@@ -1,26 +1,37 @@
-<HTML>
+<html>
 
-<BODY>
-<H2><a href="../entities.html">Entities</a> - Note</H2>
+<body>
+<h2><a href="../entities.html">Entities</a> - Note</h2>
 
-<P>
-A Note is text which can be referred by other entities.
-When creating a note by clicking on <IMG src="../../images/Note.gif"></IMG>
-you are asked to enter its content. Notes are by default not
-linked to any entity. Afterwards you can add a NOTE property
-to any entity and link it to a note by entering its id and pressing
-link. 
-</P>
+<p>
+A Note is basically text which can be referenced by other entities.
+It's good for keeping one set of information in one place without
+copies for all references.
+</p>
 
-<P>
-A note according to Gedcom doesn't necessarily have properties. But
-you can still add information to a note that completes your data.
-Here is an example:
-<PRE>
-@N003@ NOTE The author of GenJ
- DATE FROM 1998 TO 2000
-</PRE>
-</P>
+<p>
+Alternatively one can use the Note Property inside other entities'
+property hierarchy by adding instances to the property of choice 
+(see <a href="../view/edit.html#toolbar">Edit View</a>'s toolbar).
+</p>
 
-</BODY>
-</HTML>
+<table>
+ <tr> 
+  <td>Entity</td><td>Note</td>
+ </tr><tr>
+  <td>Image </td><td><img src="../../images/note.gif"></td>
+ </tr><tr>
+  <td>Gedcom Tag</td><td>NOTE</td>
+ </tr><tr valign=top>
+  <td>Gedcom Info</td><td>Additional information provided by the submitter for understanding the enclosing data</td>
+ </tr><tr>
+  <td>Sub&nbsp;Tags</td><td>CHAN</td>
+ </tr><tr valign=top>
+  <td>References&nbsp;to</td><td>
+   <img src="../../images/source.gif">&nbsp;SOURC <a href="./source.html">Source</a>              <br>
+  </td>
+ </tr>
+</table>
+
+</body>
+</html>
