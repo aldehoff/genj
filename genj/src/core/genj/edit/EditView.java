@@ -112,7 +112,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     proxyPane.setLayout(new BoxLayout(proxyPane,BoxLayout.Y_AXIS));
 
     // SplitPane with tree/edit
-    splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, treePane, proxyPane);
+    splitPane = new JSplitPane(
+      JSplitPane.VERTICAL_SPLIT, 
+      treePane, 
+      new JScrollPane(proxyPane));
     splitPane.setDividerLocation(registry.get("divider",-1));
 
     // layout

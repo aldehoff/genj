@@ -152,7 +152,7 @@ import javax.swing.JScrollPane;
   protected JComponent start(JPanel in) {
     
     // Create Text and button for current value
-    tFile = new TextFieldWidget("", 80);
+    tFile = new TextFieldWidget("", 10);
     
     JPanel p = new JPanel();
     p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
