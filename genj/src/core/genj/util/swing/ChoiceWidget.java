@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.List;
 
 import javax.swing.ComboBoxEditor;
 
@@ -33,8 +34,15 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   
   /** did we change */
   private boolean isChanged = false;
-  
 
+  /**
+   * Constructor
+   */
+  public ChoiceWidget(List values) {
+    this(values.toArray(), "");
+    setEditable(true);
+  }
+  
   /**
    * Constructor
    */     

@@ -1,4 +1,4 @@
- /**
+/**
  * GenJ - GenealogyJ
  *
  * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
@@ -64,7 +64,8 @@ public class ViewManager {
     "genj.edit.Edit",
     "genj.report.Report",
     "genj.nav.Navigator",
-    "genj.entity.Entity" 
+    "genj.entity.Entity", 
+    "genj.search.Search" 
   };
   
   /** factory instances of views */
