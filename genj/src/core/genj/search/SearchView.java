@@ -580,11 +580,17 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     private void search(Entity entity, Property prop, int pathIndex) {
       // still going?
       if (getThread().isInterrupted()) return;
-      // check path
-      if (tagPath!=null&&pathIndex<tagPath.length()&&!tagPath.get(pathIndex).equals(prop.getTag()))
-        return;
-      // all but transients
-      if (!prop.isTransient()) {
+      // got a path?
+      boolean searchThis = true;
+      if (tagPath!=null) {
+        // break if we don't match path
+        if (pathIndex<tagPath.length()&&!tagPath.get(pathIndex).equals(prop.getTag())) 
+          return;
+        // search this if path is consumed 
+        searchThis = pathIndex>=tagPath.length()-1;
+      }
+      // parse all but transients
+      if (searchThis&&!prop.isTransient()) {
         // check prop's value
         String value;
         if (prop instanceof MultiLineSupport && !(prop instanceof IconValueAvailable))
