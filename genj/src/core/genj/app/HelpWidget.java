@@ -23,6 +23,7 @@ import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.swing.ButtonHelper;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -93,7 +94,7 @@ class HelpWidget extends JPanel {
     // create south component
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     JButton bExit = new ButtonHelper()
-      .setResources(App.resources)
+      .setResources(ViewManager.resources)
       .create(new ActionDelegate.ActionDisposeFrame(frame).setText("view.close"));
     pSouth.add(bExit);
     

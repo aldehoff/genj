@@ -34,6 +34,7 @@ import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -83,7 +84,7 @@ public class AboutWidget extends JPanel{
     
     // create a south panel
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    JButton bExit = new ButtonHelper().setResources(App.resources).create(new ActionDelegate.ActionDisposeFrame(setFrame).setText("view.close"));
+    JButton bExit = new ButtonHelper().setResources(ViewManager.resources).create(new ActionDelegate.ActionDisposeFrame(setFrame).setText("view.close"));
     pSouth.add(bExit);
 
     // create a center panel
