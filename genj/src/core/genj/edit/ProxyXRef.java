@@ -51,6 +51,13 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
   protected boolean isEditable() {
     return false;
   }
+  
+  /**
+   * No label
+   */
+  protected String getLabel() {
+    return "";
+  }
 
   /**
    * Start editing a property through proxy

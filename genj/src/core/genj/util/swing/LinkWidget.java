@@ -30,7 +30,12 @@ public class LinkWidget extends JButton {
     setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     setBorder(null);
     setBorderPainted(false);
-    setFocusable(false);
+    try {
+      super.setFocusable(false);
+    } catch (Throwable t) {
+      // try pre 1.4 instead
+      super.setRequestFocusEnabled(false);
+    }
 
     setFocusPainted(false);
     setContentAreaFilled(false);

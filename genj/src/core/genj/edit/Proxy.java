@@ -88,7 +88,7 @@ import javax.swing.event.ChangeListener;
     view = setView;
     
     // add a header with a label
-    label = new JLabel(property.getTag() + " - "+ Gedcom.getName(property.getTag()), property.getImage(true), SwingConstants.LEFT);
+    label = new JLabel(getLabel(), property.getImage(true), SwingConstants.LEFT);
     panel.add(BorderLayout.NORTH, label);
 
     // add the specifics        
@@ -104,17 +104,23 @@ import javax.swing.event.ChangeListener;
       panel.add(BorderLayout.SOUTH, buttons);
     }
     
-    // propagate layout change
-    panel.validate();
-    panel.doLayout();
-
     // set focus
     editor.requestFocus();
 
     // set unchanged
     stateChanged(null);
-    
+
+    // make sure it's shown    
+    panel.revalidate();
+        
     // done
+  }
+  
+  /**
+   * Create a label for the proxy
+   */
+  protected String getLabel() {
+    return property.getTag() + " - "+ Gedcom.getName(property.getTag());
   }
 
   /**
@@ -210,13 +216,8 @@ import javax.swing.event.ChangeListener;
 
     /** overridden requestFocus() */
     public void requestFocus() {
-      JComponent c = focus!=null ? focus : this;
-      try {
-        //setFocusCycleRoot(true);
-        c.requestFocusInWindow();
-      } catch (Throwable t) {
-        c.requestFocus();
-      }
+      if (focus!=null)
+        focus.requestFocus();
     }
 
   } // Editor

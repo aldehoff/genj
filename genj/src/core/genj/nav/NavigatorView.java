@@ -307,14 +307,7 @@ public class NavigatorView extends JPanel implements ContextSupport, GedcomListe
     result.setIcon(i);
     result.setFocusPainted(false);
     result.setFireOnClick(true);
-
-    // no can do pre 1.4
-    try {    
-      result.setFocusable(false);
-    } catch (Throwable t) { 
-      result.setRequestFocusEnabled(false);
-    }
-   
+    result.setFocusable(false);
     result.setEnabled(false);
     result.setToolTipText(resources.getString(key));
 

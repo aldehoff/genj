@@ -3,10 +3,9 @@
  */
 package genj.option;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import genj.util.ActionDelegate;
+import genj.util.swing.ButtonHelper;
 
-import javax.swing.JButton;
 import javax.swing.JComponent;
 
 /**
@@ -34,7 +33,7 @@ public abstract class CustomOption extends Option {
   /** 
    * Custom UI is a button only
    */
-  private class UI implements OptionUI, ActionListener {
+  private class UI extends ActionDelegate implements OptionUI {
     
     /** callback - text representation = none */
     public String getTextRepresentation() {
@@ -43,10 +42,8 @@ public abstract class CustomOption extends Option {
 
     /** callback - component representation = button */
     public JComponent getComponentRepresentation() {
-      JButton result = new JButton("...");
-      result.setFocusable(false);
-      result.addActionListener(this);
-      return result;
+      setText("...");
+      return new ButtonHelper().setFocusable(false).create(this);
     }
 
     /** commit - noop */    
@@ -54,7 +51,7 @@ public abstract class CustomOption extends Option {
     }
     
     /** callback - button pressed */
-    public void actionPerformed(ActionEvent e) {
+    protected void execute() {
       edit();
     }
   

@@ -161,12 +161,20 @@ public class TextFieldWidget extends JTextField {
    * @see javax.swing.JComponent#requestFocus()
    */
   public void requestFocus() {
-    // try JDK 1.4's requestFocusInWindow instead
+    requestFocusInWindow();
+  }
+  
+  /**
+   * @see javax.swing.JComponent#requestFocusInWindow()
+   */
+  public boolean requestFocusInWindow() {
     try {
-      super.requestFocusInWindow();
+      return super.requestFocusInWindow();
     } catch (Throwable t) {
       super.requestFocus();
+      return true;
     }
   }
+
   
 } //JTextField

@@ -192,6 +192,8 @@ public class PopupWidget extends JButton {
     try {
       super.setFocusable(focusable);
     } catch (Throwable t) {
+      // try pre 1.4 instead
+      super.setRequestFocusEnabled(false);
     }
   }
   
@@ -201,6 +203,18 @@ public class PopupWidget extends JButton {
    */
   public void setFireOnClick(boolean set) {
     isFireOnClick = set;
+  }
+
+  /**
+   * only in 1.4 - provide for 1.3 envs
+   */  
+  public boolean requestFocusInWindow() {
+    try {
+      return super.requestFocusInWindow();
+    } catch (Throwable t) {
+      super.requestFocus();
+      return true;
+    }
   }
 
 } //PopupButton
