@@ -624,8 +624,10 @@ import javax.swing.event.TreeSelectionListener;
    */
   private class FocusPolicy extends LayoutFocusTraversalPolicy {
     public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
-      // let super find out who's getting focus
+      // let super find out who's getting focus - this might be null!
       Component result = super.getComponentAfter(focusCycleRoot, aComponent);
+      if (result==null)
+        return null;
       // choose next row in tree IF
       //  - a bean is still displayed at the moment
       //  - next component is not part of that bean
@@ -635,8 +637,10 @@ import javax.swing.event.TreeSelectionListener;
       return result;
     }
     public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
-      // let super find out who's getting focus
+      // let super find out who's getting focus - this might be null!
       Component result = super.getComponentBefore(focusCycleRoot, aComponent);
+      if (result==null)
+        return null;
       // choose previous row in tree IF
       //  - a bean is still displayed at the moment
       //  - prev component is not part of that bean
