@@ -23,6 +23,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Relationship;
+import genj.util.WordBuffer;
 import genj.view.ViewManager;
 import genj.view.widgets.SelectEntityWidget;
 
@@ -61,22 +62,29 @@ public class CreateRelationship extends AbstractChange {
    * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
    */
   protected String getConfirmMessage() {
+
+    WordBuffer result = new WordBuffer('\n');
     
     // You are about to create a {0} in {1}! / You are about to reference {0} in {1}!
     // This {0} will be {1}.
-    String about = existing==null ?
-      resources.getString("confirm.new", new Object[]{ Gedcom.getName(getTargetType(),false), gedcom})
-     :
-      resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom});
-
+    result.append( existing==null ?
+      resources.getString("confirm.new", new Object[]{ Gedcom.getName(getTargetType(),false), gedcom}) :
+      resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom})
+    );
+    
     // relationship detail
-    String detail = resources.getString("confirm.new.related", relationship.getDescription() );
+    result.append( resources.getString("confirm.new.related", relationship.getDescription()) );
 
     // Entity comment?
-    String comment = resources.getString("confirm."+getTargetType());
+    result.append( resources.getString("confirm."+getTargetType()) );
+    
+    // A warning?
+    String warning = relationship.getWarning();
+    if (warning!=null) 
+      result.append( "**Note**: " + warning );
 
     // combine
-    return about + '\n' + detail + '\n' + comment ;
+    return result.toString();
   }
 
   /**

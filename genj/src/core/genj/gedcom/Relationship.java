@@ -42,6 +42,14 @@ public abstract class Relationship {
   }
   
   /**
+   * A warning
+   * @return a warning text for this relationship or null
+   */
+  public String getWarning() {
+    return null;
+  }
+  
+  /**
    * A name
    */
   public abstract String getName();
@@ -345,19 +353,22 @@ public abstract class Relationship {
      */
     public Property apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
+      Indi parent = (Indi)entity;
       
       // get Family
       Fam fam = child.getFamc();
       if (fam==null) {
         fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
+        // make sure the new entity is first in family
+        fam.setSpouse(parent);
         // 20040619 adding missing spouse automatically now
         fam.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
         fam.addChild(child);
+        fam.addDefaultProperties();
+      } else {
+        // new entity becomes husb/wife
+        fam.setSpouse(parent);
       }
-      
-      // set parent
-      Indi parent = (Indi)entity;
-      fam.setSpouse(parent);
       
       // focus goes to new parent
       return parent;
@@ -377,6 +388,13 @@ public abstract class Relationship {
     public SpouseOf(Indi spose) {
       super(spose.getGedcom(), Gedcom.INDI);
       spouse = spose;
+    }
+    
+    public String getWarning() {
+      int n = spouse.getNoOfFams();
+      if (n>0)
+        return Gedcom.resources.getString("rel.spouse.warning", new String[]{ spouse.toString(), ""+n });
+      return super.getWarning();
     }
     
     /**
