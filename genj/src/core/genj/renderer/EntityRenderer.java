@@ -92,7 +92,7 @@ public class EntityRenderer {
   private List tableViews = new ArrayList(4);
   
   /** the proxies we know */
-  private static Map proxies = new HashMap(10);
+  private Map prenderers = new HashMap(10);
   
   /** the graphics we're for */
   private Graphics graphics;
@@ -169,10 +169,13 @@ public class EntityRenderer {
   /**
    * Setup specific resolution (in dots per centimeters)   */
   public EntityRenderer setResolution(Point2D res) {
-    // FIXME what about using this in rendering images, too
     // keep the resolution
-    resolution = new Point2D.Float();
-    resolution.setLocation(res);
+    if (res==null) {
+      resolution = null;
+    } else {
+      resolution = new Point2D.Float();
+      resolution.setLocation(res);
+    }
     // done
     return this;
   }
@@ -623,7 +626,7 @@ public class EntityRenderer {
     private int preference;
     
     /** the proxy used */
-    private PropertyRenderer proxy = null;
+    private PropertyRenderer prenderer = null;
     
     /** the tag path used */
     private TagPath path = null;
@@ -650,10 +653,10 @@ public class EntityRenderer {
         String name = Property.calcDefaultProxy(path);
 
         // know it already?
-        proxy = (PropertyRenderer) proxies.get(name);
-        if (proxy==null) {
-          proxy = PropertyRenderer.get(name);
-          proxies.put(name, proxy);
+        prenderer = (PropertyRenderer) prenderers.get(name);
+        if (prenderer==null) {
+          prenderer = PropertyRenderer.get(name);
+          prenderers.put(name, prenderer);
         }
 
         // proxy is setup
@@ -719,7 +722,7 @@ public class EntityRenderer {
       // clip and render
       Shape old = g.getClip();
       g.clipRect(r.x, r.y, r.width, r.height);
-      proxy.render(g, r, p, preference);
+      prenderer.render(g, r, p, preference, resolution);
       g.setClip(old);
       // done
     }
@@ -730,7 +733,7 @@ public class EntityRenderer {
       // get the property
       Property p = getProperty();
       if (p==null) return new Dimension(0,0);
-      return proxy.getSize(getFontMetrics(), p, preference);
+      return prenderer.getSize(getFontMetrics(), p, preference, resolution);
     }
     /**
      * @see javax.swing.text.View#getMinimumSpan(int)
@@ -744,7 +747,7 @@ public class EntityRenderer {
      * @see genj.renderer.EntityRenderer.MyView#getVerticalAlignment()
      */
     protected float getVerticalAlignment() {
-      return proxy==null ? 0 : proxy.getVerticalAlignment(getFontMetrics());
+      return prenderer==null ? 0 : prenderer.getVerticalAlignment(getFontMetrics());
     }
     /**
      * Invalidates this views current state

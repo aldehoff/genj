@@ -327,7 +327,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
       // get the proxy
       PropertyRenderer proxy = PropertyRenderer.get(prop.getProxy());
       // let it render
-      proxy.render(g, bounds, prop, proxy.PREFER_DEFAULT);
+      proxy.render(g, bounds, prop, proxy.PREFER_DEFAULT, null);
       // done
     }
   } //PropertyTableCellRenderer
