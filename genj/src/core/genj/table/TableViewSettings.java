@@ -109,8 +109,6 @@ public class TableViewSettings extends JPanel implements Settings {
   public void setView(JComponent view) {
     // remember
     table = (TableView)view;
-    // reset
-    reset();
     // done
   }
 
