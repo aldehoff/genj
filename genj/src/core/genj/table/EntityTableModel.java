@@ -164,7 +164,6 @@ import javax.swing.table.TableColumnModel;
    * Prepares the data grid
    */
   private void prepareRows() {
-    System.out.println("prepare");
     // grab entities
     Collection es = gedcom.getEntities(mode.tag);
     // build rows
@@ -180,7 +179,6 @@ import javax.swing.table.TableColumnModel;
    * Sorts the rows
    */
   private void sortRows() {
-    System.out.println("sort");
     Arrays.sort(rows, mode);
   }
   
