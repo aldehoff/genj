@@ -128,13 +128,22 @@ public class ViewManager {
    * @return the entity (might be null)
    */
   public Entity getCurrentEntity(Gedcom gedcom) {
+    // grab one from map
     Entity result = (Entity)gedcom2current.get(gedcom);
     if (result!=null) {
-      if (!gedcom.getEntities(result.getType()).contains(result)) {
-        gedcom2current.remove(gedcom);
-        result = null;
-      }
+      // still valid?
+      if (gedcom.getEntities(result.getType()).contains(result))
+        return result;
+      // remove from map 
+      gedcom2current.remove(gedcom);
     }
+    // try first indi 
+    List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
+    if (!indis.isEmpty()) {
+      result = (Entity)indis.get(0);
+      gedcom2current.put(gedcom, result);
+    }
+    // done here
     return result;
   }
 
