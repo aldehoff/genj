@@ -338,26 +338,26 @@ public class MetaProperty {
     // prepare result
     List result = new ArrayList();
     // loop through roots
-    getPathsRecursively(roots, property, new Stack(), result);
+    getPathsRecursively(roots.values(), property, new Stack(), result);
     // done
     return TagPath.toArray(result);
   }
   
-  private static void getPathsRecursively(Map map, Class property, Stack stack, Collection result) {
+  private static void getPathsRecursively(Collection subs, Class property, Stack stack, Collection result) {
     
     // loop subs
-    Iterator it = map.values().iterator();
-    while (it.hasNext()) {
+    for (Iterator it=subs.iterator();it.hasNext();) {
       MetaProperty sub = (MetaProperty)it.next();
       // something worthwhile to dive into?
       if (!sub.instantiated) continue;
       // trace it
       stack.push(sub.tag);
       // type match?
-      if (property.isAssignableFrom(sub.getType())) 
+      if (property.isAssignableFrom(sub.getType())) {
         result.add(new TagPath(stack));
+      }
       // recurse into
-      getPathsRecursively(sub.mapOfSubs, property, stack, result);
+      getPathsRecursively(sub.listOfSubs, property, stack, result);
       // rewind
       stack.pop();
     }
