@@ -146,6 +146,8 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     checkOptions[1].setSelected(tree.model.isFamilies());
     // bendarcs
     checkOptions[2].setSelected(tree.model.isBendArcs());
+    // colors
+    colorChooser.reset();
     // done
   }
 

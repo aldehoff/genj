@@ -591,9 +591,9 @@ public class Model implements Graph, GedcomListener {
       MyNode node = new MyNode(fam, shapeFams, padFamsA);
       // husband & wife
       int spouses = fam.getNoOfSpouses();
-      new MyArc(node, iterate(fam.getHusband(), spouses==2?LEFT:CENTER), false);
+      new MyArc(node, iterate(fam.getWife(), spouses==2?LEFT:CENTER), false);
       new MyArc(node, new MyNode(fam, shapeMarrs, padMarrs), false);
-      new MyArc(node, iterate(fam.getWife(), spouses==2?RIGHT:CENTER), false);
+      new MyArc(node, iterate(fam.getHusband(), spouses==2?RIGHT:CENTER), false);
       // done
       return node;
     }
@@ -727,7 +727,7 @@ public class Model implements Graph, GedcomListener {
           return minc + o.getLongitude( alignOffsetIndiAbove1stFam );
         }
       };
-      new MyArc(pivot, node, false);
+      new MyArc(pivot, node, pivot.getShape()!=null);
       // loop through our fams
       Fam[] fams = indi.getFamilies();
       MyNode fam1 = null;
@@ -756,8 +756,7 @@ public class Model implements Graph, GedcomListener {
       Indi[] children = fam.getChildren();
       for (int c=0; c<children.length; c++) {
         // create an arc from node to node for indi
-        Indi child = children[c];
-        new MyArc(pivot, iterate(child, pivot), true);       
+        iterate(children[c], pivot);       
         // next child
       }
       // done
