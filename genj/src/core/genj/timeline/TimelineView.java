@@ -88,6 +88,9 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
   /** the renderer we use for the content */
   private ContentRenderer contentRenderer = new ContentRenderer();
   
+  /** whether we ignore setCurrentProperty */
+  private boolean ignoreSetCurrent = false;
+  
   /** min/max's */
   /*package*/ final static double 
     MIN_CM_PER_YEAR =  0.1D,
@@ -289,7 +292,10 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
    */
   public void setCurrentEntity(Entity entity) {
     // try to scroll to first event
-    model.getEvent(entity);
+    if (!ignoreSetCurrent) {
+      Model.Event event = model.getEvent(entity);
+      if (event!=null) scroll2year(event.from);
+    }
     // do a repaint, too
     content.repaint();
   }
@@ -299,7 +305,12 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
    */
   public void setCurrentProperty(Property property) {
     // try to scroll to first event
-    model.getEvent(property);
+    if (!ignoreSetCurrent) {
+      Model.Event event = model.getEvent(property);
+      if (event!=null) scroll2year(event.from);
+    }
+    // do a repaint, too
+    content.repaint();
   }
 
   /**
@@ -488,7 +499,9 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
       Model.Event event = getEventAt(e.getPoint());
       if (event==null) return;
       // tell about it
+      ignoreSetCurrent=true;
       ViewManager.getInstance().setCurrentProperty(event.pe);
+      ignoreSetCurrent=false;
     }
   } //ContentClick  
     

@@ -30,8 +30,4 @@ public interface GedcomListener {
    */
   public void handleChange(Change change);
 
-  /**
-   * Notification that an entity has been selected.
-   */
-  public void handleSelection(Entity entity, boolean emphasized);
-}
+} //GedcomListener

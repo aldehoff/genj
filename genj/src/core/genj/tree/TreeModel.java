@@ -252,11 +252,6 @@ public class TreeModel implements GedcomListener, Cloneable {
       ((TreeModelListener)ls.nextElement()).handleActualChanged(oldActual,newActual);
     }
 
-    // Signal actual change to gedcom
-    if (delegateToGedcom) {
-      gedcom.fireEntitySelected(actualLink.getEntity(),false);
-    }
-
   }
 
   /**
@@ -1184,42 +1179,6 @@ public class TreeModel implements GedcomListener, Cloneable {
     fireEntitiesChanged(new Vector(change.getEntities(Change.EMOD)));
 
     // Done
-  }
-
-  /**
-   * Notification that an entity has been selected.
-   */
-  public void handleSelection(Entity entity, boolean emphasized) {
-
-    // Entity that's interesting for us ?
-    if ( (!(entity instanceof Indi)) && (!(entity instanceof Fam)) ) {
-      return;
-    }
-
-    // Double-Click -> new origin (when not stickToRoot)
-    if ((!isStickToRoot)&&emphasized) {
-      setRoot(entity);
-      return;
-    }
-
-    // Single Click -> change actual in model if link exists
-    Link newActual = null;
-
-    for (int i=1;i<=links.getSize();i++) {
-      if ((links.getLink(i).getEntity()==entity)&&(!(links.getLink(i) instanceof PlusMinus))) {
-        newActual = links.getLink(i);
-        break;
-      }
-    }
-    if ((newActual==null)||(newActual==actualLink))
-      return;
-
-    Link oldActual=actualLink;
-    actualLink=newActual;
-
-    fireActualChanged(oldActual,newActual,false);
-
-  // Done
   }
 
   /**

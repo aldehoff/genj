@@ -180,12 +180,6 @@ public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport
       }
       repaint();
     }
-    /**
-     * @see genj.gedcom.GedcomListener#handleSelection(Selection)
-     */
-    public void handleSelection(Entity entity, boolean emphasized) {
-      setEntity(entity);
-    }
   } //GedcomConnector
 
 } //EntityView

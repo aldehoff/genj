@@ -132,7 +132,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
 
       // .. here's the entity we're checking (ignoring current)
       Entity entity = (Entity)all.get(e);
-      if (entity==edit.getEntity()) {
+      if (entity==edit.getCurrentEntity()) {
         continue;
       }
 
@@ -219,7 +219,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
     prop.setValue(id);
     try {
       ((PropertyXRef)prop).link();
-      edit.setEntity(prop.getEntity());
+      edit.setCurrentEntity(prop.getEntity());
     } catch (GedcomException ex) {
       JOptionPane.showMessageDialog(
         edit.getFrame(),
@@ -245,7 +245,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
     if (e==null) {
       return;
     }
-    edit.setEntity( e );
+    edit.setCurrentEntity( e );
   }
 
   /**
@@ -309,7 +309,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
       "LINK",
       true,
       this,
-      new ImgIcon(this,"Link.gif")
+      Images.imgLink
     );
     in.add(link);
 
@@ -318,7 +318,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
       "FIND",
       true,
       this,
-      new ImgIcon(this,"Find.gif")
+      Images.imgFind
     );
     in.add(find);
 

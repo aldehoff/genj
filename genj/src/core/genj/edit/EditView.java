@@ -34,6 +34,10 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImgIconConverter;
+import genj.view.CurrentSupport;
+import genj.view.ToolBarSupport;
+import genj.view.ViewManager;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -57,9 +61,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
+import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -69,243 +75,87 @@ import javax.swing.tree.TreePath;
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends JPanel implements TreeSelectionListener, GedcomListener {
+public class EditView extends JSplitPane implements TreeSelectionListener, GedcomListener, CurrentSupport, ToolBarSupport {
 
+  /** the gedcom we're looking at */
   private Gedcom    gedcom;
-  private Entity    entity;
+  
+  /** the current entity&property */
+  private Entity    currentEntity;
+  private Property  currentProperty = null;
+  
+  /** the frame we're in */
   private Frame     frame;
 
+  /** the registry we use */
+  private Registry registry;
+
+  /** the resources we use */
+  static final Resources resources = new Resources("genj.edit");
+
+  /** buttons we use */
   private AbstractButton    actionButtonAdd,
                             actionButtonRemove,
                             actionButtonUp,
                             actionButtonDown,
                             actionButtonReturn;
-  private JCheckBox         actionCheckStick;
 
-  private JPanel            createPanel;
-
-  private JSplitPane        split;
-
-  private JTree             treeOfProps = null;
-  private JScrollPane       paneForTree = null;
-  private JPanel            panelForProxy;
-
-  private Proxy             currentProxy = null;
-  private Property          currentNode = null;
-
-  private Stack             returnStack = new Stack();
-
-  private final static int  MAX_RETURN  = 10;
-
-  private boolean keepSimple     = false;
-
-  private Registry registry;
-
-  static final Resources resources = new Resources("genj.edit");
-
-  /** the actions for creating entities */  
-  private final ActionCreate
-    actionChild  = new ActionCreate(Images.imgNewChild , Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, "new.child"),
-    actionParent = new ActionCreate(Images.imgNewParent, Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, "new.parent"),
-    actionSpouse = new ActionCreate(Images.imgNewSpouse, Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, "new.spouse"),
-    actionNote   = new ActionCreate(Images.imgNewNote  , Gedcom.NOTES, 0, "new.note"),
-    actionMedia  = new ActionCreate(Images.imgNewMedia , Gedcom.MULTIMEDIAS, 0, "new.media")
-  ;
-
-  /** the creates for entities */  
-  private ActionDelegate[][] entity2create = new ActionDelegate[][] {
-    { actionSpouse,actionChild,actionParent,actionNote,actionMedia }, // INDIVIDUALS
-    { actionSpouse, actionChild, actionNote, actionMedia }, // FAMILIES
-    { }, // MULTIMEDIAS
-    { }, // NOTES
-    { }, // SOURCES
-    { }, // SUBMITTERS
-    { }  // REPOSITORIES
-  };
-
+  /** everything for the tree */
+  private JTree             tree = null;
+  private JScrollPane       treePane = null;
   
+  /** everything for the proxy */
+  private JPanel            proxyPane;
+  private Proxy             currentProxy = null;
 
-  /**
-   * Class for rendering tree cell nodes
-   */
-  class PropertyCellRenderer extends Component implements TreeCellRenderer {
-
-    // LCD
-
-    /** members */
-    private boolean selected = false, focus = false;
-    private String  tag, value;
-    private ImgIcon image;
-    private int GAP = 2;
-    private Font    font;
-    private Color   color;
-
-    /** Constructor */
-    PropertyCellRenderer() {
-      JLabel label = new JLabel();
-      color=label.getForeground();
-      font =label.getFont      ();
-    }
-
-    /** returns the component to render in a JTree */
-    public Component getTreeCellRendererComponent(JTree tree, Object value,
-                            boolean selected, boolean expanded,
-                            boolean leaf, int row,
-                            boolean hasFocus) {
-
-      // Set the text
-      Property prop = (Property)value;
-      tag = prop.getTag();
-      if (prop instanceof Entity)
-        tag = "@"+((Entity)prop).getId()+"@ "+tag;
-
-      this.value = (prop.getValue()==null ? "" : prop.getValue());
-
-      // Set the image
-      image = prop.getImage(true);
-
-      // Done
-      this.selected = selected;
-      this.focus = focus;
-
-      return this;
-    }
-
-    /** returns the preferred size of this component */
-    public Dimension getPreferredSize() {
-
-      // Calculate Params
-      Graphics g = treeOfProps.getGraphics();
-      if (g==null)
-        return new Dimension(0,0);
-
-      // Icon Width
-      int w = image.getIconWidth();
-
-      // Tag Width
-      g.setFont(new Font(font.getName(),font.BOLD,font.getSize()));
-      FontMetrics fm = g.getFontMetrics();
-      w += fm.stringWidth(tag);
-
-      // Value Width
-      g.setFont(new Font(font.getName(),font.PLAIN,font.getSize()));
-      fm = g.getFontMetrics();
-      w += fm.stringWidth(value);
-
-      // Height
-      int h = Math.max( image.getIconHeight() , fm.getHeight() );
-
-      // Done
-      return new Dimension(w+2*GAP,h);
-    }
-
-    /** paint is subclassed to draw this treecell */
-    public void paint(Graphics g) {
-
-      // Color
-      Color            bColor;
-      if (selected)
-        bColor = Color.yellow;
-      else
-        bColor = treeOfProps.getBackground();
-      g.setColor(bColor);
-
-      // Parms
-      Dimension size = this.getSize();
-      int h = size.height,
-          w = size.width;
-
-      // Background
-      g.fillRect(0 , 0, w-1, h-1);
-
-      // Image
-      int iw = image.getIconWidth(),
-          ih = image.getIconHeight(),
-          ix = 0,
-          iy = (h-ih)/2;
-      image.paintIcon(g, ix, iy);
-
-      // Text
-      g.setColor(color);
-      g.setFont(new Font(font.getName(),font.BOLD,font.getSize()));
-      FontMetrics fm = g.getFontMetrics();
-      int tx = iw + GAP,
-          ty = (h+fm.getHeight())/2 - fm.getDescent();
-      g.drawString(tag, tx, ty);
-      tx += fm.stringWidth(tag) + GAP;
-      g.setFont(new Font(font.getName(),font.PLAIN,font.getSize()));
-      g.drawString(value, tx, ty);
-
-      // Done
-    }
-    // EOC
-  }
-
+  /** stack of entities we've been looking at */
+  private final static int  MAX_RETURN  = 10;
+  private Stack             returnStack = new Stack();
+  private boolean           isSticky = false;
+  
   /**
    * Constructor
    */
   public EditView(Gedcom setGedcom, Registry setRegistry, Frame setFrame) {
-
+    
     // remember
     this.gedcom   = setGedcom;
     this.frame    = setFrame;
     this.registry = setRegistry;
 
-    // Begin Layout
-    setLayout(new BorderLayout());
+    // TREE Component's ScrollPane
+    treePane = new JScrollPane();
+    treePane.setMinimumSize  (new Dimension(160, 128));
+    treePane.setPreferredSize(new Dimension(160, 128));
 
-    // NORTH - action buttons
-    add(createActionPanel(),BorderLayout.NORTH);
+    // EDIT Component
+    proxyPane = new JPanel();
+    proxyPane.setLayout(new BoxLayout(proxyPane,BoxLayout.Y_AXIS));
 
-    // CENTER - SplitPane for top/lower section
-
-      // TREE Component's ScrollPane
-      paneForTree = new JScrollPane();
-      paneForTree.setMinimumSize  (new Dimension(160, 128));
-      paneForTree.setPreferredSize(new Dimension(160, 128));
-
-      // EDIT Component
-      panelForProxy = new JPanel();
-      panelForProxy.setLayout(new BoxLayout(panelForProxy,BoxLayout.Y_AXIS));
-
-    split = new JSplitPane(JSplitPane.VERTICAL_SPLIT,paneForTree,panelForProxy);
-    split.setContinuousLayout(true);
-    add(split,BorderLayout.CENTER);
-
-    // 20020401 This seemed to be a problem with pre-jdk-1.4's 
-    // swing (even tried to defer it by putting it on another
-    // thread. Now it seems to work again/
-    int loc = registry.get("divider",-1);
-    if (loc!=-1) {
-      split.setDividerLocation(loc);
-    }
-    
-    // SOUTH - create buttons
-    createPanel = new JPanel();
-    createPanel.setLayout(new BoxLayout(createPanel,BoxLayout.X_AXIS));
-    add(createPanel,BorderLayout.SOUTH);
+    // layout
+    setOrientation(JSplitPane.VERTICAL_SPLIT);
+    setTopComponent(treePane);
+    setBottomComponent(proxyPane);
+    setContinuousLayout(true);
+    setDividerLocation(registry.get("divider",-1));
     
     // Listeners
     gedcom.addListener(this);
 
     // Check if we can preset something to edit
-    Entity lastEnt = null;
-    if (!actionCheckStick.isSelected()) {
-      lastEnt = gedcom.getLastEntity();
-    }
-    if (lastEnt==null) {
-      String last = registry.get("last",(String)null);
-      if (last!=null) {
-        try { lastEnt = gedcom.getEntityFromId(last); } catch (Exception e) {}
+    Entity entity = null;
+    String last = registry.get("last",(String)null);
+    if (last!=null) {
+      try { 
+        entity = gedcom.getEntityFromId(last); 
+      } catch (Exception e) {
+        entity = ViewManager.getInstance().getCurrentEntity();
       }
-      if (lastEnt==null)
-        try { lastEnt = gedcom.getIndi(0); } catch (Exception e) {}
-      if (lastEnt==null)
-        try { lastEnt = gedcom.getFam(0); } catch (Exception e) {}
     }
-    if (lastEnt!=null) {
-      setEntity(lastEnt);
-    }
+    setCurrentEntity(entity);
+    
+    // sticky?
+    isSticky = registry.get("sticky",false);
 
     // Done
   }
@@ -354,7 +204,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       if (alreadyLocked) {
         currentProxy.finish();
       } else {
-        Gedcom gedcom = entity.getGedcom();
+        Gedcom gedcom = currentEntity.getGedcom();
         if (gedcom.startTransaction()) {
           currentProxy.finish();
           gedcom.endTransaction();
@@ -380,7 +230,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   public void handleChange(Change change) {
 
     // Do I show an entity's properties now ?
-    if (entity==null) {
+    if (currentEntity==null) {
       return;
     }
 
@@ -399,7 +249,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
         while (returnStack.removeElement(ent)) {};
 
         // ... and might affect the current edit view
-        affected |= (ent==entity);
+        affected |= (ent==currentEntity);
       }
 
       // Is this a show stopper at this point?
@@ -421,7 +271,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       // .. select added
       List padd = change.getProperties(Change.PADD);
       if (padd.size()>0) {
-        PropertyTreeModel model = (PropertyTreeModel)treeOfProps.getModel();
+        PropertyTreeModel model = (PropertyTreeModel)tree.getModel();
         Property root = (Property)model.getRoot();
         Property first = (Property)padd.get(0);
         if (first instanceof PropertyEvent) {
@@ -430,7 +280,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
         }
         Property[] path = root.getPathTo(first);
         if (path!=null) {
-          treeOfProps.setSelectionPath(new TreePath(path));
+          tree.setSelectionPath(new TreePath(path));
         }
       }
       return;
@@ -438,8 +288,8 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
 
     // Property modified ?
     if ( change.isChanged(change.PMOD) ) {
-      if ( change.getEntities(Change.EMOD).contains(entity)) {
-        PropertyTreeModel treeModel = (PropertyTreeModel)treeOfProps.getModel();
+      if ( change.getEntities(Change.EMOD).contains(currentEntity)) {
+        PropertyTreeModel treeModel = (PropertyTreeModel)tree.getModel();
         treeModel.firePropertiesChanged(change.getProperties(Change.PMOD));
         return;
       }
@@ -449,12 +299,50 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   }
 
   /**
-   * Notification that an entity has been selected.
+   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
    */
-  public void handleSelection(Entity entity, boolean emphasized) {
-    if (!actionCheckStick.isSelected()) {
-      setEntity(entity);
+  public void setCurrentEntity(Entity entity) {
+    if (!isSticky) {
+      setEntity(entity, false);
     }
+  }
+
+  /**
+   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
+   */
+  public void setCurrentProperty(Property property) {
+    // ignored
+  }
+  
+  /**
+   * @see genj.view.ToolBarSupport#populate(JToolBar)
+   */
+  public void populate(JToolBar bar) {
+
+    // buttons for property manipulation    
+    ButtonHelper bh = new ButtonHelper()
+      .setEnabled(false)
+      .setResources(resources)
+      .setInsets(0)
+      .setMinimumSize(new Dimension(0,0))
+      .setContainer(bar);
+    
+    actionButtonAdd    = bh.create(new ActionPropertyAdd());
+    actionButtonRemove = bh.create(new ActionPropertyDel());
+    actionButtonUp     = bh.create(new ActionPropertyUpDown(true));
+    actionButtonDown   = bh.create(new ActionPropertyUpDown(false));
+    actionButtonReturn = bh.create(new ActionBack());
+
+    // sticky checkbox
+    JCheckBox actionCheckStick  = new JCheckBox(ImgIconConverter.get(Images.imgStickOff));
+    actionCheckStick.setSelectedIcon (ImgIconConverter.get(Images.imgStickOn ));
+    actionCheckStick.setFocusPainted(false);
+    actionCheckStick.setSelected(isSticky);
+    actionCheckStick.setToolTipText(resources.getString("tip.stick"));
+    actionCheckStick.setOpaque(false);
+    bar.add(actionCheckStick);
+    
+    // done
   }
 
   /**
@@ -473,13 +361,13 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     // We'll detach from JTree for the time the new model is setup
     // and attach later on
 
-    treeOfProps.removeTreeSelectionListener(this);
-    treeOfProps.setModel(new PropertyTreeModel(entity.getProperty()));
-    treeOfProps.addTreeSelectionListener(this);
+    tree.removeTreeSelectionListener(this);
+    tree.setModel(new PropertyTreeModel(currentEntity.getProperty()));
+    tree.addTreeSelectionListener(this);
 
     // Expand all nodes
-    for (int i=0;i<treeOfProps.getRowCount();i++) {
-      treeOfProps.expandRow(i);
+    for (int i=0;i<tree.getRowCount();i++) {
+      tree.expandRow(i);
     }
 
     // Done
@@ -491,9 +379,9 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   public void removeNotify() {
 
     // Remember registry
-    registry.put("divider",split.getDividerLocation());
-    registry.put("last", entity.getId());
-    registry.put("sticky", actionCheckStick.isSelected());
+    registry.put("divider",getDividerLocation());
+    registry.put("last", currentEntity.getId());
+    registry.put("sticky", isSticky);
 
     // Stop Listening
     gedcom.removeListener(this);
@@ -514,16 +402,8 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   /**
    * returns the currently viewed entity
    */
-  /*package*/ Entity getEntity() {
-    return entity;
-  }
-
-  /**
-   * An entity in the gedcom data has been selected.
-   * This method prepares editing of the selected entity.
-   */
-  /*package*/ void setEntity(Entity pEntity) {
-    setEntity(pEntity, false);
+  public Entity getCurrentEntity() {
+    return currentEntity;
   }
 
   /**
@@ -538,8 +418,8 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     }
 
     // Put last entity on return-stack
-    if ((!returned)&&(entity!=null)) {
-      returnStack.addElement(entity);
+    if ((!returned)&&(currentEntity!=null)) {
+      returnStack.addElement(currentEntity);
       if (returnStack.size()>MAX_RETURN) {
         returnStack.removeElementAt(0);
       }
@@ -547,17 +427,17 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     }
 
     // Remember entity
-    entity=pEntity;
+    currentEntity=pEntity;
 
     // Create tree
-    if (entity==null) {
-      if (treeOfProps!=null) {
-        treeOfProps.removeTreeSelectionListener(this);
-        treeOfProps = null;
+    if (currentEntity==null) {
+      if (tree!=null) {
+        tree.removeTreeSelectionListener(this);
+        tree = null;
       }
     } else {
       // .. create the tree
-      treeOfProps = new JTree() {
+      tree = new JTree() {
         // LCD
         /** Calculate ToopTipText depending on property under mouse */
         public String getToolTipText(MouseEvent event) {
@@ -580,77 +460,27 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
         }
         // EOC
       };
-      ToolTipManager.sharedInstance().registerComponent(treeOfProps);
+      ToolTipManager.sharedInstance().registerComponent(tree);
 
       // .. prepare data
       prepareTreeModel();
 
       // .. prepare rendering
-      treeOfProps.setCellRenderer(new PropertyCellRenderer());
+      tree.setCellRenderer(new PropertyCellRenderer());
 
       // .. done
     }
 
 
     // Update view
-    paneForTree.getViewport().setView(treeOfProps);
-    paneForTree.validate();
-    paneForTree.repaint();
+    treePane.getViewport().setView(tree);
+    treePane.validate();
+    treePane.repaint();
 
     // Pre-selected editing node ?
-    if ((entity!=null)&&(treeOfProps.isShowing())) {
-      treeOfProps.setSelectionRow( 0 );
+    if ((currentEntity!=null)&&(tree.isShowing())) {
+      tree.setSelectionRow( 0 );
     }
-
-    // Update creation buttons
-    updateCreateButtons();
-
-    // Done
-  }
-
- /**
-   * Updates (optional) create Buttons at the bottom
-   */
-  private void updateCreateButtons() {
-
-    // Same?
-    String newType = ""+Gedcom.getType(entity);
-    if (newType.equals(createPanel.getName())) {
-      return;
-    }
-
-    createPanel.setName(newType);
-
-    // Remove all
-    createPanel.removeAll();
-
-    // 1st a label
-    createPanel.add(new JLabel(resources.getString("new")));
-    
-    // None
-    if (entity!=null) {
-      
-      ButtonHelper bh = new ButtonHelper()
-        .setResources(resources)
-        .setInsets(0)
-        .setMinimumSize(new Dimension(0,0))
-        .setHorizontalAlignment(SwingConstants.LEADING)
-        .setContainer(createPanel)
-        .setImageOverText(true);
-
-      // Create Buttons
-      ActionDelegate[] creates = entity2create[entity.getType()];
-      for (int c=0;c<creates.length;c++) {
-        bh.create(creates[c]);
-      }
-      
-      // glue
-      createPanel.add(Box.createHorizontalGlue());
-    }
-
-    // make sure that's seen, too
-    createPanel.revalidate();
-    createPanel.repaint();
 
     // Done
   }
@@ -689,18 +519,18 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     label.setText(prop.getTag());
     label.setAlignmentX(0);
     label.setBorder(new EmptyBorder(2,0,8,0));
-    panelForProxy.add(label);
+    proxyPane.add(label);
 
     // Add proxy components
     try {
-      currentProxy.start(panelForProxy,label,prop,this);
+      currentProxy.start(proxyPane,label,prop,this);
     } catch (ClassCastException ex) {
       Debug.log(Debug.WARNING, this, "Seems like we're getting bad proxy for property "+prop, ex);
     }
     
     // Layout change !
-    panelForProxy.validate();
-    panelForProxy.doLayout();
+    proxyPane.validate();
+    proxyPane.doLayout();
 
     // Done
   }
@@ -712,12 +542,12 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
 
     // Clear up
     currentProxy = null;
-    panelForProxy.removeAll();
+    proxyPane.removeAll();
 
     // Layout change !
-    panelForProxy.invalidate();
-    panelForProxy.validate();
-    panelForProxy.repaint();
+    proxyPane.invalidate();
+    proxyPane.validate();
+    proxyPane.repaint();
 
   }
 
@@ -749,7 +579,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   public void valueChanged(TreeSelectionEvent e) {
 
     // Look if exactly one node has been selected
-    if (treeOfProps.getSelectionCount()==0) {
+    if (tree.getSelectionCount()==0) {
       // Disable action buttons
       actionButtonAdd   .setEnabled(false);
       actionButtonRemove.setEnabled(false);
@@ -759,7 +589,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       return;
     }
 
-    if (treeOfProps.getSelectionCount()>1) {
+    if (tree.getSelectionCount()>1) {
       // En/Disable action buttons
       actionButtonAdd   .setEnabled(false);
       actionButtonRemove.setEnabled(true );
@@ -770,18 +600,18 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     }
 
     // Calculate selection path
-    TreePath path = treeOfProps.getSelectionPath();
+    TreePath path = tree.getSelectionPath();
 
     // Prepare proxy for editing propery behind that single node
     Property prop = (Property)path.getLastPathComponent();
-    currentNode = prop;
+    currentProperty = prop;
 
     // Stop editing via old proxy before starting with new one
     if (!stopEditing(false)) {
       // .. stop here
       return;
     }
-    startEditingOf(prop,keepSimple);
+    startEditingOf(prop,false);
 
     // Enable action buttons
     actionButtonAdd.setEnabled(true);
@@ -791,130 +621,12 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       actionButtonRemove.setEnabled(false);
     }
 
-    actionButtonUp    .setEnabled(currentNode.getPreviousSibling()!=null);
-    actionButtonDown  .setEnabled(currentNode.getNextSibling()    !=null);
+    actionButtonUp    .setEnabled(currentProperty.getPreviousSibling()!=null);
+    actionButtonDown  .setEnabled(currentProperty.getNextSibling()    !=null);
 
     // Done
   }
   
-  /**
-   * Creates a panl with action buttons
-   */
-  private JPanel createActionPanel() {
-    
-    JPanel actionPanel = new JPanel();
-    actionPanel.setLayout(new BoxLayout(actionPanel,BoxLayout.X_AXIS));
-
-    actionCheckStick  = new JCheckBox(ImgIconConverter.get(Images.imgStickOff));
-    actionCheckStick.setSelectedIcon (ImgIconConverter.get(Images.imgStickOn ));
-    actionCheckStick.setFocusPainted(false);
-    actionCheckStick.setSelected(registry.get("sticky",false));
-    actionCheckStick.setToolTipText(resources.getString("tip.stick"));
-
-    ButtonHelper bh = new ButtonHelper()
-      .setEnabled(false)
-      .setResources(resources)
-      .setInsets(0)
-      .setMinimumSize(new Dimension(0,0))
-      .setContainer(actionPanel);
-    
-    actionButtonAdd    = bh.create(new ActionPropertyAdd());
-    actionButtonRemove = bh.create(new ActionPropertyDel());
-    actionButtonUp     = bh.create(new ActionPropertyUpDown(true));
-    actionButtonDown   = bh.create(new ActionPropertyUpDown(false));
-    actionButtonReturn = bh.create(new ActionBack());
-
-    actionPanel.add(actionCheckStick);
-    
-    return actionPanel;
-  }
-
-  /**
-   * Action - create entity
-   */
-  private class ActionCreate extends ActionDelegate {
-    
-    /** which */
-    private int type;
-    
-    /** relation */
-    private int relation;
-    
-    /** constructor */
-    protected ActionCreate(ImgIcon img, int t, int r, String txt) {
-      type = t;
-      relation = r;
-      super.setImage(img);
-      super.setText(txt);
-    } 
-    
-    /** run */
-    public void execute() {
-  
-      // Recheck with the user
-      String message = resources.getString(
-        "new.confirm", new String[] {resources.getString(txt),Gedcom.getNameFor(type,false)}
-      );
-  
-      int option = JOptionPane.showOptionDialog(
-        EditView.this,
-        message,
-        resources.getString("new"),
-        JOptionPane.OK_CANCEL_OPTION,
-        JOptionPane.QUESTION_MESSAGE,
-        null, null, null
-      );
-  
-      // .. OK or Cancel ?
-      if (option != JOptionPane.OK_OPTION) {
-        return;
-      }
-  
-      // Lock write
-      if (!startTransaction("Couldn't lock Gedcom for write")) {
-        return;
-      }
-  
-      // Stop editing old
-      flushEditing(true);
-  
-      // Try to create
-      Entity old = entity;
-      Entity created = null;
-      try {
-        switch (type) {
-          case Gedcom.INDIVIDUALS:
-            created = gedcom.createIndi("", "", 0, relation, entity);
-            break;
-          case Gedcom.NOTES:
-            created = gedcom.createNote(entity);
-            break;
-          case Gedcom.MULTIMEDIAS:
-            created = gedcom.createMedia(entity);
-            break;
-        }
-      } catch (GedcomException ex) {
-        JOptionPane.showMessageDialog(
-          getFrame(),
-          ex.getMessage(),
-          EditView.resources.getString("error"),
-          JOptionPane.ERROR_MESSAGE
-        );
-      }
-  
-      // End transaction
-      endTransaction();
-  
-      // Set new entity
-      if (created!=null) {
-        setEntity(created);
-        //gedcom.fireEntitySelected(null,old    ,true);
-        //gedcom.fireEntitySelected(null,created,false);
-      }
-  
-    }
-  } //ActionCreate
-
   /**
    * Action - back
    */
@@ -954,10 +666,10 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     protected void execute() {
   
       // Depending on Gedcom of current entity
-      if (entity==null)
+      if (currentEntity==null)
         return;
   
-      Gedcom gedcom = entity.getGedcom();
+      Gedcom gedcom = currentEntity.getGedcom();
   
       // .. LockWrite
       if (!startTransaction("Couldn't save")) {
@@ -968,12 +680,12 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       flushEditing(true);
   
       // .. only in case of single selection
-      TreePath paths[] = treeOfProps.getSelectionPaths();
+      TreePath paths[] = tree.getSelectionPaths();
       if ( (paths==null) || (paths.length!=1) ) {
         endTransaction();
         return;
       }
-      TreePath path = treeOfProps.getSelectionPath();
+      TreePath path = tree.getSelectionPath();
   
       // .. calculate new props
       Property prop = (Property)path.getLastPathComponent();
@@ -1042,7 +754,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     /** run */
     protected void execute() {
   
-      TreePath paths[] = treeOfProps.getSelectionPaths();
+      TreePath paths[] = tree.getSelectionPaths();
       boolean changed = false;
   
       // .. check if there are some selections
@@ -1099,7 +811,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
         }
   
         if (veto==null) {
-          entity.getProperty().delProperty( prop );
+          currentEntity.getProperty().delProperty( prop );
           changed = true;
         }
   
@@ -1143,8 +855,8 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       flushEditing(true);
   
       // .. Calculate property that is moved
-      entity.getProperty().moveProperty(
-        currentNode,
+      currentEntity.getProperty().moveProperty(
+        currentProperty,
         up? Property.UP : Property.DOWN
       );
   
@@ -1154,11 +866,58 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       // 03.02.2000 Since the movement of properties is not
       // signalled by any event, we have to reselect the node again
       prepareTreeModel();
-      TreePath path = new TreePath(entity.getProperty().getPathTo(currentNode));
-      treeOfProps.setSelectionPath(path);
+      TreePath path = new TreePath(currentEntity.getProperty().getPathTo(currentProperty));
+      tree.setSelectionPath(path);
   
     }
     
   }  //ActionPropertyUpDown
+
+  /**
+   * Class for rendering tree cell nodes
+   */
+  private class PropertyCellRenderer extends JLabel implements TreeCellRenderer {
+    
+    /**
+     * Constructor
+     */
+    private PropertyCellRenderer() {
+      setOpaque(true);
+      setFont(tree.getFont());
+    }
+
+    /**
+     * @see javax.swing.tree.TreeCellRenderer#getTreeCellRendererComponent(JTree, Object, boolean, boolean, boolean, int, boolean)
+     */
+    public Component getTreeCellRendererComponent(JTree tree, Object object, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+
+      // we know there's a property here
+      Property prop = (Property)object;
+
+      // Set the text
+      String tag = prop.getTag();
+      if (prop instanceof Entity)
+        tag = "@"+((Entity)prop).getId()+"@ "+tag;
+
+      String value = prop.getValue();
+      if (value==null) setText(tag);
+      else setText(tag + ' ' + value);
+      
+      // Set the image
+      setIcon(ImgIconConverter.get(prop.getImage(true)));
+      
+      // background
+      if (selected) {
+        setBackground(UIManager.getColor("Tree.selectionBackground"));
+        setForeground(UIManager.getColor("Tree.selectionForeground"));
+      } else {
+        setBackground(UIManager.getColor("Tree.textBackground"));
+        setForeground(UIManager.getColor("Tree.textForeground"));
+      }
+
+      // Done
+      return this;
+    }
+  } //PropertyCellRenderer
   
 }

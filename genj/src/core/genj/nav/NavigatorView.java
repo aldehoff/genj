@@ -25,11 +25,14 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.view.CurrentSupport;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -49,7 +52,7 @@ import javax.swing.JPanel;
 /**
  * A navigator with buttons to easily navigate through Gedcom data
  */
-public class NavigatorView extends JPanel {
+public class NavigatorView extends JPanel implements CurrentSupport {
   
   private static Resources resources = new Resources(NavigatorView.class);
   
@@ -62,16 +65,21 @@ public class NavigatorView extends JPanel {
   /** the buttons */
   private JButton bFather, bMother, bOlder, bPartner, bYounger, bChild;
   
+  /** the gedcom */
+  private Gedcom gedcom;
+  
 
   /**
    * Constructor
    */
   public NavigatorView(Gedcom useGedcom, Registry useRegistry, Frame useFrame) {
     
-    // super
-    super(new BorderLayout());
-
+    // remember
+    gedcom = useGedcom;
+    
     // layout    
+    setLayout(new BorderLayout());
+
     label = new JLabel();
     label.setFont(new Font("Arial", Font.PLAIN, 10));
     label.setBorder(BorderFactory.createTitledBorder(resources.getString("nav.current_entity.title")));
@@ -83,27 +91,25 @@ public class NavigatorView extends JPanel {
     // date
     useGedcom.addListener(new GedcomListener() {
       public void handleChange(Change change) {
-        if (change.getEntities(change.EDEL).contains(indi)) setEntity(change.getGedcom(), null);
-        else setEntity(change.getGedcom(), indi);
-      }
-      public void handleSelection(Entity entity, boolean emphasized) {
-        setEntity(entity.getGedcom(), entity);
+        if (change.getEntities(change.EDEL).contains(indi)) setCurrentEntity(null);
+        else setCurrentEntity(indi);
       }
     });
     
     // init
-    setEntity(useGedcom,useGedcom.getLastEntity());
+    setCurrentEntity(useGedcom.getLastEntity());
 
     // done    
 
   }
   
   /**
-   * Sets the current entity (only individuals accepted)
+   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
    */
-  public void setEntity(Gedcom g, Entity e) {
+  public void setCurrentEntity(Entity e) {
+    
     // no entity
-    if ((e == null)&&(g.getEntities(Gedcom.INDIVIDUALS).size()>0)) e=g.getIndi(0);
+    if ((e == null)&&(gedcom.getEntities(Gedcom.INDIVIDUALS).size()>0)) e=gedcom.getIndi(0);
     if (e == null) {
       // data
       indi = null;
@@ -132,6 +138,21 @@ public class NavigatorView extends JPanel {
       
     }
     // stay where we are
+  }
+  
+  /**
+   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
+   */
+  public void setCurrentProperty(Property property) {
+    // ignored
+  }
+  
+  /**
+   * propagate the selection of an entity
+   */
+  private void fireCurrentEntity(Entity e) {
+    if (e==null) return;
+    ViewManager.getInstance().setCurrentEntity(e);
   }
   
   /**
@@ -179,7 +200,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(indi.getFather(), true);
+      fireCurrentEntity(indi.getFather());
     }
   }
       
@@ -193,7 +214,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(indi.getMother(), true);
+      fireCurrentEntity(indi.getMother());
     }
   }
         
@@ -207,7 +228,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(indi.getYoungerSibling(), true);
+      fireCurrentEntity(indi.getYoungerSibling());
     }
   }      
   
@@ -221,7 +242,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(indi.getOlderSibling(), true);
+      fireCurrentEntity(indi.getOlderSibling());
     }
   }
         
@@ -235,7 +256,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(indi.getPartners()[0], true);
+      fireCurrentEntity(indi.getPartners()[0]);
     }
   }
         
@@ -249,8 +270,8 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(indi.getChildren()[0], true);
+      fireCurrentEntity(indi.getChildren()[0]);
     }
   }
   
-}
+} ///NavigatorView

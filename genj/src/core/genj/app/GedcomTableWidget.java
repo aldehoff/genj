@@ -239,13 +239,6 @@ public class GedcomTableWidget extends JTable {
       }
     }
 
-    /**
-     * @see genj.gedcom.GedcomListener#handleSelection(Selection)
-     */
-    public void handleSelection(Entity entity, boolean emphasized) {
-      // ignored
-    }
-
   } // Model
 
 } //GedcomTableWidget

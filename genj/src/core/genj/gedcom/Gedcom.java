@@ -836,31 +836,6 @@ public class Gedcom {
   }
 
   /**
-   * Proxy for notifying the selection of an entity. Can be used
-   * by listeners to notify others in case of a selection event.
-   */
-  public synchronized void fireEntitySelected(Entity which, boolean emphasized)  {
-
-    // Is there a transaction running?
-    if (isTransaction) {
-        return;
-    }
-
-    // Entity ?
-    if (which==null)
-      throw new IllegalArgumentException("Selection can't be null");
-
-    lastEntity = which;
-
-    // Signal to listeners
-    for (int i=listeners.size()-1;i>=0;i--) {
-      ((GedcomListener)listeners.get(i)).handleSelection(which, emphasized);
-    }
-
-    // Done
-  }
-
-  /**
    * Returns all entities
    */
   public List[] getEntities() {

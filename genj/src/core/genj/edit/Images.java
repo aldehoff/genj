@@ -31,11 +31,6 @@ final public class Images {
   public static ImgIcon
     imgStickOn,
     imgStickOff,
-    imgNewChild,
-    imgNewParent,
-    imgNewSpouse,
-    imgNewMedia,
-    imgNewNote,
     imgReturn,
     imgFind,
     imgLink;
@@ -45,16 +40,11 @@ final public class Images {
    */
   private Images() {
 
-    imgStickOn   = new ImgIcon(this,"StickOn.gif");
-    imgStickOff  = new ImgIcon(this,"StickOff.gif");
-    imgNewChild  = new ImgIcon(this,"NewChild.gif");
-    imgNewParent = new ImgIcon(this,"NewParent.gif");
-    imgNewSpouse = new ImgIcon(this,"NewSpouse.gif");
-    imgNewMedia  = new ImgIcon(this,"NewMedia.gif");
-    imgNewNote   = new ImgIcon(this,"NewNote.gif");
-    imgFind      = new ImgIcon(this,"Find.gif");
-    imgLink      = new ImgIcon(this,"Link.gif");
-    imgReturn    = new ImgIcon(this,"Return.gif");
+    imgStickOn   = new ImgIcon(this,"images/StickOn.gif");
+    imgStickOff  = new ImgIcon(this,"images/StickOff.gif");
+    imgFind      = new ImgIcon(this,"images/Find.gif");
+    imgLink      = new ImgIcon(this,"images/Link.gif");
+    imgReturn    = new ImgIcon(this,"images/Return.gif");
     
   }
 }

@@ -29,33 +29,14 @@ final public class Images {
   private static Images instance = new Images();
 
   public static ImgIcon
-    imgDelEntity,
-    imgNewFam,
-    imgNewSource,
     imgGedcom,
-    imgNewIndi,
-    imgNewSubmitter,
-    imgNewRepository,
-    imgUndo,
-    imgNewMedia,
-    imgNewNote,
     imgHelp;
 
   /**
    * Constructor which pre-loads all images
    */
   private Images() {
-
-    imgDelEntity    = new ImgIcon(this,"images/DelEntity.gif");
-    imgNewFam       = new ImgIcon(this,"images/NewFam.gif");
-    imgNewSource    = new ImgIcon(this,"images/NewSource.gif");
     imgGedcom       = new ImgIcon(this,"images/Gedcom.gif");
-    imgNewIndi      = new ImgIcon(this,"images/NewIndi.gif");
-    imgNewSubmitter = new ImgIcon(this,"images/NewSubmitter.gif");
-    imgNewRepository= new ImgIcon(this,"images/NewRepository.gif");
-    imgUndo         = new ImgIcon(this,"images/Undo.gif");
-    imgNewMedia     = new ImgIcon(this,"images/NewMedia.gif");
-    imgNewNote      = new ImgIcon(this,"images/NewNote.gif");
     imgHelp         = new ImgIcon(this,"images/Help.gif");
   }
 }

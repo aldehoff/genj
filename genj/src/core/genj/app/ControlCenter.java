@@ -43,10 +43,6 @@ import genj.io.*;
  */
 public class ControlCenter extends JPanel {
   
-  private final static String
-    CREATE_PREFIX = "create.",
-    VIEW_PREFIX   = "view.";
-
   /** members */
   private GedcomTableWidget tGedcoms;
   private JFrame frame;
@@ -79,17 +75,10 @@ public class ControlCenter extends JPanel {
     // ... Listening
     tGedcoms.getSelectionModel().addListSelectionListener((ListSelectionListener)new ActionToggleButtons().as(ListSelectionListener.class));
 
-    // Create Pane for buttons
-    JPanel gedcomPane = getTopButtonBar();
-    
-    // Actions Pane
-    JPanel entityPane = getBottomButtonBar();
-    
     // Layout
     setLayout(new BorderLayout());
-    add(gedcomPane ,"North");
+    add(getToolBar() ,"North");
     add(new JScrollPane(tGedcoms), "Center");
-    add(entityPane ,"South");
 
     // Load known gedcoms
     SwingUtilities.invokeLater((Runnable)new ActionLoadLastOpen().as(Runnable.class));
@@ -107,18 +96,20 @@ public class ControlCenter extends JPanel {
   /**
    * Returns a button bar for the top
    */
-  private JPanel getTopButtonBar() {
+  private JToolBar getToolBar() {
+    
+    // create it
+    JToolBar result = new JToolBar();
 
     // wether we're showing text on the buttons, too    
     boolean imageAndText = registry.get("imagesandtext", false);
     
     // .. Buttons
-    JPanel pButtons = new JPanel(new GridLayout());
     ButtonHelper bh = new ButtonHelper()
       .setResources(App.resources)
       .setInsets(4)
       .setFocusable(false)
-      .setContainer(pButtons)
+      .setContainer(result)
       .setTextAllowed(imageAndText)
       .setShortTexts(true)
       .setImageOverText(true)
@@ -135,11 +126,6 @@ public class ControlCenter extends JPanel {
     
     bh.setEnabled(true).removeCollection(gedcomButtons).setResources(App.resources);
 
-    // the result
-    JPanel result = new JPanel(new BorderLayout());
-    result.add(pButtons, BorderLayout.WEST);
-    result.add(Box.createGlue(), BorderLayout.CENTER);
-    
     // Menu
     MenuHelper mh = new MenuHelper()
       .setResources(App.resources);
@@ -150,38 +136,6 @@ public class ControlCenter extends JPanel {
     return result;
   }
 
-  /**
-   * Returns a menu for frame showing this controlcenter
-   */
-  private JPanel getBottomButtonBar() {
-  
-    JPanel result = new JPanel();
-    result.setLayout(new BoxLayout(result,BoxLayout.X_AXIS));
-
-    // .. Buttons
-    ButtonHelper bh = new ButtonHelper()
-      .setResources(App.resources)
-      .setInsets(4)
-      .setFocusable(false)
-      .setContainer(result)
-      .addCollection(gedcomButtons)
-      .setEnabled(false);
-      
-    bh.create(new ActionCreate(Gedcom.INDIVIDUALS, Images.imgNewIndi, "cc.tip.create_indi"));
-    bh.create(new ActionCreate(Gedcom.FAMILIES, Images.imgNewFam, "cc.tip.create_fam"));
-    bh.create(new ActionCreate(Gedcom.MULTIMEDIAS, Images.imgNewMedia, "cc.tip.create_media"));
-    bh.create(new ActionCreate(Gedcom.NOTES, Images.imgNewNote, "cc.tip.create_note"));
-    bh.removeCollection(gedcomButtons);
-    bh.create(new ActionCreate(Gedcom.SOURCES, Images.imgNewSource, "cc.tip.create_source"));
-    bh.create(new ActionCreate(Gedcom.SUBMITTERS, Images.imgNewSubmitter, "cc.tip.create_submitter"));
-    bh.create(new ActionCreate(Gedcom.REPOSITORIES, Images.imgNewRepository, "cc.tip.create_repository"));
-    bh.addCollection(gedcomButtons);
-    bh.create(new ActionDelete());
-
-    // done
-    return result;
-  }
-  
   /**
    * Returns a menu for frame showing this controlcenter
    */
@@ -639,32 +593,6 @@ public class ControlCenter extends JPanel {
   } //LastOpenLoader
 
   /**
-   * Action delete
-   */
-  private class ActionDelete extends ActionDelegate { 
-    /** constructor */
-    protected ActionDelete() {
-      super.setImage(Images.imgDelEntity);
-      super.setTip("cc.tip.delete_entity");
-    }
-    /** run */
-    protected void execute() {
-      // Setup delete dialog
-      JFrame frame = App.getInstance().createFrame(
-        App.resources.getString("cc.title.delete_entity"),
-        Images.imgDelEntity,
-        "delentity",
-        null
-      );
-      OptionDelEntity option = new OptionDelEntity(frame,tGedcoms.getAllGedcoms(),tGedcoms.getSelectedGedcom());
-      frame.getContentPane().add(option);
-      frame.pack();
-      frame.show();
-      // Done
-    } 
-  } //ActionDelete
-  
-  /**
    * Action - Save
    */
   private class ActionSave extends ActionDelegate {
@@ -900,64 +828,6 @@ public class ControlCenter extends JPanel {
     } 
   } //ActionVerify
   
-  /**
-   * Action - Create
-   */
-  private class ActionCreate extends ActionDelegate { 
-    
-    /** type */
-    private int type;
-    
-    /** constructor */
-    protected ActionCreate(int type, ImgIcon img, String tip) {
-      this.type = type;
-      super.setImage(img);
-      super.setTip(tip);
-    }
-    
-    /** run */
-    protected void execute() {
-  
-      ImgIcon img;
-      int otype;
-      
-      switch (type) {
-        case Gedcom.INDIVIDUALS:
-          otype = OptionNewEntity.INDIVIDUAL;
-          img  = Images.imgNewIndi;
-          break;
-        case Gedcom.FAMILIES:
-          otype = OptionNewEntity.FAMILY;
-          img  = Images.imgNewFam;
-          break;
-        case Gedcom.MULTIMEDIAS:
-          otype = OptionNewEntity.MULTIMEDIA;
-          img  = Images.imgNewMedia;
-          break;
-        case Gedcom.NOTES:
-          otype = OptionNewEntity.NOTE;
-          img  = Images.imgNewNote;
-          break;
-        default:
-          return;
-      }
-  
-      JFrame frame = App.getInstance().createFrame(
-        App.resources.getString("cc.title.create_entity")+" - "+Gedcom.getNameFor(type,false),
-        img,
-        Gedcom.getTagFor(type),
-        null
-      );
-  
-      OptionNewEntity option = new OptionNewEntity(frame,otype,tGedcoms.getAllGedcoms(),tGedcoms.getSelectedGedcom());
-      frame.getContentPane().add(option);
-      frame.pack();
-      frame.show();
-  
-      // Done
-    }
-  } //ActionCreate
-
   /**
    * Action - View
    */

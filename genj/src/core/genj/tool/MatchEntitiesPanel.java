@@ -115,12 +115,6 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
   }
 
   /**
-   * Notification that an entity has been selected.
-   */
-  public void handleSelection(Entity entity, boolean emphasized) {
-  }
-
-  /**
    * Component is not used anymore
    */
   public void removeNotify() {

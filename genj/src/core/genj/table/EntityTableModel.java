@@ -245,13 +245,6 @@ import javax.swing.table.TableColumnModel;
   }
 
   /**
-   * @see genj.gedcom.GedcomListener#handleSelection(Selection)
-   */
-  public void handleSelection(Entity entity, boolean emphasized) {
-    // ignored
-  }
-
-  /**
    * Helper that creates a new ColumnModel
    */
   /*package*/ TableColumnModel createTableColumnModel(int total) {

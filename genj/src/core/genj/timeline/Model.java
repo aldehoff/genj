@@ -148,13 +148,35 @@ import genj.gedcom.PropertyName;
    * Returns the first event of given entity
    */
   protected Event getEvent(Entity entity) {
-    return null;
+    // loop through all events
+    Event result = null;
+    for (int l=0; l<layers.size(); l++) {
+      Iterator events = ((List)layers.get(l)).iterator();
+      while (events.hasNext()) {
+        Event event = (Event)events.next();
+        if (event.getEntity()!=entity) continue;
+        if (result==null||event.from<result.from) result = event;
+      }
+    }
+    // done
+    return result;
   }
   
   /**
    * Returns the first event for given property
    */
   protected Event getEvent(Property property) {
+    // only events
+    if (!(property instanceof PropertyEvent)) return null;
+    // loop through all events
+    for (int l=0; l<layers.size(); l++) {
+      Iterator events = ((List)layers.get(l)).iterator();
+      while (events.hasNext()) {
+        Event event = (Event)events.next();
+        if (event.pe==property) return event;
+      }
+    }
+    // done
     return null;
   }
   
@@ -206,13 +228,6 @@ import genj.gedcom.PropertyName;
     // done
   }
 
-  /**
-   * @see genj.gedcom.GedcomListener#handleSelection(Entity, boolean)
-   */
-  public void handleSelection(Entity entity, boolean emphasized) {
-    // ignored
-  }
-  
   /**
    * Trigger callback - our structure has changed
    */
@@ -448,6 +463,12 @@ import genj.gedcom.PropertyName;
      */
     /*package*/ Entity getEntity() {
       return pe.getEntity();
+    }
+    /**
+     * The property for that event
+     */
+    /*package*/ PropertyEvent getProperty() {
+      return pe;
     }
   } //Event
   

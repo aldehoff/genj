@@ -112,19 +112,6 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
       /** @see genj.gedcom.GedcomListener#handleChange(Change) */
       public void handleChange(Change change) {
       }
-      /** @see genj.gedcom.GedcomListener#handleSelection(Selection) */
-      public void handleSelection(Entity entity, boolean emphasized) {
-        // a type that we're interested in?
-        if (entity.getType()!=tableModel.getType()) return;
-        // already selected?
-        int row = table.getSelectionModel().getLeadSelectionIndex();
-        if (row>=0 && tableModel.getEntity(row)==entity) return;
-        // change selection
-        row = tableModel.getRow(entity);
-        table.scrollRectToVisible(table.getCellRect(row,0,true));
-        table.getSelectionModel().setSelectionInterval(row,row);
-        // done
-      }
     });
     
     // done
@@ -300,7 +287,6 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
       int i = table.getSelectedRow();
       if (i<0) return;
       Entity e = tableModel.getEntity(i);
-      gedcom.fireEntitySelected(e, false);
       ViewManager.getInstance().setCurrentEntity(e);
     }
   } //ActionMode
