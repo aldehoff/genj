@@ -46,7 +46,7 @@ import java.awt.geom.Rectangle2D;
   protected TreeMetrics metrics;
   
   /** shapes */
-  protected Shape shapeMarrs, shapeIndis, shapeFams; 
+  protected Shape shapeMarrs, shapeIndis, shapeFams, shapePlus, shapeMinus; 
 
   /** padding (n, e, s, w) */
   protected double[] padIndis; 
@@ -77,6 +77,8 @@ import java.awt.geom.Rectangle2D;
     shapeMarrs = calcMarriageShape();
     shapeIndis = calcIndiShape();
     shapeFams  = calcFamShape();
+    shapePlus  = calcPlusShape();
+    shapeMinus = calcMinusShape();
     
     // .. indis
     padIndis  = new double[] { 
@@ -140,7 +142,7 @@ import java.awt.geom.Rectangle2D;
   /**
    * Calculates marriage rings
    */
-  private Shape calcMarriageShape() {
+  protected Shape calcMarriageShape() {
     
     // check model
     if (!model.isMarrSymbols())
@@ -177,7 +179,7 @@ import java.awt.geom.Rectangle2D;
   /**
    * Calculates shape for indis 
    */
-  private Shape calcIndiShape() {
+  protected Shape calcIndiShape() {
     return new Rectangle2D.Double(
       -metrics.wIndis/2,
       -metrics.hIndis/2,
@@ -189,13 +191,42 @@ import java.awt.geom.Rectangle2D;
   /**
    * Calculates shape for fams 
    */
-  private Shape calcFamShape() {
+  protected Shape calcFamShape() {
     return new Rectangle2D.Double(
       -metrics.wFams/2,
       -metrics.hFams/2,
        metrics.wFams,
        metrics.hFams
      );
+  }
+
+  /**
+   * Calculates shape for plus sign
+   */
+  protected Shape calcPlusShape() {
+    double d = Math.min(metrics.wIndis,metrics.hIndis)/8;
+    Path result = new Path();
+    result.moveTo(new Point2D.Double( 0,-d));
+    result.lineTo(new Point2D.Double( 0, d));
+    result.moveTo(new Point2D.Double(-d, 0));
+    result.lineTo(new Point2D.Double( d, 0));
+    result.append(new Rectangle2D.Double(-d,-d,d*2,d*2));
+    return result;
+  }
+    
+  /**
+   * Calculates shape for minus sign
+   */
+  protected Shape calcMinusShape() {
+    
+    double d = 0.3;
+    
+    Path result = new Path();
+    result.moveTo(new Point2D.Double(-d*0.3, 0));
+    result.lineTo(new Point2D.Double( d*0.3, 0));
+    result.append(new Rectangle2D.Double(-d/2,-d/2,d,d));
+    
+    return result;
   }
     
   /**
@@ -386,11 +417,21 @@ import java.awt.geom.Rectangle2D;
    * Parser - Descendants no Families
    */
   private static class DescendantsNoFams extends Parser {
+    /** how we signs */
+    private double[] padSigns;
     /**
      * Constructor
      */
     protected DescendantsNoFams(Model model, TreeMetrics metrics) {
       super(model, metrics);
+      
+      // how we pad signs (n, e, s, w)
+      padSigns  = new double[]{  
+        -padIndis[0], 
+         padIndis[1], 
+         padIndis[2], 
+         padIndis[3]     
+      };
     }
     /**
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
@@ -424,10 +465,16 @@ import java.awt.geom.Rectangle2D;
     private TreeNode iterate(Indi indi) {
       // create node for indi
       TreeNode node = model.add(new TreeNode(indi, shapeIndis, padIndis)); 
-      // loop through our fams
+      // grab fams
       Fam[] fams = indi.getFamilies();
-      for (int f=0; f<fams.length; f++) {
-        iterate(fams[f], node);
+      if (fams.length>0) {
+        // and minus
+        TreeNode minus = model.add(new TreeNode(null, shapeMinus, padSigns));
+        model.add(new TreeArc(node, minus, true));
+        // loop through our fams
+        for (int f=0; f<fams.length; f++) {
+          iterate(fams[f], minus);
+        }
       }
       // done
       return node;
