@@ -2,7 +2,7 @@
 <helpset version="1.0">
   <title>Family Tree - Help</title>
   <maps>
-    <homeID>intro</homeID>
+    <homeID>welcome</homeID>
     <mapref location="./map.xml"/>
   </maps>
   <view>
