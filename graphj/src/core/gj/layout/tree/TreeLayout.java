@@ -416,19 +416,16 @@ public class TreeLayout extends AbstractLayout implements Layout {
    * Default NodeOptions
    */
   private class DefaultNodeOptions implements NodeOptions {
-    private Node n;
     /**
      * @see gj.layout.tree.NodeOptions#set(Node)
      */
     public void set(Node node) {
       // ignored
-      n=node;
     }
     /**
      * @see gj.layout.tree.NodeOptions#getAlignment(int)
      */
     public double getAlignment(int dir) {
-      if (n.toString().equals("1")&&dir==LON) return -1;
       return dir==LAT ? latAlignment : lonAlignment;
     }
     /**
