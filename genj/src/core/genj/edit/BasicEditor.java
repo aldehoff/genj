@@ -80,8 +80,6 @@ import javax.swing.event.ChangeListener;
   //
   private final static HashMap TEMPLATES = new HashMap();
   
-  // FIXME auto focus on first line
-  // FIXME confirm on exit
   
   static {
     
