@@ -410,13 +410,10 @@ public class Indi extends PropertyIndi implements Entity {
   public String getName() {
 
     // Calculate NAME
-    PropertyName p = (PropertyName)getProperty(new TagPath("INDI:NAME"),true);
-    if (p==null) {
-      return "";
-    }
-
-    // Return string value
-    return p.getName();
+    Property name = getProperty("NAME",true);
+    if (name instanceof PropertyName)
+      return ((PropertyName)name).getName();  
+    return "";
   }
   
   /** 

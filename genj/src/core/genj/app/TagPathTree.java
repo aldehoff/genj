@@ -98,7 +98,7 @@ public class TagPathTree extends JScrollPane {
   /**
    * Adds another listener to this
    */
-  public void addTagPathTreeListener(TagPathTreeListener listener) {
+  public void addListener(Listener listener) {
     listeners.addElement(listener);
   }
 
@@ -119,14 +119,14 @@ public class TagPathTree extends JScrollPane {
     // Go through listeners
     Enumeration enum = listeners.elements();
     while (enum.hasMoreElements()) {
-      ((TagPathTreeListener)enum.nextElement()).handleSelection(path,on);
+      ((Listener)enum.nextElement()).handleSelection(path,on);
     }
   }
   
   /**
    * Removes one of ther listener to this
    */
-  public void removeTagPathTreeListener(TagPathTreeListener listener) {
+  public void removeListener(Listener listener) {
     listeners.removeElement(listener);
   }
 
@@ -181,5 +181,17 @@ public class TagPathTree extends JScrollPane {
 //    }
 //
 //  } //NodeRenderer
+
+  /**
+   * Notification Interface for selections on the TagPathTree component
+   */
+  public interface Listener {
+
+    /**
+     * Notification in case a selection for a TagPath has changed
+     */
+    public void handleSelection(TagPath path, boolean on);
+
+  } //Listener
 
 } //TagPathTree

@@ -26,13 +26,14 @@ import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.DoubleValueSlider;
-import genj.util.swing.UnitGraphics;
 import genj.util.swing.ScreenResolutionScale;
+import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.ContextPopupSupport;
 import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -44,7 +45,6 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
-import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -156,7 +156,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
     csRuler.add("tick", Color.lightGray);
     
     // create/keep our sub-parts
-    model = new Model(gedcom, (Set)regstry.get("filter", model.DEFAULT_FILTER));
+    model = new Model(gedcom, regstry.get("filter", (String[])null));
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
     content = new Content();
     content.addMouseListener(new ContentClick());
@@ -200,7 +200,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
     regstry.put("paintdates" , isPaintDates);
     regstry.put("paintgrid"  , isPaintGrid);
     regstry.put("painttags"  , isPaintTags);
-    regstry.put("filter"     , model.getFilter());
+    regstry.put("filter"     , model.getPaths());
     regstry.put("centeryear" , (float)centeredYear);
     // done
     super.removeNotify();

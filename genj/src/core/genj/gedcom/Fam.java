@@ -97,9 +97,10 @@ public class Fam extends PropertyFam implements Entity {
    * Returns the husband of the family
    */
   public Indi getHusband() {
-    Property husb = getProperty(new TagPath("FAM:HUSB"),true);
-    if (husb==null) return null;
-    return ((PropertyHusband)husb).getHusband();
+    Property husb = getProperty("FAM:HUSB",true);
+    if (husb instanceof PropertyHusband)
+      return ((PropertyHusband)husb).getHusband();
+    return null;    
   }
 
   /**

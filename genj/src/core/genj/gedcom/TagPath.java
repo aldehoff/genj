@@ -71,15 +71,16 @@ public class TagPath {
     
     // decompose property path
     tags = new String[props.length];
-    
+
+    // grab prop's tags and hash
     for (int i=0; i<tags.length; i++) {
-    	tags[i] = props[i].getTag();
+      tags[i] = props[i].getTag();
       hash += tags[i].hashCode();
     }
     
     // done
   }
-
+    
   /**
    * Constructor for TagPath
    */
@@ -88,6 +89,19 @@ public class TagPath {
     System.arraycopy(other.tags, 0, tags, 0, other.tags.length);
     tags[tags.length-1] = tag;
     hash = other.hash+tag.hashCode();
+  }
+
+  /**
+   * Constructor for TagPath
+   */
+  public TagPath(TagPath other, int len) {
+    // copyup to len and rehash
+    tags = new String[len];
+    for (int i=0; i<tags.length; i++) {
+      tags[i] = other.tags[i];
+      hash += tags[i].hashCode();
+    }
+    // done
   }
 
   /**

@@ -21,7 +21,6 @@ package genj.table;
 
 import genj.app.TagPathList;
 import genj.app.TagPathTree;
-import genj.app.TagPathTreeListener;
 import genj.gedcom.Gedcom;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
@@ -66,7 +65,7 @@ public class TableViewSettings extends JPanel implements Settings {
     // Tree of TagPaths
     pathTree = new TagPathTree();
 
-    TagPathTreeListener plistener = new TagPathTreeListener() {
+    TagPathTree.Listener plistener = new TagPathTree.Listener() {
       // LCD
       /** selection notification */
       public void handleSelection(TagPath path, boolean on) {
@@ -78,7 +77,7 @@ public class TableViewSettings extends JPanel implements Settings {
       }
       // EOC
     };
-    pathTree.addTagPathTreeListener(plistener);
+    pathTree.addListener(plistener);
 
     // List of TagPaths
     pathList = new TagPathList();

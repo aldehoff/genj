@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -46,7 +48,7 @@ public class MetaProperty {
     IMG_ERROR   = "Error.gif";
     
   /** static - loaded images */    
-  private static Map name2images;
+  private static Map name2images = new HashMap();
   
   /** static - entity meta properties */
   private static Map roots = new HashMap();
@@ -54,11 +56,14 @@ public class MetaProperty {
   /** static - one parser that is triggered */
   private static Parser parser = new Parser();
   
+  /** static - event paths */
+  private static Set eventPaths = new HashSet();
+  
   /** super */
   private MetaProperty supr;
   
-  /** tag */
-  private String tag;
+  /** tag path */
+  private TagPath path;
   
   /** cached - image */
   private ImageIcon image;
@@ -81,9 +86,9 @@ public class MetaProperty {
   /**
    * Constructor
    */
-  private MetaProperty(String tag, Map props, MetaProperty supr) {
+  private MetaProperty(TagPath path, Map props, MetaProperty supr) {
     // remember
-    this.tag = tag;
+    this.path = path;
     this.props = props;
     this.supr = supr;
     // done
@@ -102,8 +107,6 @@ public class MetaProperty {
    * Load image (once)
    */
   /*package*/ static ImageIcon loadImage(String name) {
-    // init map
-    if (name2images==null) name2images = new HashMap();
     // look up
     ImageIcon result = (ImageIcon)name2images.get(name);
     if (result==null) {
@@ -124,7 +127,7 @@ public class MetaProperty {
     try {
       
       // .. get constructor of property
-      Object parms[] = { tag, value };
+      Object parms[] = { path.getLast(), value };
       Class  parmclasses[] = { String.class , String.class };
 
       Constructor constructor = getType().getConstructor(parmclasses);
@@ -136,7 +139,7 @@ public class MetaProperty {
       
       Debug.log(Debug.WARNING, this, t);
       
-      result = new PropertySimpleValue(tag, value); 
+      result = new PropertySimpleValue(path.getLast(), value); 
     }
 
     // done 
@@ -165,7 +168,14 @@ public class MetaProperty {
    * Accessor - tag
    */
   public String getTag() {
-    return tag;
+    return path.getLast();
+  }
+
+  /**
+   * Accessor - path
+   */
+  public TagPath getPath() {
+    return path;
   }
 
   /**
@@ -177,6 +187,10 @@ public class MetaProperty {
       String clazz = "genj.gedcom.Property"+getProperty("type", "SimpleValue");
       try {
         type = Class.forName(clazz);
+        
+        if (PropertyEvent.class.isAssignableFrom(type))
+          eventPaths.add(path);    
+          
       } catch (ClassNotFoundException e) {
         Debug.log(Debug.WARNING, this, "Property type "+clazz+" can't be loaded", e);    
         type = PropertySimpleValue.class;
@@ -192,6 +206,7 @@ public class MetaProperty {
   public String getInfo() {
     // check cached info
     if (info==null) {
+      String tag = getTag();
       info = Gedcom.getResources().getString(tag+".name")
         +":\n"+Gedcom.getResources().getString(tag+".info");
     }
@@ -223,7 +238,7 @@ public class MetaProperty {
     // current tag in map?
     MetaProperty result = (MetaProperty)allSubs.get(tag);
     if (result==null) {
-      result = new MetaProperty(tag, Collections.EMPTY_MAP, null);
+      result = new MetaProperty(new TagPath(path,tag), Collections.EMPTY_MAP, null);
       allSubs.put(tag, result);
     }
     // done
@@ -247,7 +262,7 @@ public class MetaProperty {
     String tag = path.get(pos++);
     MetaProperty result = (MetaProperty)map.get(tag);
     if (result==null) {
-      result = new MetaProperty(tag, Collections.EMPTY_MAP, null);
+      result = new MetaProperty(new TagPath(path, pos), Collections.EMPTY_MAP, null);
       if (persist) map.put(tag, result);
     }
     
@@ -271,20 +286,12 @@ public class MetaProperty {
   public static MetaProperty get(Property prop, String sub) {
     return get(prop).get(sub);    
   }
-
+  
   /**
-   * Static - resolve event tags
+   * Static - event paths
    */
-  public static List getEventTagPaths() {
-    // FIXME
-    return new ArrayList(0);
-//    List result = new ArrayList(path2instance.size());
-//    Iterator it = path2instance.values().iterator();
-//    while (it.hasNext()) {
-//      MetaProperty meta = (MetaProperty)it.next();
-//      if (PropertyEvent.class.isAssignableFrom(meta.getType())) result.add(meta.path);
-//    }
-//    return result;
+  public static Set getEventPaths() {
+    return eventPaths;
   }
 
   /**
@@ -376,15 +383,15 @@ public class MetaProperty {
         props.putAll(supr.props);
       }
       
-      // instantiate      
-      MetaProperty meta = new MetaProperty(tag, props, supr);
-      
-      // keep it in hierarchy
+      // instantiate
+      MetaProperty meta;
       if (level==0) {
-        roots.put(meta.tag, meta);
+        meta = new MetaProperty(new TagPath(tag), props, supr);
+        roots.put(tag, meta);
       } else {
         MetaProperty parent = peek();
-        parent.allSubs.put(meta.tag, meta);
+        meta = new MetaProperty(new TagPath(parent.path, tag), props, supr);
+        parent.allSubs.put(tag, meta);
         if (!isHidden) parent.visibleSubs.add(meta);
         if (isDefault) parent.defSubs.add(meta);
       }

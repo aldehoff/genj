@@ -29,6 +29,8 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyName;
+import genj.gedcom.TagPath;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,10 +56,12 @@ import java.util.Set;
     min = Double.NaN;
 
   /** a filter for events that we're interested in */
-  private Set filter;
+  private Set paths = new HashSet(), tags = new HashSet();
   
   /** default filter */
-  /*package*/ final static Set DEFAULT_FILTER = new HashSet(Arrays.asList(new String[]{ "BIRT", "MARR", "RESI", "EMIG" }));
+  private final static String[] DEFAULT_PATHS = new String[]{ 
+    "INDI:BIRT", "FAM:MARR", "INDI:RESI", "INDI:EMIG" 
+  };
     
   /** our levels */
   /*package*/List layers;
@@ -73,12 +77,12 @@ import java.util.Set;
   /**
    * Constructor
    */
-  /*package*/ Model(Gedcom gedcom, Set filter) {
-    
+  /*package*/ Model(Gedcom ged, String[] paths) {
     // remember
-    this.gedcom = gedcom;
-    this.filter = filter;    
-
+    gedcom = ged;
+    // set paths to go for
+    if (paths==null) paths = DEFAULT_PATHS;
+    setPaths(Arrays.asList(paths));
     // done
   }
   
@@ -180,16 +184,32 @@ import java.util.Set;
   /**
    * Returns the filter - set of Tags we consider
    */
-  public Set getFilter() {
-    return Collections.unmodifiableSet(filter);
+  public Set getPaths() {
+    return Collections.unmodifiableSet(paths);
   }
   
   /**
    * Sets the filter - set of Tags we consider
    */
-  public void setFilter(Collection c) {
-    filter.clear();
-    filter.addAll(c);
+  public void setPaths(Collection c) {
+    // clear 
+    paths.clear();
+    tags.clear();
+    // defaults?
+    if (c.isEmpty()) c = Arrays.asList(DEFAULT_PATHS);
+    // add
+    Iterator it = c.iterator();
+    while (it.hasNext()) {
+      Object next = it.next();
+      try {
+        if (!(next instanceof TagPath)) next = new TagPath(next.toString());
+      } catch (IllegalArgumentException e) {
+        continue; 
+      }
+      paths.add(next);
+      tags.add(((TagPath)next).getLast());
+    }
+    // re-generate
     createEvents();
   }
   
@@ -318,7 +338,7 @@ import java.util.Set;
       List ps = e.getProperty().getProperties(PropertyEvent.class);
       for (int j=0; j<ps.size(); j++) {
         PropertyEvent pe = (PropertyEvent)ps.get(j);
-        if (filter.contains(pe.getTag())) createEventFrom(pe);
+        if (tags.contains(pe.getTag())) createEventFrom(pe);
       }
     }
     // done

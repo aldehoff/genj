@@ -19,7 +19,7 @@
  */
 package genj.gedcom;
 
-import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -66,8 +66,7 @@ public class PropertyEvent extends Property {
   public PropertyDate getDate(boolean valid) {
 
     // Try to get date-property which is valid
-  //  Property prop = getProperty(new TagPath(getTag()+":DATE"),valid);
-    Property prop = getProperty(new TagPath("DATE"),valid);
+    Property prop = getProperty("DATE",valid);
     if (prop==null) {
       return null;
     }
@@ -141,8 +140,8 @@ public class PropertyEvent extends Property {
   /**
    * Returns the list of tags which identify PropertyEvents
    */
-  public static List getTagPaths() {
-    return MetaProperty.getEventTagPaths();  
+  public static Set getTagPaths() {
+    return MetaProperty.getEventPaths();  
   }
 
 } //PropertyEvent
