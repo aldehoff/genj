@@ -219,7 +219,7 @@ public class TagPath {
 
   /**
    * Returns the n-th tag of this path
-   * @param which 1-based number
+   * @param which 0-based number
    * @return tag as <code>String</code>
    */
   public String get(int which) {
