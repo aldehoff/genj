@@ -129,7 +129,7 @@ class ProxyFile extends Proxy implements ActionListener {
     // Image from File?
     ImageIcon icon = pFile.getValueAsIcon();
     if ( (icon==null)||(icon.getIconWidth()<1)||(icon.getIconHeight()<1) ) {
-      lImage.setText("No image file");
+      lImage.setText("No image file or bigger than "+PropertyFile.getMaxValueAsIconSize()+" bytes");
       lImage.setIcon(null);
     } else {
       lImage.setIcon(icon);
