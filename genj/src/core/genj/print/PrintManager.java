@@ -148,9 +148,7 @@ public class PrintManager {
         WindowManager.IMG_QUESTION,
         widget,
         new String[]{ resources.getString("dlg.label.print"), UIManager.getString("OptionPane.cancelButtonText")},
-        owner,
-        null,
-        null
+        owner
       );
       
       // check choice

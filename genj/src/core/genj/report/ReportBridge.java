@@ -171,9 +171,7 @@ public class ReportBridge {
       WindowManager.IMG_QUESTION,
       choice,
       WindowManager.OPTIONS_OK_CANCEL,
-      view,
-      null,
-      null
+      view
     );
     
     return rc==0 ? choice.getSelectedItem() : null;
@@ -205,9 +203,7 @@ public class ReportBridge {
       WindowManager.IMG_QUESTION,
       choice,
       WindowManager.OPTIONS_OK_CANCEL,
-      view,
-      null,
-      null
+      view
     );
     
     String result = rc==0 ? choice.getText() : null;

@@ -24,9 +24,7 @@ import genj.util.Registry;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -171,27 +169,34 @@ public class LightweightWindowManager extends DefaultWindowManager {
    * @see genj.window.WindowManager#closeFrame(java.lang.String)
    */
   public void close(String key) {
+    // only for key!=null
+    if (key==null)
+      return;
+    // check internal frames
     JInternalFrame frame = (JInternalFrame)key2frame.get(key);
     if (frame!=null) { 
       frame.dispose();
+      return;
     }
+    // delegate
+    super.close(key);
+    // done
   }
   
   /**
    * @see genj.window.WindowManager#getRootComponents()
    */
   public List getRootComponents() {
-    List result = new ArrayList();
-    Iterator keys = key2frame.keySet().iterator();
-    while (keys.hasNext())
-      result.add(getRootComponent(keys.next().toString()));
+    List result = super.getRootComponents();
+    if (desktop!=null)
+      result.add(desktop);
     return result;
   }
   
   /**
    * @see genj.window.WindowManager#getRootComponent(java.lang.String)
    */
-  public JComponent getRootComponent(String key) {
+  public JComponent getContent(String key) {
     JInternalFrame frame = (JInternalFrame)key2frame.get(key);
     return frame!=null ? (JComponent)frame.getContentPane().getComponent(0) : null;
   }

@@ -49,25 +49,17 @@ public abstract class AbstractWindowManager implements WindowManager {
    */
   public int openDialog(String key, String title, Icon img, String txt, String[] options, JComponent owner) {
 
-    JComponent content;
-    
-//    if (txt.indexOf("\n")>=0) {  
-      JTextPane text = new JTextPane();
-      text.setText(txt);
-      text.setEditable(false);
+    JTextPane text = new JTextPane();
+    text.setText(txt);
+    text.setEditable(false);
       
-      content = new JScrollPane(text) {
-        public Dimension getPreferredSize() {
-          return new Dimension(240,80);
-        }
-      };
+    JComponent content = new JScrollPane(text) {
+      public Dimension getPreferredSize() {
+        return new Dimension(240,80);
+      }
+    };
       
-//    } else {
-//      
-//      content = new JLabel(txt);
-//    }
-    
-    return openDialog(key, title, img, content, options, owner, null, null);
+    return openDialog(key, title, img, content, options, owner);
   }
   
   /**
@@ -87,14 +79,6 @@ public abstract class AbstractWindowManager implements WindowManager {
     return openDialog(key, title, image, box, options, owner);
   }
 
-  
-  /**
-   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent, java.lang.String[], javax.swing.JComponent)
-   */
-  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, JComponent owner) {
-    return openDialog(key, title, image, content, options, owner, null, null);
-  }
-  
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String, javax.swing.JComponent)
    */

@@ -207,7 +207,7 @@ public class ViewManager {
   /*package*/ void openSettings(ViewWidget viewWidget) {
     
     // Frame already open?
-    SettingsWidget settings = (SettingsWidget)windowManager.getRootComponent("settings");
+    SettingsWidget settings = (SettingsWidget)windowManager.getContent("settings");
     if (settings==null) {
       settings = new SettingsWidget(resources, this);
       settings.setViewWidget(viewWidget);

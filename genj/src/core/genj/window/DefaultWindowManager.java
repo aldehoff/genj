@@ -128,7 +128,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent)
    */
-  public int openDialog(final String key, String title, Icon image, JComponent content, String[] options, JComponent owner, final Runnable onClosing, final Runnable onClose) {
+  public int openDialog(final String key, String title, Icon image, JComponent content, String[] options, JComponent owner) {
 
     // Create a dialog 
     final JDialog dlg = new JOptionPane().createDialog(owner, title);
@@ -157,11 +157,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
     assembleDialogContent(dlg.getContentPane(), image, content, actions);
 
     // DISPOSE_ON_CLOSE?
-    if (onClosing==null) {
-      dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-    } else {
-      dlg.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-    }
+    dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
     // remember
     if (key!=null)
@@ -169,18 +165,11 @@ public class DefaultWindowManager extends AbstractWindowManager {
 
     // prepare to forget
     dlg.addWindowListener(new WindowAdapter() {
-      public void windowClosing(WindowEvent e) {
-        if (onClosing!=null) try {
-          onClosing.run();
-        } catch (Throwable t) {
-        }
-      }
       public void windowClosed(WindowEvent e) {
         if (key!=null) {
           registry.put(key, dlg.getBounds());
           key2dlg.remove(key);
         }
-        if (onClose!=null) onClose.run();
       }
     });
 
@@ -196,7 +185,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // show
     dlg.show();
     
-    // analyze
+    // analyze - the disabled action is the choosen one :)
     for (int i=0; i<actions.length; i++) {
       if (!actions[i].enabled) return i;
     }
@@ -230,16 +219,22 @@ public class DefaultWindowManager extends AbstractWindowManager {
    * @see genj.window.WindowManager#closeFrame(java.lang.String)
    */
   public void close(String key) {
+    // only for key != null
+    if (key==null)
+      return;
+    // check frames
     JFrame frame = (JFrame)key2frame.get(key);
     if (frame!=null) { 
       frame.dispose();
       return;
     }
+    // check dlgs
     JDialog dlg = (JDialog)key2dlg.get(key);
     if (dlg!=null) {
       dlg.dispose();
       return;
     }
+    // done
   }
   
   /**
@@ -247,19 +242,23 @@ public class DefaultWindowManager extends AbstractWindowManager {
    */
   public List getRootComponents() {
     List result = new ArrayList();
-    Iterator frames = key2frame.keySet().iterator();
-    while (frames.hasNext()) 
-      result.add(getRootComponent(frames.next().toString()));
-    Iterator dlgs = key2dlg.keySet().iterator();
-    while (dlgs.hasNext())
-      result.add(getRootComponent(dlgs.next().toString()));
+    Iterator frames = key2frame.values().iterator();
+    while (frames.hasNext()) {
+      JFrame frame = (JFrame)frames.next();
+      result.add(frame.getRootPane());
+    }
+    Iterator dlgs = key2dlg.values().iterator();
+    while (dlgs.hasNext()) {
+      JDialog dlg = (JDialog)dlgs.next();
+      result.add(dlg.getRootPane());
+    }
     return result;
   }
   
   /**
-   * @see genj.window.WindowManager#getRootComponent(java.lang.String)
+   * @see genj.window.WindowManager#getContent(java.lang.String)
    */
-  public JComponent getRootComponent(String key) {
+  public JComponent getContent(String key) {
     JFrame frame = (JFrame)key2frame.get(key);
     if (frame!=null) 
       return (JComponent)frame.getContentPane().getComponent(0);
