@@ -44,11 +44,6 @@ public interface ViewFactory {
   public ImageIcon getImage();
   
   /**
-   * Returns a key for this view
-   */
-  public String getKey();
-  
-  /**
    * Returns a localized title for this view
    */
   public String getTitle(boolean abbreviate);

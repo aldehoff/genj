@@ -56,13 +56,6 @@ public class ReportViewFactory implements ViewFactory {
   }
 
   /**
-   * @see genj.view.ViewFactory#getKey()
-   */
-  public String getKey() {
-    return "report";
-  }
-  
-  /**
    * @see genj.view.ViewFactory#getName(boolean)
    */
   public String getTitle(boolean abbreviate) {

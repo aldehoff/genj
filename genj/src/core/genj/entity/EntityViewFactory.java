@@ -55,13 +55,6 @@ public class EntityViewFactory implements ViewFactory {
   }
 
   /**
-   * @see genj.view.ViewFactory#getKey()
-   */
-  public String getKey() {
-    return "entity";
-  }
-
-  /**
    * @see genj.view.ViewFactory#getName(boolean)
    */
   public String getTitle(boolean abbreviate) {

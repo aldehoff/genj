@@ -88,7 +88,7 @@ import javax.swing.JTextField;
     
     // others filter
     Box others = new Box(BoxLayout.Y_AXIS);
-    filterViews = (FilterSupport[])ViewManager.getInstance().getSupportFor(FilterSupport.class, gedcom);
+    filterViews = (FilterSupport[])ViewManager.getInstance().getInstances(FilterSupport.class, gedcom);
     checkViews = new JCheckBox[filterViews.length];
     for (int i=0; i<checkViews.length; i++) {
       checkViews[i] = new JCheckBox(filterViews[i].getFilterName(), false);

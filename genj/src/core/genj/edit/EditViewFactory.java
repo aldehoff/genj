@@ -81,13 +81,6 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
   }
   
   /**
-   * @see genj.view.ViewFactory#getKey()
-   */
-  public String getKey() {
-    return "edit";
-  }
-
-  /**
    * @see genj.view.ViewFactory#getName(boolean)
    */
   public String getTitle(boolean abbreviate) {
@@ -160,7 +153,7 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     result.add(new DelEntity(entity));
     
     // add an "edit in EditView"
-    if (ViewManager.getInstance().getOpenViews(EditView.class, entity.getGedcom()).isEmpty()) {
+    if (ViewManager.getInstance().getInstances(EditView.class, entity.getGedcom()).length==0) {
       result.add(ActionDelegate.NOOP);
       result.add(new OpenForEdit(entity));
     }

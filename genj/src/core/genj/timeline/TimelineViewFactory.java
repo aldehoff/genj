@@ -56,13 +56,6 @@ public class TimelineViewFactory implements ViewFactory {
   }
 
   /**
-   * @see genj.view.ViewFactory#getKey()
-   */
-  public String getKey() {
-    return "timeline";
-  }
-
-  /**
    * @see genj.view.ViewFactory#getName(boolean)
    */
   public String getTitle(boolean abbreviate) {

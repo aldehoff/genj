@@ -56,13 +56,6 @@ public class NavigatorViewFactory implements ViewFactory {
   }
   
   /**
-   * @see genj.view.ViewFactory#getKey()
-   */
-  public String getKey() {
-    return "navigator";
-  }
-  
-  /**
    * @see genj.view.ViewFactory#getName(boolean)
    */
   public String getTitle(boolean abbreviate) {

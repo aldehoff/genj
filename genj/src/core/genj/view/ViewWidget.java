@@ -198,17 +198,6 @@ import javax.swing.SwingConstants;
   }
 
   /**
-   * @see javax.swing.JComponent#removeNotify()
-   */
-  public void removeNotify() {
-    // delegate
-    super.removeNotify();
-    // propagate to manager
-    ViewManager.getInstance().closeNotify(this);
-    // done
-  }
-  
-  /**
    * Action - print view
    */
   private class ActionPrint extends ActionDelegate {

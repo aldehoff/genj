@@ -29,9 +29,12 @@ import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.MenuHelper;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -216,26 +219,6 @@ public class ViewManager {
   }
 
   /**
-   * Callback that a view was closed
-   */
-  /*package*/ void closeNotify(ViewWidget viewWidget) {
-    
-    // close property editor if open and showing settings
-    JFrame frame = App.getInstance().getFrame("settings");
-    if (frame!=null) { 
-      frame.dispose();
-    }
-    
-    // 20021017 @see note at the bottom of file
-    MenuSelectionManager.defaultManager().clearSelectedPath();
-    
-    // get rid of traces
-    if (viewWidgets.contains(viewWidget)) viewWidgets.remove(viewWidget);
-    
-    // done
-  }
-  
-  /**
    * Resolves the Gedcom for given context
    */
   private Gedcom getGedcom(Object context) {
@@ -298,6 +281,15 @@ public class ViewManager {
     }
     throw new IllegalArgumentException("Unknown factory "+factory.getName());
   }
+  
+  /**
+   * Calculate a logical key for given factory
+   */
+  private String getKey(ViewFactory factory) {
+    String pkg = factory.getClass().getPackage().getName();
+    int lastdot = pkg.lastIndexOf('.');
+    return lastdot<0 ? pkg : pkg.substring(lastdot+1);
+  }
 
   /**
    * Opens a view on a gedcom file
@@ -306,7 +298,7 @@ public class ViewManager {
   public Component openView(ViewFactory factory, Gedcom gedcom) {
     
     // get a registry 
-    Registry registry = getRegistry(gedcom, factory.getKey());
+    Registry registry = getRegistry(gedcom, getKey(factory));
     
     // a frame
     JFrame frame = App.getInstance().createFrame(
@@ -317,7 +309,7 @@ public class ViewManager {
     );
     
     // the viewwidget
-    ViewWidget viewWidget = new ViewWidget(frame,gedcom,registry,factory);
+    final ViewWidget viewWidget = new ViewWidget(frame,gedcom,registry,factory);
 
     // remember
     viewWidgets.add(viewWidget);
@@ -326,23 +318,32 @@ public class ViewManager {
     frame.getContentPane().add(viewWidget);
     frame.pack();
     frame.show();
+
+    // listen to it
+    frame.addWindowListener(new WindowAdapter() {
+      /**
+       * we want to know when views are closed
+       */
+      public void windowClosed(WindowEvent e) {
+        
+        // close property editor if open and showing settings
+        JFrame frame = App.getInstance().getFrame("settings");
+        if (frame!=null) { 
+          frame.dispose();
+        }
+    
+        // 20021017 @see note at the bottom of file
+        MenuSelectionManager.defaultManager().clearSelectedPath();
+    
+        // forget about it
+        viewWidgets.remove(viewWidget);
+    
+        // done
+      }
+    });
     
     // done
     return viewWidget.getView();
-  }
-  
-  /**
-   * Returns views of given type    */
-  public List getOpenViews(Class type, Gedcom gedcom) {
-    List result = new ArrayList(5);
-    // look through views
-    Iterator it = viewWidgets.iterator();
-    while (it.hasNext()) {
-      ViewWidget vw = (ViewWidget)it.next();
-      if (vw.getView().getClass().equals(type) && vw.getGedcom()==gedcom) result.add(vw.getView());
-    }
-    // done
-    return result;
   }
   
   /**
@@ -353,11 +354,10 @@ public class ViewManager {
     Iterator it = viewWidgets.iterator();
     while (it.hasNext()) {
       ViewWidget vw = (ViewWidget)it.next();
-      if (vw.getGedcom()==gedcom) {
-        it.remove();
+      if (vw.getGedcom()==gedcom) 
         vw.getFrame().dispose();
-      }
     }
+    
     // remove its key from gedcom2current
     gedcom2current.remove(gedcom);
 
@@ -365,9 +365,18 @@ public class ViewManager {
   }
 
   /**
-   * Fills a menu with context actions 
+   * Show a context menu for given point - at this
+   * point we assume that view instanceof EntityPopupSupport
    */
-  private void fillContextMenu(MenuHelper mh, Gedcom gedcom, ContextSupport.Context context) {
+  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, ContextSupport.Context context) {
+    
+    // 20021017 @see note at the bottom of file
+    MenuSelectionManager.defaultManager().clearSelectedPath();
+
+    // create a popup
+    MenuHelper mh = new MenuHelper().setTarget(container);
+    mh.setTarget(container);
+    JPopupMenu popup = mh.createPopup("");
 
     // the context might have some actions we're going to add
     mh.createItems(context.getActions());
@@ -406,26 +415,6 @@ public class ViewManager {
       mh.createItems(actions);
       mh.popMenu();
     }
-
-    // done    
-  }
-  
-  /**
-   * Show a context menu for given point - at this
-   * point we assume that view instanceof EntityPopupSupport
-   */
-  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, ContextSupport.Context context) {
-    
-    // 20021017 @see note at the bottom of file
-    MenuSelectionManager.defaultManager().clearSelectedPath();
-
-    // create a popup
-    MenuHelper mh = new MenuHelper().setTarget(container);
-    mh.setTarget(container);
-    JPopupMenu popup = mh.createPopup("");
-
-    // fill the context actions
-    fillContextMenu(mh, gedcom, context);
     
     // show the popup
     if (popup.getComponentCount()>0)
@@ -437,25 +426,25 @@ public class ViewManager {
   /**
    * Returns views and factories with given support 
    */
-  public Object[] getSupportFor(Class support, Gedcom gedcom) {
+  public Object[] getInstances(Class of, Gedcom gedcom) {
     
     List result = new ArrayList(16);
     
     // loop through factories
     for (int f=0; f<factories.length; f++) {
-      if (support.isAssignableFrom(factories[f].getClass())) 
+      if (of.isAssignableFrom(factories[f].getClass())) 
         result.add(factories[f]);
     }
     // loop through views
     Iterator views = viewWidgets.iterator();
     while (views.hasNext()) {
       ViewWidget view = (ViewWidget)views.next();
-      if (view.getGedcom()==gedcom && support.isAssignableFrom(view.getView().getClass()))
+      if (view.getGedcom()==gedcom && of.isAssignableFrom(view.getView().getClass()))
         result.add(view.getView());
     }
     
     // done
-    return result.toArray((Object[])Array.newInstance(support, result.size()));
+    return result.toArray((Object[])Array.newInstance(of, result.size()));
   }
 
 } //ViewManager

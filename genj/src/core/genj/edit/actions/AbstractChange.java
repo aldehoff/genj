@@ -135,7 +135,7 @@ import javax.swing.JTextArea;
     // set focus?
     if (focus!=null) {
       // no editor open?
-      if (ViewManager.getInstance().getOpenViews(EditView.class, gedcom).isEmpty()) {
+      if (ViewManager.getInstance().getInstances(EditView.class, gedcom).length==0) {
         EditView.open(focus);
       }
       // set current        
