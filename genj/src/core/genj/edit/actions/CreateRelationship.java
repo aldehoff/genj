@@ -128,7 +128,10 @@ public class CreateRelationship extends AbstractChange {
         return ents.length+1;
       }
       public Object get(int index) {
-        return index==0 ? "*New*" : (Object)ents[index-1];
+        if (index==0)
+          return  "*New*";
+        Entity e = (Entity)ents[index-1];
+        return e.toString() + " (" + e.getId() + ')';
       }
     });
     
