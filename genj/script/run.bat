@@ -9,7 +9,7 @@ echo  *   set CLASSPATH=c:\swing\swing.jar
 echo  * before starting this script.
 echo  */
 
-set LANG=./lib/genj_de.zip;./lib/genj_en.zip;./lib/genj_fr.zip
+set LANG=./lib/genj_de.zip;./lib/genj_en.zip;./lib/genj_fr.zip;./lib/genj_it.zip
 set CLASSPATH=./lib/genj.jar;./lib/swing.jar;./lib/jhbasic.jar;%LANG%;%CLASSPATH%
 java genj.app.App
 

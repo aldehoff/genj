@@ -29,6 +29,7 @@ Future
 
 1.8 - Mar xx 2002 (not released)
 
+  I ant descriptor now builds distributions for languages EN,DE,FR and IT
   C Changed the way that IDs are created for new entities (incremental)
   C Help menu is now offset to the right
   B Bug in TreeView's content pane - now does repaint() after invalidate() after structureChanged

@@ -14,7 +14,7 @@ echo  */
 rem switch off JIT by uncommenting next line
 rem set JAVA_COMPILER=none
 
-set LANG=./lib/genj_de.zip;./lib/genj_en.zip;./lib/genj_fr.zip
+set LANG=./lib/genj_de.zip;./lib/genj_en.zip;./lib/genj_fr.zip;./lib/genj_it.zip
 set CLASSPATH=./lib/genj.jar;./lib/swing.jar;./lib/jhbasic.jar;%LANG%;%CLASSPATH%
 java genj.app.App
 
