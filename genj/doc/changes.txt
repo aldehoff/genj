@@ -28,7 +28,7 @@ Future
   O Descendants view a la http://worldconnect.rootsweb.com/cgi-bin/igm.cgi?op=DESC&db=timmsc&id=I008
   O Default properties that are added to new entities should be user-defined
   O Abbreviate special dates like this: ABT 1917 > ~1917   BEF/TO 1917 > -1917   AFT/FROM 1917 > 1917-
- 
+  O some.ged.properties files should be read by CC from the same directory as the .ged-file (and saved there, too) 
  
 1.9 - May xx 2002
 
