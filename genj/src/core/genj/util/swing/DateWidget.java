@@ -212,8 +212,7 @@ public class DateWidget extends JPanel {
    */
   private void updateStatus() {
     // check whether valid
-    PointInTime pit = getValue(); 
-    if (pit==null||!pit.isValid()) {
+    if (getValue()==null) {
       // show 'X' on disabled button
       widgetCalendar.setEnabled(false);
       widgetCalendar.setIcon(MetaProperty.IMG_ERROR);
