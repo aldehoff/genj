@@ -19,11 +19,16 @@
  */
 package genj.util.swing;
 
+import java.awt.KeyboardFocusManager;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.util.Collections;
 import java.util.Set;
 
 import genj.util.ChangeSupport;
 
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 
 /**
@@ -41,16 +46,15 @@ public class TextAreaWidget extends JTextArea {
     super(text, rows, cols);
     
     setAlignmentX(0);
+
+    // restore default focus traversal keys (overriding
+    // JTextArea's ctrl (shift) tab
+    setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+    setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
     
     getDocument().addDocumentListener(changeSupport);
   }
   
-  /**
-   * Override to avoid text area from grabbing focus traversal keys (tab)
-   */
-  public void setFocusTraversalKeys(int id, Set keystrokes) {
-  }
-
   /**
    * Add change listener
    */
