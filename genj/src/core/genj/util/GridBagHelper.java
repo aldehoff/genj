@@ -25,7 +25,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Label;
 
 /**
  * This class provides basic helper functions for
@@ -199,7 +198,7 @@ public class GridBagHelper {
    * Add a filling component that grows to maximum but shows nothing
    */
   public void addFiller(int x, int y) {
-    add(new Label(), x, y, 1, 1, GROW_BOTH);
+    add(new Fill(new Dimension(0,0)), x, y, 1, 1, GROW_BOTH);
   }
 
   /**
