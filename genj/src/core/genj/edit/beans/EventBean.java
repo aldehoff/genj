@@ -100,7 +100,9 @@ public class EventBean extends PropertyBean {
     // 20040321 increased from 10 to 16 to account for long age string
     GridBagHelper gh = new GridBagHelper(this);
     
-    JTextField txt = new JTextField(age, 16); txt.setEditable(false);
+    JTextField txt = new JTextField(age, 16); 
+    txt.setEditable(false);
+    txt.setFocusable(false);
     gh.add(label1, 0, 0, 1, 1, GridBagHelper.FILL_HORIZONTAL    );
     gh.add(txt   , 1, 0, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
     
@@ -112,10 +114,11 @@ public class EventBean extends PropertyBean {
       known.setEditable(false);
       gh.add(label2, 0, 1, 1, 1, GridBagHelper.FILL_HORIZONTAL    );
       gh.add(known , 1, 1, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
+      defaultFocus = known;
     }
     
     gh.addFiller(2,2);
-
+    
     // done
   }
 
