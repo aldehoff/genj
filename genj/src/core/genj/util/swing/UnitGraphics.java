@@ -77,34 +77,6 @@ public class UnitGraphics {
     return new Point2D.Double(unitx,unity);
   }
   
-//  /**
-//   * Constructor
-//   */
-//  public UnitGraphics(Graphics g, double xppcm, double yppcm) {
-//
-//    // remember wrapped
-//    graphics = (Graphics2D)g;
-//    
-//    // push one initial at
-//    pushTransformation();
-//    
-//    // scale graphics to fix resolution (factor we're away from 1/72 inch)
-//    double 
-//      xscale = 2.54 * xppcm / 72,
-//      yscale = 2.54 * yppcm / 72;
-//    graphics.scale(xscale, yscale);
-//    
-//    // remember scale
-//    unitx = xppcm/xscale;
-//    unity = yppcm/yscale;
-//    
-//    graphics.setStroke(new BasicStroke((float)(1/xfactor)));
-//    graphics.setRenderingHint(
-//      RenderingHints.KEY_FRACTIONALMETRICS, 
-//      RenderingHints.VALUE_FRACTIONALMETRICS_ON
-//    );
-//  }
-
   /**
    * Antialiasing   */  
   public void setAntialiasing(boolean set) {
@@ -113,14 +85,6 @@ public class UnitGraphics {
       set ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF
     );
   }
-  
-//  /**
-//   * Scaling//   */
-//  public void scale(double sx, double sy) {
-//    xscale *= sx;
-//    yscale *= sy;
-//    //graphics.scale(sx, sy);
-//  }
   
   /**
    * Translation   */
@@ -163,18 +127,7 @@ public class UnitGraphics {
    * Font
    */
   public void setFont(Font font) {
-    
-    if (font==null) return;
-
-//    // calculate a factor for current scaling
-//    double factor = 2.54 * yscale / 72;
-//         
-//    // set derived font
-//    double size = font.getSize2D() * factor; 
-//    graphics.setFont(font.deriveFont((float)size));
-
-   graphics.setFont(font);    
-    // done
+    if (font!=null) graphics.setFont(font);    
   }
   
   /**
@@ -228,12 +181,8 @@ public class UnitGraphics {
     gp.transform(at);
     shape = gp;
     
-//    pushTransformation();
-//    graphics.scale(xscale, yscale);
-//    graphics.translate(x, y);
     if (fill) graphics.fill(shape);
     else graphics.draw(shape);
-//    popTransformation();
   }
   
   /**
