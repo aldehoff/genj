@@ -32,6 +32,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagLayout;
@@ -73,10 +74,11 @@ public class NavigatorView extends JPanel {
     // layout    
     label = new JLabel();
     label.setFont(new Font("Arial", Font.PLAIN, 10));
-    label.setBorder(BorderFactory.createTitledBorder("Current"));
+    label.setBorder(BorderFactory.createTitledBorder(resources.getString("nav.current_entity.title")));
     add(label,BorderLayout.NORTH);
     
     JPanel panel = createPanel();
+    panel.setBackground(Color.white);
     add(panel,BorderLayout.CENTER);
     
     // date
@@ -140,7 +142,7 @@ public class NavigatorView extends JPanel {
   private JPanel createPanel() {    
     
     JPanel result = new JPanel();    
-    result.setBorder(BorderFactory.createTitledBorder("Navigate"));
+    result.setBorder(BorderFactory.createTitledBorder(resources.getString("nav.navigate.title")));
     GridBagHelper gh = new GridBagHelper(result);
     
     // our action delegation
