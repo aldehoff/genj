@@ -492,6 +492,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       Property prop = tree.getSelection();
       if (prop==null)
         return;
+        
+      Property parent = prop.getParent(); // has to be non-null
   
       // .. Stop Editing
       stopEdit();
@@ -500,7 +502,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       if (!gedcom.startTransaction()) return;
   
       // .. Calculate property that is moved
-      prop.move(up ? -1 : 1);
+      Property sibling = parent.getProperty(tree.getModel().getIndexOfChild(parent, prop) + (up?-1:1));
+      parent.swapProperties(prop, sibling);
   
       // .. UnlockWrite
       gedcom.endTransaction();
@@ -688,9 +691,15 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       actionButtonPaste.setEnabled(Clipboard.getInstance().getCopy()!=null);
   
       // up, down
-// FIXME      
-//      actionButtonUp    .setEnabled(prop.getPreviousSibling()!=null);
-//      actionButtonDown  .setEnabled(prop.getNextSibling()    !=null);
+      int i=0,j=0;  
+      if (prop!=tree.getRoot()) {        
+        Property parent = prop.getParent();
+        i = tree.getModel().getIndexOfChild(parent, prop);
+        j = tree.getModel().getChildCount(parent);
+      }
+
+      actionButtonUp    .setEnabled(i>0);
+      actionButtonDown  .setEnabled(i<j-1);
   
       // Done
     }

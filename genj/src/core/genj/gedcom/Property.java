@@ -583,28 +583,27 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Moves a property amongst its siblings
+   * Swap two childen 
    */
-  public void move(int move) {
+  public void swapProperties(Property childA, Property childB) {
 
-    // Look for position amongst siblings
-    int pos = 0;
-    while (parent.getProperty(pos)!=this) pos++;
-    
-    // check lower/upper boundary
-    move = Math.min(1,Math.max(-1, move));
-    if (move<0&&pos==0) return;
-    if (move>0&&pos==parent.getNoOfProperties()-1) return;
-    
+    int 
+      a = children.indexOf(childA),
+      b = children.indexOf(childB);
+
+    // safety check
+    if (a<0||b<0)
+      throw new IllegalArgumentException();
+      
     // move it
-    Property sibling = parent.getProperty(pos+move);
-    parent.children.set(pos+move, this);
-    parent.children.set(pos, sibling);
+      children.set(a, childB);
+      children.set(b, childA);
 
-    changeNotify(sibling, Change.PDEL);
-    changeNotify(sibling, Change.PADD);
-    changeNotify(this, Change.PADD);
-    changeNotify(this, Change.PDEL);
+    // tell about it
+    changeNotify(childA, Change.PDEL);
+    changeNotify(childA, Change.PADD);
+    changeNotify(childB, Change.PADD);
+    changeNotify(childB, Change.PDEL);
 
     // done
   }
