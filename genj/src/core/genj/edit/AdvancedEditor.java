@@ -567,12 +567,12 @@ import javax.swing.event.TreeSelectionListener;
         
         try {
   
-          // add bean to center of editPane 
-          editPane.add(bean, BorderLayout.CENTER);
-  
           // initialize bean
           bean.init(gedcom, prop, null, editView.getViewManager(), registry);
           
+          // add bean to center of editPane 
+          editPane.add(bean, BorderLayout.CENTER);
+  
           // and a label to the top
           final JLabel label = new JLabel(Gedcom.getName(prop.getTag()), prop.getImage(false), SwingConstants.LEFT);
           editPane.add(label, BorderLayout.NORTH);
