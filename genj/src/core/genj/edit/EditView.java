@@ -81,8 +81,11 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
       "CCHILD" , Images.imgNewChild  , "new.child",
       "CNOTE"  , Images.imgNewNote   , "new.note",
       "CMEDIA" , Images.imgNewMedia  , "new.media" },
-    { },
-    { }
+    { }, // MULTIMEDIAS
+    { }, // NOTES
+    { }, // SOURCES      = 4,
+    { }, // SUBMITTERS   = 5,
+    { }  // REPOSITORIES = 6,
   };
 
   /**

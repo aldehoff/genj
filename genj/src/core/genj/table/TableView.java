@@ -47,7 +47,11 @@ public class TableView extends Table {
     {"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"},
     {"FAM","FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" },
     {"OBJE","OBJE:BLOB"},
-    {"NOTE"}
+    {"NOTE"},
+    {"NOTE"},
+    {"SOUR"},
+    {"SUBM"},
+    {"REPO"}
   };
 
   private TypeView typeViews[];
@@ -61,6 +65,7 @@ public class TableView extends Table {
     { Property.getDefaultImage("note").getImage(), "notes"   ,new Integer(Gedcom.NOTES      ) },
     { Property.getDefaultImage("sour").getImage(), "sources" ,null                            },
     { Property.getDefaultImage("subm").getImage(), "subms"   ,null                            },
+    { Property.getDefaultImage("repo").getImage(), "repos"   ,null                            },
   };
 
   /**

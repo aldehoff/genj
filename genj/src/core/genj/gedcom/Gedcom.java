@@ -60,8 +60,8 @@ public class Gedcom implements GedcomListener {
     FEMALE = 2;
 
   private final static String[]
-    ePrefixs  = { "I", "F", "M", "N", "S", "B"},
-    eTags     = { "INDI", "FAM", "OBJE", "NOTE", "SOUR", "SUBM" };
+    ePrefixs  = { "I", "F", "M", "N", "S", "B", "R"},
+    eTags     = { "INDI", "FAM", "OBJE", "NOTE", "SOUR", "SUBM", "REPO" };
 
   public final static int
     INDIVIDUALS  = 0,
@@ -70,8 +70,9 @@ public class Gedcom implements GedcomListener {
     NOTES        = 3,
     SOURCES      = 4,
     SUBMITTERS   = 5,
+    REPOSITORIES = 6,
     FIRST_ETYPE  = INDIVIDUALS,
-    LAST_ETYPE   = NOTES;
+    LAST_ETYPE   = REPOSITORIES;
 
   /**
    * Gedcom's Constructor
@@ -165,11 +166,19 @@ public class Gedcom implements GedcomListener {
     if (getTagFor(MULTIMEDIAS).equals(tag.toUpperCase())) {
       return createMedia(id);
     }
-    // Media ?
+    // Notes
     if (getTagFor(NOTES).equals(tag.toUpperCase())) {
       return createNote(id);
     }
-    // Unknown
+    // Sources
+    if (getTagFor(SOURCES).equals(tag.toUpperCase())) {
+      return createSource(id);
+    }
+    // Repository
+    if (getTagFor(REPOSITORIES).equals(tag.toUpperCase())) {
+      return createRepository(id);
+    }
+    // Unknown - SUBM
     throw new GedcomException("Unknown tag for entity");
   }
 
@@ -551,6 +560,78 @@ public class Gedcom implements GedcomListener {
   }
 
   /**
+   * Creates a Repository entity.
+   * @exception GedcomException in of error during creation
+   */
+  /*package*/ Source createSource(String id) throws GedcomException {
+    return createSource(id, null);
+  }
+
+  /**
+   * Creates a Repository entity.
+   * @exception GedcomException in of error during creation
+   */
+  /*package*/ Source createSource(String id, Entity attachedTo) throws GedcomException {
+
+    // Generate id if necessary
+    if (id==null) {
+      id = getRandomIdFor(SOURCES);
+    }
+
+    // Create source & add to list of sources
+    Source source = new Source(this);
+    noteAddedEntity(source);
+    entities[SOURCES].add(source);
+
+    // Store id
+    ids[SOURCES].put(id,source);
+    source.setId(id);
+
+    // Attach?
+    if (attachedTo!=null) {
+      attachedTo.getProperty().addSource(source);
+    }
+    // Done
+    return source;
+  }
+
+
+  /**
+   * Creates a Repository entity.
+   * @exception GedcomException in of error during creation
+   */
+  /*package*/ Repository createRepository(String id) throws GedcomException {
+    return createRepository(id, null);
+  }
+
+  /**
+   * Creates a Repository entity.
+   * @exception GedcomException in of error during creation
+   */
+  /*package*/ Repository createRepository(String id, Entity attachedTo) throws GedcomException {
+
+    // Generate id if necessary
+    if (id==null) {
+      id = getRandomIdFor(REPOSITORIES);
+    }
+
+    // Create repository & add to list of repositorys
+    Repository repository = new Repository(this);
+    noteAddedEntity(repository);
+    entities[REPOSITORIES].add(repository);
+    // Store id
+    ids[REPOSITORIES].put(id,repository);
+    repository.setId(id);
+
+    // Attach?
+    if (attachedTo!=null) {
+      attachedTo.getProperty().addRepository(repository);
+    }
+    // Done
+    return repository;
+  }
+
+  /**
    * Creates a family as childhood for given indi
    * @exception GedcomException in case individual already has parents
    */
@@ -915,6 +996,20 @@ public class Gedcom implements GedcomListener {
    */
   public Note getNoteFromId(String id) throws DuplicateIDException {
     return (Note)ids[NOTES].get(id);
+  }
+
+  /**
+   * Returns the source with given id
+   */
+  public Source getSourceFromId(String id) throws DuplicateIDException {
+    return (Source)ids[SOURCES].get(id);
+  }
+
+  /**
+   * Returns the repository with given id
+   */
+  public Repository getRepositoryFromId(String id) throws DuplicateIDException {
+    return (Repository)ids[REPOSITORIES].get(id);
   }
 
   /**

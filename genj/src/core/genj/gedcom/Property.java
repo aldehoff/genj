@@ -141,8 +141,22 @@ public abstract class Property {
     new MetaDefinition("TYPE","GenericAttribute") ,
     new MetaDefinition("TITL","GenericAttribute") ,
     new MetaDefinition("FORM","GenericAttribute") ,
+
+    // Medai
     new MetaDefinition("OBJE","Media"           ,new String[]{"TITL","FORM", "BLOB", "FILE"}) ,
-    new MetaDefinition("FILE","File"            )
+    new MetaDefinition("FILE","File"            ),
+
+    // Source
+    new MetaDefinition("SOUR","Source"    ,new String[]{"TITL","AUTH", "ABBR", "PUBL"}) ,
+    new MetaDefinition("AUTH","GenericAttribute") ,
+    new MetaDefinition("ABBR","GenericAttribute") ,
+    new MetaDefinition("PUBL","GenericAttribute") ,
+
+    // Adding this line seems like the right this to do, but, if I do it, then
+    // my test file does not load. It dies in PropertyRepository.link() in
+    // the new() or the adding of the foriegnXRef. -jch
+    //    new MetaDefinition("REPO","Repository"    ,new String[]{"NAME"}) ,
+    new MetaDefinition("REPO","GenericAttribute") ,
   };
 
   /**
@@ -1062,6 +1076,41 @@ public abstract class Property {
     // Put a foreign xref in the note
     PropertyForeignXRef fxref = new PropertyForeignXRef(pm);
     media.addForeignXRef(fxref);
+
+    // ... and point
+    pm.setTarget(fxref);
+  }
+
+  /**
+   * Adds a source to this property
+   */
+  /*package*/ void addSource(Source source) {
+
+    // New PropertySource
+    PropertySource pm = new PropertySource();
+    addProperty(pm);
+
+    // Put a foreign xref in the note
+    PropertyForeignXRef fxref = new PropertyForeignXRef(pm);
+    source.addForeignXRef(fxref);
+
+    // ... and point
+    pm.setTarget(fxref);
+  }
+
+
+  /**
+   * Adds a repository to this property
+   */
+  /*package*/ void addRepository(Repository repository) {
+
+    // New PropertyRepository
+    PropertyRepository pm = new PropertyRepository();
+    addProperty(pm);
+
+    // Put a foreign xref in the note
+    PropertyForeignXRef fxref = new PropertyForeignXRef(pm);
+    repository.addForeignXRef(fxref);
 
     // ... and point
     pm.setTarget(fxref);
