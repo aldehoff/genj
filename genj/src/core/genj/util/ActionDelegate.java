@@ -7,6 +7,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -36,6 +37,14 @@ public abstract class ActionDelegate {
    * Implementor's functionality
    */
   protected abstract void execute();
+  
+  /**
+   * Sync this action with the event-dispatcher-thread
+   * (called back on syncd)
+   */
+  protected void sync() {
+    SwingUtilities.invokeLater((Runnable)as(Runnable.class));
+  }
   
   /**
    * Image 

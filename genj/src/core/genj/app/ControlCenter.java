@@ -315,6 +315,41 @@ public class ControlCenter extends JPanel {
   } //ActionExit
 
   /**
+   * Action - read
+   */
+  private class ActionRead extends ActionDelegate { 
+    /** members */
+    private GedcomReader reader;
+    private String error;
+    private Gedcom gedcom;
+    /** constructor */
+    protected ActionRead(GedcomReader r) {
+      reader=r;
+    }
+    /** run */    
+    protected void execute() {
+      
+      if (error!=null) {
+        JOptionPane.showMessageDialog(frame,error,App.resources.getString("app.error"),JOptionPane.ERROR_MESSAGE);
+        return;
+      }
+      if (gedcom!=null) {
+        addGedcom(gedcom);
+        return;
+      }
+      
+      try {
+        gedcom = reader.readGedcom();
+      } catch (GedcomIOException ex) {
+        error = App.resources.getString("cc.open.read_error",""+ex.getLine())+":\n"+ex.getMessage();
+      } catch (GedcomFormatException ex) {
+        error = App.resources.getString("cc.open.format_error",""+ex.getLine())+":\n"+ex.getMessage();
+      }
+      sync();
+    }
+  } //ActionRead
+
+  /**
    * Action - open
    */
   private class ActionOpen extends ActionDelegate { 
@@ -410,7 +445,7 @@ public class ControlCenter extends JPanel {
         }
   
         // Read !
-        read(origin);
+        open(origin);
   
         // Done
         return;
@@ -466,7 +501,7 @@ public class ControlCenter extends JPanel {
         registry.put("urls",vUrls);
   
         // Read from URL
-        read(origin);
+        open(origin);
   
         // .. Done
         return;
@@ -481,7 +516,7 @@ public class ControlCenter extends JPanel {
     /**
      * Read Gedcom from URL
      */
-    protected void read(Origin origin) {
+    protected void open(Origin origin) {
   
       // Check if already open
       Vector gedcoms = tGedcoms.getAllGedcoms();
@@ -517,43 +552,19 @@ public class ControlCenter extends JPanel {
       }
   
       // .. read gedcom from it
-      final GedcomReader gedReader = new GedcomReader(in,origin,size);
-  
-      final Thread threadReader = new Thread() {
-        // LCD
-        /** main */
-        public void run() {
-          String err=null;
-          try {
-            addGedcom(gedReader.readGedcom());
-          } catch (GedcomIOException ex) {
-            err = App.resources.getString("cc.open.read_error",""+ex.getLine())+":\n"+ex.getMessage();
-          } catch (GedcomFormatException ex) {
-            err = App.resources.getString("cc.open.format_error",""+ex.getLine())+":\n"+ex.getMessage();
-          }
-          if (err!=null) {
-            JOptionPane.showMessageDialog(frame,
-            err,
-            App.resources.getString("app.error"),
-            JOptionPane.ERROR_MESSAGE);
-          }
-        }
-        // EOC
-      };
-  
-      threadReader.setPriority(Thread.MIN_PRIORITY);
-      threadReader.start();
+      GedcomReader reader = new GedcomReader(in,origin,size);
+      ActionDelegate action = new ActionRead(reader);
+      Thread thread = new Thread((Runnable)action.as(Runnable.class));
+      thread.setPriority(Thread.MIN_PRIORITY);
+      thread.start();
   
       // .. show progress dialog
       new ProgressDialog(frame,App.resources.getString("cc.open.loading"),
-        ""+origin,
-        gedReader,
-        threadReader
+        ""+origin,reader,thread
       );
   
       // .. done
     }
-  
     
   } //ActionOpen
 
@@ -566,7 +577,7 @@ public class ControlCenter extends JPanel {
       String[] gedcoms = registry.get("open",new String[0]);
       for (int g=0;g<gedcoms.length;g++) {
         try {
-          new ActionOpen().read(Origin.create(gedcoms[g]));
+          new ActionOpen().open(Origin.create(gedcoms[g]));
         } catch (MalformedURLException x) {
         }
       }
