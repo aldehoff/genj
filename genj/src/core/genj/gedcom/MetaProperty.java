@@ -205,11 +205,15 @@ public class MetaProperty {
   /**
    * Acessor - subs
    */
-  public MetaProperty[] getSubs(boolean defaults) {
-    // defaults or all?
-    Collection result = defaults ? defSubs : visibleSubs; 
-    // done
-    return (MetaProperty[])result.toArray(new MetaProperty[result.size()]);
+  /*package*/ MetaProperty[] getDefaultSubs() {
+    return toArray(defSubs);
+  }
+  
+  /**
+   * Acessor - subs
+   */
+  /*package*/ MetaProperty[] getVisibleSubs() {
+    return toArray(visibleSubs);
   }
   
   /**
@@ -277,7 +281,7 @@ public class MetaProperty {
     // loop through roots
     getPathsRecursively(roots, property, new Stack(), result);
     // done
-    return TagPath.getPaths(result);
+    return TagPath.toArray(result);
   }
   
   private static void getPathsRecursively(Map map, Class property, Stack stack, Collection result) {
@@ -302,6 +306,13 @@ public class MetaProperty {
     // done
   }
     
+  /**
+   * Get an array out of collection
+   */
+  public static MetaProperty[] toArray(Collection c) {
+    return (MetaProperty[])c.toArray(new MetaProperty[c.size()]);
+  }
+  
   /**
    * Parers for our descriptors
    */

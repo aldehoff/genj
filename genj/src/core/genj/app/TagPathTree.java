@@ -199,7 +199,7 @@ public class TagPathTree extends JScrollPane {
       // keep paths
       Set s = new HashSet(Arrays.asList(ps));
       s.addAll(selection);
-      paths = TagPath.getPaths(s);
+      paths = TagPath.toArray(s);
       
       // notify
       TreeModelEvent e = new TreeModelEvent(this, new Object[]{ this });
@@ -285,7 +285,7 @@ public class TagPathTree extends JScrollPane {
           children.add(new TagPath(paths[p], path.length()+1));
       }
       // done
-      return TagPath.getPaths(children);
+      return TagPath.toArray(children);
     }
     
     /** 
@@ -298,7 +298,7 @@ public class TagPathTree extends JScrollPane {
         children.add(new TagPath(paths[p], 1));
       }
       // done
-      return TagPath.getPaths(children);
+      return TagPath.toArray(children);
     }
     
     /**

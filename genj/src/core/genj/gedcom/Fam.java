@@ -27,12 +27,6 @@ import genj.util.WordBuffer;
 public class Fam extends Entity {
 
   /**
-   * Default constructor
-   */
-  /*package*/ Fam() {
-  }
-
-  /**
    * Adds another child to the family
    */
   Fam addChild(Indi newChild) throws GedcomException {
@@ -110,14 +104,6 @@ public class Fam extends Entity {
     Indi wife = getWife();
     if (wife==spouse) return getHusband();
     return wife;
-  }
-
-  /**
-   * Returns the type to which this entity belongs
-   * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
-   */
-  public int getType() {
-    return Gedcom.FAMILIES;
   }
 
   /**
@@ -247,11 +233,4 @@ public class Fam extends Entity {
     return wb.toString();
   }
   
-  /**
-   * Accessor Tag
-   */
-  public String getTag() {
-    return "FAM";
-  }
-
 } //Fam

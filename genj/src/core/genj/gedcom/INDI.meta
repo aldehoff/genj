@@ -21,6 +21,10 @@
 2   NOTE type=Note img=Note.gif
 2   SOUR hide type=Source img=Source.gif
 2   OBJE type=Media img=Media.gif
+3    TITL default type=SimpleValue img=Attribute.gif
+3    FORM default type=SimpleValue img=Format.gif
+3    FILE default type=File img=Disk.gif
+3    NOTE type=Note img=Note.gif
 
 1  DEAT default img=Death.gif super=INDI:BIRT
 

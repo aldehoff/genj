@@ -29,12 +29,6 @@ import java.util.List;
 public class Indi extends Entity {
 
   /**
-   * Constructor for Individual
-   */
-  protected Indi() {
-  }
-
-  /**
    * Adds a family in which the individual is a partner
    */
   /*package*/ Fam addFam() throws GedcomException {
@@ -434,14 +428,6 @@ public class Indi extends Entity {
   }
 
   /**
-   * Returns the type to which this entity belongs
-   * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
-   */
-  public int getType() {
-    return Gedcom.INDIVIDUALS;
-  }
-
-  /**
    * Checks wether this individual is descendant of individual
    */
   /*package*/ boolean isDescendantOf(Indi indi) {
@@ -504,13 +490,6 @@ public class Indi extends Entity {
    */
   public String toString() {
     return super.toString()+getName();
-  }
-  
-  /**
-   * @see genj.gedcom.Property#getTag()
-   */
-  public String getTag() {
-    return "INDI"; 
   }
   
 } //Indi

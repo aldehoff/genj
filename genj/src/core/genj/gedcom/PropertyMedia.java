@@ -143,14 +143,25 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
   }
   
   /**
-   * @see genj.gedcom.Property#addDefaultProperties()
+   * @see genj.gedcom.PropertyMedia#getDefaultMetaProperties()
    */
-  public Property addDefaultProperties() {
+  public MetaProperty[] getDefaultMetaProperties() {
     // no props if linked
-    if (getTarget()!=null) return this;
-    return super.addDefaultProperties();
+    if (getTarget()!=null) return new MetaProperty[0];
+    // proceed
+    return super.getDefaultMetaProperties();
   }
   
+  /**
+   * @see genj.gedcom.PropertyMedia#getVisibleMetaProperties()
+   */
+  public MetaProperty[] getVisibleMetaProperties() {
+    // no props if linked
+    if (getTarget()!=null) return new MetaProperty[0];
+    // proceed
+    return super.getVisibleMetaProperties();
+  }
+
   /**
    * @see genj.gedcom.PropertyXRef#toString()
    */

@@ -25,20 +25,6 @@ package genj.gedcom;
 public class Repository extends Entity {
 
   /**
-   * Constructor for Repository
-   */
-  /*package*/ Repository() {
-  }
-
-  /**
-   * Returns the type to which this entity belongs
-   * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
-   */
-  public int getType() {
-    return Gedcom.REPOSITORIES;
-  }
-
-  /**
    * @see genj.gedcom.Entity#toString()
    */
   public String toString() {
@@ -51,13 +37,6 @@ public class Repository extends Entity {
   private String getName() {
     Property name = getProperty("NAME");
     return name!=null ? name.getValue() : ""; 
-  }
-  
-  /**
-   * @see genj.gedcom.Property#getTag()
-   */
-  public String getTag() {
-    return "REPO";
   }
   
 } //Repository

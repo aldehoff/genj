@@ -13,6 +13,12 @@
 2   AGNC type=SimpleValue img=Phone.gif
 2   CAUS type=SimpleValue img=Phone.gif
 2   NOTE type=Note img=Note.gif
+2   SOUR hide type=Source img=Source.gif
+2   OBJE type=Media img=Media.gif
+3    TITL default type=SimpleValue img=Attribute.gif
+3    FORM default type=SimpleValue img=Format.gif
+3    FILE default type=File img=Disk.gif
+3    NOTE type=Note img=Note.gif
 
 1  ANUL super=FAM:MARR img=Event.gif
 1  CENS super=FAM:ANUL
@@ -36,10 +42,13 @@
 1  WIFE hide type=Wife img=Link2Indi.gif img.err=LinkXIndi.gif
 1  CHIL hide type=Child img=Link2Indi.gif img.err=LinkXIndi.gif
 
-1  SUBM hide type=Submitter img=Submitter.gif
 1  OBJE type=Media img=Media.gif
 2   TITL default type=SimpleValue img=Attribute.gif
 2   FORM default type=SimpleValue img=Format.gif
 2   FILE default type=File img=Disk.gif
 2   NOTE type=Note img=Note.gif
+
+1  NOTE type=Note img=Note.gif
+
+1  SUBM hide type=Submitter img=Submitter.gif
 1  SOUR hide type=Source img=Source.gif

@@ -30,20 +30,6 @@ import genj.util.WordBuffer;
 public class Source extends Entity {
 
   /**
-   * Constructor for Source
-   */
-  /*package*/ Source() {
-  }
-
-  /**
-   * Returns the type to which this entity belongs
-   * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
-   */
-  public int getType() {
-    return Gedcom.SOURCES;
-  }
-
-  /**
    * Returns this property as a string
    */
   public String toString() {
@@ -55,13 +41,6 @@ public class Source extends Entity {
     // text
     buf.setFiller("\n").append(getText(), "text n/a");
     return super.toString() + buf.toString();
-  }
-  
-  /**
-   * @see genj.gedcom.Property#getTag()
-   */
-  public String getTag() {
-    return "SOUR";
   }
   
   /**

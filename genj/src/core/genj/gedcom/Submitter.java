@@ -25,20 +25,6 @@ package genj.gedcom;
 public class Submitter extends Entity {
 
   /**
-   * Constructor for Submitter
-   */
-  /*package*/ Submitter() {
-  }
-
-  /**
-   * Returns the type to which this entity belongs
-   * INDIVIDUALS, FAMILIES, MULTIMEDIAS, SUBMITTERS, ...
-   */
-  public int getType() {
-    return Gedcom.SUBMITTERS;
-  }
-
-  /**
    * Returns this property as a string
    */
   public String toString() {

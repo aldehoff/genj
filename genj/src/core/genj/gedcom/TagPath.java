@@ -233,7 +233,7 @@ public class TagPath {
   /**
    * Get an array out of collection
    */
-  public static TagPath[] getPaths(Collection c) {
+  public static TagPath[] toArray(Collection c) {
     return (TagPath[])c.toArray(new TagPath[c.size()]);
   }
 
@@ -247,7 +247,7 @@ public class TagPath {
     	if (paths[i].get(0).equals(tag)) 
         result.add(paths[i]);
     }
-    return getPaths(result);
+    return toArray(result);
   }
 
 } //TagPath

@@ -20,8 +20,8 @@
 package genj.renderer;
 
 import genj.app.TagPathTree;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
@@ -249,8 +249,11 @@ public class BlueprintEditor extends JSplitPane {
   /**
    * Example
    */
-  private class Example extends Indi {
+  private class Example extends Entity  {
+    
+    /** faked values */
     private Map tag2value = new HashMap();
+    
     /**
      * Constructor
      */

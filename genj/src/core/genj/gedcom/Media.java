@@ -25,27 +25,6 @@ package genj.gedcom;
 public class Media extends Entity {
 
   /**
-   * Constructor for Multimedia
-   */
-  /*package*/ Media() {
-  }
-
-  /**
-   * Returns the type to which this entity belongs
-   * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
-   */
-  public int getType() {
-    return Gedcom.MULTIMEDIAS;
-  }
-
-  /**
-   * @see genj.gedcom.Property#getTag()
-   */
-  public String getTag() {
-    return "OBJE";
-  }
-  
-  /**
    * @see genj.gedcom.Entity#toString()
    */
   public String toString() {

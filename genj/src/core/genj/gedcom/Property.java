@@ -47,27 +47,6 @@ public abstract class Property implements Comparable {
     DOWN = 2;
 
   /**
-   * Adds default properties to this property
-   */
-  public Property addDefaultProperties() {
-    
-    // only if parent set
-    if (getEntity()==null) throw new IllegalArgumentException("Not part of entity is null!");
-    
-    // ask for default sub-properties
-    MetaProperty[] subs = MetaProperty.get(this).getSubs(true); 
-    
-    // loop
-    for (int s=0; s<subs.length; s++) {
-      if (getProperty(subs[s].getTag())==null) {
-      	addProperty(subs[s].create("")).addDefaultProperties();
-      }
-    }
-    
-    return this;
-  }
-
-  /**
    * Method for notifying being added to another property
    */
   public void addNotify(Property parent) {
@@ -720,6 +699,39 @@ public abstract class Property implements Comparable {
   }
 
   /**
+   * Resolve visible meta properties
+   */
+  public MetaProperty[] getVisibleMetaProperties() {
+    return MetaProperty.get(this).getVisibleSubs();
+  }
+
+  /**
+   * Resolve default meta properties
+   */
+  public MetaProperty[] getDefaultMetaProperties() {
+    return MetaProperty.get(this).getDefaultSubs();
+  }
+
+  /**
+   * Adds default properties to this property
+   */
+  public final Property addDefaultProperties() {
+    
+    // only if parent set
+    if (getEntity()==null) throw new IllegalArgumentException("entity is null!");
+    
+    // loop
+    MetaProperty[] subs = getDefaultMetaProperties(); 
+    for (int s=0; s<subs.length; s++) {
+      if (getProperty(subs[s].getTag())==null)
+        addProperty(subs[s].create("")).addDefaultProperties();
+    }
+
+    // done    
+    return this;
+  }
+
+  /**
    * Set of sub-properties 
    */
   protected class PropertySet {
@@ -796,7 +808,7 @@ public abstract class Property implements Comparable {
       vector.setElementAt(o,j);
     }          
     
-  } // PropertySet
+  }
 
 } //Property
 

@@ -30,25 +30,11 @@ public class Note extends Entity implements MultiLineSupport{
   private Delegate delegate = new Delegate();
 
   /**
-   * Constructor for Note
-   */
-  /*package*/ Note() {
-  }
-  
-  /**
    * Notification to entity that it has been added to a Gedcom
    */
   public void addNotify(Gedcom gedcom) {
     super.addNotify(gedcom);
     addProperty(delegate);
-  }
-
-  /**
-   * Returns the type to which this entity belongs
-   * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
-   */
-  public int getType() {
-    return Gedcom.NOTES;
   }
 
   /**

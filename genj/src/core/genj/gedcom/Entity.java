@@ -29,12 +29,22 @@ public abstract class Entity extends Property {
   
   /** the id */
   private String id;
+  
+  /** the tag */
+  private String tag;
+  
+  /** the type */
+  private int type;
 
   /**
    * Notification to entity that it has been added to a Gedcom
    */
   public void addNotify(Gedcom ged) {
     gedcom = ged;
+    
+    type = ged.getTypeFor(getClass());
+    tag = ged.getTagFor(type);
+    
   }
 
   /**
@@ -57,7 +67,9 @@ public abstract class Entity extends Property {
    * Returns the type to which this entity belongs
    * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
    */
-  public abstract int getType();
+  public int getType() {
+    return type;
+  }
 
   /**
    * Sets entity's id
@@ -84,7 +96,7 @@ public abstract class Entity extends Property {
    * @see genj.gedcom.Property#getTag()
    */
   public String getTag() {
-    return "NOTE";
+    return tag;
   }
   
   /**
