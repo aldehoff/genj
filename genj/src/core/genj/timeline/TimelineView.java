@@ -33,6 +33,9 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.text.NumberFormat;
 import java.util.Set;
 
@@ -142,6 +145,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     model = new Model(gedcom, (Set)regstry.get("filter", model.DEFAULT_FILTER));
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
     content = new Content();
+    content.addMouseListener(new ContentClick());
     ruler = new Ruler();
     
     // start listeing
@@ -415,5 +419,17 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       repaint();
     }
   } // ModelListener
+  
+  /**
+   * ContentClick
+   */
+  private class ContentClick extends MouseAdapter {
+    /** @see java.awt.event.MouseAdapter#mousePressed(MouseEvent) */
+    public void mousePressed(MouseEvent e) {
+      // find the year
+      double year = pixel2year(e.getX());
+      System.out.println(year);
+    }
+  } //ContentClick  
     
 } //TimelineView
