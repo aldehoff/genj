@@ -34,6 +34,7 @@ import genj.util.swing.TreeWidget;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -190,7 +191,7 @@ public class PropertyTreeWidget extends TreeWidget {
   /**
    * Resolve property for location
    */
-  public Property getProperty(int x, int y) {
+  public Property getPropertyAt(int x, int y) {
     // calc path to node under mouse
     TreePath path = super.getPathForLocation(x, y);
     if ((path==null) || (path.getPathCount()==0)) 
@@ -198,13 +199,20 @@ public class PropertyTreeWidget extends TreeWidget {
     // done
     return (Property)path.getLastPathComponent();
   }
+
+  /**
+   * Resolve property at given point
+   */
+  public Property getPropertyAt(Point pos) {
+    return getPropertyAt(pos.x, pos.y);
+  }
   
   /**
    * @see javax.swing.JTree#getToolTipText(MouseEvent)
    */
   public String getToolTipText(MouseEvent event) {
     // lookup property
-    Property prop = getProperty(event.getX(),event.getY());
+    Property prop = getPropertyAt(event.getX(),event.getY());
     if (prop==null) return null;
     // .. transient?
     if (prop.isTransient()) return null;

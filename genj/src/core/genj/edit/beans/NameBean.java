@@ -17,11 +17,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.edit;
+package genj.edit.beans;
 
+import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
+import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.TextFieldWidget;
+import genj.view.ViewManager;
 
 import javax.swing.JLabel;
 
@@ -29,7 +32,7 @@ import javax.swing.JLabel;
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : NAME
  */
-class ProxyName extends Proxy {
+public class NameBean extends PropertyBean {
 
   /** our components */
   private ChoiceWidget cLast;
@@ -38,7 +41,7 @@ class ProxyName extends Proxy {
   /**
    * Finish editing a property through proxy
    */
-  protected void commit() {
+  public void commit() {
 
     // ... calc texts
     String first = tFirst.getText().trim();
@@ -53,37 +56,35 @@ class ProxyName extends Proxy {
   }
 
   /**
-   * Start editing a property through proxy
+   * Initialize
    */
-  protected Editor getEditor() {
+  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
 
-    Editor result = new Editor();
-    result.setBoxLayout();
-    
+    super.init(setProp, setMgr, setReg);
+
     // first, last, suff
     PropertyName pname = (PropertyName)property;
     
     cLast  = new ChoiceWidget(pname.getLastNames().toArray(), pname.getLastName());
-    cLast.addChangeListener(this);
+    cLast.addChangeListener(changeSupport);
     tFirst = new TextFieldWidget(pname.getFirstName(), 10); 
-    tFirst.addChangeListener(this);
+    tFirst.addChangeListener(changeSupport);
     tSuff  = new TextFieldWidget(pname.getSuffix()   , 10); 
-    tSuff.addChangeListener(this);
+    tSuff.addChangeListener(changeSupport);
 
-    result.add(new JLabel(pname.getLabelForFirstName()));
-    result.add(tFirst);
+    add(new JLabel(pname.getLabelForFirstName()));
+    add(tFirst);
 
-    result.add(new JLabel(pname.getLabelForLastName()));
-    result.add(cLast);
+    add(new JLabel(pname.getLabelForLastName()));
+    add(cLast);
 
-    result.add(new JLabel(pname.getLabelForSuffix()));
-    result.add(tSuff);
+    add(new JLabel(pname.getLabelForSuffix()));
+    add(tSuff);
 
-    result.setFocus(tFirst);
+
+    defaultFocus = tFirst;
 
     // done
-    return result;
-
   }
 
 } //ProxyName

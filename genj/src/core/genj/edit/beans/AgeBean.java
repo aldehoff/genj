@@ -17,22 +17,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.edit;
+package genj.edit.beans;
 
+import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
 import genj.gedcom.time.Delta;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
+import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.TextFieldWidget;
+import genj.view.ViewManager;
 
 import javax.swing.JLabel;
 
 /**
  * A Proxy knows how to generate interaction components that the user
- * will use to change a property : UNKNOWN
+ * will use to change a property : AGE
  */
-class ProxyAge extends Proxy {
+public class AgeBean extends PropertyBean {
   
   private final static String TEMPLATE = "99y 9m 9d";
 
@@ -45,24 +48,26 @@ class ProxyAge extends Proxy {
   /**
    * Finish editing a property through proxy
    */
-  protected void commit() {
+  public void commit() {
     property.setValue(tfield.getText());
   }
 
   /**
-   * Start editing a property through proxy
+   * Start editing a property
    */
-  protected Editor getEditor() {
+  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
 
+    super.init(setProp, setMgr, setReg);
+
+    // keep age
     age = (PropertyAge)property;
     
     // create input
     tfield = new TextFieldWidget(property.getValue(), TEMPLATE.length());
-    tfield.addChangeListener(this);
+    tfield.addChangeListener(changeSupport);
 
     // layout
-    Editor result = new Editor();
-    GridBagHelper gh = new GridBagHelper(result);
+    GridBagHelper gh = new GridBagHelper(this);
     gh.add(tfield                                       ,0,0);
     gh.setParameter(gh.GROWFILL_HORIZONTAL);
     gh.add(new JLabel(TEMPLATE)                         ,1,0);
@@ -71,7 +76,6 @@ class ProxyAge extends Proxy {
     gh.addFiller(1,1);
 
     // Done
-    return result;
   }
   
   /**
@@ -83,7 +87,7 @@ class ProxyAge extends Proxy {
      */
     private ActionUpdate() {
       setImage(property.getImage(false));
-      setTip(resources.getString("proxy.age.tip"));
+      setTip(resources.getString("age.tip"));
       if (age.getEarlier()==null||age.getLater()==null)
         setEnabled(false);
     }

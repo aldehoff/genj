@@ -17,14 +17,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.edit;
+package genj.edit.beans;
 
 import genj.gedcom.Indi;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.time.PointInTime;
 import genj.util.GridBagHelper;
+import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
+import genj.view.ViewManager;
 import genj.window.CloseWindow;
 
 import javax.swing.JLabel;
@@ -35,7 +38,7 @@ import javax.swing.JTextField;
  * will use to change a property : *Events*
  * This Proxy was written by Dan Kionka, and only exists to display the age.
  */
-class ProxyEvent extends Proxy {
+public class EventBean extends PropertyBean {
 
   /** known to have happened */
   private ChoiceWidget known;
@@ -43,7 +46,7 @@ class ProxyEvent extends Proxy {
   /**
    * Finish proxying edit for property Birth
    */
-  protected void commit() {
+  public void commit() {
     // known might be null!
     if (known!=null) {
       ((PropertyEvent)property).setKnownToHaveHappened(known.getSelectedIndex()==0);
@@ -53,49 +56,49 @@ class ProxyEvent extends Proxy {
   /**
    * Nothing to edit
    */  
-  protected boolean isEditable() {
+  public boolean isEditable() {
     return known!=null;
   }
 
   /**
-   * Starts Proxying edit for property Date by filling a vector with
-   * components to edit this property
+   * Initialize
    */
-  protected Editor getEditor() {
+  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
 
-    Editor result = new Editor();
+    super.init(setProp, setMgr, setReg);
     
     // showing age@event only for individuals 
     if (!(property.getEntity() instanceof Indi&&property instanceof PropertyEvent)) 
-      return result;
+      return;
     
     PropertyEvent event = (PropertyEvent)property;
     PropertyDate date = event.getDate(true);
     Indi indi = (Indi)event.getEntity();
     
     // Calculate label & age
-    String ageat = "proxy.even.age";
+    String ageat = "even.age";
     String age;
     if ("BIRT".equals(event.getTag())) {
-      ageat = "proxy.even.age.today";
+      ageat = "even.age.today";
       age = indi.getAgeString(PointInTime.getNow());
     } else {
-      age = date!=null ? indi.getAgeString(date.getStart()) : resources.getString("proxy.even.age.?");
+      age = date!=null ? indi.getAgeString(date.getStart()) : resources.getString("even.age.?");
     }
     
     // layout
     JLabel 
       label1 = new JLabel(resources.getString(ageat)),
-      label2 = new JLabel(resources.getString("proxy.even.known")); 
+      label2 = new JLabel(resources.getString("even.known")); 
     
     // 20040321 increased from 10 to 16 to account for long age string
     JTextField txt = new JTextField(age, 16); txt.setEditable(false);
+    
     String[] choices = new String[]{ CloseWindow.TXT_YES, CloseWindow.TXT_NO };
     known = new ChoiceWidget(choices, event.isKnownToHaveHappened() ? choices[0] : choices[1]);
-    known.addChangeListener(this);
+    known.addChangeListener(changeSupport);
     known.setEditable(false);
     
-    GridBagHelper gh = new GridBagHelper(result);
+    GridBagHelper gh = new GridBagHelper(this);
     gh.add(label1, 0, 0, 1, 1, gh.FILL_HORIZONTAL    );
     gh.add(txt   , 1, 0, 1, 1, gh.GROWFILL_HORIZONTAL);
     gh.add(label2, 0, 1, 1, 1, gh.FILL_HORIZONTAL    );
@@ -103,7 +106,6 @@ class ProxyEvent extends Proxy {
     gh.addFiller(0,2);
 
     // done
-    return result;
   }
 
-} //ProxyEvent
+} //EventBean

@@ -17,38 +17,40 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.edit;
+package genj.edit.beans;
 
 import genj.edit.actions.RunExternal;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
-import genj.util.EnvironmentChecker;
-import genj.util.GridBagHelper;
-import genj.util.swing.ButtonHelper;
+import genj.util.Origin;
+import genj.util.Registry;
+import genj.util.swing.FileChooserWidget;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.MenuHelper;
-import genj.util.swing.TextFieldWidget;
 import genj.util.swing.UnitGraphics;
+import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
+import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.File;
 import java.io.FilePermission;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 
@@ -56,108 +58,53 @@ import javax.swing.JScrollPane;
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : FILE / BLOB
  */
-/*package*/ class ProxyFile extends Proxy {
-
-  /** static image dir */
-  private final static String 
-    IMAGE_DIR = EnvironmentChecker.getProperty(Proxy.class, 
-      new String[]{ "genj.gedcom.dir", "user.home" },
-      ".",
-      "resolve image directory"
-    );
-
+public class FileBean extends PropertyBean {
+  
   /** preview */
   private Preview preview;
   
-  /** enter text */
-  private TextFieldWidget tFile;
-
-  /** one loader per view */
-  private static Map view2loader = new HashMap();
+  /** a checkbox as accessory */
+  private JCheckBox updateFormatAndTitle = new JCheckBox(resources.getString("file.update"), false);
   
-  /** whether we'll update title/format or not */
-  private boolean updateFormatAndTitle = true;
-
+  /** file chooser  */
+  private FileChooserWidget chooser = new FileChooserWidget();
+  
+  /** a loader per rootpane*/
+  private static Map root2loader = new WeakHashMap();
+    
   /**
-   * Finish editing a property through proxy
+   * Initialize
    */
-  protected void commit() {
+  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+
+    super.init(setProp, setMgr, setReg);
+    setLayout(new BorderLayout());
+
+    // calc directory
+    Origin origin = property.getGedcom().getOrigin();
+    String dir = origin.isFile() ? origin.getFile().getParent() : null;
     
-    // propagate
-    String file = tFile.getText();
-    
-    if (property instanceof PropertyFile)
-      ((PropertyFile)property).setValue(file, updateFormatAndTitle);
-    
-    if (property instanceof PropertyBlob) 
-      ((PropertyBlob)property).load(file, updateFormatAndTitle);
-
-    // done
-  }
-
-  /**
-   * Shows property's image if possible
-   */
-  private void showFile(String file, boolean warnAboutSize) {
-
-    // show value
-    tFile.setTemplate(false);
-    tFile.setText(file);
-
-    // load it
-    synchronized (view2loader) {
-      Loader loader = (Loader)view2loader.get(view);
-      if (loader!=null) {
-        loader.cancel(true);
+    // connect file chooser with change support
+    chooser.setAccessory(updateFormatAndTitle);
+    chooser.setImage(setProp.getImage(false));
+    chooser.setDirectory(dir);
+    chooser.addChangeListener(changeSupport);
+    chooser.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        load(chooser.getFile().toString(), true);
       }
-      loader = new Loader(file, warnAboutSize);
-      view2loader.put(view, loader);
-      loader.trigger();
-    }
-    
-    // done
-  }
+    });
 
-  /**
-   * Shows property's image if possible
-   */
-  private void showFile(PropertyBlob blob) {
+    defaultFocus = chooser;
 
-    // show value
-    tFile.setText(blob.getValue());
-    tFile.setTemplate(true);
-
-    // .. preview
-    try {
-      preview.setImage(new ImageIcon(blob.getTitle(), blob.getBlobData()));
-    } catch (Throwable t) {
-    }
-
-    // done
-  }
-
-  /**
-   * Start editing a property through proxy
-   */
-  protected Editor getEditor() {
-    
-    Editor result = new Editor();
-    GridBagHelper gh = new GridBagHelper(result);
-    
-    // Create Text and button for current value
-    tFile = new TextFieldWidget("", 10);
-    tFile.addChangeListener(this);
-    result.setFocus(tFile);
-
-    // but check permissions first
+    // add filechooser if permissions are ok
     try {
 
       SecurityManager sm = System.getSecurityManager();
-      if (sm!=null) sm.checkPermission( new FilePermission(IMAGE_DIR, "read"));      
-      
-      // a text-field and button for file
-      gh.add(tFile, 0,0,1,1, gh.GROWFILL_HORIZONTAL);
-      gh.add(new ButtonHelper().create(new ActionChoose()), 1,0,1,1);
+      if (sm!=null) 
+        sm.checkPermission( new FilePermission(dir, "read"));      
+
+      add(chooser, BorderLayout.NORTH);      
 
     } catch (SecurityException se) {
     }
@@ -165,60 +112,85 @@ import javax.swing.JScrollPane;
     // Any graphical information that could be shown ?
     preview = new Preview();
     
-    JScrollPane scroll = new JScrollPane(preview);
-    scroll.setAlignmentX(0);
-    gh.add(scroll, 0,1,2,1, gh.GROWFILL_BOTH);
+    add(new JScrollPane(preview), BorderLayout.CENTER);
 
-    // display what we've got
-    if (property instanceof PropertyFile)
-      showFile(((PropertyFile)property).getValue(), false);
-    if (property instanceof PropertyBlob)
-      showFile((PropertyBlob)property);
-      
-    // Done
-    return result;
-  }
+    // case FILE
+    if (property instanceof PropertyFile) {
 
-  /**
-   * Action - Choose file
-   */
-  private class ActionChoose extends ActionDelegate {
-    /**
-     * Constructor
-     */
-    protected ActionChoose() {
+      PropertyFile file = (PropertyFile)property;
       
-      // a simple button with only an image
-      setImage(property.getImage(false));
+      // show value
+      chooser.setTemplate(false);
+      chooser.setFile(file.getValue());
+
+      load(file.getValue(), false);
 
       // done
     }
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-      
-      
-      // Let the user choose a file
-      JFileChooser chooser = new JFileChooser(IMAGE_DIR);
-      chooser.setControlButtonsAreShown(false);
-      chooser.setBorder(null);
-      JCheckBox check = new JCheckBox(view.resources.getString("proxy.file.update"), false);
 
-      int option = view.manager.getWindowManager().openDialog(null, view.resources.getString("proxy.file.title"), WindowManager.IMG_QUESTION,new JComponent[]{chooser,check},CloseWindow.OKandCANCEL(),view);
-      
-      File file = chooser.getSelectedFile();
-      if (option!=0||file==null) 
-        return;
-      
-      // remember
-      updateFormatAndTitle = check.isSelected();
-      
-      // show it 
-      showFile(file.toString(), true);
-      
+    // case BLOB
+    if (property instanceof PropertyBlob) {
+
+      PropertyBlob blob = (PropertyBlob)property;
+
+      // show value
+      chooser.setFile(blob.getValue());
+      chooser.setTemplate(true);
+
+      // .. preview
+      try {
+        preview.setImage(new ImageIcon(blob.getTitle(), blob.getBlobData()));
+      } catch (Throwable t) {
+      }
+
     }
-  } //ActionChoose
+      
+    // Done
+  }
+
+  /**
+   * Finish editing a property through proxy
+   */
+  public void commit() {
+    
+    // propagate
+    String file = chooser.getFile().toString();
+    
+    if (property instanceof PropertyFile)
+      ((PropertyFile)property).setValue(file, updateFormatAndTitle.isSelected());
+    
+    if (property instanceof PropertyBlob) 
+      ((PropertyBlob)property).load(file, updateFormatAndTitle.isSelected());
+
+    // update
+    chooser.setFile(property.getValue());
+
+    // done
+  }
+  
+  /**
+   * trigger a load - we currently only allow one concurrent loader
+   * per RootPane
+   */
+  private void load(String file, boolean warnAboutSize) {
+
+    // create new loader
+    Loader loader = new Loader(file, warnAboutSize);
+
+    // cancel current loader and keep new
+    synchronized (root2loader) {
+      Object root = getRootPane();
+      if (root!=null) {
+        Loader old = (Loader)root2loader.get(root);
+        if (old!=null)
+          old.cancel(true);
+      }
+      root2loader.put(root, loader);
+    }
+
+    // start loading      
+    loader.trigger();
+  }
   
   /**
    * Action - zoom
@@ -254,7 +226,7 @@ import javax.swing.JScrollPane;
      */
     protected Preview() {
       addMouseListener(this);
-      setZoom(view.registry.get("file.zoom", 100));
+      setZoom(registry.get("file.zoom", 100));
     }
     /**
      * Sets the zoom level
@@ -263,7 +235,7 @@ import javax.swing.JScrollPane;
       
       // remember
       zoom = zOOm;
-      view.registry.put("file.zoom", zoom);
+      registry.put("file.zoom", zoom);
       
       // calc tooltip
       setToolTipText(zoom==0 ? "1:1" : zoom+"%");
@@ -300,7 +272,7 @@ import javax.swing.JScrollPane;
           
         Point idpi = img.getResolution();
         if (idpi!=null) {
-          Point dpi = view.manager.getDPI();
+          Point dpi = viewManager.getDPI();
           
           scalex *= (double)dpi.x/idpi.x;
           scaley *= (double)dpi.y/idpi.y;
@@ -322,7 +294,7 @@ import javax.swing.JScrollPane;
       if (zoom==0)
         return new Dimension(img.getIconWidth(), img.getIconHeight());
       // check physical size
-      Dimension dim = img.getSize(view.manager.getDPI());
+      Dimension dim = img.getSize(viewManager.getDPI());
       float factor = (float)zoom/100;
       dim.width *= factor;
       dim.height *= factor;
@@ -342,8 +314,8 @@ import javax.swing.JScrollPane;
       if (!e.isPopupTrigger()) 
         return;
       // show a context menu for file
-      String file = tFile.getText();
-      MenuHelper mh = new MenuHelper().setTarget(view);
+      String file = chooser.getFile().toString();
+      MenuHelper mh = new MenuHelper().setTarget(this);
       JPopupMenu popup = mh.createPopup();
       // zoom levels for images
       if (img!=null) {
@@ -422,9 +394,10 @@ import javax.swing.JScrollPane;
      * async load
      */
     protected void execute() {
+      
       // load it
       try {
-        result = new ImageIcon(file, property.getGedcom().getOrigin().open(file));
+          result = new ImageIcon(file, property.getGedcom().getOrigin().open(file));
       } catch (Throwable t) {
       }
       // continue
@@ -442,13 +415,14 @@ import javax.swing.JScrollPane;
       // warn about size
       if (warn&&result.getByteSize()>PropertyFile.getMaxValueAsIconSize(false)) {
         
-        String txt = view.resources.getString("proxy.file.max", new String[]{
+        String txt = resources.getString("file.max", new String[]{
           result.getDescription(),
           String.valueOf(result.getByteSize()/1024+1),
           String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
         }); 
         
-        view.manager.getWindowManager().openDialog(null,null,WindowManager.IMG_INFORMATION,txt,CloseWindow.OK(),view);
+        // open dlg
+        viewManager.getWindowManager().openDialog(null,null,WindowManager.IMG_INFORMATION,txt,CloseWindow.OK(), FileBean.this);
       }
       
       // show

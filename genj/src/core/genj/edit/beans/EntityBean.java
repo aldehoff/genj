@@ -17,10 +17,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.edit;
+package genj.edit.beans;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyChange;
+import genj.util.Registry;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 
@@ -32,7 +35,7 @@ import javax.swing.JTextField;
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : ENTITY
  */
-class ProxyEntity extends Proxy {
+public class EntityBean extends PropertyBean {
 
   /** members */
   private JTextField tfield;
@@ -42,23 +45,24 @@ class ProxyEntity extends Proxy {
    * Finish editing a property through proxy (no changes here unless
    * hasChanged()==true since this will be called in all cases)
    */
-  protected void commit() {
+  public void commit() {
   }
 
   /**
    * Nothing to edit
    */  
-  protected boolean isEditable() {
+  public boolean isEditable() {
     return false;
   }
 
   /**
-   * Start editing a property through proxy
+   * Initialize
    */
-  protected Editor getEditor() {
+  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
 
-    Editor result = new Editor();
-    result.setLayout(new BorderLayout());
+    super.init(setProp, setMgr, setReg);
+
+    setLayout(new BorderLayout());
 
     // Look for entity
     if (property instanceof Entity) {
@@ -66,18 +70,16 @@ class ProxyEntity extends Proxy {
       Entity e = (Entity)property;
 
       // add a preview
-      result.add(BorderLayout.CENTER, new Preview(e));
+      add(BorderLayout.CENTER, new Preview(e));
 
       // add change date/time
       PropertyChange change = e.getLastChange();
-      if (change!=null) {
-        result.add(BorderLayout.SOUTH, new JLabel(resources.getString("proxy.entity.change", new String[] {change.getDateAsString(), change.getTimeAsString()} )));      
-      }
+      if (change!=null)
+        add(BorderLayout.SOUTH, new JLabel(resources.getString("entity.change", new String[] {change.getDateAsString(), change.getTimeAsString()} )));      
 
     }
     
     // Done
-    return result;
   }
   
 } //ProxyEntity

@@ -17,59 +17,58 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.edit;
+package genj.edit.beans;
+
+import genj.gedcom.MultiLineProperty;
+import genj.gedcom.Property;
+import genj.util.Registry;
+import genj.util.swing.TextAreaWidget;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 
-import genj.util.swing.TextFieldWidget;
-
-import javax.swing.JLabel;
-
 /**
  * A Proxy knows how to generate interaction components that the user
- * will use to change a property : UNKNOWN
+ * will use to change a property : NAME
  */
-class ProxySimpleValue extends Proxy {
+public class MLEBean extends PropertyBean {
 
   /** members */
-  private TextFieldWidget tfield;
+  private TextAreaWidget tarea;
 
   /**
    * Finish editing a property through proxy
    */
-  protected void commit() {
-    if (tfield!=null) {
-      property.setValue(tfield.getText());
-    }
+  public void commit() {
+    property.setValue(tarea.getText());
   }
 
   /**
-   * Nothing to edit
-   */  
-  protected boolean isEditable() {
-    return !property.isReadOnly();
-  }
-
-  /**
-   * Start editing a property through proxy
+   * Initialize
    */
-  protected Editor getEditor() {
+  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
 
-    Editor result = new Editor();
-    result.setLayout(new BorderLayout());
+    super.init(setProp, setMgr, setReg);
 
-    // readOnly()?
-    if (property.isReadOnly()) {
-      result.add(BorderLayout.NORTH, new JLabel(property.getValue()));
+    // Calculate value to show
+    String value;
+    if (property instanceof MultiLineProperty) {
+      value = ((MultiLineProperty)property).getLinesValue();
     } else {
-      tfield = new TextFieldWidget(property.getValue(), 0);
-      tfield.addChangeListener(this);
-      result.add(BorderLayout.NORTH, tfield);
-      result.setFocus(tfield);
+      value = property.getValue(); 
     }
-    
-    // Done
-    return result;
-  }
 
-} //ProxyUnknown
+    tarea = new TextAreaWidget(value,6,20);
+    tarea.addChangeListener(changeSupport);
+    tarea.setLineWrap(true);
+    tarea.setWrapStyleWord(true);
+
+    setLayout(new BorderLayout());
+    add(BorderLayout.CENTER, tarea);
+
+    defaultFocus = tarea;
+
+    // Done
+  }
+  
+} //ProxyMLE

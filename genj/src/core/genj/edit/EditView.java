@@ -19,11 +19,14 @@
  */
 package genj.edit;
 
+import genj.edit.beans.PropertyBean;
+import genj.edit.beans.SimpleValueBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
+import genj.gedcom.PropertyXRef;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
@@ -37,7 +40,10 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractButton;
 import javax.swing.JCheckBox;
@@ -47,6 +53,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
@@ -85,8 +94,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /*package*/ PropertyTreeWidget tree = null;
   
   /** everything for the proxy */
-  private JPanel            proxyPane;
-  private Proxy             currentProxy = null;
+  private JPanel            editPane;
+  private PropertyBean      bean = null;
 
   /** splitpane for tree/proxy */
   private JSplitPane        splitPane = null;
@@ -96,6 +105,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
    */
   public EditView(String setTitle, Gedcom setGedcom, Registry setRegistry, ViewManager setManager) {
     
+    super(new BorderLayout());
+    
     // remember
     title    = setTitle;
     gedcom   = setGedcom;
@@ -104,24 +115,31 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
 
     // TREE Component's 
     tree = new PropertyTreeWidget(setGedcom);
-    tree.addTreeSelectionListener(new SelectionChange());
+
+    Callback callback = new Callback();
+    tree.addTreeSelectionListener(callback);
+    tree.addMouseListener(callback);
     
     JScrollPane treePane = new JScrollPane(tree);
     treePane.setMinimumSize  (new Dimension(160, 128));
     treePane.setPreferredSize(new Dimension(160, 128));
-    
+        
     // EDIT Component
-    proxyPane = new JPanel();
+    editPane = new JPanel(new BorderLayout());
 
     // SplitPane with tree/edit
     splitPane = new JSplitPane(
       JSplitPane.VERTICAL_SPLIT, 
       treePane, 
-      new JScrollPane(proxyPane));
+      new JScrollPane(editPane));
     splitPane.setDividerLocation(registry.get("divider",-1));
 
+//    // tabbing
+//    JTabbedPane tabbing = new JTabbedPane();
+//    tabbing.addTab("Simple", new JPanel());
+//    tabbing.addTab("Advanced", splitPane);
+
     // layout
-    setLayout(new BorderLayout());
     add(splitPane, BorderLayout.CENTER);
     
     // Done
@@ -188,14 +206,12 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
    * @see genj.view.EntityPopupSupport#getEntityAt(Point)
    */
   public Context getContextAt(Point pos) {
-    // selection o.k.?
-    TreePath path = tree.getPathForLocation(pos.x, pos.y);
-    if (path!=null) tree.setSelectionPath(path);
-    // try to resolve a return value
-    Property prop = tree.getSelection();
-    if (prop!=null) 
-      return new Context(prop);
-    return new Context(getCurrentEntity());
+    // find property&select
+    Property prop = tree.getPropertyAt(pos);
+    if (prop!=null)
+      tree.setSelection(prop);
+    // done
+    return prop!=null ? new Context(prop) : new Context(getCurrentEntity());
   }
   
   /**
@@ -561,30 +577,46 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /**
    * Handling selection of properties
    */
-  private class SelectionChange implements TreeSelectionListener {
+  private class Callback extends MouseAdapter implements TreeSelectionListener {
+    
+    private ActionDelegate ok = new OK(), cancel = new Cancel();
     
     /**
-     * @see javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event.TreeSelectionEvent)
+     * callback - mouse doubleclick
+     */
+    public void mouseClicked(MouseEvent e) {
+      // double-click?
+      if (e.getClickCount()<2)
+        return;
+      // check against selected property
+      Property prop = tree.getPropertyAt(e.getPoint());
+      if (prop==null||prop!=tree.getSelection())
+        return;
+      // propagate any reference
+      if (prop instanceof PropertyXRef)
+        manager.setContext(((PropertyXRef)prop).getTarget());
+    }
+
+    /**
+     * callback - selection in tree has changed
      */
     public void valueChanged(TreeSelectionEvent e) {
 
       // ask user for commit if
-      //  + currentProxy with changes
-      //  + no transaction going on
-      if (!gedcom.isTransaction()&&currentProxy!=null&&currentProxy.hasChanged()) {
-        if (0==manager.getWindowManager().openDialog(null, title, WindowManager.IMG_QUESTION, resources.getString("confirm.keep.changes"), CloseWindow.YESandNO(), proxyPane))
-          currentProxy.ok.doClick();
+      if (!gedcom.isTransaction()&&bean!=null&&ok.isEnabled()) {
+        if (0==manager.getWindowManager().openDialog(null, title, WindowManager.IMG_QUESTION, resources.getString("confirm.keep.changes"), CloseWindow.YESandNO(), editPane))
+          ok.trigger();
       }
+
+      // Clean up
+      bean = null;
+      editPane.removeAll();
+      editPane.revalidate();
+      editPane.repaint();
 
       // Check for 'no selection'
       Property prop = tree.getSelection(); 
       if (prop==null) {
-
-        // Clean up
-        currentProxy = null;
-        proxyPane.removeAll();
-        proxyPane.revalidate();
-        proxyPane.repaint();
 
         // Disable action buttons
         actionButtonAdd   .setEnabled(false);
@@ -601,16 +633,50 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       // Starting with new one
       if (!prop.isSecret()) {
 
-        // get a proxy for property
-        currentProxy = getProxy(prop);
+        // get a bean for property
+        bean = getBean(prop);
         
-        // add proxy components
         try {
-          currentProxy.start(proxyPane, prop, EditView.this);
-        } catch (ClassCastException ex) {
-          Debug.log(Debug.WARNING, this, "Seems like we're getting bad proxy for property "+prop, ex);
+
+          // add bean to center of editPane 
+          editPane.add(bean, BorderLayout.CENTER);
+
+          // initialize bean
+          bean.init(prop, manager, registry);
+          
+          // and a label to the top
+          final JLabel label = new JLabel(bean.getLabel(), bean.getImage(), SwingConstants.LEFT);
+          editPane.add(label, BorderLayout.NORTH);
+
+          // and actions to the bottom
+          if (bean.isEditable()) {
+            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons).setFocusable(false);
+            bh.create(ok);
+            bh.create(cancel);
+            editPane.add(buttons, BorderLayout.SOUTH);
+          }
+          
+          // listen to it
+          bean.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+              label.setText(bean.getLabel());
+              label.setIcon(bean.getImage());
+              ok.setEnabled(true);
+              cancel.setEnabled(true);
+            }
+          });
+
+          // and request focus
+          bean.requestFocusInWindow();
+          
+        } catch (Throwable t) {
+          Debug.log(Debug.WARNING, this, "Property bean "+bean+" failed with "+t.getMessage(), t);
         }
         
+        // start without ok and cancel
+        ok.setEnabled(false);
+        cancel.setEnabled(false);
       }
 
       // add      
@@ -635,23 +701,66 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       // Done
     }
 
-    /** calculate a proxy for given property */
-    private Proxy getProxy(Property prop) {
+    /** calculate a bean for given property */
+    private PropertyBean getBean(Property prop) {
       
-      // calculate args
-      String me    = getClass().getName(),
-             pkg   = me.substring( 0, me.lastIndexOf(".") + 1 ),
-             proxy = prop.getProxy();
-          
       // create
       try {
-        return (Proxy) Class.forName( pkg + "Proxy" + proxy ).newInstance();
+        return (PropertyBean) Class.forName( "genj.edit.beans." + prop.getProxy() + "Bean").newInstance();
       } catch (Throwable t) {
-        return new ProxySimpleValue();
+        return new SimpleValueBean();
       }
       
       // done
     }
+    
+    /**
+     * A ok action
+     */
+    private class OK extends ActionDelegate {
+  
+      /** constructor */
+      private OK() {
+        setText(CloseWindow.TXT_OK);
+      }
+  
+      /** cancel current proxy */
+      protected void execute() {
+  
+        if (bean!=null) try {
+          gedcom.startTransaction();
+          bean.commit();
+        } finally {
+          gedcom.endTransaction();
+        }
+        
+        ok.setEnabled(false);
+        cancel.setEnabled(false);
+      }
+  
+    } //OK
+  
+    /**
+     * A cancel action
+     */
+    private class Cancel extends ActionDelegate {
+  
+      /** constructor */
+      private Cancel() {
+        setText(CloseWindow.TXT_CANCEL);
+      }
+  
+      /** cancel current proxy */
+      protected void execute() {
+        // disable ok&cancel
+        ok.setEnabled(false);
+        cancel.setEnabled(false);
+        // simulate a selection change
+        valueChanged(null);
+      }
+  
+    } //Cancel
+  
     
   } //Callback  
 

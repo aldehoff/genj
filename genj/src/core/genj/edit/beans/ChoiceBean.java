@@ -17,10 +17,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.edit;
+package genj.edit.beans;
 
+import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
+import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 
@@ -30,7 +33,7 @@ import java.awt.BorderLayout;
  * @author nils@meiers.net
  * @author Tomas Dahlqvist fix for prefix lookup
  */
-class ProxyChoice extends Proxy {
+public class ChoiceBean extends PropertyBean {
 
   /** members */
   private ChoiceWidget choice;
@@ -38,7 +41,7 @@ class ProxyChoice extends Proxy {
   /**
    * Finish editing a property through proxy
    */
-  protected void commit() {
+  public void commit() {
 
     // Store changed value
     Object result = choice.getText();
@@ -48,10 +51,12 @@ class ProxyChoice extends Proxy {
   }
 
   /**
-   * Start editing a property through proxy
+   * Initialize
    */
-  protected Editor getEditor() {
+  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
 
+    super.init(setProp, setMgr, setReg);
+    
     // setup choices
     Object[] items = new Object[0];
     if (property instanceof PropertyChoiceValue)
@@ -59,16 +64,15 @@ class ProxyChoice extends Proxy {
 
     // Setup controls
     choice = new ChoiceWidget(items, property.getValue());
-    choice.addChangeListener(this);
+    choice.addChangeListener(changeSupport);
     
     // layout
-    Editor result = new Editor();
-    result.setLayout(new BorderLayout());
-    result.add(BorderLayout.NORTH, choice);
-    result.setFocus(choice);
+    setLayout(new BorderLayout());
+    add(BorderLayout.NORTH, choice);
     
-    // Done
-    return result;
+    // focus
+    defaultFocus = choice;
+    
   }
   
 } //ProxyChoice

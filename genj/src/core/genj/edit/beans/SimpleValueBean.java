@@ -17,54 +17,62 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.edit;
-
-import genj.gedcom.MultiLineProperty;
-import genj.util.swing.TextAreaWidget;
+package genj.edit.beans;
 
 import java.awt.BorderLayout;
 
+import genj.gedcom.Property;
+import genj.util.Registry;
+import genj.util.swing.TextFieldWidget;
+import genj.view.ViewManager;
+
+import javax.swing.JLabel;
+
 /**
  * A Proxy knows how to generate interaction components that the user
- * will use to change a property : NAME
+ * will use to change a property : UNKNOWN
  */
-class ProxyMLE extends Proxy {
+public class SimpleValueBean extends PropertyBean {
 
   /** members */
-  private TextAreaWidget tarea;
+  private TextFieldWidget tfield;
 
   /**
    * Finish editing a property through proxy
    */
-  protected void commit() {
-    property.setValue(tarea.getText());
+  public void commit() {
+    if (tfield!=null) {
+      property.setValue(tfield.getText());
+    }
   }
 
   /**
-   * Start editing a property through proxy
-   */
-  protected Editor getEditor() {
-
-    // Calculate value to show
-    String value;
-    if (property instanceof MultiLineProperty) {
-      value = ((MultiLineProperty)property).getLinesValue();
-    } else {
-      value = property.getValue(); 
-    }
-
-    tarea = new TextAreaWidget(value,6,20);
-    tarea.addChangeListener(this);
-    tarea.setLineWrap(true);
-    tarea.setWrapStyleWord(true);
-
-    Editor result = new Editor();
-    result.setLayout(new BorderLayout());
-    result.setFocus(tarea);
-    result.add(BorderLayout.CENTER, tarea);
-
-    // Done
-    return result;
+   * Nothing to edit
+   */  
+  public boolean isEditable() {
+    return !property.isReadOnly();
   }
-  
-} //ProxyMLE
+
+  /**
+   * Initialize
+   */
+  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+
+    super.init(setProp, setMgr, setReg);
+
+    setLayout(new BorderLayout());
+
+    // readOnly()?
+    if (property.isReadOnly()) {
+      add(BorderLayout.NORTH, new JLabel(property.getValue()));
+    } else {
+      tfield = new TextFieldWidget(property.getValue(), 0);
+      tfield.addChangeListener(changeSupport);
+      add(BorderLayout.NORTH, tfield);
+      super.defaultFocus = tfield;
+    }
+    
+    // Done
+  }
+
+} //ProxyUnknown

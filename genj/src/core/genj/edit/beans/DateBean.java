@@ -17,11 +17,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.edit;
+package genj.edit.beans;
 
+import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.time.PointInTime;
+import genj.util.Registry;
 import genj.util.swing.DateWidget;
+import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.awt.Dimension;
@@ -29,13 +32,12 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JComboBox;
-import javax.swing.event.ChangeEvent;
 
 /**
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : DATE
  */
-class ProxyDate extends Proxy implements ItemListener {
+public class DateBean extends PropertyBean implements ItemListener {
 
   /** members */
   private int currentDate;
@@ -58,7 +60,7 @@ class ProxyDate extends Proxy implements ItemListener {
   /**
    * Finish proxying edit for property Date
    */
-  protected void commit() {
+  public void commit() {
 
     PropertyDate p = (PropertyDate)property;
 
@@ -94,21 +96,20 @@ class ProxyDate extends Proxy implements ItemListener {
     deOne.getParent().validate();
 
     // notify of change
-    stateChanged(new ChangeEvent(this));
+    changeSupport.fireChangeEvent();
 
     // Done
   }          
 
   /**
-   * Starts Proxying edit for property Date by filling a vector with
-   * components to edit this property
+   * Initialize
    */
-  protected Editor getEditor() {
+  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
 
+    super.init(setProp, setMgr, setReg);
+
+    // we know it's a date
     PropertyDate p = (PropertyDate)property;
-
-    Editor result = new Editor();
-    result.setBoxLayout();
 
     // Components
     combo = new JComboBox();
@@ -119,26 +120,25 @@ class ProxyDate extends Proxy implements ItemListener {
     for (int i = 0; i <= PropertyDate.LAST_ATTRIB; i++) {
       combo.addItem(PropertyDate.getLabelForFormat(i));
     }
-    result.add(combo);
+    add(combo);
     combo.addItemListener(this);
 
-    WindowManager mgr = view.manager.getWindowManager();
+    WindowManager mgr = viewManager.getWindowManager();
 
     deOne = new DateWidget(p.getStart(), mgr);
-    deOne.addChangeListener(this);
+    deOne.addChangeListener(changeSupport);
     deOne.setAlignmentX(0);
-    result.add(deOne);
-    result.setFocus(deOne);
+    add(deOne);
 
     deTwo = new DateWidget(p.getEnd(), mgr);
-    deTwo.addChangeListener(this);
+    deTwo.addChangeListener(changeSupport);
     deTwo.setAlignmentX(0);
+
+    defaultFocus = deOne;
 
     combo.setSelectedIndex( p.getFormat() );
 
     // Done
-    return result;
-
   }
 
 } //ProxyDate
