@@ -269,6 +269,7 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionAbout() {
       super.setText("cc.menu.about");
+      super.setImage(Images.imgAbout);
     }
     /** run */
     protected void execute() {
@@ -296,6 +297,7 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionHelp() {
       super.setText("cc.menu.contents");
+      super.setImage(Images.imgHelp);
     }
     /** run */
     protected void execute() {
@@ -323,6 +325,7 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionExit() {
       super.setText("cc.menu.exit");
+      super.setImage(Images.imgExit);
     }
     /** run */
     protected void execute() {
@@ -381,6 +384,7 @@ public class ControlCenter extends JPanel {
       super.setImage(Gedcom.getImage());
       super.setTip("cc.tip.open_file");
       super.setText("cc.menu.open");
+      super.setImage(Images.imgOpen);
       super.setAsync(ASYNC_NEW_INSTANCE);
     }
 
@@ -733,6 +737,7 @@ public class ControlCenter extends JPanel {
       else
         super.setText("cc.menu.save");
       // setup
+      super.setImage(Images.imgSave);
       super.setAsync(ASYNC_NEW_INSTANCE);
     }
     /**
@@ -919,6 +924,7 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionClose() {
       super.setText("cc.menu.close");
+      super.setImage(Images.imgClose);
     }
     /** run */
     protected void execute() {
