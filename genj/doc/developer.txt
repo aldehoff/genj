@@ -50,7 +50,7 @@ ADOPTING IT
 
  Make sure that
 
-  java.exe and javac.exe are in your PATH
+  JAVA_HOME points to your JDK/JRE installation
   ANT_HOME points to your ANT installation
 
 WORKING WITH IT
