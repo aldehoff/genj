@@ -512,12 +512,7 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     // ABOUT?
     if (e.getActionCommand().equals("ABOUT")) {
-// F. Massonneau ---------- 05-08-2002
       AboutDialog.showAboutDialog();
-//      JOptionPane.showMessageDialog(this,
-//      App.resources.getString("app.title")+" "+Version.getInstance().toString(),
-//      App.resources.getString("cc.menu.about"),
-//      JOptionPane.INFORMATION_MESSAGE);
       return;
 
     }
