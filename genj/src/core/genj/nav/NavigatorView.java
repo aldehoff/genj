@@ -75,7 +75,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
   private final static ImageIcon
     imgYSiblings = new ImageIcon(NavigatorView.class,"YSiblings.gif"),
     imgOSiblings = new ImageIcon(NavigatorView.class,"OSiblings.gif"),
-    imgChildren  = new ImageIcon(NavigatorView.class,"children.gif"),
+    imgChildren  = new ImageIcon(NavigatorView.class,"Children.gif"),
     imgFather    = Indi.IMG_MALE,
     imgMother    = Indi.IMG_FEMALE,
     imgMPartner  = Indi.IMG_MALE,
