@@ -253,7 +253,7 @@ public class ReportHTMLTable extends Report {
 		  		set.add(lastName, indis[i].getId());
 		  	}
 		  	// write table header
-		  	htmlOut.println("<tr><td>"+i18n("lastNames")+"</td><td>"+i18n("frequency")+"</td></tr>");
+		  	htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("lastNames")+"</td><td>"+i18n("frequency")+"</td></tr>");
 		  	// sort the table data
 		  	ArrayList sortedLastNames = new ArrayList(set.getKeys(sortLastNamesByName));
 		  	// loop over table data and write to the file
@@ -289,7 +289,7 @@ public class ReportHTMLTable extends Report {
 			  			set.add(birthPlace, indis[i].getId());
 			  		}
 			  	}
-			  	htmlOut.println("<tr><td>"+i18n("birthPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
+			  	htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("birthPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
 			  	ArrayList sortedBirthPlaces = new ArrayList(set.getKeys(sortBirthPlacesByName));
 			  	for(int i=0;i<sortedBirthPlaces.size();i++) {
 			  		String birthPlace = (String)sortedBirthPlaces.get(i);
@@ -345,7 +345,7 @@ public class ReportHTMLTable extends Report {
 				  			set.add(baptismPlace, indis[i].getId()+"chra");
 				  		}
 			  	}
-			  	htmlOut.println("<tr><td>"+i18n("baptismPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
+			  	htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("baptismPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
 			  	ArrayList sortedBaptismPlaces = new ArrayList(set.getKeys(sortBaptismPlacesByName));
 			  	for(int i=0;i<sortedBaptismPlaces.size();i++) {
 			  		String baptismPlace = (String)sortedBaptismPlaces.get(i);
@@ -378,7 +378,7 @@ public class ReportHTMLTable extends Report {
 			  			}
 			  		}
 			  	}
-			  	htmlOut.println("<tr><td>"+i18n("marriagePlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
+			  	htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("marriagePlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
 			  	ArrayList sortedMarriagePlaces = new ArrayList(set.getKeys(true));
 			  	for(int i=0;i<sortedMarriagePlaces.size();i++) {
 			  		String marriagePlace = (String)sortedMarriagePlaces.get(i);
@@ -448,7 +448,7 @@ public class ReportHTMLTable extends Report {
 		  				set.add(deathPlace, indis[i].getId());
 			  		}
 			  	}
-			  	htmlOut.println("<tr><td>"+i18n("deathPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
+			  	htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("deathPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
 			  	ArrayList sortedDeathPlaces = new ArrayList(set.getKeys(sortDeathPlacesByName));
 			  	for(int i=0;i<sortedDeathPlaces.size();i++) {
 			  		String deathPlace = (String)sortedDeathPlaces.get(i);
@@ -510,7 +510,7 @@ public class ReportHTMLTable extends Report {
 		  	}
 		}
 		//write the table header
-		htmlOut.println("<tr><td>"+i18n("title")+" places</td><td>"+i18n("frequency")+"</td></tr>");
+		htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("title")+" places</td><td>"+i18n("frequency")+"</td></tr>");
 		// sort the table data
 		ArrayList sortedPlaces = new ArrayList(set.getKeys(sortByPlace));
 		// print the table data
