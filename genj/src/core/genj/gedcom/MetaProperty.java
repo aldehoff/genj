@@ -162,6 +162,8 @@ public class MetaProperty implements Comparable {
   
   /**
    * Acessor - subs
+   * This is package private to make callees go through
+   * indvidual properties rather than accessing this directly.
    */
   /*package*/ MetaProperty[] getSubs(int filter) {
     
@@ -373,20 +375,6 @@ public class MetaProperty implements Comparable {
     return getRecursively(next, path, pos, persist);
   }
 
-  /**
-   * Static - resolve instance
-   */
-  public static MetaProperty get(Property prop) {
-    return get(prop.getPath());    
-  }
-
-  /**
-   * Static - resolve instance
-   */
-  public static MetaProperty get(Property prop, String sub) {
-    return get(prop).get(sub, true);    
-  }
-  
   /**
    * Static - paths for given type (use etag==null for all)
    */

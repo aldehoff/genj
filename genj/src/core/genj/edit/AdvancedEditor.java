@@ -23,7 +23,6 @@ import genj.edit.beans.PropertyBean;
 import genj.edit.beans.SimpleValueBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyXRef;
@@ -33,6 +32,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.Context;
+import genj.view.ContextProvider;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
@@ -40,10 +40,9 @@ import genj.window.WindowManager;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -56,7 +55,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
 
 /**
  * Our advanced version of the editor allowing low-level
@@ -65,7 +63,7 @@ import javax.swing.tree.TreePath;
 /*package*/ class AdvancedEditor extends Editor {
   
   /** resources */
-  private Resources resources = Resources.get(this);
+  private static Resources resources = Resources.get(AdvancedEditor.class);
 
   /** gedcom */
   private Gedcom gedcom;
@@ -88,12 +86,6 @@ import javax.swing.tree.TreePath;
 
   /** actions */
   private ActionDelegate    
-    add  = new Add(), 
-    cut  = new Cut(), 
-    copy = new Copy(), 
-    paste= new Paste(), 
-    up   = new UpDown(true), 
-    down = new UpDown(false),
     ok   = new OK(), 
     cancel = new Cancel();
 
@@ -114,7 +106,7 @@ import javax.swing.tree.TreePath;
     // TREE Component's 
     tree = new PropertyTreeWidget(gedcom);
 
-    Callback callback = new Callback();
+    InteractionListener callback = new InteractionListener();
     tree.addTreeSelectionListener(callback);
     tree.addMouseListener(callback);
     
@@ -137,7 +129,27 @@ import javax.swing.tree.TreePath;
     add(splitPane, BorderLayout.CENTER);
     
     // register as context provider
-    manager.registerContextProvider(tree, tree);
+    manager.registerContextProvider(new ContextProvider() {
+
+      public Context getContextAt(Point pos) {
+
+        // property at that point?
+        Property prop = tree.getPropertyAt(pos);
+        Property root = tree.getRoot();
+        
+        // create Context
+        Context result = new Context(root.getGedcom(), (Entity)root, prop);
+
+        // add actions (add&delete)
+        result.addAction(new Add(prop));
+        result.addAction(new Del(prop));
+        
+        // done
+        return result;
+      }
+  
+      
+    }, tree);
 
     // done    
   }
@@ -157,7 +169,9 @@ import javax.swing.tree.TreePath;
    * current 
    */
   public Context getContext() {
-    return new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
+    Context ctx = new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
+    ctx.setSource(this);
+    return ctx;
   }
   
   /**
@@ -178,49 +192,27 @@ import javax.swing.tree.TreePath;
   }
   
   /**
-   * Our actions
-   */
-  public List getActions() {
-    ArrayList result = new ArrayList();
-    result.add(add);
-    result.add(cut);
-    result.add(copy);
-    result.add(paste);
-    result.add(up);
-    result.add(down);
-    return result;
-  }
-  
-  /**
    * Action - add
    */
   private class Add extends ActionDelegate {
+    /** parent */
+    private Property parent; 
     /** constructor */
-    protected Add() {
-      super.setShortText("action.add");
-      super.setImage(Images.imgAdd);
-      super.setTip("action.add.tip");
+    protected Add(Property parent) {
+
+      super.setText(resources.getString("action.add"));
+      super.setImage(Images.imgNew);
+
+      this.parent = parent;
+      
+      super.setEnabled(parent!=null);
     }
     /** run */
     protected void execute() {
   
-      // check root
-      Property root = tree.getRoot();
-      if (root==null)
-        return;
-  
-      // .. only in case of single selection
-      TreePath paths[] = tree.getSelectionPaths();
-      if ( (paths==null) || (paths.length!=1) ) 
-        return;
-      TreePath path = tree.getSelectionPath();
-  
-      // .. calculate new props
-      Property prop = (Property)path.getLastPathComponent();
-  
       // .. Confirm
       JLabel label = new JLabel(resources.getString("add.choose"));
-      ChoosePropertyBean choose = new ChoosePropertyBean(prop, resources);
+      ChoosePropertyBean choose = new ChoosePropertyBean(parent, resources);
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
       int option = winManager.openDialog("add",resources.getString("add.title"),WindowManager.IMG_QUESTION,new JComponent[]{ label, choose, check },CloseWindow.OKandCANCEL(), AdvancedEditor.this); 
@@ -244,7 +236,7 @@ import javax.swing.tree.TreePath;
       gedcom.startTransaction();
       try {
         for (int i=0;i<props.length;i++) {
-          Property newProp = prop.addProperty(props[i]);
+          Property newProp = parent.addProperty(props[i]);
           if (check.isSelected()) newProp.addDefaultProperties();
         } 
       } finally {
@@ -257,7 +249,7 @@ import javax.swing.tree.TreePath;
         Property pdate = ((PropertyEvent)select).getDate(false);
         if (pdate!=null) select = pdate;
       }
-      tree.setSelectionPath(new TreePath(root.getPathTo(select)));
+      tree.setSelectionPath(tree.getPathFor(select));
       
       // done
     }
@@ -265,107 +257,32 @@ import javax.swing.tree.TreePath;
   } //ActionPropertyAdd
     
   /**
-   * Action - up/down
-   */
-  private class UpDown extends ActionDelegate {
-    /** which */
-    boolean up;
-    /** constructor */
-    protected UpDown(boolean up) {
-      this.up=up;
-      if (up) super.setShortText("action.up").setTip("action.up.tip").setImage(Images.imgUp);
-      else super.setShortText("action.down").setTip("action.down.tip").setImage(Images.imgDown);
-    }
-    /** run */
-    protected void execute() {
-      
-      // get current property
-      Property prop = tree.getSelection();
-      if (prop==null)
-        return;
-        
-      Property parent = prop.getParent(); // has to be non-null
-  
-      // .. Stop Editing
-      tree.clearSelection();
-  
-      // .. LockWrite
-      Gedcom gedcom = prop.getGedcom();
-      gedcom.startTransaction();
-  
-      // .. Calculate property that is moved
-      Property sibling = (Property)tree.getModel().getChild(parent, tree.getModel().getIndexOfChild(parent, prop) + (up?-1:1));
-      parent.swapProperties(prop, sibling);
-  
-      // .. UnlockWrite
-      gedcom.endTransaction();
-  
-      // Expand the rows
-      tree.expandRows();
-  
-      // Reselect the property
-      TreePath path = new TreePath(prop.getEntity().getPathTo(prop));
-      tree.setSelectionPath(path);
-      tree.scrollPathToVisible(path);;
-      
-      // Done  
-    }
-    
-  }  //ActionPropertyUpDown
-  
-  /**
-   * Action - copy
-   */
-  private class Copy extends ActionDelegate {
-    /** constructor */
-    private Copy() {
-      setImage(Images.imgCopy);
-      setTip("action.copy.tip");
-    }
-    /** run */
-    protected void execute() {
-      
-      // check selection
-      Property prop = tree.getSelection();
-      if (prop==null) 
-        return; // shouldn't happen
-        
-      // grab it and its subs
-      Clipboard.getInstance().copy(prop);
-      
-      // deselect to avoid user pasting to same node
-      tree.setSelection(prop.getParent());
-      
-      // done
-    }
-  } //ActionCopy
-
-  /**
    * Action - cut
    */
-  private class Cut extends Copy {
+  private class Del extends ActionDelegate {
+    private Property deletee;
     /** constructor */
-    private Cut() {
-      super.setImage(Images.imgCut);
-      super.setShortText("action.cut");
-      super.setTip("action.cut.tip");
+    private Del(Property deletee) {
+      super.setImage(Images.imgDelete);
+      super.setText(resources.getString("action.del"));
+
+      this.deletee = deletee;
+      
+      setEnabled(deletee!=null && !(deletee instanceof Entity) && !(deletee.isTransient()));
+
     }
     /** run */
     protected void execute() {
-      // check selection
-      Property prop = tree.getSelection();
-      if (prop==null) 
-        return; // shouldn't happen
       // warn about cut
-      String veto = prop.getDeleteVeto();
+      String veto = deletee.getDeleteVeto();
       if (veto!=null) { 
         // Removing property {0} from {1} leads to:\n{2}
-        String msg = resources.getString("cut.warning", new String[] { 
-          prop.getTag(), prop.getEntity().getId(), veto 
+        String msg = resources.getString("del.warning", new String[] { 
+          deletee.getTag(), deletee.getEntity().getId(), veto 
         });
         // prepare actions
         ActionDelegate[] actions = {
-          new CloseWindow(resources.getString("action.cut")), 
+          new CloseWindow(resources.getString("action.del")), 
           new CloseWindow(CloseWindow.TXT_CANCEL)
         };
         // ask the user
@@ -375,69 +292,14 @@ import javax.swing.tree.TreePath;
         // continue
       }
       
-      // copy first
-      super.execute();
-      
       // now cut
-      Gedcom gedcom = prop.getGedcom();
+      Gedcom gedcom = deletee.getGedcom();
       gedcom.startTransaction();
-      prop.getParent().delProperty(prop);
+      deletee.getParent().delProperty(deletee);
       gedcom.endTransaction();
       // done
     }
   } //ActionCut
-
-  /**
-   * Action - paste
-   */
-  private class Paste extends ActionDelegate {
-    /** constructor */
-    private Paste() {
-      super.setImage(Images.imgPaste);
-      super.setShortText("action.paste");
-      super.setTip("action.paste.tip");
-    }
-    /** run */
-    protected void execute() {
-      
-      // check selection
-      Property prop = tree.getSelection();
-      if (prop==null) 
-        return; // shouldn't happen
-        
-      // safety - check existing copy
-      Clipboard.Copy copy = Clipboard.getInstance().getCopy();
-      if (copy==null) 
-        return; // shouldn't happen
-        
-      // prepare actions
-      ActionDelegate[] actions = {
-        new CloseWindow(resources.getString("action.paste")), 
-        new CloseWindow(CloseWindow.TXT_CANCEL)
-      };
-      
-      // ask
-      if (0!=winManager.openDialog(null, resources.getString("action.paste.tip"), WindowManager.IMG_QUESTION, new JScrollPane(new PropertyTreeWidget(copy)), actions, AdvancedEditor.this)) 
-        return;        
-        
-      // paste contents
-      Gedcom gedcom = prop.getGedcom();
-      gedcom.startTransaction();
-      Property result = null;
-      try {
-        result = copy.paste(prop);
-      } catch (GedcomException e) {
-        winManager.openDialog(null,resources.getString("action.paste.tip"),WindowManager.IMG_WARNING,e.getMessage(),CloseWindow.OK(), AdvancedEditor.this);
-      }
-      gedcom.endTransaction();
-      
-      // propagate
-      if (result!=null)
-        viewManager.setContext(new Context(result));
-      
-      // done
-    }
-  } //ActionPaste
 
   /**
    * A ok action
@@ -496,7 +358,7 @@ import javax.swing.tree.TreePath;
   /**
    * Handling selection of properties
    */
-  private class Callback extends MouseAdapter implements TreeSelectionListener {
+  private class InteractionListener extends MouseAdapter implements TreeSelectionListener {
     
     /**
      * callback - mouse doubleclick
@@ -512,8 +374,13 @@ import javax.swing.tree.TreePath;
       // propagate any reference
       if (prop instanceof PropertyXRef) {
         Property target = ((PropertyXRef)prop).getTarget();
-        if (target!=null)
-          viewManager.setContext(new Context(target));
+        if (target!=null) {
+          // create new context
+          Context ctx = new Context(target);
+          ctx.setSource(AdvancedEditor.this);
+          // tell others
+          viewManager.setContext(ctx);
+        }
       }
     }
   
@@ -535,28 +402,17 @@ import javax.swing.tree.TreePath;
         }
   
       }
-  
+
       // Clean up
       bean = null;
       editPane.removeAll();
       editPane.revalidate();
       editPane.repaint();
   
-      // Check for 'no selection'
+      // done on 'no selection'
       Property prop = tree.getSelection(); 
-      if (prop==null) {
-  
-        // Disable action buttons
-        add  .setEnabled(false);
-        up   .setEnabled(false);
-        down .setEnabled(false);
-        cut  .setEnabled(false);
-        copy .setEnabled(false);
-        paste.setEnabled(false);
-        
-        // Done
+      if (prop==null)
         return;
-      }
       
       // Starting with new one
       if (!prop.isSecret()) {
@@ -610,25 +466,6 @@ import javax.swing.tree.TreePath;
         ok.setEnabled(false);
         cancel.setEnabled(false);
       }
-  
-      // add      
-      add  .setEnabled(true);
-      
-      // cut,copy,paste
-      cut  .setEnabled(prop.getParent()!=null&&!prop.isTransient());
-      copy .setEnabled(prop.getParent()!=null&&!prop.isTransient());
-      paste.setEnabled(Clipboard.getInstance().getCopy()!=null);
-  
-      // up, down
-      int i=0,j=0;  
-      if (prop!=tree.getRoot()) {        
-        Property parent = prop.getParent();
-        i = tree.getModel().getIndexOfChild(parent, prop);
-        j = tree.getModel().getChildCount(parent);
-      }
-  
-      up   .setEnabled(i>0);
-      down .setEnabled(i<j-1);
   
       // tell everyone
       viewManager.setContext(getContext());

@@ -24,8 +24,8 @@ import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Abstract base type for all GEDCOM properties
@@ -70,30 +70,36 @@ public abstract class Property implements Comparable {
     // remember parent
     this.parent=parent;
 
-    // propagate
-    changeNotify(this, Transaction.PADD);
+    // propage to still active children
+    Property[] props = getProperties();
+    for (int i=0,j=props.length;i<j;i++) {
+      Property child = (Property)props[i];
+      child.addNotify(this);
+    }
 
+    // propagate change info
+    changeNotify(this, Transaction.PADD);
+    
   }
 
   /**
-   * Lifecycle - callback when being remove from parent
+   * Lifecycle - callback when being removed from parent
    */
   /*package*/ void delNotify() {
 
     // propagate
     changeNotify(this, Transaction.PDEL);
 
-    // delete all properties - to avoid an endless
-    // loop we first make up our mind which ones
-    // to delete - that's it - anything added beyond
-    // this point will be ignored
-    Property[] props = getProperties();
-    for (int i=0,j=props.length;i<j;i++)
-      delProperty((Property)props[i]);
-    
-    // forget parent
-    parent = null;
+    // 20040609 to make move operations possible
+    // I'm keeping parent and children from now on
 
+    // propagate to children 
+    Property[] props = getProperties();
+    for (int i=0,j=props.length;i<j;i++) {
+      Property child = (Property)props[i];
+      child.delNotify();
+    }
+    
     // Done
   }
   
@@ -120,6 +126,42 @@ public abstract class Property implements Comparable {
   }
   
   /**
+   * Adds a copy of given property 
+   * @param prop the property to add as copy
+   * @param pos the position of prop after adding
+   * @return the copy of prop that was added
+   */
+  public Property addCopy(Property prop, int pos) {
+
+    // create a copy of prop
+    MetaProperty meta = getMetaProperty();
+    
+    MetaProperty copyMeta = meta.get(prop.getTag(), true);
+    String      copyValue = prop instanceof MultiLineProperty ? ((MultiLineProperty)prop).getLinesValue() : prop.getValue();
+
+    Property copy = copyMeta.create(copyValue);
+
+    // keep it    
+    addProperty(copy, pos);
+    
+    // link it if applicable
+    try {
+      if (copy instanceof PropertyXRef) {
+        ((PropertyXRef)copy).link();
+      }
+    } catch (GedcomException e) {
+    }
+    
+    // do it recursively for every child of prop
+    Property[] children = prop.getProperties();
+    for (int c=0; c<children.length; c++) 
+      copy.addCopy(children[c], -1);
+
+    // done
+    return copy;
+  }
+  
+  /**
    * Adds a sub-property to this property
    * @param prop new property to add
    */
@@ -133,19 +175,38 @@ public abstract class Property implements Comparable {
    * @param place whether to place the sub-property according to grammar
    */
   public Property addProperty(Property prop, boolean place) {
-    // add prop - check grammar for placement if applicable
+
+    // check grammar for placement if applicable
+    int pos = -1;
+    
     if (place&&getNoOfProperties()>0&&getEntity()!=null) {
-      MetaProperty meta = MetaProperty.get(this);
-      int pos = 0;
+
+      MetaProperty meta = getMetaProperty();
+      
+      pos = 0;
       int index = meta.getIndex(prop.getTag());
       for (;pos<getNoOfProperties();pos++) {
         if (meta.getIndex(getProperty(pos).getTag())>index)
           break;
       }
-      children.add(pos, prop);
-    } else {
-      children.add(prop);
     }
+    
+    // add property
+    return addProperty(prop, pos);
+    
+  }
+  
+  /**
+   * Adds another property to this property
+   */
+  public Property addProperty(Property prop, int pos) {
+
+    // position valid?
+    if (pos>=0&&pos<children.size())
+      children.add(pos, prop);
+    else
+      children.add(prop);
+
     // Notify
     prop.addNotify(this);
     // Done
@@ -184,19 +245,6 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Calculates the maximum depth of properties this property has.
-   */
-  public int getDepthOfProperties() {
-    // recursive search
-    int result = 0;
-    for (int i=0;i<children.size();i++) {
-      result = Math.max( result, getProperty(i).getDepthOfProperties()+1 );
-    }
-    // Done
-    return result;
-  }
-
-  /**
    * Returns the entity this property belongs to - simply looking up
    */
   public Entity getEntity() {
@@ -226,12 +274,15 @@ public abstract class Property implements Comparable {
     
     // valid or not ?
     if (!checkValid||isValid()) {
-      if (image==null) image = MetaProperty.get(this).getImage(); 
+      if (image==null) 
+        image = getMetaProperty().getImage(); 
       return image;
     }
     
     // not valid
-    if (imageErr==null) imageErr = MetaProperty.get(this).getImage("err"); 
+    if (imageErr==null) 
+      imageErr = getMetaProperty().getImage("err"); 
+      
     return imageErr;
   }
 
@@ -253,48 +304,19 @@ public abstract class Property implements Comparable {
    * Returns the path to this property
    */
   public TagPath getPath() {
-    return new TagPath(getEntity().getPathTo(this));
-  }
 
-  /**
-   * Returns path of properties to specified property
-   */
-  public Property[] getPathTo(Property prop) {
-
-    // Create a linked list
-    LinkedList result = new LinkedList();
+    Stack stack = new Stack();
+    stack.push(getTag());
     
-    // look for it
-    getPathToRecursively(result, prop);
-    
-    // Done
-    return toArray(result);
-  }
-
-  /**
-   * Recursive getPathTo
-   */
-  private void getPathToRecursively(LinkedList path, Property prop) {
-    
-    // is it me?
-    if (prop==this) {
-      path.add(this);
-      return;
-    }
-    
-    // maybe it's one of my children
-    for (int i=0;i<getNoOfProperties();i++) {
-      getProperty(i).getPathToRecursively(path, prop);
-      if (path.size()>0) {
-        // .. add myself
-        path.addFirst(this);
-        break;
-      } 
+    Property parent = getParent();
+    while (parent!=null) {
+      stack.push(parent.getTag());
+      parent = parent.getParent();
     }
 
-    // not found
+    return new TagPath(stack);
   }
-  
+
   /**
    * Returns this property's properties (all children)
    */
@@ -404,6 +426,17 @@ public abstract class Property implements Comparable {
 
     // done
     return fill;
+  }
+  
+  /**
+   * Returns a sub-property position
+   */
+  public int getPropertyPosition(Property prop) {
+    for (int i=0;i<children.size();i++) {
+      if (children.get(i)==prop)
+        return i;
+    }
+    throw new IllegalArgumentException();
   }
 
   /**
@@ -555,32 +588,6 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Swap two childen 
-   */
-  public void swapProperties(Property childA, Property childB) {
-
-    int 
-      a = children.indexOf(childA),
-      b = children.indexOf(childB);
-
-    // safety check
-    if (a<0||b<0)
-      throw new IllegalArgumentException();
-      
-    // move it
-      children.set(a, childB);
-      children.set(b, childA);
-
-    // tell about it
-    changeNotify(childA, Transaction.PDEL);
-    changeNotify(childA, Transaction.PADD);
-    changeNotify(childB, Transaction.PADD);
-    changeNotify(childB, Transaction.PDEL);
-
-    // done
-  }
-
-  /**
    * The default toString returns the value of this property
    * NM 19990715 introduced to allow access to a property on a
    *             more abstract level than getValue()
@@ -638,7 +645,7 @@ public abstract class Property implements Comparable {
     if (getEntity()==null) throw new IllegalArgumentException("entity is null!");
     
     // loop
-    MetaProperty[] subs = getMetaProperties(MetaProperty.FILTER_DEFAULT); 
+    MetaProperty[] subs = getSubMetaProperties(MetaProperty.FILTER_DEFAULT); 
     for (int s=0; s<subs.length; s++) {
       if (getProperty(subs[s].getTag())==null)
         addProperty(subs[s].create(EMPTY_STRING)).addDefaultProperties();
@@ -647,13 +654,20 @@ public abstract class Property implements Comparable {
     // done    
     return this;
   }
+  
+  /**
+   * Resolve meta property
+   */
+  public MetaProperty getMetaProperty() {
+    return MetaProperty.get(getPath());    
+  }
 
   /**
    * Resolve meta properties
    * @param filter one/many of QUERY_ALL, QUERY_VALID_TRUE, QUERY_SYSTEM_FALSE, QUERY_FOLLOW_LINK
    */
-  public MetaProperty[] getMetaProperties(int filter) {
-    return MetaProperty.get(this).getSubs(filter);
+  public MetaProperty[] getSubMetaProperties(int filter) {
+    return getMetaProperty().getSubs(filter);
   }
 
   /**
@@ -717,7 +731,7 @@ public abstract class Property implements Comparable {
    * @return info or null
    */
   public String getInfo() {
-    return MetaProperty.get(this).getInfo();
+    return getMetaProperty().getInfo();
   }
   
 } //Property

@@ -38,9 +38,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 /**
  * Our model of entites shown in a table
@@ -69,13 +66,6 @@ import javax.swing.table.TableColumnModel;
   private Row[] rows;
   
   /**
-   * Constructor
-   */
-  /*pacakge*/ EntityTableModel(Gedcom set) {
-    setGedcom(set);
-  }
-  
-  /**
    * Set the current gedcom
    */
   public void setGedcom(Gedcom set) {
@@ -91,6 +81,7 @@ import javax.swing.table.TableColumnModel;
     if (set!=null) {
       gedcom = set;
       gedcom.addGedcomListener(this);
+      setMode(mode.tag);
     }
     // done
   }
@@ -182,6 +173,11 @@ import javax.swing.table.TableColumnModel;
    * Prepares the data grid
    */
   private void prepareRows() {
+    // anything to do?
+    if (gedcom==null) {
+      rows = new Row[0];
+      return;
+    }
     // grab entities
     Collection es = gedcom.getEntities(mode.tag);
     // build rows
@@ -276,27 +272,12 @@ import javax.swing.table.TableColumnModel;
   }
 
   /**
-   * Helper that creates a new ColumnModel
-   */
-  /*package*/ TableColumnModel createTableColumnModel() {
-    TagPath[] paths = mode.paths;
-    int[] widths = mode.widths;
-    // create and fill
-    TableColumnModel columns = new DefaultTableColumnModel();
-    for (int c=0; c<mode.paths.length; c++) {
-      TableColumn col = new TableColumn(c);
-      col.setHeaderValue(paths[c]);
-      col.setPreferredWidth(widths.length>c&&widths[c]>0?widths[c]:75);
-      columns.addColumn(col);
-    }
-    // done
-    return columns;
-  }
-
-  /**
    * A mode is a configuration for a set of entities
    */
   /*package*/ class Mode implements Comparator {
+    
+    // FIXME widths shouldn't be part of the mode but handled in tableview as part of 'view'
+    
     /** attributes */
     private ImageIcon image;
     private String tag;

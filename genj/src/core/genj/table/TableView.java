@@ -56,7 +56,11 @@ import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 /**
@@ -89,7 +93,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
   private GedcomListener listener;
   
   /** a callback for selections */
-  private SelectionCallback selectionCallback = new SelectionCallback();
+  private TableCallback callback = new TableCallback();
   
   /**
    * Constructor
@@ -103,29 +107,25 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
     this.manager = mgr;
     
     // create the underlying model
-    tableModel = new EntityTableModel(gedcom);
+    tableModel = new EntityTableModel();
 
     // read properties
     loadProperties();
     
     // create our table
-    table = new JTable(tableModel) {
-      /** whenever new columns need to be created */
-      public void createDefaultColumnsFromModel() {
-        setColumnModel(((EntityTableModel)getModel()).createTableColumnModel());
-      }
-    };
+    table = new JTable(tableModel, new DefaultTableColumnModel());
+
     table.setTableHeader(new SortableTableHeader());
     table.setCellSelectionEnabled(true);
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-    table.setAutoCreateColumnsFromModel(true);
     table.getTableHeader().setReorderingAllowed(false);
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
 
-    // listen to row and column selections
-    table.getSelectionModel().addListSelectionListener(selectionCallback);
-    table.getColumnModel().getSelectionModel().addListSelectionListener(selectionCallback);
+    // listen to row and column selections and model changes
+    table.getModel().addTableModelListener(callback);
+    table.getSelectionModel().addListSelectionListener(callback);
+    table.getColumnModel().getSelectionModel().addListSelectionListener(callback);
     
     setLayout(new BorderLayout());
     add(new JScrollPane(table), BorderLayout.CENTER);
@@ -144,7 +144,17 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
   }
   
   /**
-   * @see java.awt.Component#removeNotify()
+   * callback - chance to hook-up on add
+   */  
+  public void addNotify() {
+    // continue
+    super.addNotify();
+    // hook on
+    tableModel.setGedcom(gedcom);
+  }
+
+  /**
+   * callback - chance to hook-off on remove
    */
   public void removeNotify() {
     // save state
@@ -296,7 +306,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
     // Done
   }  
   
-  
   /**
    * @see genj.view.FilterSupport#getFilter()
    */
@@ -372,7 +381,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
   /**
    * Callback for list selections
    */
-  private class SelectionCallback implements ListSelectionListener {
+  private class TableCallback implements ListSelectionListener, TableModelListener {
     /**
      * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
      */
@@ -380,19 +389,44 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
       // don't bother on adjusting
       if (e.getValueIsAdjusting())
         return;
-      // grab row & col
+      // grab property in row & col
       int 
         row = table.getSelectedRow(),
         col = table.getSelectedColumn();
-      // find property
-      Property context = null;
-      // 20040405 make sure we got a row when asking for property row,col
-      if (col>=0&&row>=0) context = tableModel.getProperty(row,col);
-      if (context==null&&row>=0) context = tableModel.getEntity(row);
-      if (context==null) return;
-      // set
+      if (row<0||row>=tableModel.getRowCount()||col<0||col>=tableModel.getColumnCount())
+        return;
+      Property context = tableModel.getProperty(row,col);
+      if (context==null)
+        return;
+      // propagate context change
       manager.setContext(new Context(context));
     }
+
+    /**
+     * Table updates
+     */    
+    public void tableChanged(TableModelEvent e) {
+      // big change?
+      TableColumnModel columns = table.getColumnModel();
+      if (columns.getColumnCount()>0&&e!=null&&e.getFirstRow()!=e.HEADER_ROW)
+        return;
+      // clear columns
+      while (columns.getColumnCount() > 0)
+        columns.removeColumn(columns.getColumn(0));
+      // get current mode
+      EntityTableModel.Mode mode = tableModel.getMode();          
+      TagPath[] paths = mode.getPaths();
+      int[] widths = mode.getWidths();
+      // create and fill
+      for (int c=0; c<paths.length; c++) {
+        TableColumn col = new TableColumn(c);
+        col.setHeaderValue(paths[c]);
+        col.setPreferredWidth(widths.length>c&&widths[c]>0?widths[c]:75);
+        columns.addColumn(col);
+      }
+      // done
+    }
+
   } //SelectionCallback
   
   /**

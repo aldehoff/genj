@@ -23,8 +23,10 @@ import genj.util.swing.ImageIcon;
 import java.util.List;
 
 /**
- * Gedcom Property : MEDIA (entity)
- * Property wrapping a reference to a multiMedia object
+ * Gedcom Property : MEDIA
+ * Property wrapping a reference to a multiMedia object - this object
+ * can contain BLOBs with in-line information. We discourage the use
+ * of this entity in GenJ and encourage in-line OBJE properties instead.
  */
 public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
 
@@ -79,20 +81,17 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     Entity entity = getEntity();
 
     // Something to do ?
-    if (getReferencedEntity()!=null) {
+    if (getReferencedEntity()!=null)
       return;
-    }
 
     // Look for media
     String id = getReferencedId();
-    if (id.length()==0) {
+    if (id.length()==0)
       return;
-    }
 
     Media media = (Media)getGedcom().getEntity(Gedcom.OBJE, id);
-    if (media==null) {
+    if (media==null)
       throw new GedcomException("Couldn't find entity with ID "+id);
-    }
 
     // Create a back-reference
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);

@@ -25,6 +25,7 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.print.PrintManager;
 import genj.renderer.BlueprintManager;
+import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -147,20 +148,34 @@ public class ViewManager {
     return result;
   }
 
+  boolean isIgnoreSetContext = false;
+
   /**
    * Sets the current context
    */
   public void setContext(Context context) {
+    
+    // ignored?
+    if (isIgnoreSetContext)
+      return;
+      
     // valid?
     if (!context.isValid())
       return;
+      
     // connect to us
     context.setManager(this);
-    // remember
+    
+    // remember context
     Gedcom gedcom = context.getGedcom();
     gedcom2context.put(gedcom, context);
-    // 20021017 @see note at the bottom of file
+    
+    // clear any menu selections
     MenuSelectionManager.defaultManager().clearSelectedPath();
+    
+    // ignore setContext from now on
+    isIgnoreSetContext = true;
+    
     // loop and tell to views
     Iterator it = key2viewwidget.values().iterator();
     while (it.hasNext()) {
@@ -168,15 +183,25 @@ public class ViewManager {
       // only if view on same gedcom
       if (vw.getGedcom()!= gedcom) continue;
       // and context supported
-      if (vw.getView() instanceof ContextListener)
+      if (vw.getView() instanceof ContextListener) try {
         ((ContextListener)vw.getView()).setContext(context);
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, vw.getView(), "ContextListener threw throwable", t);
+      }
       // next
     }
+    
     // loop and tell to context listeners
     ContextListener[] ls = (ContextListener[])contextListeners.toArray(new ContextListener[contextListeners.size()]);
-    for (int l=0;l<ls.length;l++) {
-      ls[l].setContext(context);
-    }
+    for (int l=0;l<ls.length;l++)
+      try {      
+        ls[l].setContext(context);
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, ls[l], "ContextListener threw throwable", t);
+      }
+    
+    // respect setContext from now on
+    isIgnoreSetContext = false;
     
     // done
   }
@@ -420,11 +445,11 @@ public class ViewManager {
   
       /** callback - mouse release */
       public void mouseReleased(MouseEvent e) {
-        
+
         // no popup trigger no action
         if (!e.isPopupTrigger()) 
           return;
-        
+  
         // grab context
         Context context = provider.getContextAt(e.getPoint());
         if (context==null)

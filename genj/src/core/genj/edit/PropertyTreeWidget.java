@@ -27,18 +27,15 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyXRef;
 import genj.gedcom.Transaction;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
-import genj.util.swing.TreeWidget;
-import genj.view.Context;
-import genj.view.ContextProvider;
 
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -47,81 +44,91 @@ import java.util.Set;
 
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.plaf.TreeUI;
 import javax.swing.text.View;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
+import swingx.tree.AbstractTreeModel;
+import swingx.tree.DnDTree;
+import swingx.tree.DnDTreeModel;
 
 /**
  * A Property Tree
  */
-public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
+public class PropertyTreeWidget extends DnDTree {
 
   /** a default renderer we keep around for colors */
   private DefaultTreeCellRenderer defaultRenderer;
   
   /** the model */
-  private Model model;
+  private Model model = new Model();
 
   /** cached object per property */
   private Map property2view =  new HashMap();
+  
+  /** stored gedcom */
+  private Gedcom gedcom;
 
-  /**
-   * Constructor
-   */
-  public PropertyTreeWidget(Property setRoot) {
-    this(setRoot.getGedcom());
-    setRoot(setRoot);
-    setExpandsSelectedPaths(true);
-    ToolTipManager.sharedInstance().registerComponent(this);
-  }
+//  /**
+//   * Constructor
+//   */
+//  public PropertyTreeWidget(Property setRoot) {
+//    this(setRoot.getGedcom());
+//    setRoot(setRoot);
+//    setExpandsSelectedPaths(true);
+//    ToolTipManager.sharedInstance().registerComponent(this);
+//  }
     
   /**
    * Constructor
    */
   public PropertyTreeWidget(Gedcom gedcom) {
-    
-    // setup model
-    model = new Model(gedcom);
+
     setModel(model);
+
+    // remember
+    this.gedcom = gedcom;
     
     // setup callbacks
     setCellRenderer(new Renderer());
     getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+    setToggleClickCount(Integer.MAX_VALUE);
+
+    setExpandsSelectedPaths(true);
+    ToolTipManager.sharedInstance().registerComponent(this);
     
     // done
   }
+  
+  /**
+   * return a path for a property
+   */
+  public TreePath getPathFor(Property property) {
+    return model.getPathToRoot(property);
+  }
+
+  /**
+   * @see javax.swing.JComponent#addNotify()
+   */
+  public void addNotify() {
+    // connect model to gedcom
+    model.setGedcom(gedcom);
+    // continue
+    super.addNotify();
+  }
+
   
   /**
    * @see javax.swing.JComponent#removeNotify()
    */
   public void removeNotify() {
-    // make sure model isn't connected to gedcom model anymoew
+    // disconnect model from gedcom
     model.setGedcom(null);
     // continue
     super.removeNotify();
-  }
-  
-  /**
-   * ContextProvider - context at given position
-   */
-  public Context getContextAt(Point pos) {
-
-    // property at that point?
-    Property prop = getPropertyAt(pos);
-    // Entity known?
-    Entity entity = null;
-    Property root = getRoot();
-    if (root!=null) {
-      entity = root.getEntity();
-    }
-    // done
-    return new Context(model.gedcom, entity, prop);
   }
   
   /**
@@ -140,8 +147,30 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
       return;
     // propagate to model
     model.setRoot(property);
-    // show
-    expandRows();
+    // show all rows
+    expandAllRows();
+    // done
+  }
+  
+  /**
+   * Expand all rows
+   */
+  public void expandAllRows() {
+    for (int i=0;i<getRowCount();i++)
+      expandRow(i); 
+  }
+  
+  /**
+   * Expand 'under' path
+   */
+  public void expandAll(TreePath root) {
+    
+    //collapsePath(root);
+    expandPath(root);
+    
+    Object node = root.getLastPathComponent();
+    for (int i=0;i<model.getChildCount(node);i++)
+      expandAll(root.pathByAddingChild(model.getChild(node, i)));
   }
   
   /**
@@ -166,12 +195,8 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
     // safety check
     if (model.root==null||select==null)
       return;
-    // get path
-    Property[] path = model.root.getPathTo(select);
-    if (path.length==0)
-      return;
     // show and select
-    TreePath tpath = new TreePath(path);
+    TreePath tpath = model.getPathToRoot(select);
     scrollPathToVisible(tpath);
     setSelectionPath(tpath);
     // done
@@ -182,10 +207,11 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
    */
   public Property getSelection() {
     // Calculate selection path
-    TreePath path = getSelectionPath();
-    if (path==null) 
+    TreePath[] paths = getSelectionPaths();
+    if (paths==null||paths.length!=1) 
       return null;
     // got it
+    TreePath path = paths[0];
     if (path.getLastPathComponent() instanceof Property)
       return (Property)path.getLastPathComponent();
     // none found
@@ -250,13 +276,10 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
   /**
    * Our model
    */
-  private class Model implements TreeModel, GedcomListener {
+  private class Model extends AbstractTreeModel implements DnDTreeModel, GedcomListener {
 
-    private Object DUMMY = new Object();
+    private Object NULL = new Object();
 
-    /** listeners */
-    private List listeners = new ArrayList();
-  
     /** root of tree */
     private Property root = null;
 
@@ -264,16 +287,9 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
     private Gedcom gedcom;
     
     /**
-     * Constructor
-     */
-    public Model(Gedcom gedcom) {
-      setGedcom(gedcom);
-    }
-    
-    /**
      * Gedcom to use
      */
-    public void setGedcom(Gedcom set) {
+    protected void setGedcom(Gedcom set) {
       // old?
       if (gedcom!=null) {
         gedcom.removeGedcomListener(this);
@@ -289,7 +305,7 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
     /**
      * Set the root
      */
-    public void setRoot(Property set) {
+    protected void setRoot(Property set) {
       // remember
       root = set;
       // notify
@@ -299,23 +315,9 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
     }
   
     /**
-     * Adds a listener to this model
-     */
-    public void addTreeModelListener(TreeModelListener l) {
-      listeners.add(l);
-    }          
-  
-    /**
-     * Removes a Listener from this model
-     */
-    public void removeTreeModelListener(TreeModelListener l) {
-      listeners.remove(l);
-    }          
-  
-    /**
      * Signals to listeners that properties have changed
      */
-    public void firePropertiesChanged(Set props) {
+    protected void firePropertiesChanged(Set props) {
 
       // Do it for all changed properties
       for (Iterator it=props.iterator();it.hasNext();) {
@@ -326,19 +328,9 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
         // .. forget cached value for prop
         property2view.remove(prop);
   
-        // .. build event
-        Object path[] = root.getPathTo(prop);
-        if (path==null)
-          continue;
-  
-        TreeModelEvent ev = new TreeModelEvent(this,path);
-  
-        // .. tell it to all listeners
-        Iterator elisteners = listeners.iterator();
-        while (elisteners.hasNext()) {
-          ((TreeModelListener)elisteners.next()).treeNodesChanged(ev);
-        }
-  
+        // .. propage change
+        fireTreeNodesChanged(this, getPathToRoot(prop), null, null);
+        
         // .. next changed property
       }
     }          
@@ -346,21 +338,141 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
     /**
      * Signals to listeners that structure has changed
      */
-    public void fireStructureChanged() {
+    protected void fireStructureChanged() {
 
       // clear cache of view
       property2view.clear();
 
-      // propagate even
-      Object[] path = new Object[]{ root!=null ? (Object)root : ""};
-      TreeModelEvent ev = new TreeModelEvent(this,path);
+      // propagate
+      fireTreeStructureChanged(this, getPathToRoot(root), null, null);
 
-      // .. tell it to all listeners
-      Iterator elisteners = listeners.iterator();
-      while (elisteners.hasNext()) {
-        ((TreeModelListener)elisteners.next()).treeStructureChanged(ev);
-      }
+      // done      
     }          
+    
+    /**
+     * DND support - remove necessary before insert
+     */
+    public boolean removeBeforeInsert() {
+      // make sure copy/move worked before remove from source
+      return false;
+    }
+    
+    /**
+     * DND support - remove nodes (called after move/insert)
+     */
+    public void removeFrom(List children) {
+
+      // start transaction
+      gedcom.startTransaction();      
+
+      // loop through children
+      int[] indexes = new int[children.size()];
+      for (int i=0;i<children.size();i++) {
+        
+        Property child = (Property)children.get(i);
+        Property parent = child.getParent();
+        int pos = parent.getPropertyPosition(child);
+
+        // remove
+        parent.delProperty(child);
+        
+        // tell to tree
+        fireTreeNodesRemoved(this, getPathToRoot(parent), new int[]{pos}, null);
+
+      }
+
+      // end move transaction
+      gedcom.removeGedcomListener(this);
+      gedcom.endTransaction();      
+      gedcom.addGedcomListener(this);
+
+      // done for now      
+    }
+    
+    /**
+     * DND support - insert child
+     */
+    public void insertInto(List children, Object parent, int index, int action) {
+
+      // cast        
+      Property
+        theParent = (Property)parent;
+        
+      // start transaction
+      gedcom.startTransaction();      
+
+      // perform copy/move
+      for (int i=0;i<children.size();i++) {
+        
+        Property child = (Property)children.get(i);
+        
+        // add copy of child
+        child = theParent.addCopy(child, index+i);
+        
+        // tell to tree
+        fireTreeNodesInserted(this, getPathToRoot(theParent), new int[]{index+i}, new Object[]{child});
+
+        // expand 
+        expandAll(getPathToRoot(child));
+      
+      }
+      
+      // end insert transaction
+      gedcom.removeGedcomListener(this);
+      gedcom.endTransaction();      
+      gedcom.addGedcomListener(this);
+
+      // done      
+    }
+
+    /**
+     * DND support - remove test
+     */
+    public boolean canRemove(List children) {
+      return true;
+    }
+
+    /**
+     * DND support - insert test
+     */
+    public boolean canInsert(List children, Object parent, int index, int action) {
+
+      // only copy and move property
+      if (action!=COPY&&action!=MOVE)
+        return false;
+
+      // check children of new parent
+      Property newParent = (Property)parent;
+      
+      for (int i=0;i<children.size();i++) {
+        Property child = (Property)children.get(i);
+        
+        // has to be property
+        if (!(child instanceof Property))
+          return false;
+          
+        // can't be xref from different entity
+        if (child instanceof PropertyXRef&&child.getEntity()!=newParent.getEntity())
+          return false;
+  
+        // has to be fine with grammar
+        return newParent.getMetaProperty().allows(child.getTag());
+      }
+
+      // all fine
+      return true;      
+    }
+
+    /**
+     * Returns parent of node
+     */  
+    protected Object getParent(Object node) {
+      // none for root
+      if (node==NULL||node==root)
+        return null;
+      // otherwise its parent
+      return ((Property)node).getParent();
+    }
   
     /**
      * Returns child by index of parent
@@ -375,6 +487,8 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
      * Returns child count of parent
      */
     public int getChildCount(Object parent) {
+      if (parent==NULL)
+        return 0;
       Property prop = (Property)parent;
       return prop.getProperties(prop.QUERY_SYSTEM_FALSE).length;
     }
@@ -395,26 +509,17 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
      * Returns root of tree
      */
     public Object getRoot() {
-      return root!=null?root:DUMMY;
+      return root!=null?root:NULL;
     }          
   
     /**
      * Tells wether object is a leaf
      */
     public boolean isLeaf(Object node) {
-      // since the root might be Object to 
-      // keep pre jdk 1.4 running we check type here
-      if (node==DUMMY) return true;
-      // check property
-      Property prop = (Property)node;
-      return prop.getNoOfProperties()==0;
+      if (node==NULL)
+        return true;
+      return ((Property)node).getNoOfProperties()==0;
     }          
-  
-    /**
-     * Changes a object at given path (not used here)
-     */
-    public void valueForPathChanged(TreePath path, Object newValue) {
-    } 
   
     /**
      * @see genj.gedcom.GedcomListener#handleChange(Change)
@@ -460,7 +565,7 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
           // reset
           fireStructureChanged();
           // show rows
-          expandRows();
+          expandAllRows();
           // done
           return;
         }
@@ -472,7 +577,7 @@ public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
           // reset
           fireStructureChanged();
           // show rows
-          expandRows();
+          expandAllRows();
           // done
           return;
         }

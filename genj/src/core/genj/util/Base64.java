@@ -52,7 +52,7 @@ public class Base64 {
   /**
    * Decodes base64 String to byte data
    */
-  public static byte[] decode(CharSequence in) throws IllegalArgumentException {
+  public static byte[] decode(String in) throws IllegalArgumentException {
 
     if ( ( (in.length() % 4) != 0) || (in.length()==0) ) {
       throw new IllegalArgumentException("Illegal Base64 String");

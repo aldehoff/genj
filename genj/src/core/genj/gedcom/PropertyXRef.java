@@ -190,9 +190,11 @@ public abstract class PropertyXRef extends Property {
   private void unlink() {
 
     // Referenced entities ?
-    if (target==null) {
+    if (target==null)
       return;
-    }
+
+    // keep referenced id
+    value = getValue();
 
     // Forget referenced entity
     PropertyXRef t = target;
@@ -251,8 +253,8 @@ public abstract class PropertyXRef extends Property {
    * with FILTER_XREF
    * @see genj.gedcom.Property#getMetaProperties(int)
    */
-  public MetaProperty[] getMetaProperties(int filter) {
-    return super.getMetaProperties(MetaProperty.FILTER_XREF|filter);
+  public MetaProperty[] getSubMetaProperties(int filter) {
+    return super.getSubMetaProperties(MetaProperty.FILTER_XREF|filter);
   }
   
   /**

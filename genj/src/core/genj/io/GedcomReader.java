@@ -219,7 +219,7 @@ public class GedcomReader implements Trackable {
       ent.setValue(value);
       
       // Read entity's properties till end of record
-      readProperties(ent, MetaProperty.get(ent), 1);
+      readProperties(ent, ent.getMetaProperty(), 1);
 
     } catch (GedcomException ex) {
       skipEntity(ex.getMessage());

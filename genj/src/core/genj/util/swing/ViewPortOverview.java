@@ -24,6 +24,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Panel;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -31,14 +32,13 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 
-import javax.swing.JPanel;
 import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
  * A component showing an overview for a viewport */
-public class ViewPortOverview extends JPanel {
+public class ViewPortOverview extends Panel {
   
   /** the square dimension used for resizing */
   private final static int DIM_RESIZE = 6;
@@ -198,8 +198,7 @@ public class ViewPortOverview extends JPanel {
         return;
       } 
       // no drag start?
-      if (dragOffset==null) 
-        return;
+      if (dragOffset==null) return;
       // calculate position
       Point2D zoom = getZoom();
       Rectangle shown = viewport.getViewRect();

@@ -247,18 +247,6 @@ public class Indi extends Entity {
   }
   
   /**
-   * Get Family with option to create
-   */
-  /*package*/ Fam getFam(boolean create) throws GedcomException {
-    Fam fam = getFam(0);
-    if (fam!=null||!create) return fam;
-    fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
-    if (getSex()==PropertySex.FEMALE) fam.setWife(this);
-    else fam.setHusband(this);
-    return fam;    
-  }
-
-  /**
    * Returns the family in which the person is child
    */
   public Fam getFamc( ) {
@@ -267,17 +255,6 @@ public class Indi extends Entity {
       return null;
     }
     return ((PropertyFamilyChild)prop).getFamily();
-  }
-
-  /**
-   * Get Family with option to create
-   */
-  public Fam getFamc(boolean create) throws GedcomException {
-    Fam fam = getFamc();
-    if (fam!=null||!create) return fam;
-    fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
-    fam.addChild(this);
-    return fam;    
   }
 
   /**

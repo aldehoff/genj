@@ -94,13 +94,13 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     // what's the entity
     Entity entity = context.getEntity();
     // noop if EditView non-sticky or current is open
-    EditView[] edits = (EditView[])manager.getInstances(EditView.class, context.getGedcom());
+    EditView[] edits = EditView.getInstances(context.getGedcom());
     for (int i=0;i<edits.length;i++) {
       if (!edits[i].isSticky()||edits[i].getEntity()==entity) 
         return;
     }
     // open
-    new OpenForEdit(entity, manager).trigger();
+    new OpenForEdit(context, manager).trigger();
   }
 
   /**
@@ -116,7 +116,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
       createActions(result, (PropertyFile)property); 
       
     // Check what xrefs can be added
-    MetaProperty[] subs = property.getMetaProperties(0);
+    MetaProperty[] subs = property.getSubMetaProperties(0);
     for (int s=0;s<subs.length;s++) {
       // create Relationship.XRef where applicable
       MetaProperty sub = subs[s]; 
@@ -153,7 +153,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(ActionDelegate.NOOP);
 
     // Check what xrefs can be added
-    MetaProperty[] subs = entity.getMetaProperties(0);
+    MetaProperty[] subs = entity.getSubMetaProperties(0);
     for (int s=0;s<subs.length;s++) {
       // create Relationship.XRef where applicable
       MetaProperty sub = subs[s]; 
@@ -169,9 +169,10 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(new DelEntity(entity, manager));
     
     // add an "edit in EditView"
-    if (manager.getInstances(EditView.class, entity.getGedcom()).length==0) {
+    EditView[] edits = EditView.getInstances(entity.getGedcom());
+    if (edits.length==0) {
       result.add(ActionDelegate.NOOP);
-      result.add(new OpenForEdit(entity, manager));
+      result.add(new OpenForEdit(new Context(entity), manager));
     }
     // done
     return result;

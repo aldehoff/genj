@@ -107,7 +107,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
     PropertyChange change = (PropertyChange)entity.getProperty(CHAN);
     if (change==null) {
       // is allowed?
-      MetaProperty ment = MetaProperty.get(entity);
+      MetaProperty ment = entity.getMetaProperty();
       if (!ment.allows(CHAN))
         return;
       // create instance

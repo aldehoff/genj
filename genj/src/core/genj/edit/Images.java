@@ -35,13 +35,6 @@ final public class Images {
     imgStickOn,
     imgStickOff,
     imgReturn,
-    imgUp,
-    imgDown,
-    imgAdd,
-    
-    imgCut,
-    imgCopy,
-    imgPaste,
     
     imgDelete,
     imgNew;
@@ -56,13 +49,6 @@ final public class Images {
     imgStickOn   = new ImageIcon(this,"images/StickOn.gif");
     imgStickOff  = new ImageIcon(this,"images/StickOff.gif");
     imgReturn    = new ImageIcon(this,"images/Return.gif");
-    imgUp        = new ImageIcon(this,"images/Up.gif");
-    imgDown      = new ImageIcon(this,"images/Down.gif");
-    imgAdd       = new ImageIcon(this,"images/Add.gif");
-
-    imgCut       = new ImageIcon(this,"images/Cut.gif");
-    imgCopy      = new ImageIcon(this,"images/Copy.gif");
-    imgPaste     = new ImageIcon(this,"images/Paste.gif");
     
     imgDelete    = new ImageIcon(this,"images/entity/Delete.gif");
     imgNew       = new ImageIcon(this,"images/entity/New.gif");

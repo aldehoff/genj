@@ -130,15 +130,16 @@ public class TagPath {
 
   /**
    * Constructor for TagPath
-   * @param path path as colon separated string value a:b:c
+   * @param path path as colon separated string value c:b:a
    * @exception IllegalArgumentException in case format isn't o.k.
+   * @return the path [a:b:c]
    */
   public TagPath(Stack path) throws IllegalArgumentException {
     // grab stack elements
     len = path.size();
     tags = new String[len];
-    for (int i=0; i<len; i++) {
-      tags[i] = path.get(i).toString();
+    for (int i=0;i<len;i++) {
+      tags[i] = path.pop().toString();
       hash += tags[i].hashCode();
     }
     // done

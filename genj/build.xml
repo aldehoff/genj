@@ -4,6 +4,7 @@
 
   <path id="project.class.path">
     <pathelement path ="${dir.build}/version"/>
+    <pathelement path ="${dir.build}/classes/contrib"/>
     <pathelement path ="${dir.build}/classes/core"/>
     <fileset dir=".">
         <include name="**/*.jar"/>
@@ -16,6 +17,7 @@
     <pathelement path ="./language/ja"/>
     <pathelement path ="./language/hu"/>
     <pathelement path ="./language/ru"/>
+    <pathelement path ="./src/contrib"/>
     <pathelement path ="./src/core"/>
     <pathelement path ="./src/report"/>
     <pathelement path ="./images"/>
@@ -35,6 +37,20 @@
     <property name="dir.lib" value="${dir.build}/lib"/>
     <delete dir="${dir.lib}"/>
     <mkdir dir="${dir.lib}"/>
+  </target>
+
+  <!--
+   Contrib Compilation
+   -->
+  <target name="compile.contrib" depends="init">
+    <echo>**********************************************</echo>
+    <echo>*** Note: JDK 1.4 required for compilation ***</echo>
+    <echo>**********************************************</echo>
+    <mkdir dir="${dir.build}/classes/contrib"/>
+    <javac srcdir="src/contrib" destdir="${dir.build}/classes/contrib"
+           debug="${javac.debug}" optimize="off" deprecation="on" target="1.3">
+      <classpath refid="project.class.path"/>
+    </javac>
   </target>
 
   <!--
@@ -65,7 +81,7 @@
   <!--
    Compilation
    -->
-  <target name="compile" depends="compile.core, compile.report">
+  <target name="compile" depends="compile.contrib, compile.core, compile.report">
   </target>
 
   <!--

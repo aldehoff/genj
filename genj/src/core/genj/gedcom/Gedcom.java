@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.61 $ $Author: nmeier $ $Date: 2004-06-01 08:45:29 $
+ * $Revision: 1.62 $ $Author: nmeier $ $Date: 2004-06-22 16:57:57 $
  */
 package genj.gedcom;
 
@@ -152,6 +152,7 @@ public class Gedcom {
     this.origin = origin;
     // create Adam
     if (createAdam) {
+      startTransaction();
       try {
         Indi adam = (Indi) createEntity(Gedcom.INDI);
         adam.addDefaultProperties();
@@ -159,6 +160,7 @@ public class Gedcom {
         adam.setSex(PropertySex.MALE);
       } catch (GedcomException e) {
       }
+      endTransaction();
     }
     // Done
   }

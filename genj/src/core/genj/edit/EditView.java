@@ -32,7 +32,10 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 
 import javax.swing.JPanel;
@@ -42,6 +45,9 @@ import javax.swing.JToolBar;
  * Component for editing genealogic entity properties
  */
 public class EditView extends JPanel implements ToolBarSupport, ContextListener {
+  
+  /** instances */
+  private static List instances = new LinkedList();
 
   /** the gedcom we're looking at */
   private Gedcom  gedcom;
@@ -92,8 +98,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
    */
   public void addNotify() {
     
-    // 20030505 in a desktop pane removeNotify()
-    // and addNotify() can happen during z-reordering
+    // remember
+    instances.add(this);
     
     // Check if we can preset something to edit
     Context context;
@@ -113,29 +119,62 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
    */
   public void removeNotify() {
     
-    // remember
+    // remember context
     Entity e = editor.getContext().getEntity();
     registry.put("last", e!=null?e.getId():"");
 
+    // forget this instance
+    instances.remove(this);
+    
     // Continue
     super.removeNotify();
 
     // Done
+  }
+  
+  /**
+   * Return all open instances for given gedcom
+   */
+  /*package*/ static EditView[] getInstances(Gedcom gedcom) {
+    List result = new ArrayList();
+    Iterator it = instances.iterator();
+    while (it.hasNext()) {
+      EditView edit = (EditView)it.next();
+      if (edit.gedcom==gedcom)
+        result.add(edit);
+    }
+    return (EditView[])result.toArray(new EditView[result.size()]);
   }
 
   /**
    * Context listener callback
    */
   public void setContext(Context context) {
-    // not if we're sticky
-    if (isSticky) 
+    
+    // source is editor and not ours?
+    Object source = context.getSource();
+    if (source instanceof Editor && source!=editor)
       return;
+    
+    // don't follow context if one EditView is looking at this already
+    EditView[] views = getInstances(context.getGedcom());
+    for (int i = 0; i < views.length; i++) {
+      if (views[i].editor.getContext().equals(context))
+        return;
+    }
+    
+    // not if we're sticky
+    if (source!=editor&&isSticky) 
+      return;
+      
     // get current
     Context current = editor.getContext();
     if (current.equals(context))
       return;
+      
     // remember current 
     back.push(current);
+    
     // tell editor
     editor.setContext(context);
     // done
@@ -154,11 +193,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       .setInsets(0)
       .setMinimumSize(new Dimension(0,0))
       .setContainer(bar);
-
-    // ask editor
-    Iterator it = editor.getActions().iterator();
-    while (it.hasNext())
-      bh.create((ActionDelegate)it.next());
 
     // return in history
     bh.setEnabled(true).create(back);
@@ -223,9 +257,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       while (!stack.isEmpty()) {
         Context context = (Context)stack.pop();
         if (context.isValid()) {
-          manager.setContext(context);      
-          // current was put on in error
-          if (!stack.isEmpty()) stack.pop();
+          editor.setContext(context);      
           return;
         }
       }

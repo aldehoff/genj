@@ -19,83 +19,74 @@
  */
 package genj.util.swing;
 
-import genj.util.GridBagHelper;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 
-import javax.swing.Box;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
  * A component for choosing a font */
 public class FontChooser extends JPanel {
+
+  /** list of all font families */
+  private static String[] families = null;
   
   /** combo for fonts */
-  private JComboBox comboFonts;
+  private JComboBox fonts;
   
   /** text for size */
-  private JTextField textSize;
+  private JTextField size;
   
-  /** list of all font families */
-  private static String[] fontFamilies = null;
-
   /**
    * Constructor   */
   public FontChooser() {
+    
     // sub-components
-    comboFonts = new JComboBox(getFontFamilies());
-    textSize = new JTextField(2);
-    textSize.setText("12");
+    fonts = new JComboBox(getAllFonts());
+    fonts.setEditable(false);
+    fonts.setRenderer(new Renderer());
+    size = new JTextField(3);
+    
     //layout
     setAlignmentX(0F);
-    GridBagHelper gh = new GridBagHelper(this);
-    gh.add(comboFonts      , 0, 0, 1, 1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-    gh.add(textSize        , 1, 0);
-    gh.add(Box.createGlue(), 2, 0, 1, 1, gh.GROW_BOTH);
+    
+    setLayout(new BorderLayout());
+    add(fonts, BorderLayout.CENTER);
+    add(size , BorderLayout.EAST  );
+    
     // done
   }
   
   /**
-   * @see javax.swing.JComponent#getMaximumSize()
+   * Patched max size
    */
   public Dimension getMaximumSize() {
-    return new Dimension(Integer.MAX_VALUE, comboFonts.getPreferredSize().height);
+    Dimension result = super.getPreferredSize();
+    result.width = Integer.MAX_VALUE;
+    return result;
   }
-  
-  /**
-   * Helper to get fontlist
-   */
-  private static String[] getFontFamilies() {
-    if (fontFamilies==null) 
-      fontFamilies = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-    return fontFamilies;
-  }
-  
+
   /**
    * Accessor - selected font   */
   public void setSelectedFont(Font font) {
-    
-    // look for font
-    for (int f=0; f<fontFamilies.length; f++) {
-      if (fontFamilies[f].equals(font.getFamily())) {
-        comboFonts.setSelectedIndex(f);
-        break;
-      }
-    }
-    
-    // set size
-    textSize.setText(""+font.getSize());
-    
-    // done
+    fonts.setSelectedItem(font);
+    size.setText(""+font.getSize());
   }
   
   /**
    * Accessor - selected font   */
   public Font getSelectedFont() {
-    return new Font(comboFonts.getSelectedItem().toString(), 0, getSelectedFontSize());
+    Font font = (Font)fonts.getSelectedItem();
+    if (font==null)
+      font = getFont();
+    return font.deriveFont((float)getSelectedFontSize());
   }
   
   /**
@@ -104,33 +95,142 @@ public class FontChooser extends JPanel {
   private int getSelectedFontSize() {
     int result = 2;
     try {
-      result = Integer.parseInt(textSize.getText());
+      result = Integer.parseInt(size.getText());
     } catch (Throwable t) {
     }
     return Math.max(2,result);
   }
   
+  /**
+   * Calculate all available fonts
+   */
+  private Font[] getAllFonts() {
+
+    // initialize families
+    if (families==null)
+      families = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+    
+    // loop
+    Font[] values = new Font[families.length];
+    for (int i = 0; i < values.length; i++) {
+      values[i] = new Font(families[i],0,12); 
+    }
+    
+    // done
+    return values;
+  }
+  
 //  /**
-//   * glue
+//   * Font list
 //   */
-//  private class Glue implements ListCellRenderer {
+//  private static class Model extends AbstractListModel implements ComboBoxModel{
 //    
-//    /** a label */
-//    private HeadlessLabel label = new HeadlessLabel();
+//    /** list of all font families */
+//    private static String[] families = null;
+//
+//    /** values */
+//    private Object[] values;
+//    
+//    /** selection */
+//    private int selection;
+//    
+//    /**
+//     * Constructor
+//     */
+//    private Model() {
+//      // grab families once
+//  System.out.println("1");
+//      if (families==null)
+//        families = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+//  System.out.println("/1");
+//      // copy families into values
+//      values = new Object[families.length];
+//      System.arraycopy(families, 0, values, 0, families.length);
+//      
+//      // test loop
+//      System.out.println("2");
+//      for (int i = 0; i < values.length; i++) {
+//        values[i] = new Font(values[i].toString(), 0, 12);
+//      }
+//      System.out.println("/2");
+//      // done
+//    }
+//    
+//    /**
+//     * Size
+//     */
+//    public int getSize() {
+//      return values.length;
+//    }
+//    
+//    /**
+//     * Element
+//     */
+//    public Object getElementAt(int index) {
+//      return values[index];
+//    }
+//    
+//    /**
+//     * Selection
+//     */
+//    public Font getSelectedFont(int size) {
+//      Object font = getSelectedItem();
+//      // none
+//      if (font==null)
+//        return null;
+//      // Font
+//      if (font instanceof Font)
+//        return ((Font)font).deriveFont((float)size);
+//      // FontFamily      
+//      return new Font(font.toString(), 0, size);
+//    }
+//    
+//    /**
+//     * Selection
+//     */
+//    public void setSelectedItem(Object set) {
+//      // translate to family
+//      if (set instanceof Font)
+//        set = ((Font)set).getFamily();
+//      // look for it
+//      synchronized (values) {
+//        for (int i = 0; i < values.length; i++) {
+//          Object font = values[i];
+//          // font or font family name in model?
+//          if ( (font instanceof Font&&((Font)font).getFamily().equals(set)) || font.equals(set))  {
+//            selection = i;
+//            return;
+//          }
+//        }
+//      }
+//      // done
+//    }
 //
 //    /**
-//     * @see javax.swing.ListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
-//     */
-//    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-//      if (value instanceof Font) {
-//        Font font = (Font)value;
-//        label.setFont(font.deriveFont((float)12));
-//        label.setText(font.getName());
-//      } else {
-//        label.setText("Foo");
-//      }
-//      return label;
+//     * Selection
+//     */    
+//    public Object getSelectedItem() {
+//      return selection<0 ? null : values[selection];
 //    }
-//  } //Glue
+//
+//  } // Model
+  
+  private static class Renderer extends DefaultListCellRenderer {
+    
+    /**
+     * @see javax.swing.ListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
+     */
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+      if (value instanceof Font) {
+        Font font = (Font)value;
+        super.getListCellRendererComponent(list, font.getFamily(), index, isSelected, cellHasFocus);
+        setFont(font);
+      } else {
+        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+      }
+      return this;
+    }
+    
+  } //Renderer
   
 } //FontChooser

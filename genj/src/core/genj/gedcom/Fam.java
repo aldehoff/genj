@@ -174,7 +174,7 @@ public class Fam extends Entity {
   /**
    * Sets the husband of this family
    */
-  /*package*/ void setHusband(Indi husband) throws GedcomException {
+  private Indi setHusband(Indi husband) throws GedcomException {
     
     // Remove old husband
     PropertyHusband ph = (PropertyHusband)getProperty(new TagPath("FAM:HUSB"),QUERY_VALID_TRUE);
@@ -183,7 +183,7 @@ public class Fam extends Entity {
       
     // done?
     if (husband==null)
-      return;
+      return null;
     
     // Add new husband
     ph = new PropertyHusband(husband.getId());
@@ -202,12 +202,13 @@ public class Fam extends Entity {
       husband.setSex(PropertySex.MALE);
 
     // done    
+    return husband;
   }
 
   /**
-   * Sets the family of the family
+   * Sets the wife of the family
    */
-  /*package*/ void setWife(Indi wife) throws GedcomException {
+  private Indi setWife(Indi wife) throws GedcomException {
 
     // Remove old wife
     PropertyWife pw = (PropertyWife)getProperty(new TagPath("FAM:WIFE"),QUERY_VALID_TRUE);
@@ -216,7 +217,7 @@ public class Fam extends Entity {
 
     // done?
     if (wife==null)
-      return;
+      return null;
     
     // Add new wife
     pw = new PropertyWife(wife.getId());
@@ -235,24 +236,47 @@ public class Fam extends Entity {
       wife.setSex(PropertySex.FEMALE);
 
     // Done
+    return wife;
   }
 
   /**
    * Sets one of the spouses
    */
   /*package*/ void setSpouse(Indi spouse) throws GedcomException {  
+    
     Indi husband = getHusband();
     Indi wife = getWife();
-    if (husband==null&&wife!=null) {
-      setHusband(spouse);
-      return;
+    
+    // won't do if husband and wife already known
+    if (husband!=null&&wife!=null)
+      throw new GedcomException("Family already has two spouses");
+
+    // check gender of spouse 
+    switch (spouse.getSex()) {
+      default:
+      case PropertySex.MALE:
+        // remember new husband
+        setHusband(spouse);
+        // keep old husband as wife if necessary
+        if (husband!=null)
+          wife = setWife(husband);
+        // make sure wife's gender is fine
+        if (wife!=null&&wife.getSex()!=PropertySex.FEMALE)
+          wife.setSex(PropertySex.FEMALE);
+        break;
+      case PropertySex.FEMALE:
+        // remember new wife
+        setWife(spouse);
+        // keep old wife as husband if necessary
+        if (wife!=null)
+          husband = setHusband(wife);
+        // make sure husband's gender is fine
+        if (husband!=null&&husband.getSex()!=PropertySex.MALE)
+          husband.setSex(PropertySex.MALE);
+        break;
     }
-    if (husband!=null&wife==null) {
-      setWife(spouse);
-      return;
-    }
-    if (spouse.getSex()==PropertySex.FEMALE) setWife(spouse);
-    else setHusband(spouse);
+    
+    // done
   }
   
   /**

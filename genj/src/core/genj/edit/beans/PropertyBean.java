@@ -92,6 +92,13 @@ public abstract class PropertyBean extends JPanel {
   }
   
   /**
+   * Property wrapped in bean
+   */
+  public Property getProperty() {
+    return property;
+  }
+  
+  /**
    * Listener 
    */
   public void addChangeListener(ChangeListener l) {

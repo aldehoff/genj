@@ -38,18 +38,18 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
+import genj.util.swing.ViewPortAdapter;
 import genj.util.swing.ViewPortOverview;
 import genj.view.ActionProvider;
 import genj.view.Context;
-import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -69,9 +69,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -79,7 +79,7 @@ import javax.swing.event.ChangeListener;
 /**
  * TreeView
  */
-public class TreeView extends JPanel implements ContextProvider, ContextListener, ToolBarSupport, ActionProvider, FilterSupport {
+public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, FilterSupport {
   
   /** an icon for bookmarking */
   private final static ImageIcon BOOKMARK_ICON = new ImageIcon(TreeView.class, "images/Bookmark.gif");      
@@ -96,9 +96,6 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   
   /** the manager */
   private ViewManager manager;
-
-  /** our split pane */
-  JSplitPane split;
 
   /** our content */
   private Content content;
@@ -207,8 +204,11 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       root = gedcm.getEntity(registry.get("root",(String)null));
     } catch (Exception e) {
     }
-    if (root==null)
-      root = manager.getContext(gedcm).getEntity();
+    if (root==null) {
+      Context context = manager.getContext(gedcm);
+      if (context.getEntity()!=null) 
+        root = context.getEntity();  
+    } 
     model.setRoot(root);
     
     try { 
@@ -231,17 +231,15 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     // setup child components
     contentRenderer = new ContentRenderer();
     content = new Content();
-    JScrollPane scroll = new JScrollPane(content);
+    JScrollPane scroll = new JScrollPane(new ViewPortAdapter(content));
     overview = new Overview(scroll);
+    overview.setVisible(registry.get("overview", false));
+    overview.setSize(registry.get("overview", new Dimension(64,64)));
     zoom = Math.max(0.1, Math.min(1.0, registry.get("zoom", 1.0F)));
     
-    split = new JSplitPane(model.isVertical() ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT, overview, scroll);
-    split.setOneTouchExpandable(true);
-    split.setDividerLocation(registry.get("overview", -1));
-    
     // setup layout
-    setLayout(new BorderLayout());
-    add(split, BorderLayout.CENTER);
+    add(overview);
+    add(scroll);
     
     // scroll to current
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -249,9 +247,6 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
         scrollToCurrent();
       }
     });
-    
-    // register for context change updated
-    manager.registerContextProvider(this, content);
     
     // done
   }
@@ -263,6 +258,8 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     // make sure our model is not connecting to gedcom model anymore
     model.setGedcom(null);
     // settings
+    registry.put("overview", overview.isVisible());
+    registry.put("overview", overview.getSize());
     registry.put("zoom", (float)zoom);
     registry.put("vertical", model.isVertical());
     registry.put("families", model.isFamilies());
@@ -277,9 +274,6 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     registry.put("antial"  , isAntialiasing );
     registry.put("font"    , contentFont);
     registry.put("adjust"  , isAdjustFonts);
-    // divider
-    registry.put("overview", split.getDividerLocation());
-
     // blueprints
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
       String tag = Gedcom.ENTITIES[t];
@@ -304,10 +298,33 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   }
   
   /**
+   * @see java.awt.Container#doLayout()
+   */
+  public void doLayout() {
+    // layout components
+    int 
+      w = getWidth(),
+      h = getHeight();
+    Component[] cs = getComponents();
+    for (int c=0; c<cs.length; c++) {
+      if (cs[c]==overview) continue;
+      cs[c].setBounds(0,0,w,h);
+    }
+    // done
+  }
+
+  /**
    * @see javax.swing.JComponent#getPreferredSize()
    */
   public Dimension getPreferredSize() {
     return new Dimension(480,480);
+  }
+
+  /**
+   * @see javax.swing.JComponent#isOptimizedDrawingEnabled()
+   */
+  public boolean isOptimizedDrawingEnabled() {
+    return !overview.isVisible();
   }
 
   /**
@@ -393,6 +410,17 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   }
 
   /**
+   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
+   */
+  public void setContext(Property property) {
+    // anything new?
+    Entity entity = property.getEntity();
+    if (entity==currentEntity) return;
+    // do it
+    setCurrent(entity);
+  }
+  
+  /**
    * Set current entity
    */
   /*package*/ void setCurrent(Entity entity) {
@@ -452,32 +480,6 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   
   
   /**
-   * callback - provide context for position
-   */
-  public Context getContextAt(Point pos) {
-    
-    Point p = view2model(pos);
-    Entity entity = model.getEntityAt(p.x, p.y);
-    Context result = new Context(model.getGedcom(), entity, null);
-    if (entity!=null)
-      result.addAction(new ActionBookmark(entity, true));
-    return result;
-  }
-
-  /**
-   * callback - context changed
-   */
-  public void setContext(Context context) {
-    // anything new?
-    Entity entity = context.getEntity();
-    if (entity==currentEntity) 
-      return;
-    // do it
-    setCurrent(entity);
-  }
-  
-  
-  /**
    * @see genj.view.ToolBarSupport#populate(JToolBar)
    */
   public void populate(JToolBar bar) {
@@ -493,7 +495,8 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       .setContainer(bar)
       .setResources(resources)
       .setFocusable(false);
-    bh.create(new ActionOverview());
+    bh.create(new ActionOverview())
+      .setSelected(overview.isVisible());
     
     // gap
     bar.addSeparator();
@@ -683,10 +686,10 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
      */
     protected void renderContent(Graphics g, double zoomx, double zoomy) {
 
-      // Render the background
-      Dimension size = getSize();
-      g.setColor(Color.white);
-      g.fillRect(0,0,size.width,size.height);
+      // fill backgound
+      g.setColor(Color.WHITE);
+      Rectangle r = g.getClipBounds();
+      g.fillRect(r.x,r.y,r.width,r.height);
 
       // go 2d
       UnitGraphics gw = new UnitGraphics(g,DPMM.getX()*zoomx*zoom, DPMM.getY()*zoomy*zoom);
@@ -695,7 +698,6 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       contentRenderer.cIndiShape     = Color.black;
       contentRenderer.cFamShape      = Color.black;
       contentRenderer.cArcs          = Color.lightGray;
-      //contentRenderer.cSelectedShape = Color.white;
       contentRenderer.selection      = null;
       contentRenderer.indiRenderer   = null;
       contentRenderer.famRenderer    = null;
@@ -724,19 +726,41 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   
   /**
    * The content we use for drawing
-   * 20040531
    */
-  private class Content extends JPanel implements ModelListener, MouseListener {
+  private class Content extends JComponent implements ContextProvider, ModelListener, MouseListener {
 
     /**
      * Constructor
      */
     private Content() {
+      // listen to mouse events
       addMouseListener(this);
-      // listen
+      // listen to model events
       model.addListener(this);
+      // provider popups
+      manager.registerContextProvider(this, this);
     }
     
+    /**
+     * @see genj.view.ContextPopupSupport#getContextAt(Point)
+     */
+    public Context getContextAt(Point pos) {
+    
+      Point p = view2model(pos);
+      Entity e = model.getEntityAt(p.x, p.y);
+
+      Context result;
+    
+      if (e==null) 
+        result = new Context(model.getGedcom());
+      else {
+        result = new Context(e);
+        result.addAction(new ActionBookmark(e, true));
+      }
+
+      return result;
+    }
+
     /**
      * @see genj.tree.ModelListener#structureChanged(Model)
      */
@@ -776,17 +800,13 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
      * @see javax.swing.JComponent#paintComponent(Graphics)
      */
     public void paint(Graphics g) {
-
-      // Render the background
-      Dimension size = getSize();
+      // fill backgound
       g.setColor(colors.getColor("content"));
- 
-      g.fillRect(0,0,size.width,size.height);
-      
+      Rectangle r = g.getClipBounds();
+      g.fillRect(r.x,r.y,r.width,r.height);
       // resolve our Graphics
       UnitGraphics gw = new UnitGraphics(g,DPMM.getX()*zoom, DPMM.getY()*zoom);
       gw.setAntialiasing(isAntialiasing);
-      
       // init renderer
       contentRenderer.cIndiShape     = colors.getColor("indis");
       contentRenderer.cFamShape      = colors.getColor("fams");
@@ -795,7 +815,6 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       contentRenderer.selection      = currentEntity;
       contentRenderer.indiRenderer   = getEntityRenderer(Gedcom.INDI);
       contentRenderer.famRenderer    = getEntityRenderer(Gedcom.FAM );
-
       // let the renderer do its work
       contentRenderer.render(gw, model);
       // done
@@ -873,26 +892,18 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
    * Action for opening overview
    */
   private class ActionOverview extends ActionDelegate {
-
-    int old = -1;
-
     /**
      * Constructor
      */
     private ActionOverview() {
       super.setImage(Images.imgOverview);
+      super.setToggle(Images.imgOverview);
     }
     /**
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      if (split.getDividerLocation()<=1) {
-        if (old<0) old = getWidth()/4;
-        split.setDividerLocation(old);
-      } else {
-        old = split.getDividerLocation();
-        split.setDividerLocation(0);
-      }
+      overview.setVisible(!overview.isVisible());
     }
   } //ActionOverview    
 
@@ -934,7 +945,6 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
      */
     protected void execute() {
       model.setVertical(!model.isVertical());
-      split.setOrientation(model.isVertical() ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT);
       scrollToCurrent();
     }
   } //ActionOrientation

@@ -145,6 +145,9 @@ public abstract class Relationship {
       if (type==PropertyHusband.class) return false;
       if (type==PropertyWife.class) return false;
       if (type==PropertyChild.class) return false;
+      // 20040619 discouraging OBJE reference'd entities
+      // and not OBJE since it's discouraged
+      if (type==PropertyMedia.class) return false;
       // o.k.
       return true;
     }
@@ -215,9 +218,22 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#apply(Entity)
      */
     public Entity apply(Entity entity) throws GedcomException {
+      
       assume(entity, Indi.class);
-      Fam fam = parent.getFam(true);
+  
+      // lookup family for child    
+      Fam fam = parent.getFam(0);
+      if (fam==null) {
+        fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
+        fam.setSpouse(parent);
+        
+        // 20040619 adding missing spouse automatically now
+        fam.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
+      }
+      
+      // add child
       fam.addChild((Indi)entity);
+      
       // focus stays with parent
       return parent;
     }
@@ -290,11 +306,22 @@ public abstract class Relationship {
      */
     public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
-      Fam fam = child.getFamc(true);
-      Indi indi = (Indi)entity;
-      fam.setSpouse(indi);
-      // focus stays with child
-      return child;
+      
+      // get Family
+      Fam fam = child.getFamc();
+      if (fam==null) {
+        fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
+        // 20040619 adding missing spouse automatically now
+        fam.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
+        fam.addChild(child);
+      }
+      
+      // set parent
+      Indi parent = (Indi)entity;
+      fam.setSpouse(parent);
+      
+      // focus goes to new parent
+      return parent;
     }
     
   } // ParentOf
@@ -328,14 +355,17 @@ public abstract class Relationship {
      */
     public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
-      // look for fam already there
-      Fam fam = spouse.getFam(true);
-      if (fam.getNoOfSpouses()>=2) {
-        // .. create new if necessary 
-        fam = spouse.addFam();
+      
+      // lookup family for spouse
+      Fam fam = spouse.getFam(0);
+      if (fam==null||fam.getNoOfSpouses()>=2) {
+        fam = (Fam)getGedcom().createEntity(Gedcom.FAM).addDefaultProperties();
+        fam.setSpouse(spouse);
       }
+
       // set its spouse
       fam.setSpouse((Indi)entity);
+      
       // focus stays with spouse
       return spouse;
     }
@@ -369,9 +399,22 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#apply(Entity)
      */
     public Entity apply(Entity entity) throws GedcomException {
+      
       assume(entity, Indi.class);
-      Fam fam = sibling.getFamc(true);
+
+      // get Family where sibling is child
+      Fam fam = sibling.getFamc();
+      if (fam==null) {
+        fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
+        // 20040619 adding missing spouse automatically now
+        fam.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
+        fam.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
+        fam.addChild(sibling);
+      }
+
+      // add new sibling      
       fam.addChild((Indi)entity);
+      
       // focus stays with sibling
       return sibling;
     }
