@@ -32,7 +32,13 @@ gj.layout.hierarchical
  [ ] crossing reduction
  [ ] horizontal spacing
  
-gj.layout.circular *new*
+gj.layout.circular
+
+ [ ] optimal radius
+ [ ] placement
+ [ ] isSingleCircle
 
 gj.layout.orthogonal *new*
+
+gj.layout.spring *new*
 
