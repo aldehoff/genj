@@ -30,6 +30,7 @@ Future
 
 1.9 - May xx 2002
 
+  N View-Menu in ControlCenter to open up views
   O Improved windows placement 
     + should never be places outside of the visible screen ("lost overview")
       (see Toolkit.getDefaultToolkit().getScreenSize() : Dimension)
