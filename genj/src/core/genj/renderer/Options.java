@@ -62,10 +62,13 @@ public class Options implements OptionProvider {
       Registry root = registry.getRoot();
       if (root.get("views.blueprints.INDI", (String)null)!=null) 
         registry = new Registry(root, "views");
-      root.remove("views.blueprints.");
       
       // continue
       BlueprintManager.getInstance().read(registry);
+      
+      // continue old leftovers
+      root.remove("views.blueprints.");
+      root.remove("blueprints.");
     }
 
     public void persist(Registry registry) {
