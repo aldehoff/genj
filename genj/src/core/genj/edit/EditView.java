@@ -32,6 +32,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.MenuHelper;
+import genj.util.swing.TreeWidget;
 import genj.view.ContextPopupSupport;
 import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
@@ -60,8 +61,6 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeCellRenderer;
@@ -698,7 +697,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /**
    * Class for rendering tree cell nodes
    */
-  private class PropertyTree extends JTree implements TreeCellRenderer, TreeSelectionListener, TreeModelListener {
+  private class PropertyTree extends TreeWidget implements TreeCellRenderer, TreeSelectionListener {
     
     /** a label for rendering */
     private HeadlessLabel label = new HeadlessLabel();
@@ -707,23 +706,13 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
      * Constructor
      */
     private PropertyTree() {
-      super(new PropertyTreeModel(gedcom));
+      setModel(new PropertyTreeModel(gedcom));
       label.setOpaque(true);
       ToolTipManager.sharedInstance().registerComponent(this);
       setCellRenderer(this);
       getSelectionModel().addTreeSelectionListener(this);
-      getModel().addTreeModelListener(this);
     }
     
-    /**
-     * @see javax.swing.JComponent#removeNotify()
-     */
-    public void removeNotify() {
-      getModel().removeTreeModelListener(this);
-      ((PropertyTreeModel)getModel()).destructor();
-      super.removeNotify();
-    }
-
     /**
      * Access to the underlying model
      */
@@ -877,32 +866,6 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       actionButtonDown  .setEnabled(prop.getNextSibling()    !=null);
   
       // Done
-    }
-    
-    /**
-     * @see javax.swing.event.TreeModelListener#treeNodesChanged(TreeModelEvent)
-     */
-    public void treeNodesChanged(TreeModelEvent e) {
-      treeStructureChanged(e);
-    }
-    /**
-     * @see javax.swing.event.TreeModelListener#treeNodesInserted(TreeModelEvent)
-     */
-    public void treeNodesInserted(TreeModelEvent e) {
-      treeStructureChanged(e);
-    }
-    /**
-     * @see javax.swing.event.TreeModelListener#treeNodesRemoved(TreeModelEvent)
-     */
-    public void treeNodesRemoved(TreeModelEvent e) {
-      treeStructureChanged(e);
-    }
-    /**
-     * @see javax.swing.event.TreeModelListener#treeStructureChanged(TreeModelEvent)
-     */
-    public void treeStructureChanged(TreeModelEvent e) {
-      // show all rows 
-      expandRows();
     }
     
   } //PropertyTree  

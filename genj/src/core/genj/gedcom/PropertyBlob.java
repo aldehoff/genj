@@ -251,7 +251,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
 
     /** set to next */
     public boolean next() {
-      if (offset<base64.length()) return false;
+      if (offset>=base64.length()) return false;
       offset+=LINE;
       return true;
     }

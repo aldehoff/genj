@@ -46,7 +46,7 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
   private List listeners = new ArrayList();
   
   /** root of tree */
-  private Property root = null;
+  private Entity root = null;
 
   /** history stack */
   private Stack history = new Stack();
@@ -59,15 +59,7 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
    */
   public PropertyTreeModel(Gedcom gedcom) {
     this.gedcom=gedcom;
-    gedcom.addListener(this);
   }          
-
-  /**
-   * Destructor
-   */
-  /*package*/ void destructor() {
-    gedcom.removeListener(this);
-  }
   
   /**
    * Set the root
@@ -75,7 +67,7 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
   public void setEntity(Entity entity) {
     // remember history
     if (root!=null) {
-      history.push(root.getEntity());
+      history.push(root);
       if (history.size()>16) history.removeElementAt(0);
     }
     // change
@@ -100,6 +92,9 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
    * Adds a listener to this model
    */
   public void addTreeModelListener(TreeModelListener l) {
+    // first?
+    if (listeners.isEmpty()) gedcom.addListener(this);
+    // add
     listeners.add(l);
   }          
   
@@ -107,7 +102,10 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
    * Removes a Listener from this model
    */
   public void removeTreeModelListener(TreeModelListener l) {
+    // remove
     listeners.remove(l);
+    // last?
+    if (listeners.isEmpty()) gedcom.removeListener(this);
   }          
   
   /**

@@ -274,7 +274,7 @@ public class ControlCenter extends JPanel {
         frame =
           App.getInstance().createFrame(
             App.resources.getString("cc.title.about"),
-            null,
+            Gedcom.getImage(),
             "about",
             null);
         frame.getContentPane().add(new AboutWidget(frame));
