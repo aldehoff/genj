@@ -475,7 +475,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       );
   
       // .. OK or Cancel ?
-      if (option != JOptionPane.OK_OPTION) return;
+      if (option != JOptionPane.OK_OPTION) {
+        startEdit(false);
+        return;
+      }
   
       // .. Calculate chosen properties
       Property[] props = choose.getResultingProperties();
