@@ -81,7 +81,7 @@ public class ButtonHelper {
       result.setMargin(insets);
     
     result.setBorderPainted(isBorder);
-    result.setFocusable(isFocusable);
+    result.setRequestFocusEnabled(isFocusable); // This should be setFocusable which comes with JDK1.4
     result.setEnabled(isEnabled);
 
     if (action!=null)
