@@ -51,7 +51,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -387,51 +386,6 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   }
   
   /**
-   * Fill the action-menu
-   */
-  private class ActionMenu extends ActionDelegate {
-    /**
-     * Constructor
-     */
-    private ActionMenu() {
-      setText(resources.getString("action"));
-    }
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-      
-      // prepare menu for actions
-      JMenu menu = (JMenu)target;
-      menu.removeAll();
-      MenuHelper mh = new MenuHelper().setTarget(EditView.this).pushMenu(menu);
-      
-      // check selection
-      Property[] selection = getSelection();
-      if (selection.length==1) {
-        ViewManager.getInstance().fillContextMenu(mh, gedcom, selection[0]);
-      } else {
-        ViewManager.getInstance().fillContextMenu(mh, gedcom, getCurrentEntity());
-      }
-      
-      // done
-    }
-
-  } //FillActionMenu
-//  /**
-//   * Updates the menu
-//   */
-//  private void updateMenu() {
-//    menuActions.removeAll();
-//    MenuHelper mh = new MenuHelper();
-//    mh.setTarget(this);
-//    mh.pushMenu(menuActions);
-//    ViewManager.getInstance().fillContextMenu(mh, gedcom, getCurrentEntity());
-//    menuActions.revalidate();
-//    menuActions.repaint();
-//  }
-
-  /**
    * Prepare a proxy for editing a property
    */
   private void startEdit(boolean keepSimple) {
@@ -527,6 +481,39 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     return result;    
   }
 
+  /**
+   * Fill the action-menu
+   */
+  private class ActionMenu extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionMenu() {
+      setText(resources.getString("action"));
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      
+      // prepare menu for actions
+      JMenu menu = (JMenu)target;
+      menu.removeAll();
+      MenuHelper mh = new MenuHelper().setTarget(EditView.this).pushMenu(menu);
+      
+      // check selection
+      Property[] selection = getSelection();
+      if (selection.length==1) {
+        ViewManager.getInstance().fillContextMenu(mh, gedcom, selection[0]);
+      } else {
+        ViewManager.getInstance().fillContextMenu(mh, gedcom, getCurrentEntity());
+      }
+      
+      // done
+    }
+
+  } //ActionMenu
+  
   /**
    * Action - toggle
    */
