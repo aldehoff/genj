@@ -293,13 +293,14 @@ public class ControlCenter extends JPanel {
     }
     /** run */
     protected void execute() {
+      if (windowManager.show("about"))
+        return;
       windowManager.openFrame(
         "about",
         resources.getString("cc.menu.about"),
         Gedcom.getImage(),
         new AboutWidget(viewManager),
-        null, null,
-        null
+        resources.getString("cc.menu.close")
       );
       // done      
     }
@@ -323,8 +324,7 @@ public class ControlCenter extends JPanel {
         resources.getString("cc.menu.help"),
         Images.imgHelp,
         new HelpWidget(),
-        null, null,
-        null
+        resources.getString("cc.menu.close")
       );
       // done
     }

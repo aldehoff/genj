@@ -24,6 +24,7 @@ import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.TextFieldWidget;
 
+import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -32,6 +33,7 @@ import java.awt.Rectangle;
 
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -43,6 +45,29 @@ import javax.swing.SwingConstants;
  * Abstract base type for WindowManagers
  */
 public abstract class AbstractWindowManager implements WindowManager {
+
+  /**
+   * @see genj.window.WindowManager#openFrame(java.lang.String, java.lang.String, javax.swing.ImageIcon, javax.swing.JComponent, java.lang.String)
+   */
+  public void openFrame(final String key, String title, ImageIcon image, JComponent content, String option) {
+    // key is necessary
+    if (key==null) throw new IllegalArgumentException("key==null");
+    // create option
+    JPanel south = new JPanel();
+    new ButtonHelper().setContainer(south).create(
+      new ActionDelegate() {
+        protected void execute() {
+          close(key);
+        }
+      }.setText(option)
+    );
+    // create new content with one option
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.add(BorderLayout.CENTER, content);
+    panel.add(BorderLayout.SOUTH , south  );
+    // delegate
+    openFrame(key, title, image, panel, null, null, null);
+  }
 
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String[], javax.swing.JComponent)

@@ -65,6 +65,17 @@ public interface WindowManager {
   public void openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose);
 
   /**
+   * Opens a frame with one close button
+   * @param key a unique key 
+   * @param title text for titlebar
+   * @param image image for titlebar
+   * @param content component to be shown in frame
+   * @param menu menubar to be shown in frame
+   * @param option a single option to close the frame
+   */
+  public void openFrame(String key, String title, ImageIcon image, JComponent content, String option);
+
+  /**
    * Opens a dialog containing a custom component
    * @param key a unique key 
    * @param title text for titlebar
