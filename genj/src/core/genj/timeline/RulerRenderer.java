@@ -52,9 +52,9 @@ public class RulerRenderer extends ContentRenderer {
     FontMetrics fm = g.getFontMetrics();
     Dimension d = getDimension(model, fm);
     double
-      from = Math.ceil(model.min),
-      to   = Math.floor(model.max),
-      cond = Math.max(1, pixels2cm(fm.stringWidth(" 0000 "))/cmPyear);
+      from  = Math.ceil(model.min),
+      to    = Math.floor(model.max),
+      width = pixels2cm(fm.stringWidth(" 0000 "))/cmPyear;
 
     Clip clip = new Clip(g, fm, model);
     // render background
@@ -62,33 +62,41 @@ public class RulerRenderer extends ContentRenderer {
     g.fillRect(0,0,d.width,d.height);
 
     // render first year and last
-    from += renderYear(g, model, d, fm, from, 0.0D);
-    to -= renderYear(g, model, d, fm, to  , 1.0D);
+    renderYear(g, model, d, fm, from, 0.0D);
+    renderYear(g, model, d, fm, to  , 1.0D);
+    
+    from += width;
+    to += -width;
     
     // recurse binary
-    renderSpan(g, model, d, fm, from, to, cond, clip);
+    renderSpan(g, model, d, fm, from, to, width, clip);
   }
   
   /**
    * Renders ticks recursively
    */
-  private void renderSpan(Graphics g, Model model, Dimension d, FontMetrics fm, double from, double to, double cond, Clip clip) {
+  private void renderSpan(Graphics g, Model model, Dimension d, FontMetrics fm, double from, double to, double width, Clip clip) {
 
-    // condition met?
-    if (to-from<cond) return;
-    
+    // condition met (ran out of space)?
+    if (to-from<width||to-from<1) return;
+
     // clipp'd out?
     if (to<clip.minYear||from>clip.maxYear) return;
     
     // calculate center year    
     double year = Math.rint((from+to)/2);
-    
+
+    // still nough' space?
+    if (year-from<width/2||to-year<width/2) {
+      return;
+    }
+
     // render
-    double gone = renderYear(g, model, d, fm, year, 0.5D);
+    renderYear(g, model, d, fm, year, 0.5D);
     
     // recurse into
-    renderSpan(g, model, d, fm, year+gone/2, to         , cond, clip);
-    renderSpan(g, model, d, fm, from       , year-gone/2, cond, clip);
+    renderSpan(g, model, d, fm, year+width/2, to         , width, clip);
+    renderSpan(g, model, d, fm, from       , year-width/2, width, clip);
     
     // done
   }
@@ -96,7 +104,7 @@ public class RulerRenderer extends ContentRenderer {
   /**
    * Renders one year
    */
-  private double renderYear(Graphics g, Model model, Dimension d, FontMetrics fm, double year, double align) {
+  private void renderYear(Graphics g, Model model, Dimension d, FontMetrics fm, double year, double align) {
     // what's the x for it
     int x = (int)(cm2pixels((year-model.min)*cmPyear)-align);
     // draw a vertical line
@@ -109,7 +117,6 @@ public class RulerRenderer extends ContentRenderer {
     int fd = fm.getDescent();
     g.drawString(s, x - (int)(align*fw), d.height-fd);
     // done
-    return pixels2cm(fw)/cmPyear;
   }
 
 } //RulerRenderer
