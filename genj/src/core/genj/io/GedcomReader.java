@@ -548,7 +548,9 @@ public class GedcomReader implements Trackable {
       prop = child.create(value);
       
       // and add to prop
-      of.addProperty(prop);
+      // 20040513 since properties are placed in order by default
+      // we pass false here - on load we're accepting what's incoming
+      of.addProperty(prop, false);
   
       // a reference ? Remember !
       if (prop instanceof PropertyXRef)

@@ -19,7 +19,6 @@
  */
 package genj.search;
 
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
@@ -28,6 +27,7 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.GridBagHelper;
@@ -730,8 +730,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     /**
      * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
      */
-    public void handleChange(Change change) {
-      if (!change.getChanges(Change.PDEL).isEmpty())
+    public void handleChange(Transaction tx) {
+      if (!tx.getChanges(tx.PDEL).isEmpty())
         clear();
     }
     

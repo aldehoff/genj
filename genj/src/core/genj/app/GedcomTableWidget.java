@@ -19,9 +19,9 @@
  */
 package genj.app;
 
-import genj.gedcom.Change;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.Transaction;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.SortableTableHeader;
@@ -254,7 +254,7 @@ import javax.swing.table.TableColumnModel;
     /**
      * @see genj.gedcom.GedcomListener#handleChange(Change)
      */
-    public void handleChange(Change change) {
+    public void handleChange(Transaction change) {
       int i = getRowFor(change.getGedcom());
       if (i>=0) fireTableRowsUpdated(i,i);
     }

@@ -19,13 +19,13 @@
  */
 package genj.nav;
 
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
+import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
@@ -155,8 +155,8 @@ public class NavigatorView extends JPanel implements ContextSupport, GedcomListe
    * update from Gedcom
    * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
    */
-  public void handleChange(Change change) {
-    if (change.getChanges(change.EDEL).contains(current)) setCurrentEntity(null);
+  public void handleChange(Transaction tx) {
+    if (tx.getChanges(tx.EDEL).contains(current)) setCurrentEntity(null);
     else setCurrentEntity(current);
   }
   

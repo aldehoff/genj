@@ -19,13 +19,13 @@
  */
 package genj.tree;
 
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.Transaction;
 import gj.layout.LayoutException;
 import gj.layout.tree.TreeLayout;
 import gj.model.Node;
@@ -411,9 +411,9 @@ import java.util.Set;
   /**
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
-  public void handleChange(Change change) {
+  public void handleChange(Transaction tx) {
     // was any entity deleted?
-    Set deleted = change.getChanges(change.EDEL);
+    Set deleted = tx.getChanges(tx.EDEL);
     if (deleted.size()>0) {
       // root has to change?
       if (deleted.contains(root)) 
@@ -432,7 +432,7 @@ import java.util.Set;
       return;
     }
     // was a relationship property deleted, added or changed?
-    for (Iterator pmods=change.getChanges(change.PMOD).iterator();pmods.hasNext();) {
+    for (Iterator pmods=tx.getChanges(tx.PMOD).iterator();pmods.hasNext();) {
       if (pmods.next() instanceof PropertyXRef) {
         update();
         return;
@@ -440,7 +440,7 @@ import java.util.Set;
     }
     // was an individual or family created and we're without root
     if (root==null) {
-      for (Iterator eadds=change.getChanges(change.EADD).iterator();eadds.hasNext();) {
+      for (Iterator eadds=tx.getChanges(tx.EADD).iterator();eadds.hasNext();) {
         Entity e = (Entity)eadds.next();
         if (e instanceof Fam || e instanceof Indi) {
           setRoot(e);
@@ -449,7 +449,7 @@ import java.util.Set;
       }
     }
     // was a property changed that we should notify about?
-    Set emods = change.getChanges(change.EMOD);
+    Set emods = tx.getChanges(tx.EMOD);
     if (!emods.isEmpty()) {
       ArrayList nodes = new ArrayList(emods.size());
       for (Iterator es=emods.iterator();es.hasNext();) {

@@ -19,7 +19,6 @@
  */
 package genj.edit;
 
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
@@ -28,6 +27,7 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
+import genj.gedcom.Transaction;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.TreeWidget;
@@ -414,7 +414,7 @@ public class PropertyTreeWidget extends TreeWidget {
     /**
      * @see genj.gedcom.GedcomListener#handleChange(Change)
      */
-    public void handleChange(Change change) {
+    public void handleChange(Transaction tx) {
 
       // Could we be affected at all?
       if (root==null) 
@@ -424,10 +424,10 @@ public class PropertyTreeWidget extends TreeWidget {
       Entity entity = root.getEntity();
 
       // Entity deleted ?
-      if ( !change.getChanges(Change.EDEL).isEmpty() ) {
+      if ( !tx.getChanges(tx.EDEL).isEmpty() ) {
         // Loop through known entity ?
         boolean affected = false;
-        Iterator ents = change.getChanges(Change.EDEL).iterator();
+        Iterator ents = tx.getChanges(tx.EDEL).iterator();
         while (ents.hasNext()) {
           // the entity deleted
           Entity deleted = (Entity)ents.next();
@@ -449,11 +449,11 @@ public class PropertyTreeWidget extends TreeWidget {
       }
       
       // at least same entity modified?
-      if (!change.getChanges(change.EMOD).contains(entity))
+      if (!tx.getChanges(tx.EMOD).contains(entity))
         return;
 
       // Property added/removed ?
-      Iterator padds = change.getChanges(Change.PADD).iterator();
+      Iterator padds = tx.getChanges(tx.PADD).iterator();
       while (padds.hasNext()) {
         Property padd = (Property)padds.next();
         if (!padd.isSystem()) {
@@ -465,7 +465,7 @@ public class PropertyTreeWidget extends TreeWidget {
           return;
         }
       }
-      Iterator pdels = change.getChanges(Change.PDEL).iterator();
+      Iterator pdels = tx.getChanges(tx.PDEL).iterator();
       while (pdels.hasNext()) {
         Property pdel = (Property)pdels.next();
         if (!pdel.isSystem()) {
@@ -479,8 +479,8 @@ public class PropertyTreeWidget extends TreeWidget {
       }
 
       // A simple property modified?
-      if ( !change.getChanges(change.PMOD).isEmpty() ) {
-        firePropertiesChanged(change.getChanges(Change.PMOD));
+      if ( !tx.getChanges(tx.PMOD).isEmpty() ) {
+        firePropertiesChanged(tx.getChanges(tx.PMOD));
         return;
       }
 

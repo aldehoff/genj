@@ -48,7 +48,7 @@ public class Entity extends Property {
     this.tag  = tag;
     
     // note
-    gedcom.getTransaction().getChangeSet(Change.EADD).add(this);
+    gedcom.getTransaction().getChanges(Transaction.EADD).add(this);
 
     // done    
   }
@@ -59,7 +59,7 @@ public class Entity extends Property {
   /*package*/ void delNotify() {
     
     // note
-    gedcom.getTransaction().getChangeSet(Change.EDEL).add(this);
+    gedcom.getTransaction().getChanges(Transaction.EDEL).add(this);
 
     // continue
     super.delNotify();
@@ -82,8 +82,8 @@ public class Entity extends Property {
       
     // propagate change
     Transaction tx = gedcom.getTransaction();
-    tx.getChangeSet(status).add(prop);
-    tx.getChangeSet(Change.EMOD).add(this);
+    tx.getChanges(status).add(prop);
+    tx.getChanges(Transaction.EMOD).add(this);
     
     // Reflect change of property
     if (tx.isTrackChanges())

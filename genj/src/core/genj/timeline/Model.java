@@ -19,7 +19,6 @@
  */
 package genj.timeline;
 
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
@@ -29,6 +28,7 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyName;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
 
@@ -240,19 +240,19 @@ import java.util.Set;
   /**
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
-  public void handleChange(Change change) {
+  public void handleChange(Transaction tx) {
     // deleted or added entities/properties -> recreate
-    if (!(change.getChanges(change.EDEL).isEmpty()
-        &&change.getChanges(change.EADD).isEmpty()
-        &&change.getChanges(change.PADD).isEmpty()
-        &&change.getChanges(change.PDEL).isEmpty())) {
+    if (!(tx.getChanges(tx.EDEL).isEmpty()
+        &&tx.getChanges(tx.EADD).isEmpty()
+        &&tx.getChanges(tx.PADD).isEmpty()
+        &&tx.getChanges(tx.PDEL).isEmpty())) {
       createEvents();
       return;
     }
     // changed properties -> scan for dates or names
     boolean changed = false;
-    if (!change.getChanges(change.PMOD).isEmpty()) {
-      Iterator ps = change.getChanges(change.PMOD).iterator();
+    if (!tx.getChanges(tx.PMOD).isEmpty()) {
+      Iterator ps = tx.getChanges(tx.PMOD).iterator();
       while (ps.hasNext()) {
         Property p = (Property)ps.next();
         // a date -> lets recreate everything

@@ -19,11 +19,11 @@
  */
 package genj.entity;
 
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
+import genj.gedcom.Transaction;
 import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
@@ -239,8 +239,8 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
   /**
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
-  public void handleChange(Change change) {
-    if (change.getChanges(change.EDEL).contains(entity)) {
+  public void handleChange(Transaction tx) {
+    if (tx.getChanges(tx.EDEL).contains(entity)) {
       setEntity(null);
     }
     repaint();

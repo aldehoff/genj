@@ -331,6 +331,18 @@ public class MetaProperty implements Comparable {
   }
   
   /**
+   * Returns index of given subtag
+   * @return zero based index or -1 if unknown
+   */
+  public int getIndex(String subtag) {
+    for (int i=0;i<listOfSubs.size();i++) {
+      if (((MetaProperty)listOfSubs.get(i)).getTag().equals(subtag))
+        return i;
+    }
+    return -1;
+  }
+  
+  /**
    * Static - resolve instance
    */
   public static MetaProperty get(TagPath path, boolean persist) {

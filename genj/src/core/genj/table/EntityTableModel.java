@@ -19,12 +19,12 @@
  */
 package genj.table;
 
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.SortableTableHeader;
 
@@ -232,9 +232,9 @@ import javax.swing.table.TableColumnModel;
   /**
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
-  public void handleChange(Change change) {
-    // a drastic change (entities added/deleted) ? 
-    if (!(change.getChanges(Change.EADD).isEmpty()&&change.getChanges(Change.EDEL).isEmpty())) {
+  public void handleChange(Transaction tx) {
+    // a drastic tx (entities added/deleted) ? 
+    if (!(tx.getChanges(tx.EADD).isEmpty()&&tx.getChanges(tx.EDEL).isEmpty())) {
       // rebuild!
       prepareRows();
       sortRows();
@@ -243,7 +243,7 @@ import javax.swing.table.TableColumnModel;
       return;
     }
     // any rows to update?
-    Set emods = change.getChanges(change.EMOD);
+    Set emods = tx.getChanges(tx.EMOD);
     int 
      first = -1,
      last  = -1; 

@@ -71,7 +71,7 @@ public abstract class Property implements Comparable {
     this.parent=parent;
 
     // propagate
-    changeNotify(this, Change.PADD);
+    changeNotify(this, Transaction.PADD);
 
   }
 
@@ -81,7 +81,7 @@ public abstract class Property implements Comparable {
   /*package*/ void delNotify() {
 
     // propagate
-    changeNotify(this, Change.PDEL);
+    changeNotify(this, Transaction.PDEL);
 
     // delete all properties - to avoid an endless
     // loop we first make up our mind which ones
@@ -103,7 +103,7 @@ public abstract class Property implements Comparable {
   /*package*/ void modNotify() {
     // tell it to parent
     if (parent!=null)
-      parent.changeNotify(this, Change.PMOD);
+      parent.changeNotify(this, Transaction.PMOD);
     // done      
   }
   
@@ -120,18 +120,38 @@ public abstract class Property implements Comparable {
   }
   
   /**
-   * Adds another property to this property
+   * Adds a sub-property to this property
    * @param prop new property to add
    */
   public Property addProperty(Property prop) {
-    // Remember
-    children.add(prop);
+    return addProperty(prop, true);
+  }
+
+  /**
+   * Adds another property to this property
+   * @param prop new property to add
+   * @param place whether to place the sub-property according to grammar
+   */
+  public Property addProperty(Property prop, boolean place) {
+    // add prop - check grammar for placement if applicable
+    if (place&&getNoOfProperties()>0&&getEntity()!=null) {
+      MetaProperty meta = MetaProperty.get(this);
+      int pos = 0;
+      int index = meta.getIndex(prop.getTag());
+      for (;pos<getNoOfProperties();pos++) {
+        if (meta.getIndex(getProperty(pos).getTag())>index)
+          break;
+      }
+      children.add(pos, prop);
+    } else {
+      children.add(prop);
+    }
     // Notify
     prop.addNotify(this);
     // Done
     return prop;
   }
-
+  
   /**
    * Removes a property by looking in the property's properties
    * list and eventually calling delProperty recursively
@@ -552,10 +572,10 @@ public abstract class Property implements Comparable {
       children.set(b, childA);
 
     // tell about it
-    changeNotify(childA, Change.PDEL);
-    changeNotify(childA, Change.PADD);
-    changeNotify(childB, Change.PADD);
-    changeNotify(childB, Change.PDEL);
+    changeNotify(childA, Transaction.PDEL);
+    changeNotify(childA, Transaction.PADD);
+    changeNotify(childB, Transaction.PADD);
+    changeNotify(childB, Transaction.PDEL);
 
     // done
   }

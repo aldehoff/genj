@@ -27,6 +27,15 @@ import java.util.Set;
  */
 public class Transaction {
 
+  public static final int
+    EADD    = 0,
+    EDEL    = 1,
+    EMOD    = 2,
+    PADD    = 3,
+    PDEL    = 4,
+    PMOD    = 5,
+    NUM     = 6;
+
   /** a  set that doesn't retain added content */  
   private static final Set NULL_SET = new HashSet() {
     // ignore any add's
@@ -51,8 +60,8 @@ public class Transaction {
     gedcom = ged;
 
     // prepare tracking changes
-    changes = new Set[Change.NUM];
-    for (int i=0;i<Change.NUM;i++) {
+    changes = new Set[NUM];
+    for (int i=0;i<NUM;i++) {
       changes[i] = new HashSet(64);
     }
   }
@@ -72,17 +81,27 @@ public class Transaction {
   }
   
   /**
-   * Returns change set
+   * Returns Set
    */
-  /*package*/ Set getChangeSet(int which) {
-    return isTrackChanges ? changes[which] : NULL_SET; 
+  public Set getChanges(int which) {
+    return isTrackChanges ? changes[which] : NULL_SET;
+  }
+
+  /**
+   * Changed Gedcom
+   */
+  public Gedcom getGedcom() {
+    return gedcom;
   }
   
   /**
-   * Returns a change audit
+   * whether something was actually changed
    */
-  /*package*/ Change getChange() {
-    return new Change( gedcom, changes );
+  public boolean hasChanges() {
+    for (int i=0;i<NUM;i++)
+      if (!changes[i].isEmpty()) 
+        return true;
+    return false;
   }
 
 } //Transaction

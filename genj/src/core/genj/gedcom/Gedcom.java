@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.58 $ $Author: nmeier $ $Date: 2004-05-12 22:31:15 $
+ * $Revision: 1.59 $ $Author: nmeier $ $Date: 2004-05-13 20:07:59 $
  */
 package genj.gedcom;
 
@@ -461,14 +461,12 @@ public class Gedcom {
     if (transaction==null)
       return;
 
-    // wrap in change
-    Change change = transaction.getChange();
-
     // end tx
+    Transaction tx = transaction;
     transaction = null;
 
     // need to notify?
-    if (change.isEmpty())
+    if (!tx.hasChanges())
       return;
       
     // remember change
@@ -477,7 +475,7 @@ public class Gedcom {
     // send message to all listeners
     GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
     for (int l=0;l<gls.length;l++) {
-      gls[l].handleChange(change);
+      gls[l].handleChange(tx);
     }
 
     // done
