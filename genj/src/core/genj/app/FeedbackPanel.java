@@ -20,7 +20,7 @@
  * About Menu class - Feedback
  * This class creates the content on the Feedback tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.6 2002-05-19 12:46:32 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.7 2002-05-20 10:33:14 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.2
  *
@@ -54,6 +54,7 @@ public class FeedbackPanel extends JPanel implements ActionListener
   // variables for panelBottom
   private JPanel panelBottom;
   private JButton b1Panel3;
+  private JButton b2Panel3;
   private boolean _clickMeMode = true;
   
   
@@ -123,7 +124,10 @@ public class FeedbackPanel extends JPanel implements ActionListener
     panelBottom.setBackground(Color.white);
     b1Panel3 = new JButton(App.resources.getString("cc.about.tab3.save.button"));
     b1Panel3.addActionListener(this);
+    b2Panel3 = new JButton(App.resources.getString("cc.about.tab3.reload.button"));
+    b2Panel3.addActionListener(this);
     panelBottom.add(b1Panel3);
+    panelBottom.add(b2Panel3);
   }
   
     // This method gets the User's system info
@@ -160,22 +164,67 @@ public class FeedbackPanel extends JPanel implements ActionListener
   // this method initiated the action event
   public void actionPerformed(ActionEvent event) {
     Object source = event.getSource();
+    String s = null;
+    /* Here I would like to do the following process :
+     * if the user click on the save button, the method should check whether or not
+     * a file named feedback.txt exist. If yes, it should show a warning, something like
+     * Warning, a file named feedback.txt already exist in your directory, to you want
+     * to overwrite it ? If you click on yes, the file will be overwrited, if you click 
+     * on no, you will be able to see its contain by clicking on the Reload button. So 
+     * if the user click on yes, the method should overwrite the file, if not, nothing
+     * happen
+     */
     if (source == b1Panel3) {
-      String s = null;
       if (_clickMeMode) {
         try {
+        // Code to write to file
           String text2save = ta1Panel2.getText();
           byte b[] = text2save.getBytes();
-          String outputFileName = "comments.txt";
+          String outputFileName = "feedback.txt";
           FileOutputStream out = new FileOutputStream(outputFileName);
           out.write(b);
           out.close();
         }
         catch(java.io.IOException e) {
-          System.out.println("Cannot write to text file comments.txt");
+          System.out.println("Cannot write to text file feedback.txt");
         }
-      }
+        // Clear text field
+        ta1Panel2.setText(App.resources.getString("cc.about.tab3.text2.6"));
+        b1Panel3.setText(App.resources.getString("cc.about.tab3.clickagain.button"));
+        _clickMeMode = false;
     }
+    else {
+      // Save text to file
+      ta1Panel2.setText(getSystemInfo());
+      b1Panel3.setText(App.resources.getString("cc.about.tab3.save.button"));
+      _clickMeMode = true;
+    }
+   }
+   if (source == b2Panel3) {
+     if (_clickMeMode) {
+       try {
+         String inputFileName = "feedback.txt";
+         /* Here I should put another "if" statement to check whether or not
+         * the file feedback.txt exist. If yes, then I load the text from that
+         * file and display it. If it doesn't exist, then I display the default
+         * info system with a call to "getSystemInfo()".
+         */
+         // Code to load a text from a file
+         File inputFile = new File(inputFileName);
+         FileInputStream in = new FileInputStream(inputFile);
+         byte bt[] = new byte[(int)inputFile.length()];
+         in.read(bt);
+         s = new String(bt);
+         in.close();
+       }
+       // If something goes wrong, I try to catch the error and display something
+       catch(java.io.IOException e) {
+         System.out.println("Cannot read from text file feedback.txt");
+       }
+       ta1Panel2.setText("");
+       ta1Panel2.setText(s);
+     }
+   }
   }
   
 } // Closes class
