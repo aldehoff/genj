@@ -291,6 +291,8 @@ public class ReportEvents extends Report {
             return false;
         
         PointInTime start = date.getStart();
+        if (start.getCalendar()!=start.GREGORIAN)
+          return false;
         
         // check criteria
         boolean d = false, m = false, y = false;
@@ -322,9 +324,7 @@ public class ReportEvents extends Report {
         else if (handleYear == 3) // year = ignore
             y = true;
         
-        if ((d) && (m) && (y))
-            return true;
-        return false;
+        return d&m&y;
     }
     
     /**
