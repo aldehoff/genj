@@ -1,6 +1,7 @@
 0 INDI type=Indi img=Indi.gif
 
 1  NAME default type=Name img=Name.gif
+2   SOUR hide type=Source img=Source.gif
 
 1  SEX default type=Sex img=Sex.gif img.male=Male.gif img.female=Female.gif
 
@@ -8,6 +9,7 @@
 2   TYPE type=SimpleValue img=Type.gif
 2   DATE default type=Date img=Date.gif
 2   PLAC default type=SimpleValue img=Place.gif
+3    SOUR hide type=Source img=Source.gif
 2   ADDR type=MultilineValue img=Addr.gif
 3    CITY default type=SimpleValue img=Place.gif
 3    POST type=SimpleValue img=Code.gif
@@ -17,6 +19,7 @@
 2   AGNC type=SimpleValue img=Phone.gif
 2   CAUS type=SimpleValue img=Phone.gif
 2   NOTE type=Note img=Note.gif
+2   SOUR hide type=Source img=Source.gif
 
 1  DEAT default img=Death.gif super=INDI:BIRT
 
@@ -82,3 +85,4 @@
 1  NOTE type=Note img=Note.gif
 
 1  SUBM hide type=Submitter img=Submitter.gif
+1  SOUR hide type=Source img=Source.gif

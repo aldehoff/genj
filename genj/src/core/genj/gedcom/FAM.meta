@@ -42,3 +42,4 @@
 2   FORM default type=SimpleValue img=Format.gif
 2   FILE default type=File img=Disk.gif
 2   NOTE type=Note img=Note.gif
+1  SOUR hide type=Source img=Source.gif

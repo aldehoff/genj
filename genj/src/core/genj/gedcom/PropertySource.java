@@ -60,24 +60,6 @@ public class PropertySource extends PropertyXRef {
   }
 
   /**
-   * Adds all default properties to this property
-   */
-  public Property addDefaultProperties() {
-
-    noteModifiedProperty();
-
-    // Just add 'em
-// FIXME    
-//    if (this instanceof Entity) {
-//      addProperty(new PropertySimpleValue("TITL"));
-//      addProperty(new PropertyText());
-//    }
-    
-    // Done
-    return this;
-  }
-
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {

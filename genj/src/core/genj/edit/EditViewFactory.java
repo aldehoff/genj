@@ -109,7 +109,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       result.add(new CreateRelationship(property.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(property,Gedcom.SOURCES)));
     }
     // association
- // FIXME ASSO
+ // FIXME ASSO and conditional relationships (check meta)
  // result.add(new CreateRelationship(property.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(property) ));
     // delete possible
     result.add(ActionDelegate.NOOP);
