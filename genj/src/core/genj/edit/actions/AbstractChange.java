@@ -94,7 +94,7 @@ import javax.swing.JTextArea;
     final JTextArea confirm = new JTextArea(getConfirmMessage(), 4, 40);
     confirm.setWrapStyleWord(true);
     confirm.setLineWrap(true);
-    confirm.setEnabled(true);
+    confirm.setEditable(false);
 
     // prepare options
     List options = new ArrayList();

@@ -79,7 +79,7 @@ public class CreateRelationship extends AbstractChange {
       protected void fireActionEvent() {
         super.fireActionEvent();
         existing = getSelectedIndex()>0 ? (Entity)getSelectedItem() : null;
-        super.firePropertyChange( "selection", -1, getSelectedIndex());
+        super.firePropertyChange( "message", 0, 1);
       }
     };
     
@@ -103,32 +103,5 @@ public class CreateRelationship extends AbstractChange {
     // done
   }
   
-} //Relate
-
-//  /**
-//   * Create an association 
-//   */
-//  /*package*/ static class Link extends Change {
-//    /** where we link from */
-//    private Property from;
-//    /**
-//     * Constructor
-//     */
-//    /*package*/ Link(Property frOm) {
-//      super(frOm.getGedcom(), Images.imgNewLink, "Add Link To ...");
-//      // remember
-//      from = frOm;
-//    }
-//    /**
-//     * @see genj.edit.EditViewFactory.Change#change()
-//     */
-//    protected void change() throws GedcomException {
-//    }
-//    /**
-//     * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
-//     */
-//    protected Object getConfirmMessage() {
-//      return new JLabel("Foo");
-//    }
-//  } //Associate
+} //CreateRelationship
 
