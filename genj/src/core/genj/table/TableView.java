@@ -24,6 +24,7 @@ import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -41,6 +42,7 @@ import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.SortableTableHeader;
 import genj.view.ToolBarSupport;
 import genj.gedcom.*;
 
@@ -81,6 +83,7 @@ public class TableView extends JPanel implements ToolBarSupport {
     
     // create our table
     table = new JTable(tableModel, tableModel.createTableColumnModel(640));
+    table.setTableHeader(new SortableTableHeader());
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     table.setAutoCreateColumnsFromModel(false);
@@ -116,7 +119,7 @@ public class TableView extends JPanel implements ToolBarSupport {
         // done
       }
     });
-    
+
     // done
   }
   

@@ -8,6 +8,7 @@ import genj.gedcom.GedcomListener;
 import genj.gedcom.Selection;
 import genj.gedcom.TagPath;
 import genj.util.ImgIcon;
+import genj.util.swing.SortableTableHeader;
 
 import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
@@ -18,7 +19,10 @@ import javax.swing.table.TableColumnModel;
 /**
  * Our model of entites shown in a table
  */
-/*package*/ class EntityTableModel extends AbstractTableModel implements GedcomListener {
+/*package*/ class EntityTableModel extends AbstractTableModel implements GedcomListener, SortableTableHeader.SortableTableModel {
+  
+  /** the sorted column */
+  private int sortedColumn = 0;
   
   /** the gedcom we're looking at */
   private Gedcom gedcom;
@@ -129,6 +133,13 @@ import javax.swing.table.TableColumnModel;
   }
   
   /**
+   * @see genj.util.swing.JTableHeader.SortableTableModel#getSortedColumn()
+   */
+  public int getSortedColumn() {
+    return sortedColumn;
+  }
+  
+  /**
    * @see javax.swing.table.TableModel#getColumnCount()
    */
   public int getColumnCount() {
@@ -183,7 +194,7 @@ import javax.swing.table.TableColumnModel;
     TableColumnModel columns = new DefaultTableColumnModel();
     for (int c=0; c<filter.paths.length; c++) {
       TableColumn col = new TableColumn(c);
-      col.setHeaderValue(paths[c]);
+      col.setHeaderValue(paths[c].getLast());
       col.setPreferredWidth(widths.length>c&&widths[c]>0?widths[c]:total/filter.paths.length);
       columns.addColumn(col);
     }
