@@ -268,5 +268,15 @@ public abstract class PropertyXRef extends Property {
     ImageIcon overlay = target!=null?MetaProperty.IMG_LINK:MetaProperty.IMG_ERROR;
     return img.getOverLayed(overlay);
   }
+  
+  /**
+   * Patched to now allow private - would require that
+   * the opposite link is made private, too
+   * @see genj.gedcom.Property#setPrivate(boolean, boolean)
+   */
+  public void setPrivate(boolean set, boolean recursively) {
+    // ignored
+  }
+
 
 } //PropertyXRef
