@@ -38,15 +38,18 @@ import java.util.Date;
  */
 public class PropertyChange extends Property implements MultiLineSupport {
   
-  private final static SimpleDateFormat
-   FORMAT = new SimpleDateFormat("HH:mm:ss");
+  private final static SimpleDateFormat[] FORMATS = { 
+    new SimpleDateFormat("HH:mm:ss.SS"),
+    new SimpleDateFormat("HH:mm:ss"),
+    new SimpleDateFormat("HH:mm")
+  };
   
   private final static String
    CHAN = "CHAN",
    TIME = "TIME",
    DATE = "DATE";
   
-  private PointInTime pit = PointInTime.getNow();
+  private PointInTime pit = PointInTime.getPointInTime(-1,-1,-1);
   private long time = -1;
 
   /**
@@ -74,7 +77,7 @@ public class PropertyChange extends Property implements MultiLineSupport {
    * Get the last change time
    */
   public String getTimeAsString() {
-    return time<0 ? EMPTY_STRING : FORMAT.format(new Date(time));
+    return time<0 ? EMPTY_STRING : FORMATS[0].format(new Date(time));
   }
   
   /**
@@ -126,19 +129,30 @@ public class PropertyChange extends Property implements MultiLineSupport {
    * @see genj.gedcom.MultiLineSupport#append(int, java.lang.String, java.lang.String)
    */
   public boolean append(int level, String tag, String value) {
-    if (level==1&&TIME.equals(tag)) { 
+    
+    // DATE
+    if (level==1&&DATE.equals(tag)) { 
       pit = PointInTime.getPointInTime(value);
       return true;
     }
+    
+    // TIME
     if (level==2&&TIME.equals(tag)) {
-      try {
-        time = FORMAT.parse(value).getTime();
-      } catch (Throwable t) {
-        time = -1;
+      time = -1;
+      
+      for (int f=0;f<FORMATS.length;f++) {
+        try {
+          time = FORMATS[f].parse(value).getTime();
+          break;
+        } catch (Throwable t) {
+        }
       }
+      
       return true;
     }
-    return true;
+    
+    // don't know it
+    return false;
   }
 
   /**
