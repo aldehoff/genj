@@ -68,7 +68,7 @@ public class PropertySex extends Property {
   /**
    * Image
    */
-  public ImageIcon getImage(int sex) {
+  public static ImageIcon getImage(int sex) {
     switch (sex) {
       case MALE: return IMG_MALE;
       case FEMALE: return IMG_FEMALE;
