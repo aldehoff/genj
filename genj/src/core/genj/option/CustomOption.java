@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.3 $ $Author: nmeier $ $Date: 2004-05-26 20:03:01 $
+ * $Revision: 1.4 $ $Author: nmeier $ $Date: 2004-11-19 20:04:00 $
  */
 package genj.option;
 
@@ -61,7 +61,7 @@ public abstract class CustomOption extends Option {
     /** callback - component representation = button */
     public JComponent getComponentRepresentation() {
       setText("...");
-      return new ButtonHelper().setFocusable(false).create(this);
+      return new ButtonHelper().setFocusable(false).setInsets(2).create(this);
     }
 
     /** commit - noop */    
