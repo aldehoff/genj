@@ -20,7 +20,7 @@
  * About Menu class - Copyright
  * This class creates the content on the Copyright tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/CopyrightPanel.java,v 1.3 2002-05-16 21:04:03 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/CopyrightPanel.java,v 1.4 2002-05-18 07:31:26 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -78,7 +78,7 @@ public class CopyrightPanel extends JPanel
     taCopyR.setLineWrap(true);
     taCopyR.setWrapStyleWord(true);
     taCopyR.setEditable(false);
-    taCopyR.setBorder(new EmptyBorder(5, 5, 5, 5));
+    taCopyR.setBorder(new EmptyBorder(3, 3, 3, 3));
     panelCopyR.add(taCopyR, BorderLayout.CENTER);
   }
     
@@ -94,7 +94,7 @@ public class CopyrightPanel extends JPanel
     taGpl.setLineWrap(true);
     taGpl.setWrapStyleWord(true);
     taGpl.setEditable(false);
-    taGpl.setBorder(new EmptyBorder(5, 5, 5, 5));
+    taGpl.setBorder(new EmptyBorder(3, 3, 3, 3));
     JScrollPane spGpl = new JScrollPane(taGpl);
     spGpl.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
     spGpl.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
