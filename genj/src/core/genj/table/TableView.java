@@ -71,6 +71,9 @@ public class TableView extends JPanel implements ToolBarSupport {
   /** the table model we're using */
   private EntityTableModel tableModel;
   
+  /** the gedcom listener we're using */
+  private GedcomListener listener;
+  
   /**
    * Constructor
    */
@@ -94,12 +97,12 @@ public class TableView extends JPanel implements ToolBarSupport {
     table.setAutoCreateColumnsFromModel(false);
     table.getTableHeader().setReorderingAllowed(false);
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
+    table.getSelectionModel().addListSelectionListener((ListSelectionListener)new ActionRowSelected().as(ListSelectionListener.class));
+    
     setLayout(new BorderLayout());
     add(new JScrollPane(table), BorderLayout.CENTER);
     
-    // listen to selections
-    table.getSelectionModel().addListSelectionListener((ListSelectionListener)new ActionSelect().as(ListSelectionListener.class));
-    
+    // start listening to Gedcom
     gedcom.addListener(new GedcomListener() {
       /** @see genj.gedcom.GedcomListener#handleChange(Change) */
       public void handleChange(Change change) {
@@ -128,7 +131,7 @@ public class TableView extends JPanel implements ToolBarSupport {
         // done
       }
     });
-
+    
     // done
   }
   
@@ -236,14 +239,6 @@ public class TableView extends JPanel implements ToolBarSupport {
   }
 
   /**
-   * Notification when table isn't used anymore
-   */
-  public void removeNotify() {
-    saveProperties();
-    super.removeNotify();
-  }
-
-  /**
    * Action - flip view to entity type
    */
   private class ActionChangeType extends ActionDelegate {
@@ -264,7 +259,7 @@ public class TableView extends JPanel implements ToolBarSupport {
   /**
    * Action - selection occured
    */
-  private class ActionSelect extends ActionDelegate {
+  private class ActionRowSelected extends ActionDelegate {
     /** run */
     public void execute() {
       int i = table.getSelectedRow();
@@ -319,4 +314,16 @@ public class TableView extends JPanel implements ToolBarSupport {
     }
   } //PropertyTableCellRenderer
     
+  /**
+   * @see java.awt.Component#removeNotify()
+   */
+  public void removeNotify() {
+    // save state
+    saveProperties();
+    // delegate
+    super.removeNotify();
+    // destruct model
+    tableModel.destructor();
+  }
+
 } //TableView

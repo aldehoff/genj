@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
@@ -57,11 +58,20 @@ import javax.swing.table.TableColumnModel;
   /*pacakge*/ EntityTableModel(Gedcom gedcom) {
     // remember
     this.gedcom=gedcom;
-    // listen
-    gedcom.addListener(this);
     // set starting type
     setType(Gedcom.INDIVIDUALS);
+    // start listening
+    gedcom.addListener(this);
     // done
+  }
+
+  /**
+   * Destructor
+   */
+  /*package*/ void destructor() {
+    // stop listening
+    gedcom.removeListener(this);
+    // done    
   }
 
   /**
@@ -257,7 +267,6 @@ import javax.swing.table.TableColumnModel;
     return columns;
   }
 
-  
   /**
    * A Filter filters the entities we have in the model
    */
