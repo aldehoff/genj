@@ -283,8 +283,6 @@ public class MenuHelper  {
     MnemonicAndText mat = new MnemonicAndText(txt);
     item.setText(mat.getText());
     item.setMnemonic(mat.getMnemonic());
-    // set it 
-    item.setText(txt);
   }
 
 } //MenuHelper
