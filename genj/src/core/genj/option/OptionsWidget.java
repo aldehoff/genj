@@ -22,6 +22,7 @@ package genj.option;
 import java.awt.BorderLayout;
 
 import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -50,21 +51,35 @@ public class OptionsWidget extends JPanel {
     // setup
     DefaultTableColumnModel columns = new DefaultTableColumnModel();
     columns.addColumn(new TableColumn(0));
-    columns.addColumn(new TableColumn(1));
+    columns.addColumn(new TableColumn(1,16));
     model = new Model();
     table = new JTable(model, columns) {
       /** we know how to find the correct editor */
       public TableCellEditor getCellEditor(int row, int col) {
+        // only editor for 2nd column 
         if (col==0)   
           return null;
-        TableCellEditor editor = getDefaultEditor(model.getOption(row).getNonPrimitiveType());
-        if (editor instanceof DefaultCellEditor)
-          ((DefaultCellEditor)editor).setClickCountToStart(1);
-        return editor;
+        Option option = model.getOption(row);
+        // multiple choice option?
+        if (option instanceof MultipleChoiceOption) {
+          MultipleChoiceOption moption = (MultipleChoiceOption)option;
+          return new DefaultCellEditor(new JComboBox(moption.getChoices()));
+        }
+        // boolean option?
+        if (option.getValue() instanceof Boolean)
+          return getDefaultEditor(Boolean.class);
+        // default 
+        return getDefaultEditor(Object.class);
       }
       /** we know how to find the correct renderer */
       public TableCellRenderer getCellRenderer(int row, int col) {
-        return getDefaultRenderer(col!=0 ? model.getOption(row).getNonPrimitiveType() : Object.class);
+        if (col==0)
+          return super.getDefaultRenderer(Object.class);
+        Object val = model.getOption(row).getValue();
+        if (val==null) 
+          val = new Object();
+        // default 
+        return getDefaultRenderer(val.getClass());
       }
     };
     

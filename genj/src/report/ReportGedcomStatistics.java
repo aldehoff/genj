@@ -26,7 +26,7 @@ import java.text.NumberFormat;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.37 2003-10-23 17:31:04 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.38 2003-10-23 23:50:37 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -43,8 +43,11 @@ public class ReportGedcomStatistics extends Report {
     public boolean analyzeFamilies = true;
     /** whether individuals with min. / max. marriage age should be reported */
     public boolean reportIndisToMarriageAge = true;
+    
     /** whether indis with min/max age at child birth should be reported */
-    public int reportFamsToChildren = 2;
+    public int reportFamsToChildren = 1;
+    public String[] reportFamsToChildrens = { i18n("choice.all"), i18n("choice.minmax"), i18n("choice.none")};
+    
     /** whether individuals with min. / max. age at child birth should be reported */
     public boolean reportIndisToChildBirth = true;
     /** whether the surnames should be analyzed */
@@ -221,7 +224,7 @@ public class ReportGedcomStatistics extends Report {
      * This method actually starts this report
      */
     public void start(Object context) {
-        
+System.out.println(reportFamsToChildren);        
         // stop report when no output categories choosen
         if((analyzeIndividuals==false)&&(analyzeLastNames==false)&&(analyzeOccupations==false)&&(analyzeFamilies==false)&&(analyzeBirthPlaces==false)&&(analyzeMarriagePlaces==false)&&(analyzeDeathPlaces==false))
             return;
@@ -832,7 +835,7 @@ public class ReportGedcomStatistics extends Report {
             println(getIndent(indent)+i18n("withChildren", output));
             
             switch(reportFamsToChildren) {
-                case 1:
+                case 0:
                     println(getIndent(indent+1)+i18n("avgChildren",Double.toString(roundNumber((double)families.withChildren/(double)families.number,fractionDigits))));
                     Iterator f = families.children.getKeys().iterator();
                     while(f.hasNext()) {
@@ -841,14 +844,14 @@ public class ReportGedcomStatistics extends Report {
                         printChildren(families, children, indent);
                     }
                     break;
-                case 2:
+                case 1:
                     println(getIndent(indent+1)+i18n("avgChildren",Double.toString(roundNumber((double)families.withChildren/(double)families.number,fractionDigits))));
                     println(getIndent(indent+1)+i18n("minChildren",families.minChildren));
                     printChildren(families, families.minChildren, indent);
                     println(getIndent(indent+1)+i18n("maxChildren",families.maxChildren));
                     printChildren(families, families.maxChildren, indent);
                     break;
-                case 3:
+                case 2:
                     println(getIndent(indent+1)+i18n("minChildren",families.minChildren));
                     println(getIndent(indent+1)+i18n("avgChildren",Double.toString(roundNumber((double)families.withChildren/(double)families.number,fractionDigits))));
                     println(getIndent(indent+1)+i18n("maxChildren",families.maxChildren));

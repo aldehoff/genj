@@ -32,21 +32,23 @@ import java.util.Properties;
 public class Option {
   
   /** option is for instance */
-  private Object instance;
+  protected Object instance;
   
   /** a name that can be presented to the user */
-  private String name;
+  protected String name;
   
   /** field */
-  private Field field;
+  protected Field field;
   
   /**
    * Constructor
    */
-  public Option(Object inStance, String naMe, Field fiEld) {
+  protected Option(Object inStance, String naMe, Field fiEld) {
+    // remember
     instance = inStance;
     name = naMe;
     field = fiEld;
+    // done
   }
 
   /**
@@ -59,14 +61,14 @@ public class Option {
   /**
    * Accessor - type of this option
    */ 
-  public Class getType() {
+  private Class getType() {
     return field.getType();
   }
   
   /**
    * Accessor - (boxed) type of this option
    */ 
-  public Class getNonPrimitiveType() {
+  private Class getNonPrimitiveType() {
     Class type = getType();
     if (type == boolean.class) return Boolean.class;         
     if (type == byte.class) return Byte.class;         
@@ -117,6 +119,24 @@ public class Option {
   }
   
   /**
+   * Get option for given instance, name and field
+   */
+  private static Option getOption(Object instance, String name, Field field) {
+    
+    // maybe multiple choice?
+    if (Integer.TYPE.isAssignableFrom(field.getType())) {
+      try {
+        Object[] choices = (Object[])instance.getClass().getField(field.getName()+"s").get(instance);
+        return new MultipleChoiceOption(instance, name, field, choices);
+      } catch (Exception e) {
+      }
+    }
+    
+    // Simple value option
+    return new Option(instance, name, field); 
+  }
+  
+  /**
    * Get options for given instance - supported are
    * int, boolean and String
    */
@@ -148,7 +168,7 @@ public class Option {
       if (String.class.isAssignableFrom(type) ||
           Integer.TYPE.isAssignableFrom(type) ||
           Boolean.TYPE.isAssignableFrom(type))
-        result.add(new Option(instance, name, field));
+        result.add(getOption(instance, name, field));
 
       // next
     }
