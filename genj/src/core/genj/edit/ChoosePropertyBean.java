@@ -21,12 +21,10 @@ package genj.edit;
 
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.util.GridBagHelper;
 import genj.util.Resources;
 
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
@@ -64,42 +62,38 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     MetaProperty[] defs = parent.getMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
         
     // Layout
-    GridBagLayout layout = new GridBagLayout();
-    setLayout(layout);
+    GridBagHelper gh = new GridBagHelper(this);
 
     // Checkbox for known props
     rbChoose = new JRadioButton(resources.getString("choose.known"),defs.length>0);
     rbChoose.setEnabled(defs.length>0);
     rbChoose.addItemListener(this);
     rbChoose.setAlignmentX(0);
-    add(rbChoose,1,1,2,1,false);
+    gh.add(rbChoose,1,1,2,1, gh.GROWFILL_HORIZONTAL);
 
     // .. List of tags
     lChoose = new JList(defs);
+    lChoose.setVisibleRowCount(4);
     lChoose.setEnabled(defs.length>0);
     lChoose.setCellRenderer(new MetaDefRenderer());
     lChoose.addListSelectionListener(this);
     JScrollPane sp = new JScrollPane(lChoose);
-    add(sp,1,2,1,1,true);
+    // 20030527 grrrrrrr why is this necessary
+    sp.setMinimumSize(sp.getPreferredSize());
+    gh.add(sp,1,2,1,1,gh.GROWFILL_VERTICAL);
 
     // .. Info field
     tpInfo = new JTextPane();
     tpInfo.setText("");
     tpInfo.setEditable(false);
-    spInfo = new JScrollPane(tpInfo,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
-      // LCD
-      public Dimension getPreferredSize() {
-        return new Dimension(256,128);
-      }
-      // EOC
-    };
-    add(spInfo,2,2,1,1,true);
+    spInfo = new JScrollPane(tpInfo);
+    gh.add(spInfo,2,2,1,1,gh.GROWFILL_BOTH);
 
     // RadioButton for new props
     rbNew = new JRadioButton(resources.getString("choose.new"),defs.length==0);
     rbNew.addItemListener(this);
     rbNew.setAlignmentX(0);
-    add(rbNew,1,3,2,1,false);
+    gh.add(rbNew,1,3,2,1, gh.GROWFILL_HORIZONTAL);
 
     ButtonGroup group = new ButtonGroup();
     group.add(rbChoose);
@@ -109,7 +103,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     tfNew = new JTextField();
     tfNew.setEnabled(defs.length==0);
     tfNew.setAlignmentX(0);
-    add(tfNew,1,4,2,1,false);
+    gh.add(tfNew,1,4,2,1, gh.GROWFILL_HORIZONTAL);
 
     // Pre select
     if (defs.length>0) {
@@ -119,23 +113,23 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     // Done
   }
   
-  /**
-   * Helper method that adds components to a container with gridbaglayout
-   */
-  private void add(Component c,int x,int y,int w,int h,boolean grow) {
-    add(c);
-
-    GridBagConstraints s = new GridBagConstraints();
-    s.gridx = x;
-    s.gridy = y;
-    s.gridwidth = w;
-    s.gridheight= h;
-    s.weightx = grow ? 1 : 0;
-    s.weighty = grow ? 1 : 0;
-    s.fill = grow ? GridBagConstraints.BOTH : GridBagConstraints.HORIZONTAL;
-
-    ((GridBagLayout)getLayout()).setConstraints(c,s);
-  }
+//  /**
+//   * Helper method that adds components to a container with gridbaglayout
+//   */
+//  private void add(Component c,int x,int y,int w,int h,boolean grow) {
+//    add(c);
+//
+//    GridBagConstraints s = new GridBagConstraints();
+//    s.gridx = x;
+//    s.gridy = y;
+//    s.gridwidth = w;
+//    s.gridheight= h;
+//    s.weightx = grow ? 1 : 0;
+//    s.weighty = grow ? 1 : 0;
+//    s.fill = grow ? GridBagConstraints.BOTH : GridBagConstraints.HORIZONTAL;
+//
+//    ((GridBagLayout)getLayout()).setConstraints(c,s);
+//  }
 
   /**
    * Returns the resulting properties
