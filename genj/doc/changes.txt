@@ -47,6 +47,7 @@ Future
   O EditView jump from entity to referencing entity/ies (multiple! "back-references")
   O Blueprint import/export from other .ged.properties / file
   O TIFF support
+  O All tables should remember ordering
   
 2.0 - Oct xx 2002
 
