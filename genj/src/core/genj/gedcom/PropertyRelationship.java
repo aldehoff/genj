@@ -37,6 +37,9 @@ public class PropertyRelationship extends Property {
   static {
     remember("Witness");
     remember("Informant");
+    remember("Godfather");
+    remember("Godmother"); 
+    remember("Other");    
   }
   
   /**
