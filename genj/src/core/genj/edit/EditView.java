@@ -417,7 +417,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
       int option = manager.getWindowManager().openDialog(
-        null, 
+        "add", 
         resources.getString("add.title"),
         WindowManager.IMG_QUESTION,
         new JComponent[]{ label, choose, check },

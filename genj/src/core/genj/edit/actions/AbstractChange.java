@@ -45,17 +45,6 @@ import javax.swing.JTextArea;
   /** resources */
   /*package*/ static Resources resources = Resources.get(AbstractChange.class);
   
-  /** images we use for new entities */
-  protected final static ImageIcon[] newImages = new ImageIcon[] {
-    Images.imgNewIndi,
-    Images.imgNewFam,
-    Images.imgNewMedia,
-    Images.imgNewNote,
-    Images.imgNewSource,
-    Images.imgNewSubmitter,
-    Images.imgNewRepository,
-  };
-  
   /** the gedcom we're working on */
   protected Gedcom gedcom;
   
@@ -64,6 +53,9 @@ import javax.swing.JTextArea;
   
   /** the focus */
   protected Entity focus = null;
+  
+  /** image *new* */
+  protected final static ImageIcon imgNew = Images.imgNew;
   
   /**
    * Constructor

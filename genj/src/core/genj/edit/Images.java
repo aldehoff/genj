@@ -43,15 +43,8 @@ final public class Images {
     imgCopy,
     imgPaste,
     
-    imgDelEntity,
-    imgNewFam,
-    imgNewIndi,
-    imgNewMedia,
-    imgNewNote,
-    imgNewRepository,
-    imgNewSource,
-    imgNewSubmitter,
-    imgNewLink;
+    imgDelete,
+    imgNew;
 
   /**
    * Constructor which pre-loads all images
@@ -71,14 +64,7 @@ final public class Images {
     imgCopy      = new ImageIcon(this,"images/Copy.gif");
     imgPaste     = new ImageIcon(this,"images/Paste.gif");
     
-    imgDelEntity     = new ImageIcon(this,"images/entity/Delete.gif");
-    imgNewFam        = new ImageIcon(this,"images/entity/NewFam.gif");
-    imgNewIndi       = new ImageIcon(this,"images/entity/NewIndi.gif");
-    imgNewMedia      = new ImageIcon(this,"images/entity/NewMedia.gif");
-    imgNewNote       = new ImageIcon(this,"images/entity/NewNote.gif");
-    imgNewRepository = new ImageIcon(this,"images/entity/NewRepository.gif");
-    imgNewSource     = new ImageIcon(this,"images/entity/NewSource.gif");
-    imgNewSubmitter  = new ImageIcon(this,"images/entity/NewSubmitter.gif");
-    imgNewLink       = new ImageIcon(this,"images/entity/NewLink.gif");
+    imgDelete    = new ImageIcon(this,"images/entity/Delete.gif");
+    imgNew       = new ImageIcon(this,"images/entity/New.gif");
   }
 }
