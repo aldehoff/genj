@@ -19,17 +19,16 @@
  */
 package genj.edit.actions;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
-import genj.gedcom.PropertyComparator;
 import genj.gedcom.Relationship;
-import genj.util.swing.ChoiceWidget;
 import genj.view.ViewManager;
+import genj.view.widgets.SelectEntityWidget;
 import genj.window.WindowManager;
-
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 import javax.swing.JComponent;
 
@@ -113,38 +112,15 @@ public class CreateRelationship extends AbstractChange {
    */
   protected JComponent getOptions() {
 
-    // grab existing (sorted) entities
-    final Entity[] ents;
-    if (targetType == gedcom.INDI) {
-      // Individiauls are sorted by name
-      ents = gedcom.getEntities(targetType, new PropertyComparator("INDI:NAME"));
-    } else {
-      ents = gedcom.getEntities(targetType, "");
-    }
-
-    // prepare a list of string items
-    Object[] items = new Object[ents.length+1];
-    items[0] = "*New*";
-    for (int i=0;i<ents.length;i++)
-      items[i+1] = ents[i].toString() + " (" + ents[i].getId() + ')';
-
-    // wrap it in choice
-    final ChoiceWidget result = new ChoiceWidget(items, items[0]);
-    result.setEditable(false);
-    result.setSelectedIndex(0);
-    result.addItemListener(new ItemListener() {
-      public void itemStateChanged(ItemEvent e) {
-        // translate index to existing entity being chosen
-        // can't use getItem() here because we have simple strings in model
-        int i = result.getSelectedIndex();
-        existing = i==0 ? null : ents[i-1]; 
-        // refresh abstract change
+    final SelectEntityWidget result = new SelectEntityWidget(targetType, gedcom.getEntities(targetType), "*New*");
+    result.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        // grab current selection (might be null)
+        existing = result.getEntity();
         refresh();
       }
-
     });
-
-    // done
+    
     return result;
   }
 
