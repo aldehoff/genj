@@ -127,13 +127,17 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
     // ... List of reports
     ListGlue glue = new ListGlue();
-    Report reports[] = ReportLoader.getInstance().getReports();
-    listOfReports = new JList(reports);
+    listOfReports = new JList(ReportLoader.getInstance().getReports());
     listOfReports.setCellRenderer(glue);
     listOfReports.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     listOfReports.addListSelectionListener(glue);
 
-    JScrollPane spList = new JScrollPane(listOfReports);
+    JScrollPane spList = new JScrollPane(listOfReports) {
+      /** min = preferred */
+      public Dimension getMinimumSize() {
+        return super.getPreferredSize();
+      }
+    };
     spList.setHorizontalScrollBarPolicy(spList.HORIZONTAL_SCROLLBAR_NEVER);
     gh.add(spList,1,1,1,4,GridBagHelper.GROWFILL_VERTICAL);
 
@@ -157,7 +161,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
     tpInfo = new JTextPane();
     tpInfo.setEnabled(false);
     JScrollPane spInfo = new JScrollPane(tpInfo);
-    spInfo.setPreferredSize(new Dimension(0,0));
     gh.add(new JLabel(resources.getString("report.info")),2,3);
     gh.add(spInfo,2,4,2,1,gh.FILL_BOTH);
 
