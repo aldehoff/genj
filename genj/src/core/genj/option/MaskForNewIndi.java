@@ -123,7 +123,7 @@ class MaskForNewIndi extends MaskForNewEntity implements ItemListener {
     }
 
     String last = tLast.getText(), first = tFirst.getText();
-    int sex = rbMale.isSelected() ? Gedcom.MALE : (rbFemale.isSelected() ? Gedcom.FEMALE : ' ') ;
+    int sex = rbMale.isSelected() ? Gedcom.MALE : (rbFemale.isSelected() ? Gedcom.FEMALE : -1) ;
 
     try {
       gedcom.createIndi(tLast.getText(),tFirst.getText(),sex,relatedTo,entity);
