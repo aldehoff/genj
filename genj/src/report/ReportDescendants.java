@@ -126,6 +126,9 @@ public class ReportDescendants extends Report {
       return "?";
     }
     
+    // id
+    String id = '@'+indi.getId()+'@';
+    
     // name
     String n = indi.getName();
     
@@ -136,7 +139,7 @@ public class ReportDescendants extends Report {
     String d = " d: " + indi.getDeathAsString();
     
     // here's the result 
-    return n + b + d;
+    return id + ' ' + n + b + d;
     
     // Could be a hyperlink, too
     //return "<a href=\"\">" + indi.getName() + "</a>" + b + d;

@@ -36,6 +36,9 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -54,10 +57,14 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Segment;
 
 /**
  * Component for running reports on genealogic data
@@ -83,7 +90,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /** components to show report info */
   private JLabel      lAuthor,lVersion;
   private JTextPane   tpInfo;
-  private JScrollPane spOutput;
   private JTextArea   taOutput;
   private JList       listOfReports;
   private JTabbedPane tabbedPane;
@@ -126,11 +132,11 @@ public class ReportView extends JPanel implements ToolBarSupport {
     tabbedPane.add(resources.getString("report.reports"),reportPanel);
 
     // ... List of reports
-    ListGlue glue = new ListGlue();
+    Callback callback = new Callback();
     listOfReports = new JList(ReportLoader.getInstance().getReports());
-    listOfReports.setCellRenderer(glue);
+    listOfReports.setCellRenderer(callback);
     listOfReports.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    listOfReports.addListSelectionListener(glue);
+    listOfReports.addListSelectionListener(callback);
 
     JScrollPane spList = new JScrollPane(listOfReports) {
       /** min = preferred */
@@ -168,9 +174,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
     taOutput = new JTextArea();
     taOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
     taOutput.setEditable(false);
+    taOutput.addMouseMotionListener(callback);
 
-    spOutput = new JScrollPane(taOutput);
-    tabbedPane.add(resources.getString("report.output"),spOutput);
+    tabbedPane.add(resources.getString("report.output"),new JScrollPane(taOutput));
 
     // Done
   }
@@ -188,7 +194,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /*package*/ void addOutput(String line) {
     taOutput.append(line);
 
-    if (!spOutput.getVerticalScrollBar().getValueIsAdjusting()&&taOutput.getText().length()>0) {
+    if (taOutput.getText().length()>0) {
+// 20030530 - why did I check for valueisadjusting here?      
+//    if (!spOutput.getVerticalScrollBar().getValueIsAdjusting()&&taOutput.getText().length()>0) {
       taOutput.setCaretPosition(taOutput.getText().length()-1);
     }
   }
@@ -454,27 +462,30 @@ public class ReportView extends JPanel implements ToolBarSupport {
   } //ActionSave
   
   /**
-   * Report Renderer
+   * A private callback for various messages coming in 
    */
-  private class ListGlue extends DefaultListCellRenderer implements ListSelectionListener {
+  private class Callback extends MouseMotionAdapter implements ListCellRenderer, ListSelectionListener {
+
+    /** a default renderer for list */
+    private DefaultListCellRenderer defRenderer = new DefaultListCellRenderer();
 
     /**
      * Return component for rendering list element
      */
     public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
-      super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+      defRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
       Report report = (Report)value;
-      setText(report.getName());
+      defRenderer.setText(report.getName());
       if (report.usesStandardOut()) {
-        setIcon(imgShell);
+        defRenderer.setIcon(imgShell);
       } else {
-        setIcon(imgGui);
+        defRenderer.setIcon(imgGui);
       }
-      return this;
+      return defRenderer;
     }
     
     /**
-     * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
+     * Monitor changes to selection of reports
      */
     public void valueChanged(ListSelectionEvent e) {
       // update info
@@ -490,8 +501,64 @@ public class ReportView extends JPanel implements ToolBarSupport {
         tpInfo.setCaretPosition(0);
       }
     }
+    
+    /**
+     * Check if user moves mouse above something recognizeable in output
+     */
+    public void mouseMoved(MouseEvent e) {
+      
+      // try to find id at location
+      String id = findIdAt(e.getPoint());
+      taOutput.setCursor(Cursor.getPredefinedCursor(id==null?Cursor.DEFAULT_CURSOR:Cursor.HAND_CURSOR));
+      
+      // done
+    }
+    
+    /**
+     * Tries to find an entity id at given position in output
+     */
+    private String findIdAt(Point loc) {
+      
+      try {
+        // do we get a position in the model?
+        int pos = taOutput.viewToModel(loc);
+        if (pos<0) 
+          return null;
+        // scan doc
+        Document doc = taOutput.getDocument();
+        Segment seg = new Segment();
+        // not on 'space' ?
+        doc.getText(pos, 1, seg);
+        if (!Character.isLetterOrDigit(seg.array[seg.offset])) 
+          return null;
+        // find @ to the left
+        for (int i=0;i<10&&pos>=0;i++,pos--) {
+          doc.getText(pos, 1, seg);
+          if (seg.array[seg.offset]=='@') break;
+        }
+        // find @ to the right
+        int len = 2;
+        for (int max=Math.min(10,doc.getLength()-pos);len<=max;len++) {
+          doc.getText(pos, len, seg);
+          if (seg.array[seg.offset+seg.count-1]=='@') break;
+        }
+        // check for find @...@
+        if (len<2) 
+          return null;
+          
+        taOutput.setCaretPosition(seg.getBeginIndex());
+        taOutput.moveCaretPosition(seg.getEndIndex());
+        return seg.toString();
+          
+        // done
+      } catch (BadLocationException ble) {
+      }
+      
+      // not found
+      return null;
+    }
 
-  } //ListGlue
+  } //Callback
 
   /**
    * A printwriter that directs output to the text area
