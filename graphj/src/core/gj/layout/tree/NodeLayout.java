@@ -178,54 +178,6 @@ import java.awt.geom.Rectangle2D;
   }
   
   /**
-   * Layout a child beside its siblings
-   * @param nodes the nodes of children including new n
-   * @param contour the contours of children including new n
-   * @param n the index of the new child
-   */
-/*  
-  private void layoutSibling(Node[] nodes, Contour[] contours, int n, TreeLayout tlayout) {
-
-    Orientation o = tlayout.getOrientation();
-
-    // place n-th child top-align
-    double dlat = contours[n-1].north - contours[n].north;
-    contours[n].translate(dlat, 0);
-
-    // calculate the deltas
-    double deltas[] = deltas(contours, n, contours[n]);
-    int min = deltas.length-1;
-    for (int d=deltas.length-2; d>=0; d--) min = deltas[d]<deltas[min] ? d : min;
-    
-    // place n-th child as close as possible
-    double dlon = -deltas[min];
-    contours[n].translate(0, dlon);
-    ModelHelper.translate(nodes[n],o.getPoint2D(dlat,dlon));
-
-    // all done if no special balancing required
-    if (!tlayout.isBalanceChildren) return;
-    
-    // re-position all nodes east of [min]
-    double slon = (o.getLongitude(nodes[n].getPosition()) - o.getLongitude(nodes[min].getPosition()))/(n-min);
-    dlon = 0;
-    for (int s=min+1;s<n;s++) {
-      // calc delta which will place all nodes min<s<n fine
-      dlon = Math.max(
-        dlon,
-        (o.getLongitude(nodes[min].getPosition())+(s-min)*slon) - o.getLongitude(nodes[s].getPosition())
-      );
-      // reality-check against delta constraints
-      for (int m=s;m<n;m++) dlon = Math.min(deltas[m] - deltas[min], dlon);
-      // contour and sub-tree @ node
-      contours[s].translate(0,dlon);
-      ModelHelper.translate(nodes[s],tlayout.getOrientation().getPoint2D(0,dlon));
-    }
-
-    // done
-  }
-*/
-
-  /**
    * Place root in parent-position to children create a contour for it
    */
   private Contour layoutParent(Node node, Arc backtrack, Contour[] children, Tree tree, int generation, TreeLayout tlayout) {
