@@ -19,6 +19,7 @@ import gj.awt.geom.PathIteratorKnowHow;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
+
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import java.io.IOException;
@@ -78,14 +79,43 @@ public class GraphWriter implements PathIteratorKnowHow {
    * Write - Arcs
    */
   private void writeArcs(Graph g) throws IOException {
+    
     push("arcs",null,false);
-    Iterator it = g.getArcs().iterator();
-    while (it.hasNext()) {
-      Arc arc = (Arc)it.next();
-      writeArc(arc);
+    
+    // sort arcs 
+    Arc[] arcs = (Arc[])g.getArcs().toArray(new Arc[g.getArcs().size()]);
+//    Arrays.sort(arcs, new ArcComparator());
+    
+    // write 'em
+    for (int i=0;i<arcs.length;i++) {
+      writeArc(arcs[i]);
     }
+    
     pop();
   }
+
+//  /**
+//   * How we sort arcs
+//   */  
+//  private class ArcComparator implements Comparator {
+//    /**
+//     */
+//    public int compare(Object a, Object b) {
+//      return compare((Arc)a, (Arc)b);
+//    }
+//    /**
+//     */
+//    private int compare(Arc a, Arc b) {    
+//      int 
+//        a1 = a.getStart().getArcs().indexOf(a),
+//        a2 = a.getEnd  ().getArcs().indexOf(a),
+//        b1 = b.getStart().getArcs().indexOf(b),
+//        b2 = b.getEnd  ().getArcs().indexOf(b);
+//
+//      int r = Math.min(a1,a2) 
+//      if (<)        
+//    }
+//  } //ArcComparator
 
   /**
    * Write - Arc
@@ -93,9 +123,9 @@ public class GraphWriter implements PathIteratorKnowHow {
   private void writeArc(Arc arc) throws IOException {
     
     ElementInfo info = new ElementInfo();
-    info.put("id", arcs2ids.get(arc));
-    info.put("s", nodes2ids.get(arc.getStart()));
-    info.put("e", nodes2ids.get(arc.getEnd  ()));
+    info.put("id", getId(arc));
+    info.put("s", getId(arc.getStart()));
+    info.put("e", getId(arc.getEnd  ()));
     push("arc",info,false);
       writeShape(arc.getPath(),-1);
     pop();
@@ -166,11 +196,8 @@ public class GraphWriter implements PathIteratorKnowHow {
    */
   private void writeNode(Node n) throws IOException {
     
-    int nid = nodes2ids.size()+1;
-    nodes2ids.put(n, new Integer(nid));
-
     ElementInfo info = new ElementInfo();
-    info.put("id", nid);
+    info.put("id", getId(n));
     info.put("x", n.getPosition().getX());
     info.put("y", n.getPosition().getY());
     info.put("c", n.getContent());
@@ -178,17 +205,41 @@ public class GraphWriter implements PathIteratorKnowHow {
     
     Iterator it = n.getArcs().iterator();
     for (int a=0;it.hasNext();a++) {
-      Object arc = it.next();
-      Object aid = arcs2ids.get(arc);
-      if (aid==null) {
-        aid = new Integer(arcs2ids.size()+1);
-        arcs2ids.put(arc, aid);
-      }
+      Arc arc = (Arc)it.next();
+      Object aid = getId(arc);
       info.put("aid"+a, aid );
     }
     
     push("node",info,true);
 
+  }
+  
+  /**
+   * Get id for node
+   */
+  private Object getId(Node node) {
+    // lookup
+    Object result = nodes2ids.get(node);
+    if (result==null) {
+      result = new Integer(nodes2ids.size()+1);
+      nodes2ids.put(node, result);
+    }
+    // don
+    return result;
+  }
+
+  /**
+   * Get id for arc
+   */
+  private Object getId(Arc arc) {
+    // lookup
+    Object result = arcs2ids.get(arc);
+    if (result==null) {
+      result = new Integer(arcs2ids.size()+1);
+      arcs2ids.put(arc, result);
+    }
+    // done
+    return result;
   }
   
   /**

@@ -15,10 +15,12 @@
  */
 package gj.shell;
 
+import gj.model.Graph;
+
 import gj.layout.Layout;
 import gj.layout.LayoutException;
-import gj.model.MutableGraph;
 import gj.shell.swing.UnifiedAction;
+
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -40,7 +42,7 @@ public class LayoutWidget extends JPanel {
   private Layout[] layouts = new Layout[0];
   
   /** the graph we're looking at */
-  private MutableGraph graph;
+  private Graph graph;
   
   /** the combo of layouts */
   private JComboBox comboLayouts;
@@ -89,7 +91,7 @@ public class LayoutWidget extends JPanel {
   /**
    * Accessor - the graph
    */
-  public void setGraph(MutableGraph set) {
+  public void setGraph(Graph set) {
     graph = set;
     actionExecute.setEnabled(graph!=null);
   }

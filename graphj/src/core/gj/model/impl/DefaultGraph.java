@@ -18,7 +18,6 @@ package gj.model.impl;
 import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Graph;
-import gj.model.MutableGraph;
 import gj.model.Node;
 
 import java.awt.Shape;
@@ -35,7 +34,7 @@ import java.util.Map;
 /**
  * @see gj.model.MutableGraph
  */
-public class MutableGraphImpl implements MutableGraph {
+public class DefaultGraph implements Graph {
   
   /** the contained nodes */
   protected Collection nodes = new HashSet(10);
@@ -51,7 +50,7 @@ public class MutableGraphImpl implements MutableGraph {
   /**
    * Constructor
    */
-  public MutableGraphImpl() {
+  public DefaultGraph() {
   }
 
   /**
@@ -59,7 +58,7 @@ public class MutableGraphImpl implements MutableGraph {
    * that are clones of those in given graph (node.getPosition(),
    * node.getShape(), node.getContent(), arc.getPath() are shared!)
    */
-  public MutableGraphImpl(Graph graph) {
+  public DefaultGraph(Graph graph) {
 
     // clone nodes
     Map orig2clone = new HashMap(graph.getNodes().size());
@@ -83,15 +82,13 @@ public class MutableGraphImpl implements MutableGraph {
   /**
    * @see MutableGraph#createArc(Node, Node)
    */
-  public Arc addArc(Node from, Node to, Path path) {
+  protected Arc addArc(Node from, Node to, Path path) {
 
-    NodeImpl 
+    DefaultNode 
       iFrom = getImpl(from),
       iTo   = getImpl(to);
       
-    if (path==null) path = new Path();
-
-    ArcImpl arc = new ArcImpl(iFrom, iTo, path);
+    DefaultArc arc = new DefaultArc(iFrom, iTo, path);
     iFrom.addArc(arc);
     iTo.addArc(arc);
 
@@ -103,7 +100,7 @@ public class MutableGraphImpl implements MutableGraph {
   /**
    * @see MutableGraph#removeArc(Arc)
    */
-  public void removeArc(Arc arc) {
+  protected void removeArc(Arc arc) {
     getImpl(arc).disconnect();
     arcs.remove(arc);
   }
@@ -111,8 +108,8 @@ public class MutableGraphImpl implements MutableGraph {
   /**
    * @see MutableGraph#createNode(Point2D, Shape, Object)
    */
-  public Node addNode(Point2D position, Shape shape, Object content) {
-    NodeImpl node = new NodeImpl(position, shape, content);
+  protected Node addNode(Point2D position, Shape shape, Object content) {
+    DefaultNode node = new DefaultNode(position, shape, content);
     nodes.add(node);
     return node;
   }
@@ -120,12 +117,12 @@ public class MutableGraphImpl implements MutableGraph {
   /**
    * @see MutableGraph#removeNode(Node)
    */
-  public void removeNode(Node node) {
+  protected void removeNode(Node node) {
     getImpl(node);
     
     List arcs = node.getArcs();
     while (arcs.size()>0) {
-      removeArc((ArcImpl)arcs.get(0));
+      removeArc((DefaultArc)arcs.get(0));
     }
     nodes.remove(node);
   }
@@ -145,42 +142,21 @@ public class MutableGraphImpl implements MutableGraph {
   }
 
   /**
-   * @see MutableGraph#setShape(Node, Shape)
-   */
-  public void setShape(Node node, Shape shape) {
-    getImpl(node).setShape(shape);
-  }
-  
-  /**
-   * @see MutableGraph#setContent(Node, Object)
-   */
-  public void setContent(Node node, Object content) {
-    getImpl(node).setContent(content);
-  }
-
-  /**
-   * @see MutableGraph#setOrder(Node, List)
-   */
-  public void setOrder(Node node, List arcs) {
-    getImpl(node).setOrder(arcs);
-  }
-
-  /**
    * Helper that returns NodeImpl for given Node
    */
-  protected final NodeImpl getImpl(Node node) {
+  protected final DefaultNode getImpl(Node node) {
     if (!nodes.contains(node))
       throw new IllegalArgumentException("Node "+node+" has to be part of this Graph");
-    return (NodeImpl)node;   
+    return (DefaultNode)node;   
   }
   
   /**
    * Helper that returns ArcImpl for given Node
    */
-  protected final ArcImpl getImpl(Arc arc) {
+  protected final DefaultArc getImpl(Arc arc) {
     if (!arcs.contains(arc))
       throw new IllegalArgumentException("Arc "+arc+" has to be part of this Graph");
-    return (ArcImpl)arc;
+    return (DefaultArc)arc;
   }
 
 

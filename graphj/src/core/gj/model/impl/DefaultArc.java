@@ -22,13 +22,13 @@ import gj.model.Node;
 /**
  * @see gj.model.MutableArc
  */
-public class ArcImpl implements Arc {
+public class DefaultArc implements Arc {
   
   /** starting Node */
-  private NodeImpl start;
+  private DefaultNode start;
 
   /** ending Node */
-  private NodeImpl end;
+  private DefaultNode end;
   
   /** path */
   private Path path;
@@ -36,10 +36,10 @@ public class ArcImpl implements Arc {
   /**
    * Constructor
    */
-  /*package*/ ArcImpl(NodeImpl start, NodeImpl end, Path path) {
+  /*package*/ DefaultArc(DefaultNode start, DefaultNode end, Path path) {
     this.start = start;
     this.end = end;
-    this.path = path;
+    this.path = path!=null ? path : new Path();
   }
   
   /**

@@ -15,38 +15,47 @@
  */
 package gj.model.factory;
 
-import gj.model.MutableGraph;
+import gj.model.Factory;
+import gj.model.Graph;
 import gj.model.Node;
-import gj.model.impl.MutableGraphImpl;
-import gj.util.ModelHelper;
 
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
 /**
  * Factory for testing purposes
  */
-public class TestFactory extends AbstractFactory implements Factory {
+public class TestFactory extends AbstractGraphFactory {
 
   /**
-   * @see gj.model.factory.Factory#create(gj.model.MutableGraph, java.awt.geom.Rectangle2D, java.awt.Shape)
+   * @see gj.model.factory.AbstractGraphFactory#create(gj.model.Factory, java.awt.geom.Rectangle2D)
    */
-  public Rectangle2D create(MutableGraph graph, Rectangle2D bounds, Shape nodeShape) {
+  public Graph create(Factory factory, Rectangle2D bounds) {
+
+    Rectangle shape = new Rectangle(-10,-10, 20, 20);
+
+    Graph graph = factory.createGraph();
    
-    Rectangle shape = new Rectangle(-10,-10,20,20);
-   
-    Node mom = graph.addNode(getPoint(-30,0), shape, "mom"); 
-    Node dad = graph.addNode(getPoint( 30,0), shape, "dad");
+    Node mom = factory.createNode(graph, shape, "mom");
+    mom.getPosition().setLocation(-30,0);
     
-    MutableGraph sub = new MutableGraphImpl();
-    Node lars =  sub.addNode(getPoint(-30,0), shape, "lars"); 
-    Node sven =  sub.addNode(getPoint(  0,0), shape, "sven"); 
-    Node nils =  sub.addNode(getPoint(+30,0), shape, "nils"); 
+    Node dad = factory.createNode(graph, shape, "dad");
+    dad.getPosition().setLocation( 30,0);
+    
 
-    graph.addNode(getPoint(00,70), new Rectangle(-50,-20, 100, 40), sub);
+    Graph sub = factory.createGraph();
+    
+    Node lars = factory.createNode(sub, shape, "lars");
+    lars.getPosition().setLocation(-30,0);
+    Node sven = factory.createNode(sub, shape, "sven");
+    sven.getPosition().setLocation(  0,0);
+    Node nils = factory.createNode(sub, shape, "nils");
+    nils.getPosition().setLocation( 30,0);
 
-    return ModelHelper.getBounds(graph.getNodes());
+    Node brothers = factory.createNode(graph, new Rectangle(-50,-20, 100, 40), sub);
+    brothers.getPosition().setLocation( 0,50);
+    
+    return graph;
   }
 
 } //TestFactory

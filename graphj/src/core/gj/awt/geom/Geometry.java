@@ -102,13 +102,23 @@ public class Geometry {
   }
   
   /**
-   * Returns the delta of two vectors.
+   * substracts a from b
    * <pre>
    *   (a1,a2) -> (b1,b2) -> (b1-a1, b2-a2)
    * </pre>
    */
-  public static Point2D getDelta(Point2D vectorA, Point2D vectorB) {
+  public static Point2D sub(Point2D vectorA, Point2D vectorB) {
     return new Point2D.Double(vectorB.getX()-vectorA.getX(), vectorB.getY()-vectorA.getY());
+  }
+  
+  /**
+   * adds a to b
+   * <pre>
+   *   (a1,a2) -> (b1,b2) -> (a1+b1, a2+b2)
+   * </pre>
+   */
+  public static Point2D add(Point2D vectorA, Point2D vectorB) {
+    return new Point2D.Double(vectorB.getX()+vectorA.getX(), vectorB.getY()+vectorA.getY());
   }
   
   /**
@@ -225,9 +235,9 @@ public class Geometry {
     //       \|         b
     //        |         b 
 
-    Point2D vectorA = getDelta(aStart, aEnd),   // a-a
-            vector1 = getDelta(aStart, bStart), // a-b1
-            vector2 = getDelta(aStart, bEnd);   // a-b2
+    Point2D vectorA = sub(aStart, aEnd),   // a-a
+            vector1 = sub(aStart, bStart), // a-b1
+            vector2 = sub(aStart, bEnd);   // a-b2
 
     // .. cross-product is '-' for 'left' and '+' for right
     // so we hope for xp(aa,ab1) * x(aa,ab2) < 0 because
@@ -241,9 +251,9 @@ public class Geometry {
     }
     
     // The same for the other line
-    Point2D vectorB = getDelta(bStart, bEnd);   // b-b
-            vector1 = getDelta(bStart, aStart); // b-a1
-            vector2 = getDelta(bStart, aEnd);   // b-a2
+    Point2D vectorB = sub(bStart, bEnd);   // b-b
+            vector1 = sub(bStart, aStart); // b-a1
+            vector2 = sub(bStart, aEnd);   // b-a2
         
     if (getCrossProduct(vectorB,vector1) * getCrossProduct(vectorB,vector2) >0) {
       return false;

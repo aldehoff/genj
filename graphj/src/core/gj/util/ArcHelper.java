@@ -19,9 +19,12 @@ import gj.awt.geom.Geometry;
 import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Node;
+
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * A simplified layout for arcs */
@@ -32,6 +35,14 @@ public class ArcHelper {
    */
   public static Path update(Arc arc) {
     return update(arc.getPath(), arc.getStart(), arc.getEnd());
+  }
+  
+  /**
+   * Updates a set of arcs
+   */
+  public static void updateArcs(Collection arcs) {
+    Iterator it = arcs.iterator();
+    while (it.hasNext()) update((Arc)it.next());
   }
 
   /**

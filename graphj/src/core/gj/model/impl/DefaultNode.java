@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * @see gj.model.Node
  */
-public class NodeImpl implements Node {
+public class DefaultNode implements Node {
   
   /** the default shape */
   private static Shape EMPTY_SHAPE = new Rectangle();
@@ -49,9 +49,9 @@ public class NodeImpl implements Node {
   /**
    * Constructor
    */  
-  /*package*/ NodeImpl(Point2D position, Shape shape, Object content) {
+  /*package*/ DefaultNode(Point2D position, Shape shape, Object content) {
     
-    this.position = position;
+    this.position = position!=null ? position : new Point2D.Double();
     this.content = content;
     this.shape = shape!=null ? shape : EMPTY_SHAPE;
   }
@@ -59,14 +59,14 @@ public class NodeImpl implements Node {
   /**
    * Keeps track of one more incoming/outgoing arc
    */
-  /*package*/ void addArc(ArcImpl arc) {
+  /*package*/ void addArc(DefaultArc arc) {
     arcs.add(arc);
   }
   
   /**
    * Forgets about one arc
    */
-  /*package*/ void removeArc(ArcImpl arc) {
+  /*package*/ void removeArc(DefaultArc arc) {
     // an arc could be kept twice in case of a loop
     while (arcs.remove(arc)) {};
   }
@@ -116,20 +116,6 @@ public class NodeImpl implements Node {
   }
   
   /**
-   * @see MutableNode#setShape(Shape)
-   */
-  public void setShape(Shape set) {
-    shape = set;
-  }
-  
-  /**
-   * @see MutableNode#setContent(Object)
-   */
-  public void setContent(Object set) {
-    content = set;
-  }
-  
-  /**
    * String representation
    */
   public String toString() {
@@ -140,4 +126,4 @@ public class NodeImpl implements Node {
     }
   }
   
-}
+} //DefaultNode

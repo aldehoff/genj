@@ -19,14 +19,12 @@ import gj.awt.geom.Geometry;
 import gj.awt.geom.ShapeHelper;
 import gj.layout.Layout;
 import gj.layout.LayoutRenderer;
-import gj.model.Arc;
-import gj.model.MutableGraph;
 import gj.model.Node;
+import gj.shell.model.ShellGraph;
+import gj.shell.model.ShellNode;
 import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.ReflectHelper;
-import gj.util.ArcHelper;
-import gj.util.ArcIterator;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -77,7 +75,7 @@ public class GraphWidget extends JPanel {
   };
   
   /** the graph we're displaying */
-  private MutableGraph graph;
+  private ShellGraph graph;
   
   /** the size of the graph */
   private Rectangle graphBounds;
@@ -89,7 +87,7 @@ public class GraphWidget extends JPanel {
   private LayoutRenderer layoutRenderer = null;
   
   /** the handle on current selection */
-  private Handle selection = null;
+  private ShellNode selection = null;
   
   /** whether quicknode is enabled */
   private boolean quickNode = false;
@@ -111,7 +109,7 @@ public class GraphWidget extends JPanel {
   /** the renderer we're using */
   private GraphRenderer graphRenderer = new GraphRenderer() {
     protected Color getColor(Node node) {
-      return selection!=null&&selection.is(node) ? Color.blue : Color.black; 
+      return selection==node ? Color.blue : Color.black; 
     }
   };
   
@@ -130,7 +128,7 @@ public class GraphWidget extends JPanel {
   /**
    * Accessor - Graph
    */
-  public void setGraph(MutableGraph setGraph, Rectangle setBounds) {
+  public void setGraph(ShellGraph setGraph, Rectangle setBounds) {
     
     // cleanup data
     graph = setGraph;
@@ -200,7 +198,6 @@ public class GraphWidget extends JPanel {
     JPopupMenu result = new JPopupMenu();
     result.add(new ActionResizeNode());
     result.add(new ActionDeleteNode());
-    result.add(new ActionCreateArc(where));
     result.add(new ActionSetNodeContent());
     JMenu mShape = new JMenu("Set Shape");
     for (int i=0;i<shapes.length;i++)
@@ -239,29 +236,6 @@ public class GraphWidget extends JPanel {
     result.add(new ActionCreateNode(pos));
     result.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleQuickNode()));
     return result;
-  }
-
-  /**
-   *  Creates a node at given position
-   */
-  private void createNode(Point screen, Object object) {
-
-    // let the graph do it
-    graph.addNode(content.getPoint(screen), shapes[0], object);
-    
-    // show it
-    repaint();
-  }
-  
-  /** 
-   * Update nodes arcs
-   */
-  private void updateArcs(Node node) {
-    // update it's arcs
-    ArcIterator it = new ArcIterator(node);
-    while (it.next()) ArcHelper.update(it.arc);
-    // show it
-    repaint();
   }
 
   /**
@@ -304,10 +278,14 @@ public class GraphWidget extends JPanel {
       // nothing to do?
       if (graph==null) return;
       // something there?
-      selection = Handle.get(graph, content.getPoint(e.getPoint()));
+      Node oldSelection = selection;
+      selection = graph.getNode(content.getPoint(e.getPoint()));
       // start dragging?
       if (selection!=null && (e.getModifiers()&e.BUTTON1_MASK)!=0) {
-        dndMoveNode.start(e.getPoint());
+        if (oldSelection==selection)
+          dndMoveNode.start(e.getPoint());
+        else
+          dndCreateArc.start(e.getPoint());
       }
       // always show
       repaint();
@@ -315,16 +293,25 @@ public class GraphWidget extends JPanel {
     }
     /** callback */
     public void mouseReleased(MouseEvent e) {
+      
+      // context menu?
       if ((e.getModifiers()&e.BUTTON3_MASK)!=0) {
         // popup
         JPopupMenu menu = selection!=null ? getNodePopupMenu(e.getPoint()) : getCanvasPopupMenu(e.getPoint());
         menu.show(content,e.getX(),e.getY());
         return;
       }
+      
+      // quick create?
       if ((e.getModifiers()&e.BUTTON1_MASK)!=0) {
-        if (quickNode) createNode(e.getPoint(),""+(graph.getNodes().size()+1));
+        if (quickNode) {
+           graph.createNode(shapes[0], ""+(graph.getNodes().size()+1), content.getPoint(e.getPoint()));
+           repaint();
+        } 
         return;
       }
+      
+      // done
     }
   } //DnDIdle
   
@@ -345,7 +332,7 @@ public class GraphWidget extends JPanel {
     /** callback */
     public void mouseDragged(MouseEvent e) {
       // move the selected
-      selection.moveBy(Geometry.getDelta(from, e.getPoint()));
+      selection.translate(Geometry.sub(from, e.getPoint()));
       from = e.getPoint();
       // show
       repaint();
@@ -356,38 +343,44 @@ public class GraphWidget extends JPanel {
    * Mouse Analyzer - Create an Arc
    */
   private class DnDCreateArc extends DnD{
-    private Arc arc;
-    private Node dummy;
+    /** a dummy to */
+    private ShellNode dummy;
     /** start */
     protected void start(Point at) {
       super.start(at);
-      dummy = graph.addNode(screen2model(at), null, null);      
-      arc = graph.addArc(selection, dummy, path);
-      repaint();
+      dummy = null;
     }
     /** stop */
     protected void stop() {
-      if (arc!=null) {
-        graph.removeArc(arc);
-        graph.removeNode(dummy);
-        arc=null;
+      if (dummy!=null) {
+        dummy.delete();
       }
     }
     /** callback */
     public void mouseReleased(MouseEvent e) {
       stop();
-      Node to = content.getPathTo(e.getPoint());
-      if (to!=null) {
-        graph.addArc(selection, to, null);
-        updateArcs(to);
+      if (dummy!=null) {
+        ShellNode to = graph.getNode(content.getPoint(e.getPoint()));
+        if (to!=null) graph.createArc(selection, to);
       }
       repaint();
       dndNoOp.start(e.getPoint());
     }
     /** callback */
-    public void mouseMoved(MouseEvent e) {
-      dummy.getPosition().setLocation(screen2model(e.getPoint()));
-      updateArcs(dummy);
+    public void mouseDragged(MouseEvent e) {
+      // not really draggin yet?
+      if (dummy==null) {
+        // have to go outside first
+        if (graph.getNode(content.getPoint(e.getPoint()))==selection)
+          return;
+        // create dummies
+        dummy = graph.createNode(null, null);      
+        graph.createArc(selection, dummy);
+      }
+      // place dummy (tip of arc)
+      dummy.setPosition(content.getPoint(e.getPoint()));
+      // show
+      repaint();
     }
   } //DnDCreateArc
 
@@ -413,7 +406,7 @@ public class GraphWidget extends JPanel {
     public void mouseMoved(MouseEvent e) {
 
       // change shape
-      Point2D delta = selection.getDistance(content.getPoint(e.getPoint()));
+      Point2D delta = Geometry.sub(selection.getPosition(), content.getPoint(e.getPoint()));
       double 
         sx = Math.max(0.1,Math.abs(delta.getX())/dim.width *2),
         sy = Math.max(0.1,Math.abs(delta.getY())/dim.height*2);
@@ -456,15 +449,6 @@ public class GraphWidget extends JPanel {
   }
 
   /**
-   * How to handle - Creats an arc
-   */
-  private class ActionCreateArc extends UnifiedAction {
-    private Point start;
-    protected ActionCreateArc(Point where) { super("Arc to"); start=where; }
-    protected void execute() { dndCreateArc.start(start);  }
-  }
-  
-  /**
    * How to handle - Change node content
    */
   private class ActionSetNodeContent extends UnifiedAction {
@@ -493,8 +477,8 @@ public class GraphWidget extends JPanel {
     protected ActionCreateNode(Point set) { super("Create node"); pos = set; }
     protected void execute() {
       String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
-      if (txt==null) return;
-      createNode(pos, txt);
+      if (txt!=null) graph.createNode(shapes[0], txt, content.getPoint(pos));
+      repaint();
     }
   }
 
@@ -606,105 +590,5 @@ public class GraphWidget extends JPanel {
     }
   
   } //Content
-  
-//  /**
-//   * A selection
-//   */
-//  /*package*/ static class Path {
-//    /** the intial graph */
-//    private MutableGraph graph;
-//    /** the path state */
-//    private ArrayList path = new ArrayList();
-//    /**
-//     * constructor
-//     */
-//    /*package*/ Path(MutableGraph grAph) {
-//      graph = grAph;
-//    }
-//    /**
-//     * test for empty
-//     */
-//    /*package*/ boolean isEmpty() {
-//      return path.isEmpty();
-//    }
-//    /**
-//     * Add a node
-//     */
-//    /*package*/ void add(Node node) {
-//      path.add(node);
-//    }
-//    /**
-//     * The node at the end of the path
-//     */ 
-//    /*package*/ Node getNode() {
-//      return path.isEmpty() ? null : (Node)path.get(path.size()-1);      
-//    }
-//    /**
-//     * The graph at the end of the path
-//     */
-//    /*package*/ MutableGraph getGraph() {
-//      // the graph is either content of the parent node
-//      if (path.size()>1) {
-//        Node node = (Node)path.get(path.size()-2);
-//        return (MutableGraph)node.getContent();
-//      }
-//      
-//      // or the master graph
-//      return graph;      
-//    }
-//    /**
-//     * Returns the point in selection space
-//     */
-//    /*package*/ Point getPoint(Point model) {
-//      Point result = new Point(model);
-//      for (int i=0; i<path.size()-1; i++) {
-//        Point2D gpos = ((Node)path.get(i)).getPosition();;
-//        result.x -= (int)gpos.getX(); 
-//        result.y -= (int)gpos.getY(); 
-//      }
-//      return result;
-//    }
-//    /**
-//     * Validate spacing
-//     */
-//    /*package*/ void validate() {
-//      validateRecursively(graph, 0);
-//    }
-//    private void validateRecursively(MutableGraph graph, int i) {
-//      
-//      // nothing to do if last node in path
-//      if (i==path.size()-1)
-//        return;
-//        
-//      // the node in graph we're concerned about
-//      Node node = (Node)path.get(i);
-//
-//      // recurse into node's content
-//      MutableGraph content = (MutableGraph)node.getContent();
-//      validateRecursively(content, i+1);
-//      
-//      // check bounds
-//      Rectangle2D bounds = ModelHelper.getBounds(content.getNodes());
-//      
-//      // recenter nodes
-//      Point2D.Double delta = new Point2D.Double(-bounds.getCenterX(), -bounds.getCenterY());
-//      Iterator nodes = content.getNodes().iterator();
-//      while (nodes.hasNext())
-//        ModelHelper.move( (Node)nodes.next(), delta);
-//        
-//      // place node
-//      ModelHelper.move( node, Geometry.getNegative(delta));
-//
-//      // update node's shape
-//      graph.setShape(node, new Rectangle2D.Double(
-//        -bounds.getWidth()/2,
-//        -bounds.getHeight()/2,
-//        bounds.getWidth(),
-//        bounds.getHeight()
-//      ));
-//        
-//      // done
-//    }
-//  } //Path
   
 } //GraphWidget

@@ -43,7 +43,7 @@ public class Branch {
       // don't go twice or loop
       if (!it.isFirst||it.isLoop) continue;
       // update the node
-      ModelHelper.move(it.dest, delta);
+      ModelHelper.translate(it.dest, delta);
     }
 
     // done      
@@ -109,7 +109,7 @@ public class Branch {
   private void finalizeRecursively(Node node, Node parent, Point2D delta) {
 
     // change the node's position
-    ModelHelper.move(node, delta);
+    ModelHelper.translate(node, delta);
 
     // propagate via arcs
     ArcIterator it = new ArcIterator(node);
@@ -135,7 +135,7 @@ public class Branch {
    */
   /*package*/ void moveBy(int dlat, int dlon, Orientation o) {
     contour.translate(dlat, dlon);
-    ModelHelper.move(root, o.getPoint(dlat, dlon));
+    ModelHelper.translate(root, o.getPoint(dlat, dlon));
   }
 
   /**

@@ -15,14 +15,12 @@
  */
 package gj.model.factory;
 
-import gj.awt.geom.Path;
-import gj.model.MutableGraph;
+import gj.model.Arc;
+import gj.model.Factory;
+import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcHelper;
-import gj.util.ModelHelper;
 
-import java.awt.Shape;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +28,7 @@ import java.util.Map;
 /**
  * GraphFactory - a Tree
  */
-public class TreeFactory extends AbstractFactory {
+public class TreeFactory extends AbstractGraphFactory {
   
   /** the maximum depth */
   private int maxDepth = 5;
@@ -110,19 +108,20 @@ public class TreeFactory extends AbstractFactory {
     };
     
   /**
-   * @see gj.model.factory.Factory#create(gj.model.MutableGraph, java.awt.geom.Rectangle2D, java.awt.Shape)
+   * @see gj.model.factory.AbstractGraphFactory#create(gj.model.Factory, java.awt.geom.Rectangle2D)
    */
-  public Rectangle2D create(MutableGraph graph, Rectangle2D bounds, Shape nodeShape) {
+  public Graph create(Factory factory, Rectangle2D bounds) {
+    
+    // create the graph
+    Graph graph = factory.createGraph();
     
     // We loop through the sample data
     Map nodes = new HashMap(sample.length);
     for (int s = 0; s < sample.length; s++) {
-      
+
       String key = sample[s][0];
-      Point2D pos = super.getRandomPosition(bounds,nodeShape);
-      
-      Node node = graph.addNode(pos, nodeShape, key);
-      
+      Node node = factory.createNode(graph, null, key);
+      node.getPosition().setLocation(super.getRandomPosition(bounds, node.getShape()));
       nodes.put(key, node);
     }
      
@@ -131,16 +130,19 @@ public class TreeFactory extends AbstractFactory {
       for (int c = 1; c < sample[s].length; c++) {
         String key = sample[s][c];        
         Node to = (Node)nodes.get(key);
+
+        Arc arc;
         if (Math.random()>0.5) {
-          ArcHelper.update(graph.addArc(from, to, new Path()));
+          arc = factory.createArc(graph, from, to);
         } else {
-          ArcHelper.update(graph.addArc(to, from, new Path()));
+          arc = factory.createArc(graph, to, from);
         }
+        ArcHelper.update(arc);
       }
     }
     
     // Done    
-    return ModelHelper.getBounds(nodes.values());
+    return graph;
   }
 
 } //TreeFactory

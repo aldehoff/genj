@@ -20,11 +20,13 @@ import gj.io.GraphWriter;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.layout.random.RandomLayout;
-import gj.model.MutableGraph;
-import gj.model.factory.Factory;
+import gj.model.factory.AbstractGraphFactory;
+import gj.shell.model.ShellFactory;
+import gj.shell.model.ShellGraph;
 import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.Properties;
+import gj.util.ModelHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -57,7 +59,7 @@ public class Shell {
   private LayoutWidget layoutWidget;
   
   /** the graph we're looking at */
-  private MutableGraph graph;
+  private ShellGraph graph;
   
   /** whether we perform an animation after layout */
   private boolean isAnimation = true;
@@ -69,7 +71,7 @@ public class Shell {
   private Properties properties = new Properties(Shell.class, "shell.properties");
   
   /** our factories */
-  private Factory[] factories = (Factory[])properties.get("factory", new Factory[0]);
+  private AbstractGraphFactory[] factories = (AbstractGraphFactory[])properties.get("factory", new AbstractGraphFactory[0]);
   
   /** our layouts */
   private Layout[] layouts = (Layout[])properties.get("layout", new Layout[0]);
@@ -170,18 +172,14 @@ public class Shell {
   }
   
   /**
-   * Creates a MutableGraph
-   */
-  private MutableGraph createMutableGraph() {
-    return new gj.model.impl.MutableGraphImpl();
-  }
-  
-  /**
    * Sets the graph we're looking at
    */
-  private void setGraph(MutableGraph graph, Rectangle2D bounds) {
+  private void setGraph(ShellGraph grAph, Rectangle2D bounds) {
     // remember
-    this.graph=graph;
+    graph = grAph;
+    // check bounds 
+    if (bounds==null)
+      bounds = ModelHelper.getBounds(graph.getNodes());      
     // propagate
     graphWidget.setGraph(graph, bounds.getBounds());
     layoutWidget.setGraph(graph);
@@ -190,7 +188,7 @@ public class Shell {
   /**
    * Creates a new graph
    */
-  private void setGraph(Factory factory) {
+  private void setGraph(AbstractGraphFactory factory) {
     // let the user change some properties
     if (PropertyWidget.hasProperties(factory)) {
       PropertyWidget content = new PropertyWidget().setInstance(factory);
@@ -198,10 +196,12 @@ public class Shell {
       if (SwingHelper.OPTION_OK!=rc) return;
       content.commit();
     }
-    // create the graph      
-    MutableGraph graph = createMutableGraph();
-    Rectangle2D bounds = factory.create(graph, createGraphBounds(), graphWidget.shapes[0]);
-    setGraph(graph, bounds.getBounds());
+    // create the graph
+    ShellGraph grAph = (ShellGraph)factory.create(
+      new ShellFactory(graphWidget.shapes[0]),
+      createGraphBounds()
+    );
+    setGraph(grAph, null);    
     // done
   }
   
@@ -308,9 +308,9 @@ public class Shell {
         if (JFileChooser.APPROVE_OPTION!=fc.showOpenDialog(frame)) return;
         file = fc.getSelectedFile();
       }
-      MutableGraph result = createMutableGraph();
-      Rectangle2D bounds = new GraphReader(new FileInputStream(file)).read(result);
-      setGraph(result, bounds);
+      ShellGraph grAph = (ShellGraph)new GraphReader(new FileInputStream(file))
+        .read(new ShellFactory(graphWidget.shapes[0]));
+      setGraph(grAph, null);
     }
   }
 
@@ -338,8 +338,8 @@ public class Shell {
    * How to handle - New Graph
    */
   protected class ActionNewGraph extends UnifiedAction {
-    private Factory factory;
-    protected ActionNewGraph(Factory factory) { 
+    private AbstractGraphFactory factory;
+    protected ActionNewGraph(AbstractGraphFactory factory) { 
       super(factory.toString());
       this.factory = factory;
     }

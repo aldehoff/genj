@@ -33,7 +33,7 @@ public class ModelHelper {
   /**
    * Translates a node's position
    */
-  public static void move(Node node, Point2D delta) {
+  public static void translate(Node node, Point2D delta) {
     Point2D pos = node.getPosition();
     pos.setLocation( pos.getX() + delta.getX(), pos.getY() + delta.getY());
   }
@@ -111,5 +111,6 @@ public class ModelHelper {
     }
     return new Rectangle2D.Double(x1,y1,x2-x1,y2-y1);
   }
+  
 
-}
+} //ModelHelper

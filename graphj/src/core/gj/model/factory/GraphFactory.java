@@ -15,15 +15,13 @@
  */
 package gj.model.factory;
 
-import gj.awt.geom.Path;
 import gj.model.Arc;
-import gj.model.MutableGraph;
+import gj.model.Factory;
+import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcHelper;
 import gj.util.ModelHelper;
 
-import java.awt.Shape;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -32,7 +30,7 @@ import java.util.List;
 /**
  * GraphFactory - a Tree
  */
-public class GraphFactory extends AbstractFactory {
+public class GraphFactory extends AbstractGraphFactory {
   
   /** connected or not */
   private boolean isConnected = true;
@@ -47,7 +45,7 @@ public class GraphFactory extends AbstractFactory {
   private int numNodes = 10;
   
   /** # number of arcs */
-  private int numArcs = 2;
+  private int minArcs = 2;
   
   /** minimum degree */
   private int minDegree = 1;
@@ -69,15 +67,15 @@ public class GraphFactory extends AbstractFactory {
   /** 
    * Getter - # number of arcs 
    */
-  public int getNumArcs() {
-    return numArcs;
+  public int getMinArcs() {
+    return minArcs;
   }
   
   /** 
    * Setter - # number of arcs 
    */
-  public void setNumArcs(int set) {
-    numArcs=set;
+  public void setMinArcs(int set) {
+    minArcs=set;
   }
   
   /** 
@@ -94,31 +92,51 @@ public class GraphFactory extends AbstractFactory {
     minDegree=set;
   }
   
-  /**
-   * @see gj.model.factory.Factory#create(gj.model.MutableGraph, java.awt.geom.Rectangle2D, java.awt.Shape)
+  /** 
+   * Getter - connected
    */
-  public Rectangle2D create(MutableGraph graph, Rectangle2D bounds, Shape nodeShape) {
+  public boolean getConnected() {
+    return isConnected;
+  }
+  
+  /** 
+   * Getter - connected
+   */
+  public void setConnected(boolean set) {
+    isConnected=set;
+  }
+  
+  /**
+   * @see gj.model.factory.AbstractGraphFactory#create(gj.model.Factory, java.awt.geom.Rectangle2D)
+   */
+  public Graph create(Factory factory, Rectangle2D bounds) {
+    
+    // create graph
+    Graph graph = factory.createGraph();
     
     // create nodes
-    createNodes(graph,bounds,nodeShape);
+    createNodes(graph, bounds, factory);
     
     // create arcs
-    createArcs(graph);
+    createArcs(graph, factory);
     
     // done
-    return ModelHelper.getBounds(graph.getNodes());
+    return graph;
   }
   
   /**
    * Creates Nodes
    */
-  private void createNodes(MutableGraph graph, Rectangle2D canvas, Shape shape) {
+  private void createNodes(Graph graph, Rectangle2D canvas, Factory factory) {
     
     // loop for nodes
     for (int n=0;n<numNodes;n++) {
-      Point2D position = getRandomPosition(canvas,shape);
-      String content = ""+(n+1);
-      Node node = graph.addNode(position, shape, content);
+      
+      Node node = factory.createNode(graph, null, ""+(n+1));
+      node.getPosition().setLocation(
+        getRandomPosition(canvas,node.getShape())
+      );
+      
     }
     
     // done
@@ -127,52 +145,45 @@ public class GraphFactory extends AbstractFactory {
   /**
    * Creates Arcs
    */
-  private void createArcs(MutableGraph graph) {
+  private void createArcs(Graph graph, Factory factory) {
+  
+    List nodes = new ArrayList(graph.getNodes());
     
     // No Nodes?
-    if (graph.getNodes().isEmpty())
+    if (nodes.isEmpty())
       return;
+
+    // create num arcs
+    for (int i=0;i<minArcs;i++) {
       
-    // validate numArcs - maximum n*(n-1)/2 so that there
-    // are no dups or loops
-    int n = graph.getNodes().size();
-    Node[] nodes = new Node[n];
-    graph.getNodes().toArray(nodes);
-    numArcs = Math.min(numArcs, n*(n-1)/2);
-    
-    // .. loop
-    for (int i=0;i<n;i++) {
-      for (int j=i+1;j<n;j++) {
-        Node from = nodes[i];
-        Node to   = nodes[j];
-        ArcHelper.update(graph.addArc(from,to,new Path()));
-      }
-    }
-    
-    List arcs = new LinkedList(graph.getArcs());
-    while (arcs.size()>numArcs) {
-      Arc arc = super.getRandomArc(arcs,false);
-      graph.removeArc(arc);
-      arcs.remove(arc);
+      Node from = super.getRandomNode(nodes, false);
+      Node to   = super.getRandomNode(nodes, false);
+      
+      if (to==from) to = super.getRandomNode(nodes, false);
+      
+      Arc arc = factory.createArc(graph, from, to);
+      
+      ArcHelper.update(arc);
     }
     
     // isConnected?
     if (isConnected) {
-      ensureConnected(graph);
+      ensureConnected(graph, factory);
     }
     
     // minDegree?
     if (minDegree>0) {
-      ensureMinDegree(graph);
+      ensureMinDegree(graph, factory);
     }
     
+    // done
   }
   
   /**
    * Creates arcs for given Nodes so that
    *  A n_x <- nodes : deg(n_x) > min
    */
-  private void ensureMinDegree(MutableGraph graph) {
+  private void ensureMinDegree(Graph graph, Factory factory) {
     
     List nodes = new ArrayList(graph.getNodes());
     
@@ -195,8 +206,8 @@ public class GraphFactory extends AbstractFactory {
       // find other
       while (true) {
         Node other = getRandomNode(others,true);
-        if ((other.getArcs().size()<minDegree)||(others.isEmpty())) {
-          ArcHelper.update(graph.addArc(node, other, new Path()));
+        if (other.getArcs().size()<minDegree||others.isEmpty()) {
+          ArcHelper.update(factory.createArc(graph, node, other));
           break;
         }
       }
@@ -207,17 +218,18 @@ public class GraphFactory extends AbstractFactory {
     // done
   }
   
+
   /**
    * Creates arcs for given Nodes so that
    *  A n_x,n_y <- nodes : con(n_i, n_j) 
    * where
    *   con(n_i, n_j) = true             , if E arc(n_i,n_j)
-   *                 = connect(n_i,n_k) , if E arc(n_j,n_k)
+   *                 = con(n_i,n_k)     , if E arc(n_j,n_k)
    *                 = false            , otherwise
    * @param nodes list of nodes that don't have arcs (mutable)
    * @param graph the graph to creat the arcs in
    */
-  protected void ensureConnected(MutableGraph graph) {
+  protected void ensureConnected(Graph graph, Factory factory) {
     
     List nodes = new LinkedList(graph.getNodes());
     
@@ -225,7 +237,7 @@ public class GraphFactory extends AbstractFactory {
       Node from = getMinDegNode(nodes,true);
       if (!ModelHelper.isNeighbour(from,nodes)) {
         Node to = getMinDegNode(nodes,false);
-        ArcHelper.update(graph.addArc(from, to, new Path()));
+        ArcHelper.update(factory.createArc(graph, from, to));
       }
     }
     

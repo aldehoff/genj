@@ -19,7 +19,7 @@ import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
-import gj.model.impl.MutableGraphImpl;
+import gj.model.impl.DefaultGraph;
 import gj.util.ArcIterator;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ import java.util.List;
  * An acyclic Graph that will reverse arcs when addition
  * would lead to directed cycle
  */
-/*package*/ class AcyclicGraph extends MutableGraphImpl {
+/*package*/ class AcyclicGraph extends DefaultGraph {
   
   /** arcs that were reversed */
   private List reversed;

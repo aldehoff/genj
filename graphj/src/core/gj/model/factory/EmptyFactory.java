@@ -15,21 +15,21 @@
  */
 package gj.model.factory;
 
-import gj.model.MutableGraph;
+import gj.model.Factory;
+import gj.model.Graph;
 
-import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
 /**
  * GraphFactory - a Tree
  */
-public class EmptyFactory extends AbstractFactory {
+public class EmptyFactory extends AbstractGraphFactory {
 
   /**
-   * @see gj.model.factory.Factory#create(gj.model.MutableGraph, java.awt.geom.Rectangle2D, java.awt.Shape)
+   * @see gj.model.factory.AbstractGraphFactory#create(gj.model.Factory, java.awt.geom.Rectangle2D)
    */
-  public Rectangle2D create(MutableGraph graph, Rectangle2D bounds, Shape nodeShape) {
-    return bounds;
+  public Graph create(Factory factory, Rectangle2D bounds) {
+    return factory.createGraph();
   }
-  
+
 } //EmptyFactory

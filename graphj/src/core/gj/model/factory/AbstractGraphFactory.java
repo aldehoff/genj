@@ -16,6 +16,8 @@
 package gj.model.factory;
 
 import gj.model.Arc;
+import gj.model.Factory;
+import gj.model.Graph;
 import gj.model.Node;
 
 import java.awt.Shape;
@@ -26,7 +28,12 @@ import java.util.List;
 /**
  * Base for all Graph/Tree/.. creation
  */
-public abstract class AbstractFactory implements Factory {
+public abstract class AbstractGraphFactory {
+  
+  /**
+   * Create a graph
+   */
+  public abstract Graph create(Factory factory, Rectangle2D bounds);
 
   /**
    * Helper that returns Point2D for given args

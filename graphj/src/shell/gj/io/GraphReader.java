@@ -15,14 +15,14 @@
  */
 package gj.io;
 
-import gj.awt.geom.Path;
 import gj.awt.geom.PathIteratorKnowHow;
 import gj.awt.geom.ShapeHelper;
 import gj.model.Arc;
-import gj.model.MutableGraph;
+import gj.model.Factory;
+import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcHelper;
-import gj.util.ModelHelper;
+
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -30,13 +30,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -55,8 +55,11 @@ public class GraphReader implements PathIteratorKnowHow  {
   /** the input we're reading from */
   private InputStream in;
   
+  /** the factory we're using */
+  private Factory factory;
+  
   /** the graph we're creating */
-  private MutableGraph graph;
+  private Graph graph;
 
   /** identity support */
   private Map 
@@ -89,40 +92,42 @@ public class GraphReader implements PathIteratorKnowHow  {
   /**
    * Read - Graph
    */
-  public Rectangle2D read(MutableGraph graph) throws IOException {
+  public Graph read(Factory faCtory) throws IOException {
+    
+    // remember
+    factory = faCtory;
+    
+    // create a graph
+    graph = factory.createGraph();
     
     try {
-      
-      // keep the graph
-      this.graph = graph;
       
       // parse
       XMLHandler handler = new XMLHandler(new GraphHandler());
       parser.parse(in, handler);
       
-      // post-work : node's arcs
-      Iterator it = nodes2arcs.keySet().iterator();
-      while (it.hasNext()) {
-        // a node and its arcs
-        Node node = (Node)it.next();
-        List arcs = (List)nodes2arcs.get(node);
-        if (arcs==null) continue;
-        // lookup arcs
-        for (int a=0; a<arcs.size(); a++) {
-          arcs.set(a, ids2arcs.get(arcs.get(a)));
-        }
-        // set on node
-        graph.setOrder(node, arcs);
-        // next
-      }
+//      // post-work : order node's arcs
+//      Iterator it = nodes2arcs.keySet().iterator();
+//      while (it.hasNext()) {
+//        // a node and its arcs
+//        Node node = (Node)it.next();
+//        List arcs = (List)nodes2arcs.get(node);
+//        if (arcs==null) continue;
+//        // lookup arcs
+//        for (int a=0; a<arcs.size(); a++) {
+//          arcs.set(a, ids2arcs.get(arcs.get(a)));
+//        }
+//        // set on node
+//        graph.setOrder(node, arcs);
+//        // next
+//      }
       
-      // post-work : graph's bounds
-      return ModelHelper.getBounds(graph.getNodes());
-      
-      // done
     } catch (SAXException e) {
       throw new IOException("Couldn't read successfully because of SAXException ("+e.getMessage()+")");
     }
+
+    // done
+    return graph;
   }
   
   /**
@@ -158,7 +163,8 @@ public class GraphReader implements PathIteratorKnowHow  {
       // the content
       String content = atts.getValue("c");
       // create the node
-      Node node = graph.addNode(pos,shape,content);
+      Node node = factory.createNode(graph, shape, content);
+      node.getPosition().setLocation( pos );
       // it's arcs
       List arcs = new ArrayList(5);
       for (int a=0;;a++) {
@@ -182,7 +188,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       Node
         s = (Node)ids2nodes.get(atts.getValue("s")),
         e = (Node)ids2nodes.get(atts.getValue("e"));
-      arc = graph.addArc(s, e, new Path());
+      arc = factory.createArc(graph, s, e);
       ids2arcs.put(atts.getValue("id"),arc);
     }
     protected ElementHandler start(String name, Attributes atts) {
