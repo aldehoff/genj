@@ -19,6 +19,8 @@
  */
 package genj.edit.beans;
 
+import java.awt.geom.Point2D;
+
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
@@ -27,9 +29,9 @@ import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
-import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
+import genj.util.swing.NestedBlockLayout;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
 
@@ -70,54 +72,61 @@ public class EventBean extends PropertyBean {
 
     super.init(setGedcom, setProp, setPath, setMgr, setReg);
     
-    // showing age@event only for individuals 
-    if (!(property.getEntity() instanceof Indi&&property instanceof PropertyEvent)) 
+    // showing age/event-has-happened if indeed an event
+    if (!(property instanceof PropertyEvent))
       return;
+    
+    NestedBlockLayout layout = new NestedBlockLayout(false, 2);
+    setLayout(layout);
     
     PropertyEvent event = (PropertyEvent)property;
     PropertyDate date = event.getDate(true);
-    Indi indi = (Indi)event.getEntity();
     
-    // Calculate label & age
-    String ageat = "even.age";
-    String age = "";
-    if ("BIRT".equals(event.getTag())) {
-      ageat = "even.age.today";
-      if (date!=null) {
-        Delta delta = Delta.get(date.getStart(), PointInTime.getNow());
-        if (delta!=null)
-          age = delta.toString();
+    // show age of individual?
+    if (property.getEntity() instanceof Indi) {
+    
+      Indi indi = (Indi)event.getEntity();
+      
+      // Calculate label & age
+      String ageat = "even.age";
+      String age = "";
+      if ("BIRT".equals(event.getTag())) {
+        ageat = "even.age.today";
+        if (date!=null) {
+          Delta delta = Delta.get(date.getStart(), PointInTime.getNow());
+          if (delta!=null)
+            age = delta.toString();
+        }
+      } else {
+        age = date!=null ? indi.getAgeString(date.getStart()) : resources.getString("even.age.?");
       }
-    } else {
-      age = date!=null ? indi.getAgeString(date.getStart()) : resources.getString("even.age.?");
+
+      JTextField txt = new JTextField(age, 16); 
+      txt.setEditable(false);
+      txt.setFocusable(false);
+      
+      add(new JLabel(resources.getString(ageat)));
+      add(txt, new Point2D.Double(1,0));
+      
+      layout.createBlock(0);
     }
-    
-    // layout
-    JLabel 
-      label1 = new JLabel(resources.getString(ageat)),
-      label2 = new JLabel(resources.getString("even.known")); 
-    
-    // 20040321 increased from 10 to 16 to account for long age string
-    GridBagHelper gh = new GridBagHelper(this);
-    
-    JTextField txt = new JTextField(age, 16); 
-    txt.setEditable(false);
-    txt.setFocusable(false);
-    gh.add(label1, 0, 0, 1, 1, GridBagHelper.FILL_HORIZONTAL    );
-    gh.add(txt   , 1, 0, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
-    
-    Boolean happened = event.isKnownToHaveHappened();
-    if (happened!=null) {
-      String[] choices = new String[]{ CloseWindow.TXT_YES, CloseWindow.TXT_NO };
-      known = new ChoiceWidget(choices, happened.booleanValue() ? choices[0] : choices[1]);
-      known.addChangeListener(changeSupport);
-      known.setEditable(false);
-      gh.add(label2, 0, 1, 1, 1, GridBagHelper.FILL_HORIZONTAL    );
-      gh.add(known , 1, 1, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
-      defaultFocus = known;
+
+    // show event-has-happened?
+    if (!"EVEN".equals(property.getTag())) {
+      Boolean happened = event.isKnownToHaveHappened();
+      if (happened!=null) {
+        
+        String[] choices = new String[]{ CloseWindow.TXT_YES, CloseWindow.TXT_NO };
+        known = new ChoiceWidget(choices, happened.booleanValue() ? choices[0] : choices[1]);
+        known.addChangeListener(changeSupport);
+        known.setEditable(false);
+        
+        add(new JLabel(resources.getString("even.known"))); 
+        add(known);
+        
+        defaultFocus = known;
+      }
     }
-    
-    gh.addFiller(2,2);
     
     // done
   }
