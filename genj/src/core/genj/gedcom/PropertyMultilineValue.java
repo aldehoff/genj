@@ -60,6 +60,14 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
     propagateChanged(this);
     lines = setValue;
   }
+  
+  /**
+   * A display value containing no newlines
+   */
+  public String getDisplayValue() {
+    int dots = lines.indexOf('\n');
+    return dots<0 ? lines : lines.substring(dots+1)+"...";
+  }
 
   /**
    * Accessor Value

@@ -53,7 +53,7 @@ public class Note extends Entity implements MultiLineProperty {
    * Returns this property as a string
    */
   public String toString() {
-    return delegate.getValue();
+    return super.toString(delegate.getDisplayValue());
   }
 
   /**

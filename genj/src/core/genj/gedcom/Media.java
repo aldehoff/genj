@@ -29,8 +29,7 @@ public class Media extends Entity {
    * @see genj.gedcom.Entity#toString()
    */
   public String toString() {
-    String title = getTitle();
-    return title.length()>0 ? title : super.toString(); 
+    return super.toString(getTitle());
   }
 
   /**

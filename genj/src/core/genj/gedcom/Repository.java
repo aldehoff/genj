@@ -28,8 +28,7 @@ public class Repository extends Entity {
    * @see genj.gedcom.Entity#toString()
    */
   public String toString() {
-    String name = getName();
-    return name.length()>0 ? name : super.toString();
+    return super.toString(getName());
   }
 
   /**

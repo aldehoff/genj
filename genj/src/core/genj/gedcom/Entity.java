@@ -198,7 +198,20 @@ public class Entity extends Property {
    * @see genj.gedcom.Property#toString()
    */
   public String toString() {
-    return getTag() + ' ' + id;
+    return toString(new StringBuffer());
+  }
+  
+  protected String toString(String prefix) {
+    return toString(new StringBuffer(prefix));
+  }
+  
+  protected String toString(StringBuffer prefix) {
+    if (prefix.length()==0)
+      prefix.append(getTag());
+    prefix.append(" (");
+    prefix.append(getId());
+    prefix.append(')');
+    return prefix.toString();
   }
 
   /**

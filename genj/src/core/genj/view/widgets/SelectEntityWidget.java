@@ -180,18 +180,14 @@ public class SelectEntityWidget extends JPanel {
      */
     private String getString(Entity e, TagPath path) {
       
-      // entity sorting = ID?
-      if (path.length()==1)
-        return e.getId() + " - " + e.toString();
-         
       // DATE?
       if (path.getLast().equals("DATE")) {
         PropertyDate pd = (PropertyDate)e.getProperty(path);
-        String date = pd!=null ? pd.getDisplayValue() : "?";
-        return  date + " - " + e.toString() + " (" + e.getId() + ')';
+        return  pd!=null ? pd.getDisplayValue() + " - " + e.toString() : e.toString();
       }
-      
-      return e.toString() + " (" + e.getId() + ')';
+
+      // default
+      return e.toString();
     }
 
   } //Renderer

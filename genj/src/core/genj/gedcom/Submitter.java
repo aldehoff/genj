@@ -28,8 +28,15 @@ public class Submitter extends Entity {
    * Returns this property as a string
    */
   public String toString() {
+    return super.toString(getName());
+  }
+  
+  /**
+   * Name of Submitter
+   */
+  public String getName() {
     Property name = getProperty("NAME");
-    return name!=null ? name.toString() : super.toString();
+    return name!=null ? name.getValue() : "";
   }
   
 } //Submitter

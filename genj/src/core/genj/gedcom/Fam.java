@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.WordBuffer;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -322,17 +320,21 @@ public class Fam extends Entity {
    */
   public String toString() {
     
-    WordBuffer wb = new WordBuffer();
-    wb.setFiller(Options.getInstance().getTxtMarriageSymbol());
+    StringBuffer result = new StringBuffer();
 
     Indi husband = getHusband();
-    if (husband!=null) wb.append(husband.toString());
+    if (husband!=null) {
+      result.append(husband.toString());
+      result.append(Options.getInstance().getTxtMarriageSymbol());
+    }
     
     Indi wife = getWife();
-    if (wife!=null) wb.append(wife.toString());
+    if (wife!=null) {
+      result.append(wife.toString());
+    }
 
     // Done
-    return wb.length()>0 ? wb.toString() : super.toString();
+    return super.toString(result);
   }
   
   /**

@@ -32,8 +32,7 @@ public class Source extends Entity {
    * Returns this property as a string
    */
   public String toString() {
-    String title = getTitle();
-    return title.length()>0 ? title : super.toString();
+    return super.toString(getTitle());
   }
   
   /** 
