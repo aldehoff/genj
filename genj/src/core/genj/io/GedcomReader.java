@@ -74,7 +74,7 @@ public class GedcomReader implements Trackable {
   private String undoLine,gedcomLine;
   private Origin origin;
   private List xrefs;
-  private String submitter;
+  private String tempSubmitter;
   private List warnings;
   private boolean cancel=false;
   private Thread worker;
@@ -312,12 +312,12 @@ public class GedcomReader implements Trackable {
     state++;
 
     // Prepare submitter
-    if (submitter!=null) {
+    if (tempSubmitter!=null) {
       try {
-        Submitter sub = (Submitter)gedcom.getEntity(Gedcom.SUBM, submitter.replace('@',' ').trim());
+        Submitter sub = (Submitter)gedcom.getEntity(Gedcom.SUBM, tempSubmitter.replace('@',' ').trim());
         gedcom.setSubmitter(sub);
       } catch (Throwable t) {
-        addWarning(line, "Submitter "+submitter+" couldn't be resolved");
+        addWarning(line, "Submitter "+tempSubmitter+" couldn't be resolved");
       }
     }
 
@@ -359,23 +359,30 @@ public class GedcomReader implements Trackable {
     //  2 "VERS", "5.5"
     //  2 "FORM", "Lineage-Linked"
     //  1 "CHAR", encoding
+    //  1 "LANG", language
     //  1 "FILE", file
-    if (!readLine()||(level!=0)||(!tag.equals("HEAD"))) {
+    if (!readLine()||level!=0||!tag.equals("HEAD"))
       throw new GedcomFormatException("Expected 0 HEAD",line);
-    }
 
     do {
+
       // read until end of header
-      if (!readLine()) {
+      if (!readLine()) 
         throw new GedcomFormatException("Unexpected end of header",line);
-      }
-      if (level==0) {
+      if (level==0)
         break;
-      }
+
       // check for submitter
-      if (level==1&&"SUBM".equals(tag)) {
-        submitter = value; 
+      if (level==1&&"SUBM".equals(tag)) 
+        tempSubmitter = value; 
+        
+      // check for language
+      if (level==1&&"LANG".equals(tag)) {
+        gedcom.setLanguage(value);
+        
+        Debug.log(Debug.INFO, this, "Found LANG "+value+" - Locale is "+gedcom.getLocale());
       }
+        
       // done
     } while (true);
 

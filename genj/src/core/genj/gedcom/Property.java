@@ -661,10 +661,32 @@ public abstract class Property implements Comparable {
    *          0 this = property <BR>
    *          1 this &gt; property
    */
-  public int compareTo(Object o) {
+  public int compareTo(Object that) {
     // safety check
-    if (!(o instanceof Property)) throw new ClassCastException("compareTo("+o+")");
-    return getValue().compareTo(((Property)o).getValue());
+    if (!(that instanceof Property)) 
+      throw new ClassCastException("compareTo("+that+")");
+    // no gedcom available?
+    return compare(this.getValue(), ((Property)that).getValue() );
+  }
+  
+  /**
+   * Compare to string gedcom language aware
+   */
+  protected int compare(String s1, String s2) {
+    
+    // I was pondering the notion of keeping cached CollationKeys
+    // for faster recurring comparisons but apparently that's not
+    // always faster and the keys have a respectable size themselves
+    // which leads me to believe a simple Collator.compare() is
+    // the better compromise here (even for sort algs)
+    
+    // gedcom and its collator available?
+    Gedcom ged = getGedcom();
+    if (ged!=null)
+      return ged.getCollator().compare(s1,s2);
+      
+    // fallback to simple compare
+    return s1.compareTo(s2);
   }
   
   /**

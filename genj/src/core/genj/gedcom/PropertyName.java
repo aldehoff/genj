@@ -58,13 +58,18 @@ public class PropertyName extends Property {
    */
   public int compareTo(Object o) {
   
-    // cast    
-    if (!(o instanceof PropertyName)) return super.compareTo(o);
-    PropertyName p = (PropertyName)o;
+    // cast to PropertyName if applicable
+    if (!(o instanceof PropertyName)) 
+      return super.compareTo(o);
+    PropertyName that = (PropertyName)o;
 
-    // check last name first then first
-    int result = getLastName().compareTo(p.getLastName());
-    return (result!=0) ? result : getFirstName().compareTo(p.getFirstName());
+    // check last name initially
+    int result = compare(this.getLastName(), that.getLastName());
+    if (result!=0)
+      return result;
+     
+    // advance to first name
+    return compare(this.getFirstName(), that.getFirstName());
   }
 
   /**

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.68 $ $Author: nmeier $ $Date: 2004-07-26 19:25:42 $
+ * $Revision: 1.69 $ $Author: nmeier $ $Date: 2004-08-25 02:59:47 $
  */
 package genj.gedcom;
 
@@ -26,6 +26,7 @@ import genj.util.ReferenceSet;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
@@ -57,10 +59,39 @@ public class Gedcom {
     LATIN1   = "LATIN1",     // a.k.a ISO-8859-1
     ANSI     = "ANSI";       // a.k.a. Windows-1252 (@see http://www.hclrss.demon.co.uk/demos/ansi.html)
   
+  /** encodings - LATIN1 and ANSI Are non-standard gedcom encodings */  
   public static final String[] ENCODINGS = { 
     ANSEL, UNICODE, ASCII, LATIN1, ANSI 
   };
 
+  /** languages - as defined by the Gedcom 5.5. standard */  
+  public static final String[] LANGUAGES = {
+    "Afrikaans","Albanian","Amharic","Anglo-Saxon","Arabic","Armenian","Assamese",
+    "Belorusian","Bengali","Braj","Bulgarian","Burmese", 
+    "Cantonese","Catalan","Catalan_Spn","Church-Slavic","Czech", 
+    "Danish","Dogri","Dutch", 
+    "English","Esperanto","Estonian", 
+    "Faroese","Finnish","French", 
+    "Georgian","German","Greek","Gujarati", 
+    "Hawaiian","Hebrew","Hindi","Hungarian", 
+    "Icelandic","Indonesian","Italian",
+    "Japanese", 
+    "Kannada","Khmer","Konkani","Korean",
+    "Lahnda","Lao","Latvian","Lithuanian", 
+    "Macedonian","Maithili","Malayalam","Mandrin","Manipuri","Marathi","Mewari", 
+    "Navaho","Nepali","Norwegian",
+    "Oriya", 
+    "Pahari","Pali","Panjabi","Persian","Polish","Prakrit","Pusto","Portuguese", 
+    "Rajasthani","Romanian","Russian", 
+    "Sanskrit","Serb","Serbo_Croa","Slovak","Slovene","Spanish","Swedish", 
+    "Tagalog","Tamil","Telugu","Thai","Tibetan","Turkish", 
+    "Ukrainian","Urdu", 
+    "Vietnamese", 
+    "Wendic" ,
+    "Yiddish"
+  };
+
+  /** record tags */
   public final static String
     INDI = "INDI", 
     FAM  = "FAM" ,
@@ -130,6 +161,15 @@ public class Gedcom {
 
   /** encoding */
   private String encoding = ANSEL;
+  
+  /** language */
+  private String language = null;
+  
+  /** cached locale */
+  private Locale cachedLocale = null;
+
+  /** cached collator */
+  private Collator cachedCollator = null;
 
   /** password for private information */
   private String password = PASSWORD_NOT_SET;
@@ -703,6 +743,20 @@ public class Gedcom {
   }
   
   /**
+   * Accessor - language
+   */
+  public String getLanguage() {
+    return language;
+  }
+  
+  /**
+   * Accessor - encoding
+   */
+  public void setLanguage(String set) {
+    language = set;
+  }
+  
+  /**
    * Accessor - encoding
    */
   public String getEncoding() {
@@ -738,6 +792,52 @@ public class Gedcom {
    */
   public boolean contains(Entity entity) {
     return getEntities(entity.getTag()).contains(entity);
+  }
+  
+  /**
+   * Return an appropriate Locale instance
+   */
+  public Locale getLocale() {
+    
+    // not known?
+    if (cachedLocale==null) {
+      
+      // known language?
+      if (language!=null) {
+        
+        // look for it
+        Locale[] locales = Locale.getAvailableLocales();
+        for (int i = 0; i < locales.length; i++) {
+          // same display language name - shortest one is best fit (e.g. 'en' instead of 'en_AU' for plain english)
+          if (locales[i].getDisplayLanguage(Locale.ENGLISH).equals(language)) {
+            if (cachedLocale==null||locales[i].toString().length()<cachedLocale.toString().length())
+              cachedLocale = locales[i];
+          }
+        }
+        
+      }
+      
+      // default?
+      if (cachedLocale==null)
+        cachedLocale = Locale.getDefault();
+      
+    }
+    
+    // done
+    return cachedLocale;
+  }
+  
+  /**
+   * Return an appropriate Collator instance
+   */
+  public Collator getCollator() {
+    
+    // not known?
+    if (cachedCollator==null) 
+      cachedCollator = Collator.getInstance(getLocale());
+    
+    // done
+    return cachedCollator;
   }
   
 } //Gedcom

@@ -287,11 +287,12 @@ public class GedcomWriter implements Trackable {
     line( 2, "TIME", time);
     if (gedcom.getSubmitter()!=null)
       line( 1, "SUBM", '@'+gedcom.getSubmitter().getId()+'@');
+    line( 1, "FILE", file);
     line( 1, "GEDC", "");
     line( 2, "VERS", "5.5");
     line( 2, "FORM", "Lineage-Linked");
     line( 1, "CHAR", encoding);
-    line( 1, "FILE", file);
+    line( 1, "LANG", gedcom.getLanguage());
     // done
   }
 
