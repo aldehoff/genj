@@ -482,9 +482,9 @@ public abstract class Report implements Cloneable {
    *
    * @param level for indent (can be thought of columns)
    * @param spacesPerLevel space character between one level
-   * @param front String in front of the indented text  
+   * @param prefix String in front of the indented text (can be null)
    */
-    public final String getIndent(int level, int spacesPerLevel, String front) {
+    public final String getIndent(int level, int spacesPerLevel, String prefix) {
         String oneLevel = "";
         while(oneLevel.length() != spacesPerLevel)
             oneLevel=oneLevel+" ";
@@ -492,7 +492,8 @@ public abstract class Report implements Cloneable {
         while (--level>0) {
             buffer.append(oneLevel);
         }
-        buffer.append(front);
+        if (prefix!=null)
+          buffer.append(prefix);
         return buffer.toString();
     }  
   
@@ -739,7 +740,7 @@ public abstract class Report implements Cloneable {
     /**
      * Constructor
      */
-    private HTMLOutput(URL url) {
+    private HTMLOutput(URL startUrl) {
       
       // non-editable
       setEditable(false);
@@ -750,21 +751,21 @@ public abstract class Report implements Cloneable {
       // events
       addHyperlinkListener(this);
       
-      // read url
-      set(url);
-
+      // remember url
+      url = startUrl;
+      
     }
     
     /**
-     * @see javax.swing.text.JTextComponent#removeNotify()
+     * @see javax.swing.JComponent#addNotify()
      */
-    public void removeNotify() {
-      // reset tooltip
-      setToolTipText(null);
+    public void addNotify() {
+      // read url (this will also make sure that document parsing happens on EDT
+      set(url);
       // continue
-      super.removeNotify();
+      super.addNotify();
     }
-
+    
     /** 
      * Set current url to render
      */

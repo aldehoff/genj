@@ -70,6 +70,7 @@ public class PropertyTreeWidget extends TreeWidget {
     this(setRoot.getGedcom());
     setRoot(setRoot);
     setExpandsSelectedPaths(true);
+    ToolTipManager.sharedInstance().registerComponent(this);
   }
     
   /**
@@ -95,26 +96,6 @@ public class PropertyTreeWidget extends TreeWidget {
     return new Dimension(256,128);
   }
   
-  /**
-   * @see javax.swing.JComponent#addNotify()
-   */
-  public void addNotify() {
-    // continue
-    super.addNotify();
-    // ready for tooltips
-    ToolTipManager.sharedInstance().registerComponent(this);
-  }
-    
-  /**
-   * @see javax.swing.JComponent#removeNotify()
-   */
-  public void removeNotify() {
-    // stop tooltips
-    ToolTipManager.sharedInstance().unregisterComponent(this);
-    // continue
-    super.removeNotify();
-  }
-    
   /**
    * Set the current root
    */
