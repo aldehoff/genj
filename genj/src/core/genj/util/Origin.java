@@ -373,6 +373,15 @@ public abstract class Origin {
     public int available() throws IOException {
       return len;
     }
+    
+    /**
+     * 20040220 have to delegate close() to 'in' to make
+     * sure the input is closed right (file open problems)
+     * @see java.io.InputStream#close()
+     */
+    public void close() throws IOException {
+      in.close();
+    }
 
     // EOC
   }
