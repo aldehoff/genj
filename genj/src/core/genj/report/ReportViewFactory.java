@@ -124,7 +124,7 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
       report = rePort;
       manager = maNager;
       // show
-      setImage(IMG);
+      setImage(report.getImage());
       setText(txt);
       // we're async
       setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);

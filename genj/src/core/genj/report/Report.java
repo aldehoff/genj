@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.52 $ $Author: nmeier $ $Date: 2004-12-07 18:00:11 $
+ * $Revision: 1.53 $ $Author: nmeier $ $Date: 2004-12-07 20:28:43 $
  */
 package genj.report;
 
@@ -48,6 +48,7 @@ import java.awt.event.MouseListener;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.text.NumberFormat;
@@ -127,6 +128,9 @@ public abstract class Report implements Cloneable {
   
   /** options */
   private List options;
+  
+  /** image */
+  private ImageIcon image;
 
   /**
    * Constructor
@@ -207,6 +211,26 @@ public abstract class Report implements Cloneable {
     
     // done
     return options;
+  }
+  
+  /**
+   * An image
+   */
+  /*package*/ ImageIcon getImage() {
+    // not known?
+    if (image==null) {
+      // prepare default
+      image = ReportViewFactory.IMG;
+      // try to load a custom one too
+      try {
+        String file = getTypeName()+".gif";
+        InputStream in = getClass().getResourceAsStream(file);
+        if (in!=null)
+          image = new genj.util.swing.ImageIcon(file, in);
+      } catch (Throwable t) {
+      }
+    }
+    return image; 
   }
 
   /**
@@ -525,16 +549,23 @@ public abstract class Report implements Cloneable {
   }
   
   /**
+   * Type name (name without packages)
+   */
+  private String getTypeName() {
+    String rtype = getClass().getName();
+    while (rtype.indexOf('.') >= 0)
+      rtype = rtype.substring(rtype.indexOf('.')+1);
+    return rtype;
+  }
+  
+  /**
    * Access to report properties
    */
   private Properties getProperties() {
     if (properties==null) {
       properties = new Properties();
       try {
-        String rtype = getClass().getName();
-        while (rtype.indexOf('.') >= 0)
-          rtype = rtype.substring(rtype.indexOf('.')+1);
-        properties.load(getClass().getResourceAsStream(rtype+".properties"));
+        properties.load(getClass().getResourceAsStream(getTypeName()+".properties"));
       } catch (Throwable t) {
         Debug.log(Debug.INFO, this, "Couldn't read properties for "+this);
       }
