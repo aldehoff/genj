@@ -27,6 +27,7 @@ import javax.swing.JToolBar;
 
 import genj.gedcom.Gedcom;
 import genj.util.Registry;
+import genj.util.swing.*;
 import genj.view.ToolBarSupport;
 
 /**
@@ -54,8 +55,8 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     ruler = new Ruler(model);
     
     // all that fits in a scrollpane
-    JScrollPane scroll = new JScrollPane(content);
-    scroll.setColumnHeaderView(ruler);
+    JScrollPane scroll = new JScrollPane(new ViewPortAdapter(content));
+    scroll.setColumnHeaderView(new ViewPortAdapter(ruler));
         
     
     // layout

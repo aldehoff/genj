@@ -17,49 +17,39 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.timeline;
+package genj.util.swing;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Rectangle;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
 import javax.swing.JComponent;
-import javax.swing.Scrollable;
 
 /**
- * The scala for our content 
+ * A simple one-child 'container' that will wrap a component
+ * for a ViewPort, making sure that this component is not
+ * sized larger than getPreferredSize(). If necessary the
+ * component is centered.
  */
-/*package*/ class Ruler extends JComponent {
-
-  /** the model */
-  private Model model;
+public class ViewPortAdapter extends JComponent {
   
+  /** the component that we adapt */
+  private JComponent comp;
+
   /**
    * Constructor
    */
-  /*package*/ Ruler(Model model) {
-    // remember
-    this.model = model;
-    // done
+  public ViewPortAdapter(JComponent c) {
+    comp = c;
+    setLayout(new GridBagLayout());
+    add(comp, new GridBagConstraints());
   }
-
-  /**
-   * @see javax.swing.JComponent#paintComponent(Graphics)
-   */
-  protected void paintComponent(Graphics g) {
-    Rectangle r = getBounds();
-    g.setColor(Color.white);
-    g.fillRect(0,0,r.width,r.height);
-    g.setColor(Color.blue);
-    g.drawRect(0,0,r.width-1,r.height-1);
-  }
-
+  
   /**
    * @see java.awt.Component#getPreferredSize()
    */
   public Dimension getPreferredSize() {
-    return new Dimension(256,32);
+    return comp.getPreferredSize();
   }
   
-} //Ruler
+} //ViewPortAdapter

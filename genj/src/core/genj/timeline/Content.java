@@ -30,7 +30,7 @@ import javax.swing.Scrollable;
 /**
  * The content rendering the timeline model
  */
-/*package*/ class Content extends JComponent implements Scrollable {
+/*package*/ class Content extends JComponent {
   
   /** the model */
   private Model model;
@@ -57,45 +57,11 @@ import javax.swing.Scrollable;
    * @see javax.swing.JComponent#paintComponent(Graphics)
    */
   protected void paintComponent(Graphics g) {
+    System.out.println(g.getClipBounds());
     g.setColor(Color.lightGray);
     g.fillRect(0,0,getWidth(),getHeight());
     g.setColor(Color.red);
     g.drawRect(0,0,getWidth()-1,getHeight()-1);
-  }
-
-  /**
-   * @see javax.swing.Scrollable#getPreferredScrollableViewportSize()
-   */
-  public Dimension getPreferredScrollableViewportSize() {
-    return getPreferredSize();
-  }
-
-  /**
-   * @see javax.swing.Scrollable#getScrollableBlockIncrement(Rectangle, int, int)
-   */
-  public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-    return 10;
-  }
-
-  /**
-   * @see javax.swing.Scrollable#getScrollableTracksViewportHeight()
-   */
-  public boolean getScrollableTracksViewportHeight() {
-    return false;
-  }
-
-  /**
-   * @see javax.swing.Scrollable#getScrollableTracksViewportWidth()
-   */
-  public boolean getScrollableTracksViewportWidth() {
-    return false;
-  }
-
-  /**
-   * @see javax.swing.Scrollable#getScrollableUnitIncrement(Rectangle, int, int)
-   */
-  public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-    return 1;
   }
 
 } //TimelineContent
