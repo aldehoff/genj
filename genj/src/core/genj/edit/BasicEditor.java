@@ -35,32 +35,24 @@ import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
+import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.KeyboardFocusManager;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -77,94 +69,94 @@ import javax.swing.event.ChangeListener;
   static {
     
     TEMPLATES.put(Gedcom.INDI,
-     "'INDI\n"+
+     "'INDI'\n"+
      " INDI:NAME INDI:SEX\n"+
-     "'INDI:BIRT @INDI:BIRT:NOTE\n"+
+     "'INDI:BIRT' (INDI:BIRT:NOTE)\n"+
      " INDI:BIRT:DATE\n"+
      " INDI:BIRT:PLAC\n"+
-     "'INDI:DEAT @INDI:DEAT:NOTE\n"+
+     "'INDI:DEAT' (INDI:DEAT:NOTE)\n"+
      " INDI:DEAT:DATE\n"+ 
      " INDI:DEAT:PLAC\n"+ 
-     "'INDI:OCCU @INDI:OCCU:NOTE\n"+
+     "'INDI:OCCU' (INDI:OCCU:NOTE)\n"+
      " INDI:OCCU\n"+
      " INDI:OCCU:DATE\n"+
      " INDI:OCCU:PLAC\n"+
-     "'INDI:RESI @INDI:RESI:NOTE\n"+
+     "'INDI:RESI' (INDI:RESI:NOTE)\n"+
      " INDI:RESI:DATE\n"+
      " INDI:RESI:ADDR\n"+
-     "'INDI:RESI:ADDR:CITY INDI:RESI:ADDR:CITY\n"+
-     "'INDI:RESI:ADDR:POST INDI:RESI:ADDR:POST\t"+
-     "'INDI:OBJE\n"+
-     "'INDI:OBJE:TITL INDI:OBJE:TITL\n"+
+     "'INDI:RESI:ADDR:CITY' INDI:RESI:ADDR:CITY\n"+
+     "'INDI:RESI:ADDR:POST' INDI:RESI:ADDR:POST\t"+
+     "'INDI:OBJE'\n"+
+     "'INDI:OBJE:TITL' INDI:OBJE:TITL\n"+
      " INDI:OBJE:FILE\n"+
-     "'INDI:NOTE\n"+
+     "'INDI:NOTE'\n"+
      " INDI:NOTE");
     
     TEMPLATES.put(Gedcom.FAM,
-     "'FAM\n"+
-     "'FAM:MARR @FAM:MARR:NOTE\n"+
+     "'FAM'\n"+
+     "'FAM:MARR' @FAM:MARR:NOTE\n"+
      " FAM:MARR:DATE\n"+
      " FAM:MARR:PLAC\n"+
-     "'FAM:ENGA\n"+
+     "'FAM:ENGA'\n"+
      " FAM:ENGA:DATE\n"+
      " FAM:ENGA:PLAC\n"+
-     "'FAM:DIV\n"+
+     "'FAM:DIV'\n"+
      " FAM:DIV:DATE\n"+
      " FAM:DIV:PLAC\n"+
-     "'FAM:EVEN\n"+
-     "'FAM:EVEN:TYPE FAM:EVEN:TYPE\n"+
+     "'FAM:EVEN'\n"+
+     "'FAM:EVEN:TYPE' FAM:EVEN:TYPE\n"+
      " FAM:EVEN:DATE\n"+
      " FAM:EVEN:PLAC\t"+
-     "'FAM:OBJE\n"+
-     "'FAM:OBJE:TITL FAM:OBJE:TITL\n"+
+     "'FAM:OBJE'\n"+
+     "'FAM:OBJE:TITL' FAM:OBJE:TITL\n"+
      " FAM:OBJE:FILE\n"+
-     "'FAM:NOTE\n"+
+     "'FAM:NOTE'\n"+
      " FAM:NOTE");
   
     TEMPLATES.put(Gedcom.OBJE,
-      "'OBJE\n"+
-      "'OBJE:TITL OBJE:TITL\n"+
-      "'OBJE:FORM OBJE:FORM\n"+
+      "'OBJE'\n"+
+      "'OBJE:TITL' OBJE:TITL\n"+
+      "'OBJE:FORM' OBJE:FORM\n"+
       " OBJE:BLOB\n"+
-      "'OBJE:NOTE\n"+
+      "'OBJE:NOTE'\n"+
       " OBJE:NOTE");
     
     TEMPLATES.put(Gedcom.NOTE,
-      "'NOTE\n"+
+      "'NOTE'\n"+
       " NOTE:NOTE");
       
     TEMPLATES.put(Gedcom.REPO,
-      "'REPO\n"+
-      "'REPO:NAME REPO:NAME\n"+
-      "'REPO:ADDR\n"+
+      "'REPO'\n"+
+      "'REPO:NAME' REPO:NAME\n"+
+      "'REPO:ADDR'\n"+
       " REPO:ADDR\n"+
-      "'REPO:ADDR:CITY REPO:ADDR:CITY\n"+
-      "'REPO:ADDR:POST REPO:ADDR:POST\n"+
-      "'REPO:NOTE\n"+
+      "'REPO:ADDR:CITY' REPO:ADDR:CITY\n"+
+      "'REPO:ADDR:POST' REPO:ADDR:POST\n"+
+      "'REPO:NOTE'\n"+
       " REPO:NOTE");
     
     TEMPLATES.put(Gedcom.SOUR,
-      "'SOUR:AUTH\nSOUR:AUTH\n"+
-      "'SOUR:TITL\nSOUR:TITL\n"+
-      "'SOUR:TEXT\nSOUR:TEXT\n"+
-      "'SOUR:OBJE\n"+
-      "'SOUR:OBJE:TITL SOUR:OBJE:TITL\n"+
+      "'SOUR:AUTH'\nSOUR:AUTH\n"+
+      "'SOUR:TITL'\nSOUR:TITL\n"+
+      "'SOUR:TEXT'\nSOUR:TEXT\n"+
+      "'SOUR:OBJE'\n"+
+      "'SOUR:OBJE:TITL' SOUR:OBJE:TITL\n"+
       " SOUR:OBJE:FILE\n"+
-      "'SOUR:NOTE\n"+
+      "'SOUR:NOTE'\n"+
       " SOUR:NOTE");
     
     TEMPLATES.put(Gedcom.SUBM,
-      "'SUBM:NAME SUBM:NAME\n"+
-      "'SUBM:ADDR\n"+
+      "'SUBM:NAME' SUBM:NAME\n"+
+      "'SUBM:ADDR'\n"+
       " SUBM:ADDR\n"+
-      "'SUBM:ADDR:CITY SUBM:ADDR:CITY\n"+
-      "'SUBM:ADDR:POST SUBM:ADDR:POST\n"+
-      "'SUBM:OBJE\n"+
-      "'SUBM:OBJE:TITL SUBM:OBJE:TITL\n"+
+      "'SUBM:ADDR:CITY' SUBM:ADDR:CITY\n"+
+      "'SUBM:ADDR:POST' SUBM:ADDR:POST\n"+
+      "'SUBM:OBJE'\n"+
+      "'SUBM:OBJE:TITL' SUBM:OBJE:TITL\n"+
       " SUBM:OBJE:FILE\n"+
-      "'SUBM:LANG SUBM:LANG\n"+
-      "'SUBM:RFN SUBM:RFN\n"+
-      "'SUBM:RIN SUBM:RIN");
+      "'SUBM:LANG' SUBM:LANG\n"+
+      "'SUBM:RFN' SUBM:RFN\n"+
+      "'SUBM:RIN' SUBM:RIN");
   }
   
 
@@ -365,10 +357,11 @@ import javax.swing.event.ChangeListener;
    */
   private void createBeans(Entity entity, String path) {
     
-    // a label?
-    if (path.startsWith("'")) {
+    // a 'label'?
+    if (path.startsWith("'")&&path.endsWith("'")) {
+      path = path.substring(1, path.length()-1);
       // add label
-      MetaProperty meta = MetaProperty.get(new TagPath(path.substring(1)));
+      MetaProperty meta = MetaProperty.get(new TagPath(path));
       if (Entity.class.isAssignableFrom(meta.getType()))
         beanPanel.add(new JLabel(meta.getName() + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT));
       else
@@ -377,8 +370,9 @@ import javax.swing.event.ChangeListener;
       return;
     } 
     // maybe a popup bean?
-    if (path.startsWith("@")) {
-      PopupBean popup = new PopupBean(createBean(entity, new TagPath(path.substring(1))));
+    if (path.startsWith("(")&&path.endsWith(")")) {
+      path = path.substring(1, path.length()-1);
+      PopupBean popup = new PopupBean(createBean(entity, new TagPath(path)));
       beanPanel.add(popup);
       // done
       return;
@@ -430,11 +424,9 @@ import javax.swing.event.ChangeListener;
   /**
    * A 'bean' we use for groups
    */
-  private static class PopupBean extends JButton implements ActionListener, PropertyChangeListener {
+  private static class PopupBean extends PopupWidget {
     
     private PropertyBean wrapped;
-    
-    private Popup popup = null;
     
     /**
      * constructor
@@ -451,76 +443,33 @@ import javax.swing.event.ChangeListener;
       setIcon(img);
 
       // fix looks
-      setFocusable(false);
       setBorder(null);
-      addActionListener(this);
       
       // done
     }
     
-    /** lifecycle callback */
-    public void addNotify() {
-      // list to focus changes
-      KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("focusOwner", this);
-      // continue
-      super.addNotify();
-    }
-    
-    /** lifecycle callback */
-    public void removeNotify() {
-      // still a popup showing?
-      if (popup!=null) {
-        popup.hide();
-        popup = null;
-      }
-      // stop listening to focus changes
-      KeyboardFocusManager.getCurrentKeyboardFocusManager().removePropertyChangeListener("focusOwner", this);
-      // continue
-      super.removeNotify();
-    }
-    
-    /** button press callback */
-    public void actionPerformed(ActionEvent e) {
-      // popup not visible?
-      if (popup!=null)
-        return;
-      // screen pos
-      Point pos = getLocationOnScreen();
-      pos.x += getWidth()/2;
-      pos.y += getHeight()/2;
-      // show popup
-      popup = PopupFactory.getSharedInstance().getPopup(this, wrapped, pos.x, pos.y);
-      popup.show();
-      wrapped.requestFocusInWindow();
+    /** popup callback */
+    protected JPopupMenu createPopup() {
+      
+      // create and fille
+      JPopupMenu popup = new JPopupMenu();
+      popup.add(wrapped);
+      
       // update image
       setIcon(wrapped.getProperty().getImage(false));
+      
+      // done
+      return popup;
     }
     
-    /** 
-     * focus property change notification 
-     * (this doesn't seem to be invoke in Java 1.4.1 with a user clicking on a textfield)
-     */
-    public void propertyChange(PropertyChangeEvent evt) {
-      // popup visible?
-      if (popup==null)
-        return;
-      // a new focus owner?
-      if (evt.getNewValue()==null)
-        return;
-      // a sub-component of this?
-      Component focus = (Component)evt.getNewValue();
-      while (true) {
-        if (focus==wrapped) 
-          return;
-        if (focus==null)
-          break;
-        focus = focus.getParent();
-      }
-      // get rid of popup
-      popup.hide();
-      popup = null;
+    /** popup callback */
+    public void showPopup() {
+      // super can do its thing
+      super.showPopup();
+      // set focus
+      wrapped.requestFocusInWindow();
     }
-        
+    
   } //Label
   
   /**

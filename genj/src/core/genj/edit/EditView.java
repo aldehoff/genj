@@ -27,6 +27,7 @@ import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
 import genj.view.ToolBarSupport;
@@ -42,6 +43,7 @@ import java.util.Stack;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 
 /**
@@ -70,7 +72,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   private Undo     undo;
   private Redo     redo;
   private Mode     mode;
-
+  private ContextMenu contextMenu = new ContextMenu();
+  
   /** whether we're sticky */
   private  boolean isSticky = false;
 
@@ -128,6 +131,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       editor.setContext(old);
       
     // show
+    contextMenu.update();
     revalidate();
     repaint();
   }
@@ -201,36 +205,30 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
    */
   public void setContext(Context context) {
     
-    // source is this view?
+    // check if we're following the context
     JComponent view = context.getView();
     if (view instanceof EditView) {
+      // not if another editor was the view responsible for context change
       if (view!=this)
         return;
     } else {
-      
-//      // don't follow context if one EditView is looking at this already
-//      EditView[] views = getInstances(context.getGedcom());
-//      for (int i = 0; i < views.length; i++) {
-//        Editor other = views[i].editor;
-//        if (other.getClass()==editor.getClass() && other.getContext().equals(context))
-//          return;
-//      }
-
       // not if we're sticky
       if (isSticky) 
         return;
     }
     
-    // get current
+    // change if applicable
     Context current = editor.getContext();
-    if (current.equals(context))
-      return;
-      
-    // remember current 
-    back.push(current);
+    if (!current.equals(context)) {
+	    // remember current 
+	    back.push(current);
+	    // tell editor
+	    editor.setContext(context);
+    }
     
-    // tell editor
-    editor.setContext(context);
+    // update context menu button
+    contextMenu.update();
+    
     // done
   }
 
@@ -259,7 +257,11 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     bh.create(undo);
     bh.create(redo);
     
+    // add actions
+    bar.add(contextMenu);
+    
     // add basic/advanced
+    bar.addSeparator();
     bh.create(mode, Images.imgAdvanced, mode.advanced);
     
     // done
@@ -285,6 +287,28 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   public Entity getEntity() {
     return editor.getContext().getEntity();
   }
+  
+  /**
+   * ContextMenu
+   */
+  private class ContextMenu extends PopupWidget {
+    
+    /** constructor */
+    private ContextMenu() {
+      setIcon(Gedcom.getImage());
+    }
+    
+    /** update */
+    private void update() {
+      setIcon(editor.getContext().getImage());
+    }
+    
+    /** override - popup creation */
+    protected JPopupMenu createPopup() {
+      return manager.getContextMenu(editor.getContext(), null, this);
+    }
+     
+  } //ContextMenu
   
   /**
    * Action - toggle
@@ -317,8 +341,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       // pop first valid on stack
       while (!stack.isEmpty()) {
         Context context = (Context)stack.pop();
-        if (context.isValid()) {
-          editor.setContext(context);      
+        if (context.isValid()&&context.getEntity()!=null) {
+          context.setSource(EditView.this);
+          setContext(context);
+          stack.pop();      
           return;
         }
       }

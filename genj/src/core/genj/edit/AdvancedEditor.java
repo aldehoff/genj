@@ -136,45 +136,6 @@ import javax.swing.event.TreeSelectionListener;
     setLayout(new BorderLayout());
     add(splitPane, BorderLayout.CENTER);
     
-    // context provider
-    tree.addMouseListener(new MouseAdapter() {   
-      /** callback - mouse press */
-      public void mousePressed(MouseEvent e) {
-        mouseReleased(e);
-      }
-      /** callback - mouse release */
-      public void mouseReleased(MouseEvent e) {
-        // no popup trigger no action
-        if (!e.isPopupTrigger()) 
-          return;
-        Point pos = e.getPoint();
-        // property at that point?
-        Property prop = tree.getPropertyAt(pos);
-        Property root = tree.getRoot();
-
-        // 20040719 got to check transient - dont want to let the user control those
-        if (prop!=null&&prop.isTransient())
-          prop = null;
-        
-        // create Context
-        Context context = new Context(gedcom, (Entity)root, prop);
-
-        // cut/copy/paste
-        List actions = Arrays.asList(new Object[]{
-          new Cut(prop),
-          new Copy(prop),
-          new Paste(prop),
-          ActionDelegate.NOOP,
-          new Add(prop)
-        });
-        
-        // show context menu
-        viewManager.showContextMenu(context, actions, tree, e.getPoint());
-  
-        // done
-      }
-    });
-    
     // done    
   }
   
@@ -490,6 +451,47 @@ import javax.swing.event.TreeSelectionListener;
       }
     }
   
+    /** callback - mouse press */
+    public void mousePressed(MouseEvent e) {
+      mouseReleased(e);
+    }
+    /** callback - mouse release */
+    public void mouseReleased(MouseEvent e) {
+      // no popup trigger no action
+      if (!e.isPopupTrigger()) 
+        return;
+      Point pos = e.getPoint();
+      
+      // property at that point?
+      Property prop = tree.getPropertyAt(pos);
+      Property root = tree.getRoot();
+      
+      // make sure it's selected
+      if (tree.getSelection()!=prop)
+        tree.setSelection(prop);
+
+      // 20040719 got to check transient - dont want to let the user control those
+      if (prop!=null&&prop.isTransient())
+        prop = null;
+      
+      // create Context
+      Context context = new Context(gedcom, (Entity)root, prop);
+
+      // cut/copy/paste
+      List actions = Arrays.asList(new Object[]{
+        new Cut(prop),
+        new Copy(prop),
+        new Paste(prop),
+        ActionDelegate.NOOP,
+        new Add(prop)
+      });
+      
+      // show context menu
+      viewManager.showContextMenu(context, actions, tree, e.getPoint());
+
+      // done
+    }
+    
     /**
      * callback - selection in tree has changed
      */
@@ -515,13 +517,9 @@ import javax.swing.event.TreeSelectionListener;
       editPane.revalidate();
       editPane.repaint();
   
-      // done on 'no selection'
+      // setup beans
       Property prop = tree.getSelection(); 
-      if (prop==null||prop.getParent()==null)
-        return;
-      
-      // Starting with new one
-      if (!prop.isSecret()) {
+      if (prop!=null&&!prop.isSecret()) {
   
         // get a bean for property
         bean = PropertyBean.get(prop);
