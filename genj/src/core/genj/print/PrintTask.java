@@ -24,6 +24,7 @@ import genj.util.Debug;
 import genj.util.Dimension2d;
 import genj.util.EnvironmentChecker;
 import genj.util.Trackable;
+import genj.util.WordBuffer;
 import genj.util.swing.ProgressWidget;
 import genj.util.swing.UnitGraphics;
 import genj.window.CloseWindow;
@@ -46,6 +47,7 @@ import javax.print.PrintException;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.print.SimpleDoc;
+import javax.print.attribute.Attribute;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttribute;
 import javax.print.attribute.PrintRequestAttributeSet;
@@ -136,11 +138,11 @@ import javax.swing.JComponent;
     if (service==null)
       throw new PrintException("Couldn't find suitable printer");
     // check suitability
+    Debug.log(Debug.INFO, this, "Found service "+service+" isDocFlavorSupported=="+service.isDocFlavorSupported(FLAVOR));
+    
     if (service.isDocFlavorSupported(FLAVOR))
       return service;
     
-   Debug.log(Debug.INFO, this, "Found service "+service+" but isDocFlavorSupported==false");
-   
     // try to find a better one
     PrintService[] suitables = PrintServiceLookup.lookupPrintServices(FLAVOR, null);
     if (suitables.length==0)
@@ -323,7 +325,11 @@ import javax.swing.JComponent;
     result = service.getSupportedAttributeValues(category, null, attributes);
     // FIXME Debugging why this might return null
     if (result==null) {
-      Debug.log(Debug.ERROR, this, "got null for "+category+" with "+attributes.toArray());
+      WordBuffer buf = new WordBuffer(',');
+      Attribute[] atts = attributes.toArray();
+      for (int i = 0; i < atts.length; i++) 
+        buf.append(atts[i].getClass().getName()+"="+atts[i].toString());
+      Debug.log(Debug.ERROR, this, "got null for "+category+" with "+buf);
     }
     // grab first
     if (result.getClass().isArray()&&result.getClass().getComponentType()==category)
