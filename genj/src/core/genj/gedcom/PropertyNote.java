@@ -28,6 +28,8 @@ import genj.util.swing.ImageIcon;
  */
 public class PropertyNote extends PropertyXRef {
 
+  public static final String TAG = "NOTE";
+
   /**
    * Empty Constructor
    */
