@@ -24,7 +24,7 @@ import java.util.Hashtable;
  *
  * $Header:
  * @author Tom Morris
- * @version 1.0
+ * @version 1.01
  */
 public class ReportTrees extends Report {
     
@@ -32,7 +32,7 @@ public class ReportTrees extends Report {
      * FIXME The parameter below should be set by a configuration
      * interface when available
      */
-    public int minTreeSize = 2;  // Don't print trees with count less than this
+    public int minGroupSize = 2;  // Don't print groups with size less than this
     
     /** this report's version */
     static final String VERSION = "1.01";
@@ -126,7 +126,7 @@ public class ReportTrees extends Report {
             int loners=0;
             for (int i=0; i<stats.numTrees; i++) {
                 int count=stats.trees[i].count;
-                if (count<minTreeSize) {
+                if (count<minGroupSize) {
                     loners +=count;
                 } else {
                     grandtotal+=count;
@@ -138,7 +138,7 @@ public class ReportTrees extends Report {
             println(i18n("grandtotal",grandtotal));
             
             if (loners>0) {
-                Object[] msgargs = {new Integer(loners), new Integer(minTreeSize)};
+                Object[] msgargs = {new Integer(loners), new Integer(minGroupSize)};
                 println("\n"+i18n("loners",msgargs));
             }
         }
