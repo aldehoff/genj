@@ -93,7 +93,6 @@ public class CircularLayout extends AbstractLayout implements Layout {
       
       // look at a circle
       CircularGraph.Circle circle = (CircularGraph.Circle)it.next();
-      System.out.println(circle);
       layout(circle, x, y);
       
       // next
