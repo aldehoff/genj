@@ -34,6 +34,8 @@
     <tocitem target="d.todo"     text="To Do">
     </tocitem>
     <tocitem target="d.faq"     text="FAQ">
+      <tocitem target="d.s.faq1"     text="General Information"    />
+      <tocitem target="d.s.faq2"     text="Working with the Tree View"    />
     </tocitem>
     <tocitem target="d.developer"   text="Developer HowTo">
     </tocitem>

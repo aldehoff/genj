@@ -34,6 +34,8 @@
   <mapID target="d.changes"     url="documentation/changes.html" />
   <mapID target="d.todo"     url="documentation/todo.html" />
   <mapID target="d.faq"    url="documentation/faq.html" />
+  <mapID target="d.s.faq1"    url="documentation/faq1.html" />
+  <mapID target="d.s.faq2"    url="documentation/faq2.html" />
   <mapID target="d.developer"    url="documentation/developer.html" />
   <mapID target="d.gpl"     url="documentation/gpl.html" />
 
