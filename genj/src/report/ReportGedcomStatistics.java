@@ -25,7 +25,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.44 2004-02-27 09:03:18 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.45 2004-02-27 20:43:04 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -331,7 +331,7 @@ public class ReportGedcomStatistics extends Report {
      *  Otherwise the "normal" point in time is returned.
      * @param d date for calculation
      * @return PointInTime average */
-    PointInTime calculateAveragePointInTime(PropertyDate p) {
+    private PointInTime calculateAveragePointInTime(PropertyDate p) {
         
         if(p.isRange()) {
             String[] months = PointInTime.GREGORIAN.getMonths(false);
@@ -664,7 +664,7 @@ public class ReportGedcomStatistics extends Report {
     /**
      * @param ages all ages added up (unit: days)
      * @param numAges number of persons added up
-     * @return double[] with average age
+     * @return double[] with average age (year, month, day)
      */
     private int[] calculateAverageAge(double ages, double numAges) {
         
@@ -734,7 +734,7 @@ public class ReportGedcomStatistics extends Report {
     private void printMinMaxAge(int reportIndis, int indent, String prefix, int age, ArrayList ages) {
         
         int[] avg = calculateAverageAge(age,1);
-        println(getIndent(indent)+i18n(prefix)+" "+new PointInTime.Delta(avg[0], avg[1], avg[2]));
+        println(getIndent(indent)+i18n(prefix)+" "+new PointInTime.Delta(avg[2], avg[1], avg[0]));
         if(reportIndis<3) {
             for(int i=0;i<ages.size();i++) {
                 Indi indi = (Indi)ages.get(i);
