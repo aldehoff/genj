@@ -12,6 +12,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertySex;
+import genj.gedcom.TagPath;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Iterator;
 
 /**
@@ -38,14 +38,26 @@ public class ReportEvents extends Report {
     /** whether births should be reported */
     public boolean reportBirth = true;
     
-    /** whether deaths should be reported */
-    public boolean reportDeath = true;
+    /** whether baptisms should be reported */
+    public boolean reportBaptism = true;
     
     /** whether marriages should be reported */
     public boolean reportMarriage = true;
     
     /** whether divorces should be reported */
     public boolean reportDivorce = true;
+    
+    /** whether emigration should be reported */
+    public boolean reportEmigration = true;
+    
+    /** whether immigration should be reported */
+    public boolean reportImmigration = true;
+    
+    /** whether naturalization should be reported */
+    public boolean reportNaturalization = true;
+    
+    /** whether deaths should be reported */
+    public boolean reportDeath = true;
     
     public int sex = 3;
     public String[] sexs = {i18n("sex.male"), i18n("sex.female"), i18n("sex.unknown"), i18n("sex.ignore")};
@@ -75,7 +87,7 @@ public class ReportEvents extends Report {
     public String[] handleYears = handleDays;
     
     /** this report's version */
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "1.1";
     
     /**
      * Returns the version of this script
@@ -118,23 +130,27 @@ public class ReportEvents extends Report {
     public void start(Object context) {
         
         // check that something is selected
-        if ((!reportBirth) && (!reportDeath) && (!reportMarriage) && (!reportDivorce))
+        if ((!reportBirth) && (!reportBaptism) && (!reportDeath) && (!reportMarriage) && (!reportDivorce) && (!reportEmigration) && (!reportImmigration) && (!reportNaturalization))
             return;
         
         // assuming Gedcom
         Gedcom gedcom = (Gedcom) context;
         
         // collect all individuals/families per event
-        HashMap
-        births = new HashMap(),
-        marriages = new HashMap(),
-        divorces = new HashMap(),
-        deaths = new HashMap();
+        ArrayList
+        births = new ArrayList(),
+        baptisms = new ArrayList(),
+        marriages = new ArrayList(),
+        divorces = new ArrayList(),
+        emigrations = new ArrayList(),
+        immigrations = new ArrayList(),
+        naturalizations = new ArrayList(),
+        deaths = new ArrayList();
         
         
         // loop individuals
         for (Iterator indis = gedcom.getEntities(gedcom.INDI).iterator(); indis.hasNext(); ) {
-            analyze((Indi)indis.next(), births, marriages, divorces, deaths);
+            analyze((Indi)indis.next(), births, baptisms, marriages, divorces, emigrations, immigrations, naturalizations, deaths);
         }
         
         // output results
@@ -149,6 +165,11 @@ public class ReportEvents extends Report {
             report(births);
             println();
         }
+        if (reportBaptism) {
+            println("   " + i18n("baptism"));
+            report(baptisms);
+            println();
+        }
         if (reportMarriage) {
             println("   " + i18n("marriage"));
             report(marriages);
@@ -157,6 +178,21 @@ public class ReportEvents extends Report {
         if (reportDivorce) {
             println("   " + i18n("divorce"));
             report(divorces);
+            println();
+        }
+        if (reportEmigration) {
+            println("   " + i18n("emigration"));
+            report(emigrations);
+            println();
+        }
+        if (reportImmigration) {
+            println("   " + i18n("immigration"));
+            report(immigrations);
+            println();
+        }
+        if (reportNaturalization) {
+            println("   " + i18n("naturalization"));
+            report(naturalizations);
             println();
         }
         if (reportDeath) {
@@ -170,7 +206,7 @@ public class ReportEvents extends Report {
     /**
      * Analyze one individual
      */
-    private void analyze(Indi indi, HashMap births, HashMap marriages, HashMap divorces, HashMap deaths) {
+    private void analyze(Indi indi, ArrayList births, ArrayList baptisms, ArrayList marriages, ArrayList divorces, ArrayList emigrations, ArrayList immigrations, ArrayList naturalizations, ArrayList deaths) {
         
         // consider dead?
         if (!isShowDead && indi.getDeathDate() != null && indi.getDeathDate().isValid())
@@ -182,7 +218,14 @@ public class ReportEvents extends Report {
         // look for births?
         if (reportBirth) {
             if (checkDate(indi.getBirthDate()))
-                births.put(indi, new Hit(indi.getBirthDate(), indi));
+                births.add(new Hit(indi.getBirthDate(), indi));
+        }
+        
+        if(reportBaptism) {
+            analyzeTag(indi, "INDI:BAPM", baptisms);
+            analyzeTag(indi, "INDI:BAPL", baptisms);
+            analyzeTag(indi, "INDI:CHR", baptisms);
+            analyzeTag(indi, "INDI:CHRA", baptisms);
         }
         
         // look for marriages?
@@ -191,7 +234,7 @@ public class ReportEvents extends Report {
             for (int j = 0; j < fams.length; j++) {
                 Fam fam = fams[j];
                 if (checkDate(fam.getMarriageDate()))
-                    marriages.put(fam, new Hit(fam.getMarriageDate(), fam));
+                    marriages.add(new Hit(fam.getMarriageDate(), fam));
             }
         }
         
@@ -201,25 +244,40 @@ public class ReportEvents extends Report {
             for (int j = 0; j < fams.length; j++) {
                 Fam fam = fams[j];
                 if (checkDate(fam.getDivorceDate()))
-                    divorces.put(fam, new Hit(fam.getDivorceDate(), fam));
+                    divorces.add(new Hit(fam.getDivorceDate(), fam));
             }
         }
+        
+        if(reportEmigration)
+            analyzeTag(indi, "INDI:EMIG", emigrations);
+        
+        if(reportImmigration)
+            analyzeTag(indi, "INDI:IMMI", immigrations);
+        
+        if(reportNaturalization)
+            analyzeTag(indi, "INDI:NATU", naturalizations);
         
         // look for deaths?
         if (reportDeath) {
             if (checkDate(indi.getDeathDate()))
-                deaths.put(indi, new Hit(indi.getDeathDate(), indi));
+                deaths.add(new Hit(indi.getDeathDate(), indi));
         }
         
         // done
     }
     
+    private void analyzeTag(Indi indi, String tag, ArrayList list) {
+        if((indi.getProperty(new TagPath(tag))!=null) && (indi.getProperty(new TagPath(tag+":DATE"))!=null)) {
+            PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath(tag+":DATE"));
+            if(checkDate(prop))
+                list.add(new Hit(prop, indi));
+        }
+    }
+    
     /**
      * Output a list of hits
      */
-    private void report(HashMap ent2hits) {
-        
-        ArrayList hits = new ArrayList(ent2hits.values());
+    private void report(ArrayList hits) {
         
         // sort the hits either by
         //  year/month/day or
@@ -292,7 +350,7 @@ public class ReportEvents extends Report {
         
         PointInTime start = date.getStart();
         if (start.getCalendar()!=start.GREGORIAN)
-          return false;
+            return false;
         
         // check criteria
         boolean d = false, m = false, y = false;
