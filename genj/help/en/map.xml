@@ -41,26 +41,26 @@
 
   <mapID target="team"      url="team.html" />
 
-  <mapID target="img.NewGedcom"   url="images/Gedcom.gif"      />
-  <mapID target="img.NewEdit"     url="images/NewEdit.gif"     />
-  <mapID target="img.NewTree"     url="images/NewTree.gif"     />
-  <mapID target="img.NewTable"    url="images/NewTable.gif"    />
-  <mapID target="img.NewTimeline" url="images/NewTimeline.gif" />
-  <mapID target="img.NewReport"   url="images/NewReport.gif"   />
-  <mapID target="img.ResEdit"     url="images/ResEdit.gif"     />
-  <mapID target="img.Settings"    url="images/Settings.gif"    />
+  <mapID target="img.NewGedcom"   url="../images/Gedcom.gif"      />
+  <mapID target="img.NewEdit"     url="../images/NewEdit.gif"     />
+  <mapID target="img.NewTree"     url="../images/NewTree.gif"     />
+  <mapID target="img.NewTable"    url="../images/NewTable.gif"    />
+  <mapID target="img.NewTimeline" url="../images/NewTimeline.gif" />
+  <mapID target="img.NewReport"   url="../images/NewReport.gif"   />
+  <mapID target="img.ResEdit"     url="../images/ResEdit.gif"     />
+  <mapID target="img.Settings"    url="../images/Settings.gif"    />
 
-  <mapID target="img.Indi"        url="images/Indi.gif" />
-  <mapID target="img.Fam"         url="images/Fam.gif" />
-  <mapID target="img.Note"        url="images/Note.gif" >
-  <mapID target="img.Media"       url="images/Media.gif" />
-  <mapID target="img.Source"      url="images/Source.gif" />
-  <mapID target="img.Submitter"   url="images/Submitter.gif" />
+  <mapID target="img.Indi"        url="../images/Indi.gif" />
+  <mapID target="img.Fam"         url="../images/Fam.gif" />
+  <mapID target="img.Note"        url="../images/Note.gif" >
+  <mapID target="img.Media"       url="../images/Media.gif" />
+  <mapID target="img.Source"      url="../images/Source.gif" />
+  <mapID target="img.Submitter"   url="../images/Submitter.gif" />
 
-  <mapID target="img.Welcome"       url="images/Welcome.gif" />
-  <mapID target="img.Intro"       url="images/Cause.gif" />
-  <mapID target="img.Concept"     url="images/Format.gif" />
-  <mapID target="img.Gedcom"      url="images/Blob.gif" />
+  <mapID target="img.Welcome"       url="../images/Welcome.gif" />
+  <mapID target="img.Intro"       url="../images/Cause.gif" />
+  <mapID target="img.Concept"     url="../images/Format.gif" />
+  <mapID target="img.Gedcom"      url="../images/Blob.gif" />
 
 
 </map>
