@@ -217,8 +217,10 @@ public abstract class Relationship {
       assume(entity, Indi.class);
   
       // lookup family for child    
-      Fam fam = parent.getFam(0);
-      if (fam==null) {
+      Fam fam;
+      if (parent.getNoOfFams()>0) {
+        fam = parent.getFam(0);
+      } else {
         fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
         fam.setSpouse(parent);
         
@@ -369,7 +371,9 @@ public abstract class Relationship {
       assume(entity, Indi.class);
       
       // lookup family for spouse
-      Fam fam = spouse.getFam(0);
+      Fam fam = null;
+      if (spouse.getNoOfFams()>0)
+        fam = spouse.getFam(0);
       if (fam==null||fam.getNoOfSpouses()>=2) {
         fam = (Fam)getGedcom().createEntity(Gedcom.FAM).addDefaultProperties();
         fam.setSpouse(spouse);
