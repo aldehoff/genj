@@ -182,7 +182,7 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
           nextTag = "CONC";
           
           // make sure we don't end with white-space
-          while ( (end>start+valueLineBreak) && (Character.isWhitespace(value.charAt(end-1)) || Character.isWhitespace(value.charAt(end))) )
+          while ( end<value.length() && end>start+1 && (Character.isWhitespace(value.charAt(end-1)) || Character.isWhitespace(value.charAt(end))) )
             end--;
         }
         

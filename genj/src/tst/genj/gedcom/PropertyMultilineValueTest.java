@@ -43,7 +43,7 @@ public class PropertyMultilineValueTest extends TestCase {
     iterator("abcde");
 
     // check result
-    assertLine(0, MLPATH.getLast(), "abcde");    
+    assertLine(0, null, "abcde");    
     assertNoNext();
     
     // ok    
@@ -58,7 +58,7 @@ public class PropertyMultilineValueTest extends TestCase {
     iterator("abcde\nfghij");
 
     // check result
-    assertLine(0, MLPATH.getLast(), "abcde");    
+    assertLine(0, null, "abcde");    
     assertNext();
     assertLine(1, CONT, "fghij");    
     assertNoNext();
@@ -75,7 +75,7 @@ public class PropertyMultilineValueTest extends TestCase {
     iterator("0123456789012345678901234567890123456789xyz");
 
     // check result
-    assertLine(0, MLPATH.getLast(), "0123456789012345678901234567890123456789");    
+    assertLine(0, null, "0123456789012345678901234567890123456789");    
     assertNext();
     assertLine(1, CONC, "xyz");    
     assertNoNext();
@@ -92,7 +92,7 @@ public class PropertyMultilineValueTest extends TestCase {
     iterator("\nabcde\n\n  fg  \nhi\n\n");
 
     // check result
-    assertLine(0, MLPATH.getLast(), "");    
+    assertLine(0, null, "");    
     assertNext();
     assertLine(1, CONT, "abcde");    
     assertNext();
@@ -106,6 +106,32 @@ public class PropertyMultilineValueTest extends TestCase {
     assertNoNext();
 
     // ok    
+  }
+  
+  /**
+   * Test space at line breaks
+   */
+  public void testSpaceAtLineBreak() {
+
+    // simple case where the break falls into space  |<-right here
+    iterator("123 567 901 345 789 123 567 901 345 789 xxx");
+
+    // check result
+    assertLine(0, null, "123 567 901 345 789 123 567 901 345 78");    
+    assertNext();
+    assertLine(1, CONC, "9 xxx");    
+    assertNoNext();
+
+    // tougher case where the break is huge          |<-up to here
+    iterator("1                                       xxx");
+
+    // check result
+    assertLine(0, null, "1");    
+    assertNext();
+    assertLine(1, CONC, "                                       x");
+    assertNext();
+    assertLine(1, CONC, "xx");    
+    assertNoNext();
   }
 
   /**
@@ -127,7 +153,8 @@ public class PropertyMultilineValueTest extends TestCase {
   private void assertLine(int indent, String tag, String value) {
 
     assertEquals("wrong indent",  indent, it.getIndent());
-    assertEquals("wrong tag"   ,  tag   , it.getTag   ());
+    if (tag!=null)
+      assertEquals("wrong tag"   ,  tag   , it.getTag   ());
     assertEquals("wrong value" ,  value , it.getValue ());
     
   }
