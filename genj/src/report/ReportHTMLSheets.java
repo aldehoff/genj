@@ -39,6 +39,7 @@ import java.util.StringTokenizer;
 public class ReportHTMLSheets extends Report {
 
   private final static String INDEX = "index.html";
+  private final static String NAMES = "names.html";
 
   /** an options - style sheet */
   public String styleSheet = "";
@@ -127,7 +128,7 @@ public class ReportHTMLSheets extends Report {
   private void export(Entity ent, File dir, PrintWriter out) throws IOException {
 
     // HEAD
-    printOpenHTML(out, ent.toString());
+    printOpenHTML(out, ent.getGedcom().getName() + " - " + ent.toString());
 
     // TABLE
     out.println("<TABLE border=\"1\" cellspacing=\"1\" width=\"100%\">");
@@ -363,6 +364,14 @@ public class ReportHTMLSheets extends Report {
     return new File(dir, INDEX);
   }
 
+  private File getFileForNames(File dir) {
+    return new File(dir, NAMES);
+  }
+
+  private File getFileForName(File dir, String name) {
+    return new File(dir, name+".html");
+  }
+
   /**
    * Exports the given entity to given directory
    */
@@ -398,6 +407,7 @@ public class ReportHTMLSheets extends Report {
 
     // Standard
     printCell(out,wrapID(indi));
+
     printCell(out,indi.getLastName() );
     printCell(out,indi.getFirstName());
 
@@ -415,9 +425,10 @@ public class ReportHTMLSheets extends Report {
    */
   private void exportIndex(Gedcom gedcom, File dir) throws IOException {
 
-    PrintWriter out = new PrintWriter(new FileOutputStream(getFileForIndex(dir)));
+    File file = getFileForIndex(dir);
+    PrintWriter out = new PrintWriter(new FileOutputStream(file));
 
-    println(i18n("exporting", new String[]{ "index.html", dir.toString() }));
+    println(i18n("exporting", new String[]{ file.getName(), dir.toString() }));
 
     // HEAD
     printOpenHTML(out, gedcom.getName());
@@ -453,12 +464,49 @@ public class ReportHTMLSheets extends Report {
     printCloseHTML(out);
 
     // done
-    if (out.checkError()) 
-      throw new IOException("Error while writing index.html");
     out.close();
     
   }
 
+  /**
+   * Exports names of individuals into a names page
+   */
+  private void exportNames(Gedcom gedcom, File dir) throws IOException {
+    
+    File file = getFileForNames(dir);
+    PrintWriter out = new PrintWriter(new FileOutputStream(file));
+
+    println(i18n("exporting", new String[]{ file.getName(), dir.toString() }));
+
+    // HEAD
+    printOpenHTML(out, gedcom.getName());
+    
+    // Create link for each last name
+    out.println("<p class=names>");
+    Iterator it = PropertyName.getLastNames(gedcom, true).iterator();
+    char last = ' ';
+    while (it.hasNext()) {
+      // create new name class (first char) if necessary
+      String name = it.next().toString();
+      if (name.length()>0&&name.charAt(0)!=last) {
+        last = name.charAt(0);
+        out.println("</p>");
+        out.println("<p class=firstchar>"+last+"</p>");
+        out.println("<p class=names>");
+      }
+      // create link to name file
+      out.print("<a href=\""+getFileForIndex(dir).getName()+'#'+name+"\">"+name+"</a>("+PropertyName.getLastNameCount(gedcom, name)+") ");
+    }
+    out.println("</p>");
+
+    // TAIL
+    printCloseHTML(out);
+
+    // done
+    out.close();
+    
+  }
+  
   /**
    * While we generate information on stdout it's not really
    * necessary because we're bringing up the result in a
@@ -495,6 +543,7 @@ public class ReportHTMLSheets extends Report {
       exportSheets(gedcom.getEntities(Gedcom.INDI),dir);
       exportSheets(gedcom.getEntities(Gedcom.FAM ),dir);
       exportIndex(gedcom, dir);
+      exportNames(gedcom, dir);
     } catch (IOException e) {
       println("Error while exporting: "+e.getMessage());
     }
@@ -532,8 +581,17 @@ public class ReportHTMLSheets extends Report {
    * Calculate a url for individual's id 
    */
   private String wrapID(Indi indi) {
+    StringBuffer result = new StringBuffer();
+    result.append("<a name=\"");
+    result.append(indi.getLastName());
+    result.append("\"/>");
 
-    return "<a href=\"" + getFileForEntity(null, indi).getName() + "\">" + indi.getId() + "</a>";
+    result.append("<a href=\"");
+    result.append(getFileForEntity(null, indi).getName());
+    result.append("\">");
+    result.append(indi.getId());
+    result.append("</a>");
+    return result.toString();
   }
   
   /**
@@ -586,14 +644,14 @@ public class ReportHTMLSheets extends Report {
   private void printOpenHTML(PrintWriter out, String title) {
     
     // HEAD
-    out.println("<HTML>");
-    out.println("<HEAD>");
-    out.println("<TITLE>"+title+"</TITLE>");
+    out.println("<html>");
+    out.println("<head>");
+    out.println("<title>"+title+"</title>");
     if (styleSheet.length()>0)
       out.println("<link rel=StyleSheet href=\""+styleSheet+"\" type=\"text/css\"></link>");
     
-    out.println("</HEAD>");
-    out.println("<BODY bgcolor=\"#ffffff\">");
+    out.println("</head>");
+    out.println("<body bgcolor=\"#ffffff\">");
     
     // done
   }
@@ -602,9 +660,14 @@ public class ReportHTMLSheets extends Report {
    * Writes HTML end header and end body information
    */
   private void printCloseHTML(PrintWriter out) {
-    out.println("<a href=\""+INDEX+"\">Index</a>");
-    out.println("</BODY>");
-    out.println("</HTML>");
+    out.print("<p class=footer>");
+    out.print("<a href=\""+INDEX+"\">Index</a>");
+    out.print(" ");
+    out.print("<a href=\""+NAMES+"\">Names</a>");
+    out.println("</p>");
+    
+    out.println("</body>");
+    out.println("</html>");
   }
 
 } //ReportHTMLSheets
