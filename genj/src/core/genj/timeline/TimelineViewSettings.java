@@ -34,6 +34,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -97,9 +98,12 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     spinCmAftEvent.setToolTipText(resources.getString("info.aftevent.tip"));
     panelOptions.add(spinCmAftEvent);
     
+    JLabel labelEvents = new JLabel(resources.getString("info.events"));
+    
     // panel for main options
     JPanel panelMain = new JPanel(new BorderLayout());
-    panelMain.add(pathsList, BorderLayout.CENTER);
+    panelMain.add(labelEvents , BorderLayout.NORTH);
+    panelMain.add(pathsList   , BorderLayout.CENTER);
     panelMain.add(panelOptions, BorderLayout.SOUTH);
     
     // color chooser
