@@ -25,8 +25,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
 import javax.swing.ComboBoxEditor;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 
 /**
  * Our own JComboBox
@@ -76,17 +74,36 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     if (isEditable()) return editor.getText();
     return super.getSelectedItem().toString();
   }
+  
+  /**
+   * @see javax.swing.JComboBox#setPopupVisible(boolean)
+   */
+  public void setPopupVisible(boolean v) {
+    // try to find prefix in combo - overriden instead of
+    //  this.addPopupMenuListener() 
+    // because that would be JDK 1.4 only
+    String pre = getText();
+    for (int i=0; i<getItemCount(); i++) {
+      String item = (String) getItemAt(i);
+      if (item.regionMatches(true, 0, pre, 0, pre.length())) {
+        setSelectedIndex(i);
+        break;
+      }
+    }
+    // continue
+    super.setPopupVisible(v);
+  }
+
       
   /**
    * our own editor
    */
-  private class Editor extends TextFieldWidget implements ComboBoxEditor, PopupMenuListener, FocusListener {
+  private class Editor extends TextFieldWidget implements ComboBoxEditor, FocusListener {
     
     /**
      * Constructor
      */
     private Editor() {
-      ChoiceWidget.this.addPopupMenuListener(this);
       ChoiceWidget.this.addFocusListener(this);
     }
     
@@ -112,36 +129,6 @@ public class ChoiceWidget extends javax.swing.JComboBox {
       setChanged(true);
     }
     
-    /**
-     * @see javax.swing.event.PopupMenuListener#popupMenuCanceled(javax.swing.event.PopupMenuEvent)
-     */
-    public void popupMenuCanceled(PopupMenuEvent e) {
-      // ignored
-    }
-
-    /**
-     * @see javax.swing.event.PopupMenuListener#popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent)
-     */
-    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-      // ignored
-    }
-
-    /**
-     * @see javax.swing.event.PopupMenuListener#popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent)
-     */
-    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-      // try to find prefix in combo
-      String pre = this.getText();
-      for (int i=0; i<getItemCount(); i++) {
-        String item = (String) getItemAt(i);
-        if (item.regionMatches(true, 0, pre, 0, pre.length())) {
-          setSelectedIndex(i);
-          break;
-        }
-      }
-      // done
-    }
-
     /**
      * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
      */
