@@ -26,7 +26,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.60 2004-06-25 10:02:20 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.61 2004-06-25 15:43:21 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -848,7 +848,6 @@ public class ReportGedcomStatistics extends Report {
      */
     private void reportIndividuals(int printIndis, String lastName, double numberAllIndis, StatisticsIndividuals all, StatisticsIndividuals males, StatisticsIndividuals females, StatisticsIndividuals unknown) {
         
-        String[] str = new String[2];
         int indent;
         
         if(lastName==null) {
@@ -867,23 +866,17 @@ public class ReportGedcomStatistics extends Report {
             printAges(printIndis, indent, all, INDIS);
         
         if((lastName==null) || (males.number>0)) {
-            str[0] = ""+males.number;
-            str[1] = ""+roundNumber((double)males.number/(double)all.number*100, OPTIONS.getPositions());
-            println(getIndent(indent-1)+i18n("males",str));
+            println(getIndent(indent-1)+i18n("males", new String[] {""+males.number, ""+roundNumber((double)males.number/(double)all.number*100, OPTIONS.getPositions()) }));
             printAges(printIndis, indent, males, INDIS);
         }
         
         if((lastName==null) || (females.number>0)) {
-            str[0] = ""+females.number;
-            str[1] = ""+roundNumber((double)females.number/(double)all.number*100, OPTIONS.getPositions());
-            println(getIndent(indent-1)+i18n("females",str));
+            println(getIndent(indent-1)+i18n("females", new String[] { ""+females.number, ""+roundNumber((double)females.number/(double)all.number*100, OPTIONS.getPositions()) }));
             printAges(printIndis, indent, females, INDIS);
         }
         
         if((lastName==null) || (unknown.number>0)) {
-            str[0] = ""+unknown.number;
-            str[1] = ""+roundNumber((double)unknown.number/(double)all.number*100, OPTIONS.getPositions());
-            println(getIndent(indent-1)+i18n("unknown",str));
+            println(getIndent(indent-1)+i18n("unknown",new String[] { ""+unknown.number, ""+roundNumber((double)unknown.number/(double)all.number*100, OPTIONS.getPositions()) }));
             printAges(printIndis, indent, unknown, INDIS);
         }
         
