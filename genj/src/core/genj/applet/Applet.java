@@ -49,7 +49,7 @@ public class Applet extends java.applet.Applet {
     "genj.timeline.TimelineViewFactory",
     "genj.edit.EditViewFactory",
     //"genj.report.ReportViewFactory",
-    //"genj.nav.NavigatorViewFactory",
+    "genj.nav.NavigatorViewFactory",
     //"genj.entity.EntityViewFactory", 
     "genj.search.SearchViewFactory" 
   };
