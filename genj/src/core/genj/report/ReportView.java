@@ -77,19 +77,18 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private Registry registry;
   private Resources resources = Resources.get(this);
   private ViewManager manager ;
+  private String title;
 
   /**
    * Constructor
    */
   public ReportView(String theTitle, Gedcom theGedcom, Registry theRegistry, ViewManager theManager) {
 
-    // Inherited
-    super();
-
     // Data
     gedcom   = theGedcom;
     registry = theRegistry;
     manager  = theManager;
+    title    = theTitle;
 
     imgShell = new ImageIcon(this,"ReportShell.gif");
     imgGui   = new ImageIcon(this,"ReportGui.gif"  );
@@ -344,8 +343,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
       taOutput.setText("");
   
       // .. prepare own STDOUT
-      bridge = new ReportBridge(ReportView.this, new Registry(registry, report.getName()));      bridge.log("<!--");
-      
+      bridge = new ReportBridge(ReportView.this, new Registry(registry, report.getName()), report); 
+      bridge.log("<!--");
       bridge.log("   Report : "+report.getClass().getName());
       bridge.log("   Gedcom : "+gedcom.getName());
       bridge.log("   Start  : "+new Date());
@@ -435,7 +434,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   
       // .. exits ?
       if (file.exists()) {
-        int rc = manager.getWindowManager().openDialog(null, WindowManager.IMG_WARNING, "File exists. Overwrite?", WindowManager.OPTIONS_YES_NO, ReportView.this);
+        int rc = manager.getWindowManager().openDialog(null, title, WindowManager.IMG_WARNING, "File exists. Overwrite?", WindowManager.OPTIONS_YES_NO, ReportView.this);
         if (rc!=0) {
           return;
         }
@@ -448,9 +447,10 @@ public class ReportView extends JPanel implements ToolBarSupport {
       } catch (IOException ex) {
         manager.getWindowManager().openDialog(
           null, 
+          title,
           WindowManager.IMG_ERROR, 
           "Error while saving to\n"+file.getAbsolutePath(), 
-          null,
+          (String[])null,
           ReportView.this
         );
         return;

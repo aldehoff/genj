@@ -56,6 +56,21 @@ public class App {
   private WindowManager winMgr;
 
   /**
+   * Main of app
+   */
+  public static void main(java.lang.String[] args) {
+
+    // Startup and catch Swing missing
+    try {
+      instance = new App();
+    } catch (Throwable t) {
+      Debug.log(Debug.ERROR, App.class, "Cannot instantiate App", t);
+      Debug.flush();
+      System.exit(1);
+    }
+  }
+  
+  /**
    * Application Constructor
    */
   private App() {
@@ -114,7 +129,7 @@ public class App {
       // keep it      
       registry.put("disclaimer", version);
       // show disclaimer
-      winMgr.openDialog("disclaimer", WindowManager.IMG_INFORMATION, resources.getString("app.disclaimer"), WindowManager.OPTIONS_OK, null);    
+      winMgr.openDialog("disclaimer", "Disclaimer", WindowManager.IMG_INFORMATION, resources.getString("app.disclaimer"), WindowManager.OPTIONS_OK, null);    
     }
     
     // setup control center
@@ -149,29 +164,14 @@ public class App {
   /**
    * Singleton access
    */
-  public static App getInstance() {
+  /*package*/ static App getInstance() {
     return instance;
-  }
-  
-  /**
-   * Main of app
-   */
-  public static void main(java.lang.String[] args) {
-
-    // Startup and catch Swing missing
-    try {
-      instance = new App();
-    } catch (Throwable t) {
-      Debug.log(Debug.ERROR, App.class, "Cannot instantiate App", t);
-      Debug.flush();
-      System.exit(1);
-    }
   }
   
   /**
    * Sets the language
    */
-  public void setLanguage(String lang) {
+  /*package*/ void setLanguage(String lang) {
     if (lang!=null)
       registry.put("language", lang);
   }
@@ -179,14 +179,14 @@ public class App {
   /**
    * Gets the language
    */
-  public String getLanguage() {
+  /*package*/ String getLanguage() {
     return registry.get("language", (String)null);
   }
 
   /**
    * Sets the LookAndFeel
    */
-  public void setLnF(LnFBridge.LnF lnf, LnFBridge.Theme theme) {
+  /*package*/ void setLnF(LnFBridge.LnF lnf, LnFBridge.Theme theme) {
     
     // collect root elements we know about
     List roots = winMgr.getRootComponents();

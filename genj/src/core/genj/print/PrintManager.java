@@ -38,7 +38,6 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 /**
@@ -188,7 +187,6 @@ public class PrintManager {
     protected void postExecute() {
       if (throwable!=null) {
         Debug.log(Debug.WARNING, this, "print() threw error", throwable);
-        JOptionPane.showMessageDialog(owner, throwable.getMessage(), "Print Error", JOptionPane.ERROR_MESSAGE);
       }
     }
     

@@ -131,7 +131,7 @@ import javax.swing.JTextArea;
     try {
       change();
     } catch (GedcomException ex) {
-      manager.getWindowManager().openDialog(null, WindowManager.IMG_ERROR, ex.getMessage(), null, target);
+      manager.getWindowManager().openDialog(null, null, WindowManager.IMG_ERROR, ex.getMessage(), (String[])null, target);
     }
     // unlock gedcom
     gedcom.endTransaction();

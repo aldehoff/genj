@@ -155,6 +155,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
      * Constructor
      */
     private Editor() {
+      super("", 24);
       ChoiceWidget.this.addFocusListener(this);
     }
     

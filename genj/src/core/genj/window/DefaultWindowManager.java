@@ -191,11 +191,13 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // place
     Rectangle box = key!=null ? registry.get(key,(Rectangle)null) : null;
     if (box==null) {
-      if (dimension==null) {
+      if (dimension!=null) {
+        dlg.setSize(dimension);
+      } else {
         dlg.pack();
-        dimension = dlg.getSize();
       }
-      dlg.setBounds(new AreaInScreen(dimension));
+      dlg.setLocationRelativeTo(owner);
+      dlg.setBounds(new AreaInScreen(dlg.getBounds()));
     } else {
       dlg.setBounds(new AreaInScreen(box));
     }

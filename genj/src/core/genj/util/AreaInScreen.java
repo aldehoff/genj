@@ -31,6 +31,18 @@ public class AreaInScreen extends Rectangle {
   /**
    * Constructor
    */
+  public AreaInScreen(Dimension d) {
+    this(new Rectangle(
+      Toolkit.getDefaultToolkit().getScreenSize().width /2 - d.width/2,
+      Toolkit.getDefaultToolkit().getScreenSize().height/2 - d.height/2,
+      d.width,
+      d.height
+    ));
+  }
+
+  /**
+   * Constructor
+   */
   public AreaInScreen(Rectangle r) {
 
     // grab data
@@ -50,18 +62,6 @@ public class AreaInScreen extends Rectangle {
     if (y+height>screen.height) y=screen.height-height;
     
     // done
-  }
-
-  /**
-   * Constructor
-   */
-  public AreaInScreen(Dimension d) {
-    this(new Rectangle(
-      Toolkit.getDefaultToolkit().getScreenSize().width /2 - d.width/2,
-      Toolkit.getDefaultToolkit().getScreenSize().height/2 - d.height/2,
-      d.width,
-      d.height
-    ));
   }
 
 } //AreaInScreen

@@ -37,17 +37,28 @@ import javax.swing.JFileChooser;
  */
 public class ReportBridge {
 
+  /** members */
   private StringBuffer buffer = new StringBuffer(16*1024);
   private final static long FLUSH_WAIT = 100;
   private long         last = -1;
 
   private Registry     registry;
   private ReportView   view;
+  private Report       report;
+
+  /**
+   * Constructor
+   */
+  public ReportBridge(ReportView theView, Registry theRegistry, Report theReport) {
+    view     = theView;
+    registry = theRegistry;
+    report   = theReport;
+  }
 
   /**
    * Logging a message
    */
-  void log(String s) {
+  /*package*/ void log(String s) {
 
     // Remember it
     buffer.append(s+"\n");
@@ -109,14 +120,6 @@ public class ReportBridge {
   }
 
   /**
-   * Constructor
-   */
-  public ReportBridge(ReportView theView, Registry theRegistry) {
-    view     = theView;
-    registry = theRegistry;
-  }
-
-  /**
    * Helper method that queries the user for a directory
    */
   public File getDirectoryFromUser(String title, String button) {
@@ -142,7 +145,7 @@ public class ReportBridge {
    * Helper that shows a simple text message to user
    */
   public void showMessageToUser(String msg) {
-    view.getViewManager().getWindowManager().openDialog(null, WindowManager.IMG_INFORMATION, msg, null, view);
+    view.getViewManager().getWindowManager().openDialog(null, report.getName(), WindowManager.IMG_INFORMATION, msg, (String[])null, view);
   }
 
   /**
@@ -164,7 +167,7 @@ public class ReportBridge {
     
     int rc = view.getViewManager().getWindowManager().openDialog(
       null, 
-      "Report Input", 
+      report.getName(), 
       WindowManager.IMG_QUESTION,
       null,
       choice,
@@ -231,6 +234,7 @@ public class ReportBridge {
   public boolean getValueFromUser(String msg, boolean yesnoORokcancel) {
     int rc = view.getViewManager().getWindowManager().openDialog(
       null, 
+      report.getName(),
       WindowManager.IMG_QUESTION, 
       msg,
       yesnoORokcancel ? WindowManager.OPTIONS_YES_NO : WindowManager.OPTIONS_OK_CANCEL,

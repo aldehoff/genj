@@ -22,11 +22,15 @@ package genj.window;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.TextFieldWidget;
 
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Insets;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -34,7 +38,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 
 /**
  * Abstract base type for WindowManagers
@@ -44,7 +47,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * convenient shortcut
    */
-  public int openDialog(String key, Icon img, String txt, String[] options, JComponent owner) {
+  public int openDialog(String key, String title, Icon img, String txt, String[] options, JComponent owner) {
 
     JComponent content;
     
@@ -55,7 +58,7 @@ public abstract class AbstractWindowManager implements WindowManager {
       
       content = new JScrollPane(text) {
         public Dimension getPreferredSize() {
-          return new Dimension(240,160);
+          return new Dimension(240,80);
         }
       };
       
@@ -64,9 +67,30 @@ public abstract class AbstractWindowManager implements WindowManager {
 //      content = new JLabel(txt);
 //    }
     
-    return openDialog(key, null, img, null, content, options, owner, null, null);
+    return openDialog(key, title, img, null, content, options, owner, null, null);
   }
+  
+  /**
+   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent, java.lang.String[], javax.swing.JComponent)
+   */
+  public int openDialog(String key, String title, Icon image, Dimension dimension, JComponent content, String[] options, JComponent owner) {
+    return openDialog(key, title, image, dimension, content, options, owner, null, null);
+  }
+  
+  /**
+   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String, javax.swing.JComponent)
+   */
+  public String openDialog(String key, String title, Icon img, String txt, String value, JComponent owner) {
+    
+    TextFieldWidget tf = new TextFieldWidget(value, 24);
+    Box box = new Box(BoxLayout.Y_AXIS);
+    box.add(new JLabel(txt));
+    box.add(tf);
 
+    int rc = openDialog(key, title, img, null, box, OPTIONS_OK_CANCEL, owner);      
+    
+    return rc==0?tf.getText().trim():null;
+  }
 
   /**
    * Helper for assembling dialog content
@@ -80,7 +104,6 @@ public abstract class AbstractWindowManager implements WindowManager {
     // prepare an icon
     JLabel icon = new JLabel(image);
     icon.setVerticalAlignment(SwingConstants.TOP);
-    icon.setBorder(new EmptyBorder(8,8,8,8));
     
     // prepare panel
     //
@@ -92,10 +115,11 @@ public abstract class AbstractWindowManager implements WindowManager {
     // |     | buttons |
     // +-----+---------+
     //
+    Insets insets = new Insets(8,8,8,8);
     GridBagHelper gh = new GridBagHelper(container);
-    gh.add(icon   , 0, 0, 1, 2);
-    gh.add(content, 1, 0, 1, 1);
-    gh.add(buttons, 1, 1, 1, 1);
+    gh.add(icon   , 0, 0, 1, 2, 0, insets);
+    gh.add(content, 1, 0, 1, 1, gh.GROW_BOTH|gh.FILL_BOTH, insets);
+    gh.add(buttons, 1, 1, 1, 1, 0);
 
     // done  
   }

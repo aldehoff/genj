@@ -57,7 +57,11 @@ public interface WindowManager {
   
   public int openDialog(String key, String title, Icon image, Dimension dimension, JComponent content, String[] options, JComponent owner, Runnable onClosing, Runnable onClose);
 
-  public int openDialog(String key, Icon img, String txt, String[] options, JComponent owner);
+  public int openDialog(String key, String title, Icon image, Dimension dimension, JComponent content, String[] options, JComponent owner);
+
+  public int openDialog(String key, String title, Icon img, String txt, String[] options, JComponent owner);
+  
+  public String openDialog(String key, String title, Icon img, String txt, String value, JComponent owner);
   
   public void closeFrame(String key);
 

@@ -362,7 +362,7 @@ public class AboutWidget extends JPanel{
         App app = App.getInstance();
         // check language 
         if (choiceLanguages.hasChanged()) {
-          viewManager.getWindowManager().openDialog(null, WindowManager.IMG_WARNING, resources.getString("cc.about.dialog.restart"), WindowManager.OPTIONS_OK, AboutWidget.this);
+          viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_WARNING, resources.getString("cc.about.dialog.restart"), WindowManager.OPTIONS_OK, AboutWidget.this);
           app.setLanguage(choiceLanguages.getSelectedItem().toString());
         }
         // update screen resolution

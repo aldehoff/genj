@@ -33,6 +33,7 @@ import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
 import genj.util.swing.MenuHelper;
 import genj.view.ViewFactory;
@@ -48,11 +49,13 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.Box;
-import javax.swing.JComboBox;
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
@@ -179,7 +182,7 @@ public class ControlCenter extends JPanel {
    * Exit action
    */
   /*package*/ ActionDelegate getExitAction() {
-    return new ActionExit();
+    return new ActionExit().setTarget(this);
   }
   
   /**
@@ -334,15 +337,15 @@ public class ControlCenter extends JPanel {
 
       // Unsaved changes ?
       if (unsaved) {
-        int rc =
-          JOptionPane.showConfirmDialog(
-            ControlCenter.this,
-            resources.getString("cc.exit_changes?"),
-            resources.getString("app.warning"),
-            JOptionPane.YES_NO_OPTION);
-        if (rc == JOptionPane.NO_OPTION) {
-          return;
-        }
+        int rc = windowManager.openDialog(
+          null, 
+          null, 
+          WindowManager.IMG_WARNING, 
+          resources.getString("cc.exit_changes?"), 
+          WindowManager.OPTIONS_YES_NO, 
+          ControlCenter.this
+        );
+        if (rc!=0) return;
       }
 
       // Tell it to the app
@@ -358,7 +361,7 @@ public class ControlCenter extends JPanel {
   private class ActionOpen extends ActionDelegate {
 
     /** a preset origin we're reading from */
-    private Origin presetOrigin;
+    private Origin origin;
 
     /** a reader we're working on */
     private GedcomReader reader;
@@ -379,9 +382,9 @@ public class ControlCenter extends JPanel {
     }
 
     /** constructor */
-    protected ActionOpen(Origin origin) {
+    protected ActionOpen(Origin setOrigin) {
       super.setAsync(ASYNC_NEW_INSTANCE);
-      presetOrigin = origin;
+      origin = setOrigin;
     }
 
     /**
@@ -390,14 +393,11 @@ public class ControlCenter extends JPanel {
     protected boolean preExecute() {
 
       // try to get an origin we're interested in
-      Origin origin;
-      if (presetOrigin != null)
-        origin = presetOrigin;
-      else
+      if (origin==null) {
         origin = getOrigin();
-
-      if (origin == null)
-        return false; // don't continue into (async) execute without
+        if (origin == null)
+          return false; // don't continue into (async) execute without
+      }
 
       // open it
       return open(origin);
@@ -428,11 +428,14 @@ public class ControlCenter extends JPanel {
     protected void postExecute() {
       // any error bubbling up?
       if (error != null) {
-        JOptionPane.showMessageDialog(
-          ControlCenter.this,
-          error,
-          resources.getString("app.error"),
-          JOptionPane.ERROR_MESSAGE);
+        windowManager.openDialog(
+          null, 
+          origin.getName(), 
+          WindowManager.IMG_ERROR, 
+          error, 
+          WindowManager.OPTIONS_OK, 
+          ControlCenter.this
+        );
       } else {
         // show warnings
         if (reader!=null) {
@@ -460,24 +463,21 @@ public class ControlCenter extends JPanel {
     private Origin getOrigin() {
 
       // pop choice of opening
-      String selections[] =
-        {
-          resources.getString("cc.open.choice.new"),
-          resources.getString("cc.open.choice.local"),
-          resources.getString("cc.open.choice.inet"),
-          resources.getString("app.cancel"),
-          };
+      String options[] = {
+        resources.getString("cc.open.choice.new"),
+        resources.getString("cc.open.choice.local"),
+        resources.getString("cc.open.choice.inet"),
+        WindowManager.OPTION_CANCEL,
+      };
 
-      int rc =
-        JOptionPane.showOptionDialog(
-          ControlCenter.this,
-          resources.getString("cc.open.choice"),
-          resources.getString("cc.open.title"),
-          0,
-          JOptionPane.QUESTION_MESSAGE,
-          null,
-          selections,
-          selections[1]);
+      int rc = windowManager.openDialog(
+        null,
+        resources.getString("cc.open.title"),
+        WindowManager.IMG_QUESTION,
+        resources.getString("cc.open.choice"),
+        options,
+        ControlCenter.this
+      );
 
       // check choices
       switch (rc) {
@@ -560,57 +560,51 @@ public class ControlCenter extends JPanel {
     private Origin chooseURL() {
 
       // pop a chooser    
-      Vector vUrls = (Vector) registry.get("urls", new Vector());
-      JLabel lEnter = new JLabel(resources.getString("cc.open.enter_url"));
-      JComboBox cEnter = new JComboBox(vUrls);
-      cEnter.setEditable(true);
-      Object message[] = { lEnter, cEnter };
-      Object options[] =
-        {
-          resources.getString("app.ok"),
-          resources.getString("app.cancel")};
-
-      int rc =
-        JOptionPane.showOptionDialog(
-          ControlCenter.this,
-          message,
-          resources.getString("cc.open.title"),
-          JOptionPane.OK_CANCEL_OPTION,
-          JOptionPane.QUESTION_MESSAGE,
-          null,
-          options,
-          options[0]);
-
+      String[] choices = (String[])registry.get("urls", new String[0]);
+      ChoiceWidget choice = new ChoiceWidget(choices, "");
+      choice.setEditable(true);
+      JLabel label = new JLabel(resources.getString("cc.open.enter_url"));
+      Box box = new Box(BoxLayout.Y_AXIS);
+      box.add(label);
+      box.add(choice);
+      
+      int rc = windowManager.openDialog(
+        null, 
+        resources.getString("cc.open.title"), 
+        WindowManager.IMG_QUESTION,
+        null,
+        box,
+        WindowManager.OPTIONS_OK_CANCEL,
+        ControlCenter.this
+      );
+    
       // check the selection
-      String item = (String) cEnter.getEditor().getItem();
-      if ((rc != JOptionPane.OK_OPTION) || (item.length() == 0)) {
-        return null;
-      }
+      String item = choice.getText();
+      if (rc!=0||item.length()==0) return null;
 
       // Try to form Origin
       Origin origin;
       try {
         origin = Origin.create(item);
       } catch (MalformedURLException ex) {
-        JOptionPane.showMessageDialog(
-          ControlCenter.this,
+        windowManager.openDialog(
+          null,
+          item,
+          WindowManager.IMG_ERROR,
           resources.getString("cc.open.invalid_url"),
-          resources.getString("app.error"),
-          JOptionPane.ERROR_MESSAGE);
+          WindowManager.OPTIONS_OK,
+          ControlCenter.this
+        );
         return null;
       }
 
       // Remember URL for dialog
-      for (int i = 0; i < vUrls.size(); i++) {
-        if (vUrls.elementAt(i).toString().equals(item)) {
-          vUrls.removeElementAt(i);
-          break;
-        }
+      Set remember = new HashSet();
+      remember.add(item);
+      for (int c=0; c<choices.length&&c<9; c++) {
+        remember.add(choices[c]);
       }
-      vUrls.insertElementAt(item, 0);
-      if (vUrls.size() > 10)
-        vUrls.setSize(10);
-      registry.put("urls", vUrls);
+      registry.put("urls", remember);
 
       // ... continue
       return origin;
@@ -628,11 +622,14 @@ public class ControlCenter extends JPanel {
         Gedcom g = (Gedcom) gedcoms.elementAt(i);
 
         if (origin.getName().equals(g.getName())) {
-          JOptionPane.showMessageDialog(
-            ControlCenter.this,
+          windowManager.openDialog(
+            null, 
+            g.getName(), 
+            WindowManager.IMG_ERROR, 
             resources.getString("cc.open.already_open", g.getName()),
-            resources.getString("app.error"),
-            JOptionPane.ERROR_MESSAGE);
+            WindowManager.OPTIONS_OK,
+            ControlCenter.this
+          );
           return false;
         }
       }
@@ -646,14 +643,17 @@ public class ControlCenter extends JPanel {
         in = connection.getInputStream();
         size = connection.getLength();
       } catch (IOException ex) {
-        JOptionPane.showMessageDialog(
-          ControlCenter.this,
+        windowManager.openDialog(
+          null, 
+          origin.getName(), 
+          WindowManager.IMG_ERROR, 
           resources.getString("cc.open.no_connect_to", origin)
             + "\n["
             + ex.getMessage()
             + "]",
-          resources.getString("app.error"),
-          JOptionPane.ERROR_MESSAGE);
+          WindowManager.OPTIONS_OK,
+          ControlCenter.this
+        );
         return false;
       }
 
@@ -807,12 +807,13 @@ public class ControlCenter extends JPanel {
           new GedcomWriter(gedcom, file.getName(), new FileOutputStream(file), encoding);
         gedWriter.setFilters(filters);
       } catch (IOException ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(
-          ControlCenter.this,
+        windowManager.openDialog(
+          null, 
+          gedcom.getName(), 
+          WindowManager.IMG_ERROR, 
           resources.getString("cc.save.open_error", file.getAbsolutePath()),
-          resources.getString("app.error"),
-          JOptionPane.ERROR_MESSAGE
+          WindowManager.OPTIONS_OK,
+          ControlCenter.this
         );
         return false;
       }
@@ -848,13 +849,15 @@ public class ControlCenter extends JPanel {
           gedcom.setUnchanged();
         }
       } catch (GedcomIOException ex) {
-        JOptionPane.showMessageDialog(
-          ControlCenter.this,
+        windowManager.openDialog(
+          null,
+          gedcom.getName(),
+          WindowManager.IMG_ERROR,
           resources.getString("cc.save.write_error", "" + ex.getLine())
             + ":\n"
             + ex.getMessage(),
-          resources.getString("app.error"),
-          JOptionPane.ERROR_MESSAGE
+          WindowManager.OPTIONS_OK,
+          ControlCenter.this
         );
         newOrigin = null;
       }
@@ -926,15 +929,15 @@ public class ControlCenter extends JPanel {
 
       // changes we should care about?      
       if (gedcom.hasUnsavedChanges()) {
-        int rc =
-          JOptionPane.showConfirmDialog(
-            ControlCenter.this,
-            resources.getString("cc.close_changes?"),
-            resources.getString("app.warning"),
-            JOptionPane.YES_NO_OPTION);
-        if (rc == JOptionPane.NO_OPTION) {
-          return;
-        }
+        int rc = windowManager.openDialog(
+          null,
+          null,
+          WindowManager.IMG_WARNING,
+          resources.getString("cc.close_changes?"),
+          WindowManager.OPTIONS_YES_NO,
+          ControlCenter.this
+        );
+        if (rc!=0) return;
       }
 
       // Remove it

@@ -44,6 +44,7 @@ import genj.view.ContextSupport;
 import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import genj.window.WindowManager;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -66,7 +67,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -987,20 +987,11 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       }
       
       // Ask for name of bookmark
-      //name = JOptionPane.showInputDialog(target, resources.getString("bookmark.name"), name);
+      name = manager.getWindowManager().openDialog(
+        null, title, WindowManager.IMG_QUESTION, resources.getString("bookmark.name"), name, TreeView.this
+      );
       
-      Object input = JOptionPane.showInputDialog(
-        target, 
-        resources.getString("bookmark.name"),
-        title,
-        JOptionPane.QUESTION_MESSAGE, 
-        null, 
-        null,
-        name);
-      
-      if (input==null)  return;
-      name = input.toString().trim();
-      if (name.length()==0)  return;
+      if (name==null) return;
       
       // create it
       model.addBookmark(new Bookmark(TreeView.this, name, entity));
