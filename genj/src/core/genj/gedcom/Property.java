@@ -85,7 +85,7 @@ public abstract class Property implements Comparable {
 
     // remember being added
     if (tx!=null)
-      tx.get(tx.PROPERTIES_ADDED).add(this);
+      tx.get(Transaction.PROPERTIES_ADDED).add(this);
 
   }
 
@@ -105,7 +105,7 @@ public abstract class Property implements Comparable {
     
     // remember being deleted
     if (tx!=null)
-      tx.get(tx.PROPERTIES_DELETED).add(this);
+      tx.get(Transaction.PROPERTIES_DELETED).add(this);
       
     // reset parent
     parent = null;
@@ -117,7 +117,7 @@ public abstract class Property implements Comparable {
 
     // remember being modified
     if (tx!=null)
-      tx.get(tx.PROPERTIES_MODIFIED).add(this);
+      tx.get(Transaction.PROPERTIES_MODIFIED).add(this);
       
   }
   
