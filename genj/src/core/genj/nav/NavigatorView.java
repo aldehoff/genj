@@ -293,6 +293,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
     PopupWidget result = new PopupWidget();
     result.setIcon(i);
     result.setFocusPainted(false);
+    result.setFireOnClick(true);
 
     // no can do pre 1.4
     try {    
