@@ -51,7 +51,7 @@ import javax.swing.JTextField;
 /*package*/ class SaveOptionsWidget extends JTabbedPane {
   
   /** components */
-  private JCheckBox[] checkEntities = new JCheckBox[Gedcom.ETYPES.length];
+  private JCheckBox[] checkEntities = new JCheckBox[Gedcom.ENTITIES.length];
   private JCheckBox[] checkViews;
   private JTextField  textTags, textValues;
   private JComboBox   comboEncodings;
@@ -73,8 +73,8 @@ import javax.swing.JTextField;
     
     // entities filter    
     Box types = new Box(BoxLayout.Y_AXIS);
-    for (int t=0; t<Gedcom.ETYPES.length; t++) {
-      checkEntities[t] = new JCheckBox(Gedcom.getEntityName(Gedcom.ETYPES[t], true), true);
+    for (int t=0; t<Gedcom.ENTITIES.length; t++) {
+      checkEntities[t] = new JCheckBox(Gedcom.getEntityName(Gedcom.ENTITIES[t], true), true);
       types.add(checkEntities[t]);
     }
     
@@ -248,9 +248,9 @@ import javax.swing.JTextField;
       
       for (int t=0; t<checks.length; t++) {
       	if (checks[t].isSelected())
-          result.types.add(Gedcom.ETYPES[t]);
+          result.types.add(Gedcom.ENTITIES[t]);
       }
-      return result.types.size()<Gedcom.ETYPES.length ? result : null;
+      return result.types.size()<Gedcom.ENTITIES.length ? result : null;
     }
     /**
      * accepting only specific entity types

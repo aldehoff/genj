@@ -66,12 +66,12 @@ import javax.swing.table.TableColumnModel;
     
     // Prepare a column model
     TableColumnModel cm = new DefaultTableColumnModel();
-    for (int h=0; h<Gedcom.ETYPES.length+1; h++) {
+    for (int h=0; h<Gedcom.ENTITIES.length+1; h++) {
       TableColumn col = new TableColumn(h);
       if (h==0) 
         col.setHeaderValue(Resources.get(this).getString("cc.column_header.name"));
       else
-        col.setHeaderValue(Gedcom.getEntityImage(Gedcom.ETYPES[h-1]));
+        col.setHeaderValue(Gedcom.getEntityImage(Gedcom.ENTITIES[h-1]));
       
       col.setPreferredWidth(defaultWidths[h]);
       cm.addColumn(col);
@@ -223,7 +223,7 @@ import javax.swing.table.TableColumnModel;
      * @see javax.swing.table.TableModel#getColumnCount()
      */
     public int getColumnCount() {
-      return Gedcom.ETYPES.length+1;
+      return Gedcom.ENTITIES.length+1;
     }
   
     /**
@@ -239,7 +239,7 @@ import javax.swing.table.TableColumnModel;
     public Object getValueAt(int row, int col) {
       Gedcom gedcom = getGedcom(row);
       if (col==0) return gedcom.getName() + (gedcom.hasUnsavedChanges() ? "*" : "" );
-      return new Integer(gedcom.getEntities(Gedcom.ETYPES[col-1]).size());
+      return new Integer(gedcom.getEntities(Gedcom.ENTITIES[col-1]).size());
     }
     
     /**

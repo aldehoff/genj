@@ -33,6 +33,9 @@ public class Entity extends Property {
   /** the tag */
   private String tag;
   
+  /** just in case someone's using a value */
+  private String value;
+  
   /**
    * Lifecycle - callback when being added to Gedcom
    */
@@ -151,14 +154,14 @@ public class Entity extends Property {
    * @see genj.gedcom.Property#getValue()
    */
   public String getValue() {
-    return EMPTY_STRING;
+    return value!=null?value:EMPTY_STRING;
   }
   
   /**
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
-  public void setValue(String value) {
-    // ignored
+  public void setValue(String set) {
+    value = set;
   }
 
   /**

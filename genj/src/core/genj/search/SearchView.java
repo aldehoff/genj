@@ -564,8 +564,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     
     /** search in gedcom (not on EDT) */
     private void search(Gedcom gedcom) {
-      for (int t=0; t<gedcom.ETYPES.length; t++) {
-        for (Iterator es=gedcom.getEntities(Gedcom.ETYPES[t]).iterator();es.hasNext();) {
+      for (int t=0; t<gedcom.ENTITIES.length; t++) {
+        for (Iterator es=gedcom.getEntities(Gedcom.ENTITIES[t]).iterator();es.hasNext();) {
           search((Entity)es.next());
         }
       }

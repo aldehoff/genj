@@ -174,8 +174,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     
     // grab blueprints
     BlueprintManager bpm = manager.getBlueprintManager();
-    for (int t=0;t<Gedcom.ETYPES.length;t++) {
-      String tag = Gedcom.ETYPES[t];
+    for (int t=0;t<Gedcom.ENTITIES.length;t++) {
+      String tag = Gedcom.ENTITIES[t];
       tag2blueprint.put(tag, bpm.getBlueprint(tag, registry.get("blueprint."+tag, "")));
     }
     
@@ -294,8 +294,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     registry.put("font"    , contentFont);
     registry.put("adjust"  , isAdjustFonts);
     // blueprints
-    for (int t=0;t<Gedcom.ETYPES.length;t++) {
-      String tag = Gedcom.ETYPES[t];
+    for (int t=0;t<Gedcom.ENTITIES.length;t++) {
+      String tag = Gedcom.ENTITIES[t];
       registry.put("blueprint."+tag, getBlueprint(tag).getName()); 
     }
     // root    

@@ -58,7 +58,7 @@ public class Gedcom {
     REPO = "REPO";
     
   public final static String[] 
-    ETYPES = { INDI, FAM, OBJE, NOTE, SOUR, SUBM, REPO };      
+    ENTITIES = { INDI, FAM, OBJE, NOTE, SOUR, SUBM, REPO };      
 
   private final static Map 
     E2PREFIX = new HashMap();

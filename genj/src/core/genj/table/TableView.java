@@ -208,8 +208,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     // create buttons for mode switch
     ButtonHelper bh = new ButtonHelper();
     bh.setFocusable(false);
-    for (int t=0;t<Gedcom.ETYPES.length;t++) {
-      bar.add(bh.create(new ActionChangeType(Gedcom.ETYPES[t])));
+    for (int t=0;t<Gedcom.ENTITIES.length;t++) {
+      bar.add(bh.create(new ActionChangeType(Gedcom.ENTITIES[t])));
     }
     // done
   }
@@ -261,8 +261,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     tableModel.setType(registry.get("type", Gedcom.INDI));
     
     // get paths&widths
-    for (int t=0; t<Gedcom.ETYPES.length; t++) {
-      String tag = Gedcom.ETYPES[t];
+    for (int t=0; t<Gedcom.ENTITIES.length; t++) {
+      String tag = Gedcom.ENTITIES[t];
       String[] ps = registry.get(tag+".paths" , (String[])null);
       if (ps!=null) tableModel.setPaths(tag, ps);
       int[]    ws = registry.get(tag+".widths", (int[]   )null);
@@ -287,8 +287,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     // save current type
     registry.put("type",tableModel.getType());
     // save paths&widths
-    for (int t=0; t<Gedcom.ETYPES.length; t++) {
-      String tag = Gedcom.ETYPES[t];
+    for (int t=0; t<Gedcom.ENTITIES.length; t++) {
+      String tag = Gedcom.ENTITIES[t];
       registry.put(tag+".paths", tableModel.getPaths(tag));
       registry.put(tag+".widths", tableModel.getWidths(tag));
     }

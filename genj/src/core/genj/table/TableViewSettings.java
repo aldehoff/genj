@@ -63,8 +63,8 @@ public class TableViewSettings extends JPanel implements Settings {
     // Chooseable type
     cTypes = new JComboBox();
 
-    for (int i=0;i<Gedcom.ETYPES.length;i++) {
-      cTypes.addItem(Gedcom.getEntityName(Gedcom.ETYPES[i],true));
+    for (int i=0;i<Gedcom.ENTITIES.length;i++) {
+      cTypes.addItem(Gedcom.getEntityName(Gedcom.ENTITIES[i],true));
     }
     cTypes.addActionListener((ActionListener)new ActionChooseEntity().as(ActionListener.class));
 
@@ -124,7 +124,7 @@ public class TableViewSettings extends JPanel implements Settings {
   public void apply() {
     // Write columns by TagPaths
     TagPath[] paths = pathList.getPaths();
-    table.setPaths(Gedcom.ETYPES[cTypes.getSelectedIndex()],paths);
+    table.setPaths(Gedcom.ENTITIES[cTypes.getSelectedIndex()],paths);
     // Done
   }
 
@@ -162,7 +162,7 @@ public class TableViewSettings extends JPanel implements Settings {
     /** run */
     public void execute() {
       if (table==null) return;
-      table.setType(Gedcom.ETYPES[cTypes.getSelectedIndex()]);
+      table.setType(Gedcom.ENTITIES[cTypes.getSelectedIndex()]);
       reset();
     }
   } //ActionChooseEntity

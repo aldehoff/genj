@@ -338,7 +338,7 @@ public class BlueprintList extends JSplitPane {
     public Object getChild(Object parent, int index) {
       // root this?
       if (parent==this)
-        return Gedcom.ETYPES[index];
+        return Gedcom.ENTITIES[index];
       // has to be entity tag
       String tag = (String)parent;
       return blueprintManager.getBlueprints(tag).get(index);
@@ -350,7 +350,7 @@ public class BlueprintList extends JSplitPane {
     public int getChildCount(Object parent) {
       // root this?
       if (parent==this)
-        return Gedcom.ETYPES.length;
+        return Gedcom.ENTITIES.length;
       // blueprint leaf?
       if (parent instanceof Blueprint)
         return 0;

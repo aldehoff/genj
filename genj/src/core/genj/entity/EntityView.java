@@ -93,8 +93,8 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
 
     // grab data from registry
     BlueprintManager bpm = viewManager.getBlueprintManager();
-    for (int t=0;t<Gedcom.ETYPES.length;t++) {
-      String tag = Gedcom.ETYPES[t];
+    for (int t=0;t<Gedcom.ENTITIES.length;t++) {
+      String tag = Gedcom.ENTITIES[t];
       type2blueprint.put(tag, bpm.getBlueprint(tag, registry.get("blueprint."+tag, "")));
     }
     isAntialiasing  = registry.get("antial"  , false);
@@ -119,8 +119,8 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
   public void removeNotify() {
     super.removeNotify();
     // store settings in registry
-    for (int t=0;t<Gedcom.ETYPES.length;t++) {
-      String tag = Gedcom.ETYPES[t];
+    for (int t=0;t<Gedcom.ENTITIES.length;t++) {
+      String tag = Gedcom.ENTITIES[t];
       registry.put("blueprint."+tag, getBlueprint(tag).getName()); 
     }
     registry.put("antial"  , isAntialiasing );
