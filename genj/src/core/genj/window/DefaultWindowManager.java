@@ -89,10 +89,10 @@ public class DefaultWindowManager extends AbstractWindowManager {
       public void dispose() {
         // forget about key but keep bounds
         forget(key, getBounds(), registry);
-        // callback?
-        if (onClose!=null) onClose.run();
         // continue
         super.dispose();
+        // callback?
+        if (onClose!=null) onClose.run();
       }
     };
 
