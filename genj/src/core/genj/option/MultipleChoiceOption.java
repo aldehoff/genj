@@ -40,11 +40,6 @@ public class MultipleChoiceOption extends Option {
     // remember choices
     choices = choIces;
     
-    System.out.print(name+":");
-    for (int i = 0; i < choIces.length; i++) {
-    	System.out.print(choices[i]+",");
-    }
-    System.out.println();
     // done
   }
   
