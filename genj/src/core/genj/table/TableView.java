@@ -294,7 +294,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     }
 
     // get current filter
-    tableModel.setMode(registry.get("type", Gedcom.INDI));
+    tableModel.setMode(registry.get("mode", Gedcom.INDI));
     
     // Done
   }
@@ -306,7 +306,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     // grab the column widths as they are right now
     grabColumnWidths();
     // save current type
-    registry.put("type",tableModel.getType());
+    registry.put("mode",tableModel.getType());
     // save paths&widths
     for (int t=0; t<Gedcom.ENTITIES.length; t++) {
       String tag = Gedcom.ENTITIES[t];
