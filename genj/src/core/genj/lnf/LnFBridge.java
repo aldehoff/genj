@@ -175,6 +175,7 @@ public class LnFBridge {
      * last Theme
      */
     public Theme getLastTheme() {
+      if ((lastTheme==null)&&(themes.length>0)) lastTheme=themes[0];
       return lastTheme;
     }
   
