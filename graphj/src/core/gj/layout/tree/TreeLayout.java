@@ -38,7 +38,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
   private double latPadding = 20;
 
   /** padding between siblings */
-  private double lonPadding = 12;
+  private double lonPadding = 20;
 
   /** the alignment of parents */
   private double lonAlignment = 0.5;

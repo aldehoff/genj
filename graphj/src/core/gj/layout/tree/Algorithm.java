@@ -166,37 +166,20 @@ import java.util.Stack;
 
     // prepare some space
     List children = new ArrayList(root.getArcs().size());
-    Branch
-      previous = null,
-      next = null;
     
-    // we loop through all arcs leaving root
+    // looping through all arcs leaving root
     ArcIterator it = new ArcIterator(root);
     while (it.next()) {
       
-      // we don't go after seconds, loops or backwards
+      // we don't go after seconds, loops or upwards(parent)
       if (!it.isFirst||it.isLoop||it.dest==parent) continue;
 
-      // recursive step for another child
-      next = layout(it.dest, root, tree, generation+1);
-
-      // place it beside previous
-      if (previous!=null) {
+      // recursive step for another child that we 
+      // insert beside (east) other children 
+      layout(it.dest, root, tree, generation+1).insertEastOf(children);
         
-        // place next top-align with previous
-        next.moveLatAligned(previous);
-        
-        // and then as close as possible to previous
-        next.moveBy(0, -calcMinimumDistance(children, next));
-        
-      }
-      
-      // keep it
-      children.add(next);
-      
       // next
-      previous = next;
-    }
+   }
 
     // done
     return (Branch[])children.toArray(new Branch[children.size()]);
@@ -207,7 +190,7 @@ import java.util.Stack;
    * Calculate a merged contour
    */
   private Contour calcContour(Contour parent, Branch[] children) {
-    List contours = new ArrayList(1+children.length+1);
+    List contours = new ArrayList(children.length+2);
     contours.add(parent);
     for (int c=0; c<children.length; c++) contours.add(children[c].contour);        
     contours.add(parent);
@@ -458,6 +441,10 @@ import java.util.Stack;
 
   /**
    * The layouted branch of a tree 
+   * <il>
+   *  <li>all nodes for descendants of root have a position relative to ancestor (delta) 
+   *  <li>all arcs in the branch have a position relative to root (delta) 
+   * </il>
    */
   private class Branch {
     
@@ -547,11 +534,24 @@ import java.util.Stack;
     }
   
     /**
-     * Align this branch to another one laterally
-     * @param other the Branch to align to
+     * Inserts this branch beside (east) and top-align of others
      */
-    private void moveLatAligned(Branch other) {
-      moveBy(other.contour.north - this.contour.north, 0);
+    private void insertEastOf(List others) {
+      
+      // no placing to do?
+      if (!others.isEmpty()) {
+        
+        // top-align to first 
+        moveBy(((Branch)others.get(0)).contour.north - this.contour.north, 0);
+          
+        // and then as close as possible to other (east of)
+        moveBy(0, -calcMinimumDistance(others, this));
+        
+      }
+        
+      // insert
+      others.add(this);
+      
     }
   
   } //Branch
