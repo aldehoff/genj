@@ -119,7 +119,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     setLayout(new BorderLayout());
 
     labelCurrent = new JLabel();
-    labelCurrent.setBorder(BorderFactory.createTitledBorder(Gedcom.getEntityName(Gedcom.INDI,false)));
+    labelCurrent.setBorder(BorderFactory.createTitledBorder(Gedcom.getName(Gedcom.INDI,false)));
     add(labelCurrent,BorderLayout.NORTH);
     add(new JScrollPane(createPopupPanel()),BorderLayout.CENTER);
     

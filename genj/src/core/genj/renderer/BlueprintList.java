@@ -258,7 +258,7 @@ public class BlueprintList extends JSplitPane {
         String tag = (String)value;
         label.setOpaque(selected);
         label.setBackground(cSelection);
-        label.setText(Gedcom.getEntityName(tag, true));
+        label.setText(Gedcom.getName(tag, true));
         label.setIcon(Gedcom.getEntityImage(tag));
       }
       

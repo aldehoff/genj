@@ -80,7 +80,7 @@ import javax.swing.JTextField;
     // entities filter    
     Box types = new Box(BoxLayout.Y_AXIS);
     for (int t=0; t<Gedcom.ENTITIES.length; t++) {
-      checkEntities[t] = new JCheckBox(Gedcom.getEntityName(Gedcom.ENTITIES[t], true), true);
+      checkEntities[t] = new JCheckBox(Gedcom.getName(Gedcom.ENTITIES[t], true), true);
       types.add(checkEntities[t]);
     }
     

@@ -101,7 +101,7 @@ public abstract class Relationship {
       // is there only one target type?
       String name;
       if (targetTypes.length==1)
-        name = Gedcom.getEntityName(targetTypes[0], false);
+        name = Gedcom.getName(targetTypes[0], false);
       else // there must be a more generic translation otherwise
         name = Gedcom.resources.getString("rel.xref."+xref.getTag());
       // verbose?

@@ -62,7 +62,7 @@ public class TableViewSettings extends JPanel implements Settings {
     cTypes = new JComboBox();
 
     for (int i=0;i<Gedcom.ENTITIES.length;i++) {
-      cTypes.addItem(Gedcom.getEntityName(Gedcom.ENTITIES[i],true));
+      cTypes.addItem(Gedcom.getName(Gedcom.ENTITIES[i],true));
     }
     cTypes.addActionListener(new ActionChooseEntity());
 
@@ -113,7 +113,7 @@ public class TableViewSettings extends JPanel implements Settings {
     // remember
     table = (TableView)view;
     // switch type
-    cTypes.setSelectedItem(Gedcom.getEntityName(table.getType(), true));
+    cTypes.setSelectedItem(Gedcom.getName(table.getType(), true));
     // done
   }
 

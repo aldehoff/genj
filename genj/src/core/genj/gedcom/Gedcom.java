@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.69 $ $Author: nmeier $ $Date: 2004-08-25 02:59:47 $
+ * $Revision: 1.70 $ $Author: nmeier $ $Date: 2004-08-27 03:27:04 $
  */
 package genj.gedcom;
 
@@ -683,15 +683,20 @@ public class Gedcom {
   /**
    * Returns a readable name for the given tag   */
   public static String getName(String tag) {
-    String name = resources.getString(tag+".name", false);
-    return name!=null ? name : tag;
+    return getName(tag, false);
   }
 
   /**
-   * Returns the readable name of the given entity type
+   * Returns the readable name for the given tag
    */
-  public static String getEntityName(String tag, boolean plural) {
-    return resources.getString("type."+getEntityPrefix(tag)+(plural?"s":""));
+  public static String getName(String tag, boolean plural) {
+    if (plural) {
+      String name = resources.getString(tag+"s.name", false);
+      if (name!=null)
+        return name;
+    }
+    String name = resources.getString(tag+".name", false);
+    return name!=null ? name : tag;
   }
 
   /**

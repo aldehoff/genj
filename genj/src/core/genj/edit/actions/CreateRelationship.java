@@ -66,7 +66,7 @@ public class CreateRelationship extends AbstractChange {
       // collect actions for types
       ActionDelegate[] actions = new ActionDelegate[types.length];
       for (int n=0;n<types.length;n++) 
-        actions[n] = new CloseWindow(Gedcom.getEntityName(types[n], false));
+        actions[n] = new CloseWindow(Gedcom.getName(types[n], false));
       // show dialog
       int rc = manager.getWindowManager().openDialog(null, relationship.getName(false), WindowManager.IMG_QUESTION, relationship.getName(true), actions, getTarget());
       if (rc<0) 
@@ -89,7 +89,7 @@ public class CreateRelationship extends AbstractChange {
     // You are about to create a {0} in {1}! / You are about to reference {0} in {1}!
     // This {0} will be {1}.
     String about = existing==null ?
-      resources.getString("confirm.new", new Object[]{ Gedcom.getEntityName(targetType,false), gedcom})
+      resources.getString("confirm.new", new Object[]{ Gedcom.getName(targetType,false), gedcom})
      :
       resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom});
 

@@ -35,7 +35,7 @@ public class CreateEntity extends AbstractChange {
    * Constructor
    */
   public CreateEntity(Gedcom ged, String tag, ViewManager manager) {
-    super(ged, Gedcom.getEntityImage(tag).getOverLayed(imgNew), resources.getString("new", Gedcom.getEntityName(tag, false) ), manager);
+    super(ged, Gedcom.getEntityImage(tag).getOverLayed(imgNew), resources.getString("new", Gedcom.getName(tag, false) ), manager);
     etag = tag;
   }
   
@@ -44,7 +44,7 @@ public class CreateEntity extends AbstractChange {
    */
   protected String getConfirmMessage() {
     // You are about to create a {0} in {1}!
-    String about = resources.getString("confirm.new", new Object[]{ Gedcom.getEntityName(etag,false), gedcom});
+    String about = resources.getString("confirm.new", new Object[]{ Gedcom.getName(etag,false), gedcom});
     // This entity will not be connected ... 
     String detail = resources.getString("confirm.new.unrelated");
     // Entity comment?

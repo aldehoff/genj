@@ -534,7 +534,7 @@ public class ViewManager {
         
     // items for entity
     if (entity!=null) {
-      String title = Gedcom.getEntityName(entity.getTag(),false)+" '"+entity.getId()+'\'';
+      String title = Gedcom.getName(entity.getTag(),false)+" '"+entity.getId()+'\'';
       mh.createMenu(title, entity.getImage(false));
       for (int i = 0; i < as.length; i++) {
         mh.createItems(as[i].createActions(entity, this), true);

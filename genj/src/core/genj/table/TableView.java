@@ -369,7 +369,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
     /** constructor */
     ActionChangeType(String t) {
       type = t;
-      setTip(resources.getString("mode.tip", Gedcom.getEntityName(type,true)));
+      setTip(resources.getString("mode.tip", Gedcom.getName(type,true)));
       setImage(Gedcom.getEntityImage(type));
     }
     /** run */
