@@ -49,18 +49,25 @@ public class ReportAppletDetails implements Report {
    * @return Information as String
    */
   public String getInfo() {
-    return "This report creates HTML-files for all individuals and families. These files "+
-           "contain details that are normally shown in the application's EditView.\n" +
-           "It also copies one existing image (OBJE:FILE) that is shown in the entity's "+
-           "detail-page.\n"+
-           "Then by specifying the parameter DETAILS you tell the applet to open a new " +
-           "browser window with that information if an entity is selected. Example:\n" +
-           " <applet code=... > \n" +
-           " <param name=GEDCOM value=...> \n" +
-           " <param name=ZIP    value=...> \n" +
-           " <param name=DETAIL value=\"./details\"> \n" +
-           " </applet> \n" +
-           "Make sure that the generated files are present in the specified directory.";
+    return "This report creates HTML-files for all individuals and families. "
+      + "These files contain details that are normally shown in the "
+      + "application's EditView.\n"
+      + "It also copies one existing image (OBJE:FILE) that is shown in the "
+      + "entity's detail-page.\n"
+      + "For multiline details (e.g., NOTE), any line break that is specified "
+      + "will be preserved in the HTML file.  Lines in the HTML file will "
+      + "wrap at 40 characters of length.  This is likely a different size "
+      + "than the text box in the application's EditView.\n" 
+      + "Then by specifying the parameter DETAILS you tell the applet to "
+      + "open a new browser window with that information if an entity is "
+      + "selected. Example:\n"
+      + " <applet code=... > \n"
+      + " <param name=GEDCOM value=...> \n"
+      + " <param name=ZIP    value=...> \n"
+      + " <param name=DETAIL value=\"./details\"> \n"
+      + " </applet> \n"
+      + "Make sure that the generated files are present in the specified "
+      + "directory.";
   }  
 
   /**
@@ -114,11 +121,14 @@ public class ReportAppletDetails implements Report {
     TagPath path = new TagPath("OBJE:FILE");
     Property prop = ent.getProperty().getProperty(path,true);
     if ( (prop!=null) && (prop instanceof PropertyFile) ) {
-            url = exportImage( (PropertyFile) prop, dir , ent.getId());
-    }
+      url = exportImage( (PropertyFile) prop, dir , ent.getId());
 
-    // Here comes the IMG-tag
-    out.println("<IMG src=\""+url+"\"></IMG>");
+      // Here comes the IMG-tag
+      out.println("<IMG src=\""+url+"\"></IMG>");
+    }
+    else {
+      out.println("No image available.");
+    }
   }
 
   /**
