@@ -123,6 +123,12 @@ public class ReportValidate extends Report {
   public void start(Object context) {
     
     println("***This Report is not finished yet - work in progress***");
+    println(" Still to do:");
+    println(" + migrate all of Jerome's anomaly checks");
+    println(" + keep report options between restarts");
+    println(" + discuss best way to word results");
+    println(" + add gedcom grammar checks");
+    flush();
     
     // assuming Gedcom
     Gedcom gedcom = (Gedcom)context;

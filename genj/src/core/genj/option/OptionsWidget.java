@@ -21,11 +21,14 @@ package genj.option;
 
 import java.awt.BorderLayout;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 /**
@@ -49,7 +52,21 @@ public class OptionsWidget extends JPanel {
     columns.addColumn(new TableColumn(0));
     columns.addColumn(new TableColumn(1));
     model = new Model();
-    table = new JTable(model, columns);
+    table = new JTable(model, columns) {
+      /** we know how to find the correct editor */
+      public TableCellEditor getCellEditor(int row, int col) {
+        if (col==0)   
+          return null;
+        TableCellEditor editor = getDefaultEditor(model.getOption(row).getNonPrimitiveType());
+        if (editor instanceof DefaultCellEditor)
+          ((DefaultCellEditor)editor).setClickCountToStart(1);
+        return editor;
+      }
+      /** we know how to find the correct renderer */
+      public TableCellRenderer getCellRenderer(int row, int col) {
+        return getDefaultRenderer(col!=0 ? model.getOption(row).getNonPrimitiveType() : Object.class);
+      }
+    };
     
     // layout
     setLayout(new BorderLayout());
@@ -68,17 +85,38 @@ public class OptionsWidget extends JPanel {
   /** 
    * Model
    */
-  private static class Model extends AbstractTableModel {
+  private class Model extends AbstractTableModel {
 
     /** options we're looking at */
     private Option[] options = new Option[0];
 
+    /**
+     * Get options by index
+     */
+    private Option getOption(int row) {
+      return options[row];
+    }
+    
     /**
      * Set options to display
      */
     private void setOptions(Option[] set) {
       options = set;
       fireTableDataChanged();
+    }
+    
+    /**
+     * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
+     */
+    public boolean isCellEditable(int row, int col) {
+      return col==1;
+    }
+    
+    /**
+     * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
+     */
+    public void setValueAt(Object value, int row, int col) {
+      getOption(row).setValue(value);
     }
   
     /**

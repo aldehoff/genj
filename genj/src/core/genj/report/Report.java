@@ -147,6 +147,14 @@ public abstract class Report implements Cloneable {
   protected Registry getRegistry() {
     return registry;
   }
+  
+  /**
+   * Flush any of the pending output
+   */
+  protected final void flush() {
+    if (out!=null)
+      out.flush();
+  }
 
   /**
    * Append a new line to the log
