@@ -30,6 +30,7 @@ Future
     (works nicely when the user has created an empty tree)
   O View-Menu in ControlCenter to open up views
   O Use colors to distinguish different events in TimelineView
+  O Add Look&Feel chooser (with Skin L&F support)
 
 1.9 - Aug xx 2002
 
