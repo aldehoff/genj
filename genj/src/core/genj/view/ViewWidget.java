@@ -34,7 +34,9 @@ import genj.util.swing.MenuHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
@@ -167,6 +169,52 @@ import javax.swing.border.TitledBorder;
   }
   
   /**
+   * Show a context menu for given point - at this
+   * point we assume that view instanceof EntityPopupSupport
+   */
+  private void showContextMenu(Point point) {
+    
+    // grab the data we need
+    EntityPopupSupport esp = (EntityPopupSupport)view;
+    JComponent container = esp.getEntityPopupContainer();
+    Entity entity = esp.getEntityAt(point);
+
+    // 20021017 @see note at the bottom of file
+    MenuSelectionManager.defaultManager().clearSelectedPath();
+
+    // create a popup
+    MenuHelper mh = new MenuHelper();
+    JPopupMenu popup = mh.createPopup(frame.getTitle());
+    
+    // items for entity
+    if (entity!=null) {
+      List actions = ViewManager.getInstance().getActions(entity);
+      if (!actions.isEmpty()) {
+        //mh.createItem(entity.getId(), entity.getProperty().getImage(false), true);
+        mh.createMenu(entity.getId(), entity.getProperty().getImage(false));
+        mh.createItems(actions);
+        mh.popMenu();
+      }
+    }
+    
+    // items for gedcom
+    List actions = ViewManager.getInstance().getActions(gedcom);
+    if (!actions.isEmpty()) {
+      //if (popup.getComponentCount()>0) mh.createSeparator();
+      //mh.createItem(gedcom.getName(), Gedcom.getImage(), true);
+      mh.createMenu(gedcom.getName(), Gedcom.getImage());
+      mh.createItems(actions);
+      mh.popMenu();
+    }
+    
+    // show the popup
+    if (popup.getComponentCount()>0)
+      popup.show(container, point.x, point.y);
+    
+    // done
+  }
+  
+  /**
    * Accessor - the view
    */
   /*package*/ Component getView() {
@@ -201,18 +249,9 @@ import javax.swing.border.TitledBorder;
     // delegate to view
     if (view instanceof CurrentSupport)
       ((CurrentSupport)view).setCurrentEntity(entity);
-    // 20021017 - Popups are not removed by Swing as
-    // diligently as I would like. e.g. opening up
-    // a JPopupMenu in one view won't close that menu
-    // when other things are done in other views. We
-    // could do some stuff with windowDeactivated but
-    // that seems to much to bother. Also timing of
-    // menu cleanup seems to be a problem. For now we'll
-    // simple tell the global MenuSelectionmanager
-    // to clearSelectedPath() which will get rid of the
-    // popup anytime the user changes the current entity.
+    // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();
-     
+    // done     
   }
   
   /**
@@ -254,6 +293,8 @@ import javax.swing.border.TitledBorder;
     super.removeNotify();
     // propagate to manager
     ViewManager.getInstance().closeNotify(this);
+    // 20021017 @see note at the bottom of file
+    MenuSelectionManager.defaultManager().clearSelectedPath();
     // done
   }
   
@@ -303,47 +344,31 @@ import javax.swing.border.TitledBorder;
     public void mouseReleased(MouseEvent e) {
       // no popup trigger no action
       if (!e.isPopupTrigger()) return;
-      // grab the data we need
-      EntityPopupSupport esp = (EntityPopupSupport)view;
-      JComponent container = esp.getEntityPopupContainer();
-      Entity entity = esp.getEntityAt(e.getPoint());
-      // get the actions/label for the selection
-      String label;
-      List actions;
-      ImgIcon img;
-      if (entity!=null) {
-        actions = ViewManager.getInstance().getActions(entity);
-        label = entity.getId();
-        img = entity.getProperty().getImage(false);
-      } else {
-        actions = ViewManager.getInstance().getActions(gedcom);
-        label = gedcom.getName();
-        img = Gedcom.getImage();
-      }
-      if (actions.isEmpty()) return;
-      // 20021017 strangely Popups for JPopupMenu don't seem to
-      // disappear even though of mouse-clicks in the view. The
-      // following makes sure that the menu disappears when 
-      // anything is clicking in the view (@see setCurrentEntity())
-      MenuSelectionManager.defaultManager().clearSelectedPath();
-      // create a popup
-      MenuHelper mh = new MenuHelper();
-      JPopupMenu popup = mh.createPopup(label);
-      popup.add(new JLabel(label, ImgIconConverter.get(img), JLabel.CENTER));
-      // take actions
-      Iterator outer = actions.iterator();
-      while (outer.hasNext()) {
-        Iterator inner = ((List)outer.next()).iterator();
-        mh.createSeparator();
-        while (inner.hasNext()) {
-          ActionDelegate ad = (ActionDelegate)inner.next();
-          mh.createItem(ad);
-        }
-      }
-      // show the popup
-      popup.show(container, e.getPoint().x, e.getPoint().y);
+      // show a context menu
+      showContextMenu(e.getPoint());
       // done
     }
   } //EntityPopupMouseListener
+
+  // 20021017 strangely Popups for JPopupMenu don't seem to
+  // disappear even though of mouse-clicks somewhere in the
+  // view. Calling
+  //  MenuSelectionManager.defaultManager().clearSelectedPath();
+  // before bringing up a popup makes sure that it disappears 
+  // when anything is clicking in the view.
+  // Also popups are not removed by Swing after opening up
+  // a JPopupMenu in one view and clicking on components in 
+  // another view. We could do some stuff with windowDeactivated 
+  // but that seems too much to bother. So for now we'll call
+  //  MenuSelectionManager.defaultManager().clearSelectedPath();
+  // which will get rid of the popup anytime 
+  //  setCurrentEntity() 
+  // is called. That will make sure there's no current-change
+  // with a popup still being open for the last current.
+  // Lastly we also call 
+  //  MenuSelectionManager.defaultManager().clearSelectedPath();
+  // in removeNotify() when a view is removed. Otherwise Swing
+  // might keep a popup open in another view showing items that
+  // are applicable to an already closed view.
   
 } //ViewWidget

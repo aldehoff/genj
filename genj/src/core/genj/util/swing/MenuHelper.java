@@ -26,6 +26,8 @@ import genj.util.Resources;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.*;
@@ -64,7 +66,15 @@ public class MenuHelper  {
    * Creates a menu
    */
   public JMenu createMenu(String text) {
+    return createMenu(text, null);
+  }
+
+  /**
+   * Creates a menu
+   */
+  public JMenu createMenu(String text, ImgIcon img) {
     JMenu result = new JMenu(string(text));
+    if (img!=null) result.setIcon(ImgIconConverter.get(img));
 
     Object menu = peekMenu();
     if (menu instanceof JMenu)
@@ -77,7 +87,7 @@ public class MenuHelper  {
     pushMenu(result);
     return result;
   }
-
+  
   /**
    * Creates a PopupMenu
    */
@@ -114,6 +124,50 @@ public class MenuHelper  {
     
     // done
     return result;
+  }
+  
+  /**
+   * Creates a simple text items
+   */
+  public JLabel createItem(String txt, ImgIcon img, boolean emphasized) {
+    JLabel item = new JLabel(txt, ImgIconConverter.get(img), JLabel.CENTER);
+    if (emphasized) {
+      item.setFont(item.getFont().deriveFont(Font.BOLD));
+    }
+
+    Object menu = peekMenu();
+    if (menu instanceof JMenu)
+      ((JMenu)menu).add(item);
+    if (menu instanceof JPopupMenu)
+      ((JPopupMenu)menu).add(item);
+    if (menu instanceof JMenuBar)
+      ((JMenuBar)menu).add(item);
+    
+    return item;
+  }
+
+  /**
+   * Creates items from list of ActionDelegates
+   * @param actions either ActionDelegates or lists of ActionDelegates that
+   * will be separated visually by createSeparator
+   */
+  public void createItems(List actions) {
+    // Loop through list
+    Iterator it = actions.iterator();
+    while (it.hasNext()) {
+      // either ActionDelegate or list
+      Object o = it.next();
+      if (o instanceof List) {
+        // a separator
+        createSeparator();
+        // recurse
+        createItems((List)o);
+      } else {
+        // create
+        createItem((ActionDelegate)o);
+      }
+    }
+    // done
   }
 
   /**

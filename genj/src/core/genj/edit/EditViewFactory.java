@@ -46,21 +46,24 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   
   /** actions for creating entities */
   private final ActionCreate
-    aChild  = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, resources.getString("new.child")),
-    aParent = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, resources.getString("new.parent")),
-    aSpouse = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, resources.getString("new.spouse")),
+    aChild     = new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, "new.child"),
+    aParent    = new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, "new.parent"),
+    aSpouse    = new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, "new.spouse"),
     
-    aIndi   = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS),
-    aFam    = new ActionCreate(Images.imgNewFam   , Gedcom.FAMILIES   ),
-    aNote   = new ActionCreate(Images.imgNewNote  , Gedcom.NOTES      ),
-    aMedia  = new ActionCreate(Images.imgNewMedia , Gedcom.MULTIMEDIAS)
+    aIndi      = new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS ),
+    aFam       = new ActionCreate(Images.imgNewFam       , Gedcom.FAMILIES    ),
+    aNote      = new ActionCreate(Images.imgNewNote      , Gedcom.NOTES       ),
+    aMedia     = new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS ),
+    aRepository= new ActionCreate(Images.imgNewRepository, Gedcom.REPOSITORIES),
+    aSource    = new ActionCreate(Images.imgNewSource    , Gedcom.SOURCES     ),
+    aSubmitter = new ActionCreate(Images.imgNewSubmitter , Gedcom.SUBMITTERS  )
   ;
   
   private final ActionDelete aDelete = new ActionDelete();
 
   /** actions on entities */
   private ActionDelegate[] gedcom2create = new ActionDelegate[] {
-    aIndi, aFam, aNote, aMedia
+    aIndi, aFam, aNote, aMedia, aRepository, aSource, aSubmitter
   };
   
   /** actions on entities */
@@ -153,14 +156,15 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
      * Constructor
      */
     private ActionCreate(ImgIcon img, int t) {
-      this(img, t, 0, Gedcom.getNameFor(t, false));
+      super.setImage(img);
+      super.setText(EditView.resources.getString("new", Gedcom.getNameFor(t, false)));
     }
     /**
      * Constructor
      */
-    private ActionCreate(ImgIcon img, int t, int r, String txt) {
+    private ActionCreate(ImgIcon img, int t, int r, String key) {
       super.setImage(img);
-      super.setText(EditView.resources.getString("new", txt));
+      super.setText(EditView.resources.getString("new", resources.getString(key)));
     }
     /**
      * @see genj.util.ActionDelegate#execute()
