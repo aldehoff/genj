@@ -73,6 +73,17 @@ public class HeadlessLabel extends JComponent {
   }
 
   /**
+   * Patched font - Java 1.5 seems to use "Microsoft Sans Serif" instead 
+   * of "sansserif" which isn't rendered correctly
+   */
+  public Font getFont() {
+    Font result = super.getFont();
+    if (result!=null&&result.getFamily().equals("Microsoft Sans Serif")) 
+      return new Font("sansserif", Font.PLAIN, result.getSize());
+    return result;
+  }
+  
+  /**
    * Set HTML to render
    */
   public View setHTML(String set) {
