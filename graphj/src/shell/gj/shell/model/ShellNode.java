@@ -15,13 +15,11 @@
  */
 package gj.shell.model;
 
-import gj.awt.geom.ShapeHelper;
 import gj.util.ArcHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -71,64 +69,64 @@ public class ShellNode implements gj.model.Node {
     return shape.contains(point.getX()-pos.getX(),point.getY()-pos.getY());   
   }
   
-  /**
-   * Revalidate node constraints
-   */
-  protected void revalidate(boolean shrink) {
-    
-    revalidateShape(shrink);    
-          
-    // update arcs
-    ArcHelper.updateArcs(arcs);
-    
-    // done
-  }  
-  
-  /**
-   * Makes sure the shape is appropriate for the content
-   */
-  private void revalidateShape(boolean shrinkIfAble) {
-
-    // don't care if not containing graph?
-    if (!(content instanceof ShellGraph))
-      return;
-    ShellGraph nested = (ShellGraph)content;
-      
-    // check our bounds
-    Rectangle2D bounds = nested.getBounds();
-   
-    // find maximum
-    double max = 1.0D;
-    while (!ShapeHelper.createShape(shape, max, null).contains(bounds))
-      max *= 2.0D;
-      
-    // shape is big enough - shrink it?
-    if (max==1.0D&&!shrinkIfAble)
-      return;
-      
-    // find minimum
-    double min = 1.0D;
-    while (ShapeHelper.createShape(shape, min, null).contains(bounds)) 
-      min *= 0.5D;
-  
-    // binary search for best fit 
-    for (int i=0;i<8;i++) {
-        
-      double pivt = (min+max)/2;
-  
-      if (ShapeHelper.createShape(shape, pivt, null).contains(bounds)) {
-        max = pivt;
-      } else {
-        min = pivt;
-      }
-  
-    }
-     
-    // set shape 
-    shape = ShapeHelper.createShape(shape, max, null);
-    
-    // done
-  }
+//  /**
+//   * Revalidate node constraints
+//   */
+//  protected void revalidate(boolean shrink) {
+//    
+//    revalidateShape(shrink);    
+//          
+//    // update arcs
+//    ArcHelper.updateArcs(arcs);
+//    
+//    // done
+//  }  
+//  
+//  /**
+//   * Makes sure the shape is appropriate for the content
+//   */
+//  private void revalidateShape(boolean shrinkIfAble) {
+//
+//    // don't care if not containing graph?
+//    if (!(content instanceof ShellGraph))
+//      return;
+//    ShellGraph nested = (ShellGraph)content;
+//      
+//    // check our bounds
+//    Rectangle2D bounds = nested.getBounds();
+//   
+//    // find maximum
+//    double max = 1.0D;
+//    while (!ShapeHelper.createShape(shape, max, null).contains(bounds))
+//      max *= 2.0D;
+//      
+//    // shape is big enough - shrink it?
+//    if (max==1.0D&&!shrinkIfAble)
+//      return;
+//      
+//    // find minimum
+//    double min = 1.0D;
+//    while (ShapeHelper.createShape(shape, min, null).contains(bounds)) 
+//      min *= 0.5D;
+//  
+//    // binary search for best fit 
+//    for (int i=0;i<8;i++) {
+//        
+//      double pivt = (min+max)/2;
+//  
+//      if (ShapeHelper.createShape(shape, pivt, null).contains(bounds)) {
+//        max = pivt;
+//      } else {
+//        min = pivt;
+//      }
+//  
+//    }
+//     
+//    // set shape 
+//    shape = ShapeHelper.createShape(shape, max, null);
+//    
+//    // done
+//  }
   
   /**
    * Sets the location
@@ -192,11 +190,14 @@ public class ShellNode implements gj.model.Node {
     // change
     shape = set;
     
-    // revalidate
-    revalidate(false);
+    // update arcs
+    ArcHelper.updateArcs(arcs);
     
-    // notify
-    graph.revalidate();
+//    // revalidate
+//    revalidate(false);
+    
+//    // notify
+//    graph.revalidate();
     
     // done
   }
@@ -261,8 +262,8 @@ public class ShellNode implements gj.model.Node {
       y = sy;
       // update arcs
       ArcHelper.updateArcs(arcs);
-      // notify
-      graph.revalidate();
+//      // notify
+//      graph.revalidate();
     }
     /** */
     public void translate(Point2D delta) {

@@ -92,6 +92,9 @@ public abstract class GraphRenderer {
     // and content    
     Object content = node.getContent();
     if (content==null) return;
+
+    Shape oldcp = graphics.getClip();
+    graphics.clip(ShapeHelper.createShape(node.getShape(), 1, node.getPosition()));
     
     // another graph?
     if (content instanceof ShellGraph) {
@@ -104,12 +107,10 @@ public abstract class GraphRenderer {
       // restore configuration
       graphics.setTransform(oldat);
     } else {
-      Shape oldcp = graphics.getClip();
-      graphics.clip(ShapeHelper.createShape(node.getShape(), 1, node.getPosition()));
       draw(content.toString(), node.getPosition(), graphics);
-      graphics.setClip(oldcp);
     }
 
+    graphics.setClip(oldcp);
     // done
   }
 

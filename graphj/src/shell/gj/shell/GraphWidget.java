@@ -476,7 +476,10 @@ public class GraphWidget extends JPanel {
     protected void execute() {
       String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
       if (txt==null) return;
-      selection.setContent(txt);
+      if (txt.length()>0)
+        selection.setContent(txt);
+      else 
+        selection.setContent(new ShellGraph());
       repaint();
     }
   }

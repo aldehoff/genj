@@ -66,35 +66,17 @@ public class ShellGraph implements gj.model.Graph {
     parent = null;
   }
   
-  /**
-   * Change Notification
-   */
-//  private boolean isRevalidating = false;
-  
-  protected void revalidate() {
-
-//    if (isRevalidating) return;
-//    isRevalidating=true;      
+//  /**
+//   * Change Notification
+//   */
+//  protected void revalidate() {
 //
-//    // make sure we center around (0,0)
-//    Rectangle2D bounds = ModelHelper.getBounds(nodes);
-//    if (bounds.getCenterX()!=0||bounds.getCenterY()!=0) {
-//
-//      Point2D delta = new Point2D.Double(-bounds.getCenterX(),-bounds.getCenterY());
-//      for (int i=0;i<nodes.size();i++)
-//        ((ShellNode)nodes.get(i)).translate(delta);
-//
-//      for (int i=0;i<arcs.size();i++)
-//        ((ShellArc)arcs.get(i)).translate(delta);              
-//    }
-    
-    // propagate to parent?
-    if (parent!=null)
-      parent.revalidate(false);
-      
-    // done
-//    isRevalidating=false;
-  }
+//    // propagate to parent?
+//    if (parent!=null)
+//      parent.revalidate(false);
+//      
+//    // done
+//  }
   
   /**
    * Bounds
@@ -132,7 +114,7 @@ public class ShellGraph implements gj.model.Graph {
     ShellNode result = new ShellNode(this, shape, content);
     if (pos!=null) result.getPosition().setLocation(pos);
     nodes.add(result);
-    revalidate();
+//    revalidate();
     return result;
   }
 

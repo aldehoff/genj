@@ -115,11 +115,6 @@ import java.util.Iterator;
     if (moves!=null) perform(moves,1D);
     // stop all moves
     moves=null;
-    // restore original bounds
-    minx = originalBounds.getMinX();
-    miny = originalBounds.getMinY();
-    maxx = originalBounds.getMaxX();
-    maxy = originalBounds.getMaxY();
     // done
     return false;
   }
