@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ * $Revision: 1.16 $ $Author: nmeier $ $Date: 2004-03-25 18:15:40 $
  */
 package genj.util;
 
@@ -110,15 +112,15 @@ public class Registry {
     }
     
     // read all from local registry (old style)
-    File old = getFile(name, false);
-    if (old.exists()) {
-      try {
+    try {
+      File old = getFile(name, false);
+      if (old.exists()) {
         FileInputStream in = new FileInputStream(old);
         properties.load(in);
         in.close();
         old.delete();
-      } catch (Throwable t) {
       }
+    } catch (Throwable t) {
     }
     
     // read all from local registry (new style)
