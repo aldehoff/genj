@@ -9,6 +9,7 @@ import genj.gedcom.*;
 import genj.report.*;
 
 import java.io.*;
+import java.util.StringTokenizer;
 
 /**
  * GenJ - Report
@@ -193,24 +194,49 @@ public class ReportAppletDetails implements Report {
   private void exportProperty(String tag, String value, PrintWriter out, int level) {
 
     // a loop for multi lines
-    while (true) {
+    exportSpaces(out, level);
 
-      exportSpaces(out, level);
+    out.print(tag + " ");
 
-      out.print(tag + " ");
+    value = value.trim();
 
-      value = value.trim();
+    // below conditional is an optimization, but is not logically necessary.
+    if (value.length() <= MAX_LINE_LENGTH) {
+      out.println(value);
+      return;
+    }
 
-      if (value.length() <= MAX_LINE_LENGTH) {
-        out.println(value);
-        break;
+    // This big string tokenization mess is so we breaks lines on word
+    // boundaries.
+    boolean first = true;
+    StringTokenizer strtok = new StringTokenizer(value);
+    String line = strtok.nextToken() + " ";
+    final String padding = "     ";
+    while (strtok.hasMoreTokens()) {
+      String next = strtok.nextToken();
+      if (line.length() + next.length() > MAX_LINE_LENGTH) {
+        if (first) {
+          out.println(line);
+          first = false;
+        }
+        else {
+          exportSpaces(out, level);
+          out.println(padding + line);
+        }
+        line = "";
       }
 
-      out.println(value.substring(0,MAX_LINE_LENGTH));
-
-      value = value.substring(MAX_LINE_LENGTH);
-
-      tag = "    ";
+      line += next + " ";
+    }
+    
+    if (line.length() > 0) {
+      if (first)
+        out.println(line);
+      else {
+        exportSpaces(out, level);
+        out.println(padding + line);
+      }
+      line = "";
     }
 
     // Done
