@@ -128,11 +128,9 @@ public class Options extends OptionProvider implements OptionMetaInfo {
    * Getter - looknfeel
    */
   public int getLookAndFeel() {
-    
-    // no LnFs available ? then it's not a valid bean property
-    if (getLookAndFeels().length==0)
-      throw new RuntimeException("No Look & Feels available");
-      
+    // this is invoked once on option introspection
+    if (lookAndFeel<0)
+      setLookAndFeel(0);
     return lookAndFeel;
   }
   
@@ -144,7 +142,7 @@ public class Options extends OptionProvider implements OptionMetaInfo {
     // Check against available LnFs
     LnF[] lnfs = LnF.getLnFs();
     if (set<0||set>lnfs.length-1)
-      return;
+      set = 0;
       
     // set it - apply on root components if available
     lnfs[set].apply(windowManager!=null?windowManager.getRootComponents():null);

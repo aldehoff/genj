@@ -52,9 +52,6 @@ public class LnF {
   /** Look&Feels */
   private static LnF[] instances;
   
-  /** dir */
-//  private static String dir;
-  
   /** members */
   private String name,type,archive,url,version,theme;
   private ClassLoader cl;
@@ -70,6 +67,12 @@ public class LnF {
       return instances;
 
     // create 'em      
+    ArrayList result = new ArrayList();    
+    
+    // add default
+    result.add(new LnF("System Default", UIManager.getSystemLookAndFeelClassName(), "", "", null, null));
+    
+    // read lnf pack
     try {
       
       // get the number of configured lnfs
@@ -77,7 +80,6 @@ public class LnF {
       int num = r.get("lnf.count",0);
       
       // create a LnF for each
-      ArrayList result = new ArrayList(num);
       for (int d=0; d<num; d++) {
 
         String prefix = "lnf."+(d+1);
@@ -106,12 +108,12 @@ public class LnF {
         }
       }   
 
-      // keep      
-      instances = (LnF[])result.toArray(new LnF[result.size()]);   
-      
     } catch (IOException ioe) {
     }
 
+    // remember
+    instances = (LnF[])result.toArray(new LnF[result.size()]);   
+    
     // done    
     return instances;
   }
@@ -277,7 +279,10 @@ public class LnF {
       SwingUtilities.invokeLater(new Runnable() {
         public void run() {
           Iterator e = rootComponents.iterator();
-          while (e.hasNext()) SwingUtilities.updateComponentTreeUI((Component)e.next());
+          while (e.hasNext()) try {
+            SwingUtilities.updateComponentTreeUI((Component)e.next());
+          } catch (Throwable t) {
+          }
         }
       });
     }
@@ -285,5 +290,5 @@ public class LnF {
     // done
     return true;
   }
-  
+
 } // LnF
