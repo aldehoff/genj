@@ -28,7 +28,6 @@ import genj.util.swing.TextFieldWidget;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
-import java.awt.geom.Point2D;
 
 import javax.swing.JLabel;
 
@@ -57,13 +56,6 @@ public class SimpleValueBean extends PropertyBean {
     return !property.isReadOnly();
   }
 
-  /** 
-   * Growing is fine
-   */
-  public Point2D getWeight() {
-    return new Point2D.Double(0.1,0);
-  }
-  
   /**
    * Initialize
    */

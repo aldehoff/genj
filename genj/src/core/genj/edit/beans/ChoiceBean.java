@@ -33,7 +33,6 @@ import genj.window.WindowManager;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Point2D;
 
 import javax.swing.JCheckBox;
 import javax.swing.border.EmptyBorder;
@@ -155,13 +154,6 @@ public class ChoiceBean extends PropertyBean {
     // because like in PropertyRelationship's case there might be more
     // in the gedcom value than what we want to display (witness@INDI:BIRT)
     return resources.getString("choice.global.confirm", new String[]{ ""+others, property.getDisplayValue(), choice.getText() });
-  }
-  
-  /**
-   * growth is good
-   */
-  public Point2D getWeight() {
-    return new Point2D.Double(0.5,0);
   }
   
 } //ProxyChoice

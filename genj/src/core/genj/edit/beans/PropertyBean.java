@@ -35,7 +35,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -185,13 +184,6 @@ public abstract class PropertyBean extends JPanel implements GedcomListener {
    */
   public boolean isEditable() {
     return true;
-  }
-  
-  /** 
-   * Weight
-   */
-  public Point2D getWeight() {
-    return null;
   }
   
   /** 

@@ -26,7 +26,6 @@ import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyNote;
-import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
@@ -40,7 +39,6 @@ import genj.view.Context;
 import genj.window.CloseWindow;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.FlowLayout;
@@ -71,9 +69,6 @@ import javax.swing.event.ChangeListener;
  * The basic version of an editor for a entity. Tries to hide Gedcom complexity from the user while being flexible in what it offers to edit information pertaining to an entity.
  */
 /* package */class BasicEditor extends Editor implements GedcomListener {
-
-  /** colors for tabborders */
-  private final static Color[] COLORS = { Color.GRAY, new Color(192, 48, 48), new Color(48, 48, 128), new Color(48, 128, 48), new Color(48, 128, 128), new Color(128, 48, 128), new Color(96, 64, 32), new Color(32, 64, 96) };
 
   /** entity tag to layout */
   private Map tag2layout = new HashMap();
@@ -289,11 +284,13 @@ import javax.swing.event.ChangeListener;
       }
       // create bean
       PropertyBean bean = createBean(entity, path);
+      if (bean==null)
+        return;
+      
       // popup or normal?
       if (cell.getAttribute("popup")!=null) {
         beanPanel.add(new PopupBean(bean), cell);
       } else {
-        cell.setWeight(bean.getWeight());
         beanPanel.add(bean, cell);
       }
       
@@ -311,23 +308,20 @@ import javax.swing.event.ChangeListener;
     
     MetaProperty meta = MetaProperty.get(path);
 
-    // resolve prop & bean
-    Property prop = entity.getProperty(path);
-    for (int s=0;prop instanceof PropertyXRef;s++) {
-      // we know how to handle a PropertyNote
-      if (prop instanceof PropertyNote) {
+    // try to resolve existing prop
+    Property prop=null;
+    Property[] props = entity.getProperties(path);
+    for (int i=0;prop==null&&i<props.length;i++) {
+      prop = props[i];
+      if (prop instanceof PropertyNote) 
         prop = prop.getProperty(new TagPath("*:..:NOTE"));
-        if (prop!=null)
-          break;
-      }
-      // try next
-      prop = entity.getProperty(new TagPath(path, path.length()-1, s));
     }
     
-    // .. fallback to newly created one?
-    if (prop == null)
+    // created a new one?
+    if (prop==null) 
       prop = meta.create("");
     
+    // init bean
     PropertyBean bean = PropertyBean.get(prop);
     bean.init(entity.getGedcom(), prop, path, view.getViewManager(), registry);
     bean.addChangeListener(changeCallback);

@@ -1,8 +1,8 @@
   <col>
    <row><label path="OBJE"/></row>
-   <row><label path="OBJE:TITL"/><bean path="OBJE:TITL"/></row>
-   <row><label path="OBJE:FORM"/><bean path="OBJE:FORM"/></row>
-   <row><bean path="OBJE:BLOB"/></row>
+   <row><label path="OBJE:TITL"/><bean path="OBJE:TITL" wx="0.1"/></row>
+   <row><label path="OBJE:FORM"/><bean path="OBJE:FORM" wx="0.1"/></row>
+   <row><bean path="OBJE:BLOB" wx="0.1" wy="0.2"/></row>
    <row><label path="OBJE:NOTE"/></row>
-   <row><bean path="OBJE:NOTE"/></row>
+   <row><bean path="OBJE:NOTE" wx="0.1" wy="0.1"/></row>
   </col>
