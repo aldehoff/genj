@@ -30,6 +30,7 @@ import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.ContextSupport;
 import genj.view.ViewManager;
@@ -47,11 +48,11 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 /**
@@ -68,7 +69,27 @@ public class NavigatorView extends JPanel implements ContextSupport {
     OSIBLING = "tip.osibling",
     PARTNER  = "tip.partner",
     CHILD    = "tip.child";
-    
+
+  private final static int gp = 70;
+
+  private final static ImageIcon
+//FIXME  
+    imgNavYoungerSiblingOn = new ImageIcon(NavigatorView.class,"NavYoungerSiblingOn.gif"),
+    imgNavYoungerSiblingOff= imgNavYoungerSiblingOn.getDisabled(gp),
+    imgNavOlderSiblingOn   = new ImageIcon(NavigatorView.class,"NavOlderSiblingOn.gif"),
+    imgNavOlderSiblingOff  = imgNavYoungerSiblingOn.getDisabled(gp),
+    imgNavChildOn          = new ImageIcon(NavigatorView.class,"NavChildOn.gif"),
+    imgNavChildOff         = imgNavChildOn.getDisabled(gp),
+    imgNavFatherOn         = new ImageIcon(NavigatorView.class,"NavFatherOn.gif"),
+    imgNavFatherOff        = imgNavFatherOn.getDisabled(gp),
+    imgNavMotherOn         = new ImageIcon(NavigatorView.class,"NavMotherOn.gif"),
+    imgNavMotherOff        = imgNavMotherOn.getDisabled(gp),
+    imgNavMalePartnerOn    = new ImageIcon(NavigatorView.class,"NavMalePartnerOn.gif"),
+    imgNavMalePartnerOff   = imgNavMalePartnerOn.getDisabled(gp),
+    imgNavFemalePartnerOn  = new ImageIcon(NavigatorView.class,"NavFemalePartnerOn.gif"),
+    imgNavFemalePartnerOff = imgNavFemalePartnerOn.getDisabled(gp);
+
+
   /** the label holding information about the current individual */
   private JLabel labelCurrent, labelSelf;
   
@@ -194,7 +215,22 @@ public class NavigatorView extends JPanel implements ContextSupport {
       // update label
       labelCurrent.setText(getNameOrID(current));
       labelCurrent.setIcon(current.getImage(false));
-      labelSelf.setIcon(current.getImage(false));
+
+      // update the self label/partner popup images
+      PopupWidget partner = getPopup(PARTNER);
+      switch (current.getSex()) {
+        case PropertySex.FEMALE:
+          labelSelf.setIcon(imgNavFemalePartnerOn);
+          partner.setIcon(imgNavMalePartnerOn);
+          // FIXME partner.setRolloverIcon(imgNavMalePartnerOn);
+          break;
+        case PropertySex.MALE:
+          labelSelf.setIcon(imgNavMalePartnerOn);
+          partner.setIcon(imgNavFemalePartnerOn);
+          // FIXME partner.setRolloverIcon(imgNavFemalePartnerOn);
+          break;
+      }
+
     }
           
     // done
@@ -238,17 +274,6 @@ public class NavigatorView extends JPanel implements ContextSupport {
     }
     popup.setActions(jumps);
     
-    // update the partner popup images if there is a spouse
-    if(key == PARTNER && is != null && is.length > 0) {
-      if(is[0].getSex() == PropertySex.MALE) {
-      	popup.setIcon(Images.imgNavMalePartnerOff);
-        popup.setRolloverIcon(Images.imgNavMalePartnerOn);
-      } else if(is[0].getSex() == PropertySex.FEMALE) {
-      	popup.setIcon(Images.imgNavFemalePartnerOff);
-        popup.setRolloverIcon(Images.imgNavFemalePartnerOn);
-      }
-    }
-      
     // done
   }
     
@@ -267,8 +292,9 @@ public class NavigatorView extends JPanel implements ContextSupport {
     
     // create result
     PopupWidget result = new PopupWidget();
-    result.setIcon(i);
-    result.setRolloverIcon(r);
+    result.setIcon(r);
+    // FIXME
+    //result.setRolloverIcon(r);
     result.setFocusPainted(false);
 
     // no can do pre 1.4
@@ -278,7 +304,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
       result.setRequestFocusEnabled(false);
     }
    
-    result.setBorder(null);
+    result.setBorder(new EmptyBorder(2,2,2,2));
     result.setEnabled(false);
     result.setToolTipText(resources.getString(key));
 
@@ -300,34 +326,37 @@ public class NavigatorView extends JPanel implements ContextSupport {
     result.setBorder(border);
     GridBagHelper gh = new GridBagHelper(result);
     
-    labelSelf = new JLabel(Gedcom.getImage(Gedcom.INDIVIDUALS),SwingConstants.CENTER);
     // add the buttons
     gh.add(
-      createPopup(FATHER, Images.imgNavFatherOff, Images.imgNavFatherOn) 
+      createPopup(FATHER, imgNavFatherOff, imgNavFatherOn) 
       ,4,1,1,1
     );
     gh.add(
-      createPopup(MOTHER, Images.imgNavMotherOff, Images.imgNavMotherOn) 
+      createPopup(MOTHER, imgNavMotherOff, imgNavMotherOn) 
       ,5,1,1,1
     );
     gh.add(
-      createPopup(OSIBLING, Images.imgNavOlderSiblingOff, Images.imgNavOlderSiblingOn) 
+      createPopup(OSIBLING, imgNavOlderSiblingOff, imgNavOlderSiblingOn) 
       ,1,2,2,1,0,new Insets(12,0,12,12)
     );
+
+    labelSelf = new JLabel(Gedcom.getImage(Gedcom.INDIVIDUALS),SwingConstants.CENTER);
+    labelSelf.setPreferredSize(getPopup(FATHER).getPreferredSize());
     gh.add(
       labelSelf
       ,4,2,1,1
     );
+
     gh.add(
-      createPopup(PARTNER, Images.imgNavMalePartnerOff, Images.imgNavMalePartnerOn)
+      createPopup(PARTNER, imgNavMalePartnerOff, imgNavMalePartnerOn)
       ,5,2,1,1
     );
     gh.add(
-      createPopup(YSIBLING, Images.imgNavYoungerSiblingOff, Images.imgNavYoungerSiblingOn)
+      createPopup(YSIBLING, imgNavYoungerSiblingOff, imgNavYoungerSiblingOn)
       ,7,2,2,1,0,new Insets(12,12,12,0)
     );
     gh.add(
-      createPopup(CHILD, Images.imgNavChildOff, Images.imgNavChildOn)  
+      createPopup(CHILD, imgNavChildOff, imgNavChildOn)  
       ,4,3,2,1
     );
 
