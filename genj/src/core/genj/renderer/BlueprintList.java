@@ -184,12 +184,13 @@ public class BlueprintList extends JSplitPane {
       if (node.blueprint==null) return;
       // confirm
       Blueprint blueprint = node.blueprint;
-      JOptionPane.showConfirmDialog(
+      int rc = JOptionPane.showConfirmDialog(
         BlueprintList.this, 
         resources.getString("blueprint.del.confirm", blueprint.getName()),
         "",
         JOptionPane.YES_NO_OPTION
       );
+      if (rc!=JOptionPane.YES_OPTION) return;
       // update selection with default
       int type = bpManager.getType(blueprint);
       selection[type] = bpManager.getBlueprint(type, "");
