@@ -124,7 +124,7 @@ public class ChoiceWidget extends JComboBox {
    * Accessor - whether a selectAll() should occur on focus gained
    */
   public void setSelectAllOnFocus(boolean set) {
-    // FIXME need selectAllOnFocus
+    // ignored - currently LnF dependant
   }
     
   /**
