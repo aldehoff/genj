@@ -30,9 +30,44 @@ import java.awt.geom.Rectangle2D;
  * The NodeLayout
  */
 /*package*/ class NodeLayout {
+
+  /**
+   * Apply to a node - root will stay at present position
+   * @param tree the tree to layout
+   * @param tlayout the tree-layout
+   */
+  /*package*/ Contour applyTo(Tree tree, TreeLayout tlayout) {
+
+    // Save root's original position
+    Orientation o = tlayout.getOrientation();
+    Node root = tree.getRoot();
+    double 
+      rootLat = o.getLatitude (root.getPosition()),
+      rootLon = o.getLongitude(root.getPosition());
+
+    // layout starting with the root of the tree
+    Contour result = layoutNode(root, null, tree, 0, tlayout);
+    
+    // calculate delta to get everything back to original position
+    double
+      dlat = rootLat - o.getLatitude (root.getPosition()),
+      dlon = rootLon - o.getLongitude(root.getPosition());
+
+    // translate the absolute contour
+    result.translate(dlat,dlon);
+    
+    // transform relative node/arc positions into absolute ones
+    relative2absolute(tree.getRoot(), o.getPoint2D(dlat,dlon), null);
+
+    // done
+    return result;
+  }
   
   /**
    * Apply to a node
+   * @param tree the tree to layout
+   * @param lat,lon where to place the tree's north/west
+   * @param tlayout the tree-layout
    */
   /*package*/ Contour applyTo(Tree tree, double lat, double lon, TreeLayout tlayout) {
 
@@ -40,10 +75,10 @@ import java.awt.geom.Rectangle2D;
     Contour result = layoutNode(tree.getRoot(), null, tree, 0, tlayout);
     
     // calculate delta to get everything to lat/lon
-    double
+    double 
       dlat = lat - result.north,
-      dlon = lon - result.west;
-
+      dlon = lon - result.west ;
+    
     // translate the absolute contour
     result.translate(dlat,dlon);
     

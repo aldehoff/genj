@@ -60,6 +60,9 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
   /** the alignment of generations (if isAlignGeneration) */
   private double latAlignment = 0.5;
   
+  /** whether we layout unreached nodes, too */
+  private boolean isLayoutUnreachedNodes = true;
+  
   /** whether latAlignment is enabled */
   /*package*/ boolean isLatAlignmentEnabled = false;
   
@@ -161,6 +164,20 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
    */
   public void setLatAlignmentEnabled(boolean set) {
     isLatAlignmentEnabled=set;
+  }
+
+  /**
+   * Getter - whether we layout unreached nodes, too 
+   */
+  public boolean isLayoutUnreachedNodes() {
+    return isLayoutUnreachedNodes;
+  }
+
+  /**
+   * setter - whether we layout unreached nodes, too 
+   */
+  public void setLayoutUnreachedNodes(boolean set) {
+    isLayoutUnreachedNodes = set;
   }
 
   /**
@@ -293,31 +310,36 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
     if (root==null||!graph.getNodes().contains(root)) root=(Node)unvisited.iterator().next();
 
     // loop as long as there are nodes that we haven't visited yet
-    double
-      north=0,
-      south=0,
-      west =0,
-      east =0;
+    double north=0, west=0, east=0, south=0;
+    Contour contour = null;
     while (true) {
 
-      // create a Tree for curren root
+      // create a Tree for current root
       Tree tree = new Tree(graph,root,latPadding,orientation);
 
       // all nodes in that will be visited
       unvisited.removeAll(tree.getNodes());
 
       // layout through root
-      Contour contour = new NodeLayout().applyTo(tree, south, west, this);
+      if (contour==null) {
+        // 1st time
+        contour = new NodeLayout().applyTo(tree, this);
+        // move position for next tree & update bounds
+        north = contour.north;
+        west  = contour.west ;
+        east  = contour.east ;
+        south = contour.south;
+      } else {
+        contour = new NodeLayout().applyTo(tree, south, west, this);
+        east  = Math.max(east , contour.east );
+        south = contour.south;
+      }
       
       // and keep the contour(s)
       if (isDebug()) debug(contour);
 
-      // move position for next tree & update bounds
-      east = Math.max(east, contour.east);
-      south = contour.south;
-
       // choose a new root (for a new sub-graph)
-      if (unvisited.isEmpty()) break;
+      if (!isLayoutUnreachedNodes||unvisited.isEmpty()) break;
 
       // next
       root = (Node)unvisited.iterator().next();
