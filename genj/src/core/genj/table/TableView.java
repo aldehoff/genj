@@ -115,7 +115,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     loadProperties();
     
     // create our table
-    // FIXME table auto row height calculation and renderer y-alignment
     table = new JTable(tableModel, new DefaultTableColumnModel());
     table.setTableHeader(new SortableTableHeader());
     table.setCellSelectionEnabled(true);
@@ -123,6 +122,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     table.getTableHeader().setReorderingAllowed(false);
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
+    table.setRowHeight((int)Math.ceil(Options.getInstance().getDefaultFont().getLineMetrics("", new FontRenderContext(null,false,false)).getHeight())+table.getRowMargin());
 
     // listen to row and column selections and model changes
     TableCallback callback = new TableCallback();
