@@ -177,19 +177,15 @@ public class ContentRenderer {
     // draw it's extend
     g.setColor(cTimespan);
     
-    switch (event.pd.getFormat()) {
-      case PropertyDate.AFT:
-      case PropertyDate.FROM:
-        g.draw(fromMark, event.from, level+1, true);
-        break;
-      case PropertyDate.BEF:
-      case PropertyDate.TO:
-        g.draw(toMark, event.from, level+1, true);
-        break;
-      default:
-        g.draw(fromMark, event.from, level+1, true);
-        g.draw( event.from, level + 1 - dotSize.y, event.to, level + 1 - dotSize.y );
-        g.draw(toMark, event.to, level+1, true);
+    PropertyDate.Format format = event.pd.getFormat();
+    if (format==PropertyDate.AFTER||format==PropertyDate.FROM) {
+      g.draw(fromMark, event.from, level+1, true);
+    } else if (format==PropertyDate.BEFORE||format==PropertyDate.TO) {
+      g.draw(toMark, event.from, level+1, true);
+    } else {
+      g.draw(fromMark, event.from, level+1, true);
+      g.draw( event.from, level + 1 - dotSize.y, event.to, level + 1 - dotSize.y );
+      g.draw(toMark, event.to, level+1, true);
     }
 
     // clipping from here    

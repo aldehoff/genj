@@ -37,37 +37,26 @@ public class PropertyDate extends Property {
     end = new PIT();
 
   /** the format of the contained date */
-  private int format = DATE;
+  private Format format = DATE;
 
   /** as string */
   private String dateAsString;
 
-  /** formats */
-  public static final int
-    DATE    = 0,			// unable to parse - use dateAsString
-    FROMTO  = 1,
-    FROM    = 2,
-    TO      = 3,
-    BETAND  = 4,
-    BEF     = 5,
-    AFT     = 6,
-    ABT     = 7,
-    CAL     = 8,
-    EST     = 9,
-    LAST_ATTRIB = EST;
-    
   /** format definitions */
-  private final static FormatDescriptor[] formats = {
-    new FormatDescriptor(false, ""    , ""   , "" , "" ), // DATE
-    new FormatDescriptor(true , "FROM", "TO" , "" , "-"), // FROM TO
-    new FormatDescriptor(false, "FROM", ""   , "[", "" ), // FROM
-    new FormatDescriptor(false, "TO"  , ""   , "]", "" ), // TO
-    new FormatDescriptor(true , "BET" , "AND", ">", "<"), // BETAND
-    new FormatDescriptor(false, "BEF" , ""   , "<", "" ), // BEF
-    new FormatDescriptor(false, "AFT" , ""   , ">", "" ), // AFT
-    new FormatDescriptor(false, "ABT" , ""   , "~", "" ), // ABT
-    new FormatDescriptor(false, "CAL" , ""   , "~", "" ), // CAL
-    new FormatDescriptor(false, "EST" , ""   , "~", "" )  // EST
+  public final static Format
+    DATE        = new Format(false, ""    , ""   , "" , "" ), // DATE
+    FROM_TO     = new Format(true , "FROM", "TO" , "" , "-"), // FROM TO
+    FROM        = new Format(false, "FROM", ""   , "[", "" ), // FROM
+    TO          = new Format(false, "TO"  , ""   , "]", "" ), // TO
+    BETWEEN_AND = new Format(true , "BET" , "AND", ">", "<"), // BETAND
+    BEFORE      = new Format(false, "BEF" , ""   , "<", "" ), // BEF
+    AFTER       = new Format(false, "AFT" , ""   , ">", "" ), // AFT
+    ABOUT       = new Format(false, "ABT" , ""   , "~", "" ), // ABT
+    CALCULATED  = new Format(false, "CAL" , ""   , "~", "" ), // CAL
+    ESTIMATED   = new Format(false, "EST" , ""   , "~", "" ); // EST
+  
+  public final static Format[] FORMATS = {
+    DATE, FROM_TO, FROM, TO, BETWEEN_AND, BEFORE, AFTER, ABOUT, CALCULATED, ESTIMATED
   };
 
   /**
@@ -95,45 +84,8 @@ public class PropertyDate extends Property {
   /**
    * Returns the format of this date
    */
-  public int getFormat() {
+  public Format getFormat() {
     return format;
-  }
-
-  /**
-   * Returns label for given format type
-   */
-  public static String getLabelForFormat(int type) {
-
-    String res=null;
-
-    switch (type) {
-      case DATE:
-        res="prop.date.date"  ; break;
-      case FROMTO:
-        res="prop.date.fromto"; break;
-      case FROM:
-        res="prop.date.from"  ; break;
-      case TO:
-        res="prop.date.to"    ; break;
-      case BETAND:
-        res="prop.date.betand"; break;
-      case BEF:
-        res="prop.date.bef"   ; break;
-      case AFT:
-        res="prop.date.aft"   ; break;
-      case ABT:
-        res="prop.date.abt"   ; break;
-      case CAL:
-        res="prop.date.cal"   ; break;
-      case EST:
-        res="prop.date.est"   ; break;
-    }
-
-    // Hmmmm
-    if (res==null)
-      return EMPTY_STRING;
-      
-    return Gedcom.getResources().getString(res);
   }
 
   /**
@@ -160,14 +112,11 @@ public class PropertyDate extends Property {
     if (dateAsString!=null) 
       return dateAsString;
       
-    // what's our format descriptor?
-    FormatDescriptor fd = formats[format]; 
-      
     // collect information
     WordBuffer result = new WordBuffer();
-    result.append(fd.start);  
+    result.append(format.start);  
     start.getValue(result);
-    result.append(fd.end);
+    result.append(format.end);
     if (isRange()) 
       end.getValue(result);
 
@@ -179,14 +128,7 @@ public class PropertyDate extends Property {
    * Returns whether this date is a range (fromto, betand)
    */
   public boolean isRange() {
-    return isRange(format);
-  }
-
-  /**
-   * Returns whether given format is a range (fromto, betand)
-   */
-  public static boolean isRange(int format) {
-    return formats[format].isRange;
+    return format.isRange();
   }
 
   /**
@@ -214,21 +156,17 @@ public class PropertyDate extends Property {
   /**
    * Accessor Format
    */
-  public void setFormat(int newFormat) {
+  public void setFormat(Format set) {
     
-    // Valid format ?
-    if ((newFormat<DATE) || (newFormat>EST) )
-      throw new IllegalArgumentException("Unknown format '"+newFormat+"'");
-
     // remember as modified      
     propagateChanged(this);
 
-    // remember
-    format=newFormat;
-    
     // set end == start?
-    if (!isRange()&&isRange(format)) 
+    if (!isRange()&&set.isRange()) 
       end.set(start);
+    
+    // remember
+    format = set;
     
     // Done
   }
@@ -265,21 +203,22 @@ public class PropertyDate extends Property {
 
     // Look for format token 'FROM', 'AFT', ...
     String token = tokens.nextToken();
-    for (format=0;format<formats.length;format++) {
+    for (int f=0;f<FORMATS.length;f++) {
 
       // .. found modifier (prefix is enough: e.g. ABT or ABT.)
-      if ( (formats[format].start.length()>0) && token.startsWith(formats[format].start) ) {
+      format = FORMATS[f];
+      if ( (format.start.length()>0) && token.startsWith(format.start) ) {
 
         // ... no range (TO,ABT,CAL,...) -> parse PointInTime from remaining tokens
-        if ( !formats[format].isRange ) 
+        if ( !format.isRange ) 
           return start.set(tokens);
 
         // ... is range (FROM-TO,BET-AND)
-        String grab=EMPTY_STRING;
+        String grab = EMPTY_STRING;
         while (tokens.hasMoreTokens()) {
           // .. TO or AND ? -> parse 2 PointInTimes from grabbed and remaining tokens
           token = tokens.nextToken();
-          if ( token.startsWith(formats[format].end) ) {
+          if ( token.startsWith(format.end) ) {
             return start.set(new StringTokenizer(grab)) && end.set(tokens);
           }
           // .. grab more
@@ -326,13 +265,10 @@ public class PropertyDate extends Property {
     if (dateAsString!=null) 
       return dateAsString;
       
-    // what's our format descriptor?
-    FormatDescriptor fd = formats[format]; 
-      
     // prepare modifiers
     String
-      smod = fd.start,
-      emod = fd.end  ;
+      smod = format.start,
+      emod = format.end  ;
       
     if (smod.length()>0)
       smod = Gedcom.getResources().getString("prop.date.mod."+smod);  
@@ -418,17 +354,43 @@ public class PropertyDate extends Property {
   /**
    * A format definition
    */
-  private static class FormatDescriptor {
+  public static class Format {
+    
     protected boolean isRange;
+    
     protected String start, end;
-    //protected String astart, aend;
-    protected FormatDescriptor(boolean r, String s, String e, String as, String ae) {
+    
+    private Format(boolean r, String s, String e, String as, String ae) {
       isRange= r; 
       start  = s; 
       end    = e;
       //astart = as;
       //aend   = ae;
     }
-  } //FormatDescriptor
+    
+    public boolean isRange() {
+      return isRange;
+    }
+
+    public String getLabel() {
+      String key = (start+end).toLowerCase();
+      if (key.length()==0)
+        key = "date";
+      return resources.getString("prop.date."+key);
+    }
+    
+    public String getLabel1() {
+      if (start.length()==0)
+        return EMPTY_STRING;
+      return resources.getString("prop.date.mod."+start);
+    }
+    
+    public String getLabel2() {
+      if (end.length()==0)
+        return EMPTY_STRING;
+      return resources.getString("prop.date.mod."+end);
+    }
+    
+  } //Format
   
 } //PropertyDate

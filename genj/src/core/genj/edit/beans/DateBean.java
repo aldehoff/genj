@@ -23,41 +23,33 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.time.PointInTime;
+import genj.util.ActionDelegate;
+import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.DateWidget;
+import genj.util.swing.ImageIcon;
+import genj.util.swing.PopupWidget;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
-import java.awt.Dimension;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.util.ArrayList;
 
-import javax.swing.JComboBox;
+import javax.swing.JLabel;
 
 /**
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : DATE
  */
-public class DateBean extends PropertyBean implements ItemListener {
+public class DateBean extends PropertyBean {
 
-  /** members */
-  private int currentDate;
-  private JComboBox combo;
-  private DateWidget deOne, deTwo;
-
-  private static final boolean drange[] = {
-    false,
-    true,
-    false,
-    false,
-    true,
-    false,
-    false,
-    false,
-    false,
-    false
-  };
+  private ImageIcon PIT = new ImageIcon(this, "/genj/gedcom/images/Time.gif");
   
+  /** members */
+  private PropertyDate.Format format; 
+  private DateWidget date1, date2;
+  private PopupWidget choose;
+  private JLabel label;
+
   /**
    * Finish proxying edit for property Date
    */
@@ -66,39 +58,43 @@ public class DateBean extends PropertyBean implements ItemListener {
     PropertyDate p = (PropertyDate)property;
 
     // Remember format
-    p.setFormat(combo.getSelectedIndex());
+    p.setFormat(format);
 
     // Remember One
-    PointInTime start = deOne.getValue();
+    PointInTime start = date1.getValue();
     if (start!=null)
       p.getStart().set(start);
   
     // Remember Two
     if ( p.isRange() ) {
-      PointInTime end = deTwo.getValue();
+      PointInTime end = date2.getValue();
       if (end!=null)
-        p.getEnd().set(deTwo.getValue());
+        p.getEnd().set(date2.getValue());
     }
     
     // Done
   }
 
   /**
-   * Trigger for changes in editing components
+   * Setup format
    */
-  public void itemStateChanged(ItemEvent e) {
+  private void setFormat(PropertyDate.Format set) {
 
-    if (PropertyDate.isRange(combo.getSelectedIndex()))
-      add(deTwo);
-    else
-      remove(deTwo);
-
-    revalidate();
-
-    // notify of change
     changeSupport.fireChangeEvent();
 
-    // Done
+    // remember
+    format = set;
+
+    // check date2 visibility
+    date2.setVisible(format.isRange());
+    choose.setText(format.getLabel1());
+    label.setText(format.getLabel2());
+
+    choose.setIcon(format==PropertyDate.DATE ? PIT : null);
+    
+    // show
+    revalidate();
+    repaint();
   }          
 
   /**
@@ -107,38 +103,63 @@ public class DateBean extends PropertyBean implements ItemListener {
   public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
 
     super.init(setGedcom, setProp, setMgr, setReg);
-
+    
     // we know it's a date
     PropertyDate p = (PropertyDate)property;
 
-    // Components
-    combo = new JComboBox();
-    combo.setAlignmentX(0);
-    combo.setEditable(false);
-    combo.setMaximumSize(new Dimension(Integer.MAX_VALUE,combo.getPreferredSize().height));
+    // prepare format change actions
+    ArrayList actions = new ArrayList(10);
+    for (int i=0;i<PropertyDate.FORMATS.length;i++)
+      actions.add(new ChangeFormat(PropertyDate.FORMATS[i]));
 
-    for (int i = 0; i <= PropertyDate.LAST_ATTRIB; i++) {
-      combo.addItem(PropertyDate.getLabelForFormat(i));
-    }
-    add(combo);
-    combo.addItemListener(this);
-
+    // setup components
     WindowManager mgr = viewManager.getWindowManager();
+    
+    choose = new PopupWidget("from", PIT, actions);
 
-    deOne = new DateWidget(p.getStart(), mgr);
-    deOne.addChangeListener(changeSupport);
-    deOne.setAlignmentX(0);
-    add(deOne);
+    date1 = new DateWidget(p.getStart(), mgr);
+    date1.addChangeListener(changeSupport);
+    date1.setAlignmentX(0);
 
-    deTwo = new DateWidget(p.getEnd(), mgr);
-    deTwo.addChangeListener(changeSupport);
-    deTwo.setAlignmentX(0);
+    label = new JLabel("to");
+    
+    date2 = new DateWidget(p.getEnd(), mgr);
+    date2.addChangeListener(changeSupport);
 
-    defaultFocus = deOne;
+    // setup Laout
+    GridBagHelper gh = new GridBagHelper(this);
 
-    combo.setSelectedIndex( p.getFormat() );
+    gh.add(choose, 0, 0);
+    gh.add(date1 , 1, 0);
+    gh.add(label , 0, 1);
+    gh.add(date2 , 1, 1);
+    gh.add(new JLabel(), 2, 2, 1, 1, GridBagHelper.GROW_BOTH);
+    
+    // set format
+    setFormat(p.getFormat());
+    
+    // done
+    defaultFocus = date1;
 
     // Done
   }
+  
+  /**
+   * Action for format change
+   */
+  private class ChangeFormat extends ActionDelegate {
+    
+    private PropertyDate.Format format;
+    
+    private ChangeFormat(PropertyDate.Format set) {
+      format = set;
+      super.setText(set.getLabel());
+    }
+    
+    protected void execute() {
+      setFormat(format);
+    }
+    
+  } //ChangeFormat 
 
 } //ProxyDate

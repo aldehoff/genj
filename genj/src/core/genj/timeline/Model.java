@@ -457,7 +457,7 @@ import java.util.Set;
       pe = propEvent;
       pd = propDate;
       // setup time
-      from = toDouble(propDate.getStart(), propDate.getFormat()==PropertyDate.AFT);
+      from = toDouble(propDate.getStart(), propDate.getFormat()==PropertyDate.AFTER);
       to  = propDate.isRange() ? toDouble(propDate.getEnd(), false) : from;
       // from<to?
       if (from>to)
