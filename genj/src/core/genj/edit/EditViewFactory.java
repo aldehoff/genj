@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.crypto.Enigma;
 import genj.edit.actions.CreateEntity;
 import genj.edit.actions.CreateRelationship;
 import genj.edit.actions.DelEntity;
@@ -103,7 +104,8 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     }
     
     // Toggle "Private"
-    result.add(new TogglePrivate(property, manager));
+    if (Enigma.isAvailable())
+      result.add(new TogglePrivate(property, manager));
 
     // done
     return result;

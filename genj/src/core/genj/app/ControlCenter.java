@@ -19,10 +19,9 @@
  */
 package genj.app;
 
-import genj.crypto.PasswordProvider;
 import genj.gedcom.Gedcom;
 import genj.io.Filter;
-import genj.io.GedcomFormatException;
+import genj.io.GedcomEncryptionException;
 import genj.io.GedcomIOException;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
@@ -431,7 +430,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - open
    */
-  private class ActionOpen extends ActionDelegate implements PasswordProvider {
+  private class ActionOpen extends ActionDelegate {
 
     /** a preset origin we're reading from */
     private Origin origin;
@@ -439,14 +438,17 @@ public class ControlCenter extends JPanel {
     /** a reader we're working on */
     private GedcomReader reader;
 
-    /** an error we'll provide */
-    private String error;
+    /** an error we might encounter */
+    private GedcomIOException exception;
 
     /** a gedcom we're creating */
     private Gedcom gedcom;
     
     /** key of progress dialog */
     private String progress;
+    
+    /** password in use */
+    private String password = "password";
 
     /** constructor */
     protected ActionOpen() {
@@ -486,15 +488,7 @@ public class ControlCenter extends JPanel {
       try {
         gedcom = reader.read();
       } catch (GedcomIOException ex) {
-        error =
-          resources.getString("cc.open.read_error", "" + ex.getLine())
-            + ":\n"
-            + ex.getMessage();
-      } catch (GedcomFormatException ex) {
-        error =
-          resources.getString("cc.open.format_error", "" + ex.getLine())
-            + ":\n"
-            + ex.getMessage();
+        exception = ex;
       }
     }
 
@@ -502,19 +496,47 @@ public class ControlCenter extends JPanel {
      * (sync) post execute
      */
     protected void postExecute() {
+      
       // close progress
       windowManager.close(progress);
+      
       // any error bubbling up?
-      if (error != null) {
+      if (exception != null) {
+        
+        // maybe try with different password
+        if (exception instanceof GedcomEncryptionException) {
+          
+          password = windowManager.openDialog(
+            null, 
+            origin.getName(), 
+            WindowManager.IMG_QUESTION, 
+            "Please provide a valid password",
+            "", 
+            ControlCenter.this
+          );
+          
+          if (password==null)
+            password = Gedcom.PASSWORD_UNKNOWN;
+          
+          // retry
+          exception = null;
+          trigger();
+          
+          return;
+        }
+
+        // tell the user about it        
         windowManager.openDialog(
           null, 
           origin.getName(), 
           WindowManager.IMG_ERROR, 
-          error, 
+          resources.getString("cc.open.read_error", "" + exception.getLine()) + ":\n" + exception.getMessage(),
           WindowManager.OPTIONS_OK, 
           ControlCenter.this
         );
+
       } else {
+        
         // show warnings
         if (reader!=null) {
           List warnings = reader.getWarnings();
@@ -529,7 +551,9 @@ public class ControlCenter extends JPanel {
             );
           }
         }
+        
       }
+      
       // got a successfull gedcom
       if (gedcom != null) {
         addGedcom(gedcom);
@@ -713,7 +737,10 @@ public class ControlCenter extends JPanel {
       try {
         
         // .. prepare our reader
-        reader = new GedcomReader(origin, this);
+        reader = new GedcomReader(origin);
+        
+        // .. set password we're using
+        reader.setPassword(password);
 
       } catch (IOException ex) {
         windowManager.openDialog(
@@ -744,15 +771,6 @@ public class ControlCenter extends JPanel {
       return true;
     }
     
-    /**
-     * Callback - password needed for decryption of private data (async)
-     * @see genj.crypto.PasswordProvider#getPassword(boolean)
-     */
-    public String getPassword(boolean retry) {
-      // Fixme prompt user for password
-      return null;
-    }
-
   } //ActionOpen
 
   /**

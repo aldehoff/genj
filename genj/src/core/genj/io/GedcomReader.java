@@ -19,7 +19,7 @@
  */
 package genj.io;
 
-import genj.crypto.PasswordProvider;
+import genj.crypto.Enigma;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
@@ -78,13 +78,13 @@ public class GedcomReader implements Trackable {
   private Thread worker;
   private Object lock = new Object();
   private boolean fixDuplicateIDs = false;
-  private PasswordProvider password;
+  private Enigma enigma;
 
   /**
    * Constructor
    * @param in BufferedReader to read from
    */
-  public GedcomReader(Origin initOrg, PasswordProvider initPasswordProvider) throws IOException {
+  public GedcomReader(Origin initOrg) throws IOException {
     
     // open origin
     InputStream oin = initOrg.open();
@@ -108,12 +108,34 @@ public class GedcomReader implements Trackable {
     length   = oin.available();
     level    = 0;
     read     = 0;
-    password = initPasswordProvider;
     warnings = new ArrayList(128);
     gedcom   = new Gedcom(origin);
     gedcom.setEncoding(sniffer.getEncoding());
     
     // Done
+  }
+  
+  /**
+   * Set password to use
+   */
+  public void setPassword(String password) {
+    
+    if (password==null)
+      throw new IllegalArgumentException("Password can't be NULL");
+      
+    gedcom.setPassword(password); 
+    
+    // try to init decryption - unless it's a special key password
+    if (password!=Gedcom.PASSWORD_UNKNOWN) {
+      
+      enigma = Enigma.getInstance(password);
+      if (enigma==null) {
+        warnings.add("Decryption not available");
+      }
+      
+    }
+    
+    // done
   }
 
   /**
@@ -254,6 +276,8 @@ public class GedcomReader implements Trackable {
     // try it
     try {
       readGedcom();
+    } catch (GedcomIOException gex) {
+      throw gex;
     } catch (Throwable t) {
       // 20030530 what abbout OutOfMemoryError
       throw new GedcomIOException(t.toString(), line);
@@ -549,14 +573,37 @@ public class GedcomReader implements Trackable {
       // next property
     } while (true);
 
-    // commit collected value for MultiLineProperties
+    // commit collected value if available
+    String value;
     if (collector!=null) {
-      of.setValue(collector.getValue());
+      value = collector.getValue();
+      of.setValue(value);
+    } else {
+      value = of.getValue();
+    }
+   
+    // check for encrypted value 
+    if (Enigma.isEncrypted(value)) {
+      
+      // decrypt
+      if (enigma!=null) try {
+        
+        // set decrypted value
+        of.setValue(enigma.decrypt(value));
+
+      } catch (IOException e) {
+        throw new GedcomEncryptionException("Decrypting private information failed", line);
+      }
+      
+      // set private
+      of.setPrivate(true, false);
+      
     } 
-  
+
     // restore what we haven't consumed
     undoLine();
   }
+  
 
   /**
    * Put back gedcom-line

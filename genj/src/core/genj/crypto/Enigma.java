@@ -27,7 +27,13 @@ import java.io.IOException;
 public abstract class Enigma {
   
   /** the implementation class we use */
-  private static final String DES = "genj.crypto.EnigmaImpl";
+  private static final String IMPL = "genj.crypto.EnigmaImpl";
+  
+  /** encryption prefix */
+  private final static String PREFIX = "[private]";
+  
+  /** availability */
+  private static boolean isAvailable = getInstance("") != null;
   
   /**
    * Get access to an Enigma instance
@@ -36,7 +42,7 @@ public abstract class Enigma {
   public static Enigma getInstance(String password) {
     
     try {
-      return ((Enigma)Class.forName(DES).newInstance()).init(password);
+      return ((Enigma)Class.forName(IMPL).newInstance()).init(password);
     } catch (Throwable t) {
       return null;
     }
@@ -44,21 +50,43 @@ public abstract class Enigma {
   }
   
   /**
-   * encrypt
+   * Availability test
+   */
+  public static boolean isAvailable() {
+    return isAvailable;
+  }
+  
+  /**
+   * try to guess whether something is encrypted
+   */
+  public static boolean isEncrypted(String value) {
+    return value.startsWith(PREFIX);
+  }
+  
+  /**
+   * encrypt a value
+   * 
+   *  "Nils" > "DES|MdwGEBqRFOM="
+   * 
    * @param value the plain data as Java string to encrypt
    * @return the encrypted value
    */  
   public String encrypt(String value) throws IOException {
-    return encryptImpl(value);
+    return PREFIX+encryptImpl(value);
   }
 
   /**
    * decrypt
+   * 
+   *  "DES|MdwGEBqRFOM=" > "Nils"
+   * 
    * @param value the encrypted data as Java string to decrypt 
    * @return the decrypted value
    */  
   public String decrypt(String value) throws IOException {
-    return decryptImpl(value);
+    if (!isEncrypted(value))
+      throw new IOException("Not an encrypted value");
+    return decryptImpl(value.substring(PREFIX.length()));
   }
 
   /**

@@ -22,23 +22,13 @@ package genj.io;
 /**
  * An exception wrapping a problem with Gedcom data format
  */
-public class GedcomFormatException extends Exception {
-
-  /** the line that this exception happened at */
-  private int line;
+public class GedcomFormatException extends GedcomIOException {
 
   /**
    * Constructor
    */
   public GedcomFormatException(String msg, int line) {
-    super(msg);
-    this.line=line;
+    super(msg, line);
   }
 
-  /**
-   * Accessor: line
-   */
-  public int getLine() {
-    return line;
-  }
-}
+} //GedcomFormatException

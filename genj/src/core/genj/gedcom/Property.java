@@ -494,7 +494,10 @@ public abstract class Property implements Comparable {
   public abstract String getTag();
 
   /**
-   * Sets this property's tag
+   * Initializes this poperty giving it a chance to inspect
+   * support for tag and value, eventually returning a 
+   * different type that is better suited for the SPECIFIC
+   * combination.
    */
   /*package*/ Property init(String tag, String value) throws GedcomException {
     // assuming concrete sub-type handles tag - keep value
@@ -659,6 +662,8 @@ public abstract class Property implements Comparable {
    * Accessor - private
    */
   public void setPrivate(boolean set, boolean recursively) {
+    
+    // change state
     if (recursively) {
       for (int c=0;c<getNoOfProperties();c++) {
         Property child = getProperty(c);
@@ -666,7 +671,11 @@ public abstract class Property implements Comparable {
       }
     }
     isPrivate = set;
+    
+    // bookkeeping
     modNotify();
+    
+    // done
   }
   
 } //Property

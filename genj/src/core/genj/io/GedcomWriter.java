@@ -241,7 +241,7 @@ public class GedcomWriter implements Trackable {
       out.close();
 
     } catch (IOException ex) {
-      throw new GedcomIOException("Error while writing", line);
+      throw new GedcomIOException("Error while writing / "+ex.getMessage(), line);
     }
 
     // Done
@@ -350,19 +350,27 @@ public class GedcomWriter implements Trackable {
    * encrypt a value
    */
   private String encrypt(String value) throws IOException {
-    return value;
-// FIXME encrypt call here    
-//    // Make sure enigma is setup
-//    if (enigma==null) {
-//      String pwd = gedcom.getPassword();
-//      if (pwd==null)
-//        throw new IOException("Unknown Password - needed for encryption");
-//      enigma = Enigma.getInstance(gedcom.getPassword());
-//      if (enigma==null) 
-//        throw new IOException("Encryption not available");
-//    }
-//    // encrypt and done
-//    return enigma.encrypt(value);
+    
+    // Make sure enigma is setup
+    if (enigma==null) {
+
+      String pwd = gedcom.getPassword();
+      
+      // no need if password is unknown (data is already/still encrypted)
+      if (pwd==Gedcom.PASSWORD_UNKNOWN)
+        return value;
+    
+      if (pwd==Gedcom.PASSWORD_NOT_SET)
+        throw new IOException("Password not set - needed for encryption");
+        
+      enigma = Enigma.getInstance(gedcom.getPassword());
+      if (enigma==null) 
+        throw new IOException("Encryption not available");
+        
+    }
+    
+    // encrypt and done
+    return enigma.encrypt(value);
   }
 
   /**

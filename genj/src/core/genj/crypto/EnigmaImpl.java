@@ -20,6 +20,7 @@
 package genj.crypto;
 
 import genj.util.Base64;
+import genj.util.Debug;
 
 import java.io.IOException;
 import java.security.spec.KeySpec;
@@ -50,7 +51,7 @@ import javax.crypto.spec.DESKeySpec;
    * Initializer
    */
   protected Enigma init(String password) {
-
+    
     try {
     
       // generate salt - byte sequence'd password (minimum length 8 for DES)
@@ -65,8 +66,8 @@ import javax.crypto.spec.DESKeySpec;
       // generate key
       key = SecretKeyFactory.getInstance(ALGORITHM).generateSecret(keyspec);
       
-    } catch (Throwable t) { 
-      t.printStackTrace();
+    } catch (Throwable t) {
+      Debug.log(Debug.ERROR, this, t); 
       return null;
     }
   

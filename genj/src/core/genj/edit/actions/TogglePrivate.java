@@ -69,7 +69,19 @@ public class TogglePrivate extends ActionDelegate {
     Gedcom gedcom = property.getGedcom();
     String pwd = gedcom.getPassword();
     
-    if (pwd==null) {
+    if (pwd==Gedcom.PASSWORD_UNKNOWN) {
+      manager.getWindowManager().openDialog(
+        null, 
+        txt, 
+        WindowManager.IMG_WARNING, 
+        "This Gedcom file contains encrypted information that has to be decrypted before changing private/public status of information", 
+        WindowManager.OPTIONS_OK, 
+        target);
+      return;              
+    }
+    
+    if (pwd==Gedcom.PASSWORD_NOT_SET) {
+      
       pwd = manager.getWindowManager().openDialog(
         null,
         txt,
@@ -91,6 +103,7 @@ public class TogglePrivate extends ActionDelegate {
       gedcom.endTransaction();
     }
 
+    // done
   }
   
 } //OpenForEdit

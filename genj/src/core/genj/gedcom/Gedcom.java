@@ -125,7 +125,11 @@ public class Gedcom {
   private String encoding = ANSEL;
 
   /** password for private information */
-  private String password = null;
+  private String password = PASSWORD_NOT_SET;
+
+  public final static String
+    PASSWORD_NOT_SET = "PASSWORD_NOT_SET",
+    PASSWORD_UNKNOWN = "PASSWORD_UNKNOWN";
 
   /**
    * Gedcom's Constructor

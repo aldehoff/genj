@@ -29,7 +29,6 @@ import java.util.Hashtable;
 public class ReportTrees extends Report {
     
     /**
-     * FIXME The parameter below should be set by a configuration
      * interface when available
      */
     public int minGroupSize = 2;  // Don't print groups with size less than this

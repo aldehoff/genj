@@ -17,18 +17,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.crypto;
+package genj.io;
+
+
 
 /**
- * A password callback interface 
+ * Exception for encryption problems during Gedcom operations
  */
-public interface PasswordProvider {
+public class GedcomEncryptionException extends GedcomIOException {
 
   /**
-   * Callback when password is necessary
-   * @param retry whether this call is a retry (2nd++)
-   * @return password if available or null
+   * Constructor
    */
-  public String getPassword(boolean retry);
+  public GedcomEncryptionException(String msg, int line) {
+    super(msg, line);
+  }
 
-} //PasswordProvider
+} //GedcomEncryptionException 

@@ -412,7 +412,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // start transaction
       if (!report.isReadOnly()) {
         if (!gedcom.startTransaction())
-          return false; //FIXME we should tell the user
+          return false; 
       }
   
       // done
