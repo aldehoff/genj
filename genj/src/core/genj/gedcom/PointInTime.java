@@ -179,29 +179,38 @@ public abstract class PointInTime implements Comparable {
     return true;
   }
     
-  
-
   /**
    * compare to other
    */  
   public int compareTo(Object o) {
-    
-    PointInTime other = (PointInTime)o;
+    return compareTo((PointInTime)o, 0);
+  }    
+  
+  /**
+   * compare to other
+   * @param other the pit to compare to
+   * @param offset 0 start with year 1 start with month 2 start with day
+   */  
+  public int compareTo(PointInTime other, int offset) {
 
     int result;
       
     // Year ?
-    if ((result=getYear()-other.getYear())!=0) return result;
+    if (--offset<0)
+      if ((result=getYear()-other.getYear())!=0) return result;
       
     // Month
-    if ((result=getMonth()-other.getMonth())!=0) return result;
+    if (--offset<0)
+      if ((result=getMonth()-other.getMonth())!=0) return result;
       
     // Day
-    if ((result=getDay()-other.getDay())!=0) return result;
+    if (--offset<0)
+      if ((result=getDay()-other.getDay())!=0) return result;
       
     // Equal
     return 0;
-  }    
+    
+  }
 
   /**
    * String representation
