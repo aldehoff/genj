@@ -44,7 +44,6 @@ class ProxyEntity extends Proxy {
   /** members */
   private JTextField tfield;
   private AbstractButton bchange;
-  private EditView edit;
 
   /**
    * Finish editing a property through proxy (no changes here unless
@@ -123,7 +122,7 @@ class ProxyEntity extends Proxy {
     protected void execute() {
       // Warn about this action's side-effects
       int rc = JOptionPane.showConfirmDialog(
-        edit.getFrame(),
+        view,
         EditView.resources.getString("proxy.change_id?"),
         EditView.resources.getString("warning"),
         JOptionPane.YES_NO_OPTION,
