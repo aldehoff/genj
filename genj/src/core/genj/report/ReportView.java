@@ -93,7 +93,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private Gedcom      gedcom;
   
   /** components to show report info */
-  private JLabel      lAuthor,lVersion;
+  private JLabel      lFile,lAuthor,lVersion;
   private JTextPane   tpInfo;
   private JTextArea   taOutput;
   private JList       listOfReports;
@@ -173,10 +173,18 @@ public class ReportView extends JPanel implements ToolBarSupport {
       }
     };
     spList.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    gh.add(spList,1,1,1,4,GridBagHelper.GROWFILL_VERTICAL);
+    gh.add(spList,1,0,1,5,GridBagHelper.GROWFILL_VERTICAL);
+
+    // ... Report's filename
+    gh.setParameter(GridBagHelper.FILL_HORIZONTAL);
+    
+    lFile = new JLabel("");
+    lFile.setForeground(Color.black);
+    
+    gh.add(new JLabel(resources.getString("report.file")),2,0);
+    gh.add(lFile,3,0,1,1,GridBagHelper.GROWFILL_HORIZONTAL);
 
     // ... Report's author
-    gh.setParameter(GridBagHelper.FILL_HORIZONTAL);
     
     lAuthor = new JLabel("");
     lAuthor.setForeground(Color.black);
@@ -521,12 +529,14 @@ public class ReportView extends JPanel implements ToolBarSupport {
     public void valueChanged(ListSelectionEvent e) {
       // update info
       if (listOfReports.getSelectedIndices().length!=1) {
+        lFile    .setText("");
         lAuthor  .setText("");
         lVersion .setText("");
         tpInfo   .setText("");
         owOptions.setOptions(Collections.EMPTY_LIST);
       } else {
         Report report = (Report)listOfReports.getSelectedValue();
+        lFile    .setText(report.getClass().getName().replace('.','/')+".java");
         lAuthor  .setText(report.getAuthor());
         lVersion .setText(report.getVersion());
         tpInfo   .setText(report.getInfo());
