@@ -93,10 +93,9 @@ public class ReportFamily extends Report {
         
         String temp = "";
         
+        println("@"+f.getId()+"@ "+f);
         if((f.getMarriageDate()!=null) || (f.getProperty(new TagPath("FAM:MARR:PLAC"))!=null))
-            temp = " oo "+getString(f.getMarriageDate())+" "+getString(f.getProperty(new TagPath("FAM:MARR:PLAC")));
-        
-        println("@"+f.getId()+"@ "+f+temp);
+            println("oo "+getString(f.getMarriageDate())+" "+getString(f.getProperty(new TagPath("FAM:MARR:PLAC"))));
         analyzeIndi(f.getHusband(), f);
         analyzeIndi(f.getWife(), f);
         println(getIndent(1, SPACES_PER_LEVEL, STANDARD_PREFIX)+i18n("children"));
@@ -160,15 +159,13 @@ public class ReportFamily extends Report {
             analyzeBaptism(child, "BAPL");
             analyzeBaptism(child, "CHR");
             analyzeBaptism(child, "CHRA");
-            if(child.getProperty("DEAT")!=null && ( (child.getDeathAsString()!=null) || (child.getProperty(new TagPath("INDI:DEAT:PLAC"))!=null) ) )
-                println(getIndent(3, SPACES_PER_LEVEL, EMPTY_PREFIX)+"+ "+getString(child.getDeathAsString())+" "+getString(child.getProperty(new TagPath("INDI:DEAT:PLAC"))));
             Fam[] families = child.getFamilies();
-            if(families.length > 0)
-                println(getIndent(3, SPACES_PER_LEVEL, EMPTY_PREFIX)+i18n("spouses"));
             for(int j=0; j<families.length; j++) {
                 family = (Fam)families[j];
-                println(getIndent(4, SPACES_PER_LEVEL, EMPTY_PREFIX)+"@"+family.getId()+"@ "+family+" oo "+getString(family.getMarriageDate())+" "+getString(family.getProperty(new TagPath("FAM:MARR:PLAC"))));
+                println(getIndent(3, SPACES_PER_LEVEL, EMPTY_PREFIX)+"oo @"+family.getId()+"@ "+family+" "+getString(family.getMarriageDate())+" "+getString(family.getProperty(new TagPath("FAM:MARR:PLAC"))));
             }            
+            if(child.getProperty("DEAT")!=null && ( (child.getDeathAsString()!=null) || (child.getProperty(new TagPath("INDI:DEAT:PLAC"))!=null) ) )
+                println(getIndent(3, SPACES_PER_LEVEL, EMPTY_PREFIX)+"+ "+getString(child.getDeathAsString())+" "+getString(child.getProperty(new TagPath("INDI:DEAT:PLAC"))));          
         }
     }
     
