@@ -30,6 +30,7 @@ public class Indi extends PropertyIndi implements Entity {
 
   private String id = "";
   private Gedcom gedcom;
+  private PropertySet foreignXRefs = new PropertySet();
 
   /**
    * Constructor for Individual
@@ -101,9 +102,27 @@ public class Indi extends PropertyIndi implements Entity {
     // Notify to properties
     super.delNotify();
 
+    // Remove all foreign XRefs
+    foreignXRefs.deleteAll();
+
     // Break connection
     this.gedcom = null;
   }
+
+  /**
+   * Removes a property
+   * This overrides the default behaviour by first
+   * looking in this entity's foreign list
+   */
+  public boolean delProperty(Property which) {
+
+    if (foreignXRefs.contains(which)) {
+      foreignXRefs.delete(which);
+      return true;
+    }
+    return super.delProperty(which);
+  }
+
 
   /**
    * Calculate indi's birth date
@@ -509,6 +528,19 @@ public class Indi extends PropertyIndi implements Entity {
     return fam.isDescendantOf(indi);
   }
 
+
+  /**
+   * Checks wether this individual is descendant of family 
+   */
+  /*package*/ boolean isDescendantOf(Fam fam) {
+    // fam's children
+    Indi[] children = fam.getChildren();
+    for (int c=0; c<children.length; c++) {
+      if (isDescendantOf(children[c])) return true;
+    }
+    return false;
+  }
+
   /**
    * Sets the family in which the person is child
    */
@@ -563,10 +595,10 @@ public class Indi extends PropertyIndi implements Entity {
   }
 
   /**
-   * @see Entity#addForeignXRef(PropertyForeignXRef)
-   */  
+   * Adds a PropertyForeignXRef to this entity
+   */
   public void addForeignXRef(PropertyForeignXRef fxref) {
-    throw new RuntimeException("Not supported yet");
+    foreignXRefs.add(fxref);
   }
 
 } //Indi

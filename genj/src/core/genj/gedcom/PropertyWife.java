@@ -98,15 +98,12 @@ public class PropertyWife extends PropertyXRef {
     if (wife==null)
       throw new GedcomException("Couldn't find wife with ID "+id);
 
-    // Enclosing family has indi as child or husband ?
+    // Enclosing family has indi as descendant or husband ?
     if (fam.getHusband()==wife)
       throw new GedcomException("Individual @"+id+"@ is already husband in family @"+fam.getId()+"@");
 
-    Indi children[] = fam.getChildren();
-    for (int i=0;i<children.length;i++) {
-      if ( children[i] == wife )
-        throw new GedcomException("Individual @"+id+"@ is already child in family @"+fam.getId()+"@");
-    }
+    if (wife.isDescendantOf(fam))
+      throw new GedcomException("Individual @"+id+"@ is already descendant of family @"+fam.getId()+"@");
 
     // Connect back from husband (maybe using invalid back reference)
     ps = wife.getProperties(new TagPath("INDI:FAMS"),false);

@@ -49,7 +49,8 @@ final public class Images {
     imgNewNote,
     imgNewRepository,
     imgNewSource,
-    imgNewSubmitter;
+    imgNewSubmitter,
+    imgNewLink;
 
   /**
    * Constructor which pre-loads all images
@@ -75,5 +76,6 @@ final public class Images {
     imgNewRepository = new ImageIcon(this,"images/entity/NewRepository.gif");
     imgNewSource     = new ImageIcon(this,"images/entity/NewSource.gif");
     imgNewSubmitter  = new ImageIcon(this,"images/entity/NewSubmitter.gif");
+    imgNewLink       = new ImageIcon(this,"images/entity/NewLink.gif");
   }
 }

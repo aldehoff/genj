@@ -105,6 +105,10 @@ public class PropertyFamilySpouse extends PropertyXRef {
 
     if (indi.getFamc()==fam)
       throw new GedcomException("Individual @"+indi.getId()+"@ is already child in family @"+id+"@");
+      
+    // Enclosing individual is descendant of family
+    if (indi.isDescendantOf(fam)) 
+      throw new GedcomException("Individual @"+indi.getId()+"@ is already descendant of family @"+id+"@");
 
     // Connect back from family (maybe using invalid back reference)
     PropertyHusband ph;

@@ -49,6 +49,7 @@ public class Fam extends PropertyFam implements Entity {
       pc.link();
     } catch (GedcomException ex) {
       delProperty(pc);
+      throw ex;
     }
 
     return this;
@@ -213,20 +214,23 @@ public class Fam extends PropertyFam implements Entity {
   /**
    * Sets the husband of this family
    */
-  /*package*/ void setHusband(Indi husband) {
+  /*package*/ void setHusband(Indi husband) throws GedcomException {
     
     // Remove old husband
     PropertyHusband ph = (PropertyHusband)getProperty(new TagPath("FAM:HUSB"),false);
     if (ph!=null) delProperty(ph);
     
-    // add property spouse to husband
-    PropertyFamilySpouse spouse = new PropertyFamilySpouse(null);
-    husband.addProperty(spouse);
-
     // Add new husband
-    ph = new PropertyHusband(spouse);
-    spouse.setTarget(ph);
+    ph = new PropertyHusband("",husband.getId());
     addProperty(ph);
+
+    // Link !
+    try {
+      ph.link();
+    } catch (GedcomException ex) {
+      delProperty(ph);
+      throw ex;
+    }
 
     // done    
   }
@@ -234,20 +238,23 @@ public class Fam extends PropertyFam implements Entity {
   /**
    * Sets the family of the family
    */
-  /*package*/ void setWife(Indi wife) {
+  /*package*/ void setWife(Indi wife) throws GedcomException {
 
     // Remove old wife
     PropertyWife pw = (PropertyWife)getProperty(new TagPath("FAM:WIFE"),true);
     if (pw!=null) delProperty(pw);
 
-    // add property spouse to wife
-    PropertyFamilySpouse spouse = new PropertyFamilySpouse(null);
-    wife.addProperty(spouse);
-    
     // Add new wife
-    pw = new PropertyWife(spouse);
-    spouse.setTarget(pw);
+    pw = new PropertyWife("",wife.getId());
     addProperty(pw);
+
+    // Link !
+    try {
+      pw.link();
+    } catch (GedcomException ex) {
+      delProperty(pw);
+      throw ex;
+    }
 
     // Done
   }
@@ -255,7 +262,7 @@ public class Fam extends PropertyFam implements Entity {
   /**
    * Sets one of the spouses
    */
-  /*package*/ void setSpouse(Indi spouse) {  
+  /*package*/ void setSpouse(Indi spouse) throws GedcomException {  
     Indi husband = getHusband();
     Indi wife = getWife();
     if (husband==null&&wife!=null) {

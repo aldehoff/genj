@@ -69,7 +69,7 @@ public abstract class Property implements Comparable {
     new MetaDefinition("WIFE","Wife") ,
 
     // INDI Record
-    new MetaDefinition("INDI","Indi",new String[]{"NAME","SEX","BIRT","DEAT","FAMS","FAMC","RESI","GRAD","OCCU","OBJE","NOTE","CAST","DSCR","EDUC","IDNO","NATI","NCHI","PROP","RELI","SSN","TITL","CHR","BURI","CREM","ADOP","BAPM","BAPL","BARM","BASM","BLES","CHRA","CONF","FCOM","ORDN","NATU","EMIG","IMMI","CENS","PROB","WILL","RETI"}) ,
+    new MetaDefinition("INDI","Indi",new String[]{"NAME","SEX","BIRT","DEAT","RESI","GRAD","OCCU","ASSO","FAMS","FAMC","OBJE","NOTE","CAST","DSCR","EDUC","IDNO","NATI","NCHI","PROP","RELI","SSN","TITL","CHR","BURI","CREM","ADOP","BAPM","BAPL","BARM","BASM","BLES","CHRA","CONF","FCOM","ORDN","NATU","EMIG","IMMI","CENS","PROB","WILL","RETI"}) ,
     new MetaDefinition("NAME","Name") ,
     new MetaDefinition("SEX" ,"Sex") ,
     new MetaDefinition("FAMC" ,"FamilyChild") ,
@@ -148,12 +148,15 @@ public abstract class Property implements Comparable {
     new MetaDefinition("PLAC","Place",new String[]{ "CONT" }) ,
     new MetaDefinition("POST","PostalCode") ,
 
+    new MetaDefinition("ASSO","Association", new String[]{ "TYPE", "RELA"}) ,
+
     // Generic Attributes
     new MetaDefinition("PHON" ,"GenericAttribute") ,
     new MetaDefinition("AGNC" ,"GenericAttribute") ,
     new MetaDefinition("TYPE" ,"GenericAttribute") ,
     new MetaDefinition("TITL" ,"GenericAttribute") ,
     new MetaDefinition("FORM" ,"GenericAttribute") ,
+    new MetaDefinition("RELA" ,"GenericAttribute") ,
 
     // Medai
     new MetaDefinition("OBJE","Media"           ,new String[]{"TITL","FORM", "BLOB", "FILE"}) ,
