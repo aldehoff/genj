@@ -21,7 +21,7 @@ import genj.report.Report;
  *
  * @author Daniel P. Kionka
  * @author Carsten Müssig <carsten.muessig@gmx.net>
- * @version 1.1
+ * @version 1.3
  */
 
 public class ReportAges extends Report {
@@ -37,10 +37,22 @@ public class ReportAges extends Report {
     public boolean reportAgeSinceBirth = true;
     
     /** program options which also contain global report options */
-    private static final Options options = Options.getInstance();
+    private static final Options OPTIONS = Options.getInstance();
     
     /** localized strings */
     private final static String AGE = Gedcom.getName("AGE");
+    private final static String VERSION = "1.3";
+    
+    public String getVersion() {
+        return VERSION;
+    }
+   
+    /**
+     * Author
+     */
+    public String getAuthor() {
+        return "Daniel P. Kionka, Carsten M\u00FCssig <carsten.muessig@gmx.net>";
+    }
     
     /**
      * @see genj.report.Report#accepts(java.lang.Object)
@@ -116,10 +128,10 @@ public class ReportAges extends Report {
         // print birth date (give up if none)
         PropertyDate birth = indi.getBirthDate();
         if (birth == null) {
-            println(options.getBirthSymbol()+" "+i18n("noData"));
+            println(OPTIONS.getBirthSymbol()+" "+i18n("noData"));
             return;
         }
-        println(options.getBirthSymbol()+" " + birth);
+        println(OPTIONS.getBirthSymbol()+" " + birth);
         println();
         
         if (reportBaptismAge) {
@@ -139,9 +151,9 @@ public class ReportAges extends Report {
                     Fam fam = fams[i];
                     String text = fam.toString() + " (@" + fam.getId() + "@): ";
                     if (fam.getMarriageDate() == null)
-                        println(getIndent(2)+options.getMarriageSymbol() + " "+ text + i18n("noData"));
+                        println(getIndent(2)+OPTIONS.getMarriageSymbol() + " "+ text + i18n("noData"));
                     else {
-                        println(getIndent(2)+options.getMarriageSymbol() + " " + text + fam.getMarriageDate());
+                        println(getIndent(2)+OPTIONS.getMarriageSymbol() + " " + text + fam.getMarriageDate());
                         age = indi.getAge(fam.getMarriageDate().getStart());
                         printAge(age,3);
                     }
@@ -156,7 +168,7 @@ public class ReportAges extends Report {
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
                     if (fam.getDivorceDate() != null) {
-                        println(getIndent(2)+options.getDivorceSymbol() + " @" + fam.getId() + "@ " + fam.toString() + ": " + fam.getDivorceDate());
+                        println(getIndent(2)+OPTIONS.getDivorceSymbol() + " @" + fam.getId() + "@ " + fam.toString() + ": " + fam.getDivorceDate());
                         age = indi.getAge(fam.getDivorceDate().getStart());
                         printAge(age,3);
                     }
@@ -167,15 +179,14 @@ public class ReportAges extends Report {
         if (reportAgeAtChildBirth) {
             Indi[] children = indi.getChildren();
             if (children.length > 0) {
-                //        println(getIndent(1, options.getIndentPerLevel(), null) + i18n("childBirths"));
                 for (int i = 0; i < children.length; i++) {
                     Indi child = children[i];
                     String text = children[i].getName() + "(@" + child.getId() + "@): ";
                     PropertyDate cbirth = child.getBirthDate();
                     if (cbirth == null)
-                        println(getIndent(2) + options.getBirthSymbol()+" "+text + i18n("noData"));
+                        println(getIndent(2) + OPTIONS.getBirthSymbol()+" "+text + i18n("noData"));
                     else {
-                        println(getIndent(2) + options.getBirthSymbol()+" "+text + cbirth);
+                        println(getIndent(2) + OPTIONS.getBirthSymbol()+" "+text + cbirth);
                         age = indi.getAge(cbirth.getStart());
                         printAge(age,3);
                     }
@@ -202,7 +213,7 @@ public class ReportAges extends Report {
         if (reportAgeAtDeath) {
             PropertyDate death = indi.getDeathDate();
             if (death != null) {
-                println(getIndent(2) + options.getDeathSymbol()+" " + death);
+                println(getIndent(2) + OPTIONS.getDeathSymbol()+" " + death);
                 age = indi.getAge(indi.getDeathDate().getStart());
                 printAge(age,3);
                 println();
@@ -231,7 +242,7 @@ public class ReportAges extends Report {
      * Return an indented string for given level
      */
     private String getIndent(int level) {
-        return super.getIndent(level, options.getIndentPerLevel(), null);
+        return super.getIndent(level, OPTIONS.getIndentPerLevel(), null);
     }
     
 } //ReportAges

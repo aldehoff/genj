@@ -8,6 +8,7 @@
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.report.Options;
 import genj.report.Report;
 
 /**
@@ -15,8 +16,8 @@ import genj.report.Report;
  */
 public class ReportDescendants extends Report {
     
-    private static final int SPACES_PER_LEVEL = 5;
-    private static final String FRONT = "";
+    /** program options which also contain global report options */
+    private static final Options OPTIONS = Options.getInstance();
     
     /**
      * Returns the version of this script
@@ -92,7 +93,7 @@ public class ReportDescendants extends Report {
     private void iterate(Indi indi, int level) {
         
         // Here comes the individual
-        println(getIndent(level, SPACES_PER_LEVEL, FRONT)+level+" "+format(indi));
+        println(getIndent(level, OPTIONS.getIndentPerLevel(), null)+level+" "+format(indi));
         
         // And we loop through its families
         int fcount = indi.getNoOfFams();
@@ -103,7 +104,7 @@ public class ReportDescendants extends Report {
             Indi spouse= fam.getOtherSpouse(indi);
             
             // .. a line for the spouse
-            println(getIndent(level, SPACES_PER_LEVEL, FRONT) +"  + "+ format(spouse));
+            println(getIndent(level, OPTIONS.getIndentPerLevel(), null) +"  + "+ format(spouse));
             
             // .. and all the kids
             Indi[] children = fam.getChildren();
