@@ -744,6 +744,9 @@ public class ControlCenter extends JPanel {
       // .. do the write
       try {
         gedWriter.writeGedcom();
+        if (newOrigin==null) {
+          gedcom.setUnchanged();
+        }
       } catch (GedcomIOException ex) {
         JOptionPane.showMessageDialog(
           frame,
@@ -751,6 +754,7 @@ public class ControlCenter extends JPanel {
           App.resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE
         );
+        newOrigin = null;
       }
       
       // done

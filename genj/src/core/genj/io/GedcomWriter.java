@@ -103,6 +103,7 @@ public class GedcomWriter implements Trackable {
    * Sets filters to use
    */
   public void setFilters(Filter[] fs) {
+    if (fs==null) fs = new Filter[0];
     filters = fs;
   }
 
@@ -216,9 +217,6 @@ public class GedcomWriter implements Trackable {
 
     } catch (IOException ex) {
       throw new GedcomIOException("Error while writing",line);
-    } finally {
-      // .. Clear changes in gedcom
-      gedcom.setUnchanged();
     }
 
     // Done
