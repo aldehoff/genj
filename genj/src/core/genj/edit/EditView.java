@@ -381,7 +381,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     menuActions.removeAll();
     MenuHelper mh = new MenuHelper();
     mh.pushMenu(menuActions);
-    ViewManager.getInstance().fillContextMenu(mh, gedcom, getCurrentEntity());
+    ViewManager.getInstance().fillContextMenu(mh, gedcom, getCurrentEntity(), this);
     menuActions.revalidate();
     menuActions.repaint();
   }

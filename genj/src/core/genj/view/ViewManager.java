@@ -24,6 +24,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -269,12 +270,12 @@ public class ViewManager {
   /**
    * Get actions for given entity/gedcom
    */
-  private List getActions(Object context) {
+  private List getActions(Object context, JComponent target) {
     // loop through descriptors
     List result = new ArrayList(16);
     for (int f=0; f<factories.length; f++) {
       if (factories[f] instanceof ContextSupport) {
-        List as = getActions((ContextSupport)factories[f], context);
+        List as = getActions((ContextSupport)factories[f], context, target);
         if (as!=null&&!as.isEmpty()) result.add(as);
       }
     }
@@ -284,7 +285,7 @@ public class ViewManager {
     while (views.hasNext()) {
       ViewWidget view = (ViewWidget)views.next();
       if (view.getGedcom()==gedcom&&view.getView() instanceof ContextSupport) {
-        List as = getActions((ContextSupport)view.getView(), context);
+        List as = getActions((ContextSupport)view.getView(), context, target);
         if (as!=null&&!as.isEmpty()) result.add(as);
       }
     }
@@ -295,11 +296,23 @@ public class ViewManager {
   /**
    * Resolves the context information from support/context
    */
-  private List getActions(ContextSupport cs, Object context) {
-    if (context instanceof Gedcom  ) return cs.createActions((Gedcom  )context);
-    if (context instanceof Entity  ) return cs.createActions((Entity  )context);
-    if (context instanceof Property) return cs.createActions((Property)context);
-    throw new IllegalArgumentException("Unknown context "+context);
+  private List getActions(ContextSupport cs, Object context, JComponent target) {
+    // get result by calling appropriate support method
+    List result;
+    if (context instanceof Gedcom) 
+      result = cs.createActions((Gedcom  )context);
+    else if (context instanceof Entity) 
+      result = cs.createActions ((Entity  )context);
+    else if (context instanceof Property) 
+      result = cs.createActions ((Property)context);
+    else throw new IllegalArgumentException();
+    // make sure target is set on ActionDelegates
+    Iterator it = result.iterator();
+    while (it.hasNext()) {
+      ((ActionDelegate)it.next()).setTarget(target);
+    }
+    // done
+    return result;
   }
 
   /**
@@ -382,7 +395,7 @@ public class ViewManager {
   /**
    * Fills a menu with context actions 
    */
-  public void fillContextMenu(MenuHelper mh, Gedcom gedcom, Object context) {
+  public void fillContextMenu(MenuHelper mh, Gedcom gedcom, Object context, JComponent target) {
 
     // we need Entity, property and Gedcom (above) from context
     Entity entity = null;
@@ -396,7 +409,7 @@ public class ViewManager {
 
     // items for property
     if (property!=null) {
-      List actions = getActions(property);
+      List actions = getActions(property, target);
       if (!actions.isEmpty()) {
         mh.createMenu(TagPath.get(property).toString(), property.getImage(false));
         mh.createItems(actions);
@@ -406,7 +419,7 @@ public class ViewManager {
     
     // items for entity
     if (entity!=null) {
-      List actions = getActions(entity);
+      List actions = getActions(entity, target);
       if (!actions.isEmpty()) {
         mh.createMenu(entity.getId(), entity.getProperty().getImage(false));
         mh.createItems(actions);
@@ -415,7 +428,7 @@ public class ViewManager {
     }
     
     // items for gedcom
-    List actions = getActions(gedcom);
+    List actions = getActions(gedcom, target);
     if (!actions.isEmpty()) {
       mh.createMenu(gedcom.getName(), Gedcom.getImage());
       mh.createItems(actions);
@@ -439,7 +452,7 @@ public class ViewManager {
     JPopupMenu popup = mh.createPopup("");
 
     // fill the context actions
-    fillContextMenu(mh, gedcom, context);
+    fillContextMenu(mh, gedcom, context, container);
     
     // show the popup
     if (popup.getComponentCount()>0)
