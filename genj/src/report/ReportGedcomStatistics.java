@@ -25,7 +25,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.50 2004-03-06 23:15:38 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.51 2004-03-07 11:51:02 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -637,7 +637,7 @@ public class ReportGedcomStatistics extends Report {
                         age = calculateAverageAge(stats.sumAge,stats.age.getSize());
                         println(getIndent(indent)+new Delta(age[2], age[1], age[0])+" "+i18n("oneIndi"));
                         if(printIndis<3) {
-                            Indi indi = (Indi)new ArrayList(stats.age.getReferences(new Integer(stats.sumAge))).get(0);
+                            Indi indi = (Indi)new ArrayList(stats.age.getReferences((Integer)stats.age.getKeys().get(0))).get(0);
                             String[] output = {indi.getId(), indi.getName()};
                             println(getIndent(indent+1)+i18n("entity", output));
                         }
@@ -662,7 +662,7 @@ public class ReportGedcomStatistics extends Report {
                         age = calculateAverageAge(stats.sumChildBirthAge,stats.childBirthNumber);
                         println(getIndent(indent)+new Delta(age[2], age[1], age[0])+" "+i18n("oneIndi"));
                         if(printIndis<3) {
-                            Indi indi = (Indi)new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.sumChildBirthAge))).get(0);
+                            Indi indi = (Indi)new ArrayList(stats.childBirthAge.getReferences((Integer)stats.childBirthAge.getKeys().get(0))).get(0);
                             String[] output = {indi.getId(), indi.getName()};
                             println(getIndent(indent+1)+i18n("entity", output));
                         }
