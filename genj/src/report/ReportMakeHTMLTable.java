@@ -240,7 +240,7 @@ public class ReportMakeHTMLTable implements Report {
     );
 
     // HEAD
-		bridge.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
+    bridge.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
     bridge.println("<HTML>");
     bridge.println("<HEAD>");
     bridge.println("<TITLE>"+gedcom.getName()+" - HTML Table</TITLE>");
@@ -265,14 +265,14 @@ public class ReportMakeHTMLTable implements Report {
     // Go through individuals
     EntityList indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
 
-		TreeMap indiMap = new TreeMap ();  // use to sort by name
+    TreeMap indiMap = new TreeMap ();  // use to sort by name
     for (int i=0;i<indis.getSize();i++) {
-			Indi indi = indis.getIndi(i);
-			indiMap.put( indi.getLastName() + ", " + indi.getFirstName(),
-									 indis.getIndi(i) );
-		}
-		Iterator iter = indiMap.values().iterator();
-		while ( iter.hasNext() ) {
+      Indi indi = indis.getIndi(i);
+      indiMap.put( indi.getLastName() + indi.getFirstName(),
+                   indis.getIndi(i) );
+    }
+    Iterator iter = indiMap.values().iterator();
+    while ( iter.hasNext() ) {
       bridge.println("<TR>");
 
       export((Indi)iter.next(), bridge, detailsUrl);
