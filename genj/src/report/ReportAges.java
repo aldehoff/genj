@@ -12,13 +12,12 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.report.Report;
-import genj.report.ReportBridge;
 
 /**
  * GenJ - ReportAges
  * (based on ReportDescendants)
  */
-public class ReportAges implements Report {
+public class ReportAges extends Report {
 
   /** this report's version */
   public static final String VERSION = "0.1";
@@ -46,14 +45,6 @@ public class ReportAges implements Report {
   }
 
   /**
-   * Indication of how this reports shows information
-   * to the user. Standard Out here only.
-   */
-  public boolean usesStandardOut() {
-    return true;
-  }
-
-  /**
    * Author
    */
   public String getAuthor() {
@@ -61,45 +52,40 @@ public class ReportAges implements Report {
   }
 
   /**
-   * Tells whether this report doesn't change information in the Gedcom-file
-   */
-  public boolean isReadOnly() {
-    return true;
-  }
-
-  /**
    * This method actually starts this report
    */
-  public boolean start(ReportBridge bridge, Gedcom gedcom) {
+  public void start(Object context) {
+    
+    // expecting gedcom only
+    Gedcom gedcom = (Gedcom)context;
 
     // Show the users in a combo to the user
-    Indi indi = (Indi)bridge.getEntityFromUser(
+    Indi indi = (Indi)getEntityFromUser(
       "Please select an individual", // msg
       gedcom,                        // our gedcom instance
       Gedcom.INDIVIDUALS,            // type INDIVIDUALS
       "INDI:NAME"                    // sort by name
     );
 
-    if (indi==null) return false;
+    if (indi==null) return;
 
     // Display the ages
-    iterate(bridge, indi, 1);
+    iterate(indi, 1);
 
     // Done
-    return true;
   }
 
   /**
    * Iterates over events
    */
-  private void iterate(ReportBridge bridge, Indi indi, int level) {
+  private void iterate(Indi indi, int level) {
 
     // Here comes the individual
-    bridge.println(indi.getName());
+    println(indi.getName());
 
     // Give up if no birth date
     if (indi.getBirthDate() == null) {
-      bridge.println("no birth date");
+      println("no birth date");
       return;
     }
 
@@ -117,13 +103,13 @@ public class ReportAges implements Report {
           String out = event.getTag() + ": " + pDate;
           if (indiAge.length() > 0)
              out += ", " + indiAge;
-          bridge.println(out);
+          println(out);
         }
       }
     }
 
     // in case no DEAT, or if he were alive today
-    bridge.println("Since birth: " + indi.getAgeString(PointInTime.getNow()));
+    println("Since birth: " + indi.getAgeString(PointInTime.getNow()));
   }
 
 } //ReportAges

@@ -41,7 +41,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Date;
 
 import javax.swing.AbstractButton;
 import javax.swing.DefaultListCellRenderer;
@@ -173,7 +172,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   public void addOutput(String line) {
     taOutput.append(line);
 
-    if (!spOutput.getVerticalScrollBar().getValueIsAdjusting()) {
+    if (!spOutput.getVerticalScrollBar().getValueIsAdjusting()&&taOutput.getText().length()>0) {
       taOutput.setCaretPosition(taOutput.getText().length()-1);
     }
   }
@@ -325,9 +324,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
    * Action: START
    */
   private class ActionStart extends ActionDelegate {
-    private ReportBridge bridge;
     private Report report;
-    private String status;
     protected ActionStart() {
       setAsync(ASYNC_SAME_INSTANCE);
       setImage(imgStart);
@@ -340,9 +337,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
       
       // Calc Report
       report = (Report)listOfReports.getSelectedValue();
-      if (report==null) {
+      if (report==null) 
         return false;
-      }
+      report = report.getInstance(ReportView.this, new Registry(registry, report.getName()));
   
       // .. change buttons
       setRunning(true);
@@ -352,17 +349,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
         tabbedPane.getModel().setSelectedIndex(1);
       }
       taOutput.setText("");
+      
+      // start transaction
+      if (!report.isReadOnly()) {
+        if (!gedcom.startTransaction())
+          return false; //FIXME we should tell the user
+      }
   
-      // .. prepare own STDOUT
-      bridge = new ReportBridge(ReportView.this, new Registry(registry, report.getName()), report); 
-      bridge.log("<!--");
-      bridge.log("   Report : "+report.getClass().getName());
-      bridge.log("   Gedcom : "+gedcom.getName());
-      bridge.log("   Start  : "+new Date());
-      bridge.log("-->");
-      bridge.log("");
-      bridge.flush();
-
       // done
       return true;
     }
@@ -372,33 +365,15 @@ public class ReportView extends JPanel implements ToolBarSupport {
     protected void execute() {
 
       // Report actions are subject to interruption
-      boolean rc=false;
       boolean readOnly=report.isReadOnly();
 
       // .. lock Gedcom for read and start report
       try {
-        if (readOnly) {
-          rc = report.start(bridge,gedcom);
-
-        } else {
-          if (!gedcom.startTransaction())
-            status = "No Write Access";
-          else {
-            rc = report.start(bridge,gedcom);
-            gedcom.endTransaction();
-          }
-        }
-        if (rc)
-          status = "O.K";
-        else
-          status = "Error";
+        report.start(gedcom);
       } catch (ReportCancelledException ex) {
-        // Running report was stopped
-        status="Cancelled";
-      } catch (Exception ex) {
+      } catch (Throwable t) {
         // Running report failed
-        bridge.println(ex);
-        status="Exception";
+        report.println(t);
       }
 
     }
@@ -407,21 +382,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
      * post execute
      */
     protected void postExecute() {
-  
-      // nothing to do?
-      if (bridge==null) return;
-  
-      // .. end output
-      bridge.log("");
-      bridge.log("<!--");
-      bridge.log("   End    : "+new Date());
-      bridge.log("   Status : "+status);
-      bridge.log("-->");
-      bridge.flush();
-      
-      // done
+      // flush
+      report.flush();
+      // end tx
+      if (!report.isReadOnly())
+        gedcom.endTransaction();
+      // stop run
       setRunning(false);
-
     }
   } //ActionStart
   

@@ -5,9 +5,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Gedcom;
 import genj.report.Report;
-import genj.report.ReportBridge;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,7 +16,7 @@ import java.io.InputStreamReader;
  * @author Nils Meier nils@meiers.net
  * @version 0.1
  */
-public class ReportExec implements Report {
+public class ReportExec extends Report {
 
   /**
    * @see genj.report.Report#getAuthor()
@@ -48,24 +47,15 @@ public class ReportExec implements Report {
   }
 
   /**
-   * @see genj.report.Report#isReadOnly()
+   * @see genj.report.Report#start(java.lang.Object)
    */
-  public boolean isReadOnly() {
-    return true;
-  }
-
-  /**
-   * @see genj.report.Report#start(ReportBridge, Gedcom)
-   */
-  public boolean start(ReportBridge bridge, Gedcom gedcom) {
+  public void start(Object context) {
     
     // get the name of the executable
-    String cmd = bridge.getValueFromUser( "executables", "Please enter path and name of the executable to run", new String[0]);
+    String cmd = getValueFromUser( "executables", "Please enter path and name of the executable to run", new String[0]);
 
-    if(cmd == null) {
-    	bridge.println("Operation cancelled by user");
-    	return true;
-    }
+    if(cmd == null) 
+      return;
     
     // run it
     try {
@@ -74,14 +64,13 @@ public class ReportExec implements Report {
       while (true) {
         String line = in.readLine();
         if (line==null) break;
-        bridge.println(line);
+        println(line);
       }
     } catch (IOException ioe) {
-      bridge.println("*** Sorry, failed with "+ioe.getMessage());
+      println("*** Sorry, failed with "+ioe.getMessage());
     }
     
     // done
-    return true;
   }
 
   /**
@@ -91,4 +80,4 @@ public class ReportExec implements Report {
     return true;
   }
 
-}
+} //ReportExec

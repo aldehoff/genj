@@ -36,17 +36,17 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.report.Report;
-import genj.report.ReportBridge;
 
 /**
  * GenJ -  ReportAncestors
  * @version 0.1
  */
-public class Report4Generations implements Report {
+public class Report4Generations extends Report {
 
   /** this report's version */
   public static final String VERSION = "0.1";
-    public static final int BLOCK_WIDTH = 34;
+  public static final int BLOCK_WIDTH = 34;
+    
   /**
    * Returns the version of this script
    */
@@ -70,14 +70,6 @@ public class Report4Generations implements Report {
   }
 
   /**
-   * Indication of how this reports shows information
-   * to the user. Standard Out here only.
-   */
-  public boolean usesStandardOut() {
-    return true;
-  }
-
-  /**
    * Author
    */
   public String getAuthor() {
@@ -85,37 +77,27 @@ public class Report4Generations implements Report {
   }
 
   /**
-   * Tells whether this report doesn't change information in the Gedcom-file
-   */
-  public boolean isReadOnly() {
-    return true;
-  }
-
-  /**
    * This method actually starts this report
    */
-  public boolean start(ReportBridge bridge, Gedcom gedcom) {
+  public void start(Object context) {
+    
+    // only gedcom here
+    Gedcom gedcom = (Gedcom)context;
 
     // Show the users in a combo to the user
-    Indi indi = (Indi)bridge.getValueFromUser(
-      "Please select an individual",
-      gedcom.getEntities(Gedcom.INDIVIDUALS).toArray(),
-      null
-    );
+    Indi indi = (Indi)getEntityFromUser("Chart origin", gedcom, Gedcom.INDIVIDUALS, "INDI:NAME");
+    if (indi==null) 
+      return;
     
-    if (indi==null) {
-      return false;
-    }
-    
-    Indi indiffff = ancestor(bridge, indi, "FFFF");
-    Indi indifff  = ancestor(bridge, indi, "FFF");
-    Indi indifffm = ancestor(bridge, indi, "FFFM");
-    Indi indimffm = ancestor(bridge, indi, "MFFM");
-    Indi indimff  = ancestor(bridge, indi, "MFF");
-    Indi indimfff = ancestor(bridge, indi, "MFFF");
+    Indi indiffff = ancestor( indi, "FFFF");
+    Indi indifff  = ancestor( indi, "FFF");
+    Indi indifffm = ancestor( indi, "FFFM");
+    Indi indimffm = ancestor( indi, "MFFM");
+    Indi indimff  = ancestor( indi, "MFF");
+    Indi indimfff = ancestor( indi, "MFFF");
 
-    bridge.println(lineone(indiffff)+lineone(indifff)+lineone(indifffm)+lineone(indimffm)+lineone(indimff)+lineone(indimfff));
-    bridge.println(linetwo(indiffff,false,(indiffff!=null))
+    println(lineone(indiffff)+lineone(indifff)+lineone(indifffm)+lineone(indimffm)+lineone(indimff)+lineone(indimfff));
+    println(linetwo(indiffff,false,(indiffff!=null))
 		   +linetwo(indifff,(indiffff!=null),(indifffm!=null),(indifff!=null))
 		   +linetwo(indifffm,(indifffm!=null),false)
 		   +linetwo(indimffm,false,(indimffm!=null))
@@ -123,105 +105,105 @@ public class Report4Generations implements Report {
 		   +linetwo(indimfff,(indimfff!=null),false));
 
     String spacer1 = pad(BLOCK_WIDTH)+connect(indifff!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimff!=null);
-    bridge.println(spacer1); bridge.println(spacer1); bridge.println(spacer1);
+    println(spacer1); println(spacer1); println(spacer1);
 
-    Indi indiffmf = ancestor(bridge, indi, "FFMF");
-    Indi indimfmf = ancestor(bridge, indi, "MFMF");
+    Indi indiffmf = ancestor( indi, "FFMF");
+    Indi indimfmf = ancestor( indi, "MFMF");
 
-    bridge.println(lineone(indiffmf)+connect(indifff!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimff!=null)+lineone(indimfmf));
-    bridge.println(linetwo(indiffmf,false,false,(indiffmf!=null))+connect(indifff!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimff!=null)+linetwo(indimfmf,false,false,(indimfmf!=null)));
+    println(lineone(indiffmf)+connect(indifff!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimff!=null)+lineone(indimfmf));
+    println(linetwo(indiffmf,false,false,(indiffmf!=null))+connect(indifff!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimff!=null)+linetwo(indimfmf,false,false,(indimfmf!=null)));
 
     String spacer2 = connect(indiffmf!=null)+connect(indifff!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimff!=null)+connect(indimfmf!=null);
-    bridge.println(spacer2); bridge.println(spacer2);
+    println(spacer2); println(spacer2);
 
 
     // *   MBNH    Collis               Arthur  Lily
     
-    Indi indiffm = ancestor(bridge, indi, "FFM");
-    Indi indiff  = ancestor(bridge, indi, "FF");
-    Indi indimf  = ancestor(bridge, indi, "MF");
-    Indi indimfm = ancestor(bridge, indi, "MFM");
+    Indi indiffm = ancestor( indi, "FFM");
+    Indi indiff  = ancestor( indi, "FF");
+    Indi indimf  = ancestor( indi, "MF");
+    Indi indimfm = ancestor( indi, "MFM");
 
-    bridge.println(lineone(indiffm)+lineone(indiff)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+lineone(indimf)+lineone(indimfm));
-    bridge.println(linetwo(indiffm,false,true,(indiffm!=null))+linetwo(indiff,(indiffm!=null),false,(indiff!=null))+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+linetwo(indimf,false,(indimfm!=null),(indimf!=null))+linetwo(indimfm,(indimfm!=null),false));
+    println(lineone(indiffm)+lineone(indiff)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+lineone(indimf)+lineone(indimfm));
+    println(linetwo(indiffm,false,true,(indiffm!=null))+linetwo(indiff,(indiffm!=null),false,(indiff!=null))+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+linetwo(indimf,false,(indimfm!=null),(indimf!=null))+linetwo(indimfm,(indimfm!=null),false));
 
 
     // *   Alice                                MFMM
-    Indi indiffmm  = ancestor(bridge, indi, "FFMM");
-    Indi indimfmm  = ancestor(bridge, indi, "MFMM");
+    Indi indiffmm  = ancestor( indi, "FFMM");
+    Indi indimfmm  = ancestor( indi, "MFMM");
 
     String spacer3 = connect(indiffmm!=null)+connect(indiff!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimf!=null)+connect(indimfmm!=null);
-    bridge.println(spacer3); bridge.println(spacer3);
+    println(spacer3); println(spacer3);
 
     // FFMM
-    bridge.println(lineone(indiffmm)+connect()+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect()+lineone(indimfmm));
-    bridge.println(linetwo(indiffmm,false,false)+connect(indiff!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimf!=null)+linetwo(indimfmm,false,false));
+    println(lineone(indiffmm)+connect()+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect()+lineone(indimfmm));
+    println(linetwo(indiffmm,false,false)+connect(indiff!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimf!=null)+linetwo(indimfmm,false,false));
     String spacer4 = pad(BLOCK_WIDTH)+connect(indiff!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimf!=null);
-    bridge.println(spacer4); bridge.println(spacer4);
+    println(spacer4); println(spacer4);
 
 
     // *            Jan                  Gail
-    Indi indif  = ancestor(bridge, indi, "F");
-    Indi indim  = ancestor(bridge, indi, "M");
+    Indi indif  = ancestor( indi, "F");
+    Indi indim  = ancestor( indi, "M");
 
-    bridge.println(pad(BLOCK_WIDTH)+lineone(indif)+pad(BLOCK_WIDTH/2)+lineone(indi)+pad(BLOCK_WIDTH/2)+lineone(indim)+pad(BLOCK_WIDTH));
-    bridge.println(pad(BLOCK_WIDTH)+linetwo(indif,false,true)+pad(BLOCK_WIDTH/2,true)+linetwo(indi,true,true)+pad(BLOCK_WIDTH/2,true)+linetwo(indim,true,false)+pad(BLOCK_WIDTH));
+    println(pad(BLOCK_WIDTH)+lineone(indif)+pad(BLOCK_WIDTH/2)+lineone(indi)+pad(BLOCK_WIDTH/2)+lineone(indim)+pad(BLOCK_WIDTH));
+    println(pad(BLOCK_WIDTH)+linetwo(indif,false,true)+pad(BLOCK_WIDTH/2,true)+linetwo(indi,true,true)+pad(BLOCK_WIDTH/2,true)+linetwo(indim,true,false)+pad(BLOCK_WIDTH));
 
     // needed now for spacers
-    Indi indifm  = ancestor(bridge, indi, "FM");
-    Indi indimm  = ancestor(bridge, indi, "MM");
+    Indi indifm  = ancestor( indi, "FM");
+    Indi indimm  = ancestor( indi, "MM");
 
     // spacers now above
     String spacer5 = pad(BLOCK_WIDTH)+connect(indifm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimm!=null);
-    bridge.println(spacer5); bridge.println(spacer5);
+    println(spacer5); println(spacer5);
 
     // *   Ida      c                       c      MMFM
-    Indi indifmfm  = ancestor(bridge, indi, "FMFM");
-    Indi indimmfm  = ancestor(bridge, indi, "MMFM");
+    Indi indifmfm  = ancestor( indi, "FMFM");
+    Indi indimmfm  = ancestor( indi, "MMFM");
 
-    bridge.println(lineone(indifmfm)+connect(indifm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimm!=null)+lineone(indimmfm));
-    bridge.println(linetwo(indifmfm,false,false,(indifmfm!=null))+connect(indifm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimm!=null)+linetwo(indimmfm,false,false,(indimmfm!=null)));
+    println(lineone(indifmfm)+connect(indifm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimm!=null)+lineone(indimmfm));
+    println(linetwo(indifmfm,false,false,(indifmfm!=null))+connect(indifm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimm!=null)+linetwo(indimmfm,false,false,(indimmfm!=null)));
 
     //      c       c                       c       c 
     // *   Alan c   Nancy                Mary Jane c John
     String spacer6 = connect(indifmfm!=null)+connect(indifm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indifm!=null)+connect(indimmfm!=null);
-    bridge.println(spacer6); bridge.println(spacer6);
+    println(spacer6); println(spacer6);
 
-    Indi indifmf = ancestor(bridge, indi, "FMF");
-    Indi indimmf = ancestor(bridge, indi, "MMF");
+    Indi indifmf = ancestor( indi, "FMF");
+    Indi indimmf = ancestor( indi, "MMF");
 
-    bridge.println(lineone(indifmf)+lineone(indifm)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+lineone(indimm)+lineone(indimmf));
-    bridge.println(linetwo(indifmf,false,(indifmf!=null))+linetwo(indifm,(indifmf!=null),false)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+linetwo(indimm,false,(indimmf!=null))+linetwo(indimmf,(indimmf!=null),false));
+    println(lineone(indifmf)+lineone(indifm)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+lineone(indimm)+lineone(indimmf));
+    println(linetwo(indifmf,false,(indifmf!=null))+linetwo(indifm,(indifmf!=null),false)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+linetwo(indimm,false,(indimmf!=null))+linetwo(indimmf,(indimmf!=null),false));
 
     // need these to decide about connectors
-    Indi indifmm  = ancestor(bridge, indi, "FMM");
-    Indi indimmm  = ancestor(bridge, indi, "MMM");
+    Indi indifmm  = ancestor( indi, "FMM");
+    Indi indimmm  = ancestor( indi, "MMM");
     //      c       c                       c       c 
     // *   James    c                       c      MMFF
     String spacer7 = connect(indifmf!=null)+connect(indifmm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimmm!=null)+connect(indimmf!=null);
-    bridge.println(spacer7); bridge.println(spacer7);
+    println(spacer7); println(spacer7);
 
 
 
-    Indi indifmff = ancestor(bridge, indi, "FMFF");
-    Indi indimmff = ancestor(bridge, indi, "MMFF");
-    bridge.println(lineone(indifmff)+connect(indifmm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimmm!=null)+lineone(indimmff));
-    bridge.println(linetwo(indifmff,false,false)+connect(indifmm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimmm!=null)+linetwo(indimmff,false,false));
+    Indi indifmff = ancestor( indi, "FMFF");
+    Indi indimmff = ancestor( indi, "MMFF");
+    println(lineone(indifmff)+connect(indifmm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimmm!=null)+lineone(indimmff));
+    println(linetwo(indifmff,false,false)+connect(indifmm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimmm!=null)+linetwo(indimmff,false,false));
 
     //              c                       c   
     // *   Henry   Ruth  Bessie      MMMM Marie     MMMF
     
-    Indi indifmmf = ancestor(bridge, indi, "FMMF");
-    Indi indifmmm = ancestor(bridge, indi, "FMMM");
-    Indi indimmmm = ancestor(bridge, indi, "MMMM");
-    Indi indimmmf = ancestor(bridge, indi, "MMMF");
+    Indi indifmmf = ancestor( indi, "FMMF");
+    Indi indifmmm = ancestor( indi, "FMMM");
+    Indi indimmmm = ancestor( indi, "MMMM");
+    Indi indimmmf = ancestor( indi, "MMMF");
 
     String spacer8 = pad(BLOCK_WIDTH)+connect(indifmm!=null)+pad(BLOCK_WIDTH)+pad(BLOCK_WIDTH)+connect(indimmm!=null);
-    bridge.println(spacer8); bridge.println(spacer8); bridge.println(spacer8);
+    println(spacer8); println(spacer8); println(spacer8);
 
-    bridge.println(lineone(indifmmf)+lineone(indifmm)+lineone(indifmmm)
+    println(lineone(indifmmf)+lineone(indifmm)+lineone(indifmmm)
 		   +lineone(indimmmm)+lineone(indimmm)+lineone(indimmmf));
-    bridge.println(linetwo(indifmmf,false,(indifmmf!=null))
+    println(linetwo(indifmmf,false,(indifmmf!=null))
 		   +linetwo(indifmm,(indifmmf!=null),(indifmmm!=null))
 		   +linetwo(indifmmm,(indifmmm!=null),false)
 		   +linetwo(indimmmm,false,(indimmmm!=null))
@@ -230,38 +212,36 @@ public class Report4Generations implements Report {
 
 
     // Done
-    return true;
   }
   
   /**
    * parent - prints information about one parent and then recurses
    */
-    private Indi ancestor(ReportBridge bridge, Indi indi, String path) {
+  private Indi ancestor(Indi indi, String path) {
 
-	//	bridge.println("debug: "+path+" "); 
-
+  	//	println("debug: "+path+" "); 
 	if (path == null || indi == null)
 	    return null;
     
 	Fam famc = indi.getFamc();
 
 	if (famc==null) {
-	    //  bridge.println("no Famc "+ format(indi));
+	    //  println("no Famc "+ format(indi));
 	    return null;
 	}
 
 	if (path.charAt(0) == 'F' && famc.getHusband()!=null) {
 	    if (path.length() == 1) {
-		//bridge.println(format(indi));
+		//println(format(indi));
 		return famc.getHusband();
 	    } else
-		return ancestor(bridge, famc.getHusband(), path.substring(1));
+		return ancestor(famc.getHusband(), path.substring(1));
 	} else if (path.charAt(0) == 'M' && famc.getWife()!=null) {
 	    if (path.length() == 1) {
-		//bridge.println(format(indi));
+		//println(format(indi));
 		return famc.getWife();
 	    } else
-		return ancestor(bridge, famc.getWife(), path.substring(1));
+		return ancestor(famc.getWife(), path.substring(1));
 	}
 	return null;
     }
@@ -390,6 +370,6 @@ public class Report4Generations implements Report {
 	else
 	    return pad(BLOCK_WIDTH);
     }
-}
 
+} //Report4Generations
 

@@ -12,7 +12,6 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.report.Report;
-import genj.report.ReportBridge;
 import genj.util.ReferenceSet;
 
 import java.util.Iterator;
@@ -21,11 +20,11 @@ import java.util.List;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.18 2003-04-02 19:57:51 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.19 2003-05-28 19:22:59 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
-public class ReportGedcomStatistics implements Report {
+public class ReportGedcomStatistics extends Report {
 
   /**
    * A data object that contains the statistical data we gather
@@ -72,14 +71,6 @@ public class ReportGedcomStatistics implements Report {
   }
 
   /**
-   * Indication of how this reports shows information
-   * to the user. Standard Out here only.
-   */
-  public boolean usesStandardOut() {
-    return true;
-  }
-
-  /**
    * Author
    */
   public String getAuthor() {
@@ -87,16 +78,12 @@ public class ReportGedcomStatistics implements Report {
   }
 
   /**
-   * Tells whether this report doesn't change information in the Gedcom-file
-   */
-  public boolean isReadOnly() {
-    return true;
-  }
-
-  /**
    * This method actually starts this report
    */
-  public boolean start(ReportBridge bridge, Gedcom gedcom) {
+  public void start(Object context) {
+
+    // expecting only gedcom
+    Gedcom gedcom = (Gedcom)context;
 
     // Here's the data object that we use while looking
     // at the statistical characteristics
@@ -109,10 +96,9 @@ public class ReportGedcomStatistics implements Report {
     }
     
     // And report what we've found
-    reportResults(bridge, gedcom, stats);
+    reportResults(gedcom, stats);
     
     // Done
-    return true;
   }
 
   /**
@@ -186,53 +172,53 @@ public class ReportGedcomStatistics implements Report {
   /**
    * Reports the result of our information-gathering
    */
-  private void reportResults(ReportBridge bridge, Gedcom gedcom, Statistics stats) {
+  private void reportResults(Gedcom gedcom, Statistics stats) {
 
     // Header :
-    bridge.println("In the Gedcom file named '"+gedcom.getName()+"', there are :\n");
-    bridge.println("  * Stats about people :");
+    println("In the Gedcom file named '"+gedcom.getName()+"', there are :\n");
+    println("  * Stats about people :");
 		
     // One: We show the number of families :
-    bridge.println("     - "+gedcom.getEntities(Gedcom.FAMILIES).size()
+    println("     - "+gedcom.getEntities(Gedcom.FAMILIES).size()
       +" families (soit : "+gedcom.getEntities(Gedcom.FAMILIES).size()+" familles).");
 
     // Two: We show the number of individuals :
-    bridge.println("     - "+gedcom.getEntities(Gedcom.INDIVIDUALS).size()
+    println("     - "+gedcom.getEntities(Gedcom.INDIVIDUALS).size()
       +" Individuals (soit : "+gedcom.getEntities(Gedcom.INDIVIDUALS).size()+" personnes).");
 
     // Three: We show the number of males :
-    bridge.println("         . "+stats.numMales+" males (soit : "+stats.numMales+" hommes).");
+    println("         . "+stats.numMales+" males (soit : "+stats.numMales+" hommes).");
 
     // Four: We show the number of females :
-    bridge.println("         . "+stats.numFemales+" females (soit : "+stats.numFemales+" femmes).");
+    println("         . "+stats.numFemales+" females (soit : "+stats.numFemales+" femmes).");
 
     // Five: We show the number of people whose sex is undefined :
-    bridge.println("         . "+stats.numUnknown+" with undefined sex (soit : "
+    println("         . "+stats.numUnknown+" with undefined sex (soit : "
       +stats.numUnknown+" personnes dont le sexe n'est pas connu).");
 
-    bridge.println("");
+    println("");
 
     // Six: We show the birth places
-    bridge.println("  * Stats about birth places :");
+    println("  * Stats about birth places :");
     Iterator births = stats.birthPlaces.iterator();
     while (births.hasNext()) {
       String place = (String)births.next();
       int count = stats.birthPlaces.getCount(place);
-      bridge.println("     - "+count+" individuals were born in "+place);
+      println("     - "+count+" individuals were born in "+place);
     }
 
-    bridge.println("");
+    println("");
 
     // Seven: We show the death places
-    bridge.println("  * Stats about death places :");
+    println("  * Stats about death places :");
     Iterator deaths = stats.deathPlaces.iterator();
     while (deaths.hasNext()) {
       String place = (String)deaths.next();
       int count = stats.deathPlaces.getCount(place);
-      bridge.println("     - "+count+" individuals died in "+place);
+      println("     - "+count+" individuals died in "+place);
     }
 
     // Done
   }
   
-}
+} //ReportGedcomStatistics

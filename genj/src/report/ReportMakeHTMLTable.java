@@ -13,7 +13,6 @@ import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.report.Report;
-import genj.report.ReportBridge;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -22,11 +21,11 @@ import java.util.TreeMap;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.15 2003-05-06 04:59:11 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.16 2003-05-28 19:23:00 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
-public class ReportMakeHTMLTable implements Report {
+public class ReportMakeHTMLTable extends Report {
 
   /** A <pre>&nbsp</pre> looks better than an empty String in a HTML cell */
   private final static String EMPTY_CELL_STRING = "&nbsp;";
@@ -150,35 +149,35 @@ public class ReportMakeHTMLTable implements Report {
   /**
    * Calculate an individual's id with possible wrapping HREF
    */
-  private String calcIndiId(Indi indi, String url) {
+  private String calcIndiId(Indi indi) {
 
-    if ((url==null)||(url.length()==0)) {
+//    if ((url==null)||(url.length()==0)) {
       return indi.getId();
-    }
-
-    return "<a href=\"" + url + indi.getId() + ".html\">" + indi.getId() + "</a>";
+//    }
+//
+//    return "<a href=\"" + url + indi.getId() + ".html\">" + indi.getId() + "</a>";
   }
 
 
   /**
    * Export individual's information
    */
-  private void export(Indi indi, ReportBridge bridge, String detailsUrl) {
+  private void export(Indi indi) {
 
     // Standard
-    htmlCell(bridge,calcIndiId(indi, detailsUrl));
-    htmlCell(bridge,indi.getLastName() );
-    htmlCell(bridge,indi.getFirstName());
+    htmlCell(calcIndiId(indi));
+    htmlCell(indi.getLastName() );
+    htmlCell(indi.getFirstName());
 
     switch (indi.getSex()) {
     case PropertySex.MALE:
-            htmlCell(bridge,"Male");
+            htmlCell("Male");
             break;
     case PropertySex.FEMALE:
-            htmlCell(bridge,"Female");
+            htmlCell("Female");
             break;
     default:
-            htmlCell(bridge,EMPTY_CELL_STRING);
+            htmlCell(EMPTY_CELL_STRING);
             break;
     }
 
@@ -188,22 +187,22 @@ public class ReportMakeHTMLTable implements Report {
       PropertyEvent event = (PropertyEvent)indi.getProperty(new TagPath("BIRT"),true);
       PropertyDate date = (PropertyDate)event.getProperty(new TagPath("DATE"),true);
       Property place = event.getProperty(new TagPath("PLAC"),true);
-      htmlCell(bridge,date);
-      htmlCell(bridge,place);
+      htmlCell(date);
+      htmlCell(place);
     } catch (Exception e) {
-      htmlCell(bridge,null);
-      htmlCell(bridge,null);
+      htmlCell(null);
+      htmlCell(null);
     }
 
     try {
       PropertyEvent event = (PropertyEvent)indi.getProperty(new TagPath("DEAT"),true);
       PropertyDate date = (PropertyDate)event.getProperty(new TagPath("DATE"),true);
       Property place = event.getProperty(new TagPath("PLAC"),true);
-      htmlCell(bridge,date);
-      htmlCell(bridge,place);
+      htmlCell(date);
+      htmlCell(place);
     } catch (Exception e) {
-      htmlCell(bridge,null);
-      htmlCell(bridge,null);
+      htmlCell(null);
+      htmlCell(null);
     }
 
     // Done
@@ -212,7 +211,7 @@ public class ReportMakeHTMLTable implements Report {
   /**
    * Writes HTML table cell information
    */
-  private void htmlCell(ReportBridge bridge, Object content) {
+  private void htmlCell(Object content) {
 
     // We don't want to see 'null' but ''
     if (content == null) {
@@ -234,53 +233,46 @@ public class ReportMakeHTMLTable implements Report {
     }
 
     // Here comes the HTML
-    bridge.println("<TD>"+unicode2html(content.toString())+"</TD>");
+    println("<TD>"+unicode2html(content.toString())+"</TD>");
 
   }
 
   /**
    * This method actually starts this report
    */
-  public boolean start(ReportBridge bridge, Gedcom gedcom) {
-
-    // Let's ask the user for a details-html directory
-    String detailsUrl = bridge.getValueFromUser(
-      "output",
-      "Enter the path to output directory of report 'Applet Details' if applicable.\nThis information is used for hyperlinks in the table.\nExample: ./details",
-      new String[0]
-    );
-    if ((detailsUrl!=null)&&(!detailsUrl.endsWith("/"))) {
-      detailsUrl += '/';
-    }
+  public void start(Object context) {
+    
+    // has to be Gedcom
+    Gedcom gedcom = (Gedcom)context;
 
     // And whether code translation should happen or not
-    isTranslateUnicode2HTML = bridge.getValueFromUser(
+    isTranslateUnicode2HTML = getValueFromUser(
       "Do you want to transform Unicode- into HTML-codes (slow)?",
       true
     );
 
     // HEAD
-    bridge.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
-    bridge.println("<HTML>");
-    bridge.println("<HEAD>");
-    bridge.println("<TITLE>"+gedcom.getName()+" - HTML Table</TITLE>");
-    bridge.println("</HEAD>");
-    bridge.println("<BODY bgcolor=\"#ffffff\">");
+    println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
+    println("<HTML>");
+    println("<HEAD>");
+    println("<TITLE>"+gedcom.getName()+" - HTML Table</TITLE>");
+    println("</HEAD>");
+    println("<BODY bgcolor=\"#ffffff\">");
 
     // TABLE
-    bridge.println("<TABLE border=1 cellspacing=1>");
+    println("<TABLE border=1 cellspacing=1>");
 
     // TABLE HEADER
-    bridge.println("<TR BGCOLOR=\"yellow\">");  //F. Massonneau 03/04/2002
-    htmlCell(bridge,"ID");
-    htmlCell(bridge,"Last Name");
-    htmlCell(bridge,"First Name");
-    htmlCell(bridge,"Sex");
-    htmlCell(bridge,"Birth");
-    htmlCell(bridge,"Place");
-    htmlCell(bridge,"Death");
-    htmlCell(bridge,"Place");
-    bridge.println("</TR>");  //F. Massonneau 03/04/2002
+    println("<TR BGCOLOR=\"yellow\">");  //F. Massonneau 03/04/2002
+    htmlCell("ID");
+    htmlCell("Last Name");
+    htmlCell("First Name");
+    htmlCell("Sex");
+    htmlCell("Birth");
+    htmlCell("Place");
+    htmlCell("Death");
+    htmlCell("Place");
+    println("</TR>");  //F. Massonneau 03/04/2002
 
     // Go through individuals
     List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
@@ -293,24 +285,23 @@ public class ReportMakeHTMLTable implements Report {
     }
     Iterator iter = indiMap.values().iterator();
     while ( iter.hasNext() ) {
-      bridge.println("<TR>");
+      println("<TR>");
 
-      export((Indi)iter.next(), bridge, detailsUrl);
+      export((Indi)iter.next());
 
-      bridge.println("</TR>");
+      println("</TR>");
 
       // .. next individual
     }
 
     // END TABLE
-    bridge.println("</TABLE>");
+    println("</TABLE>");
 
     // TAIL
-    bridge.println("</BODY>");
-    bridge.println("</HTML>");
+    println("</BODY>");
+    println("</HTML>");
 
     // Done
-    return true;
   }
 
   /**

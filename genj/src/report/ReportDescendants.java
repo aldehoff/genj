@@ -8,16 +8,14 @@
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.PropertyDate;
 import genj.report.Report;
-import genj.report.ReportBridge;
 
 /**
  * GenJ - Report
  * @author Nils Meier nils@meiers.net
  * @version 0.1
  */
-public class ReportDescendants implements Report {
+public class ReportDescendants extends Report {
 
   /** this report's version */
   public static final String VERSION = "0.1";
@@ -45,53 +43,6 @@ public class ReportDescendants implements Report {
   }
 
   /**
-   * Finding the earliest ancestor recursive.
-   */
-  public Indi findEarliest (Indi indi) {
-
-    Indi earliest = indi;
-    PropertyDate birth;
-
-    Fam fam = indi.getFamc ();
-    if (fam == null){
-      return (earliest);
-    }
-
-    indi = fam.getHusband ();
-    if (indi != null){
-      indi = findEarliest (indi);
-
-      birth = indi.getBirthDate();
-
-      if ((birth!=null)&&(birth.compareTo(earliest.getBirthDate())< 0)) {
-        earliest = indi;
-      }
-    }
-
-    indi = fam.getWife ();
-    if (indi != null){
-      indi = findEarliest (indi);
-
-      birth = indi.getBirthDate();
-
-      if ((birth!=null)&&(birth.compareTo(earliest.getBirthDate())<0)) {
-        earliest = indi;
-      }
-    }
-
-    return (earliest);
-  }
-
-
-  /**
-   * Indication of how this reports shows information
-   * to the user. Standard Out here only.
-   */
-  public boolean usesStandardOut() {
-    return true;
-  }
-
-  /**
    * Author
    */
   public String getAuthor() {
@@ -99,42 +50,53 @@ public class ReportDescendants implements Report {
   }
 
   /**
-   * Tells whether this report doesn't change information in the Gedcom-file
+   * Individuals are good too
+   * @see genj.report.Report#acceptsEntity(int)
    */
-  public boolean isReadOnly() {
+  public boolean acceptsEntity(int type) {
+    return type==Gedcom.INDIVIDUALS;  
+  }
+  
+  /**
+   * Gedcom is fine with us
+   * @see genj.report.Report#acceptsGedcom()
+   */
+  public boolean acceptsGedcom() {
     return true;
   }
 
   /**
    * This method actually starts this report
    */
-  public boolean start(ReportBridge bridge, Gedcom gedcom) {
+  public void start(Object context) {
 
-    // Show the users in a combo to the user
-    Indi indi = (Indi)bridge.getValueFromUser(
-      "Please select an individual",
-      gedcom.getEntities(Gedcom.INDIVIDUALS).toArray(),
-      null
-    );
+    Indi indi;
     
-    if (indi==null) {
-      return false;
+    // check context
+    if (context instanceof Indi) {
+      indi = (Indi)context;
+    } else {
+      // expecting gedcom
+      Gedcom gedcom = (Gedcom)context;
+      
+      indi = (Indi)getEntityFromUser("Ancestor", gedcom, Gedcom.INDIVIDUALS, "INDI:NAME");
+      if (indi==null) 
+        return;
     }
     
     // Display the descendants
-    iterate(bridge, indi, 1);
+    iterate(indi, 1);
     
     // Done
-    return true;
   }
   
   /**
    * Iterates over descendants
    */
-  private void iterate(ReportBridge bridge, Indi indi, int level) {
+  private void iterate(Indi indi, int level) {
     
     // Here comes the individual
-    bridge.println(getIndent(level)+level+" "+format(indi));
+    println(getIndent(level)+level+" "+format(indi));
     
     // And we loop through its families
     int fcount = indi.getNoOfFams();
@@ -145,14 +107,14 @@ public class ReportDescendants implements Report {
       Indi spouse= fam.getOtherSpouse(indi);
       
       // .. a line for the spouse
-      bridge.println(getIndent(level) +"  + "+ format(spouse));
+      println(getIndent(level) +"  + "+ format(spouse));
       
       // .. and all the kids
       Indi[] children = fam.getChildren();
       for (int c = 0; c < children.length; c++) {
         
         // do the recursive step
-        iterate(bridge, children[c], level+1);
+        iterate(children[c], level+1);
         
         // .. next child
 			}

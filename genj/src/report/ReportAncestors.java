@@ -9,13 +9,12 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
-import genj.report.ReportBridge;
 
 /**
  * GenJ -  ReportAncestors
  * @version 0.1
  */
-public class ReportAncestors implements Report {
+public class ReportAncestors extends Report {
 
   /** this report's version */
   public static final String VERSION = "0.1";
@@ -43,14 +42,6 @@ public class ReportAncestors implements Report {
   }
 
   /**
-   * Indication of how this reports shows information
-   * to the user. Standard Out here only.
-   */
-  public boolean usesStandardOut() {
-    return true;
-  }
-
-  /**
    * Author
    */
   public String getAuthor() {
@@ -58,55 +49,67 @@ public class ReportAncestors implements Report {
   }
 
   /**
-   * Tells whether this report doesn't change information in the Gedcom-file
+   * Individuals are good too
+   * @see genj.report.Report#acceptsEntity(int)
    */
-  public boolean isReadOnly() {
+  public boolean acceptsEntity(int type) {
+    return type==Gedcom.INDIVIDUALS;  
+  }
+  
+  /**
+   * Gedcom is fine with us
+   * @see genj.report.Report#acceptsGedcom()
+   */
+  public boolean acceptsGedcom() {
     return true;
   }
 
   /**
    * This method actually starts this report
    */
-  public boolean start(ReportBridge bridge, Gedcom gedcom) {
-
-    // Show the users in a combo to the user
-    Indi indi = (Indi)bridge.getValueFromUser(
-      "Please select an individual",
-      gedcom.getEntities(Gedcom.INDIVIDUALS).toArray(),
-      null
-    );
+  public void start(Object context) {
+  
+    Indi indi;
     
-    if (indi==null) {
-      return false;
+    // check context
+    if (context instanceof Indi) {
+      indi = (Indi)context;
+    } else {
+      // expecting gedcom
+      Gedcom gedcom = (Gedcom)context;
+      
+      indi = (Indi)getEntityFromUser("Descendant", gedcom, Gedcom.INDIVIDUALS, "INDI:NAME");
+      if (indi==null) 
+        return;
+      
     }
     
     // Display the descendants
-    parent(bridge, indi, 1);
+    parent(indi, 1);
     
     // Done
-    return true;
   }
   
   /**
    * parent - prints information about one parent and then recurses
    */
-  private void parent(ReportBridge bridge, Indi indi, int level) {
+  private void parent(Indi indi, int level) {
 
     // Here comes the individual
-    bridge.println(getIndent(level)+level+" "+format(indi));
+    println(getIndent(level)+level+" "+format(indi));
     
     Fam famc = indi.getFamc();
 
     if (famc==null) {
-	//      bridge.println(getIndent(level) +"  + leaf node "+ format(indi));
+	//      println(getIndent(level) +"  + leaf node "+ format(indi));
       return;
     }
 
     if (famc.getWife()!=null) {
-        parent(bridge, famc.getWife(), level+1);
+        parent(famc.getWife(), level+1);
     }
     if (famc.getHusband()!=null) {
-        parent(bridge, famc.getHusband(), level+1);
+        parent(famc.getHusband(), level+1);
     }
 
    
@@ -148,5 +151,6 @@ public class ReportAncestors implements Report {
     }
     return buffer.toString();
   }
-}
+  
+} //ReportAncestors
 

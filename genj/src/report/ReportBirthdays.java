@@ -1,15 +1,3 @@
-import genj.gedcom.Gedcom;
-import genj.gedcom.Indi;
-import genj.gedcom.PropertyDate;
-import genj.report.Report;
-import genj.report.ReportBridge;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-
 /**
  * Reports are Freeware Code Snippets
  *
@@ -18,12 +6,24 @@ import java.util.List;
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
+import genj.gedcom.PointInTime;
+import genj.gedcom.PropertyDate;
+import genj.report.Report;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * GenJ - Report
  * @author Nils Meier nils@meiers.net
- * @version 0.1
+ * @version 0.2
  */
-public class ReportBirthdays implements Report {
+public class ReportBirthdays extends Report {
 
   /** this report's version */
   public static final String VERSION = "0.1";
@@ -32,14 +32,14 @@ public class ReportBirthdays implements Report {
    * Returns the version of this script
    */
   public String getVersion() {
-    return VERSION;
+    return i18n("version");
   }
   
   /**
    * Returns the name of this report - should be localized.
    */
   public String getName() {
-    return "Birthdays";
+    return i18n("name");
   }
 
   /**
@@ -47,18 +47,7 @@ public class ReportBirthdays implements Report {
    * @return Information as String
    */
   public String getInfo() {
-    return "This report prints individuals with a birthday for a given month. "+
-           "Sorting the result is possible in case you run Java2 - change the "+
-           "code as indicated by uncommenting a three-line code-block in "+
-           "ReportBirthdays.java (recompilation necessary).";
-  }
-
-  /**
-   * Indication of how this reports shows information
-   * to the user. Standard Out here only.
-   */
-  public boolean usesStandardOut() {
-    return true;
+    return i18n("info");
   }
 
   /**
@@ -69,31 +58,19 @@ public class ReportBirthdays implements Report {
   }
 
   /**
-   * Tells whether this report doesn't change information in the Gedcom-file
-   */
-  public boolean isReadOnly() {
-    return true;
-  }
-
-  /**
    * This method actually starts this report
    */
-  public boolean start(ReportBridge bridge, Gedcom gedcom) {
-
-    final String months[] = { "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+  public void start(Object context) {
+    
+    Gedcom gedcom = (Gedcom)context;
 
     // Calculate Month
-    String s = (String)bridge.getValueFromUser("Please select a month",months,null);
-    if (s==null) {
-      return false;
-    }
+    String[] months = PointInTime.getMonths(true);
+    String selection = (String)getValueFromUser(i18n("select"),months,null);
+    if (selection==null) 
+      return;
 
-    int month=0;
-    for (;month<months.length;month++) {
-      if (months[month].equals(s)) {
-        break;
-      }
-    }
+    int month=0; while (month<months.length&&months[month]!=selection) month++;
 
     // Look for candidates
     List candidates = new ArrayList(100);
@@ -112,7 +89,6 @@ public class ReportBirthdays implements Report {
 
     // Sort the individuals by day of month
     Comparator comparator = new Comparator() {
-      // LCD
       public int compare(Object o1, Object o2) {
         // O.K. here are the birthdays (might be null!)
         PropertyDate b1 = ((Indi)o1).getBirthDate();
@@ -126,8 +102,7 @@ public class ReportBirthdays implements Report {
         // Comparison at last
         return d1-d2;
       }
-      // EOC
-    };
+    }; //Comparator
     
     // Change comparator here if you'd rather like to 
     // sort by year+day
@@ -137,16 +112,15 @@ public class ReportBirthdays implements Report {
     Collections.sort(candidates, comparator);
 
     // Show birthdays
-    bridge.println("The following individuals are born in month "+s);
+    println(i18n("result", selection));
 
     Iterator e = candidates.iterator();
     while (e.hasNext()) {
       Indi indi = (Indi)e.next();
-      bridge.println(indi.getName()+" (*"+indi.getBirthDate()+")");
+      println(indi.getName()+" (*"+indi.getBirthDate()+")");
     }
 
     // Done
-    return true;
   }
 
-}
+} //ReportBirthdays
