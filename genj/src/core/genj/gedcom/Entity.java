@@ -37,6 +37,13 @@ public class Entity extends Property {
   private String value;
   
   /**
+   * Lookup current transaction
+   */
+  protected Transaction getTransaction() {
+    return gedcom.getTransaction();
+  }
+  
+  /**
    * Lifecycle - callback when being added to Gedcom
    */
   /*package*/ void addNotify(Gedcom ged) {
@@ -81,7 +88,7 @@ public class Entity extends Property {
   /**
    * Propagate changed property
    */
-  /*package*/ void propagateChanged(Property changed) {
+  protected void propagateChanged(Property changed) {
 
     // always tell to modified first
     Transaction tx = gedcom.getTransaction();
@@ -104,7 +111,7 @@ public class Entity extends Property {
   /**
    * Propagate added property
    */
-  /*package*/ void propagateAdded(Property owner, int pos, Property added) {
+  protected void propagateAdded(Property owner, int pos, Property added) {
 
     // always tell to added first
     Transaction tx = gedcom.getTransaction();
@@ -128,7 +135,7 @@ public class Entity extends Property {
   /**
    * Propagate removed property
    */
-  /*package*/ void propagateRemoved(Property owner, int pos, Property removed) {
+  protected void propagateRemoved(Property owner, int pos, Property removed) {
 
     // always tell to removed first
     Transaction tx = gedcom.getTransaction();
