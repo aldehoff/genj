@@ -28,6 +28,9 @@
   <mapID target="x.report"    url="special/report.html" />
   <mapID target="x.resedit"   url="special/resedit.html" />
 
+  <mapID target="d.gpl"     url="documentation/gpl.html" />
+  <mapID target="d.developer"    url="documentation/developer.html" />
+
   <mapID target="team"      url="team.html" />
 
   <mapID target="img.NewGedcom"   url="images/Gedcom.gif"      />
@@ -45,6 +48,9 @@
   <mapID target="img.Media"       url="images/Media.gif" />
   <mapID target="img.Source"      url="images/Source.gif" />
   <mapID target="img.Submitter"   url="images/Submitter.gif" />
+
+  <mapID target="img.GNUgpl"      url="images/GNUgpl.gif" />
+  <mapID target="img.Developer"   url="images/Developer.gif" />
 
   <mapID target="img.Intro"       url="images/Cause.gif" />
   <mapID target="img.Concept"     url="images/Format.gif" />

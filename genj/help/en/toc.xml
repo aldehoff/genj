@@ -26,5 +26,9 @@
     <tocitem target="x.report"    text="Report Writing"   image="img.NewReport"/>
     <tocitem target="x.resedit"   text="Resource Editor" image="img.ResEdit"/>
   </tocitem>
+  <tocitem target="documentation"    text="General Documentation">
+    <tocitem target="d.gpl"     text="GNU GPL"            image="img.GNUgpl"/>
+    <tocitem target="d.developer"   text="Developer HowTo" image="img.Developer"/>
+  </tocitem>
   <tocitem target="team"      text="The Team"       image="img.Fam"        />
 </toc>
