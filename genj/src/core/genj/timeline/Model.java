@@ -230,8 +230,12 @@ import java.util.Set;
    * Returns the first event for given property
    */
   protected Event getEvent(Property property) {
+    // a date? try parent!
+    if (property instanceof PropertyDate)
+      property = property.getParent();
     // only events
-    if (!(property instanceof PropertyEvent)) return null;
+    if (!(property instanceof PropertyEvent)) 
+      return null;
     // loop through all events
     for (int l=0; l<layers.size(); l++) {
       Iterator events = ((List)layers.get(l)).iterator();
