@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<toc version="1.0">
+  <tocitem target="welcome"       text="@welcome@">
+  </tocitem>
+  <tocitem target="intro"       text="@intro@"  image="img.Intro"       />
+  <tocitem target="gedcom"      text="@gedcom@"        image="img.Gedcom"      />
+  <tocitem target="cc"          text="@cc@"image="img.NewGedcom"   />
+  <tocitem target="views"       text="@views@">
+    <tocitem target="v.table"     text="@v.table@"    image="img.NewTable"    />
+    <tocitem target="v.tree"      text="@v.tree@"     image="img.NewTree"     />
+    <tocitem target="v.timeline"  text="@v.timeline@" image="img.NewTimeline" />
+    <tocitem target="v.edit"      text="@v.edit@"     image="img.NewEdit"     />
+    <tocitem target="v.report"    text="@v.report@"   image="img.NewReport"   />
+    <tocitem target="v.settings"  text="@v.settings@" image="img.Settings"   >
+      <tocitem target="v.s.table"    text="@v.s.table@" image="img.NewTable" />
+      <tocitem target="v.s.tree"     text="@v.s.tree@" image="img.NewTree" />
+      <tocitem target="v.s.timeline" text="@v.s.timeline@" image="img.NewTimeline" />
+    </tocitem>
+  </tocitem>
+  <tocitem target="entities"    text="@entities@">
+    <tocitem target="e.indi"      text="@e.indi@"    image="img.Indi"        />
+    <tocitem target="e.family"    text="@e.family@"        image="img.Fam"         />
+    <tocitem target="e.note"      text="@e.note@"          image="img.Note"        />
+    <tocitem target="e.media"     text="@e.media@"         image="img.Media"       />
+  </tocitem>
+  <tocitem target="specials"    text="@specials@">
+    <tocitem target="x.tools"     text="@x.tools@"            image="img.NewGedcom"/>
+    <tocitem target="x.report"    text="@x.report@"   image="img.NewReport"/>
+    <tocitem target="x.resedit"   text="@x.resedit@" image="img.ResEdit"/>
+  </tocitem>
+  <tocitem target="documentation"    text="@documentation@">
+    <tocitem target="d.changes"     text="@d.changes@">
+    </tocitem>
+    <tocitem target="d.todo"     text="@d.todo@">
+    </tocitem>
+    <tocitem target="d.faq"     text="@d.faq@">
+      <tocitem target="d.s.faq1"     text="@d.s.faq1@"    />
+      <tocitem target="d.s.faq2"     text="@d.s.faq2@"    />
+    </tocitem>
+    <tocitem target="d.developer"   text="@d.developer@">
+    </tocitem>
+    <tocitem target="d.gpl"     text="@d.gpl@">
+    </tocitem>
+  </tocitem>
+  <tocitem target="team"      text="@team@"       image="img.Fam"        />
+</toc>
