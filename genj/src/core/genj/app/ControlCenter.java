@@ -511,7 +511,7 @@ public class ControlCenter extends JPanel {
             null, 
             origin.getName(), 
             WindowManager.IMG_QUESTION, 
-            "Please provide a valid password",
+            resources.getString("cc.provide_password"),
             "", 
             ControlCenter.this
           );
