@@ -421,7 +421,7 @@ public class ReportHTMLSheets extends Report {
         out.println("<p class=names>");
       }
       // create link to name file
-      out.print("<a href=\""+getFileForIndex(dir).getName()+'#'+name+"\">"+name+"</a>("+PropertyName.getLastNameCount(gedcom, name)+") ");
+      out.print("<a href=\""+getFileForIndex(dir).getName()+'#'+name+"\">"+name+"</a><Font color=\"00009c\">(</Font>"+"<Font color=\"3299cc\">"+PropertyName.getLastNameCount(gedcom, name)+"</Font>"+"<Font color=\"00009c\">)</Font> ");
     }
     out.println("</p>");
 
