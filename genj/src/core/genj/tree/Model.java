@@ -109,9 +109,9 @@ public class Model implements Graph, GedcomListener {
     padMarrs = padMarrsV,
     padFamsD = new double[]{
       -padding*0.4,
-      padding*0.2,      
+      padding*0.1,      
       padding/2,
-      0      
+      padding*0.1     
     },
     padFamsA = new double[]{
       padding/2,
@@ -716,8 +716,8 @@ public class Model implements Graph, GedcomListener {
     
     /** the alignment offset for an individual above its 1st fam */
     private Point2D.Double alignOffsetIndiAbove1stFam = new Point2D.Double(
-        ( widthFams-padding)/2 -  widthIndis -  widthMarrs/2,
-      -((heightFams-padding)/2 - heightIndis - heightMarrs/2)
+      padFamsD[MyNode.WEST]-padIndis[MyNode.WEST] +  widthFams/2 - widthIndis  - ( widthMarrs)/2,
+      padIndis[MyNode.WEST]-padFamsD[MyNode.WEST] - heightFams/2 + heightIndis + (heightMarrs)/2
     );
     
     /**
