@@ -2,6 +2,9 @@
 <project name="GenJ" default="about" basedir=".">
 
   <property file="./build.properties"/>
+  	
+  <property name="dir.dist" value="${dir.build}/dist"/>
+  <property name="dir.run" value="${dir.build}/run"/>
 
   <path id="project.class.path">
     <pathelement path ="${dir.build}/version"/>
@@ -36,6 +39,8 @@
     <mkdir dir="${dir.run}"/>
     <mkdir dir="${dir.dist}"/>
     <mkdir dir="${dir.build}/lib"/>
+  	
+  	<echo file="${dir.build}/.cvsignore">*</echo>
   </target>
 
   <!--
