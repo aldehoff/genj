@@ -210,14 +210,14 @@
      
      <!-- create genj_app-xyz.zip -->
      <zip zipfile="${dir.dist}/genj_app-${app.version}.zip" update="True">
-       <fileset dir="${dir.lib}" includes="run.jar"/>
-       <fileset dir="${dir.lib}/.." includes="lib/genj.jar"/>
-       <fileset dir="." includes="lib/graphj.jar"/>
-       <fileset dir="${dir.build}/classes" includes="report/**"/>
-       <fileset dir="." includes="gedcom/**"/>
-       <fileset dir="." includes="doc/**"/>
-       <fileset dir="./script" includes="run.*"/>
-       <fileset dir="./src" includes="report/**"/>
+       <zipfileset dir="${dir.lib}" includes="run.jar"/>
+       <zipfileset dir="${dir.lib}/.." includes="lib/genj.jar"/>
+       <zipfileset dir="." includes="lib/graphj.jar"/>
+       <zipfileset dir="${dir.build}/classes" includes="report/**"/>
+       <zipfileset dir="." includes="gedcom/**"/>
+       <zipfileset dir="." includes="doc/**"/>
+       <zipfileset dir="./script" includes="run.*" filemode="755"/>
+       <zipfileset dir="./src" includes="report/**"/>
      </zip>
 
   </target>
