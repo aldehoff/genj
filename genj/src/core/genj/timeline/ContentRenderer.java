@@ -19,6 +19,7 @@
  */
 package genj.timeline;
 
+import genj.gedcom.Entity;
 import genj.util.ImgIcon;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -46,6 +47,9 @@ public class ContentRenderer extends Renderer {
   /** whether we paint a grid or not */
   /*package*/ boolean paintGrid = false;
   
+  /** an entity that we consider selected */
+  /*package*/ Entity selection = null;
+  
   /** background color */
   /*package*/ Color cBackground = null;
   
@@ -63,6 +67,9 @@ public class ContentRenderer extends Renderer {
   
   /** timespane color */
   /*package*/ Color cGrid = null;
+  
+  /** selected color */
+  /*package*/ Color cSelected = null;
   
   /** 
    * Calculates the model size in pixels
@@ -195,7 +202,8 @@ public class ContentRenderer extends Renderer {
     }
 
     // draw its text 
-    setColor(g, cText);
+    if (cSelected!=null&&event.pe.getEntity()==selection) setColor(g, cSelected);
+    else setColor(g, cText);
     g.drawString(event.content, x1, y);
     x1+=fm.stringWidth(event.content)+fm.charWidth(' ');
     

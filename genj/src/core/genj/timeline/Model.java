@@ -130,6 +130,23 @@ import genj.gedcom.PropertyName;
   }
   
   /**
+   * Returns an event by year/layer
+   */
+  protected Event getEvent(double year, int layer) {
+    // look for events in appropriate layer
+    Iterator events = ((List)layers.get(layer)).iterator();
+    Event event = (Event)events.next();
+    while (events.hasNext()) {
+      Event other = (Event)events.next();
+      if (other.from>year) break;
+      event = other;
+      if (year<event.to) break;
+    }
+    // none found
+    return event;
+  }
+  
+  /**
    * Returns the filter - set of Tags we consider
    */
   public Set getFilter() {
@@ -407,6 +424,12 @@ import genj.gedcom.PropertyName;
       if (husband!=null) return husband.getName();
       if (wife!=null) return wife.getName();
       return "@"+fam.getId()+"@";
+    }
+    /**
+     * String representation
+     */
+    public String toString() {
+      return content;
     }
   } //Event
   

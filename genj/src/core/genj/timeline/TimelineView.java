@@ -136,6 +136,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     csContent.add("date"    , Color.gray );
     csContent.add("timespan", Color.blue );
     csContent.add("grid"    , Color.lightGray);
+    csContent.add("selected", Color.red  );
    
     csRuler = new ColorSet("ruler", Color.blue, resources, regstry);
     csRuler.add("text", Color.black);
@@ -352,6 +353,8 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       contentRenderer.cTag        = csContent.getColor("tag"     );
       contentRenderer.cTimespan   = csContent.getColor("timespan");
       contentRenderer.cGrid       = csContent.getColor("grid"    );
+      contentRenderer.cSelected   = csContent.getColor("selected");
+      contentRenderer.selection   = model.gedcom.getLastEntity();
       contentRenderer.cmPyear = cmPerYear;
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;
@@ -428,7 +431,8 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     public void mousePressed(MouseEvent e) {
       // find the year
       double year = pixel2year(e.getX());
-      System.out.println(year);
+      int layer = e.getY()/contentRenderer.calcLayerHeight(getFontMetrics(getFont()));
+      System.out.println(model.getEvent(year, layer));
     }
   } //ContentClick  
     
