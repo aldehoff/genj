@@ -62,6 +62,15 @@ public class PropertyIndividualAttribute extends Property {
     // Done
     return this;
   }
+  
+  /**
+   * @see genj.gedcom.Property#getProxy()
+   */
+  public String getProxy() {
+    // 20021219 RESI is not allowed to have data
+    if (getTag().equals("RESI")) return "Empty";
+    return super.getProxy();
+  }
 
   /**
    * Accessor for Tag
