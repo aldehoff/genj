@@ -134,7 +134,7 @@ public class TableViewSettings extends JPanel implements Settings {
 
     // Reflect columns by TagPaths
     TagPath[] selectedPaths = table.getPaths(table.getType());
-    TagPath[] usedPaths     = MetaProperty.getPaths(new TagPath(Gedcom.getTagFor(table.getType())), Property.class);
+    TagPath[] usedPaths     = TagPath.filter(MetaProperty.getPaths(Property.class), table.getType());
 
     pathTree.setPaths(usedPaths, selectedPaths);
 

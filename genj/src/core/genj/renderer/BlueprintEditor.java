@@ -222,11 +222,10 @@ public class BlueprintEditor extends JSplitPane {
       // only if gedcom is valid
       if (gedcom==null) return;
       // create a tree of available TagPaths
-      TagPathTree tree = new TagPathTree(); 
-      tree.setPaths(
-        MetaProperty.getPaths(new TagPath(Gedcom.getTagFor(BlueprintManager.getInstance().getType(blueprint))), Property.class),
-        new TagPath[0]
-      );
+      TagPathTree tree = new TagPathTree();
+      TagPath[] paths = MetaProperty.getPaths(Property.class); 
+      TagPath.filter(paths, BlueprintManager.getInstance().getType(blueprint));
+      tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
       int option = JOptionPane.showConfirmDialog(
         BlueprintEditor.this, tree, resources.getString("prop.insert.tip"), JOptionPane.OK_CANCEL_OPTION
@@ -234,7 +233,7 @@ public class BlueprintEditor extends JSplitPane {
       // .. OK?
       if (option != JOptionPane.OK_OPTION) return;
       // add those properties
-      TagPath[] paths = tree.getSelection();
+      paths = tree.getSelection();
       for (int p=0;p<paths.length; p++) {
         html.insert(
           "<prop path="+paths[p].toString()+">"+(p==paths.length-1?"":"\n"), 

@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 /**
@@ -276,15 +278,37 @@ public class MetaProperty {
   /**
    * Static - paths for given type
    */
-  public static TagPath[] getPaths(TagPath prefix, Class type) {
-//  FIXME
-//       // some static tracking
-//       propPaths.add(path);
-//       if (PropertyEvent.class.isAssignableFrom(type))
-//         eventPaths.add(path);    
-    return new TagPath[0];
+  public static TagPath[] getPaths(Class property) {
+    // prepare result
+    List result = new ArrayList();
+    // loop through roots
+    getPathsRecursively(roots, property, new Stack(), result);
+    // done
+    return TagPath.getPaths(result);
   }
-
+  
+  private static void getPathsRecursively(Map map, Class property, Stack stack, Collection result) {
+    
+    // loop subs
+    Iterator it = map.values().iterator();
+    while (it.hasNext()) {
+      MetaProperty sub = (MetaProperty)it.next();
+      // something worthwhile to dive into?
+      if (sub.type==null) continue;
+      // trace it
+      stack.push(sub.tag);
+      // type match?
+      if (sub.type!=null&&property.isAssignableFrom(sub.type)) 
+        result.add(new TagPath(stack));
+      // recurse into
+      getPathsRecursively(sub.allSubs, property, stack, result);
+      // rewind
+      stack.pop();
+    }
+    
+    // done
+  }
+    
   /**
    * Parers for our descriptors
    */

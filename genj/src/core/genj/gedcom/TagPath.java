@@ -19,7 +19,10 @@
  */
 package genj.gedcom;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 /**
@@ -101,6 +104,21 @@ public class TagPath {
     // done
   }
 
+  /**
+   * Constructor for TagPath
+   * @param path path as colon separated string value a:b:c
+   * @exception IllegalArgumentException in case format isn't o.k.
+   */
+  public TagPath(Stack path) throws IllegalArgumentException {
+    // grab stack elements
+    tags = new String[path.size()];
+    for (int i=0; i<tags.length; i++) {
+      tags[i] = path.get(i).toString();
+      hash += tags[i].hashCode();
+    }
+    // done
+  }
+  
   /**
    * Wether this path starts with prefix
    */
@@ -218,6 +236,18 @@ public class TagPath {
   public static TagPath[] getPaths(Collection c) {
     return (TagPath[])c.toArray(new TagPath[c.size()]);
   }
-  
+
+  /**
+   * Filter TagPath by entities
+   */
+  public static TagPath[] filter(TagPath[] paths, int entity) {
+    List result = new ArrayList(paths.length);
+    String tag = Gedcom.getTagFor(entity);
+    for (int i=0; i<paths.length; i++) {
+    	if (paths[i].get(0).equals(tag)) 
+        result.add(paths[i]);
+    }
+    return getPaths(result);
+  }
 
 } //TagPath

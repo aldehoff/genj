@@ -140,7 +140,7 @@ public class PropertyEvent extends Property {
    * Returns the list of paths which identify PropertyEvents
    */
   public static TagPath[] getTagPaths() {
-    return MetaProperty.getPaths(null, PropertyEvent.class);  
+    return MetaProperty.getPaths(PropertyEvent.class);  
   }
 
 } //PropertyEvent
