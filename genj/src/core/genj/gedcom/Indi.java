@@ -286,19 +286,32 @@ public class Indi extends PropertyIndi implements Entity {
       showDay   |= (pit.getDay()   != null);
     }
 
-    if (end.get(Calendar.YEAR) < birthCal.get(Calendar.YEAR))
-      return "";                        // would be positive BC years
+    int ageYears  = end.get(Calendar.YEAR)  - birthCal.get(Calendar.YEAR);
+    int ageMonths = end.get(Calendar.MONTH) - birthCal.get(Calendar.MONTH);
+    int ageDays   = end.get(Calendar.DATE)  - birthCal.get(Calendar.DATE);
 
-    // there is no such thing as year 0, so add 1 and subtract it later
-    end.add(Calendar.YEAR,  -birthCal.get(Calendar.YEAR) + 1);
-    end.add(Calendar.MONTH, -birthCal.get(Calendar.MONTH));
-    end.add(Calendar.DATE,  -birthCal.get(Calendar.DATE));
+    if ((ageMonths < 0) || ((ageMonths == 0) && (ageDays < 0))) {
+      ageYears  -= 1;
+      ageMonths += 12;
+    }
+    if (ageDays < 0) {
+      ageMonths -= 1;
+      // a lot of work just to get the number of days in the previous month
+      Calendar tmp = Calendar.getInstance();
+      tmp.set(birthCal.get(Calendar.YEAR), birthCal.get(Calendar.MONTH), 1);
+      tmp.add(Calendar.YEAR,  ageYears);
+      tmp.add(Calendar.MONTH, ageMonths);
+      ageDays += tmp.getActualMaximum(Calendar.DATE);
+    }
 
-    StringBuffer buf = new StringBuffer((end.get(Calendar.YEAR) - 1) + "y");
+    if (ageYears < 0)
+      return "";                        // bogus info
+
+    StringBuffer buf = new StringBuffer(ageYears + "y");
     if (showMonth) {
-      buf.append(" ").append(end.get(Calendar.MONTH)).append("m");
+      buf.append(" ").append(ageMonths).append("m");
       if (showDay) {
-        buf.append(" ").append(end.get(Calendar.DATE)).append("d");
+        buf.append(" ").append(ageDays).append("d");
       }
     }
 
