@@ -18,7 +18,6 @@ Future
   O OBJE-FILE reference should allow to start external viewer via mouse-click
   O TimelineView should use more vertical space if available to allow for more text (horizontal)
   O Configurable selection of Views in Applet
-  O ReportMakeHTMLTable should order by something
   O Reports should translate dates to a more readable format (e.g. MAR becomes March)
   O EditView/PropertySex should allow for male/female/unknown
   O Localize Print texts
@@ -38,6 +37,8 @@ Future
   C Applet opens detail browser window on (new "Browser Details") button click and not single click
   C Applet's default-size for windows is now 640/480
   B Link to image in help HTML is broken (resedit.html)
+  I ReportMakeHTMLTable orders alphabetically by name
+  I Javadoc now has links to Sun's Java2 API
 
 1.7 - Mar 08 2002
 
