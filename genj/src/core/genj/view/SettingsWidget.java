@@ -80,6 +80,13 @@ import javax.swing.JPanel;
   }
 
   /**
+   * Gets the ViewSettingsWidget to display
+   */
+  protected Component getViewSettingsWidget() {
+    return vsWidget;
+  }
+
+  /**
    * Sets the ViewSettingsWidget to display
    */
   protected void setViewSettingsWidget(Component vsw) {

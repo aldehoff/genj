@@ -112,6 +112,25 @@ public class ViewManager {
 
     // done
   }
+  
+  /**
+   * Closes settings for given view settings component
+   */
+  public void closeSettings(Component view) {
+    
+    // is there a frame for the setting?
+    JFrame frame = App.getInstance().getFrame("settings");
+    if (frame==null) return;
+    
+    // check the SettingsWidget
+    SettingsWidget sw = (SettingsWidget)frame.getContentPane().getComponent(0);
+    if (sw.getViewSettingsWidget()!=view) return;
+    
+    // close the settings frame
+    frame.dispose();
+    
+    // done
+  }
 
   /**
    * Opens settings for given view settings component

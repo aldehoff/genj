@@ -57,6 +57,9 @@ import javax.swing.border.TitledBorder;
   /** the toolbar we're using */
   private JToolBar bar;
   
+  /** the settings for this view */
+  private JComponent settings;
+  
   /** 
    * Constructor
    */
@@ -86,10 +89,10 @@ import javax.swing.border.TitledBorder;
       .setContainer(bar);
 
     // .. a button for editing the View's settings
-    JComponent settings = factory.createSettingsComponent(view);
+    settings = factory.createSettingsComponent(view);
     if (settings!=null) {
       settings.setBorder(new TitledBorder(frame.getTitle()));
-      bh.create(new ActionOpenSettings(settings));
+      bh.create(new ActionOpenSettings());
       isBar = true;
     }
   
@@ -112,43 +115,8 @@ import javax.swing.border.TitledBorder;
   }
   
   /**
-   * Action - print view
-   */
-  private class ActionPrint extends ActionDelegate {
-    /** the renderer */
-    private PrintRenderer renderer;
-    /** the frame */
-    private Frame frame;
-    /** constructor */
-    protected ActionPrint(PrintRenderer r, Frame f) {
-      renderer=r;
-      frame=f;
-      super.setImage(Images.imgPrint).setTip("view.print.tip");
-    }
-    /** run */
-    protected void execute() {
-      Printer.print(frame, renderer, new PrintProperties(frame.getTitle()));
-    }
-  } //ActionOpenSettings
-  
-  /**
-   * Action - open the settings of a view
-   */
-  private class ActionOpenSettings extends ActionDelegate {
-    /** the settings widget */
-    private Component settings;
-    /** constructor */
-    protected ActionOpenSettings(Component settings) {
-      this.settings=settings;
-      super.setImage(Images.imgSettings).setTip("view.settings.tip");
-    }
-    /** run */
-    protected void execute() {
-      ViewManager.getInstance().openSettings(settings);
-    }
-  } //ActionOpenSettings
-  
-  /**
+   * When adding components we fix a Toolbar's sub-component's
+   * orientation
    * @see java.awt.Container#addImpl(Component, Object, int)
    */
   protected void addImpl(Component comp, Object constraints, int index) {
@@ -177,4 +145,49 @@ import javax.swing.border.TitledBorder;
     // done
   }
 
+  /**
+   * @see javax.swing.JComponent#removeNotify()
+   */
+  public void removeNotify() {
+    // delegate
+    super.removeNotify();
+    // close property editor if open
+    ViewManager.getInstance().closeSettings(settings);
+    // done
+  }
+  
+  /**
+   * Action - print view
+   */
+  private class ActionPrint extends ActionDelegate {
+    /** the renderer */
+    private PrintRenderer renderer;
+    /** the frame */
+    private Frame frame;
+    /** constructor */
+    protected ActionPrint(PrintRenderer r, Frame f) {
+      renderer=r;
+      frame=f;
+      super.setImage(Images.imgPrint).setTip("view.print.tip");
+    }
+    /** run */
+    protected void execute() {
+      Printer.print(frame, renderer, new PrintProperties(frame.getTitle()));
+    }
+  } //ActionOpenSettings
+  
+  /**
+   * Action - open the settings of a view
+   */
+  private class ActionOpenSettings extends ActionDelegate {
+    /** constructor */
+    protected ActionOpenSettings() {
+      super.setImage(Images.imgSettings).setTip("view.settings.tip");
+    }
+    /** run */
+    protected void execute() {
+      ViewManager.getInstance().openSettings(settings);
+    }
+  } //ActionOpenSettings
+  
 } //ViewWidget
