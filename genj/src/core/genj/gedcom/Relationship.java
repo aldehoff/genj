@@ -96,7 +96,11 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#getName()
      */
     public String getName() {
-      return Gedcom.resources.getString(xref.getTag()+".name");
+      // is there only one target type?
+      if (targetTypes.length==1)
+        return Gedcom.getNameFor(targetTypes[0], false);
+      // there must be a more generic translation otherwise
+      return Gedcom.resources.getString("rel.xref."+xref.getTag());
     }
     
     /**
