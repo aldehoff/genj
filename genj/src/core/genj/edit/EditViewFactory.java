@@ -269,7 +269,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
 
       // Recheck with the user
       int option = JOptionPane.showConfirmDialog(
-        null, new Object[]{ new JScrollPane(text), new JLabel(resources.getString("confirm.proceed"))}, resources.getString("title"), 0
+        target, new Object[]{ new JScrollPane(text), new JLabel(resources.getString("confirm.proceed"))}, resources.getString("title"), 0
       );
       // .. Yes or NO?
       if (option != JOptionPane.YES_OPTION) {

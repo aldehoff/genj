@@ -435,7 +435,7 @@ public class ViewManager {
     MenuSelectionManager.defaultManager().clearSelectedPath();
 
     // create a popup
-    MenuHelper mh = new MenuHelper();
+    MenuHelper mh = new MenuHelper().setTarget(container);
     JPopupMenu popup = mh.createPopup("");
 
     // fill the context actions

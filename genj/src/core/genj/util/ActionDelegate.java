@@ -19,6 +19,7 @@
  */
 package genj.util;
 
+import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,10 +31,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 /**
  * An Action
@@ -50,10 +47,11 @@ public abstract class ActionDelegate implements Cloneable {
     ASYNC_NEW_INSTANCE   = 2;
   
   /** attributes */
-  public ImgIcon img,roll,toggle;
-  public String  txt;
-  public String  stxt;
-  public String  tip;
+  public ImgIcon   img,roll,toggle;
+  public String    txt;
+  public String    stxt;
+  public String    tip;
+  public Component target;
   
   /** whether we're async or not */
   private int async = ASYNC_NOT_APPLICABLE;
@@ -171,6 +169,14 @@ public abstract class ActionDelegate implements Cloneable {
    */
   protected void handleThrowable(String phase, Throwable t) {
     Debug.log(Debug.ERROR, this, "Action failed in "+phase, t); 
+  }
+  
+  /**
+   * Set frame
+   */
+  public ActionDelegate setTarget(Component t) {
+    target = t;
+    return this;
   }
   
   /**

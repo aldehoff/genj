@@ -45,6 +45,7 @@ public class MenuHelper  {
   private Vector collection       = null;
   private Resources resources     = null;
   private boolean enabled         = true;
+  private JComponent target       = null;
 
   /** Setters */    
   public MenuHelper popMenu() { menus.removeElement(menus.lastElement()); return this; }
@@ -52,6 +53,7 @@ public class MenuHelper  {
   public MenuHelper setCollection(Vector set) { collection=set; return this; }
   public MenuHelper setResources(Resources set) { resources=set; return this; }
   public MenuHelper setEnabled(boolean set) { enabled=set; return this; }
+  public MenuHelper setTarget(JComponent set) { target=set; return this; }
 
   /**
    * Creates a menubar
@@ -199,6 +201,9 @@ public class MenuHelper  {
       
     // put it in collection if applicable
     if (collection!=null) collection.addElement(result);
+
+    // propagate target
+    if (target!=null) action.setTarget(target);
     
     // done
     return result;
