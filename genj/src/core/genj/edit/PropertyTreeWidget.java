@@ -152,7 +152,7 @@ public class PropertyTreeWidget extends TreeWidget {
   /**
    * Our model
    */
-  public class Model implements TreeModel, GedcomListener {
+  private class Model implements TreeModel, GedcomListener {
 
     private Object DUMMY = new Object();
 
@@ -173,6 +173,7 @@ public class PropertyTreeWidget extends TreeWidget {
      */
     public Model(Gedcom gedcom) {
       this.gedcom=gedcom;
+      setEntity(null);
     }          
   
     /**
@@ -180,13 +181,16 @@ public class PropertyTreeWidget extends TreeWidget {
      */
     public void setEntity(Entity entity) {
       // remember history
-      if (root!=null) {
+      if (entity!=null) {
         history.push(root);
         if (history.size()>16) history.removeElementAt(0);
       }
-      // change
+      // remember
       root = entity;
+      // notify
       fireStructureChanged();
+      // make sure we don't show null-root
+      setRootVisible(root!=null);
     }
   
     /**
@@ -351,8 +355,7 @@ public class PropertyTreeWidget extends TreeWidget {
         }
         // Is this a show stopper at this point?
         if (affected==true) {
-          root=null;
-          fireStructureChanged();
+          setEntity(null);
           return;
         }
         // continue
