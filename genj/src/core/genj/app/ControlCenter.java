@@ -292,31 +292,19 @@ public class ControlCenter extends JPanel {
     // Done
     return result;
   }
-
+  
   /**
-   * A FileChoose that accepts .ged and looks into the appropriate
-   * directory for Gedcom files
+   * Create a file chooser
    */
-  private class GedcomFileChooser extends FileChooser {
+  private FileChooser createFileChooser(String title, String action) {
+    
+    return new FileChooser(
+      ControlCenter.this, title, action, "ged",
+      EnvironmentChecker.getProperty(ControlCenter.this,
+        new String[] { "genj.gedcom.dir", "user.home" } , ".", "choose gedcom file")
+     );
 
-    /**
-     * Constructor
-     */
-    protected GedcomFileChooser(String title, String action) {
-      super(
-        ControlCenter.this,
-        title,
-        action,
-        new String[] { "ged" },
-        "GEDCOM (*.ged)",
-        EnvironmentChecker.getProperty(
-          ControlCenter.this,
-          new String[] { "genj.gedcom.dir" },
-          ".",
-          "choose gedcom file"));
-    }
-
-  } //GedcomFileChooser
+  }
 
   /**
    * Action - toggle text&images
@@ -607,7 +595,7 @@ public class ControlCenter extends JPanel {
     private void createNew() {
 
       // pop a chooser
-      FileChooser chooser = new GedcomFileChooser(
+      FileChooser chooser = createFileChooser(
         resources.getString("cc.create.title"),
         resources.getString("cc.create.action")
       );
@@ -647,7 +635,7 @@ public class ControlCenter extends JPanel {
     private Origin chooseFile() {
 
       // pop a chooser      
-      FileChooser chooser = new GedcomFileChooser(
+      FileChooser chooser = createFileChooser(
           resources.getString("cc.open.title"),
           resources.getString("cc.open.action")
       );
@@ -862,7 +850,7 @@ public class ControlCenter extends JPanel {
       if (ask || origin==null || !origin.isFile()) {
 
         // .. choose file
-        FileChooser chooser = new GedcomFileChooser(
+        FileChooser chooser = createFileChooser(
           resources.getString("cc.save.title"),
           resources.getString("cc.save.action")
         );
@@ -1070,7 +1058,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - View
    */
-  protected class ActionView extends ActionDelegate {
+  private class ActionView extends ActionDelegate {
     /** which ViewFactory */
     private ViewFactory factory;
     /** constructor */

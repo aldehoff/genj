@@ -30,65 +30,23 @@ import javax.swing.filechooser.FileFilter;
  */
 public class FileChooser extends JFileChooser {
 
-  private String[] extensions;
-  private String   description;
-
+  /** the textual command on the non-cancel button */
   private String command;
 
+  /** the owning component */
   private JComponent owner;
-
-  /**
-   * Filter Definition
-   */
-  class Filter extends FileFilter {
-
-    // LCD
-
-    /**
-     * Files to accept
-     */
-    public boolean accept(File f) {
-
-      // directory is o.k.
-      if (f.isDirectory()) {
-        return true;
-      }
-
-      String s= f.getName();
-      int i =s.lastIndexOf('.');
-      if (i>0) {
-
-        for (int e=0;e<extensions.length;e++) {
-          if (extensions[e].equals( s.substring(i+1).toLowerCase() )) {
-            return true;
-          }
-        }
-
-      }
-      return false;
-    }
-
-    /**
-     * Description
-     */
-    public String getDescription() {
-      return description;
-    }
-
-    // EOC
-  }
 
   /**
    * Constructor
    */
-  public FileChooser(JComponent owner, String title, String command, String[] fileExtensions, String fileDescription, String baseDir) {
+  public FileChooser(JComponent owner, String title, String command, String extension, String baseDir) {
+    
     super(baseDir!=null?baseDir:".");
+    
     this.owner  = owner;
     this.command= command;
-    extensions  = fileExtensions;
-    description = fileDescription;
 
-    Filter filter = new Filter();
+    Filter filter = new Filter(extension);
     addChoosableFileFilter(filter);
     setFileFilter(filter);
     setDialogTitle(title);
@@ -98,6 +56,53 @@ public class FileChooser extends JFileChooser {
    * show it
    */
   public int showDialog() {
-    return showDialog(owner,command);
+    int rc = showDialog(owner,command);
+    // unselect selected file if not 'ok'
+    if (rc!=0)
+      setSelectedFile(null);
+    return rc;
   }
-}
+
+
+  /**
+   * Filter Definition
+   */
+  private class Filter extends FileFilter {
+    
+    /** extension we're looking for */
+    private String ext;
+
+    /**
+     * Constructor
+     */
+    private Filter(String extension) {
+      ext = extension;
+    }
+
+    /**
+     * Files to accept
+     */
+    public boolean accept(File f) {
+
+      // directory is o.k.
+      if (f.isDirectory())
+        return true;
+
+      // check extension
+      String name = f.getName();
+      
+      int i = name.lastIndexOf('.');
+      
+      return i>0 && ext.equals(name.substring(i+1).toLowerCase()); 
+    }
+
+    /**
+     * Description
+     */
+    public String getDescription() {
+      return "*."+ext;
+    }
+
+  } //Filter
+
+} //FileChooser
