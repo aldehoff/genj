@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Blueprint/Renderer Options
  */
-public class Options implements OptionProvider {
+public class Options extends OptionProvider {
 
   /**
    * Access to our options (one)

@@ -63,6 +63,13 @@ public class OptionsWidget extends JPanel {
    * Constructor
    */
   public OptionsWidget(WindowManager manager) {
+    this(manager, null);
+  }
+  
+  /**
+   * Constructor
+   */
+  public OptionsWidget(WindowManager manager, List options) {
 
     this.manager = manager;
         
@@ -72,6 +79,10 @@ public class OptionsWidget extends JPanel {
     // layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(table));    
+    
+    // options?
+    if (options!=null)
+      setOptions(options);
 
     // done
   }

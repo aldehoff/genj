@@ -22,16 +22,17 @@ package genj.option;
 import genj.util.Registry;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import sun.misc.Service;
+
 
 /**
  * An option is simply a wrapped public field of a type 
  * with meta-information (JavaBean 'light')
  */
 public abstract class Option {
+  
+  private List listeners;
   
   /**
    * Accessor - name of this option
@@ -53,66 +54,23 @@ public abstract class Option {
    */
   public abstract OptionUI getUI(OptionsWidget widget);
   
-  /** all known options */
-  private static List options;
-
   /**
-   * Restore options values from registry
+   * Add listener
    */
-  public static void restoreAll(Registry registry) {
-
-    registry = new Registry(registry, "options");
-
-    // loop over all options
-    Iterator it = getAllOptions().iterator();
-    while (it.hasNext()) try {
-      ((Option)it.next()).restore(registry);
-    } catch (Throwable t) {}
-    
-    // done
+  public void addOptionListener(OptionListener listener) {
+    if (listeners==null)
+      listeners = new ArrayList(4);
+    listeners.add(listener);
   }
   
   /**
-   * Persist option values to registry
+   * Trigger for change notification
    */
-  public static void persistAll(Registry registry) {
-    
-    registry = new Registry(registry, "options");
-
-    // loop over all options
-    Iterator it = getAllOptions().iterator();
-    while (it.hasNext()) try {
-      ((Option)it.next()).persist(registry);
-    } catch (Throwable t) {
-    }
-    
-    // done
-    
-  }
-  
-  /**
-   * Static Accessor - all options available from OptionProviders
-   */
-  public static List getAllOptions() {  
-    
-    // known?
-    if (options!=null)
-      return options;    
-
-    // collect    
-    options = new ArrayList(32);
-
-    // prepare options
-    Iterator it = Service.providers(OptionProvider.class);
-    while (it.hasNext()) {
-      // one provider at a time
-      OptionProvider provider = (OptionProvider)it.next();
-      // one option at a time
-      options.addAll(provider.getOptions());
-    }
-
-    // done
-    return options;
+  protected void fireChangeNotification() {
+    if (listeners==null)
+      return;
+    for (int i = 0; i < listeners.size(); i++) 
+      ((OptionListener)listeners.get(i)).optionChanged(this);
   }
   
 } //Option

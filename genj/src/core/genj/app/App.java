@@ -21,7 +21,7 @@ package genj.app;
 
 import genj.Version;
 import genj.gedcom.Gedcom;
-import genj.option.Option;
+import genj.option.OptionProvider;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
@@ -89,7 +89,7 @@ public class App {
     final Registry registry = new Registry("genj");
     
     // initialize options
-    Option.restoreAll(registry);
+    OptionProvider.restoreAll(registry);
 
     // get app resources now
     Resources resources = Resources.get(App.class);
@@ -122,7 +122,7 @@ public class App {
         // close all frames we know
         winMgr.closeAll();
         // persist options
-        Option.persistAll(registry);
+        OptionProvider.persistAll(registry);
         // Store registry 
         Registry.persist();      
         // Flush Debug

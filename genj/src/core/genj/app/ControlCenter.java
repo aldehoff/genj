@@ -25,7 +25,7 @@ import genj.io.GedcomEncryptionException;
 import genj.io.GedcomIOException;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
-import genj.option.Option;
+import genj.option.OptionProvider;
 import genj.option.OptionsWidget;
 import genj.print.PrintManager;
 import genj.util.ActionDelegate;
@@ -1056,7 +1056,7 @@ public class ControlCenter extends JPanel {
       Options.getInstance().setWindowManager(windowManager);
       // create widget for options
       OptionsWidget widget = new OptionsWidget(windowManager);
-      widget.setOptions(Option.getAllOptions());
+      widget.setOptions(OptionProvider.getAllOptions());
       // open dialog
       windowManager.openDialog("options", "Options", WindowManager.IMG_INFORMATION, widget, CloseWindow.OK(), ControlCenter.this);
       // done

@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * View options
  */
-public class Options implements OptionProvider {
+public class Options extends OptionProvider {
 
   /** singleton */
   private final static Options instance = new Options();

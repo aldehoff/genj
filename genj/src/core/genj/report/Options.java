@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.7 $ $Author: nmeier $ $Date: 2004-06-25 10:02:21 $
+ * $Revision: 1.8 $ $Author: nmeier $ $Date: 2004-10-28 16:04:58 $
  */
 package genj.report;
 
@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Options for report package
  */
-public class Options implements OptionProvider {
+public class Options extends OptionProvider {
     
     /** 'singleton' instance */
     private static Options instance = new Options();

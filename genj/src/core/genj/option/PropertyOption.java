@@ -347,6 +347,8 @@ public abstract class PropertyOption extends Option {
       } catch (Throwable t) {
         // not much we can do about that - ignored
       }
+      // notify
+      fireChangeNotification();
     }
 
     /**
@@ -376,6 +378,8 @@ public abstract class PropertyOption extends Option {
       return
         File.class.isAssignableFrom(type)   ||
         String.class.isAssignableFrom(type) ||
+        Float.TYPE.isAssignableFrom(type) ||
+        Double.TYPE.isAssignableFrom(type) ||
         Long.TYPE.isAssignableFrom(type) ||
         Integer.TYPE.isAssignableFrom(type) ||
         Boolean.TYPE.isAssignableFrom(type);
