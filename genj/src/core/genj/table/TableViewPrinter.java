@@ -30,6 +30,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Dimension2D;
 
@@ -149,7 +150,7 @@ public class TableViewPrinter implements Printer {
     else
       rowHeights[row] = max(dim.getHeight(), rowHeights[row], pageHeight - headerHeight - pad);
     // keep width
-    colWidths[col] = max(dim.getWidth(), colWidths[col], pageWidth);
+    colWidths[col] = max(dim.getWidth(), colWidths[col], pageWidth/4);
     // done
   }
   
@@ -228,9 +229,15 @@ public class TableViewPrinter implements Printer {
     // need property
     if (prop==null)
       return;
+    // set clip
+    Shape clip = g.getClip();
+    g.clip(r);
     // grab renderer and render
     PropertyRenderer.get(prop).render(g, r, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
+    // restore clip
+    g.setClip(clip);
     // done
   }
   
 } //TreePrintRenderer
+
