@@ -128,7 +128,7 @@ public abstract class Change {
     private int      pos;
     private Property added;
     
-    public PropertyAdd(Property owner, int pos, Property added) {
+    PropertyAdd(Property owner, int pos, Property added) {
       super(owner);
       this.added = added;
       this.pos = pos;
