@@ -471,5 +471,22 @@ public class Indi extends Entity {
       
     return delta.toString();
   }
+  
+  /**
+   * Calculate indi's age at given point in time or null if an error occured
+   */
+  public Delta getAge(PointInTime pit) {
+  
+    // try to get birth    
+    PropertyDate pbirth = getBirthDate();
+    if (pbirth==null) 
+      return null;
     
+    Delta delta = Delta.get(pbirth.getStart(), pit);
+    if (delta==null)
+      return null;
+      
+    return delta;
+  }  
+  
 } //Indi
