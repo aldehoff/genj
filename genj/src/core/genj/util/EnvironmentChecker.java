@@ -52,5 +52,39 @@ public class EnvironmentChecker {
     }
     return false;
   }
+
+  /**
+   * Returns a (system) property
+   */
+  public static String getProperty(Object receipient, String[] keys, String fallback, String msg) {
+    // see if one key fits
+    String key = null, val, postfix;
+    try {
+      for (int i=0; i<keys.length; i++) {
+        // get the key
+        key = keys[i];
+        // there might be a prefix in there
+        int pf = key.indexOf('/');
+        if (pf<0) pf = key.length();
+        postfix = key.substring(pf);
+        key = key.substring(0,pf);
+        // ask the System
+        val = System.getProperty(key);
+        // found it ?
+        if (val!=null) {
+          Debug.log(Debug.INFO, receipient, "Using system-property "+key+'='+val+" ("+msg+')');
+          return val+postfix;
+        }
+        // next one
+        Debug.log(Debug.INFO, receipient, "Tried system-property "+key+" ("+msg+')');
+      }
+    } catch (Throwable t) {
+      Debug.log(Debug.WARNING, receipient, "Couldn't access system-properties", t);
+    }
+    // fallback
+    Debug.log(Debug.INFO, receipient, "Using fallback for system-property "+key+'='+fallback+" ("+msg+')');
+    return fallback;
+  }
+
   
 }
