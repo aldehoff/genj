@@ -25,7 +25,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.52 2004-03-08 22:55:28 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.53 2004-03-14 22:17:42 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -34,20 +34,22 @@ public class ReportGedcomStatistics extends Report {
     
     /** number of digits allowed in the fraction portion of a number */
     public int fractionDigits = 2;
+    
     /** if individuals should be analyzed */
     public boolean analyzeIndividuals = true;
     /** whether individuals with min. / max. age should be reported */
     public boolean reportAgeToIndis = true;
+    
     /** if families should be analyzed */
     public boolean analyzeFamilies = true;
     /** whether individuals with min. / max. marriage age should be reported */
     public boolean reportIndisToMarriageAge = true;
-    
     /** whether indis with min/max age at child birth should be reported */
     public int reportFamsToChildren = 1;
     public String[] reportFamsToChildrens = { i18n("choice.all"), i18n("choice.minmax"), i18n("choice.none")};
     /** whether individuals with min. / max. age at child birth should be reported */
     public boolean reportIndisToChildBirth = true;
+    
     /** whether the surnames should be analyzed */
     public boolean analyzeLastNames = true;
     /** whether individuals with min. / max. age should be reported */
@@ -61,24 +63,56 @@ public class ReportGedcomStatistics extends Report {
     public boolean reportLastNamesToChildBirths = true;
     /** whether we sort last names by name or frequency */
     public boolean sortLastNamesByName = true;
+    
     /** whether occupatoins should be analyzed */
     public boolean analyzeOccupations = true;
     /** whether the occupations should be sorted by name or frequency */
     public boolean sortOccupationsByName = true;
     /** whether individuals with occucaptions should be reported */
     public boolean reportIndisToOccupations = true;
+    
     /** if birth places should be analyzed */
     public boolean analyzeBirthPlaces = true;
     /** whether indis to birthplaces should be reported */
     public boolean reportIndisToBirthPlaces = true;
     /** whether we sort birth places by name or freqeuncy */
     public boolean sortBirthPlacesByName = true;
+    
+    /** if baptism places should be analyzed */
+    public boolean analyzeBaptismPlaces = true;
+    /** whether indis to marriageplaces should be reported */
+    public boolean reportIndisToBaptismPlaces = true;
+    /** whether we sort marriage places by name or freqeuncy */
+    public boolean sortBaptismPlacesByName = true;
+    
     /** if marriage places should be analyzed */
     public boolean analyzeMarriagePlaces = true;
     /** whether indis to marriageplaces should be reported */
     public boolean reportIndisToMarriagePlaces = true;
     /** whether we sort marriage places by name or freqeuncy */
     public boolean sortMarriagePlacesByName = true;
+    
+    /** if emigration places should be analyzed */
+    public boolean analyzeEmigrationPlaces = true;
+    /** whether indis to marriageplaces should be reported */
+    public boolean reportIndisToEmigrationPlaces = true;
+    /** whether we sort marriage places by name or freqeuncy */
+    public boolean sortEmigrationPlacesByName = true;
+    
+    /** if immigration places should be analyzed */
+    public boolean analyzeImmigrationPlaces = true;
+    /** whether indis to marriageplaces should be reported */
+    public boolean reportIndisToImmigrationPlaces = true;
+    /** whether we sort marriage places by name or freqeuncy */
+    public boolean sortImmigrationPlacesByName = true;
+    
+    /** if naturalization places should be analyzed */
+    public boolean analyzeNaturalizationPlaces = true;
+    /** whether indis to marriageplaces should be reported */
+    public boolean reportIndisToNaturalizationPlaces = true;
+    /** whether we sort marriage places by name or freqeuncy */
+    public boolean sortNaturalizationPlacesByName = true;
+    
     /** if death places should be analyzed */
     public boolean analyzeDeathPlaces = true;
     /** whether indis to deathplaces should be reported */
@@ -154,28 +188,32 @@ public class ReportGedcomStatistics extends Report {
     
     /** to store data about places */
     private static class StatisticsPlaces {
-        /** which places the statistic is about (BIRTH||DEATH||MARRIAGE) */
+        /** which places the statistic is about (BIRTH|BAPTISM|MARRIAGE|EMIGRATION|IMMIGRATION|NATURALIZATION|DEATH) */
         int which = -1;
-        /** number of known places */
-        int knownPlaces = 0;
+        /** entities with known places */
+        int entitiesWithKnownPlaces = 0;
         /** places sorted by name */
         ReferenceSet places = new ReferenceSet();
     }
     
-    /** for StatisticsIndividuals.which */
+    // constants for statistics of individuals
     private static final int ALL = 1;
     private static final int MALES = 2;
     private static final int FEMALES = 3;
     private static final int UNKNOWN = 4;
-
-    /** some other flags */
+    
+    // constants for analyze, report and print methods
     private static final int INDIS = 5;
     private static final int CHILDBIRTH = 6;
     
-    /** for StatisticsPlaces.which */
-    private static final int MARRIAGE = 7;
-    private static final int BIRTH = 8;
-    private static final int DEATH = 9;
+    // constants for statistics of places
+    private static final int BIRTH = 7;
+    private static final int BAPTISM = 8;
+    private static final int MARRIAGE = 9;
+    private static final int EMIGRATION = 10;
+    private static final int IMMIGRATION = 11;
+    private static final int NATURALIZATION = 12;
+    private static final int DEATH = 13;
     
     /** for indent calculation */
     private static final int SPACES_PER_LEVEL = 5;
@@ -187,7 +225,7 @@ public class ReportGedcomStatistics extends Report {
     private static final String FRONT_SIXTH_LEVEL = "   ";
     
     /** this report's version */
-    public static final String VERSION = "2.2";
+    public static final String VERSION = "2.3";
     
     /** Returns the version of the report
      */
@@ -227,7 +265,12 @@ public class ReportGedcomStatistics extends Report {
      */
     public void start(Object context) {
         // stop report when no output categories choosen
-        if((analyzeIndividuals==false)&&(analyzeLastNames==false)&&(analyzeOccupations==false)&&(analyzeFamilies==false)&&(analyzeBirthPlaces==false)&&(analyzeMarriagePlaces==false)&&(analyzeDeathPlaces==false))
+        if((analyzeIndividuals==false)&&(analyzeLastNames==false)&&
+        (analyzeOccupations==false)&&(analyzeFamilies==false)&&
+        (analyzeBirthPlaces==false)&&(analyzeBaptismPlaces==false)&&
+        (analyzeMarriagePlaces==false)&&(analyzeEmigrationPlaces==false)&&
+        (analyzeImmigrationPlaces==false)&&(analyzeNaturalizationPlaces==false)&&
+        (analyzeDeathPlaces==false))
             return;
         
         Gedcom gedcom = (Gedcom)context;
@@ -241,7 +284,7 @@ public class ReportGedcomStatistics extends Report {
         StatisticsLastNames lastNames = null;
         StatisticsOccupations occupations = null;
         StatisticsFamilies families=null;
-        StatisticsPlaces births=null, marriages=null, deaths=null;
+        StatisticsPlaces births=null, baptisms=null, marriages=null, emigrations=null, immigrations=null, naturalizations=null, deaths=null;
         
         // now do the desired analyzes
         if(analyzeIndividuals) {
@@ -256,9 +299,10 @@ public class ReportGedcomStatistics extends Report {
             analyzeIndividuals(indis, all, males, females, unknown);
         }
         
-        if(analyzeOccupations) {
-            occupations = new StatisticsOccupations();
-            analyzeOccupations(indis, occupations);
+        if(analyzeFamilies) {
+            families = new StatisticsFamilies();
+            families.number = fams.length;
+            analyzeFamilies(fams, null, families);
         }
         
         if(analyzeLastNames) {
@@ -266,10 +310,9 @@ public class ReportGedcomStatistics extends Report {
             analyzeLastNames(indis, lastNames);
         }
         
-        if(analyzeFamilies) {
-            families = new StatisticsFamilies();
-            families.number = fams.length;
-            analyzeFamilies(fams, null, families);
+        if(analyzeOccupations) {
+            occupations = new StatisticsOccupations();
+            analyzeOccupations(indis, occupations);
         }
         
         if(analyzeBirthPlaces) {
@@ -278,10 +321,34 @@ public class ReportGedcomStatistics extends Report {
             analyzePlaces(indis, births);
         }
         
+        if(analyzeBaptismPlaces) {
+            baptisms = new StatisticsPlaces();
+            baptisms.which = BAPTISM;
+            analyzePlaces(indis, baptisms);
+        }
+        
         if(analyzeMarriagePlaces) {
             marriages = new StatisticsPlaces();
             marriages.which = MARRIAGE;
             analyzePlaces(fams, marriages);
+        }
+        
+        if(analyzeEmigrationPlaces) {
+            emigrations = new StatisticsPlaces();
+            emigrations.which = EMIGRATION;
+            analyzePlaces(indis, emigrations);
+        }
+        
+        if(analyzeImmigrationPlaces) {
+            immigrations = new StatisticsPlaces();
+            immigrations.which = IMMIGRATION;
+            analyzePlaces(indis, immigrations);
+        }
+        
+        if(analyzeNaturalizationPlaces) {
+            naturalizations = new StatisticsPlaces();
+            naturalizations.which = NATURALIZATION;
+            analyzePlaces(indis, naturalizations);
         }
         
         if(analyzeDeathPlaces) {
@@ -313,17 +380,37 @@ public class ReportGedcomStatistics extends Report {
             reportOccupations(occupations);
         
         if(analyzeBirthPlaces) {
-            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("birthPlaces")+": "+new Integer(births.knownPlaces));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("birthPlaces")+": "+new Integer(births.places.getKeys().size()));
             reportPlaces(reportIndisToBirthPlaces, sortBirthPlacesByName, births);
         }
         
+        if(analyzeBaptismPlaces) {
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("baptismPlaces")+": "+new Integer(baptisms.places.getKeys().size()));
+            reportPlaces(reportIndisToBaptismPlaces, sortBaptismPlacesByName, baptisms);
+        }
+        
         if(analyzeMarriagePlaces) {
-            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("marriagePlaces")+": "+new Integer(marriages.knownPlaces));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("marriagePlaces")+": "+new Integer(marriages.places.getKeys().size()));
             reportPlaces(reportIndisToMarriagePlaces, sortMarriagePlacesByName, marriages);
         }
         
+        if(analyzeEmigrationPlaces) {
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("emigrationPlaces")+": "+new Integer(emigrations.places.getKeys().size()));
+            reportPlaces(reportIndisToEmigrationPlaces, sortEmigrationPlacesByName, emigrations);
+        }
+        
+        if(analyzeImmigrationPlaces) {
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("immigrationPlaces")+": "+new Integer(immigrations.places.getKeys().size()));
+            reportPlaces(reportIndisToImmigrationPlaces, sortImmigrationPlacesByName, immigrations);
+        }
+        
+        if(analyzeNaturalizationPlaces) {
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("naturalizationPlaces")+": "+new Integer(naturalizations.places.getKeys().size()));
+            reportPlaces(reportIndisToNaturalizationPlaces, sortNaturalizationPlacesByName, naturalizations);
+        }
+        
         if(analyzeDeathPlaces) {
-            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("deathPlaces")+": "+new Integer(deaths.knownPlaces));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("deathPlaces")+": "+new Integer(deaths.places.getKeys().size()));
             reportPlaces(reportIndisToDeathPlaces, sortDeathPlacesByName, deaths);
         }
     }
@@ -350,34 +437,89 @@ public class ReportGedcomStatistics extends Report {
      * @param places to store results
      */
     private void analyzePlaces(Entity[] e, StatisticsPlaces places) {
+                    
+        Property prop;
+        Property[] props;
         
-        Property prop=null;
         for(int i=0;i<e.length;i++) {
+            
+            prop = null;
+            props = null;
             
             switch(places.which) {
                 
                 case BIRTH:
-                    prop = e[i].getProperty(new TagPath("INDI:BIRT:PLAC"));
+                    props = new Property[1];
+                    props[0] = e[i].getProperty(new TagPath("INDI:BIRT:PLAC"));
                     break;
                     
-                case DEATH:
-                    prop = e[i].getProperty("DEAT");
+                case BAPTISM:
+                    ArrayList baps = new ArrayList();
+                    prop = e[i].getProperty("BAPM");
+                    if (prop!=null) {
+                        prop = e[i].getProperty(new TagPath("INDI:BAPM:PLAC"));
+                        baps.add(prop);
+                    }
+                    prop = e[i].getProperty("BAPL");
+                    if (prop!=null) {
+                        prop = e[i].getProperty(new TagPath("INDI:BAPL:PLAC"));
+                        baps.add(prop);
+                    }
+                    prop = e[i].getProperty("CHR");
+                    if (prop!=null) {
+                        prop = e[i].getProperty(new TagPath("INDI:CHR:PLAC"));
+                        baps.add(prop);
+                    }
+                    prop = e[i].getProperty("CHRA");
+                    if (prop!=null) {
+                        prop = e[i].getProperty(new TagPath("INDI:CHRA:PLAC"));
+                        baps.add(prop);
+                    }
+                    props = (Property[])baps.toArray(new Property[baps.size()]);
+                    break;
+                    
+                case EMIGRATION:
+                    prop = e[i].getProperty("EMIG");
                     if (prop!=null)
-                        prop = e[i].getProperty(new TagPath("INDI:DEAT:PLAC"));
+                        props = e[i].getProperties(new TagPath("INDI:EMIG:PLAC"), Property.QUERY_VALID_TRUE);
+                    break;
+                    
+                case IMMIGRATION:
+                    prop = e[i].getProperty("IMMI");
+                    if (prop!=null)
+                        props = e[i].getProperties(new TagPath("INDI:IMMI:PLAC"), Property.QUERY_VALID_TRUE);
+                    break;
+                    
+                case NATURALIZATION:
+                    prop = e[i].getProperty("NATU");
+                    if (prop!=null)
+                        props = e[i].getProperties(new TagPath("INDI:NATU:PLAC"), Property.QUERY_VALID_TRUE);
                     break;
                     
                 case MARRIAGE:
                     prop = e[i].getProperty("MARR");
                     if (prop!=null)
-                        prop = e[i].getProperty(new TagPath("FAM:MARR:PLAC"));
+                        props = e[i].getProperties(new TagPath("FAM:MARR:PLAC"), Property.QUERY_VALID_TRUE);
                     break;
+                    
+                case DEATH:
+                    props = new Property[1];
+                    prop = e[i].getProperty("DEAT");
+                    if (prop!=null)
+                        props[0] = e[i].getProperty(new TagPath("INDI:DEAT:PLAC"), Property.QUERY_VALID_TRUE);
+                    break;
+                    
             }
             
-            if (prop!=null) {
-                String place = prop.getValue();
-                if (place.length()>0) {
-                    places.places.add(place, e[i]);
-                    places.knownPlaces++;
+            if ((props!=null) && (props.length>0)) {
+                for(int j=0;j<props.length;j++) {
+                    if(props[j]!=null) {
+                        String place = props[j].getValue();
+                        if (place.length()>0) {
+                            if(places.places.add(place, e[i]))                            
+                                places.entitiesWithKnownPlaces++;
+                        }
+                    }
                 }
             }
         }
@@ -528,14 +670,18 @@ public class ReportGedcomStatistics extends Report {
     private void analyzeOccupations(Entity[] e, StatisticsOccupations occupations) {
         
         Property[] prop = null;
+        String occu = "";
         for(int i=0;i<e.length;i++) {
             Indi indi = (Indi)e[i];
             occupations.numberIndis++;
+            // an individual might have more than one occupation
             prop = e[i].getProperties("OCCU");
             if (prop!=null) {
-                // an individual might have more than one occupation
-                for(int j=0;j<prop.length;j++)
-                    occupations.occupations.add(prop[j].getValue(), e[i]);
+                for(int j=0;j<prop.length;j++) {
+                    occu = prop[j].getValue();
+                    if(occu.length()>0)
+                        occupations.occupations.add(occu, e[i]);
+                }
             }
         }
     }
@@ -709,7 +855,7 @@ public class ReportGedcomStatistics extends Report {
     /**
      * prints individuals (all, males, females, unknown gender, wifes, husbands, same last name, ...)
      * @param printIndis which indis should be printed (1=all, 2=min./max. age, 3=none)
-     * @param lastName null if all indis of a gedcom file are reported or 
+     * @param lastName null if all indis of a gedcom file are reported or
      * a string value if indis with same last name should be reported
      * @param numberAllIndis number of inidividuals in the gedcom file (only needed when last names are reported)
      */
@@ -772,7 +918,7 @@ public class ReportGedcomStatistics extends Report {
     }
     
     
-    /** prints the output for families ("real" families or persons with same last name) 
+    /** prints the output for families ("real" families or persons with same last name)
      *
      * @param families the statistic
      * @param reportIndisToMarriageAge if indis to marriage ages should be printed
@@ -856,7 +1002,7 @@ public class ReportGedcomStatistics extends Report {
      *
      * @param reportIndisToPlaces if indis to places should be reported
      * @param sortPlacesByName if places should be sorted by name
-     * @param places our statistic 
+     * @param places our statistic
      */
     private void reportPlaces(boolean reportIndisToPlaces, boolean sortPlacesByName, StatisticsPlaces places) {
         
@@ -865,7 +1011,7 @@ public class ReportGedcomStatistics extends Report {
         while(p.hasNext()) {
             place = (String)p.next();
             int number = places.places.getSize(place);
-            println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+place+": "+number+" ("+roundNumber((double)number/(double)places.knownPlaces*100, fractionDigits)+"%)");
+            println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+place+": "+number+" ("+roundNumber((double)number/(double)places.entitiesWithKnownPlaces*100, fractionDigits)+"%)");
             if(reportIndisToPlaces) {
                 ArrayList entities = new ArrayList(places.places.getReferences(place));
                 String[] output = new String[2];
@@ -962,8 +1108,8 @@ public class ReportGedcomStatistics extends Report {
         println();
     }
     
-    /** returns the front string for the getIndent() calls 
-      * @param indent level for indent printing
+    /** returns the front string for the getIndent() calls
+     * @param indent level for indent printing
      */
     private String getFront(int indent) {
         switch(indent) {
@@ -976,5 +1122,5 @@ public class ReportGedcomStatistics extends Report {
             default: return "";
         }
     }
-
+    
 } //ReportGedcomStatistics
