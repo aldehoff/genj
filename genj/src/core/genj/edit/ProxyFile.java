@@ -240,7 +240,7 @@ import javax.swing.JScrollPane;
      */
     protected ActionZoom(int zOOm) {
       zoom = zOOm;
-      setText(zoom+"%");
+      setText(zoom==0?"1:1":zoom+"%");
     }
     /**
      * @see genj.util.ActionDelegate#execute()
@@ -271,7 +271,7 @@ import javax.swing.JScrollPane;
     protected void setZoom(int zOOm) {
       zoom = zOOm;
       view.registry.put("file.zoom", zoom);
-      setToolTipText(zoom+"%");
+      setToolTipText(zoom==0 ? "1:1" : zoom+"%");
       revalidate();
       repaint();
     }
@@ -293,25 +293,27 @@ import javax.swing.JScrollPane;
     protected void paintComponent(Graphics g) {
       // no image?
       if (img==null) return;
-      // Paint in physical size
+      // Maybe we'll paint in physical size
       UnitGraphics ug = new UnitGraphics(g, 1, 1);
-      
-      // calculate factor - the image's dpi might be
-      // different than that of the rendered surface
-      float factor = (float)zoom/100;
-      double 
-        scalex = factor,
-        scaley = factor;
+      // not 1:1?
+      if (zoom!=0) {
+        // calculate factor - the image's dpi might be
+        // different than that of the rendered surface
+        float factor = (float)zoom/100;
+        double 
+          scalex = factor,
+          scaley = factor;
+          
+        Point idpi = img.getResolution();
+        if (idpi!=null) {
+          Point dpi = view.manager.getDPI();
+          
+          scalex *= (double)dpi.x/idpi.x;
+          scaley *= (double)dpi.y/idpi.y;
+        }
         
-      Point idpi = img.getResolution();
-      if (idpi!=null) {
-        Point dpi = view.manager.getDPI();
-        
-        scalex *= (double)dpi.x/idpi.x;
-        scaley *= (double)dpi.y/idpi.y;
+        ug.scale(scalex,scaley);
       }
-      
-      ug.scale(scalex,scaley);
       // paint
       ug.draw(img, 0, 0, 0, 0);
       // done
@@ -322,6 +324,9 @@ import javax.swing.JScrollPane;
     public Dimension getPreferredSize() {
       // no image?
       if (img==null) return new Dimension(0,0);
+      // 1:1?
+      if (zoom==0)
+        return new Dimension(img.getIconWidth(), img.getIconHeight());
       // check physical size
       Dimension dim = img.getSize(view.manager.getDPI());
       float factor = (float)zoom/100;
@@ -353,6 +358,7 @@ import javax.swing.JScrollPane;
       mh.createItem(new ActionZoom(100));
       mh.createItem(new ActionZoom(150));
       mh.createItem(new ActionZoom(200));
+      mh.createItem(new ActionZoom(  0));
       // lookup associations
       String suffix = PropertyFile.getSuffix(file);
       Iterator it = FileAssociation.get(suffix).iterator();
