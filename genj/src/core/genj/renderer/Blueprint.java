@@ -23,16 +23,6 @@ package genj.renderer;
  * Encapsulating name and html for rendering an entity */
 public class Blueprint {
   
-  /**
-   * Accessor - html
-   */
-  public String getHTML() {
-    return html;
-  }
-
-  /** the type this scheme is for */
-  private int type;
-  
   /** the name of this scheme */
   private String name;
   
@@ -40,22 +30,33 @@ public class Blueprint {
   private String html;
   
   /**
-   * Accessor - type    */
-  public int getType() {
-    return type;
-  }
-  
-  /**
-   * Accessor - type 
-   */
-  public void setType(int tYpe) {
-    type = tYpe;
-  }
-  
-  /**
    * Accessor - html
    */
   public void setHTML(String hTml) {
     html = hTml;
   }
+  
+  /**
+   * Accessor - html
+   */
+  public String getHTML() {
+    return html;
+  }
+
+  /**
+   * Accessor - name
+   */
+  public void setName(String nAme) {
+    name = nAme;
+  }
+  
+  /**
+   * Accessor - name
+   */
+  public String getName() {
+    return name;
+  }
+
+  
+  
 } //RenderingScheme

@@ -20,8 +20,7 @@
 package genj.entity;
 
 import genj.gedcom.Gedcom;
-import genj.renderer.Blueprint;
-import genj.renderer.BlueprintEditor;
+import genj.renderer.BlueprintList;
 import genj.util.ActionDelegate;
 import genj.view.ApplyResetSupport;
 import java.awt.BorderLayout;
@@ -46,7 +45,7 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
   private EntityView entityView; 
   
   /** the scheme editor */
-  private BlueprintEditor editor;
+  private BlueprintList blueprintList;
   
   /**
    * Constructor
@@ -68,14 +67,16 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
     });
     dropEntities.addActionListener((ActionListener)new ActionSelect().as(ActionListener.class));
     
-    // prepare a scheme editor
-    editor = new BlueprintEditor();
-    editor.set(view.gedcom, new Blueprint());
+    // prepare a blueprint list    
+    blueprintList = new BlueprintList();
     
     // do the layout
     setLayout(new BorderLayout());
     add(dropEntities, BorderLayout.NORTH);
-    add(editor, BorderLayout.CENTER);    
+    add(blueprintList, BorderLayout.CENTER);
+    
+    // reset
+    reset();    
     
     // done
   }
@@ -105,10 +106,14 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
    * @see genj.app.ViewSettingsWidget#reset()
    */
   public void reset() {
-    Blueprint s = new Blueprint();
-    s.setType(dropEntities.getSelectedIndex());
-    s.setHTML(entityView.getHtml(dropEntities.getSelectedIndex()));
-    editor.set(entityView.gedcom, s);
+//    Blueprint bp = new Blueprint();
+//    bp.setHTML(entityView.getHtml(dropEntities.getSelectedIndex()));
+//    
+//    editor.set(
+//      entityView.gedcom, 
+//      dropEntities.getSelectedIndex(),
+//      bp
+//    );
     // FIXME textHtml.setText(entityView.getHtml(unwrap(dropEntities.getSelectedItem())));
   }
 

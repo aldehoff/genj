@@ -63,6 +63,9 @@ public class BlueprintEditor extends Box {
   /** the gedcom we're looking at*/
   private Gedcom gedcom;
   
+  /** the type we're editing for */
+  private int type;
+  
   /** the current scheme */
   private Blueprint blueprint;
 
@@ -94,14 +97,14 @@ public class BlueprintEditor extends Box {
     // event listening
     html.getDocument().addDocumentListener(preview);
     // intial set
-    set(null,null);
+    set(null,0,null);
     // done
   }
   
   /**
    * Set Gedcom, Blueprint
    */
-  public void set(Gedcom geDcom, Blueprint scHeme) {
+  public void set(Gedcom geDcom, int tYpe, Blueprint scHeme) {
     boolean b;
     if (geDcom==null||scHeme==null) {
       gedcom = null;
@@ -109,6 +112,7 @@ public class BlueprintEditor extends Box {
       b = false;
     } else {
       gedcom = geDcom;
+      type = tYpe;
       blueprint = scHeme;
       html.setText(blueprint.getHTML());
       b = true;
@@ -166,7 +170,7 @@ public class BlueprintEditor extends Box {
     protected void execute() {
       // create a tree of available TagPaths
       TagPathTree tree = new TagPathTree(); 
-      tree.setPaths(TagPath.getUsedTagPaths(gedcom,blueprint.getType()));      
+      tree.setPaths(TagPath.getUsedTagPaths(gedcom,type));      
       // Recheck with the user
       int option = JOptionPane.showConfirmDialog(
         BlueprintEditor.this, tree, resources.getString("insert.tip"), JOptionPane.OK_CANCEL_OPTION
