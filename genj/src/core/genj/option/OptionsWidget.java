@@ -108,15 +108,28 @@ public class OptionsWidget extends JPanel {
    */
   public void removeNotify() {
     // make sure any edit is stopped
-    tree.stopEditing();
+    stopEditing();
     // continue
     super.removeNotify();
+  }
+  
+  /**
+   * Stop editing if currently ongoing
+   */
+  public void stopEditing() {
+    tree.stopEditing();
   }
   
   /**
    * Set options to display
    */
   public void setOptions(List set) {
+    
+    // stop editing
+    stopEditing();
+    
+    // clear current selection
+    tree.clearSelection();
     
     // check options - we don't keep any without ui
     ListIterator it = set.listIterator();
