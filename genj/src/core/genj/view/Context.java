@@ -22,6 +22,7 @@ package genj.view;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.util.swing.ImageIcon;
 
 import java.awt.Component;
 
@@ -182,6 +183,17 @@ public class Context {
    */
   public String toString() {
     return gedcom+"/"+entity+"/"+property;
+  }
+
+  /**
+   * An image representation
+   */
+  public ImageIcon getImage() {
+    if (property!=null)
+      return property.getImage(false);
+    if (entity!=null)
+      return entity.getImage(false);
+    return Gedcom.getImage();
   }
 
 } //Context
