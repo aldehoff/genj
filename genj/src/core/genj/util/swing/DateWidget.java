@@ -30,7 +30,6 @@ import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,8 +95,11 @@ public class DateWidget extends JPanel {
     widgetDay.addChangeListener(changeSupport);
     
     // Layout
-    setLayout(new FlowLayout(FlowLayout.LEFT));
+    NestedBlockLayout layout = new NestedBlockLayout(true, 1);
+    setLayout(layout);
     
+    add(widgetCalendar);
+
     String format;
     switch (new SimpleDateFormat().toPattern().charAt(0)) {
       case 'm': case 'M':
@@ -107,7 +109,6 @@ public class DateWidget extends JPanel {
       default: 
         add(widgetYear); add(widgetMonth); add(widgetDay ); format = "yyyy-mmm-dd"; break;
     }
-    add(widgetCalendar);
     
     widgetCalendar.setToolTipText(format);
     widgetDay.setToolTipText(format);
