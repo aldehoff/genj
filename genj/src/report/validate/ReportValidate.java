@@ -9,6 +9,7 @@ package validate;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.report.Report;
@@ -128,7 +129,6 @@ public class ReportValidate extends Report {
     println(" Still to do:");
     println(" + migrate all of Jerome's anomaly checks");
     println(" + discuss best way to word results");
-    println(" + add gedcom grammar checks");
     flush();
     
     // assuming Gedcom
@@ -141,9 +141,12 @@ public class ReportValidate extends Report {
     List issues = new ArrayList();
 
     // Loop through entities and test 'em
-    for (Iterator es=gedcom.getEntities().iterator();es.hasNext();) {
-      Entity e = (Entity)es.next();
-      test(e, new TagPath(e.getTag()), tests, issues);
+    for (int t=0;t<Gedcom.ENTITIES.length;t++) {
+      for (Iterator es=gedcom.getEntities(Gedcom.ENTITIES[t]).iterator();es.hasNext();) {
+        Entity e = (Entity)es.next();
+        TagPath path = new TagPath(e.getTag());
+        test(e, path, MetaProperty.get(path), tests, issues);
+      }
     }
     
     // any fixes proposed at all?
@@ -161,7 +164,7 @@ public class ReportValidate extends Report {
   /**
    * Test a property (recursively)
    */
-  private void test(Property prop, TagPath path, List tests, List issues) {
+  private void test(Property prop, TagPath path, MetaProperty meta, List tests, List issues) {
     // test tests
     for (int i=0, j=tests.size(); i<j; i++) {
       Test tst = (Test)tests.get(i);
@@ -177,9 +180,16 @@ public class ReportValidate extends Report {
       // for non-system, non-transient children
       Property child = prop.getProperty(i);
       if (child.isTransient()||child.isSystem()) continue;
+      // get child tag
+      String ctag = child.getTag();
+      // check if Gedcom grammar allows it
+      if (!meta.allows(ctag)) {
+        issues.add(new Issue(path+":"+ctag+" is not Gedcom compliant", MetaProperty.IMG_ERROR, child));
+        continue;
+      }
       // dive into
-      path.add(child.getTag());
-      test(child, path, tests, issues);
+      path.add(ctag);
+      test(child, path, meta.get(child.getTag(), false), tests, issues);
       path.pop();
       // next child
     }
@@ -193,11 +203,18 @@ public class ReportValidate extends Report {
     
     List result = new ArrayList();
 
+    // ******************** SPECIALIZED TESTS *******************************
+
     // non-valid properties
     result.add(new TestValid(isEmptyValueValid));
     
     // spouses with wrong gender
     result.add(new TestSpouseGender());
+
+    // non existing files
+    result.add(new TestFile());
+
+    // ****************** DATE COMPARISON TESTS *****************************
 
     // birth after death
     result.add(new TestDate("INDI:BIRT:DATE",TestDate.AFTER  ,"INDI:DEAT:DATE"));
@@ -214,13 +231,15 @@ public class ReportValidate extends Report {
     // marriage after divorce 
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:DIV:DATE"));
     
-    // marriage after death
+    // marriage after death of husband/wife
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:HUSB:INDI:BIRT:DATE"));
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:WIFE:INDI:BIRT:DATE"));
 
     // childbirth after death of mother
     result.add(new TestDate("FAM:CHIL"      ,"FAM:CHIL:INDI:BIRT:DATE", TestDate.AFTER  ,"FAM:WIFE:INDI:DEAT:DATE"));
 
+    // ************************* AGE TESTS **********************************
+    
     // max lifespane
     result.add(new TestAge ("INDI:DEAT:DATE","INDI", TestAge.OVER, maxLife));
     
@@ -237,11 +256,8 @@ public class ReportValidate extends Report {
     result.add(new TestAge ("FAM:MARR:DATE" ,"FAM:HUSB:INDI", TestAge.UNDER  ,minAgeMARR));
     result.add(new TestAge ("FAM:MARR:DATE" ,"FAM:WIFE:INDI", TestAge.UNDER  ,minAgeMARR));
 
-    // non existing files
-    result.add(new TestFile());
-
-    // done
+    // **********************************************************************
     return result;    
   }
 
-} //ReportValidate FAM:HUSB:BIRT:DATE
+} //ReportValidate
