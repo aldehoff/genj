@@ -70,9 +70,9 @@ class ProxyEvent extends Proxy {
     String age;
     if ("BIRT".equals(event.getTag())) {
       ageat+=" (today)";
-      age = indi.getAge(PointInTime.getNow());
+      age = indi.getAgeString(PointInTime.getNow());
     } else {
-      age = date!=null ? indi.getAge(date.getStart()) : "(unknown)";
+      age = date!=null ? indi.getAgeString(date.getStart()) : "(unknown)";
     }
     
     // layout

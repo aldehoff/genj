@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
  */
 public class PropertyDate extends Property {
 
-  private final static String TAG = "DATE";
+  /*package*/ final static String TAG = "DATE";
 
   /** time values */
   private PIT 
@@ -378,17 +378,17 @@ public class PropertyDate extends Property {
      */
     public void set(int d, int m, int y) {
 
-      // Remember change
+      // remember change
       noteModifiedProperty();
 
-      // Set it
+      // set it
       dateAsString=null;
       
       day   = d;
       month = m;
       year  = y;
   
-      // Done
+      // done
     }
     
     /**

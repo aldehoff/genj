@@ -90,11 +90,10 @@ public class Indi extends Entity {
 
     // Calculate BIRT|DATE
     PropertyDate p = (PropertyDate)getProperty(new TagPath("INDI:BIRT:DATE"),true);
-    if (p==null) {
+    if (p==null)
       return null;
-    }
 
-    // Return string value
+    // found
     return p;
   }
 
@@ -105,11 +104,10 @@ public class Indi extends Entity {
 
     // Calculate DEAT|DATE
     PropertyDate p = (PropertyDate)getProperty(new TagPath("INDI:DEAT:DATE"),true);
-    if (p==null) {
+    if (p==null)
       return null;
-    }
 
-    // Return string value
+    // found
     return p;
   }
   
@@ -449,16 +447,13 @@ public class Indi extends Entity {
   /**
    * Calculate indi's age at given point in time
    */
-  public String getAge(PointInTime pit) {
+  public String getAgeString(PointInTime pit) {
   
     // try to get birth    
     PropertyDate pbirth = getBirthDate();
     if (pbirth==null) return EMPTY_STRING;
-    PointInTime birth = pbirth.getStart();
-    if (!birth.isValid()) return EMPTY_STRING;
-      
-    // calculate
-    return birth.getDelta(pit);
+    
+    return PropertyAge.getAgeString(pbirth.getStart(), pit);
   }
     
 } //Indi

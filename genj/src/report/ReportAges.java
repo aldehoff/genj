@@ -114,7 +114,7 @@ public class ReportAges implements Report {
         PropertyEvent event = (PropertyEvent) prop;
         PropertyDate pDate = event.getDate(true);
         if (pDate != null) {
-          String indiAge = indi.getAge(pDate.getStart());
+          String indiAge = indi.getAgeString(pDate.getStart());
           String out = event.getTag() + ": " + pDate;
           if (indiAge.length() > 0)
              out += ", " + indiAge;
@@ -124,7 +124,7 @@ public class ReportAges implements Report {
     }
 
     // in case no DEAT, or if he were alive today
-    bridge.println("Since birth: " + indi.getAge(PointInTime.getNow()));
+    bridge.println("Since birth: " + indi.getAgeString(PointInTime.getNow()));
   }
 
 } //ReportAges

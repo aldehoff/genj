@@ -33,11 +33,6 @@ import java.awt.Label;
  */
 public class GridBagHelper {
 
-  private GridBagLayout layout;
-  private GridBagConstraints constraints;
-  private Container container;
-  private Insets insets = new Insets(0,0,0,0);
-
   public final static int
     FILL_HORIZONTAL =  1,
     FILL_VERTICAL   =  2,
@@ -46,6 +41,21 @@ public class GridBagHelper {
     GROW_HORIZONTAL = 16,
     GROW_VERTICAL   = 32,
     GROW_BOTH       = 64;
+
+  /** wrapped layout */
+  private GridBagLayout layout;
+  
+  /** cached constraints */
+  private GridBagConstraints constraints;
+  
+  /** managed container */
+  private Container container;
+  
+  /** preset insets */
+  private Insets presetInsets = new Insets(0,0,0,0);
+
+  /** the next preset parameter */
+  private int presetParameter = 0;
 
   /**
    * A filling component
@@ -89,7 +99,15 @@ public class GridBagHelper {
    * Sets insets to use
    */
   public GridBagHelper setInsets(Insets set) {
-    insets = set;
+    presetInsets = set;
+    return this;
+  }
+  
+  /**
+   * Sets parameters to use
+   */
+  public GridBagHelper setParameter(int set) {
+    presetParameter = set;
     return this;
   }
 
@@ -101,7 +119,7 @@ public class GridBagHelper {
    * @return Added component
    */
   public Component add(Component component,int x,int y) {
-    return add(component,x,y,1,1,0);
+    return add(component,x,y,1,1);
   }
 
   /**
@@ -114,7 +132,7 @@ public class GridBagHelper {
    * @return Added component
    */
   public Component add(Component component,int x,int y,int w,int h) {
-    return add(component,x,y,w,h,0);
+    return add(component,x,y,w,h,presetParameter);
   }
 
   /**
@@ -129,7 +147,7 @@ public class GridBagHelper {
    * @return Added component
    */
   public Component add(Component component,int x,int y,int w,int h,int parm) {
-    return add(component,x,y,w,h,parm,insets);
+    return add(component,x,y,w,h,parm,presetInsets);
   }
 
   /**

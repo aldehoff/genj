@@ -22,7 +22,6 @@ package genj.gedcom;
 import genj.util.WordBuffer;
 
 import java.util.Calendar;
-import java.util.StringTokenizer;
 
 /**
  * A point in time
@@ -69,14 +68,6 @@ public abstract class PointInTime implements Comparable {
     );      
   }  
   
-  /**
-   * Accessor to an immutable point in time
-   * @param delta a delta string @see getDelta()
-   */
-  public static PointInTime getDelta(String delta) {
-    return new Impl(delta);
-  }
-
   /**
    * Setter (implementation dependant)
    */
@@ -134,22 +125,29 @@ public abstract class PointInTime implements Comparable {
   }
     
   /**
+   * String representation (Gedcom format)
+   */
+  public String toGedcomString() {
+    return toString(new WordBuffer(),false).toString();
+  }
+    
+  /**
    * String representation
    */
   public WordBuffer toString(WordBuffer buffer, boolean localize) {
-    
-    if (!isValid()) return buffer;
     
     int 
       day = getDay(),
       month = getMonth(),
       year = getYear();
       
-    if (day>0) buffer.append(new Integer(day));
-    
-    buffer.append(getMonth(localize));
-    
-    if (year>0) buffer.append(new Integer(year));
+    if (year>0) {
+      if (month>=0&&month<MONTHS.length) {
+        if (day>0) buffer.append(new Integer(day));
+        buffer.append(getMonth(localize));
+      }    
+      buffer.append(new Integer(year));
+    }
     
     return buffer;
   }
@@ -200,88 +198,6 @@ public abstract class PointInTime implements Comparable {
   }
 
   /**
-   * Helper which returns given date in gedcom string-format
-   */
-  public static String getDateString(Calendar c) {
-
-    return c.get(Calendar.DAY_OF_MONTH)
-      + " " + MONTHS[c.get(Calendar.MONTH)]
-      + " " + c.get(Calendar.YEAR);
-
-  }
-
-  /**
-   * Calculate delta (1y 2m 3d)
-   * @return delta as string (e.g. 1y 2m 3d) or empty string 
-   */
-  public String getDelta(PointInTime other) {
-    return getDelta(this, other);
-  }
-  
-  /**
-   * Calculate delta (1y 2m 3d)
-   * @return delta as string (e.g. 1y 2m 3d) or empty string 
-   */
-  public static String getDelta(PointInTime earlier, PointInTime later) {
-
-    // valid?
-    if (!earlier.isValid()||!later.isValid())
-      return "";
-      
-    // ordering?
-    if (earlier.compareTo(later)>0) {
-      PointInTime p = earlier;
-      earlier = later;
-      later = p;
-    }
-
-    // grab earlier values  
-    int 
-      yearlier = earlier.getYear(),
-      mearlier = Math.max(0,earlier.getMonth()),
-      dearlier = Math.max(0,earlier.getDay  ());
-  
-    // age at what point in time?
-    int 
-      ylater = later.getYear(),
-      mlater = Math.max(0, later.getMonth()),
-      dlater = Math.max(0, later.getDay  ());
-    
-    // calculate deltas
-    int 
-      ydelta = ylater - yearlier,
-      mdelta = mlater - mearlier,
-      ddelta = dlater - dearlier;
-    
-    // check day
-    if (ddelta<0) {
-      // decrease months
-      mdelta -=1;
-      // increase days with days in previous month
-      Calendar c = Calendar.getInstance();
-      c.set(yearlier, mearlier, 1);
-      int days = c.getActualMaximum(Calendar.DATE);
-      ddelta = dlater + (days-dearlier); 
-    }
-  
-    // check month now<then
-    if (mdelta<0) {
-      // decrease years
-      ydelta -=1;
-      // increase months
-      mdelta +=12;
-    } 
-  
-    // calculate output
-    WordBuffer buffer = new WordBuffer();
-    if (ydelta>0) buffer.append(ydelta+"y");
-    if (mdelta>0) buffer.append(mdelta+"m");
-    if (ddelta>0) buffer.append(ddelta+"d");
-    return buffer.toString();    
-  }
-
-  
-  /**
    * a default impl
    */
   private static class Impl extends PointInTime {
@@ -296,47 +212,6 @@ public abstract class PointInTime implements Comparable {
       day = d;
       month = m;
       year = y;
-    }
-    
-    /**
-     * Constructor for delta
-     */
-    private Impl(String delta) {
-      this(0,0,0);
-      
-      // try to parse delta string tokens
-      StringTokenizer tokens = new StringTokenizer(delta);
-      fail: while (tokens.hasMoreTokens()) { 
-        
-        String token = tokens.nextToken();
-        int len = token.length();
-        
-        // check 1234x
-        if (len<2) return;
-        for (int i=0;i<len-1;i++) {
-          if (!Character.isDigit(token.charAt(i))) return;
-        }
-        // check last
-        switch (token.charAt(len-1)) {
-          case 'y' : year = s2i(token, 0, token.length()-1)  ; break;
-          case 'm' : month= s2i(token, 0, token.length()-1)-1; break;
-          case 'd' : day  = s2i(token, 0, token.length()-1)-1; break;
-          default  : return;
-        }
-      }
-      
-      // did everything we could do
-    }
-    
-    /**
-     * Calculate int from string 
-     */
-    private int s2i(String str, int start, int end) {
-      try {
-        return Integer.parseInt(str.substring(start, end));
-      } catch (NumberFormatException e) {
-        return -1;
-      }
     }
     
     /**

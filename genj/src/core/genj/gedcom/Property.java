@@ -38,10 +38,10 @@ public abstract class Property implements Comparable {
     UNSUPPORTED_TAG = "Unsupported Tag";
 
   /** parent of this property */
-  protected Property parent=null;
+  private Property parent=null;
   
   /** children of this property */
-  protected List childs = new ArrayList();
+  private List childs = new ArrayList();
   
   /** images */
   protected ImageIcon image, imageErr;

@@ -139,8 +139,8 @@ public class ButtonHelper {
       result.setBorderPainted(isBorder.booleanValue());
     if (isFocusable!=null) // This should be setFocusable which comes with JDK1.4
       result.setRequestFocusEnabled(isFocusable.booleanValue()); 
-    if (isEnabled!=null) 
-      result.setEnabled(isEnabled.booleanValue());
+    if (isEnabled!=null||!action.enabled) 
+      result.setEnabled( !action.enabled ? false : isEnabled.booleanValue());
       
     // listening
     result.addActionListener((ActionListener)action.as(ActionListener.class));
