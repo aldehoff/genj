@@ -20,6 +20,7 @@
 package genj.util.swing;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
@@ -190,6 +191,10 @@ public class SortableTableHeader extends JTableHeader {
       // find out which column
       int col = columnAtPoint(e.getPoint());
       if (col<0) return;
+      // check rect
+      if (Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR).equals(getCursor())
+        ||Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR).equals(getCursor()))
+        return;
       // model that cares?
       TableModel model = getTable().getModel();
       if (!(model instanceof SortableTableModel)) return;
