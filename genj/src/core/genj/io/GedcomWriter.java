@@ -283,6 +283,10 @@ public class GedcomWriter implements Trackable {
     line(+0, "NAME", "GenealogyJ");
     line(-1);
     line(+0, "DEST", "ANY");
+    line(+0, "GEDC", "");
+    line(+1, "VERS", "5.5");
+    line(+0, "FORM", "Lineage-Linked");
+    line(-1);
     line(+0, "CHAR", encoding);
     line(+0, "FILE", file);
     line(+0, "DATE", date);
