@@ -20,10 +20,10 @@
 package genj.edit;
 
 import genj.edit.beans.PropertyBean;
-import genj.edit.beans.XRefBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -34,31 +34,22 @@ import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ColumnLayout;
-import genj.util.swing.ImageIcon;
 import genj.view.Context;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
+import java.awt.Font;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.StringTokenizer;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -70,62 +61,86 @@ import javax.swing.event.ChangeListener;
  */
 /*package*/ class BasicEditor extends Editor implements GedcomListener {
 
-  // beans for given entity
-  private final static String[] PATHS = { 
-    "INDI:NAME", 
-    "INDI:SEX", 
-    "INDI:BIRT:DATE", 
-    "INDI:BIRT:PLAC", 
-    "INDI:DEAT:DATE",  
-    "INDI:DEAT:PLAC",
-    "INDI:OCCU",
-    "INDI:OCCU:DATE",
-    "INDI:OCCU:PLAC",
-    "INDI:RESI:DATE",
-    "INDI:RESI:ADDR",
-    "INDI:RESI:ADDR:CITY",
-    "INDI:RESI:ADDR:POST",
-    "INDI:OBJE:TITL",
-    "INDI:OBJE:FILE", 
-    "INDI:NOTE",
-    
-    "FAM:MARR:DATE",    "FAM:MARR:PLAC",
-    "FAM:DIV:DATE",
-    "FAM:DIV:PLAC",
-    "FAM:OBJE:TITL",
-    "FAM:OBJE:FILE", 
-    "FAM:NOTE",
-    
-    "OBJE:TITL",
-    "OBJE:FORM",
-    "OBJE:BLOB",
-    "OBJE:NOTE",
-    
-    "NOTE:NOTE",
-    
-    "REPO:NAME",
-    "REPO:ADDR",
-    "REPO:ADDR:CITY",
-    "REPO:ADDR:POST",
-    "REPO:NOTE",
-    
-    "SOUR:AUTH",
-    "SOUR:TITL",
-    "SOUR:TEXT",
-    "SOUR:OBJE:TITL",
-    "SOUR:OBJE:FILE",
-    "SOUR:NOTE",
-    
-    "SUBM:NAME",
-    "SUBM:ADDR",
-    "SUBM:ADDR:CITY",
-    "SUBM:ADDR:POST",
-    "SUBM:OBJE:TITL",
-    "SUBM:OBJE:FILE",
-    "SUBM:LANG",
-    "SUBM:RFN",
-    "SUBM:RIN"
-  };
+  private final static String PAGE = 
+    "$INDI\n"+
+    " INDI:NAME INDI:SEX\n" + 
+    "$INDI:BIRT\n" + 
+    " INDI:BIRT:DATE\n" + 
+    " INDI:BIRT:PLAC\n" + 
+    "$INDI:DEAT\n" + 
+    " INDI:DEAT:DATE\n" +  
+    " INDI:DEAT:PLAC\n" +
+    "$INDI:OCCU\n" +
+    " INDI:OCCU\n" +
+    " INDI:OCCU:DATE\n" +
+    " INDI:OCCU:PLAC\n" +
+    "$INDI:RESI\n" +
+    " INDI:RESI:DATE\n" +
+    " INDI:RESI:ADDR\n" +
+    "$INDI:RESI:ADDR:CITY INDI:RESI:ADDR:CITY\n" +
+    "$INDI:RESI:ADDR:POST INDI:RESI:ADDR:POST\t" +
+    "$INDI:OBJE\n" +
+    "$INDI:OBJE:TITL INDI:OBJE:TITL\n" + 
+    " INDI:OBJE:FILE\n" + 
+    "$INDI:NOTE\n" +
+    " INDI:NOTE";
+  
+//  // beans for given entity
+//  private final static String[] PATHS = { 
+//    "INDI:NAME", 
+//    "INDI:SEX", 
+//    "INDI:BIRT:DATE", 
+//    "INDI:BIRT:PLAC", 
+//    "INDI:DEAT:DATE",  
+//    "INDI:DEAT:PLAC",
+//    "INDI:OCCU",
+//    "INDI:OCCU:DATE",
+//    "INDI:OCCU:PLAC",
+//    "INDI:RESI:DATE",
+//    "INDI:RESI:ADDR",
+//    "INDI:RESI:ADDR:CITY",
+//    "INDI:RESI:ADDR:POST",
+//    "INDI:OBJE:TITL",
+//    "INDI:OBJE:FILE", 
+//    "INDI:NOTE",
+//    
+//    "FAM:MARR:DATE",//    "FAM:MARR:PLAC",
+//    "FAM:DIV:DATE",
+//    "FAM:DIV:PLAC",
+//    "FAM:OBJE:TITL",
+//    "FAM:OBJE:FILE", 
+//    "FAM:NOTE",
+//    
+//    "OBJE:TITL",
+//    "OBJE:FORM",
+//    "OBJE:BLOB",
+//    "OBJE:NOTE",
+//    
+//    "NOTE:NOTE",
+//    
+//    "REPO:NAME",
+//    "REPO:ADDR",
+//    "REPO:ADDR:CITY",
+//    "REPO:ADDR:POST",
+//    "REPO:NOTE",
+//    
+//    "SOUR:AUTH",
+//    "SOUR:TITL",
+//    "SOUR:TEXT",
+//    "SOUR:OBJE:TITL",
+//    "SOUR:OBJE:FILE",
+//    "SOUR:NOTE",
+//    
+//    "SUBM:NAME",
+//    "SUBM:ADDR",
+//    "SUBM:ADDR:CITY",
+//    "SUBM:ADDR:POST",
+//    "SUBM:OBJE:TITL",
+//    "SUBM:OBJE:FILE",
+//    "SUBM:LANG",
+//    "SUBM:RFN",
+//    "SUBM:RIN"
+//  };
   
 
   /** colors for tabborders */
@@ -161,9 +176,6 @@ import javax.swing.event.ChangeListener;
   /** bean container */
   private JPanel beanPanel;
   
-  /** link container */
-  private JPanel linkPanel;
-  
   /** actions */
   private ActionDelegate    
     ok   = new OK(), 
@@ -192,8 +204,7 @@ import javax.swing.event.ChangeListener;
     this.registry = registry;
 
     // create panels for beans and links
-    beanPanel = new JPanel(new ColumnLayout(6));
-    linkPanel = new JPanel(new ColumnLayout(100));
+    beanPanel = new JPanel();
     
     // create panel for actions
     JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -205,7 +216,6 @@ import javax.swing.event.ChangeListener;
     setLayout(new BorderLayout());
     add(header                    , BorderLayout.NORTH );
     add(new JScrollPane(beanPanel), BorderLayout.CENTER);
-//    add(new JScrollPane(linkPanel), BorderLayout.EAST);
     add(buttons                   , BorderLayout.SOUTH );
 
     // done
@@ -282,59 +292,73 @@ import javax.swing.event.ChangeListener;
 
     // remove all current beans
     beanPanel.removeAll();
-    linkPanel.removeAll();
     path2panels.clear();
     path2beans.clear();
+    
+    // setup new layout for bean panel
+    ColumnLayout layout = new ColumnLayout();
+    beanPanel.setLayout(layout);
 
     // setup for new entity
-    if (entity!=null) {
+    if (entity instanceof Indi) {
 
-      // create beans for all configured paths
-      for (int i=0; i<PATHS.length; i++) {
-  
-        // an applicable path?
-        if (!PATHS[i].startsWith(entity.getTag()+':'))
-          continue;
-
-        TagPath path = new TagPath(PATHS[i]);
-  
-        // analyze & create if necessary
-        MetaProperty meta = MetaProperty.get(path);
-        Property prop = entity.getProperty(path);
-        if (prop == null || prop instanceof PropertyXRef)
-          prop = meta.create("");
-  
-        // prepare bean 
-        PropertyBean bean = PropertyBean.get(prop);
-        bean.init(entity.getGedcom(), prop, manager, registry);
-
-        ColumnLayout.setWeight(bean, bean.getWeight());
-  
-        // listen to bean changes
-        bean.addChangeListener(changeCallback);
+      // create beans for configured page
+      StringTokenizer page = new StringTokenizer(PAGE, "\t\n ", true);
+      while (page.hasMoreTokens()) {
         
-        // keep it
-        path2beans.put(path, bean);
-  
-        // add to corect panel
-        getPanel(path).add(bean);
-  
-      }
-
-// FIXME need to add paths for INDI:FAMS, INDI:FAMC, FAM:HUSB, FAM:WIFE, FAM:CHIL 
-      // create links
-      Iterator xrefs = entity.getProperties(PropertyXRef.class).iterator();
-      while (xrefs.hasNext()) {
-        PropertyXRef xref = (PropertyXRef)xrefs.next();
-        if (xref.isValid()) {
-          linkPanel.add(new JLabel(Gedcom.getName(xref.getTag())));
-          XRefBean bean = new XRefBean();
-          bean.init(entity.getGedcom(), xref, manager, registry);
-          ColumnLayout.setWeight(bean, new Point2D.Double(1.0,0));
-          linkPanel.add(bean);
+        String token = page.nextToken();
+        if (token.equals(" "))
+          continue;
+        if (token.equals("\n")) {
+          layout.startNextRow(beanPanel);
+          continue;
         }
+        if (token.equals("\t")) {
+          layout.startNextColumn(beanPanel);
+          continue;
+        }
+        
+        // text or bean?
+        boolean text = token.startsWith("$");
+        if (text)
+          token = token.substring(1);
+        TagPath path = new TagPath(token);
+        
+        // get meta information for path
+        MetaProperty meta = MetaProperty.get(path);
+  
+        // create text or bean
+        if (text) {
+          // add text
+          JLabel label = new JLabel(meta.getName());
+          if (path.length()<3)
+            label.setFont(label.getFont().deriveFont(Font.BOLD));
+          beanPanel.add(label);
+        } else {
+          // resolve prop for bean
+          Property prop = entity.getProperty(path);
+          if (prop == null || prop instanceof PropertyXRef)
+            prop = meta.create("");
+  
+          // prepare bean 
+          PropertyBean bean = PropertyBean.get(prop);
+          bean.init(entity.getGedcom(), prop, manager, registry);
+          path2beans.put(path, bean);
+          
+          // add bean
+          beanPanel.add(bean, bean.getWeight());
+  
+          // listen to bean changes
+          bean.addChangeListener(changeCallback);
+
+        }
+        
+        // contribute to layout
+        //ColumnLayout.setWeight(bean, bean.getWeight());
+        
       }
 
+      // FIXME need to add paths for INDI:FAMS, INDI:FAMC, FAM:HUSB, FAM:WIFE, FAM:CHIL 
     }
     
     // start without ok and cancel
@@ -346,80 +370,6 @@ import javax.swing.event.ChangeListener;
     repaint();
 
     // done    
-  }
-  
-  /**
-   * Resolve a panel for given path
-   * <pre>
-   *  +-----------+
-   *  |N+--------+|
-   *  |A|        ||
-   *  |M|        ||
-   *  |E+--------+|
-   *  |           |
-   *  |B+--------+|
-   *  |I|P+-----+||
-   *  |R|L|     |||
-   *  |T|A|     |||
-   *  | |C+-----+||
-   *  | |        ||
-   *  | |D+-----+||
-   *  | |A|     |||
-   *  | |T|     |||
-   *  | |E+-----+||
-   *  | +--------+|
-   *  |           |
-   *  +-----------+
-   * </pre>
-   */
-  private JComponent getPanel(final TagPath path) {
-    
-    // already known?
-    JPanel result = (JPanel)path2panels.get(path);
-    if (result!=null)
-      return result;
-      
-    // root -> use main bean panel
-    if (path.length()==1)
-      return beanPanel;
-
-
-    // create border & panel for it
-    MetaProperty meta = MetaProperty.get(path);
-    TabBorder border = new TabBorder(meta.getName(), meta.getImage());
-
-    result = new JPanel();
-    result.setLayout(new ColumnLayout(100));
-    result.setBorder(border);
-    result.setToolTipText(meta.getName());
-
-    // get parent 
-    JComponent parent = getPanel(new TagPath(path, path.length()-1));
-
-    // check color
-    if (parent.getBorder() instanceof TabBorder) {
-      TabBorder tb = (TabBorder)parent.getBorder();
-      border.setForeground(tb.getForeground());
-      border.setBackground(tb.getBackground());
-    } else {
-      border.setBackground(COLORS[parent.getComponentCount()&7]);
-      border.setForeground(Color.WHITE);
-    }
-    
-    // add to parent panel
-//    if (meta.getType()==PropertyEvent.class) {
-//      JTabbedPane tabs = new JTabbedPane();
-//      tabs.add("0", result);
-//      parent.add(tabs);
-//    } else {
-      parent.add(result);
-//    }
-  
-    // remember
-    path2panels.put(path, result);
-
-    // done
-    return result;
   }
 
   /**
@@ -510,131 +460,5 @@ import javax.swing.event.ChangeListener;
     }
   
   } //Cancel
-
-  /**
-   * A special broder that shows a tab on the left
-   */
-  public static class TabBorder implements Border {
-
-    private String title;
-    private ImageIcon img;
-    private Color 
-      background = Color.GRAY,
-      foreground = Color.WHITE;
-    
-    /**
-     * Constructor
-     */
-    public TabBorder(String title, ImageIcon img) {
-      this.title = title;
-      this.img   = img;
-    }
-
-    /**
-     * our insets
-     */    
-    public Insets getBorderInsets(Component c) {
-      
-      // height of font
-      int fh = c.getFontMetrics(c.getFont()).getHeight();
-      
-      // default
-      int 
-        top = 1,
-        bottom = 1;
-        
-      // 1st in parent with same border?
-      Container parent = c.getParent();
-      if (parent instanceof JComponent) {
-        if ( ((JComponent)parent).getBorder() instanceof TabBorder) {
-          
-          if (parent.getComponent(0)==c)
-            top = 0;
-          if (parent.getComponent(parent.getComponentCount()-1)==c)
-            bottom = 0;
-        }
-      }
-      
-      // done
-      return new Insets(top, fh+2, bottom, 1);
-    }
-
-    /**
-     * yes, we're opaque
-     */
-    public boolean isBorderOpaque() {
-      return true;
-    }
-    
-    /**
-     * Accessor - background color
-     */
-    public void setBackground(Color set) {
-      background = set;
-    }
-    
-    /**
-     * Accessor - background color
-     */
-    public Color getBackground() {
-      return background;
-    }
-    
-    /**
-     * Accessor - foreground color
-     */
-    public void setForeground(Color set) {
-      foreground = set;
-    }
-    
-    /**
-     * Accessor - foreground color
-     */
-    public Color getForeground() {
-      return foreground;
-    }
-    
-    /**
-     * paint it
-     */
-    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-      
-      // check insets
-      Insets insets = getBorderInsets(c);
-
-      // prepare font
-      g.setFont(c.getFont());
-      FontMetrics fm = g.getFontMetrics();
-
-      // fill tab      
-      g.setColor(background);
-      g.fillRect(1, insets.top, fm.getHeight(), height-insets.top-insets.bottom);
-
-      // prepare parms
-      int bottom = y+height;
-      y += insets.top;
-
-      // show image
-      if (img!=null) {
-        img.paintIcon(g, 1, y+1);
-        y += img.getIconHeight();
-      }
-
-      // show text
-      if (title!=null) {
-        if (y + fm.getStringBounds(title, g).getWidth() < bottom) {
-          g.setColor(foreground);
-          Graphics2D g2d = (Graphics2D)g;
-          AffineTransform at = g2d.getTransform();
-          g2d.rotate(Math.PI/2);
-          g2d.drawString(title, y+1, -fm.getMaxDescent());
-          g2d.setTransform(at);
-        }
-      }
-      
-      // done      
-    }
-
-  } //TabBorder
   
 } //BasicEditor

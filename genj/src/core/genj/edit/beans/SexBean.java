@@ -72,7 +72,7 @@ public class SexBean extends PropertyBean {
     super.init(setGedcom, setProp, setMgr, setReg);
   
     // use our layout
-    setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
       
     // we know it's PropertySex
     PropertySex p = (PropertySex) property;
