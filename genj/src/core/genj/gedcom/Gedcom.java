@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.73 $ $Author: nmeier $ $Date: 2004-11-12 19:55:20 $
+ * $Revision: 1.74 $ $Author: nmeier $ $Date: 2004-11-19 22:05:14 $
  */
 package genj.gedcom;
 
@@ -143,7 +143,6 @@ public class Gedcom {
   /** entities */
   private LinkedList entities = new LinkedList();
   private Map e2entities = new HashMap(); // values are maps id->entitiy
-  private int minIDStringLen = 4; //lenght of ids e.g. I001
   
   /** transaction support */
   private Transaction transaction = null;
@@ -305,9 +304,6 @@ public class Gedcom {
     if (id==null)
       id = createEntityId(tag);
       
-    // update minIDStringLen
-    minIDStringLen = Math.max(id.length(), minIDStringLen);
-
     // lookup a type - all well known types need id
     Class clazz = (Class)E2TYPE.get(tag);
     if (clazz!=null) {
@@ -457,6 +453,13 @@ public class Gedcom {
     
     // Lookup current entities of type
     Map ents = getEntityMap(tag);
+
+    // figure out how many digits we want to see (e.g. X000 = 3 digits)
+    // we don't want to create I001 if there's an I0001 already
+    int digits = 3;
+    if (ents.size()>  999) digits++;
+    if (ents.size()> 9999) digits++;
+    if (ents.size()>99999) digits++;
     
     // We might to do this several times
     String prefix = getEntityPrefix(tag);
@@ -469,7 +472,7 @@ public class Gedcom {
       String suffix = Integer.toString(id);
       result = prefix + suffix;
       // result.length() >= "X000".length()
-      while (result.length()<minIDStringLen) {
+      while (result.length()<digits+1) {
         // make sure non padded id doesn't exist
         if (ents.containsKey(result))
           continue search;
