@@ -66,7 +66,7 @@ public class MetaProperty {
    * Constructor
    */
   private MetaProperty(String tag, String type, String subs) {
-
+System.out.println(tag);
     // Remember data
     theTag = tag;
     
@@ -263,13 +263,9 @@ public class MetaProperty {
     String subs = properties.getProperty(tag+".subs");
 
     // create it
-    if (type==null) {
-      result = new MetaProperty(tag, type, subs);
-    } else { 
-      result = new MetaProperty(tag, type, subs);     
-      instances.put(tag, result);
-      if (result.isEvent()) events.add(result);
-    }
+    result = new MetaProperty(tag, type, subs);
+    instances.put(tag, result);
+    if (result.isEvent()) events.add(result);
     
     // done
     return result;
