@@ -36,20 +36,18 @@ public class PropertyName extends Property {
   private String nameAsString;
 
   /**
-   * Constructor for Name Gedcom line
+   * Empty Constructor
    */
   public PropertyName() {
-    setValue("");
   }
-
+  
   /**
-   * Constructor for Name Gedcom line
+   * Constructor
    */
-  public PropertyName(String tag, String value) {
-    // Setup data
-    setValue(value);
+  public PropertyName(String name) {
+    setValue(name);
   }
-
+  
   /**
    * @see java.lang.Comparable#compareTo(Object)
    */
@@ -139,6 +137,13 @@ public class PropertyName extends Property {
   public String getTag() {
     return "NAME";
   }
+  
+  /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String tag) throws GedcomException {
+    if (!"NAME".equals(tag)) throw new GedcomException("Unsupported Tag");
+  }
 
   /**
    * the gedcom value
@@ -160,7 +165,7 @@ public class PropertyName extends Property {
    * Sets name to a new value
    */
   public PropertyName setName(String first, String last) {
-    return setName(first,last,"");
+    return setName(first,last,EMPTY_STRING);
   }
 
   /**

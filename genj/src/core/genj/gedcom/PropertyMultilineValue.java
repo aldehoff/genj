@@ -26,13 +26,6 @@ package genj.gedcom;
 public class PropertyMultilineValue extends PropertySimpleValue implements MultiLineSupport {
   
   /**
-   * Constructor of cause Gedcom-line
-   */
-  public PropertyMultilineValue(String tag, String value) {
-    super(tag, value);
-  }
-
-  /**
    * Which Proxy to use for this property
    */
   public String getProxy() {

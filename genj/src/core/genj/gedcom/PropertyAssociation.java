@@ -27,19 +27,18 @@ package genj.gedcom;
 public class PropertyAssociation extends PropertyXRef {
 
   /**
+   * Empty Constructor
+   */
+  public PropertyAssociation() {
+  }
+
+  /**
    * Constructor with reference
    */
   public PropertyAssociation(PropertyXRef target) {
     super(target);
   }
 
-  /**
-   * Constructor with Tag,Value parameters
-   */
-  public PropertyAssociation(String tag, String value) {
-    super(tag,value);
-  }
-  
   /**
    * Returns a warning string that describes what happens when this
    * property would be deleted

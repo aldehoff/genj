@@ -26,7 +26,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -118,26 +117,21 @@ public class MetaProperty {
    * Create an instance
    */
   public Property create(String value) {
-    
+
+    // let's try to instantiate    
     Property result;
     
     try {
-      
-      // .. get constructor of property
-      Object parms[] = { tag, value };
-      Class  parmclasses[] = { String.class , String.class };
-
-      Constructor constructor = getType().getConstructor(parmclasses);
-
-      // .. get object
-      result = (Property)constructor.newInstance(parms);
-    
+      result = (Property)getType().newInstance();
+      result.setTag(tag);
     } catch (Throwable t) {
-      
       Debug.log(Debug.WARNING, this, t);
-      
-      result = new PropertySimpleValue(tag, value); 
+      result = new PropertySimpleValue(); 
+      ((PropertySimpleValue)result).setTag(tag);
     }
+    
+    // initialize value
+    result.setValue(value);
 
     // done 
     return result;

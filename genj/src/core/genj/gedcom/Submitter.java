@@ -29,7 +29,7 @@ public class Submitter extends Entity {
    */
   public String toString() {
     Property name = getProperty("NAME");
-    return super.toString() + (name!=null ? name.toString() : "");
+    return super.toString() + (name!=null ? name.toString() : EMPTY_STRING);
   }
   
 } //Submitter

@@ -29,31 +29,17 @@ public class PropertyRepository extends PropertyXRef {
   private String repository;
 
   /**
+   * Empty Constructor
+   */
+  public PropertyRepository() {
+  }
+  
+  /**
    * Constructor with reference
    * @param entity reference of entity this property links to
    */
   public PropertyRepository(PropertyXRef target) {
     super(target);
-  }
-
-  /**
-   * Constructor with Tag,Value parameters
-   * @param tag property's tag
-   * @param value property's value
-   */
-  public PropertyRepository() {
-    this(null,"");
-  }
-
-  /**
-   * Constructor with Tag,Value parameters
-   * @param tag property's tag
-   * @param value property's value
-   */
-  public PropertyRepository(String tag, String value) {
-    super(null);
-    // Setup value
-    setValue(value);
   }
 
   /**

@@ -28,22 +28,7 @@ public class PropertyAge extends Property {
   private int age;
 
   /** as string */
-  String ageAsString;
-
-  /**
-   * Constructor
-   */
-  public PropertyAge(int setAge) {
-    age=setAge;
-    ageAsString=null;
-  }
-
-  /**
-   * Constructor
-   */
-  public PropertyAge(String tag, String value) {
-    setValue(value);
-  }
+  private String ageAsString;
 
   /**
    * Returns <b>true</b> if this property is valid
@@ -58,6 +43,13 @@ public class PropertyAge extends Property {
    */
   public String getTag() {
     return "AGE";
+  }
+  
+  /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String tag) throws GedcomException {
+    if (!"AGE".equals(tag)) throw new GedcomException("Unsupported Tag");
   }
 
   /**

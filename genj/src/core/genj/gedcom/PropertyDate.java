@@ -76,19 +76,6 @@ public class PropertyDate extends Property {
   private final static SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 
   /**
-   * Constructor
-   */
-  public PropertyDate() {
-  }
-
-  /**
-   * Constructor
-   */
-  public PropertyDate(String tag, String value) {
-    setValue(value);
-  }
-
-  /**
    * @see java.lang.Comparable#compareTo(Object)
    */
   public int compareTo(Object o) {
@@ -149,7 +136,7 @@ public class PropertyDate extends Property {
 
     // Hmmmm
     if (res==null)
-      return "";
+      return EMPTY_STRING;
       
     return Gedcom.getResources().getString(res);
   }
@@ -251,7 +238,7 @@ public class PropertyDate extends Property {
           return start.set(tokens);
 
         // ... is range (FROM-TO,BET-AND)
-        String grab="";
+        String grab=EMPTY_STRING;
         while (tokens.hasMoreTokens()) {
           // .. TO or AND ? -> parse 2 PointInTimes from grabbed and remaining tokens
           token = tokens.nextToken();
@@ -328,6 +315,13 @@ public class PropertyDate extends Property {
     return;
   }
 
+  /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String tag) throws GedcomException {
+    if (!"DATE".equals(tag)) throw new GedcomException("Unsupported Tag");
+  }
+  
   /**
    * Returns this date as a string
    */
@@ -563,7 +557,7 @@ public class PropertyDate extends Property {
      */
     private String getMonth(boolean localize) {
       if (month==null)
-        return "";
+        return EMPTY_STRING;
       String mmm = months[month.intValue()-1];
       if (localize) mmm = Gedcom.getResources().getString("prop.date.mon."+mmm);
       return mmm;

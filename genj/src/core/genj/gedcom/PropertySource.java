@@ -29,7 +29,12 @@ public class PropertySource extends PropertyXRef {
   /** the source's content */
   private String source;
 
-
+  /**
+   * Empty Constructor
+   */
+  public PropertySource() {
+  }
+  
   /**
    * Constructor with reference
    * @param entity reference of entity this property links to
@@ -39,33 +44,11 @@ public class PropertySource extends PropertyXRef {
   }
 
   /**
-   * Constructor with Tag,Value parameters
-   * @param tag property's tag
-   * @param value property's value
-   */
-  public PropertySource() {
-    this(null,"");
-  }
-
-  /**
-   * Constructor with Tag,Value parameters
-   * @param tag property's tag
-   * @param value property's value
-   */
-  public PropertySource(String tag, String value) {
-    super(null);
-
-    // Setup value
-    setValue(value);
-  }
-
-  /**
    * Returns the tag of this property
    */
   public String getTag() {
     return "SOUR";
   }
-
 
   /**
    * Links reference to entity (if not already done)

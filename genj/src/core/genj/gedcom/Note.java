@@ -84,8 +84,15 @@ public class Note extends Entity implements MultiLineSupport{
      * Constructor
      */
     private Delegate() {
-      super("NOTE", "");
     };
+    
+    /**
+     * @see genj.gedcom.PropertySimpleValue#getTag()
+     */
+    public String getTag() {
+      return Note.this.getTag();
+    }
+
     
     /**
      * @see genj.gedcom.Property#getImage(boolean)

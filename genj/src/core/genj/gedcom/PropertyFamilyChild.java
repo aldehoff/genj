@@ -26,17 +26,23 @@ package genj.gedcom;
 public class PropertyFamilyChild extends PropertyXRef {
 
   /**
+   * Empty Constructor
+   */
+  public PropertyFamilyChild() {
+  }
+  
+  /**
+   * Constructor with reference
+   */
+  public PropertyFamilyChild(String target) {
+    setValue(target);
+  }
+
+  /**
    * Constructor with reference
    */
   public PropertyFamilyChild(PropertyXRef target) {
     super(target);
-  }
-
-  /**
-   * Constructor with Tag,Value parameters
-   */
-  public PropertyFamilyChild(String tag, String value) {
-    super(tag,value);
   }
 
   /**

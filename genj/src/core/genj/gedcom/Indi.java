@@ -41,7 +41,7 @@ public class Indi extends Entity {
   /*package*/ Fam addFam(Fam fam) throws GedcomException {
 
     // Remember Fam where this is spouse in
-    PropertyFamilySpouse pfs = new PropertyFamilySpouse("",fam.getId());
+    PropertyFamilySpouse pfs = new PropertyFamilySpouse(fam.getId());
     addProperty(pfs);
 
     // Link !
@@ -472,7 +472,7 @@ public class Indi extends Entity {
     }
 
     // Remember new Fam where this is child in
-    PropertyFamilyChild pfc = new PropertyFamilyChild("",fam.getId());
+    PropertyFamilyChild pfc = new PropertyFamilyChild(fam.getId());
     addProperty(fam);
 
     // Link !

@@ -46,33 +46,6 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   private boolean isIconChecked;
 
   /**
-   * Constructor of Blob Gedcom-line
-   */
-  public PropertyBlob() {
-    this("");
-  }
-
-  /**
-   * Constructor of Blob Gedcom-line
-   * @param in input to read data from
-   */
-  public PropertyBlob(File file) throws GedcomException {
-    setValue(file);
-  }
-
-  /**
-   * Constructor of Blob Gedcom-line
-   */
-  public PropertyBlob(String value) {
-  }
-
-  /**
-   * Constructor of Blob Gedcom-line
-   */
-  public PropertyBlob(String tag, String value) {
-  }
-
-  /**
    * Returns the data of this Blob
    */
   public byte[] getBlobData() {
@@ -109,6 +82,13 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    */
   public String getTag() {
     return "BLOB";
+  }
+  
+  /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String tag) throws GedcomException {
+    if (!"BLOB".equals(tag)) throw new GedcomException("Unsupported Tag");
   }
 
   /**
@@ -169,7 +149,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
       return new Base64Iterator(base64);
     }
 
-    return new Base64Iterator("");
+    return new Base64Iterator(EMPTY_STRING);
   }
   
   /**
@@ -185,7 +165,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   /**
    * Sets value to be taken from file
    */
-  public void setValue(File file) throws GedcomException {
+  public PropertyBlob setValue(File file) throws GedcomException {
 
     // Try to open file
     FileInputStream in;
@@ -222,6 +202,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     noteModifiedProperty();
 
     // Done
+    return this;
   }
 
   /**

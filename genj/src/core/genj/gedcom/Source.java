@@ -51,7 +51,7 @@ public class Source extends Entity {
     if (text instanceof PropertyMultilineValue) 
       return ((PropertyMultilineValue)text).getLinesValue();
     if (text!=null) return text.getValue();
-    return "";
+    return EMPTY_STRING;
   }
   
 } //Source

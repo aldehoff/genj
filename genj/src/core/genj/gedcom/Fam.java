@@ -32,7 +32,7 @@ public class Fam extends Entity {
   Fam addChild(Indi newChild) throws GedcomException {
 
     // Remember Indi who is child
-    PropertyChild pc = new PropertyChild("",newChild.getId());
+    PropertyChild pc = new PropertyChild(newChild.getId());
     addProperty(pc);
 
     // Link !
@@ -149,7 +149,7 @@ public class Fam extends Entity {
     if (ph!=null) delProperty(ph);
     
     // Add new husband
-    ph = new PropertyHusband("",husband.getId());
+    ph = new PropertyHusband(husband.getId());
     addProperty(ph);
 
     // Link !
@@ -173,7 +173,7 @@ public class Fam extends Entity {
     if (pw!=null) delProperty(pw);
 
     // Add new wife
-    pw = new PropertyWife("",wife.getId());
+    pw = new PropertyWife(wife.getId());
     addProperty(pw);
 
     // Link !

@@ -32,21 +32,9 @@ public class PropertySimpleValue extends Property {
   private String value;
 
   /**
-   * Constructor of address Gedcom-line
+   * Constructor
    */
-  public PropertySimpleValue(String initTag) {
-    tag = initTag;
-  }
-
-  /**
-   * Constructor of address Gedcom-line
-   */
-  public PropertySimpleValue(String tag, String value) {
-
-    // Remember
-    this.tag = tag;
-    setValue(value);
-    // Done
+  public PropertySimpleValue() {
   }
 
   /**
@@ -55,11 +43,19 @@ public class PropertySimpleValue extends Property {
   public String getTag() {
     return tag;
   }
+  
+  /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String set) {
+    tag = set;
+  }
 
   /**
    * Returns the value of this property
    */
   public String getValue() {
+    if (value==null) return EMPTY_STRING;
     return value;
   }
 

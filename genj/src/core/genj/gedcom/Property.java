@@ -32,6 +32,9 @@ import java.util.Vector;
  */
 public abstract class Property implements Comparable {
 
+  /** empty string */
+  protected final static String EMPTY_STRING = "";
+
   /** parent of this property */
   protected Property  parent=null;
   
@@ -197,22 +200,10 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Returns the entity this property belongs to
+   * Returns the entity this property belongs to - simply looking up
    */
   public Entity getEntity() {
-
-    // Parent == Entity ?
-    if (this instanceof Entity) {
-      return (Entity)this;
-    }
-
-    // No Parent ?
-    if (parent==null) {
-      return null;
-    }
-
-    // Ask Parent
-    return parent.getEntity();
+    return parent==null ? null : parent.getEntity();
   }
 
   /**
@@ -541,9 +532,19 @@ public abstract class Property implements Comparable {
   public abstract String getTag();
 
   /**
+   * Sets this property's tag
+   */
+  public abstract void setTag(String tag) throws GedcomException ;
+
+  /**
    * Returns the value of this property as string.
    */
   abstract public String getValue();
+
+  /**
+   * Sets this property's value as string.
+   */
+  public abstract void setValue(String value);
 
   /**
    * Returns <b>true</b> if this property is valid
@@ -624,11 +625,6 @@ public abstract class Property implements Comparable {
       gedcom.noteModifiedProperty(this);
     }
   }
-
-  /**
-   * Sets this property's value as string.
-   */
-  public abstract void setValue(String newValue);
 
   /**
    * The default toString returns the value of this property
@@ -724,7 +720,7 @@ public abstract class Property implements Comparable {
     MetaProperty[] subs = getDefaultMetaProperties(); 
     for (int s=0; s<subs.length; s++) {
       if (getProperty(subs[s].getTag())==null)
-        addProperty(subs[s].create("")).addDefaultProperties();
+        addProperty(subs[s].create(EMPTY_STRING)).addDefaultProperties();
     }
 
     // done    

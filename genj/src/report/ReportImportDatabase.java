@@ -182,13 +182,13 @@ public class ReportImportDatabase implements Report {
 
       Indi indi = (Indi)gedcom.createEntity(Indi.class, id);
       if (name!=null) {
-        indi.addProperty(new PropertyName       ("",name));
+        indi.addProperty(new PropertyName       (name));
       }
       if (sex !=null) {
-        indi.addProperty(new PropertySex        ("",sex ));
+        indi.addProperty(new PropertySex        (sex ));
       }
       if (famc!=null) {
-        xref = new PropertyFamilyChild("",famc);
+        xref = new PropertyFamilyChild(famc);
         indi.addProperty(xref);
         xrefs.addElement(xref);
       }
@@ -210,12 +210,12 @@ public class ReportImportDatabase implements Report {
 
       Fam fam = (Fam)gedcom.createEntity(Fam.class, id);
       if (husb!=null) {
-        xref = new PropertyHusband("",husb);
+        xref = new PropertyHusband(husb);
         fam.addProperty(xref);
         xrefs.addElement(xref);
       }
       if (wife!=null) {
-        xref = new PropertyWife   ("",wife);
+        xref = new PropertyWife   (wife);
         fam.addProperty(xref);
         xrefs.addElement(xref);
       }

@@ -25,17 +25,10 @@ package genj.gedcom;
 public class PropertyNoValue extends PropertySimpleValue {
   
   /**
-   * Constructor
-   */
-  public PropertyNoValue(String tag, String value) {
-    super(tag,"");
-  }
-  
-  /**
    * @see genj.gedcom.Property#getValue()
    */
   public String getValue() {
-    return "";
+    return EMPTY_STRING;
   }
   
   /**

@@ -54,6 +54,13 @@ public abstract class Entity extends Property {
   public Gedcom getGedcom() {
     return gedcom;
   }
+  
+  /**
+   * @see genj.gedcom.Property#getEntity()
+   */
+  public Entity getEntity() {
+    return this;
+  }
 
   /**
    * Returns entity's id
@@ -64,6 +71,13 @@ public abstract class Entity extends Property {
   }
 
   /**
+   * Sets entity's id
+   */
+  public void setId(String setId) {
+    id = setId;
+  }
+  
+  /**
    * Returns the type to which this entity belongs
    * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
    */
@@ -71,13 +85,6 @@ public abstract class Entity extends Property {
     return type;
   }
 
-  /**
-   * Sets entity's id
-   */
-  public void setId(String setId) {
-    id = setId;
-  }
-  
   /**
    * @see genj.gedcom.Property#toString()
    */
@@ -100,16 +107,22 @@ public abstract class Entity extends Property {
   }
   
   /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String tag) {
+  }
+  
+  /**
    * @see genj.gedcom.Property#getValue()
    */
   public String getValue() {
-    return "";
+    return EMPTY_STRING;
   }
-
+  
   /**
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
-  public void setValue(String newValue) {
+  public void setValue(String value) {
   }
 
 } //Entity

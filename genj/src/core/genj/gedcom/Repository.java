@@ -36,7 +36,7 @@ public class Repository extends Entity {
    */
   private String getName() {
     Property name = getProperty("NAME");
-    return name!=null ? name.getValue() : ""; 
+    return name!=null ? name.getValue() : EMPTY_STRING; 
   }
   
 } //Repository

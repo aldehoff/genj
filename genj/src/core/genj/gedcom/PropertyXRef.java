@@ -37,15 +37,21 @@ public abstract class PropertyXRef extends Property {
   private String       value ;
 
   /**
+   * Empty Constructor
+   */
+  public PropertyXRef() {
+    this(null);
+  }
+
+  /**
    * Constructor with reference
    * @param entity reference of entity this property links to
    */
   public PropertyXRef(PropertyXRef target) {
-
+    // keep
     setTarget(target);
-    
-    if (target==null) value="";
-    
+    if (target==null) value=EMPTY_STRING;
+    // done    
   }
 
   /**
@@ -94,7 +100,7 @@ public abstract class PropertyXRef extends Property {
    */
   public String getReferencedId() {
     if (target==null) {
-      return value == null ? "" : value;
+      return value == null ? EMPTY_STRING : value;
     }
     return target.getEntity().getId();
   }
@@ -112,7 +118,7 @@ public abstract class PropertyXRef extends Property {
       //return "@"+value+"@";
       return value;
     }
-    return "";
+    return EMPTY_STRING;
   }
 
   /**
@@ -174,6 +180,19 @@ public abstract class PropertyXRef extends Property {
 
     // done
   }
+  
+  /**
+   * @see genj.gedcom.Property#getTag()
+   */
+  public abstract String getTag();
+
+  /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String tag) throws GedcomException {
+    if (!getTag().equals(tag)) throw new GedcomException("Unsupported Tag");
+  }
+
 
   /**
    * Helper that unlinks reference to other entity.

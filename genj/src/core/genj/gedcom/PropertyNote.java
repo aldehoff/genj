@@ -28,30 +28,17 @@ package genj.gedcom;
 public class PropertyNote extends PropertyXRef implements MultiLineSupport {
 
   /**
+   * Empty Constructor
+   */
+  public PropertyNote() {
+  }
+  
+  /**
    * Constructor with reference
    * @param entity reference of entity this property links to
    */
   public PropertyNote(PropertyXRef target) {
     super(target);
-  }
-
-  /**
-   * Constructor with Tag,Value parameters
-   * @param tag property's tag
-   * @param value property's value
-   */
-  public PropertyNote() {
-    this(null,"");
-  }
-
-  /**
-   * Constructor with Tag,Value parameters
-   * @param tag property's tag
-   * @param value property's value
-   */
-  public PropertyNote(String tag, String value) {
-    super(null);
-    setValue(value);
   }
 
   /**

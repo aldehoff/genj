@@ -29,6 +29,12 @@ import genj.util.swing.ImageIcon;
 public class PropertyForeignXRef extends PropertyXRef {
 
   /**
+   * Empty Constructor
+   */
+  public PropertyForeignXRef() {
+  }
+  
+  /**
    * Constructor with reference
    */
   public PropertyForeignXRef(PropertyXRef target) {
@@ -39,7 +45,7 @@ public class PropertyForeignXRef extends PropertyXRef {
    * getTag method comment.
    */
   public String getTag() {
-    return "";
+    return EMPTY_STRING;
   }
 
   /**

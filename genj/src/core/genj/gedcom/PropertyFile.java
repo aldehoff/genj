@@ -48,26 +48,6 @@ public class PropertyFile extends Property implements IconValueAvailable {
   private ImageIcon valueAsIcon   = null;
 
   /**
-   * Constructor of FILE Gedcom-line
-   */
-  public PropertyFile() {
-  }
-
-  /**
-   * Constructor of FILE Gedcom-line
-   */
-  public PropertyFile(String file) {
-    this.file=file;
-  }
-
-  /**
-   * Constructor of FILE Gedcom-line
-   */
-  public PropertyFile(String tag, String value) {
-    setValue(value);
-  }
-
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
@@ -80,6 +60,13 @@ public class PropertyFile extends Property implements IconValueAvailable {
   public String getTag() {
     return "FILE";
   }
+  
+  /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String tag) throws GedcomException {
+    if (!"FILE".equals(tag)) throw new GedcomException("Unsupported Tag");
+  }
 
   /**
    * Returns this property's value
@@ -87,7 +74,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
   public String getValue() {
 
     if (file==null)
-      return "";
+      return EMPTY_STRING;
 
     if (!isRelativeChecked) {
       String relative = getGedcom().getOrigin().calcRelativeLocation(file);

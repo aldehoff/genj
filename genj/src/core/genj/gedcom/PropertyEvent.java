@@ -30,28 +30,6 @@ public class PropertyEvent extends Property {
   private String tag;
 
   /**
-   * Constructor of address Gedcom-line
-   */
-  public PropertyEvent(String tag) {
-
-    // Remember
-    this.tag = tag;
-
-    // Done
-  }
-
-  /**
-   * Constructor of address Gedcom-line
-   */
-  public PropertyEvent(String tag, String value) {
-
-    // Remember
-    this.tag = tag;
-
-    // Done
-  }
-
-  /**
    * Returns the date of the event
    */
   public PropertyDate getDate() {
@@ -80,7 +58,7 @@ public class PropertyEvent extends Property {
   public String getDateAsString() {
 
     // look for PropertyDate in children
-    if (children==null) return "";
+    if (children==null) return EMPTY_STRING;
     
     for (int i=0;i<children.getSize();i++) {
       Property prop = children.get(i);
@@ -90,7 +68,7 @@ public class PropertyEvent extends Property {
     }
 
     // No information
-    return "";
+    return EMPTY_STRING;
   }
 
   /**
@@ -108,10 +86,17 @@ public class PropertyEvent extends Property {
   }
 
   /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String set) throws GedcomException {
+    tag = set;
+  }
+
+  /**
    * Returns the value of this property
    */
   public String getValue() {
-    return "";
+    return EMPTY_STRING;
   }
 
   /**

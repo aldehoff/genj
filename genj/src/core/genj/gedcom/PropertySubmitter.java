@@ -28,6 +28,12 @@ package genj.gedcom;
 public class PropertySubmitter extends PropertyXRef {
 
   /**
+   * Empty Constructor
+   */
+  public PropertySubmitter() {
+  }
+  
+  /**
    * Constructor with reference
    * @param entity reference of entity this property links to
    */
@@ -35,25 +41,6 @@ public class PropertySubmitter extends PropertyXRef {
     super(target);
   }
 
-  /**
-   * Constructor with Tag,Value parameters
-   * @param tag property's tag
-   * @param value property's value
-   */
-  public PropertySubmitter() {
-    this(null,"");
-  }
-
-  /**
-   * Constructor with Tag,Value parameters
-   * @param tag property's tag
-   * @param value property's value
-   */
-  public PropertySubmitter(String tag, String value) {
-    super(null);
-    setValue(value);
-  }
-  
   /**
    * Returns the tag of this property
    */

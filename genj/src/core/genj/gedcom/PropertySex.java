@@ -37,42 +37,24 @@ public class PropertySex extends Property {
   public static final int FEMALE  = 2;
 
   /** the sex code */
-  private int sex;
+  private int sex = UNKNOWN;
 
   /** the sex as string (unknown code) */
   private String sexAsString;
 
   /**
-   * Constructor for Gedcom Sex Line
+   * Empty Constructor
    */
   public PropertySex() {
-    // Setup data
-    setSex(UNKNOWN);
-    // Done
   }
-
+  
   /**
-   * Constructor for Gedcom Sex Line
+   * Constructor
    */
-  public PropertySex(int setSex) {
-    // Setup data
-    sex = setSex;
-    // Done
+  public PropertySex(String sex) {
+    setValue(sex);
   }
-
-  /**
-   * Constructor for Gedcom Sex Line
-   */
-  public PropertySex(String tag, String value) {
-    // Setup data
-    if (value.length() == 0) {
-      setSex(UNKNOWN);
-    } else {
-      setValue(value);
-    }
-    // Done
-  }
-
+  
   /**
    * Image
    */
@@ -148,6 +130,13 @@ public class PropertySex extends Property {
   }
 
   /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String tag) throws GedcomException {
+    if (!"SEX".equals(tag)) throw new GedcomException("Unsupported Tag");
+  }
+
+  /**
    * Accessor for Value
    */
   public String getValue() {
@@ -157,7 +146,7 @@ public class PropertySex extends Property {
       return "M";
     if (sex == FEMALE)
       return "F";
-    return "";
+    return EMPTY_STRING;
   }
 
   /**

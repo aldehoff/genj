@@ -29,7 +29,7 @@ import java.util.TreeMap;
 public class PropertyRelationship extends Property {
 
   /** the relationship */
-  private String relationship = "";
+  private String relationship = EMPTY_STRING;
   
   /** relationships */
   private static TreeMap relationships = new TreeMap();
@@ -69,19 +69,19 @@ public class PropertyRelationship extends Property {
   }
 
   /**
-   * Constructor 
-   */
-  public PropertyRelationship(String tag, String value) {
-    setValue(value);
-  }
-
-  /**
    * Returns the tag of this property
    */
   public String getTag() {
     return "RELA";
   }
 
+  /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  public void setTag(String tag) throws GedcomException {
+    if (!"RELA".equals(tag)) throw new GedcomException("Unsupported Tag");
+  }
+  
   /**
    * Returns the value of this property
    */

@@ -29,27 +29,17 @@ import java.util.List;
 public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
 
   /**
+   * Empty Constructor
+   */
+  public PropertyMedia() {
+  }
+  
+  /**
    * Constructor with reference
    * @param entity reference of entity this property links to
    */
   public PropertyMedia(PropertyXRef target) {
     super(target);
-  }
-
-  /**
-   * Constructor
-   */
-  public PropertyMedia() {
-    super(null,"");
-  }
-
-  /**
-   * Constructor with Tag,Value parameters
-   * @param tag property's tag
-   * @param value property's value
-   */
-  public PropertyMedia(String tag, String value) {
-    super(tag,value);
   }
 
   /**
@@ -175,7 +165,7 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
    */
   private String getTitle() {
     Property title = getProperty("OBJE:TITL");
-    return title!=null ? title.getValue() : ""; 
+    return title!=null ? title.getValue() : EMPTY_STRING; 
   }
 
 } //PropertyMedia
