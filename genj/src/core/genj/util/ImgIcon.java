@@ -60,6 +60,9 @@ public class ImgIcon {
 
     // Get InputStream
     InputStream in = from.getClass().getResourceAsStream(name);
+    if (in==null) 
+      throw new RuntimeException("Couldn't read image from resources "+from.getClass().getName()+"/"+name);
+
     // Load it
     createImageFrom(in);
 
