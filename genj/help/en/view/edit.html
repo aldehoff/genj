@@ -1,18 +1,28 @@
-<HTML>
+<html>
 
-<BODY>
-<H2>Edit View</H2>
+<body>
+<h2>Edit View</h2>
 
-<P>
+<!-------- note for all views ----------------------------->
+<blockquote><table border=1><tr><td>
+ <b>Note:</b> All views in GenJ work on the same underlying 
+ model that captures the genealogic data. You should have 
+ familiarized yourself with the general concept of
+   <a href="../views.html">Working with Views</a>
+ before drilling down to individuals views.
+</td></tr></table></blockquote>
+<!--------------------------------------------------------->
+
+<p>
 Gedcom suggests one file which consists of an unlimited
 number of <A href="../entities.html">entities</A>. Every
 entity has an unlimited number of properties which
 can be nested in an unlimited number of levels.
 To edit an entity therefore GenJ shows a tree of its
 properties.
-</P>
+</p>
 
-<P>
+<p>
 You can open as many Edit Views as you wish - they all
 listen to events on the file they were opened on. Once
 you select an entity in the Table or Tree view, it will
@@ -21,16 +31,16 @@ Edit View stick to a particular entity, simply select
 it in one of the other views and click on the little
 symbol at the top/right. Now this view sticks to that
 entity.
-</P>
+</p>
 
-<P>
+<p>
 You can browse the property-tree by opening and closing
 sub-trees and selecting individual properties. Once
 selected the property is also displayed in the bottom
 part - here you can edit it.
-</P>
+</p>
 
-<P>
+<p>
 Note that there is a number of predefined editors for
 specific properties. Most properties are single-line
 but sometimes they have a special format. For example
@@ -42,9 +52,9 @@ know an editor for the selected property or the data
 kept in the property is not well formatted (e.g.
 a wrong date) you still can change that value with the
 default editor.
-</P>
+</p>
 
-<P>
+<p>
 A special case are also links between entities - for
 example if an individual is married he is a husband
 in a family. Gedcom keeps that information by adding
@@ -53,9 +63,9 @@ The family knows the property HUSB - the husband or
 WIFE - the wife.
 The individual knows the property FAMS - the family
 in which he/she is a spouse.
-</P>
+</p>
 
-<P>
+<p>
 If you select a property such as HUSB, WIFE, FAMS or
 FAMC an editor appears that looks different depending
 on the link's state:
@@ -66,16 +76,16 @@ on the link's state:
  entity to link to by text-search and a button to perform
  the link operation.
 </OL>
-</P>
+</p>
 
-<P>
+<p>
 The buttons at the top of this view allow you to
 add or remove properties. This applies to the currently
 selected property. You can also move properties up/down
 in the current level they reside in.
-</P>
+</p>
 
-<P>
+<p>
 When adding a property a dialog appears that allows to
 choose from a number of known sub-properties (identified
 by tags). Select one of the properties and a description
@@ -84,15 +94,15 @@ that is not in the list, select the 2. radio button and
 enter a user-defined tag. Please read about the discussion
 of <A href="../gedcom.html">Gedcom</A> compliancy to
 understand that this has to be done carefully.
-</P>
+</p>
 
-<P>
+<p>
 When you select one of the know properties by choosing
 the checkbox at the bottom you can tell GenJ to add the
 default sub-properties, too.
-</P>
+</p>
 
-<P>
+<p>
 The buttons at the bottom of this view can be used to
 quickly grow your GEDCOM information from the currently
 shown entity. There are buttons to:
@@ -106,7 +116,7 @@ shown entity. There are buttons to:
 The new entity will be selected automatically so you can
 enter information very quickly e.g. starting with an
 individual.
-</P>
+</p>
 
-</BODY>
-</HTML>
+</body>
+</html>
