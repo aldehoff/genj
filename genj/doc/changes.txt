@@ -33,8 +33,9 @@ Future
   O Open URL http://host should parse http output and offer list of choices to .ged links
   O Open URL should allow basic authentication challenge/response
   O Components in EditView receive correct focus for all proxies
+  O Switch between localized names for month abbrv. and long (e.g. Jan and January)
 
-2.0 - MMM DD 2002
+1.9.1 - MMM DD 2002
 
   I Accessing System.getProperty() is done through EnvironmentChecker and logged
   I edit.ProxyFile and edit.ProxyBlob's file dialog default to -Dgenj.gedcom.dir,-Duser.home
