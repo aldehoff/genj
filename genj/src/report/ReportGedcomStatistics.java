@@ -23,7 +23,7 @@ import java.util.TreeMap;
  * GenJ - Report
  * Note: this report requires Java2
  * @author Francois Massonneau <fmas@celtes.com>
- * @version 0.02
+ * @version 0.03
  */
 public class ReportGedcomStatistics implements Report {
 
@@ -42,7 +42,11 @@ public class ReportGedcomStatistics implements Report {
    * @return Information as String
    */
   public String getInfo() {
-    return "This report gives you some statistics about the current Gedcom File.\n\n            Have Fun and Enjoy\n\n\n(version 0.02)";
+    return "This report gives you some statistics about the current Gedcom File.\n"+
+		"   . How many families, persons.\n"+
+		"   . Number of males, females, and individuals with undefined sex.\n"+
+		"   . Stats about birth places.\n\n"+
+		"            Have Fun and Enjoy\n\n\n(version 0.03)";
   }
 
   /**
@@ -121,15 +125,10 @@ public class ReportGedcomStatistics implements Report {
     }
 
     // Header :
-    bridge.println("This report gives you some statistics about your Family Tree :");
-    bridge.println("     . How many families, persons,");
-    bridge.println("     . Number of males, females, and individuals with undefined sex");
-
-    bridge.println("                    -----------------------------");
-    bridge.println("");
 
     bridge.println("In the Gedcom file named '"+gedcom.getName()+"', there are :");
-
+    bridge.println("  * Stats about people :");
+		
     // One: We show the number of families :
     bridge.println("     - "+gedcom.getEntities(Gedcom.FAMILIES).getSize()
       +" families (soit : "+gedcom.getEntities(Gedcom.FAMILIES).getSize()+" familles).");
@@ -141,12 +140,14 @@ public class ReportGedcomStatistics implements Report {
     // Three: We show the number of males :
     bridge.println("         . "+numMales+" males (soit : "+numMales+" hommes).");
 
-    // Four: We show the number of males :
+    // Four: We show the number of females :
     bridge.println("         . "+numFemales+" females (soit : "+numFemales+" femmes).");
 
     // Five: We show the number of people whose sex is undefined :
     bridge.println("         . "+numUnknown+" with undefined sex (soit : "
       +numUnknown+" personnes dont le sexe n'est pas connu).");
+
+    bridge.println("  * Stats about birth places :");
       
     // Six: We show the birth places
     Iterator it = places.keySet().iterator();
