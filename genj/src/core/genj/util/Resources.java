@@ -86,7 +86,7 @@ public class Resources {
       lang = System.getProperty("user.language");
     } catch (Throwable t) {
     }
-
+    
     // try to load it
     try {
 
@@ -102,11 +102,15 @@ public class Resources {
       // the locale we'll use
       Locale locale = new Locale(lang,"");
       
-      // if we don't set the default then -Duser.language will
-      // take effect for 'en' because we use resources.properties
-      // for english as THE default 
+      // o.k. here's the scoop - by the time we're here after
+      // possibly changing System.setProperty("user.language")
+      // the default Locale is already set (e.g. "FR_FR"). 
+      // Instead of our english resource (which are in
+      // resources.properties instead of resources_en.properties)
+      // we might end up with resources_fr.properties. So
+      // let's kill the default here 
       try { 
-        Locale.setDefault(locale);
+        Locale.setDefault(new Locale(""));
       } catch (Throwable t) {
       }
       
