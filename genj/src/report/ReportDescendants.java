@@ -170,21 +170,12 @@ public class ReportDescendants implements Report {
     
     // name
     String n = indi.getName();
-    if (Property.isEmptyOrNull(n)) {
-      n = "?";
-    }
     
     // birth?
-    String b = indi.getBirthAsString();
-    if (!Property.isEmptyOrNull(b)) {
-      b = " b: " + b;
-    }
+    String b = " b: " + indi.getBirthAsString();
     
     // death?
-    String d = indi.getDeathAsString();
-    if (!Property.isEmptyOrNull(d)) {
-      d = " d: " + d;
-    }
+    String d = " d: " + indi.getDeathAsString();
     
     // here's the result 
     return n + b + d;
@@ -203,4 +194,5 @@ public class ReportDescendants implements Report {
     }
     return buffer.toString();
   }
-}
+
+} //ReportDescendants
