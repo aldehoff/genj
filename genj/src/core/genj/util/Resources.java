@@ -68,6 +68,18 @@ public class Resources {
   public Resources(String pkg) {
     init(pkg);
   }
+  
+  /**
+   * Returns localized strings
+   */
+  public String[] getStrings(String[] keys) {
+    
+    String[] result = new String[keys.length];
+    for (int i = 0; i < result.length; i++) {
+      result[i] = getString(keys[i]);
+    }
+    return result;
+  }
 
   /**
    * Returns a localized string
