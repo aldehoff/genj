@@ -27,7 +27,7 @@ import genj.util.*;
  * Gedcom Property : EVENT
  */
 public class PropertyEvent extends Property {
-
+  
   /** our Tag */
   private String tag;
 
@@ -111,32 +111,6 @@ public class PropertyEvent extends Property {
 
     // No information
     return "";
-  }
-
-  /**
-   * Returns the default image of this property
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgEvent;
-  }
-
-  /**
-   * Returns the image of this property
-   */
-  public ImgIcon getImage(boolean checkValid) {
-
-    // Try to find image for Tag
-    if (tag.equals("BIRT")) return Images.imgBirth;
-    if (tag.equals("DEAT")) return Images.imgDeath;
-    if (tag.equals("BURI")) return Images.imgBurial;
-    if (tag.equals("MARR")) return Images.imgMarriage;
-    if (tag.equals("BARM")) return Images.imgBarBat;
-    if (tag.equals("BASM")) return Images.imgBarBat;
-    if (tag.equals("IMMI")) return Images.imgMigration;
-    if (tag.equals("EMIG")) return Images.imgMigration;
-
-    // Return Default
-    return Images.imgEvent;
   }
 
   /**

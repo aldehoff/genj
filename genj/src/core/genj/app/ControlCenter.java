@@ -861,7 +861,7 @@ public class ControlCenter extends JPanel implements ActionListener {
    * Another helper which creates a JButton
    */
   private JButton createButton(ImgIcon img,String action, String tip,boolean enabled) {
-    JButton b = new JButton(new ImageIcon(img.getImage()));
+    JButton b = new JButton(ImgIconConverter.get(img));
     b.setToolTipText(App.resources.getString(tip));
     b.addActionListener(this);
     b.setActionCommand(action);

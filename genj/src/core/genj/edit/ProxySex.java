@@ -26,6 +26,7 @@ import java.util.Vector;
 
 import genj.gedcom.*;
 import genj.util.*;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -83,7 +84,7 @@ class ProxySex extends Proxy implements ItemListener {
       img=((PropertySex)prop).getDefaultImage(Gedcom.FEMALE);
 
     // Image change
-    label.setIcon(new ImageIcon(img.getImage()));
+    label.setIcon(ImgIconConverter.get(img));
 
     // Done
   }          

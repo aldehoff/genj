@@ -27,6 +27,7 @@ import javax.swing.event.*;
 
 import genj.gedcom.*;
 import genj.util.ImgIcon;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * Option - Create Entity
@@ -65,8 +66,8 @@ public class OptionNewEntity extends Option implements ActionListener, GedcomLis
 
     // Images ?
     if (imgData==null) {
-      imgData     = new ImageIcon(new ImgIcon(this,"Data.gif"    ).getImage());
-      imgRelation = new ImageIcon(new ImgIcon(this,"Relation.gif").getImage());
+      imgData     = ImgIconConverter.get(new ImgIcon(this,"Data.gif"    ));
+      imgRelation = ImgIconConverter.get(new ImgIcon(this,"Relation.gif"));
     }
 
     // Data

@@ -55,12 +55,12 @@ public class TableView extends Table {
   private ETableModel model;
 
   private final static Object[][] views = {
-    { PropertyIndi     .getDefaultImage().getImage(), "indis"   ,new Integer(Gedcom.INDIVIDUALS) },
-    { PropertyFam      .getDefaultImage().getImage(), "fams"    ,new Integer(Gedcom.FAMILIES   ) },
-    { PropertyMedia    .getDefaultImage().getImage(), "medias"  ,new Integer(Gedcom.MULTIMEDIAS) },
-    { PropertyNote     .getDefaultImage().getImage(), "notes"   ,new Integer(Gedcom.NOTES      ) },
-    { PropertySource   .getDefaultImage().getImage(), "sources" ,null                            },
-    { PropertySubmitter.getDefaultImage().getImage(), "subms"   ,null                            },
+    { Property.getDefaultImage("indi").getImage(), "indis"   ,new Integer(Gedcom.INDIVIDUALS) },
+    { Property.getDefaultImage("fam" ).getImage(), "fams"    ,new Integer(Gedcom.FAMILIES   ) },
+    { Property.getDefaultImage("obje").getImage(), "medias"  ,new Integer(Gedcom.MULTIMEDIAS) },
+    { Property.getDefaultImage("note").getImage(), "notes"   ,new Integer(Gedcom.NOTES      ) },
+    { Property.getDefaultImage("sour").getImage(), "sources" ,null                            },
+    { Property.getDefaultImage("subm").getImage(), "subms"   ,null                            },
   };
 
   /**

@@ -29,6 +29,7 @@ import javax.swing.event.*;
 
 import genj.gedcom.*;
 import genj.util.ImgIcon;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * Option - Delete Entity
@@ -53,7 +54,7 @@ public class OptionDelEntity extends Option implements ActionListener, GedcomLis
 
     // Images ?
     if (imgTrash==null) {
-      imgTrash = new ImageIcon(new ImgIcon(this,"Trash.gif").getImage());
+      imgTrash = ImgIconConverter.get(new ImgIcon(this,"Trash.gif"));
     }
 
     // Data
@@ -188,13 +189,13 @@ public class OptionDelEntity extends Option implements ActionListener, GedcomLis
     if (entity==null) {
 
       lWhich.setText( getResourceString("mask.none") );
-      lWhich.setIcon( PropertyUnknown.getDefaultImage().getImageIcon() );
+      lWhich.setIcon( ImgIconConverter.get(Property.getDefaultImage("?")) );
       bDelete.setEnabled(false);
 
     } else {
 
       lWhich.setText( entity.toString() );
-      lWhich.setIcon( new ImageIcon(entity.getProperty().getImage(false).getImage()) );
+      lWhich.setIcon( ImgIconConverter.get(entity.getProperty().getImage(false)) );
       bDelete.setEnabled(true);
 
     }

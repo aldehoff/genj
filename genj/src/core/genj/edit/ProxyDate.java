@@ -115,6 +115,7 @@ class ProxyDate extends Proxy implements ItemListener {
     combo = new JComboBox();
     combo.setAlignmentX(0);
     combo.setEditable(false);
+    combo.setMaximumSize(new Dimension(Integer.MAX_VALUE,combo.getPreferredSize().height));
 
     for (int i=0;i<PropertyDate.MAX;i++) {
       combo.addItem(PropertyDate.getLabelForFormat(i));
@@ -130,6 +131,8 @@ class ProxyDate extends Proxy implements ItemListener {
     deTwo.setAlignmentX(0);
 
     combo.setSelectedIndex( p.getFormat() );
+
+//    in.add(Box.createVerticalGlue());
 
     // Done
     deOne.requestFocus();

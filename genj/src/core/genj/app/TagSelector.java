@@ -29,6 +29,7 @@ import javax.swing.event.*;
 
 import genj.gedcom.*;
 import genj.util.ImgIcon;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * A component allowing to select a Tag
@@ -68,7 +69,7 @@ public class TagSelector extends JComponent {
       Tag tag = (Tag)value;
 
       label.setText( tag.tag );
-      label.setIcon( Property.calcDefaultImage(tag.tag).getImageIcon() );
+      label.setIcon( ImgIconConverter.get(Property.getDefaultImage(tag.tag)) );
       check.setSelected( tag.selected );
 
       return panel;

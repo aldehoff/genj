@@ -66,26 +66,6 @@ public class PropertyIndividualAttribute extends Property {
   }
 
   /**
-   * Default Image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgAttribute;
-  }
-
-  /**
-   * Image
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    // Known property ?
-    if (tag.equals("OCCU"))
-      return Images.imgOccu;
-    if (tag.equals("NATI"))
-      return Images.imgNati;
-    // Return Default
-    return getDefaultImage();
-  }
-
-  /**
    * Accessor for Tag
    */
   public String getTag() {

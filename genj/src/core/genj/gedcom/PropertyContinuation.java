@@ -45,13 +45,6 @@ public class PropertyContinuation extends Property {
   }
 
   /**
-   * Default Image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgCont;
-  }
-
-  /**
    * Image
    */
   public ImgIcon getImage(boolean checkValid) {

@@ -246,6 +246,7 @@ public abstract class Property {
   /**
    * Calculates a property's standard image from given TAG
    */
+/*  
   public static ImgIcon calcDefaultImage(String tag) {
 
     // Find class for tag
@@ -262,6 +263,7 @@ public abstract class Property {
     // Error means unknown
     return PropertyUnknown.getDefaultImage();
   }
+*/  
 
   /**
    * Calculates a property's standard proxy from given TagPath
@@ -407,8 +409,15 @@ public abstract class Property {
   /**
    * Returns the default image which is associated with this property.
    */
-  public static ImgIcon getDefaultImage() {
-    return PropertyUnknown.getDefaultImage();
+  public ImgIcon getDefaultImage() {
+    return Images.get(getTag());
+  }
+
+  /**
+   * Returns the default image which is associated with this property.
+   */
+  public static ImgIcon getDefaultImage(String tag) {
+    return Images.get(tag);
   }
 
   /**
@@ -476,7 +485,19 @@ public abstract class Property {
   /**
    * Returns the image which is associated with this property.
    */
-  public abstract ImgIcon getImage(boolean checkValid);
+  public ImgIcon getImage(boolean checkValid) {
+    if (checkValid&&(!isValid())) {
+      // Maybe we have a special error for this one?
+      ImgIcon result = Images.get(getTag()+".err", false);
+      if (result!=null) {
+        return result;
+      }
+      // Otherwise we use the error one
+      return Images.get("X");
+    }
+    // Normal tag to image
+    return Images.get(getTag());
+  }
 
   /**
    * Returns the index of given property - or 0 when not found.

@@ -44,8 +44,8 @@ public class DateEntry extends javax.swing.JPanel implements DocumentListener, F
 
   /** images */
   private ImageIcon
-    imgGood = new ImageIcon(new ImgIcon(this,"DateGood.gif").getImage()),
-    imgBad  = new ImageIcon(new ImgIcon(this,"DateBad.gif" ).getImage());
+    imgGood = ImgIconConverter.get(new ImgIcon(this,"DateGood.gif")),
+    imgBad  = ImgIconConverter.get(new ImgIcon(this,"DateBad.gif" ));
 
   /**
    * Constructor

@@ -28,6 +28,7 @@ import javax.swing.event.*;
 
 import genj.gedcom.*;
 import genj.util.*;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * Mask for creating : Individual
@@ -261,7 +262,7 @@ class MaskForNewIndi extends MaskForNewEntity implements ItemListener {
       Indi indi = (Indi)entity;
 
       lRelative.setText( "@"+indi.getId()+"@" );
-      lRelative.setIcon( new ImageIcon(PropertyIndi.getDefaultImage().getImage()) );
+      lRelative.setIcon( ImgIconConverter.get(Property.getDefaultImage("indi")) );
 
       rbSibling.setEnabled(true);
       rbParent .setEnabled(   indi.getFamc() == null
@@ -284,7 +285,7 @@ class MaskForNewIndi extends MaskForNewEntity implements ItemListener {
       Fam fam = (Fam)entity;
 
       lRelative.setText( "@"+fam.getId()+"@" );
-      lRelative.setIcon( new ImageIcon(PropertyFam.getDefaultImage().getImage()) );
+      lRelative.setIcon( ImgIconConverter.get(Property.getDefaultImage("fam")) );
 
       rbSibling.setEnabled(false);
       rbParent .setEnabled(false);

@@ -27,6 +27,7 @@ import java.util.Vector;
 
 import genj.gedcom.Property;
 import genj.util.*;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -105,7 +106,7 @@ abstract class Proxy  {
     result.setActionCommand(command);
     result.setEnabled(enabled);
     if (icon!=null) {
-      result.setIcon(new ImageIcon(icon.getImage()));
+      result.setIcon(ImgIconConverter.get(icon));
     }
 
     return result;

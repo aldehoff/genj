@@ -136,13 +136,6 @@ public class PropertyBlob extends Property {
   }
 
   /**
-   * Returns the default image of this property
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgBlob;
-  }
-
-  /**
    * Returns the image of this property
    */
   public ImgIcon getImage(boolean checkValid) {

@@ -71,21 +71,14 @@ public class PropertySex extends Property {
   }
 
   /**
-   * Default Image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgMale;
-  }
-
-  /**
    * Image
    */
   public static ImgIcon getDefaultImage(int sex) {
     switch (sex) {
     case MALE:
-      return Images.imgMale;
+      return Images.get("sex.m");
     case FEMALE:
-      return Images.imgFemale;
+      return Images.get("sex.f");
     }
     throw new IllegalArgumentException("Unknown sex");
   }
@@ -94,12 +87,20 @@ public class PropertySex extends Property {
    * Image
    */
   public ImgIcon getImage(boolean checkValid) {
-    if (checkValid&&(sexAsString!=null))
-      return Images.imgError;
+    if (checkValid&&(!isValid()))
+      return super.getImage(true);
     if (sex == MALE)
-      return Images.imgMale;
-    return Images.imgFemale;
+      return Images.get("sex.m");
+    return Images.get("sex.f");
   }
+
+  /**
+   * Returns <b>true</b> if this property is valid
+   */
+  public boolean isValid() {
+    return ((sexAsString==null)&&(isSex(sex)));
+  }
+
 
   /**
    * Returns localized label for sex
@@ -160,13 +161,6 @@ public class PropertySex extends Property {
     if (sex == FEMALE)
       return "F";
     return "";
-  }
-
-  /**
-   * Returns <b>true</b> if this property is valid
-   */
-  public boolean isValid() {
-    return ((sexAsString==null)&&(isSex(sex)));
   }
 
   /**

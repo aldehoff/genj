@@ -71,13 +71,6 @@ public class PropertyName extends Property {
   }
 
   /**
-   * the property's default image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgName;
-  }
-
-  /**
    * the first name
    */
   public String getFirstName() {
@@ -85,14 +78,12 @@ public class PropertyName extends Property {
   }
 
   /**
-   * the image
+   * Returns <b>true</b> if this property is valid
    */
-  public ImgIcon getImage(boolean checkValid) {
-    if (checkValid&&(nameAsString!=null)) {
-      return Images.imgError;
-    }
-    return Images.imgName;
+  public boolean isValid() {
+    return nameAsString==null;
   }
+
 
   /**
    * Returns localized label for first name

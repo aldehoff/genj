@@ -57,13 +57,6 @@ public abstract class PropertyIndi extends Property{
   }
 
   /**
-   * Default Image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgIndi;
-  }
-
-  /**
    * Image
    */
   public ImgIcon getImage(boolean checkValid) {
@@ -106,4 +99,5 @@ public abstract class PropertyIndi extends Property{
   public boolean setValue(String value) {
     return false;
   }
+  
 }

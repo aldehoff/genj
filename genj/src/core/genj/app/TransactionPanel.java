@@ -22,6 +22,7 @@ package genj.app;
 import javax.swing.*;
 
 import java.util.Vector;
+import genj.util.swing.ImgIconConverter;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -52,7 +53,7 @@ public class TransactionPanel extends JPanel implements ActionListener {
     // Panel for Image
     JPanel pimage = new JPanel(new BorderLayout(2,2));
     pimage.add(
-      new JLabel(new ImageIcon(transaction.getImage())),
+      new JLabel(ImgIconConverter.get(transaction.getImage())),
       "Center"
     );
 

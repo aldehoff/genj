@@ -29,6 +29,7 @@ import javax.swing.event.*;
 
 import genj.gedcom.*;
 import genj.util.ImgIcon;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * A component that shows a list of TagPaths
@@ -54,7 +55,7 @@ public class TagPathList extends JComponent {
       TagPath path = (TagPath)value;
 
       label.setText( path.toString() );
-      label.setIcon( Property.calcDefaultImage(path.getLast()).getImageIcon() );
+      label.setIcon( ImgIconConverter.get(Property.getDefaultImage(path.getLast())) );
 
       if (isSelected)
       label.setBackground(lChoose.getSelectionBackground());

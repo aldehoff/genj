@@ -73,13 +73,6 @@ public class PropertyMedia extends PropertyXRef {
   }
 
   /**
-   * Returns the (default) image of this property
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgMedia;
-  }
-
-  /**
    * Returns the image of this property
    */
   public ImgIcon getImage(boolean checkValid) {

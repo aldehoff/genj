@@ -32,6 +32,7 @@ import java.net.*;
 
 import genj.gedcom.*;
 import genj.util.*;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * Component for running reports on genealogic data
@@ -111,8 +112,8 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
     frame    = theFrame ;
     registry = theRegistry;
 
-    imgShell = new ImageIcon(new ImgIcon(this,"ReportShell.gif").getImage());
-    imgGui   = new ImageIcon(new ImgIcon(this,"ReportGui.gif"  ).getImage());
+    imgShell = ImgIconConverter.get(new ImgIcon(this,"ReportShell.gif"));
+    imgGui   = ImgIconConverter.get(new ImgIcon(this,"ReportGui.gif"  ));
 
     deferredSetRunning = new Closure(this, "setRunning", false);
 

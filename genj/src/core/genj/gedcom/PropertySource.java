@@ -28,13 +28,6 @@ import genj.util.*;
 public abstract class PropertySource extends Property {
 
   /**
-   * the default image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgIndi;
-  }
-
-  /**
    * the image
    */
   public ImgIcon getImage(boolean checkValid) {

@@ -56,31 +56,12 @@ public class PropertyChild extends PropertyXRef {
   }
 
   /**
-   * Returns the default image which is associated with this property.
-   * @return image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgLink2Indi;
-  }
-
-  /**
    * Returns a warning string that describes what happens when this
    * property would be deleted
    * @return warning as <code>String</code>, <code>null</code> when no warning
    */
   public String getDeleteVeto() {
     return "The connection to the referenced child and its reference to this family are lost";
-  }
-
-  /**
-   * Returns the image which is associated with this property.
-   * @return image
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    if ((checkValid)&&(getReferencedEntity()==null)) {
-      return Images.imgLinkXIndi;
-    }
-    return Images.imgLink2Indi;
   }
 
   /**

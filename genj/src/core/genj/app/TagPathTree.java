@@ -28,6 +28,7 @@ import java.awt.event.*;
 import java.util.*;
 
 import genj.gedcom.*;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * Component that allows to look at a Tree of TagPaths
@@ -128,7 +129,7 @@ public class TagPathTree extends JScrollPane {
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       Node node = (Node)value;
       label.setText( node.tag );
-      label.setIcon( Property.calcDefaultImage(node.tag).getImageIcon() );
+      label.setIcon( ImgIconConverter.get(Property.getDefaultImage(node.tag)) );
       checkbox.setSelected(node.selected);
       return panel;
     }

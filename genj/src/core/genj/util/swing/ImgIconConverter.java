@@ -17,61 +17,33 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.gedcom;
+package genj.util.swing;
 
-import java.util.Vector;
+import genj.util.ImgIcon;
 
-import genj.util.*;
+import javax.swing.ImageIcon;
+import java.awt.*;
 
 /**
- * Gedcom Property : CITY
+ * This type can extract a swing.ImageIcon from a
+ * ImgIcon - a result will be cached in the ImgIcon
  */
-public class PropertyCity extends Property {
-
-  /** the city */
-  private String city;
-
+public class ImgIconConverter {
+  
   /**
-   * Constructor of city Gedcom-line
+   * Returns a (cached) Swing ImageIcon representation of given image
    */
-  public PropertyCity(String city) {
-    this.city=city;
+  public static ImageIcon get(ImgIcon img) {
+
+    // Already present ?
+    if (img.getSwingIcon()==null) {
+      img.setSwingIcon(new ImageIcon(img.getImage()));
+    }
+    
+    // Here it is
+    return (ImageIcon)img.getSwingIcon();
   }
 
-  /**
-   * Constructor of city Gedcom-line
-   */
-  public PropertyCity(String tag, String value) {
-    setValue(value);
-  }
+  
 
-  /**
-   * Image
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    return getDefaultImage();
-  }
-
-  /**
-   * Accessor Tag
-   */
-  public String getTag() {
-    return "CITY";
-  }
-
-  /**
-   * Accessor Value
-   */
-  public String getValue() {
-    return(city);
-  }
-
-  /**
-   * Accessor Value
-   */
-  public boolean setValue(String value) {
-    noteModifiedProperty();
-    city=value;
-    return true;
-  }
 }

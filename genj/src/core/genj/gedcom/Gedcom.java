@@ -30,16 +30,16 @@ public class Gedcom implements GedcomListener {
 
   private boolean          isTransaction = false;
   private boolean          hasUnsavedChanges;
-  private Origin           origin;
-  private Vector           listeners = new Vector();
-  private Entity           lastEntity = null;
-  private Vector           addedEntities     ,
-                           deletedEntities   ;
-  private Vector           addedProperties   ,
-                           deletedProperties ,
-                           modifiedProperties;
-  private EntityList[]     entities = new EntityList[LAST_ETYPE-FIRST_ETYPE+1];
-  private IDHashtable[]    ids = new IDHashtable[LAST_ETYPE-FIRST_ETYPE+1];
+  private Origin            origin;
+  private Vector            listeners = new Vector();
+  private Entity            lastEntity = null;
+  private Vector            addedEntities     ,
+                             deletedEntities   ;
+  private Vector            addedProperties   ,
+                             deletedProperties ,
+                             modifiedProperties;
+  private EntityList[]      entities = new EntityList[LAST_ETYPE-FIRST_ETYPE+1];
+  private IDHashtable[]     ids = new IDHashtable[LAST_ETYPE-FIRST_ETYPE+1];
 
   static private Random    seed = new Random();
   static private Resources resources;
@@ -60,14 +60,16 @@ public class Gedcom implements GedcomListener {
     FEMALE = 2;
 
   private final static String[]
-    ePrefixs  = { "I", "F", "M", "N" },
-    eTags     = { "INDI", "FAM", "OBJE", "NOTE" };
+    ePrefixs  = { "I", "F", "M", "N", "S", "B"},
+    eTags     = { "INDI", "FAM", "OBJE", "NOTE", "SOUR", "SUBM" };
 
   public final static int
     INDIVIDUALS  = 0,
     FAMILIES     = 1,
     MULTIMEDIAS  = 2,
     NOTES        = 3,
+    SOURCES      = 4,
+    SUBMITTERS   = 5,
     FIRST_ETYPE  = INDIVIDUALS,
     LAST_ETYPE   = NOTES;
 
@@ -1514,17 +1516,11 @@ public class Gedcom implements GedcomListener {
    * Returns an image for given entity type
    */
   public static ImgIcon getImage(int type) {
-    switch (type) {
-      case INDIVIDUALS:
-        return Images.imgIndi;
-      case FAMILIES:
-        return Images.imgFam;
-      case MULTIMEDIAS:
-        return Images.imgMedia;
-      case NOTES:
-        return Images.imgNote;
+    try {
+      return Images.get(eTags[type]);
+    } catch (ArrayIndexOutOfBoundsException e) {
+      throw new IllegalArgumentException("Unknown type");
     }
-    throw new IllegalArgumentException("Unknown type");
   }
 
 

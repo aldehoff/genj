@@ -232,7 +232,7 @@ class MaskForNewFam extends MaskForNewEntity implements ItemListener {
     Indi indi = (Indi)entity;
 
     lMemberIs.setText( "@"+indi.getId()+"@" );
-    lMemberIs.setIcon( new ImageIcon(PropertyIndi.getDefaultImage().getImage()) );
+    lMemberIs.setIcon( ImgIconConverter.get(Property.getDefaultImage("indi")) );
 
     rbParent .setEnabled(true);
     rbChild  .setEnabled(indi.getFamc() == null);

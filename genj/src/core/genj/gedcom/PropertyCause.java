@@ -72,13 +72,6 @@ public class PropertyCause extends Property {
   }
 
   /**
-   * Default Image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgCause;
-  }
-
-  /**
    * Image
    */
   public ImgIcon getImage(boolean checkValid) {

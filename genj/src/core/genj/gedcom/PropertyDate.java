@@ -172,26 +172,10 @@ public class PropertyDate extends Property {
   }
 
   /**
-   * Default Image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgDate;
-  }
-
-  /**
    * Returns format of date
    */
   public int getFormat() {
     return format;
-  }
-
-  /**
-   * Returns image
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    if (checkValid&&(!isValid()))
-      return Images.imgError;
-    return Images.imgDate;
   }
 
   /**

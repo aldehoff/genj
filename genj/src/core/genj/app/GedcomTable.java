@@ -43,12 +43,12 @@ public class GedcomTable extends Table {
   /** default column headers */
   private static final Object defaultHeaders[] = {
     "Name"                             ,
-    PropertyIndi     .getDefaultImage(),
-    PropertyFam      .getDefaultImage(),
-    PropertyMedia    .getDefaultImage(),
-    PropertyNote     .getDefaultImage(),
-    PropertySource   .getDefaultImage(),
-    PropertySubmitter.getDefaultImage()
+    Gedcom.getImage(Gedcom.INDIVIDUALS),
+    Gedcom.getImage(Gedcom.FAMILIES),
+    Gedcom.getImage(Gedcom.MULTIMEDIAS),
+    Gedcom.getImage(Gedcom.NOTES),
+    Gedcom.getImage(Gedcom.SOURCES),
+    Gedcom.getImage(Gedcom.SUBMITTERS)
   };
 
   /** default column widths */

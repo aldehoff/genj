@@ -93,13 +93,6 @@ public class PropertyNote extends PropertyXRef {
   }
 
   /**
-   * Returns the (default) image of this property
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgNote;
-  }
-
-  /**
    * Returns the image of this property
    */
   public ImgIcon getImage(boolean checkValid) {

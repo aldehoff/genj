@@ -23,10 +23,10 @@ import java.awt.*;
 import java.net.*;
 import java.io.*;
 import java.util.*;
-import javax.swing.ImageIcon;
 
 /**
- * Class that represents an improved image
+ * Class that represents an improved image that doesn't depend
+ * on Swing
  */
 public class ImgIcon {
 
@@ -160,23 +160,6 @@ public class ImgIcon {
   }
 
   /**
-   * Returns a (cached) Swing ImageIcon representation of this image
-   */
-  public ImageIcon getImageIcon() {
-
-    // Already present ?
-    if (swingicon!=null) {
-      return (ImageIcon)swingicon;
-    }
-
-    // Make it
-    swingicon = new ImageIcon(image);
-
-    // Done
-    return (ImageIcon)swingicon;
-  }
-
-  /**
    * Paints the image
    */
   public void paintIcon(Component c,Graphics g, int x, int y) {
@@ -233,5 +216,19 @@ public class ImgIcon {
    */
   public void paintIcon(Graphics g, int x, int y, double zoom) {
     paintIcon(null,g,x,y,zoom);
+  }
+  
+  /**
+   * Untyped setter for cached SwingIcon
+   */
+  public void setSwingIcon(Object o) {
+    swingicon = o;
+  }
+  
+  /** 
+   * Untyped getter for cached SwingIcon
+   */
+  public Object getSwingIcon() {
+    return swingicon;
   }
 }

@@ -31,6 +31,7 @@ import java.util.*;
 import genj.gedcom.*;
 import genj.option.*;
 import genj.util.*;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * Component for editing genealogic entity properties
@@ -217,8 +218,8 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     actionPanel = new JPanel();
     actionPanel.setLayout(new FlowLayout(FlowLayout.LEFT,0,0));
 
-    actionCheckStick  = new JCheckBox(new ImageIcon(Images.imgStickOff.getImage()));
-    actionCheckStick.setSelectedIcon (new ImageIcon(Images.imgStickOn .getImage()));
+    actionCheckStick  = new JCheckBox(ImgIconConverter.get(Images.imgStickOff));
+    actionCheckStick.setSelectedIcon (ImgIconConverter.get(Images.imgStickOn ));
     actionCheckStick.setFocusPainted(false);
     actionCheckStick.setSelected(registry.get("sticky",false));
 
@@ -691,7 +692,7 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
       result.setText(resources.getString(text));
     }
     if (image!=null) {
-      result.setIcon(new ImageIcon(image.getImage()));
+      result.setIcon(ImgIconConverter.get(image));
     }
     if (tip!=null) {
       result.setToolTipText(resources.getString(tip));
@@ -1073,7 +1074,7 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
 
     // Add Image+Heading
     JLabel label = new JLabel();
-    label.setIcon(new ImageIcon(prop.getImage(true).getImage()));
+    label.setIcon(ImgIconConverter.get(prop.getImage(true)));
     label.setText(prop.getTag());
     label.setAlignmentX(0);
     label.setBorder(new EmptyBorder(2,0,8,0));

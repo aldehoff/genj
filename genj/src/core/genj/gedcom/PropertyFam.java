@@ -35,13 +35,6 @@ public abstract class PropertyFam extends Property {
   }
 
   /**
-   * Default Image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgFam;
-  }
-
-  /**
    * Image
    */
   public ImgIcon getImage(boolean checkValid) {

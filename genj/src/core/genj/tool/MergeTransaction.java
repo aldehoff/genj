@@ -150,8 +150,8 @@ public class MergeTransaction implements Transaction {
   /**
    * Returns an image that represents this transaction's state
    */
-  public Image getImage() {
-    return new ImgIcon(this,"Merge.gif").getImage();
+  public ImgIcon getImage() {
+    return new ImgIcon(this,"Merge.gif");
   }
 
   /**

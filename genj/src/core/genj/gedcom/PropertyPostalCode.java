@@ -54,13 +54,6 @@ public class PropertyPostalCode extends Property {
   }
 
   /**
-   * Default Image
-   */
-  public static ImgIcon getDefaultImage() {
-    return Images.imgCode;
-  }
-
-  /**
    * Image
    */
   public ImgIcon getImage(boolean checkValid) {
