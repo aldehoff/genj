@@ -22,6 +22,7 @@ package genj.gedcom;
 import genj.util.ReferenceSet;
 import genj.util.WordBuffer;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -287,6 +288,13 @@ public class PropertyName extends Property {
     setName(f,l,suffix);
     
     // done
+  }
+  
+  /**
+   * Return all names with given last-name
+   */
+  public static Collection getPropertyNames(Gedcom gedcom, String name) {
+    return gedcom.getReferenceSet(TAG).getReferences(name);
   }
   
   /**
