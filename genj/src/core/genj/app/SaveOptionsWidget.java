@@ -74,7 +74,6 @@ import javax.swing.JTextField;
     options.add(comboEncodings);
     options.add(new JLabel(resources.getString("save.options.password")));
     textPassword = new TextFieldWidget(gedcom.hasPassword() ? gedcom.getPassword() : "", 10);
-    textPassword.setTemplate(true);
     textPassword.setEditable(gedcom.getPassword()!=gedcom.PASSWORD_UNKNOWN);
     options.add(textPassword);
     
