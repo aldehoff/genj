@@ -295,7 +295,7 @@ public class AboutWidget extends JPanel{
       // Prepare the panel      
       JPanel pResult = new JPanel();
       GridBagHelper gh = new GridBagHelper(pResult);
-      gh.setParameter(gh.GROWFILL_HORIZONTAL);
+      gh.setParameter(gh.FILL_HORIZONTAL);
 
       // what are the languages
       choiceLanguages = new ChoiceWidget(getAvailableLanguages(), App.getInstance().getLanguage());
@@ -334,7 +334,7 @@ public class AboutWidget extends JPanel{
       screenResRuler = new ScreenResolutionScale(viewManager.getDPI());
       
       gh.add(new JLabel(resources.getString("cc.about.tab4.resolution")), 0,3);
-      gh.add(screenResRuler               , 1,3);
+      gh.add(screenResRuler               , 1,3,1,1,gh.GROW_BOTH|gh.FILL_BOTH);
       
       // done
       return pResult;
