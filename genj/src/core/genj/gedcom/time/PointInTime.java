@@ -378,10 +378,10 @@ public class PointInTime implements Comparable {
         buffer.append(calendar.getMonth(month, localize));
       }
           
-      if (calendar==GREGORIAN||!localize)
-        buffer.append(calendar.getYear(year, localize));
-      else
-        buffer.append(calendar.getYear(year, localize)+calendar.marker);
+      buffer.append(calendar.getYear(year, localize));
+      
+      if (localize&&calendar==JULIAN)
+        buffer.append("(j)");
     }
     
     return buffer;

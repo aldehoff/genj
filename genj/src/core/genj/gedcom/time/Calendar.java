@@ -37,7 +37,6 @@ public abstract class Calendar {
   protected String name;
   protected ImageIcon image;
   protected String[] months;
-  protected String marker;
   protected Map
     localizedMonthNames = new HashMap(),
     abbreviatedMonthNames = new HashMap(); 
@@ -52,7 +51,6 @@ public abstract class Calendar {
     escape = esc;
     name = PointInTime.resources.getString("cal."+key);
     image = new ImageIcon(Gedcom.class, img);
-    marker = "("+key.charAt(0)+")";
     
     // localize months
     for (int m=0;m<months.length;m++) {
