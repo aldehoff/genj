@@ -48,6 +48,7 @@ import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.plaf.TreeUI;
 import javax.swing.text.View;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
@@ -59,9 +60,15 @@ import javax.swing.tree.TreeSelectionModel;
  * A Property Tree
  */
 public class PropertyTreeWidget extends TreeWidget {
+
+  /** a default renderer we keep around for colors */
+  private DefaultTreeCellRenderer defaultRenderer;
   
   /** the model */
   private Model model;
+
+  /** cached object per property */
+  private Map property2view =  new HashMap();
 
   /**
    * Constructor
@@ -126,6 +133,14 @@ public class PropertyTreeWidget extends TreeWidget {
    */
   public Property getRoot() {
     return model.root;
+  }
+
+  /**
+   * Some LnFs have the habit of fixing the row height which
+   * we don't want
+   */  
+  public void setRowHeight(int rowHeight) {
+    super.setRowHeight(0);
   }
   
   /**
@@ -202,6 +217,23 @@ public class PropertyTreeWidget extends TreeWidget {
     // return text wrapped to 200 pixels
     return "<html><table width=200><tr><td>"+info+"</td></tr></table></html";    
   }
+
+  /**
+   * Intercept new ui to get default renderer that provides us with colors
+   */  
+  public void setUI(TreeUI ui) {
+    // continue
+    super.setUI(ui);
+    // grab the default renderer now
+    defaultRenderer = new DefaultTreeCellRenderer();
+    // clear cache of view
+    if (property2view!=null)
+      property2view.clear();
+    // make sure that propagates
+    if (model!=null)
+      model.fireStructureChanged();
+  }
+
   
   /**
    * Our model
@@ -222,9 +254,6 @@ public class PropertyTreeWidget extends TreeWidget {
     /** the gedcom we're looking at */
     private Gedcom gedcom;
     
-    /** cached object per property */
-    private Map property2cachedValue =  new HashMap();
-
     /**
      * Constructor
      */
@@ -305,7 +334,7 @@ public class PropertyTreeWidget extends TreeWidget {
         Property prop = (Property)it.next();
   
         // .. forget cached value for prop
-        property2cachedValue.remove(prop);
+        property2view.remove(prop);
   
         // .. build event
         Object path[] = root.getPathTo(prop);
@@ -329,8 +358,8 @@ public class PropertyTreeWidget extends TreeWidget {
      */
     public void fireStructureChanged() {
 
-      // clear cache of htmls
-      property2cachedValue.clear();
+      // clear cache of view
+      property2view.clear();
 
       // propagate even
       Object[] path = new Object[]{ root!=null ? (Object)root : ""};
@@ -378,20 +407,6 @@ public class PropertyTreeWidget extends TreeWidget {
     public Object getRoot() {
       return root!=null?root:DUMMY;
     }          
-  
-    /**
-     * Get cached value for given property
-     */    
-    private Object getCachedValue(Property prop) {
-      return property2cachedValue.get(prop);
-    }
-    
-    /**
-     * Set cached value for given property
-     */    
-    private void setCachedValue(Property prop, Object value) {
-      property2cachedValue.put(prop, value);
-    }
   
     /**
      * Tells wether object is a leaf
@@ -494,19 +509,11 @@ public class PropertyTreeWidget extends TreeWidget {
    */
   private class Renderer extends HeadlessLabel implements TreeCellRenderer {
     
-    /** a default we keep around for colors */
-    private DefaultTreeCellRenderer defaultRenderer = new DefaultTreeCellRenderer();
-
     /**
      * Constructor
      */
     private Renderer() {
       setOpaque(true);
-      setFont(PropertyTreeWidget.this.getFont());
-      
-      // 20031518 will have to choose color here
-      setForeground(defaultRenderer.getTextNonSelectionColor());
-
     }
     
     /**
@@ -519,11 +526,18 @@ public class PropertyTreeWidget extends TreeWidget {
         return this;
       Property prop = (Property)object;
 
+      // grab current font
+      setFont(PropertyTreeWidget.this.getFont());
+
       // prepare color
-      if (sel) {
-        setBackground(defaultRenderer.getBackgroundSelectionColor());
-      } else {
-        setBackground(defaultRenderer.getBackgroundNonSelectionColor());
+      if (defaultRenderer!=null) {
+        if (sel) {
+          setForeground(defaultRenderer.getTextSelectionColor());
+          setBackground(defaultRenderer.getBackgroundSelectionColor());
+        } else {
+          setForeground(defaultRenderer.getTextNonSelectionColor());
+          setBackground(defaultRenderer.getBackgroundNonSelectionColor());
+        }
       }
 
       // calc image        
@@ -531,26 +545,35 @@ public class PropertyTreeWidget extends TreeWidget {
       if (prop.isPrivate()) 
         img = img.getOverLayed(MetaProperty.IMG_PRIVATE);
       setIcon(img);
-      
-      // calc text view
-      View view = (View)model.getCachedValue(prop);
-      if (view==null) {
 
-        // create html text
-        String html = calcHTML(prop);
-
-        // convert
-        view = setHTML(html);
-        
-        // remember
-        model.setCachedValue(prop, view);
-      
-        // done
-      }
-      setView(view);
+      // set view to use
+      setView(getView(prop, sel));
 
       // done
       return this;
+    }
+
+    /**
+     * Calculate View
+     */
+    private View getView(Property prop, boolean scratch) {
+      
+      // check if we got one
+      View view = scratch ? null : (View)property2view.get(prop);
+
+      // create if necessary
+      if (view==null) {
+
+        // create one
+        view = setHTML(calcHTML(prop));
+        
+        // remember if not scratch
+        if (!scratch) property2view.put(prop, view);
+      
+      }
+      
+      // done
+      return view;
     }
     
     /**

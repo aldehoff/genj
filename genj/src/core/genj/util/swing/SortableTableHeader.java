@@ -29,7 +29,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.plaf.TableHeaderUI;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
@@ -43,10 +43,9 @@ import javax.swing.table.TableModel;
  */
 public class SortableTableHeader extends JTableHeader {
   
-  /** the ui used by the 'original' TableCellRender for header */ 
-  private JLabel cachedLabel;
-  private TableCellRenderer cachedRenderer;
-    
+  /** a cached table cell renderer */
+  private TableCellRenderer originalRenderer;
+  
   /**
    * Constructor
    */
@@ -56,16 +55,17 @@ public class SortableTableHeader extends JTableHeader {
   }  
 
   /**
-   * @see javax.swing.table.JTableHeader#setDefaultRenderer(TableCellRenderer)
+   * Intercept ui
    */
-  public void setDefaultRenderer(TableCellRenderer defaultRenderer) {
-    if (defaultRenderer instanceof PatchedHeaderRenderer) {
-      super.setDefaultRenderer(defaultRenderer);
-    } else {
-      cachedRenderer = defaultRenderer;
-      cachedLabel = null;
-    }
+  public void setUI(TableHeaderUI ui) {
+    // continue
+    super.setUI(ui);
+    // grab original renderer
+    originalRenderer = createDefaultRenderer();
+    // restore ours
+    setDefaultRenderer(new PatchedHeaderRenderer());
   }
+
 
   /**
    * @see javax.swing.table.JTableHeader#setTable(JTable)
@@ -90,39 +90,47 @@ public class SortableTableHeader extends JTableHeader {
     /** keeper of the column */
     private int column;
     
+    /** default label */
+    private JLabel original;
+    
     /**
      * @see TableCellRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object, boolean, boolean, int, int)
      */
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-      // compute the cached ui we'll use later
-      if (cachedLabel==null) {
-        if (cachedRenderer==null) cachedRenderer = new DefaultTableCellRenderer();
-        cachedLabel = (JLabel)cachedRenderer.getTableCellRendererComponent(table,value,isSelected,hasFocus,row,col);
-      }
-      // grab the information we need
-      if (value instanceof ImageIcon) {
-        cachedLabel.setText(null);
-        cachedLabel.setIcon((ImageIcon)value);
-      } else {
-        cachedLabel.setText(value.toString());
-        cachedLabel.setIcon(null);
-      }
+      
+      // remember column
       column = col;
+
+      // ask super for a label
+      original = (JLabel)originalRenderer.getTableCellRendererComponent(table, null, isSelected, hasFocus, row, column);
+      
+      // setup data
+      if (value instanceof ImageIcon) {
+        original.setIcon((ImageIcon)value);
+        original.setText(null);
+        original.setHorizontalAlignment(CENTER);
+      } else {
+        original.setIcon(null);
+        original.setText(value.toString());
+        original.setHorizontalAlignment(LEFT);
+      }
+      
       // done
       return this;
     }
     
     /**
-     * @see javax.swing.JComponent#paintComponent(Graphics)
+     * @see javax.swing.JComponent#paint(java.awt.Graphics)
      */
-    public void paintComponent(Graphics g) {
-      int w = getWidth(), h = getHeight();
-      // let default renderer do its job
-      cachedLabel.setBounds(0,0,w,h);
-      cachedLabel.paint(g);
-      // HACK: skinlf uses the same JLabel for all TableHeaders in the VM
-      cachedLabel.setText(null);
-      cachedLabel.setIcon(null);
+    public void paint(Graphics g) {
+      
+      int
+        w = original.getWidth(),
+        h = original.getHeight();
+      
+      // let original do its work
+      original.paint(g);
+
       // paint sort indication
       TableModel model = getTable().getModel();
       if (model instanceof SortableTableModel) {
@@ -132,6 +140,20 @@ public class SortableTableHeader extends JTableHeader {
       }
       // done
     }
+
+    /**
+     * proxy setting of bounds
+     */
+    public void setBounds(int x, int y, int width, int height) {
+      original.setBounds(x, y, width, height);
+    }
+    
+    /**
+     * proxy preferred size
+     */
+    public Dimension getPreferredSize() {
+      return original.getPreferredSize();
+    }
     
     /**
      * Paints the sort indicator
@@ -140,24 +162,9 @@ public class SortableTableHeader extends JTableHeader {
       // position to paint at
       g.translate(w-8, h/2);
       // position
-      g.setColor(cachedLabel.getForeground());
+      g.setColor(getForeground());
       g.fillPolygon(xs, a?ya:yd, xs.length);
       // done
-    }
-
-    /**
-     * @see java.awt.Component#getPreferredSize()
-     */
-    public Dimension getPreferredSize() {
-      return cachedLabel.getPreferredSize();
-    }
-
-    /**
-     * @see java.awt.Component#setBounds(int, int, int, int)
-     */
-    public void setBounds(int x, int y, int w, int h) {
-      super.setBounds(x,y,w,h);
-      cachedLabel.setBounds(x,y,w,h);
     }
 
   } //PatchedHeaderRenderer

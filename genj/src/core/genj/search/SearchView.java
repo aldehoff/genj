@@ -38,7 +38,6 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.util.swing.TextFieldWidget;
 import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -69,6 +68,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
@@ -485,7 +485,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
      */
     protected void execute() {
       // analyze what we've got
-      TextFieldWidget field = choiceValue.getTextWidget();
+      JTextField field = choiceValue.getTextEditor();
       int 
         selStart = field.getSelectionStart(),
         selEnd   = field.getSelectionEnd  ();

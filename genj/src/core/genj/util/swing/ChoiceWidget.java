@@ -19,8 +19,10 @@
  */
 package genj.util.swing;
 
-import java.awt.Component;
+import genj.util.ChangeSupport;
+
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.util.List;
@@ -29,7 +31,8 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.SwingUtilities;
+import javax.swing.JTextField;
+import javax.swing.Timer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -45,6 +48,9 @@ public class ChoiceWidget extends JComboBox {
   
   /** wether we match ignoring case */
   private boolean isIgnoreCase = false;
+  
+  /** change support */
+  private ChangeSupport changeSupport = new ChangeSupport(this);
   
   /**
    * Constructor
@@ -65,6 +71,9 @@ public class ChoiceWidget extends JComboBox {
    */     
   public ChoiceWidget(Object[] values, Object selection) {
 
+    // default is editable
+    setEditable(true);
+
     // do our model
     setModel(model);
 
@@ -74,15 +83,9 @@ public class ChoiceWidget extends JComboBox {
     // alignment fix
     setAlignmentX(LEFT_ALIGNMENT);
     
-    // init editor
-    super.setEditor(new Editor());
-    
     // try to set selection - not in values is ignored
     setSelectedItem(selection);
     
-    // default is editable
-    setEditable(true);
-
     // done
   }
   
@@ -90,14 +93,14 @@ public class ChoiceWidget extends JComboBox {
    * Add change listener
    */
   public void addChangeListener(ChangeListener l) {
-    ((Editor)getEditor()).addChangeListener(l);
+    changeSupport.addChangeListener(l);
   }
   
   /**
    * Remove change listener
    */
   public void removeChangeListener(ChangeListener l) {
-    ((Editor)getEditor()).removeChangeListener(l);
+    changeSupport.removeChangeListener(l);
   }
   
   /**
@@ -115,33 +118,21 @@ public class ChoiceWidget extends JComboBox {
   public Dimension getMaximumSize() {
     // 20040223 seems like maximum width should be pretty big really
     return new Dimension(Integer.MAX_VALUE, super.getPreferredSize().height);
-//    return new Dimension(super.getMaximumSize().width, super.getPreferredSize().height);
   }
     
-  /**
-   * Changes the currently selected item
-   * @see javax.swing.JComboBox#setSelectedItem(java.lang.Object)
-   */
-  public void setSelectedItem(Object anObject) {
-    // we're changed
-    // FIXME is this necessary?
-//    changeSupport.f();
-    // continue
-    super.setSelectedItem(anObject);
-  }
-  
   /**
    * Accessor - whether a selectAll() should occur on focus gained
    */
   public void setSelectAllOnFocus(boolean set) {
-    ((Editor)getEditor()).setSelectAllOnFocus(set);
+    // FIXME need selectAllOnFocus
   }
     
   /**
    * Current text value
    */
   public String getText() {
-    if (isEditable()) return getEditor().getItem().toString();
+    if (isEditable()) 
+      return getEditor().getItem().toString();
     return super.getSelectedItem().toString();
   }
   
@@ -151,14 +142,14 @@ public class ChoiceWidget extends JComboBox {
   public void setText(String text) {
     if (!isEditable) 
       throw new IllegalArgumentException("setText && !isEditable n/a");
-    ((Editor)getEditor()).setText(text);
+    getTextEditor().setText(text);
   }
   
   /**
    * Access to editor
    */
-  public TextFieldWidget getTextWidget() {
-    return ((Editor)getEditor());
+  public JTextField getTextEditor() {
+    return (JTextField)getEditor().getEditorComponent();
   }
   
   /**
@@ -193,21 +184,31 @@ public class ChoiceWidget extends JComboBox {
    * @see javax.swing.JComponent#requestFocus()
    */
   public void requestFocus() {
-    ((Editor)editor).requestFocus();
+    getTextEditor().requestFocus();
   }
   
   /**
    * @see javax.swing.JComponent#requestFocusInWindow()
    */
   public boolean requestFocusInWindow() {
-    return ((Editor)editor).requestFocusInWindow();
+    try {
+      return getTextEditor().requestFocusInWindow();
+    } catch (Throwable t) {
+      requestFocus();
+      return true;
+    }
   }
   
   /**
    * @see javax.swing.JComboBox#setEditor(javax.swing.ComboBoxEditor)
    */
-  public void setEditor(ComboBoxEditor anEditor) {
-    // ignore
+  public void setEditor(ComboBoxEditor set) {
+    
+    // continue
+    super.setEditor(set);
+    
+    // enable autocomplete support
+    new AutoCompleteSupport();
   }
   
   /**
@@ -223,104 +224,178 @@ public class ChoiceWidget extends JComboBox {
   public void removeActionListener(ActionListener l) {
     getEditor().removeActionListener(l);
   }
-  
+
   /**
-   * our own editor
+   * Auto complete support
    */
-  private class Editor extends TextFieldWidget implements ComboBoxEditor, DocumentListener, Runnable {
-    
+  private class AutoCompleteSupport implements DocumentListener, ActionListener {
+
     private boolean ignoreInsertUpdate = false;
+    
+    private Timer timer = new Timer(500, this);
     
     /**
      * Constructor
      */
-    private Editor() {
-      super("", 12);
-      getDocument().addDocumentListener(this);
+    private AutoCompleteSupport() {
+      getTextEditor().getDocument().addDocumentListener(this);
+      timer.setRepeats(false);
     }
     
-    /**
-     * @see javax.swing.ComboBoxEditor#getEditorComponent()
-     */
-    public Component getEditorComponent() {
-      return this;
-    }
-
-    /**
-     * @see javax.swing.ComboBoxEditor#getItem()
-     */
-    public Object getItem() {
-      return this.getText();
-    }
-
-    /**
-     * @see javax.swing.ComboBoxEditor#setItem(java.lang.Object)
-     */
-    public void setItem(Object set) {
-      String s = set==null ? "" : set.toString();
-      if (!super.getText().equals(s)) setText(s);
-      // done
-    }
-    
-    /**
-     * @see genj.util.swing.TextFieldWidget#setText(java.lang.String)
-     */
-    public void setText(String t) {
-      ignoreInsertUpdate = true;
-      super.setText(t);
-      ignoreInsertUpdate = false;
-    }
-
     /**
      * DocumentListener - callback
      */
     public void removeUpdate(DocumentEvent e) {
-      // ignored
+      changeSupport.fireChangeEvent();
     }
-    
+      
     /**
      * DocumentListener - callback
      */
     public void changedUpdate(DocumentEvent e) {
-      // ignored
+      changeSupport.fireChangeEvent();
     }
-    
+      
     /**
      * When something is typed in the editor's document we 
      * invoke a (delayed) auto complete on run()
      * @see genj.util.swing.TextFieldWidget#insertUpdate(javax.swing.event.DocumentEvent)
      */
     public void insertUpdate(DocumentEvent e) {
+      changeSupport.fireChangeEvent();
       // add a auto-complete callback
       if (!ignoreInsertUpdate)
-        SwingUtilities.invokeLater(this);
+        timer.start();
     }
-    
+      
     /**
      * Our auto-complete callback
      */
-    public void run() {
-      
+    public void actionPerformed(ActionEvent e) {
+        
       // do the auto-complete for txt
-      String txt = super.getText();
-      
+      String txt = getTextEditor().getText();
+        
       // try to select an item
+      ignoreInsertUpdate = true;
       String match = model.setSelectedPrefix(txt);
-      
+      ignoreInsertUpdate = false;
+        
       // text exactly matches - done
       if (match.length()<=txt.length())
         return;
-
+  
       // and select the text that has been added
       // ie from the current edit position to the end of the text
-      Caret c = getCaret();
+      Caret c = getTextEditor().getCaret();
       c.setDot(match.length());
       c.moveDot(txt.length());
-
+  
       // done      
     }
-    
-  } //Editor
+  } //AutoCompleteSupport
+  
+//  /**
+//   * our own editor
+//   * remark: only by implementing UIResource can I convince the UI to try
+//   * to set the editor on lnf changes - which gives us a chance to adopt
+//   * in change in look of the combobox
+//   */
+//  private class AutoCompleteEditor extends TextFieldWidget implements ComboBoxEditor, DocumentListener, ActionListener, UIResource {
+//    
+//    private boolean ignoreInsertUpdate = false;
+//    
+//    private Timer timer = new Timer(500, this);
+//    
+//    /**
+//     * Constructor
+//     */
+//    private AutoCompleteEditor() {
+//      super("", 12);
+//      getDocument().addDocumentListener(this);
+//      timer.setRepeats(false);
+//    }
+//    
+//    /**
+//     * @see javax.swing.ComboBoxEditor#getEditorComponent()
+//     */
+//    public Component getEditorComponent() {
+//      return this;
+//    }
+//
+//    /**
+//     * @see javax.swing.ComboBoxEditor#getItem()
+//     */
+//    public Object getItem() {
+//      return this.getText();
+//    }
+//
+//    /**
+//     * @see javax.swing.ComboBoxEditor#setItem(java.lang.Object)
+//     */
+//    public void setItem(Object set) {
+//      setText(set==null ? "" : set.toString());
+//    }
+//    
+//    /**
+//     * @see genj.util.swing.TextFieldWidget#setText(java.lang.String)
+//     */
+//    public void setText(String t) {
+//      ignoreInsertUpdate = true;
+//      super.setText(t);
+//      ignoreInsertUpdate = false;
+//    }
+//
+//    /**
+//     * DocumentListener - callback
+//     */
+//    public void removeUpdate(DocumentEvent e) {
+//      // ignored
+//    }
+//    
+//    /**
+//     * DocumentListener - callback
+//     */
+//    public void changedUpdate(DocumentEvent e) {
+//      // ignored
+//    }
+//    
+//    /**
+//     * When something is typed in the editor's document we 
+//     * invoke a (delayed) auto complete on run()
+//     * @see genj.util.swing.TextFieldWidget#insertUpdate(javax.swing.event.DocumentEvent)
+//     */
+//    public void insertUpdate(DocumentEvent e) {
+//      // add a auto-complete callback
+//      if (!ignoreInsertUpdate)
+//        timer.start();
+//    }
+//    
+//    /**
+//     * Our auto-complete callback
+//     */
+//    public void actionPerformed(ActionEvent e) {
+//      
+//      // do the auto-complete for txt
+//      String txt = super.getText();
+//      
+//      // try to select an item
+//      String match = model.setSelectedPrefix(txt);
+//      
+//      // text exactly matches - done
+//      if (match.length()<=txt.length())
+//        return;
+//
+//      // and select the text that has been added
+//      // ie from the current edit position to the end of the text
+//      Caret c = getCaret();
+//      c.setDot(match.length());
+//      c.moveDot(txt.length());
+//
+//      // done      
+//    }
+//    
+//  } //Editor
 
   /**
    * our own model
@@ -403,4 +478,4 @@ public class ChoiceWidget extends JComboBox {
 
   } //Model
 
-} //JComboBox
+} //ChoiceWidget
