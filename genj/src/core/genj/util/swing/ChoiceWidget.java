@@ -247,7 +247,7 @@ public class ChoiceWidget extends JComboBox {
 
     private boolean ignoreInsertUpdate = false;
     
-    private Timer timer = new Timer(500, this);
+    private Timer timer = new Timer(250, this);
     
     /**
      * Constructor
