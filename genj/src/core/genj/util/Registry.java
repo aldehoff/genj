@@ -287,11 +287,11 @@ public class Registry {
   public Point get(String key, Point def) {
 
     // Get box dimension
-    int x = get(key+".x", -1);
-    int y = get(key+".y", -1);
+    int x = get(key+".x", Integer.MAX_VALUE);
+    int y = get(key+".y", Integer.MAX_VALUE);
 
     // Missing ?
-    if ( (x==-1) || (y==-1) )
+    if ( x==Integer.MAX_VALUE || y==Integer.MAX_VALUE )
       return def;
 
     // Done
