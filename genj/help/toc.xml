@@ -15,10 +15,13 @@
     <tocitem target="v.entity"      text="@v.entity@"      image="img.NewEntity"   />
   </tocitem>
   <tocitem target="entities"    text="@entities@">
-    <tocitem target="e.indi"      text="@e.indi@"    image="img.Indi"        />
-    <tocitem target="e.family"    text="@e.family@"        image="img.Fam"         />
-    <tocitem target="e.note"      text="@e.note@"          image="img.Note"        />
-    <tocitem target="e.media"     text="@e.media@"         image="img.Media"       />
+    <tocitem target="e.indi"        text="@e.indi@"          image="img.Indi"        />
+    <tocitem target="e.family"      text="@e.family@"        image="img.Fam"         />
+    <tocitem target="e.media"       text="@e.media@"         image="img.Media"       />
+    <tocitem target="e.note"        text="@e.note@"          image="img.Note"        />
+    <tocitem target="e.source"      text="@e.source@"        image="img.Source"      />
+    <tocitem target="e.submitter"   text="@e.submitter@"     image="img.Submitter"   />
+    <tocitem target="e.repository"  text="@e.repository@"    image="img.Repository"  />
   </tocitem>
   <tocitem target="specials"    text="@specials@">
     <tocitem target="x.report"      text="@x.report@"   />

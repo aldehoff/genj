@@ -18,10 +18,13 @@
   <mapID target="v.navigator"  url="view/navigator.html" />
   <mapID target="v.entity"     url="view/entity.html" />
 
-  <mapID target="e.indi"      url="entity/indi.html" />
-  <mapID target="e.family"    url="entity/fam.html" />
-  <mapID target="e.note"      url="entity/note.html" />
-  <mapID target="e.media"     url="entity/media.html" />
+  <mapID target="e.indi"         url="entity/indi.html" />
+  <mapID target="e.family"       url="entity/fam.html" />
+  <mapID target="e.media"        url="entity/media.html" />
+  <mapID target="e.note"         url="entity/note.html" />
+  <mapID target="e.source"       url="entity/source.html" />
+  <mapID target="e.submitter"    url="entity/submitter.html" />
+  <mapID target="e.repository"   url="entity/repository.html" />
 
   <mapID target="x.report"    url="special/report.html" />
   <mapID target="x.faq1"      url="special/faq1.html" />
@@ -40,10 +43,11 @@
 
   <mapID target="img.Indi"          url="../images/Indi.gif" />
   <mapID target="img.Fam"           url="../images/Fam.gif" />
-  <mapID target="img.Note"          url="../images/Note.gif" >
   <mapID target="img.Media"         url="../images/Media.gif" />
+  <mapID target="img.Note"          url="../images/Note.gif" >
   <mapID target="img.Source"        url="../images/Source.gif" />
   <mapID target="img.Submitter"     url="../images/Submitter.gif" />
+  <mapID target="img.Repository"    url="../images/Repository.gif" >
 
   <mapID target="img.Welcome"       url="../images/Welcome.gif" />
   <mapID target="img.Intro"         url="../images/Cause.gif" />
