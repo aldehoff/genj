@@ -219,6 +219,12 @@ public class UnitGraphics {
     fontMetrics = graphics.getFontMetrics();
   }
   
+  /**
+   * Returns a Graphics object for direct rendering   */
+  public Graphics getGraphics() {
+    return graphics;
+  }
+  
   /** 
    * Returns the FontMetrics
    */
@@ -238,18 +244,6 @@ public class UnitGraphics {
    */
   public void pushTransformation() {
     stackTransformations.push(graphics.getTransform());
-  }
-  
-  /**
-   * Checks whether given rectangle is clipped
-   */
-  public boolean isClipped(double x1, double y1, double x2, double y2) {
-    Rectangle r = graphics.getClipBounds();
-    if (x1*xunit>r.getMaxX()) return true;
-    if (x2*xunit<r.getMinX()) return true;
-    if (y1*yunit>r.getMaxY()) return true;
-    if (y2*yunit<r.getMinY()) return true;
-    return false;
   }
   
   /**
@@ -292,7 +286,20 @@ public class UnitGraphics {
       r.getHeight()/yunit
     );
   }
-  
+
+  /**
+   * dimension to pixels
+   */
+  public Rectangle units2pixels(Rectangle2D bounds) {
+    return new Rectangle(
+      units2pixels(bounds.getMinX(), xunit),
+      units2pixels(bounds.getMinY(), yunit),
+      units2pixels(bounds.getWidth(), xunit),
+      units2pixels(bounds.getHeight(), yunit)
+    );
+  }
+
+
   /**
    * unit2pixels
    */
