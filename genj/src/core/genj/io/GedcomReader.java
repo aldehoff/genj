@@ -259,15 +259,19 @@ public class GedcomReader implements Trackable {
     
     // try it
     Gedcom result;
+    
     try {
       result = readGedcom();
+    } catch (Throwable t) {
+      // 20030530 what abbout OutOfMemoryError
+      throw new GedcomIOException(t.toString(), line);
     } finally  {
+      // close in
       try { in.close(); } catch (Throwable t) {};
-    }
-    
-    // Forget working thread
-    synchronized (lock) {
-      worker=null;
+      // forget working thread
+      synchronized (lock) {
+        worker=null;
+      }
     }
 
     // done
