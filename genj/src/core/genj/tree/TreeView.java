@@ -27,6 +27,7 @@ import java.awt.Graphics;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 
+import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.util.Registry;
@@ -56,7 +57,7 @@ public class TreeView extends JScrollPane {
     // setup content
     setViewportView(new ViewPortAdapter(content));
     // init model
-    model = new Model((Indi)gedcm.getEntities(Gedcom.INDIVIDUALS).get(0));
+    model = new Model((Fam)gedcm.getEntities(Gedcom.FAMILIES).get(0));
     // done
   }
   
@@ -76,9 +77,12 @@ public class TreeView extends JScrollPane {
      * @see javax.swing.JComponent#paintComponent(Graphics)
      */
     protected void paintComponent(Graphics g) {
+      g.setColor(Color.blue);
+      g.fillRect(0,0,1024,1024);
       // init renderer
       contentRenderer.cBackground = Color.white;
       contentRenderer.cIndiShape  = Color.black;
+      contentRenderer.cArcs       = Color.blue;
       // let the renderer do its work
       contentRenderer.render(g, model);
       // done

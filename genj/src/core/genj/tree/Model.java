@@ -27,9 +27,13 @@ import java.util.Collection;
 import java.util.List;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import gj.awt.geom.Path;
+import gj.layout.LayoutException;
+import gj.layout.tree.NodeOptions;
+import gj.layout.tree.TreeLayout;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
@@ -47,16 +51,30 @@ public class Model implements Graph {
   private Collection nodes = new ArrayList(100);
 
   /** bounds */
-  private Rectangle2D bounds;  
+  private Rectangle2D bounds = ModelHelper.getBounds(nodes);
+
+  /** shapes */
+  private Rectangle2D.Double 
+    shapeIndi = new Rectangle2D.Double(-1.5D,-1.0D,3.0D,2.0D),
+    shapeFam  = new Rectangle2D.Double(-1.5D,-0.5D,3.0D,1.0D),
+    shapeFoo  = new Rectangle2D.Double(-0.5D,-1.0D,1.0D,2.0D);
 
   /**
    * Constructor
    */
-  public Model(Indi root) {
+  public Model(Fam root) {
     // parse the tree
-    new IndiNode(root);
-    // update bounds
-    bounds = ModelHelper.getBounds(nodes);
+    FamNode node = new FamNode(root);
+    // layout
+    try {
+      TreeLayout tlayout = new TreeLayout();
+      tlayout.setRoot(node);
+      tlayout.setNodeOptions(new MyOptions());
+      tlayout.setBendArcs(true);
+      tlayout.applyTo(this);
+    } catch (LayoutException e) {
+      e.printStackTrace();
+    }
     // done
   }
   
@@ -84,8 +102,8 @@ public class Model implements Graph {
   /**
    * A node for an entity
    */
-  /*package*/ abstract class EntityNode implements Node {
-
+  /*package*/ abstract class MyNode implements Node {
+    
     /** the entity */
     private Entity entity;
     
@@ -95,13 +113,10 @@ public class Model implements Graph {
     /** position of this entity */
     private Point2D pos = new Point2D.Double();
     
-    /** shape */
-    private Rectangle2D.Double shape = new Rectangle2D.Double(-1.5D,-1D,3D,2D);
-
     /**
      * Constructor
      */
-    private EntityNode(Entity etity) {
+    private MyNode(Entity etity) {
       // remember
       entity = etity;
       // publish
@@ -133,59 +148,205 @@ public class Model implements Graph {
     /**
      * @see gj.model.Node#getShape()
      */
-    public Shape getShape() {
-      return shape;
-    }
-
-  } //EntityNode
+    public abstract Shape getShape();
+    
+    /**
+     * Resolve Padding
+     */
+    protected abstract double getPadding(int side);
+    
+  } //MyNode
   
   /**
    * A node for an individual
    */
-  /*package*/ class IndiNode extends EntityNode {
+  /*package*/ class IndiNode extends MyNode {
+    /** whether there are partners of the indi */
+    private boolean hasPartners = false;
     /**
      * Constructor
      */
     private IndiNode(Indi indi) {
       // delegate
       super(indi);
-      // grab the children
-      Indi[] children = indi.getChildren();
-      for (int c=0; c<children.length; c++) {
-        Indi child = children[c];
-        new Indi2Indi(this, new IndiNode(child));
-      }
       // done
     }
-  } //IndiNode
-
-  /**
-   * An arc between two individuals
-   */
-  /*package*/ class Indi2Indi implements Arc {
     /**
      * Constructor
      */
-    private Indi2Indi(EntityNode n1, EntityNode n2) {
+    private IndiNode(Indi indi, FamNode famc) {
+      // delegate
+      super(indi);
+      // arc from famc to me
+      new MyArc(famc, this, true);       
+      // loop through our fams
+      Fam[] fams = indi.getFamilies();
+      for (int f=0; f<fams.length; f++) {
+        // our family
+        Fam fam = fams[f];
+        if (fam.getNoOfSpouses()==1) {
+          // below us
+          new MyArc(this, new FamNode(fam), true);
+        } else {
+          // mark partners
+          hasPartners = true;
+          // beside us
+          new MyArc(famc, new MarrNode(fam), false);
+          new MyArc(famc, new IndiNode(fam.getOtherSpouse(indi)), false);
+        }
+        // next family
+      }
+      // done
+    }
+    /**
+     * @see gj.model.Node#getShape()
+     */
+    public Shape getShape() {
+      return shapeIndi;
+    }
+    /**
+     * @see genj.tree.Model.MyNode#getPadding(int)
+     */
+    protected double getPadding(int side) {
+      if (side==MyOptions.EAST) return hasPartners ? 0.0D : 0.3D;
+      return 0.1D;
+    }
+  } //MyINode
+  
+  /**
+   * A node for a family
+   */
+  /*package*/ class FamNode extends MyNode {
+    /**
+     * Constructor
+     */
+    private FamNode(Fam fam) {
+      // delegate
+      super(fam);
+      // grab the children
+      Indi[] children = fam.getChildren();
+      for (int c=0; c<children.length; c++) {
+        // here's the child
+        Indi child = children[c];
+        // add an arc to that
+        new IndiNode(child, this);
+        // next child
+      }
+      // done
+    }
+    /**
+     * @see genj.tree.Model.MyNode#getShape()
+     */
+    public Shape getShape() {
+      return shapeFam;
+    }
+    /**
+     * @see genj.tree.Model.MyNode#getPadding(int)
+     */
+    protected double getPadding(int side) {
+      if (side==MyOptions.NORTH) return 0;
+      return 0.1;
+    }
+  } //MyFNode
+
+  /**
+   * A dummy node
+   */
+  private class MarrNode extends MyNode {
+    /**
+     * Constructor
+     */
+    private MarrNode(Fam fam) {
+      // delegate
+      super(null);
+      // add node for fam below
+      new MyArc(this, new FamNode(fam), false);
+    }
+    /**
+     * @see genj.tree.Model.MyNode#getShape()
+     */
+    public Shape getShape() {
+      return null;
+    }
+    /**
+     * @see genj.tree.Model.MyNode#getPadding(int)
+     */
+    protected double getPadding(int side) {
+      if (side==MyOptions.NORTH||side==MyOptions.SOUTH)
+        return shapeIndi.getHeight()/2+0.1;
+      return 0.0;
+    }
+
+  } //DummyNode
+  
+  /**
+   * An arc between two individuals
+   */
+  /*package*/ class MyArc implements Arc {
+    /** start */
+    private MyNode start; 
+    /** end */
+    private MyNode end; 
+    /** path */
+    private Path path;
+    /**
+     * Constructor
+     */
+    private MyArc(MyNode n1, MyNode n2, boolean p) {
+      // remember
+      start = n1;
+      end   = n2;
+      if (p) path = new Path();
+      // register
+      n1.arcs.add(this);
+      n2.arcs.add(this);
+      arcs.add(this);
+      // done  
     }
     /**
      * @see gj.model.Arc#getEnd()
      */
     public Node getEnd() {
-      return null;
+      return end;
     }
     /**
      * @see gj.model.Arc#getStart()
      */
     public Node getStart() {
-      return null;
+      return start;
     }
     /**
      * @see gj.model.Arc#getPath()
      */
     public Path getPath() {
-      return null;
+      return path;
     }
   } //Indi2Indi
 
+  /**
+   * Customs NodeOptions
+   */
+  private class MyOptions implements NodeOptions {
+    /** our node */
+    private MyNode mynode;
+    /**
+     * @see gj.layout.tree.NodeOptions#set(Node)
+     */
+    public void set(Node node) {
+      mynode = (MyNode)node;
+    }
+    /**
+     * @see gj.layout.tree.NodeOptions#getAlignment(int)
+     */
+    public double getAlignment(int dir) {
+      return 0.5;
+    }
+    /**
+     * @see gj.layout.tree.NodeOptions#getPadding(int)
+     */
+    public double getPadding(int dir) {
+      return mynode.getPadding(dir);
+    }
+  } //MyNodeOptions
+  
 } //Model

@@ -24,12 +24,15 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Iterator;
 
 import genj.renderer.UnitGraphics;
+import gj.awt.geom.Path;
+import gj.model.Arc;
 
 /**
  * The renderer knowing how to render the content of tree's model
@@ -41,6 +44,9 @@ public class ContentRenderer {
   
   /** shape color for indis */
   /*package*/ Color cIndiShape = null;
+  
+  /** shape color for arcs */
+  /*package*/ Color cArcs = null;
 
   /**
    * The dimension of the content
@@ -58,7 +64,7 @@ public class ContentRenderer {
    */
   public void render(Graphics g, Model model) {  
     // go 2d
-    UnitGraphics ug = new UnitGraphics(g, UnitGraphics.CENTIMETERS);
+    UnitGraphics ug = new UnitGraphics(g, UnitGraphics.CENTIMETERS, UnitGraphics.CENTIMETERS);
     // translate to center
     Rectangle2D bounds = model.getBounds();
     ug.translate(-bounds.getX(), -bounds.getY());
@@ -66,6 +72,8 @@ public class ContentRenderer {
     renderBackground(ug, bounds);
     // render the nodes
     renderNodes(ug, model.getNodes());
+    // render the arcs
+    renderArcs(ug, model.getArcs());
     // done
   }  
   
@@ -77,17 +85,54 @@ public class ContentRenderer {
     Iterator it = nodes.iterator();
     while (it.hasNext()) {
       // grab node
-      Model.EntityNode node = (Model.EntityNode)it.next();
+      Model.MyNode node = (Model.MyNode)it.next();
       Point2D pos = node.getPosition();
       double 
         x = pos.getX(),
         y = pos.getY();
-      // draw its shape
-      g.setColor(cIndiShape);
-      g.draw(node.getShape(), x, y, false);
-      // draw its content
-      g.draw("Hi", x, y);
-      // done
+      Object content = node.getContent();
+      // draw its shape & content
+      Shape shape = node.getShape();
+      if (shape!=null) {
+        g.setColor(cIndiShape);
+        g.draw(shape, x, y, false);
+        g.pushClip(x, y, shape.getBounds2D());
+        renderContent(g, x, y, content);
+        g.popClip();
+      } else {
+        renderContent(g, x, y, content);
+      }
+      // next
+    }
+    // done
+  }
+  
+  /**
+   * Render the content of a node
+   */
+  private void renderContent(UnitGraphics g, double x, double y, Object content) {
+    // safety check
+    if (content==null) return;
+    // draw it
+    g.draw(content.toString(), x, y);
+    // done
+  }
+  
+  /**
+   * Render the arcs
+   */
+  private void renderArcs(UnitGraphics g, Collection arcs) {
+    // prepare color
+    g.setColor(cArcs);
+    // loop
+    Iterator it = arcs.iterator();
+    while (it.hasNext()) {
+      // grab arc
+      Arc arc = (Arc)it.next();
+      // its path
+      Path path = arc.getPath();
+      if (path!=null) g.draw(path, 0, 0, false);
+      // next
     }
     // done
   }
