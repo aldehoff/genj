@@ -67,10 +67,10 @@ public class EntityRenderer {
   private static final Segment EMPTY_SEGMENT = new Segment(); 
   
   /** the root of our rendering view */
-  private View root;
+  private RootView root;
   
   /** the kit we're using */
-  private HTMLEditorKit kit = new ModifiedHTMLEditorKit();
+  private HTMLEditorKit kit = new MyHTMLEditorKit();
   
   /** the document we're looking at */
   private HTMLDocument doc = new HTMLDocument();
@@ -80,6 +80,9 @@ public class EntityRenderer {
   
   /** all PropertyViews we know */
   private List propViews = new ArrayList(16);
+  
+  /** all TableViews we know */
+  private List tableViews = new ArrayList(4);
   
   /** the proxies we know */
   private static Map proxies = new HashMap(10);
@@ -119,7 +122,36 @@ public class EntityRenderer {
    * 
    */
   public void render(Graphics g, Rectangle r) {
+    
+    // invalidate views 
+    Iterator pv = propViews.iterator();
+    while (pv.hasNext()) {
+      ((PropertyView)pv.next()).invalidate();
+    }
+    
+    // and make sure TableView's update their grid
+    Iterator tv = tableViews.iterator();
+    while (tv.hasNext()) {
+      // this will cause invalidateGrid on a javax.swing.text.html.TableView
+      ((View)tv.next()).replace(0,0,null);
+    }
+
+//      View parent = getParent();
+//      while (parent!=null) {
+////        try {
+////          parent.getClass().getDeclaredMethod("invalidateGrid", new Class[]{}).invoke(parent, new Object[]{});
+////          System.out.println("!");
+////        } catch (Throwable t) { t.printStackTrace(); }
+//        parent.replace(0,0,null);
+//        parent = parent.getParent();
+//      } 
+//      //((javax.swing.text.html.TableView.RowView)getParent()).preferenceChanged(this,true,true);
+//      //invalidateGrid
+    
+    // set the size of root
     root.setSize(r.width,r.height);
+    
+    // show it
     root.paint(g, r);
   }
   
@@ -130,13 +162,6 @@ public class EntityRenderer {
     
     // keep it
     entity = set;
-    
-    // mark views 
-    Iterator it = propViews.iterator();
-    while (it.hasNext()) {
-      PropertyView v = (PropertyView)it.next();
-      v.invalidate();
-    }
     
     // done
   }
@@ -151,10 +176,10 @@ public class EntityRenderer {
   /**
    * 
    */
-  private class ModifiedHTMLEditorKit extends HTMLEditorKit {
+  private class MyHTMLEditorKit extends HTMLEditorKit {
     
     /** the view factory we use */
-    private ViewFactory factory = new ModifiedHTMLFactory();
+    private ViewFactory factory = new MyHTMLFactory();
   
     /**
      * @see javax.swing.text.EditorKit#getViewFactory()
@@ -168,7 +193,7 @@ public class EntityRenderer {
   /**
    * 
    */
-  private class ModifiedHTMLFactory extends HTMLFactory {
+  private class MyHTMLFactory extends HTMLFactory {
     
     /**
      * @see javax.swing.text.ViewFactory#create(Element)
@@ -182,7 +207,16 @@ public class EntityRenderer {
         result = new PropertyView(elem);
         propViews.add(result);
       } else {
+        
+        // .. otherwise default to super
         result = super.create(elem);
+        
+        // .. keep track of TableViews
+        if ("table".equals(elem.getName())) {
+          tableViews.add(result);
+        }
+          
+        
       }
       
       // done
@@ -194,11 +228,11 @@ public class EntityRenderer {
   /**
    * 
    */
-  private abstract class BaseView extends View {
+  private abstract class MyView extends View {
     /**
      * Constructor
      */
-    BaseView(Element elem) {
+    MyView(Element elem) {
       super(elem);
     }
     /**
@@ -228,10 +262,13 @@ public class EntityRenderer {
   /**
    * RootView onto a HTML Document
    */
-  private class RootView extends BaseView {
+  private class RootView extends MyView {
 
     /** the root of the html's view hierarchy */
     private View view;
+    
+    /** the size of the root view */
+    private float width, height;
 
     /**
      * Constructor
@@ -272,7 +309,11 @@ public class EntityRenderer {
     /**
      * the wrapped view needs to be sized
      */    
-    public void setSize(float width, float height) {
+    public void setSize(float wIdth, float heIght) {
+      // remember
+      width = wIdth;
+      height = heIght;
+      // delegate
       view.setSize(width, height);
     }
 
@@ -295,7 +336,7 @@ public class EntityRenderer {
   /**
    *
    */
-  private class PropertyView extends BaseView implements Cloneable {
+  private class PropertyView extends MyView implements Cloneable {
     
     /** our preference when looking at the property */
     private int preference;
@@ -306,6 +347,9 @@ public class EntityRenderer {
     /** the tag path used */
     private TagPath path = null;
     
+    /** maximum width/height */
+    private int maxw = 0, maxh = 0;
+     
     /** the cached property we're displaying */
     private Object property = null;
     
@@ -352,7 +396,24 @@ public class EntityRenderer {
           preference = PropertyProxy.PREFER_IMAGE;
       }
       
+      // check max size
+      maxw = getInt(atts, "maxw", 0, 100, 75);
+      maxh = getInt(atts, "maxh", 0, 100, 75);
+      
       // done
+    }
+    
+    /**
+     * Gets an int value from attributes     */
+    private int getInt(AttributeSet atts, String key, int min, int max, int def) {
+      // grab a value and try to parse
+      Object val = atts.getAttribute(key);
+      if (val!=null) try {
+        return Math.max(min, Math.min(max, Integer.parseInt(val.toString())));
+      } catch (NumberFormatException e) {
+      }
+      // not found
+      return def;
     }
     
     /**
@@ -363,8 +424,8 @@ public class EntityRenderer {
       // on the current entity's properties
       property = null;
       preferredSpan = null;
-      // signal through superclass
-      super.preferenceChanged(null,true,true);
+      // signal preference change through super
+      super.preferenceChanged(this,true,true);
     }
     
     /**
@@ -408,15 +469,17 @@ public class EntityRenderer {
      */
     public void paint(Graphics g, Shape allocation) {
       // find property
-      //if (proxy==null) return ;
       Property p = getProperty();
       if (p==null) return;
       // setup painting attributes
       g.setColor(getForeground());
       g.setFont(getFont());
       // render
-      Rectangle bounds = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
-      proxy.render(g, bounds, p, preference);
+      Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
+      Rectangle old = g.getClipBounds();
+      g.clipRect(r.x, r.y, r.width, r.height);
+      proxy.render(g, r, p, preference);
+      g.setClip(old.x, old.y, old.width, old.height);
       // done
     }
     /**
@@ -436,7 +499,15 @@ public class EntityRenderer {
       if (p==null) return 0;
       // check cached preferred Spane
       if (preferredSpan==null) {
-        preferredSpan =proxy.getSize(getFontMetrics(), p, preference);
+        preferredSpan = proxy.getSize(getFontMetrics(), p, preference);
+        preferredSpan.width = Math.min(
+          (int)(root.width  * maxw / 100),
+          preferredSpan.width
+        );  
+        preferredSpan.height = Math.min(
+          (int)(root.height * maxh / 100),
+          preferredSpan.height
+        );  
       }
       return axis==X_AXIS ? preferredSpan.width : preferredSpan.height;
     }
@@ -446,9 +517,9 @@ public class EntityRenderer {
     public int getBreakWeight(int axis, float pos, float len) {
       // not on vertical
       if (axis==Y_AXIS) return BadBreakWeight;
-      // horizontal might work
+      // horizontal might work after our content
       if (len > getPreferredSpan(X_AXIS)) {
-        return GoodBreakWeight;
+        return ExcellentBreakWeight;//GoodBreakWeight;
       }
       return BadBreakWeight;
     }  
@@ -457,11 +528,6 @@ public class EntityRenderer {
      */
     public View breakView(int axis, int offset, float pos, float len) {
       return this;
-//      // not on vertical
-//      if (axis==Y_AXIS) return this;
-//      // break it
-//      View result = (View)clone();
-//      return result;
     }
   } //PropertyView
 

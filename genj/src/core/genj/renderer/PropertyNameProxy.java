@@ -21,6 +21,8 @@ package genj.renderer;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
+import genj.util.WordBuffer;
+
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -54,7 +56,10 @@ public class PropertyNameProxy extends PropertyProxy {
     if (!(prop instanceof PropertyName)||!prop.isValid()) 
       return prop.getValue();
     PropertyName name = (PropertyName)prop;
-    return name.getLastName()+", "+name.getFirstName();
+    WordBuffer b = new WordBuffer().setFiller(", ");
+    b.append(name.getLastName());
+    b.append(name.getFirstName());
+    return b.toString();
   }  
 
 } //PropertyNameProxy

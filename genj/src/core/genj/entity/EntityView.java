@@ -36,14 +36,14 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.Enumeration;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.JToolBar;
 
 /**
  * A rendering component showing the currently selected entity
  * via html
  */
-public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport {
+public class EntityView extends JComponent implements ToolBarSupport, CurrentSupport {
 
   /** language resources we use */  
   /*package*/ final static Resources resources = new Resources("genj.entity");
@@ -96,7 +96,7 @@ public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport
     g.setColor(Color.white);
     g.fillRect(0,0,bounds.width,bounds.height);
     g.setColor(Color.black);
-    renderer.render(g, new Rectangle(0,0,bounds.width,bounds.height/2));
+    renderer.render(g, new Rectangle(0,0,bounds.width,bounds.height));
   }
 
   /**

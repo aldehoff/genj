@@ -28,6 +28,9 @@ public class WordBuffer {
   /** a buffer we collect words in */
   private StringBuffer buffer;
   
+  /** the filler between words */
+  private String filler = " ";
+  
   /** 
    * Constructor
    */
@@ -41,6 +44,13 @@ public class WordBuffer {
    */
   public WordBuffer() {
     buffer = new StringBuffer(80);
+  }
+  
+  /**
+   * Set the filler to use between words   */
+  public WordBuffer setFiller(String set) {
+    filler = set;
+    return this;
   }
   
   /** 
@@ -65,7 +75,7 @@ public class WordBuffer {
     // nothing to do?
     if ((word==null)||(word.length()==0)) return this;
     // need a word-filler?
-    if ((buffer.length()>0)&&(!isStartingWithPunctuation(word))) buffer.append(' ');
+    if ((buffer.length()>0)&&(!isStartingWithPunctuation(word))) buffer.append(filler);
     // get the word
     buffer.append(word.trim());
     // done

@@ -50,7 +50,10 @@ public class PropertyDateProxy extends PropertyProxy {
    */
   protected void render(Graphics g, Rectangle bounds, String txt) {
     int w = g.getFontMetrics().stringWidth(txt);
-    bounds.x += bounds.width-w;
+    bounds.x = Math.max(
+      bounds.x,
+      bounds.x+bounds.width-w
+    );
     super.render(g, bounds, txt);
   }
 

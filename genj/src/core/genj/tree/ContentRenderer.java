@@ -68,13 +68,21 @@ public class ContentRenderer {
   
   private String foo =
     "<b><prop path=INDI></b>\n"+
-    "<br><prop path=INDI:SEX img=yes txt=no>\n"+
-    " <i><prop path=INDI:NAME></i></td></tr>\n"+
-    "<br><prop path=INDI:BIRT:DATE img=yes>, <u><prop path=INDI:BIRT:PLAC></u>\n"+
-    "<br><prop path=INDI:RESI:ADDR>,\n"+
-    "    <prop path=INDI:RESI:ADDR:CITY>,\n"+
+    "<table><tr valign=top>\n"+
+    " <td>\n"+
+    "  <prop path=INDI:SEX img=yes txt=no>\n"+
+    "   <i><prop path=INDI:NAME></i>\n"+
+    "  <br>\n"+
+    "  <prop path=INDI:BIRT:DATE img=yes>,\n"+
+    "   <u><prop path=INDI:BIRT:PLAC></u>\n"+
+    "  <br>\n"+
+    "  <prop path=INDI:RESI:ADDR img=yes>,\n"+ 
+    "   <prop path=INDI:RESI:ADDR:CITY>\n"+  
     "    <prop path=INDI:RESI:ADDR:POST>\n"+
-    "<br><prop path=INDI:OBJE:FILE>\n";  
+    " </td><td>\n"+
+    "  <prop path=INDI:OBJE:FILE maxw=25>\n"+
+    " </td>\n"+
+    "</tr></table>\n";
    
 //      "<b><prop path=INDI></b>\n" +
 //      "<table>\n" +
@@ -185,7 +193,7 @@ public class ContentRenderer {
     Rectangle2D r = shape.getBounds2D();
     g.pushClip(x, y, r);
     g.pushTransformation();
-    // draw it - FIXME : render appropriate entity content here
+    // draw it - FIXME : pick from renderer for individual/family 
     g.translate(x, y);
     contentRenderer.setEntity((Entity)content);
     contentRenderer.render(g.getGraphics(), g.units2pixels(r));

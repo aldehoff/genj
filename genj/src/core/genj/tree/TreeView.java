@@ -42,11 +42,9 @@ import gj.model.Node;
 import gj.ui.UnitGraphics;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
-import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -143,7 +141,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     zoom = registry.get("zoom", 1.0F);
     
     // setup layout
-    setLayout(new MyLayout()); 
+    //setLayout(new MyLayout()); 
     add(overview);
     add(scroll);
 
@@ -159,6 +157,22 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // done
   }
   
+  /**
+   * @see java.awt.Container#doLayout()
+   */
+  public void doLayout() {
+    // layout components
+    int 
+      w = getWidth(),
+      h = getHeight();
+    Component[] cs = getComponents();
+    for (int c=0; c<cs.length; c++) {
+      if (cs[c]==overview) continue;
+      cs[c].setBounds(0,0,w,h);
+    }
+    // done
+  }
+
   /**
    * @see javax.swing.JComponent#removeNotify()
    */
@@ -536,50 +550,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     }
   } //ActionOverview    
 
-  /**
-   * Special layout   */
-  private class MyLayout implements LayoutManager {
-    /**
-     * @see java.awt.LayoutManager#addLayoutComponent(java.lang.String, java.awt.Component)
-     */
-    public void addLayoutComponent(String name, Component comp) {
-      // ignored
-    }
-    /**
-     * @see java.awt.LayoutManager#removeLayoutComponent(java.awt.Component)
-     */
-    public void removeLayoutComponent(Component arg0) {
-      // ignored
-    }
-    /**
-     * @see java.awt.LayoutManager#layoutContainer(java.awt.Container)
-     */
-    public void layoutContainer(Container parent) {
-      // layout components
-      int 
-        w = parent.getWidth(),
-        h = parent.getHeight();
-      Component[] cs = parent.getComponents();
-      for (int c=0; c<cs.length; c++) {
-        if (cs[c]==overview) continue;
-        cs[c].setBounds(0,0,w,h);
-      }
-      // done
-    }
-    /**
-     * @see java.awt.LayoutManager#preferredLayoutSize(java.awt.Container)
-     */
-    public Dimension preferredLayoutSize(Container arg0) {
-      return new Dimension(640,480);
-    }
-    /**
-     * @see java.awt.LayoutManager#minimumLayoutSize(java.awt.Container)
-     */
-    public Dimension minimumLayoutSize(Container arg0) {
-      return new Dimension(128,128);
-    }
-  } //MyLayout
-  
   /**
    * ActionTree
    */

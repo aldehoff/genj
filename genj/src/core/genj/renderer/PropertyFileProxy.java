@@ -51,7 +51,10 @@ public class PropertyFileProxy extends PropertyProxy {
     ImgIcon img = getImage(prop);
     if (img==null) return;
     // check if we should zoom
-    double zoom = Math.min(1.0D, ((double)bounds.height)/img.getIconHeight());
+    double zoom = Math.min(
+      Math.min(1.0D, ((double)bounds.height)/img.getIconHeight()),
+      Math.min(1.0D, ((double)bounds.width )/img.getIconWidth ())
+    );
     // paint
     img.paintIcon(g, bounds.x, bounds.y, zoom);
     // done

@@ -116,7 +116,13 @@ public class PropertyProxy {
    * 
    */
   protected void render(Graphics g, Rectangle bounds, String txt) {
-    g.drawString(txt, bounds.x, bounds.y+g.getFontMetrics().getAscent());
+    FontMetrics fm = g.getFontMetrics();
+    // by default we place the texts base at the bottom of bounds
+    int y = bounds.y+bounds.height;
+    // if bounds is high enough we patch up by fm's descent
+    if (bounds.height>=fm.getAscent()) y -= fm.getDescent();
+    // and paint
+    g.drawString(txt, bounds.x, y);
   }
 
   /**
