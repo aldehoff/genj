@@ -182,6 +182,10 @@
        <fileset dir="./images"/>
        <fileset dir="./language/en"/>
        <fileset dir="./src/core" includes="**/*.properties"/>
+       <manifest>
+         <attribute name="Main-Class" value="genj.app.App"/>
+         <attribute name="Class-Path" value="jhbasic.jar graphj.jar genj_de.zip genj_en.zip genj_es.zip genj_fr.zip genj_it.zip genj_ja.zip"/>
+       </manifest>
      </jar>
 
      <zip zipfile="${dir.dist}/genj_app-${app.version}.zip" update="True">
