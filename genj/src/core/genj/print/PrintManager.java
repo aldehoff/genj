@@ -34,15 +34,9 @@ import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
-import java.io.File;
 
-import javax.print.PrintService;
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.ResolutionSyntax;
-import javax.print.attribute.standard.Destination;
-import javax.print.attribute.standard.OrientationRequested;
-import javax.print.attribute.standard.PrinterResolution;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 /**
@@ -112,121 +106,31 @@ public class PrintManager {
       // create a job
       job = PrinterJob.getPrinterJob();
       
-      // restore service?
-      setPrintService(registry.get("printer.service",""));
+      // initial page format
+      pageFormat = job.defaultPage();
+      pageFormat.setOrientation(registry.get("printer.orientation", PageFormat.PORTRAIT));
       
-      // restore orientation
-      setPortrait(registry.get("printer.portrait", true));
-
       // show dialog
       boolean cont = showDialog(owner);
-            
-      // cancel if not requested to continue
       if (!cont) {
         job.cancel();
         return;
       }
+
+      // glue to us as the printable     
+      job.setPrintable(new PrintableImpl(pageFormat, renderer), pageFormat);
       
-      // remember service
-      registry.put("printer.service", getPrintService().getName());
-
-      // remember orientation
-      registry.put("printer.portrait", isPortrait());
-
-      // print it
-      print();      
+      // call
+      try {
+        job.print();
+      } catch (PrinterException pe) {
+        Debug.log(Debug.WARNING, this, "print() threw error", pe);
+        JOptionPane.showMessageDialog(owner, pe.getMessage(), "Print Error", JOptionPane.ERROR_MESSAGE);
+      }
       
       // done
     }
     
-    /**
-     * The available services     */
-    /*package*/ PrintService[] getPrintServices() {
-      return job.lookupPrintServices();
-    }
-    
-    /**
-     * Current service     */
-    /*package*/ PrintService getPrintService() {
-      return job.getPrintService();
-    }
-    
-    /**
-     * Current service     */
-    /*package*/ boolean setPrintService(PrintService service) {
-      try {
-        job.setPrintService(service);
-        return true;
-      } catch (PrinterException e) {
-        Debug.log(Debug.WARNING, this, "Couldn't change printer", e);
-        return false;
-      }
-    }
-    
-    /**
-     * Current service     */
-    /*package*/ boolean setPrintService(String name) {
-      // look for it
-      PrintService[] services = getPrintServices();
-      for (int i = 0; i < services.length; i++) {
-      	if (services[i].getName().equals(name))
-          return setPrintService(services[i]);
-      }
-      // not found
-      return false;
-    }
-    
-    /**
-     * Current orientation     */
-    /*package*/ void setPortrait(boolean set) {
-      if (set)  
-        getPageFormat().setOrientation(PageFormat.PORTRAIT);
-      else
-        getPageFormat().setOrientation(PageFormat.LANDSCAPE);
-    }
-    
-    /**
-     * Current orientation
-     */
-    /*package*/ boolean isPortrait() {
-      return getPageFormat().getOrientation()==PageFormat.PORTRAIT;
-    }
-        
-    /**
-     * PageFormat     */
-    /*package*/ PageFormat getPageFormat() {
-      if (pageFormat==null) pageFormat = job.defaultPage();
-      return pageFormat;
-    }
-
-    /**
-     * the actual printing logic     */    
-    private void print() {
-
-      // prepare print request
-      HashPrintRequestAttributeSet set = new HashPrintRequestAttributeSet();
-      if (getPageFormat().getOrientation()==PageFormat.LANDSCAPE)
-        set.add(OrientationRequested.LANDSCAPE);
-      else
-        set.add(OrientationRequested.PORTRAIT);
-      set.add(new PrinterResolution(300,300,ResolutionSyntax.DPI));
-        
-      // FIXME : hack to redirect into file
-      set.add(new Destination(new File("d:/temp/tst.ps").toURI()));
-
-      // glue to us as the printable     
-      job.setPrintable(new PrintableImpl(getPageFormat(), renderer));
-      
-      // call
-      try {
-        job.print(set);
-      } catch (Throwable t) {
-        t.printStackTrace();
-      }
-
-      // done            
-    }
-
     /**
      * Show a print dialog
      */
@@ -249,6 +153,26 @@ public class PrintManager {
       
       // check choice
       return dlg.getChoice()==0;
+    }
+    
+    /**
+     * PageFormat     */
+    /*package*/ PageFormat getPageFormat() {
+      return pageFormat;
+    }
+
+    /**
+     * Show page dialog     */
+    /*package*/ void showPageDialog() {
+      // let the user change things
+      pageFormat = job.pageDialog(getPageFormat());
+      // preserve page format
+      registry.put("printer.orientation", pageFormat.getOrientation());
+      // done            
+      if ( getPageFormat().getOrientation() == PageFormat.LANDSCAPE)
+       System.out.println("LANDSCAPE");
+      else
+       System.out.println("PORTRAIT");
     }
     
   } //PrintTask

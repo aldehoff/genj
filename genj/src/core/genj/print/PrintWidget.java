@@ -20,23 +20,10 @@
 package genj.print;
 
 import genj.util.ActionDelegate;
-import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 
-import java.awt.Component;
-import java.awt.event.ActionListener;
-import java.awt.print.PageFormat;
-
-import javax.print.PrintService;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 
 /**
@@ -73,77 +60,35 @@ public class PrintWidget extends JTabbedPane {
    * Main Panel
    */
   private class MainPanel extends JPanel {
-    
-    /** combobox with printservices */
-    private JComboBox comboServices = new JComboBox();
-    
-    /** checkbox for orientation */
-    private JRadioButton 
-      radioPortrait   = new JRadioButton("Portrait"), 
-      radioLandscape = new JRadioButton("Landscape");
-  
+
     /**
      * Constructor     */
     private MainPanel() {
        
-      // setup combo PrintServices
-      comboServices.setModel(new DefaultComboBoxModel(task.getPrintServices()));
-      comboServices.addActionListener((ActionListener)new SelectService().as(ActionListener.class));
-      comboServices.setSelectedItem(task.getPrintService());
-      comboServices.setRenderer(new DefaultListCellRenderer() {
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-          return super.getListCellRendererComponent(list,((PrintService)value).getName(),index, isSelected, cellHasFocus);
-        }
-      });
- 
-      // setup radios for orientation
-      ButtonGroup bg = new ButtonGroup();bg.add(radioPortrait);bg.add(radioLandscape);
-      ActionListener a = (ActionListener)new SelectOrientation().as(ActionListener.class);
-      radioPortrait .addActionListener(a);
-      radioLandscape.addActionListener(a);
-      PageFormat page = task.getPageFormat();
-      if (page.getOrientation()==page.PORTRAIT) radioPortrait.setSelected(true);
-      else radioLandscape.setSelected(true);
-      
+       add(new JLabel("Printing is under development - This won't work!"));
       // layout
-      ButtonHelper bh = new ButtonHelper();
-      
-      GridBagHelper gh = new GridBagHelper(this);
-      gh.add(new JLabel("Printer")    , 0, 0);
-      gh.add(comboServices            , 1, 0, 1, 1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-      gh.add(new JLabel("Orientation"), 0, 1);
-      gh.add(radioPortrait            , 1, 1, 1, 1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-      gh.add(radioLandscape           , 1, 2, 1, 1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-      gh.add(Box.createGlue()         , 0,99,99, 1, gh.GROW_BOTH);
-      
+      ButtonHelper bh = new ButtonHelper().setContainer(this);
+      bh.create(new PageDlg());
       // done
     }
 
     /**
-     * Select Print Service
+     * Open Page Dialog
      */
-    private class SelectService extends ActionDelegate {
+    private class PageDlg extends ActionDelegate {
+      /**
+       * Constructor
+       */
+      private PageDlg() {
+        super.setText("Page Properties");
+      }
       /**
        * @see genj.util.ActionDelegate#execute()
        */
       protected void execute() {
-        task.setPrintService((PrintService)comboServices.getSelectedItem());
+        task.showPageDialog();
       }
-    } //SelectService
-    
-    /**
-     * Select Orientation
-     */
-    private class SelectOrientation extends ActionDelegate {
-      /**
-       * @see genj.util.ActionDelegate#execute()
-       */
-      protected void execute() {
-        task.getPageFormat().setOrientation(
-          radioLandscape.isSelected() ? PageFormat.LANDSCAPE : PageFormat.PORTRAIT
-        );
-      }
-    } //SelectOrientation
+    } //PrintDlg
     
   } //MainPanel
   
