@@ -32,12 +32,11 @@ import java.util.StringTokenizer;
 public class PointInTime implements Comparable {
 
   /** calendars */
-  public final static Calendar
-    GREGORIAN = new GregorianCalendar(),
-    JULIAN    = new JulianCalendar(),
-    HEBREW    = new Calendar("@#DHEBREW@"   , "hebrew"   , "images/Hebrew.gif"   , new String[]{ "TSH","CSH","KSL","TVT","SHV","ADR","ADS","NSN","IYR","SVN","TMZ","AAV","ELL" }),
-    FRENCHR   = new Calendar("@#DFRENCH R@" , "french"   , "images/FrenchR.gif"  , new String[]{ "VEND","BRUM","FRIM","NIVO","PLUV","VENT","GERM","FLOR","PRAI","MESS","THER","FRUC","COMP" });
-  
+  public final static GregorianCalendar GREGORIAN = new GregorianCalendar();
+  public final static JulianCalendar    JULIAN    = new JulianCalendar();
+  public final static Calendar          HEBREW    = new HebrewCalendar();
+  public final static FrenchRCalendar   FRENCHR   = new FrenchRCalendar();
+    
   public final static Calendar[] CALENDARS = { GREGORIAN, JULIAN, HEBREW, FRENCHR };
   
   /** calendar */
@@ -420,7 +419,7 @@ public class PointInTime implements Comparable {
   /**
    * Calendars we support
    */
-  public static class Calendar {
+  public static abstract class Calendar {
     
     /** fields */
     protected String escape;
@@ -537,32 +536,26 @@ public class PointInTime implements Comparable {
     /**
      * Calculate number of days in given month
      */
-    protected int getDays(int month, int year) {
-      return 31;
-    }
-    
+    protected abstract int getDays(int month, int year);
+        
     /**
      * PIT -> Julian Day
      */
-    protected int toJulianDay(PointInTime pit) throws GedcomException {
-      throw new GedcomException("Transformation "+getName()+" to Julian Day not supported");
-    }
+    protected abstract int toJulianDay(PointInTime pit) throws GedcomException;
     
     /**
      * Julian Day -> PIT
      */
-    protected PointInTime toPointInTime(int julianDay) throws GedcomException {
-      throw new GedcomException("Transformation Julian Day to "+getName()+" not supported");
-    }
+    protected abstract PointInTime toPointInTime(int julianDay) throws GedcomException;
     
   } //Calendar
 
-  // FIXME need calendar for hebrew and french r
+  // FIXME need calendar for hebrew
 
   /**
    * Our own gregorian - dunno if java.util.GregorianCalendar would be of much help
    */
-  private static class GregorianCalendar extends Calendar {
+  public static class GregorianCalendar extends Calendar {
 
     protected static final String MONTHS[]
       = { "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC" };
@@ -644,13 +637,13 @@ public class PointInTime implements Comparable {
   /**
    * Our own julian
    */
-  private static class JulianCalendar extends GregorianCalendar {
+  public static class JulianCalendar extends GregorianCalendar {
 
     /**
      * Constructor
      */
     protected JulianCalendar() {
-      super("@#DJULIAN@"   , "julian"   , "images/Julian.gif");
+      super("@#DJULIAN@", "julian", "images/Julian.gif");
     }
     
     /**
@@ -708,4 +701,122 @@ public class PointInTime implements Comparable {
 
   } //JulianCalendar
 
+  /**
+   * Our own french republican
+   */
+  public static class FrenchRCalendar extends Calendar {
+    
+    /* valid from 22 SEP 1792 to not including 1 JAN 1806 */
+    private static final int
+      START  = GREGORIAN.toJulianDay(getPointInTime(22-1, 9-1, 1792));
+
+    private static final String MONTHS[] 
+     = { "VEND","BRUM","FRIM","NIVO","PLUV","VENT","GERM","FLOR","PRAI","MESS","THER","FRUC","COMP" };
+    
+    /**
+     * Constructor
+     */
+    protected FrenchRCalendar() {
+      super("@#DFRENCH R@" , "french", "images/FrenchR.gif", MONTHS);
+    }
+    
+    /**
+     * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
+     */
+    protected int getDays(int month, int year) {
+      // standard month has 30 days
+      if (month<12)
+        return 30;
+        
+      // 5/6 jours complémentaires
+      return isLeap(year) ? 6 : 5;
+      
+      // noop
+    }
+    
+    /**
+     * Leap year test
+     */
+    private boolean isLeap(int year) { 
+      return year == 3 || year == 7 || year == 11;
+    }
+    
+    /**
+     * @see genj.gedcom.PointInTime.Calendar#isValid(int, int, int)
+     */
+    protected boolean isValid(int day, int month, int year) {
+      
+      // default checks
+      if (!super.isValid(day, month, year))
+        return false;
+        
+      // ok        
+      return true;
+    }
+    
+    /**
+     * @see genj.gedcom.PointInTime.Calendar#toJulianDay(genj.gedcom.PointInTime)
+     */
+    protected int toJulianDay(PointInTime pit) throws GedcomException {
+      return START + pit.getDay() + pit.getMonth()*30 + 365*(pit.getYear()-1);
+    }
+    
+    /**
+     * @see genj.gedcom.PointInTime.Calendar#toPointInTime(int)
+     */
+    protected PointInTime toPointInTime(int julianDay) throws GedcomException {
+      
+      julianDay = julianDay - START;
+      
+      int 
+        y  = julianDay/365 + 1,
+        yr = julianDay%365,
+        m  = yr/30,
+        mr = yr%30,
+        d  = mr;
+        
+      return new PointInTime(d,m,y,this);
+    }
+
+  
+  } //FrenchRCalendar
+
+  /**
+   * Our own hebrew republican
+   */
+  public static class HebrewCalendar extends Calendar {
+    
+    private static final String MONTHS[] 
+     = { "TSH","CSH","KSL","TVT","SHV","ADR","ADS","NSN","IYR","SVN","TMZ","AAV","ELL" };
+  
+    /**
+     * Constructor
+     */
+    protected HebrewCalendar() {
+      super("@#DHEBREW@", "hebrew", "images/Hebrew.gif", MONTHS);
+    }
+    
+    /**
+     * PIT -> Julian Day
+     */
+    protected int toJulianDay(PointInTime pit) throws GedcomException {
+      throw new GedcomException("Transformation from Hebrew Calendar not implemented yet");
+    }
+      
+    /**
+     * Julian Day -> PIT
+     */
+    protected PointInTime toPointInTime(int julianDay) throws GedcomException {
+      throw new GedcomException("Transformation to Hebrew Calendar not implemented yet");
+    }
+    
+    /**
+     * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
+     */
+    protected int getDays(int month, int year) {
+      return 30;
+    }
+    
+  } //HebrewCalendar    
+  
 } //PointInTime
