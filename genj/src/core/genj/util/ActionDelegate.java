@@ -45,7 +45,7 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
     ASYNC_NEW_INSTANCE   = 2;
   
   /** attributes */
-  private Icon       img,toggle;
+  private Icon       img;
   private String     txt;
   private String     stxt;
   private String     tip;
@@ -252,21 +252,6 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
    */
   public Icon getImage() {
     return img;
-  }
-  
-  /**
-   * accessor - toggle icon
-   */
-  public ActionDelegate setToggle(Icon t) {
-    toggle=t;
-    return this;
-  }
-  
-  /**
-   * accessor - toggle icon
-   */
-  public Icon getToggle() {
-    return toggle;
   }
   
   /**

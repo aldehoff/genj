@@ -495,23 +495,19 @@ public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, 
       .setContainer(bar)
       .setResources(resources)
       .setFocusable(false);
-    bh.create(new ActionOverview())
-      .setSelected(overview.isVisible());
+    bh.create(new ActionOverview(), null, overview.isVisible());
     
     // gap
     bar.addSeparator();
     
     // vertical/horizontal
-    bh.create(new ActionOrientation())
-      .setSelected(model.isVertical());
+    bh.create(new ActionOrientation(), Images.imgVert, model.isVertical());
     
     // families?
-    bh.create(new ActionFamsAndSpouses())
-      .setSelected(model.isFamilies());
+    bh.create(new ActionFamsAndSpouses(), Images.imgDoFams, model.isFamilies());
       
     // toggless?
-    bh.create(new ActionFoldSymbols())
-      .setSelected(model.isFoldSymbols());
+    bh.create(new ActionFoldSymbols(), null, model.isFoldSymbols());
       
     // gap
     bar.addSeparator();
@@ -897,7 +893,6 @@ public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, 
      */
     private ActionOverview() {
       super.setImage(Images.imgOverview);
-      super.setToggle(Images.imgOverview);
     }
     /**
      * @see genj.util.ActionDelegate#execute()
@@ -937,7 +932,6 @@ public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, 
      * Constructor     */
     private ActionOrientation() {
       super.setImage(Images.imgHori);
-      super.setToggle(Images.imgVert);
       super.setTip("orientation.tip");
     }
     /**
@@ -958,7 +952,6 @@ public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, 
      */
     private ActionFamsAndSpouses() {
       super.setImage(Images.imgDontFams);
-      super.setToggle(Images.imgDoFams);
       super.setTip("families.tip");
     }
     /**
@@ -979,7 +972,6 @@ public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, 
      */
     private ActionFoldSymbols() {
       super.setImage(Images.imgFoldSymbols);
-      super.setToggle(Images.imgFoldSymbols);
       super.setTip("foldsymbols.tip");
     }
     /**

@@ -34,6 +34,7 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
@@ -91,25 +92,30 @@ public class ButtonHelper {
   }
 
   /**
-   * Creates buttons
+   * Creates a toggle button
    */
-  public void create(ActionDelegate[] actions) {
-    for (int i = 0; i < actions.length; i++) {
-      create(actions[i]);
-    }
+  public AbstractButton create(ActionDelegate action, ImageIcon toggle, boolean state) {
+    
+    JToggleButton result = (JToggleButton)create(action, JToggleButton.class);
+    result.setSelectedIcon(toggle);
+    result.setSelected(state);
+    return result;
   }
-  
+
   /**
    * Creates the button
    */
-  public AbstractButton create(final ActionDelegate action) {
+  public AbstractButton create(ActionDelegate action) {
+    return create(action, buttonType);
+  }
+      
+  /**
+   * Creates the button
+   */
+  private AbstractButton create(final ActionDelegate action, Class type) {
     
     // create the button
-    final AbstractButton result;
-    if (action.getToggle()!=null)
-      result = new ToggleWidget();
-    else
-      result = createButton();
+    final AbstractButton result = createButton(type);
     
     // its text
     String s = string((isShortTexts&&action.getShortText()!=null) ? action.getShortText() : action.getText());
@@ -132,8 +138,6 @@ public class ButtonHelper {
     // its image
     if (isImageAllowed&&action.getImage()!=null) 
       result.setIcon(action.getImage());
-    if (isImageAllowed&&action.getToggle()!=null)
-      result.setSelectedIcon(action.getToggle());
     if (action.getTip()!=null) 
       result.setToolTipText(string(action.getTip()));
     if (insets!=null)
@@ -196,6 +200,17 @@ public class ButtonHelper {
   }
 
   /**
+   * Helper that instantiates the AbstractButton
+   */  
+  private AbstractButton createButton(Class type) {
+    try {
+      return (AbstractButton)type.newInstance();
+    } catch (Throwable t) {
+      throw new IllegalStateException("Couldn't create AbstractButton for "+buttonType);
+    }
+  }
+  
+  /**
    * Helper that takes given text and tries to use resources
    */
   private String string(String string) {
@@ -203,17 +218,6 @@ public class ButtonHelper {
     if (resources!=null) 
       string = resources.getString(string);
     return string;    
-  }
-  
-  /**
-   * Helper that instantiates the AbstractButton
-   */  
-  private AbstractButton createButton() {
-    try {
-      return (AbstractButton)buttonType.newInstance();
-    } catch (Throwable t) {
-      throw new IllegalStateException("Couldn't create AbstractButton for "+buttonType);
-    }
   }
   
   /**
