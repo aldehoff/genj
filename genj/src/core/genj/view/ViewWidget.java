@@ -22,9 +22,8 @@ package genj.view;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.print.PrintProperties;
+import genj.print.PrintManager;
 import genj.print.PrintRenderer;
-import genj.print.Printer;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
@@ -121,10 +120,10 @@ import javax.swing.border.TitledBorder;
     }
   
     // .. a button for printing View
-    PrintRenderer renderer = factory.createPrintRenderer(view);
-    if (renderer!=null) {
-      bh.create(new ActionPrint(renderer, frame));
-    }
+    //PrintRenderer renderer = factory.createPrintRenderer(view);
+    //if (renderer!=null) {
+      bh.create(new ActionPrint(null, frame));
+    //}
   
     // .. a button for closing the View
     bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(Images.imgClose));
@@ -245,7 +244,7 @@ import javax.swing.border.TitledBorder;
     }
     /** run */
     protected void execute() {
-      Printer.print(frame, renderer, new PrintProperties(frame.getTitle()));
+      PrintManager.getInstance().showPrintDialog(ViewWidget.this); 
     }
   } //ActionOpenSettings
   
