@@ -162,7 +162,7 @@ public class PathHelper {
    * @param p3 the position of the shape
    * @param s the shape
    */
-  private static Point2D calculateProjection(Point2D p1, Point2D p2, Point2D p3, Shape s) {
+  public static Point2D calculateProjection(Point2D p1, Point2D p2, Point2D p3, Shape s) {
     
     // intersect the projection start-end with the shape    
     if (s!=null) {

@@ -15,6 +15,7 @@
  */
 package gj.layout.tree;
 
+import gj.awt.geom.Path;
 import gj.layout.PathHelper;
 import gj.model.Arc;
 import gj.model.Node;
@@ -71,15 +72,35 @@ import java.awt.geom.Point2D;
         start = it.arc.getStart(),
         end   = it.arc.getEnd();
   
-      PathHelper.update(
-        it.arc.getPath(), 
-        start.getPosition(), 
-        start.getShape(),
-        end.getPosition(),
-        end.getShape(),
-        it.i,
-        root==start
+      Point2D 
+        p1 = start.getPosition(),
+        p2 = end.getPosition();
+
+      
+  
+      p1 = PathHelper.calculateProjection(
+        p1, orientation.getPoint2D(orientation.getLatitude(p2), orientation.getLongitude(p1)),
+        p1, start.getShape()
       );
+      p2 = PathHelper.calculateProjection(
+        p2, orientation.getPoint2D(orientation.getLatitude(p1), orientation.getLongitude(p2)),
+        p2, end  .getShape()
+      );
+
+      Path path = it.arc.getPath();
+      path.reset();
+      path.moveTo(p1);
+      path.lineTo(p2);
+  
+//      PathHelper.update(
+//        it.arc.getPath(), 
+//        start.getPosition(), 
+//        start.getShape(),
+//        end.getPosition(),
+//        end.getShape(),
+//        it.i,
+//        root==start
+//      );
         
     }
   
