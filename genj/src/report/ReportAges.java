@@ -149,8 +149,7 @@ public class ReportAges extends Report {
      * <code>PointInTime pit</code>.
      * @param indi individual for the calculation
      * @param end end date for age calculation (PropertyDate or PointInTime)
-     * @param pit point of time for the end
-     * @return String[] : [day, month, year] or null if <CODE>end</CODE> < <CODE>birth</CODE>
+     * @return String[] : [day, month, year] or null if end < birth or end > death
      */
     private Delta calculateAge(Indi indi, Object end) {
         
@@ -182,50 +181,49 @@ public class ReportAges extends Report {
         return Delta.get(newBirth, newEnd);
     }
     
-    private void analyzeTag(Indi indi, String tag, boolean printTag, String errorMessage) {
+    private boolean analyzeTag(Indi indi, String tag, boolean printTag, String errorMessage) {
         
-        int indent = 2;
-        if(printTag) {
-            println(getIndent(2)+"INDI:"+tag+" "+i18n("seeDocu"));
-            indent=3;
+        if((indi.getProperty(new TagPath("INDI:"+tag))!=null) && (indi.getProperty(new TagPath("INDI:"+tag+":DATE"))!=null)) {
+            String toPrint = "";
+            if(printTag)
+                toPrint = "INDI:"+tag+" "+i18n("seeDocumentation")+": ";
+            PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:"+tag+":DATE"));
+            println(getIndent(2)+toPrint+prop.toString(true));
+            Delta age = calculateAge(indi, prop);
+            printAge(age, 3, errorMessage);
+            return true;
         }
-        
-        if(indi.getProperty(new TagPath("INDI:"+tag))==null)
-            println(getIndent(indent)+i18n("noData"));
-        else {
-            if(indi.getProperty(new TagPath("INDI:"+tag+":DATE"))!=null) {
-                PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:"+tag+":DATE"));
-                println(getIndent(indent)+prop.toString(true));
-                Delta age = calculateAge(indi, prop);
-                printAge(age, (indent+1), errorMessage, null);
-            }
-            else
-                println(getIndent(indent)+i18n("noDate"));
-        }
-        
+        return false;
     }
     
     private void reportAges(Indi indi) {
         
         Delta age = null;
+        String toPrint = "";
+        
+        println("@"+indi.getId()+"@ "+indi.getName());
+        println();
         
         // give up if no birth date
-        PropertyDate birth = indi.getBirthDate(); 
+        PropertyDate birth = indi.getBirthDate();
         if (birth == null) {
-            println("@"+indi.getId()+"@ "+indi.getName());
-            println(i18n("noBirthDate"));
+            println(getIndent(1)+i18n("noBirthDate"));
             return;
         }
         // print birth date
-        println("@"+indi.getId()+"@ "+indi.getName()+" *"+birth);
+        println(getIndent(1)+i18n("birth"));
+        println(getIndent(2)+birth);
         println();
         
         if(reportBaptismAge) {
+            boolean baptism[] = new boolean[4];
             println(getIndent(1)+i18n("baptismAge"));
-            analyzeTag(indi, "BAPM", true, "baptismNotInLifeTime");
-            analyzeTag(indi, "BAPL", true, "baptismNotInLifeTime");
-            analyzeTag(indi, "CHR", true, "baptismNotInLifeTime");
-            analyzeTag(indi, "CHRA", true, "baptismNotInLifeTime");
+            baptism[0] = analyzeTag(indi, "BAPM", true, "baptismNotInLifeTime");
+            baptism[1] = analyzeTag(indi, "BAPL", true, "baptismNotInLifeTime");
+            baptism[2] = analyzeTag(indi, "CHR", true, "baptismNotInLifeTime");
+            baptism[3] = analyzeTag(indi, "CHRA", true, "baptismNotInLifeTime");
+            if((baptism[0]==false) && (baptism[1]==false) && (baptism[2]==false) && (baptism[3]==false))
+                println(getIndent(2)+i18n("noData"));
             println();
         }
         
@@ -233,17 +231,17 @@ public class ReportAges extends Report {
             println(getIndent(1)+i18n("marriageAge"));
             Fam[] fams = indi.getFamilies();
             if(fams.length==0)
-                println(getIndent(2)+i18n("noMarriage"));
+                println(getIndent(2)+i18n("noData"));
             else {
                 for(int i=0;i<fams.length;i++) {
                     Fam fam = fams[i];
-                    println(getIndent(2)+"@"+fam.getId()+"@ "+fam.toString());
+                    toPrint = "@"+fam.getId()+"@ "+fam.toString()+": ";
                     if(fam.getMarriageDate() == null)
-                        println(getIndent(3)+i18n("noMarriageDate"));
+                        println(getIndent(2)+toPrint+i18n("noData"));
                     else {
-                        println(getIndent(3)+fam.getMarriageDate());
+                        println(getIndent(2)+toPrint+fam.getMarriageDate());
                         age = calculateAge(indi, fam.getMarriageDate());
-                        printAge(age, 4, "marriageNotInLifeTime", fam.getMarriageDate());
+                        printAge(age, 3, "marriageNotInLifeTime");
                     }
                 }
             }
@@ -254,39 +252,39 @@ public class ReportAges extends Report {
             println(getIndent(1)+i18n("divorceAge"));
             Fam[] fams = indi.getFamilies();
             if(fams.length==0)
-                println(getIndent(2)+i18n("noDivorce"));
+                println(getIndent(2)+i18n("noData"));
             else {
                 for(int i=0;i<fams.length;i++) {
                     Fam fam = fams[i];
-                    println(getIndent(2)+"@"+fam.getId()+"@ "+fam.toString());
+                    toPrint = "@"+fam.getId()+"@ "+fam.toString()+": ";
                     if(fam.getDivorceDate() == null)
-                        println(getIndent(3)+i18n("noDate"));
+                        println(getIndent(2)+toPrint+i18n("noData"));
                     else {
-                        println(getIndent(3)+fam.getDivorceDate());
+                        println(getIndent(2)+toPrint+fam.getDivorceDate());
                         age = calculateAge(indi, fam.getDivorceDate());
-                        printAge(age, 4, "divorceNotInLifeTime", fam.getDivorceDate());
+                        printAge(age, 3, "divorceNotInLifeTime");
                     }
                 }
             }
             println();
-        }        
+        }
         
         if(reportAgeAtChildBirth) {
             println(getIndent(1)+i18n("ageAtChildBirths"));
             Indi[] children = indi.getChildren();
             if(children.length==0)
-                println(getIndent(2)+i18n("noChildren"));
+                println(getIndent(2)+i18n("noData"));
             else {
                 for(int i=0;i<children.length;i++) {
                     Indi child = children[i];
-                    println(getIndent(2)+"@"+child.getId()+"@ "+children[i].getName());
+                    toPrint = "@"+child.getId()+"@ "+children[i].getName()+": ";
                     PropertyDate cbirth = child.getBirthDate();
                     if(cbirth == null)
-                        println(getIndent(3)+i18n("noBirthDate"));
+                        println(getIndent(2)+toPrint+i18n("noData"));
                     else {
-                        println(getIndent(3)+i18n("birth", cbirth));
+                        println(getIndent(2)+toPrint+cbirth);
                         age = calculateAge(indi, cbirth);
-                        printAge(age, 4, "childBirthNotInLifeTime", null);
+                        printAge(age, 3, "childBirthNotInLifeTime");
                     }
                 }
             }
@@ -295,49 +293,53 @@ public class ReportAges extends Report {
         
         if(reportAgeAtEmigration) {
             println(getIndent(1)+i18n("emigrationAge"));
-            analyzeTag(indi, "EMIG", false, "emigrationNotInLifeTime");
+            boolean b = analyzeTag(indi, "EMIG", false, "emigrationNotInLifeTime");
+            if(b==false)
+                println(getIndent(2)+i18n("noData"));
             println();
         }
         
         if(reportAgeAtImmigration) {
             println(getIndent(1)+i18n("immigrationAge"));
-            analyzeTag(indi, "IMMI", false, "immigrationNotInLifeTime");
+            boolean b = analyzeTag(indi, "IMMI", false, "immigrationNotInLifeTime");
+            if(b==false)
+                println(getIndent(2)+i18n("noData"));
             println();
         }
         
         if(reportAgeAtNaturalization) {
             println(getIndent(1)+i18n("naturalizationAge"));
-            analyzeTag(indi, "NATU", false, "naturalizationNotInLifeTime");
+            boolean b = analyzeTag(indi, "NATU", false, "naturalizationNotInLifeTime");
+            if(b==false)
+                println(getIndent(2)+i18n("noData"));
             println();
         }
         
         if(reportDeathAge) {
             println(getIndent(1)+i18n("deathAge"));
-            PropertyDate death = indi.getDeathDate(); 
+            PropertyDate death = indi.getDeathDate();
             if(death == null)
-                println(getIndent(2)+i18n("noDeathDate"));
+                println(getIndent(2)+i18n("noData"));
             else {
-                println(getIndent(2)+i18n("death", death));
+                println(getIndent(2)+death);
                 age = calculateAge(indi, death);
-                printAge(age, 3, "deathBeforeBirth", birth);
+                printAge(age, 3, "deathBeforeBirth");
             }
             println();
         }
         
         if(reportAgeSinceBirth) {
+            PointInTime pit = PointInTime.getNow();
             println(getIndent(1)+i18n("ageSinceBirth"));
-            age = calculateAge(indi, PointInTime.getNow());
-            printAge(age, 2, "", null);
+            println(getIndent(2)+pit);
+            age = calculateAge(indi, pit);
+            printAge(age, 3, "");
         }
     }
     
-    private void printAge(Delta age, int indent, String errorMessage, PropertyDate errorDate) {
-        if(age == null) {
-            if(errorDate!=null)
-                println(getIndent(indent)+i18n(errorMessage, errorDate));
-            if(errorDate==null)
-                println(getIndent(indent)+i18n(errorMessage));
-        }
+    private void printAge(Delta age, int indent, String errorMessage) {
+        if(age == null)
+            println(getIndent(indent)+i18n(errorMessage));        
         else
             println(getIndent(indent)+i18n("age")+" "+age);
     }
