@@ -22,10 +22,9 @@ package genj.gedcom;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Abstract base type for all GEDCOM properties
@@ -36,18 +35,13 @@ public abstract class Property implements Comparable {
   protected final static String EMPTY_STRING = "";
 
   /** parent of this property */
-  protected Property  parent=null;
+  protected Property parent=null;
   
   /** children of this property */
-  protected PropertySet children=null;
+  protected List childs = new ArrayList();
   
   /** images */
   protected ImageIcon image, imageErr;
-
-  /** constants for moving properties amongst siblings */
-  public static final int
-    UP   = 1,
-    DOWN = 2;
 
   /**
    * Method for notifying being added to another property
@@ -62,15 +56,10 @@ public abstract class Property implements Comparable {
    * @param prop new property to add
    */
   public final Property addProperty(Property prop) {
-
-    // Make sure we have a children's list
-    if (children==null) {
-      children=new PropertySet();
-    }
-
     // Remember
-    children.add(prop);
-
+    childs.add(prop);
+    // Notify
+    prop.addNotify(this);
     // Done
     return prop;
   }
@@ -112,16 +101,6 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Removes all properties
-   */
-  public final void delAllProperties() {
-    if (children!=null) {
-      children.deleteAll();
-      children=null;
-    }
-  }
-
-  /**
    * Method for notifying being removed from parent property
    */
   public void delNotify() {
@@ -130,7 +109,7 @@ public abstract class Property implements Comparable {
     noteDeletedProperty();
 
     // Say it to properties
-    delAllProperties();
+    delProperties((Property[])childs.toArray(new Property[childs.size()]));
 
     // Done
   }
@@ -139,9 +118,13 @@ public abstract class Property implements Comparable {
    * Removes an array of properties
    */
   public void delProperties(Property[] which) {
+    // single swoop remove
+    childs.removeAll(Arrays.asList(which));
+    // notify
     for (int i=0;i<which.length;i++) {
-      delProperty(which[i]);
+      which[i].delNotify();
     }
+    // done
   }
 
   /**
@@ -150,22 +133,16 @@ public abstract class Property implements Comparable {
    */
   public boolean delProperty(Property which) {
 
-    // No properties ?
-    if (children==null) {
-      return false;
-    }
-
     // Look for first class properties
-    if (children.contains(which)) {
-      children.delete(which);
+    if (childs.contains(which)) {
+      childs.remove(which);
+      which.delNotify();
       return true;
     }
 
     // Look for second class properties
-    for (int i=0;i<children.getSize();i++) {
-      if ( children.get(i).delProperty(which) ) {
-        return true;
-      }
+    for (int i=0;i<childs.size();i++) {
+      if (getProperty(i).delProperty(which)) return true;
     }
 
     // Not found
@@ -185,16 +162,11 @@ public abstract class Property implements Comparable {
    * Calculates the max. depth of properties this property has.
    */
   public int getDepthOfProperties() {
-
-    if (children==null) {
-      return 0;
-    }
-
+    // recursive search
     int result = 0;
-    for (int i=0;i<children.getSize();i++) {
-      result = Math.max( result, children.get(i).getDepthOfProperties()+1 );
+    for (int i=0;i<childs.size();i++) {
+      result = Math.max( result, getProperty(i).getDepthOfProperties()+1 );
     }
-
     // Done
     return result;
   }
@@ -285,8 +257,7 @@ public abstract class Property implements Comparable {
    * Calculates the number of properties this property has.
    */
   public int getNoOfProperties() {
-    if (children==null) return 0;
-    return children.getSize();
+    return childs.size();
   }
 
   /**
@@ -296,14 +267,14 @@ public abstract class Property implements Comparable {
    */
   public int getNoOfProperties(boolean recursive, boolean validOnly) {
 
-    if (children==null) return 0;
-
+    // recursive
     int result = 0;
-    for (int i=0;i<children.getSize();i++) {
-      if (children.get(i).isValid() || (!validOnly))
-      result ++;
+    for (int i=0;i<childs.size();i++) {
+      Property child = getProperty(i); 
+      if (child.isValid() || !validOnly)
+        result ++;
       if (recursive)
-      result += children.get(i).getNoOfProperties(true,validOnly);
+        result += child.getNoOfProperties(true,validOnly);
     }
 
     return result;
@@ -412,11 +383,8 @@ public abstract class Property implements Comparable {
    */
   public Property[] getProperties(TagPath path, boolean validOnly) {
 
-    // No properties there ?
-    if (children==null) return new Property[0];
-
     // Gather 'em
-    List result = new ArrayList(children.getSize());
+    List result = new ArrayList(childs.size());
     getPropertiesRecursively(path, 0, result, validOnly);
 
     // done
@@ -437,13 +405,9 @@ public abstract class Property implements Comparable {
       return fill;
     }
 
-    // Does this one have properties ?
-    if (children==null) return fill;
-
     // Search in properties
-    Property p;
-    for (int i=0;i<children.getSize();i++) {
-      children.get(i).getPropertiesRecursively(path,pos+1,fill,validOnly);
+    for (int i=0;i<childs.size();i++) {
+      getProperty(i).getPropertiesRecursively(path,pos+1,fill,validOnly);
     }
 
     // done
@@ -454,8 +418,7 @@ public abstract class Property implements Comparable {
    * Returns this property's nth property
    */
   public Property getProperty(int n) {
-    if (children==null) throw new IndexOutOfBoundsException("Index "+n+" doesn't work for empty set of properties");
-    return children.get(n);
+    return (Property)childs.get(n);
   }
 
   /**
@@ -505,13 +468,9 @@ public abstract class Property implements Comparable {
     if (pos==path.length()-1) 
       return !validOnly || isValid() ? this : null;
 
-    // Does this one have properties ?
-    if (children==null) return null;
-
     // Search in properties
-    Property p;
-    for (int i=0;i<children.getSize();i++) {
-      p = children.get(i).getPropertyRecursively(path, pos+1, validOnly);
+    for (int i=0;i<getNoOfProperties();i++) {
+      Property p = getProperty(i).getPropertyRecursively(path, pos+1, validOnly);
       if (p!=null) return p;
     }
 
@@ -554,46 +513,30 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Moves one of the (sub)properties up/down
+   * Moves a property amongst its siblings
    */
-  public boolean moveProperty(Property which, int how) {
+  public void move(int move) {
+    
+    // Look for position amongst siblings
+    int pos = 0;
+    while (parent.getProperty(pos)!=this) pos++;
+    
+    // check lower/upper boundary
+    move = Math.min(1,Math.max(-1, move));
+    if (move<0&&pos==0) return;
+    if (move>0&&pos==parent.getNoOfProperties()-1) return;
+    
+    // move it
+    Property sibling = parent.getProperty(pos+move);
+    parent.childs.set(pos+move, this);
+    parent.childs.set(pos, sibling);
 
-    // Does this one have properties ?
-    if (children==null) {
-      return false;
-    }
+    sibling.noteDeletedProperty();    
+    sibling.noteAddedProperty  ();    
+    noteDeletedProperty();    
+    noteAddedProperty  ();    
 
-    // Search in properties
-    Property p;
-    for (int i=0;i<children.getSize();i++) {
-      p = children.get(i);
-      // ... move it
-      if (p==which) {
-
-        int j = i+(how==UP?-1:1);
-        try {
-          children.swap(i,j);
-          
-          Property 
-            pi = children.get(i),
-            pj = children.get(j);
-          getGedcom().noteDeletedProperty(pj);
-          getGedcom().noteDeletedProperty(pi);
-          getGedcom().noteAddedProperty(pj);
-          getGedcom().noteAddedProperty(pi);
-        } catch (Exception e) {
-          return false;
-        }
-        return true;
-      }
-      // ... maybe in property ?
-      if (p.moveProperty(which,how))
-        return true;
-      // ... try next
-    }
-
-    // Not moved ! (?)
-    return false;
+    // done
   }
 
   /**
@@ -646,55 +589,6 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Finds first given text in this property (recursive)
-   */
-  public Property find(String text) {
-    Vector result = find(text,false);
-    return (result.size()>0) ? (Property)result.firstElement() : null;
-  }
-
-  /**
-   * Finds given text in this property (recursive)
-   */
-  public Vector find(String text, boolean all) {
-
-    // here's the result
-    Vector result = new Vector(3);
-
-    // go for it
-    return find(result, text.toLowerCase(), all);
-
-  }
-
-  /**
-   * Internal finder for given text in property (recursive)
-   */
-  private Vector find(Vector result, String text, boolean all) {
-
-    // check just as a start
-    if (getValue().toLowerCase().indexOf(text)>=0) {
-
-      // remember
-      result.addElement(this);
-
-      // no more?
-      if (!all) {
-        return result;
-      }
-    }
-
-    // check the children
-    if (children!=null) {
-      for (int i=0;i<children.getSize();i++) {
-        children.get(i).find(result, text, all);
-      }
-    }
-
-    // done
-    return result;
-  }
-
-  /**
    * Adds default properties to this property
    */
   public final Property addDefaultProperties() {
@@ -721,84 +615,84 @@ public abstract class Property implements Comparable {
     return MetaProperty.get(this).getSubs(filter);
   }
 
-  /**
-   * Set of sub-properties 
-   */
-  protected class PropertySet {
-    
-    /** the elements */
-    private Vector vector = new Vector();
-
-    /**
-     * Adds another property to this set
-     * @prop the property to add to this list
-     */
-    protected void add(Property prop) {
-      vector.addElement(prop);
-      prop.addNotify(Property.this);
-    }
-
-    /**
-     * Property in list?
-     */
-    protected boolean contains(Property property) {
-      return vector.contains(property);
-    }
-  
-    /**
-     * Removes a property
-     */
-    protected void delete(Property which) {
-      vector.removeElement(which);
-      which.delNotify();
-    }
-
-    /**
-     * Removes all properties
-     */
-    protected void deleteAll() {
-      Enumeration e = ((Vector)vector.clone()).elements();
-      vector.removeAllElements();
-      while (e.hasMoreElements())
-        ((Property)e.nextElement()).delNotify();
-    }
-
-    /**
-     * Returns one of the properties in this set by index
-     */
-    public Property get(int which) {
-      return ((Property)vector.elementAt(which));
-    }
-
-    /**
-     * Returns one of the properties in this set by tag
-     */
-    public Property get(String tag) {
-      Property p;
-      for (int i=0;i<getSize();i++) {
-        p = get(i);
-        if (p.getTag().equals(tag)) return p;
-      }
-      return null;
-    }
-
-    /**
-     * Returns the number of properties in this set
-     */
-    public int getSize() {
-      return vector.size();
-    }
-  
-    /**
-     * Swaps place of properties given by index
-     */
-    public void swap(int i, int j) {
-      Object o = vector.elementAt(i);
-      vector.setElementAt(vector.elementAt(j),i);
-      vector.setElementAt(o,j);
-    }          
-    
-  }
+//  /**
+//   * Set of sub-properties 
+//   */
+//  private class PropertySet {
+//    
+//    /** the elements */
+//    private Vector vector = new Vector();
+//
+//    /**
+//     * Adds another property to this set
+//     * @prop the property to add to this list
+//     */
+//    protected void add(Property prop) {
+//      vector.addElement(prop);
+//      prop.addNotify(Property.this);
+//    }
+//
+//    /**
+//     * Property in list?
+//     */
+//    protected boolean contains(Property property) {
+//      return vector.contains(property);
+//    }
+//  
+//    /**
+//     * Removes a property
+//     */
+//    protected void delete(Property which) {
+//      vector.removeElement(which);
+//      which.delNotify();
+//    }
+//
+//    /**
+//     * Removes all properties
+//     */
+//    protected void deleteAll() {
+//      Enumeration e = ((Vector)vector.clone()).elements();
+//      vector.removeAllElements();
+//      while (e.hasMoreElements())
+//        ((Property)e.nextElement()).delNotify();
+//    }
+//
+//    /**
+//     * Returns one of the properties in this set by index
+//     */
+//    public Property get(int which) {
+//      return ((Property)vector.elementAt(which));
+//    }
+//
+//    /**
+//     * Returns one of the properties in this set by tag
+//     */
+//    public Property get(String tag) {
+//      Property p;
+//      for (int i=0;i<getSize();i++) {
+//        p = get(i);
+//        if (p.getTag().equals(tag)) return p;
+//      }
+//      return null;
+//    }
+//
+//    /**
+//     * Returns the number of properties in this set
+//     */
+//    public int getSize() {
+//      return vector.size();
+//    }
+//  
+//    /**
+//     * Swaps place of properties given by index
+//     */
+//    public void swap(int i, int j) {
+//      Object o = vector.elementAt(i);
+//      vector.setElementAt(vector.elementAt(j),i);
+//      vector.setElementAt(o,j);
+//    }          
+//    
+//  }
 
 } //Property
 

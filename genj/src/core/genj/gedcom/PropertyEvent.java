@@ -56,19 +56,8 @@ public class PropertyEvent extends Property {
    * Calculate event's date
    */
   public String getDateAsString() {
-
-    // look for PropertyDate in children
-    if (children==null) return EMPTY_STRING;
-    
-    for (int i=0;i<children.getSize();i++) {
-      Property prop = children.get(i);
-      if ( prop instanceof PropertyDate ) {
-        return ((PropertyDate)prop).getValue();
-      }
-    }
-
-    // No information
-    return EMPTY_STRING;
+    Property date = getProperty("DATE");
+    return date!=null ? date.getValue() : EMPTY_STRING;
   }
 
   /**

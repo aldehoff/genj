@@ -76,9 +76,6 @@ public class PropertySubmitter extends PropertyXRef {
     // ... and point
     setTarget(fxref);
 
-    // Are there any properties that can be deleted ?
-    delAllProperties();
-
     // Done
   }
 
