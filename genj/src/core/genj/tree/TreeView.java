@@ -155,12 +155,14 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       registry.get("pad"   ,(float)defm.pad   )
     ));
     isAntialiasing = registry.get("antial", false);
-
+ 
+    Entity root = null;
     try { 
-      model.setRoot(gedcm.getEntity(registry.get("root",(String)null)));
+      root = gedcm.getEntity(registry.get("root",(String)null));
     } catch (Exception e) {
-      model.setRoot(ViewManager.getInstance().getCurrentEntity(gedcm));
     }
+    if (root==null) root = ViewManager.getInstance().getCurrentEntity(gedcm); 
+    model.setRoot(root);
     
     try { 
       currentEntity = gedcm.getEntity(registry.get("current",(String)null));
