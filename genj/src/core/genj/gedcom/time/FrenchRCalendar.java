@@ -29,6 +29,7 @@ public class FrenchRCalendar extends Calendar {
   
   /* valid from 22 SEP 1792 to not including 1 JAN 1806 */
   private static final int
+    AN_0  = 2375474,
     AN_I  = PointInTime.GREGORIAN.toJulianDay(22-1, 9-1, 1792),
     UNTIL = PointInTime.GREGORIAN.toJulianDay( 1-1, 1-1, 1806);
 
@@ -42,6 +43,10 @@ public class FrenchRCalendar extends Calendar {
    
   private static final String[] YEARS 
    = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV" };
+
+  private static final int
+    DAYS_PER_MONTH   = 30,
+    DAYS_PER_4_YEARS = 1461;
   
   /**
    * Constructor
@@ -54,6 +59,7 @@ public class FrenchRCalendar extends Calendar {
    * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
    */
   public int getDays(int month, int year) {
+    
     // standard month has 30 days
     if (month<12)
       return 30;
@@ -65,23 +71,21 @@ public class FrenchRCalendar extends Calendar {
   }
   
   /**
-   * Leap year test
+   * Leap year test  3/7/11
    */
   private boolean isLeap(int year) {
-    for (int l=0;l<FrenchRCalendar.LEAP_YEARS.length;l++)
-      if (FrenchRCalendar.LEAP_YEARS[l]==year) return true; 
-    return false;
+    return (year+1) % 4 == 0;
   }
   
   /**
    * @see genj.gedcom.PointInTime.Calendar#toJulianDay(genj.gedcom.PointInTime)
    */
-  protected int toJulianDay(int d, int m, int y) throws GedcomException {
-    // calc days
-    int jd = FrenchRCalendar.AN_I + 365*(y-1) + m*30 + d;
-    // check leap years (one less day on julian day)
-    for (int l=0;l<FrenchRCalendar.LEAP_YEARS.length;l++)
-      if (y>FrenchRCalendar.LEAP_YEARS[l]) jd++; 
+  protected int toJulianDay(int day, int month, int year) throws GedcomException {
+    // calc
+    int jd = ( year * DAYS_PER_4_YEARS / 4
+      + month * DAYS_PER_MONTH
+      + day+1
+      + AN_0 );
     // check range
     if (jd<FrenchRCalendar.AN_I)
       throw new GedcomException(resources.getString("frenchr.bef"));
@@ -89,6 +93,7 @@ public class FrenchRCalendar extends Calendar {
       throw new GedcomException(resources.getString("frenchr.aft"));
     // sum
     return jd;
+
   }
   
   /**
@@ -102,25 +107,15 @@ public class FrenchRCalendar extends Calendar {
     if (julianDay>=FrenchRCalendar.UNTIL)
       throw new GedcomException(resources.getString("frenchr.aft"));
     
-    julianDay = julianDay - FrenchRCalendar.AN_I;
+    int temp = (julianDay - AN_0) * 4 - 1;
     
-    // calculate years
-    int 
-      y  = julianDay/365 + 1,
-      yr = julianDay%365;
-      
-    // check leap years (one less day on julian day)
-    for (int l=0;l<FrenchRCalendar.LEAP_YEARS.length;l++)
-      if (y>FrenchRCalendar.LEAP_YEARS[l]) yr--; 
-      
-    // calc month
-    int
-      m  = yr/30,
-      mr = yr%30,
-      d  = mr;
-      
+    int year = temp / DAYS_PER_4_YEARS;
+    int dayOfYear = (temp % DAYS_PER_4_YEARS) / 4;
+    int month = dayOfYear / DAYS_PER_MONTH + 1;
+    int day = dayOfYear % DAYS_PER_MONTH + 1;
+          
     // done
-    return new PointInTime(d,m,y,this);
+    return new PointInTime(day-1,month-1,year,this);
   }
   
   /**
