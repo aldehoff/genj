@@ -65,7 +65,7 @@ import java.awt.geom.Rectangle2D;
   private Contour layoutNode(Node node, Arc backtrack, Tree tree, int generation, TreeLayout tlayout) {
     
     // are we looking at an inverted case?
-    boolean toggleOrientation = tlayout.orientationToggles.contains(node)&&!tlayout.isAlignGenerationsEnabled;
+    boolean toggleOrientation = tlayout.orientationToggles.contains(node)&&!tlayout.isLatAlignmentEnabled;
 
     // prepare our Layout we'll be working on
     TreeLayout layout = toggleOrientation ? tlayout.getComplement() : tlayout;
@@ -182,14 +182,17 @@ import java.awt.geom.Rectangle2D;
    */
   private Contour layoutParent(Node node, Arc backtrack, Contour[] children, Tree tree, int generation, TreeLayout tlayout) {
 
+    // grab some information
     Orientation orientation = tlayout.getOrientation();
+    NodeOptions.Padding pad = tlayout.nodeOptions.getPadding(node);
+    NodeOptions.Alignment align = tlayout.nodeOptions.getAlignment(node);
 
     // the parent's contour
     Contour parent = orientation.getContour(node.getShape().getBounds2D());
-    parent.north -= tlayout.padGenerations/2;
-    parent.south += tlayout.padGenerations/2;
-    parent.west  -= tlayout.padSiblings   /2;
-    parent.east  += tlayout.padSiblings   /2;
+    parent.north -= pad.north;
+    parent.south += pad.south;
+    parent.west  -= pad.west ;
+    parent.east  += pad.east ;
 
     // the parent's position
     double lat,lon;
@@ -206,25 +209,25 @@ import java.awt.geom.Rectangle2D;
         min = children[0].getIterator(Contour.WEST).longitude - parent.west,
         max = children[children.length-1].getIterator(Contour.EAST).longitude - parent.east;
         
-      lon = min + (max-min)*tlayout.alignParents;
+      lon = min + (max-min)*align.lon;
       lat = children[0].north - parent.south;
 
     }
 
     // Override latitude for isAlignGeneration
-    if (tlayout.isAlignGenerationsEnabled) {
+    if (tlayout.isLatAlignmentEnabled) {
       lat = tree.getLatitude(generation);
       double
         min = lat - parent.north,
         max = lat + tree.getHeight(generation) - parent.south;
 
-      lat = min + (max-min)*tlayout.alignGenerations;
+      lat = min + (max-min)*align.lat;
     }
 
     // place it at (lat,lon)
     node.getPosition().setLocation(orientation.getPoint2D(lat,lon));
     parent.translate(lat,lon);
-    if (tlayout.isAlignGenerationsEnabled) {
+    if (tlayout.isLatAlignmentEnabled) {
       parent.north = tree.getLatitude(generation);
     }
 
@@ -330,5 +333,4 @@ import java.awt.geom.Rectangle2D;
     // done
   }
 
-
-}
+} //NodeLayout

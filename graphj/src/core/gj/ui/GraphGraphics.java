@@ -65,7 +65,7 @@ public class GraphGraphics {
    * Sets color
    */
   public GraphGraphics setColor(Color color) {
-    graphics.setColor(color);
+    if (color!=null) graphics.setColor(color);
     return this;
   }
 

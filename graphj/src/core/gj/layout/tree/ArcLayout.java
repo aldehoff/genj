@@ -45,7 +45,7 @@ import java.awt.geom.Point2D;
     // Loop through arcs to children (without backtrack)
     ArcIterator it = new ArcIterator(root);
     while (it.next()) {
-      if (!it.isDup(backtrack)) layout(root, it, equator, orientation);
+      if (!it.isDup(backtrack)&&it.arc.getPath()!=null) layout(root, it, equator, orientation);
     }
     // done      
   }

@@ -37,6 +37,8 @@ import gj.layout.AbstractLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.layout.PathHelper;
+import gj.layout.tree.NodeOptions.Alignment;
+import gj.layout.tree.NodeOptions.Padding;
 
 import gj.model.Arc;
 import gj.model.Graph;
@@ -49,22 +51,25 @@ import gj.util.*;
 public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
 
   /** padding between generations */
-  /*package*/ double padGenerations = 20;
+  private double latPadding = 20;
 
   /** padding between siblings */
-  /*package*/ double padSiblings = 12;
-
-  /** whether a generations should be aligned */
-  /*package*/ boolean isAlignGenerationsEnabled = false;
+  private double lonPadding = 12;
 
   /** the alignment of parents */
-  /*package*/ double alignParents = 0.5;
+  private double lonAlignment = 0.5;
+
+  /** the alignment of generations (if isAlignGeneration) */
+  private double latAlignment = 0.5;
+  
+  /** whether latAlignment is enabled */
+  /*package*/ boolean isLatAlignmentEnabled = false;
+  
+  /** current node options */
+  /*package*/ NodeOptions nodeOptions = new DefaultNodeOptions();
 
   /** whether children should be balanced or simply stacked */
   /*package*/ boolean isBalanceChildren = true;
-
-  /** the alignment of generations (if isAlignGeneration) */
-  /*package*/ double alignGenerations = 0.5;
 
   /** whether arcs are direct or bended */
   /*package*/ boolean isBendArcs = false;
@@ -93,57 +98,71 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
   /**
    * Getter - padding between generations
    */
-  public double getPadGenerations() {
-    return padGenerations;
+  public double getLatPadding() {
+    return latPadding;
   }
 
   /**
    * Setter - padding between generations
    */
-  public void setPadGenerations(double set) {
-    padGenerations = set;
+  public void setLatPadding(double set) {
+    latPadding = set;
   }
 
   /**
    * Getter - padding between siblings
    */
-  public double getPadSiblings() {
-    return padSiblings;
+  public double getLonPadding() {
+    return lonPadding;
   }
 
   /**
    * Setter - padding between siblings
    */
-  public void setPadSiblings(double set) {
-    padSiblings=set;
-  }
-
-  /**
-   * Getter - whether generations should be aligned
-   */
-  public boolean isAlignGenerationsEnabled() {
-    return isAlignGenerationsEnabled;
-  }
-
-  /**
-   * Setter - whether generations should be aligned
-   */
-  public void setAlignGenerationsEnabled(boolean set) {
-    isAlignGenerationsEnabled=set;
+  public void setLonPadding(double set) {
+    lonPadding=set;
   }
 
   /**
    * Getter - the alignment of parents
    */
-  public double getAlignParents() {
-    return alignParents;
+  public double getLonAlignment() {
+    return lonAlignment;
   }
 
   /**
    * Setter - the alignment of parents
    */
-  public void setAlignParents(double set) {
-    alignParents=set;
+  public void setLonAlignment(double set) {
+    lonAlignment=set;
+  }
+
+  /**
+   * Getter - the alignment of generations (if isAlignGenerations)
+   */
+  public double getLatAlignment() {
+    return latAlignment;
+  }
+
+  /**
+   * Setter - the alignment of generations (if isAlignGenerations)
+   */
+  public void setLatAlignment(double set) {
+    latAlignment=set;
+  }
+
+  /**
+   * Getter - whether generations should be aligned
+   */
+  public boolean isLatAlignmentEnabled() {
+    return isLatAlignmentEnabled;
+  }
+  
+  /**
+   * Setter - whether generations should be aligned
+   */
+  public void setLatAlignmentEnabled(boolean set) {
+    isLatAlignmentEnabled=set;
   }
 
   /**
@@ -168,20 +187,6 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
    */
   public void setBalanceChildren(boolean set) {
     isBalanceChildren=set;
-  }
-
-  /**
-   * Getter - the alignment of generations (if isAlignGenerations)
-   */
-  public double getAlignGenerations() {
-    return alignGenerations;
-  }
-
-  /**
-   * Setter - the alignment of generations (if isAlignGenerations)
-   */
-  public void setAlignGenerations(double set) {
-    alignGenerations=set;
   }
 
   /**
@@ -269,8 +274,8 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
     if (graph.getNodes().isEmpty()) return;
 
     // constraints check
-    alignParents     = Math.min(1D, Math.max(0D, alignParents    ));
-    alignGenerations = Math.min(1D, Math.max(0D, alignGenerations));
+    lonAlignment = Math.min(1D, Math.max(0D, lonAlignment));
+    latAlignment = Math.min(1D, Math.max(0D, latAlignment));
 
     // get an orientation
     Orientation orientation = getOrientation();
@@ -291,7 +296,7 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
     while (true) {
 
       // create a Tree for curren root
-      Tree tree = new Tree(graph,root,padGenerations,orientation);
+      Tree tree = new Tree(graph,root,latPadding,orientation);
 
       // all nodes in that will be visited
       unvisited.removeAll(tree.getNodes());
@@ -333,10 +338,10 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
       // it's a complement now ... or back to not a complement
       result.isComplement = !isComplement;
       // the padding flips 
-      result.padSiblings = padGenerations;
-      result.padGenerations = padSiblings;
+      result.lonPadding = latPadding;
+      result.latPadding = lonPadding;
       // the layout of parents is extreme
-      result.alignParents = result.isComplement ? 1D : 0D;
+      result.lonAlignment = result.isComplement ? 1D : 0D;
       // done
       return result;
     } catch (CloneNotSupportedException e) {
@@ -390,4 +395,32 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
     // done
   }
 
-}
+  /**
+   * Default NodeOptions
+   */
+  private class DefaultNodeOptions implements NodeOptions {
+    /** an instance of alignment */
+    private Alignment alignment = new Alignment();
+    /** an instance of padding */
+    private Padding padding = new Padding();
+    /**
+     * @see gj.layout.tree.NodeOptions#getAlignment(Node)
+     */
+    public Alignment getAlignment(Node node) {
+      alignment.lon = lonAlignment;
+      alignment.lat = latAlignment;
+      return alignment;
+    }
+    /**
+     * @see gj.layout.tree.NodeOptions#getPadding(Node)
+     */
+    public Padding getPadding(Node node) {
+      padding.west  = lonPadding/2;
+      padding.east  = padding.west;
+      padding.north = latPadding/2;
+      padding.south = padding.north;
+      return padding;
+    }
+  } //DefaultNodeOptions
+
+} //TreeLayout
