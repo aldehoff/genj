@@ -35,32 +35,16 @@ public class TreeMetrics {
    */
   public TreeMetrics(double windis, double hindis, double wfams, double hfams, double padng) {
     // remember
-    wIndis = windis;
-    hIndis = hindis;
-    wFams  = wfams;
-    hFams  = hfams;
+    wIndis = Math.rint(windis  *100)/100;
+    hIndis = Math.rint(hindis  *100)/100;
+    wFams  = Math.rint(wfams   *100)/100;
+    hFams  = Math.rint(hfams   *100)/100;
     wMarrs = Math.rint(wIndis/8*100)/100;
     hMarrs = Math.rint(hIndis/8*100)/100;
-    pad    = padng;
+    pad    = Math.rint(padng   *100)/100;
     // done      
 
   }
-  
-  /**
-   * @see java.lang.Object#toString()
-   */
-  public String toString() {
-    return super.toString() + "(" + 
-      wIndis + ", " +
-      hIndis + ", " +
-      wFams  + ", " +
-      hFams  + ", " +
-      wMarrs + ", " +
-      hMarrs + ", " +
-      pad    + ")\n";
-    
-  }
-
   
 } //TreeMetrics
 

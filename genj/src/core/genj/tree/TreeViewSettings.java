@@ -83,7 +83,7 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
   private DoubleValueSlider createSlider(Container c, double min, double max, double val, String key) {
     // create and preset
     DoubleValueSlider result = new DoubleValueSlider(min, max, val, false);
-    result.setPreferredSliderWidth(64);
+    result.setPreferredSliderWidth(128);
     result.setAlignmentX(0F);
     result.setText(tree.resources.getString("info."+key));
     result.setToolTipText(tree.resources.getString("info."+key+".tip"));

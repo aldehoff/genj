@@ -124,6 +124,14 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     model.setFamilies(registry.get("families",true));
     model.setBendArcs(registry.get("bend"    ,true));
     model.setMode(registry.get("mode", 0));
+    TreeMetrics defm = model.getMetrics();
+    model.setMetrics(new TreeMetrics(
+      registry.get("windis",(float)defm.wIndis),
+      registry.get("hindis",(float)defm.hIndis),
+      registry.get("wfams" ,(float)defm.wFams ),
+      registry.get("hfams" ,(float)defm.hFams ),
+      registry.get("pad"   ,(float)defm.pad   )
+    ));
 
     // setup child components
     contentRenderer = new ContentRenderer();
@@ -162,6 +170,13 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     registry.put("families", model.isFamilies());
     registry.put("bend"    , model.isBendArcs());
     registry.put("mode"    , model.getMode());
+    TreeMetrics m = model.getMetrics();
+    registry.put("windis"  ,(float)m.wIndis);
+    registry.put("hindis"  ,(float)m.hIndis);
+    registry.put("wfams"   ,(float)m.wFams );
+    registry.put("hfams"   ,(float)m.hFams );
+    registry.put("pad"     ,(float)m.pad   );
+    
     if (model.getRoot()!=null) registry.put("root", model.getRoot().getId());
     super.removeNotify();
   }
