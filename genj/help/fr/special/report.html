@@ -4,117 +4,277 @@
 <H2>Ecrire des Rapports (Scripts)</H2>
 
 <P>
-Un rapport (script) pour GenJ est une classe Java qui met en oeuvre l'interface 
-<I>genj.report.Report</I>. Ecrire votre propre fonction, utilitaire, 
-d&eacute;bute en d&eacute;finissant votre propre classe dans un fichier source 
-et en pla&ccedil;ant ce fichier dans le sous r&eacute;pertoire des rapports 
-(Son nom doit cependant commencer par Report*).
-</P>
+Cette page donne les grandes lignes, &agrave; ceux qui veulent se lancer 
+dans l'&eacute;criture de rapports (scripts) pour GenJ, &agrave; 
+savoir :
+<ol>
+<li>Les bases</li>
+<li>Les propri&eacute;t&eacute;s et le support international</li>
+<li>Les Options</li>
+<li>Rajouter encore plus de code Java</li>
+<li>Obtenir des donn&eacute;es (Part 1): Utilisation des m&eacute;thodes sur les objets</li>
+<li>Obtenir des donn&eacute;es (Part 2): Utilisation des &eacute;tiquettes et des propri&eacute;t&eacute;s</li>
+</ol>
+</p>
+
+<h2>The basisc</h2>
+
+<p>
+A GenJ-report is a Java-type that extends the abstract type <I>genj.report.Report</I>.
+Writing your own functionality starts by defining your own class in a source-file
+and placing that file into the reports-subdirectory (its name has to start with Report*).
+</p>
+<p>
+Let's assume we want to write a test-report named "Test". First create a text-file
+named ReportTest.java in ./reports. Then compile it by running the compile-script 
+in the same directory. This script runs javac - the java compiler. The end-result is
+a file named ReportTest.class which GenJ can load and execute after it's selected
+in the <A href="../view/report.html">Report View</A>.
+</p>
 
 <P>
-Supposons que nous souhaitions &eacute;crire un rapport-test nomm&eacute; "Test1". 
-Commen&ccedil;ons par &eacute;crire un fichier de type texte d&eacute;nomm&eacute; 
-ReportTest1.java dans le r&eacute;pertoire ./reports. Bien entendu si vous 
-n'&eacute;crivez rien dedans et le laissez vide, &ccedil;a ne pourra jamais marcher. 
-Il va vous falloir mettre un peu de code Java dedans. Il faut ensuite lancer le 
-script de compilation dans le m&ecirc;me r&eacute;pertoire. Ce script lance 
-l'ex&eacute;cutable "javac" - le compilateur java. Une fois la compilation 
-termin&eacute;e, un fichier d&eacute;nomm&eacute; ReportTest1.class va 
-&ecirc;tre cr&eacute;&eacute; et GenJ va pouvoir le charger et l'ex&eacute;cuter 
-apr&eacute;s que vous l'ayez s&eacute;lectionn&eacute; dans la 
-<A href="../view/report.html">Fen&ecirc;tre des Rapports</A>.
-</P>
-
-<P>
-Jetons un coup d'oeil &agrave; l'exemple ReportTest1.java ci-apr&eacute;s. Il 
-contient la d&eacute;finition d'une classe publique (attention en langage 
-java on parle de public class, pas question de traduire ce genre de terme) 
-qui respecte les r&egrave;gles et caract&eacute;ristiques des rapports 
-(<I>implements Report</I>). Partie de ces r&egrave;gles est de fournir le 
-comportement pour toutes les m&eacute;thodes suivantes (attention le terme 
-m&eacute;thode fait r&eacute;f&eacute;rence &agrave; ce qu'on appelle 
-"method" en language java)&nbsp;:
-<blockquote>
-<il>
-<li>getName
-<li>getInfo
-<li>start
-<li>usesStandardOut
-<li>getAuthor
-<li>isReadOnly
-</il>
-</blockquote>
-Regardez l'exemple qui suit ou reprenez l'API pour en savoir plus sur le pourquoi 
-de ces m&eacute;thodes. La plus importante est <I>start</I> - c'est le point 
-d'acc&egrave;s principal dans la logique d'un rapport:
+Let's have a look at the sample ReportTest.java. It contains one public class-definition
+that conforms to the Report contract (<I>extends Report</I>). Part of that contract
+is to implement <i>public void start(Object context)</i> - the entry point into the
+Report. We can use all methods provided by the super-type Report - here we're simply
+using its println-method - <i>println()</i> dumps text into a widget that the user 
+sees when executing the report.
 
  <PRE>
 
   import genj.gedcom.*;
   import genj.report.*;
-  import java.io.*;
 
-  /**
-   * Un rapport d&eacute;nomm&eacute; Foo
-   */
-  public class ReportFoo implements Report {
+  import genj.report.Report;
+
+  public class ReportTest extends Report {
 
     /**
-     * On retourne le nom du rapport
+     * the 'main' method
      */
-    public String getName() {
-      return "Foo";
+    public void start(Object context) {
+      println("Hello World!");
     }
 
-    /**
-     * Informations sur ce que fait ce rapport
-     */
-    public String getInfo() {
-      return "This report is oh so good\nPlease try it now!";
-    }
-
-    /**
-     * Le point d'acc&egrave;s principal du rapport
-     */
-    public boolean start(ReportBridge bridge, Gedcom gedcom) throws InterruptedException {
-
-      bridge.println("Hello World");
-
-      return true;
-    }
-
-    /**
-     * Ce rapport utilise t'il la sortie standard ou ses propres fen&ecirc;tres/dialogues
-     */
-    public boolean usesStandardOut() {
-      return true;
-    }
-
-    /**
-     * L'auteur du rapport
-     */
-    public String getAuthor() {
-      return "Nils Meier <nils@meiers.net>";
-    }
-
-    /**
-     * Ce rapport va t'il modifier les donn&eacute;es Gedcom contenues dans le fichier qu'il lit
-     */
-    public boolean isReadOnly() {
-      return false;
-    }
   }
  </PRE>
-</P>
+</p>
+
+<p>
+ Now, we want to make sure this report integrates nicely into the 
+ <A href="../view/report.html">Report View</A> with name, some basic
+ information and reference to the author. 
+ To achieve this we create a file ReportTest.properties in the same
+ directory as the report and fill it with the required information like so:
+ <pre>
+  # File: ReportTest.properties
+  # These are the text resources for ReportTest
+  name   = A Simple Test
+  info   = This is a test report to get going with writing reports for GenJ
+  author = John Doe
+ </pre>
+</p>
+
+<p> 
+ The report should show up nicely now but we have to do something in 
+ start to make this worthwhile for some user of ReportTest.
+ By default reports can be run only on a Gedcom context - that means the
+ argument to start() will be an instance of the Java-type <i>Gedcom</i>.
+ So we assume that <i>context instanceof Gedcom</i>.
+ A simple Use Case here could be to report the number of individuals in 
+ the passed in Gedcom object. We do that by changing the start method
+ above:
+ <pre>
+    public void start(Object context) {
+      // we know the context is an instance of Gedcom by default
+      Gedcom gedcom = (Gedcom)context;
+      // let's compute the number of individuals
+      int count = gedcom.getEntities(Gedcom.INDI).size()
+      // ... and report it
+      println("Gedcom "+gedcom.getName()+" contains "+count+" individuals");
+    }
+ </pre>
+</p> 
+
 
 <P>
-A l'int&eacute;rieur de la m&eacute;thode "start", toutes les informations sur l'objet 
-Gedcom sont accessibles. Vous devrez r&eacute;cup&eacute;rer l'API de GenJ (un outil 
-r&eacute;f&eacute;ren&ccedil;ant toutes les classes au format HTML) pour explorer 
-toutes les possibilit&eacute;s que l'on peut reprendre dans les classes du source 
-de GenJ. Pour les d&eacute;butants, vous devriez commencer par am&eacute;liorer 
-les rapports d&eacute;j&agrave; existants.
+The API for genj.report.Report and genj.gedcom.Gedcom contains many methods for
+accessing and presenting the information contained (see the GenJ Javadocs for
+more).
 </P>
+
+<h2>Properties and Internationalization</h2>
+
+<p>
+In order to support internationalization, your report should NOT print out string constants directly.
+Instead, it should use a properties file to define the strings it prrints out, and then
+get them from that file.  That way, the properties file can be translated to other languages.
+For example, do <FONT COLOR=RED>not</FONT> do this: <tt>println("Birth Date is");</tt>
+Instead <FONT COLOR=GREEN>do</FONT> this:
+<pre>
+    println(i18n("BirthDateIs"));
+</pre>
+and put a line like this in your properties file:
+<pre>
+    BirthDateIs = Birth Date is
+</pre>
+
+<h2>Options</h2>
+
+<p>
+Every report has an options pane, which you can easily use, by creating public
+class variables in your report class and properties in your properties file.
+For example, lets say your report generates text by default, but can create HTML,
+and you would like users to specify which they want.  Start by creating a new
+public variable in your report java class:
+<pre>
+    public boolean generateHTML = true ;
+</pre>
+and then add text to your properties file:
+<pre>
+    generateHTML = Do you want HTML output generated?
+</pre>
+load your report, and take a look at the options pane to see the results.
+</p>
+
+<p>
+To create a pull down menu with some choises in it, use these public variables:
+<pre>
+    public int outputFormat = 0;
+    public static String[] outputFormats = { "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex" };
+</pre>
+and this to yoru properties file:
+<pre>
+    outputFormat=Output format
+    outputFormat.de=Ausgabe-Format
+</pre>
+There are some more complex options available.  Take a look at ReportEvent.java for more examples.
+</p>
+<h2>Loading more Java code</h2>
+
+<p>
+All the java code in the report directory is compiled by the rcompile script,
+and all of it is loaded into GenJ.  So, if you want to use some other classes in your
+report, you can just copy the java or class files into report, and they will be
+loaded an waiting for you to use.
+</p>
+
+<p>
+For example, if you want to use a DMSoundex class, just put the DMSoundex.java file
+in the report directory, and run rcompile.  It is now available for you, but does
+not show up as a report, because it is not a subclass of genj.report.Report.
+
+<h2>Getting Data (Part 1): Using methods on objects</h2>
+
+The java objects which store information from the GEDCOM file have some methods
+which access their names, dates, children and parents (but not as many as you would expect).
+Below are some examples:
+<pre>
+    //Methods available on class Indi (Individuals)
+    //This is not a complete list!  Just enough to get you started.
+    String getBirthAsString()   // Note: This is a birth DATE (not a whole object)
+    String getDeathAsString()   // Note: This is a death DATE (not a whole object)
+    String getName()
+    String getFirstName()
+    String getLastName()
+    Fam getFamc()               // Gets family where this person is a child
+    Indi getFather()
+    Indi getMother
+    Indi[] getChildren()
+    //Methods available on class Fam (Families)
+    //This is not a complete list!  Just enough to get you started.
+    Indi getChild(int which)
+    Indi[] getChildren()
+    Indi getHusband()
+    Indi getWife()
+</pre>
+You may also want to look at the PropertyDate class, and the methods which return
+these objects from other classes.
+
+<h2>Getting Data (Part 2): Using tags and properties</h2>
+
+<p>
+Most data in the GEDCOM file is available via tags, rather than from methods on objects.
+For example, to get naturalization information about a person you would <FONT COLOR=RED>
+not</FONT> do this: <TT>indi.getNaturalization()</TT>.  Instead you <FONT COLOR=GREEN>would do</FONT> this:
+<pre>
+PropertyEvent naturalization = (PropertyEvent)indi.getProperty(new TagPath("INDI:NATU")) ;
+</pre>
+Or you can get more specific pieces of data with calls like this:
+<pre>
+PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:NATU:DATE"));
+String dateOfNaturalization = prop.getValue() ;
+</pre>
+Getting notes data is quite a bit more complex.  The following code will return an event's
+note as a string, if the event has a note.  You would call it like this
+<pre>
+
+   // Example of use:
+   PropertyEvent immigration = (PropertyEvent)indi.getProperty(new TagPath("INDI:IMMI")) ;
+   String note = getNote(immigration) ;
+   if (note==null) note = i18n("noNote") ;
+   println(note) ;
+
+   // Here is the back up code:
+
+   private String getNote(PropertyEvent e) {
+       if (e==null) return null ;
+       MultiLineProperty prop = checkNote(e.getProperty("NOTE")) ;
+       if (prop==null) return null ;
+       return prop.getLinesValue()  ;
+   }
+
+  /**
+   * Checks for a NOTE property and if applicable
+   * return the MultiLineProperty for accessing its value
+   */
+  MultiLineProperty checkNote(Property prop) {
+       if (prop==null) return null ;
+
+    // has to be 'NOTE'
+   if (!prop.getTag().equals("NOTE"))
+     return null;
+
+    // see if prop is a reference to a Note
+    if (prop instanceof PropertyNote) {
+      // .. jump to the referenced target
+      prop = ((PropertyNote)prop).getTarget();
+    }
+
+    // see if we have a multiline property containing
+    // the note text now
+    if (prop instanceof MultiLineProperty )
+      return (MultiLineProperty)prop;
+
+    // no candidate
+    return null;
+  }
+</pre>
+
+<p>
+In order to use these TagPath strings, you need to know what four letter codes are part of the GEDCOM
+standard.Here are two links with more information to help you:<BR>
+&nbsp;<A HREF="http://www.math.clemson.edu/~rsimms/genealogy/ll/gedcom55.pdf">http://www.math.clemson.edu/~rsimms/genealogy/ll/gedcom55.pdf</A><BR>
+&nbsp;<A HREF="http://www.gendex.com/gedcom55/55gcappa.htm">http://www.gendex.com/gedcom55/55gcappa.htm</A>
+</p>
+
+<P>
+Below is a "cheat sheet" of the most common tags:<BR>
+&nbsp;Top Level: INDI (individual), FAM (Family)<BR>
+&nbsp;Events: BIRT (Birth), DEAT (Death), IMMI (Immigration),NATU (Naturalization), BAPT (Baptism)<BR>
+&nbsp;Others: CHIL (Child), FAMC (Family were child), HUSB (Husband), WIFE (Wife)<BR>
+&nbsp;Components: ADDR (address), DATE (date), NOTE (Note), PLAC (place)<BR>
+</p>
+
+<p>
+The "Editor View" shows exactly what tags have data for which entities, and is a great way to
+understand your GEDCOM data and structure.
+</p>
+
+<p>
+You can look at the source code for the Events report to see how these Tags are used.
+Also, you can look at the GEDCOM file itself to see which tags are subtags of other tags.
+</p>
 
 <Br>
 
