@@ -180,7 +180,7 @@ package gj.layout.tree;
       if (contour.size==null) {
         // simplest case - no data!
         north = round(contour.north);
-        longitude = round(s==WEST ? contour.west : contour.east);
+        longitude = s==WEST ? contour.west : contour.east;
         south = round(contour.south);
       } else {
         // grab first from data
@@ -201,7 +201,7 @@ package gj.layout.tree;
         
       // move forward
       this.north = this.south;
-      this.longitude = round(contour.dlon + contour.data[side][i++]);
+      this.longitude = contour.dlon + contour.data[side][i++];
       if (i==contour.size[side])
         this.south = round(contour.south);
       else
