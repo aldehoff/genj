@@ -65,7 +65,7 @@ de la langue concern&eacute;e, ex. fr=fran&ccedil;ais, en=anglais]/genj/</tt>.<B
 Sous cette arborescence, on va trouver d'autres sous directories. Ainsi 
 au moment o&ugrave; je fais cette aide, on trouve pour la langue anglaise :<Br>
 <blockquote>
-<font color="grey40">
+<font color="#666666">
 /dev/language/en/genj/app/<Br>
 /dev/language/en/genj/applet/<Br>
 /dev/language/en/genj/edit/<Br>
@@ -100,17 +100,17 @@ signe "&eacute;gal". <b>Les textes &agrave; gauche de ce signe
 </blockquote>
 
 <blockquote>
-<b><font color="red">Exemple</font>, on va traduire de l'anglais vers 
+<b><font color="#ff3333">Exemple</font>, on va traduire de l'anglais vers 
 le fran&ccedil;ais (en => fr)</b><br>
 Dans le fichier :<Br>
-<font color="green3">/dev/language/en/genj/app/resource.properties</font><Br>
+<font color="#003300">/dev/language/en/genj/app/resource.properties</font><Br>
 On va trouver la ligne suivante :<Br>
-<font color="grey40">cc.menu.file = File</font> <b>(le mot est en anglais)</b><br>
+<font color="#666666">cc.menu.file = File</font> <b>(le mot est en anglais)</b><br>
 <Br>
 On ne touchera pas &agrave; ce fichier, mais on ira voir dans le 
 fichier :<Br>
-<font color="green3">/dev/language/fr/genj/app/resource_fr.properties</font><Br>
-<font color="grey40">cc.menu.file = Fichier</font> <b>(l&agrave;, le mot 
+<font color="#003300">/dev/language/fr/genj/app/resource_fr.properties</font><Br>
+<font color="#666666">cc.menu.file = Fichier</font> <b>(l&agrave;, le mot 
 "File" doit &ecirc;tre traduit en fran&ccedil;ais, donc "Fichier")</b><Br>
 <Br>
 Si bien entendu la ligne "cc.menu.file = ....." n'existe pas, il faudra la 
@@ -146,10 +146,10 @@ aucune identification de langue. Ainsi, ils ne s'appellent pas
 "resource_en.properties", mais "resource.properties".
 
 <blockquote>
-<b><font color="red">Exemple</font> : anglais // fran&ccedil;ais // allemand</b><br>
-<font color="green3">resources.properties</font> (Anglais)<Br>
-<font color="green3">resources_fr.properties</font> (Fran&ccedil;ais)<Br>
-<font color="green3">resources_de.properties</font> (Allemand)
+<b><font color="#ff3333">Exemple</font> : anglais // fran&ccedil;ais // allemand</b><br>
+<font color="#003300">resources.properties</font> (Anglais)<Br>
+<font color="#003300">resources_fr.properties</font> (Fran&ccedil;ais)<Br>
+<font color="#003300">resources_de.properties</font> (Allemand)
 </blockquote>
 
 Apr&eacute;s avoir renomm&eacute; la directorie par le pr&eacute;fixe 
@@ -157,10 +157,10 @@ d'identification de la langue concern&eacute;e, la traduction des
 fichiers langage du programme est pr&ecirc;te.
 
 <blockquote>
-<b><font color="red">Exemple</font> : anglais // fran&ccedil;ais // allemand</b><br>
-<font color="green3">dev/genj/language/en/genj/</font> (Anglais)<Br>
-<font color="green3">dev/genj/language/fr/genj/</font> (Fran&ccedil;ais)<Br>
-<font color="green3">dev/genj/language/de/genj/</font> (Allemand)
+<b><font color="#ff3333">Exemple</font> : anglais // fran&ccedil;ais // allemand</b><br>
+<font color="#003300">dev/genj/language/en/genj/</font> (Anglais)<Br>
+<font color="#003300">dev/genj/language/fr/genj/</font> (Fran&ccedil;ais)<Br>
+<font color="#003300">dev/genj/language/de/genj/</font> (Allemand)
 </blockquote>
 </p>
 
@@ -184,11 +184,11 @@ la traduction dans la langue concern&eacute;e.<Br>
 </blockquote>
 
 <blockquote>
-<b><font color="red">Exemple</font> : anglais // fran&ccedil;ais // allemand // espagnol</b><br>
-<font color="green3">name&nbsp;&nbsp;&nbsp;&nbsp;= Gedcom Statistics</font><Br>
-<font color="green3">name.fr&nbsp;= Statistiques des donn&eacute;es Gedcom</font><Br>
-<font color="green3">name.de&nbsp;= Gedcom-Statistik</font><Br>
-<font color="green3">name.es&nbsp;= Estad&eacute;sticas de Gedcom</font>
+<b><font color="#ff3333">Exemple</font> : anglais // fran&ccedil;ais // allemand // espagnol</b><br>
+<font color="#003300">name&nbsp;&nbsp;&nbsp;&nbsp;= Gedcom Statistics</font><Br>
+<font color="#003300">name.fr&nbsp;= Statistiques des donn&eacute;es Gedcom</font><Br>
+<font color="#003300">name.de&nbsp;= Gedcom-Statistik</font><Br>
+<font color="#003300">name.es&nbsp;= Estad&eacute;sticas de Gedcom</font>
 </blockquote>
 
 Comme vous le voyez, le texte du c&ocirc;t&eacute; droit du signe 
@@ -200,11 +200,11 @@ seront remplac&eacute;s lors de l'&eacute;x&eacute;cution du script.
 Donc ne pas les traduire :
 
 <blockquote>
-<b><font color="red">Exemple</font> :</b><Br>
-<font color="green3">females&nbsp;&nbsp;&nbsp;&nbsp;= Females: {0} ({1}%)</font><Br>
-<font color="green3">females.de&nbsp;= Weiblich: {0} ({1}%)</font><Br>
-<font color="green3">females.fr&nbsp;= Femmes : {0} ({1}%)</font><Br>
-<font color="green3">females.es&nbsp;= Mujeres : {0} ({1}%)</font>
+<b><font color="#ff3333">Exemple</font> :</b><Br>
+<font color="#003300">females&nbsp;&nbsp;&nbsp;&nbsp;= Females: {0} ({1}%)</font><Br>
+<font color="#003300">females.de&nbsp;= Weiblich: {0} ({1}%)</font><Br>
+<font color="#003300">females.fr&nbsp;= Femmes : {0} ({1}%)</font><Br>
+<font color="#003300">females.es&nbsp;= Mujeres : {0} ({1}%)</font>
 </blockquote>
 
 Les s&eacute;quences d'&eacute;chappement commencent avec <tt>\</tt> 
@@ -214,9 +214,9 @@ transform&eacute;es en des lettres lisibles lors de
 l'&eacute;x&eacute;cution de GenJ.
 
 <blockquote>
-<b><font color="red">Exemple</font> : anglais // fran&ccedil;ais</b><br>
-<font color="green3">unknown&nbsp;&nbsp;&nbsp;&nbsp;= Unknown: {0} ({1}%)</font><Br>
-<font color="green3">unknown.fr&nbsp;= Ind\u00E9termin\u00E9 : {0} ({1}%)</font>
+<b><font color="#ff3333">Exemple</font> : anglais // fran&ccedil;ais</b><br>
+<font color="#003300">unknown&nbsp;&nbsp;&nbsp;&nbsp;= Unknown: {0} ({1}%)</font><Br>
+<font color="#003300">unknown.fr&nbsp;= Ind\u00E9termin\u00E9 : {0} ({1}%)</font>
 </blockquote>
 
 Les s&eacute;quences "\u00E9" dans l'exemple ci-dessus, seront 
@@ -251,7 +251,7 @@ Actuellement, l'arborescence utilis&eacute;e pour les fichiers d'aide pour
 la langue fran&ccedil;aise, est la suivante (&agrave; l'heure o&ugrave; 
 j'&eacute;cris ces lignes bien s&ucirc;r) :<Br>
 <blockquote>
-<font color="grey40">
+<font color="#666666">
 /dev/help/fr/concepts/context.html<Br>
 /dev/help/fr/concepts/gedcom.html<Br>
 /dev/help/fr/concepts/paths.html<Br>
