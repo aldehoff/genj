@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/core"/>
-	<classpathentry kind="src" path="src/report"/>
-	<classpathentry kind="src" path="src/contrib"/>
-	<classpathentry kind="src" path="src/tst"/>
+	<classpathentry output="build/classes/core" kind="src" path="src/core"/>
+	<classpathentry output="build/classes/report" kind="src" path="src/report"/>
+	<classpathentry output="build/classes/contrib" kind="src" path="src/contrib"/>
+	<classpathentry output="build/classes/tst" kind="src" path="src/tst"/>
 	<classpathentry kind="lib" path="images"/>
 	<classpathentry kind="lib" path="lib/jhbasic.jar"/>
 	<classpathentry kind="lib" path="lib/graphj.jar"/>
@@ -20,5 +20,5 @@
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/jfreechart.jar"/>
 	<classpathentry kind="lib" path="language/ru"/>
-	<classpathentry kind="output" path="build/eclipse"/>
+	<classpathentry kind="output" path="build/classes/lostnfound"/>
 </classpath>
