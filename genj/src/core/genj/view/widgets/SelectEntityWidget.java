@@ -63,15 +63,15 @@ public class SelectEntityWidget extends JPanel {
   private Sort sort;
   
   private final static String[] SORTS = {
-    "INDI:DEAT:DATE",
-    "INDI:BIRT:DATE",
-    "INDI:NAME",
     "INDI",
-    "FAM:MARR:DATE",
+    "INDI:NAME",
+    "INDI:BIRT:DATE",
+    "INDI:DEAT:DATE",
     "FAM",
+    "FAM:MARR:DATE",
     "OBJE", 
-    "NOTE:NOTE", 
     "NOTE", 
+    "NOTE:NOTE", 
     "SOUR", 
     "SUBM", 
     "REPO"
@@ -103,8 +103,9 @@ public class SelectEntityWidget extends JPanel {
       String path = SORTS[i];
       if (!path.startsWith(type))
         continue;
-      sort = new Sort(path);
-      sorts.add(sort);
+      Sort s = new Sort(path);
+      sorts.add(s);
+      if (sort==null) sort = s;
     }
     sortWidget.setActions(sorts);
 
@@ -120,7 +121,7 @@ public class SelectEntityWidget extends JPanel {
 
     // init state
     sort.trigger();
-    listWidget.setSelectedItem(list[0]);
+    listWidget.setSelectedIndex(0);
 
     // done
   }
@@ -162,15 +163,35 @@ public class SelectEntityWidget extends JPanel {
      * @see javax.swing.DefaultListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
      */
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+      // might be text of entity
       String txt;
       if (value instanceof Entity) {
-        Entity e = (Entity)value;
-        txt = e.toString() + " (" + e.getId() + ')';
-        
+        txt = getString((Entity)value, sort.tagPath);
       } else {
         txt = value.toString();
       }
+
       return super.getListCellRendererComponent(list, txt, index, isSelected, cellHasFocus);
+    }
+
+    /**
+     * generate a string to show for entity&path
+     */
+    private String getString(Entity e, TagPath path) {
+      
+      // entity sorting = ID?
+      if (path.length()==1)
+        return e.getId() + " - " + e.toString();
+         
+      // DATE?
+      if (path.getLast().equals("DATE")) {
+        PropertyDate pd = (PropertyDate)e.getProperty(path, e.QUERY_VALID_TRUE);
+        String date = pd!=null ? pd.toString(true) : "?";
+        return  date + " - " + e.toString() + " (" + e.getId() + ')';
+      }
+      
+      return e.toString() + " (" + e.getId() + ')';
     }
 
   } //Renderer
@@ -209,6 +230,8 @@ public class SelectEntityWidget extends JPanel {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
+      // remember
+      sort = this;
       // Sort
       Comparator comparator = new PropertyComparator(tagPath);
       Arrays.sort(list, 1, list.length, comparator);
