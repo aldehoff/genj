@@ -154,7 +154,24 @@ public class PropertyDate extends Property {
    * Accessor Value
    */
   public String getValue() {
-    return toString(false,false);
+    
+    // as string?
+    if (dateAsString!=null) 
+      return dateAsString;
+      
+    // what's our format descriptor?
+    FormatDescriptor fd = formats[format]; 
+      
+    // collect information
+    WordBuffer result = new WordBuffer();
+    result.append(fd.start);  
+    start.getValue(result);
+    result.append(fd.end);
+    if (isRange()) 
+      end.getValue(result);
+
+    // done    
+    return result.toString();
   }
 
   /**
@@ -328,7 +345,8 @@ public class PropertyDate extends Property {
     result.append(smod);  
     start.toString(result,localize);
     result.append(emod);
-    if (isRange()) end.toString(result,localize);
+    if (isRange()) 
+      end.toString(result,localize);
 
     // done    
     return result.toString();

@@ -293,12 +293,22 @@ public abstract class PointInTime implements Comparable {
   public String toString() {
     return toString(new WordBuffer(),true).toString();
   }
+
+  /**
+   * String representation (Gedcom format)
+   */
+  public String getValue() {
+    return getValue(new WordBuffer()).toString();
+  }
     
   /**
    * String representation (Gedcom format)
    */
-  public String toGedcomString() {
-    return toString(new WordBuffer(),false).toString();
+  public WordBuffer getValue(WordBuffer buffer) {
+    if (calendar!=GREGORIAN)
+      buffer.append(calendar.escape);
+    toString(buffer, false);
+    return buffer;
   }
     
   /**
@@ -313,7 +323,8 @@ public abstract class PointInTime implements Comparable {
       
     if (year>0) {
       if (month>=0&&month<MONTHS.length) {
-        if (day>=0) buffer.append(new Integer(day+1));
+        if (day>=0) 
+          buffer.append(new Integer(day+1));
         buffer.append(getMonth(localize, true));
       }    
       buffer.append(new Integer(year));

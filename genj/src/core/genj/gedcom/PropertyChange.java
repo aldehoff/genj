@@ -243,7 +243,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
     /** lines */
     private String[] 
       tags = { CHAN, DATE, TIME  },
-      values = { EMPTY_STRING, pit.toGedcomString(), getTimeAsString() };
+      values = { EMPTY_STRING, pit.getValue(), getTimeAsString() };
       
     /**
      * @see genj.gedcom.MultiLineProperty.Iterator#setValue(java.lang.String)
