@@ -31,7 +31,7 @@ import java.awt.Graphics;
 public class ContentRenderer extends Renderer {
   
   /** centimeters per year */
-  /*package*/ double cmPyear = Double.NaN;
+  /*package*/ double cmPyear = 1.0D;
   
   /** 
    * Calculates the model size in pixels

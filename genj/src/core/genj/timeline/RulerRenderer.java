@@ -31,7 +31,7 @@ import java.awt.Graphics;
 public class RulerRenderer extends Renderer {
   
   /** centimeters per year */
-  /*package*/ double cmPyear = Double.NaN;
+  /*package*/ double cmPyear = 1.0D;
   
   /** 
    * Calculates the model size in pixels
@@ -57,7 +57,9 @@ public class RulerRenderer extends Renderer {
       // draw a line
       g.drawLine(x,0,x,d.height);
     }
-    //g.drawLine(0,0,d.width,d.height);
+    // need finishing line
+    int x = d.width-1;
+    g.drawLine(x,0,x,d.height);
     // done
   }
 

@@ -19,13 +19,15 @@
  */
 package genj.timeline;
 
+import java.awt.Toolkit;
+
 /**
  * Generic superclass of all renderers
  */
 public abstract class Renderer {
   
   /** resolution to use */
-  /*package*/ double dpi = Double.NaN;
+  /*package*/ double dpi = Toolkit.getDefaultToolkit().getScreenResolution();
 
   /**
    * Convert cm into pixels

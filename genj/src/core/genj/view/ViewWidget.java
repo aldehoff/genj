@@ -40,7 +40,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
@@ -72,7 +74,6 @@ import javax.swing.border.TitledBorder;
     // Fill Toolbar
     boolean isBar = false;
     bar = new JToolBar();
-    bar.addPropertyChangeListener("orientation", new OrientationListener());
     if (view instanceof ToolBarSupport) {
       ((ToolBarSupport)view).populate(bar);
       bar.add(Box.createGlue());
@@ -154,24 +155,26 @@ import javax.swing.border.TitledBorder;
     // go ahead with super
     super.addImpl(comp, constraints, index);
     // toolbar?
-    if (comp==bar&&constraints!=null) {
+    if (comp==bar) {
+      // remember
       registry.put("toolbar", constraints.toString());
+      // find orientation
+      int orientation = SwingConstants.HORIZONTAL;
       if (BorderLayout.WEST.equals(constraints)||BorderLayout.EAST.equals(constraints))
-        bar.setOrientation(JToolBar.VERTICAL);
+        orientation = SwingConstants.VERTICAL;
+      // fix orientation for toolbar
+      bar.setOrientation(orientation);
+      // fix orientation for children
+      Component[] cs = bar.getComponents();
+      for (int c=0; c<cs.length; c++) {
+        if (cs[c] instanceof JSlider) {
+          JSlider slider = (JSlider)cs[c];
+          slider.setOrientation(orientation);
+        }
+      }
+      // toolbar o.k.
     }
     // done
   }
 
-  /**
-   * OrientationListener for the Toolbar
-   */
-  private class OrientationListener implements PropertyChangeListener {
-    /**
-     * @see java.beans.PropertyChangeListener#propertyChange(PropertyChangeEvent)
-     */
-    public void propertyChange(PropertyChangeEvent evt) {
-    }
-
-} //OrientationListener
-  
 } //ViewWidget
