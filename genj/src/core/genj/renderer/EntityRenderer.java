@@ -42,12 +42,15 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.GlyphView;
 import javax.swing.text.Segment;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.Position.Bias;
+import javax.swing.text.html.CSS;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.InlineView;
 import javax.swing.text.html.HTMLEditorKit.HTMLFactory;
 
 /**
@@ -209,6 +212,21 @@ public class EntityRenderer {
         
       // default to super
       View result = super.create(elem);
+
+//      // InlineViews have a bad habit of breaking
+//      // a single-space-sequence, replace those
+//      // cases with a dummy      
+//      if (result instanceof InlineView) {
+//        GlyphView gv = (GlyphView)result;
+//        Segment seg = gv.getText(gv.getStartOffset(), gv.getEndOffset());
+//        System.out.print("("+seg+")");
+//        if (seg.getEndIndex()-seg.getBeginIndex()==1&&seg.first()=='\n') {
+//          System.out.println("!");
+//          return new EmptyView(elem);
+//        }
+//        System.out.println();
+//      }
+      
       // .. keep track of TableViews
       if ("table".equals(elem.getName())) {
         tableViews.add(result);
@@ -258,7 +276,7 @@ public class EntityRenderer {
       if (axis==Y_AXIS) return BadBreakWeight;
       // horizontal might work after our content
       if (len > getPreferredSpan(X_AXIS)) {
-        return ExcellentBreakWeight;
+        return GoodBreakWeight;
       }
       return BadBreakWeight;
     }  
@@ -610,5 +628,39 @@ public class EntityRenderer {
     
   } //PropertyView
 
+//  /**
+//   * EmptyView//   */
+//  private class EmptyView extends MyView {
+//    
+//    /**
+//     * Constructor//     */
+//    private EmptyView(Element elem) {
+//      super(elem);
+//    }
+//    
+//    /**
+//     * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
+//     */
+//    protected Dimension getPreferredSpan() {
+//      return new Dimension(0,0);
+//    }
+//
+//    /**
+//     * @see javax.swing.text.View#paint(java.awt.Graphics, java.awt.Shape)
+//     */
+//    public void paint(Graphics g, Shape allocation) {
+//      g.setColor(Color.red);
+//      Rectangle r = allocation.getBounds();
+//      g.drawRect(r.x,r.y,r.width,r.height);
+//    }
+//    
+//    /**
+//     * @see genj.renderer.EntityRenderer.MyView#getBreakWeight(int, float, float)
+//     */
+//    public int getBreakWeight(int axis, float pos, float len) {
+//      return BadBreakWeight;
+//    }
+//
+//  } //EmptyView
   
 } //EntityRenderer
