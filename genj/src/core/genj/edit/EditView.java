@@ -594,7 +594,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       //  + currentProxy with changes
       //  + no transaction going on
       if (!gedcom.isTransaction()&&currentProxy!=null&&currentProxy.hasChanged()) {
-        if (0==manager.getWindowManager().openDialog(null, title, WindowManager.IMG_QUESTION, "Keep the changes you've made?", WindowManager.OPTIONS_YES_NO, proxyPane))
+        if (0==manager.getWindowManager().openDialog(null, title, WindowManager.IMG_QUESTION, resources.getString("confirm.keep.changes"), WindowManager.OPTIONS_YES_NO, proxyPane))
           currentProxy.ok.doClick();
       }
 
