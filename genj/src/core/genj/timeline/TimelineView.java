@@ -180,7 +180,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     bar.add(labelCmPerYear);
 
     // create '/year' label
-    JLabel labelPerYear = new JLabel("/year");
+    JLabel labelPerYear = new JLabel(resources.getString("view.peryear"));
     labelPerYear.setFont(labelCmPerYear.getFont());
     bar.add(labelPerYear);
 
@@ -191,18 +191,13 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     sliderCmPerEvent.addChangeListener((ChangeListener)new ActionCmPerEvent().as(ChangeListener.class));
     bar.add(sliderCmPerEvent);
 
-    // create 'max' label
-    JLabel labelMax = new JLabel("max.");
-    labelMax.setFont(labelCmPerYear.getFont());
-    bar.add(labelMax);
-
     // create '1.5cm' label
     labelCmPerEvent = new JLabel(cm2txt(cmPevent));
     labelCmPerEvent.setFont(labelCmPerYear.getFont());
     bar.add(labelCmPerEvent);
 
     // create '/event' label
-    JLabel labelPerEvent = new JLabel("/event");
+    JLabel labelPerEvent = new JLabel(resources.getString("view.perevent"));
     labelPerEvent.setFont(labelCmPerYear.getFont());
     bar.add(labelPerEvent);
 
@@ -348,6 +343,8 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       cmPyear = percent2value(sliderCmPerYear.getValue(), MIN_CMPERYEAR, MAX_CMPERYEAR);
       // update label
       labelCmPerYear.setText(cm2txt(cmPyear));
+      // and tip
+      sliderCmPerYear.setToolTipText(cm2txt(cmPyear)+resources.getString("view.peryear"));
       // update model
       model.setTimePerEvent(cmPevent/cmPyear);
       // done
@@ -364,6 +361,8 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       cmPevent = percent2value(sliderCmPerEvent.getValue(), MIN_CMPEREVENT, MAX_CMPEREVENT);
       // update label
       labelCmPerEvent.setText(cm2txt(cmPevent));
+      // and tip
+      sliderCmPerEvent.setToolTipText(cm2txt(cmPevent)+resources.getString("view.perevent"));
       // update model
       model.setTimePerEvent(cmPevent/cmPyear);
       // done
