@@ -140,6 +140,13 @@ public class MetaProperty {
   }
   
   /**
+   * Test
+   */
+  /*package*/ boolean allows(String sub) {
+    return mapOfSubs.containsKey(sub);
+  }
+  
+  /**
    * Acessor - subs
    */
   /*package*/ MetaProperty[] getSubs(int filter) {
