@@ -40,7 +40,6 @@ final public class Images {
     imgUp,
     imgDown,
     imgAdd,
-    imgRemove,
     imgIndi,
     
     imgDelete,
@@ -67,7 +66,6 @@ final public class Images {
     imgUp        = new ImageIcon(this,"images/Up.gif");
     imgDown      = new ImageIcon(this,"images/Down.gif");
     imgAdd       = new ImageIcon(this,"images/Add.gif");
-    imgRemove    = new ImageIcon(this,"images/Remove.gif");
     
     imgDelete        = new ImageIcon(this,"images/entity/Delete.gif");
     imgNewFam        = new ImageIcon(this,"images/entity/NewFam.gif");

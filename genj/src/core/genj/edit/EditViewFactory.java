@@ -233,13 +233,13 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * ActionEdit - edit an entity
    */
-  private class Edit extends ActionDelegate {
+  /*package*/ class Edit extends ActionDelegate {
     /** the entity to edit */
     private Entity candidate;
     /**
      * Constructor
      */
-    private Edit(Entity entity) {
+    /*package*/ Edit(Entity entity) {
       candidate = entity;
       setImage(Images.imgView);
       setText(EditView.resources.getString("edit", getTitle(false)));
@@ -256,15 +256,13 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * ActionChange - change the gedcom information
    */
-  private abstract class Change extends ActionDelegate {
+  /*package*/ static abstract class Change extends ActionDelegate {
     /** the gedcom we're working on */
     protected Gedcom gedcom;
-    /** the entity that should receive the focus after creation */
-    protected Entity result;
     /**
      * Constructor
      */
-    protected Change(Gedcom ged, ImageIcon img, String text) {
+    /*package*/ Change(Gedcom ged, ImageIcon img, String text) {
       gedcom = ged;
       super.setImage(img);
       super.setText(text);
@@ -301,16 +299,6 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       }
       // unlock gedcom
       gedcom.endTransaction();
-      // set focus?
-      if (result!=null) {
-        // no editor open?
-        if (ViewManager.getInstance().getOpenViews(EditView.class).isEmpty()) {
-          EditView.preselectEntity = result;
-          ViewManager.getInstance().openView(EditViewFactory.this, gedcom);
-        }
-        // set current        
-        ViewManager.getInstance().setCurrentEntity(result);
-      }
       // done
     }
     /**
@@ -322,15 +310,17 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * Create- creates an entity
    */
-  private class Create extends Change{
+  /*package*/ class Create extends Change{
     /** the type we're creating */
     private int type;
     /** the relationship */
     private Relationship relationship;
+    /** the entity that should receive the focus after creation */
+    protected Entity result;
     /**
      * Constructor
      */
-    private Create(Gedcom ged, int typ, Relationship relatshp) {
+    /*package*/ Create(Gedcom ged, int typ, Relationship relatshp) {
       super(ged, newImages[typ], resources.getString("new", relatshp==null ? Gedcom.getNameFor(typ, false) : relatshp.getName()));
       type = typ;
       relationship = relatshp;
@@ -357,18 +347,34 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       if (relationship!=null) relationship.apply(result);
       // done
     }
+    /**
+     * @see genj.edit.EditViewFactory.Change#execute()
+     */
+    protected void execute() {
+      super.execute();
+      // set focus?
+      if (result!=null) {
+        // no editor open?
+        if (ViewManager.getInstance().getOpenViews(EditView.class).isEmpty()) {
+          EditView.preselectEntity = result;
+          ViewManager.getInstance().openView(EditViewFactory.this, gedcom);
+        }
+        // set current        
+        ViewManager.getInstance().setCurrentEntity(result);
+      }
+    }
   } //Create
   
   /**
    * EDelete - delete an entity
    */  
-  private class EDelete extends Change {
+  /*package*/ static class EDelete extends Change {
     /** the candidate to delete */
     private Entity candidate;
     /**
      * Constructor
      */
-    private EDelete(Entity entity) {
+    /*package*/ EDelete(Entity entity) {
       super(entity.getGedcom(), Images.imgDelete, EditView.resources.getString("delete"));
       candidate = entity;
     }
@@ -392,13 +398,13 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * PDelete - delete a property
    */  
-  private class PDelete extends Change {
+  /*package*/ static class PDelete extends Change {
     /** the candidate to delete */
     private Property candidate;
     /**
      * Constructor
      */
-    private PDelete(Property property) {
+    /*package*/ PDelete(Property property) {
       super(property.getGedcom(), Images.imgDelete, EditView.resources.getString("delete"));
       candidate = property;
     }
@@ -425,7 +431,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   
   /**
    * External action    */
-  private static class External extends ActionDelegate {
+  /*package*/ static class External extends ActionDelegate {
     /** the wrapped association */
     private FileAssociation association;
     /** the wrapped file */

@@ -52,7 +52,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -578,72 +577,26 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     /** constructor */
     protected ActionPropertyDel() {
       super.setShortText("action.del").setTip("tip.del_prop");
-      super.setImage(Images.imgRemove);
+      super.setImage(Images.imgDelete);
     }
     /** run */
     protected void execute() {
   
+      // .. Stop Editing
+      stopEdit(true);
+      
+      // check selection
       TreePath paths[] = tree.getSelectionPaths();
-      boolean changed = false;
-  
-      // .. check if there are some selections
       if ( (paths==null) || (paths.length==0) ) {
         return;
       }
-  
-      // .. Stop Editing
-      stopEdit(true);
-  
-      // .. LockWrite
-      if (!gedcom.startTransaction()) return;
-  
+
       // .. remove every selected node
       for (int i=0;i<paths.length;i++) {
-  
         Property prop = (Property)paths[i].getLastPathComponent();
-        String veto = prop.getDeleteVeto();
-  
-        if (veto!=null) {
-  
-          JTextPane tp = new JTextPane();
-          tp.setText(veto);
-          tp.setEditable(false);
-          JScrollPane sp = new JScrollPane(tp,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
-            public Dimension getPreferredSize() {
-              return new Dimension(128,64);
-            }
-          };
-  
-          Object message[] = new Object[2];
-          message[0] = resources.getString("del.leads_to",prop.getTag());
-          message[1] = sp;
-  
-          // Show veto and respect user choice
-          int rc = JOptionPane.showConfirmDialog(
-            EditView.this,
-            message,
-            resources.getString("warning"),
-            JOptionPane.OK_CANCEL_OPTION
-          );
-          if (rc==JOptionPane.OK_OPTION)
-            veto=null;
-  
-          // Continue with/without veto
-        }
-        
-        // FIXME always ask because we don't have undo
-  
-        if (veto==null) {
-          getCurrentEntity().getProperty().delProperty( prop );
-          changed = true;
-        }
-  
-      // Next selected prop
+        new EditViewFactory.PDelete(prop).setTarget(EditView.this).trigger();
       }
   
-      // .. UnlockWrite
-      gedcom.endTransaction();
-
       // go to parent property
       tree.setSelectionRow(0);
   
