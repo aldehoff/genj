@@ -159,7 +159,7 @@ public abstract class ActionDelegate implements Cloneable {
   }
   
   /** 
-   * Handle an uncaught throwable
+   * Handle an uncaught throwable (always sync to EDT)
    */
   protected void handleThrowable(String phase, Throwable t) {
     Debug.log(Debug.ERROR, this, "Action failed in "+phase, t); 
@@ -310,7 +310,7 @@ public abstract class ActionDelegate implements Cloneable {
       try {
         execute();
       } catch (Throwable t) {
-        handleThrowable("execute(async)", t);
+        SwingUtilities.invokeLater(new CallSyncHandleThrowable(t));
       }
       synchronized (threadLock) {
         thread=null;
@@ -331,5 +331,24 @@ public abstract class ActionDelegate implements Cloneable {
       }
     }
   } //SyncPostExecute
+  
+  /**
+   * Sync (EDT) handle throwable
+   */
+  private class CallSyncHandleThrowable implements Runnable {
+    private Throwable t;
+    protected CallSyncHandleThrowable(Throwable set) {
+      t=set;
+    }
+    public void run() {
+      // an async throwable we're going to handle now?
+      try {
+        handleThrowable("execute(async)",t);
+      } catch (Throwable t) {
+      }
+    }
+  } //SyncHandleThrowable
+
+  
 }
 
