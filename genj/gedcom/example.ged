@@ -5,8 +5,8 @@
 2 CORP Nils Meier
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
-1 DATE 26 FEB 2003
-2 TIME 11:09:28
+1 DATE 19 MAR 2003
+2 TIME 21:49:11
 1 GEDC 
 2 VERS 5.5
 2 FORM Lineage-Linked
@@ -19,6 +19,8 @@
 2 DATE 8 SEP 1937
 2 PLAC Hamburg
 1 FAMS @F001@
+1 SOUR kjsfkjsdfkjsdf
+1 SOUR @S001@
 0 @I002@ INDI 
 1 NAME Magdalene /Hauschildt/
 1 SEX F
@@ -125,4 +127,8 @@
 1 CHIL @I009@
 0 @N003@ NOTE The author of GenJ
 1 CONT Please visit http://genj.sourceforge.net
+0 @S001@ SOUR 
+1 TITL 
+1 AUTH 
+1 TEXT 
 0 TRLR 

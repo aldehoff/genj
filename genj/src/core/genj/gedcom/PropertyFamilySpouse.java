@@ -25,6 +25,10 @@ package genj.gedcom;
  */
 public class PropertyFamilySpouse extends PropertyXRef {
 
+  /** applicable target types */
+  public final static int[] 
+    TARGET_TYPES = new int[]{ Gedcom.FAMILIES };
+
   /**
    * Empty Constructor
    */
@@ -163,7 +167,8 @@ public class PropertyFamilySpouse extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int getExpectedReferencedType() {
-    return Gedcom.FAMILIES;
+  public int[] getTargetTypes() {
+    return TARGET_TYPES;
   }
-}
+  
+} //PropertyFamilySpouse

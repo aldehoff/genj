@@ -27,6 +27,10 @@ package genj.gedcom;
  */
 public class PropertyNote extends PropertyXRef implements MultiLineSupport {
 
+  /** applicable target types */
+  public final static int[] 
+    TARGET_TYPES = new int[]{ Gedcom.NOTES };
+
   /**
    * Empty Constructor
    */
@@ -89,8 +93,8 @@ public class PropertyNote extends PropertyXRef implements MultiLineSupport {
   /**
    * The expected referenced type
    */
-  public int getExpectedReferencedType() {
-    return Gedcom.NOTES;
+  public int[] getTargetTypes() {
+    return TARGET_TYPES;
   }
   
   /**

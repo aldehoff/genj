@@ -50,7 +50,7 @@ public class CreateRelationship extends AbstractChange {
   public CreateRelationship(Relationship relatshp) {
     super(relatshp.getGedcom(), relatshp.getImage(), resources.getString("new", relatshp.getName()));
     relationship = relatshp;
-    target = relationship.getTargetType();
+    target = relationship.getTargetTypes()[0];
   }
   
   /**

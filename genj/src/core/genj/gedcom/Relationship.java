@@ -7,14 +7,22 @@ import javax.swing.ImageIcon;
  */
 public abstract class Relationship {
   
+  /** target type individuals static */
+  private final static int[]
+    TARGET_INDIVIDUALS = new int[]{Gedcom.INDIVIDUALS};
+  
   /** Gedcom this applies */
-  private Gedcom gedcom;
+  protected Gedcom gedcom;
+  
+  /** the applicable target types */
+  protected int[] targetTypes;
   
   /**
    * Constructor
    */
-  protected Relationship(Gedcom ged) {
+  protected Relationship(Gedcom ged, int[] types) {
     gedcom = ged;
+    targetTypes = types;
   }
   
   /**
@@ -34,7 +42,7 @@ public abstract class Relationship {
    * An image
    */
   public ImageIcon getImage() {
-    return Gedcom.getImage(getTargetType());
+    return Gedcom.getImage(getTargetTypes()[0]);
   }
   
   /**
@@ -43,9 +51,11 @@ public abstract class Relationship {
   public abstract String getName();
   
   /**
-   * The target type
+   * The target type(s)
    */
-  public abstract int getTargetType();
+  public int[] getTargetTypes() {
+    return targetTypes;
+  }
   
   /**
    * Checks type
@@ -66,18 +76,19 @@ public abstract class Relationship {
     /** its sub */
     private MetaProperty sub;
     
-    /** its xref */
+    /** the xref we're referencing through */
+    private MetaProperty mxref;
     private PropertyXRef xref;
     
     /** Constructor */
-    public XRefBy(Property owner, PropertyXRef xref) {
-
-      super(owner.getGedcom());
-
+    public XRefBy(Property owner, MetaProperty mxref) {
+      super(owner.getGedcom(), null);
       // keep owner      
       this.owner = owner;
-      this.xref = xref;
-      
+      this.mxref = mxref;
+      this.xref = (PropertyXRef)mxref.create("");
+      // update target types
+      targetTypes = xref.getTargetTypes();
       // done
     }
     
@@ -87,14 +98,14 @@ public abstract class Relationship {
     public String getName() {
       return Gedcom.resources.getString(xref.getTag()+".name");
     }
-
-    /**
-     * @see genj.gedcom.Relationship#getTargetType()
-     */
-    public int getTargetType() {
-      return xref.getExpectedReferencedType();
-    }
     
+    /**
+     * @see genj.gedcom.Relationship.XRefBy#getImage()
+     */
+    public ImageIcon getImage() {
+      return mxref.getImage();
+    }
+
     /**
      * @see java.lang.Object#toString()
      */
@@ -106,9 +117,6 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#apply(Entity)
      */
     public Entity apply(Entity entity) throws GedcomException {
-      // double check
-      if (entity.getType()!=xref.getExpectedReferencedType())
-        throw new GedcomException("Wrong type for apply()");
       // connect
       owner.addProperty(xref);
       xref.setValue(entity.getId());
@@ -121,16 +129,17 @@ public abstract class Relationship {
     /**
      * Wether this relationship is applicable for given owner
      */
-    public static boolean isApplicable(Class ownerXref) {
+    public static boolean isApplicable(MetaProperty mxref) {
       // has to be xref
-      if (!PropertyXRef.class.isAssignableFrom(ownerXref))
+      Class type = mxref.getType();
+      if (!PropertyXRef.class.isAssignableFrom(type))
         return false;
       // and not one of the special kinship relationships
-      if (ownerXref==PropertyFamilySpouse.class) return false;
-      if (ownerXref==PropertyFamilyChild.class) return false;
-      if (ownerXref==PropertyHusband.class) return false;
-      if (ownerXref==PropertyWife.class) return false;
-      if (ownerXref==PropertyChild.class) return false;
+      if (type==PropertyFamilySpouse.class) return false;
+      if (type==PropertyFamilyChild.class) return false;
+      if (type==PropertyHusband.class) return false;
+      if (type==PropertyWife.class) return false;
+      if (type==PropertyChild.class) return false;
       // o.k.
       return true;
     }
@@ -147,7 +156,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public ChildIn(Fam famly) {
-      super(famly.getGedcom());
+      super(famly.getGedcom(), TARGET_INDIVIDUALS);
       family = famly;
     }
     
@@ -156,13 +165,6 @@ public abstract class Relationship {
      */
     public String getName() {
       return Gedcom.resources.getString("rel.child");
-    }
-    
-    /**
-     * @see genj.gedcom.Relationship#getTargetType()
-     */
-    public int getTargetType() {
-      return Gedcom.INDIVIDUALS;
     }
     
     /**
@@ -194,7 +196,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public ChildOf(Indi parnt) {
-      super(parnt.getGedcom());
+      super(parnt.getGedcom(), TARGET_INDIVIDUALS);
       parent = parnt;
     }
     
@@ -203,14 +205,6 @@ public abstract class Relationship {
      */
     public String getName() {
       return Gedcom.resources.getString("rel.child");
-    }
-    
-    /**
-     * @see genj.gedcom.Relationship#getTargetType()
-     */
-    public int getTargetType() {
-      return Gedcom.INDIVIDUALS;
-
     }
     
     /**
@@ -243,7 +237,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public ParentIn(Fam famly) {
-      super(famly.getGedcom());
+      super(famly.getGedcom(), TARGET_INDIVIDUALS);
       family = famly;
     }
     
@@ -254,13 +248,6 @@ public abstract class Relationship {
       return Gedcom.resources.getString("rel.parent");
     }
     
-    /**
-     * @see genj.gedcom.Relationship#getTargetType()
-     */
-    public int getTargetType() {
-      return Gedcom.INDIVIDUALS;
-
-    }
     /**
      * @see java.lang.Object#toString()
      */
@@ -291,7 +278,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public ParentOf(Indi chil) {
-      super(chil.getGedcom());
+      super(chil.getGedcom(), TARGET_INDIVIDUALS);
       child = chil;
     }
     
@@ -300,13 +287,6 @@ public abstract class Relationship {
      */
     public String getName() {
       return Gedcom.resources.getString("rel.parent");
-    }
-    
-    /**
-     * @see genj.gedcom.Relationship#getTargetType()
-     */
-    public int getTargetType() {
-      return Gedcom.INDIVIDUALS;
     }
     
     /**
@@ -340,7 +320,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public SpouseOf(Indi spose) {
-      super(spose.getGedcom());
+      super(spose.getGedcom(), TARGET_INDIVIDUALS);
       spouse = spose;
     }
     
@@ -349,13 +329,6 @@ public abstract class Relationship {
      */
     public String getName() {
       return Gedcom.resources.getString("rel.spouse");
-    }
-    
-    /**
-     * @see genj.gedcom.Relationship#getTargetType()
-     */
-    public int getTargetType() {
-      return Gedcom.INDIVIDUALS;
     }
     
     /**
@@ -391,7 +364,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public SiblingOf(Indi siblng) {
-      super(siblng.getGedcom());
+      super(siblng.getGedcom(), TARGET_INDIVIDUALS);
       sibling = siblng;
     }
     
@@ -400,13 +373,6 @@ public abstract class Relationship {
      */
     public String getName() {
       return Gedcom.resources.getString("rel.sibling");
-    }
-    
-    /**
-     * @see genj.gedcom.Relationship#getTargetType()
-     */
-    public int getTargetType() {
-      return Gedcom.INDIVIDUALS;
     }
     
     /**

@@ -26,6 +26,10 @@ package genj.gedcom;
  */
 public class PropertyAssociation extends PropertyXRef {
 
+  /** applicable target types */
+  public final static int[] 
+    TARGET_TYPES = new int[]{ Gedcom.INDIVIDUALS, Gedcom.FAMILIES, Gedcom.SUBMITTERS};
+
   /**
    * Empty Constructor
    */
@@ -95,8 +99,8 @@ public class PropertyAssociation extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int getExpectedReferencedType() {
-    return Gedcom.INDIVIDUALS;
+  public int[] getTargetTypes() {
+    return TARGET_TYPES;
   }
   
 } //PropertyAssociation

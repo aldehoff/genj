@@ -33,7 +33,6 @@ import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
-import genj.gedcom.PropertyXRef;
 import genj.gedcom.Relationship;
 import genj.gedcom.Submitter;
 import genj.io.FileAssociation;
@@ -112,8 +111,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     for (int s=0;s<subs.length;s++) {
       // create Relationship.XRef where applicable
       MetaProperty sub = subs[s]; 
-      if (Relationship.XRefBy.isApplicable(sub.getType())) {
-        Relationship rel = new Relationship.XRefBy(property,(PropertyXRef)subs[s].create(""));
+      if (Relationship.XRefBy.isApplicable(sub)) {
+        Relationship rel = new Relationship.XRefBy(property, sub);
         result.add(new CreateRelationship(rel));
       }
       // .. next
@@ -149,8 +148,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     for (int s=0;s<subs.length;s++) {
       // create Relationship.XRef where applicable
       MetaProperty sub = subs[s]; 
-      if (Relationship.XRefBy.isApplicable(sub.getType())) {
-        Relationship rel = new Relationship.XRefBy(entity,(PropertyXRef)subs[s].create(""));
+      if (Relationship.XRefBy.isApplicable(sub)) {
+        Relationship rel = new Relationship.XRefBy(entity,sub);
         result.add(new CreateRelationship(rel));
       }
       // .. next

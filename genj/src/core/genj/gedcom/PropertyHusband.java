@@ -25,6 +25,10 @@ package genj.gedcom;
  */
 public class PropertyHusband extends PropertyXRef {
 
+  /** applicable target types */
+  public final static int[] 
+    TARGET_TYPES = new int[]{ Gedcom.INDIVIDUALS };
+
   /**
    * Empty Constructor
    */
@@ -133,7 +137,8 @@ public class PropertyHusband extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int getExpectedReferencedType() {
-    return Gedcom.INDIVIDUALS;
+  public int[] getTargetTypes() {
+    return TARGET_TYPES;
   }
-}
+  
+} //PropertyHusband
