@@ -41,7 +41,7 @@ import javax.swing.event.ChangeListener;
 public class ViewPortOverview extends Panel {
   
   /** the square dimension used for resizing */
-  private final static int DIM_RESIZE = 3;
+  private final static int DIM_RESIZE = 6;
 
   /** keep the viewport */
   private JViewport viewport;
