@@ -504,6 +504,14 @@ public class ControlCenter extends JPanel {
       if (gedcom != null) {
         addGedcom(gedcom);
       }
+      
+      // Debug - log memory status
+      long 
+       total = Runtime.getRuntime().totalMemory(),
+       free  = Runtime.getRuntime().freeMemory(),
+       used  = total-free; 
+      Debug.log(Debug.INFO, this, total+"-"+free+"="+used);
+      
       // done
     }
 
