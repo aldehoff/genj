@@ -178,7 +178,12 @@ public class Fam extends Entity {
     
     // Remove old husband
     PropertyHusband ph = (PropertyHusband)getProperty(new TagPath("FAM:HUSB"),QUERY_VALID_TRUE);
-    if (ph!=null) delProperty(ph);
+    if (ph!=null) 
+      delProperty(ph);
+      
+    // done?
+    if (husband==null)
+      return;
     
     // Add new husband
     ph = new PropertyHusband(husband.getId());
@@ -206,8 +211,13 @@ public class Fam extends Entity {
 
     // Remove old wife
     PropertyWife pw = (PropertyWife)getProperty(new TagPath("FAM:WIFE"),QUERY_VALID_TRUE);
-    if (pw!=null) delProperty(pw);
+    if (pw!=null) 
+      delProperty(pw);
 
+    // done?
+    if (wife==null)
+      return;
+    
     // Add new wife
     pw = new PropertyWife(wife.getId());
     addProperty(pw);
@@ -278,6 +288,29 @@ public class Fam extends Entity {
   public PropertyDate getDivorceDate() {
     // Calculate DIV|DATE
     return (PropertyDate)getProperty(new TagPath("FAM:DIV:DATE"),QUERY_VALID_TRUE);
+  }
+
+  /**
+   * Swap spouses
+   */
+  public void swapSpouses() throws GedcomException {
+    
+    Indi 
+      husband = getHusband(),
+      wife = getWife();
+
+    setWife(null);
+    setHusband(null);
+      
+    if (wife!=null) {
+      setHusband(wife);
+      wife.setSex(PropertySex.MALE);
+    }
+    if (husband!=null) { 
+      setWife(husband);
+      husband.setSex(PropertySex.FEMALE);
+    }
+      
   }
   
 } //Fam
