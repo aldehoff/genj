@@ -166,12 +166,13 @@ public class PropertyName extends Property {
     if (nameAsString != null) {
       return nameAsString;
     }
-    String out = firstName;
-    if ((lastName != null) && (! lastName.equals("")))
-      out = firstName+" /"+lastName+"/";
-    if ((suffix != null) && (! suffix.equals("")))
-      out = out+" "+suffix;
-    return out;
+    WordBuffer wb = new WordBuffer();
+    wb.append(firstName);
+    if ((lastName!=null) && (lastName.length()>0))
+      wb.append("/"+lastName+"/");
+    if ((suffix!=null) && (suffix.length()>0) )
+      wb.append(suffix);
+    return wb.toString();
   }
 
   /**

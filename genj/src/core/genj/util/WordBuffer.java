@@ -63,10 +63,22 @@ public class WordBuffer {
    */  
   public WordBuffer append(String word) {
     if ((word!=null)&&(word.length()!=0)) {
-      if (buffer.length()>0) buffer.append(' ');
+      if ((buffer.length()>0)&&(!isStartingWithPunctuation(word))) buffer.append(' ');
       buffer.append(word.trim());
     }
     return this;
+  }
+  
+  /**
+   * Checks whether a word starts with a punctuation
+   */
+  private final boolean isStartingWithPunctuation(String word) {
+    switch (word.charAt(0)) {
+      default: return false;
+      case '.': return true;
+      case ',': return true;
+      case ':': return true;
+    }
   }
 
 }
