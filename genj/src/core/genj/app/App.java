@@ -31,6 +31,7 @@ import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import gj.ui.UnitGraphics;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -40,6 +41,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -172,6 +174,25 @@ public class App {
   }
 
   /**
+   * Sets the LookAndFeel
+   */
+  public void setLnF(LnFBridge.LnF lnf, LnFBridge.Theme theme) {
+    
+    // collect frames we know about
+    Vector uis = new Vector();
+    Enumeration frames = openFrames.elements();
+    while (frames.hasMoreElements()) uis.add(frames.nextElement());
+    
+    // set it!
+    if (lnf.apply(theme, uis)) {
+      registry.put("lnf", lnf.getName());
+      if (theme!=null) registry.put("lnf.theme", theme.getName());
+    }
+    
+    // remember
+  }
+
+  /**
    * Returns a previously opened Frame by key
    */
   public JFrame getFrame(String key) {
@@ -181,8 +202,31 @@ public class App {
   /**
    * Creates a Frame which remembers it's position from last time
    */
-  public JFrame createFrame(String title, ImageIcon image, final String key, final Dimension dimension) {
-    return new App.Frame(title,image,key,dimension);
+  public JFrame createFrame(String title, ImageIcon image, String key, Dimension dimension) {
+    return new App.Frame(title, image, key, dimension);
+  }
+
+  /**
+   * Creates a Dialog which remembers it's position from last time
+   */
+  public JDialog createDialog(String title, String key, Dimension dimension, Component owner) {
+    
+    // find a JFrame of the component
+    JFrame frame = null;
+    while (true) {
+      // .. found it?
+      if (owner instanceof JFrame) {
+        frame = (JFrame) owner;
+        break;
+      }
+      // .. look up!
+      owner = owner.getParent();
+      // .. depleted?
+      if (owner==null) break;
+    }
+    
+    // create it
+    return new App.Dialog(title, key, dimension, frame);
   }
 
   /**
@@ -243,22 +287,56 @@ public class App {
   } // Frame
 
   /**
-   * Sets the LookAndFeel
+   * Our own dialog
    */
-  public void setLnF(LnFBridge.LnF lnf, LnFBridge.Theme theme) {
+  public class Dialog extends JDialog {
     
-    // collect frames we know about
-    Vector uis = new Vector();
-    Enumeration frames = openFrames.elements();
-    while (frames.hasMoreElements()) uis.add(frames.nextElement());
+    private String savedKey;
+    private Dimension savedDimension;
     
-    // set it!
-    if (lnf.apply(theme, uis)) {
-      registry.put("lnf", lnf.getName());
-      if (theme!=null) registry.put("lnf.theme", theme.getName());
+    /**
+     * Constructor
+     */
+    protected Dialog(String title, String key, Dimension dimension, JFrame owner) {
+      super(owner);
+      
+      // 1st remember
+      savedKey = FRAME_KEY_PREFIX+key;
+      savedDimension = dimension;
+      
+      // 2nd modify the frame's behavior
+      setTitle(title);
+      setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+      
+      // done
     }
     
-    // remember
-  }
-  
+    /**
+     * @see java.awt.Window#dispose()
+     */
+    public void dispose() {
+      registry.put(savedKey,getBounds());
+      super.dispose();
+    }
+
+    /**
+     * @see java.awt.Window#pack()
+     */    
+    public void pack() {
+      
+      Rectangle box = registry.get(savedKey,(Rectangle)null);
+      if ((box==null)&&(savedDimension!=null)) 
+        box = new Rectangle(0,0,savedDimension.width,savedDimension.height);
+      if (box==null) {
+        super.pack();
+      } else {
+        setBounds(new AreaInScreen(box));
+      }
+      invalidate();
+      validate();
+      doLayout();
+    }
+
+  } // Dialog
+
 } //App
