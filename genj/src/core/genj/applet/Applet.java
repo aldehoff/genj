@@ -22,6 +22,7 @@ package genj.applet;
 import genj.Version;
 import genj.gedcom.Gedcom;
 import genj.io.GedcomReader;
+import genj.option.OptionProvider;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
@@ -30,8 +31,8 @@ import genj.util.Registry;
 import genj.util.Trackable;
 import genj.util.swing.ProgressWidget;
 import genj.view.ViewManager;
-import genj.window.DefaultWindowManager;
 import genj.window.CloseWindow;
+import genj.window.DefaultWindowManager;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -50,12 +51,15 @@ public class Applet extends java.applet.Applet {
     "genj.tree.TreeViewFactory",
     "genj.timeline.TimelineViewFactory",
     "genj.edit.EditViewFactory",
-    //"genj.report.ReportViewFactory",
     "genj.nav.NavigatorViewFactory",
-    //"genj.entity.EntityViewFactory", 
+    "genj.entity.EntityViewFactory", 
     "genj.search.SearchViewFactory" 
   };
-
+  
+  private final static String[] OPTIONPROVIDERS = {
+    "genj.gedcom.Options",
+    "genj.renderer.Options"
+  };
 
   /** whether we're initialized */
   private boolean isInitialized = false;
@@ -171,9 +175,15 @@ public class Applet extends java.applet.Applet {
         // the origin we're loading from
         Origin origin = Origin.create(new URL(url));
         
-        // the registry
+        // the registry and some options
         try {
           registry = new Registry(origin.open("genj.properties"));
+          
+          // we can't use our OptionProvider service lookup method in an applet
+          // because of security restrictions (no sun.misc access)
+          OptionProvider.setOptionProviders(OPTIONPROVIDERS);
+          OptionProvider.restoreAll(registry);
+          
         } catch (Throwable t) {
           registry = new Registry();
         }
