@@ -30,12 +30,11 @@ Future
   O Abbreviate special dates like this: ABT 1917 > ~1917   BEF/TO 1917 > -1917   AFT/FROM 1917 > 1917-
   O some.ged.properties files should be read by CC from the same directory as the .ged-file (and saved there, too) 
   O Table view for families should list all children, not just first child.
+  O Merge and Verify should be reports
 
 1.9 - June xx 2002
 
-  O Improved windows placement 
-    + applet should layout views 
-      (tree left/top, table right/top, overview left/bottom)
+  O Improved windows placement (applet layouts views tree NW, table NE, overview S)
   O EditView should show button for 'Create New Individual' when no individual set
     (works nicely when the user has created an empty tree)
 
