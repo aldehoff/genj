@@ -25,9 +25,11 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.PopupWidget;
 import genj.view.ContextSupport;
 import genj.view.ViewManager;
 
@@ -35,19 +37,13 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -61,24 +57,24 @@ public class NavigatorView extends JPanel implements ContextSupport {
   private static Resources resources = Resources.get(NavigatorView.class);
 
   private final static String 
-    TIP_FATHER   = resources.getString("tip.father"),
-    TIP_MOTHER   = resources.getString("tip.mother"),
-    TIP_YSIBLING = resources.getString("tip.ysibling"),
-    TIP_OSIBLING = resources.getString("tip.osibling"),
-    TIP_PARTNER  = resources.getString("tip.partner"),
-    TIP_CHILD    = resources.getString("tip.child");
-
-  /** entity per tip */
-  private Map tip2indi = new HashMap();
-  
+    FATHER   = "tip.father",
+    MOTHER   = "tip.mother",
+    YSIBLING = "tip.ysibling",
+    OSIBLING = "tip.osibling",
+    PARTNER  = "tip.partner",
+    CHILD    = "tip.child";
+    
   /** the label holding information about the current individual */
   private JLabel labelCurrent;
   
   /** the current individual */
   private Indi current;
   
-  /** the buttons */
-  private Map tip2button = new HashMap();
+  /** jumps per key */
+  private Map key2jumps = new HashMap();
+  
+  /** popups per key */
+  private Map key2popup = new HashMap();
   
   /** the gedcom */
   private Gedcom gedcom;
@@ -150,20 +146,6 @@ public class NavigatorView extends JPanel implements ContextSupport {
   }
   
   /**
-   * Set jump 
-   */
-  private void setJump(String tip, Indi i) {
-    JButton b = (JButton)tip2button.get(tip);
-    if (i==null) {
-      tip2indi.remove(tip);
-      b.setEnabled(false);
-    } else {
-      tip2indi.put(tip, i);
-      b.setEnabled(true);
-    }
-  }
-  
-  /**
    * Set the current entity
    */
   public void setCurrentEntity(Entity e) {
@@ -179,35 +161,70 @@ public class NavigatorView extends JPanel implements ContextSupport {
       return;
     
     // forget jumps
-    tip2indi.clear();
+    key2jumps.clear();
     
     // and current
     current = (Indi)e;
 
     // nothing?
     if (current == null) {
-      // buttons
-      Iterator buttons = tip2button.values().iterator();
-      while (buttons.hasNext()) {
-        ((JButton)buttons.next()).setEnabled(false);
-      }
+      // no jumps
+      setJump(FATHER  , null);
+      setJump(MOTHER  , null);
+      setJump(OSIBLING, null);
+      setJumps(PARTNER , null);
+      setJump(YSIBLING, null);
+      setJumps(CHILD   , null);
       // update label
       labelCurrent.setText("n/a");
     } else {
-      // buttons
-      setJump(TIP_FATHER  , current.getFather());
-      setJump(TIP_MOTHER  , current.getMother());
-      setJump(TIP_OSIBLING, current.getOlderSibling());
-      setJump(TIP_PARTNER , current.getPartners().length==0?null:current.getPartners()[0]);
-      setJump(TIP_YSIBLING, current.getYoungerSibling());
-      setJump(TIP_CHILD   , current.getChildren().length==0?null:current.getChildren()[0]);
+      // jumps
+      setJump (FATHER  , current.getFather());
+      setJump (MOTHER  , current.getMother());
+      setJumps(OSIBLING, current.getOlderSiblings());
+      setJumps(PARTNER , current.getPartners());
+      setJumps(YSIBLING, current.getYoungerSiblings());
+      setJumps(CHILD   , current.getChildren());
       // update label
-      labelCurrent.setText(current.getName());
+      labelCurrent.setText(getNameOrID(current));
     }
           
     // done
   }
   
+  /**
+   * Resolve name or ID from indi
+   */
+  private String getNameOrID(Indi indi) {
+    String name = indi.getName();
+    if (name.length()>0) return name;
+    return indi.getId();
+  }
+  
+  /**
+   * remember a jump to individual
+   */
+  private void setJump(String key, Indi i) {
+    setJumps(key, i==null ? new Indi[0] : new Indi[]{ i });
+  }
+  
+  /**
+   * remember jumps to individuals
+   */
+  private void setJumps(String key, Indi[] is) {
+    // lookup popup
+    PopupWidget popup = (PopupWidget)key2popup.get(key);
+    // no jumps?
+    popup.setEnabled(is.length>0);
+    // loop jumps
+    ArrayList jumps = new ArrayList();
+    for (int i=0;i<is.length;i++) {
+      jumps.add(new Jump(is[i]));
+    }
+    popup.setActions(jumps);
+    // done
+  }
+    
   /**
    * propagate the selection of an entity
    */
@@ -219,10 +236,10 @@ public class NavigatorView extends JPanel implements ContextSupport {
   /**
    * Creates a button
    */
-  private JButton createButton(String key, ImageIcon i, ImageIcon r, ActionListener al, MouseListener ml) {
+  private JComponent createPopup(String key, ImageIcon i, ImageIcon r) {
     
     // create result
-    JButton result = new JButton();
+    PopupWidget result = new PopupWidget();
     result.setIcon(i);
     result.setRolloverIcon(r);
     result.setFocusPainted(false);
@@ -236,13 +253,10 @@ public class NavigatorView extends JPanel implements ContextSupport {
    
     result.setBorder(null);
     result.setEnabled(false);
-    result.setActionCommand(key);
-    result.addActionListener(al);
-    result.setToolTipText(key);
-    result.addMouseListener(ml);
+    result.setToolTipText(resources.getString(key));
 
     // remember    
-    tip2button.put(key, result);
+    key2popup.put(key, result);
     
     // done
     return result;
@@ -259,64 +273,54 @@ public class NavigatorView extends JPanel implements ContextSupport {
     result.setBorder(border);
     GridBagHelper gh = new GridBagHelper(result);
     
-    // create listener
-    MouseListener ml = new MouseAdapter() {
-      /** show preview */
-      public void mouseEntered(MouseEvent e) {
-        String tip = ((JButton)e.getSource()).getActionCommand();
-        set((Indi)tip2indi.get(tip));
-      }
-      /** restore current */
-      public void mouseExited(MouseEvent e) {
-        set(null);
-      }
-      /** set border text */
-      private void set(Indi indi) {
-        border.setTitle(indi!=null?"to "+indi.getName():title);
-        result.repaint();
-      }
-      /**
-       * @see java.awt.event.MouseAdapter#mouseReleased(java.awt.event.MouseEvent)
-       */
-      public void mouseReleased(MouseEvent e) {
-        mouseEntered(e);
-      }
-    };
-    
-    ActionListener al = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        fireCurrentEntity((Entity)tip2indi.get(e.getActionCommand()));
-      }
-    };
-    
     // add the buttons
     gh.add(
-      createButton(TIP_FATHER, Images.imgNavFatherOff, Images.imgNavFatherOn, al, ml) 
+      createPopup(FATHER, Images.imgNavFatherOff, Images.imgNavFatherOn) 
       ,3,2,1,1
     );
     gh.add(
-      createButton(TIP_MOTHER, Images.imgNavMotherOff, Images.imgNavMotherOn, al, ml) 
+      createPopup(MOTHER, Images.imgNavMotherOff, Images.imgNavMotherOn) 
       ,4,2,1,1
     );
     gh.add(
-      createButton(TIP_OSIBLING, Images.imgNavOlderSiblingOff, Images.imgNavOlderSiblingOn, al, ml) 
+      createPopup(OSIBLING, Images.imgNavOlderSiblingOff, Images.imgNavOlderSiblingOn) 
       ,1,3,2,1
     );
     gh.add(
-      createButton(TIP_PARTNER, Images.imgNavPartnerOff, Images.imgNavPartnerOn, al, ml)
+      createPopup(PARTNER, Images.imgNavPartnerOff, Images.imgNavPartnerOn)
       ,3,3,2,1,0,new Insets(12,0,12,0)
     );
     gh.add(
-      createButton(TIP_YSIBLING, Images.imgNavYoungerSiblingOff, Images.imgNavYoungerSiblingOn, al, ml)
+      createPopup(YSIBLING, Images.imgNavYoungerSiblingOff, Images.imgNavYoungerSiblingOn)
       ,5,3,2,1
     );
     gh.add(
-      createButton(TIP_CHILD, Images.imgNavChildOff, Images.imgNavChildOn, al, ml)  
+      createPopup(CHILD, Images.imgNavChildOff, Images.imgNavChildOn)  
       ,3,4,2,1
     );
 
     // done
     return result;
   }
+
+  /**
+   * Jump to another indi
+   */
+  private class Jump extends ActionDelegate {
+    /** the target */
+    private Indi target;
+    /** constructor */
+    private Jump(Indi taRget) {
+      // remember
+      target = taRget;
+      // our looks
+      setText(getNameOrID(target));
+      setImage(target.getImage(false));
+    }
+    /** do it */
+    protected void execute() {
+      fireCurrentEntity(target);
+    }
+  } //Jump
 
 } ///NavigatorView
