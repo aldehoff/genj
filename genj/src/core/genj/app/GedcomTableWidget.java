@@ -235,7 +235,9 @@ public class GedcomTableWidget extends JTable {
      */
     public void handleChange(Change change) {
       if (change.isChanged(change.EADD)||change.isChanged(change.EDEL)) {
+        int row = getSelectedRow();
         fireTableDataChanged();
+        if (row>=0) getSelectionModel().setSelectionInterval(row,row);
       }
     }
 
