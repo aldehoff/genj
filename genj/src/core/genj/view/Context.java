@@ -175,7 +175,7 @@ public class Context {
    */
   public boolean equals(Object o) {
     Context that = (Context)o;
-    return this.gedcom == that.gedcom && this.entity == that.entity && this.property == that.property;
+    return that!=null && this.gedcom == that.gedcom && this.entity == that.entity && this.property == that.property;
   }
   
   /**
