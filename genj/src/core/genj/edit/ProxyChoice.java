@@ -24,7 +24,6 @@ import genj.gedcom.PropertyChoiceValue;
 import genj.util.swing.SwingFactory;
 
 import java.awt.Component;
-import java.awt.Dimension;
 
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComboBox;
@@ -89,14 +88,12 @@ class ProxyChoice extends Proxy{
     }
 
     // Setup controls
-    combo = new JComboBox(items);
-    combo.setAlignmentX(0);
-    combo.setMaximumSize(new Dimension(Integer.MAX_VALUE,combo.getPreferredSize().height));
-    combo.setEditable(true);
-    
     editor = new Editor();
+    combo = new SwingFactory().JComboBox(items, null);
+    combo.setEditable(true);
     combo.setEditor(editor);
     combo.addPopupMenuListener(editor);
+
     editor.setText(prop.getValue());
     
     // layout
