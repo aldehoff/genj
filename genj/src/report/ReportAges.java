@@ -148,32 +148,34 @@ public class ReportAges extends Report {
      * The end point is given by <code>PropertyDate end</code> or
      * <code>PointInTime pit</code>.
      * @param indi individual for the calculation
-     * @param end end date for age calculation
+     * @param end end date for age calculation (PropertyDate or PointInTime)
      * @param pit point of time for the end
      * @return String[] : [day, month, year] or null if <CODE>end</CODE> < <CODE>birth</CODE>
      */
-    private Delta calculateAge(Indi indi, PropertyDate end, PointInTime pit) {
+    private Delta calculateAge(Indi indi, Object end) {
         
-        if((end==null)&&(pit==null))
+        if(end==null)
             return null;
         
-        PropertyDate birth = indi.getBirthDate();
+        PropertyDate birth = indi.getBirthDate(), death = indi.getDeathDate();
         PointInTime newBirth = calculateAveragePointInTime(birth);
         PointInTime newEnd = null;
         
-        if(end != null) {
+        if(end instanceof PropertyDate) {
+            PropertyDate date = (PropertyDate)end;
             // end date < birth date
-            if(end.compareTo(birth)<0)
+            if(date.compareTo(birth)<0)
                 return null;
+            // end date > death date
+            if((death != null) && (date.compareTo(death)>0))
+                return null;
+            
             // end date == birth date
-            newEnd = calculateAveragePointInTime(end);
+            newEnd = calculateAveragePointInTime(date);
         }
         
-        if(pit != null) {
-            // end date < birth date
-            if(pit.compareTo(newBirth)<0)
-                return null;
-            // end date == birth date
+        if(end instanceof PointInTime) {
+            PointInTime pit = (PointInTime)end;
             newEnd = pit;
         }
         
@@ -194,7 +196,7 @@ public class ReportAges extends Report {
             if(indi.getProperty(new TagPath("INDI:"+tag+":DATE"))!=null) {
                 PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:"+tag+":DATE"));
                 println(getIndent(indent)+prop.toString(true));
-                Delta age = calculateAge(indi, prop, null);
+                Delta age = calculateAge(indi, prop);
                 printAge(age, (indent+1), errorMessage, null);
             }
             else
@@ -220,10 +222,10 @@ public class ReportAges extends Report {
         
         if(reportBaptismAge) {
             println(getIndent(1)+i18n("baptismAge"));
-            analyzeTag(indi, "BAPM", true, "baptismBeforeBirth");
-            analyzeTag(indi, "BAPL", true, "baptismBeforeBirth");
-            analyzeTag(indi, "CHR", true, "baptismBeforeBirth");
-            analyzeTag(indi, "CHRA", true, "baptismBeforeBirth");
+            analyzeTag(indi, "BAPM", true, "baptismNotInLifeTime");
+            analyzeTag(indi, "BAPL", true, "baptismNotInLifeTime");
+            analyzeTag(indi, "CHR", true, "baptismNotInLifeTime");
+            analyzeTag(indi, "CHRA", true, "baptismNotInLifeTime");
             println();
         }
         
@@ -239,9 +241,9 @@ public class ReportAges extends Report {
                     if(fam.getMarriageDate() == null)
                         println(getIndent(3)+i18n("noMarriageDate"));
                     else {
-                        println(getIndent(3)+i18n("marriage", fam.getMarriageDate()));
-                        age = calculateAge(indi, fam.getMarriageDate(), null);
-                        printAge(age, 4, "marriageBeforeBirth", fam.getMarriageDate());
+                        println(getIndent(3)+fam.getMarriageDate());
+                        age = calculateAge(indi, fam.getMarriageDate());
+                        printAge(age, 4, "marriageNotInLifeTime", fam.getMarriageDate());
                     }
                 }
             }
@@ -258,11 +260,11 @@ public class ReportAges extends Report {
                     Fam fam = fams[i];
                     println(getIndent(2)+"@"+fam.getId()+"@ "+fam.toString());
                     if(fam.getDivorceDate() == null)
-                        println(getIndent(3)+i18n("noDivorceDate"));
+                        println(getIndent(3)+i18n("noDate"));
                     else {
-                        println(getIndent(3)+i18n("divorce", fam.getDivorceDate()));
-                        age = calculateAge(indi, fam.getDivorceDate(), null);
-                        printAge(age, 4, "divorceBeforeBirth", fam.getDivorceDate());
+                        println(getIndent(3)+fam.getDivorceDate());
+                        age = calculateAge(indi, fam.getDivorceDate());
+                        printAge(age, 4, "divorceNotInLifeTime", fam.getDivorceDate());
                     }
                 }
             }
@@ -283,8 +285,8 @@ public class ReportAges extends Report {
                         println(getIndent(3)+i18n("noBirthDate"));
                     else {
                         println(getIndent(3)+i18n("birth", cbirth));
-                        age = calculateAge(indi, cbirth, null);
-                        printAge(age, 4, "childBirthBeforeBirth", null);
+                        age = calculateAge(indi, cbirth);
+                        printAge(age, 4, "childBirthNotInLifeTime", null);
                     }
                 }
             }
@@ -293,19 +295,19 @@ public class ReportAges extends Report {
         
         if(reportAgeAtEmigration) {
             println(getIndent(1)+i18n("emigrationAge"));
-            analyzeTag(indi, "EMIG", false, "emigrationBeforeBirth");
+            analyzeTag(indi, "EMIG", false, "emigrationNotInLifeTime");
             println();
         }
         
         if(reportAgeAtImmigration) {
             println(getIndent(1)+i18n("immigrationAge"));
-            analyzeTag(indi, "IMMI", false, "immigrationBeforeBirth");
+            analyzeTag(indi, "IMMI", false, "immigrationNotInLifeTime");
             println();
         }
         
         if(reportAgeAtNaturalization) {
             println(getIndent(1)+i18n("naturalizationAge"));
-            analyzeTag(indi, "NATU", false, "naturalizationBeforeBirth");
+            analyzeTag(indi, "NATU", false, "naturalizationNotInLifeTime");
             println();
         }
         
@@ -316,7 +318,7 @@ public class ReportAges extends Report {
                 println(getIndent(2)+i18n("noDeathDate"));
             else {
                 println(getIndent(2)+i18n("death", death));
-                age = calculateAge(indi, death, null);
+                age = calculateAge(indi, death);
                 printAge(age, 3, "deathBeforeBirth", birth);
             }
             println();
@@ -324,7 +326,7 @@ public class ReportAges extends Report {
         
         if(reportAgeSinceBirth) {
             println(getIndent(1)+i18n("ageSinceBirth"));
-            age = calculateAge(indi, null, PointInTime.getNow());
+            age = calculateAge(indi, PointInTime.getNow());
             printAge(age, 2, "", null);
         }
     }
