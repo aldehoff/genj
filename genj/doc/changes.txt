@@ -30,7 +30,7 @@ Future
   O Windows should never been opened outside of the visible screen ("lost overview")
     (see Toolkit.getDefaultToolkit().getScreenSize() : Dimension)
 
-1.8 - Mar xx 2002 (not released)
+1.8 - Apr 18 2002
 
   C Abbreviated dates show month name (JAN), skip FROM/BET/AND/..., use '-' and are on one line
   I ant descriptor now builds distributions for languages EN,DE,FR and IT
