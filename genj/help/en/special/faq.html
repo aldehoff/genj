@@ -12,9 +12,8 @@
  <li> <a Href="#4">How do I get pictures to show up in Tree View?</a>
  <li> <a Href="#5">Can I change the language that GenJ speaks?</a>
  <li> <a Href="#6">Can I make a centimeter look like one on my screen?</a>
- <li> <a Href="#7">Can I change the boring gray look?</a>
+ <li> <a Href="#7">Can I change the look of GenJ?</a>
  <li> <a Href="#8">Associating existing records?</a>
- <li> <a Href="#9">How do I add the ADOP(tion) property in the right way?</a>
  <li> <a Href="#10">Why do size and resolution of images changed during program usage?</a>
  <li><a href="#11">How can I get in touch with GenJ users or developers? Where can I get further information about GenJ? </a> </li>
 </ol>
@@ -96,16 +95,14 @@
 </p>
 
 <a name = "7"><p>
- <b><a Href="#index"><Font color="red">Q</Font></a></b> Can I change the boring gray look?<br>
+ <b><a Href="#index"><Font color="red">Q</Font></a></b> Can I change the look of GenJ?<br>
  <b>A</b> GenJ uses the Swing Toolkit for presenting information to the
- user. This by default looks gray - it's called <em>Metal</em>. GenJ
- allows to change the current Look&Feel. 
+ user. This is system dependant by default. GenJ allows to change the current 
+ Look&Feel as well. 
  Please download the Look&Feel pack (genj_lnf-x.y.zip) from the
     <a target=project href="http://genj.sourceforge.net">project's homepage</a>
   and follow the instructions described to install it. 
-  After restarting GenJ
-  choose menu-item <em>Help|About</em> and flip to the <em>Look&Feel</em>-Tab. 
-  Now you can select a Look&Feel (and optionally a Theme).
+  After restarting GenJ you can change the Look&Feel in GenJ's list of Options.
 
 <a name = "8"><p>
  <b><a Href="#index"><Font color="red">Q</Font></a></b> I have an existing person and I want to make it a child of 
@@ -119,10 +116,6 @@
  drop-down box at the top.<Br>
  This way no new person will be created as child but a relationship to 
  the 'existing' one is built.
-</p>
-<a name = "9"><p>
- <b><a Href="#index"><Font color="red">Q</Font></a></b> How do I add the ADOP(tion) property in the right way?<br>
- <b>A</b> For the person you want to add the relationship to, add the person as a child of the adopted family: go to the FAM(ily) entity, select "Family => Add Child", and select the person to add as an adopted child from the drop down menu. This will put the FAMC property on the person's INDI entity. Next, go to the INDI entity for the person and create the ADOP property on the INDI entity. Next drag and drop (or cut/paste in 2.2+MDI version) the FAMC property from being under the INDI to being under the ADOP property. To specify who adopted the child, select the nested FAMC property that was just moved in the Edit INDI view and add an ADOP property to it. Select the newly created ADOP property and a new option will appear in the edit window to select the person who adopted the child: (HUSB=husband, or male spouse of the FAMily; WIFE=wife, or female spouse of the FAMily; BOTH=both the spouses adopted the child).
 </p>
 <a name = "10"><p>
  <b><a Href="#index"><Font color="red">Q</Font></a></b> Why do size and resolution of images changed during program usage?<br>
