@@ -214,6 +214,7 @@ public class UnitGraphics {
    * Set a font
    */
   public void setFont(Font font) {
+    if (font==null) return;
     graphics.setFont(font);
     fontMetrics = graphics.getFontMetrics();
   }
