@@ -22,19 +22,31 @@ package genj.timeline;
 import genj.gedcom.Entity;
 import genj.renderer.*;
 import genj.util.ImgIcon;
+import gj.ui.UnitGraphics;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import java.util.List;
 
 /**
  * A renderer knowing how to render a ruler for the timeline
  */
-public class ContentRenderer extends Renderer {
+public class ContentRenderer {
+  
+  /** a mark used for demarking time spans */
+  private final static Shape 
+    FROM_MARK = calcFromMark(),
+    TO_MARK = calcToMark();
   
   /** centimeters per year */
   /*package*/ double cmPyear = 1.0D;
@@ -77,8 +89,8 @@ public class ContentRenderer extends Renderer {
    */
   public Dimension getDimension(Model model, FontMetrics fm) {
     return new Dimension(
-      cm2pixels((model.max-model.min)*cmPyear),
-      model.layers.size()*calcLayerHeight(fm)
+      UnitGraphics.units2pixels(model.max-model.min, UnitGraphics.CENTIMETERS*cmPyear),
+      UnitGraphics.units2pixels(model.layers.size(),fm.getHeight()+1)
     );
   }
   
@@ -86,45 +98,47 @@ public class ContentRenderer extends Renderer {
    * Renders the model
    */
   public void render(Graphics g, Model model) {
-    // prepare some data
-    FontMetrics fm = g.getFontMetrics();
-    Dimension d = getDimension(model, fm);
+    // prepare UnitGraphics
+    UnitGraphics graphics = new UnitGraphics(g, 
+      UnitGraphics.CENTIMETERS*cmPyear, 
+      g.getFontMetrics().getHeight()+1
+    );
+    graphics.translate(-model.min,0);
     // render background
-    renderBackground(g, d);
-    // calculate the clipping
-    Clip clip = new Clip(g, fm, model);
+    renderBackground(graphics, model);
     // render grid
-    renderGrid(g, model, d, clip);
+    renderGrid(graphics, model);
     // render layers
-    renderLayers(g, fm, model, clip);
+    renderLayers(graphics, model);
     // done
   }
   
   /**
    * Renders the background
    */
-  private void renderBackground(Graphics g, Dimension d) {
+  protected void renderBackground(UnitGraphics g, Model model) {
     if (cBackground==null) return;
-    setColor(g,cBackground);
-    g.fillRect(0,0,d.width,d.height);
+    g.setColor(cBackground);
+    Rectangle2D r = new Rectangle2D.Double(model.min, 0, model.max-model.min, 1024);
+    g.draw(r, 0, 0, true);
   }
   
   /**
    * Renders a grid
    */
-  private final void renderGrid(Graphics g, Model model, Dimension d, Clip clip) {
+  private final void renderGrid(UnitGraphics g, Model model) {
     // check 
     if (!paintGrid) return;
     // color 
-    setColor(g, cGrid);
-    // prepare data
-    int 
-      from = (int)model.min,
-      to = (int)model.max;
+    g.setColor(cGrid);
     // loop
-    for (int year=from;year<=to;year++) {
-      int x = cm2pixels((year-model.min)*cmPyear);
-      g.drawLine(x, 0, x, d.height);
+    Rectangle2D r = g.getClip();
+    int layers = model.layers.size();
+    double 
+      from = Math.floor(r.getMinX()),
+      to = Math.ceil(r.getMaxX());
+    for (double year=from;year<=to;year++) {
+      g.draw(year, 0, year, layers);
     }
     // done
   }
@@ -132,13 +146,15 @@ public class ContentRenderer extends Renderer {
   /** 
    * Renders layers
    */
-  private final void renderLayers(Graphics g, FontMetrics fm, Model model, Clip clip) {
+  private final void renderLayers(UnitGraphics g, Model model) {
+    // check clip as we go
+    Rectangle2D clip = g.getClip();
     // loop
     List layers = model.layers;
     for (int l=0; l<layers.size(); l++) {
-      if (l<clip.minLayer||l>clip.maxLayer) continue;
+      if (l<Math.floor(clip.getMinY())||l>Math.ceil(clip.getMaxY())) continue;
       List layer = (List)layers.get(l);
-      renderEvents(g, fm, model, layer, l, clip);
+      renderEvents(g, model, layer, l);
     }
     // done
   }
@@ -146,7 +162,9 @@ public class ContentRenderer extends Renderer {
   /** 
    * Renders a layer
    */
-  private final void renderEvents(Graphics g, FontMetrics fm, Model model, List layer, int level, Clip clip) {
+  private final void renderEvents(UnitGraphics g, Model model, List layer, int level) {
+    // check clip as we go
+    Rectangle2D clip = g.getClip();
     // loop through events
     Iterator events = layer.iterator();
     Model.Event event = (Model.Event)events.next();
@@ -154,8 +172,8 @@ public class ContentRenderer extends Renderer {
       // already grabbing next because we paint as much as we can
       Model.Event next = events.hasNext() ? (Model.Event)events.next() : null;
       // check clipping and draw
-      if ((next==null||next.from>clip.minYear)&&(event.from<clip.maxYear)) {
-        renderEvent(g, fm, model, event, next, level);
+      if ((next==null||next.from>clip.getMinX())&&(event.from<clip.getMaxX())) {
+        renderEvent(g, model, event, next, level);
       }
       // no more?
       if (next==null) break;
@@ -168,77 +186,65 @@ public class ContentRenderer extends Renderer {
   /**
    * Renders an event
    */
-  private final void renderEvent(Graphics g, FontMetrics fm, Model model, Model.Event event, Model.Event next, int level) {
-    // calculate some parameters
-    int
-      lh  = calcLayerHeight(fm),
-      fd  = fm.getDescent(),
-      x1  = cm2pixels((event.from-model.min)*cmPyear),
-      x2  = cm2pixels((event.to-model.min)*cmPyear),
-      w   = next == null ? Integer.MAX_VALUE : cm2pixels((next.from-model.timeBeforeEvent-event.from)*cmPyear),
-      y   = level*calcLayerHeight(fm);
+  private final void renderEvent(UnitGraphics g, Model model, Model.Event event, Model.Event next, int level) {
 
+    // calculate some parameters
     boolean em  = event.pe.getEntity() == selection;
-    
+    FontMetrics fm = g.getFontMetrics();
+    int dy = -fm.getDescent();
+       
     // draw it's extend
-    setColor(g, cTimespan);
-    g.drawLine(x1-1, y+lh-2, x1-1, y+lh-1);
-    g.drawLine(x1  , y+lh-1, x2  , y+lh-1);
-    g.drawLine(x2+1, y+lh-2, x2+1, y+lh-1);
+    g.setColor(cTimespan);
+    
+    g.draw(FROM_MARK, event.from, level+1, Double.NaN, Double.NaN, 0, true);
+    if (event.from!=event.to) {
+      g.draw(event.from, level+1, event.to, level+1, 0, -1);
+      g.draw(TO_MARK, event.to, level+1, Double.NaN, Double.NaN, 0, true);
+    }
 
     // clipping from here    
-    pushClip(g, x1, y, w, lh);
-    
+    g.pushClip(event.from, level, next==null?Integer.MAX_VALUE:next.from, level+1);
+        
     // draw its image
     ImgIcon img = event.pe.getImage(false);
-    img.paintIcon(g, x1, y+lh/2-img.getIconHeight()/2);
-    x1+=img.getIconWidth();
-    y +=lh-fd;
+    g.draw(img.getImage(), event.from, level+0.5);
+    int dx=img.getIconWidth();
 
     // draw its tag    
     if (paintTags) {
       String tag = event.pe.getTag();
-      setColor(g, cTag);
-      g.drawString(tag, x1, y);
-      x1+=fm.stringWidth(tag)+fm.charWidth(' ');
+      g.setColor(cTag);
+      g.draw(tag, event.from, level+1, 0, dx, dy);
+      dx+=fm.stringWidth(tag)+fm.charWidth(' ');
     }
 
     // draw its text 
-    if (cSelected!=null&&event.pe.getEntity()==selection) setColor(g, cSelected);
-    else setColor(g, cText);
-    g.drawString(event.content, x1, y);
-    x1+=fm.stringWidth(event.content)+fm.charWidth(' ');
+    if (cSelected!=null&&event.pe.getEntity()==selection) g.setColor(cSelected);
+    else g.setColor(cText);
+    String txt = event.content;
+    g.draw(txt, event.from, level+1, 0, dx, dy);
+    dx+=fm.stringWidth(txt)+fm.charWidth(' ');
     
     // draw its date
     if (paintDates) {
       String date = " (" + event.pd + ')';
-      setColor(g, cDate);
-      g.drawString(date, x1, y);
+      g.setColor(cDate);
+      g.draw(date, event.from, level+1, 0, dx, dy);
     }
-        
+
     // done with clipping
-    popClip(g);
-    
+    g.popClip();
+
     // done
-  }
-  
-  /** 
-   * Helper calculating layer height
-   */
-  protected int calcLayerHeight(FontMetrics fm) {
-    return fm.getHeight()+1;
   }
   
   /**
    * Class for specialized Clip region
    */
+/*    
   protected class Clip {
-    /** attributes */
     double minYear, maxYear;
     int minLayer, maxLayer;
-    /**
-     * Constructor
-     */
     protected Clip(Graphics g, FontMetrics fm, Model model) {
       Rectangle r = g.getClipBounds();
       minYear = model.min+pixels2cm(r.x)/cmPyear;
@@ -246,7 +252,30 @@ public class ContentRenderer extends Renderer {
       int lh = calcLayerHeight(fm);
       minLayer = r.y/lh;
       maxLayer = minLayer + r.height/lh + 1;
-    }
+    }    
   } //Clip
+*/  
+
+  /**
+   * Generates a mark
+   */
+  private static Shape calcFromMark() {
+    Polygon result = new Polygon();
+    result.addPoint(0,-1);
+    result.addPoint(-3,-4);
+    result.addPoint(-3,2);
+    return result;
+  }
+  
+  /**
+   * Generates a mark
+   */
+  private static Shape calcToMark() {
+    Polygon result = new Polygon();
+    result.addPoint(0,-1);
+    result.addPoint(3,-4);
+    result.addPoint(3,2);
+    return result;
+  }
   
 } //RulerRenderer

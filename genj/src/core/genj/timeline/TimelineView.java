@@ -31,6 +31,7 @@ import genj.view.CurrentSupport;
 import genj.view.ContextPopupSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import gj.ui.UnitGraphics;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -336,7 +337,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
    */
   protected Model.Event getEventAt(Point pos) {
     double year = pixel2year(pos.x);
-    int layer = pos.y/contentRenderer.calcLayerHeight(getFontMetrics(getFont()));
+    int layer = pos.y/(getFontMetrics(getFont()).getHeight()+1);
     return model.getEvent(year, layer);
   }
   
@@ -344,7 +345,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
    * Calculates a year from given pixel position
    */
   protected double pixel2year(int x) {
-    return model.min + contentRenderer.pixels2cm(x)/cmPerYear;
+    return model.min + x/(UnitGraphics.CENTIMETERS*cmPerYear);
   }
 
   /** 
@@ -352,7 +353,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
    */
   protected void scroll2year(double year) {
     centeredYear = year;
-    int x = contentRenderer.cm2pixels( (year - model.min)*cmPerYear ) - scrollContent.getViewport().getWidth()/2;
+    int x = (int)((year-model.min)*UnitGraphics.CENTIMETERS*cmPerYear) - scrollContent.getViewport().getWidth()/2;
     scrollContent.getHorizontalScrollBar().setValue(x);
   }
   
