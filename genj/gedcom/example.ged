@@ -123,7 +123,6 @@
 1 HUSB @I005@
 1 CHIL @I007@
 1 CHIL @I009@
-0 @N003@ NOTE 
-1 NOTE The author of GenJ
-1 DATE FROM 1996 TO 2000
+0 @N003@ NOTE The author of GenJ
+1 CONT Please visit http://genj.sourceforge.net
 0 TRLR 
