@@ -37,7 +37,7 @@ The people behind GenJ (sorted by last name) :
       . Daniel Moyne
       . Shmuel Metz <shmuel@acm.org>
       . Ernst Neubauer and Sohn <e.neubauer@t-online.de>
-      . John Valera
+      . John Varela
       . Roy O. Wellington III <roy.wellington@worldnet.att.net>
       . and many others!!!
 
