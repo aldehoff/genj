@@ -15,6 +15,7 @@ The people behind GenJ (sorted by last name) :
     Translators :
       . Osamu Ajiki <osam-a@astroarts.co.jp> (Japanese translation)
       . Nicola Fragale <nicolafragale@libero.it> (Italian translation)
+      . Pere Jover <pjover@jazzfree.com> (Spanish translation)
       . Francois Massonneau <francois@arvernes.com> (French translation)
       . Nils Meier <nils@meiers.net> (German translation)
 
