@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.57 $ $Author: nmeier $ $Date: 2004-05-12 17:33:28 $
+ * $Revision: 1.58 $ $Author: nmeier $ $Date: 2004-05-12 22:31:15 $
  */
 package genj.gedcom;
 
@@ -32,13 +32,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -102,12 +100,6 @@ public class Gedcom {
   private final static Map
     E2IMAGE = new HashMap();
 
-  /** a  set that doesn't retain added content */  
-  private static final Set NULL_SET = new HashSet() {
-    // ignore any add's
-    public boolean add(Object o) { return false; }
-  };
-  
   /** image */
   private final static ImageIcon image = new ImageIcon(Gedcom.class, "images/Gedcom.gif");
   
@@ -122,10 +114,9 @@ public class Gedcom {
   private Map e2entities = new HashMap(); // values are maps id->entitiy
   private int minIDStringLen = 4; //lenght of ids e.g. I001
   
-  /** change/transaction support */
-  private boolean isTransaction = false;
+  /** transaction support */
+  private Transaction transaction = null;
   private boolean hasUnsavedChanges;
-  private Set[] changes;
 
   /** listeners */
   private List listeners = new ArrayList(10);
@@ -193,7 +184,8 @@ public class Gedcom {
     if (!getEntityMap(SUBM).containsValue(set))
       throw new IllegalArgumentException("Submitter is not part of this gedcom");
     submitter = set;
-    if (isTransaction) hasUnsavedChanges = true;
+    if (getTransaction().isTrackChanges())
+      hasUnsavedChanges = true;
   }
   
   /**
@@ -436,58 +428,44 @@ public class Gedcom {
   }
   
   /**
-   * Starts changing of mankind
+   * Starts a transaction
    */
-  public synchronized void startTransaction() throws IllegalStateException {
+  public synchronized Transaction startTransaction() throws IllegalStateException {
 
     // Is there a transaction running?
-    if (isTransaction)
+    if (transaction!=null)
       throw new IllegalStateException("Cannot start transaction for changes while concurrent transaction is active");
 
-    // Start
-    isTransaction = true;
+    // start one
+    transaction = new Transaction(this);
 
-    // ... prepare rememberance of changes
-    changes = new Set[Change.NUM];
-    for (int i=0;i<Change.NUM;i++) {
-      changes[i] = listeners.isEmpty() ? NULL_SET : new HashSet(64);
-    }
-
-    // .. done
-  }
-
-  /**
-   * Whether there's a transaction going on
-   */
-  /*package*/ boolean isTransaction() {
-    return isTransaction;
+    // done
+    return transaction;
   }
   
   /**
-   * Returns change set
+   * Access current transaction
    */
-  /*package*/ Set getTransactionChanges(int which) {
-    if (!isTransaction)
-      throw new RuntimeException("Cannot acces transaction - no current transaction context");
-    return changes[which]; 
+  public synchronized Transaction getTransaction() {
+    if (transaction==null)
+      throw new RuntimeException("Cannot find active transaction");
+    return transaction;
   }
-  
+
   /**
    * Ends Transaction
-   * @return the change that has been made
    */
   public synchronized void endTransaction() {
 
     // Is there a transaction going on?
-    if (!isTransaction)
+    if (transaction==null)
       return;
 
-    // wrao in change
-    Change change = new Change( this, changes );
+    // wrap in change
+    Change change = transaction.getChange();
 
     // end tx
-    isTransaction = false;
-    changes = null;
+    transaction = null;
 
     // need to notify?
     if (change.isEmpty())
