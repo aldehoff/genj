@@ -26,6 +26,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.TextFieldWidget;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -81,7 +82,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title, Icon img, String txt, String[] options, JComponent owner) {
+  public int openDialog(String key, String title, Icon img, String txt, String[] options, Component owner) {
 
     JTextPane text = new JTextPane();
     text.setText(txt);
@@ -99,7 +100,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent[], java.lang.String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title, Icon image, JComponent[] content, String[] options, JComponent owner) {
+  public int openDialog(String key, String title, Icon image, JComponent[] content, String[] options, Component owner) {
     // assemble content into Box (don't use Box here because
     // Box extends Container in pre JDK 1.4)
     JPanel box = new JPanel();
@@ -116,7 +117,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String, javax.swing.JComponent)
    */
-  public String openDialog(String key, String title, Icon img, String txt, String value, JComponent owner) {
+  public String openDialog(String key, String title, Icon img, String txt, String value, Component owner) {
 
     // prepare text field and label
     TextFieldWidget tf = new TextFieldWidget(value, 24);

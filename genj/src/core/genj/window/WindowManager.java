@@ -19,6 +19,7 @@
  */
 package genj.window;
 
+import java.awt.Component;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -88,7 +89,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of options choosen or -1 
    */
-  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, JComponent owner);
+  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, Component owner);
 
   /**
    * Opens a dialog containing several stacked custom components
@@ -100,7 +101,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of options choosen or -1 
    */
-  public int openDialog(String key, String title, Icon image, JComponent[] content, String[] options, JComponent owner);
+  public int openDialog(String key, String title, Icon image, JComponent[] content, String[] options, Component owner);
 
   /**
    * Opens a dialog with a simple text message
@@ -112,7 +113,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of options choosen or -1 
    */
-  public int openDialog(String key, String title, Icon image, String txt, String[] options, JComponent owner);
+  public int openDialog(String key, String title, Icon image, String txt, String[] options, Component owner);
   
   /**
    * Opens a dialog prompting the user for a simple text value
@@ -124,7 +125,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return entered text or null
    */
-  public String openDialog(String key, String title, Icon image, String txt, String value, JComponent owner);
+  public String openDialog(String key, String title, Icon image, String txt, String value, Component owner);
   
   /**
    * Opens a non-modal dialog 
@@ -135,7 +136,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return key 
    */
-  public String openDialog(String key, String title, Icon image, JComponent content, JComponent owner);
+  public String openDialog(String key, String title, Icon image, JComponent content, Component owner);
   
   /**
    * Close dialog/frame 

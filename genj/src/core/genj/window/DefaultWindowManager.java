@@ -137,7 +137,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent)
    */
-  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, JComponent owner) {
+  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, Component owner) {
     // check options - default to OK
     if (options==null) options = OPTIONS_OK;
     // ask impl
@@ -147,7 +147,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, javax.swing.JComponent, javax.swing.JComponent)
    */
-  public String openDialog(String key, String title, Icon image, JComponent content, JComponent owner) {
+  public String openDialog(String key, String title, Icon image, JComponent content, Component owner) {
     // create a key?
     if (key==null) key = getTemporaryKey();
     // ask impl
@@ -159,7 +159,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * Dialog implementation - will create a modal dialog if options==null
    */
-  private int openDialogImpl(final String key, String title, Icon image, JComponent content, String[] options, JComponent owner) {
+  private int openDialogImpl(final String key, String title, Icon image, JComponent content, String[] options, Component owner) {
 
     // Create a dialog 
     Window parent = getWindowForComponent(owner);
