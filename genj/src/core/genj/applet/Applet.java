@@ -23,6 +23,7 @@ import genj.Version;
 import genj.gedcom.Gedcom;
 import genj.io.GedcomReader;
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Trackable;
@@ -77,12 +78,18 @@ public class Applet extends java.applet.Applet {
 
     // calculate gedcom url
     String url = getParameter("gedcom");
-    if (url.indexOf(':')<0) {
+    if (url!=null&&url.indexOf(':')<0) {
       String base = getDocumentBase().toString();
       url = base.substring(0, base.lastIndexOf('/')+1)+url;
     } 
 
-    System.out.println("Loading Gedcom "+url);
+    // Log
+    String msg = "Loading Gedcom "+url;
+
+    showStatus(msg);
+    
+    Debug.log(Debug.INFO, this, msg);
+    Debug.flush();
 
     // try load gedcom
     new Init(url).trigger();
