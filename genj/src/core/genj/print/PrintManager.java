@@ -21,12 +21,15 @@ package genj.print;
 
 import genj.app.App;
 import genj.util.Debug;
-
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.print.PrintService;
 import javax.swing.JComponent;
@@ -80,7 +83,7 @@ public class PrintManager {
 
   /**
    * Our own task for printing   */  
-  private static class PrintTask implements PropertyChangeListener {
+  /*package*/ class PrintTask {
     
     /** our print job */
     private PrinterJob job;
@@ -90,26 +93,59 @@ public class PrintManager {
 
     /**
      * Constructor     */
-    protected PrintTask(JComponent owner) {
+    private PrintTask(JComponent owner) {
       
       // create a job
       job = PrinterJob.getPrinterJob();
       
-      // find services
-      PrintService[] services = job.lookupPrintServices();
-          
       // create a widget
-      widget = new PrintWidget(services, services.length>0?services[0]:null, job.defaultPage());
+      widget = new PrintWidget(this);
       
-      // listen to it
-      widget.addPropertyChangeListener(this);
-  
       // show    
       JDialog dlg = App.getInstance().createDialog("Printing", "print", new Dimension(480,320), owner);
       dlg.getContentPane().add(widget);
       dlg.pack();
       dlg.setModal(true);
       dlg.show();
+      
+      // print test
+      job.setPrintable(new Printable() {
+        /**
+         * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
+         */
+        public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+          
+          if (pageIndex>1) return NO_SUCH_PAGE;
+          
+          Graphics2D g = (Graphics2D)graphics;
+          g.setColor(Color.black);
+          
+          g.draw(new Rectangle2D.Double(
+            pageFormat.getImageableX(),
+            pageFormat.getImageableY(),
+            pageFormat.getImageableWidth(),
+            pageFormat.getImageableHeight()
+          ));
+          
+          // 1 cm = 0.393701*inches
+          double CM = 0.393701*72;
+          
+          g.draw(new Rectangle2D.Double(
+            0,//pageFormat.getImageableX(),
+            0,//pageFormat.getImageableY(),
+            21.5D/2*CM,
+            28.0D/2*CM
+          ));
+          
+          return PAGE_EXISTS;
+        }
+      });
+      
+      try {
+        job.print();
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
       
       // cancel job
       job.cancel();
@@ -118,19 +154,25 @@ public class PrintManager {
     }
     
     /**
-     * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
-     */
-    public void propertyChange(PropertyChangeEvent evt) {
-      // service?
-      if ("service".equals(evt.getPropertyName())) {
-        try {
-          job.setPrintService((PrintService)evt.getNewValue());
-        } catch (PrinterException e) {
-          Debug.log(Debug.WARNING, this, "Couldn't change printer", e);
-        }
-        widget.setPageFormat(job.defaultPage());
+     * The available services     */
+    /*package*/ PrintService[] getPrintServices() {
+      return job.lookupPrintServices();
+    }
+    
+    /**
+     * Current service     */
+    /*package*/ PrintService getCurrentPrintService() {
+      return job.getPrintService();
+    }
+    
+    /**
+     * Current service     */
+    /*package*/ void setCurrentPrintService(PrintService service) {
+      try {
+        job.setPrintService(service);
+      } catch (PrinterException e) {
+        Debug.log(Debug.WARNING, this, "Couldn't change printer", e);
       }
-      // nothing we know
     }
   } //WidgetListener  
 } //PrintManager
