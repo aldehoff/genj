@@ -22,9 +22,13 @@ package genj.window;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 
+import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -39,7 +43,6 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
-import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 /**
@@ -75,7 +78,23 @@ public class DefaultWindowManager extends AbstractWindowManager {
     close(key);
 
     // Create a frame
-    final JFrame frame = new JFrame();
+    final JFrame frame = new JFrame() {
+      /**
+       * dispose is our onClose hook because
+       * WindowListener.windowClosed is too 
+       * late (one frame) after dispose()
+       */
+      public void dispose() {
+        // keep bounds
+        registry.put(key, getBounds());
+        // forget frame
+        key2frame.remove(key);
+        // callback?
+        if (onClose!=null) onClose.run();
+        // continue
+        super.dispose();
+      }
+    };
 
     // setup looks
     if (title!=null) frame.setTitle(title);
@@ -89,26 +108,17 @@ public class DefaultWindowManager extends AbstractWindowManager {
     if (onClosing==null) {
       frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     } else {
+      // responsibility to dispose passed to onClosing?
       frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+      frame.addWindowListener(new WindowAdapter() {
+        public void windowClosing(WindowEvent e) {
+          onClosing.run();
+        }
+      });
     }
 
     // remember
     key2frame.put(key, frame);
-
-    // prepare to forget
-    frame.addWindowListener(new WindowAdapter() {
-      public void windowClosing(WindowEvent e) {
-        if (onClosing!=null) try {
-          onClosing.run();
-        } catch (Throwable t) {
-        }
-      }
-      public void windowClosed(WindowEvent e) {
-        registry.put(key, frame.getBounds());
-        key2frame.remove(key);
-        if (onClose!=null) onClose.run();
-      }
-    });
 
     // place
     Rectangle box = registry.get(key,(Rectangle)null);
@@ -131,10 +141,35 @@ public class DefaultWindowManager extends AbstractWindowManager {
   public int openDialog(final String key, String title, Icon image, JComponent content, String[] options, JComponent owner) {
 
     // Create a dialog 
-    final JDialog dlg = new JOptionPane().createDialog(owner, title);
-    dlg.getContentPane().removeAll();
+    Window parent = getWindowForComponent(owner);
+    final JDialog dlg = parent instanceof Frame ? 
+      (JDialog)new JDialog((Frame)parent) {
+        /** dispose is our onClose (WindowListener.windowClosed is too late after dispose() */
+        public void dispose() {
+          // keep bounds
+          registry.put(key, getBounds());
+          // forget frame
+          key2dlg.remove(key);
+          // continue
+          super.dispose();
+        }
+      }
+    : 
+      (JDialog)new JDialog((Dialog)parent) {
+        /** dispose is our onClose (WindowListener.windowClosed is too late after dispose() */
+        public void dispose() {
+          // keep bounds
+          registry.put(key, getBounds());
+          // forget frame
+          key2dlg.remove(key);
+          // continue
+          super.dispose();
+        }
+      }
+    ;
     
     // setup looks
+    dlg.setTitle(title);
     dlg.setResizable(true);
     dlg.setModal(true);
     
@@ -163,16 +198,6 @@ public class DefaultWindowManager extends AbstractWindowManager {
     if (key!=null)
       key2dlg.put(key, dlg);
 
-    // prepare to forget
-    dlg.addWindowListener(new WindowAdapter() {
-      public void windowClosed(WindowEvent e) {
-        if (key!=null) {
-          registry.put(key, dlg.getBounds());
-          key2dlg.remove(key);
-        }
-      }
-    });
-
     // place
     Rectangle box = registry.get(key,(Rectangle)null);
     if (box==null) {
@@ -195,10 +220,20 @@ public class DefaultWindowManager extends AbstractWindowManager {
   }
 
   /**
-   * @see genj.window.WindowManager#isFrame(java.lang.String)
+   * @see genj.window.WindowManager#show(java.lang.String)
    */
-  public boolean isOpen(String key) {
-    return key2frame.containsKey(key) || key2dlg.containsKey(key);
+  public boolean show(String key) {
+    JFrame frame = (JFrame)key2frame.get(key);
+    if (frame!=null) {
+      frame.toFront();
+      return true;
+    }
+    JDialog dlg = (JDialog)key2dlg.get(key);
+    if (dlg!=null) {
+      dlg.toFront();
+      return true;
+    }
+    return false;
   }
   
   /**
@@ -268,4 +303,13 @@ public class DefaultWindowManager extends AbstractWindowManager {
     return null;
   }
 
+  /**
+   * Get the window for given owner component
+   */  
+  private Window getWindowForComponent(Component c) {
+    if (c instanceof Frame || c instanceof Dialog)
+        return (Window)c;
+    return getWindowForComponent(c.getParent());
+  }
+  
 } //DefaultWindowManager

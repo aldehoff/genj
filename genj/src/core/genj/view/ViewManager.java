@@ -37,7 +37,6 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +71,7 @@ public class ViewManager {
   static private ViewFactory[] factories = null;
   
   /** open views */
-  private List viewWidgets = new LinkedList();
+  private Map key2viewwidget = new HashMap();
   
   /** the currently selected entity */
   private Map gedcom2current = new HashMap();
@@ -153,7 +152,7 @@ public class ViewManager {
     // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();
     // loop and tell to views
-    Iterator it = viewWidgets.iterator();
+    Iterator it = key2viewwidget.values().iterator();
     while (it.hasNext()) {
       ViewWidget vw = (ViewWidget)it.next();
       // only if view on same gedcom
@@ -236,7 +235,7 @@ public class ViewManager {
     String name = origin.getFileName();
     int number;
     for (number=1;;number++) {
-      if (!windowManager.isOpen(name+"."+nameOfView+"."+number)) {
+      if (!key2viewwidget.containsKey(name+"."+nameOfView+"."+number)) {
         break;
       }
     }
@@ -276,7 +275,7 @@ public class ViewManager {
     }
     // loop through views
     Gedcom gedcom = getGedcom(context);
-    Iterator views = viewWidgets.iterator();
+    Iterator views = key2viewwidget.values().iterator();
     while (views.hasNext()) {
       ViewWidget view = (ViewWidget)views.next();
       if (view.getGedcom()==gedcom&&view.getView() instanceof ActionSupport) {
@@ -336,7 +335,7 @@ public class ViewManager {
     Registry registry = getRegistry(gedcom, getKey(factory));
     
     // title & key
-    String 
+    final String 
       title = gedcom.getName()+" - "+factory.getTitle(false)+" ("+registry.getViewSuffix()+")",
       key = gedcom.getName() + "." + registry.getView();
     
@@ -344,7 +343,7 @@ public class ViewManager {
     final ViewWidget viewWidget = new ViewWidget(key,title,gedcom,registry,factory, this);
 
     // remember
-    viewWidgets.add(viewWidget);
+    key2viewwidget.put(key, viewWidget);
 
     // prepare to forget
     Runnable onClose = new Runnable() {
@@ -354,7 +353,7 @@ public class ViewManager {
         // 20021017 @see note at the bottom of file
         MenuSelectionManager.defaultManager().clearSelectedPath();
         // forget about it
-        viewWidgets.remove(viewWidget);
+        key2viewwidget.remove(key);
         // done
       }
     };
@@ -378,7 +377,7 @@ public class ViewManager {
    */
   public void closeViews(Gedcom gedcom) {
     // look for views looking at gedcom    
-    Iterator it = viewWidgets.iterator();
+    Iterator it = key2viewwidget.values().iterator();
     while (it.hasNext()) {
       ViewWidget vw = (ViewWidget)it.next();
       if (vw.getGedcom()==gedcom) 
@@ -463,7 +462,7 @@ public class ViewManager {
         result.add(factories[f]);
     }
     // loop through views
-    Iterator views = viewWidgets.iterator();
+    Iterator views = key2viewwidget.values().iterator();
     while (views.hasNext()) {
       ViewWidget view = (ViewWidget)views.next();
       if (view.getGedcom()==gedcom && of.isAssignableFrom(view.getView().getClass()))

@@ -316,6 +316,8 @@ public class ControlCenter extends JPanel {
     }
     /** run */
     protected void execute() {
+      if (windowManager.show("help"))
+        return;
       windowManager.openFrame(
         "help",
         resources.getString("cc.menu.help"),

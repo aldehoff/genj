@@ -59,7 +59,7 @@ public interface WindowManager {
    * @param image image for titlebar
    * @param content component to be shown in frame
    * @param menu menubar to be shown in frame
-   * @param onClosing code to run on closing (frame won't close anymore automatically)
+   * @param onClosing code to run on closing (frame won't close automatically if != null)
    * @param onClose code to run on close
    */
   public void openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose);
@@ -135,9 +135,10 @@ public interface WindowManager {
   public JComponent getContent(String key);
   
   /**
-   * Test whether dialog/frame with given id is open or not
+   * Makes sure the dialog/frame is visible
    * @param key the dialog/frame's key 
+   * @return success or no valid key supplied
    */
-  public boolean isOpen(String key);
+  public boolean show(String key);
 
 } //WindowManager

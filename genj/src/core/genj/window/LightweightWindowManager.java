@@ -85,14 +85,21 @@ public class LightweightWindowManager extends DefaultWindowManager {
     // done
     return desktop; 
   }
-  
-  /**
-   * @see genj.window.WindowManager#isFrame(java.lang.String)
-   */
-  public boolean isOpen(String key) {
-    return key2frame.containsKey(key);
-  }
 
+  /**
+   * @see genj.window.DefaultWindowManager#show(java.lang.String)
+   */
+  public boolean show(String key) {
+    // one of our internals?
+    JInternalFrame frame = (JInternalFrame)key2frame.get(key);
+    if (frame!=null) {
+      frame.toFront();
+      return true;
+    }
+    // continue in default
+    return super.show(key);
+  }
+  
   /**
    * @see genj.window.WindowManager#createFrame
    */
@@ -103,6 +110,20 @@ public class LightweightWindowManager extends DefaultWindowManager {
 
     // Create a frame
     final JInternalFrame frame = new JInternalFrame(title, true, true, true, true) {
+      /**
+       * our dispose serves as onClose - WindowListener.onClose() is one frame too late
+       */
+      public void dispose() {
+        // remember bounds
+        registry.put(key, getBounds());
+        // forget frame
+        key2frame.remove(key);
+        // callback?
+        if (onClose!=null) onClose.run();
+        // continue
+        super.dispose();
+      }
+
     };
 
     // setup looks
@@ -116,24 +137,17 @@ public class LightweightWindowManager extends DefaultWindowManager {
     if (onClosing==null) {
       frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
     } else {
+      // delegate responsibility to close
       frame.setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
+      frame.addInternalFrameListener(new InternalFrameAdapter() {
+        public void internalFrameClosing(InternalFrameEvent e) {
+          onClosing.run();
+        }
+      });
     }
 
     // remember
     key2frame.put(key, frame);
-
-    // prepare to forget
-    frame.addInternalFrameListener(new InternalFrameAdapter() {
-      public void internalFrameClosing(InternalFrameEvent e) {
-        if (onClosing!=null) 
-          onClosing.run();
-      }
-      public void internalFrameClosed(InternalFrameEvent e) {
-        registry.put(key, frame.getBounds());
-        key2frame.remove(key);
-        if (onClose!=null) onClose.run();
-      }
-    });
 
     // place
     JDesktopPane desktop = getDesktop(title, image);
