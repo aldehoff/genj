@@ -264,10 +264,20 @@ public class Fam extends Entity {
   
   /**
    * Calculate fam's Marriage date
+   * @return date or null
    */
   public PropertyDate getMarriageDate() {
     // Calculate MARR|DATE
     return (PropertyDate)getProperty(new TagPath("FAM:MARR:DATE"),QUERY_VALID_TRUE);
   }
 
+  /**
+   * Calculate fam's divorce date
+   * @return date or null
+   */
+  public PropertyDate getDivorceDate() {
+    // Calculate DIV|DATE
+    return (PropertyDate)getProperty(new TagPath("FAM:DIV:DATE"),QUERY_VALID_TRUE);
+  }
+  
 } //Fam
