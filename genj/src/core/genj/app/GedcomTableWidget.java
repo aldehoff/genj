@@ -26,6 +26,7 @@ import genj.gedcom.Selection;
 import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.swing.ImgIconConverter;
+import genj.util.swing.SortableTableHeader;
 
 import java.awt.Component;
 import java.util.Enumeration;
@@ -40,7 +41,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -77,6 +77,9 @@ public class GedcomTableWidget extends JTable {
    * Constructor
    */
   public GedcomTableWidget() {
+ 
+    // change the header to ours    
+    setTableHeader(new SortableTableHeader());
     
     // Prepare a model
     model = new Model();
@@ -93,18 +96,9 @@ public class GedcomTableWidget extends JTable {
     setColumnModel(cm);
 
     // change looks    
-      try { // alas in 1.4
-        getTableHeader().setDefaultRenderer(new PatchedTableCellRenderer(getTableHeader().getDefaultRenderer()));
-      } catch (Throwable t) {
-        TableCellRenderer p = new PatchedTableCellRenderer(null); 
-        TableColumnModel model = getTableHeader().getColumnModel();
-        for (int c=0; c<model.getColumnCount(); c++) {
-          model.getColumn(c).setHeaderRenderer(p);
-        }
-      }
-    
     setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+    getTableHeader().setReorderingAllowed(false);
     
     // done
   }
@@ -306,48 +300,4 @@ public class GedcomTableWidget extends JTable {
 
   } // Model
 
-  /**
-   * Our own TableHeader intercepting anyones attempt to
-   * change the default renderer
-   */
-  private class PatchedTableCellRenderer extends JTableHeader implements TableCellRenderer  {
-
-    private TableCellRenderer other, def;
-      
-    /**
-     * Constructor
-     */
-    protected PatchedTableCellRenderer(TableCellRenderer other) {
-      this.other=other;
-      try {
-        this.def=createDefaultRenderer();
-      } catch (Throwable t) {
-        this.def=new DefaultTableCellRenderer();
-      }
-    }
-    
-    /**
-     * @see TableCellRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object, boolean, boolean, int, int)
-     */
-    public Component getTableCellRendererComponent(JTable table, Object value,
-                       boolean isSelected, boolean hasFocus, int row, int column) {
-
-      Component result = null;
-      if (other!=null) result = other.getTableCellRendererComponent(table,value,isSelected,hasFocus,row,column);
-      if (!(result instanceof JLabel)) result = def.getTableCellRendererComponent(table,value,isSelected,hasFocus,row,column);
-     
-      JLabel label = (JLabel)result;
-      if (value instanceof ImageIcon) {
-        label.setIcon((ImageIcon)value);
-        value=null;
-      } else {
-        label.setIcon(null);
-      }
-      label.setText((value == null) ? "" : value.toString());
-      
-      return result;
-    }
-    
-  } //PatchedTableCellRenderer
-
-}
+} //GedcomTableWidget
