@@ -204,6 +204,13 @@ public class Resources {
   }
   
   /**
+   * Checks for given key
+   */
+  public boolean contains(String key) {
+    return getString(key, false) != null;
+  }
+  
+  /**
    * Returns a localized string
    * @param key identifies string to return
    * @param notNull will return key if resource is not defined
