@@ -23,6 +23,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -30,6 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
@@ -55,6 +58,9 @@ public class DoubleValueSlider extends JPanel {
     new BoxLayout(this, BoxLayout.Y_AXIS)
   };
   
+  /** the listeners */
+  private List listeners = new ArrayList();
+  
   /**
    * Constructor
    */
@@ -72,6 +78,8 @@ public class DoubleValueSlider extends JPanel {
     this.max = max;
     isExponential = exponential;
     setValue(val);
+    // glue to slider events
+    slider.addChangeListener(new JSliderGlue());
     // done
   }
 
@@ -139,14 +147,29 @@ public class DoubleValueSlider extends JPanel {
    * Adds a change listener
    */
   public void addChangeListener(ChangeListener l) {
-    slider.addChangeListener(l);
+    listeners.add(l);
   }
 
   /**
    * Removes a change listener
    */
   public void removeChangeListener(ChangeListener l) {
-    slider.removeChangeListener(l);
+    listeners.remove(l);
   }
+  
+  /**
+   * JSliderGlue
+   */
+  private class JSliderGlue implements ChangeListener { 
+    /**
+     * @see javax.swing.event.ChangeListener#stateChanged(ChangeEvent)
+     */
+    public void stateChanged(ChangeEvent e) {
+      e = new ChangeEvent(DoubleValueSlider.this);
+      for (int l=0; l<listeners.size(); l++) {
+        ((ChangeListener)listeners.get(l)).stateChanged(e);
+      }
+    }
+  } //JSliderGlue
 
 } //DoubleValueSlider
