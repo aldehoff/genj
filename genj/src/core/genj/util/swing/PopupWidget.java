@@ -19,28 +19,37 @@
  */
 package genj.util.swing;
 
+import genj.util.ActionDelegate;
+
+import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.ButtonModel;
+import javax.swing.DefaultButtonModel;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 
 /**
  * A button that opens a context-menu on press
  */
-public class PopupWidget extends ToggleWidget {
+public class PopupWidget extends JButton {
   
   /** popup */
   private JPopupMenu popup = null;
   
   /** list of actions */
-  private List items;
+  private List items = new ArrayList();
   
   /**
    * Constructor  
    */
   public PopupWidget() {
+    this((Icon)null);
   }
 
   /**
@@ -70,61 +79,95 @@ public class PopupWidget extends ToggleWidget {
   public PopupWidget(String text, Icon icon, List actions) {
     // delegate
     super(text, icon);
+    // our own model
+    super.setModel(new Model());
     // keep actions
-    setActions(actions);
+    if (actions!=null) setActions(actions);
     // done
+  }
+  
+  /**
+   * Our special model
+   */
+  private class Model extends DefaultButtonModel implements Runnable {
+    /** our menu trigger */
+    public void setPressed(boolean b) {
+      // continue
+      super.setPressed(b);
+      // show menue (delayed)
+      if (b) SwingUtilities.invokeLater(this);
+    }
+    /** EDT callback */
+    public void run() { 
+      showPopup(); 
+    }
+    /**
+     * action performed
+     */
+    protected void fireActionPerformed(ActionEvent e) {
+      // try to fire one of the actions
+      List as = getActions();
+      if (!as.isEmpty())
+        ((ActionDelegate)as.get(0)).trigger();
+    }
+  } //Model
+  
+  /**
+   * @see javax.swing.AbstractButton#setModel(javax.swing.ButtonModel)
+   */
+  public void setModel(ButtonModel newModel) {
+    // ignored
+  }
+  
+  /**
+   * Gets the toolbar we're in (might be null)
+   */
+  protected JToolBar getToolBar() {
+    if (!(getParent() instanceof JToolBar)) return null;
+    return (JToolBar)getParent();
   }
   
   /**
    * Change popup's visibility
    */
-  public void showPopup(boolean b) {
+  public void showPopup() {
+    
     // cancel popup?
-    if (!b&&popup!=null) popup.setVisible(false);
+    if (popup!=null) { 
+      popup.setVisible(false);
+      popup = null;
+    }
     
     // show popup?
-    if (b&&popup==null) {
-      
-      List l = getActions();
-      if (l!=null) {
+    List as = getActions(); //give chance to override
+    if (!as.isEmpty()) {
 
-        // .. create an populate        
-        popup = new Popup();
-        MenuHelper mh = new MenuHelper();
-        mh.pushMenu(popup);
-        mh.createItems(getActions());
+      // .. create an populate        
+      popup = new JPopupMenu();
+      popup.setBackground(Color.white);
+      MenuHelper mh = new MenuHelper();
+      mh.pushMenu(popup);
+      mh.createItems(as);
 
-        // .. calc position
-        int x=0, y=0;
-        JToolBar bar = getToolBar();
-        if (bar==null) {
-          x += getWidth();
+      // .. calc position
+      int x=0, y=0;
+      JToolBar bar = getToolBar();
+      if (bar==null) {
+        x += getWidth();
+      } else {
+        if (JToolBar.VERTICAL==bar.getOrientation()) {
+          x += bar.getLocation().x==0 ? getWidth() : -popup.getPreferredSize().width;
         } else {
-          if (JToolBar.VERTICAL==bar.getOrientation()) {
-            x += bar.getLocation().x==0 ? getWidth() : -popup.getPreferredSize().width;
-          } else {
-            y += bar.getLocation().y==0 ? getHeight() : -popup.getPreferredSize().height;
-          }
+          y += bar.getLocation().y==0 ? getHeight() : -popup.getPreferredSize().height;
         }
-
-        // .. show        
-        popup.show(PopupWidget.this, x, y);
       }
+
+      // .. show        
+      popup.show(PopupWidget.this, x, y);
     }
     
     // done
   }
-  
-  /**
-   * @see javax.swing.AbstractButton#fireActionPerformed(java.awt.event.ActionEvent)
-   */
-  protected void fireActionPerformed(ActionEvent event) {
-    // delegate
-    super.fireActionPerformed(event);
-    // show popup
-    showPopup(getModel().isSelected());
-  }
-
   
   /**
    * Accessor - the actions in the popup
@@ -140,20 +183,4 @@ public class PopupWidget extends ToggleWidget {
     items = actions;
   }
 
-  /**
-   * Popup
-   */
-  private class Popup extends JPopupMenu {
-    /**
-     * @see javax.swing.JPopupMenu#setVisible(boolean)
-     */
-    public void setVisible(boolean b) {
-      super.setVisible(b);
-      if (!b) {
-        popup=null;
-        getModel().setSelected(false);
-      } 
-    }
-  } //Popup
-  
 } //PopupButton
