@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ * $Revision: 1.55 $ $Author: nmeier $ $Date: 2004-03-30 07:30:09 $
  */
 package genj.gedcom;
 
@@ -112,6 +114,7 @@ public class Gedcom {
   /** entities */
   private LinkedList entities = new LinkedList();
   private Map e2entities = new HashMap(); // values are maps id->entitiy
+  private int minIDStringLen = 4; //lenght of ids e.g. I001
   
   /** change/transaction support */
   private boolean isTransaction = false;
@@ -224,6 +227,9 @@ public class Gedcom {
     // Generate id if necessary
     if (id==null)
       id = createEntityId(tag);
+      
+    // update minIDStringLen
+    minIDStringLen = Math.max(id.length(), minIDStringLen);
 
     // lookup a type - all well known types need id
     Class clazz = (Class)E2TYPE.get(tag);
@@ -386,11 +392,21 @@ public class Gedcom {
     String prefix = getEntityPrefix(tag);
     String result;
     int id = ents.size();
-    while (true) {
+    search: while (true) {
       // next one
       id ++;
-      // trim to 000
-      result = prefix + (id<100?(id<10?"00":"0"):"") + id;
+      // calc result
+      String suffix = Integer.toString(id);
+      result = prefix + suffix;
+      // result.length() >= "X000".length()
+      while (result.length()<minIDStringLen) {
+        // make sure non padded id doesn't exist
+        if (ents.containsKey(result))
+          continue search;
+        // pad suffix
+        suffix = '0'+suffix;
+        result = prefix + suffix;
+      }
       // try it
       if (!ents.containsKey(result)) break;
       // try again
