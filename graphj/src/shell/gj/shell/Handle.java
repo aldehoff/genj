@@ -25,18 +25,24 @@ import gj.util.ModelHelper;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * a handle to a node in a graph
  */
 public class Handle {
   
-  /** graph */
-  private MutableGraph theGraph;
+  /** graphs for nodes */
+  private Map node2graph = new HashMap();
 
-  /** sequence of nodes */
-  private Node theNode;
+  /** hierarchy - parents of nodes */
+  private Map node2parent = new HashMap();
+
+  /** node that handle refers to */
+  private Node node;
 
   /**
    * try to get a handle for given graph and position
@@ -74,33 +80,9 @@ public class Handle {
   }
   
   /**
-   * Constructor
-   */
-  private Handle(MutableGraph graph, Node node, Point2D pos) {
-    
-    // keep
-    theGraph = graph;
-    theNode  = node ;
-    
-//    // check if there's a better fit inside node
-//    Object content = node.getContent();
-//    if (content instanceof MutableGraph) {
-//      pos = Geometry.getDelta(node.getPosition(), pos);
-//      MutableGraph ig = (MutableGraph)content;
-//      Node in = findHit(ig, pos);
-//      if (in!=null) {
-//        graphs.add(ig);
-//        nodes .add(in);
-//      }
-//    }
-    
-    // done
-  }
-  
-  /**
    * update arcs
    */
-  private void updateArcs(Node node) {
+  private static void updateArcs(Node node) {
     // update it's arcs
     ArcIterator it = new ArcIterator(node);
     while (it.next()) ArcHelper.update(it.arc);
@@ -108,57 +90,104 @@ public class Handle {
   }
   
   /**
+   * Constructor
+   */
+  private Handle(MutableGraph grAph, Node noDe, Point2D pos) {
+    
+    // keep node and its graph
+    node  = noDe ;
+    node2graph.put(node, grAph);
+    
+    // check if there's a better hit in contained node
+    while (node.getContent() instanceof MutableGraph) {
+      // .. hit inside graph in node (adjust position)
+      pos = Geometry.getDelta(node.getPosition(), pos);
+      MutableGraph graph = (MutableGraph)node.getContent();
+      Node child = findHit(graph, pos);
+      // .. check
+      if (child==null) break;
+      // .. keep parent
+      node2parent.put(child, node);
+      node2graph.put(child, graph);        
+      node = child;
+    }
+    
+    // done
+  }
+  
+  /**
+   * Graph for node
+   */
+  private MutableGraph getGraph(Node node) {
+    return (MutableGraph)node2graph.get(node);
+  }
+  
+  /**
+   * Parent for node
+   */
+  private Node getParent(Node node) {
+    return (Node)node2parent.get(node);
+  }
+  
+  /**
    * Sets selection's content
    */
   public void setContent(Object content) {
-    theGraph.setContent(theNode, content);
+    getGraph(node).setContent(node, content);
   }
 
   /**
    * Sets selection's content
    */
   public Point2D getDistance(Point2D pos) {
-    return Geometry.getDelta(theNode.getPosition(), pos);
+    return Geometry.getDelta(node.getPosition(), pos);
   }
   
   /**
    * Set selection's shape
    */
   public void setShape(Shape shape) {  
-    theGraph.setShape(theNode, shape);
-    updateArcs(theNode);
+    getGraph(node).setShape(node, shape);
+    updateArcs(node);
   }
   
   /**
    * Gets selection's shape
    */
   public Shape getShape() {  
-    return theNode.getShape();
+    return node.getShape();
   }
   
   /**
    * Delete the selection
    */
   public void delete() {
-    theGraph.removeNode(theNode);
+    getGraph(node).removeNode(node);
   }
 
   /**
    * Check for content
    */
   public boolean is(Node tst) {
-    return theNode == tst;
+    return node == tst;
   }
   
   /**
    * Move by delta
    */
   public void moveBy(Point2D delta) {
-//    for (int i=0;i<nodes.size()-1;i++) 
-//      delta = Geometry.getDelta( delta, ((Node)nodes.get(i)).getPosition());
     // move it
-    ModelHelper.move(theNode, delta); 
-    updateArcs(theNode);
+    ModelHelper.move(node, delta); 
+    updateArcs(node);
+    // check if there's a parent 
+//    Node child = node;
+//    Node parent = getParent(node);
+//    while (parent!=null) {
+//      Rectangle2D bounds = ModelHelper.getBounds(getGraph(child).getNodes());
+//      getGraph(parent).setShape(parent, bounds);
+//      child = parent;
+//      
+//    }
     // go up the hierarchy
 //    for (int i=nodes.size();;) {
 //      // our graph
