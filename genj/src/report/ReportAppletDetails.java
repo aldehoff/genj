@@ -13,7 +13,8 @@ import java.util.StringTokenizer;
 
 /**
  * GenJ - Report
- * @author Nils Meier nils@meiers.net
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.8 2002-04-25 18:17:45 island1 Exp $
+ * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
 public class ReportAppletDetails implements Report {
@@ -127,7 +128,7 @@ public class ReportAppletDetails implements Report {
       out.println("<IMG src=\""+url+"\"></IMG>");
     }
     else {
-      out.println("No image available.");
+      out.println("No image<Br>available.");
     }
   }
 
