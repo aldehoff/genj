@@ -114,7 +114,7 @@ public class Wikipedia {
 
       // ignore
       if (args.length>=5) {
-        StringTokenizer tokens = new StringTokenizer(args[4], "\\");
+        StringTokenizer tokens = new StringTokenizer(args[4], "|");
         ignore = new String[tokens.countTokens()];
         for (int i=0;i<ignore.length;i++) 
           ignore[i] = tokens.nextToken().toLowerCase();
@@ -160,7 +160,7 @@ public class Wikipedia {
    */
   private void read(String lang, String[] ignore, int first, int last, PrintWriter out) {
 
-    log(true, "Ignoring groups: "+Arrays.asList(ignore));
+    log(true, "Ignoring: "+Arrays.asList(ignore));
     
     // put out disclaimer
     if (out!=null) {
@@ -307,7 +307,7 @@ public class Wikipedia {
     // matching an event "* [[15. Juli]] - [[Manitoba]] wird kanadische Provinz"
     Matcher event = REGEXP_EVENT.matcher(line);
     if (event.matches())
-      readEvent(yyyy, event, out);
+      readEvent(yyyy, ignore, event, out);
     
     // continue
     return true;
@@ -317,7 +317,7 @@ public class Wikipedia {
    * Read event e.g. 
    * "* [[15. Juli]] - [[Manitoba]] wird kanadische Provinz"
    */
-  private void readEvent(String yyyy, Matcher matcher, PrintWriter out) {
+  private void readEvent(String yyyy, String[] ignore, Matcher matcher, PrintWriter out) {
     
     // grab time
     String yyyymmdd = getYYYYMMDD(yyyy, matcher.group(1));
@@ -326,7 +326,7 @@ public class Wikipedia {
     
     // grab text
     String text = unformat(unlinkify(matcher.group(2).trim()));
-    if (text.length()==0)
+    if (text.length()==0||contains(text, ignore))
       return;
     
     // create an event line
@@ -352,6 +352,10 @@ public class Wikipedia {
    * </pre>
    */
   private String getYYYYMMDD(String yyyy, String monthday) {
+    
+    // no range
+    if (monthday.indexOf("-")>=0)
+      return null;
     
     // try month
     Matcher month = REGEXP_MONTH.matcher(monthday);
