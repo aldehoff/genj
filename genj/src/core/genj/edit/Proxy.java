@@ -20,6 +20,7 @@
 package genj.edit;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
@@ -62,8 +63,10 @@ abstract class Proxy  {
     // remember
     property = prop;
     view = edit;
+    // a text for the user
+    String txt = prop.getTag() + " - "+ Gedcom.getName(prop.getTag());
     // setup a label
-    label = new JLabel(prop.getTag(), prop.getImage(true), SwingConstants.LEFT);
+    label = new JLabel(txt, prop.getImage(true), SwingConstants.LEFT);
     panel.add(label);
     // continue with sub-implementation dependent 
     return start(panel);
