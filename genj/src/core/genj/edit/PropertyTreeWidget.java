@@ -27,6 +27,7 @@ import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyMultilineValue;
 import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
@@ -604,9 +605,9 @@ public class PropertyTreeWidget extends DnDTree {
         return;
       }
       
-      // multiline?          
-      if (prop instanceof MultiLineProperty && !(prop instanceof IconValueAvailable)) {
-        MultiLineProperty.Iterator it = ((MultiLineProperty)prop).getLineIterator();
+      // multiline (not using MultiLineProperty here)          
+      if (prop instanceof PropertyMultilineValue && !(prop instanceof IconValueAvailable)) {
+        MultiLineProperty.Iterator it = ((PropertyMultilineValue)prop).getLineIterator();
         while (true) {
           html.append(it.getValue());
           if (!it.next()) break;
