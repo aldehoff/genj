@@ -23,6 +23,9 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
 import genj.util.WordBuffer;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * A CDay event
  */
@@ -30,13 +33,13 @@ public class Event implements Comparable {
   
   private PointInTime pit;
   private String desc;
-  private Category cat;
+  private List cats;
   private long julianDay;
   
   /** constructor */
-  public Event(Category setCat, PointInTime setTime, String setText) throws GedcomException {
+  public Event(List setCats, PointInTime setTime, String setText) throws GedcomException {
     pit = setTime;
-    cat = setCat;
+    cats = setCats;
     desc = setText;
     // make sure its julian day is good
     julianDay = pit.getJulianDay();
@@ -45,6 +48,15 @@ public class Event implements Comparable {
   /** the julian day */
   protected long getJulian() {
     return julianDay;
+  }
+  
+  /* Test for category */
+  protected boolean isCategory(Set criteria) {
+    for (int c=0; c<cats.size(); c++) {
+      if (criteria.contains(cats.get(c)))
+        return true;
+    }
+    return false;
   }
   
   /** to String */
@@ -71,8 +83,8 @@ public class Event implements Comparable {
   /**
    * Accessor
    */
-  public Category getCategory() {
-    return cat;
+  public List getCategories() {
+    return cats;
   }
   
   /**

@@ -283,8 +283,11 @@ public class Almanac {
       int sig = Integer.parseInt(cols.nextToken());
       cols.nextToken();
       // #5 type
+      List cats = new ArrayList();
       String type = cols.nextToken().trim();
-      if (type.equals(";")||type.length()==0)
+      for (int c=0;c<type.length();c++) 
+        cats.add(getCategory(type.substring(c,c+1)));
+      if (cats.isEmpty())
         return null;
       cols.nextToken();
       // #6 and following description
@@ -304,7 +307,7 @@ public class Almanac {
       if (desc==null)
         return null;
       // done
-      return new Event(getCategory(type), time, desc);
+      return new Event(cats, time, desc);
     }
     /** charset */
     protected Charset getCharset() {
@@ -375,10 +378,10 @@ public class Almanac {
 		    return null;
 		  
 		  // lookup category
-		  Category cat = getCategory(c);
+		  List cats = Collections.singletonList(getCategory(c));
 
       // create event
-		  return new Event(cat, new PointInTime(day-1, month-1, year), text); 
+		  return new Event(cats, new PointInTime(day-1, month-1, year), text); 
     }
     
     /** charset */
@@ -407,7 +410,7 @@ public class Almanac {
     /**
      * Constructor
      */
-    Range(PointInTime when, int days, Set cats2ignore) throws GedcomException {
+    Range(PointInTime when, int days, Set cats) throws GedcomException {
 
       endYear = when.getYear();
       
@@ -416,7 +419,7 @@ public class Almanac {
 	    originDelta = days;
 	    
 	    // init
-	    init(endYear, cats2ignore);
+	    init(endYear, cats);
   	    
       // done
     }
@@ -472,7 +475,7 @@ public class Almanac {
 	        // here's the next
 		      next = (Event)events.get(start++);
 		      // good category?
-		      if (categories!=null&&!categories.contains(next.getCategory()))
+		      if (categories!=null&&!next.isCategory(categories)) 
 	          continue;
 	        // it's still in year range?
 		      if (next.getTime().getYear()>endYear) 
