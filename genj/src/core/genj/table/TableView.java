@@ -208,8 +208,9 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
    */
   public void setContext(Property property) {
     // a type that we're interested in?
+    // 20030730 Bug #780563 - used == instead of equals 
     Entity entity = property.getEntity();
-    if (entity.getTag()!=tableModel.getType()) return;
+    if (!entity.getTag().equals(tableModel.getType())) return;
     // already selected?
     int row = table.getSelectionModel().getLeadSelectionIndex();
     if (row>=0 && row<tableModel.getRowCount() && tableModel.getEntity(row)==entity) return;
