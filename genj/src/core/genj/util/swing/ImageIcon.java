@@ -20,6 +20,7 @@
 package genj.util.swing;
 
 import genj.util.ByteArray;
+import genj.util.Debug;
 import genj.util.ImageSniffer;
 
 import java.awt.Dimension;
@@ -95,7 +96,7 @@ public class ImageIcon extends javax.swing.ImageIcon {
    * Alternative Constructor
    */
   public ImageIcon(String name, InputStream in) {
-    this(name, read(in));
+    this(name, read(name, in));
   }
   
   /**
@@ -138,13 +139,17 @@ public class ImageIcon extends javax.swing.ImageIcon {
   /**
    * Reads image data from input stream
    */
-  private static byte[] read(InputStream in) {
+  private static byte[] read(String name, InputStream in) {
+    // check null (e.g. if resource wasn't found)
+    if (in==null) {
+      Debug.log(Debug.WARNING, ImageIcon.class, "npe for "+name);
+      return null;
+    }
+    // try to read it
     try {
-      
-      // read the bytes
       return new ByteArray(in).getBytes();
-      
     } catch (IOException ex) {
+      Debug.log(Debug.WARNING, ImageIcon.class, "ioex for "+name);
       return null;
     }
   }
