@@ -111,7 +111,6 @@ public class ReportAges extends Report {
             if(printTag)
                 toPrint = "INDI:"+tag+": ";
             PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:"+tag+":DATE"));
-            //println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+toPrint+prop.toString(true));
             println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+toPrint+prop.toString(true));
             Delta age = indi.getAge(prop.getStart());
             printAge(age, 3, SPACES_PER_LEVEL, FRONT_THIRD_LEVEL, errorMessage);
