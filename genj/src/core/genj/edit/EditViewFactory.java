@@ -162,7 +162,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     result.add(ActionDelegate.NOOP);
     result.add(new Delete(entity));
     // add an "edit in EditView"
-    if (!ViewManager.getInstance().isOpenView(EditView.class)) {
+    if (ViewManager.getInstance().getOpenViews(EditView.class).isEmpty()) {
       result.add(ActionDelegate.NOOP);
       result.add(new Edit(entity));
     }

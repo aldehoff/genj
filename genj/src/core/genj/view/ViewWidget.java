@@ -172,7 +172,7 @@ import javax.swing.border.TitledBorder;
   /**
    * Accessor - the view
    */
-  /*package*/ Component getView() {
+  /*package*/ JComponent getView() {
     return view;
   }
   

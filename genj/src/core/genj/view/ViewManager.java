@@ -346,17 +346,17 @@ public class ViewManager {
   }
   
   /**
-   * Checks whether a view instance for given type is open
-   */
-  public boolean isOpenView(Class view) {
+   * Returns views of given type    */
+  public List getOpenViews(Class type) {
+    List result = new ArrayList(5);
     // look through views
     Iterator it = viewWidgets.iterator();
     while (it.hasNext()) {
       ViewWidget vw = (ViewWidget)it.next();
-      if (vw.getView().getClass().equals(view)) return true;
+      if (vw.getView().getClass().equals(type)) result.add(vw.getView());
     }
-    // none
-    return false;
+    // done
+    return result;
   }
   
   /**
