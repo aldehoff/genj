@@ -50,6 +50,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
@@ -121,9 +122,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
     labelCurrent = new JLabel();
     labelCurrent.setBorder(BorderFactory.createTitledBorder(Gedcom.getEntityName(Gedcom.INDI,false)));
     add(labelCurrent,BorderLayout.NORTH);
-    
-    JPanel panel = createPopupPanel();
-    add(panel,BorderLayout.CENTER);
+    add(new JScrollPane(createPopupPanel()),BorderLayout.CENTER);
     
     // date
     useGedcom.addListener(new GedcomListener() {
