@@ -79,10 +79,7 @@ public class ReportNameHistory extends Report {
     Iterator iterator = indis.iterator();
     while (iterator.hasNext()) {
       Indi indi = (Indi)iterator.next();
-      try {
-        analyze(gedcom, indis, indi, yearStart, yearEnd, name2series);
-      } catch (GedcomException e) {
-      }
+      analyze(gedcom, indis, indi, yearStart, yearEnd, name2series);
     }
     
     // check if got something
@@ -122,31 +119,35 @@ public class ReportNameHistory extends Report {
   /**
    * Analyze one individual
    */
-  private void analyze(Gedcom gedcom, Collection indis, Indi indi, int yearStart, int yearEnd, Map name2series) throws GedcomException {
+  private void analyze(Gedcom gedcom, Collection indis, Indi indi, int yearStart, int yearEnd, Map name2series) {
     
-	  // look for individuals with a birth and name
-	  PropertyDate birth = indi.getBirthDate();
-	  PropertyDate death = indi.getDeathDate();
+    // check name
 	  PropertyName name = (PropertyName)indi.getProperty("NAME");
-	  if (birth==null||!birth.isValid()||name==null||!name.isValid())
+	  if (name==null||!name.isValid())
 	    return;
 	  String last = name.getLastName();
 	  if (last.length()==0)
 	    return;
-	  
+    
 	  // check minimum percentage of name
 	  if (PropertyName.getPropertyNames(gedcom, last).size()<indis.size()*minUseOfName/100)
 	    return;
 	  
 	  // calculate start
-	  int start = birth.getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
+	  int start;
+	  try {
+	    start = indi.getBirthDate().getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
+	  } catch (Throwable t) {
+	    return;
+	  }
 	  
 	  // calculate end
 	  int end;
-	  if (death==null)
+	  try {
+		  end = indi.getDeathDate().getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
+	  } catch (Throwable t) {
 	    end = start+lifespanWithoutDEAT;
-	  else
-	    end = death.getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
+	  }
 	  
 	  // check range
 	  if (end<start||end<yearStart||start>yearEnd)
