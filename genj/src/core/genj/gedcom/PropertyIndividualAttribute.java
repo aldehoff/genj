@@ -55,6 +55,7 @@ public class PropertyIndividualAttribute extends Property {
     // RESIdence ?
     if (getTag().equals("RESI")) {
       addProperty(new PropertyAddress());
+      addProperty(createInstance("PHON", true));
       addProperty(new PropertyDate());
     }
 
