@@ -377,7 +377,7 @@ public class ReportHTMLSheets extends Report {
     export(ent, dir, htmlOut);
 
     if (htmlOut.checkError()) 
-      throw new IOException("IOError while writing "+ent);
+      throw new IOException("Error while writing "+ent);
 
     htmlOut.close();
 
@@ -454,7 +454,7 @@ public class ReportHTMLSheets extends Report {
 
     // done
     if (out.checkError()) 
-      throw new IOException("IOError while writing index.html");
+      throw new IOException("Error while writing index.html");
     out.close();
     
   }
@@ -490,7 +490,7 @@ public class ReportHTMLSheets extends Report {
       exportSheets(gedcom.getEntities(gedcom.FAM ),dir);
       exportIndex(gedcom, dir);
     } catch (IOException e) {
-      println("IOError while exporting :(");
+      println("Error while exporting: "+e.getMessage());
     }
     
     // Bring up the result
