@@ -53,7 +53,7 @@ public class Gedcom {
 
   /** static resourcs */
   static private Random    seed = new Random();
-  static /*package*/ Resources resources;
+  static /*package*/ Resources resources = new Resources("genj.gedcom");
 
   private final static String[]
     ePrefixs  = { "I", "F", "M", "N", "S", "B", "R"},
@@ -512,7 +512,7 @@ public class Gedcom {
    * Returns the readable name of the given entity type
    */
   public static String getNameFor(int type, boolean plural) {
-    return getResources().getString("type."+ePrefixs[type]+(plural?"s":""));
+    return resources.getString("type."+ePrefixs[type]+(plural?"s":""));
   }
 
   /**
@@ -541,20 +541,17 @@ public class Gedcom {
   }
   
   /**
-   * Returns the Resources (lazily)
-   */
-  public static Resources getResources() {
-    if (resources==null) {
-      resources = new Resources("genj.gedcom");
-    }
-    return resources;
-  }
-
-  /**
    * Returns the tag for given entity type
    */
   public static String getTagFor(int type) {
     return eTags[type];
+  }
+
+  /**
+   * Returns the Resources (lazily)
+   */
+  public static Resources getResources() {
+    return resources;
   }
   
 } //Gedcom

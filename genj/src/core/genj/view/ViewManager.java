@@ -55,6 +55,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
@@ -376,15 +377,11 @@ public class ViewManager {
 
     // done
   }
-  
+
   /**
-   * Show a context menu for given point - at this
-   * point we assume that view instanceof EntityPopupSupport
+   * Fills a menu with context actions 
    */
-  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, Object context) {
-    
-    // 20021017 @see note at the bottom of file
-    MenuSelectionManager.defaultManager().clearSelectedPath();
+  public void fillContextMenu(MenuHelper mh, Gedcom gedcom, Object context) {
 
     // we need Entity, property and Gedcom (above) from context
     Entity entity = null;
@@ -396,10 +393,6 @@ public class ViewManager {
       entity = property.getEntity();
     }
 
-    // create a popup
-    MenuHelper mh = new MenuHelper();
-    JPopupMenu popup = mh.createPopup("");
-    
     // items for property
   /*
     if (property!=null) {
@@ -428,6 +421,25 @@ public class ViewManager {
       mh.createItems(actions);
       mh.popMenu();
     }
+
+    // done    
+  }
+  
+  /**
+   * Show a context menu for given point - at this
+   * point we assume that view instanceof EntityPopupSupport
+   */
+  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, Object context) {
+    
+    // 20021017 @see note at the bottom of file
+    MenuSelectionManager.defaultManager().clearSelectedPath();
+
+    // create a popup
+    MenuHelper mh = new MenuHelper();
+    JPopupMenu popup = mh.createPopup("");
+
+    // fill the context actions
+    fillContextMenu(mh, gedcom, context);
     
     // show the popup
     if (popup.getComponentCount()>0)

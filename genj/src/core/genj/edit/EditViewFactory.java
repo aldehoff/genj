@@ -36,6 +36,7 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
+import genj.gedcom.Note;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFamilyChild;
 import genj.gedcom.Relationship;
@@ -150,7 +151,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     if (entity instanceof Fam) createActions(result, (Fam)entity);
     // add standards
     result.add(ActionDelegate.NOOP);
-    result.add(new Create(entity.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(entity.getProperty(),Gedcom.NOTES)));
+    if (!(entity instanceof Note)) 
+      result.add(new Create(entity.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(entity.getProperty(),Gedcom.NOTES)));
     if (entity instanceof Indi||entity instanceof Fam) {
       result.add(new Create(entity.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(entity.getProperty(),Gedcom.MULTIMEDIAS)));
       result.add(new Create(entity.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SOURCES)));

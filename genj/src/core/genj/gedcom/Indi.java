@@ -54,7 +54,14 @@ public class Indi extends PropertyIndi implements Entity {
   /**
    * Adds a family in which the individual is a partner
    */
-  /*package*/ Indi addFam(Fam fam) throws GedcomException {
+  /*package*/ Fam addFam() throws GedcomException {
+    return addFam((Fam)getGedcom().createEntity(Gedcom.FAMILIES, null));
+  }
+
+  /**
+   * Adds a family in which the individual is a partner
+   */
+  /*package*/ Fam addFam(Fam fam) throws GedcomException {
 
     // Remember Fam where this is spouse in
     PropertyFamilySpouse pfs = new PropertyFamilySpouse("",fam.getId());
@@ -67,7 +74,7 @@ public class Indi extends PropertyIndi implements Entity {
       delProperty(pfs);
     }
 
-    return this;
+    return fam;
   }
 
   /**
@@ -280,7 +287,7 @@ public class Indi extends PropertyIndi implements Entity {
   /**
    * Get Family with option to create
    */
-  public Fam getFam(boolean create) throws GedcomException {
+  /*package*/ Fam getFam(boolean create) throws GedcomException {
     Fam fam = getFam(0);
     if (fam!=null||!create) return fam;
     fam = (Fam)getGedcom().createEntity(Gedcom.FAMILIES, null);

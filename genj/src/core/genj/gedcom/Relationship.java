@@ -274,6 +274,9 @@ public abstract class Relationship {
     public void apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       Fam fam = spouse.getFam(true);
+      if (fam.getNoOfSpouses()>=2) { 
+        fam = spouse.addFam();
+      }
       fam.setSpouse((Indi)entity);
     }
     

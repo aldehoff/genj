@@ -35,6 +35,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImgIconConverter;
 import genj.util.swing.HeadlessLabel;
+import genj.util.swing.MenuHelper;
 import genj.view.CurrentSupport;
 import genj.view.ContextPopupSupport;
 import genj.view.ToolBarSupport;
@@ -60,7 +61,9 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -70,9 +73,12 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -116,9 +122,9 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /** splitpane for tree/proxy */
   private JSplitPane        splitPane = null;
   
-  /** combobox for actions */
-  private JComboBox         comboActions = null;
-
+  /** menu for actions */
+  private JMenuBar          menuActions;
+  
   /**
    * Constructor
    */
@@ -143,25 +149,31 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, treePane, proxyPane);
     splitPane.setDividerLocation(registry.get("divider",-1));
 
-    // Combo for actions
-    comboActions = new JComboBox();
-
     // layout
     setLayout(new BorderLayout());
     add(splitPane, BorderLayout.CENTER);
-    //add(comboActions, BorderLayout.SOUTH);
+    
+    // menu
+    menuActions = new JMenuBar();
+    ((JFrame)setFrame).setJMenuBar(menuActions);
+    updateMenu();
     
     // Check if we can preset something to edit
-    Entity entity = null;
-    String last = registry.get("last",(String)null);
-    if (last!=null) {
-      try { 
-        entity = gedcom.getEntity(last); 
-      } catch (Exception e) {
-        entity = ViewManager.getInstance().getCurrentEntity(gedcom);
+    Runnable run = new Runnable() {
+      public void run() {
+        Entity entity = null;
+        String last = registry.get("last",(String)null);
+        if (last!=null) {
+          try { 
+            entity = gedcom.getEntity(last); 
+          } catch (Exception e) {
+            entity = ViewManager.getInstance().getCurrentEntity(gedcom);
+          }
+        }
+        setEntity(entity);
       }
-    }
-    setEntity(entity);
+    };
+    SwingUtilities.invokeLater(run);
     
     // Done
   }
@@ -351,6 +363,18 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
    */
   /*package*/ void setSticky(boolean set) {
     actionSticky.setSelected(set);
+  }
+
+  /**
+   * Updates the menu
+   */
+  private void updateMenu() {
+    menuActions.removeAll();
+    MenuHelper mh = new MenuHelper();
+    mh.pushMenu(menuActions);
+    ViewManager.getInstance().fillContextMenu(mh, gedcom, getCurrentEntity());
+    menuActions.revalidate();
+    menuActions.repaint();
   }
 
   /**
@@ -673,7 +697,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /**
    * Class for rendering tree cell nodes
    */
-  private class PropertyTree extends JTree implements TreeCellRenderer, TreeSelectionListener {
+  private class PropertyTree extends JTree implements TreeCellRenderer, TreeSelectionListener, TreeModelListener {
     
     /** a label for rendering */
     private HeadlessLabel label = new HeadlessLabel();
@@ -688,12 +712,14 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       ToolTipManager.sharedInstance().registerComponent(this);
       setCellRenderer(this);
       getSelectionModel().addTreeSelectionListener(this);
+      getModel().addTreeModelListener(this);
     }
     
     /**
      * @see javax.swing.JComponent#removeNotify()
      */
     public void removeNotify() {
+      getModel().removeTreeModelListener(this);
       ((PropertyTreeModel)getModel()).destructor();
       super.removeNotify();
     }
@@ -834,6 +860,34 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       actionButtonDown  .setEnabled(prop.getNextSibling()    !=null);
   
       // Done
+    }
+    
+    /**
+     * @see javax.swing.event.TreeModelListener#treeNodesChanged(TreeModelEvent)
+     */
+    public void treeNodesChanged(TreeModelEvent e) {
+      treeStructureChanged(e);
+    }
+    /**
+     * @see javax.swing.event.TreeModelListener#treeNodesInserted(TreeModelEvent)
+     */
+    public void treeNodesInserted(TreeModelEvent e) {
+      treeStructureChanged(e);
+    }
+    /**
+     * @see javax.swing.event.TreeModelListener#treeNodesRemoved(TreeModelEvent)
+     */
+    public void treeNodesRemoved(TreeModelEvent e) {
+      treeStructureChanged(e);
+    }
+    /**
+     * @see javax.swing.event.TreeModelListener#treeStructureChanged(TreeModelEvent)
+     */
+    public void treeStructureChanged(TreeModelEvent e) {
+      // update the menu
+      updateMenu();
+      // show all rows 
+      expandRows();
     }
     
   } //PropertyTree  
