@@ -256,6 +256,10 @@ public class DateWidget extends JPanel {
     getComponent(1).requestFocus();
   }
   
+  public boolean requestFocusInWindow() {
+    return getComponent(1).requestFocusInWindow();
+  }
+  
   /**
    * Action to switch calendar
    */
