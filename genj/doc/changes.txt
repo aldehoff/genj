@@ -31,7 +31,7 @@ Future
   O Use colors to distinguish different events in TimelineView
   O When entities are selected TableView and TreeView should try to scroll and show it
 
-1.9 - Aug xx 2002
+1.9 - Aug 30 2002
 
   N Top button bar allows to toggle "text under button icons' with popup
   I refactored multi-threading into ActionDelegate (ReportView and ControlCenter)
