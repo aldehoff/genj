@@ -84,10 +84,17 @@ import javax.swing.SwingConstants;
     setLayout(new BorderLayout());
     add(view, BorderLayout.CENTER);
 
+    // done
+  }
+  
+  /**
+   * Install toolbar at time of add
+   */
+  public void addNotify() {
+    // continue
+    super.addNotify();
     // install a toolbar
     installToolBar(view, factory);
-    
-    // done
   }
   
   /**
