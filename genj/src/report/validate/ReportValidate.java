@@ -128,7 +128,7 @@ public class ReportValidate extends Report {
     println("***This Report is not finished yet - work in progress***");
     println(" Still to do:");
     println(" + migrate all of Jerome's anomaly checks");
-    println(" + discuss best way to word results");
+    println(" + internationalize");
     flush();
     
     // assuming Gedcom
