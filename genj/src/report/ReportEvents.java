@@ -396,7 +396,8 @@ public class ReportEvents extends Report {
         Hit(PropertyDate date, Entity ent) {
             when = date.getStart();
             if (isSortDay)
-                compare = new PointInTime(when.getDay(), when.getMonth(), 1, when.getCalendar());
+                // blocking out year (to a Gregorian LEAP 4 - don't want to make it invalid) so that month and day count
+                compare = new PointInTime(when.getDay(), when.getMonth(), 4, when.getCalendar());
             else
                 compare = when;
             who = ent;
