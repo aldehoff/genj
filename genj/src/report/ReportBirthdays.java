@@ -18,11 +18,15 @@ import java.util.Comparator;
 /**
  * GenJ - Report
  * @author Nils Meier nils@meiers.net
+ * @author Carsten Müssig carsten.muessig@gmx.net
  */
 public class ReportBirthdays extends Report {
 
   /** whether we sort by day-of-month or date */
   public boolean isSortDay = true;
+  
+  /** the report will only run over persons with the year of birth >= the start year */
+  public int startYear = 0;
 
   /**
    * Returns the version of this script
@@ -52,7 +56,7 @@ public class ReportBirthdays extends Report {
    * Author
    */
   public String getAuthor() {
-    return "Nils Meier <nils@meiers.net>";
+    return "Nils Meier <nils@meiers.net>, Carsten Müssig <carsten.muessig@gmx.net>";
   }
 
   /**
@@ -104,7 +108,10 @@ public class ReportBirthdays extends Report {
       
     }
 
-    println(i18n("result", selection));
+    Object[] output = new Object[2];
+    output[0]=new Integer(startYear).toString();
+    output[1]=selection;
+    println(i18n("result", output));
     
     for (int i=0;i<indis.length;i++) {
       
@@ -116,9 +123,12 @@ public class ReportBirthdays extends Report {
 
       if (birth.getStart().getMonth() != month)
         continue;
+      
+      if (birth.getStart().getYear() < startYear)
+          continue;
         
       String[] msgargs = {indi.getName(),
-                          indi.getBirthDate()+""};
+                          indi.getBirthDate()+""};                    
       println(i18n("format",msgargs));
     }
 
