@@ -8,6 +8,7 @@
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Fam;
+import genj.gedcom.TagPath;
 import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyAge;
 import genj.gedcom.PropertyDate;
@@ -24,12 +25,17 @@ import genj.report.Report;
 
 public class ReportAges extends Report {
     
+    public boolean reportBaptismAge = true;
     public boolean reportMarriageAge = true;
     public boolean reportAgeAtChildBirth = true;
+    public boolean reportAgeAtEmigration = true;
+    public boolean reportAgeAtImmigration = true;
+    public boolean reportAgeAtNaturalization = true;
+    public boolean reportDeathAge = true;
     public boolean reportAgeSinceBirth = true;
     
     /** this report's version */
-    public static final String VERSION = "1.01";
+    public static final String VERSION = "1.1";
     
     /**
      * Returns the version of this script
@@ -121,7 +127,7 @@ public class ReportAges extends Report {
      *  Otherwise the "normal" point in time is returned.
      * @param d date for calculation
      * @return PointInTime average */
-    PointInTime calculateAveragePointInTime(PropertyDate p) {
+    private PointInTime calculateAveragePointInTime(PropertyDate p) {
         
         if(p.isRange()) {
             String[] months = PointInTime.getMonths(false, true);
@@ -188,10 +194,43 @@ public class ReportAges extends Report {
             println(i18n("noBirthDate"));
             return;
         }
+        // print birth date
         println("@"+indi.getId()+"@ "+indi.getName()+" *"+indi.getBirthDate());
         println();
         
-        // calculate marriage age
+        if(reportBaptismAge) {
+            println(getIndent(1)+i18n("baptismAge"));
+            println(getIndent(2)+i18n("normalBaptism"));
+            if(indi.getProperty(new TagPath("INDI:BAPM"))==null)
+                println(getIndent(3)+i18n("noData"));
+            else {
+                if(indi.getProperty(new TagPath("INDI:BAPM:DATE"))!=null) {
+                    PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:BAPM:DATE"));
+                    println(getIndent(3)+prop.toString(false,true));
+                    age = calculateAge(indi, prop, null);
+                    printAge(age, 4, "baptismBeforeBirth", null);
+                }
+                else
+                    println(getIndent(3)+i18n("noDate"));
+            }
+            
+            println(getIndent(2)+i18n("ldsBaptism"));
+            if(indi.getProperty(new TagPath("INDI:BAPL"))==null)
+                println(getIndent(3)+i18n("noData"));
+            else {
+                if(indi.getProperty(new TagPath("INDI:BAPL:DATE"))!=null) {
+                    PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:BAPL:DATE"));
+                    println(getIndent(3)+prop.toString(false,true));
+                    age = calculateAge(indi, prop, null);
+                    printAge(age, 4, "baptismBeforeBirth", null);
+                }
+                else
+                    println(getIndent(3)+i18n("noDate"));
+            }
+            
+            println();
+        }
+        
         if(reportMarriageAge) {
             println(getIndent(1)+i18n("marriageAge"));
             Fam[] fams = indi.getFamilies();
@@ -206,10 +245,7 @@ public class ReportAges extends Report {
                     else {
                         println(getIndent(3)+i18n("marriage", fam.getMarriageDate()));
                         age = calculateAge(indi, fam.getMarriageDate(), null);
-                        if(age == null)
-                            println(getIndent(4)+i18n("marriageBeforeBirth", fam.getMarriageDate()));
-                        else
-                            println(getIndent(4)+i18n("age")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
+                        printAge(age, 4, "marriageBeforeBirth", fam.getMarriageDate());
                     }
                 }
             }
@@ -229,34 +265,93 @@ public class ReportAges extends Report {
                     else
                         println(getIndent(3)+i18n("birth", children[i].getBirthDate()));
                     age = calculateAge(indi, children[i].getBirthDate(), null);
-                    if(age == null)
-                        println(getIndent(4)+i18n("childBirthBeforeBirth"));
-                    else
-                        println(getIndent(4)+i18n("age")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
+                    printAge(age, 4, "childBirthBeforeBirth", null);
                 }
             }
             println();
         }
         
-        println(getIndent(1)+i18n("deathAge"));
-        if(indi.getDeathDate() == null)
-            println(getIndent(2)+i18n("noDeathDate"));
-        else {
-            println(getIndent(2)+i18n("death", indi.getDeathDate()));
-            age = calculateAge(indi, indi.getDeathDate(), null);
-            if(age == null)
-                println(getIndent(3)+i18n("deathBeforeBirth", indi.getDeathDate()));
-            else
-                println(getIndent(3)+i18n("age")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
+        if(reportAgeAtEmigration) {
+            println(getIndent(1)+i18n("emigrationAge"));
+            if(indi.getProperty(new TagPath("INDI:EMIG"))==null)
+                println(getIndent(2)+i18n("noData"));
+            else {
+                if(indi.getProperty(new TagPath("INDI:EMIG:DATE"))!=null) {
+                    PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:EMIG:DATE"));
+                    println(getIndent(3)+prop.toString(false,true));
+                    age = calculateAge(indi, prop, null);
+                    printAge(age, 4, "emigrationBeforeBirth", null);
+                }
+                else
+                    println(getIndent(3)+i18n("noDate"));
+            }
+            println();
+        }
+        
+        if(reportAgeAtImmigration) {
+            println(getIndent(1)+i18n("immigrationAge"));
+            if(indi.getProperty(new TagPath("INDI:IMMI"))==null)
+                println(getIndent(2)+i18n("noData"));
+            else {
+                if(indi.getProperty(new TagPath("INDI:IMMI:DATE"))!=null) {
+                    PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:IMMI:DATE"));
+                    println(getIndent(3)+prop.toString(false,true));
+                    age = calculateAge(indi, prop, null);
+                    printAge(age, 4, "immigrationBeforeBirth", null);
+                }
+                else
+                    println(getIndent(3)+i18n("noDate"));
+            }
+            println();
+        }
+        
+        if(reportAgeAtNaturalization) {
+            println(getIndent(1)+i18n("naturalizationAge"));
+            if(indi.getProperty(new TagPath("INDI:NATU"))==null)
+                println(getIndent(2)+i18n("noData"));
+            else {
+                if(indi.getProperty(new TagPath("INDI:NATU:DATE"))!=null) {
+                    PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:NATU:DATE"));
+                    println(getIndent(3)+prop.toString(false,true));
+                    age = calculateAge(indi, prop, null);
+                    printAge(age, 4, "naturalizationBeforeBirth", null);
+                }
+                else
+                    println(getIndent(3)+i18n("noDate"));
+            }
+            println();
+        }
+        
+        if(reportDeathAge) {
+            println(getIndent(1)+i18n("deathAge"));
+            if(indi.getDeathDate() == null)
+                println(getIndent(2)+i18n("noDeathDate"));
+            else {
+                println(getIndent(2)+i18n("death", indi.getDeathDate()));
+                age = calculateAge(indi, indi.getDeathDate(), null);
+                printAge(age, 3, "deathBeforeBirth", null);
+            }
+            println();
         }
         
         if(reportAgeSinceBirth) {
-            println();
             println(getIndent(1)+i18n("ageSinceBirth"));
             age = calculateAge(indi, null, PointInTime.getNow());
-            println(getIndent(2)+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
+            printAge(age, 2, null, null);
         }
     }
+    
+    private void printAge(int[] age, int indent, String errorMessage, PropertyDate errorDate) {
+        if(age == null) {
+            if(errorDate!=null)
+                println(getIndent(indent)+i18n(errorMessage, errorDate));
+            if(errorDate==null)
+                println(getIndent(indent)+i18n(errorMessage));
+        }
+        else
+            println(getIndent(indent)+i18n("age")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
+    }
+    
     
     private String getIndent(int level) {
         int l = level;
