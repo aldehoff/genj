@@ -297,9 +297,9 @@ public class BlueprintEditor extends JSplitPane {
         Gedcom.getTagFor(blueprintManager.getType(blueprint));
     }
     /**
-     * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath, boolean)
+     * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath, int)
      */
-    public Property getProperty(TagPath path, boolean validOnly) {
+    public Property getProperty(TagPath path, int filter) {
       // safety check for root-tag
       if (!path.get(0).equals(getTag())) return null;
       // fake it
