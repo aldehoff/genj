@@ -6,21 +6,20 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-import genj.gedcom.Gedcom;
-import genj.gedcom.Fam;
-import genj.gedcom.Indi;
 import genj.gedcom.Entity;
+import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
 import genj.gedcom.PointInTime;
-import genj.gedcom.PropertyDate;
 import genj.report.Report;
 import genj.util.ReferenceSet;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 
 /**
  * GenJ - Report
