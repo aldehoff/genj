@@ -45,7 +45,10 @@ import javax.swing.event.ListSelectionListener;
 /**
  * A 'custom' color chooser
  */
-public class ColorChooser extends JColorChooser {
+public class ColorChooser extends JPanel {
+  
+  /** the wrapped swing ColorChooser */
+  private JColorChooser colorChooser = new JColorChooser();
   
   /** combo for color sets */
   private JComboBox comboSets = new JComboBox();
@@ -61,13 +64,12 @@ public class ColorChooser extends JColorChooser {
    */
   public ColorChooser() {
     
-    // connecting to events through glue
+    // setup wrapped swing color chooser
     EventGlue glue = new EventGlue();
-    getSelectionModel().addChangeListener(glue);
+    colorChooser.getSelectionModel().addChangeListener(glue);
     
     // preview
     JPanel preview = new JPanel(new BorderLayout());
-
     comboSets.addActionListener(glue);
     preview.add(comboSets, BorderLayout.NORTH);
     
@@ -78,7 +80,11 @@ public class ColorChooser extends JColorChooser {
     listColors.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     //listColors.setMinimumSize(listColors.getPreferredSize());
     preview.add(listColors, BorderLayout.CENTER);
-    setPreviewPanel(preview);
+    
+    // layout
+    setLayout(new BorderLayout());
+    add(colorChooser, BorderLayout.CENTER);
+    add(preview, BorderLayout.SOUTH);
     
     // done
   }
@@ -198,15 +204,15 @@ public class ColorChooser extends JColorChooser {
       listColors.repaint();
       // grab current color from color selector
       Color color = getColorSet().getColor(listColors.getSelectedIndex()+1);
-      if (!color.equals(getColor())) {
+      if (!color.equals(colorChooser.getColor())) {
         for (int i=0; i<changes.size(); i++) {
           if (changes.get(i++)==color) {
-            changes.set(i, getColor());
+            changes.set(i, colorChooser.getColor());
             return;
           }
         }
         changes.add(color);
-        changes.add(getColor());
+        changes.add(colorChooser.getColor());
       }
       // done
     }
@@ -215,7 +221,7 @@ public class ColorChooser extends JColorChooser {
      * @see javax.swing.event.ListSelectionListener#valueChanged(ListSelectionEvent)
      */
     public void valueChanged(ListSelectionEvent e) {
-      setColor(getColorSet().getColor(listColors.getSelectedIndex()+1));
+      colorChooser.setColor(getColorSet().getColor(listColors.getSelectedIndex()+1));
     }
   } //PickRenderer
     
