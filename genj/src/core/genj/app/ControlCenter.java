@@ -856,7 +856,7 @@ public class ControlCenter extends JPanel {
 
       // Do we need a file-dialog or not?
       Origin origin = gedcom.getOrigin();
-      String encoding = null;
+      String encoding = gedcom.getEncoding();
       password = gedcom.getPassword();
       
       if (ask || origin==null || !origin.isFile()) {
@@ -883,7 +883,7 @@ public class ControlCenter extends JPanel {
         filters = options.getFilters();
         if (gedcom.hasPassword())
           password = options.getPassword();
-        gedcom.setEncoding(options.getEncoding().toString());
+        encoding = options.getEncoding().toString();
 
         // .. create new origin
         try {
@@ -926,7 +926,7 @@ public class ControlCenter extends JPanel {
 
         // .. create writer
         gedWriter =
-          new GedcomWriter(gedcom, result.getName(), new FileOutputStream(temp));
+          new GedcomWriter(gedcom, result.getName(), encoding, new FileOutputStream(temp));
           
         // .. set options
         gedWriter.setFilters(filters);

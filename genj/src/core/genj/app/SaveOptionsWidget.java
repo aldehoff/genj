@@ -73,6 +73,7 @@ import javax.swing.JTextField;
     options.add(new JLabel(resources.getString("save.options.encoding")));
     comboEncodings = new ChoiceWidget(Gedcom.ENCODINGS, Gedcom.ANSEL);
     comboEncodings.setEditable(false);
+    comboEncodings.setSelectedItem(gedcom.getEncoding());
     options.add(comboEncodings);
     options.add(new JLabel(resources.getString("save.options.password")));
     textPassword = new TextFieldWidget(gedcom.hasPassword() ? gedcom.getPassword() : "", 10);
@@ -123,8 +124,8 @@ import javax.swing.JTextField;
   /**
    * The choosen encoding
    */
-  public Object getEncoding() {
-    return comboEncodings.getSelectedItem();
+  public String getEncoding() {
+    return comboEncodings.getSelectedItem().toString();
   }
   
   /**
