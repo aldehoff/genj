@@ -381,7 +381,16 @@ public class PropertyDate extends Property {
    * @see genj.gedcom.Property#getInfo()
    */
   public String getInfo() {
-    return super.getInfo() + ' ' + toString(true, PointInTime.GREGORIAN);
+    WordBuffer result = new WordBuffer();
+    result.append(super.getInfo());
+    result.append("<br>");
+    result.append(toString(true));
+    if (!(getStart().isGregorian()&&getEnd().isGregorian())) {
+      result.append("<br>");
+      result.append(toString(true, PointInTime.GREGORIAN));
+      result.append("("+PointInTime.GREGORIAN.getName()+")");
+    }
+    return result.toString();
   }
 
   /** 

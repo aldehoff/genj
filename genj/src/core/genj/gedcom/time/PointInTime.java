@@ -284,6 +284,13 @@ public class PointInTime implements Comparable {
     // wrong number of tokens
     return false;
   }
+  
+  /**
+   * Checks for gregorian calendar 
+   */
+  public boolean isGregorian() {
+    return getCalendar()==GREGORIAN;    
+  }
 
   /**
    * Checks for completeness - DD MMM YYYY
