@@ -438,7 +438,7 @@ public class PropertyDate extends Property {
           break;
         case 3 : // DD MMM YYYY
           try {
-            day   = Integer.parseInt( tokens.nextToken() );
+            day   = Integer.parseInt( tokens.nextToken() ) - 1;
             month = getMonth ( tokens.nextToken() );
             year  = Integer.parseInt( tokens.nextToken() );
           } catch (NumberFormatException e) {

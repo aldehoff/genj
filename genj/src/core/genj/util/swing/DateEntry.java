@@ -60,7 +60,7 @@ public class DateEntry extends JPanel {
   public DateEntry(int setDay, int setMonth, int setYear) {
     // Sub-components
     lStatus = new JLabel();
-    tfDay   = new JTextField( (setDay  <0) ? "" : ""+setDay      ,2+1);
+    tfDay   = new JTextField( (setDay  <0) ? "" : ""+(setDay+1)  ,2+1);
     tfMonth = new JTextField( (setMonth<0) ? "" : ""+(setMonth+1),2+1);
     tfYear  = new JTextField( (setYear <0) ? "" : ""+setYear     ,4+1);
     // order fields
@@ -125,11 +125,11 @@ public class DateEntry extends JPanel {
   }
 
   /**
-   * Returns Day
+   * Returns Day (zero based)
    */
   public int getDay() {
     try {
-      return Integer.parseInt(tfDay.getText());
+      return Integer.parseInt(tfDay.getText())-1;
     } catch (NumberFormatException e) {
       return -1;
     }
@@ -143,7 +143,7 @@ public class DateEntry extends JPanel {
   }
 
   /**
-   * Returns Month
+   * Returns Month (zero based)
    */
   public int getMonth() {
     try {
