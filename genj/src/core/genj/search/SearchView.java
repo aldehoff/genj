@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -32,6 +33,8 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.MenuHelper;
+import genj.util.swing.TextFieldWidget;
 import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -42,6 +45,9 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -54,6 +60,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
@@ -83,6 +90,9 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   
   /** whether we support regex or not */
   private final boolean isRegExpAvailable = getMatcher("", true)!=null; 
+
+  /** our actions for patterns */
+  private final List actionPatterns = createActionPatterns();
   
   /** gedcom */
   private Gedcom gedcom;
@@ -94,7 +104,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   private ViewManager manager;
   
   /** shown results */
-  private JList listResults;
+  private ResultWidget listResults;
   private Results results = new Results();
   
   /** criterias */
@@ -135,11 +145,26 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     choiceValue.addActionListener(new ActionListener() {
       /** button */
       public void actionPerformed(ActionEvent e) {
-        //bStop.doClick();
+        bStop.doClick();
         bSearch.doClick();
       }
     });
-
+    choiceValue.getEditor().getEditorComponent().addMouseListener(new MouseAdapter() {
+      /**
+       * @see java.awt.event.MouseAdapter#mousePressed(java.awt.event.MouseEvent)
+       */
+      public void mousePressed(MouseEvent e) {
+        mouseReleased(e);
+      }
+      /**
+       * @see java.awt.event.MouseAdapter#mouseReleased(java.awt.event.MouseEvent)
+       */
+      public void mouseReleased(MouseEvent e) {
+        if (isRegExpAvailable&&e.isPopupTrigger())
+          showRegExPopup(e.getComponent(), e.getPoint());
+      }
+    });
+    
     JLabel labelPath = new JLabel(resources.getString("label.path"));    
     choicePath = new ChoiceWidget(oldPaths);
     choicePath.setEnabled(false);
@@ -148,7 +173,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     checkAggregate.setEnabled(false);
     
     checkRegExp = new JCheckBox(resources.getString("label.regexp"), isRegExpAvailable);
-    checkRegExp.setToolTipText(resources.getString("tip.regexp"));
     checkRegExp.setEnabled(isRegExpAvailable);
 
     JPanel paneCriteria = new JPanel();
@@ -271,6 +295,99 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   }
 
   /**
+   * Show a popup for given 
+   */
+  private void showRegExPopup(Component comp, Point point) {
+    // create a popup
+    MenuHelper mh = new MenuHelper();
+    JPopupMenu popup = mh.createPopup("");
+    // fill with reg exp constructs
+    mh.createItems(actionPatterns);
+    // show
+    popup.show(comp, point.x, point.y);
+    choiceValue.getTextWidget().getCaret().setVisible(true);
+    // done
+  }
+  
+  /**
+   * Create RegExp Pattern Actions
+   */
+  private List createActionPatterns() {
+    // loop until ...
+    List result = new ArrayList();
+    for (int i=0;;i++) {
+      // check text and pattern
+      String 
+        key = "regexp."+i,
+        txt = resources.getString(key+".txt", false),
+        pat = resources.getString(key+".pat", false);
+      // no more?
+      if (txt==null) break;
+      // pattern?
+      if (pat==null) {
+        Debug.log(Debug.WARNING, this, "Encountered regexp entry "+txt+" without pattern");
+        continue;
+      }
+      // create action
+      result.add(new ActionPattern(txt,pat));
+    }
+    return result; 
+  }
+
+  /**
+   * Action - insert regexp construct
+   *   {0} all text
+   *   {1} before selection
+   *   {2} (selection)
+   *   {3} after selection
+   */
+  private class ActionPattern extends ActionDelegate {
+    /** pattern */
+    private String pattern;
+    /**
+     * Constructor
+     */
+    private ActionPattern(String txt, String pat) {
+      super.setText(txt);
+      pattern = pat;
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      // analyze what we've got
+      TextFieldWidget field = choiceValue.getTextWidget();
+      int 
+        selStart = field.getSelectionStart(),
+        selEnd   = field.getSelectionEnd  ();
+      if (selEnd<=selStart) {
+        selStart = field.getCaretPosition();
+        selEnd   = selStart;
+      }
+      // {0} all text
+      String all = field.getText();
+      // {1} before selection
+      String before = all.substring(0, selStart);
+      // {2} (selection)
+      String selection = selEnd>selStart ? '('+all.substring(selStart, selEnd)+')' : "";
+      // {3] after selection
+      String after = all.substring(selEnd);
+
+      // calculate result
+      String result = MessageFormat.format(pattern, new String[]{ all, before, selection, after} );
+      int pos = result.indexOf('#');
+      result = result.substring(0,pos)+result.substring(pos+1);
+      
+      // show
+      field.setText(result);
+      field.select(0,0);
+      field.setCaretPosition(pos);
+      
+      // done
+    }
+  } //ActionInsert
+
+  /**
    * Action - trigger search
    */
   private class ActionSearch extends ActionDelegate {
@@ -323,9 +440,11 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     }
     
     /** run (sync() callback on EDT) */
-    protected synchronized void syncExecute() {
-      results.add(hits);
-      hits.clear();
+    protected void syncExecute() {
+      synchronized (hits) {
+        results.add(hits);
+        hits.clear();
+      }
     }
     
     /**
@@ -352,19 +471,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       // done
     }
     
-    /** got a hit */
-    private synchronized void add(Object hit) {
-      // keep
-      hits.add(hit);
-      // sync (on first)?
-      if (hits.size()==1) sync();
-      // too many?
-      if (count++>MAX_HITS)
-        throw new IndexOutOfBoundsException("Too many hits found! Restricting result to "+MAX_HITS+" hits.");
-      // done
-    }
-    
-    /** search in gedcom */
+    /** search in gedcom (not on EDT) */
     private void search(Gedcom gedcom) {
       for (int t=0; t<gedcom.NUM_TYPES; t++) {
         List es = gedcom.getEntities(t);
@@ -374,12 +481,12 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       }
     }
     
-    /** search entity */
+    /** search entity (not on EDT) */
     private void search(Entity entity) {
       search((Property)entity);
     }
     
-    /** search property */
+    /** search property (not on EDT) */
     private void search(Property prop) {
       // still going?
       if (getThread().isInterrupted()) return;
@@ -395,6 +502,23 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       for (int i=0;i<n;i++) {
         search(prop.getProperty(i));
       }
+      // done
+    }
+    
+    /** got a hit (not on EDT) */
+    private void add(Hit hit) {
+      // create a view
+      listResults.init(hit);
+      // synchronized keep
+      synchronized (hits) {
+        // keep
+        hits.add(hit);
+        // sync (on first)?
+        if (hits.size()==1) sync();
+      }
+      // too many?
+      if (count++>MAX_HITS)
+        throw new IndexOutOfBoundsException("Too many hits found! Restricting result to "+MAX_HITS+" hits.");
       // done
     }
     
@@ -428,7 +552,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     /**
      * clear the results
      */
-    private synchronized void clear() {
+    private void clear() {
       // nothing to do?
       if (hits.isEmpty())
         return;
@@ -442,7 +566,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     /**
      * add a result
      */
-    private synchronized void add(List list) {
+    private void add(List list) {
       // nothing to do?
       if (list.isEmpty()) 
         return;
@@ -491,6 +615,9 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     
     /** our label used for rendering */
     private HeadlessLabel label = new HeadlessLabel(); 
+
+    /** our label used for (async) view calculation */
+    private HeadlessLabel viewFactory = new HeadlessLabel(); 
     
     /**
      * Constructor
@@ -502,6 +629,14 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
 
       label.setOpaque(true);
       label.setFont(getFont());
+      viewFactory.setFont(getFont());
+    }
+    
+    /**
+     * Create (async) view for given hit
+     */
+    private void init(Hit hit) {
+      hit.setAttribute(viewFactory.setHTML(hit.getHTML()));
     }
     
     /**
@@ -524,19 +659,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       label.setIcon(hit.getImage());
 
       // show text view
-      View view = (View)hit.getAttribute();
-      if (view==null) {
-        
-        // create view
-        view = label.setHTML(hit.getHTML());
-  
-        // cache
-        hit.setAttribute(view);
-        
-      } else {
-        label.setView(view);
-      }    
-      
+      label.setView((View)hit.getAttribute());
+
       // done
       return label;
     }

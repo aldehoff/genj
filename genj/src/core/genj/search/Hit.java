@@ -22,7 +22,6 @@ package genj.search;
 import genj.gedcom.Entity;
 import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
-import genj.util.WordBuffer;
 
 import javax.swing.ImageIcon;
 
@@ -30,7 +29,7 @@ import javax.swing.ImageIcon;
  * A search hit
  */
 /*package*/ class Hit {
-  
+
   /** formatting */
   private final static String
    OPEN = "<font color=red>",
@@ -42,15 +41,12 @@ import javax.swing.ImageIcon;
   
   /** an image (cached) */
   private ImageIcon img; 
+  
+  /** html (cached) */
+  private String html;
 
-  /** the value (cached) */
-  private String value;
-  
-  /** an attribute (cached) */
-  private Object attrib;
-  
-  /** the matches (cached) */
-  private Matcher.Match[] matches;
+  /** an arbitray (cached) attribute */
+  private Object attr;
   
   /**
    * test for hit
@@ -66,11 +62,25 @@ import javax.swing.ImageIcon;
   /** 
    * Constructor
    */
-  private Hit(Property prop, String val, Matcher.Match[] mats) {
-    // keep property & value
+  private Hit(Property prop, String value, Matcher.Match[] matches) {
+    // keep property
     property = prop;
-    value = val;
-    matches = mats;
+    // calc img
+    img = property.getImage(false);
+    // calc html
+    StringBuffer buffer = new StringBuffer(value.length()+matches.length*10);
+    buffer.append("<html>");
+    buffer.append("<b>");
+    buffer.append(property.getTag());
+    buffer.append("</b>");
+    if (property instanceof Entity) {
+      buffer.append('@'+((Entity)property).getId()+'@');
+    }
+    buffer.append(' ');
+    buffer.append(Matcher.format(value, matches, OPEN, CLOSE, NEWLINE));
+    buffer.append("</html>");
+    html = buffer.toString();
+    
     // done
   }
   
@@ -82,47 +92,31 @@ import javax.swing.ImageIcon;
   }
   
   /**
-   * Get a cached attribute
-   */
-  /*package*/ Object getAttribute() {
-    return attrib;
-  }
-  
-  /**
-   * Set a cached attribute
-   */
-  /*package*/ void setAttribute(Object attr) {
-    attrib = attr;
-  }
-  
-  /**
-   * Image (lazy once)
+   * Image
    */
   /*package*/ ImageIcon getImage() {
-    if (img==null)
-      img = property.getImage(false);
     return img;
   }
   
   /**
-   * HTML representation
+   * HTML
    */
   /*package*/ String getHTML() {
-        
-    // calc html
-    WordBuffer html = new WordBuffer();
-    html.append("<html>");
-    html.append("<b>");
-    html.append(property.getTag());
-    html.append("</b>");
-    if (property instanceof Entity) {
-      html.append('@'+((Entity)property).getId()+'@');
-    }
-    html.append(Matcher.format(value, matches, OPEN, CLOSE, NEWLINE));
-    html.append("</html>");
-    
-    // done
-    return html.toString();
+    return html;
+  }
+  
+  /**
+   * Arbitrary attribute
+   */
+  /*package*/ Object getAttribute() {
+    return attr;
+  }
+  
+  /**
+   * Arbitrary attribute
+   */
+  /*package*/ void setAttribute(Object attrib) {
+    attr = attrib;
   }
   
 } //Hit
