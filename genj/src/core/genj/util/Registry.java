@@ -108,13 +108,27 @@ public class Registry {
       } catch (Throwable t) {
       }
     }
-    // read all from local registry
+    
+    // read all from local registry (old style)
+    File old = getFile(name, false);
+    if (old.exists()) {
+      try {
+        FileInputStream in = new FileInputStream(old);
+        properties.load(in);
+        in.close();
+        old.delete();
+      } catch (Throwable t) {
+      }
+    }
+    
+    // read all from local registry (new style)
     try {
-      FileInputStream in = new FileInputStream(getFile(name));
+      FileInputStream in = new FileInputStream(getFile(name, true));
       properties.load(in);
       in.close();
     } catch (Throwable t) {
     }
+    
     // remember
     registries.put(name,this);
     // done
@@ -673,13 +687,18 @@ public class Registry {
   /**
    * Calculates a filename for given registry name
    */
-  private static File getFile(String name) {
+  private static File getFile(String name, boolean newStyle) {
+    
     String dir = EnvironmentChecker.getProperty(
       Registry.class,
       new String[]{ "user.home" },
       ".",
       "calculate dir for registry file"
     );
+    
+    if (newStyle)
+      dir = dir + "/.genj";
+      
     return new File(dir,name+".properties");
   }
 
@@ -698,7 +717,9 @@ public class Registry {
 
       // Open known file
       try {
-        FileOutputStream out = new FileOutputStream(getFile(key));
+        File file = getFile(key, true);
+        file.getParentFile().mkdirs();
+        FileOutputStream out = new FileOutputStream(file);
         registry.properties.store(out,key);
         out.flush();
         out.close();

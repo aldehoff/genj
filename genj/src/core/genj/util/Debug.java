@@ -60,9 +60,19 @@ public class Debug {
   public static void setFile(File file) {
     // try to open a file for debugging
     try {
+      
+      // .. make sure the directory exists
+      file.getParentFile().mkdirs();
+      
+      // .. open it
       PrintStream ps = new PrintStream(new FileOutputStream(file.getAbsolutePath(), true));
-      for (int i=0;i<80;i++) ps.print('#'); ps.println();
+      
+      // .. output header
+      for (int i=0;i<80;i++) 
+        ps.print('#'); ps.println();
+        
       setOutput(ps);
+      
     } catch (Throwable t) {
       log(WARNING, Debug.class, "Failed to route debug log to "+file.getAbsoluteFile(), t);
     }

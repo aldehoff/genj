@@ -76,12 +76,9 @@ public class App {
 
     // Startup Information
     Debug.log(Debug.INFO, App.class, "GenJ App - Version "+Version.getInstance()+" - "+new Date());
-    String log = EnvironmentChecker.getProperty(this, new String[]{"genj.debug.file", "user.home"}, null, "choose log-file");
-    if (log!=null) {
-      File file = new File(log);
-      if (file.isDirectory()) file = new File(file, "genj.log");
-      Debug.setFile(file);
-    }
+    String log = EnvironmentChecker.getProperty(this, new String[]{"genj.debug.file", "user.home/.genj/genj.log"}, "", "choose log-file");
+    if (log.length()>0) 
+      Debug.setFile(new File(log));
     EnvironmentChecker.log();
     
     // init our data
