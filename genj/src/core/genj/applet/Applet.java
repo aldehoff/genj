@@ -67,10 +67,20 @@ public class Applet extends java.applet.Applet {
     // load gedcom
     Gedcom gedcom;
     try {
-      URL url = new URL("file:/d:/nils/priv.java/workspace/GenJ-HEAD/gedcom/example.ged");
-      Origin origin = Origin.create(url);
+      
+      // calculate gedcom url
+      String url = getParameter("gedcom");
+      if (url.indexOf(':')<0) {
+        String base = getDocumentBase().toString();
+        url = base.substring(0, base.lastIndexOf('/')+1)+url;
+      } 
+      System.out.println("Loading Gedcom "+url);
+      
+      // load
+      Origin origin = Origin.create(new URL(url));
       GedcomReader reader = new GedcomReader(origin);
       gedcom = reader.read();
+      
     } catch (Throwable t) {
       t.printStackTrace();
       return;

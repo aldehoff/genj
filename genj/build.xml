@@ -313,8 +313,6 @@
    -->
   <target name="run" depends="compile">
 
-	
-
     <mkdir dir="${dir.run}"/>
     <copy todir="${dir.run}/report">
       <fileset dir="${dir.build}/classes/report"/>
@@ -339,35 +337,47 @@
   <!--
    Run Applet
    -->
-  <target name="applet" depends="compile">
+  <target name="run.applet" depends="compile">
 
     <mkdir dir="${dir.run}"/>
-
+        
+    <!-- create policy file simulating applet security -->
     <echo file="${dir.run}/applet.policy"> 
       grant {
        permission java.util.PropertyPermission "user.home", "read";
-       permission java.io.FilePermission ".\\.build\\-", "read";
-       permission java.io.FilePermission ".\\src\\core\\-", "read";
-       permission java.io.FilePermission ".\\images\\-", "read";
-       permission java.io.FilePermission ".\\language\\en\\-", "read";
-       permission java.io.FilePermission ".\\gedcom\\-", "read";
+       permission java.io.FilePermission "${dir.build}/classes/-", "read";
+       permission java.io.FilePermission "${basedir}/src/core/-", "read";
+       permission java.io.FilePermission "${basedir}/images/-", "read";
+       permission java.io.FilePermission "${basedir}/language/en/-", "read";
+       permission java.io.FilePermission "${basedir}/gedcom/-", "read";
        permission java.lang.RuntimePermission "modifyThread";
        permission java.lang.RuntimePermission "modifyThreadGroup";
       };
     </echo>
     
+    <replace file="${dir.run}/applet.policy" value="\\">
+     <replacefilter token="\"/>
+     <replacefilter token="/"/>
+    </replace>
+    
+    <!-- create applet.html -->
     <echo file="${dir.run}/applet.html"><![CDATA[
       <html><body>
        <applet code="genj.applet.Applet.class" width="200" height="200">
+        <param name="gedcom" value="file:/${basedir}/gedcom/example.ged">
        </applet>
       </body></html>
     ]]></echo>
 
+    <!-- run appletviewer -->
+    <concat><filelist dir="${dir.run}" files="applet.html,applet.policy"/></concat>
     <java classname="sun.applet.AppletViewer" fork="true">
        <arg value="file:/${dir.run}/applet.html"/>
        <jvmarg value="-Djava.security.policy=${dir.run}/applet.policy"/>
        <classpath refid="project.class.path"/>
     </java>
+
+    <!-- done -->
 
   </target>
 
