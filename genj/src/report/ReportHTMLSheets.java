@@ -24,10 +24,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
+import java.nio.charset.Charset;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
@@ -40,87 +41,33 @@ public class ReportHTMLSheets extends Report {
 
   private final static String INDEX = "index.html";
   private final static String NAMES = "names.html";
+  private final static Charset UTF8 = Charset.forName("UTF-8");
 
-  /** an options - style sheet */
-  public String styleSheet = "";
+  static final String defaultStylesheet = 
+   "body { background: white; } \n" +
+   "a { color: black; text-decoration: none; } \n" +
+   "a:hover { text-decoration: underline; }\n" +
+   "p { color: black; }\n" +
+   "p.firstchar { color: red; font-weight: bold; }\n" +
+   "p.names { font-style: italic; }\n" +
+   "p.footer { font-size: 10; }\n" +
+   "tr.header { background: yellow; }\n" +
+   "p.prop0 { font-weight: bold; text-decoration: underline; }\n" +
+   "p.prop1 { font-style: italic; text-decoration: underline; }\n" +
+   "p.prop2 { font-style: italic; }";
+    
+
+  /** options - style sheet */
+  public String css = "./style.css";
 
   /** A <pre>&nbsp</pre> looks better than an empty String in a HTML cell */
   private final static String SPACE = "&nbsp;";
 
-  /** whether to translate between unicode and html or not (slow!) */
-  public boolean isUnicode2HTML = true;
-  
   /** buffer size for read/write operation on images */
   private static final int IMG_BUFFER_SIZE = 1024;
 
   /** buffer for read/write operation on images */
   private byte[] imgBuffer = new byte[IMG_BUFFER_SIZE];
-
-  /** HTML Coded Character Set (see http://www.w3.org/MarkUp/html-spec/html-spec_13.html)*/
-  private final static String[] codeTable = {
-   "\u00d1" , "&Ntilde;", //    Capital N, tilde
-   "\u00d2" , "&Ograve;", //    Capital O, grave accent
-   "\u00d3" , "&Oacute;", //    Capital O, acute accent
-   "\u00d4" , "&Ocirc;", //     Capital O, circumflex accent
-   "\u00d5" , "&Otilde;", //    Capital O, tilde
-   "\u00d6" , "&Ouml;", //      Capital O, dieresis or umlaut mark
-   "\u00df" , "&szlig;", //     Small sharp s, German (sz ligature)
-   "\u00c0" , "&Agrave;", //     Capital A, grave accent
-   "\u00c1" , "&Aacute;", //    Capital A, acute accent
-   "\u00c2" , "&Acirc;", //     Capital A, circumflex accent
-   "\u00c3" , "&Atilde;", //    Capital A, tilde
-   "\u00c4" , "&Auml;", //      Capital A, dieresis or umlaut mark
-   "\u00c5" , "&Aring;", //     Capital A, ring
-   "\u00c6" , "&AElig;", //     Capital AE dipthong (ligature)
-   "\u00c7" , "&Ccedil;", //    Capital C, cedilla
-   "\u00c8" , "&Egrave;", //    Capital E, grave accent
-   "\u00c9" , "&Eacute;", //    Capital E, acute accent
-   "\u00ca" , "&Ecirc;", //     Capital E, circumflex accent
-   "\u00cb" , "&Euml;", //      Capital E, dieresis or umlaut mark
-   "\u00cc" , "&Igrave;", //    Capital I, grave accent
-   "\u00cd" , "&Iacute;", //    Capital I, acute accent
-   "\u00ce" , "&Icirc;", //     Capital I, circumflex accent
-   "\u00cf" , "&Iuml;", //      Capital I, dieresis or umlaut mark
-   "\u00d9" , "&Ugrave;", //    Capital U, grave accent
-   "\u00da" , "&Uacute;", //    Capital U, acute accent
-   "\u00db" , "&Ucirc;", //     Capital U, circumflex accent
-   "\u00dc" , "&Uuml;", //      Capital U, dieresis or umlaut mark
-   "\u00dd" , "&Yacute;", //    Capital Y, acute accent
-
-   "\u00e0" , "&agrave;", //    Small a, grave accent
-   "\u00e1" , "&aacute;", //    Small a, acute accent
-   "\u00e2" , "&acirc;", //     Small a, circumflex accent
-   "\u00e3" , "&atilde;", //    Small a, tilde
-   "\u00e4" , "&auml;", //      Small a, dieresis or umlaut mark
-   "\u00e6" , "&aelig;", //     Small ae dipthong (ligature)
-   "\u00e7" , "&ccedil;", //    Small c, cedilla
-   "\u00e8" , "&egrave;", //    Small e, grave accent
-   "\u00e9" , "&eacute;", //    Small e, acute accent
-   "\u00ea" , "&ecirc;", //     Small e, circumflex accent
-   "\u00eb" , "&euml;", //      Small e, dieresis or umlaut mark
-   "\u00ec" , "&igrave;", //    Small i, grave accent
-   "\u00ed" , "&iacute;", //    Small i, acute accent
-   "\u00ee" , "&icirc;", //     Small i, circumflex accent
-   "\u00ef" , "&iuml;", //      Small i, dieresis or umlaut mark
-   "\u00f0" , "&eth;", //       Small eth, Icelandic
-   "\u00f1" , "&ntilde;", //    Small n, tilde
-   "\u00f2" , "&ograve;", //    Small o, grave accent
-   "\u00f3" , "&oacute;", //    Small o, acute accent
-   "\u00f4" , "&ocirc;", //     Small o, circumflex accent
-   "\u00f5" , "&otilde;", //    Small o, tilde
-   "\u00f6" , "&ouml;", //      Small o, dieresis or umlaut mark
-   "\u00f8" , "&oslash;", //    Small o, slash
-   "\u00f9" , "&ugrave;", //    Small u, grave accent
-   "\u00fa" , "&uacute;", //    Small u, acute accent
-   "\u00fb" , "&ucirc;", //     Small u, circumflex accent
-   "\u00fc" , "&uuml;", //      Small u, dieresis or umlaut mark
-   "\u00fd" , "&yacute;", //    Small y, acute accent
-   "\u00fe" , "&thorn;", //     Small thorn, Icelandic
-   "\u00ff" , "&yuml;"  //      Small y, dieresis or umlaut mark
-  };
-
-  /** the mapping between unicode and html */
-  private static Hashtable unicode2html = initializeUnicodeSupport();
 
   /**
    * Exports the given entity to given directory
@@ -131,27 +78,27 @@ public class ReportHTMLSheets extends Report {
     printOpenHTML(out, ent.getGedcom().getName() + " - " + ent.toString());
 
     // TABLE
-    out.println("<TABLE border=\"1\" cellspacing=\"1\" width=\"100%\">");
-    out.println("<TR>");
-    out.println("<TD colspan=\"2\" bgcolor=\"f0f0f0\">"+wrapText(ent.toString())+"</TD>");
-    out.println("</TR>");
-    out.println("<TR>");
+    out.println("<table border=\"1\" cellspacing=\"1\" width=\"100%\">");
+    out.println("<tr class=header>");
+    out.println("<td colspan=\"2\">"+ent.toString()+"</td>");
+    out.println("</tr>");
+    out.println("<tr>");
 
     // Image Column
-    out.println("<TD width=\"50%\" valign=\"center\" align=\"center\">");
+    out.println("<td width=\"50%\" valign=\"center\" align=\"center\">");
     exportImage(ent,dir,out);
-    out.println("</TD>");
+    out.println("</td>");
 
     // Property Column
-    out.println("<TD width=\"50%\" valign=\"top\" align=\"left\">");
-    out.println("<TABLE border=0>");
+    out.println("<td width=\"50%\" valign=\"top\" align=\"left\">");
+    out.println("<table border=0>");
     exportProperty(ent,out,0);
-    out.println("</TABLE>");
-    out.println("</TD>");
+    out.println("</table>");
+    out.println("</td>");
 
     // END TABLE
-    out.println("</TR>");
-    out.println("</TABLE>");
+    out.println("</tr>");
+    out.println("</table>");
     
     // TAIL
     printCloseHTML(out);
@@ -250,25 +197,6 @@ public class ReportHTMLSheets extends Report {
         return;
     }
 
-    // calc markup
-    String markupBeg;
-    String markupEnd;
-    if ( level == 0 ) {
-      // bold underlined
-      markupBeg = "<b><u>";
-      markupEnd = "</u></b>";
-    }
-    else if ( level == 1 ) {
-      // italic underlined
-      markupBeg = "<i><u>";
-      markupEnd = "</u></i>";
-    }
-    else {
-      // italic
-      markupBeg = "<i>";
-      markupEnd = "</i>";
-    }
-
     // start row
     out.println("<tr>");
 
@@ -280,13 +208,12 @@ public class ReportHTMLSheets extends Report {
       out.print("colspan=2");
     out.print(">");
     
+    out.print("<p class=prop"+level+">");
     exportSpaces(out, level);
-    
-    out.print(markupBeg);
-    StringTokenizer tag = new StringTokenizer(wrapText(Gedcom.getName(prop.getTag())), " ");
+    StringTokenizer tag = new StringTokenizer(Gedcom.getName(prop.getTag()), " ");
     while (tag.hasMoreElements())
       out.print(tag.nextToken()+SPACE);
-    out.print(markupEnd);
+    out.print("</p>");
     out.println("</td>");
 
     // second column
@@ -313,7 +240,7 @@ public class ReportHTMLSheets extends Report {
       PropertyXRef xref = (PropertyXRef)prop;
       Entity ent = xref.getReferencedEntity();
       
-      out.println("<A HREF=\"" + ent.getId() + ".html\">" + wrapText(ent.toString()) + "</a>");
+      out.println("<A HREF=\"" + ent.getId() + ".html\">" + ent.toString() + "</a>");
       
       // done
       return;
@@ -324,7 +251,7 @@ public class ReportHTMLSheets extends Report {
       
       MultiLineProperty.Iterator lines = ((MultiLineProperty)prop).getLineIterator();
       do {
-        out.print(wrapText(lines.getValue()));
+        out.print(lines.getValue());
         out.print("<br>");
       } while (lines.next());
       
@@ -337,7 +264,7 @@ public class ReportHTMLSheets extends Report {
     if (prop instanceof PropertyName)
       value = ((PropertyName)prop).getName();
     else
-      value = wrapText(prop.toString());
+      value = prop.toString();
 
     out.print(value);
       
@@ -371,6 +298,10 @@ public class ReportHTMLSheets extends Report {
   private File getFileForName(File dir, String name) {
     return new File(dir, name+".html");
   }
+  
+  private File getFileForStylesheet(File dir) {
+    return css.length()>0 ? new File(dir, css) : null;
+  }
 
   /**
    * Exports the given entity to given directory
@@ -380,18 +311,13 @@ public class ReportHTMLSheets extends Report {
     File file = getFileForEntity(dir, ent);
 
     println(i18n("exporting", new String[]{ ent.toString(), file.getName() }));
-
-    PrintWriter htmlOut = new PrintWriter(new FileOutputStream(file));
-
-    export(ent, dir, htmlOut);
-
-    if (htmlOut.checkError()) 
-      throw new IOException("Error while writing "+ent);
-
-    htmlOut.close();
+    
+    PrintWriter out = getWriter(new FileOutputStream(file));
+    export(ent, dir, out);
+    out.close();
 
   }
-
+  
   /**
    * Exports the given entities to given directory
    */
@@ -426,18 +352,17 @@ public class ReportHTMLSheets extends Report {
   private void exportIndex(Gedcom gedcom, File dir) throws IOException {
 
     File file = getFileForIndex(dir);
-    PrintWriter out = new PrintWriter(new FileOutputStream(file));
-
     println(i18n("exporting", new String[]{ file.getName(), dir.toString() }));
+    PrintWriter out = getWriter(new FileOutputStream(file));
 
     // HEAD
     printOpenHTML(out, gedcom.getName());
 
     // TABLE
-    out.println("<TABLE border=1 cellspacing=1>");
+    out.println("<table border=1 cellspacing=1>");
 
     // TABLE HEADER
-    out.println("<TR BGCOLOR=\"yellow\">");  //F. Massonneau 03/04/2002
+    out.println("<tr class=header>"); 
     printCell(out, "ID");
     printCell(out, PropertyName.getLabelForLastName());
     printCell(out, PropertyName.getLabelForFirstName());
@@ -446,19 +371,19 @@ public class ReportHTMLSheets extends Report {
     printCell(out, Gedcom.getName("PLAC"));
     printCell(out, Gedcom.getName("DEAT"));
     printCell(out, Gedcom.getName("PLAC"));
-    out.println("</TR>");  //F. Massonneau 03/04/2002
+    out.println("</tr>");  //F. Massonneau 03/04/2002
 
     // Go through individuals
     Entity[] indis = gedcom.getEntities(Gedcom.INDI, "INDI:NAME");
     for (int i=0;i<indis.length;i++) {
-      out.println("<TR>");
+      out.println("<tr>");
       exportIndexRow(out, (Indi)indis[i]);
-      out.println("</TR>");
+      out.println("</tr>");
       // .. next individual
     }
 
     // END TABLE
-    out.println("</TABLE>");
+    out.println("</table>");
 
     // TAIL
     printCloseHTML(out);
@@ -474,9 +399,10 @@ public class ReportHTMLSheets extends Report {
   private void exportNames(Gedcom gedcom, File dir) throws IOException {
     
     File file = getFileForNames(dir);
-    PrintWriter out = new PrintWriter(new FileOutputStream(file));
-
+    
     println(i18n("exporting", new String[]{ file.getName(), dir.toString() }));
+
+    PrintWriter out = getWriter(new FileOutputStream(file));
 
     // HEAD
     printOpenHTML(out, gedcom.getName());
@@ -505,6 +431,21 @@ public class ReportHTMLSheets extends Report {
     // done
     out.close();
     
+  }
+  
+  /**
+   * Export a stylesheet - if not there already
+   */
+  private void exportStylesheet(File dir) throws IOException {
+
+    File file = getFileForStylesheet(dir);
+    if (file==null||file.exists())
+      return;
+    
+    println(i18n("exporting", new String[]{ file.getName(), dir.toString() }));
+    PrintWriter out = getWriter(new FileOutputStream(file));
+    out.println(defaultStylesheet);
+    out.close();
   }
   
   /**
@@ -544,6 +485,7 @@ public class ReportHTMLSheets extends Report {
       exportSheets(gedcom.getEntities(Gedcom.FAM ),dir);
       exportIndex(gedcom, dir);
       exportNames(gedcom, dir);
+      exportStylesheet(dir);
     } catch (IOException e) {
       println("Error while exporting: "+e.getMessage());
     }
@@ -559,26 +501,14 @@ public class ReportHTMLSheets extends Report {
   }
 
   /**
-   * Initializes a Hashtable of Unicode 2 HTML code mappings
+   * Helper - Create a PrintWriter wrapper for output stream
    */
-  private static Hashtable initializeUnicodeSupport() {
-
-    Hashtable result = new Hashtable();
-
-    // loop and copy
-    for (int c=0;c<codeTable.length;c+=2) {
-      result.put(
-        codeTable[c+0],
-        codeTable[c+1]
-      );
-    }
-
-    // done
-    return result;
+  private PrintWriter getWriter(OutputStream out) {
+    return new PrintWriter(new OutputStreamWriter(out, UTF8));
   }
-  
+
   /**
-   * Calculate a url for individual's id 
+   * Helper - Calculate a url for individual's id 
    */
   private String wrapID(Indi indi) {
     StringBuffer result = new StringBuffer();
@@ -595,32 +525,7 @@ public class ReportHTMLSheets extends Report {
   }
   
   /**
-   * Helper to make sure that a Unicode text ends up nicely in HTML
-   */
-  private String wrapText(String text) {
-
-    // no need to transform if !isUnicode2HTML
-    if (!isUnicode2HTML) 
-      return text;
-
-    // transform characters
-    StringBuffer result = new StringBuffer(256);
-    for (int c=0;c<text.length();c++) {
-      String unicode = text.substring(c,c+1);
-      Object html    = unicode2html.get(unicode);
-      if (html==null) {
-        result.append(unicode);
-      } else {
-        result.append(html);
-      }
-    }
-
-    // print it
-    return result.toString();
-  }
-
-  /**
-   * Writes HTML table cell information
+   * Helper - Writes HTML table cell information
    */
   private void printCell(PrintWriter out, Object content) {
 
@@ -634,30 +539,31 @@ public class ReportHTMLSheets extends Report {
       content = SPACE;
 
     // Here comes the HTML
-    out.println("<TD>"+wrapText(content.toString())+"</TD>");
+    out.println("<td>"+content.toString()+"</td>");
 
   }
   
   /**
-   * Writes HTML header and body information
+   * Helper - Writes HTML header and body information
    */
   private void printOpenHTML(PrintWriter out, String title) {
     
     // HEAD
     out.println("<html>");
     out.println("<head>");
+    out.println("<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" >");
     out.println("<title>"+title+"</title>");
-    if (styleSheet.length()>0)
-      out.println("<link rel=StyleSheet href=\""+styleSheet+"\" type=\"text/css\"></link>");
+    if (css.length()>0)
+      out.println("<link rel=StyleSheet href=\""+css+"\" type=\"text/css\"></link>");
     
     out.println("</head>");
-    out.println("<body bgcolor=\"#ffffff\">");
+    out.println("<body>");
     
     // done
   }
 
   /**
-   * Writes HTML end header and end body information
+   * Helper - Writes HTML end header and end body information
    */
   private void printCloseHTML(PrintWriter out) {
     out.print("<p class=footer>");
