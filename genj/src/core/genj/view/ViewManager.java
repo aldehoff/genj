@@ -511,7 +511,7 @@ public class ViewManager {
 
     // items for property
     if (property!=null&&property!=entity) {
-      String title = "Property '"+TagPath.get(property)+'\'';
+      String title = Property.LABEL+" '"+TagPath.get(property)+'\'';
       mh.createMenu(title, property.getImage(false));
       for (int i = 0; i < as.length; i++) {
         mh.createItems(as[i].createActions(property, this), true);

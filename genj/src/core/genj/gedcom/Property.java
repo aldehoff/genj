@@ -43,7 +43,7 @@ public abstract class Property implements Comparable {
     QUERY_VALID_TRUE   = 1,
     QUERY_SYSTEM_FALSE = 2,
     QUERY_FOLLOW_LINK  = 4;
-
+    
   /** parent of this property */
   private Property parent=null;
   
@@ -61,6 +61,9 @@ public abstract class Property implements Comparable {
   
   /** resources */
   protected final static Resources resources = Gedcom.resources;
+
+  /** a localized label */
+  public final static String LABEL = resources.getString("prop");
 
   /**
    * Lifecycle - callback when being added to parent
