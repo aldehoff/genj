@@ -44,9 +44,6 @@ public class TreeLayout extends AbstractLayout implements Layout {
   /** the alignment of parents */
   private double lonAlignment = 0.5;
 
-  /** the alignment of generations (if isAlignGeneration) */
-  private double latAlignment = -1;
-  
   /** whether we ignore unreached nodes */
   private boolean isIgnoreUnreachables = false;
   
@@ -117,20 +114,6 @@ public class TreeLayout extends AbstractLayout implements Layout {
    */
   public void setLonAlignment(double set) {
     lonAlignment = set;
-  }
-
-  /**
-   * Getter - the alignment of generations (if isAlignGenerations)
-   */
-  public double getLatAlignment() {
-    return latAlignment;
-  }
-
-  /**
-   * Setter - the alignment of generations (if isAlignGenerations)
-   */
-  public void setLatAlignment(double set) {
-    latAlignment = set;
   }
 
   /**
@@ -252,7 +235,6 @@ public class TreeLayout extends AbstractLayout implements Layout {
       orientn, 
       nopt, 
       arcOptions,
-      latAlignment,
       isBalanceChildren,
       isBendArcs
     );
@@ -283,11 +265,10 @@ public class TreeLayout extends AbstractLayout implements Layout {
     NodeOptions nopt = getNodeOptions();
     
     // and a node layout
-    Algorithm nlayout = new Algorithm(
+    Algorithm algorithm = new Algorithm(
       orientn, 
       nopt, 
       arcOptions,
-      latAlignment,
       isBalanceChildren,
       isBendArcs
     );
@@ -308,7 +289,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
       unvisited.removeAll(tree.getNodes());
 
       // update bounds
-      Rectangle r = nlayout.layout(tree, isDebug()?debugShapes:null);
+      Rectangle r = algorithm.layout(tree, isDebug()?debugShapes:null);
       if (bounds==null) bounds = r;
       else bounds.add(r);
       

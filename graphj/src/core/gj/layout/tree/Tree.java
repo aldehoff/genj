@@ -19,7 +19,7 @@ import gj.layout.LayoutException;
 import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcIterator;
-import java.awt.Shape;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,15 +27,6 @@ import java.util.Set;
  * A 'tree' wrapper for a Graph
  */
 public class Tree {
-  
-  /** the height of generations */
-  private int[] height;
-  
-  /** the position of generations (aligned) */
-  private int[] latitude;
-  
-  /** the number of generations */
-  private int numGenerations;
   
   /** the spanned nodes of the tree */
   private Set nodes;
@@ -60,20 +51,9 @@ public class Tree {
     
     // Analyze tree
     // - no cycles
-    // - get generations' heights & position
-    // - collect spanned nodes
-    height = new int[estimatedSize];
     nodes = new HashSet(estimatedSize);
     analyze(root, null, 0, nopt, o);
 
-    // Calculate generation's positions    
-    latitude = new int[numGenerations];
-    int pos = 0;
-    for (int i=0;i<numGenerations;i++) {
-      latitude[i] = pos;
-      pos+=height[i];
-    }
-    
     // Done
   }
 
@@ -88,20 +68,6 @@ public class Tree {
     }
     nodes.add(node);
     
-    // update number of generations
-    numGenerations = Math.max(numGenerations, generation+1);
-    
-    // Analyze the root's height
-    Shape shape = node.getShape();
-    if (shape!=null) {
-      Contour contour = o.getContour(shape.getBounds2D());
-      contour.pad(nopt.getPadding(root, o));
-      height[generation] = Math.max(
-        height[generation],
-        contour.south-contour.north
-      );
-    }
-   
     // Recurse into children
     ArcIterator it = new ArcIterator(node);
     while (it.next()) {
@@ -112,20 +78,6 @@ public class Tree {
     }
 
     // Done 
-  }
-  
-  /**
-   * Return a height for current generation
-   */
-  public int getHeight(int generation) {
-    return height[generation];
-  }
-  
-  /**
-   * Return a position for current generation
-   */
-  public int getLatitude(int generation) {
-    return latitude[generation];
   }
   
   /**
@@ -142,4 +94,4 @@ public class Tree {
     return root;
   }
   
-} //GenerationInfo
+} //Tree

@@ -48,9 +48,6 @@ import java.util.Stack;
   /** the arc options in use */
   private ArcOptions arcop;
   
-  /** latitude alignment is enabled (0-1) */
-  private double latalign;
-  
   /** whether we align children */
   private boolean balance;
   
@@ -60,11 +57,10 @@ import java.util.Stack;
   /**
    * Constructor
    */
-  /*package*/ Algorithm(Orientation orientation, NodeOptions nodeOptions, ArcOptions arcOptions, double latAlignment, boolean isBalanceChildrenEnable, boolean isBendedArcs) {
+  /*package*/ Algorithm(Orientation orientation, NodeOptions nodeOptions, ArcOptions arcOptions, boolean isBalanceChildrenEnable, boolean isBendedArcs) {
     orientn = orientation;
     nodeop  = nodeOptions;
     arcop = arcOptions;
-    latalign = latAlignment;
     balance = isBalanceChildrenEnable;
     bendarcs = isBendedArcs;
   }
@@ -183,25 +179,10 @@ import java.util.Stack;
   
     }
   
-    // Override latitude for isAlignGeneration
-    if (latalign>=0&&latalign<=1) {
-      lat = tree.getLatitude(generation);
-      int
-        min = lat - result.north,
-        max = lat + tree.getHeight(generation) - result.south;
-  
-      lat = (int)(min + (max-min) * Math.min(1D, Math.max(0D, latalign)));
-    }
-  
     // place it at (lat,lon)
     root.getPosition().setLocation(orientn.getPoint(lat,lon));
     result.translate(lat,lon);
 
-    // patch north    
-    if (latalign>=0&&latalign<=1) {
-      result.north = tree.getLatitude(generation);
-    }
-  
     // done
     return result;
   }
