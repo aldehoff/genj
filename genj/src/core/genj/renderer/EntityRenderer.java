@@ -118,7 +118,7 @@ public class EntityRenderer {
     StringBuffer html = new StringBuffer();
     html.append("<head><style type=\"text/css\">");
     if (font!=null) {
-      html.append(" body { font-family: "+font.getName()+"; font-size: "+font.getSize()+"pt; } "    );
+      html.append(" body { font-family: \""+font.getFamily()+"\"; font-size: "+font.getSize()+"pt; } "    );
     }
     html.append(" table { border-style: solid;}" );
     html.append(" td  { border-style: solid;  }" );

@@ -82,4 +82,16 @@ public class Blueprint {
   public boolean isReadOnly() {
     return isReadOnly;
   }
+  
+  /**
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  public boolean equals(Object o) {
+    // type and null check
+    if (o==null||(!(o instanceof Blueprint))) return false;
+    // check
+    Blueprint other = (Blueprint)o;
+    return other.getName().equals(getName())&&other.getHTML().equals(getHTML());
+  }
+
 } //RenderingScheme
