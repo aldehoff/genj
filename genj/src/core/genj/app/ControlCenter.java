@@ -132,7 +132,7 @@ public class ControlCenter extends JPanel {
       }
       /** callback - mouse release */
       public void mouseReleased(MouseEvent e) {
-
+        
         // no popup trigger no action
         if (!e.isPopupTrigger()) 
           return;
@@ -142,6 +142,9 @@ public class ControlCenter extends JPanel {
         if (gedcom==null)
           return;
         
+        // select it
+        tGedcoms.setSelection(gedcom);
+
         Context context = new Context(gedcom);
         List actions = Arrays.asList(new Object[]{
           new ActionClose(),
