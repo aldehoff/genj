@@ -258,7 +258,12 @@ public class PropertyDate extends Property {
           // .. grab more
           grab += " " + token + " ";
         }
+        
         // ... wasn't so good after all
+        // NM 20021009 reset data - FROM 1 OCT 2001 will then
+        // fallback to FROM even after FROMTO was checked
+        tokens = new StringTokenizer(string);
+        token = tokens.nextToken();
       }
       // .. try next one
     }
