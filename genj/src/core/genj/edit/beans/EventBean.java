@@ -98,19 +98,23 @@ public class EventBean extends PropertyBean {
       label2 = new JLabel(resources.getString("even.known")); 
     
     // 20040321 increased from 10 to 16 to account for long age string
-    JTextField txt = new JTextField(age, 16); txt.setEditable(false);
-    
-    String[] choices = new String[]{ CloseWindow.TXT_YES, CloseWindow.TXT_NO };
-    known = new ChoiceWidget(choices, event.isKnownToHaveHappened() ? choices[0] : choices[1]);
-    known.addChangeListener(changeSupport);
-    known.setEditable(false);
-    
     GridBagHelper gh = new GridBagHelper(this);
+    
+    JTextField txt = new JTextField(age, 16); txt.setEditable(false);
     gh.add(label1, 0, 0, 1, 1, GridBagHelper.FILL_HORIZONTAL    );
     gh.add(txt   , 1, 0, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
-    gh.add(label2, 0, 1, 1, 1, GridBagHelper.FILL_HORIZONTAL    );
-    gh.add(known , 1, 1, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
-    gh.addFiller(0,2);
+    
+    Boolean happened = event.isKnownToHaveHappened();
+    if (happened!=null) {
+      String[] choices = new String[]{ CloseWindow.TXT_YES, CloseWindow.TXT_NO };
+      known = new ChoiceWidget(choices, happened.booleanValue() ? choices[0] : choices[1]);
+      known.addChangeListener(changeSupport);
+      known.setEditable(false);
+      gh.add(label2, 0, 1, 1, 1, GridBagHelper.FILL_HORIZONTAL    );
+      gh.add(known , 1, 1, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
+    }
+    
+    gh.addFiller(2,2);
 
     // done
   }

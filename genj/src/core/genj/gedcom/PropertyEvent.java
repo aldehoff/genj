@@ -28,8 +28,34 @@ public class PropertyEvent extends Property {
   private String tag;
   
   /** whether the event is known to have happened */
-  private boolean knownToHaveHappened = false;
+  private boolean knownToHaveHappened;
 
+  /**
+   * Patching default sub meta properties
+   */
+  public MetaProperty[] getSubMetaProperties(int filter) {
+    
+    MetaProperty[] result = super.getSubMetaProperties(filter);
+    
+    // this RESIdence and default?
+    if (filter==MetaProperty.FILTER_DEFAULT&&getTag().equals("RESI")) {
+      // patch defaults for RESIdence event
+      for (int i = 0; i < result.length; i++) {
+        // look for PLAC
+        if (!result[i].getTag().equals("PLAC"))
+          continue;
+        // patch it
+        result[i] = getMetaProperty().get("ADDR", false); 
+        // done
+        break;
+      }
+      // patched 
+    }
+    
+    // done
+    return result;
+  }
+  
   /**
    * Returns the date of the event
    */
@@ -109,9 +135,13 @@ public class PropertyEvent extends Property {
   
   /**
    * Access - whether this event is known to have happened
+   * @return null if this attribute is not supported, true or false otherwise
    */
-  public boolean isKnownToHaveHappened() {
-    return knownToHaveHappened;
+  public Boolean isKnownToHaveHappened() {
+    // patch - no known for RESIdence
+    if (getTag().equals("RESI"))
+      return null;
+    return new Boolean(knownToHaveHappened);
   }
 
   /**
