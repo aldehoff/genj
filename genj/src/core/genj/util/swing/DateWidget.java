@@ -182,12 +182,14 @@ public class DateWidget extends JPanel {
     // analyze month
     String month = widgetMonth.getText();
     if (month.length()>0) {
-      if (month.equals(widgetMonth.getSelectedItem())) {
-        m = widgetMonth.getSelectedIndex();
-      } else try {
+      try {
         m = Integer.parseInt(month) - 1;
       } catch (NumberFormatException e) {
-        return null;
+        String[] months = calendar.getMonths(true);
+        for (m=0;m<months.length;m++)
+          if (month.equals(months[m])) break;
+        if (m==months.length) 
+          return null;
       }
     }
     
