@@ -113,17 +113,21 @@ public class ChoiceWidget extends JComboBox {
    * set values
    */
   public void setValues(List values) {
-    // set
-    model.setValues(values.toArray());
-    // done  
+    setValues(values.toArray());
   }
 
   /**
    * set values
    */
   public void setValues(Object[] set) {
+    String text = getText();
     // set
     model.setValues(set);
+    // restore text if editable since the model's selection
+    // might differ from what's in the editor right now
+    if (isEditable) 
+      setText(text);
+    
     // done  
   }
 
@@ -168,6 +172,7 @@ public class ChoiceWidget extends JComboBox {
   public void setText(String text) {
     if (!isEditable) 
       throw new IllegalArgumentException("setText && !isEditable n/a");
+    model.setSelectedItem(null);
     getTextEditor().setText(text);
   }
   
@@ -482,9 +487,9 @@ public class ChoiceWidget extends JComboBox {
       // remember
       selection = seLection;
       // propagate to editor
-      getEditor().setItem(seLection);
+      getEditor().setItem(selection);
       // notify about item state change
-      fireItemStateChanged(new ItemEvent(ChoiceWidget.this, ItemEvent.ITEM_STATE_CHANGED, seLection, ItemEvent.SELECTED));
+      fireItemStateChanged(new ItemEvent(ChoiceWidget.this, ItemEvent.ITEM_STATE_CHANGED, selection, ItemEvent.SELECTED));
       // and notify of data change - apparently the JComboBox
       // doesn't update visually on setSelectedItem() if this
       // isn't called - might lead to double itemSelectionCHange
