@@ -342,6 +342,25 @@ public abstract class Report implements Cloneable {
     return result;
   }
 
+
+  /**
+   * Helper methods to right justify monospaced text in a field
+   */
+	protected final String justify(int num, int width) {
+		return justify(num+"",width);
+	}																				
+
+  protected final String justify(String text, int width) {
+		String spaces = "                               ";
+
+		if (width>spaces.length()) {
+			return null;
+		}
+		return spaces.substring(1,width-text.length())+text;
+  }
+ 
+
+
   /**
    * Returns the author of this script
    */
