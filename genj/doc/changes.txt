@@ -18,6 +18,16 @@ Future
   O New Tool - run a command line script
   O OBJE-FILE reference should allow to start external viewer via mouse-click
   O TimelineView should use more vertical space if available to allow for more text (horizontal)
+  O Configurable selection of Views in Applet
+  O ReportMakeHTMLTable should order by something
+  O Reports should translate dates to a more readable format (e.g. MAR becomes March)
+
+1.8 - Mar xx 2002 (not released)
+
+  C EditView's create-entity actions will result in confirmation-prompt when clicked
+  C Applet opens detail browser window on (new "Browser Details") button click and not single click
+  C Applet's default-size for windows is now 640/480
+  B Link to image in help HTML is broken (resedit.html)
 
 1.7 - Mar 08 2002
 
