@@ -280,5 +280,17 @@ public class TagPath {
   public static TagPath[] toArray(Collection c) {
     return (TagPath[])c.toArray(new TagPath[c.size()]);
   }
+  
+  /**
+   * Get an array of tag Paths out of an array of strings
+   */
+  public static TagPath[] toArray(String[] paths) {
+    TagPath[] result = new TagPath[paths.length];
+    for (int i=0; i<result.length; i++) {
+      result[i] = new TagPath(paths[i]);
+    }
+    return result;
+  }
+  
 
 } //TagPath
