@@ -39,7 +39,7 @@ import javax.swing.table.TableColumnModel;
 /**
  * A component displaying a list of Gedcoms
  */
-public class GedcomTableWidget extends JTable {
+/*package*/ class GedcomTableWidget extends JTable {
   
   /** default column widths */
   private static final int defaultWidths[] = {
@@ -55,13 +55,14 @@ public class GedcomTableWidget extends JTable {
   /**
    * Constructor
    */
-  public GedcomTableWidget() {
+  public GedcomTableWidget(Registry reGistry) {
  
     // change the header to ours    
     setTableHeader(new SortableTableHeader());
     
     // Prepare a model
     model = new Model();
+    registry = reGistry;
     
     // Prepare a column model
     TableColumnModel cm = new DefaultTableColumnModel();
@@ -83,20 +84,12 @@ public class GedcomTableWidget extends JTable {
     setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     getTableHeader().setReorderingAllowed(false);
     
-    // done
-  }
-  
-  /**
-   * Tells us where to look for stored information
-   */
-  public void setRegistry(Registry registry) {
-    // remember
-    this.registry=registry;
     // grab the preferred columns
     int[] widths = registry.get("columns",new int[0]);
     for (int c=0; c<widths.length; c++) {
       getColumnModel().getColumn(c).setPreferredWidth(widths[c]);
     }    
+    
     // done
   }
   
@@ -106,13 +99,11 @@ public class GedcomTableWidget extends JTable {
    */
   public void removeNotify() {
     // remember our layout
-    if (registry!=null) {
-      int[] widths = new int[getColumnModel().getColumnCount()];
-      for (int c=0; c<widths.length; c++) {
-        widths[c] = getColumnModel().getColumn(c).getWidth();
-      }
-      registry.put("columns", widths);
+    int[] widths = new int[getColumnModel().getColumnCount()];
+    for (int c=0; c<widths.length; c++) {
+      widths[c] = getColumnModel().getColumn(c).getWidth();
     }
+    registry.put("columns", widths);
     // continue
     super.removeNotify();
   }

@@ -105,8 +105,7 @@ public class ControlCenter extends JPanel {
     printManager = new PrintManager(new Registry(setRegistry, "print"), windowManager);
     viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager, FACTORIES);
     // Table of Gedcoms
-    tGedcoms = new GedcomTableWidget();
-    tGedcoms.setRegistry(registry);
+    tGedcoms = new GedcomTableWidget(registry);
 
     // ... Listening
     tGedcoms.getSelectionModel().addListSelectionListener(
