@@ -320,7 +320,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
   public Context getContextAt(Point pos) {
     // is there an event?
     Model.Event event = getEventAt(pos);
-    if (event==null) return null;
+    if (event==null) return new Context(null);
     // grab its entity
     return new Context(event.getProperty());
   }
