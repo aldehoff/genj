@@ -53,7 +53,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
   /*package*/ boolean isLatAlignmentEnabled = false;
   
   /** current node options */
-  private NodeOptions nodeOptions = new DefaultNodeOptions();
+  private NodeOptions nodeOptions = null;
   
   /** current arc options */
   private ArcOptions arcOptions = new DefaultArcOptions();
@@ -72,9 +72,6 @@ public class TreeLayout extends AbstractLayout implements Layout {
 
   /** the root of the tree */
   /*package*/ Node declaredRoot = null;
-
-  /** the inverters of the tree */
-  /*package*/ Set orientationToggles = new HashSet();
 
   /** the Graph we've been applied to */
   /*package*/ Graph appliedTo = null;
@@ -254,20 +251,17 @@ public class TreeLayout extends AbstractLayout implements Layout {
   }
 
   /**
-   * Declares that the orientation at given node should
-   * be changed (counter-/clockwise) for the whole sub-tree
-   * starting at that node. If the node was marked for
-   * an orientation change this reverses that mark.
-   */
-  public void toggleOrientation(Node node) {
-    if (!orientationToggles.remove(node)) orientationToggles.add(node);
-  }
-  
-  /**
-   * Sets custom node options to use during layout
+   * Accesspr - node options
    */
   public void setNodeOptions(NodeOptions no) {
     nodeOptions = no;
+  }
+  
+  /**
+   * Accesspr - node options
+   */
+  public NodeOptions getNodeOptions() {
+    return nodeOptions!=null ? nodeOptions : new DefaultNodeOptions();
   }
   
   /**
@@ -284,20 +278,20 @@ public class TreeLayout extends AbstractLayout implements Layout {
 
     // get an orientation
     Orientation orientn = Orientation.get(isVertical,isTopDown);
-    
+    NodeOptions nopt = getNodeOptions();
+        
     // and a node layout
     Algorithm algorithm = new Algorithm(
       orientn, 
-      nodeOptions, 
+      nopt, 
       arcOptions,
       isLatAlignmentEnabled,
       isBalanceChildren,
-      orientationToggles,
       isBendArcs
     );
 
     // create a Tree for current root assuming that all nodes in it will be visited
-    Tree tree = new Tree(root, latPadding, orientn, estimatedSize);
+    Tree tree = new Tree(root, nopt, orientn, estimatedSize);
 
     // layout and return bounds
     return algorithm.layout(tree, null);
@@ -319,15 +313,15 @@ public class TreeLayout extends AbstractLayout implements Layout {
 
     // get an orientation
     Orientation orientn = Orientation.get(isVertical,isTopDown);
+    NodeOptions nopt = getNodeOptions();
     
     // and a node layout
     Algorithm nlayout = new Algorithm(
       orientn, 
-      nodeOptions, 
+      nopt, 
       arcOptions,
       isLatAlignmentEnabled,
       isBalanceChildren,
-      orientationToggles,
       isBendArcs
     );
 
@@ -343,7 +337,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
     while (true) {
 
       // create a Tree for current root assuming that all nodes in it will be visited
-      Tree tree = new Tree(graph,root,latPadding,orientn);
+      Tree tree = new Tree(graph,root,nopt,orientn);
       unvisited.removeAll(tree.getNodes());
 
       // update bounds
@@ -367,14 +361,15 @@ public class TreeLayout extends AbstractLayout implements Layout {
    * Default NodeOptions
    */
   private class DefaultNodeOptions implements NodeOptions {
+    /** default padding n,w,e,s */
+    private double[] pad = new double[]{ latPadding/2, lonPadding/2, lonPadding/2, latPadding/2};
     /**
-     * @see gj.layout.tree.NodeOptions#getPadding(int)
+     * @see gj.layout.tree.NodeOptions#getPadding()
      */
-    public double getPadding(Node node, int dir, Orientation o) {
+    public double[] getPadding(Node node, Orientation o) {
       if (node instanceof NodeOptions) 
-        return ((NodeOptions)node).getPadding(node, dir, o);
-      if (dir==WEST||dir==EAST) return lonPadding/2;
-      return latPadding/2;
+        return ((NodeOptions)node).getPadding(node, o);
+      return pad;
     }
     /**
      * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double)
@@ -385,12 +380,14 @@ public class TreeLayout extends AbstractLayout implements Layout {
       return min + (max-min) * Math.min(1D, Math.max(0D, latAlignment));
     }
     /**
-     * @see gj.layout.tree.NodeOptions#getLongitude(Node, double, double, double, double)
+     * @see gj.layout.tree.NodeOptions#getLongitude(Node, Branch[], Orientation)
      */
-    public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
+    public double getLongitude(Node node, Branch[] children, Orientation o) {
+      // delegate?
       if (node instanceof NodeOptions) 
-        return ((NodeOptions)node).getLongitude(node, minc, maxc, mint, maxt, o);
-      return minc + (maxc-minc) * Math.min(1D, Math.max(0D, lonAlignment));
+        return ((NodeOptions)node).getLongitude(node, children, o);
+      // calculate center point
+      return Branch.getLongitude(children, lonAlignment, o);
     }
   } //DefaultNodeOptions
   

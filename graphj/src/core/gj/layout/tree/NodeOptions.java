@@ -22,16 +22,10 @@ import gj.model.Node;
  */
 public interface NodeOptions {
 
-  public final static int
-    NORTH = 0,
-    EAST  = 1,
-    SOUTH = 2,
-    WEST  = 3;
-    
   /**
-   * Callback - Padding of a node
+   * Callback - Padding of a node (n,w,e,s)
    */
-  public double getPadding(Node node, int dir, Orientation o);
+  public double[] getPadding(Node node, Orientation o);
   
   /**
    * Callback - Calculate node's latitude in generation
@@ -45,11 +39,10 @@ public interface NodeOptions {
   /**
    * Callback - Calculate node's longitude above children
    * @param node the node that the callback is for
-   * @param minc the minimum longitude to keep the node and its shape above its children
-   * @param maxc the maximum longitude to keep the node and its shape above its children
-   * @param mint the minimum longitude to keep the node and its shape above its sub-tree
-   * @param maxt the maximum longitude to keep the node and its shape above its sub-tree
+   * @param children the node's children
+   * @param min the minimum longitude to keep the node and its shape above its children
+   * @param max the maximum longitude to keep the node and its shape above its children
    */
-  public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o);
+  public double getLongitude(Node node, Branch[] children, Orientation o);
     
 } //NodeOptions

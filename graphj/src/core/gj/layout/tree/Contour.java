@@ -47,8 +47,7 @@ package gj.layout.tree;
   
   protected final static int 
     WEST = 0,
-    EAST = 1;
-    
+    EAST = 1;    
   protected double 
     north,
     south,
@@ -66,10 +65,12 @@ package gj.layout.tree;
    * Constructor
    */    
   /*package*/ Contour(double n, double w, double e, double s) {
+    // keep n,w,e,s
     north = n;
     west  = w;
     east  = e;
     south = s;
+    // done
   }
   
   /**
@@ -89,7 +90,7 @@ package gj.layout.tree;
       
     // create a new result
     Contour result = new Contour(Double.NaN, Double.MAX_VALUE, -Double.MAX_VALUE, Double.NaN);
-
+  
     // prepare some data
     int demand = 0;
     for (int c=0;c<contours.length;c++) {

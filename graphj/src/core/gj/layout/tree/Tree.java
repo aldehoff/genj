@@ -46,14 +46,14 @@ public class Tree {
   /**
    * Constructor
    */
-  public Tree(Graph graph, Node root, double padGenerations, Orientation o) throws LayoutException {
-    this(root, padGenerations, o, graph.getNodes().size());
+  public Tree(Graph graph, Node root, NodeOptions nopt, Orientation o) throws LayoutException {
+    this(root, nopt, o, graph.getNodes().size());
   }
   
   /**
    * Constructor
    */
-  public Tree(Node root, double padGenerations, Orientation o, int estimatedSize) throws LayoutException {
+  public Tree(Node root, NodeOptions nopt, Orientation o, int estimatedSize) throws LayoutException {
 
     // remember
     this.root = root;
@@ -64,14 +64,13 @@ public class Tree {
     // - collect spanned nodes
     height = new double[estimatedSize];
     nodes = new HashSet(estimatedSize);
-    analyze(root, null, 0, o);
+    analyze(root, null, 0, nopt, o);
 
     // Calculate generation's positions    
     latitude = new double[numGenerations];
     double pos = 0;
     for (int i=0;i<numGenerations;i++) {
       latitude[i] = pos;
-      height[i] += padGenerations;
       pos+=height[i];
     }
     
@@ -81,7 +80,7 @@ public class Tree {
   /**
    * Analyzes one generation
    */
-  private void analyze(Node node, Node parent, int generation, Orientation o) throws LayoutException {
+  private void analyze(Node node, Node parent, int generation, NodeOptions nopt, Orientation o) throws LayoutException {
     
     // this node shouldn't have been visited before
     if (nodes.contains(node)) {
@@ -91,11 +90,11 @@ public class Tree {
     
     // update number of generations
     numGenerations = Math.max(numGenerations, generation+1);
-
+    
     // Analyze the root's height
     Shape shape = node.getShape();
     if (shape!=null) {
-      Contour contour = o.getContour(shape.getBounds2D());
+      Contour contour = o.getContour(shape.getBounds2D(), nopt.getPadding(root, o));
       height[generation] = Math.max(
         height[generation],
         contour.south-contour.north
@@ -108,7 +107,7 @@ public class Tree {
       if (!it.isFirst) continue;
       if (it.isLoop) continue;
       if (it.dest==parent) continue;
-      analyze(it.dest, node, generation+1, o);
+      analyze(it.dest, node, generation+1, nopt, o);
     }
 
     // Done 

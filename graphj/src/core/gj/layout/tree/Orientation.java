@@ -54,7 +54,7 @@ public abstract class Orientation {
   /**
    * Returns the surface with lat/lon's for given 2D bounds
    */
-  /*package*/ abstract Contour getContour(Rectangle2D r);
+  /*package*/ abstract Contour getContour(Rectangle2D r, double[] pad);
 
   /**
    * Returns the 2D position for given latitude/longitude
@@ -91,8 +91,13 @@ public abstract class Orientation {
     public double getLatitude(Point2D p) {
       return p.getX();
     }
-    /*package*/ Contour getContour(Rectangle2D r) {
-      return new Contour(r.getMinX(), -r.getMaxY(), -r.getMinY(), r.getMaxX());
+    /*package*/ Contour getContour(Rectangle2D r, double[] pad) {
+      return new Contour(
+          r.getMinX() - pad[0],
+         -r.getMaxY() - pad[1], 
+         -r.getMinY() + pad[2], 
+          r.getMaxX() + pad[3]
+      );
     }
     public Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(lat,-lon);
@@ -123,8 +128,13 @@ public abstract class Orientation {
     public double getLatitude(Point2D p) {
       return p.getY();
     }
-    /*package*/ Contour getContour(Rectangle2D r) {
-      return new Contour(r.getMinY(), r.getMinX(), r.getMaxX(), r.getMaxY());
+    /*package*/ Contour getContour(Rectangle2D r, double[] pad) {
+      return new Contour(
+        r.getMinY() - pad[0], 
+        r.getMinX() - pad[1], 
+        r.getMaxX() + pad[2], 
+        r.getMaxY() + pad[3] 
+      );
     }
     public Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(lon,lat);
@@ -159,8 +169,13 @@ public abstract class Orientation {
     public double getLongitude(Point2D p) {
       return p.getY();
     }
-    /*package*/ Contour getContour(Rectangle2D r) {
-      return new Contour(-r.getMaxX(), r.getMinY(), r.getMaxY(), -r.getMinX());
+    /*package*/ Contour getContour(Rectangle2D r, double[] pad) {
+      return new Contour(
+        -r.getMaxX() - pad[0], 
+         r.getMinY() - pad[1], 
+         r.getMaxY() + pad[2], 
+        -r.getMinX() + pad[3]
+      );
     }
     public Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(-lat,lon);
@@ -185,8 +200,13 @@ public abstract class Orientation {
     /*package*/ Rectangle2D.Double getBounds(Contour c) {
       return new Rectangle2D.Double(-c.east, -c.south, c.east-c.west, c.south-c.north);
     }
-    /*package*/ Contour getContour(Rectangle2D r) {
-      return new Contour(-r.getMaxY(), -r.getMaxX(), -r.getMinX(), -r.getMinY());
+    /*package*/ Contour getContour(Rectangle2D r, double[] pad) {
+      return new Contour(
+        -r.getMaxY() - pad[0], 
+        -r.getMaxX() - pad[1], 
+        -r.getMinX() + pad[2], 
+        -r.getMinY() + pad[3]
+      );
     }
     public double getLatitude(Point2D p) {
       return -p.getY();
