@@ -5,18 +5,21 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
+import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.util.swing.TreeWidget;
 
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import javax.swing.JTree;
+import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -43,10 +46,30 @@ public class PropertyTreeWidget extends TreeWidget {
     
     // setup callbacks
     setCellRenderer(new Renderer());
-    ToolTipManager.sharedInstance().registerComponent(this);
+
     // done
   }
   
+  /**
+   * @see javax.swing.JComponent#addNotify()
+   */
+  public void addNotify() {
+    // continue
+    super.addNotify();
+    // ready for tooltips
+    ToolTipManager.sharedInstance().registerComponent(this);
+  }
+    
+  /**
+   * @see javax.swing.JComponent#removeNotify()
+   */
+  public void removeNotify() {
+    // stop tooltips
+    ToolTipManager.sharedInstance().unregisterComponent(this);
+    // continue
+    super.removeNotify();
+  }
+    
   /**
    * Prepare the tree-model that lies behind the tree.
    */
@@ -141,12 +164,9 @@ public class PropertyTreeWidget extends TreeWidget {
     if (prop.isTransient()) return null;
     // .. calc information text
     String info = MetaProperty.get(prop).getInfo();
-    if (info==null) return "?";
-    // .. return max 60
-    info = info.replace('\n',' ');
-    if (info.length()<=60)
-      return info;
-    return info.substring(0,60)+"...";
+    if (info==null) return null;
+    // return text wrapped to 200 pixels
+    return "<html><table width=200><tr><td>"+info+"</td></tr></table></html";    
   }
   
   /**
@@ -167,6 +187,9 @@ public class PropertyTreeWidget extends TreeWidget {
   
     /** the gedcom we're looking at */
     private Gedcom gedcom;
+    
+    /** cached html per property */
+    private Map property2html =  new HashMap();
 
     /**
      * Constructor
@@ -231,6 +254,11 @@ public class PropertyTreeWidget extends TreeWidget {
      */
     public void firePropertiesChanged(List props) {
 
+      // update cache of htmls
+      for (int i=props.size()-1;i>=0;i--) {
+        property2html.remove(props.get(i));
+      }
+
       // Do it for all changed properties
       Iterator e = props.iterator();
       while (e.hasNext()) {
@@ -260,6 +288,10 @@ public class PropertyTreeWidget extends TreeWidget {
      */
     public void fireStructureChanged() {
 
+      // clear cache of htmls
+      property2html.clear();
+
+      // propagate even
       Object[] path = new Object[]{ root!=null ? (Object)root : ""};
       TreeModelEvent ev = new TreeModelEvent(this,path);
 
@@ -290,13 +322,8 @@ public class PropertyTreeWidget extends TreeWidget {
      * Returns index of given child from parent
      */
     public int getIndexOfChild(Object parent, Object child) {
-
       // Calculate index by fiven parent property
-      int index = ((Property)parent).getIndexOf((Property)child);
-  
-      // This is zero-based
-      return index-1;
-    
+      return ((Property)parent).getIndexOf((Property)child);
     }          
   
     /**
@@ -312,6 +339,54 @@ public class PropertyTreeWidget extends TreeWidget {
     public Entity getEntity() {
       if (root==null) return null;
       return root.getEntity();
+    }
+    
+    /**
+     * Get cached html for given property
+     */
+    public String getHtml(Property prop) {
+
+      // cached?
+      String result = (String)property2html.get(prop);
+      if (result!=null)
+        return result;
+        
+      // create html text
+      StringBuffer html = new StringBuffer();
+      
+      html.append("<html>");
+      
+      if (prop instanceof Entity) {
+        html.append("@").append(((Entity)prop).getId()).append("@ ");
+        html.append("<b>").append(prop.getTag()).append("</b>");
+      } else {
+        if (!prop.isTransient())
+          html.append(" <b>").append(prop.getTag()).append("</b> ");
+          
+        if (prop instanceof MultiLineSupport) {
+          
+          char[] chars = ((MultiLineSupport)prop).getLinesValue().toCharArray();
+          for (int i=0; i<chars.length; i++) {
+            char c = chars[i];
+            if (c=='\n') html.append("<br>");
+            else html.append(c);
+          }
+          
+        } else {
+          html.append(prop.getValue());
+        }
+      }
+
+      html.append("</html>");
+
+      // convert
+      result = html.toString();
+
+      // remember
+      property2html.put(prop, result);
+      
+      // done
+      return result;    
     }
   
     /**
@@ -388,39 +463,38 @@ public class PropertyTreeWidget extends TreeWidget {
    * Our renderer
    */
   private class Renderer extends DefaultTreeCellRenderer {
-    
-    /** original font */
-    private Font font;
+
+    /**
+     * Constructor
+     */
+    private Renderer() {
+      setVerticalAlignment(SwingConstants.TOP);
+      setVerticalTextPosition(SwingConstants.TOP);
+    }
     
     /**
      * @see javax.swing.tree.DefaultTreeCellRenderer#getTreeCellRendererComponent(javax.swing.JTree, java.lang.Object, boolean, boolean, boolean, int, boolean)
      */
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    public Component getTreeCellRendererComponent(JTree tree, Object object, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       
       // delegate to super
       super.getTreeCellRendererComponent(tree, "", sel, expanded, leaf, row, hasFocus);
 
-      // do our own      
-      if (value instanceof Property) {
-        Property prop = (Property)value;
+      // no property no luck      
+      if (!(object instanceof Property))
+        return this;
+      Property prop = (Property)object;
 
-        // Set the text & image
-        String tag = prop.getTag();
-        if (prop instanceof Entity)
-          tag = "@"+((Entity)prop).getId()+"@ "+tag;
-    
-        setText(tag+' '+prop.getValue());
-        setIcon(prop.getImage(true));
-
-        // font
-        if (font==null) font = getFont();
-        setFont(prop.isTransient() ? font.deriveFont(Font.ITALIC) : font);
-      }      
+      // calc image        
+      setIcon(prop.getImage(true));
+      
+      // & text
+      setText(model.getHtml(prop));
 
       // done
       return this;
     }
-
+    
   } //Renderer
     
 } //PropertyTree
