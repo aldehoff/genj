@@ -80,7 +80,7 @@ public abstract class PointInTime implements Comparable {
   }
   
   /** calendar */
-  private Calendar calendar = GREGORIAN;
+  protected Calendar calendar = GREGORIAN;
   
   /**
    * Returns the calendar
@@ -111,7 +111,17 @@ public abstract class PointInTime implements Comparable {
    * @param y year
    */
   public static PointInTime getPointInTime(int d, int m, int y) {
-    return new Impl(d, m, y);
+    return getPointInTime(d,m,y,GREGORIAN);
+  }
+  
+  /**
+   * Accessor to an immutable point in time
+   * @param d day (zero based)
+   * @param m month (zero based)
+   * @param y year
+   */
+  public static PointInTime getPointInTime(int d, int m, int y, Calendar calendar) {
+    return new Impl(d, m, y, calendar);
   }
   
   /**
@@ -131,7 +141,7 @@ public abstract class PointInTime implements Comparable {
    * @param string e.g. 25 MAY 1970
    */
   public static PointInTime getPointInTime(String string) {
-    Impl result = new Impl(-1,-1,-1);
+    Impl result = new Impl(-1,-1,-1, GREGORIAN);
     result.set(new StringTokenizer(string));
     return result;
   }
@@ -147,6 +157,7 @@ public abstract class PointInTime implements Comparable {
    * Setter 
    */
   public void set(PointInTime other) {
+    calendar = other.calendar;
     set(other.getDay(), other.getMonth(), other.getYear());
   }
   
@@ -439,10 +450,11 @@ public abstract class PointInTime implements Comparable {
     /**
      * Constructor
      */
-    private Impl(int d, int m, int y) {
+    private Impl(int d, int m, int y, Calendar cal) {
       day = d;
       month = m;
       year = y;
+      calendar = cal;
     }
     
     /**

@@ -39,9 +39,6 @@ import javax.swing.JTextField;
  */
 public class DateWidget extends JPanel {
   
-  /** calendar */
-  private PointInTime.Calendar calendar = PointInTime.CALENDARS[0];
-
   /** components */
   private PopupWidget widgetCalendar; 
   private TextFieldWidget widgetDay,widgetYear;
@@ -51,24 +48,27 @@ public class DateWidget extends JPanel {
   private final static String[] MONTHS = PointInTime.getMonths(true, false);
   
   /** calendar switches */
-  private ArrayList switches; 
+  private ArrayList switches;
+  
+  /** current calendar */
+  private PointInTime.Calendar calendar; 
     
   /**
    * Constructor
    */
   public DateWidget(PointInTime pit) {
-    
+
+    calendar = pit.getCalendar();
+        
     // create calendar switches
     switches = new ArrayList(PointInTime.CALENDARS.length);
     for (int s=0;s<PointInTime.CALENDARS.length;s++)
       switches.add(new SwitchCalendar(PointInTime.CALENDARS[s]));
     
     // initialize Sub-components
-    widgetCalendar = new PopupWidget(pit.getCalendar().getImage()); 
+    widgetCalendar = new PopupWidget(); 
     widgetCalendar.setMargin(new Insets(1,1,1,1));
     widgetCalendar.setActions(switches);
-    
-    //  FIXME reflect pit's calendar
     
     widgetDay   = new TextFieldWidget( int2string(pit.getDay  (), true ),2+1);
     
@@ -105,7 +105,7 @@ public class DateWidget extends JPanel {
     addFocusListener(e);
     
     // Status
-    checkValidDate();
+    updateStatus();
     
     // Done
   }
@@ -119,13 +119,14 @@ public class DateWidget extends JPanel {
     int m = string2int(widgetMonth.getText(), true);
     if (m<0&&widgetMonth.getText().equals(widgetMonth.getSelectedItem())) 
       m = widgetMonth.getSelectedIndex();    
-    return PointInTime.getPointInTime(d, m, y);
+    return PointInTime.getPointInTime(d, m, y, calendar);
   }
 
   /**
    * Update the status icon
    */
-  private void checkValidDate() {
+  private void updateStatus() {
+    widgetCalendar.setIcon(calendar.getImage());        
     widgetCalendar.setEnabled(getValue().isValid());
   }
 
@@ -183,7 +184,7 @@ public class DateWidget extends JPanel {
   private class Events implements FocusListener {
     /** callback - focus gained */
     public void focusGained(FocusEvent e) {
-      checkValidDate();
+      updateStatus();
       // me?
       if (e.getSource()==DateWidget.this) {
         getComponent(1).requestFocus();
@@ -203,18 +204,23 @@ public class DateWidget extends JPanel {
    * Action to switch calendar
    */
   private class SwitchCalendar extends ActionDelegate {
+    /** the calendar to switch to */
+    private PointInTime.Calendar newCalendar;
     /**
      * Constructor
      */
-    private SwitchCalendar(PointInTime.Calendar calendar) {
-      setImage(calendar.getImage());
-      setText(calendar.getName());
+    private SwitchCalendar(PointInTime.Calendar cal) {
+      newCalendar = cal;
+      setImage(newCalendar.getImage());
+      setText(newCalendar.getName());
     }
     /**
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      // FIXME switch calendar
+      calendar = newCalendar;
+      // FIXME calendar conversion necessary here (exception)
+      updateStatus();
     }
   } // SwitchCalendar
   
