@@ -450,14 +450,11 @@ import javax.swing.JComponent;
     ug.draw(printable,0,0,false);
     ug.pushClip(0,0, printable);
 
-    // translate for content 
-    ug.translate(
-      -col*printable.getWidth ()+printable.getX(), 
-      -row*printable.getHeight()+printable.getY()
-    );
+    // translate for to top left on page
+    ug.translate(printable.getX(), printable.getY()); 
 
     // draw content
-    renderer.renderPage((Graphics2D)graphics, new Point(col, row), dpi, false);
+    renderer.renderPage((Graphics2D)graphics, new Point(col, row), new Dimension2d(printable), dpi, false);
     
     // next
     return PAGE_EXISTS;

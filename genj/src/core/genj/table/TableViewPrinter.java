@@ -20,6 +20,7 @@
 package genj.table;
 
 import genj.gedcom.Property;
+import genj.gedcom.PropertySimpleValue;
 import genj.print.Printer;
 import genj.renderer.PropertyRenderer;
 
@@ -51,6 +52,9 @@ public class TableViewPrinter implements Printer {
   
   /** font */
   private Font font = new Font("SansSerif", Font.PLAIN, 8);
+  private FontRenderContext context = new FontRenderContext(null, false, true);
+
+  private Property header = new PropertySimpleValue();
   
   /**
    * Sets the view to print   */
@@ -66,9 +70,6 @@ public class TableViewPrinter implements Printer {
     // grab model
     EntityTableModel model = table.getModel();
 
-    // prepare our font render context
-    FontRenderContext context = new FontRenderContext(null, false, true);
-
     // prepare data
     int pageWidth = (int)Math.ceil(pageSizeInInches.getWidth()*dpi.x);
     int pageHeight = (int)Math.ceil(pageSizeInInches.getHeight()*dpi.y);
@@ -79,35 +80,17 @@ public class TableViewPrinter implements Printer {
     
     // calculate header parameters
     for (int col=0;col<colWidths.length;col++) {
-      String header = model.getColumnName(col);
-      Dimension2D dim = PropertyRenderer.DEFAULT_RENDERER.getSize(font, context, null, header, PropertyRenderer.PREFER_TEXT, dpi);
-      headerHeight = (int)Math.max(headerHeight, Math.ceil(dim.getHeight()));
-      colWidths[col] = (int)Math.max(colWidths[col], Math.ceil(dim.getWidth()));
+      header.setValue(model.getColumnName(col));
+      calcSize(-1, col, header, dpi);
     }
     
     // loop rows
     for (int row=0, height=0;row<rowHeights.length;row++) {
-
       // loop columns
       for (int col=0;col<colWidths.length;col++) {
-        
-        // check property
-        Property prop = model.getProperty(row, col);
-        if (prop==null)
-          continue;
-        
-        // grab size
-        Dimension2D dim = PropertyRenderer.get(prop).getSize(font, context, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
-        
-        // update col and row
-        rowHeights[row] = (int)Math.max(rowHeights[row], Math.ceil(dim.getHeight()));
-        colWidths[col] = (int)Math.max(colWidths[col], Math.ceil(dim.getWidth()));
-        
-        // next col
+        // add cell
+        calcSize(row, col, model.getProperty(row, col), dpi);
       }
-      
-      // check page fit vertically
-    
       // next row
     }
 
@@ -133,12 +116,31 @@ public class TableViewPrinter implements Printer {
     // done
     return pages;
   }
+
+  /**
+   * Registers a cell with given dimensions into the colwidths/rowheights state
+   */
+  private void calcSize(int row, int col, Property prop, Point dpi) {
+    // need property
+    if (prop==null)
+      return;
+    // grab size
+    Dimension2D dim = PropertyRenderer.get(prop).getSize(font, context, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
+    // keep height/width
+    if (row<0)
+      headerHeight    = (int)Math.max(headerHeight   , Math.ceil(dim.getHeight()));
+    else
+      rowHeights[row] = (int)Math.max(rowHeights[row], Math.ceil(dim.getHeight()));
+    colWidths[col] = (int)Math.max(colWidths[col], Math.ceil(dim.getWidth()));
+    // done
+  }
   
   /**
    * @see genj.print.PrintRenderer#renderPage(java.awt.Point, gj.ui.UnitGraphics)
    */
-  public void renderPage(Graphics2D g, Point page, Point dpi, boolean preview) {
+  public void renderPage(Graphics2D g, Point page, Dimension2D pageSizeInInches, Point dpi, boolean preview) {
 
+    // scale to 1/72 inch space
     g.scale(dpi.x/72F, dpi.y/72F);
 
     // testing
@@ -153,15 +155,21 @@ public class TableViewPrinter implements Printer {
     // grab model
     EntityTableModel model = table.getModel();
     
+    // identify column/row for this page
+    // FIXME have to identify correct col/row/page selection
+    int 
+      scol = page.x == 0 ? 0 : 6,
+      srow = 0; 
+    
     // draw header
     Shape clip;
 
     int y = 0;
     int x = 0;
-    for (int col=0,cols=model.getColumnCount();col<cols;col++) {
-      String header = model.getColumnName(col);
+    for (int col=scol,cols=model.getColumnCount();col<cols;col++) {
       Rectangle r = new Rectangle(x, 0, colWidths[col], headerHeight); 
-      PropertyRenderer.DEFAULT_RENDERER.render(g, r, null, header, PropertyRenderer.PREFER_TEXT, dpi);
+      header.setValue(model.getColumnName(col));
+      render(g, r, header, dpi);
       x += colWidths[col];
     }
     y += headerHeight;
@@ -176,15 +184,11 @@ public class TableViewPrinter implements Printer {
       x = 0;
       
       // draw cols
-      for (int col=0,cols=model.getColumnCount();col<cols;col++) {
+      for (int col=scol,cols=model.getColumnCount();col<cols;col++) {
 
         // calculate space to render in
         Rectangle r = new Rectangle(x, y, colWidths[col], rowHeights[row]);
-        Property prop = model.getProperty(row, col);
-        if (prop!=null) {
-          PropertyRenderer.get(prop)
-            .render(g, r, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
-        }
+        render(g, r, model.getProperty(row, col), dpi);
         
         // increase current horizontal position
         x += colWidths[col];
@@ -202,7 +206,7 @@ public class TableViewPrinter implements Printer {
     
     // draw vertical lines
     x = 0;
-    for (int col=0,cols=model.getColumnCount();col<cols;col++) {
+    for (int col=scol,cols=model.getColumnCount();col<cols;col++) {
       x += colWidths[col];
       g.drawLine(x, 0, x, y);
     }
@@ -210,4 +214,25 @@ public class TableViewPrinter implements Printer {
     // done
   }
 
+  /**
+   * Render a property
+   */
+  private void render(Graphics2D g, Rectangle r, Property prop, Point dpi) {
+    // need property
+    if (prop==null)
+      return;
+    // grab renderer and render
+    PropertyRenderer.get(prop).render(g, r, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
+    // done
+  }
+  
+  /**
+   * Page content
+   */
+  private class Page {
+    
+    int row, col, rows, cols;
+    
+  } //Page
+  
 } //TreePrintRenderer

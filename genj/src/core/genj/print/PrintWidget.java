@@ -20,6 +20,7 @@
 package genj.print;
 
 import genj.util.ActionDelegate;
+import genj.util.Dimension2d;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
@@ -162,9 +163,9 @@ public class PrintWidget extends JPanel {
           // draw content
           ug.pushTransformation();
           ug.pushClip(imageable);
-          ug.translate(imageable.getMinX() - (x*imageable.getWidth()), imageable.getMinY() - (y*imageable.getHeight()));
+          ug.translate(imageable.getMinX(), imageable.getMinY());
           ug.getGraphics().scale(zoom,zoom);
-          renderer.renderPage(ug.getGraphics(), new Point(x,y), dpiScreen, true);
+          renderer.renderPage(ug.getGraphics(), new Point(x,y), new Dimension2d(imageable), dpiScreen, true);
           ug.popTransformation();
           ug.popClip();
           // next   

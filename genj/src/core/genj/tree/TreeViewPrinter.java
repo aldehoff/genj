@@ -67,8 +67,15 @@ public class TreeViewPrinter implements Printer {
   /**
    * @see genj.print.PrintRenderer#renderPage(java.awt.Point, gj.ui.UnitGraphics)
    */
-  public void renderPage(Graphics2D g, Point page, Point dpi, boolean preview) {
+  public void renderPage(Graphics2D g, Point page, Dimension2D pageSizeInInches, Point dpi, boolean preview) {
 
+    // translate to correct page
+    new UnitGraphics(g, dpi.x, dpi.y).translate(
+      -page.x*pageSizeInInches.getWidth(), 
+      -page.y*pageSizeInInches.getHeight()
+    );
+
+    // prepare rendering on mm/10 space
     UnitGraphics graphics = new UnitGraphics(g, dpi.x/2.54F*0.1D, dpi.y/2.54F*0.1D);
 
     ContentRenderer renderer = new ContentRenderer();

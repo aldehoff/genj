@@ -42,8 +42,9 @@ public interface Printer {
   
   /**
    * Renders page content (x,y) on given context (dots) and 
-   * resolution (dpi) - g is clipped and translated already
+   * resolution (dpi) - (0,0) in graphics space is the top-left
+   * location of the printable area of given page
    */  
-  public void renderPage(Graphics2D g, Point page, Point dpi, boolean preview);
+  public void renderPage(Graphics2D g, Point page, Dimension2D pageSizeInInches, Point dpi, boolean preview);
   
 } //PrintRenderer
