@@ -335,6 +335,13 @@ public abstract class Property implements Comparable {
   }
 
   /**
+   * Test properties
+   */
+  public boolean isProperties(List props) {
+    return children.containsAll(props);
+  }
+  
+  /**
    * Returns this property's properties (all children)
    */
   public Property[] getProperties() {
