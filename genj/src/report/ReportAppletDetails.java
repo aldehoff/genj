@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.9 2002-04-29 04:12:24 timmsc Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.10 2002-04-30 01:08:04 timmsc Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -202,7 +202,16 @@ public class ReportAppletDetails implements Report {
     }
     
     String tag = prop.getTag();
-    
+    if (tag.equals("NAME")) {
+      // Replace /Last/ with LAST
+      int slashPos = value.indexOf('/');
+      if (slashPos >= 0) {
+        String first = value.substring(0, slashPos);
+        String last = value.substring(slashPos + 1, value.length() - 1);
+        value = first + last.toUpperCase();
+      }
+    }
+
     if ( propertiesToLink.contains(tag) ) {
       out.println("<tr><td valign=TOP><b><u>"
                   + Gedcom.getResources().getString(prop.getTag() + ".name")
@@ -227,15 +236,38 @@ public class ReportAppletDetails implements Report {
    */
   private void exportProperty(String tag, String value, PrintWriter out, int level) {
 
-    out.print("<tr><td valign=TOP>");
+    String spanColumns = "";
+    if ( (level == 0) && (value.length() == 0) ) {
+      spanColumns = "colspan = 2";
+    }
+
+    out.print("<tr><td valign=TOP " + spanColumns + ">");
 
     // a loop for multi lines
     exportSpaces(out, level);
     
     
-    out.print("<b><u>" + 
+    String markupBeg;
+    String markupEnd;
+    if ( level == 0 ) {
+      // bold underlined
+      markupBeg = "<b><u>";
+      markupEnd = "</u></b>";
+    }
+    else if ( level == 1 ) {
+      // italic underlined
+      markupBeg = "<i><u>";
+      markupEnd = "</u></i>";
+    }
+    else {
+      // italic
+      markupBeg = "<i>";
+      markupEnd = "</i>";
+    }
+
+    out.print(markupBeg + 
               Gedcom.getResources().getString(tag + ".name") +
-              "</u></b></td><td><pre>");
+              markupEnd + "</td><td><pre>");
 
     value = value.trim();
 
