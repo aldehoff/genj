@@ -12,7 +12,6 @@ Future
   O A better method of assigning IDs to entities (a system that means a little bit more than randomness)
   O Searching capability (incl. regular expressions)
   O Cut/Copy/Paste for properties in the EditView
-  O New Tool - run a command line script
   O OBJE-FILE reference should allow to start external viewer via mouse-click
   O Configurable selection of Views in Applet
   O Reports should translate dates to a more readable format (e.g. MAR becomes March)
@@ -33,6 +32,7 @@ Future
 
 1.9 - Aug xx 2002
 
+  N New Report ReportExec which allows to execute a command line tool
   I EditView Buttons are now always visible (shrinking horizontally) when component is sized too small
   N User can choose Look&Feel (with Skin/Theme support) through AboutDialog (download genj_lnf-x.y.zip to enable)
   N A new PropertySex is now unset when created - the user has to choose male/female eventually
