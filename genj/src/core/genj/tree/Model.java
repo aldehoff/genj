@@ -449,11 +449,13 @@ public class Model implements GedcomListener {
 
     // parse and layout    
     try {
+      // make sure families only when root is not family
+      boolean isFams = isFamilies || root instanceof Fam;
       // parse its descendants
-      Parser descendants = Parser.getInstance(false, isFamilies, this, metrics);
+      Parser descendants = Parser.getInstance(false, isFams, this, metrics);
       bounds.add(layout(descendants.parse(root), true));
       // parse its ancestors 
-      bounds.add(layout(descendants.align(Parser.getInstance(true, isFamilies, this, metrics).parse(root)), false));
+      bounds.add(layout(descendants.align(Parser.getInstance(true, isFams, this, metrics).parse(root)), false));
     } catch (LayoutException e) {
       e.printStackTrace();
       root = null;
