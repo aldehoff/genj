@@ -19,6 +19,7 @@
  */
 package genj.util.swing;
 
+import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 
 import java.awt.BorderLayout;
@@ -26,6 +27,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
@@ -124,7 +127,7 @@ public class FontChooser extends JPanel {
   /**
    * Calculate all available fonts
    */
-  private Font[] getAllFonts() {
+  private static Font[] getAllFonts() {
 
     // initialize families
     if (families==null)
@@ -140,100 +143,45 @@ public class FontChooser extends JPanel {
     return values;
   }
   
-//  /**
-//   * Font list
-//   */
-//  private static class Model extends AbstractListModel implements ComboBoxModel{
-//    
-//    /** list of all font families */
-//    private static String[] families = null;
-//
-//    /** values */
-//    private Object[] values;
-//    
-//    /** selection */
-//    private int selection;
-//    
-//    /**
-//     * Constructor
-//     */
-//    private Model() {
-//      // grab families once
-//  System.out.println("1");
-//      if (families==null)
-//        families = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-//  System.out.println("/1");
-//      // copy families into values
-//      values = new Object[families.length];
-//      System.arraycopy(families, 0, values, 0, families.length);
-//      
-//      // test loop
-//      System.out.println("2");
-//      for (int i = 0; i < values.length; i++) {
-//        values[i] = new Font(values[i].toString(), 0, 12);
-//      }
-//      System.out.println("/2");
-//      // done
-//    }
-//    
-//    /**
-//     * Size
-//     */
-//    public int getSize() {
-//      return values.length;
-//    }
-//    
-//    /**
-//     * Element
-//     */
-//    public Object getElementAt(int index) {
-//      return values[index];
-//    }
-//    
-//    /**
-//     * Selection
-//     */
-//    public Font getSelectedFont(int size) {
-//      Object font = getSelectedItem();
-//      // none
-//      if (font==null)
-//        return null;
-//      // Font
-//      if (font instanceof Font)
-//        return ((Font)font).deriveFont((float)size);
-//      // FontFamily      
-//      return new Font(font.toString(), 0, size);
-//    }
-//    
-//    /**
-//     * Selection
-//     */
-//    public void setSelectedItem(Object set) {
-//      // translate to family
-//      if (set instanceof Font)
-//        set = ((Font)set).getFamily();
-//      // look for it
-//      synchronized (values) {
-//        for (int i = 0; i < values.length; i++) {
-//          Object font = values[i];
-//          // font or font family name in model?
-//          if ( (font instanceof Font&&((Font)font).getFamily().equals(set)) || font.equals(set))  {
-//            selection = i;
-//            return;
-//          }
-//        }
-//      }
-//      // done
-//    }
-//
-//    /**
-//     * Selection
-//     */    
-//    public Object getSelectedItem() {
-//      return selection<0 ? null : values[selection];
-//    }
-//
-//  } // Model
+  /**
+   * test
+   */
+  public static void main(String[] args) {
+    
+    Debug.log(Debug.INFO, FontChooser.class, "Running font test");
+    Debug.flush();
+    
+    Font[] fonts = getAllFonts();
+
+    Debug.log(Debug.INFO, FontChooser.class, "Found "+fonts.length+" fonts");
+    Debug.flush();
+    
+    String txt = "GenealogyJ";
+    FontRenderContext ctx = new FontRenderContext(null, false, false);
+    
+    for (int f = 0; f < fonts.length; f++) {
+      Font font = fonts[f];
+      
+      Debug.log(Debug.INFO, FontChooser.class, "Testing font "+font+"...");
+      Debug.flush();
+      
+      LineMetrics lm = font.getLineMetrics(txt, ctx);
+      lm.getAscent();
+      lm.getBaselineIndex();
+      lm.getDescent();
+      lm.getHeight();
+      lm.getLeading();
+      lm.getStrikethroughOffset();
+      lm.getUnderlineOffset();
+      lm.getUnderlineThickness();
+      
+      Debug.log(Debug.INFO, FontChooser.class, "OK");
+      Debug.flush();
+      
+    }
+    
+    // done
+  }
   
   private static class Renderer extends DefaultListCellRenderer {
     
