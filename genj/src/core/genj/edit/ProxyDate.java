@@ -20,7 +20,7 @@
 package genj.edit;
 
 import genj.gedcom.PropertyDate;
-import genj.util.swing.DateEntry;
+import genj.util.swing.DateWidget;
 
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -40,7 +40,7 @@ class ProxyDate extends Proxy implements ItemListener {
   private boolean formatChanged = false;
   private int currentDate;
   private JComboBox combo;
-  private DateEntry deOne, deTwo;
+  private DateWidget deOne, deTwo;
 
   private static final boolean drange[] = {
     false,
@@ -69,11 +69,11 @@ class ProxyDate extends Proxy implements ItemListener {
     p.setFormat(combo.getSelectedIndex());
 
     // Remember One
-    p.getStart().set(deOne.getDay(),deOne.getMonth(),deOne.getYear());
+    p.getStart().set(deOne.getValue());
 
     // Remember Two
     if ( p.isRange() )
-      p.getEnd().set(deTwo.getDay(),deTwo.getMonth(),deTwo.getYear());
+      p.getEnd().set(deTwo.getValue());
 
     // Done
   }
@@ -122,11 +122,11 @@ class ProxyDate extends Proxy implements ItemListener {
     panel.add(combo);
     combo.addItemListener(this);
 
-    deOne = new DateEntry(p.getStart().getDay(),p.getStart().getMonth(),p.getStart().getYear());
+    deOne = new DateWidget(p.getStart());
     deOne.setAlignmentX(0);
     panel.add(deOne);
 
-    deTwo = new DateEntry(p.getEnd().getDay(),p.getEnd().getMonth(),p.getEnd().getYear());
+    deTwo = new DateWidget(p.getEnd());
     deTwo.setAlignmentX(0);
 
     combo.setSelectedIndex( p.getFormat() );

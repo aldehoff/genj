@@ -194,54 +194,6 @@ public class PropertyDate extends Property {
   }
 
   /**
-   * Helper that parses date as string for validity
-   */
-  private boolean parseDate(String string, StringTokenizer tokens) {
-
-    // No words -> no date
-    if (tokens.countTokens()==0)
-      return false;
-
-    // Look for format token 'FROM', 'AFT', ...
-    String token = tokens.nextToken();
-    for (format=0;format<formats.length;format++) {
-
-      // .. found modifier (prefix is enough: e.g. ABT or ABT.)
-      if ( (formats[format].start.length()>0) && token.startsWith(formats[format].start) ) {
-
-        // ... no range (TO,ABT,CAL,...) -> parse PointInTime from remaining tokens
-        if ( !formats[format].isRange ) 
-          return start.set(tokens);
-
-        // ... is range (FROM-TO,BET-AND)
-        String grab=EMPTY_STRING;
-        while (tokens.hasMoreTokens()) {
-          // .. TO or AND ? -> parse 2 PointInTimes from grabbed and remaining tokens
-          token = tokens.nextToken();
-          if ( token.startsWith(formats[format].end) ) {
-            return start.set(new StringTokenizer(grab)) && end.set(tokens);
-          }
-          // .. grab more
-          grab += " " + token + " ";
-        }
-        
-        // ... wasn't so good after all
-        // NM 20021009 reset data - FROM 1 OCT 2001 will then
-        // fallback to FROM even after FROMTO was checked
-        tokens = new StringTokenizer(string);
-        token = tokens.nextToken();
-      }
-      // .. try next one
-    }
-
-    // ... no valid type found ?
-    format = DATE;
-    
-    // .. look for date from first to last word
-    return start.set(new StringTokenizer(string));
-  }
-
-  /**
    * Accessor Format
    */
   public void setFormat(int newFormat) {
@@ -276,20 +228,60 @@ public class PropertyDate extends Property {
     format = DATE;
     dateAsString=null;
 
-    // Empty Date ?
-    StringTokenizer tokens = new StringTokenizer(newValue);
-    if ( tokens.countTokens() == 0 ) {
-      return;
-    }
-
-    // Parsing wrong ?
-    if ( parseDate(newValue,tokens) == false ){
+    // parse and keep string if no good
+    if (!parseDate(newValue))
       dateAsString=newValue;
-      return;
+
+    // done
+  }
+
+  /**
+   * Helper that parses date as string for validity
+   */
+  private boolean parseDate(String text) {
+
+    // empty string is fine
+    StringTokenizer tokens = new StringTokenizer(text);
+    if (tokens.countTokens()==0)
+      return true;
+
+    // Look for format token 'FROM', 'AFT', ...
+    String token = tokens.nextToken();
+    for (format=0;format<formats.length;format++) {
+
+      // .. found modifier (prefix is enough: e.g. ABT or ABT.)
+      if ( (formats[format].start.length()>0) && token.startsWith(formats[format].start) ) {
+
+        // ... no range (TO,ABT,CAL,...) -> parse PointInTime from remaining tokens
+        if ( !formats[format].isRange ) 
+          return start.parseDate(tokens);
+
+        // ... is range (FROM-TO,BET-AND)
+        String grab=EMPTY_STRING;
+        while (tokens.hasMoreTokens()) {
+          // .. TO or AND ? -> parse 2 PointInTimes from grabbed and remaining tokens
+          token = tokens.nextToken();
+          if ( token.startsWith(formats[format].end) ) {
+            return start.parseDate(new StringTokenizer(grab)) && end.parseDate(tokens);
+          }
+          // .. grab more
+          grab += " " + token + " ";
+        }
+        
+        // ... wasn't so good after all
+        // NM 20021009 reset data - FROM 1 OCT 2001 will then
+        // fallback to FROM even after FROMTO was checked
+        tokens = new StringTokenizer(text);
+        token = tokens.nextToken();
+      }
+      // .. try next one
     }
 
-    // Everything o.k.
-    return;
+    // ... format is a simple date
+    format = DATE;
+    
+    // .. look for date from first to last word
+    return start.parseDate(new StringTokenizer(text));
   }
 
   /**
@@ -404,13 +396,6 @@ public class PropertyDate extends Property {
      */
     private void reset() {
       set(-1,-1,-1);
-    }
-    
-    /**
-     * Setter
-     */
-    private void set(PIT other) {
-      set(other.day, other.month, other.year);
     }
     
   } // class PointInTime

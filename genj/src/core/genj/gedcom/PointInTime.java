@@ -27,18 +27,31 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
- * A point in time
+ * A point in time - either hebrew, roman, frenchr, gregorian or julian
  */
 public abstract class PointInTime implements Comparable {
 
+  /** calendars */
+  private final static String
+    CALENDARS[] = {  
+      "@#DHEBREW@",
+      "@#DROMAN@" ,
+      "@#DFRENCH R@",
+      "@#DGREGORIAN@", 
+      "@#DJULIAN@"
+    };
+
   /** month names */
-  private final static String MONTHS[] = {"JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
+  private final static String 
+    MONTHS[] = { "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC" },
+    MONTHS_HEBR[] = { "TSH","CSH","KSL","TVT","SHV","ADR","ADS","NSN","IYR","SVN","TMZ","AAV","ELL" },
+    MONTHS_FREN[] = { "VEND","BRUM","FRIM","NIVO","PLUV","VENT","GERM","FLOR","PRAI","MESS","THER","FRUC","COMP" };
 
   /** localized months */
   private static Map
     localizedMonthNames = new HashMap(),
     abbreviatedMonthNames = new HashMap(); 
-  
+    
   /**
    * initialize months - loop through month names, remember localized value
    * and calculate abbreviation (either first 3 characters or up to vertical
@@ -110,7 +123,7 @@ public abstract class PointInTime implements Comparable {
    */
   public static PointInTime getPointInTime(String string) {
     Impl result = new Impl(-1,-1,-1);
-    result.set(new StringTokenizer(string));
+    result.parseDate(new StringTokenizer(string));
     return result;
   }
   
@@ -122,42 +135,80 @@ public abstract class PointInTime implements Comparable {
   }
   
   /**
-   * Setter
+   * Setter 
    */
-  public boolean set(StringTokenizer tokens) {
-    // Number of tokens ?
-    switch (tokens.countTokens()) {
-      default : // TOO MANY
-        return false;
-      case 0 : // NONE
-        return false;
-      case 1 : // YYYY
-        try {
-          set(-1,-1,Math.max(-1,Integer.parseInt(tokens.nextToken())));
-        } catch (NumberFormatException e) {
-          break;
-        }
-        return getYear()>=0;
-      case 2 : // MMM YYYY
-        try {
-          set(-1, getMonth (tokens.nextToken()), Integer.parseInt( tokens.nextToken() ));
-        } catch (NumberFormatException e) {
-          break;
-        }
-        return getYear()>=0;
-      case 3 : // DD MMM YYYY
-        try {
-          set(
-            Integer.parseInt( tokens.nextToken() ) - 1,
-            getMonth ( tokens.nextToken() ),
-            Integer.parseInt( tokens.nextToken() )
-          );
-        } catch (NumberFormatException e) {
-          break;
-        }
-        return getYear()>=0&&getDay()>=0&&getDay()<=31;
+  public void set(PointInTime other) {
+    set(other.getDay(), other.getMonth(), other.getYear());
+  }
+  
+  /**
+   * Parse month
+   */
+  protected int parseMonth(String mmm) throws NumberFormatException {
+    for (int i=0;i<MONTHS.length;i++) {
+      if (MONTHS[i].equalsIgnoreCase(mmm)) return i;
     }
-    // didn't work
+    throw new NumberFormatException();
+  }
+  
+  /**
+   * Parse tokens into this PIT
+   */
+  protected boolean parseDate(StringTokenizer tokens) {
+
+    // no tokens no joy
+    if (!tokens.hasMoreTokens())
+      return false;
+
+    // first token might be calendar indicator
+    String first = tokens.nextToken();
+    for (int c=0;c<CALENDARS.length;c++) {
+      if (CALENDARS[c].equals(first)) {
+        if (!tokens.hasMoreTokens())
+          return false;
+        System.out.println("Found "+first);
+        first = tokens.nextToken();
+        break;
+      }
+    }
+    
+    // first is YYYY
+    if (!tokens.hasMoreTokens()) {
+        try {
+          set(-1,-1,Math.max(-1,Integer.parseInt(first)));
+        } catch (NumberFormatException e) {
+          return false;
+        }
+        return getYear()>=0;
+    }
+    
+    // have second
+    String second = tokens.nextToken();
+    
+    // first and second are MMM YYYY
+    if (!tokens.hasMoreTokens()) {
+      try {
+        set(-1, parseMonth(first), Integer.parseInt(second));
+      } catch (NumberFormatException e) {
+        return false;
+      }
+      return getYear()>=0;
+    }
+
+    // have third
+    String third = tokens.nextToken();
+    
+    // first, second and third are DD MMM YYYY
+    if (!tokens.hasMoreTokens()) {
+      try {
+        set( Integer.parseInt(first) - 1, parseMonth(second), Integer.parseInt(third));
+      } catch (NumberFormatException e) {
+        return false;
+      }
+      return getYear()>=0&&getDay()>=0&&getDay()<=31;
+    }
+
+    // wrong number of tokens
     return false;
   }
 
@@ -171,10 +222,10 @@ public abstract class PointInTime implements Comparable {
     if (year<0)
       return false;
     int month = getMonth();
-    if (month>=12)
+    if (month<-1||month>=12)
       return false;
     int day = getDay();
-    if (month<0&&day>=0)
+    if ((month<0&&day>=0)||day<-1||day>31)
       return false;
     return true;
   }
@@ -275,16 +326,6 @@ public abstract class PointInTime implements Comparable {
       result[m] = mmm;
     }
     return result;
-  }
-
-  /**
-   * Helper that transforms month to Integer
-   */
-  public static int getMonth(String mmm) throws NumberFormatException {
-    for (int i=0;i<MONTHS.length;i++) {
-      if (MONTHS[i].equalsIgnoreCase(mmm)) return i;
-    }
-    throw new NumberFormatException();
   }
 
   /**
