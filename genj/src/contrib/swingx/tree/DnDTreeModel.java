@@ -36,20 +36,22 @@ public interface DnDTreeModel extends TreeModel {
     public static final int LINK = DnDConstants.ACTION_LINK;
 
     /**
-     * Can the given children be removed from their parents.
+     * Can the given children be dragged
      * 
-     * @param children  children to test for removal
-     * @return          <code>true</code> if children can be removed
+     * @param children  children to test 
+     * @return          actions (or)
      */
-    public boolean canRemove(List children);
+    public int canDrag(List children);
 
     /**
-     * Remove children from its parent.
+     * Can the given children be dropped to the given parent.
      * 
-     * @param children   children to remove
-     * @param target     new parent if known (when dnd inside same vm)
+     * @param transferable transferable to test for drop
+     * @param parent       parent to drag to
+     * @param pivot        index to drag to
+     * @return             <code>true</code> if drop ok
      */
-    public void remove(List children, Object target);
+    public boolean canDrop(int action, Transferable transferable, Object parent, int index);
 
     /**
      * Create a transferable for given children
@@ -57,25 +59,25 @@ public interface DnDTreeModel extends TreeModel {
     public Transferable getTransferable(List children);
     
     /**
-     * Can the given children be inserted to the given parent.
+     * Perform drag
      * 
-     * @param transferable transferable to test for insertion
-     * @param parent       parent of children to insert
-     * @return             <code>true</code> if insert is acceptable
+     * @param mode       copy, link or move
+     * @param children   children to remove
+     * @param parent     drop parent if known (when dnd inside same vm)
+     * @param index      drop index (when dnd inside same vm)
      */
-    public boolean canInsert(Transferable transferable, Object parent, int index, int action);
+    public void drag(int mode, List children, Object parent, int index);
 
     /**
-     * Insert children to the given parent.
-     * <br>
-     * The list of children is garanteed to be ordered from top to bottom.
+     * Perform drop
      * 
+     * @param mode         copy, link or move
      * @param transferable transferable to insert
-     * @param parent       parent to insert into
-     * @param index        index for children to insert at
-     * @return             list of added children
+     * @param parent       drop parent
+     * @param pivot        drop index
+     * @return             drop result
      */
-    public List insert(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException;
+    public List drop(int mode, Transferable transferable, Object parent, int index) throws IOException, UnsupportedFlavorException;
 }
 
 

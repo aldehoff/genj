@@ -322,35 +322,29 @@ public class PropertyTreeWidget extends DnDTree {
     }
 
     /**
-     * Test for parent
+     * DND support - drag test
      */
-    private boolean isChildren(Property parent, List children) {
-      for (int c = 0; c < children.size(); c++) {
-        Property child = (Property)children.get(c);
-        if (child.getParent()!=parent) 
-          return false;
-      }
-      return true;
-    }
-    
-    /**
-     * DND support - remove test
-     */
-    public boolean canRemove(List children) {
-      return true;
+    public int canDrag(List children) {
+      return COPY | MOVE;
     }
 
     /**
-     * DND support - remove nodes 
+     * DND support - drag
      */
-    public void remove(List children, Object target) {
+    public void drag(int mode, List children, Object parent, int index) {
       
-      Property newParent = (Property)target;
+      // do nothing on copy
+      if (mode==COPY)
+        return;
       
-      // check if all children are of the same parent a.k.a. target
-      // then we simply don't remove them in the first place - this
-      // will only work in same-vm-cases since otherwise target==null
-      boolean isShuffle = newParent!=null&&isChildren(newParent, children);
+      // check if this is an in-parent move - we'll leave the
+      // shuffle of the children in parent to drop in that case
+      Property newParent = (Property)parent;
+      if (newParent!=null&&newParent.isProperties(children)) {
+        // FIXME
+//        System.out.println("DRAG I P");
+//        return;
+      }
       
       // start transaction for our gedcom
       gedcom.startTransaction();
@@ -382,9 +376,9 @@ public class PropertyTreeWidget extends DnDTree {
     }
 
     /**
-     * DND support - insert test
+     * DND support - drop test
      */
-    public boolean canInsert(Transferable transferable, Object parent, int index, int action) {
+    public boolean canDrop(int action, Transferable transferable, Object parent, int index) {
       // copy or move
       if (!(action==COPY||action==MOVE))
         return false;
@@ -392,20 +386,30 @@ public class PropertyTreeWidget extends DnDTree {
         || transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR);       
     }
     /**
-     * DND support - insert
+     * DND support - drop
      */
-    public List insert(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException {
+    public List drop(int action, Transferable transferable, Object parent, int index) throws IOException, UnsupportedFlavorException {
 
       // start transaction for our gedcom?
       if (!gedcom.isTransaction())
         gedcom.startTransaction();
       
-      // perform copy/move 
-//      Object o1 = transferable.getTransferData(PropertyTransferable.GENJ_FLAVOR);
+      // is this an in-parent move?
+      Property newParent = (Property)parent;
+      if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
+        List children = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
+        if (newParent.isProperties(children)) {
+          System.out.println("DROP I P");
+          // FIXME
+//          gedcom.endTransaction();
+//          return children;
+        }
+      }
       
+      // paste text into new parent
       try {
         String s = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
-        return GedcomReader.read(new StringReader(s), (Property)parent, index);
+        return GedcomReader.read(new StringReader(s), newParent, index);
       } finally {
         gedcom.endTransaction();      
       }

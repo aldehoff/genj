@@ -55,7 +55,16 @@ public class DefaultDnDTreeModel extends DefaultTreeModel implements DnDTreeMode
     super(root);
   }
 
-  public boolean canInsert(Transferable transferable, Object parent, int index, int action) {
+  public int canDrag(List children) {
+    for (int c = 0; c < children.size(); c++) {
+      if (((MutableTreeNode) children.get(c)).getParent() == null) {
+        return 0;
+      }
+    }
+    return MOVE;
+  }
+
+  public boolean canDrop(int action, Transferable transferable, Object parent, int index) {
     if (action!=MOVE)
       return false;
     if (transferable.isDataFlavorSupported(localFlavor))
@@ -63,15 +72,6 @@ public class DefaultDnDTreeModel extends DefaultTreeModel implements DnDTreeMode
     if (transferable.isDataFlavorSupported(serializedFlavor))
       return true;
     return false;
-  }
-
-  public boolean canRemove(List children) {
-    for (int c = 0; c < children.size(); c++) {
-      if (((MutableTreeNode) children.get(c)).getParent() == null) {
-        return false;
-      }
-    }
-    return true;
   }
 
   /**
@@ -82,21 +82,20 @@ public class DefaultDnDTreeModel extends DefaultTreeModel implements DnDTreeMode
   }
 
   /**
-   * Remove children
-   * 
-   * @param children
-   *          children to remove
+   * drag operation
    */
-  public void remove(List children, Object newParent) {
-    for (int c = children.size() - 1; c >= 0; c--) {
-      removeNodeFromParent((MutableTreeNode) children.get(c));
+  public void drag(int action, List children, Object parent, int index) {
+    if (action==MOVE) {
+	    for (int c = children.size() - 1; c >= 0; c--) {
+	      removeNodeFromParent((MutableTreeNode) children.get(c));
+	    }
     }
   }
 
   /**
-   * Insert children.
+   * drop operation
    */
-  public List insert(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException {
+  public List drop(int action, Transferable transferable, Object parent, int index) throws IOException, UnsupportedFlavorException {
     
     if (action != MOVE) 
       throw new IllegalArgumentException("action not supported: " + action);

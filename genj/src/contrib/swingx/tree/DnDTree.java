@@ -260,22 +260,24 @@ public class DnDTree extends JTree implements Autoscroll {
     private List nodes;
 
     /**
-     * Enabled source actions depending on the possibility to remove the currently selected nodes from the model.
+     * Enabled source actions 
      */
     public void valueChanged(TreeSelectionEvent e) {
-      int actions = DnDConstants.ACTION_COPY | DnDConstants.ACTION_LINK;
 
+      int actions = 0;
+      
       DnDTreeModel dndModel = getDnDModel();
       if (dndModel != null) {
+        
         TreePath[] paths = getSelectionPaths();
         if (paths != null && paths.length > 0) {
+          
           List children = new ArrayList();
           for (int p = 0; p < paths.length; p++) {
             children.add(paths[p].getLastPathComponent());
           }
-          if (dndModel.canRemove(children)) {
-            actions = actions | DnDConstants.ACTION_MOVE;
-          }
+          
+          actions = dndModel.canDrag(children);
         }
       }
 
@@ -346,17 +348,16 @@ public class DnDTree extends JTree implements Autoscroll {
     public void dragDropEnd(DragSourceDropEvent dsde) {
       sourceDragSourceHandler = null;
 
-      dragDropEnd(dsde.getDropSuccess(), null, dsde.getDropAction());
+      dragDropEnd(dsde.getDropAction(), dsde.getDropSuccess(), null, -1);
     }
 
     /**
      * On successful drop of a move action the nodes are removed.
      */
-    protected void dragDropEnd(boolean success, Object target, int action) {
+    protected void dragDropEnd(int action, boolean success, Object target, int index) {
       if (nodes != null) {
-        if (success && action == DnDConstants.ACTION_MOVE) {
-          ((DnDTreeModel) getModel()).remove(nodes, target);
-        }
+        if (success)
+          ((DnDTreeModel)getModel()).drag(action, nodes, target, index);
         nodes = null;
       }
     }
@@ -378,7 +379,7 @@ public class DnDTree extends JTree implements Autoscroll {
 
     private TreePath parentPath;
 
-    private int childIndex = 0;
+    private int childIndex;
 
     private Rectangle indicator;
 
@@ -440,13 +441,14 @@ public class DnDTree extends JTree implements Autoscroll {
 
     protected boolean canInsert(Transferable transferable, int action) {
 
+      // gotta have a model
       DnDTreeModel model = getDnDModel();
       if (model == null)
         return false;
 
+      // ask model
       Object parent = parentPath.getLastPathComponent();
-
-      return model.canInsert(transferable, parent, childIndex, action);
+      return model.canDrop(action, transferable, parent, childIndex);
     }
 
     protected boolean insert(Transferable transferable, int action) {
@@ -456,12 +458,12 @@ public class DnDTree extends JTree implements Autoscroll {
 
       // first tell source handler if known (same VM)
       if (sourceDragSourceHandler != null) 
-        sourceDragSourceHandler.dragDropEnd(true, parent, action);
+        sourceDragSourceHandler.dragDropEnd(action, true, parent, childIndex);
 
       // let model insert transferable
       List children;
       try {
-        children = model.insert(transferable, parent, childIndex, action);
+        children = model.drop(action, transferable, parent, childIndex);
       } catch (Throwable t) {
         return false;
       }
@@ -479,7 +481,7 @@ public class DnDTree extends JTree implements Autoscroll {
 
     private void update(Point point) {
       TreePath oldParentPath = parentPath;
-
+    
       TreePath path = getClosestPathForLocation(point.x, point.y);
       if (path == null) {
         parentPath = null;
@@ -493,9 +495,9 @@ public class DnDTree extends JTree implements Autoscroll {
         parentPath = path.getParentPath();
         childIndex = getModel().getIndexOfChild(parentPath.getLastPathComponent(), path.getLastPathComponent());
         indicator = getPathBounds(path);
-
+    
         if ((getModel().isLeaf(path.getLastPathComponent())) || (point.y < indicator.y + indicator.height * 1 / 4) || (point.y > indicator.y + indicator.height * 3 / 4 && !isExpanded(path))) {
-
+    
           if (point.y > indicator.y + indicator.height / 2) {
             indicator.y = indicator.y + indicator.height;
             childIndex++;
@@ -509,9 +511,9 @@ public class DnDTree extends JTree implements Autoscroll {
           childIndex = 0;
         }
       }
-
+    
       repaint();
-
+    
       if (parentPath == null) {
         if (timer.isRunning()) {
           timer.stop();
@@ -567,6 +569,16 @@ public class DnDTree extends JTree implements Autoscroll {
       }
     }
 
+    public void treeStructureChanged(TreeModelEvent e) {
+      if (parentPath != null) {
+        TreePath path = e.getTreePath();
+    
+        if (path.equals(parentPath)) {
+          childIndex = 0;
+        }
+      }
+    }
+
     public void treeNodesChanged(TreeModelEvent e) {
     }
 
@@ -576,7 +588,7 @@ public class DnDTree extends JTree implements Autoscroll {
     public void treeNodesRemoved(TreeModelEvent e) {
       if (parentPath != null) {
         TreePath path = e.getTreePath();
-
+    
         if (path.equals(parentPath)) {
           int[] childIndices = e.getChildIndices();
           for (int i = 0; i < childIndices.length; i++) {
@@ -584,16 +596,6 @@ public class DnDTree extends JTree implements Autoscroll {
               childIndex--;
             }
           }
-        }
-      }
-    }
-
-    public void treeStructureChanged(TreeModelEvent e) {
-      if (parentPath != null) {
-        TreePath path = e.getTreePath();
-
-        if (path.equals(parentPath)) {
-          childIndex = 0;
         }
       }
     }
