@@ -20,7 +20,7 @@
  * About Menu class - Feedback
  * This class creates the content on the Feedback tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.4 2002-05-18 18:37:52 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.5 2002-05-18 19:57:45 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.1
  *
@@ -33,6 +33,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 // Import for layout manager.
 import java.awt.*;
+import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 
@@ -46,7 +47,7 @@ public class FeedbackPanel extends JPanel
   private JPanel panelUp;
   private JTextArea ta1Panel1;
   
-  // variables for panelBottom
+  // variables for panelMiddle
   private JPanel panelMiddle;
   private JTextArea ta1Panel2;
   
@@ -59,7 +60,7 @@ public class FeedbackPanel extends JPanel
   {  // Opens constructor
     // Sets the layout by instantiating a BorderLayout container in the setLayout method
     setLayout(new BorderLayout());
-    // Sets the background color for this authors panel object
+    // Sets the background color for this feedback panel object
 //    setBackground(Color.white);
     
     // Call method to build Panel 1 - panelUp
@@ -91,6 +92,7 @@ public class FeedbackPanel extends JPanel
     ta1Panel1.setLineWrap(true);
     ta1Panel1.setWrapStyleWord(true);
     ta1Panel1.setEditable(false);
+    // We add an empty border
     ta1Panel1.setBorder(new EmptyBorder(3, 3, 3, 3));
     panelUp.add(ta1Panel1, BorderLayout.CENTER);
   }
@@ -101,9 +103,13 @@ public class FeedbackPanel extends JPanel
     panelMiddle.setBackground(Color.white);
     panelMiddle.setBorder(BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab3.text2.title")));
     ta1Panel2 = new JTextArea(getSystemInfo());
+    // Sets the font face and size
+    ta1Panel2.setFont(new Font("Times-Roman", Font.PLAIN, 12));
+    // Line wrap is set for the text area and it is not editable
     ta1Panel2.setLineWrap(true);
     ta1Panel2.setWrapStyleWord(true);
     ta1Panel2.setEditable(true);
+    // We add an empty border
     ta1Panel2.setBorder(new EmptyBorder(3, 3, 3, 3));
     JScrollPane jspta1 = new JScrollPane(ta1Panel2);
     panelMiddle.add(jspta1, BorderLayout.CENTER);
@@ -115,12 +121,16 @@ public class FeedbackPanel extends JPanel
     panelBottom.setLayout(new FlowLayout(FlowLayout.LEFT));
     panelBottom.setBackground(Color.white);
     b1Panel3 = new JButton(App.resources.getString("cc.about.tab3.send.button"));
+    b1Panel3.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        // Here we have to write code to perform an action
+      }
+    });
     panelBottom.add(b1Panel3);
   }
   
     // This method gets the User's system info
-  public static String getSystemInfo()
-  {
+  public static String getSystemInfo() {
    	Properties p = System.getProperties();
     StringBuffer sb = new StringBuffer();
    	sb.append(App.resources.getString("cc.about.tab3.text2.1"));
