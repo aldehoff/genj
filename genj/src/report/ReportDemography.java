@@ -7,6 +7,7 @@
  */
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.PropertyAge;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertySex;
 import genj.gedcom.time.Delta;
@@ -96,7 +97,7 @@ public class ReportDemography extends Report {
     //   instead of stacked
     // + isVertical makes the main axis for the categories go from top
     //   to bottom
-    showChartToUser(title, sheet, new DecimalFormat("#; #"), true, true);
+    showChartToUser(title, PropertyAge.getLabelForAge(), sheet, new DecimalFormat("#; #"), true, true);
       
     // done
   }

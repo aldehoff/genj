@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.55 $ $Author: nmeier $ $Date: 2004-12-08 17:01:08 $
+ * $Revision: 1.56 $ $Author: nmeier $ $Date: 2004-12-08 19:39:50 $
  */
 package genj.report;
 
@@ -305,10 +305,10 @@ public abstract class Report implements Cloneable {
   /**
    * Helper method that shows a chart to the user
    */
-  public final void showChartToUser(String title, CategorySheet sheet, NumberFormat format, boolean isStacked, boolean isVertical) {
+  public final void showChartToUser(String title, String labelCatAxis, CategorySheet sheet, NumberFormat format, boolean isStacked, boolean isVertical) {
 
     // wrap into JFreeChart
-    CategoryAxis categoryAxis = new CategoryAxis();
+    CategoryAxis categoryAxis = new CategoryAxis(labelCatAxis);
     NumberAxis valueAxis = new NumberAxis();
     valueAxis.setNumberFormatOverride(format);
 
