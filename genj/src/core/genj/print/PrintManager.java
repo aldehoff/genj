@@ -108,7 +108,7 @@ public class PrintManager {
 
   /**
    * Our own task for printing   */  
-  /*package*/ class PrintTask {
+  /*package*/ class PrintTask implements Printable {
     
     /** our print job */
     private PrinterJob job;
@@ -121,6 +121,9 @@ public class PrintManager {
     
     /** the current renderer */
     private Printer renderer;
+    
+    /** pages */
+    private Point[] pageSequence;
     
     /**
      * Constructor     */
@@ -143,8 +146,27 @@ public class PrintManager {
         return;
       }
 
+      // calculate pages
+      Point pages = renderer.calcPages(
+        new Point2D.Double(pageFormat.getImageableWidth(),pageFormat.getImageableHeight()),
+        resolution
+      );   
+
+      // safety check
+      if (pages.x==0||pages.y==0) 
+        throw new IllegalArgumentException("Renderer returned zero pages");
+      
+      // setup pages
+      pageSequence = new Point[pages.x*pages.y];
+      int i = 0;
+      for (int x=0; x<pages.x; x++) {
+        for (int y=0; y<pages.y; y++) {
+          pageSequence[i++] = new Point(x,y);         
+        }
+      }
+
       // glue to us as the printable     
-      job.setPrintable(new PrintableImpl(pageFormat, renderer), pageFormat);
+      job.setPrintable(this, pageFormat);
       
       // call
       try {
@@ -195,51 +217,6 @@ public class PrintManager {
       // preserve page format
       registry.put("printer.orientation", pageFormat.getOrientation());
       // done            
-      if ( getPageFormat().getOrientation() == PageFormat.LANDSCAPE)
-       System.out.println("LANDSCAPE");
-      else
-       System.out.println("PORTRAIT");
-    }
-    
-  } //PrintTask
-
-  /**
-   * PrintManager   */
-  private static class PrintableImpl implements Printable {
-    
-    /** renderer we use */
-    private Printer renderer;
-    
-    /** pages */
-    private Point[] pageSequence;
-    
-    /**
-     * Constructor     */
-    /*package*/ PrintableImpl(PageFormat pageFormat, Printer rendErer) {
-
-      // remember renderer
-      renderer = rendErer;
-      
-      // calculate pages
-      Point pages = renderer.calcPages(
-        new Point2D.Double(pageFormat.getImageableWidth(),pageFormat.getImageableHeight()),
-        resolution
-      );   
-
-      // safety check
-      if (pages.x==0||pages.y==0) 
-        throw new IllegalArgumentException("Renderer returned zero pages");
-      
-      // setup pages
-      pageSequence = new Point[pages.x*pages.y];
-      int i = 0;
-      for (int x=0; x<pages.x; x++) {
-      	for (int y=0; y<pages.y; y++) {
-          pageSequence[i++] = new Point(x,y);       	
-        }
-      }
-
-      // ready      
     }
     
     /**
@@ -272,39 +249,6 @@ public class PrintManager {
 
     }
 
-  } //PrintableImpl  
-
-//  /**
-//   * TestRenderer//   */
-//  private class TestRenderer implements PrintRenderer {
-//    /**
-//     * @see genj.print.PrintRenderer#getNumPages(java.awt.geom.Point2D)
-//     */
-//    public Point getNumPages(Point2D pageSize) {
-//      System.out.println(pageSize);
-//      return new Point(3,2);
-//    }
-//    /**
-//     * @see genj.print.PrintRenderer#renderPage(java.awt.Point, gj.ui.UnitGraphics)
-//     */
-//    public void renderPage(Point page, UnitGraphics g) {
-//
-//      Rectangle2D clip = g.getClip();
-//      g.translate(
-//        clip.getX() + clip.getWidth()/2,
-//        clip.getY() + clip.getHeight()/2
-//      );
-//
-//      g.draw(new Rectangle2D.Double(-21.5/4, -28.0/4, 21.5/2, 28.0/2),0,0,false);
-//      g.draw("Page x="+page.x, 0, 0, 0.0D);
-//      g.draw("Page y="+page.y, 0, 0, 1.0D);
-//      
-//      int h = g.getFontMetrics().getHeight();
-//      
-//      g.draw(-21.5/4, 0, 21.5/4, 0, 0, -h/2);
-//      g.draw(-21.5/4, 0, 21.5/4, 0, 0, h/2);
-//      
-//    }
-//  } //TestRenderer
+  } //PrintTask
 
 } //PrintManager
