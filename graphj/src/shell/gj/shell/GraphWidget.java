@@ -494,8 +494,8 @@ public class GraphWidget extends JPanel {
     /** callback */
     public void mouseMoved(MouseEvent e) {
       fac.setLocation(
-        Math.max(0.1,Math.abs(e.getX()-pos.x)/dim.w*2),
-        Math.max(0.1,Math.abs(e.getY()-pos.y)/dim.h*2)
+        Math.max(0.1,Math.abs(content.getX(e)-pos.x)/dim.w*2),
+        Math.max(0.1,Math.abs(content.getY(e)-pos.y)/dim.h*2)
       );
       // show it
       repaint();

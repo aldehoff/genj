@@ -46,7 +46,7 @@ import gj.util.*;
 /**
  * A Layout for trees
  */
-public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
+public class TreeLayout extends AbstractLayout implements Layout {
 
   /** padding between generations */
   private double latPadding = 20;
@@ -67,19 +67,19 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
   /*package*/ boolean isLatAlignmentEnabled = false;
   
   /** current node options */
-  /*package*/ NodeOptions nodeOptions = new DefaultNodeOptions();
+  private NodeOptions nodeOptions = new DefaultNodeOptions();
 
   /** whether children should be balanced or simply stacked */
   /*package*/ boolean isBalanceChildren = true;
 
   /** whether arcs are direct or bended */
-  /*package*/ boolean isBendArcs = false;
+  private boolean isBendArcs = true;
 
   /** whether we're vertical or not (=horizontal) */
-  /*package*/ boolean isVertical = true;
+  private boolean isVertical = true;
 
   /** whether we're doing it top/down or bottom/up */
-  /*package*/ boolean isTopDown = true;
+  private boolean isTopDown = true;
 
   /** the root of the tree */
   /*package*/ Node declaredRoot = null;
@@ -300,7 +300,16 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
     latAlignment = Math.min(1D, Math.max(0D, latAlignment));
 
     // get an orientation
-    Orientation orientation = getOrientation();
+    Orientation orientn = Orientation.get(isVertical,isTopDown);
+    
+    // and a node layout
+    NodeLayout nlayout = new NodeLayout(
+      orientn, 
+      nodeOptions, 
+      isLatAlignmentEnabled,
+      orientationToggles,
+      ArcLayout.get(isBendArcs)
+    );
 
     // keep track of nodes we haven't visited yet
     Set unvisited = new HashSet(graph.getNodes());
@@ -315,7 +324,7 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
     while (true) {
 
       // create a Tree for current root
-      Tree tree = new Tree(graph,root,latPadding,orientation);
+      Tree tree = new Tree(graph,root,latPadding,orientn);
 
       // all nodes in that will be visited
       unvisited.removeAll(tree.getNodes());
@@ -323,20 +332,20 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
       // layout through root
       if (contour==null) {
         // 1st time
-        contour = new NodeLayout().applyTo(tree, this);
+        contour = nlayout.applyTo(tree);
         // move position for next tree & update bounds
         north = contour.north;
         west  = contour.west ;
         east  = contour.east ;
         south = contour.south;
       } else {
-        contour = new NodeLayout().applyTo(tree, south, west, this);
+        contour = nlayout.applyTo(tree, south, west);
         east  = Math.max(east , contour.east );
         south = contour.south;
       }
       
       // and keep the contour(s)
-      if (isDebug()) debug(contour);
+      if (isDebug()) debug(contour, orientn);
 
       // choose a new root (for a new sub-graph)
       if (isIgnoreUnreachables||unvisited.isEmpty()) break;
@@ -347,7 +356,7 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
 
 
     // Lastly tell the graph its size
-    graph.getBounds().setRect(orientation.getBounds(new Contour(north,west,east,south)));
+    graph.getBounds().setRect(orientn.getBounds(new Contour(north,west,east,south)));
 
     // Done
   }
@@ -356,68 +365,53 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
    * A complement is a layout that is rotated counter-clockwise
    * (or clockwise for a complement of a complement)
    */
-  /*package*/ TreeLayout getComplement() {
-    try {
-      // a clone gives us what we need
-      TreeLayout result = (TreeLayout)clone();
-      // rotate it according to whether we're a complement or not
-      getOrientation().rotate(result, isComplement);
-      // it's a complement now ... or back to not a complement
-      result.isComplement = !isComplement;
-      // the padding flips 
-      result.lonPadding = latPadding;
-      result.latPadding = lonPadding;
-      // the layout of parents is extreme
-      result.lonAlignment = result.isComplement ? 1D : 0D;
-      // done
-      return result;
-    } catch (CloneNotSupportedException e) {
-      throw new RuntimeException("Couldn't clone TreeLayout");
-    }
-  }
-
-  /**
-   * Returns the orientation in use
-   */
-  /*package*/ Orientation getOrientation() {
-    return Orientation.get(isVertical,isTopDown);
-  }
-
-  /**
-   * Returns the arc-layout in use
-   */
-  /*package*/ ArcLayout getArcLayout() {
-    return ArcLayout.get(isBendArcs);
-  }
+//  /*package*/ TreeLayout getComplement() {
+//    try {
+//      // a clone gives us what we need
+//      TreeLayout result = (TreeLayout)clone();
+//      // rotate it according to whether we're a complement or not
+//      getOrientation().rotate(result, isComplement);
+//      // it's a complement now ... or back to not a complement
+//      result.isComplement = !isComplement;
+//      // the padding flips 
+//      result.lonPadding = latPadding;
+//      result.latPadding = lonPadding;
+//      // the layout of parents is extreme
+//      result.lonAlignment = result.isComplement ? 1D : 0D;
+//      // done
+//      return result;
+//    } catch (CloneNotSupportedException e) {
+//      throw new RuntimeException("Couldn't clone TreeLayout");
+//    }
+//  }
 
   /**
    * Adds more debugging information
    */
-  /*package*/ void debug(Contour contour) {
+  private void debug(Contour contour, Orientation orientn) {
 
     // add debugging information about contour's segments
-    Orientation o = getOrientation();
-    Path path = new Path();
+   Path path = new Path();
 
     Contour.Iterator it = new Contour.Iterator(contour, Contour.WEST);
-    Point2D a = o.getPoint2D(it.north, it.longitude);
+    Point2D a = orientn.getPoint2D(it.north, it.longitude);
     path.moveTo(a);
     do {
-      path.lineTo(o.getPoint2D(it.north, it.longitude));
-      path.lineTo(o.getPoint2D(it.south, it.longitude));
+      path.lineTo(orientn.getPoint2D(it.north, it.longitude));
+      path.lineTo(orientn.getPoint2D(it.south, it.longitude));
     } while (it.next());
     Point2D b = path.getLastPoint();
     path.moveTo(a);
 
     it = new Contour.Iterator(contour, Contour.EAST);
     do {
-      path.lineTo(o.getPoint2D(it.north, it.longitude));
-      path.lineTo(o.getPoint2D(it.south, it.longitude));
+      path.lineTo(orientn.getPoint2D(it.north, it.longitude));
+      path.lineTo(orientn.getPoint2D(it.south, it.longitude));
     } while (it.next());
     path.lineTo(b);
 
     debugShapes.add(path);
-    debugShapes.add(getOrientation().getBounds(contour));
+    debugShapes.add(orientn.getBounds(contour));
 
     // done
   }

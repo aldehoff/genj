@@ -25,39 +25,84 @@ import gj.util.ModelHelper;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The NodeLayout
  */
-/*package*/ class NodeLayout {
+/*package*/ class NodeLayout implements Cloneable {
+
+  /** the original non-cloned layout */
+  /*package*/ Orientation oorientn;
+  
+  /** the orientation in use */
+  /*package*/ Orientation orientn;
+  
+  /** the node options in use */
+  private NodeOptions nodeop;
+  
+  /** the orientation toggles */
+  private Set orientntggls;
+  
+  /** the arc layout we use */
+  private ArcLayout alayout;
+  
+  /** whether latitude alignment is enabled */
+  private boolean latalign;
+  
+  /**
+   * Constructor
+   */
+  /*package*/ NodeLayout(Orientation orientation, NodeOptions nodeOptions, boolean isLatAlignmentEnabled, Set orientationToggles, ArcLayout arcLayout) {
+    oorientn = orientation;
+    orientn = orientation;
+    nodeop  = nodeOptions;
+    latalign = isLatAlignmentEnabled;
+    if (latalign) orientntggls = new HashSet();
+    else orientntggls = orientationToggles;
+    alayout = arcLayout;
+  }
+  
+  /**
+   * Return a clone
+   */
+  /*package*/ NodeLayout getClone() {
+    try {
+      NodeLayout result = (NodeLayout)super.clone();
+      result.oorientn = oorientn;
+      return result;
+    } catch (CloneNotSupportedException e) {
+      throw new RuntimeException("Couldn't clone NodeLayout - strange");
+    }
+  }
 
   /**
    * Apply to a node - root will stay at present position
    * @param tree the tree to layout
    * @param tlayout the tree-layout
    */
-  /*package*/ Contour applyTo(Tree tree, TreeLayout tlayout) {
+  /*package*/ Contour applyTo(Tree tree) {
 
     // Save root's original position
-    Orientation o = tlayout.getOrientation();
     Node root = tree.getRoot();
     double 
-      rootLat = o.getLatitude (root.getPosition()),
-      rootLon = o.getLongitude(root.getPosition());
+      rootLat = orientn.getLatitude (root.getPosition()),
+      rootLon = orientn.getLongitude(root.getPosition());
 
     // layout starting with the root of the tree
-    Contour result = layoutNode(root, null, tree, 0, tlayout);
+    Contour result = layoutNode(root, null, tree, 0);
     
     // calculate delta to get everything back to original position
     double
-      dlat = rootLat - o.getLatitude (root.getPosition()),
-      dlon = rootLon - o.getLongitude(root.getPosition());
+      dlat = rootLat - orientn.getLatitude (root.getPosition()),
+      dlon = rootLon - orientn.getLongitude(root.getPosition());
 
     // translate the absolute contour
     result.translate(dlat,dlon);
     
     // transform relative node/arc positions into absolute ones
-    relative2absolute(tree.getRoot(), o.getPoint2D(dlat,dlon), null);
+    relative2absolute(tree.getRoot(), orientn.getPoint2D(dlat,dlon), null);
 
     // done
     return result;
@@ -69,10 +114,10 @@ import java.awt.geom.Rectangle2D;
    * @param lat,lon where to place the tree's north/west
    * @param tlayout the tree-layout
    */
-  /*package*/ Contour applyTo(Tree tree, double lat, double lon, TreeLayout tlayout) {
+  /*package*/ Contour applyTo(Tree tree, double lat, double lon) {
 
     // layout starting with the root of the tree
-    Contour result = layoutNode(tree.getRoot(), null, tree, 0, tlayout);
+    Contour result = layoutNode(tree.getRoot(), null, tree, 0);
     
     // calculate delta to get everything to lat/lon
     double 
@@ -83,7 +128,7 @@ import java.awt.geom.Rectangle2D;
     result.translate(dlat,dlon);
     
     // transform relative node/arc positions into absolute ones
-    relative2absolute(tree.getRoot(), tlayout.getOrientation().getPoint2D(dlat,dlon), null);
+    relative2absolute(tree.getRoot(), orientn.getPoint2D(dlat,dlon), null);
 
     // done
     return result;
@@ -100,36 +145,36 @@ import java.awt.geom.Rectangle2D;
    *  <li>note: all nodes (exception is node) and arcs have relative positions
    * </il>
    */
-  private Contour layoutNode(Node node, Arc backtrack, Tree tree, int generation, TreeLayout tlayout) {
+  private Contour layoutNode(Node node, Arc backtrack, Tree tree, int generation) {
     
     // are we looking at an inverted case?
-    boolean toggleOrientation = tlayout.orientationToggles.contains(node)&&!tlayout.isLatAlignmentEnabled;
+    boolean toggleOrientation = orientntggls.contains(node);
 
     // prepare our Layout we'll be working on
-    TreeLayout layout = toggleOrientation ? tlayout.getComplement() : tlayout;
+    NodeLayout layout = toggleOrientation ? orientn.getComplement(this) : this;
 
     // we layout the children
-    Contour[] children = layoutChildren(node, backtrack, tree, generation, layout);
+    Contour[] children = layout.layoutChildren(node, backtrack, tree, generation);
 
     // we layout the root
-    Contour root = layoutParent(node, backtrack, children, tree, generation, layout);
+    Contour root = layout.layoutParent(node, backtrack, children, tree, generation);
 
     // we layout the arcs
-    layout.getArcLayout().applyTo(node, backtrack, toggleOrientation ? Double.NaN : root.south, layout.getOrientation());
+    alayout.applyTo(node, backtrack, toggleOrientation ? Double.NaN : root.south, layout.orientn);
 
     // make everything children/arcs directly 'under' node relative
-    absolute2relative(node, backtrack);
+    layout.absolute2relative(node, backtrack);
 
     // The result is a hull comprised of root's and children's hull
     Contour result = Contour.merge(
       new Contour.List(children.length+2).add(root).add(children).add(root)
     );
-      
+     
     // If another layout was used to create the contour result
-    if (layout!=tlayout) {
+    if (layout!=this) {
       // .. we have to transform it
-      Rectangle2D bounds = layout.getOrientation().getBounds(result);
-      result = tlayout.getOrientation().getContour(bounds);
+      Rectangle2D bounds = layout.orientn.getBounds(result);
+      result = orientn.getContour(bounds);
     }
 
     // done
@@ -140,9 +185,8 @@ import java.awt.geom.Rectangle2D;
   /**
    * Layout children of root and create contours for them
    */
-  private Contour[] layoutChildren(Node root, Arc backtrack, Tree tree, int generation, TreeLayout tlayout) {
+  private Contour[] layoutChildren(Node root, Arc backtrack, Tree tree, int generation) {
 
-    Orientation o = tlayout.getOrientation();
     Node[] nodes = new Node[root.getArcs().size()];
     Contour[] contours = new Contour[nodes.length];
     
@@ -161,7 +205,7 @@ import java.awt.geom.Rectangle2D;
       nodes[c] = ModelHelper.getOther(it.arc, root);
 
       // recursive step into child
-      contours[c] = layoutNode(nodes[c], it.arc, tree, generation+1, tlayout);
+      contours[c] = layoutNode(nodes[c], it.arc, tree, generation+1);
 
       // position 'new' child if not first
       if (c>0) {
@@ -178,29 +222,29 @@ import java.awt.geom.Rectangle2D;
         // place n-th child as close as possible
         double dlon = -deltas[min];
         contours[c].translate(0, dlon);
-        ModelHelper.translate(nodes[c],o.getPoint2D(dlat,dlon));
+        ModelHelper.translate(nodes[c],orientn.getPoint2D(dlat,dlon));
         
         // balance children?
-        if (tlayout.isBalanceChildren) {
-    
-          // re-position all nodes east of [min]
-          double slon = (o.getLongitude(nodes[c].getPosition()) - o.getLongitude(nodes[min].getPosition()))/(c-min);
-          dlon = 0;
-          for (int s=min+1;s<c;s++) {
-            // calc delta which will place all nodes min<s<n fine
-            dlon = Math.max(
-              dlon,
-              (o.getLongitude(nodes[min].getPosition())+(s-min)*slon) - o.getLongitude(nodes[s].getPosition())
-            );
-            // reality-check against delta constraints
-            for (int m=s;m<c;m++) dlon = Math.min(deltas[m] - deltas[min], dlon);
-            // contour and sub-tree @ node
-            contours[s].translate(0,dlon);
-            ModelHelper.translate(nodes[s],tlayout.getOrientation().getPoint2D(0,dlon));
-          }
-      
-          // done
-        }
+//        if (tlayout.isBalanceChildren) {
+//    
+//          // re-position all nodes east of [min]
+//          double slon = (orientn.getLongitude(nodes[c].getPosition()) - orientn.getLongitude(nodes[min].getPosition()))/(c-min);
+//          dlon = 0;
+//          for (int s=min+1;s<c;s++) {
+//            // calc delta which will place all nodes min<s<n fine
+//            dlon = Math.max(
+//              dlon,
+//              (orientn.getLongitude(nodes[min].getPosition())+(s-min)*slon) - orientn.getLongitude(nodes[s].getPosition())
+//            );
+//            // reality-check against delta constraints
+//            for (int m=s;m<c;m++) dlon = Math.min(deltas[m] - deltas[min], dlon);
+//            // contour and sub-tree @ node
+//            contours[s].translate(0,dlon);
+//            ModelHelper.translate(nodes[s],orientn.getPoint2D(0,dlon));
+//          }
+//      
+//          // done
+//        }
 
         // 'new' child is positioned
       }
@@ -218,19 +262,18 @@ import java.awt.geom.Rectangle2D;
   /**
    * Place root in parent-position to children create a contour for it
    */
-  private Contour layoutParent(Node node, Arc backtrack, Contour[] children, Tree tree, int generation, TreeLayout tlayout) {
+  private Contour layoutParent(Node node, Arc backtrack, Contour[] children, Tree tree, int generation) {
 
-    // grab some information
-    Orientation orientation = tlayout.getOrientation();
-    NodeOptions no = tlayout.nodeOptions; no.set(node);
+    // prepare NodeOptions to point to current node
+    nodeop.set(node);
 
     // the parent's contour
     Shape shape = node.getShape();
-    Contour parent = shape==null ? new Contour() : orientation.getContour(shape.getBounds2D());
-    parent.north -= no.getPadding(no.NORTH);
-    parent.south += no.getPadding(no.SOUTH);
-    parent.west  -= no.getPadding(no.WEST );
-    parent.east  += no.getPadding(no.EAST );
+    Contour parent = shape==null ? new Contour() : orientn.getContour(shape.getBounds2D());
+    parent.north -= nodeop.getPadding(nodeop.NORTH);
+    parent.south += nodeop.getPadding(nodeop.SOUTH);
+    parent.west  -= nodeop.getPadding(nodeop.WEST );
+    parent.east  += nodeop.getPadding(nodeop.EAST );
 
     // the parent's position
     double lat,lon;
@@ -247,25 +290,25 @@ import java.awt.geom.Rectangle2D;
         min = children[0].getIterator(Contour.WEST).longitude - parent.west,
         max = children[children.length-1].getIterator(Contour.EAST).longitude - parent.east;
         
-      lon = min + (max-min)*no.getAlignment(no.LON);
+      lon = min + (max-min)*nodeop.getAlignment(nodeop.LON);
       lat = children[0].north - parent.south;
 
     }
 
     // Override latitude for isAlignGeneration
-    if (tlayout.isLatAlignmentEnabled) {
+    if (latalign) {
       lat = tree.getLatitude(generation);
       double
         min = lat - parent.north,
         max = lat + tree.getHeight(generation) - parent.south;
 
-      lat = min + (max-min) * no.getAlignment(no.LAT);
+      lat = min + (max-min) * nodeop.getAlignment(nodeop.LAT);
     }
 
     // place it at (lat,lon)
-    node.getPosition().setLocation(orientation.getPoint2D(lat,lon));
+    node.getPosition().setLocation(orientn.getPoint2D(lat,lon));
     parent.translate(lat,lon);
-    if (tlayout.isLatAlignmentEnabled) {
+    if (latalign) {
       parent.north = tree.getLatitude(generation);
     }
 

@@ -13,11 +13,17 @@ import java.util.Map;
   /** orientations */
   private static final Map orientations = new HashMap();
   
-  static {
-    new truetrue  ();
-    new falsetrue ();
-    new truefalse ();
-    new falsefalse();
+  private static final Orientation
+    truetrue   = new truetrue  (),
+    falsetrue  = new falsetrue (),
+    truefalse  = new truefalse (),
+    falsefalse = new falsefalse();
+    
+  /**
+   * Constructor
+   */
+  private Orientation() {
+    orientations.put(getClass().getName(), this);
   }
   
   /**
@@ -28,13 +34,6 @@ import java.util.Map;
    */
   /*package*/ static Orientation get(boolean vertical, boolean topdown) {
     return (Orientation) orientations.get(Orientation.class.getName()+"$"+vertical+topdown);
-  }
-  
-  /**
-   * Constructor
-   */
-  /*package*/ Orientation() {
-    orientations.put(getClass().getName(), this);
   }
   
   /**
@@ -63,9 +62,9 @@ import java.util.Map;
   /*package*/ abstract Point2D.Double getPoint2D(double lat, double lon);
   
   /**
-   * Rotates the orientation
+   * Gets a complement for given NodeLayout
    */
-  /*package*/ abstract void rotate(TreeLayout layout, boolean clockwise);
+  /*package*/ abstract NodeLayout getComplement(NodeLayout nlayout);
   
   /**
    * vertical=false, topdown=true
@@ -98,9 +97,10 @@ import java.util.Map;
     /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(lat,-lon);
     }
-    /*package*/ void rotate(TreeLayout layout, boolean clockwise) {
-      layout.isVertical = true;
-      layout.isTopDown = clockwise ? true : false;
+    /*package*/ NodeLayout getComplement(NodeLayout nlayout) {
+      NodeLayout result = nlayout.getClone();
+      result.orientn = result.oorientn==this ? truefalse : truetrue;
+      return result;
     }
   } //falsetrue
 
@@ -131,9 +131,10 @@ import java.util.Map;
     /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(lon,lat);
     }
-    /*package*/ void rotate(TreeLayout layout, boolean clockwise) {
-      layout.isVertical = false;
-      layout.isTopDown = clockwise ? false : true;
+    /*package*/ NodeLayout getComplement(NodeLayout nlayout) {
+      NodeLayout result = nlayout.getClone();
+      result.orientn = result.oorientn==this ? falsetrue : falsefalse;
+      return result;
     }
   } //truetrue
 
@@ -168,9 +169,10 @@ import java.util.Map;
     /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(-lat,lon);
     }
-    /*package*/ void rotate(TreeLayout layout, boolean clockwise) {
-      layout.isVertical = true;
-      layout.isTopDown = clockwise ? false : true;
+    /*package*/ NodeLayout getComplement(NodeLayout nlayout) {
+      NodeLayout result = nlayout.getClone();
+      result.orientn = result.oorientn==this ? truetrue : truefalse;
+      return result;
     }
   } //falsefalse
 
@@ -201,11 +203,55 @@ import java.util.Map;
     /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(-lon,-lat);
     }
-    /*package*/ void rotate(TreeLayout layout, boolean clockwise) {
-      layout.isVertical = false;
-      layout.isTopDown = clockwise ? true : false;
+    /*package*/ NodeLayout getComplement(NodeLayout nlayout) {
+      NodeLayout result = nlayout.getClone();
+      result.orientn = result.oorientn==this ? falsefalse : falsetrue;
+      return result;
     }
   } //truefalse
+
+  
+//  /**
+//   * PatchedNodeOptions
+//   */
+//  private class PatchedNodeOptions implements NodeOptions {
+//    /** the orignal node options */
+//    private NodeOptions original;
+//    /**
+//     * Constructor
+//     */
+//    private PatchedNodeOptions(NodeOptions originl) {
+//      original = originl;
+//    }
+//    /**
+//     * @see gj.layout.tree.NodeOptions#set(Node)
+//     */
+//    public void set(Node node) {
+//      original.set(node);
+//    }
+//    /**
+//     * @see gj.layout.tree.TreeLayout.DefaultNodeOptions#getAlignment(int)
+//     */
+//    public double getAlignment(int dir) {
+//      if (dir==LON) return isComplement ? 1.0D : 0;
+//      return original.getAlignment(dir);
+//    }
+//    /**
+//     * @see gj.layout.tree.NodeOptions#getPadding(int)
+//     */
+//    public double getPadding(int dir) {
+//      switch (dir) {
+//        case NORTH: default:
+//          return original.getPadding(EAST);
+//        case WEST:
+//          return original.getPadding(NORTH);
+//        case EAST:
+//          return original.getPadding(SOUTH);
+//        case SOUTH:
+//          return original.getPadding(WEST);
+//      }
+//    }
+//  } //ComplementNodeOptions
 
 } //Orientation
 
