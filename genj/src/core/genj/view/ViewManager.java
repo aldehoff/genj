@@ -138,7 +138,9 @@ public class ViewManager {
     // already?
     Gedcom gedcom = property.getGedcom();
     // remember
-    if (gedcom2current.get(gedcom)==property) return;
+    // 20030402 don't block propagation if already current
+    // let it be signalled twice if necessary
+    //   if (gedcom2current.get(gedcom)==property) return;
     gedcom2current.put(gedcom, property);
     // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();
