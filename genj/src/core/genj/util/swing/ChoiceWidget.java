@@ -301,25 +301,31 @@ public class ChoiceWidget extends JComboBox {
      * Our auto-complete callback
      */
     public void actionPerformed(ActionEvent e) {
-        
-      // do the auto-complete for txt
+
+      // grab current 'prefix'
       String txt = getTextEditor().getText();
         
-      // try to select an item
+      // don't auto-complete unless cursor at end of text
+      Caret c = getTextEditor().getCaret();
+      if (c.getDot()!=txt.length())
+        return;
+
+      // try to select an item by prefix
       ignoreInsertUpdate = true;
       String match = model.setSelectedPrefix(txt);
       ignoreInsertUpdate = false;
         
-      Caret c = getTextEditor().getCaret();
+      // no match
+      if (match.length()==0)
+        return;
       
-      // text exactly matches - place dot behind last character
-      if (match.length()<=txt.length()) {
+      // found a complete match==text - place cursor after all text
+      if (match.length()==txt.length()) {
         c.setDot(txt.length());
         return;
       }
   
-      // and select the text that has been added
-      // ie from the current edit position to the end of the text
+      // found partial match - restore cursor to current position and select rest 
       c.setDot(match.length());
       c.moveDot(txt.length());
   
