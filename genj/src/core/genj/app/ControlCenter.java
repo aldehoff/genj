@@ -611,9 +611,10 @@ public class ControlCenter extends JPanel {
       }
       // form the origin
       try {
-        Origin origin =
-          Origin.create(new URL("file", "", file.getAbsolutePath()));
-        gedcom = new Gedcom(origin);
+        gedcom = new Gedcom(
+          Origin.create(new URL("file", "", file.getAbsolutePath())),
+          true
+        );
       } catch (MalformedURLException e) {
       }
       // done
