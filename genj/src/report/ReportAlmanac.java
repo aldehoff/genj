@@ -118,7 +118,7 @@ public class ReportAlmanac extends Report {
     for (int e=0; e<events.size(); e++) {
       Property event = (Property)events.get(e);
       PropertyDate date = (PropertyDate)event.getProperty("DATE");
-      if (!date.isValid())
+      if (date==null||!date.isValid())
         continue;
       try {
 	      PointInTime 
