@@ -31,7 +31,7 @@ Future
   O some.ged.properties files should be read by CC from the same directory as the .ged-file (and saved there, too) 
   O Table view for families should list all children, not just first child.
 
-1.9 - May xx 2002
+1.9 - June xx 2002
 
   B GedcomWriter now writes correct version information
   N A new About window has been added, implementing Welcome, Authors, Feedback and Copyright tabbed panes
