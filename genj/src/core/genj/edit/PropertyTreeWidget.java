@@ -32,6 +32,7 @@ import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
 import genj.io.PropertyTransferable;
 import genj.renderer.Options;
+import genj.util.WordBuffer;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 
@@ -73,9 +74,6 @@ public class PropertyTreeWidget extends DnDTree {
   /** the model */
   private Model model = new Model();
 
-  /** cached object per property */
-  private Map property2view =  new HashMap();
-  
   /** stored gedcom */
   private Gedcom gedcom;
 
@@ -273,9 +271,6 @@ public class PropertyTreeWidget extends DnDTree {
     super.setUI(ui);
     // grab the default renderer now
     defaultRenderer = new DefaultTreeCellRenderer();
-    // clear cache of view
-    if (property2view!=null)
-      property2view.clear();
   }
 
   /**
@@ -313,8 +308,6 @@ public class PropertyTreeWidget extends DnDTree {
     protected void setRoot(Property set) {
       // remember
       root = set;
-      // .. clear cache of view
-      property2view.clear();
       // .. tell about it
       fireTreeStructureChanged(this, getPathToRoot(getRoot()), null, null);
       // make sure we don't show null-root
@@ -524,8 +517,6 @@ public class PropertyTreeWidget extends DnDTree {
         // simple change?
         if (change instanceof Change.PropertyValue) {
           Property changed = ((Change.PropertyValue)change).getChanged();
-          // .. forget cached value for prop
-          property2view.remove(changed);
           // .. tell about it
           fireTreeNodesChanged(this, getPathFor(changed), null, null);
         }
@@ -550,7 +541,6 @@ public class PropertyTreeWidget extends DnDTree {
      */
     private Renderer() {
       setOpaque(true);
-      setFont(Options.getInstance().getDefaultFont());
     }
     
     /**
@@ -580,85 +570,33 @@ public class PropertyTreeWidget extends DnDTree {
         img = img.getOverLayed(MetaProperty.IMG_PRIVATE);
       setIcon(img);
 
-      // set view to use
-      setView(getView(prop, sel));
+      // calc text
+      setText(prop instanceof Entity ? calcText((Entity)prop) : calcText(prop));
 
       // done
       return this;
     }
 
-    /**
-     * Calculate View
-     */
-    private View getView(Property prop, boolean scratch) {
-      
-      // check if we got one
-      View view = scratch ? null : (View)property2view.get(prop);
-
-      // create if necessary
-      if (view==null) {
-        // create one
-        view = setHTML(calcHTML(prop));
-        
-        // remember if not scratch
-        if (!scratch) property2view.put(prop, view);
-      
-      }
-      
-      // done
-      return view;
-    }
-    
-    /**
-     * Calculate HTML for a property node
-     */
-    private String calcHTML(Property prop) {
-
-      StringBuffer html = new StringBuffer();
-      
-      html.append("<html>");
-      
-      if (prop instanceof Entity) 
-        calcEntity(html, (Entity)prop);
-      else
-        calcProperty(html, prop);
-
-      html.append("</html>");
-
-      return html.toString();        
-    }
-    
-    private void calcEntity(StringBuffer html, Entity entity) {        
-        
-      html.append("@").append(entity.getId()).append("@ ");
-      html.append("<b>").append(entity.getTag()).append("</b>");
+    private String calcText(Entity entity) {        
+      return "@" + entity.getId() + "@ " + entity.getTag();
     } 
       
-    private void calcProperty(StringBuffer html, Property prop) {
+    private String calcText(Property prop) {
 
-      // TAG      
+      WordBuffer result = new WordBuffer();
+      
       if (!prop.isTransient())
-        html.append(" <b>").append(prop.getTag()).append("</b> ");
+        result.append(prop.getTag());
 
       // private?
       if (prop.isSecret()) {
-        html.append("*****");
-        return;
+        result.append("*****");
+      } else {
+        result.append(prop.getDisplayValue());
       }
       
-      // multiline (not using MultiLineProperty here)          
-      if (prop instanceof PropertyMultilineValue && !(prop instanceof IconValueAvailable)) {
-        MultiLineProperty.Iterator it = ((PropertyMultilineValue)prop).getLineIterator();
-        while (true) {
-          html.append(it.getValue());
-          if (!it.next()) break;
-          html.append("<br>");
-        }
-        return;
-      } 
-      
-      // default!
-      html.append(prop.getDisplayValue());
+      // done
+      return result.toString();
     }
     
   } //Renderer
