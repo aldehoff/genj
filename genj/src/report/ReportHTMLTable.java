@@ -140,7 +140,7 @@ public class ReportHTMLTable extends Report {
 	  private static Hashtable unicode2html = initializeUnicodeSupport();
 	  
 	  /** this report's version */
-	  public static final String VERSION = "1.02";
+	  public static final String VERSION = "1.1";
 	  
 	  /* possible parameters for printEmiImmiNatu() in order
 	     to implement this methode generic */
@@ -233,7 +233,13 @@ public class ReportHTMLTable extends Report {
 	    
 	    /* these variables are used in multiple cases and
 	       therefore defined outside a certain visibility */
-	    PrintWriter htmlOut = null;
+	    PrintWriter htmlOut = null, indexOut = null;
+            try {
+                indexOut =  new PrintWriter(new FileOutputStream(createFile(dir, "index.html")));
+                printHTMLStart(indexOut);
+			} catch(Exception e) {
+		  		println("Can't create index.html: "+e.getMessage());
+		  	}
 	    ReferenceSet set = null;
 	    
 	    // examine the last names
@@ -243,7 +249,7 @@ public class ReportHTMLTable extends Report {
 				// initialize print writer
 				htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "lastNames.html")));
 			} catch(Exception e) {
-		  		println("Can't create file lastName.html: "+e.getMessage());
+		  		println("Can't create lastName.html: "+e.getMessage());
 		  	}
 		  	set = new ReferenceSet();
 		  	// write HTML header
@@ -272,6 +278,7 @@ public class ReportHTMLTable extends Report {
 		  	printHTMLEnd(htmlOut);
 		  	// close the file
 		  	htmlOut.close();
+                        indexOut.println("<a href=\"lastNames.html\">"+i18n("lastNames")+"</a><br>");
 		  }		  
 		
 		  /* same program logic used as for last names, but with
@@ -280,7 +287,7 @@ public class ReportHTMLTable extends Report {
 		  	try {
 			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "birthPlaces.html")));
 		  	} catch(Exception e) {
-		  		println("Can't create file birthPlaces.html: "+e.getMessage());
+		  		println("Can't create birthPlaces.html: "+e.getMessage());
 		  	}
 			  	set = new ReferenceSet();
 			  	printHTMLStart(htmlOut);
@@ -303,6 +310,7 @@ public class ReportHTMLTable extends Report {
 				htmlOut.println("</table>");
 			  	printHTMLEnd(htmlOut);
 			  	htmlOut.close();
+                                indexOut.println("<a href=\"birthPlaces.html\">"+i18n("birthPlaces")+"</a><br>");
 		  }
           
 		  /* same program logic used as for last names, but with
@@ -311,7 +319,7 @@ public class ReportHTMLTable extends Report {
 		  	try {
 			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "baptismPlaces.html")));
 		  	} catch(Exception e) {
-		  		println("Can't create file baptismPlaces.html: "+e.getMessage());
+		  		println("Can't create baptismPlaces.html: "+e.getMessage());
 		  	}
 			  	set = new ReferenceSet();
 			  	printHTMLStart(htmlOut);
@@ -359,6 +367,7 @@ public class ReportHTMLTable extends Report {
 				htmlOut.println("</table>");
 			  	printHTMLEnd(htmlOut);
 			  	htmlOut.close();
+                                indexOut.println("<a href=\"baptismPlaces.html\">"+i18n("baptismPlaces")+"</a><br>");
 		  }
 
 		  /* same program logic used as for last names, but with
@@ -367,7 +376,7 @@ public class ReportHTMLTable extends Report {
 		  	try {
 			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "marriagePlaces.html")));
 			  	} catch(Exception e) {
-			  		println("Can't create file marriagePlaces.html: "+e.getMessage());
+			  		println("Can't create marriagePlaces.html: "+e.getMessage());
 			  	}
 			  	set = new ReferenceSet();
 			  	printHTMLStart(htmlOut);
@@ -392,6 +401,7 @@ public class ReportHTMLTable extends Report {
 				htmlOut.println("</table>");
 			  	printHTMLEnd(htmlOut);
 			  	htmlOut.close();
+                                indexOut.println("<a href=\"marriagePlaces.html\">"+i18n("marriagePlaces")+"</a><br>");
 			  }
 
 		  /* using printEmigImmiNatu() to examine and output the data, this body
@@ -400,11 +410,12 @@ public class ReportHTMLTable extends Report {
 		  	try {
 			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "emigrationPlaces.html")));
 			  	} catch(Exception e) {
-			  		println("Can't create file emigrationPlaces.html: "+e.getMessage());
+			  		println("Can't create emigrationPlaces.html: "+e.getMessage());
 			  	}
 			  	printEmigImmiNatu(EMIG, indis, htmlOut);
 			  	printHTMLEnd(htmlOut);
 			  	htmlOut.close();
+                                indexOut.println("<a href=\"emigrationPlaces.html\">"+i18n("emigration")+"</a><br>");
 			  }
 		  
 		  /* using printEmigImmiNatu() to examine and output the data, this body
@@ -413,11 +424,12 @@ public class ReportHTMLTable extends Report {
 		  	try {
 			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "immigrationPlaces.html")));
 			  	} catch(Exception e) {
-			  		println("Can't create file immigrationPlaces.html: "+e.getMessage());
+			  		println("Can't create immigrationPlaces.html: "+e.getMessage());
 			  	}
 			  	printEmigImmiNatu(IMMI, indis, htmlOut);
 			  	printHTMLEnd(htmlOut);
 			  	htmlOut.close();
+                                indexOut.println("<a href=\"immigrationPlaces.html\">"+i18n("immigration")+"</a><br>");
 		  }
 		  
 		  /* using printEmigImmiNatu() to examine and output the data, this body
@@ -426,11 +438,12 @@ public class ReportHTMLTable extends Report {
 		  	try {
 			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "naturalizationPlaces.html")));
 			  	} catch(Exception e) {
-			  		println("Can't create file naturalizationPlaces.html: "+e.getMessage());
+			  		println("Can't create naturalizationPlaces.html: "+e.getMessage());
 			  	}
 			  	printEmigImmiNatu(NATU, indis, htmlOut);
 			  	printHTMLEnd(htmlOut);
 			  	htmlOut.close();
+                                indexOut.println("<a href=\"naturalizationPlaces.html\">"+i18n("naturalization")+"</a><br>");
 		  }
 		  
 		  /* same program logic used as for last names, but with
@@ -439,7 +452,7 @@ public class ReportHTMLTable extends Report {
 		  	try {
 			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "deathPlaces.html")));
 			  	} catch(Exception e) {
-			  		println("Can't create file deathPlaces.html: "+e.getMessage());
+			  		println("Can't create deathPlaces.html: "+e.getMessage());
 			  	}
 			  	set = new ReferenceSet();
 			  	printHTMLStart(htmlOut);
@@ -462,7 +475,10 @@ public class ReportHTMLTable extends Report {
 				htmlOut.println("</table>");
 			  	printHTMLEnd(htmlOut);
 			  	htmlOut.close();
+                                indexOut.println("<a href=\"deathPlaces.html\">"+i18n("deathPlaces")+"</a><br>");
 		  }
+            printHTMLEnd(indexOut);
+            indexOut.close();
 	  }
 	  
 	  /** examines and writes emigration, immigration and naturalization places
@@ -480,17 +496,17 @@ public class ReportHTMLTable extends Report {
 	  	switch(which) {
 	  	case EMIG:
 	  		tag = "EMIG";
-	  		title = "emigration";
+	  		title = i18n("emigration");
 	  		sortByPlace = sortEmigrationPlacesByName;
 	  		break;
 	  	case IMMI:
 	  		tag = "IMMI";
-	  		title = "immigration";
+	  		title = i18n("immigration");
 	  		sortByPlace = sortImmigrationPlacesByName;
 	  		break;
 	  	case NATU:
 	  		tag = "NATU";
-	  		title = "naturalization";
+	  		title = i18n("naturalization");
 	  		sortByPlace = sortNaturalizationPlacesByName;
 	  		break;
 	  	default: 
@@ -515,7 +531,7 @@ public class ReportHTMLTable extends Report {
 		  	}
 		}
 		//write the table header
-		htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("title")+" places</td><td>"+i18n("frequency")+"</td></tr>");
+		htmlOut.println("<tr bgcolor=\"yellow\"><td>"+title+"</td><td>"+i18n("frequency")+"</td></tr>");
 		// sort the table data
 		ArrayList sortedPlaces = new ArrayList(set.getKeys(sortByPlace));
 		// print the table data
