@@ -94,6 +94,15 @@ public class Resources {
    * @param values array of values to replace placeholders in value
    */
   public String getString(String key, Object substitute) {
+    return getString(key, new Object[]{ substitute });
+  }
+
+  /**
+   * Returns a localized string
+   * @param key identifies string to return
+   * @param values array of values to replace placeholders in value
+   */
+  public String getString(String key, Object[] substitutes) {
 
     try {
 
@@ -102,11 +111,14 @@ public class Resources {
         // Get Value
         String value = rb.getString(key);
 
-        // Replace with substitutes
+        // .. this is our pattern
         format.applyPattern(value);
-        Object[] subs = { substitute };
-        return format.format(subs);
 
+        // .. which we fill with substitutes
+        String result = format.format(substitutes);
+
+        // Done
+        return result;
       }
 
     } catch (RuntimeException e) {
@@ -114,7 +126,7 @@ public class Resources {
 
     System.out.println("Resource "+key+" for pkg "+pkg+" is missing");
 
-    return "..." + substitute + "...";
+    return "";
 
   }
 
