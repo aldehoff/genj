@@ -83,7 +83,7 @@ public abstract class Property implements Comparable {
     new MetaDefinition("NOTE","Note", new String[]{"DATE"}) ,
 
     // SUBM Record
-    new MetaDefinition("SUBM","Submitter",new String[]{"NAME","ADDR","PHONE"}),
+    new MetaDefinition("SUBM","Submitter",new String[]{"NAME","ADDR","PHON"}),
 
     // INDI Attributes
     new MetaDefinition("CAST","IndividualAttribute",IAT_SUB_TAGS) ,
