@@ -163,6 +163,19 @@ public abstract class PointInTime implements Comparable {
     if (localize) mmm = Gedcom.getResources().getString("prop.date.mon."+mmm);
     return mmm;
   }
+  
+  /**
+   * Access to (localized) gedcom months 
+   */
+  public static String[] getMonths(boolean localize) {
+    String[] result = new String[12];
+    for (int m=0;m<result.length;m++) {
+      String mmm = MONTHS[m];
+      if (localize) mmm = Gedcom.getResources().getString("prop.date.mon."+mmm);
+      result[m] = mmm;
+    }
+    return result;
+  }
 
   /**
    * Helper that transforms month to Integer
