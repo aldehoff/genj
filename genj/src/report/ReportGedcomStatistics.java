@@ -8,19 +8,20 @@
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.report.Report;
 import genj.report.ReportBridge;
-import java.util.AbstractMap;
+import genj.util.ReferenceSet;
+
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
 
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.17 2003-03-27 00:31:26 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.18 2003-04-02 19:57:51 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -33,8 +34,8 @@ public class ReportGedcomStatistics implements Report {
     /**package*/ int numMales = 0;
     /**package*/ int numFemales = 0;
     /**package*/ int numUnknown = 0;
-    /**package*/ TreeMap birthPlaces = new TreeMap();
-    /**package*/ TreeMap deathPlaces = new TreeMap();
+    /**package*/ ReferenceSet birthPlaces = new ReferenceSet();
+    /**package*/ ReferenceSet deathPlaces = new ReferenceSet();
   }
    
   /** the place that is not known */
@@ -115,33 +116,6 @@ public class ReportGedcomStatistics implements Report {
   }
 
   /**
-   * Helper that looks up an Integer from a AbstractMap
-   * and increases it 
-   * <ul>
-   * <li> if it doesn't exist it will be created with initial value 1
-   * <li> if it does exist it will be incremented by one
-   * </ul>
-   */
-  private void incrementIntegerInMap(AbstractMap map, Object key) {
-    
-    // We make sure to use the text representation of the key
-    key = key.toString();
-    
-    // look it up
-    Integer integer = (Integer)map.get(key);
-    
-    // Increment it (or start at zero)
-    int value = 0;
-    if (integer!=null) {
-      value = integer.intValue();
-    }
-    integer = new Integer(value+1);      
-
-    // Remember it
-    map.put(key, integer);      
-  }
-
-  /**
    * Analyzes an Individual for the Statistics
    */
   private void analyzeIndividual(Indi indi, Statistics stats) {
@@ -175,16 +149,17 @@ public class ReportGedcomStatistics implements Report {
    */
   private void analyzeIndividualBirth(Indi indi, Statistics stats) {
       
-      // And here comes the check for place
-      Object place = indi.getProperty(new TagPath("INDI:BIRT:PLAC"));
-      if ((place==null) || (place.toString().trim().length()==0)){
-        place = UNKNOWN_PLACE;
-      }
-       
-      // .. and a simple increment
-      incrementIntegerInMap(stats.birthPlaces, place);
+    // And here comes the check for place
+    Property prop = indi.getProperty(new TagPath("INDI:BIRT:PLAC"));
+    if (prop==null) return;
+    
+    String place = prop.getValue();
+    if (place.length()==0) place = UNKNOWN_PLACE;
+    
+    // keep track
+    stats.birthPlaces.add(place);
       
-      // Done
+    // Done
   }
   
   /**
@@ -193,19 +168,17 @@ public class ReportGedcomStatistics implements Report {
   private void analyzeIndividualDeath(Indi indi, Statistics stats) {
       
       // We only look at individuals with a DEATH property
-      Object deat = indi.getProperty(new TagPath("INDI:DEAT"));
-      if (deat==null) {
-        return;
-      }
+      Object deat = indi.getProperty("DEAT");
+      if (deat==null) return;
       
       // And here comes the check for place
-      Object place = indi.getProperty(new TagPath("INDI:DEAT:PLAC"));
-      if ((place==null) || (place.toString().trim().length()==0)){
-        place = UNKNOWN_PLACE;
-      }
+      String place = "";
+      Property prop = indi.getProperty(new TagPath("INDI:DEAT:PLAC"));
+      if (prop!=null) place = prop.getValue();
+      if (place.length()==0) place = UNKNOWN_PLACE;
        
-      // .. and a simple increment
-      incrementIntegerInMap(stats.deathPlaces, place);
+      // keep track of that
+      stats.deathPlaces.add(place);
       
       // Done
   }
@@ -241,10 +214,10 @@ public class ReportGedcomStatistics implements Report {
 
     // Six: We show the birth places
     bridge.println("  * Stats about birth places :");
-    Iterator it = stats.birthPlaces.keySet().iterator();
-    while (it.hasNext()) {
-      String place = (String)it.next();
-      Integer count = (Integer)stats.birthPlaces.get(place);
+    Iterator births = stats.birthPlaces.iterator();
+    while (births.hasNext()) {
+      String place = (String)births.next();
+      int count = stats.birthPlaces.getCount(place);
       bridge.println("     - "+count+" individuals were born in "+place);
     }
 
@@ -252,11 +225,11 @@ public class ReportGedcomStatistics implements Report {
 
     // Seven: We show the death places
     bridge.println("  * Stats about death places :");
-    Iterator death_it = stats.deathPlaces.keySet().iterator();
-    while (death_it.hasNext()) {
-      String death_place = (String)death_it.next();
-      Integer death_count = (Integer)stats.deathPlaces.get(death_place);
-      bridge.println("     - "+death_count+" individuals died in "+death_place);
+    Iterator deaths = stats.deathPlaces.iterator();
+    while (deaths.hasNext()) {
+      String place = (String)deaths.next();
+      int count = stats.deathPlaces.getCount(place);
+      bridge.println("     - "+count+" individuals died in "+place);
     }
 
     // Done
