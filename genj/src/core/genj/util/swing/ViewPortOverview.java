@@ -27,6 +27,8 @@ import java.awt.Graphics;
 import java.awt.Panel;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -37,7 +39,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * A component showing an overview for a viewport */
+ * A component showing an overview for a viewport
+ */
 public class ViewPortOverview extends Panel {
   
   /** the square dimension used for resizing */
@@ -58,6 +61,7 @@ public class ViewPortOverview extends Panel {
     viewport.addChangeListener(glue);
     addMouseListener(glue); 
     addMouseMotionListener(glue);
+    viewport.addComponentListener(glue);
   }
   
   /**
@@ -90,7 +94,8 @@ public class ViewPortOverview extends Panel {
   }
   
   /**
-   * Override for specific rendering   */
+   * Override for specific rendering
+   */
   protected void renderContent(Graphics g, double zoomx, double zoomy) {
   }
   
@@ -123,7 +128,8 @@ public class ViewPortOverview extends Panel {
   
   /**
    * Helper that calculates the correct zoom for the viewport's content 'view'
-   * to fit in this overview   */
+   * to fit in this overview
+   */
   private Point2D getZoom() {
 
     // need available space (ours) and used space (view's)  
@@ -141,8 +147,12 @@ public class ViewPortOverview extends Panel {
   }
   
   /**
-   * Event glue   */
-  private class EventGlue implements ChangeListener, MouseListener, MouseMotionListener {
+   * Event glue
+   */
+  private class EventGlue
+    extends ComponentAdapter
+  	implements ChangeListener, MouseListener, MouseMotionListener
+  {
     /** tracking dragging offset*/
     private Point dragOffset = null;  
     /** resizing */
@@ -231,10 +241,18 @@ public class ViewPortOverview extends Panel {
     }
     
     /**
-     * Helper that decides whether we're resizing      */
+     * Helper that decides whether we're resizing 
+     */
     private boolean isResize(Point p) {
       Dimension dim = getSize();
       return p.x>dim.width-DIM_RESIZE&&p.y>dim.height-DIM_RESIZE;
+    }
+    
+    /**
+     * @see java.awt.event.ComponentAdapter#componentResized(java.awt.event.ComponentEvent)
+     */
+    public void componentResized(ComponentEvent e) {
+    	repaint();
     }
 
   } //EventGlue
