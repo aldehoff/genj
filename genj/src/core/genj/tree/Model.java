@@ -242,6 +242,9 @@ public class Model implements Graph {
    */
   private abstract class MyNode implements Node {
     
+    /** the lon alignment */
+    protected double lonAlign = 0.5D;
+    
     /** the entity */
     protected Entity entity;
     
@@ -398,8 +401,10 @@ public class Model implements Graph {
       Fam fam = (Fam)entity;
       // husband
       IndiNode hnode = new IndiNode(fam.getHusband());
+      hnode.lonAlign = -padIndis/2;
       hnode.addAncestors();
       IndiNode wnode = new IndiNode(fam.getWife());
+      wnode.lonAlign = 1+padIndis/2;
       wnode.addAncestors();      // connect
       new MyArc(this, wnode, false);
       new MyArc(this, new MarrNode(fam), false);
@@ -543,25 +548,17 @@ public class Model implements Graph {
    * Customs NodeOptions
    */
   private class MyOptions implements NodeOptions {
-    /** our node */
-    private MyNode mynode;
-    /**
-     * @see gj.layout.tree.NodeOptions#set(Node)
-     */
-    public void set(Node node) {
-      mynode = (MyNode)node;
-    }
     /**
      * @see gj.layout.tree.NodeOptions#getAlignment(int)
      */
-    public double getAlignment(int dir) {
-      return 0.5;
+    public double getAlignment(Node node, int dir) {
+      return ((MyNode)node).lonAlign;
     }
     /**
      * @see gj.layout.tree.NodeOptions#getPadding(int)
      */
-    public double getPadding(int dir) {
-      return mynode.getPadding(dir);
+    public double getPadding(Node node, int dir) {
+      return ((MyNode)node).getPadding(dir);
     }
   } //MyNodeOptions
 
