@@ -76,23 +76,14 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
    * @see genj.app.ViewSettingsWidget#apply()
    */
   public void apply() {
-    // entityView.setHtml(, edi.getText());
+    entityView.setBlueprints(blueprintList.getSelection());
   }
 
   /**
    * @see genj.app.ViewSettingsWidget#reset()
    */
   public void reset() {
-//    Blueprint bp = new Blueprint();
-//    bp.setHTML(entityView.getHtml(dropEntities.getSelectedIndex()));
-//    
-//    editor.set(
-//      entityView.gedcom, 
-//      dropEntities.getSelectedIndex(),
-//      bp
-//    );
-    // FIXME : propagate Blueprint
-    //textHtml.setText(entityView.getHtml(unwrap(dropEntities.getSelectedItem())));
+    blueprintList.setSelection(entityView.getBlueprints());
   }
 
 } //EntityViewSettings

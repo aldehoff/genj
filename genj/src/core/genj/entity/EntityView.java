@@ -66,6 +66,12 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
   /** the current entity */
   private Entity entity = null;
   
+  /** the blueprints we're using */
+  private Blueprint[] blueprints = new Blueprint[Gedcom.NUM_TYPES];
+  
+  /** a manager we're using */
+  private BlueprintManager bpManager = BlueprintManager.getInstance();
+  
   /**
    * Constructor
    */
@@ -75,6 +81,12 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     gedcom = ged;
     // listen to gedcom
     gedcom.addListener(new GedcomConnector());
+    // resolve blueprints
+    String[] names = registry.get("blueprints", (String[])null);
+    for (int i=0; i<blueprints.length; i++) {
+      String name = names!=null&&i<names.length ? names[i] : "";
+      blueprints[i] = bpManager.getBlueprint(i, name);
+    }
     // done    
   }
   
@@ -86,6 +98,21 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     // set first entity
     setEntity(ViewManager.getInstance().getCurrentEntity(gedcom));
   }
+  
+  /**
+   * @see javax.swing.JComponent#removeNotify()
+   */
+  public void removeNotify() {
+    super.removeNotify();
+    // store blueprints
+    String[] names = new String[blueprints.length];
+    for (int i=0; i<names.length; i++) {
+      names[i] = blueprints[i].getName();   	
+    }
+    registry.put("blueprints", names);
+    // done
+  }
+
 
   /**
    * @see javax.swing.JComponent#paintComponent(Graphics)
@@ -112,7 +139,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     // resolve blueprint & renderer
     Blueprint blueprint;
     if (e==null) blueprint = BLUEPRINT_SELECT;
-    else blueprint = BlueprintManager.getInstance().getBlueprint(e.getType(), "Default");
+    else blueprint = blueprints[e.getType()];
     renderer=new EntityRenderer(
       getGraphics(),
       blueprint
@@ -124,7 +151,21 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     // done
   }
   
-  /**
+  /** 
+   * Sets blueprints
+   */
+  public void setBlueprints(Blueprint[] bluepRints) {
+    blueprints = (Blueprint[])bluepRints.clone();
+    setEntity(entity);
+  }
+  
+  /** 
+   * Returns blueprints
+   */
+  public Blueprint[] getBlueprints() {
+    return (Blueprint[])blueprints.clone();
+  }
+    /**
    * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
    */
   public void setCurrentEntity(Entity e) {
