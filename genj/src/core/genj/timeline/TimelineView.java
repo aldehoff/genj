@@ -28,8 +28,10 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,6 +45,7 @@ import javax.swing.event.ChangeListener;
 
 import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
+import genj.util.ColorAttribute;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.*;
@@ -52,10 +55,13 @@ import genj.view.ToolBarSupport;
  * Component for showing entities' events in a timeline view
  */
 public class TimelineView extends JPanel implements ToolBarSupport {
-  
+
   /** resources */
   /*package*/ final static Resources resources = new Resources("genj.timeline");
   
+  /** keeping track of our colors */
+  /*package*/ ColorAttribute.Group colorGroup = new ColorAttribute.Group();
+    
   /** our model */
   private Model model;
   
@@ -122,6 +128,12 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     isPaintDates = regstry.get("paintdates", true);
     isPaintGrid  = regstry.get("paintgrid" , false);
     isPaintTags  = regstry.get("painttags" , false);
+
+    colorGroup.add(regstry, resources, "ruler"   , Color.black, Color.white);
+    colorGroup.add(regstry, resources, "content" , Color.black, Color.white);
+    colorGroup.add(regstry, resources, "tag"     , Color.green, null       );
+    colorGroup.add(regstry, resources, "date"    , Color.gray , null       );
+    colorGroup.add(regstry, resources, "timespan", Color.blue , null       );
     
     // create/keep our sub-parts
     model = new Model(gedcom, (Set)regstry.get("filter", model.DEFAULT_FILTER));
@@ -271,11 +283,9 @@ public class TimelineView extends JPanel implements ToolBarSupport {
      * @see javax.swing.JComponent#paintComponent(Graphics)
      */
     protected void paintComponent(Graphics g) {
-      // fill the background
-      Rectangle r = getBounds();
-      g.setColor(Color.white);
-      g.fillRect(0,0,r.width,r.height);
       // let the renderer do its work
+      rulerRenderer.foreground = colorGroup.get("ruler", false);
+      rulerRenderer.background = colorGroup.get("ruler", true );
       rulerRenderer.cmPyear = cmPerYear;
       rulerRenderer.render(g, model);
       // done

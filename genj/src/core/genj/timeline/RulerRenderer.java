@@ -30,6 +30,12 @@ import java.awt.Graphics;
  */
 public class RulerRenderer extends ContentRenderer {
   
+  /** background color */
+  /*package*/ Color background = null;
+  
+  /** foreground color */
+  /*package*/ Color foreground = null;
+  
   /** 
    * Calculates the model size in pixels
    */
@@ -53,9 +59,13 @@ public class RulerRenderer extends ContentRenderer {
       to   = model.max,
       cond = Math.max(1, pixels2cm(fm.stringWidth(" 0000 "))/cmPyear);
     Clip clip = new Clip(g, fm, model);
+    
+    // render background
+    if (background!=null) g.setColor(background);
+    g.fillRect(0,0,d.width,d.height);
 
     // render first year and last
-    g.setColor(Color.black);
+    if (foreground!=null) g.setColor(foreground);
     from += renderYear(g, model, d, fm, from, 0.0D);
     to -= renderYear(g, model, d, fm, to  , 1.0D);
     

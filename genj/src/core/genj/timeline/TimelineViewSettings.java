@@ -22,10 +22,12 @@ package genj.timeline;
 import genj.app.TagSelector;
 import genj.gedcom.PropertyEvent;
 import genj.util.ActionDelegate;
+import genj.util.swing.ColorChooser;
 import genj.util.swing.DoubleValueSlider;
 import genj.view.ApplyResetSupport;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -69,6 +71,9 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
   
   /** sliders for event size */
   private DoubleValueSlider sliderCmBefEvent, sliderCmAftEvent;
+  
+  /** colorchooser for colors */
+  private ColorChooser colorChooser;
     
   /**
    * Constructor
@@ -99,15 +104,12 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     panelMain.add(selectorEventTags, BorderLayout.CENTER);
     panelMain.add(panelOptions, BorderLayout.SOUTH);
     
-    // panel for colors
-    JPanel panelColors = new JPanel(new BorderLayout());
-    JColorChooser colorChooser = new JColorChooser();
-    colorChooser.setPreviewPanel(new JPanel());
-    panelColors.add(colorChooser, BorderLayout.CENTER);
-
+    // color chooser
+    colorChooser = new ColorChooser(timeline.colorGroup.getAll());
+    
     // add those tabs
     add("Main"  , panelMain);
-    add("Colors", panelColors);
+    add("Colors", colorChooser);
 
     // listen
     ActionSlider as = new ActionSlider();
@@ -136,6 +138,9 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     timeline.setPaintGrid(checkOptions[2].isSelected());
     timeline.setCMPerEvents(sliderCmBefEvent.getValue(), sliderCmAftEvent.getValue());
     
+    // colors
+    colorChooser.apply();
+    
     // Done
   }
 
@@ -152,6 +157,9 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     checkOptions[1].setSelected(timeline.isPaintDates());
     checkOptions[2].setSelected(timeline.isPaintGrid());
     
+    // colors
+    colorChooser.reset();
+    
     // Done
   }
 
@@ -163,7 +171,7 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     protected void execute() {
       // get values
       double 
-        cmBefEvent = sliderCmBefEvent .getValue(),
+        cmBefEvent = sliderCmBefEvent.getValue(),
         cmAftEvent = sliderCmAftEvent.getValue();
       // update labels
       sliderCmBefEvent.setText(timeline.cm2txt(cmBefEvent, "info.befevent"));
