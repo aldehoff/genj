@@ -122,7 +122,7 @@ abstract class Proxy  {
       Insets insets = getInsets();
       Rectangle box = new Rectangle(insets.left,insets.top,getWidth()-insets.left-insets.right,getHeight()-insets.top-insets.bottom);     
       // clear background
-      g.setColor(Color.WHITE);
+      g.setColor(Color.white); //Color.WHITE is 1.4 only
       g.fillRect(box.x, box.y, box.width, box.height);
       // render entity
       if (renderer==null) 
