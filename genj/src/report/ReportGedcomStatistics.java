@@ -15,7 +15,6 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.gedcom.time.Delta;
-import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 import genj.util.ReferenceSet;
 
@@ -26,7 +25,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.48 2004-03-06 16:13:39 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.49 2004-03-06 19:28:43 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
