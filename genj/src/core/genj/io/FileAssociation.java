@@ -61,9 +61,9 @@ public class FileAssociation {
    */
   public FileAssociation(String s) {
     StringTokenizer tokens = new StringTokenizer(s,"*");
-    suffix = tokens.nextToken();
-    action = tokens.nextToken();
-    executable = tokens.nextToken();
+    suffix = tokens.hasMoreTokens() ? tokens.nextToken() : "";
+    action = tokens.hasMoreTokens() ? tokens.nextToken() : "";
+    executable = tokens.hasMoreTokens() ? tokens.nextToken() : "";
   }
   
   /**
