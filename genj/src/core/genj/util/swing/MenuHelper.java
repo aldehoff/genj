@@ -37,18 +37,17 @@ public class MenuHelper  {
   private String text             = null;
   private String action           = null;
   private ImgIcon image           = null;
-  private JMenu menu              = null;  
+  private Vector menus            = new Vector();  // JMenu or JPopupMenu or JMenuBar
   private ActionListener listener = null;
   private Vector collection       = null;
   private Resources resources     = null;
-  private JMenuBar bar            = null;
   private boolean enabled         = true;
 
   /** Setters */    
-  public MenuHelper setMenu(JMenu set) { menu=set; return this; }
+  public MenuHelper popMenu() { menus.remove(menus.lastElement()); return this; }
+  public MenuHelper pushMenu(Object set) { menus.add(set); return this; }
   public MenuHelper setCollection(Vector set) { collection=set; return this; }
   public MenuHelper setResources(Resources set) { resources=set; return this; }
-  public MenuHelper setBar(JMenuBar set) { bar=set; return this; }
   public MenuHelper setEnabled(boolean set) { enabled=set; return this; }
 
   /**
@@ -56,7 +55,7 @@ public class MenuHelper  {
    */
   public JMenuBar createBar() {
     JMenuBar result = new JMenuBar();
-    setBar(result);
+    pushMenu(result);
     return result;
   }
 
@@ -65,8 +64,40 @@ public class MenuHelper  {
    */
   public JMenu createMenu(String text) {
     JMenu result = new JMenu(string(text));
-    if ((menu==null)&&(bar!=null)) bar.add(result);
-    setMenu(result);
+
+    Object menu = peekMenu();
+    if (menu instanceof JMenu)
+      ((JMenu)menu).add(result);
+    if (menu instanceof JPopupMenu)
+      ((JPopupMenu)menu).add(result);
+    if (menu instanceof JMenuBar)
+      ((JMenuBar)menu).add(result);
+
+    pushMenu(result);
+    return result;
+  }
+
+  /**
+   * Creates a PopupMenu
+   */
+  public JPopupMenu createPopup(String label, Component component) {
+    
+    // create one
+    final JPopupMenu result = new JPopupMenu(string(label));
+    
+    // start listening for it
+    component.addMouseListener(new MouseAdapter() {
+      public void mouseReleased(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+          result.show(e.getComponent(),e.getX(), e.getY());
+        }
+      }
+    });
+    
+    // that's the menu now
+    pushMenu(result);
+    
+    // done
     return result;
   }
 
@@ -80,7 +111,15 @@ public class MenuHelper  {
     if (action.txt!=null) result.setText(string(action.txt));
     if (action.img!=null) result.setIcon(ImgIconConverter.get(action.img));
     result.setEnabled(enabled);
-    if (menu!=null) menu.add(result);
+    
+    Object menu = peekMenu();
+    if (menu instanceof JMenu)
+      ((JMenu)menu).add(result);
+    if (menu instanceof JPopupMenu)
+      ((JPopupMenu)menu).add(result);
+    if (menu instanceof JMenuBar)
+      ((JMenuBar)menu).add(result);
+      
     if (collection!=null) collection.addElement(result);
     
     return result;
@@ -90,7 +129,13 @@ public class MenuHelper  {
    * Creates an separator
    */
   public MenuHelper createSeparator() {
-    if (menu!=null) menu.addSeparator();
+
+    Object menu = peekMenu();
+    if (menu instanceof JMenu)
+      ((JMenu)menu).addSeparator();
+    if (menu instanceof JPopupMenu)
+      ((JPopupMenu)menu).addSeparator();
+      
     return this;
   }
 
@@ -98,7 +143,16 @@ public class MenuHelper  {
    * Helper resolving a text
    */
   private String string(String txt) {
+    if (txt==null) return "";
     if (resources==null) return txt;
     return resources.getString(txt);
+  }
+
+  /**
+   * Helper getting the top Menu from the stack
+   */  
+  private Object peekMenu() {
+    if (menus.size()==0) return null;
+    return menus.lastElement();
   }
 }

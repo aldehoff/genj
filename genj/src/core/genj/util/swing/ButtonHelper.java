@@ -48,7 +48,7 @@ public class ButtonHelper {
   private Container container     = null;
   private Dimension minSize       = null;
   private int horizontalAlignment = -1;
-  private Vector collection       = null;
+  private Vector collections      = new Vector();
   private boolean isTextAllowed   = true;
   private boolean isImageAllowed  = true;
   private boolean isImageOverText = false;
@@ -65,7 +65,8 @@ public class ButtonHelper {
   public ButtonHelper setContainer(Container set) { container=set; return this; }
   public ButtonHelper setMinimumSize(Dimension set) { minSize=set; return this; }
   public ButtonHelper setHorizontalAlignment(int set) { horizontalAlignment=set; return this; }
-  public ButtonHelper setCollection(Vector set) { collection=set; return this; }
+  public ButtonHelper addCollection(Vector set) { collections.addElement(set); return this; }
+  public ButtonHelper removeCollection(Vector set) { collections.removeElement(set); return this; }
   public ButtonHelper setImageAllowed(boolean set) { isImageAllowed=set; return this; }
   public ButtonHelper setTextAllowed(boolean set) { isTextAllowed=set; return this; }
   public ButtonHelper setImageOverText(boolean set) { isImageOverText=set; return this; }
@@ -80,10 +81,12 @@ public class ButtonHelper {
     
     JButton result = new JButton();
     
-    if (isTextAllowed) {
-      String s = (isShortTexts&&action.stxt!=null) ? action.stxt : action.txt;
-      if (s!=null) result.setText(string(s));
-    }
+    // its text
+    String s = string((isShortTexts&&action.stxt!=null) ? action.stxt : action.txt);
+    result.putClientProperty("save.text", s);
+    if (isTextAllowed) result.setText(s);
+    
+    // its image
     if (isImageAllowed&&action.img!=null) 
       result.setIcon(ImgIconConverter.get(action.img));
     if (isImageAllowed&&action.roll!=null)
@@ -112,8 +115,12 @@ public class ButtonHelper {
 
     if (container!=null)
       container.add(result);
-    if (collection!=null)
-      collection.addElement(result);
+    if (collections.size()>0) {
+      Enumeration e = collections.elements();
+      while (e.hasMoreElements()) {
+        ((Vector)e.nextElement()).addElement(result);
+      }
+    }
 
     return result;
   }
@@ -122,6 +129,7 @@ public class ButtonHelper {
    * Helper that takes given text and tries to use resources
    */
   private String string(String string) {
+    if (string==null) return "";
     if (resources!=null) 
       string = resources.getString(string);
     return string;    
@@ -136,4 +144,21 @@ public class ButtonHelper {
       ((AbstractButton)e.nextElement()).setEnabled(set);
     }
   }
+  
+  /**
+   * Helper that sets/unsets text for a set of buttons
+   */
+  public static void setTextAllowed(Vector v, boolean set) {
+    Enumeration e = v.elements();
+    while (e.hasMoreElements()) {
+      AbstractButton b = (AbstractButton)e.nextElement();
+      if (set) {
+        Object s = b.getClientProperty("save.text");
+        if (s!=null) b.setText(s.toString());
+      } else {
+        b.setText(null);
+      }
+    }
+  }
+  
 }
