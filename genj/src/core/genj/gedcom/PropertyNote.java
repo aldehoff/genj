@@ -203,6 +203,9 @@ public class PropertyNote extends PropertyXRef {
     }
 
     Note note = getGedcom().getNoteFromId(id);
+    if (note == null) {
+        throw new GedcomException(toString()+" not in this gedcom");
+    }
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);

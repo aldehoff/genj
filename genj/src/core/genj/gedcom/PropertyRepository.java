@@ -136,6 +136,9 @@ public class PropertyRepository extends PropertyXRef {
     }
 
     Repository repository = getGedcom().getRepositoryFromId(id);
+    if (repository == null) {
+      throw new GedcomException("Couldn't find entity with ID "+id);
+    }
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);

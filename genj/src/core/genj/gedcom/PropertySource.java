@@ -140,6 +140,9 @@ public class PropertySource extends PropertyXRef {
     }
 
     Source source = getGedcom().getSourceFromId(id);
+    if (source == null) {
+      throw new GedcomException("Couldn't find entity with ID "+id);
+    }
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
