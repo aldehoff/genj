@@ -52,7 +52,7 @@ public class PropertyDate extends Property {
     ABT     = 7,
     CAL     = 8,
     EST     = 9,
-    MAX     = 9;
+    LAST_ATTRIB = EST;
 
   /** month names */
   private final static String months[] = {"JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
