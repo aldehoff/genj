@@ -31,9 +31,6 @@ public class PropertyName extends Property {
   
   private final static String TAG =  "NAME";
   
-  /** all names */
-  private static ReferenceSet lastNames = new ReferenceSet();
-
   /** the first + last name */
   private String
     lastName  = null,
@@ -189,8 +186,7 @@ public class PropertyName extends Property {
     noteModifiedProperty();
 
     // forget/remember
-    lastNames.remove(lastName, this);
-    lastNames.add(last, this);
+    rememberLastName(lastName, last);
 
     // Make sure no Information is kept in base class
     nameAsString=null;
@@ -204,13 +200,32 @@ public class PropertyName extends Property {
   }
   
   /**
+   * Hook:
+   * + Remember last names in reference set
+   * 
    * @see genj.gedcom.PropertyName#addNotify(genj.gedcom.Property)
    */
-  public void addNotify(Property parent) {
+  /*package*/ void addNotify(Property parent) {
+    // continue
     super.addNotify(parent);
-    // might have to update name now inside indi
-    if (nameAsString!=null) setValue(nameAsString); 
+    // our change to remember the last name
+    rememberLastName(lastName, lastName);
+    // done
   }
+  
+  /**
+   * Callback:
+   * + Forget last names in reference set
+   * @see genj.gedcom.Property#delNotify()
+   */
+  /*package*/ void delNotify() {
+    // forget value
+    rememberLastName(lastName, EMPTY_STRING);
+    // continue
+    super.delNotify();
+    // done
+  }
+
 
   /**
    * sets the name to a new gedcom value
@@ -256,14 +271,41 @@ public class PropertyName extends Property {
    * Return all last names
    */
   public List getLastNames() {
-    return lastNames.getValues();
+    return getReferenceSet(true).getValues();
   }
 
   /**
    * Returns all PropertyNames that contain the same name 
    */
   public Property[] getSameLastNames() {
-    return toArray(lastNames.getReferences(getLastName()));
+    return toArray(getReferenceSet(true).getReferences(getLastName()));
   }
   
+  /**
+   * Lookup reference set
+   */
+  private ReferenceSet getReferenceSet(boolean notNull) {
+    // look it up
+    Gedcom gedcom = getGedcom();
+    if (gedcom!=null)
+      return gedcom.getReferenceSet(TAG);
+    // none available!
+    if (notNull) throw new IllegalArgumentException("getReferenceSet() n/a with parent==null");
+    return null;
+  }
+
+  /**
+   * Remember a last name
+   */
+  private void rememberLastName(String oldName, String newName) {
+    // got access to a reference set?
+    ReferenceSet refSet = getReferenceSet(false);
+    if (refSet==null)
+      return;
+    // forget old
+    if (oldName!=null&&oldName.length()>0) refSet.remove(oldName, this);
+    // remember new
+    if (newName!=null&&newName.length()>0) refSet.add(newName, this);
+    // done
+  }
 } //PropertyName

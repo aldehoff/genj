@@ -21,44 +21,36 @@ package genj.gedcom;
 
 import genj.util.ReferenceSet;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 
 /**
  * Gedcom Property : simple value with choices
  */
 public class PropertyChoiceValue extends PropertySimpleValue {
 
-  /** mapping tags refence sets */
-  private static Map tags2refsets = new HashMap();
-
   /**
-   * Lookup a refset
+   * Lookup reference set
    */
-  private ReferenceSet getRefSet() {
-    // lookup
-    String tag = getTag();
-    ReferenceSet result = (ReferenceSet)tags2refsets.get(tag);
-    if (result==null) {
-      // .. instantiate if necessary
-      result = new ReferenceSet();
-      tags2refsets.put(tag, result);
-      // .. and pre-fill
-      StringTokenizer tokens = new StringTokenizer(Gedcom.resources.getString(tag+".vals",""),",");
-      while (tokens.hasMoreElements()) result.add(tokens.nextToken().trim(), null);
-    }
-    // done
-    return result;
+  private ReferenceSet getReferenceSet(boolean notNull) {
+    // look it up
+    Gedcom gedcom = getGedcom();
+    if (gedcom!=null)
+      return gedcom.getReferenceSet(getTag());
+    // none available!
+    if (notNull) throw new IllegalArgumentException("getReferenceSet() n/a with parent==null");
+    return null;
   }
-  
+
   /**
    * Remember a value
    */
   private void remember(String oldValue, String newValue) {
+    // remember by tag
     String tag = getTag();
-    ReferenceSet refSet = getRefSet();
+    // got access to a reference set?
+    ReferenceSet refSet = getReferenceSet(false);
+    if (refSet==null)
+      return;
     // forget old
     if (oldValue.length()>0) refSet.remove(oldValue, this);
     // remember new
@@ -67,10 +59,10 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   }
   
   /**
-   * Returns all Properties that contain the same value 
+   * Returns all Properties that contain the same value
    */
   public Property[] getSameChoices() {
-    return toArray(getRefSet().getReferences(getValue()));
+    return toArray(getReferenceSet(true).getReferences(getValue()));
   }
   
   /**
@@ -84,20 +76,32 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   }
 
   /**
+   * @see genj.gedcom.Property#addNotify(genj.gedcom.Property)
+   */
+  /*package*/ void addNotify(Property parent) {
+    // delegate
+    super.addNotify(parent);
+    // a remember wouldn't have worked until now
+    remember(getValue(), getValue());
+    // done
+  }
+
+  /**
+   * Removing us from the reference set (our value is not used anymore)
    * @see genj.gedcom.PropertyRelationship#delNotify()
    */
-  public void delNotify() {
+  /*package*/ void delNotify() {
     // forget value
-    setValue("");
+    remember(getValue(), EMPTY_STRING);
     // continue
     super.delNotify();
   }
   
   /**
-   * Used choices
+   * Used choices - this won't work unless parent!=null
    */
   public List getChoices() {
-    return getRefSet().getValues();
+    return getReferenceSet(true).getValues();
   }
   
   /**
