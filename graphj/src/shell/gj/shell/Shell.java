@@ -209,7 +209,7 @@ public class Shell {
    * Creates a graph bounds rectangle
    */
   private Rectangle createGraphBounds() {
-    return new Rectangle(0,0,graphWidget.getWidth(),graphWidget.getHeight());
+    return new Rectangle(0,0,graphWidget.getWidth()-32,graphWidget.getHeight()-32);
   }
   
   /**
