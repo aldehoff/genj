@@ -257,7 +257,7 @@ class View extends JFrame {
     // Try to find out box
     Rectangle box = registry.get("frame",(Rectangle)null);
     if (box!=null) {
-      setBounds(box);
+      setBounds(new AreaInScreen(box));
     } else {
       setSize(new Dimension(480,320));
     }

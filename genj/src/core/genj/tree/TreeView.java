@@ -574,15 +574,20 @@ public class TreeView extends Scrollpane {
 
     // Setup Bound of new window
     Rectangle r = registry.get("over.bounds", (Rectangle)null);
-
     if (r!=null) {
+      
+      // .. relative to a frame?
       if (frame!=null) {
         Point p = frame.getLocation();
         r.x = p.x+r.x;
         r.y = p.y+r.y;
       }
-      overview.setBounds(r);
+      
+      // .. set
+      overview.setBounds(new AreaInScreen(r));
+      
     } else {
+      // .. default
       overview.setSize(new Dimension(160,160));
     }
 
