@@ -69,7 +69,7 @@ public class App {
   private Registry registry;
   private Hashtable openFrames = new Hashtable();
   private static App instance;
-  private Resources resources = Resources.get(this);
+  private Resources resources;
 
   /**
    * Application Constructor
@@ -97,6 +97,8 @@ public class App {
     } catch (Throwable t) {}
 
     // Make sure that Swing shows our localized texts
+    resources = Resources.get(this);
+    
     Enumeration keys = resources.getKeys();
     while (keys.hasMoreElements()) {
       String key = (String)keys.nextElement();
