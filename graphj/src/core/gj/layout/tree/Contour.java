@@ -179,12 +179,12 @@ package gj.layout.tree;
       
       if (contour.size==null) {
         // simplest case - no data!
-        north = contour.north;
-        longitude = s==WEST ? contour.west : contour.east;
-        south = contour.south;
+        north = round(contour.north);
+        longitude = round(s==WEST ? contour.west : contour.east);
+        south = round(contour.south);
       } else {
         // grab first from data
-        south = contour.north;
+        south = round(contour.north);
         i = 0;
         next();
       }
@@ -201,14 +201,18 @@ package gj.layout.tree;
         
       // move forward
       this.north = this.south;
-      this.longitude = contour.dlon + contour.data[side][i++];
+      this.longitude = round(contour.dlon + contour.data[side][i++]);
       if (i==contour.size[side])
-        this.south = contour.south;
+        this.south = round(contour.south);
       else
-        this.south = contour.dlat + contour.data[side][i++];
+        this.south = round(contour.dlat + contour.data[side][i++]);
 
       // done
       return true;      
+    }
+    
+    private double round(double d) {
+      return Math.rint(d*1000)/1000;
     }
       
   } //ContourIterator
