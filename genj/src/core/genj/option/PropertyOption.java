@@ -54,10 +54,16 @@ public abstract class PropertyOption extends Option {
   protected String property;
 
   /**
-   * Get options for given instance - supported are
-   * int, boolean and String
+   * Get options for given instance 
    */
   public static List introspect(Object instance) {
+    return introspect(instance, null);
+  }
+  
+  /**
+   * Get options for given instance 
+   */
+  public static List introspect(Object instance, String category) {
     
     // prepare result
     List result = new ArrayList();
@@ -83,8 +89,12 @@ public abstract class PropertyOption extends Option {
           // try a read
           property.getReadMethod().invoke(instance, null);
             
-          // create and keep the option
-          result.add(BeanPropertyImpl.create(instance, property));
+          // create 
+          Option option = BeanPropertyImpl.create(instance, property);
+          option.setCategory(category);
+          
+          // and keep the option
+          result.add(option);
           
           // remember name
           beanattrs.add(property.getName());
@@ -119,8 +129,12 @@ public abstract class PropertyOption extends Option {
       if (!Impl.isSupportedArgument(type))
         continue;
 
-      // create and keep the option
-      result.add(FieldImpl.create(instance, field));
+      // create 
+      Option option = FieldImpl.create(instance, field);
+      option.setCategory(category);
+      
+      // and keep the option
+      result.add(option);
 
       // next
     }

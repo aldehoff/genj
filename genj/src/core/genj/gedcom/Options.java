@@ -114,7 +114,7 @@ public class Options extends OptionProvider {
    * Provider callback 
    */
   public List getOptions() {
-    return PropertyOption.introspect(instance);
+    return PropertyOption.introspect(instance, "Gedcom");
   }
 
 } //Options

@@ -34,6 +34,23 @@ public abstract class Option {
   
   private List listeners;
   
+  private String category;
+  
+  /**
+   * Accessor - category of this option
+   * @return category or null
+   */
+  public String getCategory() {
+    return category;
+  }
+  
+  /**
+   * Accessor - category of this option
+   */
+  public void setCategory(String set) {
+    category = set;
+  }
+  
   /**
    * Accessor - name of this option
    */

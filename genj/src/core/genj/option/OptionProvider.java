@@ -91,8 +91,10 @@ public abstract class OptionProvider {
     while (it.hasNext()) {
       // one provider at a time
       OptionProvider provider = (OptionProvider)it.next();
-      // one option at a time
-      options.addAll(provider.getOptions());
+      // grab its options
+      List os = provider.getOptions();
+      // keep em
+      options.addAll(os);
     }
   
     // done

@@ -25,27 +25,20 @@ import genj.window.WindowManager;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.ItemSelectable;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.EventObject;
+import java.awt.Font;
+import java.awt.font.FontRenderContext;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTree;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.CellEditorListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
@@ -63,11 +56,14 @@ public class OptionsWidget extends JPanel {
   /** tree we're using */
   private JTree tree;
   
-  /** model we're using */
-  private Model model = new Model();
-  
   /** reference to window manager */
   private WindowManager manager;
+  
+  /** tree model */
+  private Model model = new Model();
+  
+  /** first column width */
+  private int widthOf1stColumn = 32;
   
   /**
    * Constructor
@@ -84,8 +80,11 @@ public class OptionsWidget extends JPanel {
     this.manager = manager;
         
     // setup
-    
-    tree = new JTree(model);
+    tree = new JTree(model) {
+      public boolean isPathEditable(TreePath path) {
+        return path.getLastPathComponent() instanceof Option;
+      }
+    };
     tree.setShowsRootHandles(false);
     tree.setRootVisible(false);
     tree.setCellRenderer(new Cell());
@@ -119,27 +118,30 @@ public class OptionsWidget extends JPanel {
    */
   public void setOptions(List set) {
     
-    // check options
+    // check options - we don't keep any without ui
     ListIterator it = set.listIterator();
     while (it.hasNext()) {
       Option option = (Option)it.next();
       if (option.getUI(this)==null)
         it.remove();
     }
-
-    // let model know
-    Option[] options = (Option[])set.toArray(new Option[set.size()]);
-    model.setOptions(options);
     
-//    // recalc column widths
-//    int w = 48;
-//    
-//    for (int i=0;i<options.length;i++)
-//      w = Math.max(w, options[i].getUI(this).getComponentRepresentation().getPreferredSize().width);
-//      
-//    table.getColumnModel().getColumn(0).setPreferredWidth(Integer.MAX_VALUE);
-//    table.getColumnModel().getColumn(1).setMinWidth(w);
-
+    // calculate longest width of option name
+    FontRenderContext ctx = new FontRenderContext(null,false,false);
+    Font font = tree.getFont();
+    widthOf1stColumn = 0;
+    for (int i = 0; i < set.size(); i++) {
+      Option option = (Option)set.get(i);
+      widthOf1stColumn = Math.max(widthOf1stColumn, (int)Math.ceil(font.getStringBounds(option.getName(), ctx).getWidth()));
+    }
+    
+    // tell to model
+    model.setOptions(set);
+    
+    // unfold all
+    for (int i=0;i<tree.getRowCount();i++)
+      tree.expandRow(i); 
+    
     // layout
     doLayout();
   }
@@ -180,10 +182,11 @@ public class OptionsWidget extends JPanel {
      * callback - component generation
      */
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-      // an option group?
-      if (!(value instanceof Option)) 
-        return panel;
-      return assemblePanel((Option)value, false);
+      // option?
+      if (value instanceof Option) 
+        return assemblePanel((Option)value, false);
+      // must be string
+      return new JLabel(value.toString());
     }
 
     /**
@@ -196,8 +199,8 @@ public class OptionsWidget extends JPanel {
       // lookup option and ui
       ui = option.getUI(OptionsWidget.this);
       // prepare name
-      labelForName.setText(option.getName()+ " : ");
-      labelForName.setPreferredSize(new Dimension(getWidth()/2,labelForName.getPreferredSize().height));
+      labelForName.setText(option.getName());
+      labelForName.setPreferredSize(new Dimension(widthOf1stColumn,16));
       // and value (either text or ui)
       JComponent compForValue;
       String text = ui.getTextRepresentation();
@@ -241,27 +244,51 @@ public class OptionsWidget extends JPanel {
     }
 
   } //Cell
-    
+
   /** 
    * Model
    */
   private class Model extends AbstractTreeModel {
     
-    /** options we're looking at */
-    private Option[] options = new Option[0];
+    /** top-level children */
+    private List categories = new ArrayList();
+    private Map cat2options = new HashMap();
   
     /**
      * the parent of options is the root (this)
      */
     protected Object getParent(Object node) {
-      return node==this ? null : this;
+      throw new IllegalArgumentException();
     }
-
+    
+    private List getCategory(String cat) {
+      List result = (List)cat2options.get(cat);
+      if (result==null) {
+        result = new ArrayList();
+        cat2options.put(cat, result);
+        if (cat!=null)
+          categories.add(cat);
+      }
+      return result;
+    }
+  
     /**
      * Set options to display
      */
-    private void setOptions(Option[] set) {
-      options = set;
+    private void setOptions(List set) {
+      
+      // parse anew
+      cat2options.clear();
+      categories.clear();
+      
+      HashMap categories = new HashMap();
+      for (int i = 0; i < set.size(); i++) {
+        Option option = (Option)set.get(i);
+        String cat = option.getCategory();
+        getCategory(cat).add(option);
+      }
+      
+      // notify
       fireTreeStructureChanged(this, new TreePath(this), null, null);
     }
     
@@ -271,35 +298,40 @@ public class OptionsWidget extends JPanel {
     public Object getRoot() {
       return this;
     }
-
+  
     /**
      * children are all options
      */
     public int getChildCount(Object parent) {
-      return parent==this ? options.length : 0;
+      if (parent==this)
+        return getCategory(null).size() + cat2options.size()-1;
+      return getCategory((String)parent).size();
     }
-
+  
     /**
      * options are leafs
      */
     public boolean isLeaf(Object node) {
-      return node!=this;
+      return node instanceof Option;
     }
-
+  
     /**
      * option by index
      */
     public Object getChild(Object parent, int index) {
-      return options[index];
+      if (parent==this) {
+        List toplevel = getCategory(null);
+        if (index<toplevel.size())
+          return toplevel.get(index);
+        return categories.get(index - toplevel.size());
+      }
+      return getCategory((String)parent).get(index);
     }
-
+  
     /**
      * reverse index lookup
      */
     public int getIndexOfChild(Object parent, Object child) {
-      for (int o = 0; o < options.length; o++) {
-        if (options[o]==child) return o;
-      }
       throw new IllegalArgumentException();
     }
     
