@@ -50,7 +50,7 @@ public class CreateRelationship extends AbstractChange {
    * Constructor
    */
   public CreateRelationship(Relationship relatshp, ViewManager manager) {
-    super(relatshp.getGedcom(), relatshp.getImage().getOverLayed(imgNew), resources.getString("new", relatshp.getName()), manager);
+    super(relatshp.getGedcom(), relatshp.getImage().getOverLayed(imgNew), resources.getString("new", relatshp.getName(false)), manager);
     relationship = relatshp;
   }
   
@@ -67,7 +67,7 @@ public class CreateRelationship extends AbstractChange {
       // show dialog
       int choice = manager.getWindowManager().openDialog(
         null,
-        relationship.getName(),
+        relationship.getName(false),
         WindowManager.IMG_QUESTION,
         relationship.toString(),
         names,
@@ -97,7 +97,7 @@ public class CreateRelationship extends AbstractChange {
       resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom});
 
     // relationship detail      
-    String detail = resources.getString("confirm.new.related", relationship );
+    String detail = resources.getString("confirm.new.related", relationship.getName(true) );
     
     // Entity comment?
     String comment = resources.getString("confirm."+Gedcom.getTagFor(targetType));
