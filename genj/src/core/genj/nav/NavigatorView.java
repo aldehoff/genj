@@ -25,11 +25,9 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.ButtonHelper;
 import genj.view.ContextSupport;
 import genj.view.ViewManager;
 
@@ -38,29 +36,51 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
 /**
  * A navigator with buttons to easily navigate through Gedcom data
  */
 public class NavigatorView extends JPanel implements ContextSupport {
   
-  private Resources resources = Resources.get(this);
+  private static Resources resources = Resources.get(NavigatorView.class);
+
+  private final static String 
+    TIP_FATHER   = resources.getString("tip.father"),
+    TIP_MOTHER   = resources.getString("tip.mother"),
+    TIP_YSIBLING = resources.getString("tip.ysibling"),
+    TIP_OSIBLING = resources.getString("tip.osibling"),
+    TIP_PARTNER  = resources.getString("tip.partner"),
+    TIP_CHILD    = resources.getString("tip.child");
+
+  /** entity per tip */
+  private Map tip2indi = new HashMap();
   
   /** the label holding information about the current individual */
-  private JLabel label;
+  private JLabel labelName;
+  private TitledBorder borderName;
   
   /** the current individual */
-  private Indi indi;
+  private Indi current;
   
   /** the buttons */
-  private AbstractButton bFather, bMother, bOlder, bPartner, bYounger, bChild;
+  private Map tip2button = new HashMap();
   
   /** the gedcom */
   private Gedcom gedcom;
@@ -80,10 +100,11 @@ public class NavigatorView extends JPanel implements ContextSupport {
     // layout    
     setLayout(new BorderLayout());
 
-    label = new JLabel();
-    label.setFont(new Font("Arial", Font.PLAIN, 10));
-    label.setBorder(BorderFactory.createTitledBorder(resources.getString("nav.current_entity.title")));
-    add(label,BorderLayout.NORTH);
+    borderName = BorderFactory.createTitledBorder("");
+    labelName = new JLabel();
+    labelName.setFont(new Font("Arial", Font.PLAIN, 10));
+    labelName.setBorder(borderName);
+    add(labelName,BorderLayout.NORTH);
     
     JPanel panel = createPanel();
     add(panel,BorderLayout.CENTER);
@@ -91,15 +112,14 @@ public class NavigatorView extends JPanel implements ContextSupport {
     // date
     useGedcom.addListener(new GedcomListener() {
       public void handleChange(Change change) {
-        if (change.getEntities(change.EDEL).contains(indi)) setCurrentEntity(null);
-        else setCurrentEntity(indi);
+        if (change.getEntities(change.EDEL).contains(current)) setCurrentEntity(null);
+        else setCurrentEntity(current);
       }
     });
     
     // init
     Property context = manager.getContext(gedcom);
-    if (context!=null)
-      setCurrentEntity(context.getEntity());
+    setCurrentEntity(context!=null?context.getEntity():null);
 
     // done    
 
@@ -134,42 +154,71 @@ public class NavigatorView extends JPanel implements ContextSupport {
   }
   
   /**
+   * Set jump 
+   */
+  private void setJump(String tip, Entity e) {
+    JButton b = (JButton)tip2button.get(tip);
+    if (e==null) {
+      tip2indi.remove(tip);
+      b.setEnabled(false);
+    } else {
+      tip2indi.put(tip, e);
+      b.setEnabled(true);
+    }
+  }
+  
+  /**
+   * Sets the label and title
+   */
+  private void setLabel(String title, Indi indi) {
+    if (title==null) title = Gedcom.getNameFor(Gedcom.INDIVIDUALS,false);
+    borderName.setTitle(title);
+    labelName.setText(indi!=null ? indi.getName() : "n/a");
+    repaint();
+  }
+  
+  /**
    * Set the current entity
    */
   public void setCurrentEntity(Entity e) {
-    // no entity
+    
+    // try to get one if entity==null
     if (e == null) {
       List list = gedcom.getEntities(Gedcom.INDIVIDUALS);
       if (!list.isEmpty()) e=(Entity)list.get(0);
     }
-    if (e == null) {
-      // data
-      indi = null;
-      label.setText("n/a");
-      // buttons
-      bFather.setEnabled(false);
-      bMother.setEnabled(false);
-      bOlder.setEnabled(false);
-      bPartner.setEnabled(false);
-      bYounger.setEnabled(false);
-      bChild.setEnabled(false);
+
+    // only individual
+    if (e!=null&&!(e instanceof Indi)) 
       return;
-    }
-    // individual
-    if (e instanceof Indi) {
-      // data
-      indi = (Indi)e;
-      label.setText(e.toString());
+    
+    // forget jumps
+    tip2indi.clear();
+    
+    // and current
+    current = (Indi)e;
+
+    // update label
+    setLabel(null, current);
+    
+    // nothing?
+    if (current == null) {
       // buttons
-      bFather.setEnabled(indi.getFather()!=null);
-      bMother.setEnabled(indi.getMother()!=null);
-      bOlder.setEnabled(indi.getOlderSibling()!=null);
-      bPartner.setEnabled(indi.getPartners().length>0);
-      bYounger.setEnabled(indi.getYoungerSibling()!=null);
-      bChild.setEnabled(indi.getChildren().length>0);
-      
+      Iterator buttons = tip2button.values().iterator();
+      while (buttons.hasNext()) {
+        ((JButton)buttons.next()).setEnabled(false);
+      }
+    } else {
+      // buttons
+      setJump(TIP_FATHER  , current.getFather());
+      setJump(TIP_MOTHER  , current.getMother());
+      setJump(TIP_OSIBLING, current.getOlderSibling());
+      setJump(TIP_PARTNER , current.getPartners().length==0?null:current.getPartners()[0]);
+      setJump(TIP_YSIBLING, current.getYoungerSibling());
+      setJump(TIP_CHILD   , current.getChildren().length==0?null:current.getChildren()[0]);
     }
-    // stay where we are
+          
+    // done
   }
   
   /**
@@ -178,6 +227,30 @@ public class NavigatorView extends JPanel implements ContextSupport {
   private void fireCurrentEntity(Entity e) {
     if (e==null) return;
     manager.setContext(e);
+  }
+
+  /**
+   * Creates a button
+   */
+  private JButton createButton(String key, ImageIcon i, ImageIcon r, ActionListener al, MouseListener ml) {
+    
+    // create result
+    JButton result = new JButton();
+    result.setIcon(i);
+    result.setRolloverIcon(r);
+    result.setFocusable(false);
+    result.setBorder(null);
+    result.setEnabled(false);
+    result.setActionCommand(key);
+    result.addActionListener(al);
+    result.setToolTipText(key);
+    result.addMouseListener(ml);
+
+    // remember    
+    tip2button.put(key, result);
+    
+    // done
+    return result;
   }
   
   /**
@@ -189,114 +262,53 @@ public class NavigatorView extends JPanel implements ContextSupport {
     result.setBorder(BorderFactory.createTitledBorder(resources.getString("nav.navigate.title")));
     GridBagHelper gh = new GridBagHelper(result);
     
-    // add the buttons    
-    ButtonHelper bh = new ButtonHelper()
-      .setFocusable(false)
-      .setBorder(false)
-      .setInsets(0)
-      .setResources(resources)
-      .setEnabled(false);
+    // create listener
+    ActionListener al = new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        fireCurrentEntity((Entity)tip2indi.get(e.getActionCommand()));
+      }
+    };
     
-      bFather = bh.create(new ActionFather()        );
-      bMother = bh.create(new ActionMother()        );
-      bOlder  = bh.create(new ActionOlderSibling()  );
-      bPartner= bh.create(new ActionPartner()       );
-      bYounger= bh.create(new ActionYoungerSibling());
-      bChild  = bh.create(new ActionChild()         );
-
-    gh.add(bFather ,2,1,1,1);
-    gh.add(bMother ,3,1,1,1);
-    gh.add(bOlder  ,0,2,2,1);
-    gh.add(bPartner,2,2,2,1,0,new Insets(12,0,12,0));
-    gh.add(bYounger,4,2,2,1);
-    gh.add(bChild  ,2,3,2,1);
+    MouseListener ml = new MouseAdapter() {
+      /** show preview */
+      public void mouseEntered(MouseEvent e) {
+        String tip = ((JButton)e.getSource()).getActionCommand();
+        setLabel(tip, (Indi)tip2indi.get(tip));
+      }
+      /** restore current */
+      public void mouseExited(MouseEvent e) {
+        setLabel(null, current);
+      }
+    };
+    
+    // add the buttons
+    gh.add(
+      createButton(TIP_FATHER, Images.imgNavFatherOff, Images.imgNavFatherOn, al, ml) 
+      ,2,1,1,1
+    );
+    gh.add(
+      createButton(TIP_MOTHER, Images.imgNavMotherOff, Images.imgNavMotherOn, al, ml) 
+      ,3,1,1,1
+    );
+    gh.add(
+      createButton(TIP_OSIBLING, Images.imgNavOlderSiblingOff, Images.imgNavOlderSiblingOn, al, ml) 
+      ,0,2,2,1
+    );
+    gh.add(
+      createButton(TIP_PARTNER, Images.imgNavPartnerOff, Images.imgNavPartnerOn, al, ml)
+      ,2,2,2,1,0,new Insets(12,0,12,0)
+    );
+    gh.add(
+      createButton(TIP_YSIBLING, Images.imgNavYoungerSiblingOff, Images.imgNavYoungerSiblingOn, al, ml)
+      ,4,2,2,1
+    );
+    gh.add(
+      createButton(TIP_CHILD, Images.imgNavChildOff, Images.imgNavChildOn, al, ml)  
+      ,2,3,2,1
+    );
 
     // done
     return result;
   }
 
-  /**
-   * Navigate 2 Father
-   */
-  private class ActionFather extends ActionDelegate {
-    /** constructor */
-    protected ActionFather() {
-      super.setRollover(Images.imgNavFatherOn).setImage(Images.imgNavFatherOff).setTip("tip.nav_father"  );
-    }
-    /** run */
-    protected void execute() {
-      fireCurrentEntity(indi.getFather());
-    }
-  }
-      
-  /**
-   * Navigate 2 Mother
-   */
-  private class ActionMother extends ActionDelegate {
-    /** constructor */
-    protected ActionMother() {
-      super.setRollover(Images.imgNavMotherOn).setImage(Images.imgNavMotherOff).setTip("tip.nav_mother"  );
-    }
-    /** run */
-    protected void execute() {
-      fireCurrentEntity(indi.getMother());
-    }
-  }
-        
-  /**
-   * Navigate 2 Previous
-   */
-  private class ActionYoungerSibling extends ActionDelegate {
-    /** constructor */
-    protected ActionYoungerSibling() {
-      super.setRollover(Images.imgNavYoungerSiblingOn).setImage(Images.imgNavYoungerSiblingOff).setTip("tip.nav_ysibling");
-    }
-    /** run */
-    protected void execute() {
-      fireCurrentEntity(indi.getYoungerSibling());
-    }
-  }      
-  
-  /**
-   * Navigate 2 Next
-   */
-  private class ActionOlderSibling extends ActionDelegate {
-    /** constructor */
-    protected ActionOlderSibling() {
-      super.setRollover(Images.imgNavOlderSiblingOn).setImage(Images.imgNavOlderSiblingOff).setTip("tip.nav_osibling");
-    }
-    /** run */
-    protected void execute() {
-      fireCurrentEntity(indi.getOlderSibling());
-    }
-  }
-        
-  /**
-   * Navigate 2 Partner
-   */
-  private class ActionPartner extends ActionDelegate {
-    /** constructor */
-    protected ActionPartner() {
-      super.setRollover(Images.imgNavPartnerOn).setImage(Images.imgNavPartnerOff).setTip("tip.nav_partner" );
-    }
-    /** run */
-    protected void execute() {
-      fireCurrentEntity(indi.getPartners()[0]);
-    }
-  }
-        
-  /**
-   * Navigate 2 Child
-   */
-  private class ActionChild extends ActionDelegate {
-    /** constructor */
-    protected ActionChild() {
-      super.setRollover(Images.imgNavChildOn).setImage(Images.imgNavChildOff).setTip("tip.nav_child"   );
-    }
-    /** run */
-    protected void execute() {
-      fireCurrentEntity(indi.getChildren()[0]);
-    }
-  }
-  
 } ///NavigatorView
