@@ -7,125 +7,154 @@
 <Center>
 <Font size="+1">
 <U>
-GenJ - Developer HOWTO
+Mode d'Emploi du D&eacute;veloppeur pour GenJ
 </U>
 </Font>
 </Center>
 
 <Br>
 
-<b>GETTING IT</b><Br>
+<b>L'OBTENIR</b><Br>
 
 <Br>
 
- GenJ's source is hosted at http://genj.sourceforge.net. By using
- cvs/ssh you can get any desired snapshot. The main developer module
- is ./dev.<Br>
+ Le code source de GenJ est h&eacute;berg&eacute; sur SourceForge &agrave; 
+ l'adresse suivante&nbsp;:&nbsp;<b>http://genj.sourceforge.net</b>. En 
+ utilisant le logiciel cvs/ssh (qui sont des outils pour controler la 
+ conformit&eacute; et mise &agrave; jour d'un code d&eacute;tenu dans 
+ diff&eacute;rents endroits), vous pouvez en obtenir une copie 
+ instantan&eacute;ment. Le principal module de d&eacute;veloppement 
+ est ./dev.<Br>
 
 
- For now I assume that you have cvs/ssh correctly setup on your
- machine. Set the following environment parameters and cd into
- an empty directory of choice:<Br>
-  >cd d:\genj<Br>
+ D&eacute;s &agrave; pr&eacute;sent, je suppose que vous avez le logiciel 
+ cvs/ssh correctement install&eacute; sur votre machine. Etablissez les 
+ param&egrave;tres d'environnement suivants et entrez en ligne de commande 
+ dans un r&eacute;pertoire vide de votre choix et tapez&nbsp;:<Br>
+  >cd d:\genj <i>(sous Linux ce sera plut&ocirc;t cd /home/fm/CVS/genj par exemple)</i><Br>
   >set cvs_rsh=ssh<Br>
   >set cvsroot=:ext:YOURUSERID@cvs.genj.sourceforge.net:/cvsroot/genj<Br>
   >cvs checkout dev<Br>
 <Br>
- This will place all sources into the module directory ./dev - all
- necessary bits are on your machine now for a complete build (of
- course you can have a look at the artifacts first).<Br>
+ Si vous n'avez pas &eacute;t&eacute; accr&eacute;dit&eacute; par l'auteur 
+ du projet comme &eacute;tant un d&eacute;veloppeur et donc ne pouvez pas 
+ remonter sur Sourceforge du code modifi&eacute;, vous pouvez toujours vous 
+ loguer comme anonyme (anonymous) et ainsi reprendre le code source. Il vous 
+ suffit pour cela de mettre en "YOURUSERID" le mot "anonymous" et lorsque 
+ l'on vous demandera un mot de passe, de faire simplement 'Entr&eacute;e' 
+ (donc ne rien mettre comme mot de passe).<Br>
+<Br>
+ Ces commandes vont placer toutes les sources du module r&eacute;cup&eacute;r&eacute; 
+ (ici "dev") dans un sous r&eacute;pertoire ./dev - toutes les donn&eacute;es sont 
+ maintenant sur votre machine et vont vous permettre de reconstruire l'application 
+ (bien s&ucirc;r vous pouvez commencer par jeter un coup d'oeil &agrave; ce 
+ qui a d&eacute;j&agrave; &eacute;t&eacute; r&eacute;alis&eacute;).<Br>
 
 <Br>
 
-<b>LOOKING AT IT</b><Br>
+<b>EN Y REGARDANT DE PLUS PRES</b><Br>
 
 <Br>
 
- The artifacts that comprise ./dev are:
+ Ce qui a d&eacute;j&agrave; &eacute;t&eacute; fait sous ./dev consiste dans 
+ les &eacute;l&eacute;ments suivants&nbsp;:
 <Ul>
-  ./ant.cmd             - ANT start script<Br>
-  ./ant.properties      - Project properties<Br>
-  ./ant.xml             - Project ANT makefile<Br>
-  ./doc                 - Document files<Br>
-  ./gedcom              - Gedcom files<Br>
-  ./help                - Help files<Br>
-  ./images              - Image files<Br>
-  ./language            - Language resource files<Br>
-  ./lib                 - Libraries<Br>
-  ./script              - Scripts (for distribution)<Br>
-  ./src                 - Source<Br>
+  ./build.cmd             - Script de lancement de ANT sous OS/2<Br>
+  ./build.sh              - Script de lancement de ANT sous Linux<Br>
+  ./build.properties      - Les propri&eacute;t&eacute;s du projet <i>(modifiez le chemin pour dir.out)</i><Br>
+  ./build.xml             - Le construction ANT du projet<Br>
+  ./doc                   - Les Fichiers de Documentation<Br>
+  ./gedcom                - Les fichiers Gedcom<Br>
+  ./help                  - Les fichiers d'Aide<Br>
+  ./images                - Les fichiers Images<Br>
+  ./language              - Les fichiers ressource des diff&eacute;rents langages support&eacute;s<Br>
+  ./lib                   - Les Librairies<Br>
+  ./script                - Les Scripts (pour construire la distribution finale)<Br>
+  ./src                   - Le Source<Br>
 </Ul>
 
 <Br>
 
-<b>ADOPTING IT</b><Br>
+<b>INSTALLER TOUT CE QUI EST N&Eacute;CESSAIRE</b><Br>
 
 <Br>
 
- Download and install the ANT package - get it from http://jakarta.apache.org/ant<Br>
+ R&eacute;cup&eacute;rez et installez le logiciel ANT - vous pouvez l'obtenir &agrave; 
+ l'URL suivante&nbsp;: http://jakarta.apache.org/ant<Br>
 
- Make sure to open ant.properties and adopt the following settings
- to your environment:
+ Assurez vous de bien &eacute;diter le fichier ant.properties et d'adapter les 
+ param&egrave;tres suivants &agrave; votre environnement&nbsp;:
 <Ul>
-  dir.dist              - Where to place files that are part of the distribution<Br>
-  dir.build             - Where to place files generated during build<Br>
-  dir.run               - Where to place files that are prepared for running<Br>
+  dir.dist              - L'endroit o&ugrave; mettre les fichiers qui font parties de la distribution<Br>
+  dir.build             - L'endroit o&ugrave; mettre les fichiers cr&eacute;&eacute;s durant la compilation<Br>
+  dir.run               - L'endroit o&ugrave; mettre les fichiers permettant de faire 
+  tourner l'application sans l'installer<Br>
 
- [by default they are defined relative to dir.out]
+ [par d&eacute;faut, elles sont d&eacute;finies relativement &agrave; dir.out]
+</Ul>
+  (en principe, seul dir.out devrait &ecirc;tre modifi&eacute;).<Br>
+
+<Br>
+
+ <u>Important</u> : Assurez-vous que&nbsp;:<Br>
+
+  -&nbsp;JAVA_HOME pointe sur votre installation JDK/JRE<Br>
+  -&nbsp;ANT_HOME pointe sur votre installation ANT<Br>
+
+<Br>
+
+<b>TRAVAILLER AVEC</b><Br>
+
+<Br>
+
+ Vous pouvez utiliser build.cmd (ou build.sh sous Linux par ex.) pour 
+ effectuer un certain nombre d'op&eacute;rations qui sont n&eacute;cessaires 
+ pour compiler/utiliser GenJ sur votre propre machine. Pour cela il 
+ vous suffit de lancer build.cmd (ou build.sh) (ou mettez le dans votre 
+ chemin d'environnement) avec l'un des param&egrave;tres suivants&nbsp;:
+<Ul>
+  init                  - Pour initialiser l'environnement (cela cr&eacute;e 
+  les r&eacute;pertoires n&eacute;cessaires)<Br>
+  compile.core          - Pour compiler le source de GenJ<Br>
+  compile.report        - Pour compiler les rapports<Br>
+  compile.awtx          - Pour compiler l'ensemble AWTx (librairie pour l'interface 
+  graphique sp&eacute;cifique)<Br>
+  compile               - Pour tout compiler<Br>
+  clean                 - Pour effacer les fichiers temporaires<Br>
+  version               - Pour &eacute;tablir le num&eacute;ro de version<Br>
+  dist                  - Pour faire l'ensemble des fichiers n&eacute;cessaires &agrave; 
+  la distribution du programme (app, applet, en, de, fr, help, ...)<Br>
+  javadoc               - Pour cr&eacute;er la documentation Java &agrave; partir 
+  du source<Br>
+  run                   - Pour lancer GenJ &agrave; partir du source sans l'installer<Br>
+  classpath             - Pour conna&icirc;tre le classpath<Br>
+  about                 - Pour afficher la d&eacute;charge de responsabilit&eacute;<Br>
 </Ul>
 
-<Br>
-
- Make sure that<Br>
-
-  JAVA_HOME points to your JDK/JRE installation<Br>
-  ANT_HOME points to your ANT installation<Br>
+ [en lan&ccedil;ant 'build.cmd run' (ou ./build run (sous linux)) - cela fera tout 
+ ce qui est n&eacute;cessaire pour vous permettre de faire tourner GenJ]<Br>
 
 <Br>
 
-<b>WORKING WITH IT</b><Br>
+<b>SI VOUS UTILISEZ UN IDE (Interface Graphique de D&eacute;veloppement)</b><Br>
 
 <Br>
 
- You can use ant.cmd to perform project operations that are necessary
- to rebuild/run GenJ on your local machine. Start ant.cmd (or adopt
- it to your environment) with one of the following parameters:
-<Ul>
-  init                  - Initialize environment (creates output directories)<Br>
-  compile.core          - Compiles the GenJ core<Br>
-  compile.report        - Compiles the GenJ reports<Br>
-  compile.awtx          - Compiles the AWTx package (ui abstraction library)<Br>
-  compile               - Compiles all<Br>
-  clean                 - Cleans up any temporary files<Br>
-  version               - Spits out version<Br>
-  dist                  - Makes a distribution (app, applet, en, de, fr, help, ...)<Br>
-  javadoc               - Creats Javadoc for core<Br>
-  run                   - Runs GenJ Application<Br>
-  classpath             - Spits out the classpath<Br>
-  about                 - Spits out disclaimer<Br>
-</Ul>
-
- [start with 'ant.cmd run' - this will do the necessary steps to run GenJ]<Br>
-
-<Br>
-
-<b>USING AN IDE</b><Br>
-
-<Br>
-
- If you're trying to run GenJ from inside your favourite IDE (e.g. JBuilder or Eclipse)
- then you might not want to run ant to create a complete runnable unit everytime
- you compile and restart.<Br>
+ Si vous essayez de faire tourner GenJ par l'interm&eacute;diaire de votre IDE favori 
+ (ex. JBuilder ou Eclipse), il se peut que vous ne souhaitiez pas lancer ant pour 
+ cr&eacute;er un ensemble fonctionnel &agrave; chaque fois que vous recompilez et relancez.<Br>
  
- You can set the following VM parameters to rectify that situation:
+ 
+ Vous pouvez ajouter les param&egrave;tres suivants &agrave; la ligne de commande pour 
+ corriger cette situation&nbsp;:
 <Ul>
-  -Duser.home=[home_folder]                   where .properties files will end up in<Br>
-  -Dgenj.report.dir=[report_folder]           where the reports are loaded from<Br>
-  -Dgenj.help.dir=[help_folder]               where the help is loaded from<Br>
-  -Dgenj.gedcom.dir=[gedcom_folder]           where the file-dialog for opening files starts<Br>
+  -Duser.home=[home_folder]                   indique o&ugrave; sont les fichiers .properties<Br>
+  -Dgenj.report.dir=[report_folder]           indique &agrave; partir d'o&ugrave; les rapports doivent &ecirc;tre charg&eacute;s<Br>
+  -Dgenj.help.dir=[help_folder]               indique o&ugrave; le logiciel peut trouver l'aide<Br>
+  -Dgenj.gedcom.dir=[gedcom_folder]           indique o&ugrave; le programme va pouvoir trouver les fichiers gedcom<Br>
 </Ul>
  
- Here's an example:<Br>
+ Voici un exemple:<Br>
  
   java -Duser.home=d:\nils -Dgenj.gedcom.dir=d:\nils\gedcoms genj.App<Br>
 
