@@ -80,16 +80,23 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     
   /** centimeters per year */
   private double cmPyear = DEF_CMPERYEAR;
-  
+
+  /** registry we keep */
+  private Registry regstry;
+    
   /**
    * Constructor
    */
   public TimelineView(Gedcom gedcom, Registry registry, Frame frame) {
-    
-    // create our sub-parts
+
+    // create/keep our sub-parts
     model = new Model(gedcom);
     content = new Content();
     ruler = new Ruler();
+    regstry = registry;
+    
+    // read some stuff from registry
+    cmPyear = Math.max(MIN_CMPERYEAR, Math.min(MAX_CMPERYEAR, regstry.get("cmpyear", (float)DEF_CMPERYEAR)));
     
     // all that fits in a scrollpane
     JScrollPane scroll = new JScrollPane(new ViewPortAdapter(content));
@@ -100,6 +107,16 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     add(scroll, BorderLayout.CENTER);
     
     // done
+  }
+
+  /**
+   * @see javax.swing.JComponent#removeNotify()
+   */
+  public void removeNotify() {
+    // store stuff in registry
+    regstry.put("cmpyear", (float)cmPyear);
+    // done
+    super.removeNotify();
   }
   
   /**

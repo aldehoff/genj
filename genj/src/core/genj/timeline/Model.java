@@ -38,10 +38,10 @@ import genj.gedcom.PropertyEvent;
 /*package*/ class Model {
 
   /** the gedcom we're looking at */
-  private Gedcom gedcom;
+  /*package*/ Gedcom gedcom;
   
   /** limits */
-  private double 
+  /*package*/ double 
     max = Double.NaN,
     min = Double.NaN;
 
@@ -49,10 +49,10 @@ import genj.gedcom.PropertyEvent;
   private Set filter;
   
   /** default filter */
-  private final static String[] DEFAULT_FILTER = { "BIRT", "MARR", "RESI" };
+  private final static String[] DEFAULT_FILTER = { "BIRT", "MARR", "RESI", "EMIG" };
     
   /** our levels */
-  private List layers;
+  /*package*/List layers;
   
   /**
    * Constructor
@@ -74,36 +74,6 @@ import genj.gedcom.PropertyEvent;
     // done
   }
   
-  /**
-   * Returns the maximum
-   * @return double
-   */
-  /*package*/ double getMaximum() {
-    return max;
-  }
-
-  /**
-   * Returns the minimum
-   * @return double
-   */
-  /*package*/ double getMinimum() {
-    return min;
-  }
-  
-  /**
-   * Returns max-min
-   */
-  /*package*/ double getTimespan() {  
-    return max-min;
-  }
-  
-  /** 
-   * Returns the layers (containing lists of events)
-   */
-  /*package*/ List getLayers() {
-    return layers;
-  }
-
   /**
    * Gather Events
    */

@@ -36,13 +36,16 @@ public class ContentRenderer extends Renderer {
   /** centimeters per year */
   /*package*/ double cmPyear = 1.0D;
   
+  /** whether we colorize or not */
+  /*package*/ boolean colorize = true;
+  
   /** 
    * Calculates the model size in pixels
    */
   public Dimension getDimension(Model model, FontMetrics metrics) {
     return new Dimension(
-      cm2pixels(model.getTimespan()*cmPyear),
-      model.getLayers().size()*(metrics.getHeight()+1)
+      cm2pixels((model.max-model.min)*cmPyear),
+      model.layers.size()*(metrics.getHeight()+1)
     );
   }
   
@@ -50,10 +53,8 @@ public class ContentRenderer extends Renderer {
    * Renders the model
    */
   public void render(Graphics g, Model model) {
-    // prepare drawing
-    g.setColor(Color.black);
     // loop through layers
-    Iterator layers = model.getLayers().iterator();
+    Iterator layers = model.layers.iterator();
     for (int l=0; layers.hasNext(); l++) {
       List layer = (List)layers.next();
       render(g, model, layer, l);
@@ -77,11 +78,15 @@ public class ContentRenderer extends Renderer {
       
       // here's the event
       Model.Event event = (Model.Event)events.next();
-      int     x1  = cm2pixels((event.from-model.getMinimum())*cmPyear);
-      int     x2  = cm2pixels((event.to-model.getMinimum())*cmPyear);
+      int     x1  = cm2pixels((event.from-model.min)*cmPyear);
+      int     x2  = cm2pixels((event.to-model.min)*cmPyear);
       String  tag = event.prop.getTag() + " of " + event.prop.getEntity() + " (" + event.prop.getDate() + ")";
       int     y   = level*fh;
       ImgIcon img = event.prop.getImage(false);
+      boolean em  = event.prop.getEntity().equals(model.gedcom.getLastEntity());
+
+      // color
+      if (colorize) g.setColor(em ? Color.red : Color.black);
       
       // draw it's extend
       g.drawLine(x1, y+fh-1, x1, y+fh);

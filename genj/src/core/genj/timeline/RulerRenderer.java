@@ -38,7 +38,7 @@ public class RulerRenderer extends Renderer {
    */
   public Dimension getDimension(Model model, FontMetrics metrics) {
     return new Dimension(
-      cm2pixels(model.getTimespan()*cmPyear),
+      cm2pixels((model.max-model.min)*cmPyear),
       metrics.getHeight()
     );
   }
@@ -52,10 +52,10 @@ public class RulerRenderer extends Renderer {
     FontMetrics fm = g.getFontMetrics();
     Dimension d = getDimension(model, fm);
     double
-      from = model.getMinimum(),
-      to   = model.getMaximum(),
+      from = model.min,
+      to   = model.max,
       cond = Math.max(1, pixels2cm(fm.stringWidth(" 0000 "))/cmPyear);
-  System.out.println(cond);
+
     // render first year and last
     g.setColor(Color.black);
     from += renderYear(g, model, d, fm, from, 0.0D);
@@ -91,7 +91,7 @@ public class RulerRenderer extends Renderer {
    */
   private double renderYear(Graphics g, Model model, Dimension d, FontMetrics fm, double year, double align) {
     // what's the x for it
-    int x = cm2pixels((year-model.getMinimum())*cmPyear);
+    int x = cm2pixels((year-model.min)*cmPyear);
     // draw a vertical line
     g.drawLine((int)(x - align), d.height-4, x, d.height);
     // draw the label
