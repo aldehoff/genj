@@ -199,7 +199,7 @@ public class PropertyDate extends Property {
       return false;
 
     // end valid?
-    if (isRange()&&(!end.isValid()))
+    if (isRange()&&!end.isValid())
       return false;
 
     // start valid?
@@ -409,7 +409,7 @@ public class PropertyDate extends Property {
      * Setter
      */
     private void reset() {
-      set(-1,-1,-1);
+      set(UNKNOWN,UNKNOWN,UNKNOWN);
     }
     
   } // class PointInTime
