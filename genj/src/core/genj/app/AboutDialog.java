@@ -20,7 +20,7 @@
  *
  * AboutDialog class
  * This class creates the content of AboutDialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.8 2002-08-12 17:55:12 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.9 2002-08-12 19:19:39 nmeier Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -292,6 +292,7 @@ public class AboutDialog extends JPanel{
       comboLnfs.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
+          if (lnf==null) return; // shouldn't be but old Swing might
           LnFBridge.Theme[] themes = lnf.getThemes();
           if (themes.length==0) {
             comboThemes.setModel(new DefaultComboBoxModel());
