@@ -65,7 +65,7 @@ public class Applet extends java.applet.Applet implements Runnable {
   private GedcomReader   gedReader;
   private DetailBridge   detailBridge;
 
-  private static final Resources resources = new Resources("genj.applet");
+  private Resources resources;
 
   /**
    * A Link for a View
@@ -149,7 +149,12 @@ public class Applet extends java.applet.Applet implements Runnable {
     if (state!=NOT_READY) {
       return;
     }
-
+    
+    // Read the resources
+    // 20020311 Apparently Netscape doesn't like it if we read this
+    // in the static initialization block
+    resources = new Resources("genj.applet");
+    
     // Report some information
     System.out.println(
       resources.getString("applet.info")
