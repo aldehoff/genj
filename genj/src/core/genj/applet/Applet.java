@@ -28,7 +28,6 @@ import genj.view.ViewManager;
 import genj.window.DefaultWindowManager;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import java.net.URL;
 
 /**
@@ -68,7 +67,7 @@ public class Applet extends java.applet.Applet {
     // load gedcom
     Gedcom gedcom;
     try {
-      URL url = new File("../gedcom/example.ged").toURL();
+      URL url = new URL("file:/d:/nils/priv.java/workspace/GenJ-HEAD/gedcom/example.ged");
       Origin origin = Origin.create(url);
       GedcomReader reader = new GedcomReader(origin);
       gedcom = reader.read();
