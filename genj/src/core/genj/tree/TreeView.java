@@ -690,11 +690,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     public void structureChanged(Model arg0) {
       repaint();
     }
-    /**
-     * @see genj.tree.ModelListener#bookmarksChanged(genj.tree.Model)
-     */
-    public void bookmarksChanged(Model model) {
-    }
   } //Overview
   
   /**
@@ -740,12 +735,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      */
     public void nodesChanged(Model model, List nodes) {
       repaint();
-    }
-    
-    /**
-     * @see genj.tree.ModelListener#bookmarksChanged(genj.tree.Model)
-     */
-    public void bookmarksChanged(Model model) {
     }
     
     /**

@@ -323,15 +323,6 @@ public class Model implements GedcomListener {
   public void addBookmark(Bookmark b) {
     bookmarks.addFirst(b);
     if (bookmarks.size()>16) bookmarks.removeLast();
-    fireBookmarksChanged();
-  }
-  
-  /**
-   * Del a bookmark
-   */
-  public void delBookmark(Bookmark b) {
-    bookmarks.remove(b);
-    fireBookmarksChanged();
   }
   
   /**
@@ -339,6 +330,14 @@ public class Model implements GedcomListener {
    */
   public List getBookmarks() {
     return Collections.unmodifiableList(bookmarks);
+  }
+  
+  /**
+   * Accessor - bookmarks
+   */
+  public void setBookmarks(List set) {
+    bookmarks.clear();
+    bookmarks.addAll(set);
   }
   
   /**
@@ -543,15 +542,6 @@ public class Model implements GedcomListener {
     }
   }
   
-  /**
-   * Fire bookmarks changed
-   */
-  private void fireBookmarksChanged() {
-    for (int l=listeners.size()-1; l>=0; l--) {
-      ((ModelListener)listeners.get(l)).bookmarksChanged(this);
-    }
-  }
-
   /**
    * NextFamily
    */

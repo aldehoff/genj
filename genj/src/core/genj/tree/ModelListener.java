@@ -36,9 +36,4 @@ public interface ModelListener {
    */
   public void structureChanged(Model model);
   
-  /**
-   * Notification that the bookmarks have changed
-   */
-  public void bookmarksChanged(Model model);
-
 } //ModelListener

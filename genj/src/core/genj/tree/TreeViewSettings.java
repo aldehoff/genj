@@ -32,18 +32,21 @@ import genj.view.Settings;
 
 import java.awt.Container;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractButton;
-import javax.swing.AbstractListModel;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -73,6 +76,10 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     checkAdjustFonts = new JCheckBox(resources.getString("adjustfonts" )),
     checkMarrSymbols = new JCheckBox(resources.getString("marrsymbols" ))
   ;
+  
+  /** buttons */
+  private AbstractButton 
+    bUp, bDown, bDelete;
   
   /** font chooser */
   private FontChooser fontChooser = new FontChooser();
@@ -114,13 +121,24 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     // bookmarks
     Box bookmarks = new Box(BoxLayout.Y_AXIS);
     bookmarkList = new ListWidget();
+    bookmarkList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     bookmarks.add(new JScrollPane(bookmarkList));
+    
     JPanel bookmarkActions = new JPanel();
-    ButtonHelper bh = new ButtonHelper().setContainer(bookmarkActions);
-    final AbstractButton b = bh.setEnabled(false).create(new ActionBDelete());
+    ButtonHelper bh = new ButtonHelper().setContainer(bookmarkActions).setEnabled(false);
+    bUp     = bh.create(new ActionMove(-1));
+    bDown   = bh.create(new ActionMove( 1));
+    bDelete = bh.create(new ActionDelete());
     bookmarkList.addListSelectionListener(new ListSelectionListener() {
+      /** update buttons */
       public void valueChanged(ListSelectionEvent e) {
-        b.setEnabled(!bookmarkList.isSelectionEmpty());
+        int 
+          i = bookmarkList.getSelectedIndex(),
+          n = bookmarkList.getModel().getSize();
+      
+        bUp.setEnabled(i>0);
+        bDown.setEnabled(i>=0&&i<n-1);
+        bDelete.setEnabled(i>=0);
       }
     });
     bookmarks.add(bookmarkActions);
@@ -172,19 +190,11 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     // update characteristics
     colors.setColorSets(new ColorSet[]{view.colors});
     blueprintList.setGedcom(view.getModel().getGedcom());
-    bookmarkList.setModel(new BookmarkListModel());
     // start listening to new?
     view.getModel().addListener(this);
     // done
   }
   
-  /**
-   * @see genj.tree.ModelListener#bookmarksChanged(genj.tree.Model)
-   */
-  public void bookmarksChanged(Model model) {
-    bookmarkList.setModel(new BookmarkListModel());
-  }
-
   /**
    * @see genj.tree.ModelListener#nodesChanged(genj.tree.Model, java.util.List)
    */
@@ -209,6 +219,13 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     view.getModel().setMarrSymbols(checkMarrSymbols.isSelected());
     // colors
     colors.apply();
+    // bookmarks
+    List bookmarks = new ArrayList();
+    ListModel list = bookmarkList.getModel();
+    for (int i=0;i<list.getSize();i++) {
+      bookmarks.add(list.getElementAt(i));
+    }
+    view.getModel().setBookmarks(bookmarks);
     // metrics
     view.getModel().setMetrics(new TreeMetrics(
       (int)(spinModels[0].getDoubleValue()*10),
@@ -234,6 +251,8 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     checkMarrSymbols.setSelected(view.getModel().isMarrSymbols());
     // colors
     colors.reset();
+    // bookmarks
+    bookmarkList.setModel(new DefaultComboBoxModel(view.getModel().getBookmarks().toArray()));
     // metrics
     TreeMetrics m = view.getModel().getMetrics();
     int[] values = new int[] {
@@ -253,44 +272,51 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
   public JComponent getEditor() {
     return this;
   }
+
+  /**
+   * Action - move a bookmark
+   */
+  private class ActionMove extends ActionDelegate {
+    /** by how much to move */
+    private int by;
+    /**
+     * Constructor
+     */
+    private ActionMove(int how) {
+      setText(resources.getString("bookmark.move."+how));
+      by = how;
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      int i = bookmarkList.getSelectedIndex();
+      DefaultComboBoxModel model = (DefaultComboBoxModel)bookmarkList.getModel();
+      Object bookmark = model.getElementAt(i);
+      model.removeElementAt(i);
+      model.insertElementAt(bookmark, i+by);
+      bookmarkList.setSelectedIndex(i+by);
+    }
+  } //ActionMove
   
   /**
    * Action - delete a bookmark
    */
-  private class ActionBDelete extends ActionDelegate {
+  private class ActionDelete extends ActionDelegate {
     /**
      * Constructor
      */
-    private ActionBDelete() {
+    private ActionDelete() {
       setText(resources.getString("bookmark.del"));
     }
     /**
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      Object[] bs = bookmarkList.getSelectedValues();
-      for (int b=0; b<bs.length; b++) {
-        view.getModel().delBookmark((Bookmark)bs[b]);
-      }
+      int i = bookmarkList.getSelectedIndex();
+      if (i>=0)
+        ((DefaultComboBoxModel)bookmarkList.getModel()).removeElementAt(i);
     }
-  } //ActionBDelete
+  } //ActionDelete
   
-  /**
-   * BookmarkListModel
-   */
-  private class BookmarkListModel extends AbstractListModel {
-    /**
-     * @see javax.swing.ListModel#getElementAt(int)
-     */
-    public Object getElementAt(int index) {
-      return view.getModel().getBookmarks().get(index); 
-    }
-    /**
-     * @see javax.swing.ListModel#getSize()
-     */
-    public int getSize() {
-      return view.getModel().getBookmarks().size();
-    }
-  } //BookmarkListModel
-
 } //TreeViewSettings
