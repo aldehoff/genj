@@ -27,8 +27,10 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.util.Enumeration;
 import java.util.Vector;
 
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 
 /**
@@ -105,5 +107,15 @@ public class ButtonHelper {
     if (resources!=null) 
       string = resources.getString(string);
     return string;    
+  }
+  
+  /**
+   * Helper that en/disables a set of buttons
+   */
+  public static void setEnabled(Vector v, boolean set) {
+    Enumeration e = v.elements();
+    while (e.hasMoreElements()) {
+      ((AbstractButton)e.nextElement()).setEnabled(set);
+    }
   }
 }
