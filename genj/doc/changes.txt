@@ -25,9 +25,12 @@ Future
   O Printing dialogs remember parameters now (e.g. margins)
   O Printing forgets about paper orientation between pages
   O Wizard that asks what to do after deletion of entities (remove empty family, remove lost branch, ...)
+  O Report to re-layout all entity IDs (logical numbering, format, etc.)
 
 1.8 - Mar xx 2002 (not released)
 
+  C Changed the way that IDs are created for new entities (incremental)
+  C Help menu is now offset to the right
   B Bug in TreeView's content pane - now does repaint() after invalidate() after structureChanged
   N System parameters : genj.report.dir + genj.help.dir + genj.gedcom.dir
   C EditView's create-entity actions will result in confirmation-prompt when clicked
