@@ -406,9 +406,10 @@ public class ReportView extends JPanel implements ToolBarSupport {
       taOutput.setText("");
       
       // start transaction
-      if (!report.isReadOnly()) {
-        if (!gedcom.startTransaction())
-          return false; 
+      if (!report.isReadOnly()) try {
+        gedcom.startTransaction();
+      } catch (IllegalStateException e) {
+        return false; 
       }
   
       // done

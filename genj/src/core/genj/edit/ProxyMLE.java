@@ -22,10 +22,7 @@ package genj.edit;
 import genj.gedcom.MultiLineProperty;
 import genj.util.swing.TextAreaWidget;
 
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import java.awt.BorderLayout;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -39,10 +36,8 @@ class ProxyMLE extends Proxy {
   /**
    * Finish editing a property through proxy
    */
-  protected void finish() {
-
-    if (hasChanged())
-      property.setValue(tarea.getText());
+  protected void commit() {
+    property.setValue(tarea.getText());
   }
 
   /**
@@ -55,7 +50,7 @@ class ProxyMLE extends Proxy {
   /**
    * Start editing a property through proxy
    */
-  protected JComponent start(JPanel in) {
+  protected Editor getEditor() {
 
     // Calculate value to show
     String value;
@@ -69,13 +64,13 @@ class ProxyMLE extends Proxy {
     tarea.setLineWrap(true);
     tarea.setWrapStyleWord(true);
 
-    JScrollPane spane = new JScrollPane(tarea);
-    spane.setBorder(BorderFactory.createMatteBorder(4,4,4,4,in.getBackground()));
-    spane.setAlignmentX(0);
-    in.add(spane);
+    Editor result = new Editor();
+    result.setLayout(new BorderLayout());
+    result.setFocus(tarea);
+    result.add(BorderLayout.CENTER, tarea);
 
     // Done
-    return tarea;
+    return result;
   }
   
 } //ProxyMLE

@@ -22,8 +22,7 @@ package genj.edit;
 import genj.gedcom.PropertyChoiceValue;
 import genj.util.swing.ChoiceWidget;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
+import java.awt.BorderLayout;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -31,7 +30,7 @@ import javax.swing.JPanel;
  * @author nils@meiers.net
  * @author Tomas Dahlqvist fix for prefix lookup
  */
-class ProxyChoice extends Proxy{
+class ProxyChoice extends Proxy {
 
   /** members */
   private ChoiceWidget choice;
@@ -39,17 +38,13 @@ class ProxyChoice extends Proxy{
   /**
    * Finish editing a property through proxy
    */
-  protected void finish() {
-
-    // Has something been edited ?
-    if ( !hasChanged() ) return;
+  protected void commit() {
 
     // Store changed value
     Object result = choice.getText();
     property.setValue(result!=null?result.toString():"");
 
     // Done
-    return;
   }
 
   /**
@@ -62,7 +57,7 @@ class ProxyChoice extends Proxy{
   /**
    * Start editing a property through proxy
    */
-  protected JComponent start(JPanel panel) {
+  protected Editor getEditor() {
 
     // setup choices
     Object[] items = new Object[0];
@@ -73,10 +68,13 @@ class ProxyChoice extends Proxy{
     choice = new ChoiceWidget(items, property.getValue());
     
     // layout
-    panel.add(choice);
+    Editor result = new Editor();
+    result.setLayout(new BorderLayout());
+    result.add(BorderLayout.NORTH, choice);
+    result.setFocus(choice);
     
     // Done
-    return choice;
+    return result;
   }
   
 } //ProxyChoice

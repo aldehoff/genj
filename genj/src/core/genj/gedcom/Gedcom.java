@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.56 $ $Author: nmeier $ $Date: 2004-05-11 10:01:41 $
+ * $Revision: 1.57 $ $Author: nmeier $ $Date: 2004-05-12 17:33:28 $
  */
 package genj.gedcom;
 
@@ -102,6 +102,12 @@ public class Gedcom {
   private final static Map
     E2IMAGE = new HashMap();
 
+  /** a  set that doesn't retain added content */  
+  private static final Set NULL_SET = new HashSet() {
+    // ignore any add's
+    public boolean add(Object o) { return false; }
+  };
+  
   /** image */
   private final static ImageIcon image = new ImageIcon(Gedcom.class, "images/Gedcom.gif");
   
@@ -432,23 +438,22 @@ public class Gedcom {
   /**
    * Starts changing of mankind
    */
-  public synchronized boolean startTransaction() {
+  public synchronized void startTransaction() throws IllegalStateException {
 
     // Is there a transaction running?
-    if (isTransaction) {
-      return false;
-    }
+    if (isTransaction)
+      throw new IllegalStateException("Cannot start transaction for changes while concurrent transaction is active");
 
     // Start
     isTransaction = true;
 
     // ... prepare rememberance of changes
     changes = new Set[Change.NUM];
-    for (int i=0;i<Change.NUM;i++)
-      changes[i] = new HashSet(64);
+    for (int i=0;i<Change.NUM;i++) {
+      changes[i] = listeners.isEmpty() ? NULL_SET : new HashSet(64);
+    }
 
     // .. done
-    return true;
   }
 
   /**
@@ -462,6 +467,8 @@ public class Gedcom {
    * Returns change set
    */
   /*package*/ Set getTransactionChanges(int which) {
+    if (!isTransaction)
+      throw new RuntimeException("Cannot acces transaction - no current transaction context");
     return changes[which]; 
   }
   
@@ -473,7 +480,7 @@ public class Gedcom {
 
     // Is there a transaction going on?
     if (!isTransaction)
-      throw new RuntimeException("Attempt to end non existing Transaction");
+      return;
 
     // wrao in change
     Change change = new Change( this, changes );

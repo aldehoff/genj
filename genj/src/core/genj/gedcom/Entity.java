@@ -48,8 +48,7 @@ public class Entity extends Property {
     this.tag  = tag;
     
     // note
-    if (gedcom.isTransaction())
-      gedcom.getTransactionChanges(Change.EADD).add(this);
+    gedcom.getTransactionChanges(Change.EADD).add(this);
 
     // done    
   }
@@ -57,15 +56,14 @@ public class Entity extends Property {
   /**
    * @see genj.gedcom.Property#delNotify()
    */
-  void delNotify() {
+  /*package*/ void delNotify() {
     
+    // note
+    gedcom.getTransactionChanges(Change.EDEL).add(this);
+
     // continue
     super.delNotify();
     
-    // note
-    if (gedcom.isTransaction())
-      gedcom.getTransactionChanges(Change.EDEL).add(this);
-
     // forget gedcom
     gedcom = null;
     
@@ -78,8 +76,8 @@ public class Entity extends Property {
    */
   /*package*/ void changeNotify(Property prop, int status) {
     
-    // gedcom with transaction to tell it to?
-    if (gedcom==null||!gedcom.isTransaction())
+    // gedcom known?
+    if (gedcom==null)
       return;
       
     // propagate change

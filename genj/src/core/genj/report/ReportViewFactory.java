@@ -146,8 +146,11 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
         return false;
       }
       // start transaction
-      if (!report.isReadOnly()&&!gedcom.startTransaction())
+      if (!report.isReadOnly()) try {
+        gedcom.startTransaction();
+      } catch (IllegalStateException e) {
         return false; 
+      }
       // we're doing this ourselves now
       return true;
     }

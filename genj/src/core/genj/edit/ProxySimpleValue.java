@@ -19,11 +19,11 @@
  */
 package genj.edit;
 
+import java.awt.BorderLayout;
+
 import genj.util.swing.TextFieldWidget;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -37,8 +37,8 @@ class ProxySimpleValue extends Proxy {
   /**
    * Finish editing a property through proxy
    */
-  protected void finish() {
-    if (hasChanged())
+  protected void commit() {
+    if (tfield!=null)
       property.setValue(tfield.getText());
   }
 
@@ -50,20 +50,31 @@ class ProxySimpleValue extends Proxy {
   }
 
   /**
+   * Nothing to edit
+   */  
+  protected boolean isEditable() {
+    return !property.isReadOnly();
+  }
+
+  /**
    * Start editing a property through proxy
    */
-  protected JComponent start(JPanel in) {
+  protected Editor getEditor() {
+
+    Editor result = new Editor();
+    result.setLayout(new BorderLayout());
 
     // readOnly()?
     if (property.isReadOnly()) {
-      in.add(new JLabel(property.getValue()));
+      result.add(BorderLayout.NORTH, new JLabel(property.getValue()));
     } else {
       tfield = new TextFieldWidget(property.getValue(), 0);
-      in.add(tfield);
+      result.add(BorderLayout.NORTH, tfield);
+      result.setFocus(tfield);
     }
     
     // Done
-    return tfield;
+    return result;
   }
 
 } //ProxyUnknown

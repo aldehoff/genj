@@ -22,13 +22,11 @@ package genj.edit;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 
+import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 
 /**
  * A proxy for a property that links entities
@@ -44,9 +42,10 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
   /**
    * Finish editing a property through proxy
    */
-  protected void finish() {
+  protected void commit() {
     // not if no entity - noone was listening and preview==null 20030420
-    if (xref==null||xref.getReferencedEntity()==null) return;
+    if (xref==null||xref.getReferencedEntity()==null) 
+      return;
     // update looks
     setArmed(false);
     view.tree.removeMouseMotionListener(this);
@@ -63,9 +62,19 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
   }
   
   /**
+   * Nothing to edit
+   */  
+  protected boolean isEditable() {
+    return false;
+  }
+
+  /**
    * Start editing a property through proxy
    */
-  protected JComponent start(JPanel in) {
+  protected Editor getEditor() {
+
+    Editor result = new Editor();
+    result.setLayout(new BorderLayout());
 
     // Calculate reference information
     xref = (PropertyXRef)property;
@@ -73,7 +82,7 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
     // setup content
     if (xref.getReferencedEntity()!=null) {
       preview = new Preview(xref.getReferencedEntity());
-      in.add(preview);
+      result.add(BorderLayout.CENTER, preview);
       
       view.tree.addMouseMotionListener(this);
       view.tree.addMouseListener(this);
@@ -83,7 +92,7 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
     }
     
     // done
-    return null;
+    return result;
   }
   
   /**

@@ -63,6 +63,13 @@ import javax.swing.JTextArea;
     super.setImage(img);
     super.setText(text);
   }
+
+  /**
+   * Show a dialog for errors
+   */  
+  protected void handleThrowable(String phase, Throwable t) {
+    manager.getWindowManager().openDialog("err", "Error", WindowManager.IMG_ERROR, t.getMessage(), WindowManager.OPTIONS_OK, getTarget());
+  }
   
   /** 
    * Returns the confirmation message - null if none
@@ -114,7 +121,7 @@ import javax.swing.JTextArea;
     }
         
     // lock gedcom
-    if (!gedcom.startTransaction()) return;
+    gedcom.startTransaction();
     // let sub-class handle create
     try {
       change();

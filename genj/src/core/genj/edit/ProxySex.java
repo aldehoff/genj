@@ -25,8 +25,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 /**
@@ -38,15 +36,12 @@ class ProxySex extends Proxy implements ItemListener {
   /** members */
   private JRadioButton[] rbSex = new JRadioButton[3];
   
-  private boolean changed=false;
+  private boolean changed = false;
 
   /**
    * Finish editing a property through proxy
    */
-  protected void finish() {
-    
-    // Something changed ?
-    if (! hasChanged() ) return;
+  protected void commit() {
     
     // Gather data change
     PropertySex sex = (PropertySex)property; 
@@ -94,26 +89,30 @@ class ProxySex extends Proxy implements ItemListener {
   /**
    * Start editing a property through proxy
    */
-  protected JComponent start(JPanel in) {
+  protected Editor getEditor() {
 
+    Editor result = new Editor();
+    result.setBoxLayout();
     PropertySex p = (PropertySex) property;
     ButtonGroup bg = new ButtonGroup();
 
     for (int i=0;i<rbSex.length;i++) {
       rbSex[i] = new JRadioButton( p.getLabelForSex(i) );
-      in.add(rbSex[i]);
+      result.add(rbSex[i]);
       
       rbSex[i].getModel().setGroup(bg);
       rbSex[i].getModel().addItemListener(this);
     }
     
     rbSex[p.getSex()].setSelected(true);
+    
+    result.setFocus(rbSex[p.getSex()]);
 
     // reset changed
     changed = false;
 
     // Done
-    return null;
+    return result;
   }
 
 } //ProxySex

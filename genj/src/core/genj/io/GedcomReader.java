@@ -85,12 +85,12 @@ public class GedcomReader implements Trackable {
    * Constructor
    * @param initOrg the origin to initialize reader from
    */
-  public GedcomReader(Origin initOrg) throws IOException {
+  public GedcomReader(Origin org) throws IOException {
     
-    Debug.log(Debug.INFO, this, "Initializing reader for "+initOrg);
+    Debug.log(Debug.INFO, this, "Initializing reader for "+org);
     
     // open origin
-    InputStream oin = initOrg.open();
+    InputStream oin = org.open();
 
     // prepare sniffer
     InputStreamSniffer sniffer = new InputStreamSniffer(oin);
@@ -107,7 +107,7 @@ public class GedcomReader implements Trackable {
     // init some data
     in       = new BufferedReader(reader);
     line     = 0;
-    origin   = initOrg;
+    origin   = org;
     length   = oin.available();
     level    = 0;
     read     = 0;
@@ -261,7 +261,10 @@ public class GedcomReader implements Trackable {
     
     // try it
     try {
+      gedcom.startTransaction();
       readGedcom();
+      gedcom.endTransaction();
+      return gedcom;
     } catch (GedcomIOException gex) {
       throw gex;
     } catch (Throwable t) {
@@ -276,8 +279,7 @@ public class GedcomReader implements Trackable {
       }
     }
 
-    // done
-    return gedcom;
+    // nothing happening here
   }
   
   /**

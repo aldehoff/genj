@@ -25,6 +25,7 @@ import genj.gedcom.PropertyFile;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
+import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.MenuHelper;
@@ -44,11 +45,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 
@@ -81,10 +80,7 @@ import javax.swing.JScrollPane;
   /**
    * Finish editing a property through proxy
    */
-  protected void finish() {
-    
-    // changes?
-    if (!hasChanged()) return;
+  protected void commit() {
     
     // propagate
     String file = tFile.getText();
@@ -149,15 +145,14 @@ import javax.swing.JScrollPane;
   /**
    * Start editing a property through proxy
    */
-  protected JComponent start(JPanel in) {
+  protected Editor getEditor() {
+    
+    Editor result = new Editor();
+    GridBagHelper gh = new GridBagHelper(result);
     
     // Create Text and button for current value
     tFile = new TextFieldWidget("", 10);
-    
-    JPanel p = new JPanel();
-    p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
-    p.setAlignmentX(0);
-    in.add(p);
+    result.setFocus(tFile);
 
     // but check permissions first
     try {
@@ -166,8 +161,8 @@ import javax.swing.JScrollPane;
       if (sm!=null) sm.checkPermission( new FilePermission(IMAGE_DIR, "read"));      
       
       // a text-field and button for file
-      p.add(tFile);
-      p.add(new ButtonHelper().create(new ActionChoose()));
+      gh.add(tFile, 0,0,1,1, gh.GROWFILL_HORIZONTAL);
+      gh.add(new ButtonHelper().create(new ActionChoose()), 1,0,1,1);
 
     } catch (SecurityException se) {
     }
@@ -177,7 +172,7 @@ import javax.swing.JScrollPane;
     
     JScrollPane scroll = new JScrollPane(preview);
     scroll.setAlignmentX(0);
-    in.add(scroll);
+    gh.add(scroll, 0,1,2,1, gh.GROWFILL_BOTH);
 
     // display what we've got
     if (property instanceof PropertyFile)
@@ -186,7 +181,7 @@ import javax.swing.JScrollPane;
       showFile((PropertyBlob)property);
       
     // Done
-    return null;
+    return result;
   }
 
   /**

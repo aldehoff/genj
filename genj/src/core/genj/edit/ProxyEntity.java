@@ -22,10 +22,10 @@ package genj.edit;
 import genj.gedcom.Entity;
 import genj.gedcom.PropertyChange;
 
+import java.awt.BorderLayout;
+
 import javax.swing.AbstractButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
@@ -42,7 +42,7 @@ class ProxyEntity extends Proxy {
    * Finish editing a property through proxy (no changes here unless
    * hasChanged()==true since this will be called in all cases)
    */
-  protected void finish() {
+  protected void commit() {
   }
 
   /**
@@ -53,26 +53,38 @@ class ProxyEntity extends Proxy {
   }
 
   /**
+   * Nothing to edit
+   */  
+  protected boolean isEditable() {
+    return false;
+  }
+
+  /**
    * Start editing a property through proxy
    */
-  protected JComponent start(JPanel in) {
+  protected Editor getEditor() {
+
+    Editor result = new Editor();
+    result.setLayout(new BorderLayout());
 
     // Look for entity
-    if (!(property instanceof Entity)) return null;
-    
-    Entity e = (Entity)property;
-    
-    // add a preview
-    in.add(new Preview(e));
+    if (property instanceof Entity) {
 
-    // add change date/time
-    PropertyChange change = e.getLastChange();
-    if (change!=null) {
-      in.add(new JLabel(resources.getString("proxy.entity.change", new String[] {change.getDateAsString(), change.getTimeAsString()} )));      
+      Entity e = (Entity)property;
+
+      // add a preview
+      result.add(BorderLayout.CENTER, new Preview(e));
+
+      // add change date/time
+      PropertyChange change = e.getLastChange();
+      if (change!=null) {
+        result.add(BorderLayout.SOUTH, new JLabel(resources.getString("proxy.entity.change", new String[] {change.getDateAsString(), change.getTimeAsString()} )));      
+      }
+
     }
     
     // Done
-    return null;
+    return result;
   }
   
 } //ProxyEntity

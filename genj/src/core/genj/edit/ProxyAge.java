@@ -26,9 +26,7 @@ import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.TextFieldWidget;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -36,6 +34,8 @@ import javax.swing.JPanel;
  */
 class ProxyAge extends Proxy {
   
+  private final static String TEMPLATE = "99y 9m 9d";
+
   /** age */
   private PropertyAge age;
 
@@ -45,11 +45,8 @@ class ProxyAge extends Proxy {
   /**
    * Finish editing a property through proxy
    */
-  protected void finish() {
-
-    if (hasChanged())
-      property.setValue(tfield.getText());
-
+  protected void commit() {
+    property.setValue(tfield.getText());
   }
 
   /**
@@ -59,12 +56,10 @@ class ProxyAge extends Proxy {
     return tfield.hasChanged();
   }
 
-  private final static String TEMPLATE = "99y 9m 9d";
-
   /**
    * Start editing a property through proxy
    */
-  protected JComponent start(JPanel in) {
+  protected Editor getEditor() {
 
     age = (PropertyAge)property;
     
@@ -72,20 +67,17 @@ class ProxyAge extends Proxy {
     tfield = new TextFieldWidget(property.getValue(), TEMPLATE.length());
 
     // layout
-    JPanel panel = new JPanel();
-    panel.setAlignmentX(0F);
-
-    GridBagHelper gh = new GridBagHelper(panel);
+    Editor result = new Editor();
+    GridBagHelper gh = new GridBagHelper(result);
     gh.add(tfield                                       ,0,0);
     gh.setParameter(gh.GROWFILL_HORIZONTAL);
     gh.add(new JLabel(TEMPLATE)                         ,1,0);
     gh.setParameter(0);
     gh.add(new ButtonHelper().create(new ActionUpdate()),2,0);
     gh.addFiller(1,1);
-    in.add(panel);
-    
+
     // Done
-    return tfield;
+    return result;
   }
   
   /**

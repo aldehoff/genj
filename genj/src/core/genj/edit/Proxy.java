@@ -23,14 +23,19 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.renderer.EntityRenderer;
+import genj.util.ActionDelegate;
 import genj.util.Resources;
+import genj.util.swing.ButtonHelper;
 import genj.window.WindowManager;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -46,6 +51,9 @@ import javax.swing.border.EmptyBorder;
   /** the resources */
   protected final static Resources resources = EditView.resources;
   
+  /** the panel we're working in */
+  private JPanel panel;
+  
   /** the proxied property */
   protected Property property;
   
@@ -56,26 +64,51 @@ import javax.swing.border.EmptyBorder;
   protected JLabel label;
 
   /**
-   * Start editing a property through proxy
-   * @return component to receive focus
+   * Setup an editor in given panel
    */
-  protected final JComponent start(JPanel panel, Property prop, EditView edit) {
-    // remember
-    property = prop;
-    view = edit;
-    // a text for the user
-    String txt = prop.getTag() + " - "+ Gedcom.getName(prop.getTag());
-    // setup a label
-    label = new JLabel(txt, prop.getImage(true), SwingConstants.LEFT);
-    panel.add(label);
-    // continue with sub-implementation dependent 
-    return start(panel);
+  protected final void start(JPanel setPanel, Property setProp, EditView setView) {
+
+    panel = setPanel;
+
+    // setup pane
+    panel.removeAll();
+    panel.setLayout(new BorderLayout());
+    
+    // remember property
+    property = setProp;
+    view = setView;
+    
+    // add a header with a label
+    label = new JLabel(property.getTag() + " - "+ Gedcom.getName(property.getTag()), property.getImage(true), SwingConstants.LEFT);
+    panel.add(BorderLayout.NORTH, label);
+
+    // add the specifics        
+    Editor editor = getEditor();
+    panel.add(BorderLayout.CENTER, editor);
+    
+    // add buttons
+    if (isEditable()) {
+      JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+      ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons).setFocusable(false);
+      bh.create(new OK());
+      bh.create(new Cancel());
+      panel.add(BorderLayout.SOUTH, buttons);
+    }
+    
+    // propagate layout change
+    panel.validate();
+    panel.doLayout();
+
+    // set focus
+    editor.requestFocus();
+
+    // done
   }
   
   /**
    * Implementation
    */
-  protected abstract JComponent start(JPanel panel);
+  protected abstract Editor getEditor();
   
   /**
    * Returns change state of proxy
@@ -83,10 +116,9 @@ import javax.swing.border.EmptyBorder;
   protected abstract boolean hasChanged();
 
   /**
-   * Stop editing a property through proxy. Return <b>true</b>
-   * in case that sub-properties have been created/removed.
+   * Commit any changes made by the user
    */
-  protected abstract void finish();
+  protected abstract void commit();
   
   /**
    * Access to window manager
@@ -96,7 +128,14 @@ import javax.swing.border.EmptyBorder;
   }
   
   /**
-   * Our content
+   * Editable? default is yes
+   */
+  protected boolean isEditable() {
+    return true;
+  }
+  
+  /**
+   * A preview component using EntityRenderer for an entity
    */
   protected class Preview extends JComponent {
     /** entity */
@@ -128,5 +167,84 @@ import javax.swing.border.EmptyBorder;
       // done
     }
   } //Content
+
+  /**
+   * An editor with focussable component
+   */
+  protected class Editor extends JComponent {
+    
+    /** the focus */
+    private JComponent focus;
+    
+    /** set box layout */
+    protected void setBoxLayout() {
+      setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    }
+    
+    /** set focus */
+    protected void setFocus(JComponent c) {
+      focus = c;
+    }
+
+    /** overridden requestFocus() */
+    public void requestFocus() {
+      JComponent c = focus!=null ? focus : this;
+      try {
+        //setFocusCycleRoot(true);
+        c.requestFocusInWindow();
+      } catch (Throwable t) {
+        c.requestFocus();
+      }
+    }
+
+  } // Editor
+
+  /**
+   * A ok action
+   */
+  private class OK extends ActionDelegate {
+
+    /** constructor */
+    private OK() {
+      setText(WindowManager.OPTION_OK);
+    }
+
+    /** cancel current proxy */
+    protected void execute() {
+
+      // any changes?        
+      if (!hasChanged())
+        return;
+        
+      Gedcom gedcom = property.getGedcom();
+  
+      try {
+        gedcom.startTransaction();
+        commit();
+      } catch (Throwable t) {
+      } finally {
+        gedcom.endTransaction();
+      }
+    
+    }
+
+  } //OK
+
+  /**
+   * A cancel action
+   */
+  private class Cancel extends ActionDelegate {
+
+    /** constructor */
+    private Cancel() {
+      setText(WindowManager.OPTION_CANCEL);
+    }
+
+    /** cancel current proxy */
+    protected void execute() {
+      start(panel, property, view);
+    }
+
+  } //Cancel
 
 } //Proxy

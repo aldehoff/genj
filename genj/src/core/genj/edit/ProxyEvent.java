@@ -27,9 +27,7 @@ import genj.util.GridBagHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.window.WindowManager;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
@@ -45,7 +43,7 @@ class ProxyEvent extends Proxy {
   /**
    * Finish proxying edit for property Birth
    */
-  protected void finish() {
+  protected void commit() {
     // known might be null!
     if (known!=null&&known.hasChanged()) {
       ((PropertyEvent)property).setKnownToHaveHappened(known.getSelectedIndex()==0);
@@ -61,10 +59,17 @@ class ProxyEvent extends Proxy {
   }
 
   /**
+   * Nothing to edit
+   */  
+  protected boolean isEditable() {
+    return known!=null;
+  }
+
+  /**
    * Starts Proxying edit for property Date by filling a vector with
    * components to edit this property
    */
-  protected JComponent start(JPanel in) {
+  protected Editor getEditor() {
     
     // showing age@event only for individuals 
     if (!(property.getEntity() instanceof Indi)) return null;
@@ -94,19 +99,16 @@ class ProxyEvent extends Proxy {
     known = new ChoiceWidget(choices, event.isKnownToHaveHappened() ? choices[0] : choices[1]);
     known.setEditable(false);
     
-    JPanel panel = new JPanel();
-    panel.setAlignmentX(0);
-    GridBagHelper gh = new GridBagHelper(panel);
+    Editor result = new Editor();
+    GridBagHelper gh = new GridBagHelper(result);
     gh.add(label1, 0, 0, 1, 1, gh.FILL_HORIZONTAL    );
     gh.add(txt   , 1, 0, 1, 1, gh.GROWFILL_HORIZONTAL);
     gh.add(label2, 0, 1, 1, 1, gh.FILL_HORIZONTAL    );
     gh.add(known , 1, 1, 1, 1, gh.GROWFILL_HORIZONTAL);
     gh.addFiller(0,2);
 
-    in.add(panel);
-
     // done
-    return null;
+    return result;
   }
 
 } //ProxyEvent

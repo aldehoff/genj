@@ -23,9 +23,7 @@ import genj.gedcom.PropertyName;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.TextFieldWidget;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -43,10 +41,7 @@ class ProxyName extends Proxy {
   /**
    * Finish editing a property through proxy
    */
-  protected void finish() {
-
-    // Has something been edited ?
-    if ( !hasChanged() ) return;
+  protected void commit() {
 
     // ... calc texts
     String first = tFirst.getText().trim();
@@ -70,8 +65,11 @@ class ProxyName extends Proxy {
   /**
    * Start editing a property through proxy
    */
-  protected JComponent start(JPanel in) {
+  protected Editor getEditor() {
 
+    Editor result = new Editor();
+    result.setBoxLayout();
+    
     // first, last, suff
     PropertyName pname = (PropertyName)property;
     
@@ -79,17 +77,19 @@ class ProxyName extends Proxy {
     tFirst = new TextFieldWidget(pname.getFirstName(), 10); 
     tSuff  = new TextFieldWidget(pname.getSuffix()   , 10); 
 
-    in.add(new JLabel(pname.getLabelForFirstName()));
-    in.add(tFirst);
+    result.add(new JLabel(pname.getLabelForFirstName()));
+    result.add(tFirst);
 
-    in.add(new JLabel(pname.getLabelForLastName()));
-    in.add(cLast);
+    result.add(new JLabel(pname.getLabelForLastName()));
+    result.add(cLast);
 
-    in.add(new JLabel(pname.getLabelForSuffix()));
-    in.add(tSuff);
+    result.add(new JLabel(pname.getLabelForSuffix()));
+    result.add(tSuff);
+
+    result.setFocus(tFirst);
 
     // done
-    return tFirst;
+    return result;
 
   }
 

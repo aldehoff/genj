@@ -28,8 +28,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -59,11 +57,7 @@ class ProxyDate extends Proxy implements ItemListener {
   /**
    * Finish proxying edit for property Date
    */
-  protected void finish() {
-
-    // Something changed ?
-    if (!hasChanged()) 
-      return;
+  protected void commit() {
 
     PropertyDate p = (PropertyDate)property;
 
@@ -113,9 +107,12 @@ class ProxyDate extends Proxy implements ItemListener {
    * Starts Proxying edit for property Date by filling a vector with
    * components to edit this property
    */
-  protected JComponent start(JPanel panel) {
+  protected Editor getEditor() {
 
     PropertyDate p = (PropertyDate)property;
+
+    Editor result = new Editor();
+    result.setBoxLayout();
 
     // Components
     combo = new JComboBox();
@@ -126,12 +123,13 @@ class ProxyDate extends Proxy implements ItemListener {
     for (int i = 0; i <= PropertyDate.LAST_ATTRIB; i++) {
       combo.addItem(PropertyDate.getLabelForFormat(i));
     }
-    panel.add(combo);
+    result.add(combo);
     combo.addItemListener(this);
 
     deOne = new DateWidget(p.getStart(), getWindowManager());
     deOne.setAlignmentX(0);
-    panel.add(deOne);
+    result.add(deOne);
+    result.setFocus(deOne);
 
     deTwo = new DateWidget(p.getEnd(), getWindowManager());
     deTwo.setAlignmentX(0);
@@ -140,7 +138,7 @@ class ProxyDate extends Proxy implements ItemListener {
     formatChanged = false;
 
     // Done
-    return deOne;
+    return result;
 
   }
 

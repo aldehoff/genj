@@ -39,7 +39,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 
 import javax.swing.AbstractButton;
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -99,9 +98,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     this.manager  = setManager;
 
     // TREE Component's 
-    Callback callback = new Callback();
     tree = new PropertyTreeWidget(setGedcom);
-    tree.addTreeSelectionListener(callback);
+    tree.addTreeSelectionListener(new SelectionChange());
     
     JScrollPane treePane = new JScrollPane(tree);
     treePane.setMinimumSize  (new Dimension(160, 128));
@@ -109,7 +107,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     
     // EDIT Component
     proxyPane = new JPanel();
-    proxyPane.setLayout(new BoxLayout(proxyPane,BoxLayout.Y_AXIS));
 
     // SplitPane with tree/edit
     splitPane = new JSplitPane(
@@ -155,7 +152,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   public void removeNotify() {
     
     // stop editing
-    stopEdit();
+    tree.clearSelection();
 
     // Remember registry
     registry.put("divider",splitPane.getDividerLocation());
@@ -256,10 +253,11 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /*pacakge*/ void setEntity(Entity entity) {
 
     // already?
-    if (getCurrentEntity()==entity) return;
+    if (getCurrentEntity()==entity) 
+      return;
 
     // Try to stop old editing first
-    stopEdit();
+    tree.clearSelection();
 
     // Reset tree model
     tree.setRoot(entity);
@@ -283,80 +281,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     return actionSticky!=null && actionSticky.isSelected();
   }
 
-  /**
-   * Prepare a proxy for editing a property
-   */
-  private void startEdit() {
-
-    // Property?
-    Property prop = tree.getSelection();
-    if (prop == null) 
-      return;
-      
-    // private one?
-    if (prop.isSecret())
-      return;
-
-    // Calculate editing for property
-    String me    = getClass().getName(),
-           pkg   = me.substring( 0, me.lastIndexOf(".") + 1 ),
-           proxy = prop.getProxy();
-
-    // Create proxy
-    try {
-      currentProxy = (Proxy) Class.forName( pkg + "Proxy" + proxy ).newInstance();
-    } catch (Exception e) {
-      currentProxy = new ProxySimpleValue();
-    }
-
-    // Add proxy components
-    try {
-      JComponent focus = currentProxy.start(proxyPane,prop,this);
-      if (focus!=null) focus.requestFocus();
-    } catch (ClassCastException ex) {
-      Debug.log(Debug.WARNING, this, "Seems like we're getting bad proxy for property "+prop, ex);
-    }
-    
-    // Layout change !
-    proxyPane.validate();
-    proxyPane.doLayout();
-
-    // Done
-  }
-
-  /**
-   * Stop editing
-   */
-  private void stopEdit() {
-
-    // Prepare for finishing changed and finish
-    if (currentProxy!=null) {
-      if (currentProxy.hasChanged()) {
-        Gedcom gedcom = getCurrentEntity().getGedcom();
-        if (gedcom.startTransaction()) {
-          try {
-            currentProxy.finish();
-          } finally {
-            gedcom.endTransaction();
-          }
-        }
-      } else {
-        currentProxy.finish();
-      }
-    }
-
-    // Clear up
-    currentProxy = null;
-
-    proxyPane.removeAll();
-
-    // Layout change !
-    proxyPane.revalidate();
-    proxyPane.repaint();
-
-    // Done
-  }
-  
   /**
    * Action - toggle
    */
@@ -407,9 +331,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   
       Gedcom gedcom = entity.getGedcom();
   
-      // .. Stop Editing
-      stopEdit();
-  
       // .. only in case of single selection
       TreePath paths[] = tree.getSelectionPaths();
       if ( (paths==null) || (paths.length!=1) ) 
@@ -433,11 +354,12 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
         EditView.this 
       ); 
       
-      // .. OK or Cancel ?
-      if (option!=0) {
-        startEdit();
+      // .. not OK?
+      if (option!=0)
         return;
-      }
+
+      // .. stop current 
+      tree.clearSelection();
   
       // .. Calculate chosen properties
       Property[] props = choose.getResultingProperties();
@@ -455,9 +377,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       }
   
       // .. add properties
-      if (!gedcom.startTransaction()) 
-        return;
-      
+      gedcom.startTransaction();
       try {
         for (int i=0;i<props.length;i++) {
           Property newProp = prop.addProperty(props[i]);
@@ -503,10 +423,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       Property parent = prop.getParent(); // has to be non-null
   
       // .. Stop Editing
-      stopEdit();
+      tree.clearSelection();
   
       // .. LockWrite
-      if (!gedcom.startTransaction()) return;
+      gedcom.startTransaction();
   
       // .. Calculate property that is moved
       Property sibling = (Property)tree.getModel().getChild(parent, tree.getModel().getIndexOfChild(parent, prop) + (up?-1:1));
@@ -549,7 +469,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       Clipboard.getInstance().copy(prop);
       
       // deselect to avoid user pasting to same node
-      tree.clearSelection();
+      tree.setSelection(prop.getParent());
       
       // done
     }
@@ -594,7 +514,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       // copy first
       super.execute();
       // now cut
-      if (!gedcom.startTransaction()) return;
+      gedcom.startTransaction();
       prop.getParent().delProperty(prop);
       gedcom.endTransaction();
       // done
@@ -635,7 +555,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       )) return;        
         
       // paste contents
-      if (!gedcom.startTransaction()) return;
+      gedcom.startTransaction();
       Property result = null;
       try {
         result = copy.paste(prop);
@@ -662,19 +582,24 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /**
    * Handling selection of properties
    */
-  private class Callback implements TreeSelectionListener {
+  private class SelectionChange implements TreeSelectionListener {
     
     /**
      * @see javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event.TreeSelectionEvent)
      */
     public void valueChanged(TreeSelectionEvent e) {
 
-      // stop editing
-      stopEdit();
+      // 20040512 removed auto-commit
 
       // Check for 'no selection'
       Property prop = tree.getSelection(); 
       if (prop==null) {
+
+        // Clean up
+        currentProxy = null;
+        proxyPane.removeAll();
+        proxyPane.revalidate();
+        proxyPane.repaint();
 
         // Disable action buttons
         actionButtonAdd   .setEnabled(false);
@@ -689,8 +614,20 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       }
   
       // Starting with new one
-      startEdit();
-  
+      if (!prop.isSecret()) {
+
+        // get a proxy for property
+        currentProxy = getProxy(prop);
+        
+        // add proxy components
+        try {
+          currentProxy.start(proxyPane, prop, EditView.this);
+        } catch (ClassCastException ex) {
+          Debug.log(Debug.WARNING, this, "Seems like we're getting bad proxy for property "+prop, ex);
+        }
+        
+      }
+
       // add      
       actionButtonAdd.setEnabled(true);
       
@@ -712,8 +649,26 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   
       // Done
     }
+
+    /** calculate a proxy for given property */
+    private Proxy getProxy(Property prop) {
+      
+      // calculate args
+      String me    = getClass().getName(),
+             pkg   = me.substring( 0, me.lastIndexOf(".") + 1 ),
+             proxy = prop.getProxy();
+          
+      // create
+      try {
+        return (Proxy) Class.forName( pkg + "Proxy" + proxy ).newInstance();
+      } catch (Throwable t) {
+        return new ProxySimpleValue();
+      }
+      
+      // done
+    }
     
-  } //PropertyTree  
+  } //Callback  
 
   
 } //EditView
