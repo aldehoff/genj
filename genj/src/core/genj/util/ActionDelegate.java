@@ -6,12 +6,14 @@ import java.lang.reflect.Method;
 import java.util.Hashtable;
 
 /**
- * Glue between ActionCommands and methods on instances
+ * An ActionListener that delegates actions to a java object - either
+ * provide that target in constructor or inherit and provide implementations
+ * in concrete sub-class
  */
 public class ActionDelegate implements ActionListener {
   
-  /** the instance the actions will be delegated to */
-  private Object instance;
+  /** the target */
+  private Object target;
   
   /** the mapping */
   private Hashtable mapping = new Hashtable();
@@ -19,47 +21,48 @@ public class ActionDelegate implements ActionListener {
   /** constants */
   private final static Object[] EMPTY_OBJECT_ARRAY = new Object[0];
   private final static Class[] EMPTY_CLASS_ARRAY = new Class[0];
+  
+  /**
+   * Constructor
+   */
+  public ActionDelegate(Object target) {
+    this.target=target;
+  }
 
   /**
    * Constructor
    */
-  public ActionDelegate(Object setInstance) {
-    instance = setInstance;
+  protected ActionDelegate() {
+    this.target=this;
   }
-  
-  /**
-   * Add a delegate
-   */
-  public ActionDelegate add(String action, String method) throws IllegalArgumentException {
-    
-    try {
-      mapping.put(
-        action,
-        instance.getClass().getMethod(method, EMPTY_CLASS_ARRAY)
-      );
-    } catch (Throwable t) {
-      throw new IllegalArgumentException("Method "+method+" on "+instance.getClass().getName()+" is no good");
-    }
-    
-    return this;
-  }
-  
+
   /**
    * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
    */
   public void actionPerformed(ActionEvent e) {
+
+    String action = e.getActionCommand();
     
-    // Something we know?
-    Method m = (Method)mapping.get(e.getActionCommand());
-    if (m==null) return;
+    // do we know a method already?
+    Method method = (Method)mapping.get(action);
+    if (method==null) {
+      try {
+        method = target.getClass().getMethod(action, EMPTY_CLASS_ARRAY);
+        mapping.put(action,method);
+      } catch (Throwable t) {
+        System.out.println("[Debug]Action "+action+" couldn't be delegated to "+target.getClass().getName());
+        return;
+      }
+    }
     
     // call it
     try {
-      m.invoke(instance, EMPTY_OBJECT_ARRAY);
+      method.invoke(target, EMPTY_OBJECT_ARRAY);
     } catch (Throwable t) {
+      System.out.println("[Debug]Action "+action+" delegated to "+target.getClass().getName()+" failed with:");
       t.printStackTrace();
     }
-    
+
     // done
   }
 

@@ -19,35 +19,39 @@
  */
 package genj.app;
 
-import javax.swing.*;
-
-import java.util.*;
-import java.awt.*;
-import java.io.*;
-import java.awt.event.*;
-import java.net.*;
-
-import genj.gedcom.*;
-import genj.util.*;
 import genj.lnf.LnFBridge;
+import genj.util.AreaInScreen;
+import genj.util.ImgIcon;
+import genj.util.Registry;
+import genj.util.Resources;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.io.File;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
+import java.util.Vector;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.UIManager;
 
 /**
  * Main Class for GenJ Application
  */
 public class App {
-
+  
   /** constants */
   private final static String SWING_RESOURCES_KEY_PREFIX = "swing.";
+  private final static String FRAME_KEY_PREFIX = "frame.";
 
   /** members */
-  private static boolean doDisclaimer=false;
   private Registry registry = Registry.getRegistry("genj");
-  private JFrame frame;
-  private ControlCenter center;
   private Hashtable openFrames = new Hashtable();
   private static App instance;
-
-  final static Resources resources = new Resources("genj.app");
+  protected final static Resources resources = new Resources("genj.app");
 
   /**
    * Application Constructor
@@ -93,10 +97,10 @@ public class App {
     }
 
     // Create frame
-    frame = createFrame(resources.getString("app.title"),Images.imgGedcom,"main", null);
+    JFrame frame = createFrame(resources.getString("app.title"),Images.imgGedcom,"main", null);
 
     // Create the desktop
-    center = new ControlCenter(frame,registry);
+    ControlCenter center = new ControlCenter(frame,registry);
     frame.getContentPane().add(center);
 
     // Menu-Bar
@@ -149,7 +153,7 @@ public class App {
    * Returns a previously opened Frame by key
    */
   public JFrame getFrame(String key) {
-    return (JFrame)openFrames.get(key);
+    return (JFrame)openFrames.get(FRAME_KEY_PREFIX+key);
   }
   
   /**
@@ -163,44 +167,65 @@ public class App {
    * Creates a Frame which remembers it's position from last time
    */
   public JFrame createFrame(String title, ImgIcon image, final String key, final Dimension dimension) {
+    return new App.Frame(title,image,key,dimension);
+  }
 
-    final String resource = "frame."+key;
+  /**
+   * Our own frame
+   */
+  public class Frame extends JFrame {
+    
+    private String savedKey;
+    private Dimension savedDimension;
+    
+    /**
+     * Constructor
+     */
+    protected Frame(String title, ImgIcon image, String key, Dimension dimension) {
 
-    // Create the frame
-    JFrame frame = new JFrame(title) {
-      // LCD
-      /** Disposes of this frame */
-      public void dispose() {
-        registry.put(resource,getBounds());
-        openFrames.remove(key);
-        super.dispose();
-      }
-      /** Packs this frame to optimal/remembered size */
-      public void pack() {
-        Rectangle box = registry.get(resource,(Rectangle)null);
-        if ((box==null)&&(dimension!=null)) box = new Rectangle(0,0,dimension.width,dimension.height);
-        if (box==null) {
-          super.pack();
-        } else {
-          setBounds(new AreaInScreen(box));
-        }
-        invalidate();
-        validate();
-        doLayout();
-      }
-      // EOC
-    };
+      // 1st remember
+      savedKey = FRAME_KEY_PREFIX+key;
+      savedDimension = dimension;
+      
+      // 2nd modify the frame's behavior
+      setTitle(title);
+      if (image!=null) setIconImage(image.getImage());
+      setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+      
+      // 3rd remember
+      openFrames.put(savedKey,this);
 
-    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    if (image!=null) {
-      frame.setIconImage(image.getImage());
+      // done
+    }
+    
+    /**
+     * @see java.awt.Window#dispose()
+     */
+    public void dispose() {
+      registry.put(savedKey,getBounds());
+      openFrames.remove(savedKey);
+      super.dispose();
     }
 
-    openFrames.put(key,frame);
+    /**
+     * @see java.awt.Window#pack()
+     */    
+    public void pack() {
+      
+      Rectangle box = registry.get(savedKey,(Rectangle)null);
+      if ((box==null)&&(savedDimension!=null)) 
+        box = new Rectangle(0,0,savedDimension.width,savedDimension.height);
+      if (box==null) {
+        super.pack();
+      } else {
+        setBounds(new AreaInScreen(box));
+      }
+      invalidate();
+      validate();
+      doLayout();
+    }
 
-    // Done
-    return frame;
-  }
+  } // Frame
 
   /**
    * Sets the LookAndFeel

@@ -178,11 +178,10 @@ class ViewBridge {
   private Registry getRegistryFor(Gedcom gedcom, String nameOfView) {
 
     // Check which iteration number is available next
-    Hashtable frames = App.getInstance().getFrames();
     String name = gedcom.getOrigin().getFileName();
     int number;
     for (number=1;;number++) {
-      if (!frames.containsKey(name+"."+nameOfView+"."+number)) {
+      if (App.getInstance().getFrame(name+"."+nameOfView+"."+number)==null) {
         break;
       }
     }

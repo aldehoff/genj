@@ -373,6 +373,9 @@ public class Table extends Scrollpane implements TableModelListener {
 
     // Show it
     repaint();
+    
+    // notify
+    fireSelectionChanged();
   }
 
   /**

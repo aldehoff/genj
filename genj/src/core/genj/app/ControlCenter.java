@@ -91,16 +91,17 @@ public class ControlCenter extends JPanel implements ActionListener {
         boolean on = (gedcom!=null);
 
         // Switch on/off Buttons
-        bNewTable   .setEnabled(on);
-        bNewTree    .setEnabled(on);
-        bNewTimeline.setEnabled(on);
-        bNewEdit    .setEnabled(on);
-        bNewReport  .setEnabled(on);
-        bNewIndi    .setEnabled(on);
-        bNewFam     .setEnabled(on);
-        bNewMedia   .setEnabled(on);
-        bNewNote    .setEnabled(on);
-        bDelEntity  .setEnabled(on);
+        bNewTable    .setEnabled(on);
+        bNewTree     .setEnabled(on);
+        bNewTimeline .setEnabled(on);
+        bNewEdit     .setEnabled(on);
+        bNewNavigator.setEnabled(on);
+        bNewReport   .setEnabled(on);
+        bNewIndi     .setEnabled(on);
+        bNewFam      .setEnabled(on);
+        bNewMedia    .setEnabled(on);
+        bNewNote     .setEnabled(on);
+        bDelEntity   .setEnabled(on);
 
         // Switch on/off menu
         if (gedcomMenu!=null) {
@@ -163,14 +164,20 @@ public class ControlCenter extends JPanel implements ActionListener {
     gedcomPane.setLayout(new BoxLayout(gedcomPane,BoxLayout.X_AXIS));
 
     // .. Buttons
-    bOpenGedcom  = createButton(Images.imgGedcom      ,"OPEN"        ,"cc.tip.open_file"    ,true );
-    bNewTable    = createButton(Images.imgNewTable    ,"NEWTABLE"    ,"cc.tip.open_table"   ,false);
-    bNewTree     = createButton(Images.imgNewTree     ,"NEWTREE"     ,"cc.tip.open_tree"    ,false);
-    bNewTimeline = createButton(Images.imgNewTimeline ,"NEWTIMELINE" ,"cc.tip.open_timeline",false);
-    bNewEdit     = createButton(Images.imgNewEdit     ,"NEWEDIT"     ,"cc.tip.open_edit"    ,false);
-    bNewReport   = createButton(Images.imgNewReport   ,"NEWREPORT"   ,"cc.tip.open_report"  ,false);
-    bNewNavigator= createButton(Images.imgNewNavigator,"NEWNAVIGATOR","cc.tip.open_navigator",true );
-    bSettings    = createButton(Images.imgSettings    ,"VIEWEDIT"    ,"cc.tip.settings"     ,true );
+    ButtonHelper bh = new ButtonHelper()
+      .setResources(App.resources)
+      .setListener(this)
+      .setInsets(4)
+      .setFocusable(false);
+
+    bOpenGedcom  = bh.setImage(Images.imgGedcom      ).setAction("OPEN"        ).setTip("cc.tip.open_file"     ).setEnabled(true ).create();
+    bNewTable    = bh.setImage(Images.imgNewTable    ).setAction("NEWTABLE"    ).setTip("cc.tip.open_table"    ).setEnabled(false).create();
+    bNewTree     = bh.setImage(Images.imgNewTree     ).setAction("NEWTREE"     ).setTip("cc.tip.open_tree"     ).setEnabled(false).create();
+    bNewTimeline = bh.setImage(Images.imgNewTimeline ).setAction("NEWTIMELINE" ).setTip("cc.tip.open_timeline" ).setEnabled(false).create();
+    bNewEdit     = bh.setImage(Images.imgNewEdit     ).setAction("NEWEDIT"     ).setTip("cc.tip.open_edit"     ).setEnabled(false).create();
+    bNewReport   = bh.setImage(Images.imgNewReport   ).setAction("NEWREPORT"   ).setTip("cc.tip.open_report"   ).setEnabled(false).create();
+    bNewNavigator= bh.setImage(Images.imgNewNavigator).setAction("NEWNAVIGATOR").setTip("cc.tip.open_navigator").setEnabled(false).create();
+    bSettings    = bh.setImage(Images.imgSettings    ).setAction("VIEWEDIT"    ).setTip("cc.tip.settings"      ).setEnabled(true ).create();
 
     // .. Layout
     gedcomPane.add(bOpenGedcom);
@@ -187,15 +194,15 @@ public class ControlCenter extends JPanel implements ActionListener {
     entityPane.setLayout(new BoxLayout(entityPane,BoxLayout.X_AXIS));
 
     // .. Buttons
-    bNewIndi      = createButton(Images.imgNewIndi      ,"NEWINDI"      ,"cc.tip.create_indi"       ,false);
-    bNewFam       = createButton(Images.imgNewFam       ,"NEWFAM"       ,"cc.tip.create_fam"        ,false);
-    bNewMedia     = createButton(Images.imgNewMedia     ,"NEWMEDIA"     ,"cc.tip.create_media"      ,false);
-    bNewNote      = createButton(Images.imgNewNote      ,"NEWNOTE"      ,"cc.tip.create_note"       ,false);
-    bNewSource    = createButton(Images.imgNewSource    ,"NEWSOURCE"    ,"cc.tip.create_source"     ,false);
-    bNewSubmitter = createButton(Images.imgNewSubmitter ,"NEWSUBMITTER" ,"cc.tip.create_submitter"  ,false);
-    bNewRepository= createButton(Images.imgNewRepository,"NEWREPOSITORY","cc.tip.create_repository" ,false);
-    bDelEntity    = createButton(Images.imgDelEntity    ,"DEL"          ,"cc.tip.delete_entity"     ,false);
-    //    bUndo        = createButton(Images.imgUndo        ,"UNDO"        ,"cc.tip.undo_change"      ,false);
+    bh.setEnabled(false);
+    bNewIndi      = bh.setImage(Images.imgNewIndi      ).setAction("NEWINDI"      ).setTip("cc.tip.create_indi"       ).create();
+    bNewFam       = bh.setImage(Images.imgNewFam       ).setAction("NEWFAM"       ).setTip("cc.tip.create_fam"        ).create();
+    bNewMedia     = bh.setImage(Images.imgNewMedia     ).setAction("NEWMEDIA"     ).setTip("cc.tip.create_media"      ).create();
+    bNewNote      = bh.setImage(Images.imgNewNote      ).setAction("NEWNOTE"      ).setTip("cc.tip.create_note"       ).create();
+    bNewSource    = bh.setImage(Images.imgNewSource    ).setAction("NEWSOURCE"    ).setTip("cc.tip.create_source"     ).create();
+    bNewSubmitter = bh.setImage(Images.imgNewSubmitter ).setAction("NEWSUBMITTER" ).setTip("cc.tip.create_submitter"  ).create();
+    bNewRepository= bh.setImage(Images.imgNewRepository).setAction("NEWREPOSITORY").setTip("cc.tip.create_repository" ).create();
+    bDelEntity    = bh.setImage(Images.imgDelEntity    ).setAction("DEL"          ).setTip("cc.tip.delete_entity"     ).create();
 
     entityPane.add(bNewIndi     );
     entityPane.add(bNewFam      );
@@ -575,6 +582,12 @@ public class ControlCenter extends JPanel implements ActionListener {
       return;
     }
 
+    // Settings?
+    if (e.getActionCommand().equals("VIEWEDIT")) {
+      ViewEditor.startEditing(null,"");
+      return;
+    }
+
     // Calculate Gedcom for Action
     Gedcom gedcom=tGedcoms.getSelectedGedcom();
     if (gedcom!=null) {
@@ -643,11 +656,6 @@ public class ControlCenter extends JPanel implements ActionListener {
     // Close ?
     if (e.getActionCommand().equals("CLOSE")) {
       actionCloseGedcom(gedcom);
-      return;
-    }
-    // Settings?
-    if (e.getActionCommand().equals("VIEWEDIT")) {
-      ViewEditor.startEditing(null,"");
       return;
     }
     // Unknown !
@@ -855,20 +863,6 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     // Done
     return true;
-  }
-
-  /**
-   * Another helper which creates a JButton
-   */
-  private JButton createButton(ImgIcon img,String action, String tip,boolean enabled) {
-    JButton b = new JButton(ImgIconConverter.get(img));
-    b.setToolTipText(App.resources.getString(tip));
-    b.addActionListener(this);
-    b.setActionCommand(action);
-    b.setEnabled(enabled);
-    b.setMargin(new Insets(4,4,4,4));
-    b.setRequestFocusEnabled(false);
-    return b;
   }
 
   /**

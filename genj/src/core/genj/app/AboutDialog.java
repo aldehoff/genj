@@ -20,7 +20,7 @@
  *
  * AboutDialog class
  * This class creates the content of AboutDialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.9 2002-08-12 19:19:39 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.10 2002-08-15 01:15:57 nmeier Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -35,8 +35,6 @@ import genj.util.GridBagHelper;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -85,11 +83,8 @@ public class AboutDialog extends JPanel{
     // create a south panel
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     JButton bExit = new JButton(App.resources.getString("cc.about.dialog.exit"));
-    bExit.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        frame.dispose();
-      }
-    });
+    bExit.setActionCommand("dispose");
+    bExit.addActionListener(new ActionDelegate(frame));
     pSouth.add(bExit);
 
     // create a center panel
@@ -249,7 +244,7 @@ public class AboutDialog extends JPanel{
   /**
    * Panel - Look&Feel
    */
-  private class LookNFeelPanel extends JPanel implements ActionListener {
+  public class LookNFeelPanel extends JPanel {
 
     /** the combobox with lnfs & themes*/
     private JComboBox comboLnfs,comboThemes;
@@ -258,22 +253,35 @@ public class AboutDialog extends JPanel{
      * Constructor
      */
     protected LookNFeelPanel() {
-      
       super(new BorderLayout());
-      
       add(getCenter(),BorderLayout.CENTER);
       add(getSouth (),BorderLayout.SOUTH );
-      
     }
     
     /**
-     * actionPerformed
+     * Apply the LnF
      */
-    public void actionPerformed(ActionEvent e) {
-      if (comboLnfs==null) return;
+    public void apply() {
       LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
       if (lnf==null) return;
       App.getInstance().setLnF(lnf,(LnFBridge.Theme)comboThemes.getSelectedItem());
+    }
+    
+    /**
+     * Update the LnF selection
+     */
+    public void update() {
+      LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
+      if (lnf==null) return; // shouldn't be but old Swing might
+      LnFBridge.Theme[] themes = lnf.getThemes();
+      if (themes.length==0) {
+        comboThemes.setModel(new DefaultComboBoxModel());
+        comboThemes.disable();
+      } else {
+        comboThemes.setModel(new DefaultComboBoxModel(themes));
+        comboThemes.setSelectedItem(lnf.getLastTheme());
+        comboThemes.enable();
+      }
     }
     
     /**
@@ -286,26 +294,12 @@ public class AboutDialog extends JPanel{
       if (lnfs.length==0) return new JLabel("Please download genj_lnf-x.y.zip for chooseable Look&Feels", SwingConstants.CENTER);
       
       // create a combo with LnFs      
-      comboLnfs = new JComboBox(new DefaultComboBoxModel(lnfs));
       comboThemes = new JComboBox();
       
-      comboLnfs.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
-          if (lnf==null) return; // shouldn't be but old Swing might
-          LnFBridge.Theme[] themes = lnf.getThemes();
-          if (themes.length==0) {
-            comboThemes.setModel(new DefaultComboBoxModel());
-            comboThemes.disable();
-          } else {
-            comboThemes.setModel(new DefaultComboBoxModel(themes));
-            comboThemes.setSelectedItem(lnf.getLastTheme());
-            comboThemes.enable();
-          }
-        }
-      });
-
+      comboLnfs = new JComboBox(new DefaultComboBoxModel(lnfs));
+      comboLnfs.setActionCommand("update");
       comboLnfs.setSelectedItem(LnFBridge.getInstance().getLastLnF());
+      comboLnfs.addActionListener(new ActionDelegate(this));
       
       // layout
       JPanel pResult = new JPanel();
@@ -314,6 +308,9 @@ public class AboutDialog extends JPanel{
       gh.add(comboLnfs              , 1,0,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
       gh.add(new JLabel("Theme"    ), 0,1,1,1);
       gh.add(comboThemes            , 1,1,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+      
+      // show status
+      update();
       
       // done
       return pResult;
@@ -326,7 +323,8 @@ public class AboutDialog extends JPanel{
       
       // apply-button
       JButton bOk = new JButton("Apply");
-      bOk.addActionListener(this);
+      bOk.setActionCommand("apply");
+      bOk.addActionListener(new ActionDelegate(this));
       
       // layout
       JPanel pResult = new JPanel();

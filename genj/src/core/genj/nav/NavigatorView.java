@@ -145,15 +145,6 @@ public class NavigatorView extends JPanel {
     result.setBorder(BorderFactory.createTitledBorder(resources.getString("nav.navigate.title")));
     GridBagHelper gh = new GridBagHelper(result);
     
-    // our action delegation
-    ActionDelegate ad = new ActionDelegate(this);
-    ad.add("FATHER"  , "nav2Father")
-      .add("MOTHER"  , "nav2Mother")
-      .add("YSIBLING", "nav2YoungerSibling")
-      .add("PARTNER" , "nav2Partner")
-      .add("OSIBLING", "nav2OlderSibling")
-      .add("CHILD"   , "nav2Child");
-    
     // add the buttons    
     ButtonHelper bh = new ButtonHelper()
       .setFocusable(false)
@@ -161,14 +152,14 @@ public class NavigatorView extends JPanel {
       .setInsets(0)
       .setResources(resources)
       .setEnabled(false)
-      .setListener(ad);
+      .setListener(new NavigateDelegate());
     
-      bFather = bh.setAction("FATHER"  ).setRollover(Images.imgNavFatherOn         ).setImage(Images.imgNavFatherOff        ).setTip("tip.nav_father"  ).create();
-      bMother = bh.setAction("MOTHER"  ).setRollover(Images.imgNavMotherOn         ).setImage(Images.imgNavMotherOff        ).setTip("tip.nav_mother"  ).create();
-      bOlder  = bh.setAction("OSIBLING").setRollover(Images.imgNavOlderSiblingOn   ).setImage(Images.imgNavOlderSiblingOff  ).setTip("tip.nav_osibling").create();
-      bPartner= bh.setAction("PARTNER" ).setRollover(Images.imgNavPartnerOn        ).setImage(Images.imgNavPartnerOff       ).setTip("tip.nav_partner" ).create();
-      bYounger= bh.setAction("YSIBLING").setRollover(Images.imgNavYoungerSiblingOn ).setImage(Images.imgNavYoungerSiblingOff).setTip("tip.nav_ysibling").create();
-      bChild  = bh.setAction("CHILD"   ).setRollover(Images.imgNavChildOn          ).setImage(Images.imgNavChildOff         ).setTip("tip.nav_child"   ).create();
+      bFather = bh.setAction("father"  ).setRollover(Images.imgNavFatherOn         ).setImage(Images.imgNavFatherOff        ).setTip("tip.nav_father"  ).create();
+      bMother = bh.setAction("mother"  ).setRollover(Images.imgNavMotherOn         ).setImage(Images.imgNavMotherOff        ).setTip("tip.nav_mother"  ).create();
+      bOlder  = bh.setAction("osibling").setRollover(Images.imgNavOlderSiblingOn   ).setImage(Images.imgNavOlderSiblingOff  ).setTip("tip.nav_osibling").create();
+      bPartner= bh.setAction("partner" ).setRollover(Images.imgNavPartnerOn        ).setImage(Images.imgNavPartnerOff       ).setTip("tip.nav_partner" ).create();
+      bYounger= bh.setAction("ysibling").setRollover(Images.imgNavYoungerSiblingOn ).setImage(Images.imgNavYoungerSiblingOff).setTip("tip.nav_ysibling").create();
+      bChild  = bh.setAction("child"   ).setRollover(Images.imgNavChildOn          ).setImage(Images.imgNavChildOff         ).setTip("tip.nav_child"   ).create();
 
     gh.add(bFather ,2,1,1,1,gh.FILL_NONE);
     gh.add(bMother ,3,1,1,1,gh.FILL_NONE);
@@ -182,45 +173,51 @@ public class NavigatorView extends JPanel {
   }
 
   /**
-   * Navigate 2 Father
+   * A delegate that knows how to navigate
    */
-  public void nav2Father() {
-    indi.getGedcom().fireEntitySelected(null, indi.getFather(), false);
-  }
+  public class NavigateDelegate extends ActionDelegate {
     
-  /**
-   * Navigate 2 Mother
-   */
-  public void nav2Mother() {
-    indi.getGedcom().fireEntitySelected(null, indi.getMother(), false);
-  }
-    
-  /**
-   * Navigate 2 Previous
-   */
-  public void nav2YoungerSibling() {
-    indi.getGedcom().fireEntitySelected(null, indi.getYoungerSibling(), false);
-  }
-    
-  /**
-   * Navigate 2 Next
-   */
-  public void nav2OlderSibling() {
-    indi.getGedcom().fireEntitySelected(null, indi.getOlderSibling(), false);
-  }
-    
-  /**
-   * Navigate 2 Partner
-   */
-  public void nav2Partner() {
-    indi.getGedcom().fireEntitySelected(null, indi.getPartners()[0], false);
-  }
-    
-  /**
-   * Navigate 2 Child
-   */
-  public void nav2Child() {
-    indi.getGedcom().fireEntitySelected(null, indi.getChildren()[0], false);
-  }
-    
+    /**
+     * Navigate 2 Father
+     */
+    public void father() {
+      indi.getGedcom().fireEntitySelected(null, indi.getFather(), false);
+    }
+      
+    /**
+     * Navigate 2 Mother
+     */
+    public void mother() {
+      indi.getGedcom().fireEntitySelected(null, indi.getMother(), false);
+    }
+      
+    /**
+     * Navigate 2 Previous
+     */
+    public void ysibling() {
+      indi.getGedcom().fireEntitySelected(null, indi.getYoungerSibling(), false);
+    }
+      
+    /**
+     * Navigate 2 Next
+     */
+    public void osibling() {
+      indi.getGedcom().fireEntitySelected(null, indi.getOlderSibling(), false);
+    }
+      
+    /**
+     * Navigate 2 Partner
+     */
+    public void partner() {
+      indi.getGedcom().fireEntitySelected(null, indi.getPartners()[0], false);
+    }
+      
+    /**
+     * Navigate 2 Child
+     */
+    public void child() {
+      indi.getGedcom().fireEntitySelected(null, indi.getChildren()[0], false);
+    }
+
+  } // NavigateDelegate 
 }

@@ -35,7 +35,7 @@ import genj.util.swing.ImgIconConverter;
 /**
  * Class for editing the properties of a view
  */
-class ViewEditor extends JPanel {
+public class ViewEditor extends JPanel {
 
   /** statics */
   static private Hashtable hViewInfos = new Hashtable();
@@ -66,25 +66,14 @@ class ViewEditor extends JPanel {
     // Panel for Actions
     JPanel pActions = new JPanel();
 
-    ActionListener alistener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        if ("CLOSE".equals(e.getActionCommand()))
-          frame.dispose();
-        if ((currentView==null)||(!currentView.isValid())) {
-          edit(null,null,null);
-        }
-        if ("APPLY".equals(e.getActionCommand())&&(currentView!=null))
-          currentInfo.apply();
-        if ("RESET".equals(e.getActionCommand())&&(currentView!=null))
-          currentInfo.reset();
-      }
-    };
-
-    ButtonHelper bh = new ButtonHelper().setResources(resources).setListener(alistener);
-
-    bApply = bh.setText("view.apply").setAction("APPLY").create();
-    bReset = bh.setText("view.reset").setAction("RESET").create();
-    bClose = bh.setText("view.close").setAction("CLOSE").create();
+    ButtonHelper bh = new ButtonHelper()
+      .setResources(resources)
+      .setListener(new ActionDelegate(this));
+    bApply = bh.setText("view.apply").setAction("apply").create();
+    bReset = bh.setText("view.reset").setAction("reset").create();
+    
+    bh.setListener(new ActionDelegate(frame));
+    bClose = bh.setText("view.close").setAction("dispose").create();
 
     pActions.add(bApply);
     pActions.add(bReset);
@@ -97,6 +86,20 @@ class ViewEditor extends JPanel {
 
     // Done
     edit(emptyViewInfo,null,null);
+  }
+  
+  /**
+   * Applies the changes currently being done
+   */
+  public void apply() {
+    if (currentInfo!=null) currentInfo.apply();
+  }
+
+  /**
+   * Resets any change being done
+   */
+  public void reset() {
+    if (currentInfo!=null) currentInfo.reset();
   }
 
   /**
