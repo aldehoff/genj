@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.48 $ $Author: nmeier $ $Date: 2004-10-03 23:37:29 $
+ * $Revision: 1.49 $ $Author: nmeier $ $Date: 2004-11-09 19:20:15 $
  */
 package genj.report;
 
@@ -722,7 +722,7 @@ public abstract class Report implements Cloneable {
   /**
    * A (result) item can be shown to the user
    */
-  public static class Item {
+  public static class Item implements Comparable {
 
     /** attrs */
     private String name;
@@ -757,6 +757,14 @@ public abstract class Report implements Cloneable {
      */
     private Property getTarget() {
       return target==null ? null : target.getGedcom()==null ? null : target;
+    }
+    
+    /**
+     * Compare by text
+     */
+    public int compareTo(Object o) {
+      Item that = (Item)o;
+      return this.name.compareTo(that.name);
     }
     
   } //Item
