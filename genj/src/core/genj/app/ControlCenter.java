@@ -345,7 +345,6 @@ public class ControlCenter extends JPanel {
         resources.getString("cc.menu.about"),
         Gedcom.getImage(),
         new AboutWidget(viewManager),
-        // FIXME cc.menu.close should be in view resources
         resources.getString("cc.menu.close")
       );
       // done      

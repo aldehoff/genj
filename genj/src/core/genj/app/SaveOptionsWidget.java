@@ -66,8 +66,6 @@ import javax.swing.JTextField;
    */    
   /*package*/ SaveOptionsWidget(Gedcom gedcom, ViewManager manager) {
     
-    // FIXME should allow user to specify language for Gedcom
-    
     // Options
     Box options = new Box(BoxLayout.Y_AXIS);
     options.add(new JLabel(resources.getString("save.options.encoding")));
