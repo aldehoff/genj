@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyNote;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
@@ -100,12 +101,20 @@ import javax.swing.event.ChangeListener;
      " INDI:NOTE");
     
     TEMPLATES.put(Gedcom.FAM,
+     "'FAM\n"+
      "'FAM:MARR @FAM:MARR:NOTE\n"+
      " FAM:MARR:DATE\n"+
      " FAM:MARR:PLAC\n"+
+     "'FAM:ENGA\n"+
+     " FAM:ENGA:DATE\n"+
+     " FAM:ENGA:PLAC\n"+
      "'FAM:DIV\n"+
      " FAM:DIV:DATE\n"+
      " FAM:DIV:PLAC\n"+
+     "'FAM:EVEN\n"+
+     "'FAM:EVEN:TYPE FAM:EVEN:TYPE\n"+
+     " FAM:EVEN:DATE\n"+
+     " FAM:EVEN:PLAC\t"+
      "'FAM:OBJE\n"+
      "'FAM:OBJE:TITL FAM:OBJE:TITL\n"+
      " FAM:OBJE:FILE\n"+
@@ -113,6 +122,7 @@ import javax.swing.event.ChangeListener;
      " FAM:NOTE");
   
     TEMPLATES.put(Gedcom.OBJE,
+      "'OBJE\n"+
       "'OBJE:TITL OBJE:TITL\n"+
       "'OBJE:FORM OBJE:FORM\n"+
       " OBJE:BLOB\n"+
@@ -120,9 +130,11 @@ import javax.swing.event.ChangeListener;
       " OBJE:NOTE");
     
     TEMPLATES.put(Gedcom.NOTE,
+      "'NOTE\n"+
       " NOTE:NOTE");
       
     TEMPLATES.put(Gedcom.REPO,
+      "'REPO\n"+
       "'REPO:NAME REPO:NAME\n"+
       "'REPO:ADDR\n"+
       " REPO:ADDR\n"+
@@ -199,7 +211,7 @@ import javax.swing.event.ChangeListener;
     this.registry = registry;
 
     // create panels for beans and links
-    beanPanel = new JPanel(new NestedBlockLayout(true, 2));
+    beanPanel = new JPanel(new NestedBlockLayout(true, 3));
     beanPanel.setBorder(new EmptyBorder(2,2,2,2));
 
     // create panel for actions
@@ -321,9 +333,20 @@ import javax.swing.event.ChangeListener;
     MetaProperty meta = MetaProperty.get(path);
 
     // resolve prop & bean
-    // FIXME gotta think about this one - can we simply skip xrefs?
     Property prop = entity.getProperty(path);
-    if (prop == null || prop instanceof PropertyXRef)
+    for (int s=0;prop instanceof PropertyXRef;s++) {
+      // we know how to handle a PropertyNote
+      if (prop instanceof PropertyNote) {
+        prop = prop.getProperty(new TagPath("*:..:NOTE"));
+        if (prop!=null)
+          break;
+      }
+      // try next
+      prop = entity.getProperty(new TagPath(path, path.length()-1, s));
+    }
+    
+    // .. fallback to newly created one?
+    if (prop == null)
       prop = meta.create("");
     
     PropertyBean bean = PropertyBean.get(prop);
@@ -487,7 +510,10 @@ import javax.swing.event.ChangeListener;
       button.setIcon(wrapped.getProperty().getImage(false));
     }
     
-    /** focus property change notification */
+    /** 
+     * focus property change notification 
+     * (this doesn't seem to be invoke in Java 1.4.1 with a user clicking on a textfield)
+     */
     public void propertyChange(PropertyChangeEvent evt) {
       // popup visible?
       if (popup==null)
