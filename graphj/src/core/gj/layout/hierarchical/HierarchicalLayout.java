@@ -21,6 +21,7 @@ import gj.layout.LayoutException;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
+import gj.util.ArcHelper;
 import gj.util.ModelHelper;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -145,7 +146,7 @@ public class HierarchicalLayout extends AbstractLayout implements Layout {
     Iterator it = graph.getArcs().iterator();
     while (it.hasNext()) {
       Arc arc = (Arc)it.next();
-      arcLayout.layout(arc);
+      ArcHelper.update(arc);
     }
     
     // then layout all arcs that were broken - the
@@ -161,7 +162,7 @@ public class HierarchicalLayout extends AbstractLayout implements Layout {
         points[d] = nodes[d].getPosition();
       }
       // which we reflect on the Path
-      arcLayout.layout(
+      ArcHelper.update(
         arc.getPath(), 
         points,
         arc.getStart().getShape(),

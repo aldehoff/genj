@@ -17,12 +17,12 @@ package gj.layout.circular;
 
 import gj.awt.geom.Geometry;
 import gj.layout.AbstractLayout;
-import gj.layout.ArcLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
+import gj.util.ArcHelper;
 import gj.util.ModelHelper;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
@@ -43,7 +43,7 @@ public class CircularLayout extends AbstractLayout implements Layout {
   private boolean isSingleCircle = true;
   
   /** an arc layout we use */
-  private ArcLayout alayout = new ArcLayout();
+  private ArcHelper alayout = new ArcHelper();
 
   /**
    * Getter - is single circle
@@ -101,7 +101,7 @@ public class CircularLayout extends AbstractLayout implements Layout {
     Iterator arcs = graph.getArcs().iterator();
     while (arcs.hasNext()) {
       Arc arc = (Arc)arcs.next();
-      alayout.layout(arc);
+      ArcHelper.update(arc);
     }
     
     // done

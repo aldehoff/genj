@@ -19,6 +19,7 @@ import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.MutableGraph;
 import gj.model.Node;
+import gj.util.ArcHelper;
 import gj.util.ModelHelper;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -142,7 +143,7 @@ public class GraphFactory extends AbstractFactory {
       for (int j=i+1;j<n;j++) {
         Node from = nodes[i];
         Node to   = nodes[j];
-        arcLayout.layout(graph.createArc(from,to,new Path()));
+        ArcHelper.update(graph.createArc(from,to,new Path()));
       }
     }
     
@@ -193,7 +194,7 @@ public class GraphFactory extends AbstractFactory {
       while (true) {
         Node other = getRandomNode(others,true);
         if ((other.getArcs().size()<minDegree)||(others.isEmpty())) {
-          arcLayout.layout(graph.createArc(node, other, new Path()));
+          ArcHelper.update(graph.createArc(node, other, new Path()));
           break;
         }
       }
@@ -222,7 +223,7 @@ public class GraphFactory extends AbstractFactory {
       Node from = getMinDegNode(nodes,true);
       if (!ModelHelper.isNeighbour(from,nodes)) {
         Node to = getMinDegNode(nodes,false);
-        arcLayout.layout(graph.createArc(from, to, new Path()));
+        ArcHelper.update(graph.createArc(from, to, new Path()));
       }
     }
     

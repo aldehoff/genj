@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * An iterator for looping over Arcs
+ * An iterator for looping over Arcs from a source
  */
 public class ArcIterator {
   

@@ -294,14 +294,14 @@ public class TreeLayout extends AbstractLayout implements Layout {
     Orientation orientn = Orientation.get(isVertical,isTopDown);
     
     // and a node layout
-    NodeLayout nlayout = new NodeLayout(
+    Algorithm nlayout = new Algorithm(
       orientn, 
       nodeOptions, 
       arcOptions,
       isLatAlignmentEnabled,
       isBalanceChildren,
       orientationToggles,
-      TreeArcLayout.get(isBendArcs)
+      isBendArcs
     );
 
     // keep track of nodes we haven't visited yet

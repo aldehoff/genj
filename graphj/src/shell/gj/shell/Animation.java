@@ -14,13 +14,14 @@
  * Lesser General Public License for more details.
  */package gj.shell;
 
-import gj.layout.ArcLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.layout.random.RandomLayout;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
+import gj.util.ArcHelper;
+
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
@@ -48,7 +49,7 @@ import java.util.Iterator;
     startFrame;
     
   /** an arc layout we use during the animation */
-  private ArcLayout arcLayout = new ArcLayout();    
+  private ArcHelper arcLayout = new ArcHelper();    
   
   /**
    * Constructor
@@ -232,7 +233,7 @@ import java.util.Iterator;
     }
     boolean perform(double time) {
       if (time<1)
-        arcLayout.layout(arc);
+        ArcHelper.update(arc);
       else 
         arc.getPath().set(shape);
       return true;

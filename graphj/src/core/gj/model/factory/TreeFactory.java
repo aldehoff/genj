@@ -18,6 +18,8 @@ package gj.model.factory;
 import gj.awt.geom.Path;
 import gj.model.MutableGraph;
 import gj.model.Node;
+import gj.util.ArcHelper;
+
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
@@ -128,9 +130,9 @@ public class TreeFactory extends AbstractFactory {
         String key = sample[s][c];        
         Node to = (Node)nodes.get(key);
         if (Math.random()>0.5) {
-          arcLayout.layout(graph.createArc(from, to, new Path()));
+          ArcHelper.update(graph.createArc(from, to, new Path()));
         } else {
-          arcLayout.layout(graph.createArc(to, from, new Path()));
+          ArcHelper.update(graph.createArc(to, from, new Path()));
         }
       }
     }

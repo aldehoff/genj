@@ -21,6 +21,8 @@ import gj.layout.LayoutException;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
+import gj.util.ArcHelper;
+
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import java.util.Random;
@@ -123,7 +125,7 @@ public class RandomLayout extends AbstractLayout implements Layout {
         from = arc.getStart(),
         to   = arc.getEnd();
       
-      arcLayout.layout(arc);
+      ArcHelper.update(arc);
     }
     
     // done

@@ -15,6 +15,9 @@
  */
 package gj.layout;
 
+import gj.util.*;
+import gj.util.*;
+
 /**
  * Base for Layouts (optional)
  */
@@ -24,7 +27,7 @@ public abstract class AbstractLayout implements Layout {
   private boolean isDebug = false;
   
   /** an arc layout for convenience */
-  protected ArcLayout arcLayout = new ArcLayout();
+  protected ArcHelper arcLayout = new ArcHelper();
 
   /**
    * Getter - debug

@@ -13,33 +13,32 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  */
-package gj.layout;
+package gj.util;
 
 import gj.awt.geom.Geometry;
 import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Node;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
  * A simplified layout for arcs */
-public class ArcLayout {
+public class ArcHelper {
 
   /**
    * Updates a path of an arc
    */
-  public Path layout(Arc arc) {
-    return layout(arc.getPath(), arc.getStart(), arc.getEnd());
+  public static Path update(Arc arc) {
+    return update(arc.getPath(), arc.getStart(), arc.getEnd());
   }
 
   /**
    * Updates a simple path between two nodes
    */
-  public Path layout(Path path, Node start, Node end) {
-    return layout(path,start.getPosition(),start.getShape(),end.getPosition(),end.getShape());
+  public static Path update(Path path, Node start, Node end) {
+    return update(path,start.getPosition(),start.getShape(),end.getPosition(),end.getShape());
   }
 
   /**
@@ -49,15 +48,15 @@ public class ArcLayout {
    * @param s1 shape positioned at the first point
    * @param s2 shape positioned at the last point
    */  
-  public Path layout(Path path, Point2D[] points, Shape s1, Shape s2) {
+  public static Path update(Path path, Point2D[] points, Shape s1, Shape s2) {
     
     // clean things up initially
     path.reset();
     
     // intersect the first segment with s1
     Point2D
-      a = getIntersection(points[1], points[0], points[0], s1),
-      b = getIntersection(points[points.length-2], points[points.length-1], points[points.length-1], s2);
+      a = Geometry.getIntersection(points[1], points[0], points[0], s1),
+      b = Geometry.getIntersection(points[points.length-2], points[points.length-1], points[points.length-1], s2);
     
     // add the points to this path
     path.moveTo(a);
@@ -77,7 +76,7 @@ public class ArcLayout {
    * @param p2 the ending point
    * @param s2 the shape sitting at p2
    */
-  public Path layout(Path path, Point2D p1, Shape s1, Point2D p2, Shape s2) {
+  public static Path update(Path path, Point2D p1, Shape s1, Point2D p2, Shape s2) {
     
     // clean things up initially
     path.reset();
@@ -97,40 +96,17 @@ public class ArcLayout {
         c = new Point2D.Double(a.getX()+w, a.getY()+h),
         d = new Point2D.Double(a.getX()  , a.getY()+h);
         
-      layout(path,new Point2D[]{a,b,c,d,a}, s1, s1);
+      update(path,new Point2D[]{a,b,c,d,a}, s1, s1);
       
       return path;
     }
 
     // A simple line
-    path.moveTo(getIntersection(p2, p1, p1, s1));
-    path.lineTo(getIntersection(p1, p2, p2, s2));
+    path.moveTo(Geometry.getIntersection(p2, p1, p1, s1));
+    path.lineTo(Geometry.getIntersection(p1, p2, p2, s2));
    
     // done
     return path; 
-  }
-
-  /**
-   * Calculates the endpoint of a projection on a Shape
-   * @param p1 the start of the projection
-   * @param p2 the end of the projection
-   * @param p3 the position of the shape
-   * @param s the shape
-   */
-  public Point2D getIntersection(Point2D p1, Point2D p2, Point2D p3, Shape s) {
-    
-    // intersect the projection start-end with the shape    
-    if (s!=null) {
-      Point2D p = Geometry.getClosestIntersection(
-        p1, 
-        p1, p2,
-        s.getPathIterator(AffineTransform.getTranslateInstance(p3.getX(), p3.getY()))
-      );
-      if (p!=null) return p;
-    }
-
-    // no intersections -> projection doesn't stop
-    return p2;
   }
 
 } //ArcLayout

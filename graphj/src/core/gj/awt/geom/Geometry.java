@@ -15,6 +15,8 @@
  */
 package gj.awt.geom;
 
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
@@ -129,6 +131,29 @@ public class Geometry {
    */
   public static Point2D getClosestIntersection(Point2D fix, Point2D lineStart, Point2D lineEnd, PathIterator shape) {
     return new OpGetClosestIntersection(fix, lineStart, lineEnd, shape).getResult();
+  }
+  
+  /**
+   * Calculates the endpoint of a projection on a Shape
+   * @param p1 the start of the projection
+   * @param p2 the end of the projection
+   * @param p3 the position of the shape
+   * @param s the shape
+   */
+  public static Point2D getIntersection(Point2D p1, Point2D p2, Point2D p3, Shape s) {
+    
+    // intersect the projection start-end with the shape    
+    if (s!=null) {
+      Point2D p = Geometry.getClosestIntersection(
+        p1, 
+        p1, p2,
+        s.getPathIterator(AffineTransform.getTranslateInstance(p3.getX(), p3.getY()))
+      );
+      if (p!=null) return p;
+    }
+
+    // no intersections -> projection doesn't stop
+    return p2;
   }
   
   /**

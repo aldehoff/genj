@@ -17,7 +17,9 @@ package gj.layout.tree;
 
 import gj.awt.geom.Geometry;
 import gj.awt.geom.Path;
+import gj.model.Arc;
 import gj.model.Node;
+import gj.util.ArcHelper;
 import gj.util.ArcIterator;
 import gj.util.ModelHelper;
 
@@ -29,9 +31,9 @@ import java.util.Set;
 import java.util.Stack;
 
 /**
- * The NodeLayout
+ * The layout's algorithm
  */
-/*package*/ class NodeLayout {
+/*package*/ class Algorithm {
 
   /** a stack of orientations to return to */
   private Stack oldos = new Stack();
@@ -48,27 +50,27 @@ import java.util.Stack;
   /** the orientation toggles */
   private Set orientntggls;
   
-  /** the arc layout we use */
-  private TreeArcLayout alayout;
-  
   /** whether latitude alignment is enabled */
   private boolean latalign;
   
   /** whether we align children */
   private boolean balance;
   
+  /** whether we bend arcs */
+  private boolean bendarcs;
+  
   /**
    * Constructor
    */
-  /*package*/ NodeLayout(Orientation orientation, NodeOptions nodeOptions, ArcOptions arcOptions, boolean isLatAlignmentEnabled, boolean isBalanceChildrenEnable, Set orientationToggles, TreeArcLayout arcLayout) {
+  /*package*/ Algorithm(Orientation orientation, NodeOptions nodeOptions, ArcOptions arcOptions, boolean isLatAlignmentEnabled, boolean isBalanceChildrenEnable, Set orientationToggles, boolean isBendedArcs) {
     orientn = orientation;
     nodeop  = nodeOptions;
     arcop = arcOptions;
     latalign = isLatAlignmentEnabled;
     balance = isBalanceChildrenEnable;
+    bendarcs = isBendedArcs;
     if (latalign) orientntggls = new HashSet();
     else orientntggls = orientationToggles;
-    alayout = arcLayout;
   }
   
   /**
@@ -96,7 +98,7 @@ import java.util.Stack;
     result.translate(dlat,dlon);
     
     // transform relative node/arc positions into absolute ones
-    relative2absolute(tree.getRoot(), null, orientn.getPoint2D(dlat,dlon));
+    placeAllDescendants(tree.getRoot(), null, orientn.getPoint2D(dlat,dlon));
 
     // done
     return result;
@@ -122,7 +124,7 @@ import java.util.Stack;
     result.translate(dlat,dlon);
     
     // transform relative node/arc positions into absolute ones
-    relative2absolute(tree.getRoot(), null, orientn.getPoint2D(dlat,dlon));
+    placeAllDescendants(tree.getRoot(), null, orientn.getPoint2D(dlat,dlon));
 
     // done
     return result;
@@ -158,8 +160,8 @@ import java.util.Stack;
     // we layout the root
     Contour root = layoutParent(node, children, tree, generation);
 
-    // we layout the arcs
-    alayout.layout(
+    // .. and the arcs to its children
+    layoutArcs2Children( 
       node, 
       toggleOrientation ? orientn.getLatitude(node.getPosition()) : root.south, 
       orientn,
@@ -167,7 +169,7 @@ import java.util.Stack;
     );
 
     // make everything children/arcs directly 'under' node relative
-    absolute2relative(node, parent);
+    placeChildrenRelative2Parent(node, parent);
 
     // The result is a hull comprised of root's and children's hull
     Contour result = Contour.merge(
@@ -378,7 +380,7 @@ import java.util.Stack;
    * Transforms absolute positions of direct descendants
    * into relative ones
    */
-  private void absolute2relative(Node node, Node parent) {
+  private void placeChildrenRelative2Parent(Node node, Node parent) {
 
     // loop through arcs    
     Point2D delta = Geometry.getNegative(node.getPosition());
@@ -400,7 +402,7 @@ import java.util.Stack;
    * Transforms all relative positions of tree starting
    * at node into absolute ones (recursively)
    */
-  private void relative2absolute(Node node, Node parent, Point2D delta) {
+  private void placeAllDescendants(Node node, Node parent, Point2D delta) {
 
     // change the node's position
     ModelHelper.move(node, delta);
@@ -420,50 +422,113 @@ import java.util.Stack;
       // .. child
       Node child = ModelHelper.getOther(it.arc, node);
       // .. recursion
-      relative2absolute(child, node, node.getPosition());
+      placeAllDescendants(child, node, node.getPosition());
     }
 
     // done
   }
 
-//  /**
-//   * Balance children - we assume that at this point sub-tree i
-//   * described by its root ns[i] and cs[i] for i>0 is placed as
-//   * close as possible to all sub-trees with j<i
-//   * (#ns==#cs > 2)
-//   */
-//  private void balanceChilden(Node[] ns, Contour[] cs, int n, Orientation orientn) {
-//    
-//    // calculate min dists of 0<=i<n-1 to n-1    
-//    double[] ds = calcMinDists(cs, n-1, cs[n-1]);
-//
-//    // space between cs[n-1] and cs[n]
-//    double space = ds[ds.length-1]; 
-//    if (space<=0) return;
-//    
-//    // distribute space 
-//    double[] shares = new double[n-1];
-//    double share = space/(n-1);
-//    for (int i=shares.length;i>0;i--) {
-//      // default share 
-//      shares[i-1] = i*share;
-//      // check all but the last
-//      if (i==ds.length) continue;
-//      // too much?
-//      if (shares[i-1]>ds[i]) shares[i-1]=ds[i];
-//    }
-//      
-//    // move sub-trees
-//    for (int i=0; i<shares.length-1; i++) {
-//      share = shares[i];
-//      cs[i+1].translate(0, share);
-//      ModelHelper.translate(ns[i+1],orientn.getPoint2D(0, share));
-//         	
-//    }
-//    	
-//    // done
-//  }
+  /**
+   * make an arc
+   */
+  private void layoutArcs2Children(Node node, double equator, Orientation orientation, ArcOptions arcop) {
+    
+    // Loop through arcs to children (without backtrack)
+    ArcIterator it = new ArcIterator(node);
+    while (it.next()) {
+      // no path no interest
+      if (it.arc.getPath()==null) continue;
+      // handle loops separate from specialized
+      if (it.isLoop) {
+        layoutStraightArc(it.arc, orientation, arcop);
+      } else {
+        if (bendarcs) layoutBendedArc(it.arc, equator, orientation, arcop);
+        else layoutStraightArc(it.arc, orientation, arcop);
+      } 
+    }
+    // done      
+  }
   
+  /**
+   * make a straight arc
+   */
+  private void layoutStraightArc(Arc arc, Orientation o, ArcOptions arcop) {
+    
+    // grab nodes and their position/shape
+    Node
+      n1 = arc.getStart(),
+      n2 = arc.getEnd  ();
+    Point2D 
+      p1 = arcop.getPort(arc, n1, o),
+      p2 = arcop.getPort(arc, n2, o);
+    Shape 
+      s1 = n1.getShape(),
+      s2 = n2.getShape();
+
+    // calculate south of p1 and north of p2
+    p1 = Geometry.getIntersection(
+      p1, o.getPoint2D(o.getLatitude(p2), o.getLongitude(p1)),
+      p1, s1
+    );
+    p2 = Geometry.getIntersection(
+      p2, o.getPoint2D(o.getLatitude(p1), o.getLongitude(p2)),
+      p2, s2
+    );
+
+    // strike a path
+    Path path = arc.getPath();
+    path.reset();
+    path.moveTo(p1);
+    path.lineTo(p2);
+    
+    // done  
+  }
+  
+  /**
+   * make a bended arc
+   */
+  protected void layoutBendedArc(Arc arc, double equator, Orientation o, ArcOptions arcop) {
+    
+    // grab arc's information
+    Node
+      n1 = arc.getStart(),
+      n2 = arc.getEnd();
+    
+    Point2D
+      p1 = arcop.getPort(arc, n1, o),
+      p2 = new Point2D.Double(),
+      p3 = new Point2D.Double(),
+      p4 = arcop.getPort(arc, n2, o);
+
+    // straight line up?
+    if (o.getLongitude(p1)==o.getLongitude(p4)) {
+      layoutStraightArc(arc, o, arcop);
+      return;
+    }        
+
+    // bending around equator
+    if (equator==o.getLatitude(p1)) {
+      p2.setLocation(o.getPoint2D(equator, o.getLongitude(p4)));
+      p3=p2;
+    } else if (equator==o.getLatitude(p4)) {
+      p2.setLocation(o.getPoint2D(equator, o.getLongitude(p1)));
+      p3=p2;
+    } else {
+      p2.setLocation(o.getPoint2D(equator, o.getLongitude(p1)));
+      p3.setLocation(o.getPoint2D(equator, o.getLongitude(p4)));
+    }
+
+    // layout       
+    ArcHelper.update(
+      arc.getPath(),
+      new Point2D[]{p1,p2,p3,p4},
+      n1.getShape(),
+      n2.getShape()
+    );
+    
+    // done
+  }
+    
   /**
    * AlignNodeOptions
    */
@@ -501,6 +566,6 @@ import java.util.Stack;
       if ((oldos.size()&1)!=0) dir = (dir+1)&3;
       return original.getPadding(node, dir, o);
     }
-  } //ComplementNodeOptions
+  } //ToggleAlignment
 
 } //NodeLayout

@@ -18,10 +18,10 @@ package gj.io;
 import gj.awt.geom.Path;
 import gj.awt.geom.PathIteratorKnowHow;
 import gj.awt.geom.ShapeHelper;
-import gj.layout.ArcLayout;
 import gj.model.Arc;
 import gj.model.MutableGraph;
 import gj.model.Node;
+import gj.util.ArcHelper;
 import gj.util.ModelHelper;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -66,7 +66,7 @@ public class GraphReader implements PathIteratorKnowHow  {
     ids2shapes = new HashMap();
 
   /** a base layout we use for fixing arcs' paths */
-  private ArcLayout alayout = new ArcLayout();
+  private ArcHelper alayout = new ArcHelper();
   
   /**
    * Constructor
@@ -196,7 +196,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       if (shapeHandler!=null) {
         arc.getPath().set(shapeHandler.getResult());
       } else {
-        alayout.layout(arc);
+        ArcHelper.update(arc);
       }
     }    
   }
