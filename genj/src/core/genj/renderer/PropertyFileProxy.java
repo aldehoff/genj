@@ -60,10 +60,14 @@ public class PropertyFileProxy extends PropertyProxy {
       Math.min(1.0D, ((double)bounds.height)/h)
     );
     img.paintIcon(g, 
-      (int)(bounds.x + (bounds.width -w*zoom)/2), 
-      (int)(bounds.y + (bounds.height-h*zoom)/2), 
+      bounds.x, 
+      bounds.y, 
+//      (int)(bounds.x + (bounds.width -w*zoom)/2), 
+//      (int)(bounds.y + (bounds.height-h*zoom)/2), 
       zoom
     );
+//    g.setColor(Color.red);
+//    g.drawRect(bounds.x, bounds.y, bounds.width-1, bounds.height-1);
     // done
   }
   

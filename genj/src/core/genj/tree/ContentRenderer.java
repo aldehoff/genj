@@ -67,9 +67,10 @@ public class ContentRenderer {
   private EntityRenderer contentRenderer;
   
   private String foo =
-    "<b><prop path=INDI></b>\n"+
     "<table><tr valign=top>\n"+
     " <td>\n"+
+    "  <b><prop path=INDI></b>\n"+
+    "  <br>\n"+
     "  <prop path=INDI:SEX img=yes txt=no>\n"+
     "   <i><prop path=INDI:NAME></i>\n"+
     "  <br>\n"+
@@ -79,8 +80,8 @@ public class ContentRenderer {
     "  <prop path=INDI:RESI:ADDR img=yes>,\n"+ 
     "   <prop path=INDI:RESI:ADDR:CITY>\n"+  
     "    <prop path=INDI:RESI:ADDR:POST>\n"+
-    " </td><td>\n"+
-    "  <prop path=INDI:OBJE:FILE>\n"+
+    " </td><td valign=center>\n"+
+    "  <prop path=INDI:OBJE:FILE min=30>\n"+
     " </td>\n"+
     "</tr></table>\n";
    
