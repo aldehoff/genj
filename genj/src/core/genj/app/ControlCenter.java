@@ -660,10 +660,16 @@ public class ControlCenter extends JPanel {
       InputStream in;
       long size;
       try {
+        
         Origin.Connection connection = origin.open();
+        
         // .. query for input stream & length
         in = connection.getInputStream();
         size = connection.getLength();
+        
+        // .. prepare our reader
+        reader = new GedcomReader(in, origin, size);
+
       } catch (IOException ex) {
         windowManager.openDialog(
           null, 
@@ -678,9 +684,6 @@ public class ControlCenter extends JPanel {
         );
         return false;
       }
-
-      // .. prepare our reader
-      reader = new GedcomReader(in, origin, size);
 
       // .. show progress dialog
       progress = windowManager.openDialog(

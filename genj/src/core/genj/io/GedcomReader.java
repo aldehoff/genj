@@ -79,7 +79,7 @@ public class GedcomReader implements Trackable {
    * Constructor
    * @param in BufferedReader to read from
    */
-  public GedcomReader(InputStream stream, Origin org, long len) {
+  public GedcomReader(InputStream stream, Origin org, long len) throws IOException {
     
     // init some data
     in       = new BufferedReader(createReader(stream));
@@ -96,7 +96,7 @@ public class GedcomReader implements Trackable {
   /**
    * Initialize the reader we're using
    */
-  private Reader createReader(InputStream stream) {
+  private Reader createReader(InputStream stream) throws IOException {
     
     // prepare sniffer
     InputStreamSniffer sniffer = new InputStreamSniffer(stream);
@@ -115,8 +115,10 @@ public class GedcomReader implements Trackable {
       if (GedcomWriter.ANSEL.equals(encoding)) return new AnselReader(sniffer);
     } catch (UnsupportedEncodingException e) {
     }
+    
     // default
     Debug.log(Debug.WARNING, this, "Failed to create reader for encoding "+encoding);
+    
     return new InputStreamReader(sniffer);
   }
   
@@ -593,15 +595,11 @@ public class GedcomReader implements Trackable {
     /**
      * Sniff encoding
      */
-    public String getEncoding() {
+    public String getEncoding() throws IOException {
       // fill buffer
       mark(1); 
-      try {
-        read();
-        reset();
-      } catch (IOException e) {
-        return null;
-      }
+      read();
+      reset();
       // sniff
       String s = new String(buf, pos, count);
       // tests
