@@ -128,12 +128,14 @@ public class Gedcom {
     // remember
     this.origin = origin;
     // create Adam
-    try {
-      Indi adam = (Indi) createEntity(Gedcom.INDI);
-      adam.addDefaultProperties();
-      adam.setName("Adam","");
-      adam.setSex(PropertySex.MALE);
-    } catch (GedcomException e) {
+    if (createAdam) {
+      try {
+        Indi adam = (Indi) createEntity(Gedcom.INDI);
+        adam.addDefaultProperties();
+        adam.setName("Adam","");
+        adam.setSex(PropertySex.MALE);
+      } catch (GedcomException e) {
+      }
     }
     // Done
   }
