@@ -60,6 +60,10 @@ public class ByteArray {
       // Read !
       len = in.read(buffer,total,buffer.length-total);
 
+      // Interrupted?
+      if (Thread.currentThread().isInterrupted())
+        throw new IOException("interrupted");
+
       // End of stream ?
       if (len<0) break;
 

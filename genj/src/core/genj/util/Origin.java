@@ -383,7 +383,6 @@ public abstract class Origin {
       in.close();
     }
 
-    // EOC
-  }
+  } //InputStreamImpl
 
 } //Origin

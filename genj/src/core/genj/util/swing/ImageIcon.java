@@ -26,6 +26,7 @@ import genj.util.ImageSniffer;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.MediaTracker;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.geom.Point2D;
@@ -72,11 +73,14 @@ public class ImageIcon extends javax.swing.ImageIcon {
   public ImageIcon(String naMe, byte[] data) {
     super(data);
 
+    if (getImageLoadStatus()!=MediaTracker.COMPLETE)
+      throw new RuntimeException("load status incomplete");
+
     // 20040304 checking for valid width/height now - just discovered
     // that ImageIcon might otherwise accept no-image date without
     // a notice (and then ProxyFile not realizing it's NOT an image) 
     if (getIconHeight()<0||getIconWidth()<0)
-      throw new IllegalArgumentException();
+      throw new RuntimeException("image with invalid width/height");
 
     // keep name & bytes
     setDescription(naMe);
@@ -170,14 +174,14 @@ public class ImageIcon extends javax.swing.ImageIcon {
     // check null (e.g. if resource wasn't found)
     if (in==null) {
       Debug.log(Debug.WARNING, ImageIcon.class, "no stream for "+name);
-      return null;
+      throw new IllegalArgumentException("no stream for "+in);
     }
     // try to read it
     try {
       return new ByteArray(in).getBytes();
     } catch (IOException ex) {
-      Debug.log(Debug.WARNING, ImageIcon.class, "read error for "+name);
-      return null;
+      Debug.log(Debug.WARNING, ImageIcon.class, "loading "+name+": "+ex.getMessage());
+      throw new IllegalArgumentException("loading "+name+": "+ex.getMessage());
     }
   }
 
