@@ -145,7 +145,8 @@ public class PropertyChild extends PropertyXRef {
     PropertyFamilyChild pfc;
     for (int i=0;i<ps.length;i++) {
       pfc = (PropertyFamilyChild)ps[i];
-      if ( (!pfc.isValid()) && (pfc.getReferencedId().equals(child.getId())) ) {
+      // 20030616 compare against fam.getId()!!!
+      if ( (!pfc.isValid()) && (pfc.getReferencedId().equals(fam.getId())) ) {
         pfc.setTarget(this);
         setTarget(pfc);
         return;
