@@ -81,4 +81,21 @@ public class PropertyAge extends Property {
     age = i.intValue();
     // Done
   }
-}
+  
+  /**
+   * @see genj.gedcom.Property#compareTo(java.lang.Object)
+   */
+  public int compareTo(Object o) {
+    // other an age, too?
+    if (o instanceof PropertyAge) {
+      PropertyAge other = (PropertyAge)o;
+      if (ageAsString==null&&other.ageAsString==null) {
+        return age-other.age;
+      }
+    }
+    // delegate
+    return super.compareTo(o);
+  }
+
+  
+} //PropertyAge
