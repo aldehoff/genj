@@ -23,6 +23,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
+import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
@@ -77,10 +78,14 @@ public class EventBean extends PropertyBean {
     
     // Calculate label & age
     String ageat = "even.age";
-    String age;
+    String age = "";
     if ("BIRT".equals(event.getTag())) {
       ageat = "even.age.today";
-      age = indi.getAgeString(PointInTime.getNow());
+      if (date!=null) {
+        Delta delta = Delta.get(date.getStart(), PointInTime.getNow());
+        if (delta!=null)
+          age = delta.toString();
+      }
     } else {
       age = date!=null ? indi.getAgeString(date.getStart()) : resources.getString("even.age.?");
     }
