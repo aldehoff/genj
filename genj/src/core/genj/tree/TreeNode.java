@@ -19,6 +19,7 @@
  */
 package genj.tree;
 
+import gj.layout.tree.Branch;
 import gj.layout.tree.NodeOptions;
 import gj.layout.tree.Orientation;
 import gj.model.Node;
@@ -32,6 +33,9 @@ import java.util.List;
  * A node in our genealogy tree */
 /*package*/ class TreeNode implements Node, NodeOptions {
   
+  /** no padding */
+  private final static double[] NO_PADDING = new double[4];
+
   /** the content */
   /*package*/ Object content;
   
@@ -39,7 +43,7 @@ import java.util.List;
   /*package*/ List arcs = new ArrayList(5);
   
   /** position of this entity */
-  /*package*/ Point2D pos = new Point2D.Double();
+  /*package*/ Point2D.Double pos = new Point2D.Double();
   
   /** the shape */
   /*package*/ Shape shape;
@@ -54,7 +58,7 @@ import java.util.List;
     // remember
     content = cOntent;
     shape = sHape;
-    padding = padDing;
+    padding = padDing!=null ? padDing : NO_PADDING;
     // done
   }
   
@@ -87,7 +91,7 @@ import java.util.List;
   }
   
   /**
-   * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double)
+   * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double, Orientation)
    */
   public double getLatitude(Node node, double min, double max, Orientation o) {
     // default is centered
@@ -95,20 +99,19 @@ import java.util.List;
   }
   
   /**
-   * @see gj.layout.tree.NodeOptions#getLongitude(Node, double, double, double, double)
+   * @see gj.layout.tree.NodeOptions#getLongitude(gj.model.Node, gj.layout.tree.Branch[], gj.layout.tree.Orientation)
    */
-  public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
+  public double getLongitude(Node node, Branch[] children, Orientation o) {
     // default is centered
-    return minc + (maxc-minc) * 0.5;
+    return Branch.getLongitude(children, 0.5, o);
   }
   
   /**
-   * @see gj.layout.tree.NodeOptions#getPadding(int)
+   * @see gj.layout.tree.NodeOptions#getPadding(gj.model.Node, gj.layout.tree.Orientation)
    */
-  public double getPadding(Node node, int dir, Orientation o) {
-    if (padding==null) return 0;
-    return padding[dir];
+  public double[] getPadding(Node node, Orientation o) {
+    return padding;
   }
-  
+
 } //TreeNode
 

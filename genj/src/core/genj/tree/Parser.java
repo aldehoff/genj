@@ -23,6 +23,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import gj.awt.geom.Path;
+import gj.layout.tree.Branch;
 import gj.layout.tree.Orientation;
 import gj.model.Node;
 
@@ -147,7 +148,7 @@ import java.awt.geom.Rectangle2D;
    */
   private void initEntityShapes() {
     
-    // .. padding (n, e, s, w)
+    // .. padding (n,w,e,s)
     padIndis  = new double[] { 
       metrics.pad/2, 
       metrics.pad/2, 
@@ -179,7 +180,7 @@ import java.awt.geom.Rectangle2D;
    */
   private void initFoldUnfoldShapes() {
     
-    // how we pad signs (n, e, s, w)
+    // how we pad signs (n,w,e,s)
     padMinusPlus  = new double[]{  
       -padIndis[0], 
        padIndis[1], 
@@ -269,11 +270,6 @@ import java.awt.geom.Rectangle2D;
    */
   private static class AncestorsWithFams extends Parser {
     
-    private final int
-      CENTER = 0,
-      LEFT   = 1,
-      RIGHT  = 2;
-
     /** how we pad families */
     private double[] padFams;
       
@@ -286,26 +282,26 @@ import java.awt.geom.Rectangle2D;
     protected AncestorsWithFams(Model model, TreeMetrics metrics) {
       super(model, metrics);
       
-      // .. fams ancestors (n, e, s, w)
+      // .. fams ancestors (n,w,e,s)
       padFams  = new double[]{  
          padIndis[0], 
          padIndis[1], 
+         padIndis[2], 
         -metrics.pad*0.40, 
-         padIndis[3] 
       };
 
       padHusband = new double[]{
         padIndis[0],
+        padIndis[1],
         0,
-        padIndis[2],
         padIndis[3]
       };
 
       padWife = new double[]{
         padIndis[0],
-        padIndis[1],
+        0,
         padIndis[2],
-        0
+        padIndis[3]
       };
       // done      
     }
@@ -313,24 +309,70 @@ import java.awt.geom.Rectangle2D;
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
      */
     protected TreeNode parse(Fam fam) {
+
       // node for the fam
       TreeNode node = model.add(new TreeNode(fam, shapeFams, padFams));
-      // husband & wife
-      Indi
-        husb = fam.getHusband(),
-        wife = fam.getWife();
-      model.add(new TreeArc(node, parse(wife, hasParents(husb)?LEFT:CENTER, padHusband), false));
-      model.add(new TreeArc(node, model.add(new TreeNode(null, shapeMarrs, null)), false));
-      model.add(new TreeArc(node, parse(husb, hasParents(wife)?RIGHT:CENTER, padWife), false));
+
+      // node for wife & arc fam-wife 
+      Indi wife = fam.getWife();
+      TreeNode nWife = model.add(new TreeNode(wife, shapeIndis, padHusband) {
+        /**
+         * @see genj.tree.TreeNode#getLongitude(gj.model.Node, gj.layout.tree.Branch[], gj.layout.tree.Orientation)
+         */
+        public double getLongitude(Node node, Branch[] children, Orientation o) {
+          return Branch.getMaxLongitude(children) - metrics.wIndis/2;
+        }
+      });
+      model.add(new TreeArc(node, parse(wife, nWife), false)); 
+      
+      // node for marr & arc fam-marr 
+      TreeNode nMarr = model.add(new TreeNode(null, shapeMarrs, null));
+      model.add(new TreeArc(node, nMarr, false));
+      
+      // node for husband & arc fam-husb 
+      Indi husb = fam.getHusband();
+      TreeNode nHusb = model.add(new TreeNode(husb, shapeIndis, padWife) {
+        /**
+         * @see genj.tree.TreeNode#getLongitude(gj.model.Node, gj.layout.tree.Branch[], gj.layout.tree.Orientation)
+         */
+        public double getLongitude(Node node, Branch[] children, Orientation o) {
+          return Branch.getMinLongitude(children) + metrics.wIndis/2;
+        }
+      });
+      model.add(new TreeArc(node, parse(husb, nHusb), false));
+      
       // done
       return node;
     }
+    
     /**
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
      */
     protected TreeNode parse(Indi indi) {
-      return parse(indi, CENTER, padIndis);
+      return parse(indi, model.add(new TreeNode(indi, shapeIndis, padIndis)));
     }
+    
+    /**
+     * parse an individual's ancestors
+     */
+    private TreeNode parse(Indi indi, TreeNode nIndi) {
+      // might be a placeholder call
+      if (indi==null) return nIndi;
+      // do we have a family we're child in? 
+      Fam famc = indi.getFamc();
+      if (famc!=null) {
+        // no more ancestors?
+        if (model.isHideAncestors(indi)) {
+          insertPlusMinus(indi, nIndi, true, true);
+        } else {
+          TreeNode nMinus = nIndi;//FIXME insertPlusMinus(indi, nIndi, true, false);
+          model.add(new TreeArc(nMinus, parse(famc), true));
+        }
+      }
+      // done
+      return nIndi;
+    }
+    
     /**
      * helper that checks if an individual is child in a family
      */
@@ -338,45 +380,7 @@ import java.awt.geom.Rectangle2D;
       if (indi==null) return false;
       return indi.getFamc()!=null;
     }
-    /**
-     * parse an individual and its ancestors
-     */
-    private TreeNode parse(Indi indi, final int alignment, double[] pad) {
-      // node for indi      
-      TreeNode node;
-      switch (alignment) {
-        case CENTER: default:
-          node = new TreeNode(indi, shapeIndis, pad);
-          break;
-        case LEFT:
-          node = new TreeNode(indi, shapeIndis, pad) {
-            /** patching longitude */
-            public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
-              return maxt+metrics.pad/2;
-            }
-          };
-          break;
-        case RIGHT:
-          node = new TreeNode(indi, shapeIndis, pad) {
-            /** patching longitude */
-            public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
-              return mint-metrics.pad/2;
-            }
-          };
-          break;
-      }
-      model.add(node);
-      // placeholders are not investigated further
-      if (indi!=null) {
-        // do we have a family we're child in? 
-        Fam famc = indi.getFamc();
-        if (famc!=null) {
-          model.add(new TreeArc(node, parse(famc), true));
-        }
-      } 
-      // done
-      return node;
-    }
+    
   } //AncestorsWithFams
   
   /**
@@ -458,7 +462,7 @@ import java.awt.geom.Rectangle2D;
     protected DescendantsWithFams(Model model, TreeMetrics metrics) {
       super(model, metrics);
 
-      // how we pad fams (n, e, s, w)
+      // how we pad fams (n,w,e,s)
       padFams  = new double[]{  
         -metrics.pad*0.4, 
          padIndis[1], 
@@ -468,21 +472,21 @@ import java.awt.geom.Rectangle2D;
       
       padHusband = new double[]{
         padIndis[0],
+        padIndis[1],
         0,
-        padIndis[2],
         padIndis[3]
       };
 
       padWife = new double[]{
         padIndis[0],
-        padIndis[1],
+        0,
         padIndis[2],
-        0
+        padIndis[3]
       };
       
       offsetHusband = model.isVertical() ? 
-        metrics.wFams/2 - metrics.wIndis - shapeMarrs.getBounds2D().getWidth()/2 :
-        metrics.hFams/2 - metrics.hIndis - shapeMarrs.getBounds2D().getHeight()/2;
+        - (metrics.wIndis + shapeMarrs.getBounds2D().getWidth ())/2 :
+        - (metrics.hIndis + shapeMarrs.getBounds2D().getHeight())/2;
       // done
     }
     
@@ -546,27 +550,27 @@ import java.awt.geom.Rectangle2D;
         return nIndi;        
       }
 
-      // otherwise indi as husband first of family and arc pivot-indi
-      TreeNode nIndi = new TreeNode(indi,shapeIndis,padHusband) {
-        /**
-         * patch alignment above children so that marr is centered above
-         */
-        public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
-          return minc + offsetHusband;
-        }
-      };
-      model.add(new TreeArc(pivot, model.add(nIndi), pivot.getShape()!=null));
-      
-      // with one selected fam
+      // choose one of the families
       Fam fam = fams[0];
       
+      // otherwise indi as husband first of family and arc pivot-indi
+      TreeNode nIndi = model.add(new TreeNode(indi,shapeIndis,padHusband) {
+        /**
+         * @see genj.tree.TreeNode#getLongitude(gj.model.Node, gj.layout.tree.Branch[], gj.layout.tree.Orientation)
+         */
+        public double getLongitude(Node node, Branch[] children, Orientation o) {
+          return super.getLongitude(node, children, o) + offsetHusband;
+        }
+      });
+      model.add(new TreeArc(pivot, nIndi, pivot.getShape()!=null));
+      
       // add marr and arc pivot-marr
-      TreeNode nMarr = new TreeNode(null, shapeMarrs, null);
-      model.add(new TreeArc(pivot, model.add(nMarr), false));
+      TreeNode nMarr = model.add(new TreeNode(null, shapeMarrs, null));
+      model.add(new TreeArc(pivot, nMarr, false));
       
       // add spouse and arc pivot-spouse
-      TreeNode nSpouse = new TreeNode(fam.getOtherSpouse(indi), shapeIndis, padWife);
-      model.add(new TreeArc(pivot, model.add(nSpouse), false));
+      TreeNode nSpouse = model.add(new TreeNode(fam.getOtherSpouse(indi), shapeIndis, padWife));
+      model.add(new TreeArc(pivot, nSpouse, false));
       
       // add fam and arc indi-fam
       TreeNode nFam = model.add(new TreeNode(fam, shapeFams, padFams));
