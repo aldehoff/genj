@@ -477,10 +477,8 @@ public class GedcomReader implements Trackable {
       throw new GedcomIOException("Error reading file "+ex.getMessage(),line);
     }
 
-    // Parse gecom-line
-    // 20030530 I think we can use the simple constructor tokenizing " \t\n\r\f"
-    //StringTokenizer tokens = new StringTokenizer(gedcomLine," ",false);
-    StringTokenizer tokens = new StringTokenizer(gedcomLine);
+    // Parse gedcom-line
+    StringTokenizer tokens = new StringTokenizer(gedcomLine," ");
 
     try {
 
@@ -517,9 +515,11 @@ public class GedcomReader implements Trackable {
       // .. value
       if (tokens.hasMoreElements()) {
         // 20030530 o.k. gotta switch to delim "\n" because we want everything 
-        // to end of line including contained spaces but without leading/trailing
-        // spaces
-        value = tokens.nextToken("\n").trim();
+        // to end of line including contained spaces 
+        value = tokens.nextToken("\n");
+        // strip leading space that forms delimiter to tag/xref
+        if (value.startsWith(" "))
+          value = value.substring(1);
       } else {
         value = "";
       }
