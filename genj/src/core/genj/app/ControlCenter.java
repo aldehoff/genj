@@ -107,13 +107,16 @@ public class ControlCenter extends JPanel {
    * Returns a button bar for the top
    */
   private JPanel getTopButtonBar() {
+
+    // wether we're showing text on the buttons, too    
+    boolean imageAndText = registry.get("imagesandtext", false);
     
     // the result
     JPanel result = new JPanel();
-    result.setLayout(new BoxLayout(result,BoxLayout.X_AXIS));
+    if (imageAndText) result.setLayout(new GridLayout());
+    else result.setLayout(new BoxLayout(result,BoxLayout.X_AXIS));
 
     // .. Buttons
-    boolean imageAndText = registry.get("imagesandtext", false);
     ButtonHelper bh = new ButtonHelper()
       .setResources(App.resources)
       .setInsets(4)
