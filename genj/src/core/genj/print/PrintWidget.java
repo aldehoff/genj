@@ -19,9 +19,20 @@
  */
 package genj.print;
 
-import java.awt.BorderLayout;
+import genj.util.GridBagHelper;
+import genj.util.swing.ButtonHelper;
+
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.print.PageFormat;
+
+import javax.print.PrintService;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -33,38 +44,76 @@ public class PrintWidget extends JTabbedPane {
   private PrintManager manager = PrintManager.getInstance();
   
   /** panels */
-  private MainPanel main;
-
+  private MainPanel panelMain;
+  
+  /** PageFormat */
+  private PageFormat pageFormat;
+  
   /**
    * Constructor   */
-  public PrintWidget() {
+  public PrintWidget(PrintService[] services, PrintService current, PageFormat pageFormAt) {
+    
+    // remember format
+    pageFormat = pageFormAt;
     
     // create panels
-    main = new MainPanel();
+    panelMain = new MainPanel(services, current);
     
     // layout
-    add("Main", main);
+    add("Main", panelMain);
     
     // done    
   }
   
   /**
+   * Method setPageFormat.
+   * @param pageFormat
+   */
+  public void setPageFormat(PageFormat pageFormAt) {
+    pageFormat = pageFormAt;
+    System.out.println(pageFormat.getWidth()+"/"+pageFormat.getHeight());    
+    System.out.println(pageFormat.getImageableWidth()+"/"+pageFormat.getImageableHeight());    
+  }
+  
+  /**
    * Main Panel
    */
-  private class MainPanel extends JPanel {
+  private class MainPanel extends JPanel implements ActionListener {
     
     /** combobox with printservices */
-    private JComboBox services = new JComboBox();
+    private JComboBox comboServices = new JComboBox();
   
     /**
      * Constructor     */
-    private MainPanel() { 
+    private MainPanel(PrintService[] services, PrintService current) {
+       
       // setup combo PrintServices
-      services.setModel(new DefaultComboBoxModel(manager.getServices()));
+      comboServices.setModel(new DefaultComboBoxModel(services));
+      comboServices.addActionListener(this);
+      if (current!=null) comboServices.setSelectedItem(current);
+      comboServices.setRenderer(new DefaultListCellRenderer() {
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+          return super.getListCellRendererComponent(list,((PrintService)value).getName(),index, isSelected, cellHasFocus);
+        }
+      });
+      
       // layout
-      setLayout(new BorderLayout());
-      add(services, BorderLayout.NORTH);
+      ButtonHelper bh = new ButtonHelper();
+      
+      GridBagHelper gh = new GridBagHelper(this);
+      gh.add(new JLabel("Printer"), 0, 0);
+      gh.add(comboServices        , 1, 0);
+      
       // done
     }
+    
+    /**
+     * other service selected
+     */
+    public void actionPerformed(ActionEvent e) {
+      PrintWidget.this.firePropertyChange("service", null, comboServices.getSelectedItem());
+    }
+
   } //MainPanel
+
 } //PrintWidget

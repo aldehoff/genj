@@ -20,9 +20,14 @@
 package genj.print;
 
 import genj.app.App;
+import genj.util.Debug;
 
 import java.awt.Dimension;
+import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import javax.print.PrintService;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -33,7 +38,7 @@ public class PrintManager {
 
   /** singleton */
   private static PrintManager instance = null;
-
+  
   /**
    * Constructor   */
   private PrintManager() {
@@ -47,58 +52,85 @@ public class PrintManager {
     return instance;
   }
   
-  /**
-   * Get available services
-   */
-  public PrintService[] getServices() {
-    try {
-      PrinterJob job = PrinterJob.getPrinterJob();
-      PrintService[] result = job.lookupPrintServices();
-      job.cancel();
-      return result;
-    } catch (Throwable t) {
-      return new PrintService[0];
-    }
-  }
+//  /**
+//   * Set current server//   */
+//  /*package*/ void setService(PrintService service) {
+//    try {
+//      currentJob.setPrintService(service);
+//    } catch (PrinterException pe) {
+//      throw new RuntimeException("Changing Printer failed");
+//    }
+//  }
+//  
+//  /**
+//   * Gets the current page characteristics//   */
+//  /*package*/ PageFormat getPageFormat() {
+//    return currentJob.defaultPage();
+//  }
   
   /**
    * Show a print dialog
    */
   public boolean showPrintDialog(JComponent owner) {
-    
-    PrintWidget widget = new PrintWidget();
-    
-    JDialog dlg = App.getInstance().createDialog("Printing", "print", new Dimension(480,320), owner);
-    dlg.getContentPane().add(widget);
-    dlg.pack();
-    dlg.setModal(true);
-    dlg.show();
-    
+    // our own task for printing
+    new PrintTask(owner);    
+    // done
     return false;
-  }  
-//      System.out.println("1");
-//      PrinterJob pj = PrinterJob.getPrinterJob();
-//      
-//      try {
-//        
-//        PrintService[] ps = pj.lookupPrintServices();
-//        for (int i = 0; i < ps.length; i++) {
-//          System.out.println(ps[i].getName());
-//          pj.setPrintService(ps[i]);
-//          PageFormat pf = pj.defaultPage();
-//          
-//          System.out.println(
-//            pf.getWidth()/0.393701/72 +"/"+ pf.getWidth()/0.393701/72 
-//          );
-//        }
-//        
-//      } catch (PrinterException e) {
-//        e.printStackTrace();
-//      }
-//      
-//      pj.pageDialog(new PageFormat()); //native page format
-//      pj.pageDialog(new HashPrintRequestAttributeSet());
-//      pj.printDialog(new HashPrintRequestAttributeSet());
+  }
+
+  /**
+   * Our own task for printing   */  
+  private static class PrintTask implements PropertyChangeListener {
+    
+    /** our print job */
+    private PrinterJob job;
+    
+    /** the print widget */
+    private PrintWidget widget;
+
+    /**
+     * Constructor     */
+    protected PrintTask(JComponent owner) {
       
+      // create a job
+      job = PrinterJob.getPrinterJob();
+      
+      // find services
+      PrintService[] services = job.lookupPrintServices();
+          
+      // create a widget
+      widget = new PrintWidget(services, services.length>0?services[0]:null, job.defaultPage());
+      
+      // listen to it
+      widget.addPropertyChangeListener(this);
   
+      // show    
+      JDialog dlg = App.getInstance().createDialog("Printing", "print", new Dimension(480,320), owner);
+      dlg.getContentPane().add(widget);
+      dlg.pack();
+      dlg.setModal(true);
+      dlg.show();
+      
+      // cancel job
+      job.cancel();
+      
+      // done
+    }
+    
+    /**
+     * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+     */
+    public void propertyChange(PropertyChangeEvent evt) {
+      // service?
+      if ("service".equals(evt.getPropertyName())) {
+        try {
+          job.setPrintService((PrintService)evt.getNewValue());
+        } catch (PrinterException e) {
+          Debug.log(Debug.WARNING, this, "Couldn't change printer", e);
+        }
+        widget.setPageFormat(job.defaultPage());
+      }
+      // nothing we know
+    }
+  } //WidgetListener  
 } //PrintManager
