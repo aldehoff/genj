@@ -30,6 +30,7 @@
 2   DATE super=INDI:BIRT:DATE
 2   PLAC super=INDI:BIRT:PLAC
 2   TYPE super=INDI:BIRT:TYPE
+2   NOTE super=INDI:BIRT:NOTE
 
 1  RESI type=NoValue img=Attribute.gif super=INDI:OCCU
 
