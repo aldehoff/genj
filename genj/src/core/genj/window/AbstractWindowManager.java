@@ -62,15 +62,16 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openFrame(java.lang.String, java.lang.String, javax.swing.ImageIcon, javax.swing.JComponent, java.lang.String)
    */
-  public String openFrame(final String key, String title, ImageIcon image, JComponent content, String option) {
+  public String openFrame(String key, String title, ImageIcon image, JComponent content, String option) {
     // key is necessary
-    if (key==null) throw new IllegalArgumentException("key==null");
+    if (key==null) key = getTemporaryKey();
     // create option
+    final String close = key;
     JPanel south = new JPanel();
     new ButtonHelper().setContainer(south).create(
       new ActionDelegate() {
         protected void execute() {
-          close(key);
+          close(close);
         }
       }.setText(option)
     );
