@@ -396,7 +396,7 @@ public class ViewManager {
     // items for property
   /*
     if (property!=null) {
-      List actions = ViewManager.getInstance().getActions(property);
+      List actions = getActions(property);
       if (!actions.isEmpty()) {
         mh.createMenu(property.getTag(), property.getImage(false));
         mh.createItems(actions);
@@ -406,7 +406,7 @@ public class ViewManager {
   */    
     // items for entity
     if (entity!=null) {
-      List actions = ViewManager.getInstance().getActions(entity);
+      List actions = getActions(entity);
       if (!actions.isEmpty()) {
         mh.createMenu(entity.getId(), entity.getProperty().getImage(false));
         mh.createItems(actions);

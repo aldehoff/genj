@@ -62,10 +62,13 @@ public class WordBuffer {
    * Append a word
    */  
   public WordBuffer append(String word) {
-    if ((word!=null)&&(word.length()!=0)) {
-      if ((buffer.length()>0)&&(!isStartingWithPunctuation(word))) buffer.append(' ');
-      buffer.append(word.trim());
-    }
+    // nothing to do?
+    if ((word==null)||(word.length()==0)) return this;
+    // need a word-filler?
+    if ((buffer.length()>0)&&(!isStartingWithPunctuation(word))) buffer.append(' ');
+    // get the word
+    buffer.append(word.trim());
+    // done
     return this;
   }
   
