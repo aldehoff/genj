@@ -31,7 +31,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * This class adds support for a CDAY style event repository with
@@ -56,6 +60,9 @@ public class Almanac {
   private final static String[] SUFFIXES = {
     ".own", ".all", ".jan", ".feb", ".mar", ".apr", ".may", ".jun", ".jul", ".oct", ".sep", ".nov", ".dec" 
   };
+  
+  /** listeners */
+  private List listeners = new ArrayList(10);
   
   /** singleton */
   private static Almanac instance;
@@ -88,6 +95,31 @@ public class Almanac {
   }
   
   /**
+   * Add a change listener
+   */
+  public void addChangeListener(ChangeListener l) {
+    listeners.add(l);
+  }
+  
+  /**
+   * Remove a change listener
+   */
+  public void removeChangeListener(ChangeListener l) {
+    listeners.remove(l);
+  }
+  
+  /**
+   * Update listeners
+   */
+  protected void fireStateChanged() {
+    ChangeEvent e = new ChangeEvent(this);
+    ChangeListener[] ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+    for (int l = 0; l < ls.length; l++) {
+      ls[l].stateChanged(e);
+    }
+  }
+  
+  /**
    * Accessor - categories
    */
   public List getCategories() {
@@ -116,70 +148,19 @@ public class Almanac {
   }
   
   /**
-   * find start index of given year in events (log n)
-   */
-  public synchronized int getStartIndex(int year) {
-    return getStartIndex(year, 0, events.size()-1);
-  }
-  private int getStartIndex(int year, int start, int end) {
-    
-    // no range?
-    if (end<=start)
-      return start;
-
-    int pivot = (start + end)/2;
-
-    int y = ((Event)events.get(pivot)).getTime().getYear();
-    if (y<year)
-      return getStartIndex(year, pivot+1, end);
-    return getStartIndex(year, start, pivot);
-  }
-  
-  /**
    * Accessor - events by point in time
    */
-  public synchronized List getEvents(PointInTime when, int days) {
-    
-    ArrayList result = new ArrayList(10);
-    
-    try {	
-
-	    // convert to julian day
-	    long julian = when.getJulianDay();
-	    
-	    // do a quick logn search for correct year
-	    int i = getStartIndex(when.getYear(), 0, events.size()-1);
-	    
-	    // loop over events
-      for (int j=events.size(); i<j; i++) {
-        Event event = (Event)events.get(i);
-        PointInTime pit = event.getTime();
-        // check year
-        if (pit.getYear()<when.getYear())
-          continue;
-        if (pit.getYear()>when.getYear())
-          break;
-        // calculate delta
-        long delta = pit.getJulianDay()-julian;
-        if (delta<0) delta=-delta;
-        if (delta<days) 
-          result.add(event);
-      }
-	    
-    } catch (GedcomException e) {
-    }
-    
-    // done
-    return result;
+  public Iterator getEvents(PointInTime when, int days) throws GedcomException {
+    return new Range(when, days);
   }
   
   /**
-   * Accessor - the list of events
+   * Accessor - a range of events
    */
-  public List getEvents() {
-    return Collections.unmodifiableList(events);
+  public Iterator getEvents(int startYear, int endYear) {
+    return new Range(startYear, endYear);
   }
-
+  
   /**
    * A loader for cday files in ./cday
    */  
@@ -221,11 +202,6 @@ public class Almanac {
 		  
 	    Debug.log(Debug.INFO, Almanac.this, "Loaded "+events.size()+" events");
       
-      // sort 'em
-      synchronized (instance) {
-        Collections.sort(events);
-      }
-
 		  // done
 		}    
 		
@@ -258,6 +234,9 @@ public class Almanac {
 		  for (String line = in.readLine(); line!=null; line = in.readLine()) 
 		    load(lib, line);
 		    
+		  // notify about changes
+      fireStateChanged(); 
+		  
 		  // done
 		}
 		
@@ -288,19 +267,171 @@ public class Almanac {
 		  if (text.length()==0)
 		    return false;
 
+      // create event
+      Event event;
+      try {
+		    event = new Event(lib, getCategory(c), new PointInTime(day-1, month-1, year), text); 
+		  } catch (GedcomException e) {
+		    return false;
+		  }
+        
+      // Search for correct index
+      int index = Collections.binarySearch(events, event);
+      if (index < 0) 
+        index = -index-1;
+      
 		  // instantiate
-      synchronized (instance) {
-  		  try {
-  		    events.add(new Event(lib, getCategory(c), new PointInTime(day-1, month-1, year), text)); 
-  		  } catch (GedcomException e) {
-  		    return false;
-  		  }
+      synchronized (events) {
+        events.add(index, event);
       }
-		  
+      
 		  // done
 		  return true;
 		}
 		
   } //Loader
+  
+  /**
+   * An iterator over a range of events
+   */
+  private class Range implements Iterator {
+    
+    private int start, end;
+    
+    private int endYear;
+    
+    private long origin = -1;
+    private long originDelta;
+    
+    private Object next;
+    
+    /**
+     * Constructor
+     */
+    Range(PointInTime when, int days) throws GedcomException {
+
+      endYear = when.getYear();
+      
+	    // convert to julian day
+	    origin = when.getJulianDay();
+	    originDelta = days;
+  	    
+	    synchronized (events) {
+	      end = events.size();
+	      start = getStartIndex(endYear);
+        hasNext();
+	    }
+	    
+      // done
+    }
+    
+    /**
+     * Constructor
+     */
+    Range(int startYear, int endYear) {
+      
+      this.endYear = endYear;
+      
+	    synchronized (events) {
+	      end = events.size();
+	      start = getStartIndex(startYear);
+        hasNext();
+	    }
+    }
+    
+    /**
+     * end
+     */
+    boolean end() {
+      next = null;
+      start = end;
+      return false;
+    }
+    
+    /**
+     * set next
+     */
+    private boolean setNext(Object event) {
+      next = event;
+      return true;
+    }
+    
+    /**
+     * @see java.util.Iterator#hasNext()
+     */
+    public boolean hasNext() {
+      // one waiting?
+      if (next!=null)
+        return true;
+      // sync'up
+      synchronized (events) {
+        // events changed?
+        if (events.size()!=end)
+          return end();
+	      // check Event
+	      while (true) {
+	        // reached the end?
+	        if (start==end)
+	          return end();
+	        // it's still in year range?
+		      Event e = (Event)events.get(start++);
+		      if (e.getTime().getYear()>endYear) 
+		        return end();
+		      // check against origin?
+		      if (origin<0) {
+		        return setNext(e);
+		      } else {
+		        long delta = e.getJulian() - origin;
+		        if (delta>originDelta) 
+			        return end();
+		        if (delta>-originDelta)
+			        return setNext(e);
+		      }
+	      }
+      }
+    }
+    
+    /**
+     * @see java.util.Iterator#next()
+     */
+    public Object next() {
+      if (next==null&&!hasNext())
+        throw new IllegalArgumentException("no next");
+      Object result = next;
+      next = null;
+      return result;
+    }
+    
+    /**
+     * n/a
+     * @see java.util.Iterator#remove()
+     */
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * find start index of given year in events (log n)
+     */
+  	private int getStartIndex(int year) {
+  	  if (events.isEmpty())
+  	    return 0;
+      return getStartIndex(year, 0, events.size()-1);
+    }
+    private int getStartIndex(int year, int start, int end) {
+      
+      // no range?
+      if (end==start)
+        return start;
+
+      int pivot = (start + end)/2;
+
+      int y = ((Event)events.get(pivot)).getTime().getYear();
+      if (y<year)
+        return getStartIndex(year, pivot+1, end);
+      return getStartIndex(year, start, pivot);
+    }
+    
+  } //Range
   
 } //CDay

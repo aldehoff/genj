@@ -32,6 +32,7 @@ public class Event implements Comparable {
   private PointInTime pit;
   private String text;
   private Category cat;
+  private long julianDay;
   
   /** constructor */
   public Event(String library, Category setCat, PointInTime setTime, String setText) throws GedcomException {
@@ -40,7 +41,12 @@ public class Event implements Comparable {
     cat = setCat;
     text = cat.format(setText);
     // make sure its julian day is good
-    pit.getJulianDay();
+    julianDay = pit.getJulianDay();
+  }
+  
+  /** the julian day */
+  protected long getJulian() {
+    return julianDay;
   }
   
   /** to String */
