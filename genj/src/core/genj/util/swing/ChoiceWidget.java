@@ -26,6 +26,7 @@ import java.awt.event.FocusListener;
 import java.util.List;
 
 import javax.swing.ComboBoxEditor;
+import javax.swing.DefaultComboBoxModel;
 
 /**
  * Our own JComboBox
@@ -67,6 +68,13 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     // initially unchanged
     isChanged = false;
   }
+  
+  /**
+   * set values
+   */
+  public void setValues(List values) {
+    setModel(new DefaultComboBoxModel(values.toArray()));  
+  }
     
   /**
    * @see javax.swing.JComponent#getMaximumSize()
@@ -96,7 +104,15 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     // continue
     super.setSelectedItem(anObject);
   }
-
+  
+  /**
+   * @see javax.swing.JComboBox#getSelectedItem()
+   */
+  public Object getSelectedItem() {
+    if (isEditable())
+      return getEditor().getItem();
+    return super.getSelectedItem();
+  }
   
   /**
    * @see javax.swing.JComboBox#setEditable(boolean)
