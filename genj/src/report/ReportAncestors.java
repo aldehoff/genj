@@ -12,25 +12,23 @@ import genj.report.Report;
 
 /**
  * GenJ -  ReportAncestors
- * @version 0.1
  */
 public class ReportAncestors extends Report {
 
-  /** this report's version */
-  public static final String VERSION = "0.1";
-  
   /**
    * Returns the version of this script
    */
   public String getVersion() {
-    return VERSION;
+    // a call to i18n will lookup a string with given key in ReportAncestors.properties
+    return i18n("version");
   }
   
   /**
    * Returns the name of this report - should be localized.
    */
   public String getName() {
-    return "Ancestors";
+    // a call to i18n will lookup a string with given key in ReportAncestors.properties
+    return i18n("name");
   }  
 
   /**
@@ -38,7 +36,8 @@ public class ReportAncestors extends Report {
    * @return Information as String
    */
   public String getInfo() {
-    return "This report prints out all ancestors of an individual";
+    // a call to i18n will lookup a string with given key in ReportAncestors.properties
+    return i18n("info");
   }
 
   /**
@@ -52,23 +51,28 @@ public class ReportAncestors extends Report {
    * @see genj.report.Report#accepts(java.lang.Object)
    */
   public boolean accepts(Object context) {
+    // we accepts Gedom AND Individuals 
     return context instanceof Indi || context instanceof Gedcom;  
   }
   
   /**
-   * This method actually starts this report
+   * Entry point into this report - by default reports are only run on a
+   * context of type Gedcom but since we've overriden accepts we're
+   * ready for Gedcom AND Indi
    */
   public void start(Object context) {
   
+    // need Indi from context
     Indi indi;
-    
-    // check context
     if (context instanceof Indi) {
+
+      // either already there
       indi = (Indi)context;
+
     } else {
-      // expecting gedcom
+
+      // otherwise assume gedcom and let user choose one
       Gedcom gedcom = (Gedcom)context;
-      
       indi = (Indi)getEntityFromUser("Descendant", gedcom, Gedcom.INDIVIDUALS, "INDI:NAME");
       if (indi==null) 
         return;
@@ -92,17 +96,15 @@ public class ReportAncestors extends Report {
     Fam famc = indi.getFamc();
 
     if (famc==null) {
-	//      println(getIndent(level) +"  + leaf node "+ format(indi));
       return;
     }
 
     if (famc.getWife()!=null) {
-        parent(famc.getWife(), level+1);
+      parent(famc.getWife(), level+1);
     }
     if (famc.getHusband()!=null) {
-        parent(famc.getHusband(), level+1);
+      parent(famc.getHusband(), level+1);
     }
-
    
   }
   

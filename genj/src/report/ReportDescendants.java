@@ -11,27 +11,24 @@ import genj.gedcom.Indi;
 import genj.report.Report;
 
 /**
- * GenJ - Report
- * @author Nils Meier nils@meiers.net
- * @version 0.1
+ * GenJ - ReportDescendants
  */
 public class ReportDescendants extends Report {
 
-  /** this report's version */
-  public static final String VERSION = "0.1";
-  
   /**
    * Returns the version of this script
    */
   public String getVersion() {
-    return VERSION;
+    // a call to i18n will lookup a string with given key in ReportAncestors.properties
+    return i18n("version");
   }
   
   /**
    * Returns the name of this report - should be localized.
    */
   public String getName() {
-    return "Descendants";
+    // a call to i18n will lookup a string with given key in ReportAncestors.properties
+    return i18n("name");
   }  
 
   /**
@@ -39,7 +36,8 @@ public class ReportDescendants extends Report {
    * @return Information as String
    */
   public String getInfo() {
-    return "This report prints out all descendants of an individual";
+    // a call to i18n will lookup a string with given key in ReportAncestors.properties
+    return i18n("info");
   }
 
   /**
@@ -53,6 +51,7 @@ public class ReportDescendants extends Report {
    * @see genj.report.Report#accepts(java.lang.Object)
    */
   public boolean accepts(Object context) {
+    // we accepts Gedom AND Individuals 
     return context instanceof Indi || context instanceof Gedcom;  
   }
   
@@ -61,18 +60,21 @@ public class ReportDescendants extends Report {
    */
   public void start(Object context) {
 
+    // need Indi from context
     Indi indi;
-    
-    // check context
     if (context instanceof Indi) {
+
+      // either already there
       indi = (Indi)context;
+
     } else {
-      // expecting gedcom
+
+      // otherwise assume gedcom and let user choose one
       Gedcom gedcom = (Gedcom)context;
-      
-      indi = (Indi)getEntityFromUser("Ancestor", gedcom, Gedcom.INDIVIDUALS, "INDI:NAME");
+      indi = (Indi)getEntityFromUser("Descendant", gedcom, Gedcom.INDIVIDUALS, "INDI:NAME");
       if (indi==null) 
         return;
+      
     }
     
     // Display the descendants

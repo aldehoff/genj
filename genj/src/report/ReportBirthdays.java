@@ -21,32 +21,30 @@ import java.util.List;
 /**
  * GenJ - Report
  * @author Nils Meier nils@meiers.net
- * @version 0.2
  */
 public class ReportBirthdays extends Report {
-
-  /** this report's version */
-  public static final String VERSION = "0.1";
 
   /**
    * Returns the version of this script
    */
   public String getVersion() {
+    // a call to i18n will lookup a string with given key in ReportBirthdays.properties
     return i18n("version");
   }
   
   /**
-   * Returns the name of this report - should be localized.
+   * Returns the name of this report
    */
   public String getName() {
+    // a call to i18n will lookup a string with given key in ReportBirthdays.properties
     return i18n("name");
   }
 
   /**
    * Some information about this report
-   * @return Information as String
    */
   public String getInfo() {
+    // a call to i18n will lookup a string with given key in ReportBirthdays.properties
     return i18n("info");
   }
 
@@ -58,33 +56,35 @@ public class ReportBirthdays extends Report {
   }
 
   /**
-   * This method actually starts this report
+   * Entry point into this report - by default reports are only run on a
+   * context of type Gedcom. Depending on the logic in accepts either
+   * an instance of Gedcom, Entity or Property can be passed in though. 
    */
   public void start(Object context) {
     
+    // assuming Gedcom
     Gedcom gedcom = (Gedcom)context;
 
-    // Calculate Month
+    // Show months and check user's selection
     String[] months = PointInTime.getMonths(true);
     String selection = (String)getValueFromUser(i18n("select"),months,null);
     if (selection==null) 
       return;
 
+    // find out which month it was
     int month=0; while (month<months.length&&months[month]!=selection) month++;
 
-    // Look for candidates
+    // Look for candidates - folks with birthdays in given month
     List candidates = new ArrayList(100);
 
     List indis = gedcom.getEntities(gedcom.INDIVIDUALS);
     for (int i=0;i<indis.size();i++) {
       Indi indi = (Indi)indis.get(i);
       PropertyDate birth = indi.getBirthDate();
-      if (birth==null) {
+      if (birth==null) 
         continue;
-      }
-      if (birth.getStart().getMonth() == month) {
+      if (birth.getStart().getMonth() == month)
         candidates.add(indi);
-      }
     }
 
     // Sort the individuals by day of month
@@ -104,14 +104,13 @@ public class ReportBirthdays extends Report {
       }
     }; //Comparator
     
-    // Change comparator here if you'd rather like to 
-    // sort by year+day
+    // Sorting by date is possible, too 
     //
     // Comparator comparator = new genj.gedcom.PropertyComparator("INDI:BIRT:DATE");
     //
     Collections.sort(candidates, comparator);
 
-    // Show birthdays
+    // Show birthdays - a call to i18n localizes 'result' and inserts the given selection
     println(i18n("result", selection));
 
     Iterator e = candidates.iterator();
