@@ -180,11 +180,6 @@ public class MetaProperty {
         Debug.log(Debug.WARNING, this, "Property type "+clazz+" can't be loaded", e);    
         type = PropertySimpleValue.class;
       }
-// FIXME
-//      // some static tracking
-//      propPaths.add(path);
-//      if (PropertyEvent.class.isAssignableFrom(type))
-//        eventPaths.add(path);    
       // resolved
     }
     // done
@@ -282,6 +277,11 @@ public class MetaProperty {
    * Static - paths for given type
    */
   public static TagPath[] getPaths(TagPath prefix, Class type) {
+//  FIXME
+//       // some static tracking
+//       propPaths.add(path);
+//       if (PropertyEvent.class.isAssignableFrom(type))
+//         eventPaths.add(path);    
     return new TagPath[0];
   }
 

@@ -428,8 +428,7 @@ public class Indi extends PropertyIndi implements Entity {
    * Returns the number of families in which the individual is a partner
    */
   public int getNoOfFams() {
-    Property[] props = getProperties(new TagPath("INDI:FAMS"),true);
-    return props.length;
+    return getProperties(new TagPath("INDI:FAMS"),true).length;
   }
   
   /**

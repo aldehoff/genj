@@ -523,11 +523,32 @@ public abstract class Property implements Comparable {
     if (this instanceof Entity && !getTag().equals(path.get(0))) return null;
 
     // look for it
-    Property[] result = getProperties(path, validOnly);
-    if (result.length==0) return null;
-    return result[0];
+    return getPropertyRecursively(path, 0, validOnly);
   }
   
+  private Property getPropertyRecursively(TagPath path, int pos, boolean validOnly) {
+
+    // Correct here ?
+    if (!path.get(pos).equals(getTag())) return null;
+
+    // Me the last one?
+    if (pos==path.length()-1) 
+      return !validOnly || isValid() ? this : null;
+
+    // Does this one have properties ?
+    if (children==null) return null;
+
+    // Search in properties
+    Property p;
+    for (int i=0;i<children.getSize();i++) {
+      p = children.get(i).getPropertyRecursively(path, pos+1, validOnly);
+      if (p!=null) return p;
+    }
+
+    // not found
+    return null;
+  }
+
   /**
    * Returns the logical name of the proxy-object which knows this object
    */
