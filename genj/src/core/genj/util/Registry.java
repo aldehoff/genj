@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.19 $ $Author: nmeier $ $Date: 2004-10-04 23:18:43 $
+ * $Revision: 1.20 $ $Author: nmeier $ $Date: 2004-11-03 20:41:47 $
  */
 package genj.util;
 
@@ -707,17 +707,19 @@ public class Registry {
    */
   private static File getFile(String name, boolean newStyle) {
     
+    name = name+".properties";
+    
     String dir = EnvironmentChecker.getProperty(
       Registry.class,
       new String[]{ "user.home" },
       ".",
-      "calculate dir for registry file"
+      "calculate dir for registry file "+name
     );
     
     if (newStyle)
       dir = dir + "/.genj";
       
-    return new File(dir,name+".properties");
+    return new File(dir,name);
   }
 
   /**
