@@ -318,6 +318,11 @@ import javax.swing.JComponent;
       return (PrintRequestAttribute)result;
     // get first supported for current attributes
     result = service.getSupportedAttributeValues(category, null, attributes);
+    // FIXME Debugging why this might return null
+    if (result==null) {
+      Debug.log(Debug.ERROR, this, "got null for "+category+" with "+attributes.toArray());
+    }
+    // grab first
     if (result.getClass().isArray()&&result.getClass().getComponentType()==category)
       result = ((Object[])result)[0];
     // keep it
