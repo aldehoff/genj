@@ -117,7 +117,7 @@ class ProxyDate extends Proxy implements ItemListener {
     combo.setEditable(false);
     combo.setMaximumSize(new Dimension(Integer.MAX_VALUE,combo.getPreferredSize().height));
 
-    for (int i=0;i<PropertyDate.MAX;i++) {
+    for (int i = 0; i <= PropertyDate.MAX; i++) {
       combo.addItem(PropertyDate.getLabelForFormat(i));
     }
     in.add(combo);
