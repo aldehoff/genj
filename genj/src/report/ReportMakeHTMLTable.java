@@ -19,9 +19,9 @@ import java.util.Hashtable;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.20 2003-07-21 07:37:48 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.21 2003-10-27 18:32:25 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class ReportMakeHTMLTable extends Report {
 
@@ -29,7 +29,10 @@ public class ReportMakeHTMLTable extends Report {
   private final static String EMPTY_CELL_STRING = "&nbsp;";
 
   /** whether to translate between unicode and html or not (slow!) */
-  private boolean isTranslateUnicode2HTML = false;
+  public boolean isUnicode2HTML = true;
+  
+  /** url to sheets created with ReportHTMLSheets.java */
+  public String url2Sheets = "";
 
   /** HTML Coded Character Set (see http://www.w3.org/MarkUp/html-spec/html-spec_13.html)*/
   private final static String[] codeTable = {
@@ -149,11 +152,10 @@ public class ReportMakeHTMLTable extends Report {
    */
   private String calcIndiId(Indi indi) {
 
-//    if ((url==null)||(url.length()==0)) {
+    if (url2Sheets.length()==0) 
       return indi.getId();
-//    }
-//
-//    return "<a href=\"" + url + indi.getId() + ".html\">" + indi.getId() + "</a>";
+
+    return "<a href=\"" + url2Sheets + "/" + indi.getId() + ".html\">" + indi.getId() + "</a>";
   }
 
 
@@ -243,11 +245,6 @@ public class ReportMakeHTMLTable extends Report {
     // has to be Gedcom
     Gedcom gedcom = (Gedcom)context;
 
-    // And whether code translation should happen or not
-    isTranslateUnicode2HTML = getOptionFromUser(
-      i18n("Unicode2HTML"), OPTION_YESNO
-    );
-
     // HEAD
     println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
     println("<HTML>");
@@ -298,7 +295,7 @@ public class ReportMakeHTMLTable extends Report {
    */
   private String unicode2html(String text) {
 
-    if (!isTranslateUnicode2HTML) {
+    if (!isUnicode2HTML) {
       return text;
     }
 
