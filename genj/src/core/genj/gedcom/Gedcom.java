@@ -581,9 +581,14 @@ public class Gedcom implements GedcomListener {
       // .. existing fam
       fam = indi.getFamc();
       // .. two spouses ?
-      if (!fam.hasMissingSpouse())
-      throw new GedcomException("Tried to create 3rd spouse in family !");
-      // .. one spouse !
+      if (!fam.hasMissingSpouse()) {
+        throw new GedcomException("Tried to create 3rd spouse in family !");
+      }
+      // .. max one spouse !
+      Indi spouse = fam.getOtherSpouse(null);
+      if (spouse!=null) {
+        sex = PropertySex.calcOppositeSex(spouse, sex);
+      }
     } else {
       // .. fam
       fam = createFam();
