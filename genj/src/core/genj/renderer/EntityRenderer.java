@@ -693,22 +693,28 @@ public class EntityRenderer {
      * Get Renderer
      */
     private PropertyRenderer getRenderer(Property prop) {
-      // not known?
-      if (cachedRenderer==null) {
-        // get renderer for property's proxy
-        String proxy;
-        // property?
+      // 20030404 if no property is found we cannot cache
+      // the renderer dervice from path.getLast() - there
+      // are defaults for certain tags preset in PropertyRenderer
+      // but another call here with a different prop-type
+      // might resolve to a different proxy
+      
+      // assume cached for now
+      PropertyRenderer result = cachedRenderer;
+      // no good yet?
+      if (result==null) {
+        // derive from property?
         if (prop!=null) {
-          proxy = prop.getProxy();
+          cachedRenderer = PropertyRenderer.get(prop.getProxy());
+          result = cachedRenderer;
         } else {
-          proxy = path!=null ? path.getLast() : "";
+          result = PropertyRenderer.get(path!=null ? path.getLast() : "");
         }
-        cachedRenderer = PropertyRenderer.get(proxy);
       }
       // check renderer/prop compatibility
-      if (prop==null&&!cachedRenderer.isNullRenderer()) return null;
+      if (prop==null&&!result.isNullRenderer()) return null;
       // done
-      return cachedRenderer;
+      return result;
     }
     
     /**
