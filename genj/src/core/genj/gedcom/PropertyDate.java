@@ -324,6 +324,13 @@ public class PropertyDate extends Property {
   }
   
   /**
+   * @see genj.gedcom.Property#toString()
+   */
+  public String toString() {
+    return toString(false, true);
+  }
+
+  /**
    * Returns this date as a string
    */
   public String toString(boolean abbreviate, boolean localize) {
