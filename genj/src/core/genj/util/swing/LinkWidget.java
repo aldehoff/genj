@@ -31,6 +31,7 @@ public class LinkWidget extends JButton {
     setBorder(null);
     setBorderPainted(false);
     setFocusable(false);
+
     setFocusPainted(false);
     setContentAreaFilled(false);
     setHorizontalAlignment(SwingConstants.LEFT);
@@ -39,6 +40,19 @@ public class LinkWidget extends JButton {
     addMouseListener(new Callback());
     
     // done
+  }
+   
+  /**
+   * Overriden to try 1.4's super.setFocusable()
+   * @see java.awt.Component#setFocusable(boolean)
+   */
+  public void setFocusable(boolean focusable) {
+    try {
+      super.setFocusable(focusable);
+    } catch (Throwable t) {
+      // try pre 1.4 instead
+      super.setRequestFocusEnabled(false);
+    }
   }
    
   /**

@@ -34,8 +34,8 @@ public class TextAreaWidget extends JTextArea implements DocumentListener {
   /**
    * Constructor
    */
-  public TextAreaWidget(String text, int cols, int rows) {
-    super(text, cols, rows);
+  public TextAreaWidget(String text, int rows, int cols) {
+    super(text, rows, cols);
     getDocument().addDocumentListener(this);
     setAlignmentX(0);
   }
@@ -85,6 +85,7 @@ public class TextAreaWidget extends JTextArea implements DocumentListener {
   }
 
   /**
+   * Overridden to try 1.4's requestFocusInWindow
    * @see javax.swing.JComponent#requestFocus()
    */
   public void requestFocus() {
@@ -94,6 +95,19 @@ public class TextAreaWidget extends JTextArea implements DocumentListener {
         .invoke(this, new Object[]{});
     } catch (Throwable t) {
       super.requestFocus();
+    }
+  }
+
+  /**
+   * Overriden to try 1.4's super.setFocusable()
+   * @see java.awt.Component#setFocusable(boolean)
+   */
+  public void setFocusable(boolean focusable) {
+    try {
+      super.setFocusable(focusable);
+    } catch (Throwable t) {
+      // try pre 1.4 instead
+      super.setRequestFocusEnabled(false);
     }
   }
   

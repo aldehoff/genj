@@ -225,7 +225,15 @@ public class NavigatorView extends JPanel implements ContextSupport {
     JButton result = new JButton();
     result.setIcon(i);
     result.setRolloverIcon(r);
-    result.setFocusable(false);
+    result.setFocusPainted(false);
+
+    // no can do pre 1.4
+    try {    
+      result.setFocusable(false);
+    } catch (Throwable t) { 
+      result.setRequestFocusEnabled(false);
+    }
+   
     result.setBorder(null);
     result.setEnabled(false);
     result.setActionCommand(key);
