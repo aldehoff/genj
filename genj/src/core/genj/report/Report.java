@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.58 $ $Author: nmeier $ $Date: 2004-12-09 03:38:18 $
+ * $Revision: 1.59 $ $Author: nmeier $ $Date: 2004-12-19 19:38:05 $
  */
 package genj.report;
 
@@ -307,6 +307,13 @@ public abstract class Report implements Cloneable {
     // done
   }
 
+  /**
+   * Helper method that shows (resulting) items to the user
+   */
+  public final void showItemsToUser(String msg, Gedcom gedcom, List items) {
+    showItemsToUser(msg, gedcom, (Item[])items.toArray(new Item[items.size()]));
+  }
+  
   /**
    * Helper method that shows (resulting) items to the user
    */
