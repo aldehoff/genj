@@ -132,12 +132,13 @@ import javax.swing.event.TreeSelectionListener;
         
     // EDIT Component
     editPane = new JPanel(new BorderLayout());
+    JScrollPane editScroll = new JScrollPane(editPane);
+    // .. don't want scrollbars to get focus
+    editScroll.getVerticalScrollBar().setFocusable(false);
+    editScroll.getHorizontalScrollBar().setFocusable(false);
 
     // SplitPane with tree/edit
-    splitPane = new JSplitPane(
-      JSplitPane.VERTICAL_SPLIT, 
-      treePane, 
-      new JScrollPane(editPane));
+    splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, treePane, editScroll);
     splitPane.setDividerLocation(registry.get("divider",-1));
 
     // layout
@@ -579,7 +580,8 @@ import javax.swing.event.TreeSelectionListener;
           // listen to it
           bean.addChangeListener(this);
   
-          // and request focus
+          // and request focus - this only works consistently
+          // if invoked later (especially when tabbing)
           SwingUtilities.invokeLater(new Runnable() {
             public void run() {
               requestFocusInWindow();
