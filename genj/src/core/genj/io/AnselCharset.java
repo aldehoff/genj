@@ -29,7 +29,7 @@ import java.nio.charset.CoderResult;
 /**
  * Charset for Ansel character encoding
  */
-public class AnselCharset extends Charset {
+/*package*/ class AnselCharset extends Charset {
   
   /**
    * Constructor
