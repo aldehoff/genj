@@ -19,7 +19,7 @@ import genj.report.Report;
  * (based on ReportDescendants and ReportGedcomStatistics)
  *
  * @author Daniel P. Kionka
- * @author Carsten Müssig <carsten.muessig@gmx.net>
+ * @author Carsten Muessig <carsten.muessig@gmx.net>
  * @version 1.3
  */
 

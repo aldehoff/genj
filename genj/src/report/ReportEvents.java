@@ -26,7 +26,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * @author Nils Meier nils@meiers.net
- * @author Carsten Müssig carsten.muessig@gmx.net
+ * @author Carsten Muessig carsten.muessig@gmx.net
  */
 public class ReportEvents extends Report {
     

@@ -15,7 +15,7 @@ import genj.gedcom.TagPath;
 import genj.report.Report;
 
 /**
- * @author Carsten Müssig <carsten.muessig@gmx.net>
+ * @author Carsten Muessig <carsten.muessig@gmx.net>
  * @version 1.0
  */
 

@@ -26,9 +26,9 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.63 2004-08-26 23:19:50 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.64 2004-09-29 20:00:03 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
- * @author Carsten Müssig <carsten.muessig@gmx.net>
+ * @author Carsten Muessig <carsten.muessig@gmx.net>
  * @version 2.2
  */
 public class ReportGedcomStatistics extends Report {
