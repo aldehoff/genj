@@ -47,6 +47,9 @@ public class PropertyRenderer {
     PREFER_TEXT         = 2,
     PREFER_IMAGEANDTEXT = 3;
   
+  /** an empty dimension */
+  private final static Dimension EMPTY_DIM = new Dimension(0,0);
+  
   /** a default PropertyProxy */
   /*package*/ final static PropertyRenderer DEFAULT_PROPERTY_PROXY = new PropertyRenderer();
 
@@ -223,7 +226,7 @@ public class PropertyRenderer {
     public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point2D.Float resolution) {
       // check lines 
       Enumeration it = prop.getLineIterator();
-      if (it==null) return new Dimension(0,0);
+      if (it==null) return EMPTY_DIM;
       // count 'em
       int lines = 0;
       int width = 0;
@@ -310,7 +313,8 @@ public class PropertyRenderer {
      */
     public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point2D.Float resolution) {
       // FIXME resize according to resolution when set
-      ImageIcon img = getImage(prop);
+      ImageIcon img = getImage(prop, preference);
+      if (img==null) return EMPTY_DIM; 
       return new Dimension(img.getIconWidth(), img.getIconHeight());
     }
   
@@ -320,11 +324,12 @@ public class PropertyRenderer {
     public void render(Graphics g, Rectangle bounds, Property prop, int preference, Point2D.Float resolution) {
       // FIXME resize according to resolution when set
       // grab the image
-      ImageIcon img = getImage(prop);
+      ImageIcon img = getImage(prop, preference);
+      if (img==null) return;
+      // check if we should zoom
       int
         h = img.getIconHeight(),
         w = img.getIconWidth ();
-      // check if we should zoom
       double zoom = Math.min(
         Math.min(1.0D, ((double)bounds.width )/w),
         Math.min(1.0D, ((double)bounds.height)/h)
@@ -350,14 +355,19 @@ public class PropertyRenderer {
     /**
      * Helper to get the image of PropertyFile
      */
-    private ImageIcon getImage(Property prop) {
-      if (prop==null) return broken;
+    private ImageIcon getImage(Property prop, int preference) {
+      // since we're isNullRenderer prop might be null
+      if (prop==null) {
+        return isImage(preference) ? null : broken;
+      } 
+      // check file for image
       ImageIcon result = null;
       if (prop instanceof PropertyFile) { 
         PropertyFile file = (PropertyFile)prop;
         result = file.getValueAsIcon();
       }
       if (result==null) result = broken;
+      // done
       return result;
     }  
   
