@@ -3,3 +3,4 @@
 .build
 .project
 java.policy.applet
+.settings
