@@ -27,7 +27,7 @@ import java.text.NumberFormat;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.34 2003-10-11 14:41:46 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.35 2003-10-14 17:02:05 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -380,15 +380,16 @@ public class ReportGedcomStatistics extends Report {
         PropertyDate birth = indi.getBirthDate();
         
         // end date < birth date
-        if(end.compareTo(birth)<0)
+        if(end.compareTo(birth)<0) {
+            println(i18n("warning")+": "+end+" < "+birth+": @"+indi.getId()+"@ "+indi.getName());
             return null;
+        }
         // end date == birth date
         if(end.compareTo(birth)==0)
             return zero;
         
         PointInTime newBirth = calculateAveragePointInTime(birth);
         PointInTime newEnd = calculateAveragePointInTime(end);
-        
         return PointInTime.getDelta(newBirth, newEnd);
     }
     
@@ -454,6 +455,7 @@ public class ReportGedcomStatistics extends Report {
      * @param all to store results of all individuals
      */
     private void analyzeAge(Indi indi, int[] age, StatisticsIndividuals single, StatisticsIndividuals all, int which) {
+
         int a = age[0]*360+age[1]*30+age[2];
         switch(which) {
             case INDIS:
@@ -608,6 +610,7 @@ public class ReportGedcomStatistics extends Report {
      */
     private void analyzeFamilies(Entity[] e, String lastName, StatisticsFamilies families) {
         
+        int age[] = null;
         for(int i=0;i<e.length;i++) {
             Fam fam = (Fam)e[i];
             
@@ -616,21 +619,32 @@ public class ReportGedcomStatistics extends Report {
             Indi wife=fam.getWife();
             
             if(fam.getMarriageDate()!=null) {
-                if((husband!=null)&&(husband.getBirthDate()!=null)&&((lastName==null)||husband.getLastName().equals(lastName)))
-                    analyzeAge(husband, getAge(husband, fam.getMarriageDate()), families.husbands, null, MARRIAGE);
+                if((husband!=null)&&(husband.getBirthDate()!=null)&&((lastName==null)||husband.getLastName().equals(lastName))){
+                    age = getAge(husband, fam.getMarriageDate());
+                    if(age!=null)
+                        analyzeAge(husband, age, families.husbands, null, MARRIAGE);
+                }
                 if((wife!=null)&&(wife.getBirthDate()!=null)&&((lastName==null)||wife.getLastName().equals(lastName)))
-                    analyzeAge(wife, getAge(wife, fam.getMarriageDate()),families.wifes, null, MARRIAGE);
+                    age= getAge(wife, fam.getMarriageDate());
+                    if(age!=null)
+                        analyzeAge(wife, age, families.wifes, null, MARRIAGE);
             }
             
             // analyze ages at child births
             Indi[] children = fam.getChildren();
             
             for(int j=0;j<children.length;j++) {
-                if((children[j].getBirthDate()!=null)) {
-                    if ((husband!=null)&&(husband.getBirthDate()!=null)&&((lastName==null)||(husband.getLastName().equals(lastName))))
-                        analyzeAge(husband, getAge(husband, children[j].getBirthDate()), families.husbands, null, CHILDBIRTH);
-                    if ((wife!=null)&&(wife.getBirthDate()!=null)&&((lastName==null)||(wife.getLastName().equals(lastName))))
-                        analyzeAge(wife, getAge(wife, children[j].getBirthDate()), families.wifes, null, CHILDBIRTH);
+                if((children[j].getBirthDate()!=null)) {                    
+                    if ((husband!=null)&&(husband.getBirthDate()!=null)&&((lastName==null)||(husband.getLastName().equals(lastName)))) {
+                        age = getAge(husband, children[j].getBirthDate());
+                        if(age!=null)
+                        analyzeAge(husband, age, families.husbands, null, CHILDBIRTH);
+                    }
+                    if ((wife!=null)&&(wife.getBirthDate()!=null)&&((lastName==null)||(wife.getLastName().equals(lastName)))) {
+                        age = getAge(wife, children[j].getBirthDate());
+                        if(age!=null)
+                        analyzeAge(wife, age, families.wifes, null, CHILDBIRTH);
+                    }
                 }
             }
             
@@ -743,7 +757,7 @@ public class ReportGedcomStatistics extends Report {
         int indent;
         if(lastName==null) {
             println(getIndent(1)+i18n("people"));
-            println(getIndent(2)+i18n("number",all.number));
+            println(getIndent(2)+i18n("people",all.number));
             indent=3;
         }
         else {
