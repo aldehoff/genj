@@ -74,7 +74,7 @@ public class TogglePrivate extends ActionDelegate {
         null, 
         txt, 
         WindowManager.IMG_WARNING, 
-        "This Gedcom file contains encrypted information that has to be decrypted before changing private/public status of information", 
+        "This Gedcom file contains encrypted information that has to be decrypted before changing private/public status of other information", 
         WindowManager.OPTIONS_OK, 
         target);
       return;              

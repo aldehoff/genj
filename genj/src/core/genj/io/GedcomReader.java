@@ -120,20 +120,12 @@ public class GedcomReader implements Trackable {
    */
   public void setPassword(String password) {
     
+    // valid argument?
     if (password==null)
       throw new IllegalArgumentException("Password can't be NULL");
       
+    // set it on Gedcom
     gedcom.setPassword(password); 
-    
-    // try to init decryption - unless it's a special key password
-    if (password!=Gedcom.PASSWORD_UNKNOWN) {
-      
-      enigma = Enigma.getInstance(password);
-      if (enigma==null) {
-        warnings.add("Decryption not available");
-      }
-      
-    }
     
     // done
   }
@@ -581,29 +573,55 @@ public class GedcomReader implements Trackable {
     } else {
       value = of.getValue();
     }
-   
-    // check for encrypted value 
-    if (Enigma.isEncrypted(value)) {
-      
-      // decrypt
-      if (enigma!=null) try {
-        
-        // set decrypted value
-        of.setValue(enigma.decrypt(value));
 
-      } catch (IOException e) {
-        throw new GedcomEncryptionException("Decrypting private information failed", line);
-      }
-      
-      // set private
-      of.setPrivate(true, false);
-      
-    } 
-
+    // decrypt value
+    decryptLazy(of, value);
+       
     // restore what we haven't consumed
     undoLine();
   }
   
+  /**
+   * Decrypt a value if necessary
+   */
+  private void decryptLazy(Property prop, String value) throws GedcomEncryptionException {
+    
+    // no need to do anything if not encrypted value 
+    if (!Enigma.isEncrypted(value))
+      return;
+      
+    // set property private
+    prop.setPrivate(true, false);
+      
+    // no need to do anything for unknown password
+    String password = gedcom.getPassword();
+    if (password==Gedcom.PASSWORD_UNKNOWN)
+      return;
+      
+    // not set password with encrypted value is error
+    if (password==Gedcom.PASSWORD_NOT_SET) 
+      throw new GedcomEncryptionException("Password required for decryption", line);
+    
+    // try to init decryption
+    if (enigma==null) {
+      enigma = Enigma.getInstance(password);
+      if (enigma==null) {
+        warnings.add("Decryption not available");
+        gedcom.setPassword(Gedcom.PASSWORD_UNKNOWN);
+        return;
+      }
+    }
+
+    // try to decrypt    
+    try {
+      // set decrypted value
+      prop.setValue(enigma.decrypt(value));
+    } catch (IOException e) {
+      throw new GedcomEncryptionException("Wrong Password", line);
+    }
+      
+    // done
+  }
 
   /**
    * Put back gedcom-line
