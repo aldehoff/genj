@@ -6,7 +6,7 @@
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
 1 DATE 17 DEC 2003
-2 TIME 15:08:52
+2 TIME 15:14:01
 1 GEDC
 2 VERS 5.5
 2 FORM Lineage-Linked
@@ -123,6 +123,7 @@
 1 HUSB @I005@
 1 CHIL @I007@
 1 CHIL @I009@
-0 @N003@ NOTE The author of GenJ
-1 CONT Please visit http://genj.sourceforge.net
+0 @N003@ NOTE The author of GenJ - please visit
+1 CONT http://genj.sourceforge.net
+1 CONT for more information about Genealogy J
 0 TRLR
