@@ -40,7 +40,8 @@ public class ByteArray {
    * Constructor
    */
   public ByteArray(InputStream in) throws IOException {
-    this(in, CLUSTER);
+    // 20030519 check available 
+    this(in, Math.max(in.available(), CLUSTER));
   }
 
   /**
@@ -51,7 +52,6 @@ public class ByteArray {
     // Read from stream - if the callee knows the size of the
     // file it might be passed in as 'cluster'. So we increase
     // that by 1 so maximal one cluster is created
-    
     byte buffer[] = new byte[cluster+1];
     int len=0,total=0;
 
@@ -82,7 +82,7 @@ public class ByteArray {
     bits = new byte[total];
     System.arraycopy(buffer, 0, bits, 0, total);
     buffer = null;
-    
+       
     // Done
   }
 
