@@ -269,53 +269,7 @@ public class PropertyDate extends Property {
    * Accessor Value
    */
   public String getValue() {
-
     return toString();
-
-    /*
-    // Generic information ?
-    if (dateAsString!=null)
-      return dateAsString;
-
-    // Own information
-    String v="";
-    switch (format) {
-      case DATE:
-      v = toString(0);
-      break;
-      case FROMTO:
-      v = "FROM " + toString(0)
-        + " TO "  + toString(1);
-        break;
-      case FROM:
-      v = "FROM " + toString(0);
-      break;
-      case TO:
-      v = "TO "   + toString(0);
-      break;
-      case BETAND:
-      v = "BET "  + toString(0)
-       + " AND " + toString(1);
-      break;
-      case BEF:
-      v = "BEF "  + toString(0);
-      break;
-      case AFT:
-      v = "AFT "  + toString(0);
-      break;
-      case ABT:
-      v = "ABT "  + toString(0);
-      break;
-      case CAL:
-      v = "CAL "  + toString(0);
-      break;
-      case EST:
-      v = "EST "  + toString(0);
-      break;
-      }
-
-    return v.trim();
-    */
   }
 
   /**
@@ -592,7 +546,7 @@ public class PropertyDate extends Property {
     month[1] = null;
     year [1] = null;
     format = DATE;
-    dateAsString=null;;
+    dateAsString=null;
 
     // Empty Date ?
     StringTokenizer tokens = new StringTokenizer(newValue);
