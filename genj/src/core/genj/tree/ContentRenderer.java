@@ -66,17 +66,10 @@ public class ContentRenderer {
   /** an entity that we consider selected */
   /*package*/ Entity selection = null;
   
-  /** map of entity types to colors */
-  private Map ent2color = new HashMap();
-
   /**
    * Render the content
    */
   public void render(UnitGraphics ug, Model model) {  
-    // prepare colors
-    ent2color.put(Model.IndiNode.class, cIndiShape);
-    ent2color.put(Model.FamNode .class, cFamShape );
-    ent2color.put(Model.MarrNode.class, cMarrShape);
     // translate to center
     Rectangle2D bounds = model.getBounds();
     ug.translate(-bounds.getX(), -bounds.getY());
