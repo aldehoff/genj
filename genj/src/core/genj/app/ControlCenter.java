@@ -448,7 +448,7 @@ public class ControlCenter extends JPanel {
     private String progress;
     
     /** password in use */
-    private String password = "password";
+    private String password = Gedcom.PASSWORD_NOT_SET;
 
     /** constructor */
     protected ActionOpen() {
