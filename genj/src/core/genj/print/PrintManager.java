@@ -162,11 +162,12 @@ public class PrintManager {
       }
 
       // setup progress dlg
-      progress = winMgr.openDialog(
+      progress = winMgr.openNonModalDialog(
         null, 
         resources.getString("dlg.title", title),
         WindowManager.IMG_INFORMATION, 
         new ProgressWidget(this, getThread()),
+        null,
         owner
       );
       

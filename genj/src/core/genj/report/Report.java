@@ -21,13 +21,18 @@ package genj.report;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
+import genj.util.swing.HeadlessLabel;
+import genj.view.ViewManager;
 import genj.window.WindowManager;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
@@ -40,6 +45,10 @@ import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
 
 
 /**
@@ -47,31 +56,31 @@ import javax.swing.JLabel;
  */
 public abstract class Report implements Cloneable {
 
+  /** one report for all reports */
+  private final static Registry REGISTRY = new Registry("genj-reports");
+
   /** language we're trying to use */
   private final static String lang = EnvironmentChecker.getProperty(Report.class, "user.language", null, "i18n for reports");
 
   /** i18n texts */
   private Properties i18n; 
-  
-  /** log buffer */
-  private StringBuffer logBuffer = new StringBuffer(16*1024);
-  
-  /** last flush time */
-  private long         lastFlush = -1;
-  
-  /** time between flushs */
-  private final static long FLUSH_WAIT = 100;
-  
-  /** the view */
-  private ReportView view;
-  
-  /** a registry for us */
-  private Registry registry;
 
+  /** out */
+  private PrintWriter out;
+  
+  /** a view manager */
+  private ViewManager viewManager;
+  
+  /** local registry */
+  private Registry registry;
+  
+  /** owning component */
+  private JComponent owner;
+  
   /**
    * integration - private instance for a run 
    */
-  /*package*/ Report getInstance(ReportView viEw, Registry reGistry) {
+  /*package*/ Report getInstance(ViewManager viEwManager, JComponent owNer, PrintWriter ouT) {
     
     try {
       
@@ -79,9 +88,11 @@ public abstract class Report implements Cloneable {
       Report result = (Report)clone();
       
       // remember context for result
-      result.view = viEw;
-      result.registry = reGistry;
-      
+      result.registry = new Registry(REGISTRY, getClass().getName());
+      result.viewManager = viEwManager;
+      result.out = ouT;
+      result.owner = owNer;
+            
       // done
       return result;
       
@@ -95,30 +106,8 @@ public abstract class Report implements Cloneable {
    * integration - log a message
    */
   /*package*/ void log(String txt) {
-
-    // Remember it
-    logBuffer.append(txt+"\n");
-
-    // Time for a display?
-    if (System.currentTimeMillis()-lastFlush > FLUSH_WAIT) 
-      flush();
-
-    // done
-  }
-
-  /**
-   * integration - flush messages
-   */
-  /*package*/ void flush() {
-    
-    lastFlush = System.currentTimeMillis();
-    if (view!=null) {
-      view.addOutput(logBuffer.toString());
-    } else {
-      Debug.log(Debug.INFO, this, logBuffer.toString());
-    }
-    logBuffer.setLength(0);
-    
+    if (out!=null)
+      out.println(txt);
   }
 
   /**
@@ -153,9 +142,9 @@ public abstract class Report implements Cloneable {
   /**
    * log an exception
    */
-  protected final void println(Exception e) {
+  protected final void println(Throwable t) {
     CharArrayWriter awriter = new CharArrayWriter(256);
-    e.printStackTrace(new PrintWriter(awriter));
+    t.printStackTrace(new PrintWriter(awriter));
     log(awriter.toString());
   }
   
@@ -167,7 +156,7 @@ public abstract class Report implements Cloneable {
     JFileChooser chooser = new JFileChooser(".");
     chooser.setFileSelectionMode(chooser.DIRECTORIES_ONLY);
     chooser.setDialogTitle(title);
-    if (chooser.APPROVE_OPTION != chooser.showDialog(view,button)) {
+    if (chooser.APPROVE_OPTION != chooser.showDialog(owner,button)) {
       return null;
     }
     return chooser.getSelectedFile();
@@ -175,17 +164,26 @@ public abstract class Report implements Cloneable {
   }
   
   /**
-   * Helper that shows a simple text message to user
+   * Helper method that shows (resulting) properties to the user
    */
-  protected final void showMessageToUser(String msg) {
-    view.getViewManager().getWindowManager().openDialog(
+  protected final void showToUser(String msg, Property[] props) {
+
+    // prepare content
+    JPanel content = new JPanel(new BorderLayout());
+    content.add(BorderLayout.NORTH, new JLabel(msg));
+    content.add(BorderLayout.CENTER, new JScrollPane(new PropertyList(props)));
+
+    // open a non-modal dialog
+    viewManager.getWindowManager().openNonModalDialog(
       null, 
-      getName(), 
-      WindowManager.IMG_INFORMATION, 
-      msg, 
-      (String[])null, 
-      view
+      getName(),
+      ReportViewFactory.IMG, 
+      content, 
+      WindowManager.OPTION_OK,
+      owner
     );
+    
+    // done
   }
   
   /**
@@ -214,13 +212,13 @@ public abstract class Report implements Cloneable {
     ChoiceWidget choice = new ChoiceWidget(choices, selected);
     choice.setEditable(false);
       
-    int rc = view.getViewManager().getWindowManager().openDialog(
+    int rc = viewManager.getWindowManager().openDialog(
       null, 
       getName(), 
       WindowManager.IMG_QUESTION,
       new JComponent[]{new JLabel(msg),choice},
       WindowManager.OPTIONS_OK_CANCEL,
-      view
+      owner
     );
       
     return rc==0 ? choice.getSelectedItem() : null;
@@ -247,13 +245,13 @@ public abstract class Report implements Cloneable {
     // show 'em
     ChoiceWidget choice = new ChoiceWidget(choices, "");
       
-    int rc = view.getViewManager().getWindowManager().openDialog(
+    int rc = viewManager.getWindowManager().openDialog(
       null, 
       "Report Input", 
       WindowManager.IMG_QUESTION,
       new JComponent[]{new JLabel(msg),choice},
       WindowManager.OPTIONS_OK_CANCEL,
-      view
+      owner
     );
       
     String result = rc==0 ? choice.getText() : null;
@@ -278,18 +276,18 @@ public abstract class Report implements Cloneable {
    * Helper method that queries the user for yes/no input
    */
   protected final boolean getValueFromUser(String msg, boolean yesnoORokcancel) {
-    int rc = view.getViewManager().getWindowManager().openDialog(
+    int rc = viewManager.getWindowManager().openDialog(
       null, 
       getName(),
       WindowManager.IMG_QUESTION, 
       msg,
       yesnoORokcancel ? WindowManager.OPTIONS_YES_NO : WindowManager.OPTIONS_OK_CANCEL,
-      view
+      owner
     );
     // Done
     return rc==0;
   }
-
+  
   /**
    * i18n of a string
    */
@@ -419,5 +417,42 @@ public abstract class Report implements Cloneable {
   public String accepts(Object context) {
     return context instanceof Gedcom ? getName() :  null;
   }
+
+  /**
+   * A list of properties
+   */
+  protected static class PropertyList extends JList implements ListCellRenderer {
+    
+    /** a headless label for rendering */
+    private HeadlessLabel label = new HeadlessLabel(); 
+    
+    /**
+     * Constructor
+     */
+    public PropertyList(Property[] props) {
+      super(props);
+      setCellRenderer(this);
+      label.setOpaque(true);
+    }
+    
+    /**
+     * Our own rendering
+     * @see javax.swing.ListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
+     */
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+      // colors
+      label.setBackground(cellHasFocus ? getSelectionBackground() : getBackground());
+      label.setForeground(cellHasFocus ? getSelectionForeground() : getForeground());
+      // content
+      Property prop = (Property)value;
+      String txt = prop instanceof Entity ? 
+        prop.toString() : prop.getTag()+' '+prop.getValue();
+      label.setText(txt);
+      label.setIcon(prop.getImage(false));
+      // done
+      return label;
+    }
+    
+  } //PropertyList
 
 } //Report

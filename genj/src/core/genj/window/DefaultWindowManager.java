@@ -141,25 +141,27 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // check options - default to OK
     if (options==null) options = OPTIONS_OK;
     // ask impl
-    return openDialogImpl(key, title, image, content, options, owner);
+    return openDialogImpl(key, title, image, content, options, owner, true);
   }
   
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, javax.swing.JComponent, javax.swing.JComponent)
    */
-  public String openDialog(String key, String title, Icon image, JComponent content, Component owner) {
+  public String openNonModalDialog(String key, String title, Icon image, JComponent content, String option, Component owner) {
     // create a key?
     if (key==null) key = getTemporaryKey();
+    // construct options
+    String[] options = option==null?new String[0]:new String[]{option};
     // ask impl
-    openDialogImpl(key, title, image, content, null, owner);
+    openDialogImpl(key, title, image, content, options, owner, false);
     // done
     return key;
   }
   
   /**
-   * Dialog implementation - will create a modal dialog if options==null
+   * Dialog implementation
    */
-  private int openDialogImpl(final String key, String title, Icon image, JComponent content, String[] options, Component owner) {
+  private int openDialogImpl(final String key, String title, Icon image, JComponent content, String[] options, Component owner, boolean isModal) {
 
     // Create a dialog 
     Window parent = getWindowForComponent(owner);
@@ -188,10 +190,10 @@ public class DefaultWindowManager extends AbstractWindowManager {
     dlg.setResizable(true);
     
     // setup options/modal or non-modal
+    dlg.setModal(isModal);
+    
     ActionDelegate[] actions;
     if (options!=null) {
-      
-      dlg.setModal(true);
       
       actions = new ActionDelegate[options.length];
       for (int i=0; i<options.length; i++) {
@@ -205,8 +207,6 @@ public class DefaultWindowManager extends AbstractWindowManager {
       }
       
     } else {
-      
-      dlg.setModal(false);
       
       actions = new ActionDelegate[0];
       
@@ -235,10 +235,13 @@ public class DefaultWindowManager extends AbstractWindowManager {
       
     // show
     dlg.show();
-    
-    // analyze - the disabled action is the choosen one :)
-    for (int i=0; i<actions.length; i++) {
-      if (!actions[i].enabled) return i;
+
+    // did we wait for something?
+    if (isModal) {
+      // analyze - the disabled action is the choosen one :)
+      for (int i=0; i<actions.length; i++) {
+        if (!actions[i].enabled) return i;
+      }
     }
         
     // done    

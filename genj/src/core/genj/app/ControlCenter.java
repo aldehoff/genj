@@ -489,11 +489,12 @@ public class ControlCenter extends JPanel {
         if (reader!=null) {
           List warnings = reader.getWarnings();
           if (!warnings.isEmpty()) {
-            windowManager.openDialog(
+            windowManager.openNonModalDialog(
               null,
               origin.getName(),
               WindowManager.IMG_WARNING,
               new JScrollPane(new JList(warnings.toArray())),
+              WindowManager.OPTION_OK,
               ControlCenter.this
             );
           }
@@ -698,11 +699,12 @@ public class ControlCenter extends JPanel {
       }
 
       // .. show progress dialog
-      progress = windowManager.openDialog(
+      progress = windowManager.openNonModalDialog(
         null,
         resources.getString("cc.open.loading", origin.getName()),
         WindowManager.IMG_INFORMATION,
         new ProgressWidget(reader, getThread()),
+        null,
         ControlCenter.this
       );
 
@@ -858,11 +860,12 @@ public class ControlCenter extends JPanel {
       }
 
       // .. open progress dialog
-      progress = windowManager.openDialog(
+      progress = windowManager.openNonModalDialog(
         null,
         resources.getString("cc.save.saving", file.getName()),
         WindowManager.IMG_INFORMATION,
         new ProgressWidget(gedWriter, getThread()),
+        null,
         ControlCenter.this
       );
 

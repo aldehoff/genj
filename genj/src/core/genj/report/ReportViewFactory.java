@@ -40,6 +40,8 @@ import javax.swing.JComponent;
  */
 public class ReportViewFactory implements ViewFactory, ActionSupport {
 
+  /*package*/ final static ImageIcon IMG = new ImageIcon(ReportViewFactory.class, "View.gif");
+  
   /**
    * @see genj.view.ViewFactory#createView(String, Gedcom, Registry, ViewManager)
    */
@@ -51,7 +53,7 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
    * @see genj.view.ViewFactory#getImage()
    */
   public ImageIcon getImage() {
-    return new ImageIcon(this, "View.gif");
+    return IMG;
   }
   
   /**
@@ -127,14 +129,20 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
     }
     /** callback */
     protected void execute() {
-      // get hand of a view for gedcom
+      // a report without standard out?
+      if (!report.usesStandardOut()) {
+        // run right there
+        report.getInstance(manager, target, null).start(context);
+        return;
+      }
+      // get handle of a ReportView 
       Object[] views = manager.getInstances(ReportView.class, gedcom);
       ReportView view;
       if (views.length==0)
         view = (ReportView)manager.openView(ReportViewFactory.class, gedcom);
       else 
         view = (ReportView)views[0];
-      // run it
+      // run it in view
       view.run(report, context);
       // done
     }

@@ -40,6 +40,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 
 import javax.swing.AbstractButton;
 import javax.swing.DefaultListCellRenderer;
@@ -61,6 +63,9 @@ import javax.swing.event.ListSelectionListener;
  * Component for running reports on genealogic data
  */
 public class ReportView extends JPanel implements ToolBarSupport {
+
+  /** time between flush of output writer to output text area */
+  private final static long FLUSH_WAIT = 200;
 
   /** statics */
   private final static ImageIcon 
@@ -293,6 +298,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
     /** the running report */
     private Report instance;
     
+    /** an output writer */
+    private PrintWriter out = new PrintWriter(new OutputWriter());
+    
     /** constructor */
     protected ActionStart(Object coNtext) {
       // remember
@@ -335,7 +343,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       }
 
       // create our own private instance  
-      instance = report.getInstance(ReportView.this, new Registry(registry, report.getName()));
+      instance = report.getInstance(manager, ReportView.this, out);
       
       // .. switch to output
       if (report.usesStandardOut()) {
@@ -356,8 +364,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
      * execute
      */
     protected void execute() {
-
-      // .. lock Gedcom for read and start report
       try {
         instance.start(context);
       } catch (ReportCancelledException ex) {
@@ -365,21 +371,18 @@ public class ReportView extends JPanel implements ToolBarSupport {
         // Running report failed
         instance.println(t);
       }
-
     }
     
     /**
      * post execute
      */
     protected void postExecute() {
-      // report to cleanup?
-      if (instance!=null) {
-        // flush
-        instance.flush();
-        // end tx
-        if (!instance.isReadOnly())
-          gedcom.endTransaction();
+      // tx to end?
+      if (instance!=null&&!instance.isReadOnly()) {
+        gedcom.endTransaction();
       }
+      // flush
+      out.flush();
       // stop run
       setRunning(false);
     }
@@ -486,5 +489,54 @@ public class ReportView extends JPanel implements ToolBarSupport {
     }
 
   } //ListGlue
+
+  /**
+   * A printwriter that directs output to the text area
+   */
+  private class OutputWriter extends Writer {
+    
+    /** buffer */
+    private StringBuffer buffer = new StringBuffer(4*1024);
+    
+    /** timer */
+    private long lastFlush = -1;
+    
+    /**
+     * @see java.io.Writer#close()
+     */
+    public void close() {
+      // clear buffer
+      buffer.setLength(0);
+    }
+ 
+    /**
+     * @see java.io.Writer#flush()
+     */
+    public void flush() {
+      // mark
+      lastFlush = System.currentTimeMillis();
+      // something to flush?
+      if (buffer.length()==0)
+        return;
+      // output
+      taOutput.append(buffer.toString());
+      // clear buffer
+      buffer.setLength(0);
+      // done
+    }
+    
+    /**
+     * @see java.io.Writer#write(char[], int, int)
+     */
+    public void write(char[] cbuf, int off, int len) throws IOException {
+      // append to buffer
+      buffer.append(cbuf, off, len);
+      // check flush
+      if (System.currentTimeMillis()-lastFlush > FLUSH_WAIT)
+        flush(); 
+      // done                  
+    }
+
+  } //OutputWriter
   
 } //ReportView

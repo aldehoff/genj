@@ -136,7 +136,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return key 
    */
-  public String openDialog(String key, String title, Icon image, JComponent content, Component owner);
+  public String openNonModalDialog(String key, String title, Icon image, JComponent content, String option, Component owner);
   
   /**
    * Close dialog/frame 
