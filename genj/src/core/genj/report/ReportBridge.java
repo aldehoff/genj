@@ -60,8 +60,8 @@ public class ReportBridge {
       flush();
     }
 
-    // FIXME : this is only for green threads
-    Thread.yield();
+    // 20021030 threading should work better nowadays - removing yield()
+    //Thread.yield();
   }
 
   /**
