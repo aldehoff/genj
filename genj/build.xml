@@ -115,6 +115,42 @@
   </target>
 
   <!--
+   JavaDoc
+   -->
+  <target name="javadoc" depends="init">
+    <echo level="info">Generating API documentation</echo>
+  	<delete dir="${dir.build}/javadoc"/>
+    <mkdir dir="${dir.build}/javadoc"/>
+    <javadoc destdir="${dir.build}/javadoc"
+             link="http://java.sun.com/j2se/1.4/docs/api"
+             classpathref="project.class.path"
+             access="public"
+             windowtitle="${app.name} - ${app.version}"
+             doctitle="${app.name} - ${app.version}&lt;br&gt;Package Overview"
+             bottom="&lt;a href=http://genj.sourceforge.net target=sourceforge &gt;genj.sourceforge.net&lt;/a&gt;"
+             noindex="yes"
+             nohelp="yes"
+             nodeprecatedlist="yes">
+        <fileset dir="./src/core" defaultexcludes="yes">
+          <include name="genj/gedcom/**.java" />
+          <include name="genj/report/Report.java" />
+          <include name="genj/io/**.java" />
+        </fileset>
+    </javadoc>
+  </target>
+  	
+  <!--
+   Distribution - javadocs
+   -->
+  <target name="dist.javadoc" depends="javadoc">
+  	
+    <zip zipfile="${dir.dist}/genj_javadoc-${app.version}.zip" update="True">
+      <fileset dir="${dir.build}" includes="javadoc/**"/>
+	</zip>
+
+  </target>
+	
+  <!--
    Distribution - a language
    -->
   <target name="dist.language">
@@ -224,7 +260,7 @@
        <zipfileset dir="${dir.build}/classes" includes="report/**"/>
         <zipfileset dir="./src" includes="report/**"/>
        <zipfileset dir="." includes="gedcom/**"/>
-       <zipfileset dir="." includes="doc/**"/>
+       <zipfileset dir="." includes="doc/*"/>
        <zipfileset dir="./script" includes="run.*" filemode="755"/>
      </zip>
 
@@ -294,32 +330,10 @@
   <!--
    Distribution
    -->
-  <target name="dist" depends="init,compile,version,dist.languages,dist.applet,dist.app,dist.help">
+  <target name="dist" depends="init,compile,version,dist.languages,dist.applet,dist.app,dist.help,dist.javadoc">
 
      <echo level="info">You can find the distribution bits in ${dir.dist}</echo>
 
-  </target>
-
-  <!--
-   JavaDoc
-   -->
-  <target name="javadoc" depends="init">
-    <echo level="info">Generating API documentation</echo>
-    <mkdir dir="${dir.build}/javadoc"/>
-    <javadoc destdir="${dir.build}/javadoc"
-             link="http://java.sun.com/j2se/1.4/docs/api"
-             sourcepath="./src/core"
-             packagenames="genj.gedcom.*, genj.report.*, genj.io.*"
-             classpathref="project.class.path"
-             access="public"
-             windowtitle="${app.name} - ${app.version}"
-             doctitle="${app.name} - ${app.version}&lt;br&gt;Package Overview"
-             bottom="&lt;a href=http://genj.sourceforge.net target=sourceforge &gt;genj.sourceforge.net&lt;/a&gt;"
-             noindex="yes"
-             nohelp="yes"
-             nodeprecatedlist="yes"
-    />
-    <!-- overview -->
   </target>
 
   <!--

@@ -26,7 +26,7 @@ public interface GedcomListener {
 
   /**
    * Notification that a change in a Gedcom-object took place.
-   * @param change describing the change
+   * @param tx the transaction responsible for the chane
    */
   public void handleChange(Transaction tx);
 

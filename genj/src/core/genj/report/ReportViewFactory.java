@@ -43,7 +43,7 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
   /*package*/ final static ImageIcon IMG = new ImageIcon(ReportViewFactory.class, "View.gif");
   
   /**
-   * @see genj.view.ViewFactory#createView(String, Gedcom, Registry, ViewManager)
+   * Factory method - create instance of view
    */
   public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager) {
     return new ReportView(title,gedcom,registry,manager);
@@ -64,24 +64,21 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
   }
 
   /**
-   * Reports ew offer to run on an entity
-   * @see genj.view.ActionSupport#createActions(genj.gedcom.Entity, genj.view.ViewManager)
+   * Plugin actions for entity
    */
   public List createActions(Entity entity, ViewManager manager) {
     return getActions(entity, entity.getGedcom(), manager);
   }
 
   /**
-   * Reports we offer to be run on a gedcom file
-   * @see genj.view.ActionSupport#createActions(genj.gedcom.Gedcom, genj.view.ViewManager)
+   * Plugin actions for gedcom
    */
   public List createActions(Gedcom gedcom, ViewManager manager) {
     return getActions(gedcom, gedcom, manager);
   }
 
   /**
-   * Report we offer to be run on a property
-   * @see genj.view.ActionSupport#createActions(genj.gedcom.Property, genj.view.ViewManager)
+   * Plugin actions for property
    */
   public List createActions(Property property, ViewManager manager) {
     return getActions(property, property.getGedcom(), manager);

@@ -253,7 +253,7 @@ public abstract class PropertyXRef extends Property {
   /**
    * overriden to make sure we always look for sub-meta-properties
    * with FILTER_XREF
-   * @see genj.gedcom.Property#getMetaProperties(int)
+   * @see genj.gedcom.Property#getSubMetaProperties(int)
    */
   public MetaProperty[] getSubMetaProperties(int filter) {
     return super.getSubMetaProperties(MetaProperty.FILTER_XREF|filter);

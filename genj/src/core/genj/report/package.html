@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+
+   GenJ - GenealogyJ
+ 
+   Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+
+   This piece of code is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation; either version 2 of the
+   License, or (at your option) any later version.
+
+   This code is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+-->
+</head>
+<body>
+
+<a href=./Report.html>Reports</a> are simple, plug-able Java Types 
+which are executed in the context of GenealogyJ. They can access the 
+underlying object representation of Gedcom-file opened by the user. 
+
+<h2>Running Reports</h2>
+
+<p>There are multiple ways of intergrating a report with GenJ. Generally every 
+report found in the report-directory (or one of its sub-directories) will be
+loaded and displayed in ReportView. There the user can read about the
+report's author and operation description, set report-options and run 
+them individually. </p>
+
+<p>A report can also be run by opening the context-menu for a Gedcom element
+in the UI. Depending on the selected element (for example an entity, a
+property or a Gedcom-file itself) reports that can accept this context as
+input are presented. A report declares whether it can run on a given
+context by overriding 
+ <pre> public String accepts(Object context) </pre>
+and returning a textual description of the action the report will do if
+executed (if applicable). By default it's assumed that reports can be
+executed on a <a href=../gedcom/Gedcom.html>Gedcom</a> object - when
+run the report is called with a reference to an instance of the corresponding
+type.
+</p>
+
+<h2>Report Output</h2>
+
+<p>todo</p>
+
+<h2>Compiling Reports</h2>
+
+<p>todo</p>
+
+</body>
+</html>
