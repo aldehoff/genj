@@ -19,6 +19,7 @@
  */
 package genj.renderer;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.util.ImgIcon;
@@ -28,19 +29,31 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
+import javax.swing.ImageIcon;
+import javax.swing.text.html.ImageView;
+
 /**
  * last, first
  * first last
  * first last suffix
  */
 public class PropertyFileProxy extends PropertyProxy {
+  
+  private ImgIcon broken;
+  
+  {
+    try {
+      broken = new ImgIcon(((ImageIcon)new ImageView(null).getNoImageIcon()).getImage());
+    } catch (Throwable t) {
+      broken = Gedcom.getImage();
+    }
+  }
 
   /**
    * @see genj.renderer.PropertyProxy#getSize(FontMetrics, Property, boolean, boolean)
    */
   public Dimension getSize(FontMetrics metrics, Property prop, int preference) {
     ImgIcon img = getImage(prop);
-    if (img==null) return new Dimension(32,32);
     return new Dimension(img.getIconWidth(), img.getIconHeight());
   }
 
@@ -48,32 +61,17 @@ public class PropertyFileProxy extends PropertyProxy {
    * @see genj.renderer.PropertyProxy#render(Graphics, FontMetrics, Rectangle, Property, boolean, boolean)
    */
   public void render(Graphics g, Rectangle bounds, Property prop, int preference) {
-    // render background
-    
     // grab the image
     ImgIcon img = getImage(prop);
-    int w,h;
-    if (img==null) {
-      w = 32;
-      h = 32;
-    } else {
-      h = img.getIconHeight();
+    int
+      h = img.getIconHeight(),
       w = img.getIconWidth ();
-    }
     // check if we should zoom
     double zoom = Math.min(
       Math.min(1.0D, ((double)bounds.width )/w),
       Math.min(1.0D, ((double)bounds.height)/h)
     );
-    if (img==null) {
-      g.drawRect(bounds.x, bounds.y, bounds.width-1, bounds.height-1);
-    } else {
-      img.paintIcon(g, 
-        bounds.x, 
-        bounds.y, 
-        zoom
-      );
-    }
+    img.paintIcon(g, bounds.x, bounds.y, zoom);
     // done
   }
   
@@ -88,10 +86,13 @@ public class PropertyFileProxy extends PropertyProxy {
    * Helper to get the image of PropertyFile
    */
   private ImgIcon getImage(Property prop) {
-    if (!(prop instanceof PropertyFile)) 
-      return null;
-    PropertyFile file = (PropertyFile)prop;
-    return file.getValueAsIcon();
+    ImgIcon result = null;
+    if (prop instanceof PropertyFile) { 
+      PropertyFile file = (PropertyFile)prop;
+      result = file.getValueAsIcon();
+    }
+    if (result==null) result = broken;
+    return result;
   }  
 
 } //PropertyNameProxy
