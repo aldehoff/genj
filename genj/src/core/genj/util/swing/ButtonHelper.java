@@ -25,6 +25,7 @@ import genj.util.Resources;
 
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.util.Enumeration;
@@ -51,6 +52,7 @@ public class ButtonHelper {
   private boolean isTextAllowed   = true;
   private boolean isImageAllowed  = true;
   private boolean isImageOverText = false;
+  private int fontSize            = -1;
   
   /** Setters */    
   public ButtonHelper setInsets(Insets set) { insets=set; return this; }
@@ -66,6 +68,7 @@ public class ButtonHelper {
   public ButtonHelper setImageAllowed(boolean set) { isImageAllowed=set; return this; }
   public ButtonHelper setTextAllowed(boolean set) { isTextAllowed=set; return this; }
   public ButtonHelper setImageOverText(boolean set) { isImageOverText=set; return this; }
+  public ButtonHelper setFontSize(int set) { fontSize=set; return this; }
   
   
   /**
@@ -93,6 +96,10 @@ public class ButtonHelper {
     }
     if (horizontalAlignment>=0)
       result.setHorizontalAlignment(horizontalAlignment);
+    if (fontSize>0) {
+      Font f = result.getFont();
+      result.setFont(new Font(f.getName(), f.getStyle(), fontSize));
+    }
     
     result.setBorderPainted(isBorder);
     result.setRequestFocusEnabled(isFocusable); // This should be setFocusable which comes with JDK1.4
