@@ -61,9 +61,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -382,10 +385,13 @@ public class AboutWidget extends JPanel{
   /**
    * Associations
    */
-  private class AssociationPanel extends JPanel {
+  private class AssociationPanel extends JPanel implements ListSelectionListener {
     
     /** buttons */
     private AbstractButton bAdd, bDel, bEdit;
+    
+    /** table */
+    private JTable table;
     
     /**
      * Constructor
@@ -393,15 +399,19 @@ public class AboutWidget extends JPanel{
     private AssociationPanel() {
       
       // table with associations
-      JTable table = new JTable();
+      table = new JTable();
       table.getTableHeader().setReorderingAllowed(false);
       table.setModel(new Model());
+      ListSelectionModel lsm = table.getSelectionModel(); 
+      lsm.setSelectionMode(lsm.SINGLE_SELECTION);
+      lsm.addListSelectionListener(this);
       
       // panel with actions
       JPanel panel = new JPanel();
       ButtonHelper bh = new ButtonHelper();
       bh.setContainer(panel);
       bAdd = bh.create(new Add ());
+             bh.setEnabled(false);
       bDel = bh.create(new Del ());
       bEdit= bh.create(new Edit());
       
@@ -411,6 +421,15 @@ public class AboutWidget extends JPanel{
       add(panel                 , BorderLayout.SOUTH );
       
       // done
+    }
+    
+    /**
+     * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
+     */
+    public void valueChanged(ListSelectionEvent e) {
+      boolean b = table.getSelectedRow()>=0;
+      bDel .setEnabled(b);
+      bEdit.setEnabled(b);
     }
     
     /**

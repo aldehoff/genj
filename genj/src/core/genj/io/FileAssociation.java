@@ -19,11 +19,15 @@
  */
 package genj.io;
 
+import genj.util.Debug;
+import genj.util.Registry;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 /**
@@ -53,6 +57,22 @@ public class FileAssociation {
   }
   
   /**
+   * Constructor
+   */
+  public FileAssociation(String s) {
+    StringTokenizer tokens = new StringTokenizer(s,"*");
+    suffix = tokens.nextToken();
+    action = tokens.nextToken();
+    executable = tokens.nextToken();
+  }
+  
+  /**
+   * String representation   */
+  public String toString() {
+    return suffix+'*'+action+'*'+executable;
+  }
+  
+  /**
    * Accessor - exec
    */
   public String getExecutable() {
@@ -78,17 +98,17 @@ public class FileAssociation {
    */
   public boolean execute(String[] parms) {
     // run the executable
-    boolean rc = false;
     try {
       String[] args = new String[1+parms.length];
       args[0] = getExecutable(); 
       System.arraycopy(parms, 0, args, 1, parms.length);
-      rc = null!=Runtime.getRuntime().exec(args);
+      if (null!=Runtime.getRuntime().exec(args)) return true;
+      Debug.log(Debug.WARNING, this, "Couldn't start external application "+getExecutable());
+      return false;
     } catch (IOException e) {
-      e.printStackTrace();
+      Debug.log(Debug.WARNING, this, "Couldn't start external application "+getExecutable(), e);
+      return false;
     }
-    // done
-    return rc;
   }
 
   /**
@@ -128,10 +148,35 @@ public class FileAssociation {
     list.add(fa);
     // done
   }
+  
+  /**
+   * Reads associations from registry   */
+  public static void read(Registry r) {
+    String[] as = r.get("associations", new String[0]);
+    if (as.length>0) instances.clear();
+    for (int i=0; i<as.length; i++) {
+      add(new FileAssociation(as[i]));
+    }
+    // done
+  }
    
+  /**
+   * Writes associations to registry
+   */
+  public static void write(Registry r) {
+    List all = getAll();
+    String[] as = new String[all.size()];
+    for (int i=0; i<as.length; i++) {
+      as[i] = all.get(i).toString();
+    }
+    r.put("associations", as);
+  }
+  
+  /**
+   * Defaults   */
   static {
     add(new FileAssociation("jpg", "View", "C:/Program Files/Internet Explorer/IEXPLORE.EXE"));
     add(new FileAssociation("jpg", "Edit", "C:/winnt/System32/mspaint.exe"));
+    add(new FileAssociation("txt", "Edit", "C:/winnt/notepad.exe"));
   }
-
 } //FileAssociation

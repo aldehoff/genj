@@ -21,6 +21,7 @@ package genj.app;
 
 import genj.Version;
 import genj.gedcom.Gedcom;
+import genj.io.FileAssociation;
 import genj.lnf.LnFBridge;
 import genj.renderer.BlueprintManager;
 import genj.util.ActionDelegate;
@@ -111,6 +112,9 @@ public class App {
     // Preset resolution (dots per centimeters)
     Point2D dpc = registry.get("resolution",(Point2D)null); 
     if (dpc!=null) ScreenResolutionScale.setDotsPerCm(dpc);
+    
+    // Load file associations
+    FileAssociation.read(registry);
 
     // Disclaimer
     if (registry.get("disclaimer",0)==0) {
@@ -149,6 +153,8 @@ public class App {
   public void shutdown() {
     // remember resolution 
     registry.put("resolution", ScreenResolutionScale.getDotsPerCm());
+    // remember file associations
+    FileAssociation.write(registry);
     // tell BlueprintManager
     BlueprintManager.getInstance().shutdown();
     // close all frames we know
