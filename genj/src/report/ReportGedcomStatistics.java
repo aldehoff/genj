@@ -12,7 +12,7 @@ import java.io.*;
 /**
  * GenJ - Report
  * @author Francois Massonneau <fmas@celtes.com>
- * @version 0.01
+ * @version 0.02
  */
 public class ReportGedcomStatistics implements Report {
 
@@ -28,7 +28,7 @@ public class ReportGedcomStatistics implements Report {
    * @return Information as String
    */
   public String getInfo() {
-    return "This report gives you some statistics about the current Gedcom File.\n\n            Have Fun and Enjoy";
+    return "This report gives you some statistics about the current Gedcom File.\n\n            Have Fun and Enjoy\n\n\n(version 0.02)";
   }
 
   /**
@@ -58,22 +58,57 @@ public class ReportGedcomStatistics implements Report {
    */
   public boolean start(ReportBridge bridge, Gedcom gedcom) {
 
+    int numMales = 0;
+    int numFemales = 0;
+    int numUnknown = 0;
+
+    // We Look thru individuals to check their sex
+
+    EntityList indis = gedcom.getEntities(gedcom.INDIVIDUALS);
+    for (int i=0;i<indis.getSize();i++) {
+      Indi indi = indis.getIndi(i);
+      int sex = indi.getSex();
+      switch (indi.getSex()) {
+      case Gedcom.MALE:
+          numMales++;
+          break;
+      case Gedcom.FEMALE:
+          numFemales++;
+          break;
+      default:
+          numUnknown++;
+          break;
+      }
+    }
+
     // Header :
     bridge.println("This report gives you some statistics about your Family Tree :");
-    bridge.println("     . Number of people,");
-    bridge.println("     . Number of families,");
+    bridge.println("     . How many families, persons,");
+    bridge.println("     . Number of males, females, and individuals with undefined sex");
+
     bridge.println("                    -----------------------------");
     bridge.println("");
 
-
-    // One: We show the number of individuals :
     bridge.println("In the Gedcom file named '"+gedcom.getName()+"', there are :");
-    bridge.println("     - "+gedcom.getEntities(Gedcom.INDIVIDUALS).getSize()
-           +" Individuals (soit : "+gedcom.getEntities(Gedcom.INDIVIDUALS).getSize()+" personnes).");
 
-    // Two: We show the number of families :
+    // One: We show the number of families :
     bridge.println("     - "+gedcom.getEntities(Gedcom.FAMILIES).getSize()
-           +" families (soit : "+gedcom.getEntities(Gedcom.FAMILIES).getSize()+" familles).");
+      +" families (soit : "+gedcom.getEntities(Gedcom.FAMILIES).getSize()+" familles).");
+
+    // Two: We show the number of individuals :
+    bridge.println("     - "+gedcom.getEntities(Gedcom.INDIVIDUALS).getSize()
+      +" Individuals (soit : "+gedcom.getEntities(Gedcom.INDIVIDUALS).getSize()+" personnes).");
+
+    // Three: We show the number of males :
+    bridge.println("         . "+numMales+" males (soit : "+numMales+" hommes).");
+
+    // Four: We show the number of males :
+    bridge.println("         . "+numFemales+" females (soit : "+numFemales+" femmes).");
+
+    // Five: We show the number of people whose sex is undefined :
+    bridge.println("         . "+numUnknown+" with undefined sex (soit : "
+      +numUnknown+" personnes dont le sexe n'est pas connu).");
+
 
     return true;
 
