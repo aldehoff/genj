@@ -218,6 +218,13 @@ import javax.swing.table.AbstractTableModel;
   }
   
   /**
+   * @see javax.swing.table.TableModel#getColumnName(int)
+   */
+  public String getColumnName(int col) {
+    return Gedcom.getName(mode.paths[col].getLast());
+  }
+  
+  /**
    * @see javax.swing.table.TableModel#getColumnCount()
    */
   public int getColumnCount() {

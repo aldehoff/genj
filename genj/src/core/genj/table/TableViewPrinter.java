@@ -29,6 +29,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Dimension2D;
 
@@ -37,6 +38,13 @@ import javax.swing.JComponent;
 /**
  * A print renderer for table */
 public class TableViewPrinter implements Printer {
+  
+  /** print state */
+  private int[] 
+    rowHeights,
+    colWidths;
+  private int headerHeight;
+
   
   /** the table view */
   private TableView table;
@@ -60,16 +68,27 @@ public class TableViewPrinter implements Printer {
 
     // prepare our font render context
     FontRenderContext context = new FontRenderContext(null, false, true);
+
+    // prepare data
+    int pageWidth = (int)Math.ceil(pageSizeInInches.getWidth()*dpi.x);
+    int pageHeight = (int)Math.ceil(pageSizeInInches.getHeight()*dpi.y);
     
-    // calculate a factor 
-    
-    // loop rows
+    headerHeight = 0;
     rowHeights = new int[model.getRowCount()];
     colWidths = new int[model.getColumnCount()];
     
-    for (int row=0;row<rowHeights.length;row++) {
+    // calculate header parameters
+    for (int col=0;col<colWidths.length;col++) {
+      String header = model.getColumnName(col);
+      Dimension2D dim = PropertyRenderer.DEFAULT_RENDERER.getSize(font, context, null, header, PropertyRenderer.PREFER_TEXT, dpi);
+      headerHeight = (int)Math.max(headerHeight, Math.ceil(dim.getHeight()));
+      colWidths[col] = (int)Math.max(colWidths[col], Math.ceil(dim.getWidth()));
+    }
+    
+    // loop rows
+    for (int row=0, height=0;row<rowHeights.length;row++) {
 
-      // loop cells
+      // loop columns
       for (int col=0;col<colWidths.length;col++) {
         
         // check property
@@ -84,21 +103,37 @@ public class TableViewPrinter implements Printer {
         rowHeights[row] = (int)Math.max(rowHeights[row], Math.ceil(dim.getHeight()));
         colWidths[col] = (int)Math.max(colWidths[col], Math.ceil(dim.getWidth()));
         
-        // next
+        // next col
       }
       
+      // check page fit vertically
+    
+      // next row
+    }
+
+    // Prepare result
+    Dimension pages = new Dimension(1,1);
+    
+    // check page fit horizontally
+    for (int col=0, width=0;col<colWidths.length;col++) {
+      // too much for current page?
+      if (width+colWidths[col]>pageWidth) {
+        // expand previous column if possible
+        if (width>0) {
+          colWidths[col-1] += pageWidth-width;
+          width = 0;
+          pages.width++;
+        }
+      }
+      // increase width
+      width += colWidths[col];
     }
     
+    
     // done
-//    sizeInInches.setSize(size.width/(float)dpi.x,size.height/(float)dpi.y);
-    return new Dimension(1,1);
+    return pages;
   }
   
-
-  private int[] 
-    rowHeights,
-    colWidths;
-
   /**
    * @see genj.print.PrintRenderer#renderPage(java.awt.Point, gj.ui.UnitGraphics)
    */
@@ -118,35 +153,58 @@ public class TableViewPrinter implements Printer {
     // grab model
     EntityTableModel model = table.getModel();
     
-    // loop
+    // draw header
+    Shape clip;
+
     int y = 0;
+    int x = 0;
+    for (int col=0,cols=model.getColumnCount();col<cols;col++) {
+      String header = model.getColumnName(col);
+      Rectangle r = new Rectangle(x, 0, colWidths[col], headerHeight); 
+      PropertyRenderer.DEFAULT_RENDERER.render(g, r, null, header, PropertyRenderer.PREFER_TEXT, dpi);
+      x += colWidths[col];
+    }
+    y += headerHeight;
     
+    // draw line demarcation
+    g.drawLine(0, y, x, y++);
+    
+    // draw rows
     for (int row=0,rows=model.getRowCount();row<rows;row++) {
+
+      // start on the left
+      x = 0;
       
-      int x = 0;
-      
+      // draw cols
       for (int col=0,cols=model.getColumnCount();col<cols;col++) {
-        
+
+        // calculate space to render in
+        Rectangle r = new Rectangle(x, y, colWidths[col], rowHeights[row]);
         Property prop = model.getProperty(row, col);
         if (prop!=null) {
-          PropertyRenderer renderer = PropertyRenderer.get(prop);
-          Dimension2D size = renderer.getSize(font, g.getFontRenderContext(), prop, PropertyRenderer.PREFER_DEFAULT, dpi);
-          Rectangle r = new Rectangle(
-              x, 
-              y, 
-              Math.min((int)size.getWidth(), colWidths[col]),
-              Math.min((int)size.getHeight(),rowHeights[row])
-          );
-          renderer.render(g, r, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
-        }        
+          PropertyRenderer.get(prop)
+            .render(g, r, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
+        }
+        
+        // increase current horizontal position
         x += colWidths[col];
+        
       }
       
+      // increase current vertical position
       y += rowHeights[row];
       
-      g.drawLine(0, y, x, y);
-      
-      y ++;
+      // draw line demarcation
+      g.drawLine(0, y, x, y++);
+
+      // next row
+    }
+    
+    // draw vertical lines
+    x = 0;
+    for (int col=0,cols=model.getColumnCount();col<cols;col++) {
+      x += colWidths[col];
+      g.drawLine(x, 0, x, y);
     }
 
     // done

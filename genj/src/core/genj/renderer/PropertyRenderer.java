@@ -61,9 +61,9 @@ public class PropertyRenderer {
   private final static Dimension EMPTY_DIM = new Dimension(0,0);
   
   /** a default PropertyProxy */
-  /*package*/ final static PropertyRenderer 
-    DEFAULT_PROPERTY_PROXY = new PropertyRenderer(),
-    SECRET_PROPERTY_PROXY  = new Secret();
+  public final static PropertyRenderer 
+    DEFAULT_RENDERER = new PropertyRenderer(),
+    SECRET_RENDERER  = new Secret();
 
   /** an replacement for a 'broken' image */  
   private final static ImageIcon broken = 
@@ -83,7 +83,7 @@ public class PropertyRenderer {
     
     // check secret
     if (prop.isSecret()) 
-      return SECRET_PROPERTY_PROXY;
+      return SECRET_RENDERER;
     
     // continue with tag
     return get(prop.getProxy());
@@ -105,7 +105,7 @@ public class PropertyRenderer {
         result = (PropertyRenderer)Class.forName(PropertyRenderer.class.getName()+"$"+name).newInstance();
       } catch (Throwable t) {
         //Debug.log(Debug.INFO, PropertyRenderer.class, "Couldn't find renderer for "+name, t);
-        result = DEFAULT_PROPERTY_PROXY;
+        result = DEFAULT_RENDERER;
       }
       
       // remember
@@ -153,7 +153,7 @@ public class PropertyRenderer {
   /**
    * Implementation for calculating size with given img/txt
    */
-  protected Dimension2D getSize(Font font, FontRenderContext context, ImageIcon img, String txt, int preference, Point dpi) {
+  public Dimension2D getSize(Font font, FontRenderContext context, ImageIcon img, String txt, int preference, Point dpi) {
     double 
       w = 0,
       h = 0;
@@ -181,7 +181,7 @@ public class PropertyRenderer {
   /**
    * Implementation for rendering img/txt 
    */
-  protected void render(Graphics2D g, Rectangle bounds, ImageIcon img, String txt, int preference, Point dpi) {
+  public void render(Graphics2D g, Rectangle bounds, ImageIcon img, String txt, int preference, Point dpi) {
     // image?
     if (isImage(preference)) render(g, bounds, img, dpi);
     // text?
