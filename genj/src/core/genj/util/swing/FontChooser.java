@@ -50,7 +50,7 @@ public class FontChooser extends JPanel {
    * Constructor   */
   public FontChooser() {
     // sub-components
-    comboFonts = new JComboBox();
+    comboFonts = new JComboBox(getAllFonts());
     comboFonts.setPrototypeDisplayValue(getFont());
     textSize = new JTextField(2);
     textSize.setText("12");
@@ -107,8 +107,6 @@ public class FontChooser extends JPanel {
   /**
    * Accessor - selected font   */
   public void setSelectedFont(Font font) {
-    // make sure fonts are prepared
-    getAllFonts();
     // look for font
     for (int f=0; f<allFonts.length; f++) {
       if (allFonts[f].getName().equals(font.getName())) {
