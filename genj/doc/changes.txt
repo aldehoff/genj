@@ -36,7 +36,7 @@ Future
   O Switch between localized names for month abbrv. and long (e.g. Jan and January)
   O Following links in EditView should also change focus in TreeView and TableView
 
-1.9.1 - MMM DD 2002
+1.9.1 - Sep 26 2002
 
   I Accessing System.getProperty() is done through EnvironmentChecker and logged
   I edit.ProxyFile and edit.ProxyBlob's file dialog default to -Dgenj.gedcom.dir,-Duser.home
