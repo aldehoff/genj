@@ -163,6 +163,7 @@ class ViewEditor extends JPanel implements ViewInfo {
         System.out.println("[Debug]"+viName+" is no valid ViewInfo class");
       } catch (Exception e) {
         //System.out.println("[Debug] Couldn't instantiate "+viName);
+        return;
       }
     }
 
