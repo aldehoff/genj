@@ -86,7 +86,12 @@ public class ProgressDialog extends JDialog implements ActionListener {
 
     // No more components
     pack();
-    setLocationRelativeTo(frame);
+    try {
+      setLocationRelativeTo(frame);
+    } catch (Throwable t) { 
+      // 20020813 Having a problem with pre 1.4 VMs - even though 
+      // this API call seems to be supported I get a NoSuchMethodError
+    }
 
     // Are there any other dialogs?
     dlgNumber = 0;
