@@ -304,7 +304,7 @@ public class AboutWidget extends JPanel{
       // what are the languages
       String[] languages = {"en", "de", "es", "fr", "it", "ja"};
       choiceLanguages = new ChoiceWidget(languages, App.getInstance().getLanguage());
-      gh.add(new JLabel("Language"), 0, 0);
+      gh.add(new JLabel(resources.getString("cc.about.tab4.language")), 0, 0);
       gh.add(choiceLanguages, 1, 0);
 
       // what are the LnFs
@@ -326,9 +326,9 @@ public class AboutWidget extends JPanel{
         comboLnfs.setSelectedItem(LnFBridge.getInstance().getLastLnF());
         comboLnfs.addActionListener(this);
 
-        gh.add(new JLabel("Look&Feel" ), 0,1,1,1);
+        gh.add(new JLabel(resources.getString("cc.about.tab4.look&feel") ), 0,1,1,1);
         gh.add(comboLnfs               , 1,1,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-        gh.add(new JLabel("Theme"     ), 0,2,1,1);
+        gh.add(new JLabel(resources.getString("cc.about.tab4.theme")     ), 0,2,1,1);
         gh.add(comboThemes             , 1,2,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
         
         actionPerformed(null);
@@ -337,7 +337,7 @@ public class AboutWidget extends JPanel{
       // create ruler for adjusting resolution
       screenResRuler = new ScreenResolutionScale();
       
-      gh.add(new JLabel("Resolution (cm)"), 0,3,1,1);
+      gh.add(new JLabel(resources.getString("cc.about.tab4.resolution")), 0,3,1,1);
       gh.add(screenResRuler               , 1,3,1,1, gh.GROW_BOTH      |gh.FILL_BOTH      );
       
       // done
