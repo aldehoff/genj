@@ -50,7 +50,7 @@ import genj.view.ViewManager;
 public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   
   /** resources we use */
-  private Resources resources = EditView.resources;
+  private final static Resources resources = EditView.resources;
 
   /** a noop is used for separators in returning actions */  
   private final static ActionDelegate aNOOP = ActionDelegate.NOOP;
@@ -199,7 +199,7 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   /**
    * ActionDelete - delete an entity
    */  
-  private class ActionDelete extends ActionDelegate {
+  private static class ActionDelete extends ActionDelegate {
     /** the candidate to delete */
     private Entity candidate;
     /**
@@ -223,7 +223,7 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   /**
    * ActionCreate - create an entity
    */  
-  private class ActionCreate extends ActionDelegate {
+  private static class ActionCreate extends ActionDelegate {
     /** confirmation message */
     private String message;
     /** the confirmation type */
@@ -289,7 +289,7 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
 
       // Recheck with the user
       int option = JOptionPane.showOptionDialog(
-        null, new JScrollPane(text), getTitle(false),
+        null, new JScrollPane(text), resources.getString("title"),
         JOptionPane.OK_CANCEL_OPTION,
         isWarning ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
         null, null, null

@@ -34,11 +34,13 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImgIconConverter;
+import genj.util.swing.MenuHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -54,7 +56,9 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
+import javax.swing.MenuSelectionManager;
 import javax.swing.border.TitledBorder;
 
 /**
@@ -142,6 +146,8 @@ public class ViewManager {
     if (gedcom2current.get(gedcom)==entity) return;
     // remember
     gedcom2current.put(gedcom, entity);
+    // 20021017 @see note at the bottom of file
+    MenuSelectionManager.defaultManager().clearSelectedPath();
     // loop and tell to views
     Iterator it = viewWidgets.iterator();
     while (it.hasNext()) {
@@ -251,6 +257,9 @@ public class ViewManager {
      if (sw.getViewWidget()==viewWidget) frame.dispose();
     }
     
+    // 20021017 @see note at the bottom of file
+    MenuSelectionManager.defaultManager().clearSelectedPath();
+    
     // get rid of traces
     if (viewWidgets.contains(viewWidget)) viewWidgets.remove(viewWidget);
     
@@ -348,7 +357,65 @@ public class ViewManager {
     gedcom2current.remove(gedcom);
 
     // done
-    
   }
 
+  /**
+   * Show a context menu for given point - at this
+   * point we assume that view instanceof EntityPopupSupport
+   */
+  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, Entity entity) {
+    
+    // 20021017 @see note at the bottom of file
+    MenuSelectionManager.defaultManager().clearSelectedPath();
+
+    // create a popup
+    MenuHelper mh = new MenuHelper();
+    JPopupMenu popup = mh.createPopup("");
+    
+    // items for entity
+    if (entity!=null) {
+      List actions = ViewManager.getInstance().getActions(entity);
+      if (!actions.isEmpty()) {
+        mh.createMenu(entity.getId(), entity.getProperty().getImage(false));
+        mh.createItems(actions);
+        mh.popMenu();
+      }
+    }
+    
+    // items for gedcom
+    List actions = getActions(gedcom);
+    if (!actions.isEmpty()) {
+      mh.createMenu(gedcom.getName(), Gedcom.getImage());
+      mh.createItems(actions);
+      mh.popMenu();
+    }
+    
+    // show the popup
+    if (popup.getComponentCount()>0)
+      popup.show(container, point.x, point.y);
+    
+    // done
+  }
+
+  // 20021017 strangely Popups for JPopupMenu don't seem to
+  // disappear even though of mouse-clicks somewhere in the
+  // view. Calling
+  //  MenuSelectionManager.defaultManager().clearSelectedPath();
+  // before bringing up a popup makes sure that it disappears 
+  // when anything is clicking in the view.
+  // Also popups are not removed by Swing after opening up
+  // a JPopupMenu in one view and clicking on components in 
+  // another view. We could do some stuff with windowDeactivated 
+  // but that seems too much to bother. So for now we'll call
+  //  MenuSelectionManager.defaultManager().clearSelectedPath();
+  // which will get rid of the popup anytime 
+  //  setCurrentEntity() 
+  // is called. That will make sure there's no current-change
+  // with a popup still being open for the last current.
+  // Lastly we also call 
+  //  MenuSelectionManager.defaultManager().clearSelectedPath();
+  // in removeNotify() when a view is removed. Otherwise Swing
+  // might keep a popup open in another view showing items that
+  // are applicable to an already closed view.
+  
 } //ViewManager

@@ -105,7 +105,8 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
                             actionButtonUp,
                             actionButtonDown,
                             actionButtonReturn,
-                            actionSticky;
+                            actionSticky,
+                            actionContextMenu;
 
   /** everything for the tree */
   private PropertyTree      tree = null;
@@ -295,6 +296,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     actionButtonDown   = bh.create(new ActionPropertyUpDown(false));
     actionButtonReturn = bh.setEnabled(true).create(new ActionBack());
     actionSticky       = bh.create(new ActionSticky());
+    actionContextMenu  = bh.create(new ActionContextMenu());
     
     actionSticky.setSelected(registry.get("sticky",false));
 
@@ -320,10 +322,11 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
    */
   /*pacakge*/ void setEntity(Entity entity) {
 
+    // already?
+    if (currentEntity==entity) return;
+
     // Try to stop old editing first
     stopEdit(true);
-
-    //if (actionButtonReturn!=null) actionButtonReturn.setEnabled(!returnStack.isEmpty());
 
     // Remember entity
     currentEntity=entity;
@@ -333,9 +336,17 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
 
     // Pre-selected editing node ?
     if ((currentEntity!=null)&&(tree.isShowing())) {
-      tree.setSelectionRow( 0 );
+      tree.setSelectionRow(0);
     }
-
+    
+    // context-menu button
+    if (actionContextMenu!=null) {
+      ImgIcon img;
+      if (currentEntity==null) img = Gedcom.getImage();
+      else img = Gedcom.getImage(currentEntity.getType());
+      actionContextMenu.setIcon(ImgIconConverter.get(img));
+    }
+    
     // Done
   }
   
@@ -422,6 +433,24 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
   }
 
   /**
+   * Action - show context menu
+   */
+  private class ActionContextMenu extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionContextMenu() {
+      super.setImage(currentEntity==null ? Gedcom.getImage() : Gedcom.getImage(currentEntity.getType()));
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      ViewManager.getInstance().showContextMenu(actionContextMenu, new Point(0,0), gedcom, currentEntity);
+    }
+  } //ActionContextMenu
+  
+  /**
    * Action - toggle
    */
   private class ActionSticky extends ActionDelegate {
@@ -436,7 +465,6 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
       //noop
     }
   } //ActionBack
-  
 
   /**
    * Action - back
