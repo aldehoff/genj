@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.util.swing.ImageIcon;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -264,26 +266,21 @@ public abstract class PropertyXRef extends Property {
     filter |= getReferencedEntity()!=null ? MetaProperty.FILTER_LINKED : MetaProperty.FILTER_NOT_LINKED;
     return super.getMetaProperties(filter);
   }
-
-//  /**
-//   * @see genj.gedcom.Property#getPropertyRecursively(genj.gedcom.TagPath, int, boolean)
-//   */
-//  protected Property getPropertyRecursively(TagPath path, int pos, boolean validOnly) {
-//    
-//    // let super go ahead
-//    Property result = super.getPropertyRecursively(path, pos, validOnly);
-//    if (result!=null) return result;
-//    
-//    // a target to try?
-//    Entity entity = getReferencedEntity();
-//    if (target==null) return null;
-//    
-//    // check it out
-//    if (path.get(pos).equals(getTag())) 
-//      return entity.getPropertyRecursively(path, pos+1, validOnly);
-//    
-//    // done
-//    return null;
-//  }
+  
+  /**
+   * Final impl for image of xrefs
+   * @see genj.gedcom.Property#getImage(boolean)
+   */
+  public ImageIcon getImage(boolean checkValid) {
+    return overlay(super.getImage(false));
+  }
+  
+  /**
+   * Overlay image with current status
+   */
+  protected ImageIcon overlay(ImageIcon img) {
+    ImageIcon overlay = target!=null?MetaProperty.IMG_LINK:MetaProperty.IMG_ERROR;
+    return img.getOverLayed(overlay);
+  }
 
 } //PropertyXRef

@@ -144,4 +144,16 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     return title!=null ? title.getValue() : EMPTY_STRING; 
   }
 
+  /**
+   * @see genj.gedcom.PropertyXRef#overlay(genj.util.swing.ImageIcon)
+   */
+  protected ImageIcon overlay(ImageIcon img) {
+    // used as a reference? go ahead and overlay!
+    if (super.getReferencedEntity()!=null)
+      return super.overlay(img);
+    // used inline! no overlay!
+    return img;
+  }
+
+
 } //PropertyMedia

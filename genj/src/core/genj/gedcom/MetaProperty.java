@@ -48,14 +48,15 @@ public class MetaProperty {
     FILTER_LINKED     = 4,
     FILTER_NOT_LINKED = 8; 
   
-  /** static - images */
-  private final static String
-    IMG_UNKNOWN = "Question.gif",
-    IMG_ERROR   = "Error.gif";
-    
   /** static - loaded images */    
   private static Map name2images = new HashMap();
   
+  /** static - images */
+  public final static ImageIcon
+    IMG_LINK    = loadImage("Association.gif"),
+    IMG_UNKNOWN = loadImage("Question.gif"),
+    IMG_ERROR   = loadImage("Error.gif");
+    
   /** static - root for entities  */
   private static Map roots = new HashMap();
   
@@ -212,8 +213,10 @@ public class MetaProperty {
    * Accessor - image
    */
   public ImageIcon getImage() {
-    if (image==null)
-      image = loadImage(getAttribute("img", IMG_UNKNOWN));
+    if (image==null) {
+      String s = getAttribute("img", null);
+      image = s==null ? IMG_UNKNOWN : loadImage(s);
+    }
     return image;
   }
 
@@ -225,7 +228,7 @@ public class MetaProperty {
     if (name==null) {
       // check err
       if ("err".equals(postfix))
-        name = IMG_ERROR;
+        return IMG_ERROR;
       else
         return getImage() ;
     } 

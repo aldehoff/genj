@@ -166,20 +166,19 @@ public class PropertyChild extends PropertyXRef {
   public int[] getTargetTypes() {
     return TARGET_TYPES;
   }
-
+  
   /**
-   * Image
+   * @see genj.gedcom.PropertyXRef#getImage(boolean)
    */
   public ImageIcon getImage(boolean checkValid) {
-    // validity?
-    if (checkValid&&(!isValid()))
-      return super.getImage(true);
-    // check it
-    switch (getChild().getSex()) {
-      case PropertySex.MALE: return IMG_MALE;
-      case PropertySex.FEMALE: return IMG_FEMALE;
-      default: return IMG_UNKNOWN;
+     // check it
+    Indi child = getChild();
+    if (child==null) return super.getImage(checkValid);
+    switch (child.getSex()) {
+      case PropertySex.MALE: return overlay(IMG_MALE);
+      case PropertySex.FEMALE: return overlay(IMG_FEMALE);
+      default: return overlay(IMG_UNKNOWN);
     }
   }
-
+  
 } //PropertyChild

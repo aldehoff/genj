@@ -82,10 +82,10 @@ public class PropertyForeignXRef extends PropertyXRef {
   }
 
   /**
-   * getImage method comment.
+   * @see genj.gedcom.PropertyXRef#getImage(boolean)
    */
   public ImageIcon getImage(boolean checkValid) {
-    return MetaProperty.loadImage("Association.gif");
+    return overlay(getTarget().getEntity().getImage(false));
   }
 
   /**

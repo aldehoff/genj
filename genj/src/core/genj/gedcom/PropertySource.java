@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.util.swing.ImageIcon;
+
 /**
  * Gedcom Property : SOURCE 
  * A property that either consists of SOURCE information or
@@ -126,5 +128,15 @@ public class PropertySource extends PropertyXRef implements MultiLineSupport {
     return super.getValue();
   }
   
+  /**
+   * @see genj.gedcom.PropertyXRef#overlay(genj.util.swing.ImageIcon)
+   */
+  protected ImageIcon overlay(ImageIcon img) {
+    // used as a reference? go ahead and overlay!
+    if (super.getReferencedEntity()!=null)
+      return super.overlay(img);
+    // used inline! no overlay!
+    return img;
+  }
 } //PropertySource
 
