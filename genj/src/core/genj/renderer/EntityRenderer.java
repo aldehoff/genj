@@ -167,10 +167,11 @@ public class EntityRenderer {
   
   /**
    * Change the font factor   */
-  public void setFontFactor(float set) {
+  public EntityRenderer setFontFactor(float set) {
     // keep the fFactor
     fontFactor = set;
     // done
+    return this;
   }
   
   /**
