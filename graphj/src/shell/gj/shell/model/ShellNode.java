@@ -1,5 +1,17 @@
 /**
+ * GraphJ
  * 
+ * Copyright (C) 2002 Nils Meier
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  */
 package gj.shell.model;
 
@@ -8,20 +20,19 @@ import gj.util.ArcHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * @author nmeier
+ * Node for Shell
  */
 public class ShellNode implements gj.model.Node {
   
   private Point2D position = new Point2D.Double();
   
-  private GeneralPath shape = new GeneralPath(new Rectangle(-20,-20,40,40));
+  private Shape shape = null;
   
   private ArrayList arcs = new ArrayList();
   
@@ -34,7 +45,7 @@ public class ShellNode implements gj.model.Node {
    */
   protected ShellNode(ShellGraph grAph, Shape shApe, Object conTent) {
     graph = grAph;
-    shape = new GeneralPath(shApe==null ? new Rectangle() : shApe);
+    shape = shApe==null ? new Rectangle() : shApe;
     content = conTent;
   }
   
@@ -125,7 +136,7 @@ public class ShellNode implements gj.model.Node {
     // FIXME make sure children fit in
     
     // change
-    shape = new GeneralPath(set);
+    shape = set;
     
     // FIXME check parent's bounds
     
@@ -145,5 +156,13 @@ public class ShellNode implements gj.model.Node {
     
     // FIXME what if it's a graph
   }
+  
+  /**
+   * @see java.lang.Object#toString()
+   */
+  public String toString() {
+    return content!=null ? content.toString() : super.toString();
+  }
 
-} //Node
+
+} //ShellNode

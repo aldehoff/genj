@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @see gj.model.MutableGraph
+ * A default impl for 
+ * @see gj.model.Graph
  */
 public class DefaultGraph implements Graph {
   
@@ -160,4 +161,4 @@ public class DefaultGraph implements Graph {
   }
 
 
-}
+} //DefaultGraph

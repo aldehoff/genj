@@ -44,4 +44,4 @@ public interface Node {
    */
   public List getArcs();
   
-}
+} //Node

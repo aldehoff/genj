@@ -20,6 +20,7 @@ import gj.model.Arc;
 import gj.model.Node;
 
 /**
+ * A default implementation for
  * @see gj.model.MutableArc
  */
 public class DefaultArc implements Arc {

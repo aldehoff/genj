@@ -28,9 +28,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -59,11 +57,10 @@ public class GraphReader implements PathIteratorKnowHow  {
   private Factory factory;
   
   /** the graph we're creating */
-  private Graph graph;
+  private Graph result;
 
   /** identity support */
   private Map 
-    nodes2arcs = new HashMap(),
     ids2nodes = new HashMap(),
     ids2arcs = new HashMap(),
     ids2shapes = new HashMap();
@@ -98,36 +95,27 @@ public class GraphReader implements PathIteratorKnowHow  {
     factory = faCtory;
     
     // create a graph
-    graph = factory.createGraph();
+    result = factory.createGraph();
     
     try {
       
       // parse
-      XMLHandler handler = new XMLHandler(new GraphHandler());
+      XMLHandler handler = new XMLHandler(new GraphHandler(result));
       parser.parse(in, handler);
-      
-//      // post-work : order node's arcs
-//      Iterator it = nodes2arcs.keySet().iterator();
-//      while (it.hasNext()) {
-//        // a node and its arcs
-//        Node node = (Node)it.next();
-//        List arcs = (List)nodes2arcs.get(node);
-//        if (arcs==null) continue;
-//        // lookup arcs
-//        for (int a=0; a<arcs.size(); a++) {
-//          arcs.set(a, ids2arcs.get(arcs.get(a)));
-//        }
-//        // set on node
-//        graph.setOrder(node, arcs);
-//        // next
-//      }
       
     } catch (SAXException e) {
       throw new IOException("Couldn't read successfully because of SAXException ("+e.getMessage()+")");
     }
 
     // done
-    return graph;
+    return result;
+  }
+  
+  /**
+   * Handle an error during read
+   */
+  protected void error(String message) {
+    throw new RuntimeException(message);
   }
   
   /**
@@ -136,47 +124,61 @@ public class GraphReader implements PathIteratorKnowHow  {
   private abstract class ElementHandler {
     protected ElementHandler start(String name, Attributes atts) { return this; }
     protected void end(String name) {} 
-  }
+  } //ElementHandler
   
   /**
    * Handling structure elements - Graph
    */
   private class GraphHandler extends ElementHandler {
+    private Graph graph;
+    protected GraphHandler(Graph grAph) {
+      graph = grAph;
+    }
     protected ElementHandler start(String name, Attributes atts) {
-      if ("node".equals(name)) return new NodeHandler(atts);
-      if ("arc".equals(name)) return new ArcHandler(atts);
+      if ("node".equals(name)) return new NodeHandler(graph, atts);
+      if ("arc".equals(name)) return new ArcHandler(graph, atts);
       if ("shape".equals(name)) return new ShapeHandler(atts);
       return this;
     }
-  }
+  } //GraphHandler
   
   /**
    * Handling structure elements - Node
    */
   private class NodeHandler extends ElementHandler {
-    protected NodeHandler(Attributes atts) {
+    private Graph graph;
+    private String id = null;
+    private Shape shape = null;
+    private Point2D pos = null;
+    private Object content = null;
+    protected NodeHandler(Graph grAph, Attributes atts) {
+      graph = grAph;
+      // the id
+      id = atts.getValue("id");
+      if (id==null)
+        error("expected id=");
       // find a shape
-      Shape shape = (Shape)ids2shapes.get(atts.getValue("sid"));
+      shape = (Shape)ids2shapes.get(atts.getValue("sid"));
       if (shape==null) shape = DEFAULT_SHAPE;
       // its position
-      Point2D pos = new Point2D.Double(Double.parseDouble(atts.getValue("x")), Double.parseDouble(atts.getValue("y")));
+      pos = new Point2D.Double(Double.parseDouble(atts.getValue("x")), Double.parseDouble(atts.getValue("y")));
       // the content
-      String content = atts.getValue("c");
+      content = atts.getValue("c");
+    }
+    protected ElementHandler start(String name, Attributes atts) {
+      if (!"graph".equals(name)) 
+        error("expected graph");
+      content = factory.createGraph();
+      return new GraphHandler((Graph)content);
+    }
+    protected void end(String name) {
       // create the node
       Node node = factory.createNode(graph, shape, content);
       node.getPosition().setLocation( pos );
-      // it's arcs
-      List arcs = new ArrayList(5);
-      for (int a=0;;a++) {
-        String aid = atts.getValue("aid"+a);
-        if (aid==null) break;
-        arcs.add(aid);
-      }
-      if (!arcs.isEmpty()) nodes2arcs.put(node,arcs);
       // keep it
-      ids2nodes.put(atts.getValue("id"), node);
+      ids2nodes.put(id, node);
     }
-  }
+  } //NodeHandler
   
   /**
    * Handling structure elements - Arc
@@ -184,7 +186,7 @@ public class GraphReader implements PathIteratorKnowHow  {
   private class ArcHandler extends ElementHandler {
     private ShapeHandler shapeHandler;
     private Arc arc;
-    protected ArcHandler(Attributes atts) {
+    protected ArcHandler(Graph graph, Attributes atts) {
       Node
         s = (Node)ids2nodes.get(atts.getValue("s")),
         e = (Node)ids2nodes.get(atts.getValue("e"));
@@ -205,7 +207,7 @@ public class GraphReader implements PathIteratorKnowHow  {
         ArcHelper.update(arc);
       }
     }    
-  }
+  } //ArcHandler
 
   /**
    * Handling structure elements - Shape
@@ -239,13 +241,14 @@ public class GraphReader implements PathIteratorKnowHow  {
     protected Shape getResult() {
       return result;
     }
-  }
+  } //ShapeHandler
   
   
   /**
-   * A SAX 'Default' Handler that knows how to read a Graph
+   * A SAX 'Default' Handler that knows how to read xml 
+   * stacking element handlers
    */
-  private class XMLHandler extends DefaultHandler {
+  private final class XMLHandler extends DefaultHandler {
     
     private Stack stack = new Stack();
     
@@ -275,6 +278,6 @@ public class GraphReader implements PathIteratorKnowHow  {
     }
 
 
-  } // EOC
-}
-
+  } //XMLHandler
+  
+} //GraphReader

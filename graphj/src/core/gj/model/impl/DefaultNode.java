@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * A default implementation for
  * @see gj.model.Node
  */
 public class DefaultNode implements Node {

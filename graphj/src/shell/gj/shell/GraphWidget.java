@@ -292,6 +292,12 @@ public class GraphWidget extends JPanel {
       // done
     }
     /** callback */
+    public void mouseDragged(MouseEvent e) {
+      // FIXME Auto-generated method stub
+      super.mouseDragged(e);
+    }
+
+    /** callback */
     public void mouseReleased(MouseEvent e) {
       
       // context menu?
@@ -362,6 +368,7 @@ public class GraphWidget extends JPanel {
       if (dummy!=null) {
         ShellNode to = graph.getNode(content.getPoint(e.getPoint()));
         if (to!=null) graph.createArc(selection, to);
+        selection = null;
       }
       repaint();
       dndNoOp.start(e.getPoint());

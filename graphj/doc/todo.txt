@@ -15,7 +15,8 @@ gj.shell.factory.TreeFactory
 
 gj.layout.tree 
  
- [ ] double stretchGenerationForWidth
+ [ ] align children
+ [ ] double stretchGenerationForWidth?
  
             A                   A
           +-+--+               +++

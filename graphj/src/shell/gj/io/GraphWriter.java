@@ -26,8 +26,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -82,10 +85,11 @@ public class GraphWriter implements PathIteratorKnowHow {
     
     push("arcs",null,false);
     
-    // sort arcs 
+    // sort arcs so that they're written in order
+    // to be recreated on load
     Arc[] arcs = (Arc[])g.getArcs().toArray(new Arc[g.getArcs().size()]);
-//    Arrays.sort(arcs, new ArcComparator());
-    
+    Arrays.sort(arcs, new ArcComparator());
+
     // write 'em
     for (int i=0;i<arcs.length;i++) {
       writeArc(arcs[i]);
@@ -94,28 +98,58 @@ public class GraphWriter implements PathIteratorKnowHow {
     pop();
   }
 
-//  /**
-//   * How we sort arcs
-//   */  
-//  private class ArcComparator implements Comparator {
-//    /**
-//     */
-//    public int compare(Object a, Object b) {
-//      return compare((Arc)a, (Arc)b);
-//    }
-//    /**
-//     */
-//    private int compare(Arc a, Arc b) {    
-//      int 
-//        a1 = a.getStart().getArcs().indexOf(a),
-//        a2 = a.getEnd  ().getArcs().indexOf(a),
-//        b1 = b.getStart().getArcs().indexOf(b),
-//        b2 = b.getEnd  ().getArcs().indexOf(b);
-//
-//      int r = Math.min(a1,a2) 
-//      if (<)        
-//    }
-//  } //ArcComparator
+  /**
+   * KnowHow about which arc to write first
+   */  
+  private static class ArcComparator implements Comparator {
+    /**
+     * callback - compare
+     */
+    public int compare(Object a, Object b) {
+      return compare((Arc)a, (Arc)b);
+    }
+    /**
+     * Which arc to write first (as,ae) || (bs,be)
+     * 
+     * (1) a,b are loops starting at x => order of a,b in as 
+     * 
+     *     x == as == ae == bs == be
+     * 
+     * (2) a,b are dups between x,y => order of a,b in as
+     *  
+     *     x == as == bs, y == ae == be ||
+     *     x == as == be, y == ae == bs
+     * 
+     * (3) a,b connect in x => order of a,b in ...
+     * 
+     *     x == as == bs || x == as == be ||     ... as
+     *     x == ae == bs || x == ae == be        ... ae
+     * 
+     * (4) a,b are not connected => we don't care
+     */
+    private int compare(Arc a, Arc b) {    
+      // check nodes
+      Node 
+        as = a.getStart(),
+        ae = a.getEnd  (),
+        bs = b.getStart(),
+        be = b.getEnd  ();
+      // arcs that touch?
+      if (as==bs||as==be)
+        return compare(as, a, b);
+      if (ae==bs||ae==be)
+        return compare(ae, a, b);
+      // unknown
+      return 0;
+    }
+    /**
+     * The index of arc a vs. b in n.getArcs()
+     */
+    private int compare(Node n, Arc a, Arc b) {
+      List arcs = n.getArcs();
+      return arcs.indexOf(a) - arcs.indexOf(b);
+    }
+  } //ArcComparator
 
   /**
    * Write - Arc
@@ -135,13 +169,19 @@ public class GraphWriter implements PathIteratorKnowHow {
    * Write - Shapes
    */
   private void writeShapes(Graph g) throws IOException {
+    // starting shapes
     push("shapes",null,false);
+    // loop through nodes
     Iterator it = g.getNodes().iterator();
     while (it.hasNext()) {
+      // check known shape - wish that (but it is not)
+      //  new GeneralPath(shape).equals(new GeneralPath(shape))
       Shape s = ((Node)it.next()).getShape();
       if (!shapes2ids.containsKey(s))
         writeShape(s, shapes2ids.size()+1);
+      // next
     }
+    // done
     pop();
   }
   
@@ -196,22 +236,29 @@ public class GraphWriter implements PathIteratorKnowHow {
    */
   private void writeNode(Node n) throws IOException {
     
+    // gather element information
     ElementInfo info = new ElementInfo();
     info.put("id", getId(n));
     info.put("x", n.getPosition().getX());
     info.put("y", n.getPosition().getY());
-    info.put("c", n.getContent());
     info.put("sid", shapes2ids.get(n.getShape()));
-    
-    Iterator it = n.getArcs().iterator();
-    for (int a=0;it.hasNext();a++) {
-      Arc arc = (Arc)it.next();
-      Object aid = getId(arc);
-      info.put("aid"+a, aid );
+
+    // no graph contained?
+    Object content = n.getContent();
+    if (!(content instanceof Graph)) {
+      info.put("c", n.getContent());
+      push("node",info,true);
+      return;
     }
     
-    push("node",info,true);
+    // open node for contained graph
+    push("node",info,false);
+    
+    // do the graph
+    write((Graph)content);
 
+    // done
+    pop();
   }
   
   /**
@@ -298,5 +345,6 @@ public class GraphWriter implements PathIteratorKnowHow {
       }
     }
   } //ElementInfo
-}
+
+} //GraphWriter
 
