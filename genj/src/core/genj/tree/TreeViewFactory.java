@@ -3,11 +3,13 @@ package genj.tree;
 import java.awt.Component;
 import java.awt.Frame;
 
-import genj.app.ViewFactory;
-import genj.app.ViewSettingsWidget;
+import javax.swing.JComponent;
+
+
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
 import genj.util.Registry;
+import genj.view.ViewFactory;
 
 public class TreeViewFactory implements ViewFactory {
 
@@ -21,7 +23,7 @@ public class TreeViewFactory implements ViewFactory {
   /**
    * @see genj.app.ViewFactory#createSettingsComponent(Component)
    */
-  public ViewSettingsWidget createSettingsComponent(Component view) {
+  public JComponent createSettingsComponent(Component view) {
     return new TreeViewSettings((TreeView)view);
   }
 

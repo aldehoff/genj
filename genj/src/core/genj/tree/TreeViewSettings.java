@@ -30,13 +30,14 @@ import genj.gedcom.*;
 import awtx.*;
 import genj.app.*;
 import genj.util.GridBagHelper;
+import genj.view.*;
 import genj.option.*;
 import genj.util.Resources;
 
 /**
  * Class for providing PInfo information to a ViewEditor
  */
-public class TreeViewSettings extends ViewSettingsWidget {
+public class TreeViewSettings extends JPanel implements ApplyResetSupport {
 
   private TreeView   tree;
 
@@ -79,9 +80,10 @@ public class TreeViewSettings extends ViewSettingsWidget {
    */
   public TreeViewSettings(TreeView tree) {
     
+    super(new BorderLayout());
+    
     // initial layout
     JTabbedPane tabbed = new JTabbedPane();
-    setLayout(new BorderLayout());
     add(tabbed, BorderLayout.CENTER);
     
     // remember

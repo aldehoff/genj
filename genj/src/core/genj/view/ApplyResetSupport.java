@@ -17,24 +17,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.app;
-
-import javax.swing.JPanel;
+package genj.view;
 
 /**
- * Abstract base class for components allowing to edit
- * settings of a view
+ * An interface for something supporting appy/reset
  */
-public abstract class ViewSettingsWidget extends JPanel {
+public interface ApplyResetSupport {
 
   /**
-   * Tells the ViewInfo to apply made changes
+   * apply made changes
    */
-  public abstract void apply();
+  public void apply();
 
   /**
-   * Tells the ViewInfo to reset made changes
+   * reset made changes
    */
-  public abstract void reset();
+  public void reset();
 
 }

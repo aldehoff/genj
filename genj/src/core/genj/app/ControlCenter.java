@@ -21,7 +21,6 @@ package genj.app;
 
 import javax.swing.*;
 import javax.swing.event.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.net.*;
@@ -33,6 +32,7 @@ import genj.Version;
 import genj.gedcom.*;
 import genj.util.*;
 import genj.util.swing.*;
+import genj.view.*;
 import genj.print.*;
 import genj.tool.*;
 import genj.option.*;
@@ -127,13 +127,13 @@ public class ControlCenter extends JPanel {
 
     bh.setEnabled(true).create(new ActionOpen());
     
-    bh.setEnabled(false).addCollection(gedcomButtons);
+    bh.setEnabled(false).addCollection(gedcomButtons).setResources(null);
     ViewManager.Descriptor[] ds=ViewManager.getInstance().getDescriptors();
     for (int i=0; i<ds.length; i++) {
       JButton b = bh.create(new ActionView(ds[i]));
     }
     
-    bh.setEnabled(true).removeCollection(gedcomButtons);
+    bh.setEnabled(true).removeCollection(gedcomButtons).setResources(App.resources);
     bh.create(new ActionSettings());
 
     // the result
@@ -205,11 +205,11 @@ public class ControlCenter extends JPanel {
 
     mh.popMenu().createMenu("cc.menu.view");
     
-      mh.setEnabled(false).setCollection(gedcomButtons);    
+      mh.setEnabled(false).setCollection(gedcomButtons).setResources(null);    
       ViewManager.Descriptor[] ds=ViewManager.getInstance().getDescriptors();
       for (int i=0; i<ds.length; i++) 
         mh.createItem(new ActionView(ds[i]));
-      mh.setEnabled(true).setCollection(null);    
+      mh.setEnabled(true).setCollection(null).setResources(App.resources);    
 
     mh.popMenu().createMenu("cc.menu.tools");
 
@@ -910,9 +910,9 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionSettings() {
       super.setImage(Images.imgSettings);
-      super.setText("cc.view.settings");
-      super.setShortText("cc.view.short.settings");
-      super.setTip("cc.tip.settings");
+      super.setText("cc.menu.settings");
+      super.setShortText("cc.menu.settings.short");
+      super.setTip("cc.tip.open_settings");
     }    
     /** run */
     protected void execute() {
@@ -987,9 +987,9 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionView(ViewManager.Descriptor which) {
       this.which = which;
-      super.setText("cc.view."+which.key);
-      super.setShortText("cc.view.short."+which.key);
-      super.setTip("cc.tip.open_"+which.key);
+      super.setText(which.getTitle());
+      super.setShortText(which.getShortTitle());
+      super.setTip(which.getTip());
       super.setImage(which.img);
     }
     /** run */

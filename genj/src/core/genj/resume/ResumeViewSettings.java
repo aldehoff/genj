@@ -19,41 +19,49 @@
  */
 package genj.resume;
 
-import java.awt.Component;
-import java.awt.Frame;
+import genj.view.ApplyResetSupport;
+import java.awt.BorderLayout;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
 
-import javax.swing.JComponent;
-
-
-import genj.gedcom.Gedcom;
-import genj.print.PrintRenderer;
-import genj.util.Registry;
-import genj.view.ViewFactory;
 
 /**
- * The factory for the ResumeView
+ * The settings editor for the ResumeView
  */
-public class ResumeViewFactory implements ViewFactory {
-
+public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
+  
+  /** a drop-down for available entities */
+  private JComboBox dropEntities = new JComboBox();
+  
+  /** a text-area for html */
+  private JTextArea textHtml = new JTextArea();
+  
   /**
-   * @see genj.app.ViewFactory#createSettingsComponent(Component)
+   * Constructor
    */
-  public JComponent createSettingsComponent(Component view) {
-    return new ResumeViewSettings((ResumeView)view);
+  public ResumeViewSettings(ResumeView resumeView) {
+    super(new BorderLayout());
+
+    // prepare the drop-down with entity types    
+    add(dropEntities, BorderLayout.NORTH);
+
+    // and the html
+    add(textHtml, BorderLayout.CENTER);    
+    
+    // done
   }
 
   /**
-   * @see genj.app.ViewFactory#createPrintRenderer(Component)
+   * @see genj.app.ViewSettingsWidget#apply()
    */
-  public PrintRenderer createPrintRenderer(Component view) {
-    return null;
+  public void apply() {
   }
 
   /**
-   * @see genj.app.ViewFactory#createViewComponent(Gedcom, Registry, Frame)
+   * @see genj.app.ViewSettingsWidget#reset()
    */
-  public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
-    return new ResumeView(gedcom,registry,frame);
+  public void reset() {
   }
 
 }

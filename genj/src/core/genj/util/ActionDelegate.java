@@ -27,6 +27,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -248,6 +250,9 @@ public abstract class ActionDelegate implements Cloneable {
     if (contract==ListSelectionListener.class) {
       return new AsListSelectionListener();
     }
+    if (contract==ChangeListener.class) {
+      return new AsChangeListener();
+    }
     // don't know
     throw new RuntimeException("Unsupported contract '"+contract+"' for ActionDelegate");
   }
@@ -298,6 +303,16 @@ public abstract class ActionDelegate implements Cloneable {
   private class AsActionListener implements ActionListener {
     /** the routed call */
     public void actionPerformed(ActionEvent e) {
+      trigger();
+    }
+  }
+
+  /**
+   * A converter - ChangeListener
+   */
+  private class AsChangeListener implements ChangeListener {
+    /** the routed call */
+    public void stateChanged(ChangeEvent e) {
       trigger();
     }
   }

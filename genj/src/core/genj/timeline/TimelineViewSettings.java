@@ -24,8 +24,8 @@ import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
-
 import genj.util.GridBagHelper;
+import genj.view.*;
 import genj.gedcom.*;
 import awtx.*;
 import genj.app.*;
@@ -33,7 +33,7 @@ import genj.app.*;
 /**
  * The ViewInfo representing settings of a TimelineView
  */
-public class TimelineViewSettings extends ViewSettingsWidget {
+public class TimelineViewSettings extends JPanel implements ApplyResetSupport {
 
   /** members */
   private TimelineView timeline;

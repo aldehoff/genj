@@ -83,7 +83,7 @@ public class Scrollpane extends Container {
   /**
    * Adds a component to space in lower right corner
    */
-  public void add2Edge(Component c) {
+  private void add2Edge(Component c) {
     compEdge.add(c);
   }
 

@@ -306,7 +306,7 @@ public class Applet extends java.applet.Applet implements Runnable {
     // Let's add a button for the bridge activation
     Scrollpane pane = (Scrollpane)component;
 
-    pane.add2Edge(ComponentProvider.createButton(null, resources.getString("applet.browse_details"), null, "DETAIL", detailBridge));
+    //pane.add2Edge(ComponentProvider.createButton(null, resources.getString("applet.browse_details"), null, "DETAIL", detailBridge));
 
     // Done
   }

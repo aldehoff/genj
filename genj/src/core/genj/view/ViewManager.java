@@ -17,8 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.app;
+package genj.view;
 
+import genj.app.App;
+import genj.app.Images;
 import genj.gedcom.Gedcom;
 import genj.print.PrintProperties;
 import genj.print.PrintRenderer;
@@ -40,9 +42,11 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.border.TitledBorder;
 
 /**
@@ -52,6 +56,9 @@ public class ViewManager {
 
   /** instance */
   private static ViewManager instance;
+
+  /** resources */
+  /*package*/ final static Resources resources = new Resources("genj.view");
 
   /** descriptors of views */
   static final private Descriptor[] descriptors = new Descriptor[]{
@@ -107,29 +114,29 @@ public class ViewManager {
   }
 
   /**
-   * Opens settings for given view
+   * Opens settings for given view settings component
    */
-  public void openSettings(ViewSettingsWidget vsw) {
+  public void openSettings(Component vsw) {
 
     // the frame for the settings
     JFrame frame = App.getInstance().getFrame("settings");
     if (frame==null) {
       // create it
       frame = App.getInstance().createFrame(
-        App.resources.getString("cc.title.settings_edit"),
+        resources.getString("view.edit.title"),
         Images.imgSettings,
         "settings",
         new Dimension(256,480)
       );
       // and the SettingsWidget
-      SettingsContainer sw = new SettingsContainer(App.resources, frame);
+      SettingsWidget sw = new SettingsWidget(resources, frame);
       frame.getContentPane().add(sw);
       // layout      
       frame.pack();
     }
     
     // get the SettingsWidget
-    SettingsContainer sw = (SettingsContainer)frame.getContentPane().getComponent(0);
+    SettingsWidget sw = (SettingsWidget)frame.getContentPane().getComponent(0);
     sw.setViewSettingsWidget(vsw);
     
     // show it
@@ -148,60 +155,18 @@ public class ViewManager {
     
     // a frame
     JFrame frame = App.getInstance().createFrame(
-      gedcom.getName()+" - "+App.resources.getString("cc.view."+descriptor.key)+" ("+registry.getViewSuffix()+")",
+      gedcom.getName()+" - "+descriptor.getTitle()+" ("+registry.getViewSuffix()+")",
       descriptor.img,
       gedcom.getName() + "." + registry.getView(),
       descriptor.dim
     );
-    
-    // and an instance of the view
-    Component view = createView(descriptor, gedcom, registry, frame);
-    
+
     // show it
-    frame.getContentPane().add(view);
+    frame.getContentPane().add(new ViewWidget(frame,gedcom,registry,descriptor));
     frame.pack();
     frame.show();
     
     // done
-  }
-  
-  /**
-   * Creates an instance of a view for given factory
-   */
-  private Component createView(Descriptor descriptor, Gedcom gedcom, Registry registry, JFrame frame) {
-    
-    // create a factory
-    ViewFactory factory = descriptor.instantiate();
-    
-    // ask the factory
-    Component result = factory.createViewComponent(gedcom, registry, frame);
-    
-    // can we add something to it
-    if (!(result instanceof awtx.Scrollpane))
-      return result;
-      
-    // treat as Scrollpane
-    awtx.Scrollpane scroll = (awtx.Scrollpane)result;
-      
-    ButtonHelper bh = new ButtonHelper()
-      .setResources(App.resources)
-      .setInsets(0);
-
-    // A button for editing the View's settings
-    ViewSettingsWidget vsWidget = factory.createSettingsComponent(result);
-    if (vsWidget!=null) {
-      vsWidget.setBorder(new TitledBorder(frame.getTitle()));
-      scroll.add2Edge(bh.create(new ActionOpenSettings(vsWidget)));
-    }
-    
-    // A button for printing View
-    PrintRenderer renderer = factory.createPrintRenderer(result);
-    if (renderer!=null) {
-      scroll.add2Edge(bh.create(new ActionPrint(renderer, frame)));
-    }
-    
-    // done
-    return result;  
   }
   
   /**
@@ -262,135 +227,28 @@ public class ViewManager {
         throw new RuntimeException("ViewFactory "+factory+" couldn't be instantiated");
       }
     }
+
+    /**
+     * Return a title representation
+     */
+    public String getTitle() {    
+      return resources.getString("view.title."+key);
+    }
+    
+    /**
+     * Return a short representation
+     */
+    public String getShortTitle() {    
+      return resources.getString("view.short."+key);
+    }
+
+    /**
+     * Return a tip representation
+     */
+    public String getTip() {    
+      return resources.getString("view.tip."+key);
+    }
     
   } //Descriptor
 
-  /**
-   * Action - print view
-   */
-  private class ActionPrint extends ActionDelegate {
-    /** the renderer */
-    private PrintRenderer renderer;
-    /** the frame */
-    private Frame frame;
-    /** constructor */
-    protected ActionPrint(PrintRenderer r, Frame f) {
-      renderer=r;
-      frame=f;
-      super.setImage(Images.imgPrint).setTip("cc.tip.print");
-    }
-    /** run */
-    protected void execute() {
-      Printer.print(frame, renderer, new PrintProperties(frame.getTitle()));
-    }
-  } //ActionOpenSettings
-  
-  /**
-   * Action - open the settings of a view
-   */
-  private class ActionOpenSettings extends ActionDelegate {
-    /** the settings widget */
-    private ViewSettingsWidget vsw;
-    /** constructor */
-    protected ActionOpenSettings(ViewSettingsWidget vsw) {
-      this.vsw=vsw;
-      super.setImage(Images.imgSettings).setTip("cc.tip.settings");
-    }
-    /** run */
-    protected void execute() {
-      openSettings(vsw);
-    }
-  } //ActionOpenSettings
-  
-  /**
-   * A settings component 
-   */
-  private class SettingsContainer extends JPanel {
-    
-    /** members */
-    private JPanel pSettings,pActions;
-    private Vector vButtons = new Vector();
-    private ViewSettingsWidget vsWidget = null;
-    private JLabel lIdle;
-    
-    /**
-     * Constructor
-     */
-    protected SettingsContainer(Resources resources, JFrame frame) {
-      
-      // Idle case prep
-      lIdle = new JLabel(resources.getString("view.choose"),ImgIconConverter.get(Images.imgSettings),JLabel.CENTER);
-      lIdle.setHorizontalTextPosition(lIdle.LEADING);
-      
-      // Panel for ViewSettingsWidget
-      pSettings = new JPanel(new BorderLayout());
-
-      // Panel for Actions
-      JPanel pActions = new JPanel();
-
-      ButtonHelper bh = new ButtonHelper()
-        .setResources(resources)
-        .setContainer(pActions)
-        .addCollection(vButtons)
-        .setEnabled(false);
-        
-      bh.create(new ActionApply());
-      bh.create(new ActionReset());
-      bh.removeCollection(vButtons)
-        .setEnabled(true)
-        .create(new ActionDelegate.ActionDisposeFrame(frame).setText("view.close"));
-
-      // Layout
-      setLayout(new BorderLayout());
-      add(pSettings,"Center");
-      add(pActions ,"South" );
-      
-      // init
-      setViewSettingsWidget(null);
-    }
-
-    /**
-     * Sets the ViewSettingsWidget to display
-     */
-    protected void setViewSettingsWidget(ViewSettingsWidget vsw) {
-      
-      vsWidget = vsw;
-
-      ButtonHelper.setEnabled(vButtons, vsw!=null);
-      
-      pSettings.removeAll();
-      
-      if (vsw==null) {
-        pSettings.add(lIdle, BorderLayout.CENTER);
-      } else {
-        vsw.reset();
-        pSettings.add(vsw, BorderLayout.CENTER);
-      }
-      pSettings.invalidate();
-      pSettings.validate();
-      pSettings.repaint();
-    }
-
-    /**
-     * Applies the changes currently being done
-     */
-    private class ActionApply extends ActionDelegate {
-      protected ActionApply() { super.setText("view.apply"); }
-      protected void execute() {
-        if (vsWidget!=null) vsWidget.apply();
-      }
-    }
-  
-    /**
-     * Resets any change being done
-     */
-    private class ActionReset extends ActionDelegate {
-      protected ActionReset() { super.setText("view.reset"); }
-      protected void execute() {
-        if (vsWidget!=null) vsWidget.reset();
-      }
-    }
-    
-  } //SettingsWidget
-  
 }

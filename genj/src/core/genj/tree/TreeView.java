@@ -26,23 +26,29 @@ import java.net.URL;
 import java.awt.image.*;
 import java.beans.*;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JToolBar;
+
 import genj.*;
 import genj.gedcom.*;
 import genj.util.*;
+import genj.util.swing.ButtonHelper;
+import genj.view.ToolBarSupport;
 
 import awtx.*;
 
 /**
  * This class shows persons and families from a mankind object in a tree-view way
  */
-public class TreeView extends Scrollpane {
+public class TreeView extends Scrollpane implements ToolBarSupport {
 
   private Content                content;
   private Gedcom                 gedcom;
   private Frame                  frame;
   private Registry               registry;
-  private Scala                  scala;
-  private Combobox               combo;
+  private Scala                  scala = new Scala(); 
+  private JComboBox              combo = new JComboBox();
   private Window                 overview;
   private PropertyChangeSupport  pcsupport;
   private Vector                 bookmarks = new Vector();
@@ -62,33 +68,6 @@ public class TreeView extends Scrollpane {
 
     // Do the layout
     setQuadrant(CENTER,content);
-
-    // Create a listener for controls
-    ActionListener alistener = new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-        // OVERview?
-        if (ae.getActionCommand().equals("OVER")) {
-          toggleOverview();
-          return;
-        }
-        // ZOOM
-        if (ae.getActionCommand().equals("ZOOM")) {
-          setZoom(scala.getValue());
-          return;
-        }
-        // bookMARK
-        if (ae.getActionCommand().equals("MARK")) {
-          selectBookmark(combo.getSelectedIndex()-1);
-          if (combo.getSelectedIndex()!=0) {
-                combo.setSelectedIndex(0);
-          }
-          content.requestFocus();
-          return;
-        }
-        // Done
-      }
-      // EOC
-    };
 
     // Listening to Mouse
     MouseAdapter madapter = new MouseAdapter() {
@@ -154,43 +133,6 @@ public class TreeView extends Scrollpane {
       // EOC
     };
     content.addKeyListener(klistener);
-
-    // Create a control for Bookmarks
-    combo = ComponentProvider.createCombobox();
-    combo.setActionCommand("MARK");
-    combo.addActionListener(alistener);
-    add2Edge(combo);
-
-    // Create control for ZOOM
-    scala = new Scala();
-    scala.setActionCommand("ZOOM");
-    scala.addActionListener(alistener);
-    scala.setValue(content.getZoom());
-    add2Edge(scala);
-
-    // Create control for OVERVIEW
-    add2Edge(ComponentProvider.createButton(
-      Images.imgOverview.getImage(),
-      resources.getString("corner.overview.text"),
-      resources.getString("corner.overview.tip"),
-      "OVER",
-      alistener,
-      ComponentProvider.IMAGE_ONLY,
-      new Insets(0,0,0,0)
-    ));
-
-    // Registry : Bookmarks
-    String[] bnames = registry.get("bookmark.name",new String[0]);
-    String[] bids   = registry.get("bookmark.id"  ,new String[0]);
-    if (bnames.length==bids.length) { try {
-      for (int i=0;i<bnames.length;i++) {
-        Entity e = gedcom.getEntityFromId(bids[i]);
-        if (e==null) {
-          continue;
-        }
-        bookmarks.addElement(new Bookmark(e,bnames[i]));
-      }
-    } catch (DuplicateIDException e) {} }
 
     // Open overview?
     if (registry.get("over.open",false)) {
@@ -267,7 +209,7 @@ public class TreeView extends Scrollpane {
     for (int i=1;bs.hasMoreElements();i++) {
       elements[i] = bs.nextElement();
     }
-    combo.setElements(elements);
+    combo.setModel(new DefaultComboBoxModel(elements));
   }
 
   /**
@@ -600,4 +542,85 @@ public class TreeView extends Scrollpane {
     // Done
   }
 
-}
+  /**
+   * @see genj.view.ToolBarSupport#populate(JToolBar)
+   */
+  public void populate(JToolBar bar) {
+    
+    // bookmarks
+    combo.addActionListener((ActionListener)new ActionBookmark().as(ActionListener.class));
+    bar.add(combo);
+
+    // Create control for ZOOM
+    scala.addActionListener((ActionListener)new ActionZoom().as(ActionListener.class));
+    scala.setValue(content.getZoom());
+    bar.add(scala);
+
+    // Create control for OVERVIEW
+    ButtonHelper bh = new ButtonHelper().setResources(resources).setInsets(0);
+    bar.add(bh.create(new ActionOverview()));
+
+    // Registry : Bookmarks
+    String[] bnames = registry.get("bookmark.name",new String[0]);
+    String[] bids   = registry.get("bookmark.id"  ,new String[0]);
+    if (bnames.length==bids.length) { try {
+      for (int i=0;i<bnames.length;i++) {
+        Entity e = gedcom.getEntityFromId(bids[i]);
+        if (e==null) {
+          continue;
+        }
+        bookmarks.addElement(new Bookmark(e,bnames[i]));
+      }
+    } catch (DuplicateIDException e) {} }
+    
+  }
+
+  /**
+   * Action - Zoom
+   */
+  private class ActionZoom extends ActionDelegate {
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      setZoom(scala.getValue());
+    }
+  } //ActionZoom
+
+  /**
+   * Action - Select Bookmark
+   */
+  private class ActionBookmark extends ActionDelegate {
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      selectBookmark(combo.getSelectedIndex()-1);
+      if (combo.getSelectedIndex()!=0) {
+            combo.setSelectedIndex(0);
+      }
+      content.requestFocus();
+    }
+  } //ActionBookmark
+
+  /**
+   * Action - Toggle Overview
+   */
+  private class ActionOverview extends ActionDelegate {
+    /** 
+     * Constructor
+     */
+    ActionOverview() {
+      //setText("corner.overview.text");
+      setTip("corner.overview.tip");
+      setImage(Images.imgOverview);
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      toggleOverview();
+    }
+  } //ActionOverview
+  
+} //TreeView

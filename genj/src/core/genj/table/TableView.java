@@ -22,17 +22,20 @@ package genj.table;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.swing.JToolBar;
+
 import awtx.*;
 import awtx.table.*;
 
 import genj.util.*;
+import genj.view.ToolBarSupport;
 import genj.gedcom.*;
 
 /**
  * Component for showing entities of a gedcom file in a tabular way
  * NM 19990722 Change extends from Container to awtx.Table
  */
-public class TableView extends Table {
+public class TableView extends Table implements ToolBarSupport {
 
   /** members */
   /*package*/ Frame                  frame;
@@ -325,34 +328,6 @@ public class TableView extends Table {
 
     // Some parameters
     setSortable(true);
-
-    // Prepare buttons in left edge for view switching
-    ActionListener alistener = new ActionListener() {
-      // LCD
-      /** action notification */
-      public void actionPerformed(ActionEvent ae) {
-        setType(Integer.parseInt(ae.getActionCommand()));
-      }
-      // EOC
-    };
-
-    for (int i=0;i<views.length;i++) {
-
-      Image  img = (Image) views[i][0];
-      String key = (String)views[i][1];
-      String act = ""+     views[i][2];
-
-      Component c = ComponentProvider.createButton(
-        img,
-        resources.getString("corner."+key+".text"),
-        resources.getString("corner."+key+".tip" ),
-        act,
-        alistener,
-        ComponentProvider.IMAGE_ONLY
-      );
-      c.setEnabled(views[i][2]!=null);
-      add2Edge(c);
-    }
 
     // Restore last state
     try {
@@ -663,4 +638,39 @@ public class TableView extends Table {
     // Done
   }
 
-}
+  /**
+   * @see genj.view.ToolBarSupport#populate(JToolBar)
+   */
+  public void populate(JToolBar bar) {
+    
+    // Prepare buttons in left edge for view switching
+    ActionListener alistener = new ActionListener() {
+      // LCD
+      /** action notification */
+      public void actionPerformed(ActionEvent ae) {
+        setType(Integer.parseInt(ae.getActionCommand()));
+      }
+      // EOC
+    };
+
+    for (int i=0;i<views.length;i++) {
+
+      Image  img = (Image) views[i][0];
+      String key = (String)views[i][1];
+      String act = ""+     views[i][2];
+
+      Component c = ComponentProvider.createButton(
+        img,
+        resources.getString("corner."+key+".text"),
+        resources.getString("corner."+key+".tip" ),
+        act,
+        alistener,
+        ComponentProvider.IMAGE_ONLY
+      );
+      c.setEnabled(views[i][2]!=null);
+      bar.add(c);
+    }
+    
+  }
+
+} //TableView

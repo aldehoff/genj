@@ -32,6 +32,7 @@ import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.view.ToolBarSupport;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -50,19 +51,21 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 
 /**
  * A rendering component showing a resume of the currently
  * selected entity
  */
-public class ResumeView extends JComponent {
+public class ResumeView extends JPanel implements ToolBarSupport {
   
   /**
    * Constructor
    */
-  public ResumeView(Gedcom useGedcom, Registry useRegistry, Frame useFrame) {
+  public ResumeView(Gedcom gedcom, Registry registry, Frame frame) {
+    // listen to gedcom
+    gedcom.addListener(new GedcomConnector());
     // done    
-    useGedcom.addListener(new GedcomConnector());
   }
   
   /**
@@ -75,6 +78,12 @@ public class ResumeView extends JComponent {
       h = g.getFontMetrics().getHeight(),
       w = g.getFontMetrics().stringWidth(txt);
     g.drawString(txt, (d.width-w)/2, (d.height-h)/2);
+  }
+
+  /**
+   * @see genj.view.ToolBarSupport#populate(JToolBar)
+   */
+  public void populate(JToolBar bar) {
   }
   
   /** 

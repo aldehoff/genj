@@ -17,10 +17,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.app;
+package genj.view;
 
 import java.awt.Component;
 import java.awt.Frame;
+
+import javax.swing.JComponent;
 
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
@@ -39,7 +41,7 @@ public interface ViewFactory {
   /**
    * 
    */
-  public ViewSettingsWidget createSettingsComponent(Component view);
+  public JComponent createSettingsComponent(Component view);
   
   /**
    * 

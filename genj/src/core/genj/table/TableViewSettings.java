@@ -24,10 +24,10 @@ import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
-
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
+import genj.view.*;
 import genj.gedcom.*;
 import genj.option.*;
 import genj.app.*;
@@ -36,7 +36,7 @@ import genj.util.Resources;
 /**
  * Class for providing ViewInfo information to a ViewEditor
  */
-public class TableViewSettings extends ViewSettingsWidget {
+public class TableViewSettings extends JPanel implements ApplyResetSupport {
 
   /** components */
   private JComboBox       cTypes;

@@ -23,15 +23,20 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
+import javax.swing.JSlider;
+import javax.swing.JToolBar;
+import javax.swing.event.ChangeListener;
+
 import awtx.*;
 import genj.gedcom.*;
 import genj.option.*;
 import genj.util.*;
+import genj.view.ToolBarSupport;
 
 /**
  * Component for showing entities' events in a timeline view
  */
-public class TimelineView extends Scrollpane implements TimelineModelListener, ActionListener {
+public class TimelineView extends Scrollpane implements TimelineModelListener, ToolBarSupport {
 
   /** events we look for */
   private final static String[] defaultEventTags = {
@@ -47,7 +52,7 @@ public class TimelineView extends Scrollpane implements TimelineModelListener, A
   private Gedcom gedcom;
   private Registry registry;
   private TimelineModel model;
-  private Scala scala;
+  private JSlider scala = new JSlider(JSlider.HORIZONTAL,1,100,100);
   private boolean isPaintTags = true;
   private boolean isPaintDates = true;
   private boolean isPaintGrid = false;
@@ -72,12 +77,6 @@ public class TimelineView extends Scrollpane implements TimelineModelListener, A
     // Listen
     model.addTimelineModelListener(this);
 
-    // Make additional scala for pixelsPerYear
-    scala = new Scala();
-    scala.setActionCommand("PPY");
-    scala.addActionListener(this);
-    add2Edge(scala);
-
     //  Remember
     this.gedcom  =gedcom;
     this.registry=registry;
@@ -85,17 +84,6 @@ public class TimelineView extends Scrollpane implements TimelineModelListener, A
     // Load parameters
     loadParameters();
 
-    // Done
-  }
-
-  /**
-   * ActionCommand handling
-   */
-  public void actionPerformed(ActionEvent ev) {
-    // Read from scala for PixelsPerYear
-    if (ev.getActionCommand().equals("PPY")) {
-      setPercentagePerYear(scala.getValue());
-    }
     // Done
   }
 
@@ -110,14 +98,14 @@ public class TimelineView extends Scrollpane implements TimelineModelListener, A
    * Returns the percentage of space for one year
    */
   public float getPercentagePerYear() {
-    return scala.getValue();
+    return ((float)scala.getValue())/100;
   }
 
   /**
    * Returns the number of pixels per Year
    */
   public int getPixelsPerYear() {
-    return (int)(MIN_PPY+scala.getValue()*(MAX_PPY-MIN_PPY));
+    return (int)(MIN_PPY+getPercentagePerYear()*(MAX_PPY-MIN_PPY));
   }
 
   /**
@@ -232,7 +220,30 @@ public class TimelineView extends Scrollpane implements TimelineModelListener, A
    * Sets the percentage of space for one year
    */
   public void setPercentagePerYear(float value) {
-    scala.setValue(value);
+    scala.setValue((int)(value*100));
     doLayout();
   }
+  
+  /**
+   * @see genj.view.ToolBarSupport#populate(JToolBar)
+   */
+  public void populate(JToolBar bar) {
+    
+    // Make additional scala for pixelsPerYear
+    scala.addChangeListener((ChangeListener)new ActionZoom().as(ChangeListener.class));
+    bar.add(scala);
+
+  }
+
+  /**
+   * Action - Zoom
+   */
+  private class ActionZoom extends ActionDelegate {
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      doLayout();
+    }
+  } //ActionZoom
 }
