@@ -325,9 +325,9 @@ public class Options extends OptionProvider implements OptionMetaInfo {
       private FileAssociation association;
       /** constructor */
       private Action(int i, FileAssociation fa) {
-        association = fa!=null ? fa : new FileAssociation();
+        association = fa;
         setImage(PropertyFile.DEFAULT_IMAGE);
-        setText(fa!=null ? i+" "+fa.getSuffixes() : localize("new"));
+        setText(fa!=null ? i+" "+fa.getName()+" ("+fa.getSuffixes()+')' : localize("new"));
       }
       /** localize */
       private String localize(String key) {
@@ -339,9 +339,9 @@ public class Options extends OptionProvider implements OptionMetaInfo {
         // create panel with association fields
         JPanel panel = new JPanel();
         final TextFieldWidget 
-          suffixes   = new TextFieldWidget(association.getSuffixes()  , 0),
-          name       = new TextFieldWidget(association.getName()      , 0),
-          executable = new TextFieldWidget(association.getExecutable(), 0);
+          suffixes   = new TextFieldWidget(),
+          name       = new TextFieldWidget(),
+          executable = new TextFieldWidget();
         GridBagHelper gh = new GridBagHelper(panel);
         gh.add(new JLabel(localize("suffix"), JLabel.LEFT), 0,0,1,1,gh.FILL_HORIZONTAL);
         gh.add(suffixes                                   , 1,0,1,1,gh.GROWFILL_HORIZONTAL);
@@ -350,10 +350,17 @@ public class Options extends OptionProvider implements OptionMetaInfo {
         gh.add(new JLabel(localize("exec"  ), JLabel.LEFT), 0,2,1,1,gh.FILL_HORIZONTAL);
         gh.add(executable                                 , 1,2,1,1,gh.GROWFILL_HORIZONTAL);
 
+        // setup data from existing FileAssociation
+        if (association!=null) {
+          suffixes  .setText(association.getSuffixes()  );
+          name      .setText(association.getName()      );
+          executable.setText(association.getExecutable());
+        }
+        
         // create actions for dialog
         final ActionDelegate[] actions = {
           new CloseWindow(CloseWindow.TXT_OK), 
-          new CloseWindow(localize("delete")), 
+          new CloseWindow(localize("delete")).setEnabled(association!=null), 
           new CloseWindow(CloseWindow.TXT_CANCEL)
         };
         
@@ -375,17 +382,18 @@ public class Options extends OptionProvider implements OptionMetaInfo {
 
         // analyze option
         switch (rc) {
+          // cancel?
+          case 2:
+            return;
           // ok?
           case 0:
-            // check
-            if (suffixes.isEmpty() ||name.isEmpty() ||executable.isEmpty())
-              return;
+            // create new?
+            if (association==null)
+              association = FileAssociation.add(new FileAssociation());
             // keep input
             association.setSuffixes(suffixes.getText());
             association.setName(name.getText());
             association.setExecutable(executable.getText());
-            // make sure we add new one
-            FileAssociation.add(association);
             break;
           // delete?
           case 1:
