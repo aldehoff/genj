@@ -11,6 +11,10 @@ import junit.framework.TestCase;
 public class PropertyMultilineValueTest extends TestCase {
 
   private final static TagPath MLPATH = new TagPath("INDI:NOTE");
+  
+  private final static String 
+    CONT = "CONT",
+    CONC = "CONC";
 
   /** one used mle */
   private MultiLineProperty mle;
@@ -56,7 +60,7 @@ public class PropertyMultilineValueTest extends TestCase {
     // check result
     assertLine(0, MLPATH.getLast(), "abcde");    
     assertNext();
-    assertLine(1, "CONT", "fghij");    
+    assertLine(1, CONT, "fghij");    
     assertNoNext();
 
     // ok    
@@ -73,7 +77,7 @@ public class PropertyMultilineValueTest extends TestCase {
     // check result
     assertLine(0, MLPATH.getLast(), "0123456789012345678901234567890123456789");    
     assertNext();
-    assertLine(1, "CONC", "xyz");    
+    assertLine(1, CONC, "xyz");    
     assertNoNext();
 
     // ok    
@@ -88,15 +92,17 @@ public class PropertyMultilineValueTest extends TestCase {
     iterator("\nabcde\n\n  fg  \nhi\n\n");
 
     // check result
-    assertLine(0, MLPATH.getLast(), "abcde");    
+    assertLine(0, MLPATH.getLast(), "");    
     assertNext();
-    assertLine(1, "CONT", "");    
+    assertLine(1, CONT, "abcde");    
     assertNext();
-    assertLine(1, "CONT", "  fg  ");    
+    assertLine(1, CONT, "");    
     assertNext();
-    assertLine(1, "CONT", "hi");    
+    assertLine(1, CONT, "  fg  ");    
     assertNext();
-    assertLine(1, "CONT", "");    
+    assertLine(1, CONT, "hi");    
+    assertNext();
+    assertLine(1, CONT, "");    
     assertNoNext();
 
     // ok    

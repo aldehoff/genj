@@ -162,12 +162,9 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
         // assume taking all
         end = value.length();
         
-        // skip one leading '\n'
-        if (value.charAt(start)=='\n') {
+        // skip one leading '\n' if not first
+        if (currentTag!=firstTag && value.charAt(start)=='\n')
           start++;
-          if (start==end) 
-            return false;
-        }
         
         // take all up to next CR
         // 20030604 value.indexOf() used here previously is 1.4
