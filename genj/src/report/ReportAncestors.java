@@ -14,6 +14,9 @@ import genj.report.Report;
  * GenJ -  ReportAncestors
  */
 public class ReportAncestors extends Report {
+    
+    private static final int SPACES_PER_LEVEL = 5;
+    private static final String FRONT = "";    
 
   /**
    * Returns the version of this script
@@ -91,7 +94,7 @@ public class ReportAncestors extends Report {
   private void parent(Indi indi, int level) {
 
     // Here comes the individual
-    println(getIndent(level)+level+" "+format(indi));
+    println(getIndent(level, SPACES_PER_LEVEL, FRONT)+level+" "+format(indi));
     
     Fam famc = indi.getFamc();
 
@@ -132,17 +135,6 @@ public class ReportAncestors extends Report {
     // Could be a hyperlink, too
     //return "<a href=\"\">" + indi.getName() + "</a>" + b + d;
   }
-  
-  /**
-   * Helper that indents to given level
-   */
-  private String getIndent(int level) {
-    StringBuffer buffer = new StringBuffer(256);
-    while (--level>0) {
-      buffer.append("    ");
-    }
-    return buffer.toString();
-  }
-  
+
 } //ReportAncestors
 
