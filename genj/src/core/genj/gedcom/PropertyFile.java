@@ -19,8 +19,7 @@
  */
 package genj.gedcom;
 
-
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +39,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
   private boolean isRelativeChecked = false;
 
   /** the image */
-  private ImgIcon valueAsIcon   = null;
+  private ImageIcon valueAsIcon   = null;
 
   /**
    * Constructor of FILE Gedcom-line
@@ -105,7 +104,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
   /**
    * Tries to return the data of the referenced file as an icon
    */
-  public synchronized ImgIcon getValueAsIcon() {
+  public synchronized ImageIcon getValueAsIcon() {
 
     // Already calculated?
     if (isIconChecked) {
@@ -121,7 +120,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
 
     // Open InputStream
     try {
-      valueAsIcon = new ImgIcon(getInputStream());
+      valueAsIcon = new ImageIcon(getInputStream());
     } catch (Throwable t) {
     }
 

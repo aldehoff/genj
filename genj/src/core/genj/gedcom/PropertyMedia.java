@@ -19,7 +19,7 @@
  */
 package genj.gedcom;
 
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 import java.util.List;
 
 /**
@@ -160,7 +160,7 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
   /**
    * Returns an ImgIcon if existing in one of the sub-properties
    */
-  public ImgIcon getValueAsIcon() {
+  public ImageIcon getValueAsIcon() {
     List ps = super.getProperties(IconValueAvailable.class);
     return ps.isEmpty() ? null : ((IconValueAvailable)ps.get(0)).getValueAsIcon();
   }

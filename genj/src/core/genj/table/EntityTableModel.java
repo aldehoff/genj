@@ -6,7 +6,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 import genj.util.swing.SortableTableHeader;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -264,7 +264,7 @@ import javax.swing.table.TableColumnModel;
    */
   private class Filter {
     /** attributes */
-    ImgIcon image;
+    ImageIcon image;
     int type;
     String[] defaults;
     TagPath[] paths;

@@ -21,8 +21,8 @@ package genj.entity;
 
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
-import genj.util.ImgIcon;
 import genj.util.Registry;
+import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -65,8 +65,8 @@ public class EntityViewFactory implements ViewFactory {
   /**
    * @see genj.view.ViewFactory#getImage()
    */
-  public ImgIcon getImage() {
-    return new ImgIcon(this, "images/View.gif");
+  public ImageIcon getImage() {
+    return new ImageIcon(this, "images/View.gif");
   }
 
   /**

@@ -23,7 +23,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.swing.HeadlessLabel;
-import genj.util.swing.ImgIconConverter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -146,7 +145,7 @@ public class TagPathTree extends JScrollPane {
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       Node node = (Node)value;
       label.setText( node.tag );
-      label.setIcon( ImgIconConverter.get(Property.getDefaultImage(node.tag)) );
+      label.setIcon( Property.getDefaultImage(node.tag) );
       checkbox.setSelected(selection.contains(node));
       return panel;
     }

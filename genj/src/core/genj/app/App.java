@@ -25,9 +25,9 @@ import genj.lnf.LnFBridge;
 import genj.util.AreaInScreen;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
-import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.ImageIcon;
 import gj.ui.UnitGraphics;
 
 import java.awt.Dimension;
@@ -178,7 +178,7 @@ public class App {
   /**
    * Creates a Frame which remembers it's position from last time
    */
-  public JFrame createFrame(String title, ImgIcon image, final String key, final Dimension dimension) {
+  public JFrame createFrame(String title, ImageIcon image, final String key, final Dimension dimension) {
     return new App.Frame(title,image,key,dimension);
   }
 
@@ -193,7 +193,7 @@ public class App {
     /**
      * Constructor
      */
-    protected Frame(String title, ImgIcon image, String key, Dimension dimension) {
+    protected Frame(String title, ImageIcon image, String key, Dimension dimension) {
 
       // 1st remember
       savedKey = FRAME_KEY_PREFIX+key;

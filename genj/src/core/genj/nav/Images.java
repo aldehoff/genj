@@ -19,7 +19,7 @@
  */
 package genj.nav;
 
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 
 /**
  * Wrapper for package used Images
@@ -28,7 +28,7 @@ final public class Images {
 
   private static Images instance = new Images();
 
-  public static ImgIcon
+  public static ImageIcon
     imgView,
     imgNavYoungerSiblingOn,
     imgNavYoungerSiblingOff,
@@ -47,18 +47,18 @@ final public class Images {
    * Constructor which pre-loads all images
    */
   private Images() {
-    imgView = new ImgIcon(this,"View.gif");
-    imgNavYoungerSiblingOn   = new ImgIcon(this,"NavYoungerSiblingOn.gif");
-    imgNavYoungerSiblingOff  = new ImgIcon(this,"NavYoungerSiblingOff.gif");
-    imgNavOlderSiblingOn  = new ImgIcon(this,"NavOlderSiblingOn.gif");
+    imgView = new ImageIcon(this,"View.gif");
+    imgNavYoungerSiblingOn   = new ImageIcon(this,"NavYoungerSiblingOn.gif");
+    imgNavYoungerSiblingOff  = new ImageIcon(this,"NavYoungerSiblingOff.gif");
+    imgNavOlderSiblingOn  = new ImageIcon(this,"NavOlderSiblingOn.gif");
     imgNavOlderSiblingOff = imgNavYoungerSiblingOff;
-    imgNavChildOn         = new ImgIcon(this,"NavChildOn.gif");
-    imgNavChildOff        = new ImgIcon(this,"NavChildOff.gif");
-    imgNavFatherOn        = new ImgIcon(this,"NavFatherOn.gif");
-    imgNavFatherOff       = new ImgIcon(this,"NavFatherOff.gif");
-    imgNavMotherOn        = new ImgIcon(this,"NavMotherOn.gif");
+    imgNavChildOn         = new ImageIcon(this,"NavChildOn.gif");
+    imgNavChildOff        = new ImageIcon(this,"NavChildOff.gif");
+    imgNavFatherOn        = new ImageIcon(this,"NavFatherOn.gif");
+    imgNavFatherOff       = new ImageIcon(this,"NavFatherOff.gif");
+    imgNavMotherOn        = new ImageIcon(this,"NavMotherOn.gif");
     imgNavMotherOff       = imgNavFatherOff;
-    imgNavPartnerOn       = new ImgIcon(this,"NavPartnerOn.gif");
-    imgNavPartnerOff      = new ImgIcon(this,"NavPartnerOff.gif");
+    imgNavPartnerOn       = new ImageIcon(this,"NavPartnerOn.gif");
+    imgNavPartnerOff      = new ImageIcon(this,"NavPartnerOff.gif");
   }
 }

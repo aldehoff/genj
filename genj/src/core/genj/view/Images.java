@@ -19,7 +19,7 @@
  */
 package genj.view;
 
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 
 /**
  * Wrapper for package used Images
@@ -28,7 +28,7 @@ final public class Images {
 
   private static Images instance = new Images();
 
-  public static ImgIcon
+  public static ImageIcon
     imgSettings,
     imgPrint,
     imgClose;
@@ -38,9 +38,9 @@ final public class Images {
    */
   private Images() {
 
-    imgSettings  = new ImgIcon(this,"images/Settings.gif");
-    imgPrint     = new ImgIcon(this,"images/Print.gif");
-    imgClose     = new ImgIcon(this,"images/Close.gif");
+    imgSettings  = new ImageIcon(this,"images/Settings.gif");
+    imgPrint     = new ImageIcon(this,"images/Print.gif");
+    imgClose     = new ImageIcon(this,"images/Close.gif");
   }
   
 } //Images

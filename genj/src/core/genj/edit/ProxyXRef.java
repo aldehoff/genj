@@ -25,8 +25,8 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.IconValueAvailable;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
-import genj.util.ImgIcon;
-import genj.util.swing.ImgIconConverter;
+import genj.util.swing.ImageIcon;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -290,13 +290,13 @@ class ProxyXRef extends Proxy implements ActionListener  {
       in.add(b);
       
       // Hack to show image for referenced Blob|Image
-      ImgIcon img = null;
+      ImageIcon img = null;
       if (p instanceof IconValueAvailable) {
         img = ((IconValueAvailable)p).getValueAsIcon();
       }
       JComponent preview;
       if (img!=null) {
-        preview = new JLabel(ImgIconConverter.get(img));
+        preview = new JLabel(img);
       } else {
         preview = new JTextArea(p.toString());
         preview.setEnabled(false);

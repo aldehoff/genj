@@ -20,7 +20,6 @@
 package genj.util.swing;
 
 import genj.util.ActionDelegate;
-import genj.util.ImgIcon;
 import genj.util.Resources;
 import java.awt.Component;
 import java.awt.Font;
@@ -45,7 +44,7 @@ public class MenuHelper  {
   
   private String text             = null;
   private String action           = null;
-  private ImgIcon image           = null;
+  private ImageIcon image         = null;
   private Vector menus            = new Vector();  // JMenu or JPopupMenu or JMenuBar
   private ActionListener listener = null;
   private Vector collection       = null;
@@ -80,9 +79,9 @@ public class MenuHelper  {
   /**
    * Creates a menu
    */
-  public JMenu createMenu(String text, ImgIcon img) {
+  public JMenu createMenu(String text, ImageIcon img) {
     JMenu result = new JMenu(string(text));
-    if (img!=null) result.setIcon(ImgIconConverter.get(img));
+    if (img!=null) result.setIcon(img);
 
     Object menu = peekMenu();
     if (menu instanceof JMenu)
@@ -137,8 +136,8 @@ public class MenuHelper  {
   /**
    * Creates a simple text items
    */
-  public JLabel createItem(String txt, ImgIcon img, boolean emphasized) {
-    JLabel item = new JLabel(txt, ImgIconConverter.get(img), JLabel.CENTER);
+  public JLabel createItem(String txt, ImageIcon img, boolean emphasized) {
+    JLabel item = new JLabel(txt, img, JLabel.CENTER);
     if (emphasized) {
       item.setFont(item.getFont().deriveFont(Font.BOLD));
     }
@@ -193,7 +192,7 @@ public class MenuHelper  {
     JMenuItem result = new JMenuItem();
     result.addActionListener((ActionListener)action.as(ActionListener.class));
     if (action.txt!=null) result.setText(string(action.txt));
-    if (action.img!=null) result.setIcon(ImgIconConverter.get(action.img));
+    if (action.img!=null) result.setIcon(action.img);
     result.setEnabled(enabled);
   
     // add it to current menu on stack  

@@ -23,7 +23,6 @@ import genj.gedcom.Change;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.util.Registry;
-import genj.util.swing.ImgIconConverter;
 import genj.util.swing.SortableTableHeader;
 
 import java.util.Vector;
@@ -43,12 +42,12 @@ public class GedcomTableWidget extends JTable {
   /** default column headers */
   private static final Object headers[] = {
     App.resources.getString("cc.column_header.name"),
-    ImgIconConverter.get(Gedcom.getImage(Gedcom.INDIVIDUALS)),
-    ImgIconConverter.get(Gedcom.getImage(Gedcom.FAMILIES)),
-    ImgIconConverter.get(Gedcom.getImage(Gedcom.MULTIMEDIAS)),
-    ImgIconConverter.get(Gedcom.getImage(Gedcom.NOTES)),
-    ImgIconConverter.get(Gedcom.getImage(Gedcom.SOURCES)),
-    ImgIconConverter.get(Gedcom.getImage(Gedcom.SUBMITTERS))
+    Gedcom.getImage(Gedcom.INDIVIDUALS),
+    Gedcom.getImage(Gedcom.FAMILIES),
+    Gedcom.getImage(Gedcom.MULTIMEDIAS),
+    Gedcom.getImage(Gedcom.NOTES),
+    Gedcom.getImage(Gedcom.SOURCES),
+    Gedcom.getImage(Gedcom.SUBMITTERS)
   };
 
   /** default column widths */

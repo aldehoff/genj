@@ -19,13 +19,11 @@
  */
 package genj.util.swing;
 
-import genj.util.ImgIcon;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -47,8 +45,8 @@ public class DateEntry extends javax.swing.JPanel implements DocumentListener, F
 
   /** images */
   private ImageIcon
-    imgGood = ImgIconConverter.get(new ImgIcon(this,"DateGood.gif")),
-    imgBad  = ImgIconConverter.get(new ImgIcon(this,"DateBad.gif" ));
+    imgGood = new ImageIcon(this,"DateGood.gif"),
+    imgBad  = new ImageIcon(this,"DateBad.gif" );
 
   /**
    * Constructor

@@ -20,7 +20,7 @@
 package genj.timeline;
 
 import genj.gedcom.Entity;
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 import gj.ui.UnitGraphics;
 import java.awt.Color;
 import java.awt.FontMetrics;
@@ -179,7 +179,7 @@ public class ContentRenderer {
     g.pushClip(event.from, level, next==null?Integer.MAX_VALUE:next.from, level+1);
         
     // draw its image
-    ImgIcon img = event.pe.getImage(false);
+    ImageIcon img = event.pe.getImage(false);
     g.draw(img.getImage(), event.from, level+0.5);
     int dx=img.getIconWidth();
 

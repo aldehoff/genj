@@ -19,7 +19,7 @@
  */
 package genj.gedcom;
 
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 
 /**
  * An interface specifying that a value is
@@ -30,6 +30,6 @@ public interface IconValueAvailable {
   /**
    * Returns the value as an icon
    */
-  public ImgIcon getValueAsIcon();
+  public ImageIcon getValueAsIcon();
 
 }

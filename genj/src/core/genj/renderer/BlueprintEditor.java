@@ -70,7 +70,7 @@ public class BlueprintEditor extends Box {
   private AbstractButton bInsert;
   
   /** an example entity we use */
-  private ExampleIndi example = new ExampleIndi(); 
+  private Example example = new Example(); 
     
   /**
    * Constructor   */
@@ -185,12 +185,12 @@ public class BlueprintEditor extends Box {
   /**
    * Example
    */
-  private class ExampleIndi extends Indi {
+  private class Example extends Indi {
     private Map tag2value = new HashMap();
     /**
      * Constructor
      */
-    private ExampleIndi() {
+    private Example() {
       setId("X999");
       tag2value.put("NAME", "John /Doe/");
       tag2value.put("SEX" , "M");

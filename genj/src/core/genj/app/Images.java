@@ -19,7 +19,7 @@
  */
 package genj.app;
 
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 
 /**
  * Wrapper for package used Images
@@ -28,13 +28,13 @@ final public class Images {
 
   private static Images instance = new Images();
 
-  public static ImgIcon
+  public static ImageIcon
     imgHelp;
 
   /**
    * Constructor which pre-loads all images
    */
   private Images() {
-    imgHelp         = new ImgIcon(this,"images/Help.gif");
+    imgHelp         = new ImageIcon(this,"images/Help.gif");
   }
 }

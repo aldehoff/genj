@@ -22,7 +22,6 @@ package genj.view;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.ImgIconConverter;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.Vector;
@@ -48,7 +47,7 @@ import javax.swing.JPanel;
   protected SettingsWidget(Resources resources, JFrame frame) {
     
     // Idle case prep
-    lIdle = new JLabel(resources.getString("view.choose"),ImgIconConverter.get(Images.imgSettings),JLabel.CENTER);
+    lIdle = new JLabel(resources.getString("view.choose"),Images.imgSettings,JLabel.CENTER);
     lIdle.setHorizontalTextPosition(lIdle.LEADING);
     
     // Panel for ViewSettingsWidget

@@ -20,7 +20,7 @@
 package genj.gedcom;
 
 import genj.util.Debug;
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -419,14 +419,14 @@ public abstract class Property implements Comparable {
   /**
    * Returns the default image which is associated with this property.
    */
-  public ImgIcon getDefaultImage() {
+  public ImageIcon getDefaultImage() {
     return Images.get(getTag());
   }
 
   /**
    * Returns the default image which is associated with this property.
    */
-  public static ImgIcon getDefaultImage(String tag) {
+  public static ImageIcon getDefaultImage(String tag) {
     return Images.get(tag);
   }
 
@@ -495,10 +495,10 @@ public abstract class Property implements Comparable {
   /**
    * Returns the image which is associated with this property.
    */
-  public ImgIcon getImage(boolean checkValid) {
+  public ImageIcon getImage(boolean checkValid) {
     if (checkValid&&(!isValid())) {
       // Maybe we have a special error for this one?
-      ImgIcon result = Images.get(getTag()+".err", false);
+      ImageIcon result = Images.get(getTag()+".err", false);
       if (result!=null) {
         return result;
       }

@@ -22,9 +22,7 @@ package genj.edit;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyUnknown;
 import genj.util.Debug;
-import genj.util.ImgIcon;
 import genj.util.Resources;
-import genj.util.swing.ImgIconConverter;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -73,11 +71,10 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
       setText(prop.getTag());
       try {
         // .. get class of property
-        ImgIcon img   = prop.getImage(false);
-        setIcon(ImgIconConverter.get(img));
+        setIcon(prop.getImage(false));
       } catch (Exception e) {
         Debug.log(Debug.WARNING, this, "Unexpected error while retrieving image of "+prop, e);
-        setIcon(ImgIconConverter.get( genj.gedcom.Images.get("?")));
+        setIcon(genj.gedcom.Images.get("?"));
       }
       this.isSelected = isSelected;
       return this;

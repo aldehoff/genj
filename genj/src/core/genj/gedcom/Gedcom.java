@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import genj.util.ImgIcon;
 import genj.util.Origin;
 import genj.util.Resources;
+import genj.util.swing.ImageIcon;
 
 /**
  * The object-representation of a Gedom file
@@ -529,14 +529,14 @@ public class Gedcom {
   /**
    * Returns an image for Gedcom
    */
-  public static ImgIcon getImage() {
+  public static ImageIcon getImage() {
     return Images.get("ged");
   }
 
   /**
    * Returns an image for given entity type
    */
-  public static ImgIcon getImage(int type) {
+  public static ImageIcon getImage(int type) {
     try {
       return Images.get(eTags[type]);
     } catch (ArrayIndexOutOfBoundsException e) {

@@ -25,7 +25,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import genj.gedcom.Property;
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 
 /**
  * 
@@ -63,7 +63,7 @@ public class PropertyProxy {
   /**
    * 
    */
-  protected Dimension getSize(FontMetrics metrics, ImgIcon img, String txt, int preference) {
+  protected Dimension getSize(FontMetrics metrics, ImageIcon img, String txt, int preference) {
     Dimension result = new Dimension(0,0);
     // text?
     if (isText(preference)) {
@@ -91,7 +91,7 @@ public class PropertyProxy {
   /**
    * 
    */
-  protected void render(Graphics g, Rectangle bounds, ImgIcon img, String txt, int preference) {
+  protected void render(Graphics g, Rectangle bounds, ImageIcon img, String txt, int preference) {
     // image?
     if (isImage(preference)) render(g, bounds, img);
     // text?
@@ -102,7 +102,7 @@ public class PropertyProxy {
   /**
    * 
    */
-  protected void render(Graphics g, Rectangle bounds, ImgIcon img) {
+  protected void render(Graphics g, Rectangle bounds, ImageIcon img) {
     img.paintIcon(g,bounds.x,bounds.y+(bounds.height-img.getIconHeight())/2);
     int skip = img.getIconWidth() + g.getFontMetrics().charWidth(' ');
     bounds.x += skip;

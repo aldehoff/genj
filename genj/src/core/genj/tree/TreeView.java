@@ -26,11 +26,11 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.ColorSet;
-import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.DoubleValueSlider;
+import genj.util.swing.ImageIcon;
 import genj.util.swing.ViewPortAdapter;
 import genj.util.swing.ViewPortOverview;
 import genj.view.ContextPopupSupport;
@@ -599,7 +599,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       // remember
       mode = moDe; 
       // image
-      ImgIcon i = null;
+      ImageIcon i = null;
       String t = null;
       switch (mode) {
         case Model.ANCESTORS_AND_DESCENDANTS:

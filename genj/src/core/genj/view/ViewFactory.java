@@ -21,8 +21,9 @@ package genj.view;
 
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
-import genj.util.ImgIcon;
 import genj.util.Registry;
+import genj.util.swing.ImageIcon;
+
 import java.awt.Dimension;
 import java.awt.Frame;
 
@@ -51,7 +52,7 @@ public interface ViewFactory {
   /**
    * Returns an image for this view
    */
-  public ImgIcon getImage();
+  public ImageIcon getImage();
   
   /**
    * Returns a key for this view

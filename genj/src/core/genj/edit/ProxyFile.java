@@ -23,8 +23,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.util.EnvironmentChecker;
-import genj.util.ImgIcon;
-import genj.util.swing.ImgIconConverter;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -129,8 +127,7 @@ class ProxyFile extends Proxy implements ActionListener {
     tFile.setText( pFile.getValue() );
 
     // Image from File?
-    ImgIcon i = pFile.getValueAsIcon();
-    ImageIcon icon = (i==null ? null : ImgIconConverter.get(i));
+    ImageIcon icon = pFile.getValueAsIcon();
     if ( (icon==null)||(icon.getIconWidth()<1)||(icon.getIconHeight()<1) ) {
       lImage.setText("No image file");
       lImage.setIcon(null);

@@ -20,8 +20,8 @@
 package genj.edit;
 
 import genj.gedcom.Property;
-import genj.util.ImgIcon;
-import genj.util.swing.ImgIconConverter;
+import genj.util.swing.ImageIcon;
+
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 
@@ -102,14 +102,14 @@ abstract class Proxy  {
   /**
    * Helper : generate JButton
    */
-  protected JButton createButton(String text, String command, boolean enabled, ActionListener listener, ImgIcon icon) {
+  protected JButton createButton(String text, String command, boolean enabled, ActionListener listener, ImageIcon icon) {
 
     JButton result = new JButton( text );
     result.addActionListener(listener);
     result.setActionCommand(command);
     result.setEnabled(enabled);
     if (icon!=null) {
-      result.setIcon(ImgIconConverter.get(icon));
+      result.setIcon(icon);
     }
 
     return result;

@@ -30,9 +30,9 @@ import genj.gedcom.Relationship;
 import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
-import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.ImageIcon;
 import genj.view.ContextSupport;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
@@ -59,7 +59,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   private final static ActionDelegate aNOOP = ActionDelegate.NOOP;
   
   /** images we use for new entities */
-  private final static ImgIcon[] newImages = new ImgIcon[] {
+  private final static ImageIcon[] newImages = new ImageIcon[] {
     Images.imgNewIndi,
     Images.imgNewFam,
     Images.imgNewMedia,
@@ -100,7 +100,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * @see genj.view.ViewFactory#getImage()
    */
-  public ImgIcon getImage() {
+  public ImageIcon getImage() {
     return Images.imgView;
   }
   
@@ -245,7 +245,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     /**
      * Constructor
      */
-    protected Change(Gedcom ged, ImgIcon img, String text) {
+    protected Change(Gedcom ged, ImageIcon img, String text) {
       gedcom = ged;
       super.setImage(img);
       super.setText(text);

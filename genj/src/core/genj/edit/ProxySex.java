@@ -21,8 +21,8 @@ package genj.edit;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
-import genj.util.ImgIcon;
-import genj.util.swing.ImgIconConverter;
+import genj.util.swing.ImageIcon;
+
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
@@ -77,14 +77,14 @@ class ProxySex extends Proxy implements ItemListener {
     changed=true;
 
     // Gather data change
-    ImgIcon img;
+    ImageIcon img;
     if ( rbMale.getModel().isSelected() == true)
       img=((PropertySex)prop).getDefaultImage(PropertySex.MALE);
     else
       img=((PropertySex)prop).getDefaultImage(PropertySex.FEMALE);
 
     // Image change
-    label.setIcon(ImgIconConverter.get(img));
+    label.setIcon(img);
 
     // Done
   }          

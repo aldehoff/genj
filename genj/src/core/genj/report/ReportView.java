@@ -24,11 +24,11 @@ import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.GridBagHelper;
-import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.ImgIconConverter;
+import genj.util.swing.ImageIcon;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -44,7 +44,6 @@ import java.util.Date;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -134,8 +133,8 @@ public class ReportView extends JPanel {
     frame    = theFrame ;
     registry = theRegistry;
 
-    imgShell = ImgIconConverter.get(new ImgIcon(this,"ReportShell.gif"));
-    imgGui   = ImgIconConverter.get(new ImgIcon(this,"ReportGui.gif"  ));
+    imgShell = new ImageIcon(this,"ReportShell.gif");
+    imgGui   = new ImageIcon(this,"ReportGui.gif"  );
 
     // Look for reports
     loadReports(false);

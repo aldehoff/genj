@@ -24,8 +24,6 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.util.EnvironmentChecker;
-import genj.util.ImgIcon;
-import genj.util.swing.ImgIconConverter;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -128,8 +126,7 @@ class ProxyBlob extends Proxy implements ActionListener {
       lImage.setIcon(null);
     } else {
       // Image from Blob?
-      ImgIcon i = pBlob.getValueAsIcon();
-      ImageIcon icon = (i==null ? null : ImgIconConverter.get(i));
+      ImageIcon icon = pBlob.getValueAsIcon();
       if ( (icon==null)||(icon.getIconWidth()<1)||(icon.getIconHeight()<1) ) {
         lImage.setText("Blob is no image");
         lImage.setIcon(null);

@@ -20,7 +20,7 @@
 package genj.gedcom;
 
 import genj.util.Debug;
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -52,7 +52,7 @@ public class Images {
   /**
    * Returns an image for given key
    */
-  public static ImgIcon get(String key) {
+  public static ImageIcon get(String key) {
     return get(key,true);
   }
   
@@ -61,19 +61,19 @@ public class Images {
    * @param key the key
    * @param useDefault whether to return null or default if key doesn't exist
    */
-  public static ImgIcon get(String key, boolean useDefault) {
+  public static ImageIcon get(String key, boolean useDefault) {
     return instance.internalGet(key, useDefault);
   }
   
   /**
    * Returns an image for given key
    */
-  private synchronized ImgIcon internalGet(String key, boolean useDefault) {
+  private synchronized ImageIcon internalGet(String key, boolean useDefault) {
   
     // Try to get it
-    ImgIcon result = (ImgIcon)map.get(key.toLowerCase());
+    ImageIcon result = (ImageIcon)map.get(key.toLowerCase());
     if ((result == null) && (useDefault)) {
-      result = (ImgIcon)map.get(DEFAULT_KEY);
+      result = (ImageIcon)map.get(DEFAULT_KEY);
     }
     
     // Done
@@ -100,7 +100,7 @@ public class Images {
       String  key = (String)keys.nextElement();
       String  val = props.getProperty(key);
       try {
-        result.put(key.toLowerCase(), new ImgIcon(getClass().getResourceAsStream("images/"+val)));
+        result.put(key.toLowerCase(), new ImageIcon(getClass().getResourceAsStream("images/"+val)));
       } catch (Throwable t) {
         Debug.log(Debug.ERROR, this,"Couldn't load image "+val);
       }

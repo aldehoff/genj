@@ -29,7 +29,6 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.HeadlessLabel;
-import genj.util.swing.ImgIconConverter;
 import genj.util.swing.MenuHelper;
 import genj.view.ContextPopupSupport;
 import genj.view.CurrentSupport;
@@ -395,7 +394,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
 
     // Add Image+Heading
     JLabel label = new JLabel();
-    label.setIcon(ImgIconConverter.get(prop.getImage(true)));
+    label.setIcon(prop.getImage(true));
     label.setText(prop.getTag());
     label.setAlignmentX(0);
     label.setBorder(new EmptyBorder(2,0,8,0));
@@ -773,7 +772,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       else label.setText(tag + ' ' + value);
       
       // Set the image
-      label.setIcon(ImgIconConverter.get(prop.getImage(true)));
+      label.setIcon(prop.getImage(true));
       
       // background
       if (selected) {

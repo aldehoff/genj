@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.util.swing.ImageIcon;
+
 /**
  * Gedcom Property : - (internal)
  * This XRef is for pointing back to XRefs in case
@@ -71,7 +73,7 @@ public class PropertyForeignXRef extends PropertyXRef {
   /**
    * getImage method comment.
    */
-  public genj.util.ImgIcon getImage(boolean checkValid) {
+  public ImageIcon getImage(boolean checkValid) {
     throw new RuntimeException("getImage is not support by ForeignXRefs");
   }
 

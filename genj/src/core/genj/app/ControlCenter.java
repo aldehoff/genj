@@ -24,8 +24,6 @@ import genj.io.GedcomFormatException;
 import genj.io.GedcomIOException;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
-import genj.tool.MergeTransaction;
-import genj.tool.VerifyTransaction;
 import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
 import genj.util.Origin;
@@ -186,11 +184,6 @@ public class ControlCenter extends JPanel {
       for (int i=0; i<factories.length; i++) 
         mh.createItem(new ActionView(factories[i]));
       mh.setEnabled(true).setCollection(null).setResources(App.resources);    
-
-    mh.popMenu().setEnabled(false).createMenu("cc.menu.tools");
-
-      mh.createItem(new ActionMerge());
-      mh.createItem(new ActionVerify());
 
     result.add(Box.createHorizontalGlue());
 
@@ -781,75 +774,6 @@ public class ControlCenter extends JPanel {
       // Done
     } 
   } //ActionClose
-  
-  /**
-   * Action - Merge
-   */
-  private class ActionMerge extends ActionDelegate { 
-    /** constructor */
-    protected ActionMerge() {
-      super.setText("cc.menu.merge");
-    }    
-    /** run */
-    protected void execute() {
-  
-      // Current Gedcom
-      final Gedcom gedcom = tGedcoms.getSelectedGedcom();
-      if (gedcom==null) return;
-    
-      // Setup merge dialog
-      JFrame frame = App.getInstance().createFrame(
-        App.resources.getString("cc.title.merge_gedcoms"),
-        Gedcom.getImage(),
-        "merge",
-        null
-      );
-    
-      Transaction transaction = new MergeTransaction(gedcom, tGedcoms.getAllGedcoms(),ControlCenter.this);
-    
-      TransactionPanel tpanel = new TransactionPanel(frame,transaction);
-      frame.getContentPane().add(tpanel);
-    
-      frame.pack();
-      frame.show();
-    
-      // Done
-    } 
-  } //ActionMerge
-
-  /**
-   * Action - Verify
-   */
-  private class ActionVerify extends ActionDelegate { 
-    /** constructor */
-    protected ActionVerify() {
-      super.setText("cc.menu.verify");
-    }    
-    /** run */
-    protected void execute() {
-  
-      // Current Gedcom
-      final Gedcom gedcom = tGedcoms.getSelectedGedcom();
-      if (gedcom==null) return;
-  
-      // Setup verify dialog
-      JFrame frame = App.getInstance().createFrame(
-        App.resources.getString("cc.title.verify_gedcom"),
-        Gedcom.getImage(),
-        "verify",
-        null
-      );
-  
-      Transaction transaction = new VerifyTransaction(gedcom, tGedcoms.getAllGedcoms());
-  
-      TransactionPanel tpanel = new TransactionPanel(frame,transaction);
-      frame.getContentPane().add(tpanel);
-      frame.pack();
-      frame.show();
-  
-      // Done
-    } 
-  } //ActionVerify
   
   /**
    * Action - View

@@ -19,7 +19,7 @@
  */
 package genj.gedcom;
 
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 
 /**
  * Gedcom Property : SEX
@@ -71,7 +71,7 @@ public class PropertySex extends Property {
   /**
    * Image
    */
-  public static ImgIcon getDefaultImage(int sex) {
+  public static ImageIcon getDefaultImage(int sex) {
     switch (sex) {
     case MALE:
       return Images.get("sex.m");
@@ -84,7 +84,7 @@ public class PropertySex extends Property {
   /**
    * Image
    */
-  public ImgIcon getImage(boolean checkValid) {
+  public ImageIcon getImage(boolean checkValid) {
     if (checkValid&&(!isValid()))
       return super.getImage(true);
     switch (sex) {

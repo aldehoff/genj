@@ -20,9 +20,7 @@
 package genj.gedcom;
 
 import genj.util.Base64;
-import genj.util.ImgIcon;
-import java.awt.Image;
-import java.awt.Toolkit;
+import genj.util.swing.ImageIcon;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,7 +39,7 @@ public class PropertyBlob extends Property implements IconValueAvailable {
   private String  base64;
 
   /** transformed to image */
-  private ImgIcon valueAsIcon;
+  private ImageIcon valueAsIcon;
 
   /** whether was checked for image */
   private boolean isIconChecked;
@@ -199,7 +197,7 @@ public class PropertyBlob extends Property implements IconValueAvailable {
   /**
    * Tries to return the data as an Icon
    */
-  public synchronized ImgIcon getValueAsIcon() {
+  public synchronized ImageIcon getValueAsIcon() {
 
     // Already calculated?
     if (isIconChecked) {
@@ -214,9 +212,9 @@ public class PropertyBlob extends Property implements IconValueAvailable {
       return null;
 
     // Try to create image
-    Image img = Toolkit.getDefaultToolkit().createImage(bs);
-    if (img!=null) {
-      valueAsIcon = new ImgIcon(img);
+    try {
+      valueAsIcon = new ImageIcon(bs);
+    } catch (Throwable t) {
     }
 
     return valueAsIcon;

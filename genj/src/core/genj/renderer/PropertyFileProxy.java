@@ -22,14 +22,13 @@ package genj.renderer;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-import javax.swing.ImageIcon;
 import javax.swing.text.html.ImageView;
 
 /**
@@ -39,12 +38,13 @@ import javax.swing.text.html.ImageView;
  */
 public class PropertyFileProxy extends PropertyProxy {
   
-  private ImgIcon broken;
+  private ImageIcon broken;
   
   {
     try {
-      broken = new ImgIcon(((ImageIcon)new ImageView(null).getNoImageIcon()).getImage());
+      broken = new ImageIcon(new ImageView(null).getNoImageIcon());
     } catch (Throwable t) {
+      t.printStackTrace();
       broken = Gedcom.getImage();
     }
   }
@@ -53,7 +53,7 @@ public class PropertyFileProxy extends PropertyProxy {
    * @see genj.renderer.PropertyProxy#getSize(FontMetrics, Property, boolean, boolean)
    */
   public Dimension getSize(FontMetrics metrics, Property prop, int preference) {
-    ImgIcon img = getImage(prop);
+    ImageIcon img = getImage(prop);
     return new Dimension(img.getIconWidth(), img.getIconHeight());
   }
 
@@ -62,7 +62,7 @@ public class PropertyFileProxy extends PropertyProxy {
    */
   public void render(Graphics g, Rectangle bounds, Property prop, int preference) {
     // grab the image
-    ImgIcon img = getImage(prop);
+    ImageIcon img = getImage(prop);
     int
       h = img.getIconHeight(),
       w = img.getIconWidth ();
@@ -85,8 +85,8 @@ public class PropertyFileProxy extends PropertyProxy {
   /**
    * Helper to get the image of PropertyFile
    */
-  private ImgIcon getImage(Property prop) {
-    ImgIcon result = null;
+  private ImageIcon getImage(Property prop) {
+    ImageIcon result = null;
     if (prop instanceof PropertyFile) { 
       PropertyFile file = (PropertyFile)prop;
       result = file.getValueAsIcon();

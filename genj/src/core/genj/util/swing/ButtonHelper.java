@@ -97,11 +97,11 @@ public class ButtonHelper {
     
     // its image
     if (isImageAllowed&&action.img!=null) 
-      result.setIcon(ImgIconConverter.get(action.img));
+      result.setIcon(action.img);
     if (isImageAllowed&&action.roll!=null)
-      result.setRolloverIcon(ImgIconConverter.get(action.roll));
+      result.setRolloverIcon(action.roll);
     if (isImageAllowed&&action.toggle!=null)
-      result.setSelectedIcon(ImgIconConverter.get(action.toggle));
+      result.setSelectedIcon(action.toggle);
     if (action.tip!=null) 
       result.setToolTipText(string(action.tip));
     if (insets!=null)

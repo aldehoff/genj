@@ -19,6 +19,7 @@
  */
 package genj.util;
 
+import genj.util.swing.ImageIcon;
 import java.awt.Component;
 import java.awt.Frame;
 import java.lang.reflect.InvocationHandler;
@@ -42,7 +43,7 @@ public abstract class ActionDelegate implements Cloneable {
     ASYNC_NEW_INSTANCE   = 2;
   
   /** attributes */
-  public ImgIcon   img,roll,toggle;
+  public ImageIcon img,roll,toggle;
   public String    txt;
   public String    stxt;
   public String    tip;
@@ -177,7 +178,7 @@ public abstract class ActionDelegate implements Cloneable {
   /**
    * Image 
    */
-  public ActionDelegate setImage(ImgIcon i) {
+  public ActionDelegate setImage(ImageIcon i) {
     img=i;
     return this;
   }
@@ -185,7 +186,7 @@ public abstract class ActionDelegate implements Cloneable {
   /**
    * Rollover
    */
-  public ActionDelegate setRollover(ImgIcon r) {
+  public ActionDelegate setRollover(ImageIcon r) {
     roll=r;
     return this;
   }
@@ -193,7 +194,7 @@ public abstract class ActionDelegate implements Cloneable {
   /**
    * Toggle
    */
-  public ActionDelegate setToggle(ImgIcon t) {
+  public ActionDelegate setToggle(ImageIcon t) {
     toggle=t;
     return this;
   }

@@ -19,7 +19,7 @@
  */
 package genj.tree;
 
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 
 /**
  * A wrapper to the images we use in the TreeView
@@ -28,7 +28,7 @@ final class Images {
 
   private static Images instance = new Images();
 
-  static ImgIcon
+  static ImageIcon
     imgView,
     imgOverview,
     imgAs,
@@ -44,19 +44,19 @@ final class Images {
    */
   private Images() {
 
-    imgView        = new ImgIcon(this,"images/View.gif"       );
+    imgView        = new ImageIcon(this,"images/View.gif"       );
 
-    imgOverview    = new ImgIcon(this,"images/Overview.gif"   );
+    imgOverview    = new ImageIcon(this,"images/Overview.gif"   );
     
-    imgAs          = new ImgIcon(this,"images/As.gif"         );
-    imgDs          = new ImgIcon(this,"images/Ds.gif"         );
-    imgAnDs        = new ImgIcon(this,"images/AnDs.gif"       );
+    imgAs          = new ImageIcon(this,"images/As.gif"         );
+    imgDs          = new ImageIcon(this,"images/Ds.gif"         );
+    imgAnDs        = new ImageIcon(this,"images/AnDs.gif"       );
     
-    imgHori        = new ImgIcon(this,"images/Hori.gif"       );
-    imgVert        = new ImgIcon(this,"images/Vert.gif"       );
+    imgHori        = new ImageIcon(this,"images/Hori.gif"       );
+    imgVert        = new ImageIcon(this,"images/Vert.gif"       );
     
-    imgDoFams      = new ImgIcon(this,"images/DoFams.gif"     ); 
-    imgDontFams    = new ImgIcon(this,"images/DontFams.gif"   ); 
+    imgDoFams      = new ImageIcon(this,"images/DoFams.gif"     ); 
+    imgDontFams    = new ImageIcon(this,"images/DontFams.gif"   ); 
 
   }
   

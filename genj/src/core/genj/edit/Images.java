@@ -19,7 +19,7 @@
  */
 package genj.edit;
 
-import genj.util.ImgIcon;
+import genj.util.swing.ImageIcon;
 
 /**
  * Wrapper for package used Images
@@ -28,7 +28,7 @@ final public class Images {
 
   private static Images instance = new Images();
 
-  public static ImgIcon
+  public static ImageIcon
   
     imgView,
     
@@ -57,25 +57,25 @@ final public class Images {
    */
   private Images() {
     
-    imgView      = new ImgIcon(this,"images/View.gif");
+    imgView      = new ImageIcon(this,"images/View.gif");
 
-    imgStickOn   = new ImgIcon(this,"images/StickOn.gif");
-    imgStickOff  = new ImgIcon(this,"images/StickOff.gif");
-    imgFind      = new ImgIcon(this,"images/Find.gif");
-    imgLink      = new ImgIcon(this,"images/Link.gif");
-    imgReturn    = new ImgIcon(this,"images/Return.gif");
-    imgUp        = new ImgIcon(this,"images/Up.gif");
-    imgDown      = new ImgIcon(this,"images/Down.gif");
-    imgAdd       = new ImgIcon(this,"images/Add.gif");
-    imgRemove    = new ImgIcon(this,"images/Remove.gif");
+    imgStickOn   = new ImageIcon(this,"images/StickOn.gif");
+    imgStickOff  = new ImageIcon(this,"images/StickOff.gif");
+    imgFind      = new ImageIcon(this,"images/Find.gif");
+    imgLink      = new ImageIcon(this,"images/Link.gif");
+    imgReturn    = new ImageIcon(this,"images/Return.gif");
+    imgUp        = new ImageIcon(this,"images/Up.gif");
+    imgDown      = new ImageIcon(this,"images/Down.gif");
+    imgAdd       = new ImageIcon(this,"images/Add.gif");
+    imgRemove    = new ImageIcon(this,"images/Remove.gif");
     
-    imgDelete        = new ImgIcon(this,"images/entity/Delete.gif");
-    imgNewFam        = new ImgIcon(this,"images/entity/NewFam.gif");
-    imgNewIndi       = new ImgIcon(this,"images/entity/NewIndi.gif");
-    imgNewMedia      = new ImgIcon(this,"images/entity/NewMedia.gif");
-    imgNewNote       = new ImgIcon(this,"images/entity/NewNote.gif");
-    imgNewRepository = new ImgIcon(this,"images/entity/NewRepository.gif");
-    imgNewSource     = new ImgIcon(this,"images/entity/NewSource.gif");
-    imgNewSubmitter  = new ImgIcon(this,"images/entity/NewSubmitter.gif");
+    imgDelete        = new ImageIcon(this,"images/entity/Delete.gif");
+    imgNewFam        = new ImageIcon(this,"images/entity/NewFam.gif");
+    imgNewIndi       = new ImageIcon(this,"images/entity/NewIndi.gif");
+    imgNewMedia      = new ImageIcon(this,"images/entity/NewMedia.gif");
+    imgNewNote       = new ImageIcon(this,"images/entity/NewNote.gif");
+    imgNewRepository = new ImageIcon(this,"images/entity/NewRepository.gif");
+    imgNewSource     = new ImageIcon(this,"images/entity/NewSource.gif");
+    imgNewSubmitter  = new ImageIcon(this,"images/entity/NewSubmitter.gif");
   }
 }
