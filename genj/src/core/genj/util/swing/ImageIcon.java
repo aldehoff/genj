@@ -31,6 +31,7 @@ import java.awt.Toolkit;
 import java.awt.geom.Point2D;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageProducer;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -166,4 +167,23 @@ public class ImageIcon extends javax.swing.ImageIcon {
     return new ImageIcon(this, grayImage);
   }
   
+  /**
+   * Return a version with the given ImageIcon overlayed
+   */ 
+  public ImageIcon getOverLayed(ImageIcon overlay) {
+
+    int height = Math.max(getIconHeight(), overlay.getIconHeight());
+    int width = Math.max(getIconWidth(), overlay.getIconWidth());
+
+    Image image1 = getImage();
+    Image image2 = overlay.getImage();
+    BufferedImage composite = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+    Graphics g = composite.createGraphics();
+    g.setClip(0,0,width,height);
+    g.drawImage(image1, 0, 0, null);
+    g.drawImage(image2, 0, 0, null);
+
+    return new ImageIcon(this, composite);
+  }
 } //ImageIcon 
