@@ -26,6 +26,7 @@ import genj.edit.actions.DelEntity;
 import genj.edit.actions.OpenForEdit;
 import genj.edit.actions.RunExternal;
 import genj.edit.actions.SetSubmitter;
+import genj.edit.actions.SwapSpouses;
 import genj.edit.actions.TogglePrivate;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
@@ -205,6 +206,8 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     result.add(new CreateRelationship(new Relationship.ChildIn(fam), manager));
     if (fam.getNoOfSpouses()<2)
       result.add(new CreateRelationship(new Relationship.ParentIn(fam), manager));
+    if (fam.getNoOfSpouses()!=0)
+      result.add(new SwapSpouses(fam, manager));
   }
   
   /**
