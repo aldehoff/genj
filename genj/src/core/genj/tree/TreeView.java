@@ -37,6 +37,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupButton;
 import genj.util.swing.ScreenResolutionScale;
+import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortOverview;
 import genj.view.ActionSupport;
@@ -70,7 +71,6 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -108,7 +108,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   private double zoom = 1.0D;
 
   /** our current zoom */  
-  private JSlider sliderZoom;  
+  private SliderWidget sliderZoom;  
   
   /** the frame we're in */
   private Frame frame;
@@ -466,7 +466,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   public void populate(JToolBar bar) {
 
     // zooming!    
-    sliderZoom = new JSlider(1, 100, (int)(zoom*100));
+    sliderZoom = new SliderWidget(1, 100, (int)(zoom*100));
     sliderZoom.addChangeListener(new ZoomGlue());
     sliderZoom.setAlignmentX(0F);
     bar.add(sliderZoom);
