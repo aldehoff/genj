@@ -166,6 +166,7 @@
        <fileset dir="./images"/>
        <fileset dir="./language/en"/>
        <fileset dir="./src/core" includes="**/*.properties"/>
+       <fileset dir="./src/core" includes="META-INF/**"/>
      </jar>
      
      <!-- create run.jar -->
