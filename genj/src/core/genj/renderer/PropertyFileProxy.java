@@ -38,7 +38,7 @@ public class PropertyFileProxy extends PropertyProxy {
   /** an replacement for a 'broken' image */  
   private final static ImageIcon broken = 
     //new ImageIcon(new javax.swing.text.html.ImageView(null).getNoImageIcon());
-    new ImageIcon(Object.class.getResourceAsStream("javax/swing/text/html/icons/image-failed.gif"));
+    new ImageIcon(Object.class.getResourceAsStream("/javax/swing/text/html/icons/image-failed.gif"));
 
   /**
    * @see genj.renderer.PropertyProxy#getSize(FontMetrics, Property, boolean, boolean)
