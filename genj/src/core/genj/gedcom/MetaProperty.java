@@ -31,11 +31,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -48,12 +45,6 @@ public class MetaProperty {
     IMG_UNKNOWN = "Question.gif",
     IMG_ERROR   = "Error.gif";
     
-  /** static - paths to instantiated props */
-  private static Set propPaths = new HashSet();
-    
-  /** static - paths to instantiated events */
-  private static Set eventPaths = new HashSet();
-  
   /** static - loaded images */    
   private static Map name2images = new HashMap();
   
@@ -66,8 +57,8 @@ public class MetaProperty {
   /** super */
   private MetaProperty supr;
   
-  /** tag path */
-  private TagPath path;
+  /** tag */
+  private String tag;
   
   /** cached - image */
   private ImageIcon image;
@@ -90,13 +81,11 @@ public class MetaProperty {
   /**
    * Constructor
    */
-  private MetaProperty(TagPath path, Map props, MetaProperty supr) {
+  private MetaProperty(String tag, Map props, MetaProperty supr) {
     // remember
-    this.path = path;
+    this.tag = tag;
     this.props = props;
     this.supr = supr;
-    // publish if one-element-path
-    if (path.length()==1) propPaths.add(path);
     // done
   }
   
@@ -133,7 +122,7 @@ public class MetaProperty {
     try {
       
       // .. get constructor of property
-      Object parms[] = { path.getLast(), value };
+      Object parms[] = { tag, value };
       Class  parmclasses[] = { String.class , String.class };
 
       Constructor constructor = getType().getConstructor(parmclasses);
@@ -145,7 +134,7 @@ public class MetaProperty {
       
       Debug.log(Debug.WARNING, this, t);
       
-      result = new PropertySimpleValue(path.getLast(), value); 
+      result = new PropertySimpleValue(tag, value); 
     }
 
     // done 
@@ -174,7 +163,7 @@ public class MetaProperty {
    * Accessor - tag
    */
   public String getTag() {
-    return path.getLast();
+    return tag;
   }
 
   /**
@@ -191,10 +180,11 @@ public class MetaProperty {
         Debug.log(Debug.WARNING, this, "Property type "+clazz+" can't be loaded", e);    
         type = PropertySimpleValue.class;
       }
-      // some static tracking
-      propPaths.add(path);
-      if (PropertyEvent.class.isAssignableFrom(type))
-        eventPaths.add(path);    
+// FIXME
+//      // some static tracking
+//      propPaths.add(path);
+//      if (PropertyEvent.class.isAssignableFrom(type))
+//        eventPaths.add(path);    
       // resolved
     }
     // done
@@ -239,7 +229,7 @@ public class MetaProperty {
     // current tag in map?
     MetaProperty result = (MetaProperty)allSubs.get(tag);
     if (result==null) {
-      result = new MetaProperty(new TagPath(path,tag), Collections.EMPTY_MAP, null);
+      result = new MetaProperty(tag, Collections.EMPTY_MAP, null);
       allSubs.put(tag, result);
     }
     // done
@@ -263,7 +253,7 @@ public class MetaProperty {
     String tag = path.get(pos++);
     MetaProperty result = (MetaProperty)map.get(tag);
     if (result==null) {
-      result = new MetaProperty(new TagPath(path, pos), Collections.EMPTY_MAP, null);
+      result = new MetaProperty(tag, Collections.EMPTY_MAP, null);
       if (persist) map.put(tag, result);
     }
     
@@ -289,25 +279,10 @@ public class MetaProperty {
   }
   
   /**
-   * Static - event paths
+   * Static - paths for given type
    */
-  public static TagPath[] getEventPaths() {
-    return TagPath.getPaths(eventPaths);
-  }
-
-  /**
-   * Static - paths
-   */
-  public static TagPath[] getPropertyPaths(TagPath prefix) {
-    // loop over stuff that was instantiated
-    List result = new ArrayList(propPaths.size());
-    Iterator it = propPaths.iterator();
-    while (it.hasNext()) {
-      TagPath path = (TagPath)it.next();
-      if (path.startsWith(prefix)) result.add(path);
-    }
-    // done
-    return TagPath.getPaths(result);
+  public static TagPath[] getPaths(TagPath prefix, Class type) {
+    return new TagPath[0];
   }
 
   /**
@@ -400,13 +375,11 @@ public class MetaProperty {
       }
       
       // instantiate
-      MetaProperty meta;
+      MetaProperty meta = new MetaProperty(tag, props, supr);
       if (level==0) {
-        meta = new MetaProperty(new TagPath(tag), props, supr);
         roots.put(tag, meta); 
       } else {
         MetaProperty parent = peek();
-        meta = new MetaProperty(new TagPath(parent.path, tag), props, supr);
         parent.allSubs.put(tag, meta);
         if (!isHidden) parent.visibleSubs.add(meta);
         if (isDefault) parent.defSubs.add(meta);

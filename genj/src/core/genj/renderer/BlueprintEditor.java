@@ -224,7 +224,7 @@ public class BlueprintEditor extends JSplitPane {
       // create a tree of available TagPaths
       TagPathTree tree = new TagPathTree(); 
       tree.setPaths(
-        MetaProperty.getPropertyPaths(new TagPath(Gedcom.getTagFor(BlueprintManager.getInstance().getType(blueprint)))),
+        MetaProperty.getPaths(new TagPath(Gedcom.getTagFor(BlueprintManager.getInstance().getType(blueprint))), Property.class),
         new TagPath[0]
       );
       // Recheck with the user

@@ -23,6 +23,7 @@ import genj.app.TagPathList;
 import genj.app.TagPathTree;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
+import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -133,7 +134,7 @@ public class TableViewSettings extends JPanel implements Settings {
 
     // Reflect columns by TagPaths
     TagPath[] selectedPaths = table.getPaths(table.getType());
-    TagPath[] usedPaths     = MetaProperty.getPropertyPaths(new TagPath(Gedcom.getTagFor(table.getType())));
+    TagPath[] usedPaths     = MetaProperty.getPaths(new TagPath(Gedcom.getTagFor(table.getType())), Property.class);
 
     pathTree.setPaths(usedPaths, selectedPaths);
 
