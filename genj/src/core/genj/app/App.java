@@ -55,15 +55,8 @@ public class App {
   private App() {
 
     // Startup Information
-    String cpath = System.getProperty("java.class.path");
-    StringTokenizer tokens = new StringTokenizer(
-      cpath,
-      System.getProperty("path.separator"),
-      false
-    );
-    while (tokens.hasMoreTokens())
-      System.out.println("[Debug]Classpath contains "+tokens.nextToken());
-
+    checkEnvironment();
+    
     // Make sure that Swing shows our localized texts
     Enumeration keys = resources.getKeys();
     while (keys.hasMoreElements()) {
@@ -228,5 +221,25 @@ public class App {
     // remember
   }
 
+  /**
+   * Check the environment
+   */
+  private static void checkEnvironment() {
 
+    // CLASSPATH    
+    String cpath = System.getProperty("java.class.path");
+    StringTokenizer tokens = new StringTokenizer(
+      cpath,
+      System.getProperty("path.separator"),
+      false
+    );
+    
+    while (tokens.hasMoreTokens()) {
+      String entry = tokens.nextToken();
+      String stat = " (does" + (new File(entry).exists() ? "" :"n't") + " exist)";
+      System.out.println("[Debug]Classpath contains "+entry+stat);
+    }
+
+  }
+  
 }
