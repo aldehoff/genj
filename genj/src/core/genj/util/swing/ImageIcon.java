@@ -24,11 +24,17 @@ import genj.util.ImageSniffer;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.geom.Point2D;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageProducer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import javax.swing.GrayFilter;
 
 /**
  * Improved ImageIcon
@@ -43,7 +49,16 @@ public class ImageIcon extends javax.swing.ImageIcon {
 
   /** dpi */
   private Point dpi = null;
-
+  
+  /**
+   * Private special
+   */
+  private ImageIcon(ImageIcon original, Image copy) {
+    super(copy);
+    this.dpi = original.dpi;
+    this.name = original.name;
+  }
+  
   /** 
    * Overriden default
    */
@@ -132,6 +147,18 @@ public class ImageIcon extends javax.swing.ImageIcon {
     } catch (IOException ex) {
       return null;
     }
+  }
+
+  /**
+   * Return a disabled/gray version
+   */
+  public ImageIcon getDisabled(int percentage) {
+
+    GrayFilter filter = new GrayFilter(true, percentage);
+    ImageProducer prod = new FilteredImageSource(getImage().getSource(), filter);
+    Image grayImage = Toolkit.getDefaultToolkit().createImage(prod);
+    
+    return new ImageIcon(this, grayImage);
   }
   
 } //ImageIcon 
