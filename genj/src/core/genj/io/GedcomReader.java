@@ -523,7 +523,7 @@ public class GedcomReader implements Trackable {
       tag = tokens.nextToken();
 
       // .. xref ?
-      if (tag.startsWith("@")) {
+      if (tag.startsWith("@")&&level==0) {
 
         // .. valid ?
         if (!tag.endsWith("@")||tag.length()<=2)
