@@ -636,10 +636,16 @@ import javax.swing.event.ChangeListener;
   } //Cancel
 
   /**
+   * The default container FocusTravelPolicy works based on
+   * x/y coordinates which doesn't work well with the column
+   * layout used.
    * ContainerOrderFocusTraversalPolicy would do fine but Sun
    * (namely David Mendenhall) in its eternal wisdom has decided
-   * to put the working accept() check into a protected method
-   * of LayoutFocusTraversalPolicy
+   * to put the working accept()-check into a protected method
+   * of LayoutFocusTraversalPolicy basically rendering the
+   * former layout useless.
+   * I'm doing a hack to get the ContainerOrderFTP with
+   * LayoutFTP's accept :(
    */
   private class FocusPolicy extends ContainerOrderFocusTraversalPolicy {
     private Hack hack = new Hack();
