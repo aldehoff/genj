@@ -2,6 +2,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Entity;
 import genj.report.Report;
+import genj.report.Options;
 import genj.util.ReferenceSet;
 
 import java.util.Iterator;
@@ -17,6 +18,9 @@ public class ReportPhonetics extends Report {
     public int outputFormat = 0;
     public boolean reportFirstNames = true;
     
+    /** program options */
+    private static final Options OPTIONS = Options.getInstance();
+    
     public static String[] outputFormats = {
         "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex"
     };
@@ -29,10 +33,8 @@ public class ReportPhonetics extends Report {
         new Phonex()
     };
     
-    private static final int SPACES_PER_LEVEL = 3;
-    
     /** this report's version */
-    public static final String VERSION = "0.1";
+    public static final String VERSION = "0.11";
     
     /**
      * Returns the version of this script
@@ -127,12 +129,12 @@ public class ReportPhonetics extends Report {
             Iterator last = names.getKeys(true).iterator();
             while(last.hasNext()) {
                 str = (String)last.next();
-                println(getIndent(1, SPACES_PER_LEVEL, "")+str+": "+encode(str));
+                println(str+": "+encode(str));
                 Iterator first = names.getReferences(str).iterator();
                 while(first.hasNext()) {
                     indi  = (Indi)first.next();
                     str = indi.getFirstName();
-                    println(getIndent(2, SPACES_PER_LEVEL, "")+"@"+indi.getId()+"@ "+str+": "+encode(str));
+                    println(getIndent(2)+"@"+indi.getId()+"@ "+str+": "+encode(str));
                 }
             }
         }
@@ -155,7 +157,7 @@ public class ReportPhonetics extends Report {
         // grab information from indi
         String firstName = indi.getFirstName();
         String lastName = indi.getLastName();
-
+        
         println(i18n("outputFormat")+": "+outputFormats[outputFormat]);
         println();
         
@@ -174,6 +176,13 @@ public class ReportPhonetics extends Report {
         if(s==null)
             return "";
         return s;
+    }
+    
+    /**
+     * Return an indented string for given level
+     */
+    private String getIndent(int level) {
+        return super.getIndent(level, OPTIONS.getIndentPerLevel(), null);
     }
     
     

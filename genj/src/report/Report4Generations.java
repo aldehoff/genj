@@ -47,7 +47,7 @@ public class Report4Generations extends Report {
     /** this report's version */
     public static final String VERSION = "0.22";
     public static final int BLOCK_WIDTH = 34;
-    /** program options which also contain global report options */
+    /** program options */
     private static final Options OPTIONS = Options.getInstance();
     
     /**

@@ -31,32 +31,23 @@ import java.util.Iterator;
 public class ReportEvents extends Report {
     
     /** whether we sort by day-of-month or date */
-    public boolean isSortDay = true;
-    
+    public boolean isSortDay = true;    
     /** wether dead persons' events should be considered */
-    public boolean isShowDead = true;
-    
+    public boolean isShowDead = true;    
     /** whether births should be reported */
-    public boolean reportBirth = true;
-    
+    public boolean reportBirth = true;    
     /** whether baptisms should be reported */
-    public boolean reportBaptism = true;
-    
+    public boolean reportBaptism = true;    
     /** whether marriages should be reported */
-    public boolean reportMarriage = true;
-    
+    public boolean reportMarriage = true;    
     /** whether divorces should be reported */
-    public boolean reportDivorce = true;
-    
+    public boolean reportDivorce = true;    
     /** whether emigration should be reported */
-    public boolean reportEmigration = true;
-    
+    public boolean reportEmigration = true;    
     /** whether immigration should be reported */
-    public boolean reportImmigration = true;
-    
+    public boolean reportImmigration = true;    
     /** whether naturalization should be reported */
-    public boolean reportNaturalization = true;
-    
+    public boolean reportNaturalization = true;    
     /** whether deaths should be reported */
     public boolean reportDeath = true;
     
@@ -87,7 +78,9 @@ public class ReportEvents extends Report {
     public String[] handleYears = handleDays;
     
     /** the marriage symbol */
-    private final static String txtMarrSymbol = genj.gedcom.Options.getInstance().getTxtMarriageSymbol();
+    private final static String TXT_MARR_SYMBOL = genj.gedcom.Options.getInstance().getTxtMarriageSymbol();
+    /** indent for output formatting */
+    private final static genj.report.Options OPTIONS = genj.report.Options.getInstance();
     
     /**
      * @see genj.report.Report#accepts(java.lang.Object)
@@ -136,42 +129,42 @@ public class ReportEvents extends Report {
         println();
         
         if (reportBirth&&!births.isEmpty()) {
-            println("   " + Gedcom.getName("BIRT"));
+            println(getIndent(2) + Gedcom.getName("BIRT"));
             report(births);
             println();
         }
         if (reportBaptism&&!baptisms.isEmpty()) {
-            println("   " + Gedcom.getName("BAPM"));
+            println(getIndent(2) + Gedcom.getName("BAPM"));
             report(baptisms);
             println();
         }
         if (reportMarriage&&!marriages.isEmpty()) {
-            println("   " + Gedcom.getName("MARR"));
+            println(getIndent(2) + Gedcom.getName("MARR"));
             report(marriages);
             println();
         }
         if (reportDivorce&&!divorces.isEmpty()) {
-            println("   " + Gedcom.getName("DIV"));
+            println(getIndent(2) + Gedcom.getName("DIV"));
             report(divorces);
             println();
         }
         if (reportEmigration&&!emigrations.isEmpty()) {
-            println("   " + Gedcom.getName("EMIG"));
+            println(getIndent(2) + Gedcom.getName("EMIG"));
             report(emigrations);
             println();
         }
         if (reportImmigration&&!immigrations.isEmpty()) {
-            println("   " + Gedcom.getName("IMMI"));
+            println(getIndent(2) + Gedcom.getName("IMMI"));
             report(immigrations);
             println();
         }
         if (reportNaturalization&&!naturalizations.isEmpty()) {
-            println("   " + Gedcom.getName("NATU"));
+            println(getIndent(2) + Gedcom.getName("NATU"));
             report(naturalizations);
             println();
         }
         if (reportDeath&&!deaths.isEmpty()) {
-            println("   " + Gedcom.getName("DEAT"));
+            println(getIndent(2) + Gedcom.getName("DEAT"));
             report(deaths);
         }
         
@@ -283,11 +276,11 @@ public class ReportEvents extends Report {
             String tag = "";
             if(hit.tag.length() > 0)
                 tag = hit.tag+": ";
-            println("      " + tag + hit.when + " @" + indi.getId() + "@ " + indi.getName());
+            println(getIndent(3) + tag + hit.when + " @" + indi.getId() + "@ " + indi.getName());
         }
         if (hit.who instanceof Fam) {
             Fam fam = (Fam) hit.who;
-            println("      " + hit.when + " @" + fam.getId() + "@ " + fam.toString() + " (@" + fam.getHusband().getId() + "@" + txtMarrSymbol + "@" + fam.getWife().getId() + "@)");
+            println(getIndent(3) + hit.when + " @" + fam.getId() + "@ " + fam.toString() + " (@" + fam.getHusband().getId() + "@" + TXT_MARR_SYMBOL + "@" + fam.getWife().getId() + "@)");
         }
     }
     
@@ -369,6 +362,13 @@ public class ReportEvents extends Report {
             y = true;
         
         return d&m&y;
+    }
+    
+        /**
+     * Return an indented string for given level
+     */
+    private String getIndent(int level) {
+        return super.getIndent(level, OPTIONS.getIndentPerLevel(), null);
     }
     
     /**

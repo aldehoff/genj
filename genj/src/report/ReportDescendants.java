@@ -16,7 +16,7 @@ import genj.report.Report;
  */
 public class ReportDescendants extends Report {
     
-    /** program options which also contain global report options */
+    /** program options */
     private static final Options OPTIONS = Options.getInstance();
     
     /**

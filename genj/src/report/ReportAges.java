@@ -36,7 +36,7 @@ public class ReportAges extends Report {
     public boolean reportAgeAtDeath = true;
     public boolean reportAgeSinceBirth = true;
     
-    /** program options which also contain global report options */
+    /** program options */
     private static final Options OPTIONS = Options.getInstance();
     
     /** localized strings */
@@ -149,11 +149,11 @@ public class ReportAges extends Report {
             if (fams.length > 0) {
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
-                    String text = fam.toString() + " (@" + fam.getId() + "@): ";
+                    String text = getIndent(2)+OPTIONS.getMarriageSymbol() + " "+fam.toString() + " (@" + fam.getId() + "@): ";
                     if (fam.getMarriageDate() == null)
-                        println(getIndent(2)+OPTIONS.getMarriageSymbol() + " "+ text + i18n("noData"));
+                        println(text + i18n("noData"));
                     else {
-                        println(getIndent(2)+OPTIONS.getMarriageSymbol() + " " + text + fam.getMarriageDate());
+                        println(text + fam.getMarriageDate());
                         age = indi.getAge(fam.getMarriageDate().getStart());
                         printAge(age,3);
                     }
@@ -181,12 +181,12 @@ public class ReportAges extends Report {
             if (children.length > 0) {
                 for (int i = 0; i < children.length; i++) {
                     Indi child = children[i];
-                    String text = children[i].getName() + "(@" + child.getId() + "@): ";
+                    String text = getIndent(2) + OPTIONS.getBirthSymbol()+" "+children[i].getName() + " (@" + child.getId() + "@): ";
                     PropertyDate cbirth = child.getBirthDate();
                     if (cbirth == null)
-                        println(getIndent(2) + OPTIONS.getBirthSymbol()+" "+text + i18n("noData"));
+                        println(text + i18n("noData"));
                     else {
-                        println(getIndent(2) + OPTIONS.getBirthSymbol()+" "+text + cbirth);
+                        println(text + cbirth);
                         age = indi.getAge(cbirth.getStart());
                         printAge(age,3);
                     }
