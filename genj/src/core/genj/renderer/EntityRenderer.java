@@ -598,13 +598,13 @@ public class EntityRenderer {
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       g.setFont(getFont());
       g.setColor(getForeground());
-      PropertyRenderer.DEFAULT_RENDERER.render((Graphics2D)g,r,txt);
+      PropertyRenderer.DEFAULT_RENDERER.renderImpl((Graphics2D)g,r,txt);
     }
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
     protected Dimension2D getPreferredSpan() {
-      return PropertyRenderer.DEFAULT_RENDERER.getSize(getFont(), context, null, txt, PropertyRenderer.PREFER_DEFAULT, dpi);
+      return PropertyRenderer.DEFAULT_RENDERER.getSizeImpl(getFont(), context, null, txt, PropertyRenderer.PREFER_DEFAULT, dpi);
     }
     /**
      * alignment patched
