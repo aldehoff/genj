@@ -211,10 +211,11 @@
        <zipfileset dir="${dir.build}" includes="lib/genj.jar"/>
        <zipfileset dir="." includes="lib/graphj.jar"/>
        <zipfileset dir="${dir.build}/classes" includes="report/**"/>
+        <zipfileset dir="./src" includes="report/**"/>
        <zipfileset dir="." includes="gedcom/**"/>
        <zipfileset dir="." includes="doc/**"/>
        <zipfileset dir="./script" includes="run.*" filemode="755"/>
-       <zipfileset dir="./src" includes="report/**"/>
+       <zipfileset dir="." includes="contrib/cday/**"/>
      </zip>
 
   </target>
