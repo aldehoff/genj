@@ -360,8 +360,10 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /**
    * Change sticky status
    */
-  /*package*/ void setSticky(boolean set) {
+  /*package*/ boolean setSticky(boolean set) {
+    boolean result = actionSticky.isSelected();
     actionSticky.setSelected(set);
+    return result;
   }
 
   /**

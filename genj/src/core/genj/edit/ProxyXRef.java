@@ -27,6 +27,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
+import genj.view.ViewManager;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -257,11 +258,16 @@ class ProxyXRef extends Proxy implements ActionListener  {
    */
   private void jump() {
 
+    // get entity
     Entity e = ((PropertyXRef)prop).getReferencedEntity();
-    if (e==null) {
-      return;
-    }
-    edit.setEntity( e );
+    if (e==null) return;
+    
+    // propagate 
+    boolean sticky = edit.setSticky(false);
+    ViewManager.getInstance().setCurrentEntity(e);
+    edit.setSticky(sticky);
+    
+    // done 
   }
 
   /**
