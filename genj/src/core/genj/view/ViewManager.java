@@ -509,6 +509,8 @@ public class ViewManager {
      * propagate
      */
     protected void execute() {
+
+      propagateContext.stop();
       
       // check current contexts
       Iterator contexts = gedcom2context.values().iterator();
