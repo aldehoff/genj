@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.10 2002-04-30 01:08:04 timmsc Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.11 2002-05-12 15:57:14 timmsc Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -213,10 +213,22 @@ public class ReportAppletDetails implements Report {
     }
 
     if ( propertiesToLink.contains(tag) ) {
+      String idStr = value.replace('@',' ').trim();
+      if ( !(prop instanceof PropertyFam) ) {
+        try {
+          Indi individual = prop.getGedcom().getIndiFromId(idStr);
+          if ( individual != null ) {
+            value = individual.getName();
+          }
+        }
+        catch ( genj.gedcom.DuplicateIDException x ) {
+          // ignore exception
+        }
+      }
       out.println("<tr><td valign=TOP><b><u>"
                   + Gedcom.getResources().getString(prop.getTag() + ".name")
                   + "</u></b></td><td>"
-                  + "<A HREF=\"" + value.replace('@',' ').trim() + ".html\">"
+                  + "<A HREF=\"" + idStr + ".html\">"
                   + value
                   + "</a></td></tr>");
     }
