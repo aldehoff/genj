@@ -55,6 +55,7 @@ public class RulerRenderer extends ContentRenderer {
       from = Math.ceil(model.min),
       to   = Math.floor(model.max),
       cond = Math.max(1, pixels2cm(fm.stringWidth(" 0000 "))/cmPyear);
+
     Clip clip = new Clip(g, fm, model);
     // render background
     setColor(g, cBackground);
@@ -72,7 +73,7 @@ public class RulerRenderer extends ContentRenderer {
    * Renders ticks recursively
    */
   private void renderSpan(Graphics g, Model model, Dimension d, FontMetrics fm, double from, double to, double cond, Clip clip) {
-    
+
     // condition met?
     if (to-from<cond) return;
     
@@ -86,8 +87,8 @@ public class RulerRenderer extends ContentRenderer {
     double gone = renderYear(g, model, d, fm, year, 0.5D);
     
     // recurse into
-    renderSpan(g, model, d, fm, Math.ceil(year+gone/2), to         , cond, clip);
-    renderSpan(g, model, d, fm, from       , Math.floor(year-gone/2), cond, clip);
+    renderSpan(g, model, d, fm, year+gone/2, to         , cond, clip);
+    renderSpan(g, model, d, fm, from       , year-gone/2, cond, clip);
     
     // done
   }
@@ -97,10 +98,10 @@ public class RulerRenderer extends ContentRenderer {
    */
   private double renderYear(Graphics g, Model model, Dimension d, FontMetrics fm, double year, double align) {
     // what's the x for it
-    int x = cm2pixels((year-model.min)*cmPyear);
+    int x = (int)(cm2pixels((year-model.min)*cmPyear)-align);
     // draw a vertical line
     setColor(g, cTick);
-    g.drawLine((int)(x - align), d.height-4, x, d.height);
+    g.drawLine(x, d.height-4, x, d.height);
     // draw the label
     setColor(g, cText);
     String s = Integer.toString((int)year);
