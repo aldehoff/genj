@@ -77,7 +77,7 @@ public class SpinnerWidget extends JPanel {
     gbh.add(anorth, 2, 0); 
     gbh.add(asouth, 2, 1);
     if (txt.length()>0)
-      gbh.add(new JLabel(txt), 3, 0, 1, 2);
+      gbh.add(new JLabel(" "+txt), 3, 0, 1, 2);
     
     // listening
     ActionListener al = new ActionListener() {
