@@ -313,8 +313,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       this.start=start;
     }
     protected void execute() {
-      Thread thread = start.getThread();
-      if (thread!=null) thread.interrupt();
+      start.cancel(false);
     }
   } //ActionStop
 

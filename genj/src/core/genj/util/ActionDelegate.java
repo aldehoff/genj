@@ -19,7 +19,6 @@
  */
 package genj.util;
 
-import java.awt.Frame;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -132,7 +131,7 @@ public abstract class ActionDelegate implements Cloneable {
    * The thread running this asynchronously
    * @return thread or null
    */
-  public Thread getThread() {
+  protected Thread getThread() {
     if (async!=ASYNC_SAME_INSTANCE) return null;
     synchronized (threadLock) {
       if (thread==null) thread=new Thread(new CallAsyncExecute());
@@ -153,7 +152,21 @@ public abstract class ActionDelegate implements Cloneable {
    * (called asynchronously to EDT if !ASYNC_NOT_APPLICABLE)
    */
   protected abstract void execute();
-
+  
+  /**
+   * Trigger a syncExecute callback
+   */
+  protected final void sync() {
+    SwingUtilities.invokeLater(new CallSyncExecute());
+  }
+  
+  /**
+   * Implementor's functionality
+   * (sync callback)
+   */
+  protected void syncExecute() {
+  }
+  
   /**
    * Implementor's functionality (always sync to EDT)
    */
@@ -300,6 +313,19 @@ public abstract class ActionDelegate implements Cloneable {
   } //SyncPostExecute
   
   /**
+   * Sync (EDT) syncExecute
+   */
+  private class CallSyncExecute implements Runnable {
+    public void run() {
+      try {
+        syncExecute();
+      } catch (Throwable t) {
+        handleThrowable("syncExecute", t);
+      }
+    }
+  } //SyncPostExecute
+  
+  /**
    * Sync (EDT) handle throwable
    */
   private class CallSyncHandleThrowable implements Runnable {
@@ -315,7 +341,7 @@ public abstract class ActionDelegate implements Cloneable {
       }
     }
   } //SyncHandleThrowable
-
+  
   /**
    * Action - noop
    */
@@ -328,21 +354,5 @@ public abstract class ActionDelegate implements Cloneable {
     }
   } //ActionNOOP
   
-  /**
-   * A default Frame close Action
-   */
-  public static class ActionDisposeFrame extends ActionDelegate {
-    /** a frame */
-    private Frame frame;
-    /** constructor */
-    public ActionDisposeFrame(Frame f) {
-      frame = f;
-    }
-    /** run */
-    public void execute() {
-      frame.dispose();
-    }
-  }
-
 } //ActionDelegate
 
