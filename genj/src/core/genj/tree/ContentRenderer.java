@@ -30,8 +30,10 @@ import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Iterator;
 
+import genj.gedcom.Entity;
 import gj.awt.geom.Path;
 import gj.model.Arc;
+import gj.model.Node;
 import gj.ui.UnitGraphics;
 
 /**
@@ -48,23 +50,16 @@ public class ContentRenderer {
   /** shape color for arcs */
   /*package*/ Color cArcs = null;
 
-  /**
-   * The dimension of the content
-   */
-  public Dimension getDimension(Model model) {
-    Rectangle2D bounds = model.getBounds();
-    int 
-      w = UnitGraphics.units2pixels(bounds.getWidth (), UnitGraphics.CENTIMETERS),
-      h = UnitGraphics.units2pixels(bounds.getHeight(), UnitGraphics.CENTIMETERS);
-    return new Dimension(w,h);
-  }
+  /** selected color */
+  /*package*/ Color cSelectedShape = null;
+
+  /** an entity that we consider selected */
+  /*package*/ Entity selection = null;
 
   /**
    * Render the content
    */
-  public void render(Graphics g, Model model) {  
-    // go 2d
-    UnitGraphics ug = new UnitGraphics(g, UnitGraphics.CENTIMETERS, UnitGraphics.CENTIMETERS);
+  public void render(UnitGraphics ug, Model model) {  
     // translate to center
     Rectangle2D bounds = model.getBounds();
     ug.translate(-bounds.getX(), -bounds.getY());
@@ -85,24 +80,33 @@ public class ContentRenderer {
     Iterator it = nodes.iterator();
     while (it.hasNext()) {
       // grab node
-      Model.MyNode node = (Model.MyNode)it.next();
-      Point2D pos = node.getPosition();
-      double 
-        x = pos.getX(),
-        y = pos.getY();
-      Object content = node.getContent();
-      // draw its shape & content
-      Shape shape = node.getShape();
-      if (shape!=null) {
-        g.setColor(cIndiShape);
-        g.draw(shape, x, y, false);
-        g.pushClip(x, y, shape.getBounds2D());
-        renderContent(g, x, y, content);
-        g.popClip();
-      } else {
-        renderContent(g, x, y, content);
-      }
+      Node node = (Node)it.next();
+      // render it
+      renderNode(g, node);
       // next
+    }
+    // done
+  }
+  
+  /**
+   * Render a node
+   */
+  private void renderNode(UnitGraphics g, Node node) {
+    // parameters
+    Point2D pos = node.getPosition();
+    double 
+      x = pos.getX(),
+      y = pos.getY();
+    Object content = node.getContent();
+    // draw its shape & content
+    Shape shape = node.getShape();
+    if (shape!=null) {
+      if (cSelectedShape!=null&&content==selection) g.setColor(cSelectedShape);
+      else g.setColor(cIndiShape);
+      g.draw(shape, x, y, false);
+      g.pushClip(x, y, shape.getBounds2D());
+      renderContent(g, x, y, content);
+      g.popClip();
     }
     // done
   }

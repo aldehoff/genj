@@ -23,23 +23,36 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.Property;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ViewPortAdapter;
+import genj.view.CurrentSupport;
+import genj.view.ViewManager;
+import gj.ui.UnitGraphics;
 
 /**
  * TreeView
  */
-public class TreeView extends JScrollPane {
+public class TreeView extends JScrollPane implements CurrentSupport {
   
   /*package*/ static final Resources resources = new Resources(TreeView.class); 
+  
+  /** the units we use */
+  private final static double UNITS = UnitGraphics.CENTIMETERS;
   
   /** our model */
   private Model model;
@@ -50,6 +63,9 @@ public class TreeView extends JScrollPane {
   /** our content renderer */
   private ContentRenderer contentRenderer = new ContentRenderer();
   
+  /** our current selection */
+  private Entity currentEntity = null;
+  
   /**
    * Constructor
    */
@@ -58,7 +74,40 @@ public class TreeView extends JScrollPane {
     setViewportView(new ViewPortAdapter(content));
     // init model
     model = new Model((Fam)gedcm.getEntities(Gedcom.FAMILIES).get(0));
+    // click listening
+    content.addMouseListener(new MouseGlue());
     // done
+  }
+  
+  /**
+   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
+   */
+  public void setCurrentEntity(Entity entity) {
+    // anything new?
+    if (entity==currentEntity) return;
+    // allowed?
+    if (!(entity instanceof Indi||entity instanceof Fam)) return;
+    // get and show
+    currentEntity = entity;
+    repaint();
+    // done
+  }
+
+  /**
+   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
+   */
+  public void setCurrentProperty(Property property) {
+  }
+
+  /**
+   * Resolves entity at given position
+   */
+  public Entity getEntityAt(Point pos) {
+    Rectangle2D bounds = model.getBounds();
+    return model.getEntity(
+      UnitGraphics.pixels2units(pos.x,UNITS)+bounds.getMinX(), 
+      UnitGraphics.pixels2units(pos.y,UNITS)+bounds.getMinY()
+    );
   }
   
   /**
@@ -70,24 +119,47 @@ public class TreeView extends JScrollPane {
      * @see java.awt.Component#getPreferredSize()
      */
     public Dimension getPreferredSize() {
-      return contentRenderer.getDimension(model);
+      Rectangle2D bounds = model.getBounds();
+      int 
+        w = UnitGraphics.units2pixels(bounds.getWidth (), UNITS),
+        h = UnitGraphics.units2pixels(bounds.getHeight(), UNITS);
+      return new Dimension(w,h);
     }
   
     /**
      * @see javax.swing.JComponent#paintComponent(Graphics)
      */
     protected void paintComponent(Graphics g) {
-      g.setColor(Color.blue);
-      g.fillRect(0,0,1024,1024);
+      // go 2d
+      UnitGraphics ug = new UnitGraphics(g, UNITS, UNITS);
       // init renderer
-      contentRenderer.cBackground = Color.white;
-      contentRenderer.cIndiShape  = Color.black;
-      contentRenderer.cArcs       = Color.blue;
+      contentRenderer.cBackground    = Color.white;
+      contentRenderer.cIndiShape     = Color.black;
+      contentRenderer.cArcs          = Color.blue;
+      contentRenderer.cSelectedShape = Color.red;
+      contentRenderer.selection      = currentEntity;
       // let the renderer do its work
-      contentRenderer.render(g, model);
+      contentRenderer.render(ug, model);
       // done
     }
     
   } //Content
 
+  /**
+   * Glue to Mouse Stuff
+   */
+  private class MouseGlue extends MouseAdapter {
+    /**
+     * @see java.awt.event.MouseListener#mousePressed(MouseEvent)
+     */
+    public void mousePressed(MouseEvent e) {
+      // a new sleection?
+      Entity entity = getEntityAt(e.getPoint());
+      if (entity==currentEntity) return;
+      // propagate it
+      ViewManager.getInstance().setCurrentEntity(entity);
+      // done
+    }
+  } //MouseGlue
+  
 } //TreeView

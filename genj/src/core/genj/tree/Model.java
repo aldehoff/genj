@@ -24,6 +24,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import genj.gedcom.Entity;
@@ -62,9 +63,9 @@ public class Model implements Graph {
   /**
    * Constructor
    */
-  public Model(Fam root) {
+  public Model(Entity root) {
     // parse the tree
-    FamNode node = new FamNode(root);
+    Node node = parse(root);
     // layout
     try {
       TreeLayout tlayout = new TreeLayout();
@@ -76,6 +77,46 @@ public class Model implements Graph {
       e.printStackTrace();
     }
     // done
+  }
+  
+  /**
+   * builds the tree
+   */
+  private Node parse(Entity entity) {
+    if (entity instanceof Indi) return parse((Indi)entity);
+    if (entity instanceof Fam ) return parse((Fam )entity);
+    throw new IllegalArgumentException("Indi and Fam only");
+  }
+  
+  /**
+   * builds the tree for an individual
+   */
+  private Node parse(Indi indi) {
+    return new IndiNode(indi);
+  }
+  
+  /**
+   * builds the tree for a family
+   */
+  private Node parse(Fam fam) {
+    return new FamNode(fam);
+  }
+  
+  /**
+   * An entity by position
+   */
+  public Entity getEntity(double x, double y) {
+    // loop nodes
+    Iterator it = nodes.iterator();
+    while (it.hasNext()) {
+      MyNode node = (MyNode)it.next();
+      Point2D pos = node.getPosition();
+      Shape shape = node.getShape();
+      if (shape!=null&&shape.getBounds().contains(x-pos.getX(),y-pos.getY())) 
+        return node.entity;
+    }
+    // nothing found
+    return null;
   }
   
   /**
@@ -102,7 +143,7 @@ public class Model implements Graph {
   /**
    * A node for an entity
    */
-  /*package*/ abstract class MyNode implements Node {
+  private abstract class MyNode implements Node {
     
     /** the entity */
     private Entity entity;
@@ -160,7 +201,7 @@ public class Model implements Graph {
   /**
    * A node for an individual
    */
-  /*package*/ class IndiNode extends MyNode {
+  private class IndiNode extends MyNode {
     /** whether there are partners of the indi */
     private boolean hasPartners = false;
     /**
@@ -174,7 +215,7 @@ public class Model implements Graph {
     /**
      * Constructor
      */
-    private IndiNode(Indi indi, FamNode famc) {
+    private IndiNode(Indi indi, MyNode famc) {
       // delegate
       super(indi);
       // arc from famc to me
@@ -216,7 +257,7 @@ public class Model implements Graph {
   /**
    * A node for a family
    */
-  /*package*/ class FamNode extends MyNode {
+  private class FamNode extends MyNode {
     /**
      * Constructor
      */
@@ -282,7 +323,7 @@ public class Model implements Graph {
   /**
    * An arc between two individuals
    */
-  /*package*/ class MyArc implements Arc {
+  private class MyArc implements Arc {
     /** start */
     private MyNode start; 
     /** end */
