@@ -139,11 +139,9 @@ import java.awt.geom.Rectangle2D;
     // FIXME 20030417 doesn't work with big pad!
     Rectangle2D r = shapeMarrs.getBounds2D();
     if (model.isVertical()) {
-      r.add(0, shapeIndis.getBounds2D().getMinY());
-      r.add(0, shapeIndis.getBounds2D().getMaxY());
+      r.setRect(r.getMinX(), -metrics.hIndis/2-metrics.pad/2, r.getWidth(), metrics.hIndis+metrics.pad);
     } else {
-      r.add(shapeIndis.getBounds2D().getMinX(), 0);
-      r.add(shapeIndis.getBounds2D().getMaxX(), 0);
+      r.setRect(-metrics.wIndis/2-metrics.pad/2, r.getMinY(), metrics.wIndis+metrics.pad, r.getHeight());
     }
     shapeMarrs.setBounds2D(r);
    
