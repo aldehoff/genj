@@ -20,10 +20,16 @@ import javax.swing.JComponent;
  * by dragging a ruler */
 public class ScreenResolutionScale extends JComponent {
   
-  /** current dots per cm */
-  private Point2D.Double dpc = new Point2D.Double( 
+  /** global dots per cm */
+  private static Point2D.Double globalDpc = new Point2D.Double( 
     0.393701D * Toolkit.getDefaultToolkit().getScreenResolution(),
     0.393701D * Toolkit.getDefaultToolkit().getScreenResolution()
+  );
+
+  /** current dots per cm */
+  private Point2D.Double dpc = new Point2D.Double( 
+    globalDpc.x,
+    globalDpc.y
   );
 
   /**
@@ -35,16 +41,21 @@ public class ScreenResolutionScale extends JComponent {
   /**
    * Set dotspercentimeters
    */
-  public void setDotsPerCm(Point2D set) {
-    dpc.x = set.getX();
-    dpc.y = set.getY();
-    repaint();
+  public static void setDotsPerCm(Point2D set) {
+    globalDpc.x = set.getX();
+    globalDpc.y = set.getY();
   }
   
   /**
    * Get dotspercentimeters   */
-  public Point2D getDotsPerCm() {
-    return new Point2D.Double(dpc.x, dpc.y);
+  public static Point2D getDotsPerCm() {
+    return new Point2D.Double(globalDpc.x, globalDpc.y);
+  }
+  
+  /**
+   * Apply current settings to global   */
+  public void apply() {
+    setDotsPerCm(dpc);
   }
   
   /**

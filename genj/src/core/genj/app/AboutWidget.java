@@ -36,7 +36,6 @@ import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ScreenResolutionScale;
 import genj.view.ViewManager;
-import gj.ui.UnitGraphics;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -313,7 +312,6 @@ public class AboutWidget extends JPanel{
       
       // create ruler for adjusting resolution
       screenResRuler = new ScreenResolutionScale();
-      screenResRuler.setDotsPerCm(UnitGraphics.getDPC());
       
       gh.add(new JLabel("Resolution (cm)"), 0,2,1,1);
       gh.add(screenResRuler          , 1,2,1,1, gh.GROW_BOTH      |gh.FILL_BOTH      );
@@ -344,7 +342,7 @@ public class AboutWidget extends JPanel{
       /** run */
       public void execute() {
         // update screen resolution
-        UnitGraphics.setDPC(screenResRuler.getDotsPerCm());
+        screenResRuler.apply();
         // update lnf
         if (comboLnfs!=null) {
           LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();

@@ -31,7 +31,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
-import gj.ui.UnitGraphics;
+import genj.util.swing.ScreenResolutionScale;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -106,7 +106,7 @@ public class App {
     
     // Preset resolution (dots per centimeters)
     Point2D dpc = registry.get("resolution",(Point2D)null); 
-    if (dpc!=null) UnitGraphics.setDPC(dpc);
+    if (dpc!=null) ScreenResolutionScale.setDotsPerCm(dpc);
 
     // Disclaimer
     if (registry.get("disclaimer",0)==0) {
@@ -144,7 +144,7 @@ public class App {
    */
   public void shutdown() {
     // remember resolution 
-    registry.put("resolution", UnitGraphics.getDPC());
+    registry.put("resolution", ScreenResolutionScale.getDotsPerCm());
     // tell BlueprintManager
     BlueprintManager.getInstance().shutdown();
     // close all frames we know

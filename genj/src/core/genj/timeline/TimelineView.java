@@ -26,6 +26,7 @@ import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.DoubleValueSlider;
+import genj.util.swing.ScreenResolutionScale;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.ContextPopupSupport;
 import genj.view.CurrentSupport;
@@ -61,7 +62,7 @@ import javax.swing.event.ChangeListener;
 public class TimelineView extends JPanel implements ToolBarSupport, CurrentSupport, ContextPopupSupport {
 
   /** the units we use */
-  private final Point2D UNITS = UnitGraphics.getDPC();
+  private final Point2D UNITS = ScreenResolutionScale.getDotsPerCm();
   
   /** resources */
   /*package*/ final static Resources resources = new Resources("genj.timeline");
@@ -382,7 +383,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
       rulerRenderer.cTick = csRuler.getColor("tick");
       // prepare UnitGraphics
       UnitGraphics graphics = new UnitGraphics(g, 
-        UnitGraphics.getDPC().getX()*cmPerYear, 
+        UNITS.getX()*cmPerYear, 
         getFontMetrics(getFont()).getHeight()+1
       );
       graphics.translate(-model.min,0);

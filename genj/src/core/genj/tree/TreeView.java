@@ -34,6 +34,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.ScreenResolutionScale;
 import genj.util.swing.ViewPortAdapter;
 import genj.util.swing.ViewPortOverview;
 import genj.view.ContextPopupSupport;
@@ -72,7 +73,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /*package*/ static final Resources resources = new Resources(TreeView.class);
   
   /** the units we use */
-  private final Point2D UNITS = UnitGraphics.getDPC();
+  private final Point2D UNITS = ScreenResolutionScale.getDotsPerCm();
   
   /** our model */
   /*package*/ Model model;
