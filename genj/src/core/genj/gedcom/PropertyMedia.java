@@ -47,22 +47,20 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
   }
 
   /**
-   * Returns the logical name of the proxy-object which knows this object
+   * This will be called once when instantiation has
+   * happend - it's our chance to substitute this with
+   * a read-only value if no reference applicable
    */
-  public String getProxy() {
-    // 20021113 if linked then we stay XRef
-    if (super.getReferencedEntity()!=null)
-      return super.getProxy();
-    // empty
-    return "SimpleValue";    
+  /*package*/ Property init(String tag, String value) throws GedcomException {
+    // expecting NOTE
+    assume("OBJE".equals(tag), UNSUPPORTED_TAG);
+    // ONLY for @..@!!!
+    if (value.startsWith("@")&&value.endsWith("@"))
+      return super.init(tag,value);
+    // switch to ro value
+    return new PropertySimpleReadOnly().init(tag, value);
   }
-  
-  /**
-   * @see genj.gedcom.Property#isReadOnly()
-   */
-  public boolean isReadOnly() {
-    return true;
-  }
+
 
   /**
    * Returns the tag of this property
@@ -108,15 +106,6 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
   }
   
   /**
-   * @see genj.gedcom.PropertyXRef#isValid()
-   */
-  public boolean isValid() {
-    // always because might be inline instead of referenced target
-    return true;
-  }
-
-
-  /**
    * The expected referenced type
    */
   public String[] getTargetTypes() {
@@ -131,36 +120,4 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     return ps.isEmpty() ? null : ((IconValueAvailable)ps.get(0)).getValueAsIcon();
   }
   
-  /**
-   * Returns the property file for this OBJE
-   */
-  public PropertyFile getFile() {
-    // linked target?
-    Media target = (Media )super.getReferencedEntity();
-    if (target!=null) return target.getFile();
-    // sub?
-    Property file = getProperty("FILE", true);
-    return (file instanceof PropertyFile) ? (PropertyFile)file : null;    
-  }
-  
-  /**
-   * Returns the title of this media
-   */
-  private String getTitle() {
-    Property title = getProperty("TITL");
-    return title!=null ? title.getValue() : EMPTY_STRING; 
-  }
-
-  /**
-   * @see genj.gedcom.PropertyXRef#overlay(genj.util.swing.ImageIcon)
-   */
-  protected ImageIcon overlay(ImageIcon img) {
-    // used as a reference? go ahead and overlay!
-    if (super.getReferencedEntity()!=null)
-      return super.overlay(img);
-    // used inline! no overlay!
-    return img;
-  }
-
-
 } //PropertyMedia
