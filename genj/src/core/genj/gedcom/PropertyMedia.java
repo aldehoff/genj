@@ -138,13 +138,14 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     // .. and point to it
     setTarget(fxref);
 
-    // Are there any properties that can be deleted ?
-    Property[] known = getKnownProperties();
-    for (int i=0;i<known.length;i++) {
-      TagPath path = new TagPath(getTag()+":"+known[i].getTag());
-      Property[] props = getProperties(path,false);
-      delProperties(props);
-    }
+//  20020209 guess we shouldn't remove stuff that still might be of some importance
+//    // Are there any properties that can be deleted ?
+//    Property[] known = getKnownProperties();
+//    for (int i=0;i<known.length;i++) {
+//      TagPath path = new TagPath(getTag()+":"+known[i].getTag());
+//      Property[] props = getProperties(path,false);
+//      delProperties(props);
+//    }
 
     // Done
 
