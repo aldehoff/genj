@@ -434,17 +434,19 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       PointInTime when = model.getPointInTime(year);
       int days = (int)Math.ceil(5F/DPC.getX()/cmPerYear*365);
       // collect events and their text
-      WordBuffer text = new WordBuffer();
-      text.append("<html><body>");
       Iterator it = Repository.getInstance().getEvents(when, days).iterator();
-      for (int i=0;i<10&&it.hasNext();i++) {
-        text.append("<div>");
-        text.append(it.next());
-        text.append("</div>");
+      WordBuffer text = new WordBuffer();
+      if (it.hasNext()) {
+	      text.append("<html><body>");
+	      for (int i=0;i<10&&it.hasNext();i++) {
+	        text.append("<div>");
+	        text.append(it.next());
+	        text.append("</div>");
+	      }
+	      text.append("</body></html>");
       }
-      text.append("</body></html>");
       // set tooltip
-      setToolTipText(text.toString());
+      setToolTipText(text.length()==0 ? null : text.toString());
       // done
     }
     
