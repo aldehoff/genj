@@ -24,7 +24,7 @@ import genj.window.CloseWindow;
 /**
  * GenJ - Report
  * @author Carsten Muessig <carsten.muessig@gmx.net>
- * @version 1.0
+ * @version 1.01
  */
 public class ReportHTMLTable extends Report {
 	  
@@ -73,9 +73,6 @@ public class ReportHTMLTable extends Report {
 	  
 	  /** whether to translate between unicode and html or not (slow!) */
 	  public boolean isUnicode2HTML = true;
-
-	  /** A <pre>&nbsp</pre> looks better than an empty String in a HTML cell */
-	  private final static String SPACE = "&nbsp;";
 	  
 	  /** HTML Coded Character Set (see http://www.w3.org/MarkUp/html-spec/html-spec_13.html)*/
 	  private final static String[] codeTable = {
@@ -143,7 +140,7 @@ public class ReportHTMLTable extends Report {
 	  private static Hashtable unicode2html = initializeUnicodeSupport();
 	  
 	  /** this report's version */
-	  public static final String VERSION = "1.0";
+	  public static final String VERSION = "1.01";
 	  
 	  /* possible parameters for printEmiImmiNatu() in order
 	     to implement this methode generic */
@@ -236,6 +233,7 @@ public class ReportHTMLTable extends Report {
 	    
 	    // examine the last names
 		if(lastNameTable) {
+			String lastName;
 			try {
 				// initialize print writer
 				htmlOut = new PrintWriter(new FileOutputStream(new File(dir, "lastNames.html")));
@@ -248,15 +246,19 @@ public class ReportHTMLTable extends Report {
 		  	// write table header
 		  	htmlOut.println("<table border=1 cellspacing=1>");
 		  	// get Indi's last names and put them into a ReferenceSet
-		  	for(int i=0;i<indis.length;i++)
-		  		set.add(((Indi)indis[i]).getLastName(), indis[i].getId());
+		  	for(int i=0;i<indis.length;i++) {
+		  		lastName = ((Indi)indis[i]).getLastName();
+		  		if(lastName.length()==0)
+		  			lastName = i18n("unknown");
+		  		set.add(lastName, indis[i].getId());
+		  	}
 		  	// write table header
 		  	htmlOut.println("<tr><td>"+i18n("lastNames")+"</td><td>"+i18n("frequency")+"</td></tr>");
 		  	// sort the table data
 		  	ArrayList sortedLastNames = new ArrayList(set.getKeys(sortLastNamesByName));
 		  	// loop over table data and write to the file
 		  	for(int i=0;i<sortedLastNames.size();i++) {
-		  		String lastName = (String)sortedLastNames.get(i);
+		  		lastName = (String)sortedLastNames.get(i);
 		  		htmlOut.println("<tr><td>"+wrapText(lastName)+"</td><td>"+set.getReferences(lastName).size()+"</td></tr>");
 		  	}
 		  	// write table footer
@@ -280,8 +282,12 @@ public class ReportHTMLTable extends Report {
 			  	htmlOut.println("<table border=1 cellspacing=1>");
 			  	for(int i=0;i<indis.length;i++) {
 			  		Property prop = indis[i].getProperty(new TagPath("INDI:BIRT:PLAC"));
-			  		if(prop!=null)
-			  			set.add(prop.toString(), indis[i].getId());
+			  		if(prop!=null) {
+			  			String birthPlace = prop.toString();
+			  			if(birthPlace.length()==0)
+			  				birthPlace = i18n("unknown");
+			  			set.add(birthPlace, indis[i].getId());
+			  		}
 			  	}
 			  	htmlOut.println("<tr><td>"+i18n("birthPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
 			  	ArrayList sortedBirthPlaces = new ArrayList(set.getKeys(sortBirthPlacesByName));
@@ -307,20 +313,37 @@ public class ReportHTMLTable extends Report {
 			  	htmlOut.println("<table border=1 cellspacing=1>");
 			  	for(int i=0;i<indis.length;i++) {
 			  		Property prop;
+			  		String baptismPlace;
 			  		/* individual identifier for each type of baptism
 			  		   becaus the underlying HashSet doesn't allow duplicates */
 		            prop = indis[i].getProperty(new TagPath("INDI:BAPM:PLAC"));
-				  		if(prop!=null)
-				  			set.add(prop.toString(), indis[i].getId()+"bapm");
+				  		if(prop!=null) {
+				  			baptismPlace = prop.toString();
+				  			if(baptismPlace.length()==0)
+				  				baptismPlace = i18n("unknown");
+				  			set.add(baptismPlace, indis[i].getId()+"bapm");
+				  		}
 		            prop = indis[i].getProperty(new TagPath("INDI:BAPL:PLAC"));
-				  		if(prop!=null)
-				  			set.add(prop.toString(), indis[i].getId()+"bapl");
+				  		if(prop!=null) {
+				  			baptismPlace = prop.toString();
+				  			if(baptismPlace.length()==0)
+				  				baptismPlace = i18n("unknown");
+				  			set.add(baptismPlace.toString(), indis[i].getId()+"bapl");
+				  		}
 		            prop = indis[i].getProperty(new TagPath("INDI:CHR:PLAC"));
-				  		if(prop!=null)
-				  			set.add(prop.toString(), indis[i].getId()+"chr");
+				  		if(prop!=null) {
+				  			baptismPlace = prop.toString();
+				  			if(baptismPlace.length()==0)
+				  				baptismPlace = i18n("unknown");
+				  			set.add(baptismPlace, indis[i].getId()+"chr");
+				  		}
 		            prop = indis[i].getProperty(new TagPath("INDI:CHRA:PLAC"));
-				  		if(prop!=null)
-				  			set.add(prop.toString(), indis[i].getId()+"chra");
+				  		if(prop!=null) {
+				  			baptismPlace = prop.toString();
+				  			if(baptismPlace.length()==0)
+				  				baptismPlace = i18n("unknown");
+				  			set.add(baptismPlace, indis[i].getId()+"chra");
+				  		}
 			  	}
 			  	htmlOut.println("<tr><td>"+i18n("baptismPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
 			  	ArrayList sortedBaptismPlaces = new ArrayList(set.getKeys(sortBaptismPlacesByName));
@@ -347,8 +370,12 @@ public class ReportHTMLTable extends Report {
 			  	for(int i=0;i<fams.length;i++) {
 			  		Property[] props = fams[i].getProperties(new TagPath("FAM:MARR:PLAC"));
 			  		if((props!=null) && (props.length>0)) {
-			  			for(int j=0;j<props.length;j++)
-			  				set.add(props[j].toString(), fams[i].getId()+j);
+			  			for(int j=0;j<props.length;j++) {
+				  			String marriagePlace = props[j].toString();
+				  			if(marriagePlace.length()==0)
+				  				marriagePlace = i18n("unknown");
+			  				set.add(marriagePlace, fams[i].getId()+j);
+			  			}
 			  		}
 			  	}
 			  	htmlOut.println("<tr><td>"+i18n("marriagePlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
@@ -414,8 +441,12 @@ public class ReportHTMLTable extends Report {
 			  	htmlOut.println("<table border=1 cellspacing=1>");
 			  	for(int i=0;i<indis.length;i++) {
 			  		Property prop = indis[i].getProperty(new TagPath("INDI:DEAT:PLAC"));
-			  		if(prop!=null)
-		  				set.add(prop.toString(), indis[i].getId());
+			  		if(prop!=null) {
+			  			String deathPlace = prop.toString();
+			  			if(deathPlace.length()==0)
+			  				deathPlace = i18n("unknown");
+		  				set.add(deathPlace, indis[i].getId());
+			  		}
 			  	}
 			  	htmlOut.println("<tr><td>"+i18n("deathPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
 			  	ArrayList sortedDeathPlaces = new ArrayList(set.getKeys(sortDeathPlacesByName));
@@ -470,12 +501,16 @@ public class ReportHTMLTable extends Report {
 		for(int i=0;i<indis.length;i++) {
 			Property[] props = indis[i].getProperties(new TagPath("INDI:"+tag+":PLAC"));
 			if((props!=null) && (props.length>0)) {
-				for(int j=0;j<props.length;j++)
-					set.add(props[j].toString(), indis[i].getId()+j);
-		  		}
+				for(int j=0;j<props.length;j++) {
+		  			String place = props[j].toString();
+		  			if(place.length()==0)
+		  				place = i18n("unknown");
+					set.add(place, indis[i].getId()+j);
+				}
+		  	}
 		}
 		//write the table header
-		htmlOut.println("<tr><td>"+i18n(title)+" places</td><td>"+i18n("frequency")+"</td></tr>");
+		htmlOut.println("<tr><td>"+i18n("title")+" places</td><td>"+i18n("frequency")+"</td></tr>");
 		// sort the table data
 		ArrayList sortedPlaces = new ArrayList(set.getKeys(sortByPlace));
 		// print the table data
