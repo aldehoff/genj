@@ -91,6 +91,9 @@ public class EntityRenderer {
   /** the graphics we're for */
   private Graphics graphics;
   
+  /** whether we have a debug mode */
+  private boolean isDebug = false; 
+  
   /**
    * 
    */  
@@ -154,6 +157,12 @@ public class EntityRenderer {
     g.setClip(oc.x,oc.y,oc.width,oc.height);
     
     // done
+  }
+  
+  /**
+   * Sets debug mode    */
+  public void setDebug(boolean set) {
+    isDebug = set;
   }
   
   /**
@@ -550,11 +559,16 @@ public class EntityRenderer {
       // find property
       Property p = getProperty();
       if (p==null) return;
-      // setup painting attributes
+      // setup painting attributes and bounds
       g.setColor(getForeground());
       g.setFont(getFont());
-      // render
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
+      // debug?
+      if (isDebug) {      
+        g.setColor(super.getForeground());
+        g.drawRect(r.x,r.y,r.width,r.height);
+      }
+      // clip and render
       Rectangle old = g.getClipBounds();
       g.clipRect(r.x, r.y, r.width, r.height);
       proxy.render(g, r, p, preference);
