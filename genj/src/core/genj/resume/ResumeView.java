@@ -24,7 +24,6 @@ import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.Selection;
 import genj.gedcom.GedcomListener;
 import genj.renderer.EntityRenderer;
 import genj.util.ActionDelegate;
@@ -161,15 +160,10 @@ public class ResumeView extends JPanel implements ToolBarSupport {
       repaint();
     }
     /**
-     * @see genj.gedcom.GedcomListener#handleClose(Gedcom)
-     */
-    public void handleClose(Gedcom which) {
-    }
-    /**
      * @see genj.gedcom.GedcomListener#handleSelection(Selection)
      */
-    public void handleSelection(Selection selection) {
-      setEntity(selection.getEntity());
+    public void handleSelection(Entity entity, boolean emphasized) {
+      setEntity(entity);
     }
   } //GedcomConnector
 

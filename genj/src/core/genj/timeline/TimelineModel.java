@@ -334,16 +334,9 @@ public class TimelineModel implements GedcomListener {
   }
 
   /**
-   * Gedcom is being closed
-   */
-  public void handleClose(Gedcom which) {
-    // I won't do anything
-  }
-
-  /**
    * Entity in Gedcom has been selected
    */
-  public void handleSelection(Selection selection) {
+  public void handleSelection(Entity entity, boolean emphasized) {
     // I won't do anything
   }
 

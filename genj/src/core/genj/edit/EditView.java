@@ -27,7 +27,6 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
-import genj.gedcom.Selection;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.ImgIcon;
@@ -375,12 +374,6 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   }
 
   /**
-   * Notification that an existing gedcom has been closed
-   */
-  public void gedcomClosed(Gedcom which) {
-  }
-
-  /**
    * Notification that a change in a Gedcom-object took place.
    */
   public void handleChange(Change change) {
@@ -455,29 +448,11 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   }
 
   /**
-   * Notification that the gedcom is being closed
-   */
-  public void handleClose(Gedcom which) {
-
-    // Empty stack
-    returnStack.removeAllElements();
-
-    // Leave entity
-    if (entity!=null) {
-      setEntity(null);
-    }
-
-    // Forget Gedcom
-    gedcom.removeListener(this);
-  }
-
-  /**
    * Notification that an entity has been selected.
    */
-  public void handleSelection(Selection selection) {
-
+  public void handleSelection(Entity entity, boolean emphasized) {
     if (!actionCheckStick.isSelected()) {
-      setEntity(selection.getEntity());
+      setEntity(entity);
     }
   }
 

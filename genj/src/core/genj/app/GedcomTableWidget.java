@@ -20,9 +20,9 @@
 package genj.app;
 
 import genj.gedcom.Change;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Selection;
 import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.swing.ImgIconConverter;
@@ -39,6 +39,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
@@ -158,15 +159,19 @@ public class GedcomTableWidget extends JTable {
   }
 
   /**
+   * Removes a gedcom
+   */
+  public void removeGedcom(Gedcom gedcom) {
+    model.removeGedcom(gedcom);
+  }
+
+  /**
    * A model keeping track of a bunch of Gedcoms
    */
-  public class Model implements TableModel, GedcomListener {
+  public class Model extends AbstractTableModel implements GedcomListener {
     
     /** the Gedcoms we know about */
     private Vector gedcoms = new Vector(10);
-    
-    /** the listeners */
-    private Vector listeners = new Vector(2);
     
     /**
      * Selected Gedcom
@@ -190,35 +195,23 @@ public class GedcomTableWidget extends JTable {
     public void addGedcom(Gedcom gedcom) {
       gedcoms.addElement(gedcom);
       gedcom.addListener(this);
-      fireTableChange(-1);
+      fireTableDataChanged();
     }
 
     /**
-     * @see javax.swing.table.TableModel#addTableModelListener(TableModelListener)
+     * Removes a gedcom
      */
-    public void addTableModelListener(TableModelListener l) {
-      listeners.addElement(l);
+    public void removeGedcom(Gedcom gedcom) {
+      gedcoms.removeElement(gedcom);
+      gedcom.removeListener(this);
+      fireTableDataChanged();
     }
-  
-    /**
-     * @see javax.swing.table.TableModel#getColumnClass(int)
-     */
-    public Class getColumnClass(int columnIndex) {
-      return String.class;
-    }
-  
+
     /**
      * @see javax.swing.table.TableModel#getColumnCount()
      */
     public int getColumnCount() {
       return headers.length;
-    }
-  
-    /**
-     * @see javax.swing.table.TableModel#getColumnName(int)
-     */
-    public String getColumnName(int columnIndex) {
-      return ""+columnIndex;
     }
   
     /**
@@ -238,64 +231,19 @@ public class GedcomTableWidget extends JTable {
     }
   
     /**
-     * @see javax.swing.table.TableModel#isCellEditable(int, int)
-     */
-    public boolean isCellEditable(int rowIndex, int columnIndex) {
-      return false;
-    }
-  
-    /**
-     * @see javax.swing.table.TableModel#removeTableModelListener(TableModelListener)
-     */
-    public void removeTableModelListener(TableModelListener l) {
-      listeners.remove(l);
-    }
-  
-    /**
-     * @see javax.swing.table.TableModel#setValueAt(Object, int, int)
-     */
-    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-      // ignored
-    }
-    
-    /**
-     * notification that num
-     */
-    public void fireTableChange(int row) {
-      TableModelEvent ev = (row<0 ? new TableModelEvent(this) : new TableModelEvent(this,row) );
-      Enumeration e = listeners.elements();
-      while (e.hasMoreElements()) {
-        ((TableModelListener)e.nextElement()).tableChanged(ev);
-      }
-    }
-  
-    /**
      * @see genj.gedcom.GedcomListener#handleChange(Change)
      */
     public void handleChange(Change change) {
       if (change.isChanged(change.EADD)||change.isChanged(change.EDEL)) {
-        Gedcom gedcom = change.getGedcom();
-        for (int g=0;g<gedcoms.size(); g++) {
-          if (gedcoms.elementAt(g)==gedcom) {
-            fireTableChange(g);
-            break;
-          }
-        }
+        fireTableDataChanged();
       }
-    }
-
-    /**
-     * @see genj.gedcom.GedcomListener#handleClose(Gedcom)
-     */
-    public void handleClose(Gedcom which) {
-      gedcoms.remove(which);
-      fireTableChange(-1);
     }
 
     /**
      * @see genj.gedcom.GedcomListener#handleSelection(Selection)
      */
-    public void handleSelection(Selection selection) {
+    public void handleSelection(Entity entity, boolean emphasized) {
+      // ignored
     }
 
   } // Model

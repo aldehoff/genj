@@ -26,7 +26,7 @@ import genj.util.*;
 /**
  * The object-representation of a Gedom file
  */
-public class Gedcom implements GedcomListener {
+public class Gedcom {
 
   private boolean          isTransaction = false;
   private boolean          hasUnsavedChanges;
@@ -93,24 +93,6 @@ public class Gedcom implements GedcomListener {
    */
   public synchronized void addListener(GedcomListener which) {
     listeners.addElement(which);
-  }
-
-  /**
-   * Close Gedcom object
-   */
-  public void close() {
-
-    // Signal to listeners
-    Object ls[] = new Object[listeners.size()];
-    listeners.copyInto(ls);
-
-    GedcomListener listener;
-    for (int i=0;i<ls.length;i++) {
-      listener  = (GedcomListener)ls[i];
-      listener.handleClose(this);
-    }
-
-    // Done
   }
 
   /**
@@ -868,7 +850,7 @@ public class Gedcom implements GedcomListener {
    * Proxy for notifying the selection of an entity. Can be used
    * by listeners to notify others in case of a selection event.
    */
-  public synchronized void fireEntitySelected(GedcomListener from,Entity which,boolean doubleClick)  {
+  public synchronized void fireEntitySelected(Entity which, boolean emphasized)  {
 
     // Is there a transaction running?
     if (isTransaction) {
@@ -882,14 +864,9 @@ public class Gedcom implements GedcomListener {
     lastEntity = which;
 
     // Signal to listeners
-    Selection selection = new Selection(which, from, doubleClick);
     GedcomListener listener;
-
     for (int i=0;i<listeners.size();i++) {
-      listener  = (GedcomListener)listeners.elementAt(i);
-      if (listener != from) {
-        listener.handleSelection(selection);
-      }
+      ((GedcomListener)listeners.elementAt(i)).handleSelection(which, emphasized);
     }
 
     // Done
@@ -1117,24 +1094,6 @@ public class Gedcom implements GedcomListener {
   }
   
   /**
-   * Notification that a change in a Gedcom-object took place.
-   */
-  public void handleChange(Change change) {
-  }
-
-  /**
-   * Notification that the gedcom is being closed
-   */
-  public void handleClose(Gedcom which) {
-  }
-
-  /**
-   * Notification that an entity has been selected.
-   */
-  public void handleSelection(Selection selection) {
-  }
-
-  /**
    * Returns wether there are two entities with same ID
    */
   public boolean hasDuplicates() {
@@ -1180,7 +1139,8 @@ public class Gedcom implements GedcomListener {
    *        properties of merged entities.
    */
   public static Gedcom merge(final Gedcom g1, final Gedcom g2, Entity[][] matches, int options) {
-
+throw new IllegalArgumentException("Merging is not supported yet");
+/*
     // Valid parameters?
     if ((g1==null)||(g2==null))
       throw new IllegalArgumentException("Candidates have to be non null");
@@ -1306,6 +1266,7 @@ public class Gedcom implements GedcomListener {
 
     // Done
     return result;
+*/    
   }
 
   /**

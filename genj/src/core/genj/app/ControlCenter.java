@@ -211,16 +211,14 @@ public class ControlCenter extends JPanel {
         mh.createItem(new ActionView(ds[i]));
       mh.setEnabled(true).setCollection(null).setResources(App.resources);    
 
-    mh.popMenu().createMenu("cc.menu.tools");
+    mh.popMenu().setEnabled(false).createMenu("cc.menu.tools");
 
-      mh.setEnabled(false).setCollection(gedcomButtons);    
       mh.createItem(new ActionMerge());
       mh.createItem(new ActionVerify());
-      mh.setEnabled(true).setCollection(null);    
 
     result.add(Box.createHorizontalGlue());
 
-    mh.popMenu().createMenu("cc.menu.help");
+    mh.popMenu().setEnabled(true).createMenu("cc.menu.help");
     
       mh.createItem(new ActionHelp());
       mh.createItem(new ActionAbout());
@@ -826,9 +824,9 @@ public class ControlCenter extends JPanel {
   
       // Close all views for that gedcom
       ViewManager.getInstance().closeViews(gedcom);
-  
-      // Close instance
-      gedcom.close();
+      
+      // forget about it
+      tGedcoms.removeGedcom(gedcom);
   
       // Done
     } 

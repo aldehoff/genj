@@ -24,7 +24,6 @@ import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.Selection;
 import genj.gedcom.GedcomListener;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -87,10 +86,8 @@ public class NavigatorView extends JPanel {
         if (change.getEntities(change.EDEL).contains(indi)) setEntity(change.getGedcom(), null);
         else setEntity(change.getGedcom(), indi);
       }
-      public void handleClose(Gedcom which) {
-      }
-      public void handleSelection(Selection selection) {
-        setEntity(selection.getEntity().getGedcom(), selection.getEntity());
+      public void handleSelection(Entity entity, boolean emphasized) {
+        setEntity(entity.getGedcom(), entity);
       }
     });
     
@@ -182,7 +179,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getFather(), true);
+      indi.getGedcom().fireEntitySelected(indi.getFather(), true);
     }
   }
       
@@ -196,7 +193,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getMother(), true);
+      indi.getGedcom().fireEntitySelected(indi.getMother(), true);
     }
   }
         
@@ -210,7 +207,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getYoungerSibling(), true);
+      indi.getGedcom().fireEntitySelected(indi.getYoungerSibling(), true);
     }
   }      
   
@@ -224,7 +221,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getOlderSibling(), true);
+      indi.getGedcom().fireEntitySelected(indi.getOlderSibling(), true);
     }
   }
         
@@ -238,7 +235,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getPartners()[0], true);
+      indi.getGedcom().fireEntitySelected(indi.getPartners()[0], true);
     }
   }
         
@@ -252,7 +249,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getChildren()[0], true);
+      indi.getGedcom().fireEntitySelected(indi.getChildren()[0], true);
     }
   }
   

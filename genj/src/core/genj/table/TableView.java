@@ -107,27 +107,17 @@ public class TableView extends JPanel implements ToolBarSupport {
       /** @see genj.gedcom.GedcomListener#handleChange(Change) */
       public void handleChange(Change change) {
       }
-      /** @see genj.gedcom.GedcomListener#handleClose(Gedcom) */
-      public void handleClose(Gedcom which) {
-      }
       /** @see genj.gedcom.GedcomListener#handleSelection(Selection) */
-      public void handleSelection(Selection selection) {
-        Entity entity = selection.getEntity();
+      public void handleSelection(Entity entity, boolean emphasized) {
         // a type that we're interested in?
         if (entity.getType()!=tableModel.getType()) return;
         // already selected?
-        int old = table.getSelectionModel().getLeadSelectionIndex();
-        if (old>=0 && tableModel.getEntity(old)==entity) return;
+        int row = table.getSelectionModel().getLeadSelectionIndex();
+        if (row>=0 && tableModel.getEntity(row)==entity) return;
         // change selection
-        EntityList es = TableView.this.gedcom.getEntities(entity.getType());
-        for (int e=0; e<es.getSize(); e++) {
-          if (es.get(e)==entity) {
-            table.getSelectionModel().setSelectionInterval(e,e);
-            if (table.getSelectionModel().getMinSelectionIndex()!=e)
-              table.scrollRectToVisible(table.getCellRect(e,0,true));
-            return;
-          }
-        }
+        row = tableModel.getRow(entity);
+        table.scrollRectToVisible(table.getCellRect(row,0,true));
+        table.getSelectionModel().setSelectionInterval(row,row);
         // done
       }
     });
@@ -265,7 +255,7 @@ public class TableView extends JPanel implements ToolBarSupport {
       int i = table.getSelectedRow();
       if (i<0) return;
       Entity e = tableModel.getEntity(i);
-      gedcom.fireEntitySelected(null, e, false);
+      gedcom.fireEntitySelected(e, false);
     }
   } //ActionMode
   

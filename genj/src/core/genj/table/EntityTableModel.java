@@ -6,7 +6,6 @@ import genj.gedcom.EntityList;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
-import genj.gedcom.Selection;
 import genj.gedcom.TagPath;
 import genj.util.ImgIcon;
 import genj.util.swing.SortableTableHeader;
@@ -142,6 +141,16 @@ import javax.swing.table.TableColumnModel;
   }
   
   /**
+   * Returns the row for given entity
+   */
+  /*package*/ int getRow(Entity e) {          
+    for (int r=0; r<rows.length; r++) {
+      if (rows[r].e==e) return r;
+    }
+    return -1;
+  }
+  
+  /**
    * Prepares the data grid
    */
   private void prepareRows() {
@@ -236,16 +245,9 @@ import javax.swing.table.TableColumnModel;
   }
 
   /**
-   * @see genj.gedcom.GedcomListener#handleClose(Gedcom)
-   */
-  public void handleClose(Gedcom which) {
-    // ignored
-  }
-
-  /**
    * @see genj.gedcom.GedcomListener#handleSelection(Selection)
    */
-  public void handleSelection(Selection selection) {
+  public void handleSelection(Entity entity, boolean emphasized) {
     // ignored
   }
 

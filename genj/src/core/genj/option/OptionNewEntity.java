@@ -203,8 +203,8 @@ public class OptionNewEntity extends Option implements ActionListener, GedcomLis
   /**
    * Notification that an entity has been selected.
    */
-  public void handleSelection(Selection selection) {
-    setContext(selection.getEntity().getGedcom());
+  public void handleSelection(Entity entity, boolean emphasized) {
+    setContext(entity.getGedcom());
   }
 
   /**

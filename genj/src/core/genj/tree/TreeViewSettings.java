@@ -43,11 +43,6 @@ public class TreeViewSettings extends JPanel implements ApplyResetSupport {
 
   private int entity = Gedcom.INDIVIDUALS;
 
-  private final static int[] filter = {
-    Gedcom.INDIVIDUALS,
-    Gedcom.FAMILIES
-  };
-
   private JComboBox comboTypes = new JComboBox();
   private Scala scalaZoom = new Scala();
   private JList listBookmarks = new JList();
@@ -67,9 +62,8 @@ public class TreeViewSettings extends JPanel implements ApplyResetSupport {
     upBookmark  = new JButton(resources.getString("bookmarks.up")),
     downBookmark= new JButton(resources.getString("bookmarks.down"));
 
-  private JTextField labelBookmark = new JTextField();
-
-  private EntitySelector entityBookmark = new EntitySelector();
+  private JTextField bookmarkLabel = new JTextField();
+  private JLabel bookmarkEntity = new JLabel();
 
   private JComboBox comboFont = new JComboBox();
   private final static Resources resources = new Resources("genj.tree");
@@ -129,10 +123,9 @@ public class TreeViewSettings extends JPanel implements ApplyResetSupport {
     pathTree.addTagPathTreeListener(tlistener);
 
     // Create Components
-    for (int i=0;i<filter.length;i++) {
-      comboTypes.addItem(Gedcom.getNameFor(filter[i],true));
-    }
-    entityBookmark.setFilter(filter);
+    comboTypes.addItem(Gedcom.getNameFor(Gedcom.INDIVIDUALS,true));
+    comboTypes.addItem(Gedcom.getNameFor(Gedcom.FAMILIES   ,true));
+    
     Insets ins = new Insets(0,0,0,0);
     addBookmark.setMargin(ins);
     delBookmark.setMargin(ins);
@@ -182,8 +175,8 @@ public class TreeViewSettings extends JPanel implements ApplyResetSupport {
       helper = new GridBagHelper(panel);
       row = 0;
 
-      helper.add(entityBookmark                ,1,row++,5,1);
-      helper.add(labelBookmark                 ,1,row++,5,1);
+      helper.add(bookmarkEntity                ,1,row++,5,1);
+      helper.add(bookmarkLabel                 ,1,row++,5,1);
 
       helper.add(addBookmark                   ,1,row  ,1,1,helper.FILL_NONE);
       helper.add(delBookmark                   ,2,row  ,1,1,helper.FILL_NONE);
@@ -202,10 +195,10 @@ public class TreeViewSettings extends JPanel implements ApplyResetSupport {
    * Adds a bookmark
    */
   private void addBookmark() {
-
+/*
     // Get information
     Entity entity = entityBookmark.getEntity();
-    String label  = labelBookmark.getText().trim();
+    String label  = bookmarkLabel.getText().trim();
 
     if ((entity==null)||(label.length()==0)) {
       return;
@@ -222,7 +215,7 @@ public class TreeViewSettings extends JPanel implements ApplyResetSupport {
     new_model.addElement(new Bookmark(entity,label));
 
     listBookmarks.setModel(new_model);
-
+*/
     // Done
   }
 
@@ -230,11 +223,7 @@ public class TreeViewSettings extends JPanel implements ApplyResetSupport {
    * Changes the type to the current ComboBox selection
    */
   private void changeType() {
-    int i = comboTypes.getSelectedIndex();
-    if (i==-1) {
-      return;
-    }
-    entity = filter[i];
+    entity = comboTypes.getSelectedIndex();
     reset();
   }
 
@@ -344,8 +333,6 @@ public class TreeViewSettings extends JPanel implements ApplyResetSupport {
 
     pathTree.setPaths(usedPaths);
     pathTree.setSelection(selectedPaths);
-
-    entityBookmark.setGedcom(t.getGedcom());
 
     layoutProperties.setFont(t.getFont());
     layoutProperties.setSizeOfEntities(t.getSize(entity));

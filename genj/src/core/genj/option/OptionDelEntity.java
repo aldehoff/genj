@@ -163,8 +163,8 @@ public class OptionDelEntity extends Option implements ActionListener, GedcomLis
   /**
    * Notification that an entity has been selected.
    */
-  public void handleSelection(Selection selection) {
-    setEntity(selection.getEntity());
+  public void handleSelection(Entity entity, boolean emphasized) {
+    setEntity(entity);
   }
 
   /**

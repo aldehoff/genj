@@ -106,11 +106,6 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
    * Notification that a change in a Gedcom-object took place.
    */
   public void handleChange(Change change) {
-
-    if ((change!=null)&&(change.getCause()==this)) {
-      return;
-    }
-
     // Recalculate Matches
     tMatch.setModel(new MatchModel());
 
@@ -118,16 +113,9 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
   }
 
   /**
-   * Notification that a Gedcom has been closed
-   */
-  public void handleClose(Gedcom which) {
-    // FIXME
-  }
-
-  /**
    * Notification that an entity has been selected.
    */
-  public void handleSelection(Selection selection) {
+  public void handleSelection(Entity entity, boolean emphasized) {
   }
 
   /**

@@ -31,12 +31,7 @@ public interface GedcomListener {
   public void handleChange(Change change);
 
   /**
-   * Notification that this gedcom is beeing closed
-   */
-  public void handleClose(Gedcom which);
-
-  /**
    * Notification that an entity has been selected.
    */
-  public void handleSelection(Selection selection);
+  public void handleSelection(Entity entity, boolean emphasized);
 }
