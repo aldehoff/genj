@@ -32,7 +32,6 @@ import genj.print.PrintRenderer;
 import genj.print.Printer;
 import genj.util.*;
 import genj.util.swing.ButtonHelper;
-import awtx.*;
 
 /**
  * A broker for Views into Gedcom information
