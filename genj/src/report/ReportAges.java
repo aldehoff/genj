@@ -130,7 +130,7 @@ public class ReportAges extends Report {
     private PointInTime calculateAveragePointInTime(PropertyDate p) {
         
         if(p.isRange()) {
-            String[] months = PointInTime.getMonths(false, true);
+            String[] months = PointInTime.GREGORIAN.getMonths(false, true);
             PointInTime a = p.getStart(), b = p.getEnd();
             double[] age = calculateAverageAge(a.getDay()+b.getDay()+a.getMonth()*30+b.getMonth()*30+a.getYear()*360+b.getYear()*360, 2);
             // calculateAverageAge returns int[] = {year, month, day}

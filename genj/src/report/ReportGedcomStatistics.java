@@ -26,7 +26,7 @@ import java.text.NumberFormat;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.41 2003-12-12 13:08:01 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.42 2004-02-25 02:47:17 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -333,7 +333,7 @@ public class ReportGedcomStatistics extends Report {
     PointInTime calculateAveragePointInTime(PropertyDate p) {
         
         if(p.isRange()) {
-            String[] months = PointInTime.getMonths(false, true);
+            String[] months = PointInTime.GREGORIAN.getMonths(false, true);
             PointInTime a = p.getStart(), b = p.getEnd();
             int[] age = calculateAverageAge(a.getDay()+b.getDay()+a.getMonth()*30+b.getMonth()*30+a.getYear()*360+b.getYear()*360, 2);
             // calculateAverageAge returns int[] = {year, month, day}

@@ -29,59 +29,42 @@ import java.util.StringTokenizer;
 /**
  * A point in time - either hebrew, roman, frenchr, gregorian or julian
  */
-public abstract class PointInTime implements Comparable {
+public class PointInTime implements Comparable {
 
   /** calendars */
   public final static Calendar
-    GREGORIAN = new Calendar("@#DGREGORIAN@", "gregorian", "images/Gregorian.gif"),
-    JULIAN    = new Calendar("@#DJULIAN@"   , "julian"   , "images/Julian.gif"),
-    HEBREW    = new Calendar("@#DHEBREW@"   , "hebrew"   , "images/Hebrew.gif"),
-    FRENCHR   = new Calendar("@#DFRENCH R@" , "french"   , "images/FrenchR.gif");
+    GREGORIAN = new Calendar("@#DGREGORIAN@", "gregorian", "images/Gregorian.gif", new String[]{ "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC" }),
+    JULIAN    = new Calendar("@#DJULIAN@"   , "julian"   , "images/Julian.gif"   , new String[]{ "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC" }),
+    HEBREW    = new Calendar("@#DHEBREW@"   , "hebrew"   , "images/Hebrew.gif"   , new String[]{ "TSH","CSH","KSL","TVT","SHV","ADR","ADS","NSN","IYR","SVN","TMZ","AAV","ELL" }),
+    FRENCHR   = new Calendar("@#DFRENCH R@" , "french"   , "images/FrenchR.gif"  , new String[]{ "VEND","BRUM","FRIM","NIVO","PLUV","VENT","GERM","FLOR","PRAI","MESS","THER","FRUC","COMP" });
   
   public final static Calendar[] CALENDARS = { GREGORIAN, JULIAN, HEBREW, FRENCHR };
     
-  /** month names */
-  private final static String 
-    MONTHS[] = { "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC" },
-    MONTHS_HEBR[] = { "TSH","CSH","KSL","TVT","SHV","ADR","ADS","NSN","IYR","SVN","TMZ","AAV","ELL" },
-    MONTHS_FREN[] = { "VEND","BRUM","FRIM","NIVO","PLUV","VENT","GERM","FLOR","PRAI","MESS","THER","FRUC","COMP" };
-
-  /** localized months */
-  private static Map
-    localizedMonthNames = new HashMap(),
-    abbreviatedMonthNames = new HashMap(); 
-
-  /**
-   * initialize months - loop through month names, remember localized value
-   * and calculate abbreviation (either first 3 characters or up to vertical
-   * bar marker e.g. juil|let)
-   */
-  {
-    for (int m=0;m<MONTHS.length;m++) {
-      String mmm = MONTHS[m];
-      String localized = Gedcom.getResources().getString("prop.date.mon."+mmm);
-      String abbreviated;
-      
-      // calculate abbreviation
-      int marker = localized.indexOf('|'); 
-      if (marker>0) {
-        abbreviated = localized.substring(0, marker);
-        localized = abbreviated + localized.substring(marker+1);
-      } else {
-        abbreviated = localized.length()>3 ? localized.substring(0,3) : localized;
-      }
-      
-      // remember
-      localizedMonthNames.put(mmm, localized);
-      abbreviatedMonthNames.put(mmm, abbreviated);
-      
-      // next
-    }
-  }
-  
   /** calendar */
   protected Calendar calendar = GREGORIAN;
   
+  /** values */
+  private int 
+    day = -1, 
+    month = -1, 
+    year = -1;
+
+  /**
+   * Constructor
+   */
+  protected PointInTime() {
+  }
+
+  /**
+   * Constructor
+   */
+  protected PointInTime(int d, int m, int y, Calendar cal) {
+    day = d;
+    month = m;
+    year = y;
+    calendar = cal;
+  }
+    
   /**
    * Returns the calendar
    */
@@ -92,17 +75,23 @@ public abstract class PointInTime implements Comparable {
   /**
    * Returns the year
    */
-  public abstract int getYear();
+  public int getYear() {
+    return year;
+  }
   
   /**
    * Returns the month (first month of year is 0=Jan)
    */
-  public abstract int getMonth();
+  public int getMonth() {
+    return month;    
+  }
 
   /**
    * Returns the day (first day of month is 0)
    */
-  public abstract int getDay();
+  public int getDay() {
+    return day;
+  }
 
   /**
    * Accessor to an immutable point in time
@@ -121,7 +110,7 @@ public abstract class PointInTime implements Comparable {
    * @param y year
    */
   public static PointInTime getPointInTime(int d, int m, int y, Calendar calendar) {
-    return new Impl(d, m, y, calendar);
+    return new PointInTime(d, m, y, calendar);
   }
   
   /**
@@ -141,7 +130,7 @@ public abstract class PointInTime implements Comparable {
    * @param string e.g. 25 MAY 1970
    */
   public static PointInTime getPointInTime(String string) {
-    Impl result = new Impl(-1,-1,-1, GREGORIAN);
+    PointInTime result = new PointInTime(-1,-1,-1, GREGORIAN);
     result.set(new StringTokenizer(string));
     return result;
   }
@@ -150,7 +139,9 @@ public abstract class PointInTime implements Comparable {
    * Setter (implementation dependant)
    */
   public void set(int d, int m, int y) {
-    throw new IllegalArgumentException("not supported");
+    day = d;
+    month = m;
+    year = y;
   }
   
   /**
@@ -159,16 +150,6 @@ public abstract class PointInTime implements Comparable {
   public void set(PointInTime other) {
     calendar = other.calendar;
     set(other.getDay(), other.getMonth(), other.getYear());
-  }
-  
-  /**
-   * Parse month
-   */
-  protected int parseMonth(String mmm) throws NumberFormatException {
-    for (int i=0;i<MONTHS.length;i++) {
-      if (MONTHS[i].equalsIgnoreCase(mmm)) return i;
-    }
-    throw new NumberFormatException();
   }
   
   /**
@@ -223,7 +204,7 @@ public abstract class PointInTime implements Comparable {
     // first and second are MMM YYYY
     if (!tokens.hasMoreTokens()) {
       try {
-        set(-1, parseMonth(first), Integer.parseInt(second));
+        set(-1, calendar.parseMonth(first), Integer.parseInt(second));
       } catch (NumberFormatException e) {
         return false;
       }
@@ -236,7 +217,7 @@ public abstract class PointInTime implements Comparable {
     // first, second and third are DD MMM YYYY
     if (!tokens.hasMoreTokens()) {
       try {
-        set( Integer.parseInt(first) - 1, parseMonth(second), Integer.parseInt(third));
+        set( Integer.parseInt(first) - 1, calendar.parseMonth(second), Integer.parseInt(third));
       } catch (NumberFormatException e) {
         return false;
       }
@@ -251,18 +232,7 @@ public abstract class PointInTime implements Comparable {
    * Checks for validity
    */
   public boolean isValid() {
-
-    // YYYY or MMM YYYY or DD MMMM YYYY
-    int year = getYear();
-    if (year<0)
-      return false;
-    int month = getMonth();
-    if (month<-1||month>=12)
-      return false;
-    int day = getDay();
-    if ((month<0&&day>=0)||day<-1||day>31)
-      return false;
-    return true;
+    return calendar.isValid(day,month,year);
   }
     
   /**
@@ -279,6 +249,8 @@ public abstract class PointInTime implements Comparable {
    */  
   public int compareTo(PointInTime other, int offset) {
 
+    // FIXME comparing PITs with different calendars must be handled
+    
     int result;
       
     // Year ?
@@ -333,45 +305,16 @@ public abstract class PointInTime implements Comparable {
       year = getYear();
       
     if (year>0) {
-      if (month>=0&&month<MONTHS.length) {
-        if (day>=0) 
+      if (month>=0) {
+        if (day>=0) {
           buffer.append(new Integer(day+1));
-        buffer.append(getMonth(localize, true));
+        }
+        buffer.append(calendar.getMonth(month, localize, true));
       }    
       buffer.append(new Integer(year));
     }
     
     return buffer;
-  }
-
-  /**
-   * Returns the localized month as string (either MAY or Mai)
-   */
-  public String getMonth(boolean localize, boolean abbreviate) {
-    // what's the numeric value?
-    int month = getMonth();
-    if (month<0||month>=12)
-      return "";
-    // calculate text
-    String mmm = MONTHS[month];
-    if (localize) 
-      mmm = abbreviate ? abbreviatedMonthNames.get(mmm).toString() : localizedMonthNames.get(mmm).toString();
-    // done
-    return mmm;
-  }
-  
-  /**
-   * Access to (localized) gedcom months 
-   */
-  public static String[] getMonths(boolean localize, boolean abbreviate) {
-    String[] result = new String[12];
-    for (int m=0;m<result.length;m++) {
-      String mmm = MONTHS[m];
-      if (localize) 
-        mmm = abbreviate ? abbreviatedMonthNames.get(mmm).toString() : localizedMonthNames.get(mmm).toString();
-      result[m] = mmm;
-    }
-    return result;
   }
 
   /**
@@ -440,56 +383,6 @@ public abstract class PointInTime implements Comparable {
   }
 
   /**
-   * a default impl
-   */
-  private static class Impl extends PointInTime {
-    
-    /** values */
-    private int day, month, year;
-    
-    /**
-     * Constructor
-     */
-    private Impl(int d, int m, int y, Calendar cal) {
-      day = d;
-      month = m;
-      year = y;
-      calendar = cal;
-    }
-    
-    /**
-     * @see genj.gedcom.PointInTime#getDay()
-     */
-    public int getDay() {
-      return day;
-    }
-
-    /**
-     * @see genj.gedcom.PointInTime#getMonth()
-     */
-    public int getMonth() {
-      return month;
-    }
-
-    /**
-     * @see genj.gedcom.PointInTime#getYear()
-     */
-    public int getYear() {
-      return year;
-    }
-    
-    /**
-     * @see genj.gedcom.PointInTime#set(int, int, int)
-     */
-    public void set(int d, int m, int y) {
-      day = d;
-      month = m;
-      year = y;
-    }
-
-  } //PIT
-
-  /**
    * Calendars we support
    */
   public static class Calendar {
@@ -498,12 +391,43 @@ public abstract class PointInTime implements Comparable {
     private String escape;
     private String name;
     private ImageIcon image;
+    private String[] months;
+    private Map
+      localizedMonthNames = new HashMap(),
+      abbreviatedMonthNames = new HashMap(); 
      
     /** Constructor */
-    private Calendar(String esc, String key, String img) {
+    private Calendar(String esc, String key, String img, String[] mOnths) {
+      
+      // initialize members
+      months = mOnths;
       escape = esc;
       name = Gedcom.resources.getString("prop.date.cal."+key);
       image = new ImageIcon(Gedcom.class, img);
+      
+      // localize months
+      for (int m=0;m<months.length;m++) {
+        String mmm = months[m];
+        String localized = Gedcom.getResources().getString("prop.date.mon."+mmm);
+        String abbreviated;
+    
+        // calculate abbreviation
+        int marker = localized.indexOf('|'); 
+        if (marker>0) {
+          abbreviated = localized.substring(0, marker);
+          localized = abbreviated + localized.substring(marker+1);
+        } else {
+          abbreviated = localized.length()>3 ? localized.substring(0,3) : localized;
+        }
+    
+        // remember
+        localizedMonthNames.put(mmm, localized);
+        abbreviatedMonthNames.put(mmm, abbreviated);
+    
+        // next
+      }  
+
+      // done
     }
     
     /** accessor - name */
@@ -516,6 +440,64 @@ public abstract class PointInTime implements Comparable {
       return image;
     }
     
+    /**
+     * Parse month
+     */
+    protected int parseMonth(String mmm) throws NumberFormatException {
+      for (int i=0;i<months.length;i++) {
+        if (months[i].equalsIgnoreCase(mmm)) return i;
+      }
+      throw new NumberFormatException();
+    }
+  
+    /**
+     * Access to (localized) gedcom months 
+     */
+    public String[] getMonths(boolean localize, boolean abbreviate) {
+      
+      String[] result = new String[months.length];
+      for (int m=0;m<result.length;m++) {
+        String mmm = months[m];
+        if (localize) 
+          mmm = abbreviate ? abbreviatedMonthNames.get(mmm).toString() : localizedMonthNames.get(mmm).toString();
+        result[m] = mmm;
+      }
+      return result;
+    }
+
+    /**
+     * Returns the localized month as string (either MAY or Mai)
+     */
+    public String getMonth(int month, boolean localize, boolean abbreviate) {
+      // what's the numeric value?
+      if (month<0||month>=months.length)
+        return "";
+      // calculate text
+      String mmm = months[month];
+      if (localize) 
+        mmm = abbreviate ? abbreviatedMonthNames.get(mmm).toString() : localizedMonthNames.get(mmm).toString();
+      // done
+      return mmm;
+    }
+  
+    /**
+     * Validity check
+     */
+    public boolean isValid(int day, int month, int year) {
+      // YYYY is needed!
+      if (year<0)
+        return false;
+      // MMM YYYY with month within range?
+      if (month<-1||month>=months.length)
+        return false;
+      // DD MMMM YYYY involves month
+      if (month<0&&day>=0)
+        return false;
+      // FIXME day in range dependent on calendar?
+      if (day<-1||day>31)
+        return false;
+      return true;
+    }
     
   } //Calendar
 

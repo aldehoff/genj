@@ -616,6 +616,8 @@ public class ControlCenter extends JPanel {
       File file = chooser.getSelectedFile();
       if (file == null)
         return;
+      if (!file.getName().endsWith(".ged"))
+        file = new File(file.getAbsolutePath()+".ged");
       if (file.exists()) {
         int rc = windowManager.openDialog(
           null,

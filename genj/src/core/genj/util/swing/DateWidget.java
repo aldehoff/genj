@@ -44,9 +44,6 @@ public class DateWidget extends JPanel {
   private TextFieldWidget widgetDay,widgetYear;
   private ChoiceWidget widgetMonth;
   
-  /** localized month names */
-  private final static String[] MONTHS = PointInTime.getMonths(true, false);
-  
   /** calendar switches */
   private ArrayList switches;
   
@@ -72,10 +69,10 @@ public class DateWidget extends JPanel {
     
     widgetDay   = new TextFieldWidget( int2string(pit.getDay  (), true ),2+1);
     
-    widgetMonth = new ChoiceWidget(MONTHS, "");
+    widgetMonth = new ChoiceWidget(calendar.getMonths(true, false), "");
     widgetMonth.setIgnoreCase(true);
     try {
-      widgetMonth.setSelectedItem(MONTHS[pit.getMonth()]);
+      widgetMonth.setSelectedItem(calendar.getMonth(pit.getMonth(), true, false));
       widgetMonth.setChanged(false);
     } catch (ArrayIndexOutOfBoundsException e) {
     }
@@ -218,7 +215,7 @@ public class DateWidget extends JPanel {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      calendar = newCalendar;
+      //calendar = newCalendar;
       // FIXME calendar conversion necessary here (exception)
       updateStatus();
     }

@@ -357,39 +357,6 @@ public class PropertyDate extends Property {
    */
   private class PIT extends PointInTime {
     
-    /** content */
-    private int 
-      year = -1,
-      month = -1,
-      day = -1;
-    
-    /**
-     * Returns the year
-     */
-    public int getYear() {
-      if (end==this&&!isRange())
-        return start.getYear();
-      return year;
-    }
-  
-    /**
-     * Returns the month
-     */
-    public int getMonth() {
-      if (end==this&&!isRange())
-        return start.getMonth();
-      return month;
-    }
-
-    /**
-     * Returns the day
-     */
-    public int getDay() {
-      if (end==this&&!isRange())
-        return start.getDay();
-      return day;
-    }
-
     /**
      * Setter
      */
@@ -402,10 +369,8 @@ public class PropertyDate extends Property {
       dateAsString=null;
       
       // set it
-      day   = d;
-      month = m;
-      year  = y;
-      
+      super.set(d,m,y);
+
       // done
     }
     
