@@ -423,8 +423,13 @@ public class ControlCenter extends JPanel {
         if (rc!=0) return;
       }
 
-      // Tell it to the app
+      // Close all Windows
       windowManager.closeAll();
+      
+      // Shutdown - wanted to do without but SingUtilities creates
+      // a hidden frame that sticks around (for null-parent dialogs)
+      // preventing the event dispatcher thread from shutting down
+      System.exit(0);
 
       // Done
     }
