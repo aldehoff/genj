@@ -109,7 +109,7 @@ import javax.swing.event.ChangeListener;
     
     TEMPLATES.put(Gedcom.FAM,
      "'FAM'\n"+
-     "'FAM:MARR' FAM:MARR:NOTE\n"+
+     "'FAM:MARR' (FAM:MARR:NOTE)\n"+
      " FAM:MARR:DATE\n"+
      " FAM:MARR:PLAC\n"+
      "'FAM:ENGA'\n"+
