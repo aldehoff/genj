@@ -73,7 +73,7 @@ public class ContentRenderer {
     // render background
     renderBackground(ug, bounds);
     // render the nodes
-    renderNodes(ug, model.getNodes());
+    renderNodes(ug, model);
     // render the arcs
     renderArcs(ug, model.getArcs());
     // done
@@ -82,9 +82,12 @@ public class ContentRenderer {
   /**
    * Render the nodes
    */
-  private void renderNodes(UnitGraphics g, Collection nodes) {
+  private void renderNodes(UnitGraphics g, Model model) {
+    // clip is the range we'll be looking in range
+    Rectangle2D clip = g.getClip();
+    // FIXME : has to grow by maximum node size
     // loop
-    Iterator it = nodes.iterator();
+    Iterator it = model.getEntitiesIn(clip).iterator();//model.getNodes().iterator();
     while (it.hasNext()) {
       // grab node
       Node node = (Node)it.next();
@@ -144,6 +147,7 @@ public class ContentRenderer {
     // preserve clip
     g.pushClip(x, y, shape.getBounds2D());
     // draw it
+    // FIXME : render properties here
     g.draw(content.toString(), x, y);
     // restore clip
     g.popClip();

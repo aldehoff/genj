@@ -416,7 +416,11 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     public void mouseClicked(MouseEvent e) {
       // double -> root
-      if (e.getClickCount()>1&&currentEntity!=null) model.setRoot(currentEntity);
+      if (e.getClickCount()>1) {
+        Entity entity = getEntityAt(e.getPoint());
+        if (entity==null) return;
+        model.setRoot(currentEntity);
+      }
       // done
     }
     /**

@@ -61,6 +61,9 @@ public class Model implements Graph, GedcomListener {
   /** bounds */
   private Rectangle2D bounds = new Rectangle2D.Double();
   
+  /** caching */
+  private GridCache cache = null;
+  
   /** the layout we use */
   private TreeLayout layout = new TreeLayout();
     
@@ -161,36 +164,8 @@ public class Model implements Graph, GedcomListener {
   }
     
   /**
-   * Parses the current model starting at root   */
-  private void parse() {
-    // clear old
-    arcs.clear();
-    nodes.clear();
-    bounds.setFrame(0,0,0,0);
-    // something to do?
-    if (root==null) return;
-    // prepare parsers
-    Parser 
-      pd = isFamilies ? (Parser)new DescendantsWithFams() : new DescendantsNoFams(),
-      pa = isFamilies ? (Parser)new AncestorsWithFams() : new AncestorsNoFams();
-    // prepare marr padding
-    padMarrs = isVertical ? padMarrsV : padMarrsH;
-    // parse its descendants
-    MyNode node = pd.parse(root, null);
-    // keep bounds
-    Rectangle2D r = bounds.getFrame();
-    Point2D p = node.getPosition();
-    // parse its ancestors while preserving position
-    node = pa.parse(root, p);    
-    // update bounds
-    bounds.add(r);
-    // notify
-    fireStructureChanged();
-    // done
-  }
-  
-  /**
-   * Accessor - wether we're vertical   */
+   * Accessor - wether we're vertical
+   */
   public boolean isVertical() {
     return isVertical;
   }
@@ -203,7 +178,8 @@ public class Model implements Graph, GedcomListener {
   }
   
   /**
-   * Accessor - whether we model families   */
+   * Accessor - whether we model families
+   */
   public boolean isFamilies() {
     return isFamilies;
   } 
@@ -238,6 +214,59 @@ public class Model implements Graph, GedcomListener {
   }
   
   /**
+   * Entities by range
+   */
+  public List getEntitiesIn(Rectangle2D range) {
+    return cache.get(range);
+  }
+     /**
+   * An entity by position
+   */
+  public Entity getEntityAt(double x, double y) {
+    // do we have a cache?
+    if (cache==null) return null;
+    // get nodes in possible range
+    double
+      w = Math.max( widthIndis, widthFams),
+      h = Math.max(heightIndis,heightFams);
+    Rectangle2D range = new Rectangle2D.Double(x-w/2, y-h/2, w, h);
+    // loop nodes
+    Iterator it = cache.get(range).iterator();
+    while (it.hasNext()) {
+      MyNode node = (MyNode)it.next();
+      Point2D pos = node.getPosition();
+      Shape shape = node.getShape();
+      if (shape!=null&&shape.getBounds2D().contains(x-pos.getX(),y-pos.getY())&&node.entity!=null) {
+        return node.entity;
+      }
+    }
+    
+    // nothing found
+    return null;
+  }
+  
+  /**
+   * @see gj.model.Graph#getArcs()
+   */
+  public Collection getArcs() {
+    return arcs;
+  }
+
+  /**
+   * @see gj.model.Graph#getBounds()
+   */
+  public Rectangle2D getBounds() {
+    return bounds;
+  }
+
+  /**
+   * @see gj.model.Graph#getNodes()
+   */
+  public Collection getNodes() {
+    return nodes;
+  }
+
+  /**
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
   public void handleChange(Change change) {
@@ -265,6 +294,42 @@ public class Model implements Graph, GedcomListener {
     }
     // done
   }
+
+  /**
+   * Parses the current model starting at root   */
+  private void parse() {
+    // clear old
+    arcs.clear();
+    nodes.clear();
+    bounds.setFrame(0,0,0,0);
+    // something to do?
+    if (root==null) return;
+    // prepare parsers
+    Parser 
+      pd = isFamilies ? (Parser)new DescendantsWithFams() : new DescendantsNoFams(),
+      pa = isFamilies ? (Parser)new AncestorsWithFams() : new AncestorsNoFams();
+    // prepare marr padding
+    padMarrs = isVertical ? padMarrsV : padMarrsH;
+    // parse its descendants
+    MyNode node = pd.parse(root, null);
+    // keep bounds
+    Rectangle2D r = bounds.getFrame();
+    Point2D p = node.getPosition();
+    // parse its ancestors while preserving position
+    node = pa.parse(root, p);    
+    // update bounds
+    bounds.add(r);
+    // create gridcache
+    cache = new GridCache(bounds, Math.max(heightIndis+heightFams, widthIndis+widthFams));
+    Iterator it = nodes.iterator();
+    while (it.hasNext()) {
+      MyNode n = (MyNode)it.next();
+      cache.put(n, n.getPosition());
+    }
+    // notify
+    fireStructureChanged();
+    // done
+  }
   
   /**
    * Fire even
@@ -287,45 +352,6 @@ public class Model implements Graph, GedcomListener {
     return result;
   }
   
-  /**
-   * An entity by position
-   */
-  public Entity getEntityAt(double x, double y) {
-    // loop nodes
-    Iterator it = nodes.iterator();
-    while (it.hasNext()) {
-      MyNode node = (MyNode)it.next();
-      Point2D pos = node.getPosition();
-      Shape shape = node.getShape();
-      if (shape!=null&&shape.getBounds2D().contains(x-pos.getX(),y-pos.getY())&&node.entity!=null) {
-        return node.entity;
-      }
-    }
-    // nothing found
-    return null;
-  }
-  
-  /**
-   * @see gj.model.Graph#getArcs()
-   */
-  public Collection getArcs() {
-    return arcs;
-  }
-
-  /**
-   * @see gj.model.Graph#getBounds()
-   */
-  public Rectangle2D getBounds() {
-    return bounds;
-  }
-
-  /**
-   * @see gj.model.Graph#getNodes()
-   */
-  public Collection getNodes() {
-    return nodes;
-  }
-
   /**
    * A node for an entity
    */
