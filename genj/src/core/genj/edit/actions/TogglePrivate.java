@@ -52,18 +52,41 @@ public class TogglePrivate extends ActionDelegate {
    */
   protected void execute() {
 
-    int recursive = manager.getWindowManager().openDialog(
-      null,
-      txt,
-      WindowManager.IMG_QUESTION,
-      AbstractChange.resources.getString("recursive"),
-      WindowManager.OPTIONS_YES_NO,
-      target
-    );
+    // check if the user wants to do it recursively
+    int recursive = 0;
+    if (property.getNoOfProperties()>0) {
+      recursive = manager.getWindowManager().openDialog(
+        null,
+        txt,
+        WindowManager.IMG_QUESTION,
+        AbstractChange.resources.getString("recursive"),
+        WindowManager.OPTIONS_YES_NO,
+        target
+      );
+    }
 
+    // check gedcom
     Gedcom gedcom = property.getGedcom();
+    String pwd = gedcom.getPassword();
+    
+    if (pwd==null) {
+      pwd = manager.getWindowManager().openDialog(
+        null,
+        txt,
+        WindowManager.IMG_QUESTION,
+        AbstractChange.resources.getString("password", gedcom.getName()),
+        "",
+        target
+      );
+      
+      // canceled?
+      if (pwd==null)
+        return;
+    }
 
-    if (gedcom.startTransaction()) { 
+    // change it
+    if (gedcom.startTransaction()) {
+      gedcom.setPassword(pwd); 
       property.setPrivate(!property.isPrivate(), recursive==0);
       gedcom.endTransaction();
     }
