@@ -14,9 +14,6 @@
  * Lesser General Public License for more details.
  */package gj.shell;
 
-import gj.layout.Layout;
-import gj.layout.LayoutException;
-import gj.layout.random.RandomLayout;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
@@ -35,15 +32,9 @@ import java.util.Iterator;
   /** the graph */
   private Graph graph;
   
-  /** original graph bounds */
-  private Rectangle2D originalBounds;
-  
   /** the moves */
   private Movement[] moves;
   
-  /** the bounds of our animation */
-  private double minx, maxx, miny, maxy;
-
   /** animation status */
   private long 
     totalTime = 1000    ,
@@ -55,12 +46,9 @@ import java.util.Iterator;
   private ArcHelper arcLayout = new ArcHelper();    
   
   /**
-   * Constructor
+   * Constructor (before)
    */
-  /*package*/ Animation(Graph graph, Layout layout, Rectangle2D bounds) throws LayoutException {
-    
-    // preset original bounds to given bounds
-    originalBounds = bounds;
+  /*package*/ Animation(Graph graph) {
     
     // something to animate?
     if (graph.getNodes().isEmpty()) return;
@@ -82,19 +70,15 @@ import java.util.Iterator;
       Arc arc = (Arc)arcs.next();
       moves[m]=new ArcMovement(arc);
     }
-    
-    // do the layout
-    try {
-      originalBounds = layout.layout(graph, bounds);
-    } catch (LayoutException e) {
-      // make sure the graph is at least some how in place
-      new RandomLayout().layout(graph, bounds);
-      // can't handle it really
-      throw e;
-    }
-    
+  }
+  
+  /**
+   * Start animation - after nodes and arcs are end-position
+   */
+  /*package*/ void start() {
+        
     // collect new values
-    for (m=0;m<moves.length;m++) {
+    for (int m=0;m<moves.length;m++) {
       moves[m].postLayout();
     }
     
@@ -110,7 +94,7 @@ import java.util.Iterator;
   /**
    * Stops the animation by setting it to the last frame
    */
-  private boolean stop() {
+  /*package*/ boolean stop() {
     // perform step to final frame
     if (moves!=null) perform(moves,1D);
     // stop all moves
@@ -155,12 +139,6 @@ import java.util.Iterator;
 
     synchronized (graph) {
     
-      // prepare a new bounds for the graph
-      minx = Double.MAX_VALUE;
-      maxx = -Double.MAX_VALUE;
-      miny = Double.MAX_VALUE;
-      maxy = -Double.MAX_VALUE;
-      
       // loop moves
       for (int m=0;m<moves.length;m++) {
         
@@ -175,13 +153,6 @@ import java.util.Iterator;
         
     // done
     return done;
-  }
-
-  /**
-   * Current bounds
-   */  
-  public Rectangle2D getBounds() {
-    return new Rectangle2D.Double(minx,miny,maxx-minx,maxy-miny);
   }
 
   /**
@@ -216,11 +187,6 @@ import java.util.Iterator;
         currenty = oldy+(newy-oldy)*time;
       // change position
       node.getPosition().setLocation(currentx,currenty);
-      // change bounds
-      minx = Math.min(minx, currentx+shape.getMinX());
-      miny = Math.min(miny, currenty+shape.getMinY());
-      maxx = Math.max(maxx, currentx+shape.getMaxX());
-      maxy = Math.max(maxy, currenty+shape.getMaxY());
       // done      
       return (Math.abs(currentx-newx)<1)&&(Math.abs(currenty-newy)<1);
     }

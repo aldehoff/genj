@@ -26,12 +26,10 @@ import gj.shell.model.ShellGraph;
 import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.Properties;
-import gj.util.ModelHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -174,14 +172,11 @@ public class Shell {
   /**
    * Sets the graph we're looking at
    */
-  private void setGraph(ShellGraph grAph, Rectangle2D bounds) {
+  private void setGraph(ShellGraph grAph) {
     // remember
     graph = grAph;
-    // check bounds 
-    if (bounds==null)
-      bounds = ModelHelper.getBounds(graph.getNodes());      
     // propagate
-    graphWidget.setGraph(graph, bounds.getBounds());
+    graphWidget.setGraph(graph);
     layoutWidget.setGraph(graph);
   }
   
@@ -201,7 +196,7 @@ public class Shell {
       new ShellFactory(graphWidget.shapes[0]),
       createGraphBounds()
     );
-    setGraph(grAph, null);    
+    setGraph(grAph);    
     // done
   }
   
@@ -215,10 +210,17 @@ public class Shell {
   /**
    * How to handle - run a layout
    */
-  protected class ActionExecuteLayout extends UnifiedAction {
+  /*package*/ class ActionExecuteLayout extends UnifiedAction {
     
     /** an animation that we're working on */
     private Animation animation;
+
+    /**
+     * constructor
+     */
+    /*package*/ ActionExecuteLayout() {
+      super.setAsync(ASYNC_SAME_INSTANCE);
+    }
     
     /** initializer (EDT) */
     protected boolean preExecute() throws LayoutException {
@@ -230,22 +232,22 @@ public class Shell {
       Layout layout = layoutWidget.getSelectedLayout();
       // tell the graph Widget
       graphWidget.setCurrentLayout(layout);
-      // apply it?
+      // create animation (it'll take a snapshot of current configuration)
+      animation = new Animation(graph);
+      // apply layout
       Rectangle bounds = createGraphBounds();
-      if (!isAnimation) {
-        try {
-          bounds = layout.layout(graph, bounds).getBounds();
-          graphWidget.setGraph(graph, bounds);
-        } catch (LayoutException e) {
-          new RandomLayout().layout(graph, bounds);
-          // can't handle it really
-          throw e;
-        }
-        // dont' continue
-        return false;
+      try {
+        layout.layout(graph, bounds);
+      } catch (LayoutException e) {
+        new RandomLayout().layout(graph, bounds);
+        // can't handle it really
+        throw e;
       }
-      // create an animation
-      animation = new Animation(graph, layout, bounds);
+      // continue into animation?
+      if (!isAnimation)
+        return false;
+      // start it
+      animation.start();
       // rip the layout from the graph widget  
       graphWidget.setCurrentLayout(null);
       // continue
@@ -258,36 +260,27 @@ public class Shell {
         while (true) {
           if (Thread.currentThread().isInterrupted()) break;
           if (!animation.perform()) break;
-          graphWidget.setGraph(graph, animation.getBounds().getBounds());
+          graphWidget.setGraph(graph);
         }
       } catch (InterruptedException e) {
         // ignore
       }
-      graphWidget.setGraph(graph, animation.getBounds().getBounds());
+      graphWidget.setGraph(graph);
       graphWidget.setCurrentLayout(layoutWidget.getSelectedLayout());
     }
     
-    /** postExecute (EDT) */
-    protected void postExecute() {
-    }
-    
-    /** whether we're async or not */
-    protected int getAsync() {
-      return isAnimation ? ASYNC_SAME_INSTANCE : ASYNC_NOT_APPLICABLE;
-    }
-
-  }
+  } //ActionExecuteLayout
   
   /**
    * How to handle - switch to Layout
    */
-  protected class ActionSelectLayout extends UnifiedAction {
+  /*package*/ class ActionSelectLayout extends UnifiedAction {
     private Layout layout;
-    protected ActionSelectLayout(Layout layout) {
+    /*package*/ ActionSelectLayout(Layout layout) {
       super(layout.toString());
       this.layout=layout;
     }
-    public void execute() { 
+    protected void execute() { 
       layoutWidget.setSelectedLayout(layout); 
     }
   }
@@ -295,13 +288,13 @@ public class Shell {
   /**
    * How to handle - Load Graph
    */
-  protected class ActionLoadGraph extends UnifiedAction {
+  /*package*/ class ActionLoadGraph extends UnifiedAction {
     private File preset;
-    protected ActionLoadGraph(File file) { 
+    /*package*/ ActionLoadGraph(File file) { 
       preset=file;
     }
-    protected ActionLoadGraph() { super("Load"); }
-    public void execute() throws IOException { 
+    /*package*/ ActionLoadGraph() { super("Load"); }
+    protected void execute() throws IOException { 
       File file = preset;
       if (file==null) {
         JFileChooser fc = new JFileChooser(new File("./save"));
@@ -310,16 +303,16 @@ public class Shell {
       }
       ShellGraph grAph = (ShellGraph)new GraphReader(new FileInputStream(file))
         .read(new ShellFactory(graphWidget.shapes[0]));
-      setGraph(grAph, null);
+      setGraph(grAph);
     }
   }
 
   /**
    * How to handle - Save Graph
    */
-  protected class ActionSaveGraph extends UnifiedAction {
-    protected ActionSaveGraph() { super("Save"); }
-    public void execute() throws IOException { 
+  /*package*/ class ActionSaveGraph extends UnifiedAction {
+    /*package*/ ActionSaveGraph() { super("Save"); }
+    protected void execute() throws IOException { 
       JFileChooser fc = new JFileChooser(new File("./save"));
       if (JFileChooser.APPROVE_OPTION!=fc.showSaveDialog(frame)) return;
       new GraphWriter(new FileOutputStream(fc.getSelectedFile())).write(graph);
@@ -329,21 +322,21 @@ public class Shell {
   /**
    * How to handle - Close Graph
    */
-  protected class ActionCloseGraph extends UnifiedAction {
-    protected ActionCloseGraph() { super("Close"); }
-    public void execute() { frame.dispose(); }
+  /*package*/ class ActionCloseGraph extends UnifiedAction {
+    /*package*/ ActionCloseGraph() { super("Close"); }
+    protected void execute() { frame.dispose(); }
   }
   
   /**
    * How to handle - New Graph
    */
-  protected class ActionNewGraph extends UnifiedAction {
+  /*package*/ class ActionNewGraph extends UnifiedAction {
     private AbstractGraphFactory factory;
-    protected ActionNewGraph(AbstractGraphFactory factory) { 
+    /*package*/ ActionNewGraph(AbstractGraphFactory factory) { 
       super(factory.toString());
       this.factory = factory;
     }
-    public void execute() {
+    protected void execute() {
       setGraph(factory);
     }
   }
@@ -351,10 +344,10 @@ public class Shell {
   /**
    * How to handle - Toggle antialiasing
    */
-  protected class ActionToggleAntialias extends UnifiedAction {
-    protected ActionToggleAntialias() { super("Antialiasing"); }
+  /*package*/ class ActionToggleAntialias extends UnifiedAction {
+    /*package*/ ActionToggleAntialias() { super("Antialiasing"); }
     public boolean isSelected() { return graphWidget.isAntialiasing(); }
-    public void execute() {
+    protected void execute() {
       graphWidget.setAntialiasing(!graphWidget.isAntialiasing());
     }    
   }
@@ -362,10 +355,10 @@ public class Shell {
   /**
    * How to handle - Toggle animation
    */
-  protected class ActionToggleAnimation extends UnifiedAction {
-    protected ActionToggleAnimation() { super("Animation"); }
+  /*package*/ class ActionToggleAnimation extends UnifiedAction {
+    /*package*/ ActionToggleAnimation() { super("Animation"); }
     public boolean isSelected() { return isAnimation; }
-    public void execute() {
+    protected void execute() {
       isAnimation = !isAnimation;
     }    
   }

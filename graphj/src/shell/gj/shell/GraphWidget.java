@@ -24,6 +24,7 @@ import gj.shell.model.ShellNode;
 import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.ReflectHelper;
+import gj.util.ModelHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -127,11 +128,11 @@ public class GraphWidget extends JPanel {
   /**
    * Accessor - Graph
    */
-  public void setGraph(ShellGraph setGraph, Rectangle setBounds) {
+  public void setGraph(ShellGraph setGraph) {
     
     // cleanup data
     graph = setGraph;
-    graphBounds = setBounds;
+    graphBounds = ModelHelper.getBounds(graph.getNodes()).getBounds();
     selection = null;
     
     // make sure that's reflected
