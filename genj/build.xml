@@ -295,6 +295,9 @@
     <copy todir="${dir.run}/gedcom">
       <fileset dir="./gedcom"/>
     </copy>
+    <copy todir="${dir.run}/lnf">
+      <fileset dir="./lnf"/>
+    </copy>
     <antcall target="dist.help.language.files">
         <param name="language" value="en"/>
       <param name="dir.help" value="${dir.run}/help"/>
@@ -307,24 +310,6 @@
   <target name="run" depends="run.init">
     <java classname="genj.app.App" fork="true" dir="${dir.run}">
        <classpath refid="project.class.path"/>
-    </java>
-  </target>
-
-  <!--
-   Skinit - to use this target place copy both files
-   
-     http://javootoo.l2fprod.com/plaf/skinlf/themepacks/aquathemepack.zip   
-     http://www.l2fprod.com/software/skinlf/jnlp/skinlf.jar   
-     
-   into ${dir.run}/skinit
-   -->
-  <target name="skinit" depends="run.init">
-    <java classname="Skinit" fork="true" dir="${dir.run}">
-       <arg line="-pack ./skinit/aquathemepack.zip genj.app.App"/>
-       <classpath>
-         <pathelement path="${project.class.path}"/>
-         <pathelement path="${dir.run}/skinit/skinlf.jar"/>
-       </classpath>
     </java>
   </target>
 
