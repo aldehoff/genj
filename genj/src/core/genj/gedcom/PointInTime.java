@@ -356,6 +356,8 @@ public class PointInTime implements Comparable {
    */
   public static int[] getDelta(PointInTime earlier, PointInTime later) {
 
+    // FIXME use Julian Day for delta calculation
+
     // null check
     if (earlier==null||later==null) 
       return null;
