@@ -28,6 +28,7 @@ import genj.gedcom.TagPath;
 import genj.io.Filter;
 import genj.renderer.PropertyRenderer;
 import genj.util.ActionDelegate;
+import genj.util.Dimension2d;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
@@ -48,6 +49,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.font.FontRenderContext;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -112,8 +114,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     loadProperties();
     
     // create our table
+    // FIXME table auto row height calculation and renderer y-alignment
     table = new JTable(tableModel, new DefaultTableColumnModel());
-
     table.setTableHeader(new SortableTableHeader());
     table.setCellSelectionEnabled(true);
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -478,6 +480,14 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       return this;
     }
     /**
+     * patched preferred size
+     */
+    public Dimension getPreferredSize() {
+      if (prop==null)
+        return new Dimension(0,0);
+      return Dimension2d.getDimension(PropertyRenderer.get(prop).getSize(getFont(), new FontRenderContext(null, false, false), prop, PropertyRenderer.PREFER_DEFAULT, manager.getDPI()));
+    }
+    /**
      * @see genj.util.swing.HeadlessLabel#paint(java.awt.Graphics)
      */
     public void paint(Graphics g) {
@@ -493,9 +503,11 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       } else {
         g.setColor(table.getForeground());
       }
-      g.setFont(table.getFont());
       // no prop and we're done
-      if (prop==null) return;
+      if (prop==null) 
+        return;
+      // set font
+      g.setFont(getFont());
       // get the proxy
       PropertyRenderer proxy = PropertyRenderer.get(prop);
       // let it render
