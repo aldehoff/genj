@@ -19,11 +19,19 @@
  */
 package genj.timeline;
 
+import genj.cday.Event;
+import genj.cday.Repository;
+import genj.gedcom.GedcomException;
+import genj.gedcom.time.PointInTime;
 import genj.util.swing.UnitGraphics;
+
 import java.awt.Color;
 import java.awt.FontMetrics;
+import java.awt.Shape;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 /**
  * A renderer knowing how to render a ruler for the timeline
@@ -34,7 +42,7 @@ public class RulerRenderer extends ContentRenderer {
   /*package*/ Color cTick = null;
   
   /** a tick */
-  private GeneralPath tickMark;
+  private Shape tickMark, eventMark;
   
   /**
    * Renders the model
@@ -64,7 +72,35 @@ public class RulerRenderer extends ContentRenderer {
     // recurse binary
     renderSpan(graphics, model, fm, from, to, width);
     
+    // render cday events
+    renderEvents(graphics, from, to);
+    
     // done
+  }
+  
+  /**
+   * Renders CDay event markers
+   */
+  private void renderEvents(UnitGraphics g, double from, double to) {
+    
+    g.setColor(cTimespan);
+
+    Rectangle2D clip = g.getClip();
+    List events = Repository.getInstance().getEvents();
+    for (int i=0;i<events.size();i++) {
+      Event event = (Event)events.get(i);
+      PointInTime time = event.getTime();
+      double year = time.getYear();
+      if (year<clip.getX()-1)
+        continue;
+      if (year>clip.getMaxX()+1)
+        break;
+      try {
+        year = Model.toDouble(time, false);
+        g.draw(eventMark, year, 0, false);
+      } catch (GedcomException e) {
+      }
+    }
   }
   
   /**
@@ -118,12 +154,14 @@ public class RulerRenderer extends ContentRenderer {
   protected void init(UnitGraphics graphics) {
     super.init(graphics);
     
-    tickMark = new GeneralPath();
-    tickMark.moveTo( (float)( 0F*dotSize.x), (float)( 0F*dotSize.y) );
-    tickMark.lineTo( (float)( 3F*dotSize.x), (float)(-3F*dotSize.y) );
-    tickMark.lineTo( (float)(-3F*dotSize.x), (float)(-3F*dotSize.y) );
-    tickMark.closePath();
+    GeneralPath gp = new GeneralPath();
+    gp.moveTo( (float)( 0F*dotSize.x), (float)( 0F*dotSize.y) );
+    gp.lineTo( (float)( 3F*dotSize.x), (float)(-3F*dotSize.y) );
+    gp.lineTo( (float)(-3F*dotSize.x), (float)(-3F*dotSize.y) );
+    gp.closePath();
     
+    tickMark = gp;
+    eventMark = new Line2D.Double(0,0,0,5F*dotSize.y);
   }
   
 } //RulerRenderer

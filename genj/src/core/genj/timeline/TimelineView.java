@@ -367,6 +367,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       rulerRenderer.cBackground = (Color)colors.get("background");
       rulerRenderer.cText = (Color)colors.get("text");
       rulerRenderer.cTick = rulerRenderer.cText;
+      rulerRenderer.cTimespan = (Color)colors.get("timespan");
       // prepare UnitGraphics
       UnitGraphics graphics = new UnitGraphics(
         g,
