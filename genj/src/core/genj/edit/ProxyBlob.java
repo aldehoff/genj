@@ -52,8 +52,14 @@ class ProxyBlob extends Proxy implements ActionListener {
   public void actionPerformed(ActionEvent e) {
 
     // Let the user choose a file
-    JFileChooser chooser = new JFileChooser(".");
-    chooser.setDialogTitle("Choose a multimedia file");
+    String dir = EnvironmentChecker.getProperty(
+      this,
+      new String[]{ "genj.gedcom.dir", "user.home" },
+      ".",
+      "choose multimedia file"
+    );
+    JFileChooser chooser = new JFileChooser(dir);
+    chooser.setDialogTitle("Choose a multimedia blob");
 
     int rc=chooser.showDialog(frame, "Open");
 

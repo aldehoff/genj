@@ -61,7 +61,13 @@ class ProxyFile extends Proxy implements ActionListener {
       newValue = tFile.getText();
     } else {
       // Let the user choose a file
-      JFileChooser chooser = new JFileChooser(".");
+      String dir = EnvironmentChecker.getProperty(
+        this,
+        new String[]{ "genj.gedcom.dir", "user.home" },
+        ".",
+        "choose multimedia file"
+      );
+      JFileChooser chooser = new JFileChooser(dir);
       chooser.setDialogTitle("Choose a file");
 
       int rc=chooser.showDialog(frame, "Choose file");
