@@ -277,7 +277,9 @@ public class ChoiceWidget extends javax.swing.JComboBox {
      * @see javax.swing.ComboBoxEditor#setItem(java.lang.Object)
      */
     public void setItem(Object set) {
-      setText(set!=null ? set.toString() : "");
+      String s = set==null ? "" : set.toString();
+      if (!super.getText().equals(s)) setText(s);
+      // done
     }
     
     /**
@@ -390,8 +392,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
       // remember
       selection = seLection;
       // propagate to editor
-      if (!editor.getText().equals(selection.toString()))
-        editor.setItem(seLection);
+      editor.setItem(seLection);
       // notify list selection
       ListSelectionEvent e = new ListSelectionEvent(this, 0, values.length-1, false);
       ListSelectionListener[] ls = (ListSelectionListener[])lsListeners.toArray(new ListSelectionListener[lsListeners.size()]);
