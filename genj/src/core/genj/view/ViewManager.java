@@ -419,13 +419,14 @@ public class ViewManager {
   }
   
   /**
-   * Show a context menu
+   * Get a context menu
    */
-  public void showContextMenu(Context context, List actions, JComponent component, Point pos) {
+  public JPopupMenu getContextMenu(Context context, List actions, JComponent target) {
     
     // make sure context is valid
     if (!context.isValid())
-      return;
+      return null;
+    
     Property property = context.getProperty();
     Entity entity = context.getEntity();
     Gedcom gedcom = context.getGedcom();
@@ -434,13 +435,10 @@ public class ViewManager {
     MenuSelectionManager.defaultManager().clearSelectedPath();
 
     // hook up context's source
-    context.setSource(component);
+    context.setSource(target);
     
-    // propagate a context change
-    setContext(context);
-
     // create a popup
-    MenuHelper mh = new MenuHelper().setTarget(component);
+    MenuHelper mh = new MenuHelper().setTarget(target);
     JPopupMenu popup = mh.createPopup();
 
     // popup local actions?
@@ -477,12 +475,18 @@ public class ViewManager {
       mh.createItems(as[i].createActions(gedcom, this), true);
     }
     mh.popMenu();
-  
-    // show the popup
-    if (popup.getComponentCount()>0)
-      popup.show(component, pos.x, pos.y);
 
-    // done      
+    // done
+    return popup;
+  }
+  
+  /**
+   * Show a context menu
+   */
+  public void showContextMenu(Context context, List actions, JComponent component, Point pos) {
+    JPopupMenu popup = getContextMenu(context, actions, component);
+    if (popup!=null)
+      popup.show(component, pos.x, pos.y);
   }
   
   /**
