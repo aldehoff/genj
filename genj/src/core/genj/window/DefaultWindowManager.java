@@ -224,7 +224,11 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // place
     if (bounds==null) {
       dlg.pack();
-      dlg.setLocationRelativeTo(owner);
+      try {
+        dlg.setLocationRelativeTo(owner);
+      } catch (Throwable t) {
+        // apparently no in JDialog/Window on jdk 1.3.1_04
+      }
     } else {
       dlg.setBounds(clip(bounds,screen));
     }
