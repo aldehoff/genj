@@ -29,7 +29,7 @@ import genj.util.WordBuffer;
 public class Event implements Comparable {
   
   private PointInTime pit;
-  private String text;
+  private String desc;
   private Category cat;
   private long julianDay;
   
@@ -37,7 +37,7 @@ public class Event implements Comparable {
   public Event(Category setCat, PointInTime setTime, String setText) throws GedcomException {
     pit = setTime;
     cat = setCat;
-    text = cat.format(setText);
+    desc = cat.format(setText);
     // make sure its julian day is good
     julianDay = pit.getJulianDay();
   }
@@ -51,7 +51,7 @@ public class Event implements Comparable {
   public String toString() {
     WordBuffer result = new WordBuffer();
     result.append(pit.toString());
-    result.append(text);
+    result.append(desc);
     return result.toString();
   }
   
@@ -78,8 +78,8 @@ public class Event implements Comparable {
   /**
    * Accessor
    */
-  public String getText() {
-    return text;
+  public String getDescription() {
+    return desc;
   }
   
 } //Event

@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -43,6 +44,9 @@ import javax.swing.event.ChangeListener;
  * A global Almanac for all kinds of historic events
  */
 public class Almanac {
+  
+  /** language we use for events */
+  private final static String LANG = Locale.getDefault().getLanguage();
   
   /** listeners */
   private List listeners = new ArrayList(10);
@@ -283,8 +287,22 @@ public class Almanac {
       if (type.equals(";")||type.length()==0)
         return null;
       cols.nextToken();
-      // #6 description
-      String desc = cols.nextToken().trim();
+      // #6 and following description
+      String desc = null;
+      while (cols.hasMoreTokens()) {
+        String translation = cols.nextToken().trim();
+        if (translation.equals(";"))
+          continue;
+        int i = translation.indexOf('=');
+        if (i<0)
+          continue;
+        String lang = translation.substring(0,i);
+        if (desc==null||LANG.equals(lang)) 
+          desc = translation.substring(i+1);
+      }
+      // got a description?
+      if (desc==null)
+        return null;
       // done
       return new Event(getCategory(type), time, desc);
     }
