@@ -695,6 +695,13 @@ public abstract class Property implements Comparable {
   }
 
   /**
+   * Resolve all meta properties
+   */
+  public MetaProperty[] getAllMetaProperties() {
+    return MetaProperty.get(this).getAllSubs();
+  }
+
+  /**
    * Resolve visible meta properties
    */
   public MetaProperty[] getVisibleMetaProperties() {

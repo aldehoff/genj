@@ -19,13 +19,13 @@
  */
 package genj.util;
 
-import genj.util.swing.ImageIcon;
 import java.awt.Component;
 import java.awt.Frame;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 
 /**

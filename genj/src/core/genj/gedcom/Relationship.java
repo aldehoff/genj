@@ -1,5 +1,7 @@
 package genj.gedcom;
 
+import javax.swing.ImageIcon;
+
 /**
  * A relationship between entities
  */
@@ -12,9 +14,23 @@ public abstract class Relationship {
   public abstract Entity apply(Entity entity) throws GedcomException ;  
   
   /**
+   * An image
+   */
+  public ImageIcon getImage() {
+    return Gedcom.getImage(getTargetType());
+  }
+  
+  /**
    * A name
    */
-  public abstract String getName();
+  public String getName() {
+    return Gedcom.getNameFor(getTargetType(), false);    
+  }
+  
+  /**
+   * The target type
+   */
+  public abstract int getTargetType();
   
   /**
    * Checks type
@@ -29,23 +45,44 @@ public abstract class Relationship {
    */
   public static class LinkedBy extends Relationship {
     
-    /** target type */
-    private int target;
-
-    /** linked by ... */
+    /** linked by owner */
     private Property owner;
     
+    /** its sub */
+    private MetaProperty sub;
+    
+    /** its xref */
+    private PropertyXRef xref;
+    
     /** Constructor */
-    public LinkedBy(Property ownr, int targt) {
-      owner = ownr;
-      target = targt;
+    private LinkedBy(Property owner, MetaProperty sub) {
+
+      // keep owner      
+      this.owner = owner;
+      this.sub = sub;
+      
+      // create sub xref
+      Property p = sub.create("");
+
+      // keep      
+      xref = (PropertyXRef)p;
+      
+      // done
+    }
+    
+    /** access */
+    public static LinkedBy getInstance(Property owner, MetaProperty sub) {
+      // applicable?
+      if (!PropertyXRef.class.isAssignableFrom(sub.getType()))
+        return null;
+      return new LinkedBy(owner, sub);
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName()
+     * @see genj.gedcom.Relationship#getTargetType()
      */
-    public String getName() {
-      return Gedcom.getNameFor(target, false);
+    public int getTargetType() {
+      return xref.getExpectedReferencedType();
     }
     
     /**
@@ -60,20 +97,14 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#apply(Entity)
      */
     public Entity apply(Entity entity) throws GedcomException {
-      // must be of correct type
-      if (entity.getType()!=target)
+      // double check
+      if (entity.getType()!=xref.getExpectedReferencedType())
         throw new GedcomException("Wrong type for apply()");
-      // try to create reference
-      Property xref = MetaProperty.get(owner).get(Gedcom.getTagFor(target)).create(entity.getId());
-      if (!(xref instanceof PropertyXRef))
-        throw new GedcomException("Got property of type "+xref.getClass()+" as xref - bailing out");
-        
+      // connect
       owner.addProperty(xref);
-      
-      ((PropertyXRef)xref).link();
-      
+      xref.setValue(entity.getId());
+      xref.link();
       xref.addDefaultProperties();
-      
       //  focus stays with owner
       return owner.getEntity();
     }
@@ -98,6 +129,13 @@ public abstract class Relationship {
      */
     public String getName() {
       return Gedcom.resources.getString("rel.child");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getTargetType()
+     */
+    public int getTargetType() {
+      return Gedcom.INDIVIDUALS;
     }
     
     /**
@@ -137,6 +175,14 @@ public abstract class Relationship {
      */
     public String getName() {
       return Gedcom.resources.getString("rel.child");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getTargetType()
+     */
+    public int getTargetType() {
+      return Gedcom.INDIVIDUALS;
+
     }
     
     /**
@@ -180,6 +226,13 @@ public abstract class Relationship {
     }
     
     /**
+     * @see genj.gedcom.Relationship#getTargetType()
+     */
+    public int getTargetType() {
+      return Gedcom.INDIVIDUALS;
+
+    }
+    /**
      * @see java.lang.Object#toString()
      */
     public String toString() {
@@ -217,6 +270,13 @@ public abstract class Relationship {
      */
     public String getName() {
       return Gedcom.resources.getString("rel.parent");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getTargetType()
+     */
+    public int getTargetType() {
+      return Gedcom.INDIVIDUALS;
     }
     
     /**
@@ -258,6 +318,13 @@ public abstract class Relationship {
      */
     public String getName() {
       return Gedcom.resources.getString("rel.spouse");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getTargetType()
+     */
+    public int getTargetType() {
+      return Gedcom.INDIVIDUALS;
     }
     
     /**
@@ -304,6 +371,13 @@ public abstract class Relationship {
     }
     
     /**
+     * @see genj.gedcom.Relationship#getTargetType()
+     */
+    public int getTargetType() {
+      return Gedcom.INDIVIDUALS;
+    }
+    
+    /**
      * @see java.lang.Object#toString()
      */
     public String toString() {
@@ -323,47 +397,47 @@ public abstract class Relationship {
     
   } // SiblingOf
   
-  /**
-   * Relationship : Associated With
-   */
-  public static class AssociatedWith extends Relationship {
-    
-    /** target property */
-    private Property property;
-    
-    /** Constructor */
-    public AssociatedWith(Property prop) {
-      property = prop;
-    }
-    
-    /**
-     * @see genj.gedcom.Relationship.AssociatedWith#getName()
-     */
-    public String getName() {
-      return Gedcom.resources.getString("rel.association");
-    }
-    
-    /**
-     * @see genj.gedcom.Relationship.AssociatedWith#toString()
-     */
-    public String toString() {
-      TagPath path = new TagPath(property.getEntity().getPathTo(property));
-      return Gedcom.resources.getString("rel.association.with", new Object[]{ path, property.getEntity()});
-    }
-    
-    /**
-     * @see genj.gedcom.Relationship.AssociatedWith#apply(genj.gedcom.Entity)
-     */
-    public Entity apply(Entity entity) throws GedcomException {
-      assume(entity, Indi.class);
-      // add association
-      PropertyAssociation pa = (PropertyAssociation)MetaProperty.get(property, "ASSO").create(entity.getId());
-      property.addProperty(pa).addDefaultProperties();
-      pa.link();
-      // focus stays with entity getting the ASSO
-      return property.getEntity();
-    }
-    
-  } //AssociatedWith
+//  /**
+//   * Relationship : Associated With
+//   */
+//  public static class AssociatedWith extends Relationship {
+//    
+//    /** target property */
+//    private Property property;
+//    
+//    /** Constructor */
+//    public AssociatedWith(Property prop) {
+//      property = prop;
+//    }
+//    
+//    /**
+//     * @see genj.gedcom.Relationship.AssociatedWith#getName()
+//     */
+//    public String getName() {
+//      return Gedcom.resources.getString("rel.association");
+//    }
+//    
+//    /**
+//     * @see genj.gedcom.Relationship.AssociatedWith#toString()
+//     */
+//    public String toString() {
+//      TagPath path = new TagPath(property.getEntity().getPathTo(property));
+//      return Gedcom.resources.getString("rel.association.with", new Object[]{ path, property.getEntity()});
+//    }
+//    
+//    /**
+//     * @see genj.gedcom.Relationship.AssociatedWith#apply(genj.gedcom.Entity)
+//     */
+//    public Entity apply(Entity entity) throws GedcomException {
+//      assume(entity, Indi.class);
+//      // add association
+//      PropertyAssociation pa = (PropertyAssociation)MetaProperty.get(property, "ASSO").create(entity.getId());
+//      property.addProperty(pa).addDefaultProperties();
+//      pa.link();
+//      // focus stays with entity getting the ASSO
+//      return property.getEntity();
+//    }
+//    
+//  } //AssociatedWith
   
 } //Relationship

@@ -35,22 +35,22 @@ import javax.swing.JComponent;
  */
 public class CreateRelationship extends AbstractChange {
   
-  /** the type of the added entity*/
-  private int type;
-  
   /** the relationship */
   private Relationship relationship;
   
   /** the referenced entity */
   private Entity existing;
   
+  /** the target type */
+  private int target;
+  
   /**
    * Constructor
    */
-  public CreateRelationship(Gedcom ged, int typ, Relationship relatshp) {
-    super(ged, newImages[typ], resources.getString("new", relatshp.getName()));
-    type = typ;
+  public CreateRelationship(Gedcom ged, Relationship relatshp) {
+    super(ged, relatshp.getImage(), resources.getString("new", relatshp.getName()));
     relationship = relatshp;
+    target = relationship.getTargetType();
   }
   
   /**
@@ -61,7 +61,7 @@ public class CreateRelationship extends AbstractChange {
     // You are about to create a {0} in {1}! / You are about to reference {0} in {1}!
     // This {0} will be {1}.
     String about = existing==null ?
-      resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom})
+      resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(target,false), gedcom})
      :
       resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom});
 
@@ -69,7 +69,7 @@ public class CreateRelationship extends AbstractChange {
     String detail = resources.getString("confirm.new.related", relationship );
     
     // Entity comment?
-    String comment = resources.getString("confirm."+Gedcom.getTagFor(type));
+    String comment = resources.getString("confirm."+Gedcom.getTagFor(target));
     
     // combine
     return about + '\n' + detail + '\n' + comment ;
@@ -81,7 +81,7 @@ public class CreateRelationship extends AbstractChange {
   protected JComponent getOptions() {
     
     // selection of existing
-    List ents = gedcom.getEntities(type);
+    List ents = gedcom.getEntities(target);
     Collections.sort(ents);
     ents.add(0, "*New*" );
     
@@ -103,7 +103,7 @@ public class CreateRelationship extends AbstractChange {
     // create the entity if necessary
     if (existing==null) {
       // focus always changes to new that we create now
-      focus = gedcom.createEntity(type, null);
+      focus = gedcom.createEntity(target, null);
       focus.addDefaultProperties();
       // perform the relationship to new
       relationship.apply(focus);

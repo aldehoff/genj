@@ -19,18 +19,21 @@
  */
 package genj.edit;
 
-import genj.edit.actions.*;
+import genj.edit.actions.CreateEntity;
+import genj.edit.actions.CreateRelationship;
+import genj.edit.actions.DelEntity;
+import genj.edit.actions.DelProperty;
+import genj.edit.actions.OpenForEdit;
+import genj.edit.actions.RunExternal;
+import genj.edit.actions.SetSubmitter;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.Note;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyFile;
-import genj.gedcom.PropertyNote;
 import genj.gedcom.Relationship;
-import genj.gedcom.Source;
 import genj.gedcom.Submitter;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
@@ -39,6 +42,7 @@ import genj.util.swing.ImageIcon;
 import genj.view.ContextSupport;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
+
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.ArrayList;
@@ -94,26 +98,29 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    * @see genj.view.ContextSupport#createActions(Property)
    */
   public List createActions(Property property) {
+    
     // create the actions
     List result = new ArrayList();
-    // add FileAssociations for PropertyFile
-    if (property instanceof PropertyFile) { 
+    
+    // FileAssociationActions for PropertyFile
+    if (property instanceof PropertyFile)  
       createActions(result, (PropertyFile)property); 
+      
+    // Check what xrefs can be added
+    MetaProperty[] subs = property.getVisibleMetaProperties();
+    for (int s=0;s<subs.length;s++) {
+      Relationship rel = Relationship.LinkedBy.getInstance(property,subs[s]);
+      if (rel!=null)
+        result.add(new CreateRelationship(property.getGedcom(), rel));
     }
-    // everything but a note can get a note attached
-    if (!(property instanceof PropertyNote))
-      result.add(new CreateRelationship(property.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(property,Gedcom.NOTES)));
-    // event can get can get an obje|SOUR attached
-    if (property instanceof PropertyEvent) {
-      result.add(new CreateRelationship(property.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(property,Gedcom.MULTIMEDIAS)));
-      result.add(new CreateRelationship(property.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(property,Gedcom.SOURCES)));
-    }
-    // association
- // FIXME ASSO and conditional relationships (check meta)
- // result.add(new CreateRelationship(property.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(property) ));
+
+//    // association
+//    result.add(new CreateRelationship(property.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(property) ));
+ 
     // delete possible
     result.add(ActionDelegate.NOOP);
     result.add(new DelProperty(property));
+    
     // done
     return result;
   }
@@ -124,22 +131,32 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   public List createActions(Entity entity) {
     // create the actions
     List result = new ArrayList();
+    
     // indi?
     if (entity instanceof Indi) createActions(result, (Indi)entity);
     // fam?
     if (entity instanceof Fam) createActions(result, (Fam)entity);
     // submitter?
     if (entity instanceof Submitter) createActions(result, (Submitter)entity);
-    // source?
-    if (entity instanceof Source) createActions(result, (Source)entity);
-    // standards
-    if (!(entity instanceof Note)) 
-      result.add(new CreateRelationship(entity.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(entity,Gedcom.NOTES)));
-  // FIXME ASSO
-  // result.add(new CreateRelationship(entity.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(entity) ));
+    
+    // separator
+    result.add(ActionDelegate.NOOP);
+
+    // Check what xrefs can be added
+    MetaProperty[] subs = entity.getAllMetaProperties();
+    for (int s=0;s<subs.length;s++) {
+      Relationship rel = Relationship.LinkedBy.getInstance(entity,subs[s]);
+      if (rel!=null)
+        result.add(new CreateRelationship(entity.getGedcom(), rel));
+    }
+
+//  // FIXME ASSO
+//  // result.add(new CreateRelationship(entity.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(entity) ));
+
     // add delete
     result.add(ActionDelegate.NOOP);
     result.add(new DelEntity(entity));
+    
     // add an "edit in EditView"
     if (ViewManager.getInstance().getOpenViews(EditView.class, entity.getGedcom()).isEmpty()) {
       result.add(ActionDelegate.NOOP);
@@ -155,15 +172,6 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   public List createActions(Gedcom gedcom) {
     // create the actions
     List result = new ArrayList();
-    createActions(result, gedcom);
-    // done
-    return result;
-  }
-
-  /**
-   * Create actions for Gedcom
-   */
-  private void createActions(List result, Gedcom gedcom) {
     result.add(new CreateEntity(gedcom, Gedcom.INDIVIDUALS ));
     result.add(new CreateEntity(gedcom, Gedcom.FAMILIES    ));
     result.add(new CreateEntity(gedcom, Gedcom.NOTES       ));
@@ -171,39 +179,28 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     result.add(new CreateEntity(gedcom, Gedcom.REPOSITORIES));
     result.add(new CreateEntity(gedcom, Gedcom.SOURCES     ));
     result.add(new CreateEntity(gedcom, Gedcom.SUBMITTERS  ));
+    // done
+    return result;
   }
-  
+
   /**
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi) {
-    result.add(new CreateRelationship(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ChildOf(indi)));
+    result.add(new CreateRelationship(indi.getGedcom(), new Relationship.ChildOf(indi)));
     if (indi.getNoOfParents()<2)
-      result.add(new CreateRelationship(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentOf(indi)));
-    result.add(new CreateRelationship(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.SpouseOf(indi)));
-    result.add(new CreateRelationship(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.SiblingOf(indi)));
-    
-    result.add(ActionDelegate.NOOP);
-    result.add(new CreateRelationship(indi.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(indi,Gedcom.MULTIMEDIAS)));
-    result.add(new CreateRelationship(indi.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(indi,Gedcom.SOURCES)));
-    result.add(new CreateRelationship(indi.getGedcom(), Gedcom.SUBMITTERS  , new Relationship.LinkedBy(indi,Gedcom.SUBMITTERS)));
-    result.add(new CreateRelationship(indi.getGedcom(), Gedcom.REPOSITORIES, new Relationship.LinkedBy(indi,Gedcom.REPOSITORIES)));
+      result.add(new CreateRelationship(indi.getGedcom(), new Relationship.ParentOf(indi)));
+    result.add(new CreateRelationship(indi.getGedcom(), new Relationship.SpouseOf(indi)));
+    result.add(new CreateRelationship(indi.getGedcom(), new Relationship.SiblingOf(indi)));
   }
   
   /**
    * Create actions for Families
    */
   private void createActions(List result, Fam fam) {
-    
-    result.add(new CreateRelationship(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ChildIn(fam)));
+    result.add(new CreateRelationship(fam.getGedcom(), new Relationship.ChildIn(fam)));
     if (fam.getNoOfSpouses()<2)
-      result.add(new CreateRelationship(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentIn(fam)));
-      
-    result.add(ActionDelegate.NOOP);
-    result.add(new CreateRelationship(fam.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(fam,Gedcom.MULTIMEDIAS)));
-    result.add(new CreateRelationship(fam.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(fam,Gedcom.SOURCES)));
-    result.add(new CreateRelationship(fam.getGedcom(), Gedcom.SUBMITTERS  , new Relationship.LinkedBy(fam,Gedcom.SUBMITTERS)));
-    result.add(new CreateRelationship(fam.getGedcom(), Gedcom.REPOSITORIES, new Relationship.LinkedBy(fam,Gedcom.REPOSITORIES)));
+      result.add(new CreateRelationship(fam.getGedcom(), new Relationship.ParentIn(fam)));
   }
   
   /**
@@ -211,17 +208,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    */
   private void createActions(List result, Submitter submitter) {
     result.add(new SetSubmitter(submitter));
-    result.add(ActionDelegate.NOOP);
   }
   
-  /**
-   * Create actions for Submitters
-   */
-  private void createActions(List result, Source source) {
-    result.add(new CreateRelationship(source.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(source,Gedcom.MULTIMEDIAS)));
-    result.add(new CreateRelationship(source.getGedcom(), Gedcom.REPOSITORIES, new Relationship.LinkedBy(source,Gedcom.REPOSITORIES)));
-  }
-    
   /**
    * Create actions for PropertyFile
    */

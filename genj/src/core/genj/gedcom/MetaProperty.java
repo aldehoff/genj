@@ -181,7 +181,7 @@ public class MetaProperty {
   /**
    * Accessor - type
    */
-  private Class getType() {
+  public Class getType() {
     // check cached type
     if (type==null) {
       String clazz = "genj.gedcom."+getProperty("type", "PropertySimpleValue");
@@ -224,6 +224,13 @@ public class MetaProperty {
    */
   /*package*/ MetaProperty[] getVisibleSubs() {
     return toArray(visibleSubs);
+  }
+  
+  /**
+   * Acessor - subs
+   */
+  /*package*/ MetaProperty[] getAllSubs() {
+    return toArray(allSubs.values());
   }
   
   /**

@@ -26,7 +26,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
-import genj.util.swing.ImageIcon;
 import genj.view.ViewManager;
 
 import java.beans.PropertyChangeEvent;
@@ -34,6 +33,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
