@@ -20,9 +20,9 @@
  * About Dialog class - Copyright
  * This class creates the content on the Copyright tabbed pane in the
  * About Dialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/CopyrightPanel.java,v 1.6 2002-05-21 17:55:59 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/CopyrightPanel.java,v 1.7 2002-05-26 09:20:07 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
- * @version 1.1
+ * @version 1.2
  *
  */
 
@@ -39,7 +39,7 @@ import java.io.*;
 import java.util.*;
 
 
-public class CopyrightPanel extends JPanel
+public class CopyrightPanel extends InfoPanel
 { // Opens class
   
   // Some variables
@@ -93,7 +93,7 @@ public class CopyrightPanel extends JPanel
     taGpl = new JTextArea();
     // We give the path for the gpl.txt file, using a platform-independant construction
     String pathAndFileToGPLDoc = System.getProperty("user.dir") + File.separatorChar + "doc" + File.separatorChar + "gpl.txt";
-    readTextFile(taGpl, pathAndFileToGPLDoc, App.resources.getString("cc.about.tab4.text2"));
+    this.readTextFile(taGpl, pathAndFileToGPLDoc, App.resources.getString("cc.about.file_missing.text") + pathAndFileToGPLDoc);
     taGpl.setFont(new Font("Times-Roman", Font.PLAIN, 12));
     taGpl.setLineWrap(true);
     taGpl.setWrapStyleWord(true);
@@ -103,20 +103,6 @@ public class CopyrightPanel extends JPanel
     spGpl.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
     spGpl.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     panelGpl.add(spGpl, BorderLayout.CENTER);
-  }
-  
-  // This method reads the text to feed the variable taGpl and if the text file is
-  // missing, it sends a substitute sentence.
-  private void readTextFile(JTextArea ta, String file, String fallback) {
-    try {
-      FileInputStream fin = new FileInputStream(file);
-      Reader in = new InputStreamReader(fin);
-      ta.read(in,null);
-      fin.close();
-    }
-    catch (Exception e) {
-      ta.setText(fallback);
-    }
   }
   
   

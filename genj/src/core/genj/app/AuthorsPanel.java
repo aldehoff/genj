@@ -20,23 +20,32 @@
  * About Dialog class - Authors
  * This class creates the content on the Authors tabbed pane in the
  * About Dialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AuthorsPanel.java,v 1.5 2002-05-21 17:55:59 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AuthorsPanel.java,v 1.6 2002-05-26 09:20:07 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
- * @version 1.0
+ * @version 1.1
  *
  */
 
+
 package genj.app;
+
 
 // Import for buttons, labels, and images
 import javax.swing.*;
 import javax.swing.border.*;
 // Import for layout manager.
 import java.awt.*;
+import java.io.*;
 
 
-public class AuthorsPanel extends JPanel
+
+public class AuthorsPanel extends InfoPanel
 { // Opens class
+  
+  // Some variables
+  private JPanel panelAuthor;
+  private JTextArea taAuthorText;
+  
   
     public AuthorsPanel()
   {  // Opens constructor
@@ -48,7 +57,34 @@ public class AuthorsPanel extends JPanel
     // We create a green border
     setBorder(BorderFactory.createMatteBorder(1, 1, 3, 3, Color.green));
     
+    
+    // Call method to build  the Authors Panel
+    buildPanelAuthor();
+    
+    // We add the authors panel to the main panel
+    add(panelAuthor, BorderLayout.CENTER);
+    
+    
   }  // Closes constructor
+  
+  // This method create the panel to display the authors file
+  private void buildPanelAuthor() {
+    panelAuthor = new JPanel();
+    panelAuthor.setLayout(new BorderLayout());
+    panelAuthor.setBackground(Color.white);
+    taAuthorText = new JTextArea();
+    // We give the path for the authors.txt file, using a platform-independant construction
+    String pathAndFileToAuthorText = System.getProperty("user.dir") + File.separatorChar + "doc" + File.separatorChar + "authors.txt";
+    this.readTextFile(taAuthorText, pathAndFileToAuthorText, App.resources.getString("cc.about.file_missing.text") + pathAndFileToAuthorText);
+    taAuthorText.setFont(new Font("Times-Roman", Font.PLAIN, 12));
+    taAuthorText.setLineWrap(true);
+    taAuthorText.setWrapStyleWord(true);
+    taAuthorText.setEditable(false);
+    JScrollPane spAuthor = new JScrollPane(taAuthorText);
+    spAuthor.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    spAuthor.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    panelAuthor.add(spAuthor, BorderLayout.CENTER);
+  }
   
 
 } // Closes class
