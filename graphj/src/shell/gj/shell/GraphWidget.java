@@ -19,7 +19,6 @@ import gj.awt.geom.Geometry;
 import gj.awt.geom.ShapeHelper;
 import gj.layout.Layout;
 import gj.layout.LayoutRenderer;
-import gj.model.Node;
 import gj.shell.model.ShellGraph;
 import gj.shell.model.ShellNode;
 import gj.shell.swing.SwingHelper;
@@ -108,7 +107,7 @@ public class GraphWidget extends JPanel {
     
   /** the renderer we're using */
   private GraphRenderer graphRenderer = new GraphRenderer() {
-    protected Color getColor(Node node) {
+    protected Color getColor(ShellNode node) {
       return selection==node ? Color.blue : Color.black; 
     }
   };
@@ -192,10 +191,12 @@ public class GraphWidget extends JPanel {
   /**
    * Returns the popup for nodes
    */
-  private JPopupMenu getNodePopupMenu(Point where) {
+  private JPopupMenu getNodePopupMenu(ShellNode node, Point pos) {
 
     // Create the popups
     JPopupMenu result = new JPopupMenu();
+    if (selection.getContainedGraph()!=null)
+      result.add(new ActionCreateNode(selection.getContainedGraph(), Geometry.sub(graph.getPosition(node), content.getPoint(pos)) ));
     result.add(new ActionResizeNode());
     result.add(new ActionDeleteNode());
     result.add(new ActionSetNodeContent());
@@ -212,7 +213,7 @@ public class GraphWidget extends JPanel {
     JMenu mLayout = new JMenu();
     
     // collect public setters(Node)
-    Method[] actions = ReflectHelper.getMethods(currentLayout, "", new Class[]{ Node.class});
+    Method[] actions = ReflectHelper.getMethods(currentLayout, "", new Class[]{ gj.model.Node.class});
     if (actions.length>0) {
       // add add actions
       for (int a=0; a<actions.length; a++) {
@@ -233,7 +234,7 @@ public class GraphWidget extends JPanel {
   private JPopupMenu getCanvasPopupMenu(Point pos) {
     
     JPopupMenu result = new JPopupMenu();
-    result.add(new ActionCreateNode(pos));
+    result.add(new ActionCreateNode(graph, content.getPoint(pos)));
     result.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleQuickNode()));
     return result;
   }
@@ -278,10 +279,15 @@ public class GraphWidget extends JPanel {
       // nothing to do?
       if (graph==null) return;
       // something there?
-      Node oldSelection = selection;
+      ShellNode oldSelection = selection;
       selection = graph.getNode(content.getPoint(e.getPoint()));
+      // popup?
+      if (e.isPopupTrigger()) {
+        popup(e.getPoint());
+        return;
+      }
       // start dragging?
-      if (selection!=null && (e.getModifiers()&e.BUTTON1_MASK)!=0) {
+      if (e.getButton()==e.BUTTON1&&selection!=null) {
         if (oldSelection==selection)
           dndMoveNode.start(e.getPoint());
         else
@@ -295,23 +301,23 @@ public class GraphWidget extends JPanel {
     public void mouseReleased(MouseEvent e) {
       
       // context menu?
-      if ((e.getModifiers()&e.BUTTON3_MASK)!=0) {
-        // popup
-        JPopupMenu menu = selection!=null ? getNodePopupMenu(e.getPoint()) : getCanvasPopupMenu(e.getPoint());
-        menu.show(content,e.getX(),e.getY());
+      if (e.isPopupTrigger()) {
+        popup(e.getPoint());
         return;
       }
       
       // quick create?
-      if ((e.getModifiers()&e.BUTTON1_MASK)!=0) {
-        if (quickNode) {
-           graph.createNode(shapes[0], ""+(graph.getNodes().size()+1), content.getPoint(e.getPoint()));
-           repaint();
-        } 
+      if (quickNode) {
+        graph.createNode(shapes[0], ""+(graph.getNodes().size()+1), content.getPoint(e.getPoint()));
+        repaint();
         return;
       }
-      
       // done
+    }
+    /** popup */
+    private void popup(Point at) {
+      JPopupMenu menu = selection!=null ? getNodePopupMenu(selection, at) : getCanvasPopupMenu(at);
+      menu.show(content,at.x,at.y);
     }
   } //DnDIdle
   
@@ -487,11 +493,16 @@ public class GraphWidget extends JPanel {
    * How to handle - Create a node
    */
   private class ActionCreateNode extends UnifiedAction {
-    private Point pos;
-    protected ActionCreateNode(Point set) { super("Create node"); pos = set; }
+    private ShellGraph in;
+    private Point2D pos;
+    protected ActionCreateNode(ShellGraph setIn, Point2D setPos) { 
+      super("Create node"); 
+      pos = setPos;
+      in = setIn; 
+    }
     protected void execute() {
       String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
-      if (txt!=null) graph.createNode(shapes[0], txt, content.getPoint(pos));
+      if (txt!=null) in.createNode(shapes[0], txt, pos);
       repaint();
     }
   }

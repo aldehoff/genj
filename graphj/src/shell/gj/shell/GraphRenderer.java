@@ -18,9 +18,9 @@ package gj.shell;
 import gj.awt.geom.Path;
 import gj.awt.geom.ShapeHelper;
 import gj.layout.Layout;
-import gj.model.Arc;
-import gj.model.Graph;
-import gj.model.Node;
+import gj.shell.model.ShellArc;
+import gj.shell.model.ShellGraph;
+import gj.shell.model.ShellNode;
 
 import java.awt.Color;
 import java.awt.FontMetrics;
@@ -46,7 +46,7 @@ public abstract class GraphRenderer {
   /**
    * The rendering functionality
    */
-  public void render(Graph graph, Layout layout, Graphics2D graphics) {
+  public void render(ShellGraph graph, Layout layout, Graphics2D graphics) {
 
     // the arcs
     renderArcs(graph.getArcs(), graphics);    
@@ -60,7 +60,7 @@ public abstract class GraphRenderer {
   /**
    * Attribute resolver
    */
-  protected abstract Color getColor(Node node);
+  protected abstract Color getColor(ShellNode node);
   
   /**
    * Renders all Nodes
@@ -72,7 +72,7 @@ public abstract class GraphRenderer {
     while (it.hasNext()) {
       
       // .. this is the node
-      Node node = (Node)it.next();
+      ShellNode node = (ShellNode)it.next();
       
       // .. render
       renderNode(node, graphics);
@@ -82,7 +82,7 @@ public abstract class GraphRenderer {
     // Done
   }
 
-  private void renderNode(Node node, Graphics2D graphics) {
+  private void renderNode(ShellNode node, Graphics2D graphics) {
 
     // draw its shape
     Point2D pos = node.getPosition();
@@ -94,12 +94,13 @@ public abstract class GraphRenderer {
     if (content==null) return;
     
     // another graph?
-    if (content instanceof Graph) {
+    if (content instanceof ShellGraph) {
+      ShellGraph sub = (ShellGraph)content;
       // save configuration
       AffineTransform oldat = graphics.getTransform();
       // render content graph
       graphics.translate( pos.getX(), pos.getY());
-      render((Graph)content, null, graphics);
+      render((ShellGraph)content, null, graphics);
       // restore configuration
       graphics.setTransform(oldat);
     } else {
@@ -120,7 +121,7 @@ public abstract class GraphRenderer {
     // Loop through the graph's arcs
     Iterator it = arcs.iterator();
     while (it.hasNext()) {
-      Arc arc = (Arc)it.next();
+      ShellArc arc = (ShellArc)it.next();
       renderArc(arc, graphics);
     }
    
@@ -130,7 +131,7 @@ public abstract class GraphRenderer {
   /**
    * Renders an Arc
    */
-  private void renderArc(Arc arc, Graphics2D graphics) {
+  private void renderArc(ShellArc arc, Graphics2D graphics) {
     
     Path path = arc.getPath();
     

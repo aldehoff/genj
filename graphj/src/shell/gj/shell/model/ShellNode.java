@@ -15,10 +15,8 @@
  */
 package gj.shell.model;
 
-import gj.awt.geom.Geometry;
 import gj.awt.geom.ShapeHelper;
 import gj.util.ArcHelper;
-import gj.util.ModelHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -33,7 +31,7 @@ import java.util.List;
  */
 public class ShellNode implements gj.model.Node {
   
-  private Point2D position = new Point2D.Double();
+  private Position pos = new Position();
   
   private Shape shape = null;
   
@@ -70,7 +68,7 @@ public class ShellNode implements gj.model.Node {
    * Check if a point lies within node
    */
   protected boolean contains(Point2D point) {
-    return shape.contains(point.getX()-position.getX(),point.getY()-position.getY());   
+    return shape.contains(point.getX()-pos.getX(),point.getY()-pos.getY());   
   }
   
   /**
@@ -78,44 +76,7 @@ public class ShellNode implements gj.model.Node {
    */
   protected void revalidate(boolean shrink) {
     
-    // FIXME this should try to shift the contained graph nodes' origin
-    // to optimize space requirement
-    
-    // do we contain a graph?
-    if (content instanceof ShellGraph) {
-      
-      // check our bounds
-      Rectangle2D bounds = ModelHelper.getBounds(((ShellGraph)content).getNodes());
-      
-      // find maximum
-      double max = 1.0D;
-      while (!ShapeHelper.createShape(shape, max, null).contains(bounds))
-        max *= 2.0D;
-        
-      if (max==1.0D&&!shrink)
-        return;
-        
-      // find minimum
-      double min = 1.0D;
-      while (ShapeHelper.createShape(shape, min, null).contains(bounds)) 
-        min *= 0.5D;
-    
-      // binary search for best fit 
-      for (int i=0;i<8;i++) {
-          
-        double pivt = (min+max)/2;
-    
-        if (ShapeHelper.createShape(shape, pivt, null).contains(bounds)) {
-          max = pivt;
-        } else {
-          min = pivt;
-        }
-    
-      }
-       
-      // set shape 
-      shape = ShapeHelper.createShape(shape, max, null);
-    }
+    revalidateShape(shrink);    
           
     // update arcs
     ArcHelper.updateArcs(arcs);
@@ -124,13 +85,56 @@ public class ShellNode implements gj.model.Node {
   }  
   
   /**
+   * Makes sure the shape is appropriate for the content
+   */
+  private void revalidateShape(boolean shrinkIfAble) {
+
+    // don't care if not containing graph?
+    if (!(content instanceof ShellGraph))
+      return;
+    ShellGraph nested = (ShellGraph)content;
+      
+    // check our bounds
+    Rectangle2D bounds = nested.getBounds();
+   
+    // find maximum
+    double max = 1.0D;
+    while (!ShapeHelper.createShape(shape, max, null).contains(bounds))
+      max *= 2.0D;
+      
+    // shape is big enough - shrink it?
+    if (max==1.0D&&!shrinkIfAble)
+      return;
+      
+    // find minimum
+    double min = 1.0D;
+    while (ShapeHelper.createShape(shape, min, null).contains(bounds)) 
+      min *= 0.5D;
+  
+    // binary search for best fit 
+    for (int i=0;i<8;i++) {
+        
+      double pivt = (min+max)/2;
+  
+      if (ShapeHelper.createShape(shape, pivt, null).contains(bounds)) {
+        max = pivt;
+      } else {
+        min = pivt;
+      }
+  
+    }
+     
+    // set shape 
+    shape = ShapeHelper.createShape(shape, max, null);
+    
+    // done
+  }
+  
+  /**
    * Sets the location
    */
-  public void setPosition(Point2D pos) {
-    // check parents' bounds
-    position = pos;
-    // update arcs
-    ArcHelper.updateArcs(arcs);
+  public void setPosition(Point2D set) {
+    pos.setLocation(set);
   }
 
   /**
@@ -170,19 +174,14 @@ public class ShellNode implements gj.model.Node {
    * @see gj.model.Node#getPosition()
    */
   public Point2D getPosition() {
-    return position;
+    return pos;
   }
   
   /**
    * Move by delta 
    */
   public void translate(Point2D delta) {
-    // move
-    position = Geometry.add(position, delta);
-    ArcHelper.updateArcs(arcs);
-    // notify
-    graph.revalidate();
-    // done
+    pos.translate(delta);
   }
   
   /**
@@ -235,5 +234,40 @@ public class ShellNode implements gj.model.Node {
     return content!=null ? content.toString() : super.toString();
   }
 
-
+  /**
+   * Any contained graph
+   */
+  public ShellGraph getContainedGraph() {
+    return content instanceof ShellGraph ? (ShellGraph)content : null;
+  }
+ 
+  /**
+   * Our own position
+   */
+  private class Position extends Point2D {
+    private double x,y;
+    /** */
+    public double getX() {
+      return x;
+    }
+    /** */
+    public double getY() {
+      return y;
+    }
+    /** */
+    public void setLocation(double sx, double sy) {
+      // remember
+      x = sx;
+      y = sy;
+      // update arcs
+      ArcHelper.updateArcs(arcs);
+      // notify
+      graph.revalidate();
+    }
+    /** */
+    public void translate(Point2D delta) {
+      setLocation(x+delta.getX(), y+delta.getY());
+    }
+  } //Position
+  
 } //ShellNode

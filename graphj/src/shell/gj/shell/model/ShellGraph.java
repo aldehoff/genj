@@ -16,9 +16,11 @@
 package gj.shell.model;
 
 import gj.awt.geom.Geometry;
+import gj.util.ModelHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -35,7 +37,7 @@ public class ShellGraph implements gj.model.Graph {
   
   /** a parent we might be added to */
   private ShellNode parent;
-
+  
   /**
    * Remove node
    */
@@ -67,12 +69,39 @@ public class ShellGraph implements gj.model.Graph {
   /**
    * Change Notification
    */
+//  private boolean isRevalidating = false;
+  
   protected void revalidate() {
-    // parent?
-    if (parent==null)
-      return;
-    // propagate
-    parent.revalidate(true);
+
+//    if (isRevalidating) return;
+//    isRevalidating=true;      
+//
+//    // make sure we center around (0,0)
+//    Rectangle2D bounds = ModelHelper.getBounds(nodes);
+//    if (bounds.getCenterX()!=0||bounds.getCenterY()!=0) {
+//
+//      Point2D delta = new Point2D.Double(-bounds.getCenterX(),-bounds.getCenterY());
+//      for (int i=0;i<nodes.size();i++)
+//        ((ShellNode)nodes.get(i)).translate(delta);
+//
+//      for (int i=0;i<arcs.size();i++)
+//        ((ShellArc)arcs.get(i)).translate(delta);              
+//    }
+    
+    // propagate to parent?
+    if (parent!=null)
+      parent.revalidate(false);
+      
+    // done
+//    isRevalidating=false;
+  }
+  
+  /**
+   * Bounds
+   */
+  public Rectangle2D getBounds() {
+    // could be cached
+    return ModelHelper.getBounds(nodes);
   }
 
   /**
@@ -103,6 +132,7 @@ public class ShellGraph implements gj.model.Graph {
     ShellNode result = new ShellNode(this, shape, content);
     if (pos!=null) result.getPosition().setLocation(pos);
     nodes.add(result);
+    revalidate();
     return result;
   }
 

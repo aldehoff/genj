@@ -19,6 +19,8 @@ import gj.awt.geom.Path;
 import gj.model.Node;
 import gj.util.ArcHelper;
 
+import java.awt.geom.Point2D;
+
 /**
  * Arc for Shell
  */
@@ -38,6 +40,13 @@ public class ShellArc implements gj.model.Arc {
     start = from;
     end   = to;
     ArcHelper.update(this);
+  }
+  
+  /**
+   * Translate
+   */
+  protected void translate(Point2D delta) {
+    path.translate(delta);
   }
   
   /**
