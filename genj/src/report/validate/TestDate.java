@@ -13,6 +13,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
+import genj.util.WordBuffer;
 
 import java.util.List;
 
@@ -103,7 +104,7 @@ import java.util.List;
       
     // test it 
     if (isError(date1, (PropertyDate)date2)) 
-      issues.add(new Issue(getError(date2.getEntity(), trigger), date1.getParent().getImage(false), prop));
+      issues.add(getError(date2.getEntity(), prop, trigger, report));
     
     // done
   }
@@ -122,17 +123,28 @@ import java.util.List;
   }
 
   /**
-   * Calculate error messag from two paths
+   * Calculate an issue
    */
-  private String getError(Entity entity, TagPath trigger) {
+  private Issue getError(Entity entity, Property prop, TagPath trigger, ReportValidate report) {
     
-    // prepare it
-    return 
-        Gedcom.getName(trigger.get(trigger.length()-(trigger.getLast().equals("DATE")?2:1)))
-      + (comparison==BEFORE ? " before " : " after ") 
-      + Gedcom.getName(path2.get(path2.length()-2))
-      + (entity instanceof Indi? " of "+entity : "");
+    WordBuffer buf = new WordBuffer();
     
+    buf.append(Gedcom.getName(trigger.get(trigger.length()-(trigger.getLast().equals("DATE")?2:1))));
+    if (comparison==BEFORE)
+      buf.append(report.i18n("err.date.before"));
+    else
+      buf.append(report.i18n("err.date.after"));
+    buf.append(Gedcom.getName(path2.get(path2.length()-2)));
+    if (entity instanceof Indi) {
+      buf.append(report.i18n("err.date.of"));    
+      buf.append(entity.toString());
+    }
+     
+    return new Issue(
+      buf.toString(), 
+      prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), 
+      prop
+    );
   }
   
 } //TestEventTime

@@ -217,33 +217,33 @@ public class ReportValidate extends Report {
     
     // max lifespane
     if (maxLife>0)
-      result.add(new TestAge ("INDI:DEAT:DATE","..:..", TestAge.OVER, maxLife));
+      result.add(new TestAge ("INDI:DEAT:DATE","..:..", TestAge.OVER ,   maxLife, "maxLife"  ));
     
     // max BAPM age
     if (maxAgeBAPM>0) 
-      result.add(new TestAge ("INDI:BAPM:DATE","..:..", TestAge.OVER   ,maxAgeBAPM));
+      result.add(new TestAge ("INDI:BAPM:DATE","..:..", TestAge.OVER ,maxAgeBAPM,"maxAgeBAPM"));
     
     // max CHRI age
     if (maxAgeBAPM>0) 
-      result.add(new TestAge ("INDI:CHRI:DATE","..:..", TestAge.OVER   ,maxAgeBAPM));
+      result.add(new TestAge ("INDI:CHRI:DATE","..:..", TestAge.OVER ,maxAgeBAPM,"maxAgeBAPM"));
     
     // min RETI age
     if (minAgeRETI>0)
-      result.add(new TestAge ("INDI:RETI:DATE","..:..", TestAge.UNDER  ,minAgeRETI));
+      result.add(new TestAge ("INDI:RETI:DATE","..:..", TestAge.UNDER,minAgeRETI,"minAgeRETI"));
 
     // min MARR age of husband, wife
     if (minAgeMARR>0) 
-      result.add(new TestAge ("FAM:MARR:DATE" ,"..:..:HUSB:INDI", TestAge.UNDER  ,minAgeMARR));
+      result.add(new TestAge ("FAM:MARR:DATE" ,"..:..:HUSB:INDI", TestAge.UNDER  ,minAgeMARR,"minAgeMARR"));
     if (minAgeMARR>0) 
-      result.add(new TestAge ("FAM:MARR:DATE" ,"..:..:WIFE:INDI", TestAge.UNDER  ,minAgeMARR));
+      result.add(new TestAge ("FAM:MARR:DATE" ,"..:..:WIFE:INDI", TestAge.UNDER  ,minAgeMARR,"minAgeMARR"));
     
     // min/max age for father, mother
     if (minAgeMother>0) 
-      result.add(new TestAge ("FAM:CHIL", ".:INDI:BIRT:DATE" ,"..:WIFE:INDI", TestAge.UNDER,minAgeMother));
+      result.add(new TestAge ("FAM:CHIL", ".:INDI:BIRT:DATE" ,"..:WIFE:INDI", TestAge.UNDER,minAgeMother,"minAgeMother"));
     if (maxAgeMother>0) 
-      result.add(new TestAge ("FAM:CHIL", ".:INDI:BIRT:DATE" ,"..:WIFE:INDI", TestAge.OVER ,maxAgeMother));
+      result.add(new TestAge ("FAM:CHIL", ".:INDI:BIRT:DATE" ,"..:WIFE:INDI", TestAge.OVER ,maxAgeMother,"maxAgeMother"));
     if (minAgeFather>0) 
-      result.add(new TestAge ("FAM:CHIL", ".:INDI:BIRT:DATE" ,"..:HUSB:INDI", TestAge.UNDER,minAgeFather));
+      result.add(new TestAge ("FAM:CHIL", ".:INDI:BIRT:DATE" ,"..:HUSB:INDI", TestAge.UNDER,minAgeFather,"minAgeFather"));
     
 
     // **********************************************************************

@@ -38,6 +38,9 @@ public class TestAge extends Test {
   /** the value */
   private int years;
 
+  /** the explanation */
+  private String explanation;
+
   /**
    * Constructor
    * @param trigger the path that triggers this test (pointing to date)
@@ -45,8 +48,8 @@ public class TestAge extends Test {
    * @param comp either OVER or UNDER
    * @param yrs age in years 
    */
-  /*package*/ TestAge(String trigger, String p2indi, int comp, int yrs) {
-    this(trigger, null, p2indi, comp, yrs);
+  /*package*/ TestAge(String trigger, String p2indi, int comp, int yrs, String expltn) {
+    this(trigger, null, p2indi, comp, yrs, expltn);
   }
 
   /**
@@ -57,10 +60,11 @@ public class TestAge extends Test {
    * @param comp either OVER or UNDER
    * @param yrs age in years 
    */
-  /*package*/ TestAge(String trigger, String p2date, String p2indi, int comp, int yrs) {
+  /*package*/ TestAge(String trigger, String p2date, String p2indi, int comp, int yrs, String expltn) {
     // delegate to super
     super(trigger, p2date!=null?Property.class:PropertyDate.class);
     // remember
+    explanation = expltn;
     path2date = p2date!=null?new TagPath(p2date):null;
     path2indi = new TagPath(p2indi);
     comparison = comp;
@@ -109,7 +113,7 @@ public class TestAge extends Test {
       
     // test it 
     if (isError(delta[0])) 
-      issues.add(new Issue(getError(indi), date.getParent().getImage(false), prop));
+      issues.add(getError(indi, prop, report));
     
     // done
   }
@@ -128,20 +132,25 @@ public class TestAge extends Test {
   }
 
   /**
-   * Calculate error messag from two paths
+   * Calculate issue
    */
-  private String getError(Indi indi) {
+  private Issue getError(Indi indi, Property prop, ReportValidate report) {
     
     WordBuffer words = new WordBuffer();
-    words.append("Age of");
-    words.append(indi.toString());
+    String[] format = new String[]{ indi.toString(), String.valueOf(years)}; 
     if (comparison==UNDER) {
-      words.append("under");
+      words.append(report.i18n("err.age.under", format));
     } else {
-      words.append("over");
+      words.append(report.i18n("err.age.over", format));
     }
-    words.append(String.valueOf(years));
-    return words.toString();
+    words.append("-");
+    words.append(report.i18n(explanation));
+    
+    return new Issue(
+      words.toString(),
+      prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false),
+      prop
+    );
   }
   
 } //TestAge

@@ -8,9 +8,11 @@
 package validate;
 
 import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
+import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 
 import java.util.List;
@@ -37,13 +39,14 @@ import java.util.List;
     
     // check husband/wife
     Indi husband = fam.getHusband();
-    if (!testSex(husband, PropertySex.MALE)) 
-      issues.add(new Issue(husband+" has wrong gender", husband.getImage(true), fam.getProperty("HUSB") ));
+    if (!testSex(husband, PropertySex.MALE))
+      issues.add(getError(fam, "HUSB", report)); 
       
     Indi wife = fam.getWife();
     if (!testSex(wife, PropertySex.FEMALE)) 
-      issues.add(new Issue(wife+" has wrong gender", husband.getImage(true), fam.getProperty("WIFE") ));
+      issues.add(getError(fam, "WIFE", report)); 
 
+    // done
   }    
 
   /**
@@ -51,6 +54,27 @@ import java.util.List;
    */
   private boolean testSex(Indi indi, int sex) {
     return indi==null ? true : indi.getSex()==sex;
+  }
+
+  /**
+   * Calculate an issue for indi in fam 
+   * @param role HUSB or WIFE
+   */
+  private Issue getError(Fam fam, String role, ReportValidate report) {
+    
+    PropertyXRef xref = (PropertyXRef)fam.getProperty(role);
+    Indi indi = (Indi)xref.getReferencedEntity();
+     
+    String[] format = new String[] {
+      Gedcom.getName(role),
+      indi.toString()
+    };
+    
+    return new Issue(
+      report.i18n("err.spouse."+role, format),
+      xref.getImage(false),
+      xref
+    );
   }
 
 } //TestHusbandGender
