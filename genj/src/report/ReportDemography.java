@@ -45,7 +45,7 @@ public class ReportDemography extends Report {
     // gather data - we're using two series, one for males the other
     // for females. The categories we're collecting is ages/lifespans
     // for people between 0-9 and 10-19 etc. years old
-    String[] series = { PropertySex.TXT_MALE, PropertySex.TXT_FEMALE };
+    String[] series = { i18n("men"), i18n("women") };
     int res = ageGrouping==0 ? 10 : 5;
     String[] categories = new String[100/res + 1];
     categories[0] = "100+"; 
