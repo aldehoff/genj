@@ -5,7 +5,7 @@
 1 DEST ANY
 1 CHAR IBMPC
 1 FILE example.ged
-1 DATE 9 OCT 2002
+1 DATE 14 NOV 2002
 0 @I001@ INDI 
 1 NAME Lars H. /Meier/
 1 SEX M
@@ -71,7 +71,7 @@
 2 TITL Pilot Error
 2 FORM JPG
 2 FILE meiern.jpg
-1 NOTE @N003@
+1 NOTE 
 1 RESI 
 2 DATE FROM 1 OCT 2001
 2 ADDR 788 Harrison Street
@@ -116,6 +116,7 @@
 1 HUSB @I005@
 1 CHIL @I007@
 1 CHIL @I009@
-0 @N003@ NOTE The author of GenJ
+0 @N003@ NOTE 
+1 NOTE The author of GenJ
 1 DATE FROM 1996 TO 2000
 0 TRLR 
