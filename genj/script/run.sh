@@ -10,7 +10,8 @@ while [ -h "$SCRIPT" ]; do
  SCRIPT=`ls -l $SCRIPT | grep -o '[/.[:alnum:]]*$'`
  echo "*** INFO: Following symlink $SCRIPT"
  cd `dirname $SCRIPT`
- SCRIPT=`basename $SCRIPT` done
+ SCRIPT=`basename $SCRIPT`
+done
 
 # final check if the GenJ main archive is right here
 if [ ! -e "./run.jar"  ]; then
@@ -35,4 +36,4 @@ CMD="$JAVA -jar run.jar"
 
 echo "*** INFO: Executing '$CMD'"
 
-# end
+`$CMD`
