@@ -66,7 +66,7 @@ public class DateWidget extends JPanel {
     
     // initialize Sub-components
     widgetCalendar = new PopupWidget(); 
-    widgetCalendar.setMargin(new Insets(0,0,0,0));
+    widgetCalendar.setMargin(new Insets(1,1,1,1));
     widgetCalendar.setActions(switches);
     
     //  FIXME reflect pit's calendar

@@ -33,10 +33,10 @@ public abstract class PointInTime implements Comparable {
 
   /** calendars */
   public final static Calendar[] CALENDARS = {
-    new Calendar("@#DGREGORIAN@", "gregorian", "images/Ordination.gif"),  
-    new Calendar("@#DJULIAN@"   , "julian"   , "images/Will.gif"),
-    new Calendar("@#DHEBREW@"   , "hebrew"   , "images/Bar.gif"),
-    new Calendar("@#DFRENCH R@" , "french"   , "images/Nationality.gif")
+    new Calendar("@#DGREGORIAN@", "gregorian", "images/Gregorian.gif"),  
+    new Calendar("@#DJULIAN@"   , "julian"   , "images/Julian.gif"),
+    new Calendar("@#DHEBREW@"   , "hebrew"   , "images/Hebrew.gif"),
+    new Calendar("@#DFRENCH R@" , "french"   , "images/FrenchR.gif")
   };
     
   /** month names */
