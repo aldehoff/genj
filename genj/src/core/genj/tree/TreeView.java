@@ -264,11 +264,11 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     registry.put("bend"    , model.isBendArcs());
     registry.put("marrs"   , model.isMarrSymbols());
     TreeMetrics m = model.getMetrics();
-    registry.put("windis"  ,(float)m.wIndis);
-    registry.put("hindis"  ,(float)m.hIndis);
-    registry.put("wfams"   ,(float)m.wFams );
-    registry.put("hfams"   ,(float)m.hFams );
-    registry.put("pad"     ,(float)m.pad   );
+    registry.put("windis"  , m.wIndis);
+    registry.put("hindis"  , m.hIndis);
+    registry.put("wfams"   , m.wFams );
+    registry.put("hfams"   , m.hFams );
+    registry.put("pad"     , m.pad   );
     registry.put("antial"  , isAntialiasing );
     registry.put("font"    , contentFont);
     registry.put("adjust"  , isAdjustFonts);
