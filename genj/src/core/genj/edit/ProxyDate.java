@@ -29,6 +29,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JComboBox;
+import javax.swing.event.ChangeEvent;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -53,7 +54,7 @@ class ProxyDate extends Proxy implements ItemListener {
     false,
     false
   };
-
+  
   /**
    * Finish proxying edit for property Date
    */
@@ -84,8 +85,6 @@ class ProxyDate extends Proxy implements ItemListener {
    */
   public void itemStateChanged(ItemEvent e) {
 
-    change.set(true);
-
     if (PropertyDate.isRange(combo.getSelectedIndex()))
       deOne.getParent().add(deTwo);
     else
@@ -93,6 +92,10 @@ class ProxyDate extends Proxy implements ItemListener {
 
     deOne.getParent().invalidate();
     deOne.getParent().validate();
+
+    // notify of change
+    stateChanged(new ChangeEvent(this));
+
     // Done
   }          
 
@@ -121,18 +124,18 @@ class ProxyDate extends Proxy implements ItemListener {
 
     WindowManager mgr = view.manager.getWindowManager();
 
-    deOne = new DateWidget(change, p.getStart(), mgr);
+    deOne = new DateWidget(p.getStart(), mgr);
+    deOne.addChangeListener(this);
     deOne.setAlignmentX(0);
     result.add(deOne);
     result.setFocus(deOne);
 
-    deTwo = new DateWidget(change, p.getEnd(), mgr);
+    deTwo = new DateWidget(p.getEnd(), mgr);
+    deTwo.addChangeListener(this);
     deTwo.setAlignmentX(0);
 
     combo.setSelectedIndex( p.getFormat() );
 
-    change.set(false);
-    
     // Done
     return result;
 

@@ -28,6 +28,7 @@ import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.widgets.PathTreeWidget;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -235,14 +236,7 @@ public class BlueprintEditor extends JSplitPane {
       TagPath[] paths = MetaProperty.getPaths(blueprint.getTag(), Property.class);
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
-      int option =  windowManager.openDialog(
-        null,
-        resources.getString("prop.insert.tip"),
-        WindowManager.IMG_QUESTION,
-        tree,
-        WindowManager.OPTIONS_OK_CANCEL, 
-        BlueprintEditor.this
-      );        
+      int option =  windowManager.openDialog(null,resources.getString("prop.insert.tip"),WindowManager.IMG_QUESTION,tree,CloseWindow.OKandCANCEL(),BlueprintEditor.this);        
       // .. OK?
       if (option!=0) return;
       // add those properties

@@ -25,6 +25,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.TreeWidget;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.Color;
@@ -207,14 +208,7 @@ public class BlueprintList extends JSplitPane {
         return;
       // confirm
       Blueprint blueprint = (Blueprint)node;
-      int rc = windowManager.openDialog(
-        null,
-        null,
-        WindowManager.IMG_QUESTION,
-        resources.getString("blueprint.del.confirm", blueprint.getName()),
-        WindowManager.OPTIONS_OK_CANCEL,
-        BlueprintList.this        
-      ); 
+      int rc = windowManager.openDialog(null,null,WindowManager.IMG_QUESTION,resources.getString("blueprint.del.confirm", blueprint.getName()),CloseWindow.OKandCANCEL(),BlueprintList.this); 
       if (rc!=0) 
         return;
       // remove selection

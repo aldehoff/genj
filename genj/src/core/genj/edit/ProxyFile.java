@@ -31,6 +31,7 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.TextFieldWidget;
 import genj.util.swing.UnitGraphics;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.Cursor;
@@ -144,7 +145,8 @@ import javax.swing.JScrollPane;
     GridBagHelper gh = new GridBagHelper(result);
     
     // Create Text and button for current value
-    tFile = new TextFieldWidget(change, "", 10);
+    tFile = new TextFieldWidget("", 10);
+    tFile.addChangeListener(this);
     result.setFocus(tFile);
 
     // but check permissions first
@@ -203,12 +205,7 @@ import javax.swing.JScrollPane;
       chooser.setBorder(null);
       JCheckBox check = new JCheckBox(view.resources.getString("proxy.file.update"), false);
 
-      int option = view.manager.getWindowManager().openDialog( 
-        null, view.resources.getString("proxy.file.title"), WindowManager.IMG_QUESTION, 
-        new JComponent[]{chooser,check}, 
-        WindowManager.OPTIONS_OK_CANCEL, 
-        view 
-      );
+      int option = view.manager.getWindowManager().openDialog(null, view.resources.getString("proxy.file.title"), WindowManager.IMG_QUESTION,new JComponent[]{chooser,check},CloseWindow.OKandCANCEL(),view);
       
       File file = chooser.getSelectedFile();
       if (option!=0||file==null) 
@@ -451,13 +448,7 @@ import javax.swing.JScrollPane;
           String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
         }); 
         
-        view.manager.getWindowManager().openDialog(
-          null,null,
-          WindowManager.IMG_INFORMATION,
-          txt,
-          WindowManager.OPTIONS_OK,
-          view
-        );
+        view.manager.getWindowManager().openDialog(null,null,WindowManager.IMG_INFORMATION,txt,CloseWindow.OK(),view);
       }
       
       // show

@@ -17,7 +17,7 @@ import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.report.Report;
-import genj.window.WindowManager;
+import genj.window.CloseWindow;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -478,7 +478,7 @@ public class ReportHTMLSheets extends Report {
     Gedcom gedcom = (Gedcom)context;
 
     // Get a directory to write to
-    File dir = getDirectoryFromUser(i18n("target.dir"), WindowManager.OPTION_OK);
+    File dir = getDirectoryFromUser(i18n("target.dir"), CloseWindow.TXT_OK);
     if (dir==null)
       return;
 

@@ -62,7 +62,8 @@ class ProxySimpleValue extends Proxy {
     if (property.isReadOnly()) {
       result.add(BorderLayout.NORTH, new JLabel(property.getValue()));
     } else {
-      tfield = new TextFieldWidget(change, property.getValue(), 0);
+      tfield = new TextFieldWidget(property.getValue(), 0);
+      tfield.addChangeListener(this);
       result.add(BorderLayout.NORTH, tfield);
       result.setFocus(tfield);
     }

@@ -13,7 +13,6 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.report.Report;
-import genj.window.WindowManager;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -129,7 +128,7 @@ public class ReportValidate extends Report {
     
     // any fixes proposed at all?
     if (issues.isEmpty()) {
-      getOptionFromUser(i18n("noissues"), WindowManager.OPTIONS_OK);
+      getOptionFromUser(i18n("noissues"), Report.OPTION_OK);
       return;
     }
     

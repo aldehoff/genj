@@ -24,10 +24,9 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.renderer.EntityRenderer;
 import genj.util.ActionDelegate;
-import genj.util.ObservableBoolean;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.window.WindowManager;
+import genj.window.CloseWindow;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -50,7 +49,7 @@ import javax.swing.event.ChangeListener;
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property
  */
-/*package*/ abstract class Proxy  {
+/*package*/ abstract class Proxy implements ChangeListener {
   
   /** the resources */
   protected final static Resources resources = EditView.resources;
@@ -67,12 +66,12 @@ import javax.swing.event.ChangeListener;
   /** the label header */
   protected JLabel label;
   
+  /** change state */
+  private boolean changed = false;
+  
   /** buttons */
   protected AbstractButton ok, cancel;
   
-  /** change support */
-  protected ObservableBoolean change = new ObservableBoolean();  
-
   /**
    * Setup an editor in given panel
    */
@@ -103,14 +102,6 @@ import javax.swing.event.ChangeListener;
       ok = bh.create(new OK());
       cancel = bh.create(new Cancel());
       panel.add(BorderLayout.SOUTH, buttons);
-      
-      change.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
-          ok.setEnabled(change.get());
-          cancel.setEnabled(change.get());
-        }
-      });
-      
     }
     
     // propagate layout change
@@ -120,11 +111,24 @@ import javax.swing.event.ChangeListener;
     // set focus
     editor.requestFocus();
 
-    // we're ready for changes now
-    change.set(false);
+    // set unchanged
+    stateChanged(null);
     
-
     // done
+  }
+
+  /**
+   * callback - change happened
+   */
+  public void stateChanged(ChangeEvent e) {
+    // ok and cancel applies?
+    if (ok==null)
+      return;
+    // no event means clear change
+    changed = e!=null;
+    // update buttons
+    ok.setEnabled(changed);
+    cancel.setEnabled(changed);
   }
   
   /**
@@ -137,7 +141,7 @@ import javax.swing.event.ChangeListener;
    */
   protected final boolean hasChanged() {
     // only if property is still in entity/gedcom and change state is true
-    return property.getGedcom()!=null & change.get();
+    return property.getGedcom()!=null & changed;
   }
 
   /**
@@ -224,7 +228,7 @@ import javax.swing.event.ChangeListener;
 
     /** constructor */
     private OK() {
-      setText(WindowManager.OPTION_OK);
+      setText(CloseWindow.TXT_OK);
     }
 
     /** cancel current proxy */
@@ -243,7 +247,8 @@ import javax.swing.event.ChangeListener;
         gedcom.endTransaction();
       }
 
-      change.set(false);    
+      changed = false;
+      stateChanged(null);    
     }
 
   } //OK
@@ -255,7 +260,7 @@ import javax.swing.event.ChangeListener;
 
     /** constructor */
     private Cancel() {
-      setText(WindowManager.OPTION_CANCEL);
+      setText(CloseWindow.TXT_CANCEL);
     }
 
     /** cancel current proxy */

@@ -31,6 +31,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -388,14 +389,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
       // check if appropriate
       if (report.accepts(context)==null) {
-        manager.getWindowManager().openDialog(
-          null,
-          report.getName(),
-          WindowManager.IMG_ERROR,
-          resources.getString("report.noaccept"),
-          WindowManager.OPTIONS_OK,
-          ReportView.this
-        );
+        manager.getWindowManager().openDialog(null,report.getName(),WindowManager.IMG_ERROR,resources.getString("report.noaccept"),CloseWindow.OK(),ReportView.this);
         return false;
       }
 
@@ -467,7 +461,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   
       // .. exits ?
       if (file.exists()) {
-        int rc = manager.getWindowManager().openDialog(null, title, WindowManager.IMG_WARNING, "File exists. Overwrite?", WindowManager.OPTIONS_YES_NO, ReportView.this);
+        int rc = manager.getWindowManager().openDialog(null, title, WindowManager.IMG_WARNING, "File exists. Overwrite?", CloseWindow.YESandNO(), ReportView.this);
         if (rc!=0) {
           return;
         }
@@ -478,14 +472,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       try {
         writer = new FileWriter(file);
       } catch (IOException ex) {
-        manager.getWindowManager().openDialog(
-          null, 
-          title,
-          WindowManager.IMG_ERROR, 
-          "Error while saving to\n"+file.getAbsolutePath(), 
-          (String[])null,
-          ReportView.this
-        );
+        manager.getWindowManager().openDialog(null,title,WindowManager.IMG_ERROR,"Error while saving to\n"+file.getAbsolutePath(),CloseWindow.OK(),ReportView.this);
         return;
       }
   

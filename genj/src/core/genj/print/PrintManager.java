@@ -25,6 +25,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.swing.ProgressWidget;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.Color;
@@ -39,7 +40,6 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 
 import javax.swing.JComponent;
-import javax.swing.UIManager;
 
 /**
  * A manager for printing */
@@ -144,16 +144,12 @@ public class PrintManager {
       
       // show dialog
       widget = new PrintWidget(this, resources);
+
+      // prepare actions
+      ActionDelegate[] actions = CloseWindow.andCANCEL(resources.getString("dlg.label.print"));
       
       // show it in dialog
-      int choice = winMgr.openDialog(
-        "print",
-        resources.getString("dlg.title", title),
-        WindowManager.IMG_QUESTION,
-        widget,
-        new String[]{ resources.getString("dlg.label.print"), UIManager.getString("OptionPane.cancelButtonText")},
-        owner
-      );
+      int choice = winMgr.openDialog("print", resources.getString("dlg.title", title), WindowManager.IMG_QUESTION, widget, actions, owner);
       
       // check choice
       if (choice!=0||getPages().x==0||getPages().y==0) {

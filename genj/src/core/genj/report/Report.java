@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.40 $ $Author: nmeier $ $Date: 2004-05-21 13:15:42 $
+ * $Revision: 1.41 $ $Author: nmeier $ $Date: 2004-05-22 11:05:41 $
  */
 package genj.report;
 
@@ -28,6 +28,7 @@ import genj.gedcom.Property;
 import genj.option.Option;
 import genj.option.OptionMetaInfo;
 import genj.option.PropertyOption;
+import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
@@ -36,6 +37,7 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
 import genj.view.ViewManager;
 import genj.view.widgets.SelectEntityWidget;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -73,13 +75,13 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
     OPTION_YESNO    = 0,
     OPTION_OKCANCEL = 1,
     OPTION_OK       = 2;
-    
-  private final static String[][] OPTIONS = {
-    WindowManager.OPTIONS_YES_NO, 
-    WindowManager.OPTIONS_OK_CANCEL,
-    WindowManager.OPTIONS_OK
-  };
 
+  private final static String[][] OPTIONS = {
+    new String[]{CloseWindow.TXT_YES, CloseWindow.TXT_NO     }, 
+    new String[]{CloseWindow.TXT_OK , CloseWindow.TXT_CANCEL }, 
+    new String[]{CloseWindow.TXT_OK                          }
+  };
+    
   /** alignment options */
   protected final static int
     ALIGN_LEFT   = 0,
@@ -264,14 +266,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
     content.add(BorderLayout.CENTER, new JScrollPane(new ItemList(gedcom, items, viewManager)));
 
     // open a non-modal dialog
-    viewManager.getWindowManager().openNonModalDialog(
-      getClass().getName()+"#items",
-      getName(),
-      ReportViewFactory.IMG,
-      content,
-      WindowManager.OPTION_OK,
-      owner
-    );
+    viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#items",getName(),ReportViewFactory.IMG,content,CloseWindow.OK(),owner);
 
     // done
   }
@@ -282,19 +277,20 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
   public final void showBrowserToUser(URL url) {
 
     // get browser command
-    File browser = new File(registry.get("browser", ""));
+    Options options = Options.getInstance();
+    File browser = new File(options.browser);
     while (!browser.isFile()) {
       
       // show file chooser
       JFileChooser chooser = new JFileChooser();
-      chooser.setDialogTitle("Choose HTML Browser Executable");
+      chooser.setDialogTitle(Resources.get(ReportView.class).getString("option.browser"));
       int rc = chooser.showOpenDialog(owner);
       browser = chooser.getSelectedFile(); 
       if (rc!=chooser.APPROVE_OPTION||browser==null)
         return;
     
       // keep it
-      registry.put("browser", browser.toString());    
+      options.browser = browser.toString();    
     }
     
     // run it
@@ -317,14 +313,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
     
     SelectEntityWidget select = new SelectEntityWidget(tag, gedcom.getEntities(tag), "");
 
-    int rc = viewManager.getWindowManager().openDialog(
-      null,
-      getName(),
-      WindowManager.IMG_QUESTION,
-      new JComponent[]{new JLabel(msg),select},
-      WindowManager.OPTIONS_OK_CANCEL,
-      owner
-    );
+    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.IMG_QUESTION,new JComponent[]{new JLabel(msg),select},CloseWindow.OKandCANCEL(),owner);
 
     return rc==0 ? select.getEntity() : null;
   }
@@ -337,14 +326,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
     ChoiceWidget choice = new ChoiceWidget(choices, selected);
     choice.setEditable(false);
 
-    int rc = viewManager.getWindowManager().openDialog(
-      null,
-      getName(),
-      WindowManager.IMG_QUESTION,
-      new JComponent[]{new JLabel(msg),choice},
-      WindowManager.OPTIONS_OK_CANCEL,
-      owner
-    );
+    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.IMG_QUESTION,new JComponent[]{new JLabel(msg),choice},CloseWindow.OKandCANCEL(),owner);
 
     return rc==0 ? choice.getSelectedItem() : null;
   }
@@ -372,14 +354,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
     // show 'em
     ChoiceWidget choice = new ChoiceWidget(choices, "");
 
-    int rc = viewManager.getWindowManager().openDialog(
-      null,
-      "Report Input",
-      WindowManager.IMG_QUESTION,
-      new JComponent[]{new JLabel(msg),choice},
-      WindowManager.OPTIONS_OK_CANCEL,
-      owner
-    );
+    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.IMG_QUESTION,new JComponent[]{new JLabel(msg),choice},CloseWindow.OKandCANCEL(),owner);
 
     String result = rc==0 ? choice.getText() : null;
 
@@ -410,13 +385,23 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
    * Helper method that queries the user for yes/no input
    */
   public final int getOptionFromUser(String msg, String[] options) {
+    ActionDelegate[] actions = new ActionDelegate[options.length];
+    for (int i = 0; i < actions.length; i++)
+      actions[i] = new CloseWindow(options[i]);
+    return getOptionFromUser(msg, actions);
+  }
+    
+  /**
+   * Helper method that queries the user for yes/no input
+   */
+  private int getOptionFromUser(String msg, ActionDelegate[] actions) {
     
     return viewManager.getWindowManager().openDialog(
       null,
       getName(),
       WindowManager.IMG_QUESTION,
       msg,
-      options,
+      actions,
       owner
     );
     

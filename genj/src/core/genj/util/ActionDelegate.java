@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 
 /**
  * An Action
@@ -57,6 +58,9 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
   /** the thread executing asynchronously */
   private Thread thread;
   private Object threadLock = new Object();
+  
+  /** change support */
+  private ChangeSupport changeSupport = new ChangeSupport(this);
   
   /**
    * trigger execution - ActionListener support
@@ -314,7 +318,11 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
    * accessor - enabled
    */
   public ActionDelegate setEnabled(boolean e) {
+    // remember
     enabled = e;
+    // notify
+    changeSupport.fireChangeEvent();
+    // done
     return this;
   }
 
@@ -323,6 +331,20 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
    */
   public boolean isEnabled() {
     return enabled;
+  }
+  
+  /**
+   * add listener
+   */
+  public void addChangeListener(ChangeListener l) {
+    changeSupport.addChangeListener(l);
+  }
+  
+  /**
+   * remove listener
+   */
+  public void removeChangeListener(ChangeListener l) {
+    changeSupport.removeChangeListener(l);
   }
   
   /**

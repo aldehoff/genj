@@ -20,7 +20,6 @@
 package genj.util.swing;
 
 import genj.util.GridBagHelper;
-import genj.util.ObservableBoolean;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -56,9 +55,6 @@ public class SpinnerWidget extends JPanel {
   /** change listener */
   private ChangeListener modelListener;
   
-  /** our observable for tracking changes */
-  private ObservableBoolean change = new ObservableBoolean();
-  
   /** format */
   private Format format = null;
 
@@ -70,8 +66,9 @@ public class SpinnerWidget extends JPanel {
     // setup
     setAlignmentX(0);
     
-    tfield = new TextFieldWidget(change, "", setCols);
+    tfield = new TextFieldWidget("", setCols);
     tfield.setHorizontalAlignment(SwingConstants.RIGHT);
+    
     anorth = new AB(SwingConstants.NORTH);
     asouth = new AB(SwingConstants.SOUTH);
     
@@ -98,19 +95,24 @@ public class SpinnerWidget extends JPanel {
       }
     };
     
-//    tfield.addFocusListener(new FocusAdapter() {
-//      /**
-//       * @see genj.util.swing.SpinnerWidget#focusLost(java.awt.event.FocusEvent)
-//       */
-//      public void focusLost(FocusEvent e) {
-//        commit();
-//      }
-//    });
-    
     // remember model
     setModel(setModel);
     
     // done 
+  }
+  
+  /**
+   * Add change listener
+   */
+  public void addChangeListener(ChangeListener l) {
+    tfield.addChangeListener(l);
+  }
+  
+  /**
+   * Remove change listener
+   */
+  public void removeChangeListener(ChangeListener l) {
+    tfield.removeChangeListener(l);
   }
   
   /**

@@ -24,6 +24,7 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.view.ViewManager;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 /**
@@ -50,30 +51,15 @@ public class TogglePrivate extends AbstractChange {
 
     // check if the user wants to do it recursively
     int recursive = 0;
-    if (property.getNoOfProperties()>0) {
-      recursive = manager.getWindowManager().openDialog(
-        null,
-        getText(),
-        WindowManager.IMG_QUESTION,
-        AbstractChange.resources.getString("recursive"),
-        WindowManager.OPTIONS_YES_NO,
-        getTarget()
-      );
-    }
+    if (property.getNoOfProperties()>0)
+      recursive = manager.getWindowManager().openDialog(null,getText(),WindowManager.IMG_QUESTION,AbstractChange.resources.getString("recursive"),CloseWindow.YESandNO(),getTarget());
 
     // check gedcom
     Gedcom gedcom = property.getGedcom();
     String pwd = gedcom.getPassword();
     
     if (pwd==Gedcom.PASSWORD_UNKNOWN) {
-      manager.getWindowManager().openDialog(
-        null, 
-        getText(), 
-        WindowManager.IMG_WARNING, 
-        "This Gedcom file contains encrypted information that has to be decrypted before changing private/public status of other information", 
-        WindowManager.OPTIONS_OK, 
-        getTarget()
-      );
+      manager.getWindowManager().openDialog(null,getText(),WindowManager.IMG_WARNING,"This Gedcom file contains encrypted information that has to be decrypted before changing private/public status of other information",CloseWindow.OK(),getTarget());
       return;              
     }
     

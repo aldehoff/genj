@@ -19,12 +19,13 @@
  */
 package genj.util.swing;
 
-import genj.util.ObservableBoolean;
+import genj.util.ChangeSupport;
 
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
 
 import javax.swing.JTextField;
+import javax.swing.event.ChangeListener;
 
 /**
  * Our own JTextField
@@ -37,8 +38,8 @@ public class TextFieldWidget extends JTextField {
   /** whether we do a selectAll() on focus */
   private boolean isSelectAllOnFocus = false;
   
-  /** an observable we offer */
-  private ObservableBoolean change;
+  /** change support */
+  private ChangeSupport changeSupport = new ChangeSupport(this);
   
   /**
    * Constructor
@@ -51,33 +52,33 @@ public class TextFieldWidget extends JTextField {
    * Constructor
    */
   public TextFieldWidget(String text) {
-    this(null, text, 0);
-  }
-
-  /**
-   * Constructor
-   */
-  public TextFieldWidget(String text, int cols) {
-    this(null, text, cols);
+    this(text, 0);
   }
 
   /** 
    * Constructor
    */
-  public TextFieldWidget(ObservableBoolean chan, String text, int cols) {
+  public TextFieldWidget(String text, int cols) {
     super(text, cols);
     setAlignmentX(0);
-    change = chan!=null ? chan : new ObservableBoolean();
-    getDocument().addDocumentListener(change);
+
+    getDocument().addDocumentListener(changeSupport);
   }
   
   /**
-   * Accessor - observable
+   * Add change listener
    */
-  public ObservableBoolean getChangeState() {
-    return change;
+  public void addChangeListener(ChangeListener l) {
+    changeSupport.addChangeListener(l);
   }
-    
+  
+  /**
+   * Remove change listener
+   */
+  public void removeChangeListener(ChangeListener l) {
+    changeSupport.removeChangeListener(l);
+  }
+  
   /**
    * Make this a template - the field is set to unchanged, any
    * current value in the text-field is not returned but empty

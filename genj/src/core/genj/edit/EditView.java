@@ -32,6 +32,7 @@ import genj.util.swing.ButtonHelper;
 import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -346,14 +347,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       ChoosePropertyBean choose = new ChoosePropertyBean(prop, resources);
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
-      int option = manager.getWindowManager().openDialog(
-        "add", 
-        resources.getString("add.title"),
-        WindowManager.IMG_QUESTION,
-        new JComponent[]{ label, choose, check },
-        WindowManager.OPTIONS_OK_CANCEL,
-        EditView.this 
-      ); 
+      int option = manager.getWindowManager().openDialog("add",resources.getString("add.title"),WindowManager.IMG_QUESTION,new JComponent[]{ label, choose, check },CloseWindow.OKandCANCEL(),EditView.this); 
       
       // .. not OK?
       if (option!=0)
@@ -366,14 +360,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       Property[] props = choose.getResultingProperties();
   
       if ( (props==null) || (props.length==0) ) {
-        manager.getWindowManager().openDialog(
-          null,
-          null,
-          WindowManager.IMG_ERROR,
-          resources.getString("add.must_enter"),
-          WindowManager.OPTIONS_OK,
-          EditView.this
-        );
+        manager.getWindowManager().openDialog(null,null,WindowManager.IMG_ERROR,resources.getString("add.must_enter"),CloseWindow.OK(),EditView.this);
         return;
       }
   
@@ -499,16 +486,14 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
         String msg = resources.getString("cut.warning", new String[] { 
           prop.getTag(), prop.getEntity().getId(), veto 
         });
+        // prepare actions
+        ActionDelegate[] actions = {
+          new CloseWindow(resources.getString("action.cut")), 
+          new CloseWindow(CloseWindow.TXT_CANCEL)
+        };
         // ask the user
-        int option = manager.getWindowManager().openDialog(
-          null,
-          resources.getString("action.cut.tip"),
-          WindowManager.IMG_WARNING,
-          msg,
-          new String[] { resources.getString("action.cut"), WindowManager.OPTION_CANCEL },
-          EditView.this
-        );
-        if (option!=0)
+        int rc = manager.getWindowManager().openDialog(null, resources.getString("action.cut.tip"), WindowManager.IMG_WARNING, msg, actions, EditView.this );
+        if (rc!=0)
           return;
         // continue
       }
@@ -545,15 +530,15 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       if (copy==null) 
         return; // shouldn't happen
         
+      // prepare actions
+      ActionDelegate[] actions = {
+        new CloseWindow(resources.getString("action.paste")), 
+        new CloseWindow(CloseWindow.TXT_CANCEL)
+      };
+      
       // ask
-      if (0!=manager.getWindowManager().openDialog(
-        null,
-        resources.getString("action.paste.tip"),
-        WindowManager.IMG_QUESTION,
-        new JScrollPane(new PropertyTreeWidget(copy)),
-        new String[]{ resources.getString("action.paste"), WindowManager.OPTION_CANCEL},
-        EditView.this
-      )) return;        
+      if (0!=manager.getWindowManager().openDialog(null, resources.getString("action.paste.tip"), WindowManager.IMG_QUESTION, new JScrollPane(new PropertyTreeWidget(copy)), actions, EditView.this)) 
+        return;        
         
       // paste contents
       gedcom.startTransaction();
@@ -561,14 +546,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       try {
         result = copy.paste(prop);
       } catch (GedcomException e) {
-        manager.getWindowManager().openDialog(
-          null,
-          resources.getString("action.paste.tip"),
-          WindowManager.IMG_WARNING,
-          e.getMessage(),
-          WindowManager.OPTIONS_OK,
-          EditView.this
-        );
+        manager.getWindowManager().openDialog(null,resources.getString("action.paste.tip"),WindowManager.IMG_WARNING,e.getMessage(),CloseWindow.OK(),EditView.this);
       }
       gedcom.endTransaction();
       
@@ -594,7 +572,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       //  + currentProxy with changes
       //  + no transaction going on
       if (!gedcom.isTransaction()&&currentProxy!=null&&currentProxy.hasChanged()) {
-        if (0==manager.getWindowManager().openDialog(null, title, WindowManager.IMG_QUESTION, resources.getString("confirm.keep.changes"), WindowManager.OPTIONS_YES_NO, proxyPane))
+        if (0==manager.getWindowManager().openDialog(null, title, WindowManager.IMG_QUESTION, resources.getString("confirm.keep.changes"), CloseWindow.YESandNO(), proxyPane))
           currentProxy.ok.doClick();
       }
 

@@ -26,8 +26,10 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Relationship;
+import genj.util.ActionDelegate;
 import genj.view.ViewManager;
 import genj.view.widgets.SelectEntityWidget;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import javax.swing.JComponent;
@@ -61,22 +63,16 @@ public class CreateRelationship extends AbstractChange {
     // check if we have to choose a target type
     String[] types = relationship.getTargetTypes();
     if (types.length>1) {
-      // collect names of types
-      String[] names = new String[types.length];
+      // collect actions for types
+      ActionDelegate[] actions = new ActionDelegate[types.length];
       for (int n=0;n<types.length;n++) 
-        names[n] = Gedcom.getEntityName(types[n], false);
+        actions[n] = new CloseWindow(Gedcom.getEntityName(types[n], false));
       // show dialog
-      int choice = manager.getWindowManager().openDialog(
-        null,
-        relationship.getName(false),
-        WindowManager.IMG_QUESTION,
-        relationship.getName(true),
-        names,
-        getTarget()
-      );
-      if (choice<0) return;
+      int rc = manager.getWindowManager().openDialog(null, relationship.getName(false), WindowManager.IMG_QUESTION, relationship.getName(true), actions, getTarget());
+      if (rc<0) 
+        return;
       // set targetType
-      targetType = types[choice];
+      targetType = types[rc];
     } else {
       targetType = types[0];
     }

@@ -53,7 +53,8 @@ class ProxyMLE extends Proxy {
       value = property.getValue(); 
     }
 
-    tarea = new TextAreaWidget(change, value,6,20);
+    tarea = new TextAreaWidget(value,6,20);
+    tarea.addChangeListener(this);
     tarea.setLineWrap(true);
     tarea.setWrapStyleWord(true);
 

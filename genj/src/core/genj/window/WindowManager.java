@@ -19,6 +19,8 @@
  */
 package genj.window;
 
+import genj.util.ActionDelegate;
+
 import java.awt.Component;
 import java.util.List;
 
@@ -35,25 +37,11 @@ public interface WindowManager {
   
   /** predefined images */
   public final static Icon
-    IMG_ERROR = UIManager.getIcon("OptionPane.errorIcon"),
+    IMG_ERROR       = UIManager.getIcon("OptionPane.errorIcon"),
     IMG_INFORMATION = UIManager.getIcon("OptionPane.informationIcon"),
-    IMG_WARNING = UIManager.getIcon("OptionPane.warningIcon"),
-    IMG_QUESTION = UIManager.getIcon("OptionPane.questionIcon");
+    IMG_WARNING     = UIManager.getIcon("OptionPane.warningIcon"),
+    IMG_QUESTION    = UIManager.getIcon("OptionPane.questionIcon");
 
-  /** predefined options */
-  public final static String
-    OPTION_YES = UIManager.getString("OptionPane.yesButtonText"),
-    OPTION_NO  = UIManager.getString("OptionPane.noButtonText" ),
-    OPTION_OK  = UIManager.getString("OptionPane.okButtonText" ),
-    OPTION_CANCEL = UIManager.getString("OptionPane.cancelButtonText");
-
-  /** predefined option groups */
-  public final static String[]
-    OPTIONS_YES_NO    = new String[]{ OPTION_YES, OPTION_NO },
-    OPTIONS_OK_CANCEL = new String[]{ OPTION_OK, OPTION_CANCEL },
-    OPTIONS_OK        = new String[]{ OPTION_OK },
-    OPTIONS_CANCEL    = new String[]{ OPTION_CANCEL };
-    
   /**
    * Opens a frame
    * @param key a unique key 
@@ -85,11 +73,11 @@ public interface WindowManager {
    * @param title text for titlebar
    * @param image image for titlebar
    * @param content component to be shown in dialog
-   * @param options text labels for buttons that will close dialog
+   * @param actions text labels for buttons that will close dialog
    * @param owner the 'owning' component
-   * @return index of options choosen or -1 
+   * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, Component owner);
+  public int openDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner);
 
   /**
    * Opens a dialog containing several stacked custom components
@@ -97,11 +85,11 @@ public interface WindowManager {
    * @param title text for titlebar
    * @param image image for titlebar
    * @param content components to be shown in a vertical box
-   * @param options text labels for buttons that will close dialog
+   * @param actions text labels for buttons that will close dialog
    * @param owner the 'owning' component
-   * @return index of options choosen or -1 
+   * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title, Icon image, JComponent[] content, String[] options, Component owner);
+  public int openDialog(String key, String title, Icon image, JComponent[] content, ActionDelegate[] actions, Component owner);
 
   /**
    * Opens a dialog with a simple text message
@@ -109,11 +97,11 @@ public interface WindowManager {
    * @param title text for titlebar
    * @param image image for titlebar
    * @param txt text to show in a scroll text area
-   * @param options text labels for buttons that will close dialog
+   * @param actions text labels for buttons that will close dialog
    * @param owner the 'owning' component
-   * @return index of options choosen or -1 
+   * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title, Icon image, String txt, String[] options, Component owner);
+  public int openDialog(String key, String title, Icon image, String txt, ActionDelegate[] actions, Component owner);
   
   /**
    * Opens a dialog prompting the user for a simple text value
@@ -136,7 +124,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return key 
    */
-  public String openNonModalDialog(String key, String title, Icon image, JComponent content, String option, Component owner);
+  public String openNonModalDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner);
   
   /**
    * Close dialog/frame 

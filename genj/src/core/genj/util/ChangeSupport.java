@@ -20,6 +20,9 @@
 package genj.util;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -27,74 +30,65 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
- * A boolean state with change notifications
+ * Support for connecting change events sources and listeners
  */
-public class ObservableBoolean implements DocumentListener {
+public class ChangeSupport implements DocumentListener, ChangeListener {
 
-  /** state */
-  private boolean state;
-  
   /** listeners */
-  private ArrayList listeners = new ArrayList();
-
-  /**
-   * Accessor - Status
-   */
-  public boolean get() {
-    return state;
-  }
-
-  /**
-   * Accessor - Status
-   */  
-  public void set(boolean set) {
-    state = set;
-    broadcast();
-  }
-  /**
-   * Trigger broadcast of state to listeners
-   */
-  public void broadcast() {
-    ChangeEvent e = new ChangeEvent(this);
-    ChangeListener[] array = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
-    for (int i = 0; i < array.length; i++) {
-      array[i].stateChanged(e);
-    }   
-  }
+  private List listeners = new LinkedList();
+  
+  /** source */
+  private Object source;
   
   /**
-   * Add listener
+   * Constructor
+   */
+  public ChangeSupport(Object source) {
+    this.source = source;
+  }
+
+  /**
+   * add listener
    */
   public void addChangeListener(ChangeListener l) {
     listeners.add(l);
   }
   
   /**
-   * Remove listener
+   * remove listener
    */
   public void removeChangeListener(ChangeListener l) {
     listeners.remove(l);
   }
+  
+  /**
+   * fire change event
+   */
+  public void fireChangeEvent() {
+    ChangeEvent e = new ChangeEvent(source);
+    Iterator it = new ArrayList(listeners).iterator();
+    while (it.hasNext())
+      ((ChangeListener)it.next()).stateChanged(e);
+  }
+  
+  /**
+   * callback - proxy nested change event
+   */
+  public void stateChanged(ChangeEvent e) {
+    fireChangeEvent();
+  }
 
   /**
-   * Change notification
-   */
+   * callback - document events = fire change event
+   */  
   public void changedUpdate(DocumentEvent e) {
-    set(true);
+    fireChangeEvent();
   }
-
-  /**
-   * Document event - insert
-   */
   public void insertUpdate(DocumentEvent e) {
-    set(true);
+    fireChangeEvent();
   }
-
-  /**
-   * Document event - remove
-   */
   public void removeUpdate(DocumentEvent e) {
-    set(true);
+    fireChangeEvent();
   }
-
-} //ObservableBoolean
+  
+} //ChangeSupport

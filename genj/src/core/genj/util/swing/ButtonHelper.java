@@ -36,6 +36,8 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Helper for button creation etc.
@@ -100,10 +102,10 @@ public class ButtonHelper {
   /**
    * Creates the button
    */
-  public AbstractButton create(ActionDelegate action) {
+  public AbstractButton create(final ActionDelegate action) {
     
     // create the button
-    AbstractButton result;
+    final AbstractButton result;
     if (action.getToggle()!=null)
       result = new ToggleWidget();
     else
@@ -164,6 +166,12 @@ public class ButtonHelper {
       
     // listening
     result.addActionListener(action);
+
+    action.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        result.setEnabled(action.isEnabled());
+      }
+    });
 
     // context
     if (group!=null) {

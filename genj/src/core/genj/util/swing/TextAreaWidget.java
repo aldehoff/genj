@@ -19,44 +19,44 @@
  */
 package genj.util.swing;
 
-import genj.util.ObservableBoolean;
+import genj.util.ChangeSupport;
 
 import javax.swing.JTextArea;
+import javax.swing.event.ChangeListener;
 
 /**
  * Our own JTextArea
  */
 public class TextAreaWidget extends JTextArea {
 
-  /** wrapped observable */  
-  private ObservableBoolean change;
+  /** change support */
+  private ChangeSupport changeSupport = new ChangeSupport(this);
 
   /**
    * Constructor
    */
   public TextAreaWidget(String text, int rows, int cols) {
-    this(null, text, rows, cols);
-  }
-
-  /**
-   * Constructor
-   */
-  public TextAreaWidget(ObservableBoolean observable, String text, int rows, int cols) {
     super(text, rows, cols);
     
     setAlignmentX(0);
     
-    change = observable!=null ? observable : new ObservableBoolean();
-    getDocument().addDocumentListener(observable);
+    getDocument().addDocumentListener(changeSupport);
   }
 
   /**
-   * Accessor - observable
+   * Add change listener
    */
-  public ObservableBoolean getChangeState() {
-    return change;
+  public void addChangeListener(ChangeListener l) {
+    changeSupport.addChangeListener(l);
   }
-    
+  
+  /**
+   * Remove change listener
+   */
+  public void removeChangeListener(ChangeListener l) {
+    changeSupport.removeChangeListener(l);
+  }
+
   /**
    * Overridden to try 1.4's requestFocusInWindow
    * @see javax.swing.JComponent#requestFocus()

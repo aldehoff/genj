@@ -25,6 +25,7 @@ import genj.util.swing.ButtonHelper;
 
 import javax.swing.AbstractButton;
 import javax.swing.JRadioButton;
+import javax.swing.event.ChangeEvent;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -86,8 +87,9 @@ class ProxySex extends Proxy {
       setText(PropertySex.getLabelForSex(sex));
     }
     protected void execute() {
-      change.set(true);
       label.setIcon(PropertySex.getImage(sex));
+      // notify of change
+      stateChanged(new ChangeEvent(ProxySex.this));
     }
 
   } //Gender

@@ -19,8 +19,6 @@
  */
 package genj.util.swing;
 
-import genj.util.ObservableBoolean;
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
@@ -32,6 +30,7 @@ import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Caret;
@@ -40,9 +39,6 @@ import javax.swing.text.Caret;
  * Our own JComboBox
  */
 public class ChoiceWidget extends JComboBox {
-  
-  /** our observable for tracking changes */
-  private ObservableBoolean change;
   
   /** our own model */
   private Model model = new Model();
@@ -68,33 +64,15 @@ public class ChoiceWidget extends JComboBox {
    * Constructor
    */     
   public ChoiceWidget(Object[] values, Object selection) {
-    this(null, values, selection);
-  }
-  
-  /**
-   * Constructor
-   */
-  public ChoiceWidget(ObservableBoolean setChange, Object[] values, Object selection) {
 
     // do our model
     setModel(model);
 
-    // always our own editor because 
-    // (1) want to use our TextWidget here
-    // (2) want to avoid actionPerformed on focusLost (see Editor)
-    // (3) want to avoid double actionPerformed from JComboBox on 'enter'
-    //     with a changed editor value
-    // caveat: no action performed on select from choices
-    super.setEditor(editor);
-    
     // set the values now
     model.setValues(values);
        
     // alignment fix
     setAlignmentX(LEFT_ALIGNMENT);
-    
-    // keep observable
-    change = setChange!=null ? setChange : new ObservableBoolean();
     
     // init editor
     super.setEditor(new Editor());
@@ -109,12 +87,19 @@ public class ChoiceWidget extends JComboBox {
   }
   
   /**
-   * Accessor - observable
+   * Add change listener
    */
-  public ObservableBoolean getChangeState() {
-    return change;
+  public void addChangeListener(ChangeListener l) {
+    ((Editor)getEditor()).addChangeListener(l);
   }
-    
+  
+  /**
+   * Remove change listener
+   */
+  public void removeChangeListener(ChangeListener l) {
+    ((Editor)getEditor()).removeChangeListener(l);
+  }
+  
   /**
    * set values
    */
@@ -139,7 +124,8 @@ public class ChoiceWidget extends JComboBox {
    */
   public void setSelectedItem(Object anObject) {
     // we're changed
-    change.set(true);
+    // FIXME is this necessary?
+//    changeSupport.f();
     // continue
     super.setSelectedItem(anObject);
   }
@@ -249,7 +235,7 @@ public class ChoiceWidget extends JComboBox {
      * Constructor
      */
     private Editor() {
-      super(change, "", 12);
+      super("", 12);
       getDocument().addDocumentListener(this);
     }
     

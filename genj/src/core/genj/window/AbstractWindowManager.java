@@ -86,7 +86,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title, Icon img, String txt, String[] options, Component owner) {
+  public int openDialog(String key, String title, Icon img, String txt, ActionDelegate[] options, Component owner) {
 
     // create a textpane for the txt
     TextAreaWidget text = new TextAreaWidget("", 4, 20);
@@ -107,7 +107,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent[], java.lang.String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title, Icon image, JComponent[] content, String[] options, Component owner) {
+  public int openDialog(String key, String title, Icon image, JComponent[] content, ActionDelegate[] options, Component owner) {
     // assemble content into Box (don't use Box here because
     // Box extends Container in pre JDK 1.4)
     JPanel box = new JPanel();
@@ -131,7 +131,7 @@ public abstract class AbstractWindowManager implements WindowManager {
     JLabel lb = new JLabel(txt);
     
     // delegate
-    int rc = openDialog(key, title, img, new JComponent[]{ lb, tf}, OPTIONS_OK_CANCEL, owner);
+    int rc = openDialog(key, title, img, new JComponent[]{ lb, tf}, CloseWindow.OKandCANCEL(), owner);
     
     // analyze
     return rc==0?tf.getText().trim():null;

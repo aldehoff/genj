@@ -24,8 +24,9 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
 import genj.util.ActionDelegate;
-import genj.util.ObservableBoolean;
+import genj.util.ChangeSupport;
 import genj.util.WordBuffer;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.Dimension;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 
 /**
  * Generic component for editing dates
@@ -52,23 +54,22 @@ public class DateWidget extends JPanel {
   
   /** window manager */
   private WindowManager manager;
-    
-  /** our observable for tracking changes */
-  private ObservableBoolean change;
   
+  /** change support */
+  private ChangeSupport changeSupport = new ChangeSupport(this) {
+    public void fireChangeEvent() {
+      // update our status
+      updateStatus();
+      // continue
+      super.fireChangeEvent();
+    }
+  };
+    
   /**
    * Constructor
    */
   public DateWidget(PointInTime pit, WindowManager mgr) {
-    this(null, pit, mgr);
-  }
 
-  /**
-   * Constructor
-   */
-  public DateWidget(ObservableBoolean observable, PointInTime pit, WindowManager mgr) {
-
-    change = observable!=null ? observable : new ObservableBoolean();
     manager = mgr;
     calendar = pit.getCalendar();
         
@@ -81,15 +82,18 @@ public class DateWidget extends JPanel {
     widgetCalendar = new PopupWidget(); 
     widgetCalendar.setActions(switches);
     
-    widgetYear  = new TextFieldWidget(observable, "",5+1);
+    widgetYear  = new TextFieldWidget("",5+1);
     widgetYear.setSelectAllOnFocus(true);
+    widgetYear.addChangeListener(changeSupport);
     
-    widgetMonth = new ChoiceWidget(observable, new Object[0], null);
+    widgetMonth = new ChoiceWidget(new Object[0], null);
     widgetMonth.setIgnoreCase(true);
     widgetMonth.setSelectAllOnFocus(true);
+    widgetMonth.addChangeListener(changeSupport);
 
-    widgetDay   = new TextFieldWidget(observable, "",2+1);
+    widgetDay   = new TextFieldWidget("",2+1);
     widgetDay.setSelectAllOnFocus(true);
+    widgetDay.addChangeListener(changeSupport);
     
     // Layout
     setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -115,6 +119,20 @@ public class DateWidget extends JPanel {
     updateStatus();
 
     // Done
+  }
+  
+  /**
+   * Add change listener
+   */
+  public void addChangeListener(ChangeListener l) {
+    changeSupport.addChangeListener(l);
+  }
+  
+  /**
+   * Remove change listener
+   */
+  public void removeChangeListener(ChangeListener l) {
+    changeSupport.removeChangeListener(l);
   }
   
   /**
@@ -272,14 +290,7 @@ public class DateWidget extends JPanel {
       try {
         pit.set(newCalendar);
       } catch (GedcomException e) {
-        int rc = manager.openDialog(
-          null,
-          Calendar.TXT_CALENDAR_SWITCH, 
-          manager.IMG_ERROR, 
-          e.getMessage(), 
-          new String[]{ manager.OPTION_OK, Calendar.TXT_CALENDAR_RESET }, 
-          DateWidget.this
-        );
+        int rc = manager.openDialog(null, Calendar.TXT_CALENDAR_SWITCH, manager.IMG_ERROR, e.getMessage(), CloseWindow.OKand(Calendar.TXT_CALENDAR_RESET), DateWidget.this);
         if (rc==0) 
           return;
         pit = new PointInTime(newCalendar);

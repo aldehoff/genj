@@ -31,11 +31,11 @@ import genj.option.PropertyOption;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.GridBagHelper;
-import genj.util.ObservableBoolean;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.PopupWidget;
 import genj.util.swing.TextFieldWidget;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.io.File;
@@ -48,6 +48,8 @@ import java.util.TreeSet;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Application options
@@ -334,15 +336,12 @@ public class Options extends OptionProvider implements OptionMetaInfo {
       /** action main */
       protected void execute() {
 
-        // create observable for tracing user input
-        ObservableBoolean observable = new ObservableBoolean();
-
         // create panel with association fields
         JPanel panel = new JPanel();
         final TextFieldWidget 
-          suffixes   = new TextFieldWidget(observable, association!=null?association.getSuffixes()  :"", 0),
-          name       = new TextFieldWidget(observable, association!=null?association.getName()      :"", 0),
-          executable = new TextFieldWidget(observable, association!=null?association.getExecutable():"", 0);
+          suffixes   = new TextFieldWidget(association.getSuffixes()  , 0),
+          name       = new TextFieldWidget(association.getName()      , 0),
+          executable = new TextFieldWidget(association.getExecutable(), 0);
         GridBagHelper gh = new GridBagHelper(panel);
         gh.add(new JLabel(localize("suffix"), JLabel.LEFT), 0,0,1,1,gh.FILL_HORIZONTAL);
         gh.add(suffixes                                   , 1,0,1,1,gh.GROWFILL_HORIZONTAL);
@@ -351,19 +350,28 @@ public class Options extends OptionProvider implements OptionMetaInfo {
         gh.add(new JLabel(localize("exec"  ), JLabel.LEFT), 0,2,1,1,gh.FILL_HORIZONTAL);
         gh.add(executable                                 , 1,2,1,1,gh.GROWFILL_HORIZONTAL);
 
-// FIXME wish I could track changes and set option/button state
+        // create actions for dialog
+        final ActionDelegate[] actions = {
+          new CloseWindow(CloseWindow.TXT_OK), 
+          new CloseWindow(localize("delete")), 
+          new CloseWindow(CloseWindow.TXT_CANCEL)
+        };
+        
         // track changes
-//        observable.addChangeListener(new ChangeListener() {
-//          public void stateChanged(ChangeEvent e) {
-//            boolean ok = !suffixes.isEmpty() && !name.isEmpty() && !executable.isEmpty();
-//            System.out.println(ok);
-//          }
-//        });
+        ChangeListener l = new ChangeListener() {
+          public void stateChanged(ChangeEvent e) {
+            boolean ok = !suffixes.isEmpty() && !name.isEmpty() && !executable.isEmpty();
+            actions[0].setEnabled(ok);
+          }
+        };
+        suffixes.addChangeListener(l);
+        name.addChangeListener(l);
+        executable.addChangeListener(l);
+        l.stateChanged(null);
         
         // show a dialog with file association fields
-        String[] options = { WindowManager.OPTION_OK, localize("delete"), WindowManager.OPTION_CANCEL};
         WindowManager mgr = widget.getWindowManager();
-        int rc = mgr.openDialog(null, getName(), mgr.IMG_QUESTION, panel, options, widget);
+        int rc = mgr.openDialog(null, getName(), mgr.IMG_QUESTION, panel, actions, widget);
 
         // analyze option
         switch (rc) {
@@ -376,6 +384,7 @@ public class Options extends OptionProvider implements OptionMetaInfo {
             association.setSuffixes(suffixes.getText());
             association.setName(name.getText());
             association.setExecutable(executable.getText());
+            // make sure we add new one
             FileAssociation.add(association);
             break;
           // delete?

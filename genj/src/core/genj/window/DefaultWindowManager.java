@@ -137,23 +137,25 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent)
    */
-  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, Component owner) {
+  public int openDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner) {
     // check options - default to OK
-    if (options==null) options = OPTIONS_OK;
+    if (actions==null) 
+      actions = CloseWindow.OK();
     // ask impl
-    return openDialogImpl(key, title, image, content, options, owner, true);
+    return openDialogImpl(key, title, image, content, actions, owner, true);
   }
   
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, javax.swing.JComponent, javax.swing.JComponent)
    */
-  public String openNonModalDialog(String key, String title, Icon image, JComponent content, String option, Component owner) {
+  public String openNonModalDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner) {
     // create a key?
     if (key==null) key = getTemporaryKey();
     // construct options
-    String[] options = option==null?new String[0]:new String[]{option};
+    if (actions==null)
+      actions = new ActionDelegate[0];
     // ask impl
-    openDialogImpl(key, title, image, content, options, owner, false);
+    openDialogImpl(key, title, image, content, actions, owner, false);
     // done
     return key;
   }
@@ -161,11 +163,11 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * Dialog implementation
    */
-  private int openDialogImpl(final String key, String title, Icon image, JComponent content, String[] options, Component owner, boolean isModal) {
+  private int openDialogImpl(final String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner, boolean isModal) {
 
     // Create a dialog 
     Window parent = getWindowForComponent(owner);
-    final JDialog dlg = parent instanceof Dialog ? 
+    JDialog dlg = parent instanceof Dialog ? 
       (JDialog)new JDialog((Dialog)parent) {
         /** dispose is our onClose (WindowListener.windowClosed is too late after dispose() */
         public void dispose() {
@@ -192,26 +194,13 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // setup options/modal or non-modal
     dlg.setModal(isModal);
     
-    ActionDelegate[] actions;
-    if (options!=null) {
-      
-      actions = new ActionDelegate[options.length];
-      for (int i=0; i<options.length; i++) {
-        actions[i] = new ActionDelegate() {
-          /** choose an option */
-          protected void execute() {
-            setEnabled(false);
-            dlg.dispose();
-          }
-        }.setText(options[i]);
-      }
-      
-    } else {
-      
+    if (actions==null)
       actions = new ActionDelegate[0];
-      
+    for (int i=0; i<actions.length; i++) {
+      if (actions[i] instanceof CloseWindow)
+        ((CloseWindow)actions[i]).setDialog(dlg);
     }
-    
+      
     // assemble content
     assembleDialogContent(dlg.getRootPane(), dlg.getContentPane(), image, content, actions);
 
@@ -238,9 +227,10 @@ public class DefaultWindowManager extends AbstractWindowManager {
 
     // did we wait for something?
     if (isModal) {
-      // analyze - the disabled action is the choosen one :)
+      // analyze - check which action was responsible for close
       for (int i=0; i<actions.length; i++) {
-        if (!actions[i].isEnabled()) return i;
+        if (actions[i] instanceof CloseWindow && ((CloseWindow)actions[i]).isPerformed()) 
+          return i;
       }
     }
         

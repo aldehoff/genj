@@ -42,16 +42,15 @@ public class FileAssociation {
   private Set suffixes = new HashSet();
   
   /** action name e.g. OPEN */
-  private String name;
+  private String name = "";
   
   /** external app */
-  private String executable;
+  private String executable = "";
   
   /**
    * Constructor
    */
   public FileAssociation() {
-    this("suffix*name*executable");
   }
   
   /**
@@ -143,7 +142,8 @@ public class FileAssociation {
       if (i<0) {
         cmd += ' ' + parm;
       } else {
-        cmd = cmd.substring(0, i) + ' ' + parm + ' ' + cmd.substring(i+1);
+        // 20050522 removed extra spaces around parm since user might have enclosed % in quotes already
+        cmd = cmd.substring(0, i) + parm + cmd.substring(i+1);
       }
       // exec' it 
       if (null!=Runtime.getRuntime().exec(cmd)) return true;

@@ -28,6 +28,7 @@ import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import genj.view.ViewManager;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import javax.swing.JComponent;
@@ -68,7 +69,7 @@ import javax.swing.JTextArea;
    * Show a dialog for errors
    */  
   protected void handleThrowable(String phase, Throwable t) {
-    manager.getWindowManager().openDialog("err", "Error", WindowManager.IMG_ERROR, t.getMessage(), WindowManager.OPTIONS_OK, getTarget());
+    manager.getWindowManager().openDialog("err", "Error", WindowManager.IMG_ERROR, t.getMessage(), CloseWindow.OK(), getTarget());
   }
   
   /** 
@@ -108,14 +109,15 @@ import javax.swing.JTextArea;
   
       // prepare options
       JComponent c = getOptions();
+      
+      // prepare actions
+      ActionDelegate[] actions = {
+        new CloseWindow(resources.getString("confirm.proceed", getText() )), 
+        new CloseWindow(CloseWindow.TXT_CANCEL)
+      };
   
       // Recheck with the user
-      int rc = manager.getWindowManager().openDialog(
-        getClass().getName(), null, WindowManager.IMG_QUESTION, 
-        new JComponent[]{ c, new JScrollPane(confirm)} , 
-        new String[] { resources.getString("confirm.proceed", getText() ), WindowManager.OPTION_CANCEL }, 
-        getTarget() 
-      );
+      int rc = manager.getWindowManager().openDialog(getClass().getName(), null, WindowManager.IMG_QUESTION, new JComponent[]{ c, new JScrollPane(confirm)}, actions, getTarget() );
       if (rc!=0)
         return;
     }
@@ -126,7 +128,7 @@ import javax.swing.JTextArea;
     try {
       change();
     } catch (GedcomException ex) {
-      manager.getWindowManager().openDialog(null, null, WindowManager.IMG_ERROR, ex.getMessage(), (String[])null, getTarget());
+      manager.getWindowManager().openDialog(null, null, WindowManager.IMG_ERROR, ex.getMessage(), CloseWindow.OK(), getTarget());
     }
     // unlock gedcom
     gedcom.endTransaction();

@@ -42,6 +42,7 @@ import genj.util.swing.TextFieldWidget;
 import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -550,14 +551,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
         matcher = getMatcher(value, checkRegExp.isSelected());
         tagPath = path.length()>0 ? new TagPath(path) : null;
       } catch (IllegalArgumentException e) {
-        manager.getWindowManager().openDialog(
-          null,
-          value,
-          WindowManager.IMG_ERROR,
-          e.getMessage(),
-          WindowManager.OPTIONS_OK,
-          SearchView.this
-        );
+        manager.getWindowManager().openDialog(null,value,WindowManager.IMG_ERROR,e.getMessage(),CloseWindow.OK(),SearchView.this);
         return false;
       }
       // remember
@@ -585,14 +579,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
      * @see genj.util.ActionDelegate#handleThrowable(java.lang.String, java.lang.Throwable)
      */
     protected void handleThrowable(String phase, Throwable t) {
-      manager.getWindowManager().openDialog(
-        null,
-        null,
-        WindowManager.IMG_INFORMATION,
-        t.getMessage() ,
-        WindowManager.OPTIONS_OK,
-        SearchView.this 
-      );
+      manager.getWindowManager().openDialog(null,null,WindowManager.IMG_INFORMATION,t.getMessage() ,CloseWindow.OK(),SearchView.this);
     }
 
     /**

@@ -43,7 +43,6 @@ class ProxyChoice extends Proxy {
     // Store changed value
     Object result = choice.getText();
     property.setValue(result!=null?result.toString():"");
-    choice.getChangeState().set(false);
   
     // Done
   }
@@ -59,7 +58,8 @@ class ProxyChoice extends Proxy {
       items =  ((PropertyChoiceValue)property).getChoices().toArray();
 
     // Setup controls
-    choice = new ChoiceWidget(change, items, property.getValue());
+    choice = new ChoiceWidget(items, property.getValue());
+    choice.addChangeListener(this);
     
     // layout
     Editor result = new Editor();

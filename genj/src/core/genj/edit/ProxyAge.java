@@ -57,7 +57,8 @@ class ProxyAge extends Proxy {
     age = (PropertyAge)property;
     
     // create input
-    tfield = new TextFieldWidget(change, property.getValue(), TEMPLATE.length());
+    tfield = new TextFieldWidget(property.getValue(), TEMPLATE.length());
+    tfield.addChangeListener(this);
 
     // layout
     Editor result = new Editor();
