@@ -249,7 +249,7 @@ public class GedcomReader implements Trackable {
       } while (level!=0);
       undoLine();
     } finally {
-      warnings.add("Line "+start+": Skipping "+(line-start)+" lines - "+msg);
+      addWarning(start, "Skipped "+(line-start)+" lines - "+msg);
     }
   }
 
@@ -334,7 +334,7 @@ public class GedcomReader implements Trackable {
         Submitter sub = (Submitter)gedcom.getEntity(Gedcom.SUBM, submitter.replace('@',' ').trim());
         gedcom.setSubmitter(sub);
       } catch (Throwable t) {
-        warnings.add("Submitter "+submitter+" couldn't be resolved");
+        addWarning(line, "Submitter "+submitter+" couldn't be resolved");
       }
     }
 
@@ -347,8 +347,7 @@ public class GedcomReader implements Trackable {
         progress = Math.min(100,(int)(i*(100*2)/j));  // 100*2 because Links are probably backref'd
 
       } catch (GedcomException ex) {
-        warnings.add("Line "+xref.line+": Property "+xref.prop.getTag()+" - "+
-                 ex.getMessage());
+        addWarning(xref.line, "Property "+xref.prop.getTag()+" - "+ ex.getMessage());
       }
     }
 
@@ -542,7 +541,7 @@ public class GedcomReader implements Trackable {
         
       // skip if level>currentLevel?
       if (level>currentlevel) {
-        warnings.add("Line "+line+": Skipping "+tag+" because of level "+level+" - expected "+currentlevel);
+        addWarning(line, "Skipping "+tag+" because level "+level+" was expected "+currentlevel);
         continue;
       }
   
@@ -595,8 +594,10 @@ public class GedcomReader implements Trackable {
       
     // no need to do anything for unknown password
     String password = gedcom.getPassword();
-    if (password==Gedcom.PASSWORD_UNKNOWN)
+    if (password==Gedcom.PASSWORD_UNKNOWN) {
+      addWarning(line, "Found private/secret property");
       return;
+    }
       
     // not set password with encrypted value is error
     if (password==Gedcom.PASSWORD_NOT_SET) 
@@ -606,7 +607,7 @@ public class GedcomReader implements Trackable {
     if (enigma==null) {
       enigma = Enigma.getInstance(password);
       if (enigma==null) {
-        warnings.add("Decryption not available");
+        addWarning(line, "Decryption not available - found private/secret property");
         gedcom.setPassword(Gedcom.PASSWORD_UNKNOWN);
         return;
       }
@@ -628,6 +629,13 @@ public class GedcomReader implements Trackable {
    */
   private void undoLine() {
     undoLine = gedcomLine;
+  }
+  
+  /**
+   * Add a warning
+   */
+  private void addWarning(int wline, String txt) {
+    warnings.add("Line "+wline+": "+txt);
   }
   
   /**
