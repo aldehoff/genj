@@ -30,6 +30,7 @@ import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
 import genj.util.Debug;
 import genj.util.Origin;
+import genj.util.Resources;
 import genj.util.Trackable;
 
 import java.io.BufferedInputStream;
@@ -48,6 +49,8 @@ import java.util.StringTokenizer;
  * Type that knows how to read GEDCOM-data from InputStream
  */
 public class GedcomReader implements Trackable {
+
+  private final static Resources resources = Resources.get("genj.io");
 
   /** estimated average byte size of one entity */
   private final static int ENTITY_AVG_SIZE = 150;
@@ -85,6 +88,8 @@ public class GedcomReader implements Trackable {
    * @param in BufferedReader to read from
    */
   public GedcomReader(Origin initOrg) throws IOException {
+    
+    Debug.log(Debug.INFO, this, "Initializing reader for "+initOrg);
     
     // open origin
     InputStream oin = initOrg.open();
@@ -595,19 +600,19 @@ public class GedcomReader implements Trackable {
     // no need to do anything for unknown password
     String password = gedcom.getPassword();
     if (password==Gedcom.PASSWORD_UNKNOWN) {
-      addWarning(line, "Found private/secret property");
+      addWarning(line, resources.getString("crypt.password.unknown"));
       return;
     }
       
     // not set password with encrypted value is error
     if (password==Gedcom.PASSWORD_NOT_SET) 
-      throw new GedcomEncryptionException("Password required for decryption", line);
+      throw new GedcomEncryptionException(resources.getString("crypt.password.required"), line);
     
     // try to init decryption
     if (enigma==null) {
       enigma = Enigma.getInstance(password);
       if (enigma==null) {
-        addWarning(line, "Decryption not available - found private/secret property");
+        addWarning(line, resources.getString("crypt.password.mismatch"));
         gedcom.setPassword(Gedcom.PASSWORD_UNKNOWN);
         return;
       }
@@ -618,7 +623,7 @@ public class GedcomReader implements Trackable {
       // set decrypted value
       prop.setValue(enigma.decrypt(value));
     } catch (IOException e) {
-      throw new GedcomEncryptionException("Wrong Password", line);
+      throw new GedcomEncryptionException(resources.getString("crypt.password.invalid"), line);
     }
       
     // done
@@ -635,7 +640,9 @@ public class GedcomReader implements Trackable {
    * Add a warning
    */
   private void addWarning(int wline, String txt) {
-    warnings.add("Line "+wline+": "+txt);
+    String warning = "Line "+wline+": "+txt;
+    warnings.add(warning);
+    Debug.log(Debug.INFO, this, warning);
   }
   
   /**
