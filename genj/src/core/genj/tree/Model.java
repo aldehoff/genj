@@ -48,10 +48,6 @@ import gj.util.ModelHelper;
  */
 public class Model implements Graph {
   
-  /** shape of marriage rings */
-  private final static Shape 
-    SHAPE_MARRIAGE_RINGS = calcMarriageRings();
-
   /** listeners */
   private List listeners = new ArrayList(3);
 
@@ -69,13 +65,21 @@ public class Model implements Graph {
   
   /** parameters */
   private double 
-    padIndis = 1.0D;
+    padIndis    = 1.0D,
+    padFams     = 1.0D,
+    widthIndis  = 3.0D,
+    heightIndis = 2.0D,
+    widthFams   = 4.0D,
+    heightFams  = 1.0D;
+
+  /** shape of marriage rings */
+  private Shape 
+    shapeMarr = calcMarriageRings();
 
   /** shapes */
   private Rectangle2D.Double 
-    shapeIndi = new Rectangle2D.Double(-1.5D,-1.0D,3.0D,2.0D),
-    shapeFam  = new Rectangle2D.Double(-1.5D,-0.5D,3.0D,1.0D),
-    shapeFoo  = new Rectangle2D.Double(-0.5D,-1.0D,1.0D,2.0D);
+    shapeIndi = new Rectangle2D.Double(-widthIndis/2,-heightIndis/2,widthIndis,heightIndis),
+    shapeFam  = new Rectangle2D.Double(-widthFams /2,-heightFams /2,widthFams ,heightFams );
 
   /**
    * Constructor
@@ -175,8 +179,9 @@ public class Model implements Graph {
       MyNode node = (MyNode)it.next();
       Point2D pos = node.getPosition();
       Shape shape = node.getShape();
-      if (shape!=null&&shape.getBounds().contains(x-pos.getX(),y-pos.getY())) 
+      if (shape!=null&&shape.getBounds2D().contains(x-pos.getX(),y-pos.getY())&&node.entity!=null) {
         return node.entity;
+      }
     }
     // nothing found
     return null;
@@ -338,8 +343,9 @@ public class Model implements Graph {
      * @see genj.tree.Model.MyNode#getPadding(int)
      */
     protected double getPadding(int side) {
-      if (side==MyOptions.NORTH) return -padIndis/2 + SHAPE_MARRIAGE_RINGS.getBounds2D().getWidth();
-      return padIndis/2;
+      if (side==MyOptions.NORTH) return -padIndis/2 + padFams/10;
+      // + shapeMarr.getBounds2D().getHeight();
+      return padFams/2;
     }
   } //MyFNode
 
@@ -360,14 +366,14 @@ public class Model implements Graph {
      * @see genj.tree.Model.MyNode#getShape()
      */
     public Shape getShape() {
-      return SHAPE_MARRIAGE_RINGS;
+      return shapeMarr;
     }
     /**
      * @see genj.tree.Model.MyNode#getPadding(int)
      */
     protected double getPadding(int side) {
       if (side==MyOptions.NORTH||side==MyOptions.SOUTH) {
-        return (shapeIndi.getHeight()+padIndis)/2 - SHAPE_MARRIAGE_RINGS.getBounds2D().getHeight()/2;
+        return (shapeIndi.getHeight()+padIndis)/2 - shapeMarr.getBounds2D().getHeight()/2;
       }
       return -padIndis/2;
     }
@@ -471,10 +477,13 @@ public class Model implements Graph {
   /**
    * Calculates marriage rings
    */
-  private static Shape calcMarriageRings() {
+  private Shape calcMarriageRings() {
+    double 
+      width  = widthIndis/16,
+      height = widthIndis/16;
     Ellipse2D
-      a = new Ellipse2D.Double(-0.15,-0.1,0.2,0.2),
-      b = new Ellipse2D.Double(-0.05,-0.1,0.2,0.2);
+      a = new Ellipse2D.Double(-width+width/4,-height/2,width,height),
+      b = new Ellipse2D.Double(      -width/4,-height/2,width,height);
     GeneralPath result = new GeneralPath(a);      
     result.append(b,false);
     return result;

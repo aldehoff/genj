@@ -140,6 +140,7 @@ public class TreeView extends JScrollPane implements CurrentSupport {
      */
     public void structureChanged(Model model) {
       revalidate();
+      repaint();
     }
     
     /**
