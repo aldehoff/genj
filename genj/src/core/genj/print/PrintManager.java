@@ -179,7 +179,7 @@ public class PrintManager {
         new Dimension(480,320), 
         owner, 
         widget,
-        new String[]{ "Print", UIManager.getString("OptionPane.cancelButtonText")}
+        new String[]{ resources.getString("dlg.label.print"), UIManager.getString("OptionPane.cancelButtonText")}
       ).packAndShow();
       
       // check choice
@@ -201,6 +201,7 @@ public class PrintManager {
     protected void execute() {
       // this is on another thread
       try {
+        Debug.log(Debug.INFO, this, "Printing to "+getPrinter());
         job.print();
       } catch (PrinterException pe) {
         throwable = pe;
@@ -301,7 +302,7 @@ public class PrintManager {
      * Computer printer name
      */
     /*package*/ String getPrinter() {
-      Object name = "Unknown";
+      Object name = "*Default*";
       try {
         name = job.getClass().getMethod("getPrintService", new Class[0]).invoke(job,new Object[0]);
       } catch (Throwable t) {}
