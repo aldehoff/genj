@@ -31,6 +31,7 @@ Future
   O Use colors to distinguish different events in TimelineView
   O When entities are selected TableView and TreeView should try to scroll and show it
   O Open URL http://host should parse http output and offer list of choices to .ged links
+  O Open URL should allow basic authentication challenge/response
   O Components in EditView receive correct focus for all proxies
 
 2.0 - MMM DD 2002
