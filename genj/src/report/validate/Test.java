@@ -7,6 +7,8 @@
  */
 package validate;
 
+import java.util.List;
+
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 
@@ -55,9 +57,9 @@ import genj.gedcom.TagPath;
   }
   
   /**
-   * Perform Test 
+   * Perform Test on prop&path - fill issues with instances of Issue 
    */
-  /*package*/ abstract Issue test(Property prop, TagPath path);
+  /*package*/ abstract void test(Property prop, TagPath path, List issues);
    
 
 } //Test

@@ -7,6 +7,8 @@
  */
 package validate;
 
+import java.util.List;
+
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 
@@ -16,22 +18,34 @@ import genj.gedcom.TagPath;
  */
 /*package*/ class TestValid extends Test {
 
+  /** whether no-information is considered to be valid */
+  private boolean isEmptyValid;
+
   /**
    * Constructor
    */
-  /*package*/ TestValid() {
+  /*package*/ TestValid(boolean emptyIsValid) {
     super((String[])null, Property.class);
+    isEmptyValid = emptyIsValid;
   }
   
   /**
-   * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath)
+   * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath, java.util.List)
    */
-  /*package*/ Issue test(Property prop, TagPath path) {
-    // no need if valid
+  /*package*/ void test(Property prop, TagPath path, List issues) {
+
+    // no issue if valid 
     if (prop.isValid())
-      return null;
+      return;
+      
+    // no issue if isEmptyValid&&getValue() is empty
+    if (isEmptyValid&&prop.getValue().length()==0)
+      return;
+      
     // got an issue with that
-    return new Issue(path.toString()+" is not valid", prop.getImage(true), prop);
+    issues.add(new Issue(path.toString()+" is not valid", prop.getImage(true), prop));
+    
+    // done
   }
 
 } //TestValid

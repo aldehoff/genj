@@ -12,6 +12,8 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 
+import java.util.List;
+
 /**
  * @author nmeier
  */
@@ -48,9 +50,9 @@ import genj.gedcom.TagPath;
   }
 
   /**
-   * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath)
+   * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath, java.util.List)
    */
-  /*package*/ Issue test(Property prop, TagPath path) {
+  /*package*/ void test(Property prop, TagPath path, List issues) {
     
     // assuming date
     PropertyDate date1 = (PropertyDate)prop;
@@ -58,14 +60,13 @@ import genj.gedcom.TagPath;
     // get other date
     PropertyDate date2 = (PropertyDate)prop.getEntity().getProperty(path2);
     if (date2==null)
-      return null;
+      return;
       
     // test it 
     if (isError(date1, date2)) 
-      return new Issue(getError(path), date1.getImage(false), date1);
+      issues.add(new Issue(getError(path), date1.getParent().getImage(false), date1));
     
-    // all good
-    return null;
+    // done
   }
   
   /**
