@@ -409,7 +409,43 @@ import java.util.Stack;
    * Calculate the balance of branches that are placed from west to east 
    */
   private void calcBalance(Branch[] branches, int start, int end, boolean right) {
-    // FIXME
+    // nothing to do if nothing between start and end
+    if (start+1==end) return;
+    
+    // calculate space between branches
+    double[] spaces = new double[end-start];
+    double space = 0;
+    for (int b=0; b<spaces.length; b++) {
+      double
+        east = branches[b].contour.getIterator(Contour.EAST).longitude,
+        west = branches[b+1].contour.getIterator(Contour.WEST).longitude;
+      spaces[b] = west-east;
+      space += spaces[b];
+    }
+    
+    // the average space
+    if (space==0) return;
+    double avg = space/spaces.length;
+    
+    for (int b=0; b<spaces.length; b++) {
+    }
+//    
+//    // distribute from right to left
+//    double lon = branches[end].contour
+//    for (int b=end-1; b>start; b--) {
+//      
+//      // b's desired lon
+//      double lon = space*(b-start);
+//      
+//      // possibilities :
+//      // (1) would move b too far
+//      // (2) would move b not far enough
+//      // (3) otherwise 
+//      
+//    	branches[b].moveTo(0, lon);
+//    } 
+           
+    // done
   }
     
   /**
