@@ -125,6 +125,9 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /** menu for actions */
   private JMenuBar          menuActions;
   
+  /** an entity to show in next open EditView */
+  /*package*/ static Entity preselectEntity = null;
+  
   /**
    * Constructor
    */
@@ -158,24 +161,30 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     ((JFrame)setFrame).setJMenuBar(menuActions);
     updateMenu();
     
-    // Check if we can preset something to edit
-    Runnable run = new Runnable() {
-      public void run() {
-        Entity entity = null;
-        String last = registry.get("last",(String)null);
-        if (last!=null) {
-          try { 
-            entity = gedcom.getEntity(last); 
-          } catch (Exception e) {
-            entity = ViewManager.getInstance().getCurrentEntity(gedcom);
-          }
-        }
-        setEntity(entity);
-      }
-    };
-    SwingUtilities.invokeLater(run);
-    
     // Done
+  }
+  
+  /**
+   * @see javax.swing.JComponent#addNotify()
+   */
+  public void addNotify() {
+    super.addNotify();
+
+    // Check if we can preset something to edit
+    Entity entity = preselectEntity;
+    if (entity==null) {
+      String last = registry.get("last",(String)null);
+      if (last!=null) {
+        try { 
+          entity = gedcom.getEntity(last); 
+        } catch (Exception e) {
+          entity = ViewManager.getInstance().getCurrentEntity(gedcom);
+        }
+      }
+    }
+    setEntity(entity);
+    preselectEntity=null;
+    
   }
 
   /**

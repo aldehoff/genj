@@ -232,9 +232,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
+      EditView.preselectEntity = candidate;
       EditView ev = (EditView)ViewManager.getInstance().openView(EditViewFactory.this, candidate.getGedcom());
-      ev.setSticky(false);
-      ev.setEntity(candidate);
     }
   }
   
