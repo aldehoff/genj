@@ -114,21 +114,21 @@ public class ControlCenter extends JPanel {
 
     // .. Buttons
     boolean imageAndText = registry.get("imagesandtext", false);
-    
     ButtonHelper bh = new ButtonHelper()
       .setResources(App.resources)
       .setInsets(4)
       .setFocusable(false)
       .setContainer(result)
       .setTextAllowed(imageAndText)
-      .setImageOverText(imageAndText);
+      .setImageOverText(imageAndText)
+      .setFontSize(10);
 
     bh.setEnabled(true).create(new ActionOpen());
     
     bh.setEnabled(false).setCollection(gedcomButtons);
     ViewManager.Descriptor[] ds=ViewManager.getInstance().getDescriptors();
     for (int i=0; i<ds.length; i++) {
-      bh.create(new ActionView(ds[i]));
+      JButton b = bh.create(new ActionView(ds[i]));
     }
     
     bh.setEnabled(true).setCollection(null);
