@@ -128,6 +128,8 @@ public class GedcomTable extends JTable {
    */
   public void addGedcom(Gedcom gedcom) {
     model.addGedcom(gedcom);
+    Vector gs = model.getAllGedcoms();
+    getSelectionModel().setSelectionInterval(gs.size()-1,gs.size()-1);
   }
 
   /**
