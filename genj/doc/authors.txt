@@ -7,10 +7,10 @@ The people behind GenJ (sorted by last name) :
       . Nils Meier <nils@meiers.net>
 
     Contributors :
+      . Jan C.Hardenbergh <jch@world.std.com>
       . Daniel P. Kionka <dan@kionka.org>
       . Francois Massonneau <frmas@free.fr>
-			.	Jan C.Hardenbergh <jch@world.std.com>
-      . Sean Timm  <TimmSCHome@aol.com>
+      . Sean Timm <TimmSCHome@aol.com>
 
     Translators :
       . Osamu Ajiki <osam-a@astroarts.co.jp> (Japanese translation)
