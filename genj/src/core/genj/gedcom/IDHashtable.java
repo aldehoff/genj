@@ -19,23 +19,26 @@
  */
 package genj.gedcom;
 
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Class for Hashtable of IDs
  */
 public class IDHashtable {
 
-  private Hashtable hashtable;
-  private Vector    duplicates;
-
+  private Map hashtable;
+  private List duplicates;
+  
   /**
    * Constructor
    */
   public IDHashtable(int initialCapacity) {
-    hashtable  = new Hashtable(initialCapacity);
-    duplicates = new Vector(16);
+    hashtable  = new HashMap(initialCapacity);
+    duplicates = new ArrayList(16);
   }
 
   /**
@@ -48,21 +51,23 @@ public class IDHashtable {
   /**
    * Returns all entities by id
    */
-  public EntityList getAll(String id) {
+  public List getAll(String id) {
 
     // Calc object for id
     Object obj = hashtable.get(id);
     if (obj==null) {
-      return new EntityList();
+      return Collections.EMPTY_LIST;
     }
 
     // .. ambiguous ?
-    if (obj instanceof Vector) {
-      return new EntityList((Vector)obj);
+    if (obj instanceof List) {
+      return Collections.unmodifiableList((List)obj);
     }
 
     // .. o.k.
-    return new EntityList((Entity)obj);
+    List result = new ArrayList(1);
+    result.add(obj);
+    return result;
   }
 
   /**
@@ -77,22 +82,18 @@ public class IDHashtable {
     }
 
     // .. ambiguous ?
-    if (obj instanceof Vector)
+    if (obj instanceof List)
       throw new DuplicateIDException("Entity-ID "+id+" is ambiguous");
 
-      // .. o.k.
-      return (Entity)obj;
-    }
-    /**
-     * Returns all duplicates in this Hashtable
-     */
-    public Entity[] getDuplicates() {
-    Entity[] result = new Entity[duplicates.size()];
-    for (int i=0;i<result.length;i++) {
-      result[i]=(Entity)duplicates.elementAt(i);
-    }
-    return result;
-
+    // .. o.k.
+    return (Entity)obj;
+  }
+    
+  /**
+   * Returns all duplicates in this Hashtable
+   */
+  public List getDuplicates() {
+    return Collections.unmodifiableList(duplicates);
   }
 
   /**
@@ -110,33 +111,27 @@ public class IDHashtable {
     // Is the given id ambiguous ?
     Object obj = hashtable.get(id);
     if (obj==null) {
-
       // .. it's o.k.
       hashtable.put(id,entity);
-
       // .. done
       return;
     }
 
     // We have >two entities with same id
     // .. already more than one there?
-    if (obj instanceof Vector) {
-
+    if (obj instanceof List) {
       // .. one more in the list
-      ((Vector)obj).addElement(entity);
-
+      ((List)obj).add(entity);
     } else {
-
       // .. new list here
-      Vector v = new Vector(2);
-      v.addElement(obj);
-      v.addElement(entity);
-      hashtable.put(id,v);
-
+      List l = new ArrayList(2);
+      l.add(obj);
+      l.add(entity);
+      hashtable.put(id,l);
     }
 
     // Remember as duplicate
-    duplicates.addElement(entity);
+    duplicates.add(entity);
 
     // Done
   }
@@ -151,19 +146,19 @@ public class IDHashtable {
     Object obj = hashtable.get(old);
 
     // Vector of indis ?
-    if (obj instanceof Vector) {
+    if (obj instanceof List) {
 
       // .. remove entity from vector
-      Vector vec=(Vector)obj;
-      vec.removeElement(entity);
+      List l = (List)obj;
+      l.remove(entity);
 
       // .. one only of previous two left?
-      if (vec.size()==1) {
-      hashtable.put(old,vec.elementAt(0));
+      if (l.size()==1) {
+        hashtable.put(old,l.get(0));
       }
 
       // .. forget about obj as being a duplicate
-      duplicates.removeElement(entity);
+      duplicates.remove(entity);
 
       // .. done
       return;
@@ -174,4 +169,5 @@ public class IDHashtable {
 
     // Done
   }            
-}
+  
+} //IDHashtable

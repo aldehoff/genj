@@ -227,7 +227,7 @@ public class GedcomTableWidget extends JTable {
     public Object getValueAt(int row, int col) {
       Gedcom gedcom = (Gedcom)gedcoms.elementAt(row);
       if (col==0) return gedcom.getName();
-      return ""+gedcom.getEntities(Gedcom.FIRST_ETYPE+(col-1)).getSize();
+      return ""+gedcom.getEntities(Gedcom.FIRST_ETYPE+(col-1)).size();
     }
   
     /**

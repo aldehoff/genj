@@ -57,7 +57,6 @@ import javax.swing.Scrollable;
    * @see javax.swing.JComponent#paintComponent(Graphics)
    */
   protected void paintComponent(Graphics g) {
-    System.out.println(g.getClipBounds());
     g.setColor(Color.lightGray);
     g.fillRect(0,0,getWidth(),getHeight());
     g.setColor(Color.red);

@@ -8,6 +8,7 @@
 import genj.gedcom.*;
 import genj.report.*;
 import java.io.*;
+import java.util.List;
 
 /**
  * GenJ - Report
@@ -137,22 +138,22 @@ public class ReportMigrateToMedias implements Report {
 
     // Looking for individuals and families
     bridge.println("***Looking for individuals");
-    EntityList indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
-    if (indis.getSize()==0)
+    List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
+    if (indis.size()==0)
             bridge.println("- none found");
     else {
-            for (int i=0;i<indis.getSize();i++)
-                    analyseEntity(indis.getIndi(i),bridge);
+            for (int i=0;i<indis.size();i++)
+                    analyseEntity((Entity)indis.get(i),bridge);
     }
     bridge.println();
 
     bridge.println("***Looking for families");
-    EntityList fams = gedcom.getEntities(Gedcom.FAMILIES);
-    if (fams.getSize()==0)
+    List fams = gedcom.getEntities(Gedcom.FAMILIES);
+    if (fams.size()==0)
             bridge.println("- none found");
     else {
-            for (int i=0;i<fams.getSize();i++)
-                    analyseEntity(fams.getFam(i),bridge);
+            for (int i=0;i<fams.size();i++)
+                    analyseEntity((Entity)fams.get(i),bridge);
     }
     bridge.println();
 

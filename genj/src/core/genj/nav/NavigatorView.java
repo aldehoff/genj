@@ -103,7 +103,7 @@ public class NavigatorView extends JPanel {
    */
   public void setEntity(Gedcom g, Entity e) {
     // no entity
-    if ((e == null)&&(g.getEntities(Gedcom.INDIVIDUALS).getSize()>0)) e=g.getIndi(0);
+    if ((e == null)&&(g.getEntities(Gedcom.INDIVIDUALS).size()>0)) e=g.getIndi(0);
     if (e == null) {
       // data
       indi = null;

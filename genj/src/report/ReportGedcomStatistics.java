@@ -6,7 +6,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-import genj.gedcom.EntityList;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
@@ -18,12 +17,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeMap;
 
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.13 2002-04-29 18:43:27 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.14 2002-10-08 04:02:01 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -105,9 +105,9 @@ public class ReportGedcomStatistics implements Report {
     Statistics stats = new Statistics();
 
     // So we loop over the Individuals
-    EntityList indis = gedcom.getEntities(gedcom.INDIVIDUALS);
-    for (int i=0;i<indis.getSize();i++) {
-      analyzeIndividual(indis.getIndi(i), stats);
+    List indis = gedcom.getEntities(gedcom.INDIVIDUALS);
+    for (int i=0;i<indis.size();i++) {
+      analyzeIndividual((Indi)indis.get(i), stats);
     }
     
     // And report what we've found
@@ -223,12 +223,12 @@ public class ReportGedcomStatistics implements Report {
     bridge.println("  * Stats about people :");
 		
     // One: We show the number of families :
-    bridge.println("     - "+gedcom.getEntities(Gedcom.FAMILIES).getSize()
-      +" families (soit : "+gedcom.getEntities(Gedcom.FAMILIES).getSize()+" familles).");
+    bridge.println("     - "+gedcom.getEntities(Gedcom.FAMILIES).size()
+      +" families (soit : "+gedcom.getEntities(Gedcom.FAMILIES).size()+" familles).");
 
     // Two: We show the number of individuals :
-    bridge.println("     - "+gedcom.getEntities(Gedcom.INDIVIDUALS).getSize()
-      +" Individuals (soit : "+gedcom.getEntities(Gedcom.INDIVIDUALS).getSize()+" personnes).");
+    bridge.println("     - "+gedcom.getEntities(Gedcom.INDIVIDUALS).size()
+      +" Individuals (soit : "+gedcom.getEntities(Gedcom.INDIVIDUALS).size()+" personnes).");
 
     // Three: We show the number of males :
     bridge.println("         . "+stats.numMales+" males (soit : "+stats.numMales+" hommes).");

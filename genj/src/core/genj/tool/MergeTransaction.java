@@ -182,7 +182,8 @@ public class MergeTransaction implements Transaction {
    * Merge the candidates technically
    */
   private void merge() {
-
+throw new RuntimeException("merge() is not supported at this time");
+/*
     Gedcom g1 = pSelect1.getGedcom(),
            g2 = pSelect2.getGedcom();
 
@@ -206,13 +207,13 @@ public class MergeTransaction implements Transaction {
        (state[0]?Gedcom.TAG_PROPERTY_SOURCE:0)
       |(state[1]?Gedcom.TAG_ENTITY_SOURCE  :0)
     );
-
     // Finish work by unlocking
     g1.endTransaction();
     g2.endTransaction();
 
     // Done
     center.addGedcom(result);
+*/
   }
 
   /**

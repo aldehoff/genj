@@ -20,7 +20,8 @@
 package genj.io;
 
 import java.io.*;
-import java.util.*;
+import java.util.Calendar;
+import java.util.List;
 
 import genj.Version;
 import genj.gedcom.*;
@@ -147,12 +148,12 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void writeEntities(EntityList[] entities) throws IOException, GedcomIOException {
+  private void writeEntities(List[] entities) throws IOException, GedcomIOException {
 
     // Loop through EntityLists
     for (int i=0;i<entities.length;i++) {
-      for (int j=0;j<entities[i].getSize();j++) {
-        writeEntity(entities[i].get(j));
+      for (int j=0;j<entities[i].size();j++) {
+        writeEntity((Entity)entities[i].get(j));
       }
     }
 
@@ -182,7 +183,7 @@ public class GedcomWriter implements Trackable {
 
     // Prepare
     total = gedcom.getNoOfEntities();
-    EntityList[] entities = gedcom.getEntities();
+    List[] entities = gedcom.getEntities();
 
     // Out operation
     try {

@@ -19,7 +19,9 @@
  */
 package genj.edit;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
@@ -31,7 +33,7 @@ import genj.gedcom.*;
  */
 public class PropertyTreeModel implements TreeModel {
 
-  private Vector listeners = new Vector();
+  private List listeners = new ArrayList();
   private Property root;
 
   /**
@@ -45,20 +47,20 @@ public class PropertyTreeModel implements TreeModel {
    * Adds a listener to this model
    */
   public void addTreeModelListener(TreeModelListener l) {
-    listeners.addElement(l);
+    listeners.add(l);
   }          
   
   /**
    * Signals to listeners that properties have changed
    */
-  public void firePropertiesChanged(Vector props) {
+  public void firePropertiesChanged(List props) {
 
     // Do it for all changed properties
-    Enumeration e = props.elements();
-    while (e.hasMoreElements()) {
+    Iterator e = props.iterator();
+    while (e.hasNext()) {
   
       // .. use property
-      Property prop = (Property)e.nextElement();
+      Property prop = (Property)e.next();
   
       // .. build event
       Object path[] = root.getPathTo(prop);
@@ -68,9 +70,9 @@ public class PropertyTreeModel implements TreeModel {
       TreeModelEvent ev = new TreeModelEvent(this,path);
   
       // .. tell it to all listeners
-      Enumeration elisteners = listeners.elements();
-      while (elisteners.hasMoreElements()) {
-        ((TreeModelListener)elisteners.nextElement()).treeNodesChanged(ev);
+      Iterator elisteners = listeners.iterator();
+      while (elisteners.hasNext()) {
+        ((TreeModelListener)elisteners.next()).treeNodesChanged(ev);
       }
   
       // .. next changed property
@@ -86,9 +88,9 @@ public class PropertyTreeModel implements TreeModel {
     TreeModelEvent ev = new TreeModelEvent(this,path);
 
     // .. tell it to all listeners
-    Enumeration elisteners = listeners.elements();
-    while (elisteners.hasMoreElements()) {
-      ((TreeModelListener)elisteners.nextElement()).treeStructureChanged(ev);
+    Iterator elisteners = listeners.iterator();
+    while (elisteners.hasNext()) {
+      ((TreeModelListener)elisteners.next()).treeStructureChanged(ev);
     }
   }          
   
@@ -140,7 +142,7 @@ public class PropertyTreeModel implements TreeModel {
    * Removes a Listener from this model
    */
   public void removeTreeModelListener(TreeModelListener l) {
-    listeners.removeElement(l);
+    listeners.remove(l);
   }          
   
   /**

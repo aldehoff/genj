@@ -14,9 +14,9 @@ import java.util.*;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.10 2002-04-24 03:28:03 timmsc Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.11 2002-10-08 04:02:01 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class ReportMakeHTMLTable implements Report {
 
@@ -275,13 +275,13 @@ public class ReportMakeHTMLTable implements Report {
     bridge.println("</TR>");  //F. Massonneau 03/04/2002
 
     // Go through individuals
-    EntityList indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
+    List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
 
     TreeMap indiMap = new TreeMap ();  // use to sort by name
-    for (int i=0;i<indis.getSize();i++) {
-      Indi indi = indis.getIndi(i);
+    for (int i=0;i<indis.size();i++) {
+      Indi indi = (Indi)indis.get(i);
       indiMap.put( indi.getLastName() + "\t" + indi.getFirstName() + "\t" + i,
-                   indis.getIndi(i) );
+                   indi );
     }
     Iterator iter = indiMap.values().iterator();
     while ( iter.hasNext() ) {

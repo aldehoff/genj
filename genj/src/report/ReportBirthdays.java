@@ -1,3 +1,14 @@
+import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
+import genj.gedcom.PropertyDate;
+import genj.report.Report;
+import genj.report.ReportBridge;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Reports are Freeware Code Snippets
  *
@@ -5,11 +16,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.*;
-import genj.report.*;
-import java.io.*;
-
-import java.util.*;
 
 /**
  * GenJ - Report
@@ -98,17 +104,17 @@ public class ReportBirthdays implements Report {
     month++;
 
     // Look for candidates
-    Vector candidates = new Vector(100);
+    List candidates = new ArrayList(100);
 
-    EntityList indis = gedcom.getEntities(gedcom.INDIVIDUALS);
-    for (int i=0;i<indis.getSize();i++) {
-      Indi indi = indis.getIndi(i);
+    List indis = gedcom.getEntities(gedcom.INDIVIDUALS);
+    for (int i=0;i<indis.size();i++) {
+      Indi indi = (Indi)indis.get(i);
       PropertyDate birth = indi.getBirthDate();
       if (birth==null) {
         continue;
       }
       if (birth.getStart().getMonth(-1) == month) {
-        candidates.addElement(indi);
+        candidates.add(indi);
       }
     }
 
@@ -142,9 +148,9 @@ public class ReportBirthdays implements Report {
     // Show birthdays
     bridge.println("The following individuals are born in month "+s);
 
-    Enumeration e = candidates.elements();
-    while (e.hasMoreElements()) {
-      Indi indi = (Indi)e.nextElement();
+    Iterator e = candidates.iterator();
+    while (e.hasNext()) {
+      Indi indi = (Indi)e.next();
       bridge.println(indi.getName()+" (*"+indi.getBirthDate()+")");
     }
 

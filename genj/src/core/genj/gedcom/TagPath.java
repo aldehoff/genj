@@ -19,7 +19,11 @@
  */
 package genj.gedcom;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Class for encapsulating a path of tags that describe the way throug
@@ -117,12 +121,12 @@ public class TagPath {
   /**
    * Fill Hashtable with paths to properties
    */
-  static private void fillHashtableWithPaths(Hashtable hash, Property prop, String path) {
+  static private void fillHashtableWithPaths(Map hash, Property prop, String path) {
 
     String p = path+prop.getTag();
 
     if (prop.getNoOfProperties()==0) {
-      if (!hash.contains(p)) {
+      if (!hash.containsKey(p)) {
         hash.put(p,new TagPath(p));
       }
       return;
@@ -166,23 +170,23 @@ public class TagPath {
    */
   static public TagPath[] getUsedTagPaths(Gedcom gedcom,int type) {
 
-    Hashtable hash = new Hashtable(32);
+    Map hash = new HashMap(32);
 
     // Loop through all entities of current type
-    EntityList entities  = gedcom.getEntities(type);
-
-    for (int e=0;e<entities.getSize();e++) {
-      Entity entity = entities.get(e);
+    List entities  = gedcom.getEntities(type);
+    for (int e=0;e<entities.size();e++) {
+      Entity entity = (Entity)entities.get(e);
       fillHashtableWithPaths(hash,entity.getProperty(),"");
     }
 
-    // Done
+    // convert
     TagPath[] result = new TagPath[hash.size()];
-    Enumeration e = hash.elements();
-    for (int i=0;e.hasMoreElements();i++) {
-      result[i] = (TagPath)e.nextElement();
+    Iterator e = hash.values().iterator();
+    for (int i=0;e.hasNext();i++) {
+      result[i] = (TagPath)e.next();
     }
 
+    // done
     return result;
   }
 

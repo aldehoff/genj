@@ -9,12 +9,13 @@ import genj.gedcom.*;
 import genj.report.*;
 
 import java.io.*;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.13 2002-08-21 21:29:47 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.14 2002-10-08 04:02:01 nmeier Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -380,9 +381,9 @@ public class ReportAppletDetails implements Report {
   /**
    * Exports the given entities to given directory
    */
-  private void export(EntityList ents, File dir, ReportBridge bridge)  throws IOException {
-    for (int e=0;e<ents.getSize();e++) {
-      export(ents.get(e),dir,bridge);
+  private void export(List ents, File dir, ReportBridge bridge)  throws IOException {
+    for (int e=0;e<ents.size();e++) {
+      export((Entity)ents.get(e),dir,bridge);
     }
   }
 
@@ -401,8 +402,8 @@ public class ReportAppletDetails implements Report {
 
     // Loop through individuals & families
     try {
-      export(gedcom.getEntities(gedcom.INDIVIDUALS),dir,bridge);
-      export(gedcom.getEntities(gedcom.FAMILIES   ),dir,bridge);
+      export((Entity)gedcom.getEntities(gedcom.INDIVIDUALS),dir,bridge);
+      export((Entity)gedcom.getEntities(gedcom.FAMILIES   ),dir,bridge);
     } catch (IOException e) {
       bridge.println("IOError while exporting :(");
     }

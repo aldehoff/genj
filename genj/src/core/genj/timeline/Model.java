@@ -19,6 +19,8 @@
  */
 package genj.timeline;
 
+import java.util.List;
+
 import genj.gedcom.Gedcom;
 
 /**
@@ -28,6 +30,11 @@ import genj.gedcom.Gedcom;
 
   /** the gedcom we're looking at */
   private Gedcom gedcom;
+  
+  /** limits */
+  private int
+    maxYear = 2020,
+    minYear = 1901;
   
   /**
    * Constructor
@@ -39,5 +46,25 @@ import genj.gedcom.Gedcom;
     
     // done
   }
+  
+  /**
+   * Gather Events
+   */
+  private void gatherEvents() {
+    gatherEvents(gedcom.getEntities(Gedcom.INDIVIDUALS));
+    gatherEvents(gedcom.getEntities(Gedcom.FAMILIES   ));
+  }
+  
+  /** 
+   * Gather Events for given entities
+   */
+  private void gatherEvents(List es) {
+  }
+  
+  /**
+   * An event in our model
+   */
+  private class Event {
+  } //Event
   
 } //TimelineModel 

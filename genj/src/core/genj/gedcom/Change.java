@@ -19,7 +19,10 @@
  */
 package genj.gedcom;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 
 /**
  * Class that encapsulated changes after writelock
@@ -36,8 +39,8 @@ public class Change {
 
   private Gedcom gedcom;
 
-  private Vector eadd , edel,  emod;
-  private Vector padd , pdel , pmod ;
+  private List eadd , edel,  emod;
+  private List padd , pdel , pmod ;
 
   private int change;
 
@@ -50,7 +53,7 @@ public class Change {
    * @param pdel Deleted properties
    * @param pmod Modified properties
    */
-  public Change(Gedcom gedcom, Vector eadd, Vector edel, Vector padd, Vector pdel, Vector pmod ) {
+  public Change(Gedcom gedcom, List eadd, List edel, List padd, List pdel, List pmod ) {
 
     // Remember
     this.gedcom=gedcom;
@@ -92,7 +95,7 @@ public class Change {
    * Resolves all entities which has properties that haveve been changed,
    * added or deleted
    */
-  private Vector getEMOD() {
+  private List getEMOD() {
 
     // Already  calculated?
     if (emod!=null) {
@@ -100,19 +103,19 @@ public class Change {
     }
 
     // Calculate
-    emod = new Vector(pmod.size()+padd.size()+pdel.size());
+    emod = new ArrayList(pmod.size()+padd.size()+pdel.size());
 
-    Enumeration e = pmod.elements();
-    while (e.hasMoreElements()) {
-      emod.addElement( ((Property)e.nextElement()).getEntity() );
+    Iterator e = pmod.iterator();
+    while (e.hasNext()) {
+      emod.add( ((Property)e.next()).getEntity() );
     }
-    e = padd.elements();
-    while (e.hasMoreElements()) {
-      emod.addElement( ((Property)e.nextElement()).getEntity() );
+    e = padd.iterator();
+    while (e.hasNext()) {
+      emod.add( ((Property)e.next()).getEntity() );
     }
-    e = pdel.elements();
-    while (e.hasMoreElements()) {
-      emod.addElement( ((Property)e.nextElement()).getEntity() );
+    e = pdel.iterator();
+    while (e.hasNext()) {
+      emod.add( ((Property)e.next()).getEntity() );
     }
 
     return emod;
@@ -125,7 +128,7 @@ public class Change {
    *  EDEL deleted entities
    *  EMOD entities with modified/added/deleted properties
    */
-  public Vector getEntities(int which) {
+  public List getEntities(int which) {
 
     switch (which) {
     case EADD:
@@ -149,7 +152,7 @@ public class Change {
   /**
    * Added/Deleted/Modified Properties
    */
-  public Vector getProperties(int which) {
+  public List getProperties(int which) {
     switch (which) {
     case PADD:
       return padd;

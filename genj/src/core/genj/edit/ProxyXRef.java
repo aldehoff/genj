@@ -21,6 +21,8 @@ package genj.edit;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.StringTokenizer;
 
@@ -123,13 +125,13 @@ class ProxyXRef extends Proxy implements ActionListener  {
     String name = Gedcom.getNameFor(type, false);
 
     // Then we try to find it through Gedcom
-    EntityList all = prop.getGedcom().getEntities(type);
+    List all = prop.getGedcom().getEntities(type);
 
-    Vector hits = new Vector(10);
-    for (int e=0;e<all.getSize();e++) {
+    List hits = new ArrayList(10);
+    for (int e=0;e<all.size();e++) {
 
       // .. here's the entity we're checking (ignoring current)
-      Entity entity = all.get(e);
+      Entity entity = (Entity)all.get(e);
       if (entity==edit.getEntity()) {
         continue;
       }
@@ -137,7 +139,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
       // .. do the lookup
       Property property = entity.getProperty().find(text);
       if (property!=null) {
-        hits.addElement(new Hit(property));
+        hits.add(new Hit(property));
       }
     }
 

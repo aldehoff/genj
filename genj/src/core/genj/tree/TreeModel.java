@@ -19,10 +19,21 @@
  */
 package genj.tree;
 
-import java.util.*;
-import java.awt.*;
-
-import genj.gedcom.*;
+import genj.gedcom.Change;
+import genj.gedcom.DuplicateIDException;
+import genj.gedcom.Entity;
+import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
+import genj.gedcom.Indi;
+import genj.gedcom.PropertyXRef;
+import genj.gedcom.TagPath;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Rectangle;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * The model underlying a tree
@@ -168,7 +179,7 @@ public class TreeModel implements GedcomListener, Cloneable {
       } catch (DuplicateIDException die) {
       }
     }
-    if ((rootEntity==null)&&(gedcom.getEntities(Gedcom.INDIVIDUALS).getSize()>0)) {
+    if ((rootEntity==null)&&(gedcom.getEntities(Gedcom.INDIVIDUALS).size()>0)) {
       rootEntity = gedcom.getIndi(0);
     }
 
@@ -708,7 +719,7 @@ public class TreeModel implements GedcomListener, Cloneable {
   private void gatherTree() {
 
     // Reset vector of visible persons/families
-    links      = new SetOfLinks(gedcom.getEntities(Gedcom.INDIVIDUALS).getSize() );
+    links      = new SetOfLinks(gedcom.getEntities(Gedcom.INDIVIDUALS).size() );
     actualLink = null;
 
     // Calculate tree
@@ -1127,9 +1138,9 @@ public class TreeModel implements GedcomListener, Cloneable {
        || (change.isChanged(Change.EDEL)) ) {
 
       // Root deleted ?
-      Vector deleted = change.getEntities(Change.EDEL);
+      List deleted = change.getEntities(Change.EDEL);
       if (deleted.contains(rootEntity)) {
-        if (gedcom.getEntities(Gedcom.INDIVIDUALS).getSize()>0) {
+        if (gedcom.getEntities(Gedcom.INDIVIDUALS).size()>0) {
           // BUG this was '1' ... hmmm .. and there was no check for size
           rootEntity = gedcom.getIndi(0);
         } else {
@@ -1139,11 +1150,11 @@ public class TreeModel implements GedcomListener, Cloneable {
 
       // Could be new root
       while (rootEntity==null) {
-      if (gedcom.getEntities(Gedcom.INDIVIDUALS).getSize()>0) {
+      if (gedcom.getEntities(Gedcom.INDIVIDUALS).size()>0) {
         rootEntity=gedcom.getIndi(0);
         break;
       }
-      if (gedcom.getEntities(Gedcom.FAMILIES).getSize()>0) {
+      if (gedcom.getEntities(Gedcom.FAMILIES).size()>0) {
         rootEntity=gedcom.getFam(0);
         break;
       }
@@ -1170,7 +1181,7 @@ public class TreeModel implements GedcomListener, Cloneable {
     }
 
     // Some Entities changed
-    fireEntitiesChanged(change.getEntities(Change.EMOD));
+    fireEntitiesChanged(new Vector(change.getEntities(Change.EMOD)));
 
     // Done
   }

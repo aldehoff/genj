@@ -19,9 +19,11 @@
  */
 package genj.tool;
 
-import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
@@ -203,7 +205,7 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
   private class MatchModel extends AbstractTableModel {
     
     /** matches we know about */
-    private Vector matches = new Vector();
+    private List matches = new ArrayList(10);
     
     /**
      * Constructor
@@ -218,20 +220,20 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
       // Loop through ents
       try {
 
-        EntityList[] entlists = candidates[0].getEntities();
-        Vector ms = new Vector();
+        List[] entlists = candidates[0].getEntities();
+        List ms = new ArrayList();
 
         for (int i=0;i<entlists.length;i++) {
 
-          for (int e=0;e<entlists[i].getSize();e++) {
+          for (int e=0;e<entlists[i].size();e++) {
 
             // .. get entity
-            Entity e1 = entlists[i].get(e);
+            Entity e1 = (Entity)entlists[i].get(e);
             Entity e2 = candidates[1].getEntityFromId(e1.getId(),e1.getType());
 
             // .. and twin
             if (e2!=null) {
-              ms.addElement(new Match(e1,e2));
+              ms.add(new Match(e1,e2));
             }
 
             // .. next entity
@@ -255,7 +257,7 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
      */
     protected void removeAll() {
       int s = matches.size();
-      matches.removeAllElements();
+      matches.clear();
       super.fireTableRowsDeleted(0,s-1);
     }
 
@@ -265,7 +267,7 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
     protected void remove(int[] selection) {
       if (selection.length==0) return;
       for (int i=selection.length-1; i>=0; i--) {
-        matches.removeElementAt(selection[i]);
+        matches.remove(selection[i]);
       }
       super.fireTableRowsDeleted(selection[0],selection[selection.length-1]);
     }
@@ -274,7 +276,7 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
      * Returns the match for given row
      */
     public Match getMatchAt(int row) {
-      return (Match)matches.elementAt(row);
+      return (Match)matches.get(row);
     }
 
     /**
@@ -299,7 +301,7 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
      * @see javax.swing.table.TableModel#getValueAt(int, int)
      */
     public Object getValueAt(int row, int col) {
-      Match m = (Match)matches.elementAt(row);
+      Match m = (Match)matches.get(row);
       if (col==0) return m.e1;
       return m.e2;
     }

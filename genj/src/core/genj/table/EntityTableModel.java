@@ -2,7 +2,6 @@ package genj.table;
 
 import genj.gedcom.Change;
 import genj.gedcom.Entity;
-import genj.gedcom.EntityList;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
@@ -13,6 +12,7 @@ import genj.util.swing.SortableTableHeader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -155,12 +155,12 @@ import javax.swing.table.TableColumnModel;
    */
   private void prepareRows() {
     // grab entities
-    EntityList es = gedcom.getEntities(filter.type);
+    List es = gedcom.getEntities(filter.type);
     // build rows
-    rows = new Row[es.getSize()];
+    rows = new Row[es.size()];
     TagPath[] tps = filter.paths;
     for (int r=0; r<rows.length; r++) {
-      Entity e = es.get(r);
+      Entity e = (Entity)es.get(r);
       Property[] ps = new Property[tps.length];
       for (int p=0; p<ps.length; p++) {
         tps[p].setToFirst();

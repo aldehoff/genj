@@ -134,7 +134,6 @@ public class ControlCenter extends JPanel {
     }
     
     bh.setEnabled(true).removeCollection(gedcomButtons).setResources(App.resources);
-    bh.create(new ActionSettings());
 
     // the result
     JPanel result = new JPanel(new BorderLayout());
@@ -901,23 +900,6 @@ public class ControlCenter extends JPanel {
     } 
   } //ActionVerify
   
-  /**
-   * Action - Settings
-   */
-  protected class ActionSettings extends ActionDelegate { 
-    /** constructor */
-    protected ActionSettings() {
-      super.setImage(Images.imgSettings);
-      super.setText("cc.menu.settings");
-      super.setShortText("cc.menu.settings.short");
-      super.setTip("cc.tip.open_settings");
-    }    
-    /** run */
-    protected void execute() {
-      ViewManager.getInstance().openSettings(null);
-    } 
-  } // ActionSettings
-    
   /**
    * Action - Create
    */

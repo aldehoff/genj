@@ -43,8 +43,9 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Frame;
 import java.awt.event.MouseEvent;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Stack;
 
 import javax.swing.AbstractButton;
 import javax.swing.Box;
@@ -92,7 +93,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   private Proxy             currentProxy = null;
   private Property          currentNode = null;
 
-  private Vector            returnStack = new Vector(MAX_RETURN);
+  private Stack             returnStack = new Stack();
 
   private final static int  MAX_RETURN  = 10;
 
@@ -104,7 +105,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
 
   /** the actions for creating entities */  
   private final ActionCreate
-    actionChild  = new ActionCreate(Images.imgNewSpouse, Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, "new.child"),
+    actionChild  = new ActionCreate(Images.imgNewChild , Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, "new.child"),
     actionParent = new ActionCreate(Images.imgNewParent, Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, "new.parent"),
     actionSpouse = new ActionCreate(Images.imgNewSpouse, Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, "new.spouse"),
     actionNote   = new ActionCreate(Images.imgNewNote  , Gedcom.NOTES, 0, "new.note"),
@@ -389,10 +390,10 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       // Loop through known entity ?
       boolean affected = false;
 
-      Enumeration ents = change.getEntities(Change.EDEL).elements();
-      while (ents.hasMoreElements()) {
+      Iterator ents = change.getEntities(Change.EDEL).iterator();
+      while (ents.hasNext()) {
 
-        Object ent = ents.nextElement();
+        Object ent = ents.next();
 
         // ... a removed entity has to be removed from stack
         while (returnStack.removeElement(ent)) {};
@@ -418,11 +419,11 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       prepareTreeModel();
 
       // .. select added
-      Vector padd = change.getProperties(Change.PADD);
+      List padd = change.getProperties(Change.PADD);
       if (padd.size()>0) {
         PropertyTreeModel model = (PropertyTreeModel)treeOfProps.getModel();
         Property root = (Property)model.getRoot();
-        Property first = (Property)padd.firstElement();
+        Property first = (Property)padd.get(0);
         if (first instanceof PropertyEvent) {
           Property pdate = ((PropertyEvent)first).getDate(false);
           first = (pdate!=null) ? pdate : first;
@@ -634,7 +635,8 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
         .setInsets(0)
         .setMinimumSize(new Dimension(0,0))
         .setHorizontalAlignment(SwingConstants.LEADING)
-        .setContainer(createPanel);
+        .setContainer(createPanel)
+        .setImageOverText(true);
 
       // Create Buttons
       ActionDelegate[] creates = entity2create[entity.getType()];

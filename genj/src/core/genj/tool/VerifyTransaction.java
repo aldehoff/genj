@@ -203,7 +203,7 @@ public class VerifyTransaction implements Transaction {
    * Initiates last step of this transaction
    */
   public boolean ok() {
-
+/**
     // Lock Gedcom for write
     if (!candidate.startTransaction()) {
       return false;
@@ -233,7 +233,7 @@ public class VerifyTransaction implements Transaction {
 
     // Go directly to last state
     state=RESULT;
-
+*/
     return true;
   }
 

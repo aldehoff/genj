@@ -19,9 +19,13 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-import java.io.*;
-import genj.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import genj.util.ImgIcon;
+import genj.util.Origin;
+import genj.util.Resources;
 
 /**
  * The object-representation of a Gedom file
@@ -30,16 +34,16 @@ public class Gedcom {
 
   private boolean          isTransaction = false;
   private boolean          hasUnsavedChanges;
-  private Origin            origin;
-  private Vector            listeners = new Vector();
-  private Entity            lastEntity = null;
-  private Vector            addedEntities     ,
-                             deletedEntities   ;
-  private Vector            addedProperties   ,
-                             deletedProperties ,
-                             modifiedProperties;
-  private EntityList[]      entities = new EntityList[LAST_ETYPE-FIRST_ETYPE+1];
-  private IDHashtable[]     ids = new IDHashtable[LAST_ETYPE-FIRST_ETYPE+1];
+  private Origin           origin;
+  private List             listeners = new ArrayList(10);
+  private Entity           lastEntity = null;
+  private List             addedEntities     ,
+                           deletedEntities   ;
+  private List             addedProperties   ,
+                           deletedProperties ,
+                           modifiedProperties;
+  private List[]           entities = new List[LAST_ETYPE-FIRST_ETYPE+1];
+  private IDHashtable[]    ids = new IDHashtable[LAST_ETYPE-FIRST_ETYPE+1];
 
   static private Random    seed = new Random();
   static private Resources resources;
@@ -78,21 +82,31 @@ public class Gedcom {
    * Gedcom's Constructor
    */
   public Gedcom(Origin origin) {
-    init(origin,100);
+    this(origin, 100);
   }
 
   /**
    * Gedcom's Constructor
    */
   public Gedcom(Origin origin, int initialCapacity) {
-    init(origin,initialCapacity);
+    // safety check
+    if (origin==null)
+      throw new IllegalArgumentException("Origin has to specified");
+    // remember
+    this.origin = origin;
+    // init
+    for (int i=0;i<entities.length;i++) {
+      entities[i] = new ArrayList  (initialCapacity);
+      ids     [i] = new IDHashtable(initialCapacity);
+    }
+    // Done
   }
 
   /**
    * Adds a Listener which will be notified when data changes
    */
   public synchronized void addListener(GedcomListener which) {
-    listeners.addElement(which);
+    listeners.add(which);
   }
 
   /**
@@ -183,16 +197,8 @@ public class Gedcom {
   public Fam createFam(int memberIs, Entity member) throws GedcomException {
 
     // Is the member of that fam a member of this gedcom (individual)
-    if (member!=null) {
-      boolean ok = false;
-      for (int i=0;i<getEntities(INDIVIDUALS).getSize();i++) {
-        if (getIndi(i)==member) {
-          ok = true;
-          break;
-        }
-      }
-      if (!ok)
-        throw new GedcomException("Given Relative isn't individual in this gedcom");
+    if (member!=null && !is(member)) {
+      throw new GedcomException("Given Relative isn't individual in this gedcom");
     }
 
     // Prepare variable of returned individual
@@ -361,21 +367,7 @@ public class Gedcom {
   public Indi createIndi(String lastName, String firstName, int sex, int relatedTo, Entity relative)  throws GedcomException {
 
     // Is the relative a member of this gedcom
-    while (relative!=null) {
-      boolean ok = false;
-      for (int i=0;i<getEntities(INDIVIDUALS).getSize();i++)
-      if (getIndi(i)==relative) {
-        ok = true;
-        break;
-      }
-      if (ok) break;
-      for (int i=0;i<getEntities(FAMILIES).getSize();i++)
-      if (getFam(i)==relative) {
-        ok = true;
-        break;
-      }
-      if (ok) break;
-
+    if (relative!=null&&!is(relative)) {
       throw new GedcomException("Gedcom.Given Relative isn't member of this gedcom");
     }
 
@@ -795,7 +787,7 @@ public class Gedcom {
     noteDeletedEntity(which);
 
     // Delete it
-    entities[type].del   (which);
+    entities[type].remove(which);
     ids     [type].remove(which);
 
     which.delNotify();
@@ -832,11 +824,8 @@ public class Gedcom {
     modifiedProperties = null;
 
     // ... send message to all listeners
-    Object ls[] = new Object[listeners.size()];
-    listeners.copyInto(ls);
-
-    for (int i=0;i<listeners.size();i++) {
-      ((GedcomListener)ls[i]).handleChange(change);
+    for (int i=listeners.size()-1;i>=0;i--) {
+      ((GedcomListener)listeners.get(i)).handleChange(change);
     }
 
     // ... End
@@ -864,9 +853,8 @@ public class Gedcom {
     lastEntity = which;
 
     // Signal to listeners
-    GedcomListener listener;
-    for (int i=0;i<listeners.size();i++) {
-      ((GedcomListener)listeners.elementAt(i)).handleSelection(which, emphasized);
+    for (int i=listeners.size()-1;i>=0;i--) {
+      ((GedcomListener)listeners.get(i)).handleSelection(which, emphasized);
     }
 
     // Done
@@ -875,14 +863,14 @@ public class Gedcom {
   /**
    * Returns all entities
    */
-  public EntityList[] getEntities() {
+  public List[] getEntities() {
     return entities;
   }
 
   /**
    * Returns entities of given type
    */
-  public EntityList getEntities(int type) {
+  public List getEntities(int type) {
     return entities[type];
   }
 
@@ -910,7 +898,7 @@ public class Gedcom {
    * Returns the family at the given index
    */
   public Fam getFam(int index) {
-    return entities[FAMILIES].getFam(index);
+    return (Fam)entities[FAMILIES].get(index);
   }
 
   /**
@@ -931,7 +919,7 @@ public class Gedcom {
    * Returns the individual at the given position
    */
   public Indi getIndi(int index) {
-    return entities[INDIVIDUALS].getIndi(index);
+    return (Indi)entities[INDIVIDUALS].get(index);
   }
 
   /**
@@ -952,7 +940,7 @@ public class Gedcom {
    * Returns the multimedia at the given position
    */
   public Media getMedia(int index) {
-    return entities[MULTIMEDIAS].getMedia(index);
+    return (Media)entities[MULTIMEDIAS].get(index);
   }
 
   /**
@@ -983,7 +971,7 @@ public class Gedcom {
 
     int total = 0;
     for (int i=0;i<entities.length;i++) {
-      total+=entities[i].getSize();
+      total+=entities[i].size();
     }
 
     return total;
@@ -993,7 +981,7 @@ public class Gedcom {
    * Returns the note at the given position
    */
   public Note getNote(int index) {
-    return entities[NOTES].getNote(index);
+    return (Note)entities[NOTES].get(index);
   }
 
   /**
@@ -1043,36 +1031,18 @@ public class Gedcom {
    * Creates a random ID for given type of entity which is free in this Gedcom
    */
   public String getRandomIdFor(int type) {
-    return getRandomIdFor(type,this,null);
-  }
-
-  /**
-   * Creates a random ID for given type of entity which is free in two Gedcoms
-   */
-  public static String getRandomIdFor(int type, Gedcom g1, Gedcom g2) {
-
-    String result = null;
-
     // We might to do this several times
-    int id = Math.max(g1==null?0:g1.entities[type].getSize(),g2==null?0:g2.entities[type].getSize());
-
+    String result;
+    int id = entities[type].size();
     while (true) {
-      
+      // next one
       id ++;
-
-      // Trim to 000
+      // trim to 000
       result = ePrefixs[type] + (id<100?(id<10?"00":"0"):"") + id;
-
-      if ((g1!=null)&&(g1.ids[type].contains(result)))
-        continue;
-      if ((g2!=null)&&(g2.ids[type].contains(result)))
-        continue;
-
-      // Found one
-      break;
+      // try it
+      if (!ids[type].contains(result)) break;
+      // try again
     };
-
-    // Done
     return result;
   }
 
@@ -1112,23 +1082,269 @@ public class Gedcom {
   }
 
   /**
-   * Private initialiser
+   * Check if entity is member
    */
-  private void init(Origin origin, int initialCapacity) {
+  private boolean is(Entity member) {
+    return getEntities(member.getType()).contains(member);
+  }
 
-    if (origin==null)
-      throw new IllegalArgumentException("Origin has to specified");
+  /**
+   * Notification that a set of entities have been added.
+   * That change will be notified to listeners after unlocking write.
+   */
+  void noteAddedEntities(List entities) {
+    // Is there a transaction running?
+    if (!isTransaction) {
+      return;
+    }
+    addedEntities.addAll(entities);
+  }
 
-    this.origin = origin;
+  /**
+   * Notification that an entity has been added.
+   * That change will be notified to listeners after unlocking write.
+   */
+  void noteAddedEntity(Entity entity) {
 
-    for (int i=0;i<entities.length;i++) {
-      entities[i] = new EntityList (initialCapacity);
-      ids     [i] = new IDHashtable(initialCapacity);
+    // Is there a transaction running?
+    if (!isTransaction) {
+      return;
+    }
+    addedEntities.add(entity);
+  }
+
+  /**
+   * Notification that a property has been added.
+   * That change will be notified to listeners after unlocking write.
+   */
+  void noteAddedProperty(Property prop) {
+
+    // Is there a transaction running?
+    if (!isTransaction) {
+      return;
+    }
+    addedProperties.add(prop);
+    // Done
+  }
+
+  /**
+   * Notification that a set of entities have been deleted.
+   * That change will be notified to listeners after unlocking write.
+   */
+  void noteDeletedEntities(List entities) {
+
+    // Is there a transaction running?
+    if (!isTransaction) {
+        return;
+    }
+
+    deletedEntities.addAll(entities);
+    // Done
+  }
+
+  /**
+   * Notification that an entity has been deleted.
+   * That change will be notified to listeners after unlocking write.
+   */
+  void noteDeletedEntity(Entity entity) {
+
+    // Is there a transaction running?
+    if (!isTransaction) {
+      return;
+    }
+
+    // Remember
+    deletedEntities.add(entity);
+
+    // Last one ?
+    if (lastEntity==entity) {
+      lastEntity=null;
     }
 
     // Done
   }
 
+  /**
+   * Notification that a property has been deleted.
+   * That change will be notified to listeners after unlocking write.
+   */
+  void noteDeletedProperty(Property prop) {
+
+    // Is there a transaction running?
+    if (!isTransaction)
+      return;
+
+    deletedProperties.add(prop);
+    // Done
+  }
+
+  /**
+   * Notification that a property has been modified
+   * That change will be notified to listeners after unlocking write.
+   */
+  void noteModifiedProperty(Property property) {
+
+    // Is there a transaction running?
+    if (!isTransaction)
+      return;
+
+    modifiedProperties.add(property);
+    // Done
+  }
+
+  /**
+   * Removes a Listener from receiving notifications
+    */
+  public synchronized void removeListener(GedcomListener which) {
+    listeners.remove(which);
+  }
+
+  /**
+   * Sets an entity's id
+   * @exception GedcomException if id-argument is null oder of zero length
+   */
+  public void setIdOf(Entity entity, String id) throws GedcomException {
+
+    // Known entity?
+    if (!entities[entity.getType()].contains(entity)) {
+      throw new GedcomException("Illegal argument for this Gedcom");
+    }
+
+    // ID o.k. ?
+    id = id.trim();
+    if (id.length()==0) {
+      throw new GedcomException("Length of entity's ID has to be non-zero");
+    }
+
+    // Remember change
+    noteModifiedProperty(entity.getProperty());
+
+    // Prepare change
+    int type = entity.getType();
+
+    // Change it by removing old id
+    ids[type].remove(entity);
+
+    // .. remember as new
+    ids[type].put(id,entity);
+
+    // ... store info in entity
+    entity.setId(id);
+
+    // Done
+  }
+
+  /**
+   * Sets the origin of this gedcom
+   */
+  public void setOrigin(Origin newOrigin) {
+
+    // Remember new origin
+    origin = newOrigin;
+
+    // Done
+  }
+
+  /**
+   * Clears flag for unsaved changes
+   */
+  public void setUnsavedChanges(boolean set) {
+    hasUnsavedChanges=set;
+  }
+  /**
+   * Starts changing of mankind
+   */
+  public synchronized boolean startTransaction() {
+
+    // Is there a transaction running?
+    if (isTransaction) {
+      return false;
+    }
+
+    // Start
+    isTransaction = true;
+
+    // ... prepare rememberance of changes
+    addedEntities      = new ArrayList(64);
+    deletedEntities    = new ArrayList(64);
+    addedProperties    = new ArrayList(64);
+    deletedProperties  = new ArrayList(64);
+    modifiedProperties = new ArrayList(64);
+
+    // .. done
+    return true;
+  }
+
+  /**
+   * toString overridden
+   */
+  public String toString() {
+    return getName();
+  }
+
+  /**
+   * Returns all Entities with given id
+   * @param which one of INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES
+   */
+  public List getEntitiesFromId(int which, String id) {
+    return ids[which].getAll(id);
+  }
+
+  /**
+   * Returns an image for given entity type
+   */
+  public static ImgIcon getImage(int type) {
+    try {
+      return Images.get(eTags[type]);
+    } catch (ArrayIndexOutOfBoundsException e) {
+      throw new IllegalArgumentException("Unknown type");
+    }
+  }
+
+
+  /**
+   * Little helper that retuns type for given entity and know
+   * how to handle null
+   */
+  public static int getType(Entity entity) {
+    if (entity==null) {
+      return -1;
+    }
+    return entity.getType();
+  }
+
+  /**
+   * Creates a random ID for given type of entity which is free in two Gedcoms
+   */
+  /*
+  public static String getRandomIdFor(int type, Gedcom g1, Gedcom g2) {
+
+    String result = null;
+
+    // We might to do this several times
+    int id = Math.max(g1==null?0:g1.entities[type].size(),g2==null?0:g2.entities[type].size());
+
+    while (true) {
+      
+      id ++;
+
+      // Trim to 000
+      result = ePrefixs[type] + (id<100?(id<10?"00":"0"):"") + id;
+
+      if ((g1!=null)&&(g1.ids[type].contains(result)))
+        continue;
+      if ((g2!=null)&&(g2.ids[type].contains(result)))
+        continue;
+
+      // Found one
+      break;
+    };
+
+    // Done
+    return result;
+  }
+  */
+  
   /**
    * Merging of two Gedcom candidates - all unsatisfied links in those
    * candidates will be removed and all entities get new IDs.
@@ -1138,9 +1354,8 @@ public class Gedcom {
    *        for tagging all entities where they came from and/or all
    *        properties of merged entities.
    */
+  /*
   public static Gedcom merge(final Gedcom g1, final Gedcom g2, Entity[][] matches, int options) {
-throw new IllegalArgumentException("Merging is not supported yet");
-/*
     // Valid parameters?
     if ((g1==null)||(g2==null))
       throw new IllegalArgumentException("Candidates have to be non null");
@@ -1266,120 +1481,13 @@ throw new IllegalArgumentException("Merging is not supported yet");
 
     // Done
     return result;
+  }
 */    
-  }
-
-  /**
-   * Notification that a set of entities have been added.
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteAddedEntities(EntityList entities) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-      return;
-    }
-
-    addedEntities.addElement(entities);
-  }
-
-  /**
-   * Notification that an entity has been added.
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteAddedEntity(Entity entity) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-      return;
-    }
-    addedEntities.addElement(entity);
-  }
-
-  /**
-   * Notification that a property has been added.
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteAddedProperty(Property prop) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-      return;
-    }
-    addedProperties.addElement(prop);
-    // Done
-  }
-
-  /**
-   * Notification that a set of entities have been deleted.
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteDeletedEntities(EntityList entities) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-        return;
-    }
-
-    deletedEntities.addElement(entities);
-    // Done
-  }
-
-  /**
-   * Notification that an entity has been deleted.
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteDeletedEntity(Entity entity) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-      return;
-    }
-
-    // Remember
-    deletedEntities.addElement(entity);
-
-    // Last one ?
-    if (lastEntity==entity) {
-      lastEntity=null;
-    }
-
-    // Done
-  }
-
-  /**
-   * Notification that a property has been deleted.
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteDeletedProperty(Property prop) {
-
-    // Is there a transaction running?
-    if (!isTransaction)
-      return;
-
-    deletedProperties.addElement(prop);
-    // Done
-  }
-
-  /**
-   * Notification that a property has been modified
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteModifiedProperty(Property property) {
-
-    // Is there a transaction running?
-    if (!isTransaction)
-      return;
-
-    modifiedProperties.addElement(property);
-    // Done
-  }
-
   /**
    * Removes all duplicates in Gedcom
    */
+  /*
   public void removeDuplicates() {
-
     for (int i=0;i<ids.length;i++) {
 
       // .. indefinite?
@@ -1387,7 +1495,7 @@ throw new IllegalArgumentException("Merging is not supported yet");
         continue;
 
       // .. make definit!
-      Entity[] ents = ids[i].getDuplicates();
+      List ents = ids[i].getDuplicates();
       for (int e=0;e<ents.length;e++) {
         // .. change id
         try {
@@ -1401,20 +1509,13 @@ throw new IllegalArgumentException("Merging is not supported yet");
 
       // .. next
     }
-
     // Done
   }
-
-  /**
-   * Removes a Listener from receiving notifications
-    */
-  public synchronized void removeListener(GedcomListener which) {
-    listeners.removeElement(which);
-  }
-
+  */
   /**
    * Remove unsatisfied links (PropertyXRef) from Gedcom
    */
+/* 
   public void removeUnsatisfiedLinks() {
 
     // Get list of EntityLists
@@ -1426,10 +1527,12 @@ throw new IllegalArgumentException("Merging is not supported yet");
 
     // Done
   }
+*/
 
   /**
    * Helper that removes unsatisfied links (PropertyXRef) from Property
    */
+/*
   private void removeUnsatisfiedLinks(Property property) {
 
     // Check wether any property of this property is unsatisfied
@@ -1452,119 +1555,6 @@ throw new IllegalArgumentException("Merging is not supported yet");
 
     // Done
   }
+*/
 
-  /**
-   * Sets an entity's id
-   * @exception GedcomException if id-argument is null oder of zero length
-   */
-  public void setIdOf(Entity entity, String id) throws GedcomException {
-
-    // Known entity?
-    if (!entities[entity.getType()].contains(entity)) {
-      throw new GedcomException("Illegal argument for this Gedcom");
-    }
-
-    // ID o.k. ?
-    id = id.trim();
-    if (id.length()==0) {
-      throw new GedcomException("Length of entity's ID has to be non-zero");
-    }
-
-    // Remember change
-    noteModifiedProperty(entity.getProperty());
-
-    // Prepare change
-    int type = entity.getType();
-
-    // Change it by removing old id
-    ids[type].remove(entity);
-
-    // .. remember as new
-    ids[type].put(id,entity);
-
-    // ... store info in entity
-    entity.setId(id);
-
-    // Done
-  }
-
-  /**
-   * Sets the origin of this gedcom
-   */
-  public void setOrigin(Origin newOrigin) {
-
-    // Remember new origin
-    origin = newOrigin;
-
-    // Done
-  }
-
-  /**
-   * Clears flag for unsaved changes
-   */
-  public void setUnsavedChanges(boolean set) {
-    hasUnsavedChanges=set;
-  }
-  /**
-   * Starts changing of mankind
-   */
-  public synchronized boolean startTransaction() {
-
-    // Is there a transaction running?
-    if (isTransaction) {
-      return false;
-    }
-
-    // Start
-    isTransaction = true;
-
-    // ... prepare rememberance of changes
-    addedEntities      = new Vector(64);
-    deletedEntities    = new Vector(64);
-    addedProperties    = new Vector(64);
-    deletedProperties  = new Vector(64);
-    modifiedProperties = new Vector(64);
-
-    // .. done
-    return true;
-  }
-
-  /**
-   * toString overridden
-   */
-  public String toString() {
-    return getName();
-  }
-
-  /**
-   * Returns all Entities with given id
-   * @param which one of INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES
-   */
-  public EntityList getEntitiesFromId(int which, String id) {
-    return ids[which].getAll(id);
-  }
-
-  /**
-   * Returns an image for given entity type
-   */
-  public static ImgIcon getImage(int type) {
-    try {
-      return Images.get(eTags[type]);
-    } catch (ArrayIndexOutOfBoundsException e) {
-      throw new IllegalArgumentException("Unknown type");
-    }
-  }
-
-
-  /**
-   * Little helper that retuns type for given entity and know
-   * how to handle null
-   */
-  public static int getType(Entity entity) {
-    if (entity==null) {
-      return -1;
-    }
-    return entity.getType();
-  }
-
-}
+} //Gedcom
