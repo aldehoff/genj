@@ -19,7 +19,10 @@
  */
 package genj.util.swing;
 
+import genj.util.WordBuffer;
+
 import java.io.File;
+import java.util.StringTokenizer;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -39,17 +42,20 @@ public class FileChooser extends JFileChooser {
   /**
    * Constructor
    */
-  public FileChooser(JComponent owner, String title, String command, String extension, String baseDir) {
+  public FileChooser(JComponent owner, String title, String command, String extensions, String baseDir) {
     
     super(baseDir!=null?baseDir:".");
+
+    setDialogTitle(title);
     
     this.owner  = owner;
     this.command= command;
 
-    Filter filter = new Filter(extension);
-    addChoosableFileFilter(filter);
-    setFileFilter(filter);
-    setDialogTitle(title);
+    if (extensions!=null) {
+      Filter filter = new Filter(extensions);
+      addChoosableFileFilter(filter);
+      setFileFilter(filter);
+    }
   }
 
   /**
@@ -69,14 +75,28 @@ public class FileChooser extends JFileChooser {
    */
   private class Filter extends FileFilter {
     
-    /** extension we're looking for */
-    private String ext;
+    /** extensions we're looking for */
+    private String[] exts;
+    
+    /** description */
+    private String descr;
 
     /**
      * Constructor
      */
-    private Filter(String extension) {
-      ext = extension;
+    private Filter(String extensions) {
+
+      StringTokenizer tokens = new StringTokenizer(extensions, ",");
+      exts = new String[tokens.countTokens()];
+      if (exts.length==0)
+        throw new IllegalArgumentException("extensions required");
+        
+      WordBuffer buf = new WordBuffer(',');
+      for (int i=0; i<exts.length; i++) {
+        exts[i] = tokens.nextToken();
+        buf.append("*."+exts[i]);
+      }
+      descr = buf.toString();
     }
 
     /**
@@ -90,17 +110,26 @@ public class FileChooser extends JFileChooser {
 
       // check extension
       String name = f.getName();
+      int dot = name.lastIndexOf('.');
+      if (dot<0)
+        return false;
+      String ext = name.substring(dot+1).toLowerCase(); 
+        
+      // loop
+      for (int i=0;i<exts.length;i++) {
+        if (exts[i].equals(ext))
+          return true;
+      }
       
-      int i = name.lastIndexOf('.');
-      
-      return i>0 && ext.equals(name.substring(i+1).toLowerCase()); 
+      // not found
+      return false;
     }
 
     /**
      * Description
      */
     public String getDescription() {
-      return "*."+ext;
+      return descr;
     }
 
   } //Filter

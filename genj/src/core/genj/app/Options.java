@@ -32,6 +32,7 @@ import genj.util.Debug;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.FileChooserWidget;
 import genj.util.swing.PopupWidget;
 import genj.util.swing.TextFieldWidget;
 import genj.window.CloseWindow;
@@ -329,8 +330,9 @@ public class Options implements OptionProvider {
         JPanel panel = new JPanel();
         final TextFieldWidget 
           suffixes   = new TextFieldWidget(),
-          name       = new TextFieldWidget(),
-          executable = new TextFieldWidget();
+          name       = new TextFieldWidget();
+        final FileChooserWidget
+          executable = new FileChooserWidget(FileChooserWidget.EXECUTABLES);
         GridBagHelper gh = new GridBagHelper(panel);
         gh.add(new JLabel(localize("suffix"), JLabel.LEFT), 0,0,1,1,gh.FILL_HORIZONTAL);
         gh.add(suffixes                                   , 1,0,1,1,gh.GROWFILL_HORIZONTAL);
@@ -343,7 +345,7 @@ public class Options implements OptionProvider {
         if (association!=null) {
           suffixes  .setText(association.getSuffixes()  );
           name      .setText(association.getName()      );
-          executable.setText(association.getExecutable());
+          executable.setFile(association.getExecutable());
         }
         
         // create actions for dialog
@@ -382,7 +384,7 @@ public class Options implements OptionProvider {
             // keep input
             association.setSuffixes(suffixes.getText());
             association.setName(name.getText());
-            association.setExecutable(executable.getText());
+            association.setExecutable(executable.getFile().toString());
             break;
           // delete?
           case 1:

@@ -17,13 +17,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.2 $ $Author: nmeier $ $Date: 2004-05-25 08:24:30 $
+ * $Revision: 1.3 $ $Author: nmeier $ $Date: 2004-05-26 20:02:59 $
  */
 package genj.report;
 
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -35,7 +36,7 @@ public class Options implements OptionProvider {
   private static Options instance = new Options();
   
   /** option - browser executable */
-  public String browser = "";
+  public File browser = new File("");
 
   /**
    * callback - provide options

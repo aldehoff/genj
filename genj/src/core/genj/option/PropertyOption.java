@@ -21,12 +21,14 @@ package genj.option;
 
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.FileChooserWidget;
 import genj.util.swing.TextFieldWidget;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -152,6 +154,36 @@ public abstract class PropertyOption extends Option {
   }
   
   /**
+   * A UI for a file
+   */
+  private class FileUI implements OptionUI {
+    
+    /** file chooser */
+    private FileChooserWidget chooser = new FileChooserWidget();
+    
+    /** constructor */
+    private FileUI() {
+      chooser.setFile((File)getValue());
+    }
+    
+    /** text is file name */
+    public String getTextRepresentation() {
+      return chooser.getFile().toString();
+    }
+
+    /** component is the chooser */    
+    public JComponent getComponentRepresentation() {
+      return chooser;
+    }
+
+    /** end and commit change */
+    public void endRepresentation() {
+      setValue(chooser.getFile());
+    }
+
+  } //FileUI
+  
+  /**
    * A UI for a boolean 
    */
   private class BooleanUI extends JCheckBox implements OptionUI {
@@ -275,6 +307,9 @@ public abstract class PropertyOption extends Option {
       // a boolean?
       if (type==Boolean.TYPE)
         return new BooleanUI();
+      // a file?
+      if (type==File.class)
+        return new FileUI();
       // all else
       return new SimpleUI();
     }
@@ -339,6 +374,7 @@ public abstract class PropertyOption extends Option {
      */
     private static boolean isSupportedArgument(Class type) {
       return
+        File.class.isAssignableFrom(type)   ||
         String.class.isAssignableFrom(type) ||
         Integer.TYPE.isAssignableFrom(type) ||
         Boolean.TYPE.isAssignableFrom(type);

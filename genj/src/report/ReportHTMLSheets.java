@@ -483,6 +483,12 @@ public class ReportHTMLSheets extends Report {
       return;
 
     println(i18n("target.dir")+" = "+dir);
+    
+    // Make sure directory is there
+    if (!dir.mkdirs()) {
+      println("***Couldn't create output directory "+dir);
+      return;
+    }
 
     // Loop through individuals & families
     try {
