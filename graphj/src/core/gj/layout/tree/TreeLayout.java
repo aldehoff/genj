@@ -386,7 +386,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
     // add debugging information about contour's segments
    Path path = new Path();
 
-    Contour.Iterator it = new Contour.Iterator(contour, Contour.WEST);
+    Contour.Iterator it = contour.getIterator(Contour.WEST);
     Point2D a = orientn.getPoint2D(it.north, it.longitude);
     path.moveTo(a);
     do {
@@ -396,7 +396,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
     Point2D b = path.getLastPoint();
     path.moveTo(a);
 
-    it = new Contour.Iterator(contour, Contour.EAST);
+    it = contour.getIterator(Contour.EAST);
     do {
       path.lineTo(orientn.getPoint2D(it.north, it.longitude));
       path.lineTo(orientn.getPoint2D(it.south, it.longitude));

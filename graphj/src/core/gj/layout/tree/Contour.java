@@ -65,12 +65,6 @@ package gj.layout.tree;
   /**
    * Constructor
    */    
-  /*package*/ Contour() {
-  }
-    
-  /**
-   * Constructor
-   */    
   /*package*/ Contour(double n, double w, double e, double s) {
     north = n;
     west  = w;
@@ -172,7 +166,7 @@ package gj.layout.tree;
     /**
      * Constructor
      */
-    /*package*/ Iterator(Contour c, int s) {
+    private Iterator(Contour c, int s) {
       
       contour = c;
       side = s;

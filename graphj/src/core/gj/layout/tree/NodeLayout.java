@@ -239,9 +239,6 @@ import java.util.Stack;
       c++;
     }
 
-    // balance children
-    if (c>2&&balance) balanceChilden(nodes, contours, c, orientn);
-    
     // done
     Object[] result=new Contour[c];
     System.arraycopy(contours,0,result,0,c);
@@ -255,7 +252,7 @@ import java.util.Stack;
 
     // the parent's contour
     Shape shape = node.getShape();
-    Contour parent = shape==null ? new Contour() : orientn.getContour(shape.getBounds2D());
+    Contour parent = orientn.getContour(shape!=null ? shape.getBounds2D() : new Rectangle2D.Double());
     parent.north -= nodeop.getPadding(node, nodeop.NORTH, orientn);
     parent.south += nodeop.getPadding(node, nodeop.SOUTH, orientn);
     parent.west  -= nodeop.getPadding(node, nodeop.WEST , orientn);
@@ -340,7 +337,7 @@ import java.util.Stack;
     double[] result = new double[css];
 
     // we'll iterate west of c - our east
-    Contour.Iterator east = new Contour.Iterator(c, c.WEST);
+    Contour.Iterator east = c.getIterator(c.WEST);
     
     // assume unlimited delta
     for (int i=0;i<css;i++) result[i] = Double.MAX_VALUE;
@@ -349,7 +346,7 @@ import java.util.Stack;
     loop: for (int i=css-1;i>=0;i--) {
       
       // here's the iterator west
-      Contour.Iterator west = new Contour.Iterator(cs[i], c.EAST);
+      Contour.Iterator west = cs[i].getIterator(c.EAST);
       
       // calculate distance
       while (true) {
@@ -431,43 +428,43 @@ import java.util.Stack;
     // done
   }
 
-  /**
-   * Balance children - we assume that at this point sub-tree i
-   * described by its root ns[i] and cs[i] for i>0 is placed as
-   * close as possible to all sub-trees with j<i
-   * (#ns==#cs > 2)
-   */
-  private void balanceChilden(Node[] ns, Contour[] cs, int n, Orientation orientn) {
-    
-    // calculate min dists of 0<=i<n-1 to n-1    
-    double[] ds = calcMinDists(cs, n-1, cs[n-1]);
-
-    // space between cs[n-1] and cs[n]
-    double space = ds[ds.length-1]; 
-    if (space<=0) return;
-    
-    // distribute space 
-    double[] shares = new double[n-1];
-    double share = space/(n-1);
-    for (int i=shares.length;i>0;i--) {
-      // default share 
-      shares[i-1] = i*share;
-      // check all but the last
-      if (i==ds.length) continue;
-      // too much?
-      if (shares[i-1]>ds[i]) shares[i-1]=ds[i];
-    }
-      
-    // move sub-trees
-    for (int i=0; i<shares.length-1; i++) {
-      share = shares[i];
-      cs[i+1].translate(0, share);
-      ModelHelper.translate(ns[i+1],orientn.getPoint2D(0, share));
-         	
-    }
-    	
-    // done
-  }
+//  /**
+//   * Balance children - we assume that at this point sub-tree i
+//   * described by its root ns[i] and cs[i] for i>0 is placed as
+//   * close as possible to all sub-trees with j<i
+//   * (#ns==#cs > 2)
+//   */
+//  private void balanceChilden(Node[] ns, Contour[] cs, int n, Orientation orientn) {
+//    
+//    // calculate min dists of 0<=i<n-1 to n-1    
+//    double[] ds = calcMinDists(cs, n-1, cs[n-1]);
+//
+//    // space between cs[n-1] and cs[n]
+//    double space = ds[ds.length-1]; 
+//    if (space<=0) return;
+//    
+//    // distribute space 
+//    double[] shares = new double[n-1];
+//    double share = space/(n-1);
+//    for (int i=shares.length;i>0;i--) {
+//      // default share 
+//      shares[i-1] = i*share;
+//      // check all but the last
+//      if (i==ds.length) continue;
+//      // too much?
+//      if (shares[i-1]>ds[i]) shares[i-1]=ds[i];
+//    }
+//      
+//    // move sub-trees
+//    for (int i=0; i<shares.length-1; i++) {
+//      share = shares[i];
+//      cs[i+1].translate(0, share);
+//      ModelHelper.translate(ns[i+1],orientn.getPoint2D(0, share));
+//         	
+//    }
+//    	
+//    // done
+//  }
   
   /**
    * AlignNodeOptions
