@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.app;
+package genj.view.widgets;
 
 import genj.gedcom.MetaProperty;
 import genj.gedcom.TagPath;
@@ -46,7 +46,7 @@ import javax.swing.ListSelectionModel;
 /**
  * A component that shows a list of TagPaths
  */
-public class TagPathList extends JComponent {
+public class PathListWidget extends JComponent {
 
   /** list showing tag paths */
   private JList lChoose;
@@ -60,7 +60,7 @@ public class TagPathList extends JComponent {
   /**
    * Constructor
    */
-  public TagPathList() {
+  public PathListWidget() {
 
     // Layout
     lChoose = new JList();

@@ -19,8 +19,6 @@
  */
 package genj.table;
 
-import genj.app.TagPathList;
-import genj.app.TagPathTree;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
@@ -31,6 +29,8 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.Settings;
 import genj.view.ViewManager;
+import genj.view.widgets.PathListWidget;
+import genj.view.widgets.PathTreeWidget;
 
 import java.awt.event.ActionListener;
 
@@ -47,8 +47,8 @@ public class TableViewSettings extends JPanel implements Settings {
 
   /** components */
   private JComboBox       cTypes;
-  private TagPathTree     pathTree;
-  private TagPathList     pathList;
+  private PathTreeWidget     pathTree;
+  private PathListWidget     pathList;
   private TableView       table;
   private Resources       resources = Resources.get(this);
 
@@ -69,9 +69,9 @@ public class TableViewSettings extends JPanel implements Settings {
     cTypes.addActionListener((ActionListener)new ActionChooseEntity().as(ActionListener.class));
 
     // Tree of TagPaths
-    pathTree = new TagPathTree();
+    pathTree = new PathTreeWidget();
 
-    TagPathTree.Listener plistener = new TagPathTree.Listener() {
+    PathTreeWidget.Listener plistener = new PathTreeWidget.Listener() {
       // LCD
       /** selection notification */
       public void handleSelection(TagPath path, boolean on) {
@@ -86,7 +86,7 @@ public class TableViewSettings extends JPanel implements Settings {
     pathTree.addListener(plistener);
 
     // List of TagPaths
-    pathList = new TagPathList();
+    pathList = new PathListWidget();
 
     // Up/Down of ordering
     ButtonHelper bh = new ButtonHelper().setResources(resources).setInsets(0);

@@ -19,7 +19,6 @@
  */
 package genj.timeline;
 
-import genj.app.TagPathList;
 import genj.gedcom.PropertyEvent;
 import genj.util.ColorSet;
 import genj.util.Resources;
@@ -27,6 +26,7 @@ import genj.util.swing.ColorChooser;
 import genj.util.swing.SpinnerWidget;
 import genj.view.Settings;
 import genj.view.ViewManager;
+import genj.view.widgets.PathListWidget;
 
 import java.awt.BorderLayout;
 
@@ -57,7 +57,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   private TimelineView view;
   
   /** a widget for selecting paths to show */
-  private TagPathList pathsList = new TagPathList();
+  private PathListWidget pathsList = new PathListWidget();
   
   /** resources we use */
   private Resources resources = Resources.get(this);

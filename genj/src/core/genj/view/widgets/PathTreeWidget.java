@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.app;
+package genj.view.widgets;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
@@ -51,7 +51,7 @@ import javax.swing.tree.TreeSelectionModel;
 /**
  * Component that allows to look at a Tree of TagPaths
  */
-public class TagPathTree extends JScrollPane {
+public class PathTreeWidget extends JScrollPane {
 
   /** list listeners */
   private List    listeners = new ArrayList();
@@ -68,7 +68,7 @@ public class TagPathTree extends JScrollPane {
   /**
    * Constructor
    */
-  public TagPathTree() {
+  public PathTreeWidget() {
 
     // Prepare tree
     tree = new JTree(model);
@@ -130,7 +130,8 @@ public class TagPathTree extends JScrollPane {
   }
   
   /**
-   * Returns the selected TagPaths   */
+   * Returns the selected TagPaths
+   */
   public TagPath[] getSelection() {
     return (TagPath[])model.getSelection().toArray(new TagPath[0]);
   }

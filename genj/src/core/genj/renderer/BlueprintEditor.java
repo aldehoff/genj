@@ -19,7 +19,6 @@
  */
 package genj.renderer;
 
-import genj.app.TagPathTree;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
@@ -28,6 +27,7 @@ import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.view.widgets.PathTreeWidget;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -231,7 +231,7 @@ public class BlueprintEditor extends JSplitPane {
       // only if gedcom is valid
       if (gedcom==null) return;
       // create a tree of available TagPaths
-      TagPathTree tree = new TagPathTree();
+      PathTreeWidget tree = new PathTreeWidget();
       TagPath[] paths = TagPath.filter(MetaProperty.getPaths(Property.class), blueprintManager.getType(blueprint));
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
