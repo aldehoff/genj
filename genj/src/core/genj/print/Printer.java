@@ -56,6 +56,7 @@ public class Printer implements Trackable {
   private Preview         preview;
   private int             page,pages;
   private boolean         cancel;
+  private Resources       resources = new Resources("genj.print");
 
   /**
    * Subclass which does the preview
@@ -175,14 +176,13 @@ public class Printer implements Trackable {
     };
     JTabbedPane pTabs = new JTabbedPane();
     pTabs.addChangeListener(clistener);
-    pTabs.add("Page Setup",getPanelForPageSetup());
-    pTabs.add("Preview"   ,getPanelForPreview()  );
+    pTabs.add(resources.getString("setup.page"),getPanelForPageSetup());
+    pTabs.add(resources.getString("setup.preview"),getPanelForPreview()  );
 
     // .. panel for actions
     JPanel pActions = getPanelForActions(dlg);
 
     // ... show it
-    System.out.println("Printer Dialog Hack!");
     dlg.getContentPane().setLayout(new BorderLayout());
     dlg.getContentPane().add(pTabs,"Center");
     dlg.getContentPane().add(pActions,"South");
@@ -207,7 +207,7 @@ public class Printer implements Trackable {
     // Show progress
     ProgressDialog progress = new ProgressDialog(
       frame,
-      "Printing",
+      resources.getString("progress.title"),
       props.getTitle(),
       this,
       t
@@ -236,11 +236,11 @@ public class Printer implements Trackable {
           // Look though components for header setup
           Enumeration enum = componentsForHeader.elements();
           while (enum.hasMoreElements()) {
-          JComponent c = (JComponent)enum.nextElement();
-          if ((c instanceof JTextField)&&(c.hasFocus())) {
-            ((JTextField)c).replaceSelection(e.getActionCommand());
-            break;
-          }
+            JComponent c = (JComponent)enum.nextElement();
+            if ((c instanceof JTextField)&&(c.hasFocus())) {
+              ((JTextField)c).replaceSelection(e.getActionCommand());
+              break;
+            }
           }
           // Done
         }
@@ -306,8 +306,8 @@ public class Printer implements Trackable {
   private JPanel getPanelForActions(final JDialog dlg) {
 
     // Create components
-    final JButton bOK = new JButton("OK");
-    final JButton bCancel = new JButton("Cancel");
+    final JButton bOK = new JButton(""+UIManager.get("OptionPane.okButtonText"));
+    final JButton bCancel = new JButton(""+UIManager.get("OptionPane.cancelButtonText"));
 
     JPanel result = new JPanel();
     result.add(bOK);
@@ -341,13 +341,13 @@ public class Printer implements Trackable {
 
     GridBagHelper helper = new GridBagHelper(result);
 
-    helper.add(new JLabel("Left"  ), 1, 2, 1, 1, 0);
-    helper.add(new JLabel("Center"), 1, 3, 1, 1, 0);
-    helper.add(new JLabel("Right" ), 1, 4, 1, 1, 0);
+    helper.add(new JLabel(resources.getString("header.left"  )), 1, 2, 1, 1, 0);
+    helper.add(new JLabel(resources.getString("header.center")), 1, 3, 1, 1, 0);
+    helper.add(new JLabel(resources.getString("header.right" )), 1, 4, 1, 1, 0);
 
-    rHeaderNone   = new JRadioButton("None"  ,false);
-    rHeaderTop    = new JRadioButton("Top"   ,true );
-    rHeaderBottom = new JRadioButton("Bottom",false);
+    rHeaderNone   = new JRadioButton(resources.getString("header.none"  ),false);
+    rHeaderTop    = new JRadioButton(resources.getString("header.top"   ),true );
+    rHeaderBottom = new JRadioButton(resources.getString("header.bottom"),false);
 
     ButtonGroup grp = new ButtonGroup();
     grp.add(rHeaderNone   );
@@ -359,12 +359,12 @@ public class Printer implements Trackable {
     componentsForHeader.addElement(tHeaderRight  = new JTextField("<p>/<pp>"));
 
     JPanel pMacros = new JPanel();
-    pMacros.add(createMacroButton("<n>" ,"Name of Gedcom file")  );
-    pMacros.add(createMacroButton("<u>" ,"URL of Gedcom file")   );
-    pMacros.add(createMacroButton("<t>" ,"Current Time")         );
-    pMacros.add(createMacroButton("<d>" ,"Current Date")         );
-    pMacros.add(createMacroButton("<p>" ,"Page number")          );
-    pMacros.add(createMacroButton("<pp>","Total number of pages"));
+    pMacros.add(createMacroButton("<n>" ,resources.getString("tag.filename")  ));
+    pMacros.add(createMacroButton("<u>" ,resources.getString("tag.url"     )  ));
+    pMacros.add(createMacroButton("<t>" ,resources.getString("tag.time"    )  ));
+    pMacros.add(createMacroButton("<d>" ,resources.getString("tag.date"    )  ));
+    pMacros.add(createMacroButton("<p>" ,resources.getString("tag.page"    )  ));
+    pMacros.add(createMacroButton("<pp>",resources.getString("tag.total"   )  ));
 
     helper.add(rHeaderNone              , 1, 1, 1, 1, 0);
     helper.add(rHeaderTop               , 2, 1, 1, 1, 0);
@@ -414,14 +414,14 @@ public class Printer implements Trackable {
   protected JPanel getPanelForMarginSetup() {
 
     JPanel result = new JPanel();
-    result.setBorder(BorderFactory.createTitledBorder("Margin"));
+    result.setBorder(BorderFactory.createTitledBorder(resources.getString("margin")));
 
     GridBagHelper helper = new GridBagHelper(result);
 
-    helper.add(new JLabel("Left"  ), 1, 1, 1, 1, 0);
-    helper.add(new JLabel("Right" ), 1, 2, 1, 1, 0);
-    helper.add(new JLabel("Top"   ), 1, 3, 1, 1, 0);
-    helper.add(new JLabel("Bottom"), 1, 4, 1, 1, 0);
+    helper.add(new JLabel(resources.getString("margin.left"  )), 1, 1, 1, 1, 0);
+    helper.add(new JLabel(resources.getString("margin.right" )), 1, 2, 1, 1, 0);
+    helper.add(new JLabel(resources.getString("margin.top"   )), 1, 3, 1, 1, 0);
+    helper.add(new JLabel(resources.getString("margin.bottom")), 1, 4, 1, 1, 0);
 
     tMarginLeft   = new JTextField(8);
     tMarginRight  = new JTextField(8);
@@ -463,7 +463,7 @@ public class Printer implements Trackable {
 
     // Create visual parts
     JPanel result = new JPanel();
-    result.setBorder(BorderFactory.createTitledBorder("Page Information"));
+    result.setBorder(BorderFactory.createTitledBorder(resources.getString("info")));
 
     GridBagHelper helper = new GridBagHelper(result);
 
@@ -479,14 +479,14 @@ public class Printer implements Trackable {
     tHeight.setEditable(false);
     tDPI   .setEditable(false);
 
-    helper.add(new JLabel("Width " ), 1, 1, 1, 1, 0);
+    helper.add(new JLabel(resources.getString("info.width")+" "), 1, 1, 1, 1, 0);
     helper.add(tSizeX               , 2, 1, 1, 1, 0);
     helper.add(new JLabel(" x ")    , 3, 1, 1, 1, 0);
     helper.add(tWidth               , 4, 1, 1, 1, 0);
     helper.add(new JLabel(" / ")    , 5, 1, 1, 1, 0);
     helper.add(tDPI                 , 6, 1, 1, 1, 0);
 
-    helper.add(new JLabel("Height "), 1, 2, 1, 1, 0);
+    helper.add(new JLabel(resources.getString("info.height")+" "), 1, 2, 1, 1, 0);
     helper.add(tSizeY               , 2, 2, 1, 1, 0);
     helper.add(new JLabel(" x ")    , 3, 2, 1, 1, 0);
     helper.add(tHeight              , 4, 2, 1, 1, 0);
@@ -521,7 +521,7 @@ public class Printer implements Trackable {
     // Prepare result
     preview = new Preview();
 
-    JPanel  editor  = renderer.getEditor();
+    JPanel  editor  = renderer.getEditor(resources);
     editor.setBackground(Color.lightGray);
 
     JPanel result = new JPanel(new BorderLayout());
@@ -545,7 +545,7 @@ public class Printer implements Trackable {
    * Returns state as explanatory string
    */
   public String getState() {
-    return "Page "+page+" of "+pages;
+    return resources.getString("progress.line", new String[]{ ""+page, ""+pages} );
   }
 
   /**

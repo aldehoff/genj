@@ -22,6 +22,8 @@ package genj.print;
 import java.awt.*;
 import javax.swing.*;
 
+import genj.util.Resources;
+
 /**
  * Interface between Printer and Renderer
  */
@@ -30,7 +32,7 @@ public interface PrintRenderer {
   /**
    * Returns a panel for editing this renderers properties
    */
-  public JPanel getEditor();
+  public JPanel getEditor(Resources resources);
 
   /**
    * Returns size of rendering object in pixels
