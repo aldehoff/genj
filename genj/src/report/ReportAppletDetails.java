@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.12 2002-08-08 19:28:41 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.13 2002-08-21 21:29:47 nmeier Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -55,23 +55,26 @@ public class ReportAppletDetails implements Report {
   public String getInfo() {
     return "This report creates HTML-files for all individuals and families. "
       + "These files contain details that are normally shown in the "
-      + "application's EditView.\n"
+      + "application's EditView.\n\n"
       + "It also copies one existing image (OBJE:FILE) that is shown in the "
-      + "entity's detail-page.\n"
+      + "entity's detail-page.\n\n"
       + "For multiline details (e.g., NOTE), any line break that is specified "
       + "will be preserved in the HTML file.  Lines in the HTML file will "
       + "wrap at 40 characters of length.  This is likely a different size "
-      + "than the text box in the application's EditView.\n" 
+      + "than the text box in the application's EditView.\n\n" 
+      + "To use start this report and choose an existing folder that will "
+      + "hold the generated HTML files and images. This folder and its content "
+      + "will have to be transferred manually to your website running the applet.\n\n"
       + "Then by specifying the parameter DETAILS you tell the applet to "
       + "open a new browser window with that information if an entity is "
-      + "selected. Example:\n"
+      + "selected and the appropriate button pressed in the TreeView.\n\n"
+      + "Example:\n"
       + " <applet code=... > \n"
-      + " <param name=GEDCOM value=...> \n"
-      + " <param name=ZIP    value=...> \n"
-      + " <param name=DETAIL value=\"./details\"> \n"
+      + "  <param name=GEDCOM value=...> \n"
+      + "  <param name=DETAIL value=\"./details\"> \n"
       + " </applet> \n"
-      + "Make sure that the generated files are present in the specified "
-      + "directory.";
+      + "Make sure that specified path is valid relative to the document "
+      + "containing the Applet.";
   }  
 
   /**
