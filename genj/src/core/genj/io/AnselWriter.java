@@ -19,6 +19,7 @@
  */
 package genj.io;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -38,8 +39,10 @@ public class AnselWriter extends Writer {
   /**
    * Constructor
    */
-  public AnselWriter(OutputStream out) {
-    this.out = out;
+  public AnselWriter(OutputStream stream) {
+    if (!(stream instanceof BufferedOutputStream)) 
+      stream = new BufferedOutputStream(stream, 4096);
+    out = stream;
   }
 
   /**
@@ -61,6 +64,11 @@ public class AnselWriter extends Writer {
    * @see java.io.Writer#write(char[], int, int)
    */
   public void write(char[] cbuf, int off, int len) throws IOException {
+//    byte[] bs = new byte[cbuf.length];
+//    for (int i=0;i<len;i++) {
+//      bs[i] = (byte)cbuf[off+i];
+//    }
+//    out.write(bs, 0, len);
     for (int c=off;c<off+len;c++) {
       write(cbuf[c]);
     }
