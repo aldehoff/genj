@@ -7,8 +7,7 @@ import genj.util.swing.UnitGraphics;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.Rectangle;
 
 import javax.swing.JComponent;
 
@@ -28,20 +27,24 @@ public class TreeViewPrinter implements Printer {
   /**
    * @see genj.print.PrintRenderer#getNumPages(java.awt.geom.Point2D)
    */
-  public Point calcPages(Point2D pageSize, Point2D resolution) {
-    return new Point(1,1);
+  public Point calcPages(Point pageSize, Point resolution) {
+    
+    Rectangle mmbounds = tree.getModel().getBounds();
+    
+    return new Point(
+      (int)Math.ceil(mmbounds.width *0.1D/2.54D * resolution.x / pageSize.x),
+      (int)Math.ceil(mmbounds.height*0.1D/2.54D * resolution.y / pageSize.y)
+    );
+    
   }
 
   /**
    * @see genj.print.PrintRenderer#renderPage(java.awt.Point, gj.ui.UnitGraphics)
    */
-  public void renderPage(Graphics2D g, Point page, Point2D resolution) {
+  public void renderPage(Graphics2D g, Point page, Point resolution) {
 
-    UnitGraphics graphics = new UnitGraphics(g, resolution.getX(), resolution.getY());
+    UnitGraphics graphics = new UnitGraphics(g, resolution.x/2.54D*0.1D, resolution.y/2.54D*0.1D);
 
-    Rectangle2D clip = graphics.getClip();
-    graphics.translate(clip.getMinX(), clip.getMinY());
-    
     ContentRenderer renderer = new ContentRenderer();
     renderer.cArcs          = Color.black;
     renderer.cFamShape      = Color.black;

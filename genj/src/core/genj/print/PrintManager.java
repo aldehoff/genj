@@ -28,7 +28,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
@@ -205,8 +204,15 @@ public class PrintManager {
 
     /**
      * Resolve resolution     */
-    /*package*/ Point2D getResolution() {
-      return new Point2D.Double(72/2.54, 72/2.54);
+    /*package*/ Point getResolution() {
+      return new Point(72, 72);
+    }
+    
+    /**
+     * PageSize
+     */
+    /*package*/ Point getPageSize() {
+      return new Point((int)pageFormat.getImageableWidth(),(int)pageFormat.getImageableHeight());
     }
     
     /**
@@ -217,17 +223,10 @@ public class PrintManager {
       if (pages!=null) return pages;
       
       // FIXME fix resolution if required (e.g. 300)
-      Point2D.Double size = new Point2D.Double(pageFormat.getImageableWidth(),pageFormat.getImageableHeight());
-      pages = renderer.calcPages(size, getResolution());
+      pages = renderer.calcPages(getPageSize(), getResolution());
       
       // done
       return pages;
-    }
-    
-    /** 
-     * Resolves renderer     */
-    /*package*/ Printer getRenderer() {
-      return renderer;
     }
     
   } //PrintTask
@@ -241,7 +240,7 @@ public class PrintManager {
     private Printer renderer;
     
     /** the resolution */
-    private Point2D resolution;
+    private Point resolution;
     
     /** pages */
     private Point[] pageSequence;
@@ -249,7 +248,7 @@ public class PrintManager {
     /**
      * Constructor
      */
-    /*package*/ PrintableImpl(Point pages, Point2D resolUtion, Printer rendErer) {
+    /*package*/ PrintableImpl(Point pages, Point resolUtion, Printer rendErer) {
   
       // remember renderer
       renderer = rendErer;
@@ -288,6 +287,17 @@ public class PrintManager {
         pageFormat.getImageableHeight()
       ));
       
+      
+      // translate for content
+      graphics.translate(
+        (int)pageFormat.getImageableX(), 
+        (int)pageFormat.getImageableY()
+      );
+      graphics.translate(
+        -(int)(page.x*pageFormat.getImageableWidth ()), 
+        -(int)(page.y*pageFormat.getImageableHeight())
+      );
+
       // render it
       renderer.renderPage(g, page, resolution);
       

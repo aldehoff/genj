@@ -21,7 +21,6 @@ package genj.print;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.geom.Point2D;
 
 import javax.swing.JComponent;
 
@@ -37,13 +36,13 @@ public interface Printer {
   /**
    * Calculates the number of pages (horizontally and vertically)
    * needed to render the content on pages with given imageable
-   * size (dots) and resolution (in dots per centimeters)     */
-  public Point calcPages(Point2D pageSize, Point2D resolution);
+   * size (dots) and resolution (dpi)     */
+  public Point calcPages(Point pageSize, Point resolution);
   
   /**
    * Renders page content (x,y) on given context (dots) and 
-   * resolution (in dots per centimeters)
+   * resolution (dpi) - g is clipped and translated already
    */  
-  public void renderPage(Graphics2D g, Point page, Point2D resolution);
+  public void renderPage(Graphics2D g, Point page, Point resolution);
   
 } //PrintRenderer
