@@ -27,8 +27,8 @@ import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyChange;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyXRef;
 import genj.gedcom.Transaction;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
@@ -312,63 +312,69 @@ public class PropertyTreeWidget extends DnDTree {
       fireTreeStructureChanged(this, getPathToRoot(getRoot()), null, null);
       // make sure we don't show null-root
       setRootVisible(root!=null);
+      // expand all
+      expandAllRows();
     }
   
     /**
-     * DND support - remove necessary before insert
+     * DND support
      */
     public boolean removeBeforeInsert() {
-      // make sure remove happens first - otherwise checks (e.g. multiple
-      // childhood) can lead to error
-      return true;
+      return false;
     }
     
     /**
-     * DND support - remove nodes (called after move/insert)
+     * DND support - remove nodes 
      */
     public void removeFrom(List children) {
-
-      // start transaction
-      gedcom.startTransaction();      
-
-      // loop through children
-      int[] indexes = new int[children.size()];
-      for (int i=0;i<children.size();i++) {
-        
-        Property child = (Property)children.get(i);
-        Property parent = child.getParent();
-        int pos = parent.getPropertyPosition(child);
-
-        // remove
-        parent.delProperty(child);
-        
-      }
-
-      // end transaction
-      gedcom.endTransaction();
+      // ignored
     }
-    
+
     /**
      * DND support - insert child
      */
-    public void insertInto(List children, Object parent, int index, int action) {
+    public void insertInto(List children, Object parentAsObject, int index, int action) {
 
-      // cast        
-      Property
-        theParent = (Property)parent;
+      // anything to do?
+      if (children.isEmpty())
+        return;
 
-      // start transaction 
-      // FIXME need to make both transactions into one for undo
-       
-      gedcom.startTransaction();      
-  
+      Gedcom gedcom = null;
+      Property parent = (Property)parentAsObject;
+
+      // remove if move
+      if (action==DnDTreeModel.MOVE) {
+        
+        // start transaction
+        gedcom = ((Property)children.get(0)).getGedcom();
+        gedcom.startTransaction();
+      
+        for (int i=0;i<children.size();i++) {
+          Property child = (Property)children.get(i);
+          Property childsParent = child.getParent();
+          int pos = childsParent.getPropertyPosition(child);
+          childsParent.delProperty(pos);
+          if (parent==childsParent&&pos<index)
+            index--;
+        }
+        
+        // end transaction?
+        if (parent.getGedcom()!=gedcom) 
+          gedcom.endTransaction();
+      }
+
+      // start transaction?
+      gedcom = parent.getGedcom();
+      if (!gedcom.isTransaction())
+        gedcom.startTransaction();
+        
       // perform copy/move
       for (int i=0;i<children.size();i++) {
         
         Property child = (Property)children.get(i);
         
         // add copy of child
-        child = theParent.addCopy(child, index+i);
+        child = parent.addCopy(child, index+i);
         
       }
       
@@ -400,10 +406,6 @@ public class PropertyTreeWidget extends DnDTree {
       for (int i=0;i<children.size();i++) {
         Property child = (Property)children.get(i);
         
-        // can't be xref from different entity
-        if (child instanceof PropertyXRef&&child.getEntity()!=newParent.getEntity())
-          return false;
-  
         // has to be fine with grammar
         return newParent.getMetaProperty().allows(child.getTag());
       }
@@ -487,44 +489,47 @@ public class PropertyTreeWidget extends DnDTree {
       // at least same entity modified?
       if (!tx.get(Transaction.ENTITIES_MODIFIED).contains(entity))
         return;
+        
+      // preserve current selection
+      Property sel = getSelection();
 
       // follow changes
       Change[] changes = tx.getChanges();
       for (int i=0;i<changes.length;i++) {
+        
         Change change = changes[i];
+        
         // applicable?
         if (change.getEntity()!=entity)
           continue;
+          
         // add?
         if (change instanceof Change.PropertyAdded) {
-          Change.PropertyAdded c = (Change.PropertyAdded)change;
-          // .. tell about it if owner wasn't new as well
-          if (!tx.get(Transaction.PROPERTIES_ADDED).contains(c.getOwner())) {
-            TreePath path = getPathFor(c.getOwner());
-            fireTreeNodesInserted(this, path, new int[]{c.getPosition()}, null);
-          }
-          expandPath(getPathToRoot(c.getProperty()));
-          continue;
+          if (!(change.getProperty() instanceof PropertyChange))
+            sel = change.getProperty();
+          setRoot(root);
+          break;
         }
+        
         // remove?
         if (change instanceof Change.PropertyRemoved) {
-          Change.PropertyRemoved c = (Change.PropertyRemoved)change;
-          // .. forget cached value for prop
-          property2view.remove(c.getProperty());
-          // .. tell about it
-          fireTreeNodesRemoved(this, getPathFor(c.getOwner()), new int[]{c.getPosition()}, new Object[]{c.getProperty()});
-          continue;
+          setRoot(root);
+          break;
         }
+        
         // simple change?
         if (change instanceof Change.PropertyChanged) {
-          Change.PropertyChanged c = (Change.PropertyChanged)change;
           // .. forget cached value for prop
-          property2view.remove(c.getProperty());
+          property2view.remove(change.getProperty());
           // .. tell about it
-          fireTreeNodesChanged(this, getPathFor(c.getProperty()), null, null);
+          fireTreeNodesChanged(this, getPathFor(change.getProperty()), null, null);
           continue;
         }
       }
+      
+      // restore selection?
+      if (sel.getEntity()==entity) 
+        setSelection(sel);
 
       // Done
     }
