@@ -95,7 +95,6 @@ public class PropertyFamilySpouse extends PropertyXRef {
 
     // Prepare some VARs
     Property p;
-    Property ps[];
 
     // Look for family (not-existing -> Gedcom throws Exception)
     String id = getReferencedId();
@@ -120,46 +119,57 @@ public class PropertyFamilySpouse extends PropertyXRef {
     if (fam.getDescendants().contains(indi)) 
       throw new GedcomException("Individual @"+indi.getId()+"@ is already descendant of family @"+id+"@");
 
-    // Connect back from family (maybe using invalid back reference)
-    PropertyHusband ph;
-    ps = fam.getProperties(new TagPath("FAM:HUSB"),QUERY_ALL);
-    for (int i=0;i<ps.length;i++) {
-      ph = (PropertyHusband)ps[i];
-      if ( (!ph.isValid()) && (ph.getReferencedId().equals(indi.getId())) ) {
-      if (husband!=null)
-        throw new GedcomException("Family @"+fam.getId()+"@ can't have two husbands");
-      ph.setTarget(this);
-      setTarget(ph);
-      return;
-      }
-    }
-    PropertyWife pw;
-    ps = fam.getProperties(new TagPath("FAM:WIFE"),QUERY_ALL);
-    for (int i=0;i<ps.length;i++) {
-      pw = (PropertyWife)ps[i];
-      if ( (!pw.isValid()) && (pw.getReferencedId().equals(indi.getId())) ) {
-      if (wife!=null)
-        throw new GedcomException("Family @"+fam.getId()+"@ can't have two wifes");
-      pw.setTarget(this);
-      setTarget(pw);
-      return;
-      }
-    }
+    // place as husband or wife according to gender
+    if (indi.getSex()==PropertySex.UNKNOWN) 
+      indi.setSex(husband==null ? PropertySex.MALE : PropertySex.FEMALE);
 
-    // .. new back referencing property
-    PropertyXRef px;
-    if (indi.getSex()==PropertySex.MALE) {
-      if (husband!=null)
-      throw new GedcomException("Family @"+fam.getId()+"@ can't have two husbands");
-      px = new PropertyHusband(this);
-      fam.addProperty(px);
-    } else {
-      if (wife!=null)
-      throw new GedcomException("Family @"+fam.getId()+"@ can't have two wifes");
-      px = new PropertyWife(this);
-      fam.addProperty(px);
-    }
-    setTarget(px);
+    // place as husband or wife
+    PropertyXRef backref;
+    
+    found: switch (indi.getSex()) {
+      // HUSB
+      case PropertySex.MALE: default:{
+        // swap if necessary
+        if (husband!=null)
+          fam.swapSpouses();
+        // look for dead back reference
+        Property[] ps = fam.getProperties(new TagPath("FAM:HUSB"),QUERY_ALL);
+        for (int i=0;i<ps.length;i++) {
+          PropertyHusband ph = (PropertyHusband)ps[i];
+          if ( (!ph.isValid()) && (ph.getReferencedId().equals(indi.getId())) ) {
+            backref = ph;
+            break found;
+          }
+        }
+        // create new back ref
+        backref = new PropertyHusband();
+        return;
+      } 
+      // WIFE
+      case PropertySex.FEMALE : {
+        // swap if necessary
+        if (wife!=null)
+          fam.swapSpouses();
+        // look for dead back reference
+        Property[] ps = fam.getProperties(new TagPath("FAM:WIFE"),QUERY_ALL);
+        for (int i=0;i<ps.length;i++) {
+          PropertyWife pw = (PropertyWife)ps[i];
+          if ( (!pw.isValid()) && (pw.getReferencedId().equals(indi.getId())) ) {
+            backref = pw;
+            break found;
+          }
+        }
+        // create new back ref
+        backref = new PropertyWife();
+        break;      
+      }
+    } 
+
+    // connect
+    if (backref.getParent()==null)
+      fam.addProperty(backref);
+    backref.setTarget(this);
+    setTarget(backref);
 
     // Done
   }

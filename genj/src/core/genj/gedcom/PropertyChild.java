@@ -155,8 +155,8 @@ public class PropertyChild extends PropertyXRef {
 
     // .. new back referencing property
     pfc = new PropertyFamilyChild(this);
-    setTarget(pfc);
     child.addProperty(pfc);
+    setTarget(pfc);
 
     // Done
   }
