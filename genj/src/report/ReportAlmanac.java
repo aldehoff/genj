@@ -1,3 +1,10 @@
+/**
+ * Reports are Freeware Code Snippets
+ *
+ * This report is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
 import genj.almanac.Almanac;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
@@ -10,14 +17,6 @@ import genj.report.Report;
 
 import java.util.Iterator;
 import java.util.List;
-
-/**
- * Reports are Freeware Code Snippets
- *
- * This report is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- */
 
 /**
  * @author NMeier
