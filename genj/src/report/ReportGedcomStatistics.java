@@ -23,8 +23,9 @@ import java.util.TreeMap;
 /**
  * GenJ - Report
  * Note: this report requires Java2
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.10 2002-03-25 21:02:01 island1 Exp $
  * @author Francois Massonneau <fmas@celtes.com>
- * @version 0.04
+ * @version 1.1
  */
 public class ReportGedcomStatistics implements Report {
 
@@ -43,7 +44,7 @@ public class ReportGedcomStatistics implements Report {
   private final static String UNKNOWN_PLACE = "[unknown places]";
   
   /** this report's version */
-  public static final String VERSION = "0.04";
+  public static final String VERSION = "1.1";
 
   /**
    * Returns the version of this script
@@ -69,7 +70,7 @@ public class ReportGedcomStatistics implements Report {
 		"   . Number of males, females, and individuals with undefined sex.\n"+
 		"   . Stats about birth places.\n"+
 		"   . Stats about death places.\n\n"+
-		"            Have Fun and Enjoy\n\n\n(version 0.04)";
+		"(Note: this report requires Java2)";
   }
 
   /**
