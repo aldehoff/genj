@@ -118,13 +118,18 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /** our content's font */
   private Font contentFont = new Font("SansSerif", 0, 12);
   
+  /** current centered position */
+  private Point2D.Double center = new Point2D.Double(0,0);
+  
   /**
    * Constructor
    */
   public TreeView(Gedcom gedcm, Registry regIstry, Frame fRame) {
+    
     // remember
     frame = fRame;
     registry = regIstry;
+    
     // grab colors
     colors = new ColorSet("content", Color.white, resources, registry);
     colors.add("indis"  , Color.black);
@@ -153,6 +158,18 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     ));
     isAntialiasing = registry.get("antial", false);
 
+    try { 
+      model.setRoot(gedcm.getEntity(registry.get("root",(String)null)));
+    } catch (Exception e) {
+      model.setRoot(ViewManager.getInstance().getCurrentEntity(gedcm));
+    }
+    
+    try { 
+      currentEntity = gedcm.getEntity(registry.get("current",(String)null));
+    } catch (Exception e) {
+      currentEntity = model.getRoot();
+    }
+
     // setup child components
     contentRenderer = new ContentRenderer();
     content = new Content();
@@ -165,16 +182,15 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // setup layout
     add(overview);
     add(scroll);
-
-    // set root
-    Entity root;
-    try { 
-      root = gedcm.getEntity(registry.get("root",(String)null));
-    } catch (Exception e) {
-      root = ViewManager.getInstance().getCurrentEntity(gedcm);
-    }
-    model.setRoot(root);
     
+    // scroll 1st time
+    // scroll to last centered year
+    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        scrollToCurrent();
+      }
+    });
+
     // done
   }
   
@@ -219,6 +235,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     BlueprintManager.getInstance().writeBlueprints(blueprints, registry);
     // root    
     if (model.getRoot()!=null) registry.put("root", model.getRoot().getId());
+    if (currentEntity!=null) registry.put("current", currentEntity.getId());
     // done
     super.removeNotify();
   }
@@ -321,8 +338,19 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // remember
     currentEntity = entity;
     // scroll
+    scrollTo(node.getPosition());
+    // make sure it's reflected
+    content.repaint();
+    // done
+  }
+  
+  /**
+   * Scroll to given position   */
+  private void scrollTo(Point2D p) {
+    // remember
+    center.setLocation(p);
+    // scroll
     Rectangle2D b = model.getBounds();
-    Point2D     p = node.getPosition();
     Dimension   d = getSize();
     content.scrollRectToVisible(new Rectangle(
       (int)( (p.getX()-b.getMinX()) * (UNITS.getX()*zoom) ) - d.width /2,
@@ -330,10 +358,23 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       d.width ,
       d.height
     ));
-    // make sure it's reflected
-    content.repaint();
     // done
   }
+  
+  /**
+   * Scroll to current entity   */
+  private void scrollToCurrent() {
+    // something to do?
+    if (currentEntity==null) currentEntity=model.getRoot();
+    if (currentEntity==null) return;
+    // Node for it?
+    Node node = model.getNode(currentEntity);
+    if (node==null) return;
+    // scroll
+    scrollTo(node.getPosition());
+    // done    
+  }
+  
   
   /**
    * @see genj.view.CurrentSupport#setCurrentProperty(Property)
@@ -648,6 +689,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       DoubleValueSlider dvs = (DoubleValueSlider)e.getSource();
       zoom = dvs.getValue();
       content.revalidate();
+      scrollToCurrent();
       repaint();
     }
   } //ZoomGlue
@@ -732,6 +774,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     protected void execute() {
       model.setMode(mode);
+      scrollToCurrent();
     }
   } //ActionAsDsAnDs
   
@@ -750,6 +793,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     protected void execute() {
       model.setVertical(!model.isVertical());
+      scrollToCurrent();
     }
   } //ActionOrientation
   
@@ -770,6 +814,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     protected void execute() {
       model.setFamilies(!model.isFamilies());
+      scrollToCurrent();
     }
   } //ActionOrientation
 
