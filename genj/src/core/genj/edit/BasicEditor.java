@@ -49,8 +49,10 @@ import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -73,6 +75,9 @@ import javax.swing.event.ChangeListener;
   /** colors for tabborders */
   private final static Color[] COLORS = { Color.GRAY, new Color(192, 48, 48), new Color(48, 48, 128), new Color(48, 128, 48), new Color(48, 128, 128), new Color(128, 48, 128), new Color(96, 64, 32), new Color(32, 64, 96) };
 
+  /** entity tag to layout */
+  private Map tag2layout = new HashMap();
+  
   /** our gedcom */
   private Gedcom gedcom = null;
 
@@ -196,7 +201,7 @@ import javax.swing.event.ChangeListener;
 
     // set if new
     Entity set = context.getEntity();
-    if (entity != set)
+    if (entity != set) 
       setEntity(set);
 
     // select 1st/appropriate bean for property from context
@@ -227,11 +232,13 @@ import javax.swing.event.ChangeListener;
     beanPanel.removeAll();
     beans.clear();
 
-    // setup new layout
+    // setup layout
     if (entity!=null) try {
       
-      // setup layoute for new entity
-      NestedBlockLayout layout = new NestedBlockLayout(getClass().getResourceAsStream("basic/"+entity.getTag()+".xml"));
+      // grab layout (lazy)
+      NestedBlockLayout layout = (NestedBlockLayout)tag2layout.get(entity.getTag());
+      if (layout==null)
+        layout = new NestedBlockLayout(getClass().getResourceAsStream("basic/"+entity.getTag()+".xml"));
       beanPanel.setLayout(layout);
 
       Iterator cells = layout.getCells().iterator();
