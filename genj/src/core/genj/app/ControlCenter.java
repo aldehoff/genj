@@ -824,6 +824,8 @@ public class ControlCenter extends JPanel {
     private GedcomIOException ioex = null;
     /** temporary and target file */
     private File temp, result;
+    /** password used */
+    private String password;
     /** 
      * Constructor
      */
@@ -853,7 +855,7 @@ public class ControlCenter extends JPanel {
       // Do we need a file-dialog or not?
       Origin origin = gedcom.getOrigin();
       String encoding = null;
-      String password = gedcom.getPassword();
+      password = gedcom.getPassword();
       
       if (ask || origin==null || !origin.isFile()) {
 
@@ -1015,7 +1017,9 @@ public class ControlCenter extends JPanel {
           Gedcom old = tGedcoms.getGedcom(newOrigin.getName());
           if (old!=null)
             removeGedcom(old);
-          new ActionOpen(newOrigin).trigger();
+          ActionOpen open = new ActionOpen(newOrigin);
+          open.password = password;
+          open.trigger();
         }
       }
 
