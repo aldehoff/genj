@@ -26,13 +26,13 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.47 2004-02-29 21:19:35 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.48 2004-03-06 16:13:39 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
  */
 public class ReportGedcomStatistics extends Report {
-
+    
     /** number of digits allowed in the fraction portion of a number */
     public int fractionDigits = 2;
     /** if individuals should be analyzed */
@@ -163,26 +163,24 @@ public class ReportGedcomStatistics extends Report {
         ReferenceSet places = new ReferenceSet();
     }
     
-    private static class Constants {
-        /** all individuals */
-        static final int ALL = 1;
-        /** males */
-        static final int MALES = 2;
-        /** females */
-        static final int FEMALES = 3;
-        /** unknown gender */
-        static final int UNKNOWN = 4;
-        /** indis */
-        static final int INDIS = 5;
-        /** childbirth */
-        static final int CHILDBIRTH = 6;
-        /** marriage*/
-        static final int MARRIAGE = 7;
-        /** birth  */
-        static final int BIRTH = 8;
-        /** death */
-        static final int DEATH = 9;
-    }
+    /** all individuals */
+    private static final int ALL = 1;
+    /** males */
+    private static final int MALES = 2;
+    /** females */
+    private static final int FEMALES = 3;
+    /** unknown gender */
+    private static final int UNKNOWN = 4;
+    /** indis */
+    private static final int INDIS = 5;
+    /** childbirth */
+    private static final int CHILDBIRTH = 6;
+    /** marriage*/
+    private static final int MARRIAGE = 7;
+    /** birth  */
+    private static final int BIRTH = 8;
+    /** death */
+    private static final int DEATH = 9;
     
     /** this report's version */
     public static final String VERSION = "2.2";
@@ -244,13 +242,13 @@ public class ReportGedcomStatistics extends Report {
         // now do the desired analyzes
         if(analyzeIndividuals) {
             all = new StatisticsIndividuals();
-            all.which = Constants.ALL;
+            all.which = ALL;
             males = new StatisticsIndividuals();
-            males.which=Constants.MALES;
+            males.which= MALES;
             females = new StatisticsIndividuals();
-            females.which=Constants.FEMALES;
+            females.which= FEMALES;
             unknown = new StatisticsIndividuals();
-            unknown.which=Constants.UNKNOWN;
+            unknown.which= UNKNOWN;
             analyzeIndividuals(indis, all, males, females, unknown);
         }
         
@@ -272,19 +270,19 @@ public class ReportGedcomStatistics extends Report {
         
         if(analyzeBirthPlaces) {
             births = new StatisticsPlaces();
-            births.which = Constants.BIRTH;
+            births.which = BIRTH;
             analyzePlaces(indis, births);
         }
         
         if(analyzeMarriagePlaces) {
             marriages = new StatisticsPlaces();
-            marriages.which = Constants.MARRIAGE;
+            marriages.which = MARRIAGE;
             analyzePlaces(fams, marriages);
         }
         
         if(analyzeDeathPlaces) {
             deaths = new StatisticsPlaces();
-            deaths.which = Constants.DEATH;
+            deaths.which = DEATH;
             analyzePlaces(indis, deaths);
         }
         
@@ -326,71 +324,6 @@ public class ReportGedcomStatistics extends Report {
         }
     }
     
-    /** Calculates the average PointInTime if parameter is a range.
-     *  Otherwise the "normal" point in time is returned.
-     * @param d date for calculation
-     * @return PointInTime average */
-    private PointInTime calculateAveragePointInTime(PropertyDate p) {
-        
-        if(p.isRange()) {
-            String[] months = PointInTime.GREGORIAN.getMonths(false);
-            PointInTime a = p.getStart(), b = p.getEnd();
-            int[] age = calculateAverageAge(a.getDay()+b.getDay()+a.getMonth()*30+b.getMonth()*30+a.getYear()*360+b.getYear()*360, 2);
-            // calculateAverageAge returns int[] = {year, month, day}
-            return PointInTime.getPointInTime(age[2]+" "+months[age[1]]+" "+age[0]);
-        }
-        
-        return p.getStart();
-    }
-    
-    /** 
-     * Calculates the age of a individual. Ranges are taken into
-     * consideration by PointInTime.getDelta(begin, end)/2.
-     * @param indi individual for the calculation
-     * @param end end date for age calculation
-     */
-    private Delta getAge(Indi indi, PropertyDate end, int which) {
-      
-        String message = null;
-        PropertyDate birth = indi.getBirthDate();
-        
-        // end date < birth date
-        if(end.compareTo(birth)<0) {
-            switch(which) {
-                case Constants.MARRIAGE:
-                    message = i18n("warningMarriage");
-                    break;
-                case Constants.CHILDBIRTH:
-                    message = i18n("warningChildBirth");
-                    break;
-                case Constants.DEATH:
-                    message = i18n("warningDeath");
-                    break;
-            }
-            println(message+": @"+indi.getId()+"@ "+indi.getName()+" "+end+" <= "+birth);
-            return null;
-        }
-        
-        // end date == birth date
-        if(end.compareTo(birth)==0) {
-            switch(which) {
-                case Constants.MARRIAGE:
-                    message = i18n("warningMarriage");
-                    break;
-                case Constants.CHILDBIRTH:
-                    message = i18n("warningChildBirth");
-                    break;
-            }
-            if(which!=Constants.DEATH)
-                println(message+": @"+indi.getId()+"@ "+indi.getName()+" "+end+" <= "+birth);
-            return null;
-        }
-        
-        PointInTime newBirth = calculateAveragePointInTime(birth);
-        PointInTime newEnd = calculateAveragePointInTime(end);
-        return Delta.get(newBirth, newEnd);
-    }
-    
     /** Rounds a number to a specified number digits in the fraction portion
      * @param number number to round
      * @param digits number of digits allowed in the fraction portion of <CODE>number</CODE>
@@ -419,17 +352,17 @@ public class ReportGedcomStatistics extends Report {
             
             switch(places.which) {
                 
-                case Constants.BIRTH:
+                case BIRTH:
                     prop = e[i].getProperty(new TagPath("INDI:BIRT:PLAC"));
                     break;
                     
-                case Constants.DEATH:
+                case DEATH:
                     prop = e[i].getProperty("DEAT");
                     if (prop!=null)
                         prop = e[i].getProperty(new TagPath("INDI:DEAT:PLAC"));
                     break;
                     
-                case Constants.MARRIAGE:
+                case MARRIAGE:
                     prop = e[i].getProperty("MARR");
                     if (prop!=null)
                         prop = e[i].getProperty(new TagPath("FAM:MARR:PLAC"));
@@ -448,16 +381,20 @@ public class ReportGedcomStatistics extends Report {
     
     /**
      * @param indi individual to analyze
-     * @param age age of <CODE>indi</CODE>
-     * @param gender to store the results of <CODE>indi</CODE>
+     * @param age of indi
+     * @param single statistic for the single indi
      * @param all to store results of all individuals
+     * @param which info to analyze
      */
     private void analyzeAge(Indi indi, Delta age, StatisticsIndividuals single, StatisticsIndividuals all, int which) {
         
+        if(age==null)
+            return;
         int a = age.getYears()*360+age.getMonths()*30+age.getDays();
+        
         switch(which) {
-            case Constants.INDIS:
-            case Constants.MARRIAGE:
+            case INDIS:
+            case MARRIAGE:
                 
                 if(all!=null) {
                     all.age.add(new Integer(a),indi);
@@ -479,15 +416,16 @@ public class ReportGedcomStatistics extends Report {
                     single.minAge=a;
                 break;
                 
-            case Constants.CHILDBIRTH:
-                if(a < single.minChildBirthAge)
-                    single.minChildBirthAge = a;
-                if(a > single.maxChildBirthAge)
-                    single.maxChildBirthAge = a;
+            case CHILDBIRTH:
                 
                 single.childBirthNumber++;
                 single.sumChildBirthAge = single.sumChildBirthAge + a;
                 single.childBirthAge.add(new Integer(a), indi);
+                
+                if(a < single.minChildBirthAge)
+                    single.minChildBirthAge = a;
+                if(a > single.maxChildBirthAge)
+                    single.maxChildBirthAge = a;
                 break;
         }
     }
@@ -507,34 +445,30 @@ public class ReportGedcomStatistics extends Report {
             all.number++;
             Delta age = null;
             
-            // get age when birth and death date are known and aren't ranges
-            if((indi.getBirthDate()!=null)&&(indi.getDeathDate()!=null))
-                age = getAge(indi, indi.getDeathDate(), Constants.DEATH);
+            if(indi.getDeathDate()!=null)
+                age = indi.getAge(indi.getDeathDate().getStart());
             
             switch (indi.getSex()) {
                 
                 case PropertySex.MALE:
                     males.number++;
-                    if(age!=null)
-                        analyzeAge(indi, age, males, all, Constants.INDIS);
+                    analyzeAge(indi, age, males, all, INDIS);
                     break;
                     
                 case PropertySex.FEMALE:
                     females.number++;
-                    if(age!=null)
-                        analyzeAge(indi, age, females, all, Constants.INDIS);
+                    analyzeAge(indi, age, females, all, INDIS);
                     break;
                     
                 default:
                     unknown.number++;
-                    if(age!=null)
-                        analyzeAge(indi, age, unknown, all, Constants.INDIS);
+                    analyzeAge(indi, age, unknown, all, INDIS);
                     break;
             }
         }
     }
     
-    /** @param e array with individuals
+    /** @param e the individuals
      * @param surnames to store the results */
     private void analyzeLastNames(Entity[] e, StatisticsLastNames lastNames) {
         
@@ -542,7 +476,7 @@ public class ReportGedcomStatistics extends Report {
         // sort indis by name
         for(int i=0;i<e.length;i++) {
             Indi indi = (Indi)e[i];
-            lastNames.lastNamesIndis.add(indi.getLastName(), indi);//name, indi);
+            lastNames.lastNamesIndis.add(indi.getLastName(), indi);
         }
         
         // analyze all individuals with same name and store the result
@@ -566,13 +500,13 @@ public class ReportGedcomStatistics extends Report {
             StatisticsFamilies families = new StatisticsFamilies();
             families.number = familiesToLastName.size();
             StatisticsIndividuals all = new StatisticsIndividuals();
-            all.which=Constants.ALL;
+            all.which=ALL;
             StatisticsIndividuals males = new StatisticsIndividuals();
-            males.which=Constants.MALES;
+            males.which=MALES;
             StatisticsIndividuals females = new StatisticsIndividuals();
-            females.which=Constants.FEMALES;
+            females.which=FEMALES;
             StatisticsIndividuals unknown = new StatisticsIndividuals();
-            unknown.which=Constants.UNKNOWN;
+            unknown.which=UNKNOWN;
             // fill the statistics
             analyzeIndividuals(entities, all, males, females, unknown);
             analyzeFamilies((Entity[])familiesToLastName.toArray(new Entity[familiesToLastName.size()]), name, families);
@@ -603,8 +537,12 @@ public class ReportGedcomStatistics extends Report {
     }
     
     /**
+     * Persons with the same last name are basically a "family". Therefore this method is also
+     * called from analyzeLastNames().
+     *
      * @param families to store the result
-     * @param e array with families
+     * @param lastName two possibilities: a) null for families, b) a last name for persons with this name
+     * @param e the families
      */
     private void analyzeFamilies(Entity[] e, String lastName, StatisticsFamilies families) {
         
@@ -615,33 +553,32 @@ public class ReportGedcomStatistics extends Report {
             // analyze marriage age of husband and wife
             Indi husband=fam.getHusband();
             Indi wife=fam.getWife();
+            PropertyDate marriage = fam.getMarriageDate();
             
-            if(fam.getMarriageDate()!=null) {
-                if((husband!=null)&&(husband.getBirthDate()!=null)&&((lastName==null)||husband.getLastName().equals(lastName))){
-                    age = getAge(husband, fam.getMarriageDate(), Constants.MARRIAGE);
-                    if(age!=null)
-                        analyzeAge(husband, age, families.husbands, null, Constants.MARRIAGE);
+            if(marriage!=null) {
+                if((husband!=null)&&((lastName==null)||husband.getLastName().equals(lastName))){
+                    age = husband.getAge(marriage.getStart());
+                    analyzeAge(husband, age, families.husbands, null, MARRIAGE);
                 }
-                if((wife!=null)&&(wife.getBirthDate()!=null)&&((lastName==null)||wife.getLastName().equals(lastName)))
-                    age= getAge(wife, fam.getMarriageDate(), Constants.MARRIAGE);
-                if(age!=null)
-                    analyzeAge(wife, age, families.wifes, null, Constants.MARRIAGE);
+                if((wife!=null)&&((lastName==null)||wife.getLastName().equals(lastName))){
+                    age= wife.getAge(marriage.getStart());
+                    analyzeAge(wife, age, families.wifes, null, MARRIAGE);
+                }
             }
             
             // analyze ages at child births
             Indi[] children = fam.getChildren();
             
             for(int j=0;j<children.length;j++) {
-                if((children[j].getBirthDate()!=null)) {
-                    if ((husband!=null)&&(husband.getBirthDate()!=null)&&((lastName==null)||(husband.getLastName().equals(lastName)))) {
-                        age = getAge(husband, children[j].getBirthDate(), Constants.CHILDBIRTH);
-                        if(age!=null)
-                            analyzeAge(husband, age, families.husbands, null, Constants.CHILDBIRTH);
+                PropertyDate birth = children[j].getBirthDate();
+                if(birth!=null) {
+                    if ((husband!=null)&&((lastName==null)||(husband.getLastName().equals(lastName)))) {
+                        age = husband.getAge(birth.getStart());
+                        analyzeAge(husband, age, families.husbands, null, CHILDBIRTH);
                     }
-                    if ((wife!=null)&&(wife.getBirthDate()!=null)&&((lastName==null)||(wife.getLastName().equals(lastName)))) {
-                        age = getAge(wife, children[j].getBirthDate(), Constants.CHILDBIRTH);
-                        if(age!=null)
-                            analyzeAge(wife, age, families.wifes, null, Constants.CHILDBIRTH);
+                    if ((wife!=null)&&((lastName==null)||(wife.getLastName().equals(lastName)))) {
+                        age = wife.getAge(birth.getStart());
+                        analyzeAge(wife, age, families.wifes, null, CHILDBIRTH);
                     }
                 }
             }
@@ -661,12 +598,11 @@ public class ReportGedcomStatistics extends Report {
     }
     
     /**
-     * @param ages all ages added up (unit: days)
+     * @param ages all ages added up in days
      * @param numAges number of persons added up
-     * @return double[] with average age (year, month, day)
+     * @return int[] with average age (year, month, day)
      */
     private int[] calculateAverageAge(double ages, double numAges) {
-        
         int[] age = {0, 0, 0};
         
         // only calculate if paramaters != default or unvalid values
@@ -693,27 +629,27 @@ public class ReportGedcomStatistics extends Report {
         int[] age;
         
         switch(which) {
-            case Constants.INDIS:
-            case Constants.MARRIAGE:
+            case INDIS:
+            case MARRIAGE:
                 if(stats.age.getKeys().size()>0) {
                     // min. age
                     printMinMaxAge(printIndis, indent, "minAge", stats.minAge, new ArrayList(stats.age.getReferences(new Integer(stats.minAge))));
                     // average age
                     age = calculateAverageAge(stats.sumAge,stats.age.getSize());
-                    println(getIndent(indent)+i18n("avgAge")+" "+new Delta(age[0], age[1], age[2]));
+                    println(getIndent(indent)+i18n("avgAge")+" "+new Delta(age[2], age[1], age[0]));
                     // max. age
                     printMinMaxAge(printIndis, indent, "maxAge", stats.maxAge, new ArrayList(stats.age.getReferences(new Integer(stats.maxAge))));
                 }
                 else
                     println(getIndent(indent)+i18n("missingData"));
                 break;
-            case Constants.CHILDBIRTH:
+            case CHILDBIRTH:
                 if(stats.childBirthAge.getKeys().size()>0) {
                     // min. age
                     printMinMaxAge(printIndis, indent, "minAge", stats.minChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.minChildBirthAge))));
                     // avg age
                     age = calculateAverageAge(stats.sumChildBirthAge,stats.childBirthNumber);
-                    println(getIndent(indent)+i18n("avgAge")+" "+new Delta(age[0], age[1], age[2]));
+                    println(getIndent(indent)+i18n("avgAge")+" "+new Delta(age[2], age[1], age[0]));
                     // max. age
                     printMinMaxAge(printIndis, indent, "maxAge", stats.maxChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.maxChildBirthAge))));
                 }
@@ -744,7 +680,7 @@ public class ReportGedcomStatistics extends Report {
     }
     
     /**
-     * prints individuals (all, males, females, unknown gender, wifes, husbands,...
+     * prints individuals (all, males, females, unknown gender, wifes, husbands, same last name, ...)
      * @param printIndis whether individuals with min. / max. ages should be displayed
      * @param lastName last name of the individuals, only needed if last names are reported, else <code>null</code>
      * @param numberAllIndis number of all inidividuals (needed for calculations when last names are reported)
@@ -755,7 +691,7 @@ public class ReportGedcomStatistics extends Report {
         int indent;
         if(lastName==null) {
             println(getIndent(1)+i18n("people"));
-            println(getIndent(2)+i18n("people",all.number));
+            println(getIndent(2)+i18n("number",all.number));
             indent=3;
         }
         else {
@@ -765,22 +701,22 @@ public class ReportGedcomStatistics extends Report {
             indent=5;
         }
         
-        printAges(printIndis, indent, all, Constants.INDIS);
+        printAges(printIndis, indent, all, INDIS);
         
         str[0] = Integer.toString(males.number);
         str[1] = Double.toString(roundNumber((double)males.number/(double)all.number*100, fractionDigits));
         println(getIndent(indent-1)+i18n("males",str));
-        printAges(printIndis, indent, males, Constants.INDIS);
+        printAges(printIndis, indent, males, INDIS);
         
         str[0] = Integer.toString(females.number);
         str[1] = Double.toString(roundNumber((double)females.number/(double)all.number*100, fractionDigits));
         println(getIndent(indent-1)+i18n("females",str));
-        printAges(printIndis, indent, females, Constants.INDIS);
+        printAges(printIndis, indent, females, INDIS);
         
         str[0] = Integer.toString(unknown.number);
         str[1] = Double.toString(roundNumber((double)unknown.number/(double)all.number*100, fractionDigits));
         println(getIndent(indent-1)+i18n("unknown",str));
-        printAges(printIndis, indent, unknown, Constants.INDIS);
+        printAges(printIndis, indent, unknown, INDIS);
         
         if(lastName==null)
             println();
@@ -824,10 +760,10 @@ public class ReportGedcomStatistics extends Report {
             println(getIndent(indent)+i18n("ageAtMarriage"));
             //husbands
             println(getIndent(indent+1)+i18n("husbands"));
-            printAges(i, indent+2, families.husbands, Constants.MARRIAGE);
+            printAges(i, indent+2, families.husbands, MARRIAGE);
             // wifes
             println(getIndent(indent+1)+i18n("wifes"));
-            printAges(i, indent+2, families.wifes, Constants.MARRIAGE);
+            printAges(i, indent+2, families.wifes, MARRIAGE);
             
             //children
             String[] output = { Integer.toString(families.withChildren), Double.toString(roundNumber((double)families.withChildren/(double)families.number*100,fractionDigits)) };
@@ -861,10 +797,10 @@ public class ReportGedcomStatistics extends Report {
             println(getIndent(indent)+i18n("agesAtChildBirths"));
             //husbands
             println(getIndent(indent+1)+i18n("husbands"));
-            printAges(j, indent+2, families.husbands, Constants.CHILDBIRTH);
+            printAges(j, indent+2, families.husbands, CHILDBIRTH);
             //wifes
             println(getIndent(indent+1)+i18n("wifes"));
-            printAges(j, indent+2, families.wifes, Constants.CHILDBIRTH);
+            printAges(j, indent+2, families.wifes, CHILDBIRTH);
         }
         
         if(lastName==false)
@@ -884,7 +820,7 @@ public class ReportGedcomStatistics extends Report {
                 String[] output = new String[2];
                 for(int i=0;i<entities.size();i++){
                     
-                    if(places.which==Constants.MARRIAGE) {
+                    if(places.which==MARRIAGE) {
                         Fam fam = (Fam)entities.get(i);
                         output[0] = fam.getId();
                         output[1] = fam.toString();
@@ -915,16 +851,16 @@ public class ReportGedcomStatistics extends Report {
                 Object stat = stats.get(i);
                 if(stat instanceof StatisticsIndividuals) {
                     switch(((StatisticsIndividuals)stat).which) {
-                        case Constants.ALL:
+                        case ALL:
                             all=(StatisticsIndividuals)stat;
                             break;
-                        case Constants.MALES:
+                        case MALES:
                             males=(StatisticsIndividuals)stat;
                             break;
-                        case Constants.FEMALES:
+                        case FEMALES:
                             females=(StatisticsIndividuals)stat;
                             break;
-                        case Constants.UNKNOWN:
+                        case UNKNOWN:
                             unknown=(StatisticsIndividuals)stat;
                             break;
                     }
