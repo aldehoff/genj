@@ -47,8 +47,8 @@ public class Applet extends java.applet.Applet {
     "genj.timeline.TimelineViewFactory",
     "genj.edit.EditViewFactory",
     //"genj.report.ReportViewFactory",
-    "genj.nav.NavigatorViewFactory",
-    "genj.entity.EntityViewFactory", 
+    //"genj.nav.NavigatorViewFactory",
+    //"genj.entity.EntityViewFactory", 
     "genj.search.SearchViewFactory" 
   };
 
@@ -72,6 +72,9 @@ public class Applet extends java.applet.Applet {
     if (isInitialized)
       return;
     isInitialized = true;
+
+    // disclaimer
+    Debug.log(Debug.INFO, this, getAppletInfo());
 
     // set our layout
     setLayout(new BorderLayout());
@@ -159,6 +162,7 @@ public class Applet extends java.applet.Applet {
         
       } catch (Throwable t) {
         throwable = t;
+        Debug.log(Debug.ERROR, Applet.this, "Encountered throwable", throwable);
       }
 
       // back to sync   

@@ -73,7 +73,7 @@ public class ControlCenter extends JPanel {
     
     JPanel p = new JPanel(new GridLayout(2,1));
     p.setOpaque(false);
-    p.add(new JLabel(gedcom.getName(), SwingConstants.CENTER));
+    p.add(new JLabel(gedcom.getOrigin().getFileName(), SwingConstants.CENTER));
     
     WordBuffer words = new WordBuffer();
     int i = Gedcom.INDIVIDUALS;
