@@ -56,7 +56,7 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
   }
   
   /**
-   * Can contain '\n' etc. since this is a mutli-line text
+   * Can contain newline characters since this is a mutli-line text
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
   public void setValue(String setValue) {
@@ -90,7 +90,7 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
   }
   
   /**
-   * @see genj.gedcom.MultiLineSupport#getLinesValue()
+   * @see genj.gedcom.MultiLineProperty#getLinesValue()
    */
   public String getLinesValue() {
     return lines.toString();
@@ -98,14 +98,14 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
 
   
   /**
-   * @see genj.gedcom.MultiLineSupport#getLines()
+   * @see genj.gedcom.MultiLineProperty#getLineIterator()
    */
   public Iterator getLineIterator() {
     return new ConcContIterator(getTag(), lines);
   }
 
   /**
-   * @see genj.gedcom.MultiLineSupport#getContinuation()
+   * @see genj.gedcom.MultiLineProperty#getLineCollector()
    */
   public Collector getLineCollector() {
     return new ConcContCollector();

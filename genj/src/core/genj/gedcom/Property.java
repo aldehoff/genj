@@ -164,7 +164,7 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Calculates the max. depth of properties this property has.
+   * Calculates the maximum depth of properties this property has.
    */
   public int getDepthOfProperties() {
     // recursive search
@@ -630,7 +630,7 @@ public abstract class Property implements Comparable {
 
   /**
    * Resolve meta properties
-   * @param attr comma separated list of attributes to filter
+   * @param filter one/many of QUERY_ALL, QUERY_VALID_TRUE, QUERY_SYSTEM_FALSE, QUERY_FOLLOW_LINK
    */
   public MetaProperty[] getMetaProperties(int filter) {
     return MetaProperty.get(this).getSubs(filter);

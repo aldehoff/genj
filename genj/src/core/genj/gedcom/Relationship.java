@@ -93,7 +93,7 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName()
+     * @see genj.gedcom.Relationship#getName(boolean)
      */
     public String getName(boolean verbose) {
       // "Note"|"Media"|"Source"|... or "Something for"
@@ -166,7 +166,7 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName()
+     * @see genj.gedcom.Relationship#getName(boolean)
      */
     public String getName(boolean verbose ) {
       // "Child in .." or "Child"
@@ -202,7 +202,7 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName()
+     * @see genj.gedcom.Relationship#getName(boolean)
      */
     public String getName(boolean verbose) {
       // "Child of Meier, Nils" or "Child"
@@ -239,7 +239,7 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName()
+     * @see genj.gedcom.Relationship#getName(boolean)
      */
     public String getName(boolean verbose) {
       // "Parent in .." or "Parent"
@@ -276,7 +276,7 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName()
+     * @see genj.gedcom.Relationship#getName(boolean)
      */
     public String getName(boolean verbose ) {
       // "Parent of Meier, Nils" or "Parent"
@@ -314,7 +314,7 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName()
+     * @see genj.gedcom.Relationship#getName(boolean)
      */
     public String getName(boolean verbose) {
       // "Spouse of Meier, Nils" or "Spouse"
@@ -357,7 +357,7 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName()
+     * @see genj.gedcom.Relationship#getName(boolean)
      */
     public String getName(boolean verbose) {
       return verbose ? 

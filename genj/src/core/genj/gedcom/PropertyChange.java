@@ -123,21 +123,21 @@ public class PropertyChange extends Property implements MultiLineProperty {
   }
   
   /**
-   * @see genj.gedcom.MultiLineSupport#getContinuation()
+   * @see genj.gedcom.MultiLineProperty#getLineCollector()()
    */
   public Collector getLineCollector() {
     return new DateTimeCollector();
   }
     
   /**
-   * @see genj.gedcom.MultiLineSupport#getLines()
+   * @see genj.gedcom.MultiLineProperty#getLineIterator()
    */
   public Iterator getLineIterator() {
     return new DateTimeIterator();
   }
   
   /**
-   * @see genj.gedcom.MultiLineSupport#getLinesValue()
+   * @see genj.gedcom.MultiLineProperty#getLinesValue()
    */
   public String getLinesValue() {
     return getValue();

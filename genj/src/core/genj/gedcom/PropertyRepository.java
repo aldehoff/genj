@@ -40,7 +40,7 @@ public class PropertyRepository extends PropertyXRef {
   
   /**
    * Constructor with reference
-   * @param entity reference of entity this property links to
+   * @param target reference of property this property links to
    */
   public PropertyRepository(PropertyXRef target) {
     super(target);

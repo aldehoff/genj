@@ -98,14 +98,14 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   }
   
   /**
-   * Used choices - this won't work unless parent!=null
+   * Used choices (this will not work unless parent not null)
    */
   public List getChoices() {
     return getReferenceSet(true).getKeys();
   }
   
   /**
-   * @see genj.gedcom.PropertyRelationship#getProxy()
+   * Our proxy of choice
    */
   public String getProxy() {
     return "Choice";

@@ -142,7 +142,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   }
   
   /**
-   * @see genj.gedcom.MultiLineSupport#getContinuation()
+   * @see genj.gedcom.MultiLineProperty#getLineCollector()
    */
   public Collector getLineCollector() {
     return new BlobCollector();
@@ -167,7 +167,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   }
   
   /**
-   * @see genj.gedcom.MultiLineSupport#getLinesValue()
+   * @see genj.gedcom.MultiLineProperty#getLinesValue()
    */
   public String getLinesValue() {
     return getValue();

@@ -40,7 +40,7 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
   
   /**
    * Constructor with reference
-   * @param entity reference of entity this property links to
+   * @param target reference of property this property links to
    */
   public PropertyMedia(PropertyXRef target) {
     super(target);

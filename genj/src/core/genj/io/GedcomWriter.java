@@ -66,7 +66,7 @@ public class GedcomWriter implements Trackable {
    * Constructor
    * @param ged data to write
    * @param name the logical name (header value)
-   * @param encoding either IBMPC, ASCII, UNICODE or ANSEL
+   * @param enc either IBMPC, ASCII, UNICODE or ANSEL
    * @param stream the stream to write to
    */
   public GedcomWriter(Gedcom ged, String name, String enc, OutputStream stream) {

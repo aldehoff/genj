@@ -333,7 +333,6 @@ public class PointInTime implements Comparable {
   /**
    * compare to other
    * @param other the pit to compare to
-   * @param mask
    */  
   public int compareTo(PointInTime other) {
     

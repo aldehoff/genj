@@ -278,7 +278,7 @@
     <javadoc destdir="${dir.build}/javadoc"
              link="http://java.sun.com/j2se/1.4/docs/api"
              sourcepath="./src/core"
-             packagenames="genj.gedcom.*, genj.report.*"
+             packagenames="genj.gedcom.*, genj.report.*, genj.io.*"
              classpathref="project.class.path"
              access="public"
              windowtitle="${app.name} - ${app.version}"

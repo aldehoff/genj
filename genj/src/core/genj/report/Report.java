@@ -301,9 +301,9 @@ public abstract class Report implements Cloneable {
 
   /**
    * Helper method that queries the user for an entity
+   * @param msg a message for letting the user know what and why he's choosing
    * @param gedcom to use
-   * @param tag the tag of the entities to show
-   * @param sortPath path to sort by or null
+   * @param tag the tag of the entities to show (for example Gedcom.INDI)
    */
   public final Entity getEntityFromUser(String msg, Gedcom gedcom, String tag) {
     

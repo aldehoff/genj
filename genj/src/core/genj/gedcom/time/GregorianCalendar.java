@@ -53,7 +53,7 @@ public class GregorianCalendar extends Calendar {
   }
 
   /**
-   * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
+   * @see genj.gedcom.time.Calendar#getDays(int, int)
    */
   public int getDays(int month, int year) {
     int[] length = isLeap(year) ? GregorianCalendar.LEAP_MONTH_LENGTH : GregorianCalendar.MONTH_LENGTH;

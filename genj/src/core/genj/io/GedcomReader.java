@@ -83,7 +83,7 @@ public class GedcomReader implements Trackable {
 
   /**
    * Constructor
-   * @param in BufferedReader to read from
+   * @param initOrg the origin to initialize reader from
    */
   public GedcomReader(Origin initOrg) throws IOException {
     

@@ -47,7 +47,7 @@ public abstract class PropertyXRef extends Property {
 
   /**
    * Constructor with reference
-   * @param entity reference of entity this property links to
+   * @param target reference of property this property links to
    */
   public PropertyXRef(PropertyXRef target) {
     // keep
@@ -230,8 +230,8 @@ public abstract class PropertyXRef extends Property {
   }
 
   /**
-   * Return references between given ent and all its 'neighbours'
-   * connected through PropertyXRef
+   * Return all entities that are connected to the given entity through
+   * a PropertyXRef
    */
   public static Entity[] getReferences(Entity ent) {
     List result = new ArrayList(10);
@@ -247,7 +247,8 @@ public abstract class PropertyXRef extends Property {
   }
 
   /**
-   * overriden to add linked/!linked support
+   * overriden to make sure we always look for sub-meta-properties
+   * with FILTER_XREF
    * @see genj.gedcom.Property#getMetaProperties(int)
    */
   public MetaProperty[] getMetaProperties(int filter) {

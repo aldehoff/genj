@@ -59,7 +59,7 @@ public class FrenchRCalendar extends Calendar {
   }
   
   /**
-   * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
+   * @see genj.gedcom.time.Calendar#getDays(int, int)
    */
   public int getDays(int month, int year) {
     
@@ -137,7 +137,7 @@ public class FrenchRCalendar extends Calendar {
   }
   
   /**
-   * @see genj.gedcom.PointInTime.Calendar#getYear(int, boolean)
+   * @see genj.gedcom.time.Calendar#getYear(int, boolean)
    */
   public String getYear(int year, boolean localize) {
     if (!localize||year<1||year>FrenchRCalendar.YEARS.length)

@@ -57,7 +57,7 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
   }
   
   /**
-   * @see genj.view.ViewFactory#getName(boolean)
+   * @see genj.view.ViewFactory#getTitle(boolean)
    */
   public String getTitle(boolean abbreviate) {
     return Resources.get(this).getString("title" + (abbreviate?".short":""));

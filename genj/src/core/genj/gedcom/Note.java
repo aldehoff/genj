@@ -75,21 +75,21 @@ public class Note extends Entity implements MultiLineProperty {
   }
   
   /**
-   * @see genj.gedcom.MultiLineSupport#getLinesValue()
+   * @see genj.gedcom.MultiLineProperty#getLinesValue()
    */
   public String getLinesValue() {
     return delegate.getLinesValue();
   }
   
   /**
-   * @see genj.gedcom.PropertyNote#getLines()
+   * @see genj.gedcom.MultiLineProperty#getLineIterator()
    */
   public Iterator getLineIterator() {
     return delegate.getLineIterator();
   }
 
   /**
-   * @see genj.gedcom.MultiLineSupport#getContinuation()
+   * @see genj.gedcom.MultiLineProperty#getLineCollector()
    */
   public Collector getLineCollector() {
     return delegate.getLineCollector();
