@@ -325,6 +325,13 @@ public abstract class Property implements Comparable {
     // Return previous sibling
     return parent.getProperty(index-1);
   }
+  
+  /**
+   * Returns this property's properties (all children)
+   */
+  public Property[] getProperties() {
+    return toArray(childs);
+  }
 
   /**
    * Returns this property's properties by tag
