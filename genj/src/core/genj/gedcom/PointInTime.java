@@ -174,10 +174,10 @@ public class PointInTime implements Comparable {
   public void set(Calendar cal) throws GedcomException {
     // has to be valid
     if (!isValid())
-      throw new GedcomException("PointInTime not valid - switching calendars n/a");
+      throw new GedcomException(Gedcom.getResources().getString("prop.date.PIT.not.valid"));
     // has to be complete
     if (!isComplete())
-      throw new GedcomException("PointInTime not complete DD MMM YYYY - switching calendars n/a");
+      throw new GedcomException(Gedcom.getResources().getString("prop.date.PIT.not.complete"));
     // convert to julian date
     int jd = getJulianDay();
     // convert to new instance
@@ -692,23 +692,23 @@ public class PointInTime implements Comparable {
         
       // YYYY is always needed - no calendar includes a year 0!
       if (year==UNKNOWN||year==0)
-        throw new GedcomException("Year is not valid");
+        throw new GedcomException(Gedcom.getResources().getString("prop.date.year.false"));
         
       // MM needed if DD!
       if (month==UNKNOWN&&day!=UNKNOWN)
-        throw new GedcomException("Month is not valid");
+        throw new GedcomException(Gedcom.getResources().getString("prop.date.month.false"));
         
       // months have to be within range
       if (month==UNKNOWN)
         month = 0;
       else if (month<0||month>=months.length)
-        throw new GedcomException("Month is not valid");
+        throw new GedcomException(Gedcom.getResources().getString("prop.date.month.false"));
 
       // day has to be withing range
       if (day==UNKNOWN)
         day = 0;
       else if (day<0||day>=getDays(month,year))
-        throw new GedcomException("Day is not valid");
+        throw new GedcomException(Gedcom.getResources().getString("prop.date.day.false"));
 
       // try to get julian day
       return toJulianDay(day, month, year);
@@ -933,9 +933,9 @@ public class PointInTime implements Comparable {
         if (y>LEAP_YEARS[l]) jd++; 
       // check range
       if (jd<AN_I)
-        throw new GedcomException("Day lies before French Republican Calendar");
+        throw new GedcomException(Gedcom.getResources().getString("prop.date.bef.FrenchR.cal"));
       if (jd>=UNTIL)
-        throw new GedcomException("Day lies after French Republican Calendar");
+        throw new GedcomException(Gedcom.getResources().getString("prop.date.aft.FrenchR.cal"));
       // sum
       return jd;
     }
@@ -947,9 +947,9 @@ public class PointInTime implements Comparable {
 
       // check range
       if (julianDay<AN_I)
-        throw new GedcomException("Day lies before French Republican Calendar");
+        throw new GedcomException(Gedcom.getResources().getString("prop.date.bef.FrenchR.cal"));
       if (julianDay>=UNTIL)
-        throw new GedcomException("Day lies after French Republican Calendar");
+        throw new GedcomException(Gedcom.getResources().getString("prop.date.aft.FrenchR.cal"));
       
       julianDay = julianDay - AN_I;
       
