@@ -81,7 +81,7 @@ public class PropertySubmitter extends PropertyXRef {
    * @return proxy's logical name
    */
   public static String getProxy(TagPath path) {
-
+// FIXME same as note?
     // Entity Submitter? Should be Entity but has to be Submitter to be editable :(
     if (path.length()==1)
       return "MLE";
