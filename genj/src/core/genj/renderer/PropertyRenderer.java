@@ -30,7 +30,6 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyName;
-import genj.util.Debug;
 import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
 
@@ -67,7 +66,7 @@ public class PropertyRenderer {
       try {
         result = (PropertyRenderer)Class.forName(PropertyRenderer.class.getName()+"$"+name).newInstance();
       } catch (Throwable t) {
-        Debug.log(Debug.INFO, PropertyRenderer.class, "Couldn't find renderer for "+name, t);
+        //Debug.log(Debug.INFO, PropertyRenderer.class, "Couldn't find renderer for "+name, t);
         result = DEFAULT_PROPERTY_PROXY;
       }
       
