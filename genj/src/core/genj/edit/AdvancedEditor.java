@@ -76,7 +76,19 @@ import javax.swing.event.TreeSelectionListener;
  */
 /*package*/ class AdvancedEditor extends Editor {
   
-  private final static Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+  private final static Clipboard clipboard = initClipboard();
+
+  /**
+   * Initialize clipboard - trying system falling back to private
+   */
+  private static Clipboard initClipboard() {
+    try {
+      return Toolkit.getDefaultToolkit().getSystemClipboard();
+    } catch (Throwable t) {
+      return new Clipboard("GenJ");
+    }
+
+  }
   
   /** resources */
   private static Resources resources = Resources.get(AdvancedEditor.class);
