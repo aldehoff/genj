@@ -5,6 +5,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+
+import java.util.Enumeration;
+import java.util.Hashtable;
 import genj.gedcom.*;
 import genj.report.*;
 import java.io.*;
@@ -63,22 +66,46 @@ public class ReportGedcomStatistics implements Report {
     int numUnknown = 0;
 
     // We Look thru individuals to check their sex
-
+    // .. at the same time we check for birth places
+    Hashtable places = new Hashtable();
     EntityList indis = gedcom.getEntities(gedcom.INDIVIDUALS);
     for (int i=0;i<indis.getSize();i++) {
+
+			// This is the guy we're looking at     
       Indi indi = indis.getIndi(i);
+      
+      // Here comes the Sex check
       int sex = indi.getSex();
       switch (indi.getSex()) {
-      case Gedcom.MALE:
-          numMales++;
-          break;
-      case Gedcom.FEMALE:
-          numFemales++;
-          break;
-      default:
-          numUnknown++;
-          break;
+        case Gedcom.MALE:
+            numMales++;
+            break;
+        case Gedcom.FEMALE:
+            numFemales++;
+            break;
+        default:
+            numUnknown++;
+            break;
       }
+      
+      // And here comes the check for birth place
+      Property place = indi.getProperty("INDI:BIRT:PLAC");
+      if (place!=null) {
+        
+        // .. check if we know that already (or start at 0)
+        Integer count = (Integer)places.get(place.toString());
+        if (count==null) {
+          count = new Integer(1);
+        } else {
+          count = new Integer(count.intValue()+1);
+        }
+        
+        // .. remember
+        places.put(place.toString(), count);
+        
+      }
+      
+      // Next one
     }
 
     // Header :
@@ -108,8 +135,16 @@ public class ReportGedcomStatistics implements Report {
     // Five: We show the number of people whose sex is undefined :
     bridge.println("         . "+numUnknown+" with undefined sex (soit : "
       +numUnknown+" personnes dont le sexe n'est pas connu).");
+      
+    // Six: We show the birth places
+    Enumeration enum = places.keys();
+    while (enum.hasMoreElements()) {
+      String place = (String)enum.nextElement();
+      Integer count = (Integer)places.get(place);
+      bridge.println("     - "+count+" individuals born in "+place);
+    }
 
-
+    // Done
     return true;
 
   }

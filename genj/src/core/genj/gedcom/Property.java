@@ -743,6 +743,14 @@ public abstract class Property {
 
   /**
    * Returns this property's property by path
+   * (only valid children are considered
+   */
+  public Property getProperty(String path) {
+    return getProperty(new TagPath(path), true);
+  }
+  
+  /**
+   * Returns this property's property by path
    */
   public Property getProperty(TagPath path, boolean validOnly) {
 

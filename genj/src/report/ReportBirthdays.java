@@ -85,7 +85,7 @@ public class ReportBirthdays implements Report {
     EntityList indis = gedcom.getEntities(gedcom.INDIVIDUALS);
     for (int i=0;i<indis.getSize();i++) {
       Indi indi = indis.getIndi(i);
-      PropertyDate birth = indi.getBirth();
+      PropertyDate birth = indi.getBirthDate();
       if (birth==null) {
         continue;
       }
@@ -101,8 +101,8 @@ public class ReportBirthdays implements Report {
       // LCD
       public int compare(Object o1, Object o2) {
         // O.K. here are the birthdays (might be null!)
-        PropertyDate b1 = ((Indi)o1).getBirth();
-        PropertyDate b2 = ((Indi)o2).getBirth();
+        PropertyDate b1 = ((Indi)o1).getBirthDate();
+        PropertyDate b2 = ((Indi)o2).getBirthDate();
 
         // So we check wether we can get a day
         int d1 = 0;
@@ -127,7 +127,7 @@ public class ReportBirthdays implements Report {
     Enumeration e = candidates.elements();
     while (e.hasMoreElements()) {
       Indi indi = (Indi)e.nextElement();
-      bridge.println(indi.getName()+" (*"+indi.getBirth()+")");
+      bridge.println(indi.getName()+" (*"+indi.getBirthDate()+")");
     }
 
     // Done

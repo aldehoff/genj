@@ -48,9 +48,9 @@ public class ReportEarliestAncestor implements Report {
     if (indi != null){
       indi = findEarliest (indi);
 
-      birth = indi.getBirth();
+      birth = indi.getBirthDate();
 
-      if ((birth!=null)&&(birth.compareTo(earliest.getBirth())< 0)) {
+      if ((birth!=null)&&(birth.compareTo(earliest.getBirthDate())< 0)) {
         earliest = indi;
       }
     }
@@ -59,9 +59,9 @@ public class ReportEarliestAncestor implements Report {
     if (indi != null){
       indi = findEarliest (indi);
 
-      birth = indi.getBirth();
+      birth = indi.getBirthDate();
 
-      if ((birth!=null)&&(birth.compareTo(earliest.getBirth())<0)) {
+      if ((birth!=null)&&(birth.compareTo(earliest.getBirthDate())<0)) {
         earliest = indi;
       }
     }

@@ -120,7 +120,7 @@ public class Indi extends PropertyIndi implements Entity {
   /**
    * Calculate indi's birth date
    */
-  public PropertyDate getBirth() {
+  public PropertyDate getBirthDate() {
 
     // Calculate BIRT|DATE
     PropertyDate p = (PropertyDate)getProperty(new TagPath("INDI:BIRT:DATE"),true);
@@ -137,7 +137,7 @@ public class Indi extends PropertyIndi implements Entity {
    */
   public String getBirthAsString() {
 
-    PropertyDate p = getBirth();
+    PropertyDate p = getBirthDate();
     if (p==null) {
       return "";
     }
