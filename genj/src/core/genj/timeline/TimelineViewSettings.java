@@ -148,7 +148,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   public void reset() {
     
     // EventTags to choose from
-    selectorEventTags.setTags(PropertyEvent.getTags());
+    selectorEventTags.setTags(PropertyEvent.getEventTags());
     selectorEventTags.setSelection(view.getModel().getFilter());
 
     // Checks

@@ -22,6 +22,7 @@ package genj.edit;
 import genj.edit.actions.*;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.util.ActionDelegate;
@@ -576,7 +577,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       Property prop = (Property)path.getLastPathComponent();
   
       // .. Confirm
-      ChoosePropertyBean choose = new ChoosePropertyBean(prop.getKnownProperties(),resources);
+      ChoosePropertyBean choose = new ChoosePropertyBean(MetaProperty.get(prop.getTag()).getSubs(), resources);
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
       Object[] message = new Object[3];
@@ -597,7 +598,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       if (option != JOptionPane.OK_OPTION) return;
   
       // .. Calculate chosen properties
-      Property[] props = choose.getResultingProperties();
+      Property[] props = choose.getResultingProperties(check.isSelected());
   
       if ( (props==null) || (props.length==0) ) {
         JOptionPane.showMessageDialog(
@@ -611,13 +612,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   
       // .. add properties
       if (!gedcom.startTransaction()) return;
-      boolean doSub = check.isSelected();
-      for (int i=0;i<props.length;i++) {
-        if (doSub) {
-          props[i].addDefaultProperties();
-        }
-        prop.addProperty(props[i]);
-      }
+      for (int i=0;i<props.length;i++) prop.addProperty(props[i]);
       gedcom.endTransaction();
      
       // .. select added
@@ -833,7 +828,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       // .. transient?
       if (((Property)p).isTransient()) return null;
       // .. calc information text
-      String info = ((Property)p).getInfo();
+      String info = MetaProperty.get(((Property)p).getTag()).getInfo();
       if (info==null) return "?";
       // .. return max 60
       info = info.replace('\n',' ');

@@ -64,7 +64,7 @@ public abstract class Relationship {
       if (!(entity.getProperty() instanceof PropertyXRef))
         throw new GedcomException("Can apply relationship to non-xref");
 
-      PropertyXRef xref = (PropertyXRef)Property.createInstance(entity.getProperty().getTag(), "", true);     
+      PropertyXRef xref = (PropertyXRef)MetaProperty.instantiate(entity.getProperty().getTag(), "", true);     
       owner.addProperty(xref);
       xref.setTarget((PropertyXRef)entity.getProperty());
       //  focus stays with owner

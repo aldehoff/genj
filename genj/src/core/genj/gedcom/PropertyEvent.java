@@ -30,9 +30,6 @@ public class PropertyEvent extends Property {
   /** our Tag */
   private String tag;
 
-  /** known EVENT tags */
-  private static List tags;
-
   /**
    * Constructor of address Gedcom-line
    */
@@ -60,9 +57,9 @@ public class PropertyEvent extends Property {
    */
   public Property addDefaultProperties() {
     if ("EVEN".equals(tag))
-      addProperty(Property.createInstance("TYPE", true));
-    addProperty(Property.createInstance("DATE", true));
-    addProperty(Property.createInstance("PLAC", true));
+      addProperty(MetaProperty.instantiate("TYPE", "", true));
+    addProperty(MetaProperty.instantiate("DATE", "", true));
+    addProperty(MetaProperty.instantiate("PLAC", "", true));
     return this;
   }
 
@@ -149,24 +146,18 @@ public class PropertyEvent extends Property {
   /**
    * Returns the list of tags which identify PropertyEvents
    */
-  public static List getTags() {
+  public static List getEventTags() {
 
-    // Already calculated?
-    if (tags!=null) {
-      return tags;
-    }
-
-    // fill new
-    tags = new ArrayList(32);
-    for (int i=0;i<metaDefs.length;i++) {
-      MetaDefinition def = metaDefs[i];
-      if (def.isEvent()) {
-        tags.add(def.getTag());
-      }
+    // get 'em
+    List metas = MetaProperty.getEvents();
+    List result = new ArrayList(metas.size());
+    for (int i=0;i<metas.size();i++) {
+      MetaProperty def = (MetaProperty)metas.get(i);
+      result.add(def.getTag());
     }
 
     // done
-    return tags;
+    return result;
   }
 
   /**

@@ -22,6 +22,7 @@ package genj.io;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
@@ -515,7 +516,7 @@ public class GedcomReader implements Trackable {
       }
 
       // .. here's the property
-      prop = Property.createInstance(tag,value,false);
+      prop = MetaProperty.instantiate(tag, value, false);
       of.addProperty(prop);
 
       // .. a reference ? Remember !

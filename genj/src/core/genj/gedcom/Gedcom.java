@@ -37,6 +37,9 @@ public class Gedcom {
 
   /** origin of this Gedcom */
   private Origin origin;
+  
+  /** image */
+  private final static ImageIcon image = new ImageIcon(Gedcom.class, "images/Gedcom.gif");
 
   /** entities */
   private List[]  entities = new List[NUM_TYPES];
@@ -552,7 +555,7 @@ public class Gedcom {
    * Returns an image for Gedcom
    */
   public static ImageIcon getImage() {
-    return Images.get("ged");
+    return image;
   }
 
   /**
@@ -560,7 +563,7 @@ public class Gedcom {
    */
   public static ImageIcon getImage(int type) {
     try {
-      return Images.get(eTags[type]);
+      return MetaProperty.get(getTagFor(type)).getImage();
     } catch (ArrayIndexOutOfBoundsException e) {
       throw new IllegalArgumentException("Unknown type");
     }

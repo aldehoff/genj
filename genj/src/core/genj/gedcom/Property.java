@@ -26,7 +26,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -36,8 +38,6 @@ public abstract class Property implements Comparable {
 
   private static final Property NO_KNOWN_PROPERTIES[] = {};
   private static final String   NO_KNOWN_SUB_TAGS  [] = {};
-  private static final String   EVT_SUB_TAGS       [] = new String[]{ "DATE", "PLAC", "ADDR", "PHON", "AGNC", "TYPE" };
-  private static final String   IAT_SUB_TAGS       [] = new String[]{ "ADDR", "PHON", "AGNC", "DATE", "PLAC", "TYPE" };
 
   /**
    * Common fields for every Property: parent and vector of child properties
@@ -54,143 +54,6 @@ public abstract class Property implements Comparable {
     NO_MULTI=1,
     MULTI_NEWLINE=2,
     MULTI_BLOCK=3;
-
-  private static Hashtable tag2defs;
-
-  private static MetaDefinition unknownDefinition =
-    new MetaDefinition(null,null,new String[]{});
-
-  protected static final MetaDefinition metaDefs[] = {
-
-    // FAM Record
-    new MetaDefinition("FAM","Fam",new String[]{"MARR","CHIL","ANUL","CENS","DIV","DIVF","ENGA","MARB","MARC","MARL","MARS","EVEN"}) ,
-    new MetaDefinition("CHIL","Child") ,
-    new MetaDefinition("HUSB","Husband") ,
-    new MetaDefinition("WIFE","Wife") ,
-
-    // INDI Record
-    new MetaDefinition("INDI","Indi",new String[]{"NAME","SEX","BIRT","DEAT","RESI","GRAD","OCCU","CAST","DSCR","EDUC","IDNO","NATI","NCHI","PROP","RELI","SSN","TITL","CHR","BURI","CREM","ADOP","BAPM","BAPL","BARM","BASM","BLES","CHRA","CONF","FCOM","ORDN","NATU","EMIG","IMMI","CENS","PROB","WILL","RETI","EVEN"}) ,
-    new MetaDefinition("NAME","Name") ,
-    new MetaDefinition("SEX" ,"Sex") ,
-    new MetaDefinition("FAMC" ,"FamilyChild") ,
-    new MetaDefinition("FAMS" ,"FamilySpouse") ,
-
-    // OBJE Record
-    new MetaDefinition("OBJE","Indi") ,
-    new MetaDefinition("BLOB","Blob") ,
-
-    // NOTE Record
-    new MetaDefinition("NOTE","Note", new String[]{"DATE"}) ,
-
-    // SUBM Record
-    new MetaDefinition("SUBM","Submitter",new String[]{"NAME","ADDR","PHON"}),
-
-    // INDI Attributes
-    new MetaDefinition("CAST","IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("DSCR","IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("EDUC","IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("IDNO","IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("NATI","IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("NCHI","IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("OCCU","IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("PROP","IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("RELI","IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("RESI","IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("SSN" ,"IndividualAttribute",IAT_SUB_TAGS) ,
-    new MetaDefinition("TITL","IndividualAttribute",IAT_SUB_TAGS) ,
-
-    // INDI Events
-    new MetaDefinition("BIRT","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("CHR" ,"Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("DEAT","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("BURI","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("CREM","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("ADOP","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("BAPM","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("BAPL","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("BARM","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("BASM","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("BLES","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("CHRA","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("CONF","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("FCOM","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("ORDN","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("NATU","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("EMIG","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("IMMI","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("CENS","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("PROB","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("WILL","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("GRAD","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("RETI","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("EVEN","Event",EVT_SUB_TAGS) ,
-
-    // FAM Events
-    new MetaDefinition("ANUL","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("CENS","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("DIV" ,"Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("DIVF","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("ENGA","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("MARR","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("MARB","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("MARC","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("MARL","Event",EVT_SUB_TAGS) ,
-    new MetaDefinition("MARS","Event",EVT_SUB_TAGS) ,
-
-    // Individual Attributes
-    new MetaDefinition("ADDR","Address",new String[]{ "CITY", "POST" }) ,
-    new MetaDefinition("CONT","Continuation") ,
-    new MetaDefinition("DATE","Date") ,
-
-    new MetaDefinition("AGE" ,"Age") ,
-    new MetaDefinition("CAUS","Cause") ,
-    new MetaDefinition("CITY","City") ,
-    new MetaDefinition("PLAC","Place",new String[]{ "CONT" }) ,
-    new MetaDefinition("POST","PostalCode") ,
-
-    new MetaDefinition("ASSO","Association", new String[]{ "TYPE", "RELA"}) ,
-
-    new MetaDefinition("RELA","Relationship") ,
-
-    // Generic Attributes
-    new MetaDefinition("PHON","GenericAttribute") ,
-    new MetaDefinition("AGNC","GenericAttribute") ,
-    new MetaDefinition("TYPE","GenericAttribute") ,
-    new MetaDefinition("TITL","GenericAttribute") ,
-    new MetaDefinition("FORM","GenericAttribute") ,
-
-    // Media
-    new MetaDefinition("OBJE","Media"           ,new String[]{"TITL","FORM", "BLOB", "FILE"}) ,
-    new MetaDefinition("FILE","File"            ),
-
-    // Source
-    new MetaDefinition("SOUR","Source"    ,new String[]{"TITL","AUTH", "ABBR", "PUBL", "TEXT"}) ,
-    new MetaDefinition("AUTH","GenericAttribute") ,
-    new MetaDefinition("ABBR","GenericAttribute") ,
-    new MetaDefinition("PUBL","GenericAttribute") ,
-    new MetaDefinition("TEXT" ,"Text") ,
-
-    // Repository
-    new MetaDefinition("REPO","Repository"    ,new String[]{"NAME","ADDR","PHONE","NOTE"}) ,
-  };
-
-  /**
-   * Initializer
-   */
-  static {
-
-    // Create a Hashtable for lookups
-    tag2defs = new Hashtable(metaDefs.length);
-
-    // .. fill it up with property classes
-    for (int i=0;i<metaDefs.length;i++) {
-      MetaDefinition metaDef = metaDefs[i];
-      tag2defs.put(metaDef.getTag(),metaDef);
-    }
-
-    // .. done
-
-  }
 
   /**
    * Helper for getPathTo
@@ -252,8 +115,7 @@ public abstract class Property implements Comparable {
     children.add(prop);
 
     // We have to remember this as a new known (sub-)property
-    if (!prop.isTransient()&&!(prop instanceof PropertyXRef))
-      getMetaDefinition(getTag()).addSubTag(prop.getTag());
+    MetaProperty.get(getTag()).noteSub(prop);
 
     // Done
   }
@@ -264,7 +126,7 @@ public abstract class Property implements Comparable {
   public static String calcDefaultProxy(TagPath path) {
 
     // Find class for tag
-    Class c = getMetaDefinition(path.getLast()).getPropertyClass();
+    Class c = MetaProperty.get(path.getLast()).getPropertyClass();
 
     // Get proxy value
     Class  argtypes[] = { path.getClass() };
@@ -314,53 +176,6 @@ public abstract class Property implements Comparable {
     if (end<start) throw new NumberFormatException();
          
     return Integer.parseInt(id.substring(start, end+1));
-  }
-
-  /**
-   * Create a property object from a TAG
-   */
-  public static Property createInstance(String tag, boolean subProps) {
-    Property result = createInstance(tag, "", false);
-    if (subProps) {
-      result.addDefaultProperties();
-    }
-    return result;
-  }
-
-  /**
-   * Create a property object from a TAG, VALUE (can do preferred
-   * sub-properties, too)
-   */
-  public static Property createInstance(String tag,String value, boolean nullok) {
-
-    // Find class for tag
-    Class c = getMetaDefinition(tag).getPropertyClass();
-
-    // Instantiate Property object
-    Constructor constructor = null;
-    Object      object = null;
-
-    try {
-      // .. get constructor of property
-      Object parms[] = { tag, value };
-      Class  parmclasses[] = { String.class , String.class };
-      constructor = c.getConstructor(parmclasses);
-
-      // .. get object
-      object = constructor.newInstance(parms);
-
-      // Done
-      return (Property)object;
-
-    } catch (Throwable t) {
-      
-      if (nullok) return null;
-      
-      Debug.log(Debug.WARNING, Property.class, t);
-    }
-
-    // Error means unknown
-    return new PropertyUnknown(tag,value);
   }
 
   /**
@@ -428,14 +243,14 @@ public abstract class Property implements Comparable {
    * Returns the default image which is associated with this property.
    */
   public ImageIcon getDefaultImage() {
-    return Images.get(getTag());
+    return MetaProperty.get(getTag()).getImage();
   }
 
   /**
    * Returns the default image which is associated with this property.
    */
   public static ImageIcon getDefaultImage(String tag) {
-    return Images.get(tag);
+    return MetaProperty.get(tag).getImage();
   }
 
   /**
@@ -499,22 +314,14 @@ public abstract class Property implements Comparable {
     return entity.getGedcom();
 
   }
-
+  
   /**
    * Returns the image which is associated with this property.
    */
   public ImageIcon getImage(boolean checkValid) {
-    if (checkValid&&(!isValid())) {
-      // Maybe we have a special error for this one?
-      ImageIcon result = Images.get(getTag()+".err", false);
-      if (result!=null) {
-        return result;
-      }
-      // Otherwise we use the error one
-      return Images.get("X");
-    }
-    // Normal tag to image
-    return Images.get(getTag());
+    if (!checkValid||isValid())
+      return MetaProperty.get(getTag()).getImage();
+    return MetaProperty.get(getTag()).getImage("err");
   }
 
   /**
@@ -532,51 +339,6 @@ public abstract class Property implements Comparable {
 
     // Not found
     return 0;
-  }
-
-  /**
-   * Returns some explanationary information about this property.
-   */
-  public String getInfo() {
-
-    // Find Info that matches tag
-    String tag = getTag();
-
-    String name = Gedcom.getResources().getString(tag+".name");
-    String info = Gedcom.getResources().getString(tag+".info");
-
-    return name+":\n"+info;
-  }
-
-  /**
-   * Returns a list of (sub-)properties which are known
-   */
-  public final Property[] getKnownProperties() {
-
-    // Find the definition for this property
-    MetaDefinition metaDef = (MetaDefinition)tag2defs.get(getTag());
-
-    // 2001 03 05 user-added properties do not have a def.
-    if (metaDef==null) {
-      return NO_KNOWN_PROPERTIES;
-    }
-
-    Vector tags = metaDef.getSubTags();
-
-    // Build a result
-    Property result[] = new Property[tags.size()];
-    int p = 0;
-    Enumeration e = tags.elements();
-    while (e.hasMoreElements()) {
-      result[p++] = createInstance(
-        (String)e.nextElement(),
-        false
-      );
-    }
-
-    // Done
-    return result;
-
   }
 
   /**
@@ -857,17 +619,6 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Looks up a metaDef for given tag
-   */
-  private static MetaDefinition getMetaDefinition(String tag) {
-    MetaDefinition metaDef = (MetaDefinition)tag2defs.get(tag);
-    if (metaDef==null) {
-      metaDef = unknownDefinition;
-    }
-    return metaDef;
-  }
-
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
@@ -1131,5 +882,6 @@ public abstract class Property implements Comparable {
     }          
     
   } // PropertySet
-}
+  
+} //Property
 

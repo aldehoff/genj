@@ -54,10 +54,8 @@ public class PropertyIndividualAttribute extends Property {
 
     // RESIdence ?
     if (getTag().equals("RESI")) {
-      addProperty(Property.createInstance("ADDR", true));
-      // 20030210 no phone since it's really only applicable to later generations
-      // addProperty(createInstance("PHON", true));
-      addProperty(Property.createInstance("DATE", true));
+      addProperty(MetaProperty.instantiate("ADDR", "", true));
+      addProperty(MetaProperty.instantiate("DATE", "", true));
     }
 
     // Done

@@ -22,6 +22,7 @@ package genj.renderer;
 import genj.app.TagPathTree;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
@@ -287,7 +288,7 @@ public class BlueprintEditor extends JSplitPane {
       Object value = tag2value.get(path.getLast());
       if (value==null) value = "some "+path.getLast().toLowerCase();
       // .. create the property
-      Property result = Property.createInstance(path.getLast(), value.toString(), true);
+      Property result = MetaProperty.instantiate(path.getLast(), value.toString(), false);
       // done
       return result;
     }

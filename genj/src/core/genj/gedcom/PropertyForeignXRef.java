@@ -79,7 +79,7 @@ public class PropertyForeignXRef extends PropertyXRef {
    * getImage method comment.
    */
   public ImageIcon getImage(boolean checkValid) {
-    return Images.get("ASSO");
+    return MetaProperty.get("ASSO").getImage();
   }
 
   /**

@@ -29,12 +29,12 @@ public abstract class PropertyIndi extends Property{
    * Adds all default properties to this property
    */
   public Property addDefaultProperties() {
-    addProperty(Property.createInstance("NAME", true));
-    addProperty(Property.createInstance("SEX" , true));
-    addProperty(Property.createInstance("BIRT", true));
-    addProperty(Property.createInstance("DEAT", true));
-    addProperty(Property.createInstance("RESI", true));
-    addProperty(Property.createInstance("OCCU", true));
+    addProperty(MetaProperty.instantiate("NAME", "", true));
+    addProperty(MetaProperty.instantiate("SEX" , "", true));
+    addProperty(MetaProperty.instantiate("BIRT", "", true));
+    addProperty(MetaProperty.instantiate("DEAT", "", true));
+    addProperty(MetaProperty.instantiate("RESI", "", true));
+    addProperty(MetaProperty.instantiate("OCCU", "", true));
     return this;
   }
 

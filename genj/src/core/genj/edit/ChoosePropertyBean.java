@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyUnknown;
 import genj.util.Debug;
@@ -56,75 +57,26 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
   private JTextPane tpInfo;
 
   /**
-   * Tag List Cell Renderer
-   */
-  class TagListRenderer extends JLabel implements ListCellRenderer {
-
-    /** whether the tag in the list is selected or not */
-    boolean isSelected;
-
-    /**
-     * Return component for rendering list element
-     */
-    public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
-      Property prop = (Property)value;
-      setText(prop.getTag());
-      try {
-        // .. get class of property
-        setIcon(prop.getImage(false));
-      } catch (Exception e) {
-        Debug.log(Debug.WARNING, this, "Unexpected error while retrieving image of "+prop, e);
-        setIcon(genj.gedcom.Images.get("?"));
-      }
-      this.isSelected = isSelected;
-      return this;
-    }
-
-    /**
-     * paint is subclassed to draw the background correctly.  JLabel
-     * currently does not allow backgrounds other than white, and it
-     * will also fill behind the icon.  Something that isn't desirable.
-     */
-    public void paint(Graphics g) {
-
-      Color bColor;
-
-      if (isSelected) {
-        bColor = Color.yellow;
-      } else {
-        bColor = (getParent() != null) ? getParent().getBackground() : getBackground();
-      }
-
-      g.setColor(bColor);
-      g.fillRect(0 , 0, getWidth()-1, getHeight()-1);
-
-      super.paint(g);
-    }
-
-    // EOC
-  }
-
-  /**
    * Constructor
    */
-  public ChoosePropertyBean(Property[] knownProps, Resources resources) {
+  public ChoosePropertyBean(MetaProperty[] defs, Resources resources) {
 
     // Layout
     GridBagLayout layout = new GridBagLayout();
     setLayout(layout);
 
     // Checkbox for known props
-    rbChoose = new JRadioButton(resources.getString("choose.known"),knownProps.length>0);
-    rbChoose.setEnabled(knownProps.length>0);
+    rbChoose = new JRadioButton(resources.getString("choose.known"),defs.length>0);
+    rbChoose.setEnabled(defs.length>0);
     rbChoose.addItemListener(this);
     rbChoose.setAlignmentX(0);
     add(rbChoose,1,1,2,1,false);
 
     // .. List of tags
-    lChoose = new JList(knownProps);
-    lChoose.setEnabled(knownProps.length>0);
-    lChoose.setCellRenderer(new TagListRenderer());
-    if (knownProps.length==0) lChoose.setPrototypeCellValue(new PropertyUnknown("XXXXX",""));
+    lChoose = new JList(defs);
+    lChoose.setEnabled(defs.length>0);
+    lChoose.setCellRenderer(new MetaDefRenderer());
+    if (defs.length==0) lChoose.setPrototypeCellValue(new PropertyUnknown("XXXXX",""));
     lChoose.addListSelectionListener(this);
     JScrollPane sp = new JScrollPane(lChoose);
     add(sp,1,2,1,1,true);
@@ -143,7 +95,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     add(spInfo,2,2,1,1,true);
 
     // RadioButton for new props
-    rbNew = new JRadioButton(resources.getString("choose.new"),knownProps.length==0);
+    rbNew = new JRadioButton(resources.getString("choose.new"),defs.length==0);
     rbNew.addItemListener(this);
     rbNew.setAlignmentX(0);
     add(rbNew,1,3,2,1,false);
@@ -154,12 +106,12 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
 
     // Create Lower Part
     tfNew = new JTextField();
-    tfNew.setEnabled(knownProps.length==0);
+    tfNew.setEnabled(defs.length==0);
     tfNew.setAlignmentX(0);
     add(tfNew,1,4,2,1,false);
 
     // Focus
-    if (knownProps.length==0) {
+    if (defs.length==0) {
       tfNew.requestFocus();
     } else {
       lChoose.requestFocus();
@@ -189,31 +141,28 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
   /**
    * Returns the resulting properties
    */
-  public Property[] getResultingProperties() {
+  public Property[] getResultingProperties(boolean addDefaults) {
 
     Property[] result = null;
 
     // ... prepare list of selected properties
     if (rbChoose.isSelected() == true) {
       Object[] objs = lChoose.getSelectedValues();
-      if ( (objs==null) || (objs.length==0) ) {
-        result = null;
-      } else {
-        result = new Property[objs.length];
-        for (int i=0;i<objs.length;i++) {
-          result[i] = (Property)objs[i];
-        }
+      result = new Property[objs.length];
+      for (int i=0;i<objs.length;i++) {
+        result[i] = ((MetaProperty)objs[i]).instantiate("", addDefaults);
       }
     } else {
       // ... create a single entry property list
       if (tfNew.getText().equals("")) {
-        result = null;
+        result = new Property[0];
       } else {
         result = new Property[1];
-        result[0] = Property.createInstance(tfNew.getText(),"",false);
+        result[0] = MetaProperty.get(tfNew.getText()).instantiate("",addDefaults);
       }
     }
-
+    
+    // done
     return result;
   }
 
@@ -249,13 +198,55 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     }
 
     // Show info of last selected
-    Property prop=(Property)selection[selection.length-1];
-    tpInfo.setText(prop.getInfo());
+    MetaProperty meta = (MetaProperty)selection[selection.length-1];
+    tpInfo.setText(meta.getInfo());
     if (!rbChoose.isSelected())
       rbChoose.doClick();
 
     // Done
   }
 
-}
+  /**
+   * Tag List Cell Renderer
+   */
+  class MetaDefRenderer extends JLabel implements ListCellRenderer {
+
+    /** whether the tag in the list is selected or not */
+    boolean isSelected;
+
+    /**
+     * Return component for rendering list element
+     */
+    public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
+      MetaProperty def = (MetaProperty)value;
+      setText(def.getTag());
+      setIcon(def.getImage());
+      this.isSelected = isSelected;
+      return this;
+    }
+
+    /**
+     * paint is subclassed to draw the background correctly.  JLabel
+     * currently does not allow backgrounds other than white, and it
+     * will also fill behind the icon.  Something that isn't desirable.
+     */
+    public void paint(Graphics g) {
+
+      Color bColor;
+
+      if (isSelected) {
+        bColor = Color.yellow;
+      } else {
+        bColor = (getParent() != null) ? getParent().getBackground() : getBackground();
+      }
+
+      g.setColor(bColor);
+      g.fillRect(0 , 0, getWidth()-1, getHeight()-1);
+
+      super.paint(g);
+    }
+
+  } //MetaDefRenderer
+
+} //ChoosePropertyBean
 

@@ -73,12 +73,12 @@ public class PropertySex extends Property {
    */
   public static ImageIcon getDefaultImage(int sex) {
     switch (sex) {
-    case MALE:
-      return Images.get("sex.m");
-    case FEMALE:
-      return Images.get("sex.f");
-    }
-    throw new IllegalArgumentException("Unknown sex");
+      case MALE:
+        return MetaProperty.get("SEX").getImage("m");
+      case FEMALE:
+        return MetaProperty.get("SEX").getImage("f");
+      }
+      throw new IllegalArgumentException("Unknown sex");
   }
 
   /**
@@ -89,11 +89,11 @@ public class PropertySex extends Property {
       return super.getImage(true);
     switch (sex) {
       case FEMALE:
-        return Images.get("sex.f");
+        return MetaProperty.get("SEX").getImage("f");
       case MALE:
-        return Images.get("sex.m");
+        return MetaProperty.get("SEX").getImage("m");
       default:
-        return Images.get("sex");
+        return super.getImage(checkValid);
     }
   }
 
