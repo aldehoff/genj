@@ -20,18 +20,14 @@
 package genj.util.swing;
 
 import genj.util.GridBagHelper;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 
 import javax.swing.Box;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 
 /**
  * A component for choosing a font */
@@ -43,38 +39,22 @@ public class FontChooser extends JPanel {
   /** text for size */
   private JTextField textSize;
   
-  /** list of all fonts */
-  private static Font[] allFonts = null;
+  /** list of all font families */
+  private static String[] fontFamilies = null;
 
   /**
    * Constructor   */
   public FontChooser() {
     // sub-components
-    comboFonts = new JComboBox(getAllFonts());
-    comboFonts.setPrototypeDisplayValue(getFont());
+    comboFonts = new JComboBox(getFontFamilies());
     textSize = new JTextField(2);
     textSize.setText("12");
-    // listening
-    Glue glue = new Glue();
-    comboFonts.setRenderer(glue);
     //layout
     setAlignmentX(0F);
     GridBagHelper gh = new GridBagHelper(this);
     gh.add(comboFonts      , 0, 0, 1, 1, gh.GROW_HORIZONTAL);
     gh.add(textSize        , 1, 0);
     gh.add(Box.createGlue(), 2, 0, 1, 1, gh.GROW_BOTH);
-    // done
-  }
-  
-  /**
-   * @see javax.swing.JComponent#addNotify()
-   */
-  public void addNotify() {
-    super.addNotify();
-    
-    // init combobox with fontlist
-    comboFonts.setModel(new DefaultComboBoxModel(getAllFonts()));
-    
     // done
   }
   
@@ -88,13 +68,39 @@ public class FontChooser extends JPanel {
   /**
    * Helper to get fontlist
    */
-  private static Font[] getAllFonts() {
-    if (allFonts==null) allFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
-    return allFonts;
+  private static String[] getFontFamilies() {
+    if (fontFamilies==null) 
+      fontFamilies = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+    return fontFamilies;
   }
   
   /**
-   * Calculates current selected size   */
+   * Accessor - selected font   */
+  public void setSelectedFont(Font font) {
+    
+    // look for font
+    for (int f=0; f<fontFamilies.length; f++) {
+      if (fontFamilies[f].equals(font.getFamily())) {
+        comboFonts.setSelectedIndex(f);
+        break;
+      }
+    }
+    
+    // set size
+    textSize.setText(""+font.getSize());
+    
+    // done
+  }
+  
+  /**
+   * Accessor - selected font   */
+  public Font getSelectedFont() {
+    return new Font(comboFonts.getSelectedItem().toString(), 0, getSelectedFontSize());
+  }
+  
+  /**
+   * Calculates current selected size
+   */
   private int getSelectedFontSize() {
     int result = 2;
     try {
@@ -104,48 +110,27 @@ public class FontChooser extends JPanel {
     return Math.max(2,result);
   }
   
-  /**
-   * Accessor - selected font   */
-  public void setSelectedFont(Font font) {
-    // look for font
-    for (int f=0; f<allFonts.length; f++) {
-      if (allFonts[f].getName().equals(font.getName())) {
-        comboFonts.setSelectedIndex(f);
-        break;
-      }
-    }
-    // set size
-    textSize.setText(""+font.getSize());
-    // done
-  }
+//  /**
+//   * glue
+//   */
+//  private class Glue implements ListCellRenderer {
+//    
+//    /** a label */
+//    private HeadlessLabel label = new HeadlessLabel();
+//
+//    /**
+//     * @see javax.swing.ListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
+//     */
+//    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+//      if (value instanceof Font) {
+//        Font font = (Font)value;
+//        label.setFont(font.deriveFont((float)12));
+//        label.setText(font.getName());
+//      } else {
+//        label.setText("Foo");
+//      }
+//      return label;
+//    }
+//  } //Glue
   
-  /**
-   * Accessor - selected font   */
-  public Font getSelectedFont() {
-    Font f = (Font)comboFonts.getSelectedItem();
-    return f.deriveFont((float)getSelectedFontSize());
-  }
-  
-  /**
-   * glue
-   */
-  private class Glue implements ListCellRenderer {
-    
-    /** a label */
-    private HeadlessLabel label = new HeadlessLabel();
-
-    /**
-     * @see javax.swing.ListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
-     */
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-      if (value instanceof Font) {
-        Font font = (Font)value;
-        label.setFont(font.deriveFont((float)12));
-        label.setText(font.getName());
-      } else {
-        label.setText("Foo");
-      }
-      return label;
-    }
-  } //Glue
 } //FontChooser
