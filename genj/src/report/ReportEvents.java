@@ -212,8 +212,6 @@ public class ReportEvents extends Report {
    */
   private void report(HashMap ent2hits) {
     
-    // FIXME gotta check that this is still working with new calendars and stuff
-    
     ArrayList hits = new ArrayList(ent2hits.values());
 
     // sort the hits either by
@@ -221,7 +219,10 @@ public class ReportEvents extends Report {
     //  month/day
     Collections.sort(hits, new Comparator() {
       public int compare(Object hit1, Object hit2) {
-        return ((Hit)hit1).when.compareTo(((Hit)hit2).when, isSortDay?1:0);
+        PointInTime 
+          pit1 = ((Hit)hit1).when,
+          pit2 = ((Hit)hit2).when;
+        return pit1.compareTo(pit2, isSortDay ? PointInTime.MASK_DD|PointInTime.MASK_MMM : PointInTime.MASK_DD_MMM_YYYY);
       }
     });
     

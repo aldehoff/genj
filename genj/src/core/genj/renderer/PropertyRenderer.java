@@ -77,7 +77,7 @@ public class PropertyRenderer {
   public static PropertyRenderer get(Property prop) {
     
     // check secret
-    if (prop.isPrivate()) 
+    if (prop.isSecret()) 
       return SECRET_PROPERTY_PROXY;
     
     // continue with tag

@@ -32,7 +32,15 @@ import java.util.StringTokenizer;
 public class PointInTime implements Comparable {
   
   /** marker for unknown day,month,year */
-  public final static int UNKNOWN = Integer.MAX_VALUE;
+  public final static int 
+    UNKNOWN = Integer.MAX_VALUE;
+  
+  /** masking */
+  public final static int
+    MASK_DD   = 1,
+    MASK_MMM  = 2,
+    MASK_YYYY = 4,
+    MASK_DD_MMM_YYYY = MASK_DD|MASK_MMM|MASK_YYYY;
 
   /** calendars */
   public final static GregorianCalendar GREGORIAN = new GregorianCalendar();
@@ -152,7 +160,7 @@ public class PointInTime implements Comparable {
    */
   public int getJulianDay(boolean roundUp) {
     try {
-      return calendar.toJulianDay(this, roundUp);
+      return calendar.toJulianDay(this, MASK_DD_MMM_YYYY, roundUp);
     } catch (GedcomException e) {
       return UNKNOWN;
     }
@@ -169,7 +177,7 @@ public class PointInTime implements Comparable {
     if (!isComplete())
       throw new GedcomException("PointInTime not complete DD MMM YYYY - switching calendars n/a");
     // convert to julian date
-    int jd = calendar.toJulianDay(this, false);
+    int jd = calendar.toJulianDay(this, MASK_DD_MMM_YYYY, false);
     // convert to new instance
     set(cal.toPointInTime(jd));
   }  
@@ -285,17 +293,15 @@ public class PointInTime implements Comparable {
    * compare to other
    */  
   public int compareTo(Object o) {
-    return compareTo((PointInTime)o, 0);
+    return compareTo((PointInTime)o, MASK_DD_MMM_YYYY);
   }    
 
   /**
    * compare to other
    * @param other the pit to compare to
-   * @param offset 0 start with year 1 start with month 2 start with day
+   * @param mask
    */  
-  public int compareTo(PointInTime other, int offset) {
-    
-    // FIXME what to do about the offset
+  public int compareTo(PointInTime other, int mask) {
     
     // check valid
     boolean
@@ -309,7 +315,7 @@ public class PointInTime implements Comparable {
       return -1; 
     // compare
     try {
-      return calendar.toJulianDay(this, false) - other.calendar.toJulianDay(other, false);
+      return calendar.toJulianDay(this, mask, false) - other.calendar.toJulianDay(other, mask, false);
     } catch (GedcomException e) {
       return 0; // shouldn't really happen
     }
@@ -531,14 +537,22 @@ public class PointInTime implements Comparable {
     /**
      * PIT -> Julian Day
      */
-    protected final int toJulianDay(PointInTime pit, boolean roundUp) throws GedcomException {
+    protected final int toJulianDay(PointInTime pit, int mask, boolean roundUp) throws GedcomException {
       
-      // grab data and correct for missing day/month
+      // grab data 
       int 
         year  = pit.getYear () ,
         month = pit.getMonth(),
         day   = pit.getDay  ();
+        
+      // mask out
+      if (mask!=MASK_DD_MMM_YYYY) {
+        if ((mask&MASK_DD  )==0)   day = 0;
+        if ((mask&MASK_MMM )==0) month = 0;
+        if ((mask&MASK_YYYY)==0)  year = 1;
+      }
 
+      // check minimum validity
       if (year ==UNKNOWN)
         throw new GedcomException("Transformation to Julian Day requires year");
       if (month==UNKNOWN) 
@@ -548,7 +562,6 @@ public class PointInTime implements Comparable {
      
       return toJulianDay(day, month, year);
     }
-
     /**
      * PIT -> Julian Day
      */
@@ -638,7 +651,7 @@ public class PointInTime implements Comparable {
       int m = j + 2 - ( 12 * l );
       int y = 100 * ( n - 49 ) + i + l;
       
-      return new PointInTime(d-1,m-1,y,this);
+      return new PointInTime(d-1,m-1,y<=0?y-1:y,this);
     }
     
   } //GregorianCalendar
@@ -703,7 +716,7 @@ public class PointInTime implements Comparable {
         m = E-1 <= 12 ? E-1 : E-13,
         y = C-(m<3?4715:4716);  
       
-      return new PointInTime((int)d-1,(int)m-1,(int)y,this);
+      return new PointInTime(d-1,m-1,y<=0?y-1:y,this);
     }
 
   } //JulianCalendar
@@ -877,7 +890,7 @@ public class PointInTime implements Comparable {
 
       // year ok?
       if (year<1)
-        throw new GedcomException("Hebrew calendar starts with 1");
+        throw new GedcomException("Hebrew calendar has to start with 1");
 
       // make sure Adar R is in leap year
       if (month==5&&!isLeap(year))

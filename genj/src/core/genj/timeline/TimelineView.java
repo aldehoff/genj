@@ -49,7 +49,7 @@ import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-
+// FIXME needs to refactored around multiple calendars/meaning of years
 
 /**
  * Component for showing entities' events in a timeline view
