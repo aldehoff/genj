@@ -174,7 +174,7 @@ public class Options implements OptionProvider {
       String lang = codes[language];
       if (lang.length()>0) {
         Debug.log(Debug.INFO, this, "Switching language to "+lang);
-        String country = "";
+        String country = Locale.getDefault().getCountry();
         int i = lang.indexOf('_');
         if (i>0) {
           country = lang.substring(i+1);
