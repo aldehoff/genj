@@ -192,21 +192,21 @@ public class PropertyDate extends Property {
   }
 
   /**
-   * Returns wether this date is a range (fromto, betand)
+   * Returns whether this date is a range (fromto, betand)
    */
   public boolean isRange() {
     return isRange(format);
   }
 
   /**
-   * Returns wether given format is a range (fromto, betand)
+   * Returns whether given format is a range (fromto, betand)
    */
   public static boolean isRange(int format) {
     return formats[format].isRange;
   }
 
   /**
-   * Tells wether this date is valid
+   * Tells whether this date is valid
    * @return <code>boolean</code> indicating validity
    */
   public boolean isValid() {
@@ -390,14 +390,26 @@ public class PropertyDate extends Property {
     public Integer getMonth() {
       return month;
     }
-  
+
     /**
      * Returns the day
      */
     public Integer getDay() {
       return day;
     }
-  
+
+    /**
+     * Returns a Calendar object for year/month/day
+     */
+    public Calendar getCalendar() {
+      Calendar cal = Calendar.getInstance();
+      int iyear  = (year  == null) ? 0 : year.intValue();
+      int imonth = (month == null) ? 0 : (month.intValue() - 1);
+      int iday   = (day   == null) ? 0 : day.intValue();
+      cal.set(iyear, imonth, iday);
+      return cal;
+    }
+
     /**
      * compare to other
      */  

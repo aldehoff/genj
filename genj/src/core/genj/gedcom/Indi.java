@@ -20,6 +20,7 @@
 package genj.gedcom;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -256,6 +257,48 @@ public class Indi extends PropertyIndi implements Entity {
 
     // Return string value
     return p.toString();
+  }
+
+  /**
+   * Calculate indi's age
+   * (some code borrowed from jLifelines)
+   */
+  public String getAge() {
+    PropertyDate pBirth = getBirthDate();
+    PropertyDate pDeath = getDeathDate();
+    boolean showMonth, showDay;
+    PropertyDate.PointInTime pit;
+
+    // TODO: should check for AGE properties first...
+
+    if (pBirth==null)
+      return "";
+    pit = pBirth.getStart();
+    Calendar birthCal = pit.getCalendar();
+    showMonth = (pit.getMonth() != null);
+    showDay   = (pit.getDay()   != null);
+
+    Calendar end = Calendar.getInstance(); // default to current time
+    if (pDeath!=null) {
+      pit = pDeath.isRange() ? pDeath.getEnd() : pDeath.getStart();
+      end = pit.getCalendar();
+      showMonth |= (pit.getMonth() != null);
+      showDay   |= (pit.getDay()   != null);
+    }
+
+    end.add(Calendar.YEAR,  -birthCal.get(Calendar.YEAR));
+    end.add(Calendar.MONTH, -birthCal.get(Calendar.MONTH));
+    end.add(Calendar.DATE,  -birthCal.get(Calendar.DATE));
+
+    StringBuffer buf = new StringBuffer(end.get(Calendar.YEAR) + "y");
+    if (showMonth) {
+      buf.append(" ").append(end.get(Calendar.MONTH)).append("m");
+      if (showDay) {
+        buf.append(" ").append(end.get(Calendar.DATE)).append("d");
+      }
+    }
+
+    return buf.toString();
   }
 
   /**
