@@ -115,7 +115,7 @@ public class ButtonHelper {
     String s = string((isShortTexts&&action.getShortText()!=null) ? action.getShortText() : action.getText());
     result.putClientProperty("save.text", s);
 
-    if (isTextAllowed&&s.length()>0) {
+    if (s.length()>0) {
       int mnemonic = s.indexOf('~');    
       if (mnemonic<0)
         result.setMnemonic(s.charAt(0));
@@ -123,7 +123,10 @@ public class ButtonHelper {
         result.setMnemonic(s.charAt(mnemonic+1));
         s = s.substring(0,mnemonic)+s.substring(mnemonic+1);
       }
-      result.setText(s);
+      if (isTextAllowed)
+        result.setText(s);
+      else
+        result.setToolTipText(s);
     }
     
     // its image
