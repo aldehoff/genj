@@ -25,6 +25,7 @@ import genj.edit.actions.DelEntity;
 import genj.edit.actions.OpenForEdit;
 import genj.edit.actions.RunExternal;
 import genj.edit.actions.SetSubmitter;
+import genj.edit.actions.TogglePrivate;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -100,6 +101,9 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
       }
       // .. next
     }
+    
+    // Toggle "Private"
+    result.add(new TogglePrivate(property, manager));
 
     // done
     return result;

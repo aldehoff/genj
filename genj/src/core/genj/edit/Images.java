@@ -66,5 +66,6 @@ final public class Images {
     
     imgDelete    = new ImageIcon(this,"images/entity/Delete.gif");
     imgNew       = new ImageIcon(this,"images/entity/New.gif");
+    
   }
 }

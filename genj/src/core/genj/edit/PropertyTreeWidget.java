@@ -29,6 +29,7 @@ import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.util.swing.HeadlessLabel;
+import genj.util.swing.ImageIcon;
 import genj.util.swing.TreeWidget;
 
 import java.awt.Component;
@@ -524,7 +525,10 @@ public class PropertyTreeWidget extends TreeWidget {
       }
 
       // calc image        
-      setIcon(prop.getImage(true));
+      ImageIcon img = prop.getImage(true);
+      if (prop.isPrivate()) 
+        img = img.getOverLayed(MetaProperty.IMG_PRIVATE);
+      setIcon(img);
       
       // calc text view
       View view = (View)model.getCachedValue(prop);
