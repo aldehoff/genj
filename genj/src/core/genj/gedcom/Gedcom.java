@@ -32,31 +32,6 @@ import genj.util.swing.ImageIcon;
  */
 public class Gedcom {
   
-  /** submitter of this Gedcom */
-  private Submitter submitter;
-
-  /** origin of this Gedcom */
-  private Origin origin;
-  
-  /** image */
-  private final static ImageIcon image = new ImageIcon(Gedcom.class, "images/Gedcom.gif");
-
-  /** entities */
-  private List[]  entities = new List[NUM_TYPES];
-  private IDMap[] ids = new IDMap[NUM_TYPES];
-  
-  /** change/transaction support */
-  private boolean isTransaction = false;
-  private boolean hasUnsavedChanges;
-  private List addedEntities     ,
-                deletedEntities   ;
-  private List addedProperties   ,
-                deletedProperties ,
-                modifiedProperties;
-
-  /** listeners */
-  private List listeners = new ArrayList(10);
-
   /** static resourcs */
   static private Random seed = new Random();
   static /*package*/ Resources resources = new Resources("genj.gedcom");
@@ -77,6 +52,34 @@ public class Gedcom {
     SUBMITTERS   = 5,
     REPOSITORIES = 6,
     NUM_TYPES    = 7;
+
+  /** image */
+  private final static ImageIcon image = new ImageIcon(Gedcom.class, "images/Gedcom.gif");
+  
+  /** images */
+  private static ImageIcon[] images = new ImageIcon[NUM_TYPES];
+
+  /** submitter of this Gedcom */
+  private Submitter submitter;
+
+  /** origin of this Gedcom */
+  private Origin origin;
+  
+  /** entities */
+  private List[]  entities = new List[NUM_TYPES];
+  private IDMap[] ids = new IDMap[NUM_TYPES];
+  
+  /** change/transaction support */
+  private boolean isTransaction = false;
+  private boolean hasUnsavedChanges;
+  private List addedEntities     ,
+                deletedEntities   ;
+  private List addedProperties   ,
+                deletedProperties ,
+                modifiedProperties;
+
+  /** listeners */
+  private List listeners = new ArrayList(10);
 
   /**
    * Gedcom's Constructor
@@ -566,7 +569,9 @@ public class Gedcom {
    */
   public static ImageIcon getImage(int type) {
     try {
-      return MetaProperty.get(new TagPath(getTagFor(type))).getImage();
+      if (images[type]==null) 
+        images[type] = MetaProperty.get(new TagPath(getTagFor(type))).getImage();
+      return images[type];
     } catch (ArrayIndexOutOfBoundsException e) {
       throw new IllegalArgumentException("Unknown type");
     }

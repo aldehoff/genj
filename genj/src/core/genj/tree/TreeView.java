@@ -127,6 +127,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /** our blueprints */
   private Blueprint[] blueprints = new Blueprint[Gedcom.NUM_TYPES];
   
+  /** our renderers */
+  private EntityRenderer[] renderers = new EntityRenderer[Gedcom.NUM_TYPES];
+  
   /** our content's font */
   private Font contentFont = new Font("SansSerif", 0, 12);
   
@@ -320,8 +323,13 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
    * Access - contentFont
    */
   public void setContentFont(Font set) {
+    // change?
     if (contentFont.equals(set)) return;
+    // remember
     contentFont = set;
+    // reset renderers
+    renderers = new EntityRenderer[Gedcom.NUM_TYPES];
+    // show
     repaint();
   }
 
@@ -337,13 +345,17 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
    */
   public void setBlueprints(Blueprint[] set) {
     // check 
+    boolean b = false;
+    
     for (int i=0; i<set.length; i++) {
       if (!blueprints[i].equals(set[i])) {
         blueprints = set;
-        repaint();
-        return;
+        renderers[i] = null;
+        b = true;
       }
     }
+    // show?
+    if (b) repaint();
     // done
   }
 
@@ -540,7 +552,11 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /**
    * Resolve a renderer   */
   /*package*/ EntityRenderer getEntityRenderer(int type) {
-    EntityRenderer result = new EntityRenderer(blueprints[type], contentFont);
+    EntityRenderer result = renderers[type];
+    if (result==null) { 
+      result = new EntityRenderer(blueprints[type], contentFont);
+      renderers[type] = result;
+    }
     return result;
   }
 
