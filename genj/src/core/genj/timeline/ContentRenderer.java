@@ -171,24 +171,42 @@ public class ContentRenderer extends Renderer {
 
     boolean em  = event.pe.getEntity().equals(model.gedcom.getLastEntity());
     
-    String txt = event.content;
-    if (paintTags) txt = event.pe.getTag() + ' ' + txt;
-    if (paintDates) txt = txt + '(' + event.pd + ')';
-
     // draw it's extend
     setColor(g, cTimespan);
     g.drawLine(x1-1, y+lh-2, x1-1, y+lh-1);
     g.drawLine(x1  , y+lh-1, x2  , y+lh-1);
     g.drawLine(x2+1, y+lh-2, x2+1, y+lh-1);
-    
-    // draw it's text and image (not extending past model.max)
-    setColor(g, cText);
-    
+
+    // clipping from here    
     pushClip(g, x1, y, w, lh);
+    
+    // draw its image
     ImgIcon img = event.pe.getImage(false);
     img.paintIcon(g, x1, y+lh/2-img.getIconHeight()/2);
     x1+=img.getIconWidth();
-    g.drawString(txt, x1, y + lh - fd);
+    y +=lh-fd;
+
+    // draw its tag    
+    if (paintTags) {
+      String tag = event.pe.getTag();
+      setColor(g, cTag);
+      g.drawString(tag, x1, y);
+      x1+=fm.stringWidth(tag)+fm.charWidth(' ');
+    }
+
+    // draw its text 
+    setColor(g, cText);
+    g.drawString(event.content, x1, y);
+    x1+=fm.stringWidth(event.content)+fm.charWidth(' ');
+    
+    // draw its date
+    if (paintDates) {
+      String date = " (" + event.pd + ')';
+      setColor(g, cDate);
+      g.drawString(date, x1, y);
+    }
+        
+    // done with clipping
     popClip(g);
     
     // done
