@@ -318,6 +318,7 @@ public class Registry {
   /**
    * Returns vector of strings by key
    */
+  /*
   public Vector get(String key, Vector def) {
 
     // Get size of array
@@ -329,6 +330,35 @@ public class Registry {
     Vector result = new Vector(size);
     for (int i=0;i<size;i++) {
       result.addElement(get(key+"."+(i+1),""));
+    }
+
+    // Done
+    return result;
+  }
+  */
+
+  /**
+   * Returns a collection of strings by key
+   */
+  public Collection get(String key, Collection def) {
+
+    // Get size of array
+    int size = get(key,-1);
+    if (size==-1)
+      return def;
+
+    // Create result
+    Collection result;
+    try {
+      result = (Collection)def.getClass().newInstance();
+    } catch (Throwable t) {
+      Debug.log(Debug.WARNING, this, "Couldn't instantiate new collection of type "+def.getClass().getName());
+      return def;
+    }
+    
+    // Collection content
+    for (int i=0;i<size;i++) {
+      result.add(get(key+"."+(i+1),""));
     }
 
     // Done
@@ -529,15 +559,17 @@ public class Registry {
   }
 
   /**
-   * Remembers a vector of Strings
+   * Remembers a collection of Strings
    */
-  public void put(String key, Vector value) {
+  public void put(String key, Collection values) {
 
     // Remember
-    int l = value.size();
+    int l = values.size();
     put(key,l);
-    for (int i=0;i<l;i++) {
-      put(key+"."+(i+1),value.elementAt(i).toString());
+    
+    Iterator elements = values.iterator();
+    for (int i=0;elements.hasNext();i++) {
+      put(key+"."+(i+1),elements.next().toString());
     }
 
     // Done
