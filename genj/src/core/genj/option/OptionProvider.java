@@ -41,7 +41,7 @@ public abstract class OptionProvider {
   public abstract List getOptions();
 
   /**
-   * Restore options values from registry
+   * Restore all options from all OptionProviders from registry
    */
   public static void restoreAll(Registry registry) {
   
@@ -57,7 +57,7 @@ public abstract class OptionProvider {
   }
 
   /**
-   * Persist option values to registry
+   * Persist all options from all OptionProviders to registry
    */
   public static void persistAll(Registry registry) {
     
@@ -73,7 +73,29 @@ public abstract class OptionProvider {
     // done
     
   }
-
+  
+  /**
+   * Static Accessor - explicitly set options to consider
+   */
+  public static void setOptionProviders(String[] providers) {
+    
+    // collect    
+    options = new ArrayList(32);
+    for (int i=0;i<providers.length;i++) { 
+      try {
+        // one provider at a time
+        OptionProvider provider = (OptionProvider)Class.forName(providers[i]).newInstance();
+        // grab its options
+        List os = provider.getOptions();
+        // keep em
+        options.addAll(os);
+      } catch (Throwable t) {
+      }
+    }
+    
+    // done
+  }
+  
   /**
    * Static Accessor - all options available from OptionProviders
    */
