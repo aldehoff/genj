@@ -23,7 +23,7 @@ import java.util.TreeMap;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.10 2002-03-25 21:02:01 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.11 2002-04-22 12:16:00 island1 Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -213,7 +213,7 @@ public class ReportGedcomStatistics implements Report {
   private void reportResults(ReportBridge bridge, Gedcom gedcom, Statistics stats) {
 
     // Header :
-    bridge.println("In the Gedcom file named '"+gedcom.getName()+"', there are :");
+    bridge.println("In the Gedcom file named '"+gedcom.getName()+"', there are :\n");
     bridge.println("  * Stats about people :");
 		
     // One: We show the number of families :
@@ -234,6 +234,8 @@ public class ReportGedcomStatistics implements Report {
     bridge.println("         . "+stats.numUnknown+" with undefined sex (soit : "
       +stats.numUnknown+" personnes dont le sexe n'est pas connu).");
 
+    bridge.println("");
+
     // Six: We show the birth places
     bridge.println("  * Stats about birth places :");
     Iterator it = stats.birthPlaces.keySet().iterator();
@@ -242,6 +244,8 @@ public class ReportGedcomStatistics implements Report {
       Integer count = (Integer)stats.birthPlaces.get(place);
       bridge.println("     - "+count+" individuals were born in "+place);
     }
+
+    bridge.println("");
 
     // Seven: We show the death places
     bridge.println("  * Stats about death places :");
