@@ -10,6 +10,8 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Rectangle2D;
 import java.util.Stack;
 
 
@@ -40,30 +42,30 @@ public class UnitGraphics {
   /** a stack of push'd clips */
   private Stack clipStack = new Stack();
   
-  /** the unit */
-  private double unit = PIXELS;
+  /** the horizontal/vertical unit */
+  private double xunit, yunit;
   
   /**
    * Constructor
    */
-  public UnitGraphics(Graphics graphcs, double unitt) {
-    this((Graphics2D)graphcs, unitt);
+  public UnitGraphics(Graphics graphcs, double unitX, double unitY) {
+    this((Graphics2D)graphcs, unitX, unitY);
   }
 
   /**
    * Constructor
    */
-  public UnitGraphics(Graphics2D graphcs, double unitt) {
+  public UnitGraphics(Graphics2D graphcs, double unitX, double unitY) {
     graphics = graphcs;
-    unit = unitt;
-    graphics.setStroke(new SingleBitStroke());
+    xunit = unitX;
+    yunit = unitY;
   }
   
   /**
    * Translates
    */
   public void translate(double x, double y) {
-    graphics.translate(units2pixels(x), units2pixels(y));
+    graphics.translate(units2pixels(x, xunit), units2pixels(y, yunit));
   }
 
   /** 
@@ -71,10 +73,15 @@ public class UnitGraphics {
    */
   public void draw(Shape shape, double x, double y, boolean fill) {
     pushTransformation();
-    graphics.translate(units2pixels(x), units2pixels(y));
-    graphics.scale(unit,unit);
-    if (fill) graphics.fill(shape);
-    else graphics.draw(shape);
+    graphics.translate(units2pixels(x, xunit), units2pixels(y, yunit));
+    
+    // FIXME: Cache scaled shapes
+    GeneralPath gp = new GeneralPath(shape);
+    gp.transform(AffineTransform.getScaleInstance(xunit,yunit));
+
+    if (fill) graphics.fill(gp);
+    else graphics.draw(gp);
+    
     popTransformation();
   }
   
@@ -87,7 +94,7 @@ public class UnitGraphics {
       w  = fm.stringWidth(txt),
       dx = -w/2,
       dy = fm.getHeight()/2-fm.getDescent();
-    graphics.drawString(txt, units2pixels(x)+dx, units2pixels(y)+dy);
+    graphics.drawString(txt, units2pixels(x, xunit)+dx, units2pixels(y, yunit)+dy);
   }
   
   /**
@@ -121,9 +128,21 @@ public class UnitGraphics {
   /**
    * Pushes a pop'able clip
    */
-  public void pushClip(double x, double y, double w, double h) {
+  public void pushClip(double x, double y, Rectangle2D r) {
+    pushClip(x+r.getX(), y+r.getY(), x+r.getMaxX(), y+r.getMaxY());
+  }
+  
+  /**
+   * Pushes a pop'able clip
+   */
+  public void pushClip(double x1, double y1, double x2, double y2) {
     clipStack.push(graphics.getClipBounds());
-    graphics.setClip(units2pixels(x),units2pixels(y),units2pixels(w),units2pixels(h));
+    int 
+      x = (int)Math.ceil(x1*xunit),
+      y = (int)Math.ceil(y1*yunit),
+      w = (int)Math.floor(x2*xunit)-x,
+      h = (int)Math.floor(y2*xunit)-y;
+    graphics.clipRect(x,y,w,h);
   }
   
   /**
@@ -132,20 +151,6 @@ public class UnitGraphics {
   public void popClip() {
     Rectangle r = (Rectangle)clipStack.pop();
     graphics.setClip(r.x,r.y,r.width,r.height);
-  }
-  
-  /**
-   * units2pixels
-   */
-  public int units2pixels(double d) {
-    return units2pixels(d, unit);
-  }
-  
-  /**
-   * pixels2units
-   */
-  public double pixels2units(int i) {
-    return pixels2units(i, unit);
   }
   
   /**
@@ -161,16 +166,5 @@ public class UnitGraphics {
   public static double pixels2units(int i, double unit) {
     return ((double)i)*unit;
   }
-
-  /**
-   * Single bit Stroke
-   */
-  private class SingleBitStroke extends BasicStroke {
-    /** @see java.awt.BasicStroke#getLineWidth() */
-    public float getLineWidth() {
-      return (float)(1/unit);
-    }
-  } //SingleBitStroke
-  
 
 } //UnitGraphics
