@@ -24,23 +24,33 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.ItemSelectable;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.EventObject;
 import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.AbstractCellEditor;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.JTree;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.CellEditorListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.tree.TreeCellEditor;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreePath;
+
+import swingx.tree.AbstractTreeModel;
 
 /**
  * A widget for displaying options in tabular way
@@ -50,8 +60,8 @@ public class OptionsWidget extends JPanel {
   /** an image for options */
   public final static ImageIcon IMAGE = new ImageIcon(OptionsWidget.class, "images/Options.gif");
 
-  /** table we're using */
-  private JTable table;
+  /** tree we're using */
+  private JTree tree;
   
   /** model we're using */
   private Model model = new Model();
@@ -74,17 +84,34 @@ public class OptionsWidget extends JPanel {
     this.manager = manager;
         
     // setup
-    table = new Table();
+    
+    tree = new JTree(model);
+    tree.setShowsRootHandles(false);
+    tree.setRootVisible(false);
+    tree.setCellRenderer(new Cell());
+    tree.setCellEditor(new Cell());
+    tree.setEditable(true);
+    tree.setInvokesStopCellEditing(true);
      
     // layout
     setLayout(new BorderLayout());
-    add(BorderLayout.CENTER, new JScrollPane(table));    
+    add(BorderLayout.CENTER, new JScrollPane(tree));    
     
     // options?
     if (options!=null)
       setOptions(options);
 
     // done
+  }
+  
+  /**
+   * callback - lifecycle remove
+   */
+  public void removeNotify() {
+    // make sure any edit is stopped
+    tree.stopEditing();
+    // continue
+    super.removeNotify();
   }
   
   /**
@@ -104,14 +131,14 @@ public class OptionsWidget extends JPanel {
     Option[] options = (Option[])set.toArray(new Option[set.size()]);
     model.setOptions(options);
     
-    // recalc column widths
-    int w = 48;
-    
-    for (int i=0;i<options.length;i++)
-      w = Math.max(w, options[i].getUI(this).getComponentRepresentation().getPreferredSize().width);
-      
-    table.getColumnModel().getColumn(0).setPreferredWidth(Integer.MAX_VALUE);
-    table.getColumnModel().getColumn(1).setMinWidth(w);
+//    // recalc column widths
+//    int w = 48;
+//    
+//    for (int i=0;i<options.length;i++)
+//      w = Math.max(w, options[i].getUI(this).getComponentRepresentation().getPreferredSize().width);
+//      
+//    table.getColumnModel().getColumn(0).setPreferredWidth(Integer.MAX_VALUE);
+//    table.getColumnModel().getColumn(1).setMinWidth(w);
 
     // layout
     doLayout();
@@ -123,184 +150,159 @@ public class OptionsWidget extends JPanel {
   public WindowManager getWindowManager() {
     return manager;
   } 
+  
+  /**
+   * A cell user either temporarily as renderer or editor
+   */
+  private class Cell extends AbstractCellEditor implements TreeCellRenderer, TreeCellEditor {
+    
+    /** current ui */
+    private OptionUI ui;
+    
+    /** panel container */
+    private JPanel panel = new JPanel();
+    
+    /** label for option name */
+    private JLabel labelForName = new JLabel();
+    
+    /** label for option value */
+    private JLabel labelForValue = new JLabel();
+    
+    /**
+     * constructor
+     */
+    private Cell() {
+      panel.setOpaque(false);
+      panel.setLayout(new BorderLayout());
+      panel.add(labelForName, BorderLayout.WEST);
+    }
+    /**
+     * callback - component generation
+     */
+    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+      // an option group?
+      if (!(value instanceof Option)) 
+        return panel;
+      return assemblePanel((Option)value, false);
+    }
+
+    /**
+     * assemble the editor/renderer panel
+     */
+    private JPanel assemblePanel(Option option, boolean forceUI) {
+      // remove old
+      if (panel.getComponentCount()>1) 
+        panel.remove(1);
+      // lookup option and ui
+      ui = option.getUI(OptionsWidget.this);
+      // prepare name
+      labelForName.setText(option.getName()+ " : ");
+      labelForName.setPreferredSize(new Dimension(getWidth()/2,labelForName.getPreferredSize().height));
+      // and value (either text or ui)
+      JComponent compForValue;
+      String text = ui.getTextRepresentation();
+      if (text!=null&&!forceUI) {
+        labelForValue.setText(text);
+        compForValue = labelForValue;
+      } else {
+        compForValue = ui.getComponentRepresentation();
+      }
+      panel.add(compForValue, BorderLayout.CENTER);
+      
+      // done
+      return panel;
+    }
+
+    /**
+     * callback - call for editor component
+     */
+    public Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected, boolean expanded, boolean leaf, int row) {
+      return assemblePanel((Option)value, true);
+    }
+    
+    /**
+     * callback - the resulting value
+     */
+    public Object getCellEditorValue() {
+      return null;
+    }
+
+    /** callback - cancel editing */     
+    public void cancelCellEditing() {
+      ui = null;
+      super.cancelCellEditing();
+    }
+  
+    /** callback - stop editing = commit */     
+    public boolean stopCellEditing() {
+      if (ui!=null)
+        ui.endRepresentation();
+      return super.stopCellEditing();
+    }
+
+  } //Cell
     
   /** 
    * Model
    */
-  private class Model extends AbstractTableModel {
-  
+  private class Model extends AbstractTreeModel {
+    
     /** options we're looking at */
     private Option[] options = new Option[0];
   
     /**
-     * Get options by index
+     * the parent of options is the root (this)
      */
-    private Option getOption(int row) {
-      return options[row];
+    protected Object getParent(Object node) {
+      return node==this ? null : this;
     }
-    
+
     /**
      * Set options to display
      */
     private void setOptions(Option[] set) {
       options = set;
-      fireTableDataChanged();
+      fireTreeStructureChanged(this, new TreePath(this), null, null);
     }
     
     /**
-     * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
+     * the root is this
      */
-    public boolean isCellEditable(int row, int col) {
-      return col==1;
+    public Object getRoot() {
+      return this;
     }
-    
+
     /**
-     * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
+     * children are all options
      */
-    public void setValueAt(Object value, int row, int col) {
+    public int getChildCount(Object parent) {
+      return parent==this ? options.length : 0;
     }
-  
+
     /**
-     * @see javax.swing.table.TableModel#getColumnCount()
+     * options are leafs
      */
-    public int getColumnCount() {
-      return 2;
+    public boolean isLeaf(Object node) {
+      return node!=this;
     }
-    
+
     /**
-     * @see javax.swing.table.TableModel#getRowCount()
+     * option by index
      */
-    public int getRowCount() {
-      return options.length;
+    public Object getChild(Object parent, int index) {
+      return options[index];
     }
-    
+
     /**
-     * @see javax.swing.table.TableModel#getValueAt(int, int)
+     * reverse index lookup
      */
-    public Object getValueAt(int row, int col) {
-      Option option = getOption(row);
-      
-      // first column?
-      if (col==0)
-        return option.getName();
-        
-        
-      // second column!
-      if (option instanceof PropertyOption)
-        return ((PropertyOption)option).getValue();
-        
-      // nothing
-      return null;
+    public int getIndexOfChild(Object parent, Object child) {
+      for (int o = 0; o < options.length; o++) {
+        if (options[o]==child) return o;
+      }
+      throw new IllegalArgumentException();
     }
     
   } //Model
-
-  /**
-   * our table
-   */
-  private class Table extends JTable implements TableCellRenderer {
-
-    /** our editor */
-    private Editor editor = new Editor();
-    
-    /** constructor */
-    private Table() {
-      super(model);
-
-      DefaultTableColumnModel columns = new DefaultTableColumnModel();
-      columns.addColumn(new TableColumn(0));
-      columns.addColumn(new TableColumn(1));
-      super.setColumnModel(columns);
-      
-      //table.getTableHeader().setReorderingAllowed(false);
-      
-    }
-    
-    /**
-     * catch remove to commit current editor
-     */
-    public void removeNotify() {
-      if (isEditing())
-        editCellAt(-1,-1);
-      // continue
-      super.removeNotify();
-    }
-
-    /** we know how to find the correct editor */
-    public TableCellEditor getCellEditor(int row, int col) {
-      // easy for first column
-      if (col==0)
-        return null;
-      // ourself for second column
-      return editor;
-    }
-   
-    /** we know how to find the correct renderer */
-    public TableCellRenderer getCellRenderer(int row, int col) {
-      // easy for first column
-      if (col==0)
-        return new DefaultTableCellRenderer();
-      // ourself for second column
-      return this;
-    }
-   
-    /** our renderer factory */
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-      // lookup option and ui
-      Option option = model.getOption(row);
-      OptionUI ui = option.getUI(OptionsWidget.this);
-      // text representation available
-      String text = ui.getTextRepresentation();
-      if (text!=null)
-        return new JLabel(text);
-      // use component representation
-      return ui.getComponentRepresentation();
-    }
-
-    /**
-     * Our Editor
-     */
-    private class Editor extends AbstractCellEditor implements TableCellEditor, ItemListener {  
-  
-      /** current ui */
-      private OptionUI ui;
-
-      /** a component for editing */     
-      public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        // lookup option and ui
-        Option option = model.getOption(row);
-        ui = option.getUI(OptionsWidget.this);
-        Component result = ui.getComponentRepresentation();
-        if (result instanceof ItemSelectable)
-          ((ItemSelectable)result).addItemListener(this);
-        return result;
-      }
-
-      /** callback - no value access through this one though */     
-      public Object getCellEditorValue() {
-        return null;
-      }
-    
-      /** callback - cancel editing */     
-      public void cancelCellEditing() {
-        ui = null;
-        super.cancelCellEditing();
-      }
-    
-      /** callback - stop editing = commit */     
-      public boolean stopCellEditing() {
-        if (ui!=null)
-          ui.endRepresentation();
-        return super.stopCellEditing();
-      }
-
-      /** callback - editor component item state changed */      
-      public void itemStateChanged(ItemEvent e) {
-        stopCellEditing();
-      }
-  
-    } //Editor
-
-  }
 
 } //OptionsWidget
