@@ -66,6 +66,9 @@ public class ContentRenderer {
   /** an entity that we consider selected */
   /*package*/ Entity selection = null;
   
+  /** whether to render content */
+  /*package*/ boolean isRenderContent = true;
+  
   /**
    * Render the content
    */
@@ -124,10 +127,11 @@ public class ContentRenderer {
     }
     g.draw(shape, x, y, false);
     // draw its content
-    if (content==null) return;
-    g.pushClip(x, y, shape.getBounds2D());
-    renderContent(g, x, y, content);
-    g.popClip();
+    if (isRenderContent&&content!=null) {
+      g.pushClip(x, y, shape.getBounds2D());
+      renderContent(g, x, y, content);
+      g.popClip();
+    }
     // done
   }
   

@@ -202,6 +202,7 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
     contentRenderer.cArcs          = Color.black;
     contentRenderer.cSelectedShape = Color.red;
     contentRenderer.selection      = currentEntity;
+    contentRenderer.isRenderContent= false;
     // let the renderer do its work
     ug.pushTransformation();
     contentRenderer.render(ug, model);
@@ -273,6 +274,7 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
       contentRenderer.cArcs          = Color.blue;
       contentRenderer.cSelectedShape = Color.red;
       contentRenderer.selection      = currentEntity;
+      contentRenderer.isRenderContent= true;
       // let the renderer do its work
       contentRenderer.render(ug, model);
       // render the layout, too
