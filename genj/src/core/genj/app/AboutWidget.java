@@ -365,11 +365,11 @@ public class AboutWidget extends JPanel{
       LnFBridge.Theme[] themes = lnf.getThemes();
       if (themes.length==0) {
         comboThemes.setModel(new DefaultComboBoxModel());
-        comboThemes.disable();
+        comboThemes.setEnabled(false);
       } else {
         comboThemes.setModel(new DefaultComboBoxModel(themes));
         comboThemes.setSelectedItem(lnf.getLastTheme());
-        comboThemes.enable();
+        comboThemes.setEnabled(true);
       }
     }
     
