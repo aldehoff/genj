@@ -27,6 +27,7 @@
    Initialization
    -->
   <target name="init">
+    <echo>Creating output directories</echo>
     <mkdir dir="${dir.build}"/>
     <mkdir dir="${dir.run}"/>
     <mkdir dir="${dir.dist}"/>
@@ -71,6 +72,7 @@
    Cleaning
    -->
   <target name="clean">
+    <echo>Cleaning output directories</echo>
     <delete dir="${dir.build}"/>
     <delete dir="${dir.run}"/>
     <delete dir="${dir.dist}"/>
@@ -80,6 +82,7 @@
    Version
    -->
   <target name="version">
+    <echo>Generating version number</echo>
     <mkdir dir="${dir.build}/version/genj"/>
     <echo file="${dir.build}/version/genj/resources.properties">
       version=${app.version}
@@ -250,6 +253,8 @@
    -->
   <target name="dist" depends="init,compile,version">
 
+     <echo>Generating distribution bits</echo>
+
      <!-- do the languages -->
      <antcall target="dist.languages"/>
 
@@ -268,6 +273,7 @@
    JavaDoc
    -->
   <target name="javadoc" depends="init">
+    <echo>Generating API documentation</echo>
     <mkdir dir="${dir.build}/javadoc"/>
     <javadoc destdir="${dir.build}/javadoc"
              link="http://java.sun.com/j2se/1.4/docs/api"
@@ -289,6 +295,8 @@
    Run
    -->
   <target name="run" depends="compile">
+
+    <echo>Generating and running GenJ test-run</echo>
 
     <mkdir dir="${dir.run}"/>
     <copy todir="${dir.run}/report">
@@ -373,6 +381,7 @@
    -->
   <target name="about">
     <echo>GenJ - Build ${app.version}</echo>
+    <echo>Please specify one of the basic options: clean, run or dist</echo>
   </target>
 
 </project>
