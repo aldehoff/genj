@@ -26,6 +26,8 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.TextFieldWidget;
 
 import javax.swing.AbstractButton;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -65,11 +67,16 @@ class ProxyEntity extends Proxy {
 
     // Look for entity
     if (!(property instanceof Entity)) return null;
+    
     Entity e = (Entity)property;
 
+    // ID Panel
+    Box box = new Box(BoxLayout.X_AXIS);
+    box.setAlignmentX(0);
+     
     // Label
     JLabel lid = new JLabel(EditView.resources.getString("proxy.id_of_entity"));
-    in.add(lid);
+    box.add(lid);
 
     // ID ?
     tfield = new TextFieldWidget(e.getId(), 80);
@@ -85,9 +92,14 @@ class ProxyEntity extends Proxy {
         bchange.setEnabled(true);
       }
     });
-    in.add(tfield);
+    box.add(tfield);
     
-    bchange = new ButtonHelper().setContainer(in).setEnabled(false).create(new ActionChange());
+    // Button
+    bchange = new ButtonHelper().setContainer(box).setEnabled(false).create(new ActionChange());
+
+    // Layout
+    in.add(box);
+    in.add(new Preview(e));
 
     // Done
     return tfield;

@@ -21,15 +21,6 @@ package genj.edit;
 
 import genj.gedcom.Entity;
 import genj.gedcom.PropertyXRef;
-import genj.renderer.BlueprintManager;
-import genj.renderer.EntityRenderer;
-import genj.view.ViewManager;
-
-import java.awt.Cursor;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -38,12 +29,6 @@ import javax.swing.JPanel;
  * A proxy for a property that links entities
  */
 class ProxyXRef extends Proxy {
-
-  /** the entity that is referenced */
-  private Entity entity;
-  
-  /** the blueprint we're using */
-  private EntityRenderer renderer;
 
   /**
    * Finish editing a property through proxy
@@ -64,43 +49,13 @@ class ProxyXRef extends Proxy {
   protected JComponent start(JPanel in) {
 
     // Calculate reference information
-    entity = ((PropertyXRef) property).getReferencedEntity();
+    Entity entity = ((PropertyXRef) property).getReferencedEntity();
 
     // setup content
-    if (entity!=null) in.add(new Preview());
+    if (entity!=null) in.add(new Preview(entity));
     
     // done
     return null;
   }
   
-  /**
-   * Our content
-   */
-  private class Preview extends JComponent {
-    /**
-     * Constructor
-     */
-    private Preview() {
-      setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-      addMouseListener(new MouseAdapter() {
-        /**
-         * @see genj.edit.ProxyXRef.Preview#mouseClicked(java.awt.event.MouseEvent)
-         */
-        public void mouseClicked(MouseEvent e) {
-          boolean sticky = view.setSticky(false);
-          ViewManager.getInstance().setCurrentEntity(entity);
-          view.setSticky(sticky);
-         }
-      });
-    }
-    /**
-     * @see genj.edit.ProxyXRef.Content#paintComponent(java.awt.Graphics)
-     */
-    protected void paintComponent(Graphics g) {
-      if (renderer==null) 
-        renderer = new EntityRenderer(BlueprintManager.getInstance().getBlueprint(entity.getType(), ""));
-      renderer.render(g, entity, new Rectangle(getSize()));
-    }
-  } //Content
-
 } //ProxyXRef
