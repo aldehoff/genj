@@ -74,7 +74,7 @@ public class OptionsWidget extends JPanel {
         if (option.getType()==Boolean.TYPE)
           return new DefaultCellEditor(new JCheckBox());
         // all else
-        return new DefaultCellEditor(new JTextField(8));
+        return new DefaultCellEditor(new JTextField(12));
       }
       /** we know how to find the correct renderer */
       public TableCellRenderer getCellRenderer(int row, int col) {
@@ -109,7 +109,7 @@ public class OptionsWidget extends JPanel {
     model.setOptions(options);
     
     // recalc column widths
-    int w = 0;
+    int w = 48;
     for (int i=0;i<options.length;i++) {
       w = Math.max(w,
         table.getCellEditor(i,1).getTableCellEditorComponent(table, null, false,  i, 1)
