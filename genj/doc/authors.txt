@@ -9,13 +9,13 @@ The people behind GenJ (sorted by last name) :
     Contributors :
       . Jan C.Hardenbergh <jch@world.std.com>
       . Daniel P. Kionka <dan@kionka.org>
-      . Francois Massonneau <frmas@free.fr>
+      . Francois Massonneau <francois@arvernes.com>
       . Sean Timm <TimmSCHome@aol.com>
 
     Translators :
       . Osamu Ajiki <osam-a@astroarts.co.jp> (Japanese translation)
       . Nicola Fragale <nicolafragale@libero.it> (Italian translation)
-      . Francois Massonneau <frmas@free.fr> (French translation)
+      . Francois Massonneau <francois@arvernes.com> (French translation)
       . Nils Meier <nils@meiers.net> (German translation)
 
     User Feedback and Food for Thought :
@@ -23,7 +23,7 @@ The people behind GenJ (sorted by last name) :
       . Jan Eri <jan.eri@protector-group.no>
       . Michael Gerdau <mgd@technosis.de>
       . Stan Goodman <stan@hashkedim.com>
-      . Francois Massonneau <frmas@free.fr>
+      . Francois Massonneau <francois@arvernes.com>
       . Shmuel Metz <shmuel@acm.org>
       . Ernst Neubauer and Sohn <e.neubauer@t-online.de>
       . Roy O. Wellington III <roy.wellington@worldnet.att.net>
