@@ -10,10 +10,6 @@ import genj.gedcom.PropertyChoiceValue;
 import genj.gedcom.PropertyName;
 import genj.report.Report;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 /**
  * A report that uses PropertyChoiceValue's referencing ability. For
  * a given PropertyChoiceValue's value it shows those properties
@@ -74,6 +70,14 @@ public class ReportSameValues extends Report {
   public String getVersion() {
     return "0.1";
   }
+  
+  /**
+   * We don't use STDOUT
+   * @see genj.report.Report#usesStandardOut()
+   */
+  public boolean usesStandardOut() {
+    return false;
+  }
 
   /**
    * @see genj.report.Report#start(java.lang.Object)
@@ -81,21 +85,31 @@ public class ReportSameValues extends Report {
   public void start(Object context) {
     
     // get properties that have the same choice
+    String val = null;
     Property[] sameProps = null;
-    if (context instanceof PropertyChoiceValue)
-      sameProps = ((PropertyChoiceValue)context).getSameChoices();
-    if (context instanceof PropertyName)
-      sameProps = ((PropertyName)context).getSameLastNames();
-    if (sameProps==null)
+    
+    if (context instanceof PropertyChoiceValue) {
+      PropertyChoiceValue prop = (PropertyChoiceValue)context;
+      val = prop.getValue();
+      sameProps = prop.getSameChoices();
+    }
+    if (context instanceof PropertyName) {
+      PropertyName name = (PropertyName)context;
+      val = name.getLastName();
+      sameProps = name.getSameLastNames();
+    }
+
+    if (val==null||val.length()==0)
       return;
     
-    // collect entities
-    Set entities = new HashSet();
-    for (int i=0; i<sameProps.length; i++) entities.add(sameProps[i].getEntity());
+    // collect parents of sameProps
+    for (int i=0;i<sameProps.length;i++) {
+      Property parent = sameProps[i].getParent(); 
+      if (parent!=null) sameProps[i] = parent;  
+    }
     
     // show 'em
-    for (Iterator it=entities.iterator(); it.hasNext();)
-      println(it.next());
+    showToUser( i18n("xname",val), sameProps);
     
     // done
   }
