@@ -111,7 +111,7 @@ public class App {
     }
 
     // Create frame
-    JFrame frame = createFrame(resources.getString("app.title"),Images.imgGedcom,"main", new Dimension(256,180));
+    JFrame frame = createFrame(resources.getString("app.title"),Images.imgGedcom,"main", new Dimension(280,180));
 
     // Create the desktop
     ControlCenter center = new ControlCenter(frame,registry);

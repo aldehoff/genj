@@ -60,7 +60,8 @@ public class ViewManager {
     new Descriptor("genj.timeline.TimelineViewFactory","timeline" ,Images.imgNewTimeline , new Dimension(480,256)),
     new Descriptor("genj.edit.EditViewFactory"        ,"edit"     ,Images.imgNewEdit     , new Dimension(256,480)),
     new Descriptor("genj.report.ReportViewFactory"    ,"report"   ,Images.imgNewReport   , new Dimension(480,320)),
-    new Descriptor("genj.nav.NavigatorViewFactory"    ,"navigator",Images.imgNewNavigator, new Dimension(140,200))
+    new Descriptor("genj.nav.NavigatorViewFactory"    ,"navigator",Images.imgNewNavigator, new Dimension(140,200)),
+    new Descriptor("genj.resume.ResumeViewFactory"    ,"resume"   ,Images.imgNewResume   , new Dimension(320,320))
   };
 
   /**
