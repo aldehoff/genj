@@ -197,7 +197,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     // not if running
     if (!bStart.isEnabled()) return;
     // to front
-    // FIXME
+    manager.showView(this);
     // start it
     listOfReports.setSelectedValue(report, true);
     new ActionStart(context).trigger();

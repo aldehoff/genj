@@ -413,6 +413,24 @@ public class ViewManager {
 
     // done
   }
+  
+  /** 
+   * Show a view (bring it to front)
+   */
+  public void showView(JComponent view) {
+
+    // loop through views
+    Iterator vws = key2viewwidget.values().iterator();
+    while (vws.hasNext()) {
+      ViewWidget vw = (ViewWidget)vws.next();
+      if (vw.getView()==view) {
+        windowManager.show(vw.getKey());
+        break;
+      }
+    }
+    
+    // not found    
+  }
 
   /**
    * Show a context menu for given point - at this
