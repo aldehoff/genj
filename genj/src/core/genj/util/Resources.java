@@ -20,11 +20,10 @@
 package genj.util;
 
 import java.text.MessageFormat;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Locale;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.Properties;
 
 /**
  * Class which provides localized text-resources for a package
@@ -34,8 +33,8 @@ public class Resources {
   /** keep track of loaded resources */
   private static Map instances = new HashMap();
 
-  /** the wrapped ResourceBundle */
-  private ResourceBundle rb;
+  /** the wrapped properties  */
+  private Properties properties = new Properties();
 
   /** the package name this resource is for */
   private String pkg;
@@ -70,57 +69,73 @@ public class Resources {
     String name = clazz.getName();
     return name.substring(0, name.lastIndexOf('.'));
   }
+  
+  /**
+   * Calc file for package (package/resources.properties)
+   */
+  private String calcFile(String pkg, String lang) {
+
+    // dots in package name become slashs
+    pkg = pkg.replace('.','/');
+    
+    // filename is always '/resources[_ll].properties' 
+    return '/'+pkg+"/resources"+(lang!=null?'_'+lang:"")+".properties";   
+  }
 
   /**
    * Constructor
    */
   private Resources(String pkg) {
     
+    // 20030428 Used to use ResourceBundle here to get access to the
+    // appropriate PropertyResourceBundle. Had problems though
+    // because of the decision to name default (english) resource-files
+    // 
+    //   resources.properties and NOT resources_en.properties
+    //
+    // Example
+    //  1. system is FR
+    //  2. boots and initializes default locale FR
+    //  3. App switches language to EN
+    //  4. Initialize Resources for pkg
+    //  5. ResourceBundle tries resources_en.properties (can't find)
+    //  6  ResourceBundle tries resources_fr.properties (the default)
+    // Impossible to get at EN.
+    // 
+    // Tried to change 'default' locale to make ResourceBundle try
+    //  5. resources_en.properties
+    //  6. resources.properties
+    // but that messed up other components who are interested in the
+    // default Locale too!
+    //
+    // Backed out and using homegrown dual load - loading
+    //  1. resources.properties
+    //  2. resources_lang.properties
+    // now.
+    
+    
     // init simple members
     this.format=new MessageFormat("");
     this.pkg=pkg;
 
     // try to find language
-    String lang = "en";
+    String lang = null;
     try {
       lang = System.getProperty("user.language");
     } catch (Throwable t) {
     }
-    
-    // try to load it
+
+    // have to load the defaults 
     try {
-
-      // calculate resource-name package.resources[.properties]
-      String file;
-      if (pkg.length()==0) {
-        file = "resources";
-        pkg = "<default>";
-      } else {
-        file = pkg+".resources";
-      }
-
-      // the locale we'll use
-      Locale locale = new Locale(lang,"");
-      
-      // o.k. here's the scoop - by the time we're here after
-      // possibly changing System.setProperty("user.language")
-      // the default Locale is already set (e.g. "FR_FR"). 
-      // Instead of our english resource (which are in
-      // resources.properties instead of resources_en.properties)
-      // we might end up with resources_fr.properties. So
-      // let's kill the default here 
-      try { 
-        Locale.setDefault(new Locale("","",""));
-      } catch (Throwable t) {
-      }
-      
-      // get it
-      rb = ResourceBundle.getBundle(file, locale);
-
-    } catch (RuntimeException e) {
-
-      Debug.log(Debug.WARNING, this,"Couldn't read resources for package '"+pkg+"'");
-
+      properties.load(getClass().getResourceAsStream(calcFile(pkg, null)));
+    } catch (Throwable t) {
+      Debug.log(Debug.WARNING, this,"Couldn't read default resources for package '"+pkg+"'");
+    }
+    
+    // try to load the appropriate language - english is default though
+    if (lang!=null&&!"en".equals(lang)) try {
+      properties.load(getClass().getResourceAsStream(calcFile(pkg, lang)));
+    } catch (Throwable t) {
     }
 
     // Done
@@ -128,35 +143,13 @@ public class Resources {
 
   
   /**
-   * Returns localized strings
-   */
-  public String[] getStrings(String[] keys) {
-    
-    String[] result = new String[keys.length];
-    for (int i = 0; i < result.length; i++) {
-      result[i] = getString(keys[i]);
-    }
-    return result;
-  }
-
-  /**
    * Returns a localized string
    * @param key identifies string to return
    */
   public String getString(String key) {
-
-    try {
-
-      if (rb!=null)
-        return rb.getString(key);
-
-    } catch (RuntimeException e) {
-    }
-
-    // 20030321 removed - too verbose
-    //Debug.log(Debug.WARNING, this,"Resource '"+key+"' for pkg '"+pkg+"' is missing");
-
-    return key;
+    String result = properties.getProperty(key);
+    if (result==null) result = key;
+    return result;
   }
 
   /**
@@ -175,39 +168,25 @@ public class Resources {
    */
   public String getString(String key, Object[] substitutes) {
 
-    try {
+    // Get Value
+    String value = getString(key);
 
-      if (rb!=null) {
+    // .. this is our pattern
+    format.applyPattern(value);
 
-        // Get Value
-        String value = rb.getString(key);
+    // .. which we fill with substitutes
+    String result = format.format(substitutes);
 
-        // .. this is our pattern
-        format.applyPattern(value);
-
-        // .. which we fill with substitutes
-        String result = format.format(substitutes);
-
-        // Done
-        return result;
-      }
-
-    } catch (RuntimeException e) {
-    }
-
-    Debug.log(Debug.WARNING, this,"Resource '"+key+"' for pkg '"+pkg+"' is missing");
-
-    return key;
+    // Done
+    return result;
 
   }
 
   /**
    * Returns the available Keys
    */
-  public Enumeration getKeys() {
-    if (rb==null) {
-      return null;
-    }
-    return rb.getKeys();
+  public Iterator getKeys() {
+    return properties.keySet().iterator();
   }
-}
+  
+} //Resources

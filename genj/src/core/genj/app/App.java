@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.JComponent;
@@ -99,9 +100,9 @@ public class App {
     // Make sure that Swing shows our localized texts
     resources = Resources.get(this);
     
-    Enumeration keys = resources.getKeys();
-    while (keys.hasMoreElements()) {
-      String key = (String)keys.nextElement();
+    Iterator keys = resources.getKeys();
+    while (keys.hasNext()) {
+      String key = (String)keys.next();
       if (key.indexOf(SWING_RESOURCES_KEY_PREFIX)==0) {
         UIManager.put(
           key.substring(SWING_RESOURCES_KEY_PREFIX.length()),
