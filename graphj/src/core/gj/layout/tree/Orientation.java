@@ -1,5 +1,7 @@
 package gj.layout.tree;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
@@ -32,39 +34,68 @@ public abstract class Orientation {
    * @param topdown top-down or bottom-up
    * @return an orientation
    */
-  /*package*/ static Orientation get(boolean vertical, boolean topdown) {
+  protected static Orientation get(boolean vertical, boolean topdown) {
     return (Orientation) orientations.get(Orientation.class.getName()+"$"+vertical+topdown);
   }
   
   /**
    * Returns the 2D bounds for a surface with lat/lon's
    */
-  /*package*/ abstract Rectangle2D.Double getBounds(Contour c);
+  protected Rectangle getBounds(Contour c) {
 
-  /**
-   * Returns the longitude for a 2D position
-   */
-  public abstract double getLongitude(Point2D p);
-
-  /**
-   * Returns the latitude for a 2D position
-   */
-  public abstract double getLatitude(Point2D p);
+    Point
+      p1 = getPoint(c.north, c.west),
+      p2 = getPoint(c.south, c.east);
+      
+    int
+      x1 = Math.min(p1.x, p2.x),
+      y1 = Math.min(p1.y, p2.y),
+      x2 = Math.max(p1.x, p2.x),
+      y2 = Math.max(p1.y, p2.y);
+      
+    return new Rectangle(x1,y1,x2-x1,y2-y1);
+  }
 
   /**
    * Returns the surface with lat/lon's for given 2D bounds
    */
-  /*package*/ abstract Contour getContour(Rectangle2D r, double[] pad);
+  protected Contour getContour(Rectangle2D r2d) {
+    
+    Rectangle r = r2d.getBounds(); 
+      
+    Point 
+      p1 = new Point(r.x, r.y),
+      p2 = new Point(r.x+r.width, r.y+r.height);
+      
+    int 
+      lon1 = getLongitude(p1),
+      lon2 = getLongitude(p2),
+      lat1 = getLatitude (p1),
+      lat2 = getLatitude (p2);
+
+    int          
+      n = Math.min(lat1, lat2),
+      w = Math.min(lon1, lon2),
+      e = Math.max(lon1, lon2),
+      s = Math.max(lat1, lat2);
+
+    return new Contour(n,w,e,s);    
+  }
+
+  /**
+   * Returns the longitude for a 2D position
+   */
+  public abstract int getLongitude(Point2D p);
+
+  /**
+   * Returns the latitude for a 2D position
+   */
+  public abstract int getLatitude(Point2D p);
 
   /**
    * Returns the 2D position for given latitude/longitude
    */
-  public abstract Point2D.Double getPoint2D(double lat, double lon);
-  
-  /**
-   * Returns a rotated orientation
-   */
-  /*package*/ abstract Orientation rotate(boolean clockwise);
+  protected abstract Point getPoint(int lat, int lon);
   
   /**
    * vertical=false, topdown=true
@@ -82,28 +113,14 @@ public abstract class Orientation {
    *      +-+
    */  
   private static class falsetrue extends Orientation {
-    /*package*/ Rectangle2D.Double getBounds(Contour c) {
-      return new Rectangle2D.Double(c.north, -c.east, c.south-c.north, c.east-c.west);
+    public int getLongitude(Point2D p) {
+      return (int)(-p.getY());
     }
-    public double getLongitude(Point2D p) {
-      return -p.getY();
+    public int getLatitude(Point2D p) {
+      return (int)(p.getX());
     }
-    public double getLatitude(Point2D p) {
-      return p.getX();
-    }
-    /*package*/ Contour getContour(Rectangle2D r, double[] pad) {
-      return new Contour(
-          r.getMinX() - pad[0],
-         -r.getMaxY() - pad[1], 
-         -r.getMinY() + pad[2], 
-          r.getMaxX() + pad[3]
-      );
-    }
-    public Point2D.Double getPoint2D(double lat, double lon) {
-      return new Point2D.Double(lat,-lon);
-    }
-    /*package*/ Orientation rotate(boolean clockwise) {
-      return clockwise ? truetrue : truefalse;
+    protected Point getPoint(int lat, int lon) {
+      return new Point(lat,-lon);
     }
   } //falsetrue
 
@@ -119,28 +136,14 @@ public abstract class Orientation {
    * +---------+
    */  
   private static class truetrue extends Orientation {
-    /*package*/ Rectangle2D.Double getBounds(Contour c) {
-      return new Rectangle2D.Double(c.west, c.north, c.east-c.west, c.south-c.north);
+    public int getLongitude(Point2D p) {
+      return (int)(p.getX());
     }
-    public double getLongitude(Point2D p) {
-      return p.getX();
+    public int getLatitude(Point2D p) {
+      return (int)(p.getY());
     }
-    public double getLatitude(Point2D p) {
-      return p.getY();
-    }
-    /*package*/ Contour getContour(Rectangle2D r, double[] pad) {
-      return new Contour(
-        r.getMinY() - pad[0], 
-        r.getMinX() - pad[1], 
-        r.getMaxX() + pad[2], 
-        r.getMaxY() + pad[3] 
-      );
-    }
-    public Point2D.Double getPoint2D(double lat, double lon) {
-      return new Point2D.Double(lon,lat);
-    }
-    /*package*/ Orientation rotate(boolean clockwise) {
-      return clockwise ? falsefalse : falsetrue;
+    protected Point getPoint(int lat, int lon) {
+      return new Point(lon,lat);
     }
   } //truetrue
 
@@ -160,28 +163,14 @@ public abstract class Orientation {
    *  +-+
    */  
   private static class falsefalse extends Orientation {
-    /*package*/ Rectangle2D.Double getBounds(Contour c) {
-      return new Rectangle2D.Double(-c.south, c.west, c.south-c.north, c.east-c.west);
+    public int getLatitude(Point2D p) {
+      return (int)(-p.getX());
     }
-    public double getLatitude(Point2D p) {
-      return -p.getX();
+    public int getLongitude(Point2D p) {
+      return (int)(p.getY());
     }
-    public double getLongitude(Point2D p) {
-      return p.getY();
-    }
-    /*package*/ Contour getContour(Rectangle2D r, double[] pad) {
-      return new Contour(
-        -r.getMaxX() - pad[0], 
-         r.getMinY() - pad[1], 
-         r.getMaxY() + pad[2], 
-        -r.getMinX() + pad[3]
-      );
-    }
-    public Point2D.Double getPoint2D(double lat, double lon) {
-      return new Point2D.Double(-lat,lon);
-    }
-    /*package*/ Orientation rotate(boolean clockwise) {
-      return clockwise ? truefalse : truetrue;
+    protected Point getPoint(int lat, int lon) {
+      return new Point(-lat,lon);
     }
   } //falsefalse
 
@@ -197,28 +186,14 @@ public abstract class Orientation {
    *     +-+
    */  
   private static class truefalse extends Orientation {
-    /*package*/ Rectangle2D.Double getBounds(Contour c) {
-      return new Rectangle2D.Double(-c.east, -c.south, c.east-c.west, c.south-c.north);
+    public int getLatitude(Point2D p) {
+      return (int)(-p.getY());
     }
-    /*package*/ Contour getContour(Rectangle2D r, double[] pad) {
-      return new Contour(
-        -r.getMaxY() - pad[0], 
-        -r.getMaxX() - pad[1], 
-        -r.getMinX() + pad[2], 
-        -r.getMinY() + pad[3]
-      );
+    public int getLongitude(Point2D p) {
+      return (int)(-p.getX());
     }
-    public double getLatitude(Point2D p) {
-      return -p.getY();
-    }
-    public double getLongitude(Point2D p) {
-      return -p.getX();
-    }
-    public Point2D.Double getPoint2D(double lat, double lon) {
-      return new Point2D.Double(-lon,-lat);
-    }
-    /*package*/ Orientation rotate(boolean clockwise) {
-      return clockwise ? falsetrue : falsefalse;
+    protected Point getPoint(int lat, int lon) {
+      return new Point(-lon,-lat);
     }
   } //truefalse
 

@@ -35,22 +35,19 @@ import java.util.Set;
 public class TreeLayout extends AbstractLayout implements Layout {
 
   /** padding between generations */
-  private double latPadding = 20;
+  private int latPadding = 20;
 
   /** padding between siblings */
-  private double lonPadding = 20;
+  private int lonPadding = 20;
 
   /** the alignment of parents */
   private double lonAlignment = 0.5;
 
   /** the alignment of generations (if isAlignGeneration) */
-  private double latAlignment = 0.5;
+  private double latAlignment = -1;
   
   /** whether we ignore unreached nodes */
   private boolean isIgnoreUnreachables = false;
-  
-  /** whether latAlignment is enabled */
-  /*package*/ boolean isLatAlignmentEnabled = false;
   
   /** current node options */
   private NodeOptions nodeOptions = null;
@@ -85,28 +82,28 @@ public class TreeLayout extends AbstractLayout implements Layout {
   /**
    * Getter - padding between generations
    */
-  public double getLatPadding() {
+  public int getLatPadding() {
     return latPadding;
   }
 
   /**
    * Setter - padding between generations
    */
-  public void setLatPadding(double set) {
+  public void setLatPadding(int set) {
     latPadding = set;
   }
 
   /**
    * Getter - padding between siblings
    */
-  public double getLonPadding() {
+  public int getLonPadding() {
     return lonPadding;
   }
 
   /**
    * Setter - padding between siblings
    */
-  public void setLonPadding(double set) {
+  public void setLonPadding(int set) {
     lonPadding=set;
   }
 
@@ -136,20 +133,6 @@ public class TreeLayout extends AbstractLayout implements Layout {
    */
   public void setLatAlignment(double set) {
     latAlignment = set;
-  }
-
-  /**
-   * Getter - whether generations should be aligned
-   */
-  public boolean isLatAlignmentEnabled() {
-    return isLatAlignmentEnabled;
-  }
-  
-  /**
-   * Setter - whether generations should be aligned
-   */
-  public void setLatAlignmentEnabled(boolean set) {
-    isLatAlignmentEnabled=set;
   }
 
   /**
@@ -285,7 +268,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
       orientn, 
       nopt, 
       arcOptions,
-      isLatAlignmentEnabled,
+      latAlignment,
       isBalanceChildren,
       isBendArcs
     );
@@ -320,7 +303,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
       orientn, 
       nopt, 
       arcOptions,
-      isLatAlignmentEnabled,
+      latAlignment,
       isBalanceChildren,
       isBendArcs
     );
@@ -362,27 +345,19 @@ public class TreeLayout extends AbstractLayout implements Layout {
    */
   private class DefaultNodeOptions implements NodeOptions {
     /** default padding n,w,e,s */
-    private double[] pad = new double[]{ latPadding/2, lonPadding/2, lonPadding/2, latPadding/2};
+    private int[] pad = new int[]{ latPadding/2, lonPadding/2, lonPadding/2, latPadding/2};
     /**
      * @see gj.layout.tree.NodeOptions#getPadding()
      */
-    public double[] getPadding(Node node, Orientation o) {
+    public int[] getPadding(Node node, Orientation o) {
       if (node instanceof NodeOptions) 
         return ((NodeOptions)node).getPadding(node, o);
       return pad;
     }
     /**
-     * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double)
-     */
-    public double getLatitude(Node node, double min, double max, Orientation o) {
-      if (node instanceof NodeOptions) 
-        return ((NodeOptions)node).getLatitude(node, min, max, o);
-      return min + (max-min) * Math.min(1D, Math.max(0D, latAlignment));
-    }
-    /**
      * @see gj.layout.tree.NodeOptions#getLongitude(Node, Branch[], Orientation)
      */
-    public double getLongitude(Node node, Branch[] children, Orientation o) {
+    public int getLongitude(Node node, Branch[] children, Orientation o) {
       // delegate?
       if (node instanceof NodeOptions) 
         return ((NodeOptions)node).getLongitude(node, children, o);

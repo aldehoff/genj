@@ -25,16 +25,7 @@ public interface NodeOptions {
   /**
    * Callback - Padding of a node (n,w,e,s)
    */
-  public double[] getPadding(Node node, Orientation o);
-  
-  /**
-   * Callback - Calculate node's latitude in generation
-   * @param node the node that the callback is for
-   * @param min the minum latitude to keep the node and its shape in its generation
-   * @param max the maximum latitude to keep the node and its shape in its generation
-   * @return the latitude
-   */
-  public double getLatitude(Node node, double min, double max, Orientation o);
+  public int[] getPadding(Node node, Orientation o);
   
   /**
    * Callback - Calculate node's longitude above children
@@ -43,6 +34,6 @@ public interface NodeOptions {
    * @param min the minimum longitude to keep the node and its shape above its children
    * @param max the maximum longitude to keep the node and its shape above its children
    */
-  public double getLongitude(Node node, Branch[] children, Orientation o);
+  public int getLongitude(Node node, Branch[] children, Orientation o);
     
 } //NodeOptions

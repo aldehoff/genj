@@ -41,7 +41,7 @@ public class Branch {
       Path path = it.arc.getPath();
       if (path!=null) path.translate(delta);
       // don't go twice or loop
-      if (!it.isFirst&&it.isLoop) continue;
+      if (!it.isFirst||it.isLoop) continue;
       // update the node
       ModelHelper.move(it.dest, delta);
     }
@@ -52,22 +52,22 @@ public class Branch {
   /**
    * The longitude (west-east centered at origin) 
    */
-  public double getLongitude(Orientation o) {
+  public int getLongitude(Orientation o) {
     return o.getLongitude(root.getPosition());
   }
   
   /**
    * The latitude of the branch (northest point)
    */
-  public double getLatitude() {
+  public int getLatitude() {
     return contour.north;
   }
   
   /**
    * westmost longitude
    */
-  public static double getMinLongitude(Branch[] bs) {
-    double result = Double.MAX_VALUE;
+  public static int getMinLongitude(Branch[] bs) {
+    int result = Integer.MAX_VALUE;
     for (int i=0;i<bs.length;i++)
       result = Math.min(bs[i].contour.west, result);
     return result;
@@ -76,8 +76,8 @@ public class Branch {
   /**
    * eastmost longitude
    */
-  public static double getMaxLongitude(Branch[] bs) {
-    double result = -Double.MAX_VALUE;
+  public static int getMaxLongitude(Branch[] bs) {
+    int result = Integer.MIN_VALUE;
     for (int i=0;i<bs.length;i++)
       result = Math.max(bs[i].contour.east, result);
     return result;
@@ -86,19 +86,19 @@ public class Branch {
   /**
    * longitude between branches
    */  
-  public static double getLongitude(Branch[] bs, double fraction, Orientation o) {
+  public static int getLongitude(Branch[] bs, double fraction, Orientation o) {
     // calculate center point
     double 
       min = bs[          0].getLongitude(o),
       max = bs[bs.length-1].getLongitude(o);
-    return min + (max-min) * Math.min(1D, Math.max(0D, fraction));
+    return (int)(min + (max-min) * Math.min(1D, Math.max(0D, fraction)));
   }  
   
   /**
    * Places all nodes in the branch at absolute positions
    */
-  /*package*/ Contour finalize(double dlat, double dlon, Orientation o) {
-    finalizeRecursively(root, null, o.getPoint2D(dlat,dlon));
+  /*package*/ Contour finalize(int dlat, int dlon, Orientation o) {
+    finalizeRecursively(root, null, o.getPoint(dlat,dlon));
     contour.translate(dlat, dlon);
     return contour;
   }
@@ -133,15 +133,15 @@ public class Branch {
   /**
    * Move this branch
    */
-  /*package*/ void moveBy(double dlat, double dlon, Orientation o) {
+  /*package*/ void moveBy(int dlat, int dlon, Orientation o) {
     contour.translate(dlat, dlon);
-    ModelHelper.move(root, o.getPoint2D(dlat, dlon));
+    ModelHelper.move(root, o.getPoint(dlat, dlon));
   }
 
   /**
    * Move this branch
    */
-  /*package*/ void moveTo(double lat, double lon, Orientation o) {
+  /*package*/ void moveTo(int lat, int lon, Orientation o) {
     Point2D pos = root.getPosition();
     moveBy( lat - o.getLatitude(pos), lon - o.getLongitude(pos), o);
   }
@@ -172,13 +172,13 @@ public class Branch {
    * @param branches the list of branches
    * @param other branch
    */
-  private static double calcMinimumDistance(List branches, Branch other) {
+  private static int calcMinimumDistance(List branches, Branch other) {
 
     // all min distances
-    double[] ds = calcMinimumDistances(branches, other);
+    int[] ds = calcMinimumDistances(branches, other);
     
     // find minimum distance
-    double result = Double.MAX_VALUE;
+    int result = Integer.MAX_VALUE;
     for (int d=0; d<ds.length; d++) result = Math.min(ds[d], result); 
       
     // done
@@ -190,11 +190,11 @@ public class Branch {
    * @param branches the list of branches
    * @param other branch
    */
-  private static double[] calcMinimumDistances(List branches, Branch other) {
+  private static int[] calcMinimumDistances(List branches, Branch other) {
     
     // create a result
-    double[] result = new double[branches.size()];
-    for (int r=0;r<result.length;r++) result[r] = Double.MAX_VALUE;
+    int[] result = new int[branches.size()];
+    for (int r=0;r<result.length;r++) result[r] = Integer.MAX_VALUE;
 
     // we'll iterate west-side of other -> the east
     Contour.Iterator east = other.contour.getIterator(Contour.WEST);

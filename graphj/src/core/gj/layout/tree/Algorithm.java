@@ -47,8 +47,8 @@ import java.util.Stack;
   /** the arc options in use */
   private ArcOptions arcop;
   
-  /** whether latitude alignment is enabled */
-  private boolean latalign;
+  /** latitude alignment is enabled (0-1) */
+  private double latalign;
   
   /** whether we align children */
   private boolean balance;
@@ -59,11 +59,11 @@ import java.util.Stack;
   /**
    * Constructor
    */
-  /*package*/ Algorithm(Orientation orientation, NodeOptions nodeOptions, ArcOptions arcOptions, boolean isLatAlignmentEnabled, boolean isBalanceChildrenEnable, boolean isBendedArcs) {
+  /*package*/ Algorithm(Orientation orientation, NodeOptions nodeOptions, ArcOptions arcOptions, double latAlignment, boolean isBalanceChildrenEnable, boolean isBendedArcs) {
     orientn = orientation;
     nodeop  = nodeOptions;
     arcop = arcOptions;
-    latalign = isLatAlignmentEnabled;
+    latalign = latAlignment;
     balance = isBalanceChildrenEnable;
     bendarcs = isBendedArcs;
   }
@@ -76,7 +76,7 @@ import java.util.Stack;
 
     // Save root's original position
     Node root = tree.getRoot();
-    double 
+    int 
       rootLat = orientn.getLatitude (root.getPosition()),
       rootLon = orientn.getLongitude(root.getPosition());
 
@@ -84,7 +84,7 @@ import java.util.Stack;
     Branch branch = layout(root, null, tree, 0);
     
     // calculate delta to get everything back to original position
-    double
+    int
       dlat = rootLat - orientn.getLatitude (root.getPosition()),
       dlon = rootLon - orientn.getLongitude(root.getPosition());
 
@@ -168,12 +168,13 @@ import java.util.Stack;
     // the parent's contour
     Shape shape = root.getShape();
     Contour result = orientn.getContour(
-      shape!=null ? shape.getBounds2D() : new Rectangle2D.Double(),
-      nodeop.getPadding(root, orientn)
+      shape!=null ? shape.getBounds2D() : new Rectangle2D.Double()
     );
     
+    result.pad(nodeop.getPadding(root, orientn));
+    
     // the parent's position
-    double lat = 0, lon = 0;
+    int lat = 0, lon = 0;
     if (children.length>0) {
   
       lon = nodeop.getLongitude(root, children, orientn);
@@ -182,20 +183,21 @@ import java.util.Stack;
     }
   
     // Override latitude for isAlignGeneration
-    if (latalign) {
+    if (latalign>=0&&latalign<=1) {
       lat = tree.getLatitude(generation);
-      double
+      int
         min = lat - result.north,
         max = lat + tree.getHeight(generation) - result.south;
   
-      lat = nodeop.getLatitude(root, min, max, orientn);
+      lat = (int)(min + (max-min) * Math.min(1D, Math.max(0D, latalign)));
     }
   
     // place it at (lat,lon)
-    root.getPosition().setLocation(orientn.getPoint2D(lat,lon));
+    root.getPosition().setLocation(orientn.getPoint(lat,lon));
     result.translate(lat,lon);
-    
-    if (latalign) {
+
+    // patch north    
+    if (latalign>=0&&latalign<=1) {
       result.north = tree.getLatitude(generation);
     }
   
@@ -241,11 +243,11 @@ import java.util.Stack;
 
     // calculate south of p1 and north of p2
     p1 = Geometry.getIntersection(
-      p1, orientn.getPoint2D(orientn.getLatitude(p2), orientn.getLongitude(p1)),
+      p1, orientn.getPoint(orientn.getLatitude(p2), orientn.getLongitude(p1)),
       p1, s1
     );
     p2 = Geometry.getIntersection(
-      p2, orientn.getPoint2D(orientn.getLatitude(p1), orientn.getLongitude(p2)),
+      p2, orientn.getPoint(orientn.getLatitude(p1), orientn.getLongitude(p2)),
       p2, s2
     );
 
@@ -274,8 +276,8 @@ import java.util.Stack;
       p3 = new Point2D.Double(),
       p4 = arcop.getPort(arc, n2, orientn);
 
-    p2.setLocation(orientn.getPoint2D(parent.south, orientn.getLongitude(p1)));
-    p3.setLocation(orientn.getPoint2D(parent.south, orientn.getLongitude(p4)));
+    p2.setLocation(orientn.getPoint(parent.south, orientn.getLongitude(p1)));
+    p3.setLocation(orientn.getPoint(parent.south, orientn.getLongitude(p4)));
 
     // layout       
     ArcHelper.update(arc.getPath(), new Point2D[]{p1,p2,p3,p4}, n1.getShape(), n2.getShape());
@@ -337,19 +339,19 @@ import java.util.Stack;
 
       // add debugging information about contour's segments
       Contour.Iterator it = contour.getIterator(Contour.WEST);
-      Point2D a = orientn.getPoint2D(it.north, it.longitude);
+      Point2D a = orientn.getPoint(it.north, it.longitude);
       moveTo(a);
       do {
-        lineTo(orientn.getPoint2D(it.north, it.longitude));
-        lineTo(orientn.getPoint2D(it.south, it.longitude));
+        lineTo(orientn.getPoint(it.north, it.longitude));
+        lineTo(orientn.getPoint(it.south, it.longitude));
       } while (it.next());
       Point2D b = getLastPoint();
       moveTo(a);
 
       it = contour.getIterator(Contour.EAST);
       do {
-        lineTo(orientn.getPoint2D(it.north, it.longitude));
-        lineTo(orientn.getPoint2D(it.south, it.longitude));
+        lineTo(orientn.getPoint(it.north, it.longitude));
+        lineTo(orientn.getPoint(it.south, it.longitude));
       } while (it.next());
       lineTo(b);
 

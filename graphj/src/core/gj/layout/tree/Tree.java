@@ -29,10 +29,10 @@ import java.util.Set;
 public class Tree {
   
   /** the height of generations */
-  private double[] height;
+  private int[] height;
   
   /** the position of generations (aligned) */
-  private double[] latitude;
+  private int[] latitude;
   
   /** the number of generations */
   private int numGenerations;
@@ -62,13 +62,13 @@ public class Tree {
     // - no cycles
     // - get generations' heights & position
     // - collect spanned nodes
-    height = new double[estimatedSize];
+    height = new int[estimatedSize];
     nodes = new HashSet(estimatedSize);
     analyze(root, null, 0, nopt, o);
 
     // Calculate generation's positions    
-    latitude = new double[numGenerations];
-    double pos = 0;
+    latitude = new int[numGenerations];
+    int pos = 0;
     for (int i=0;i<numGenerations;i++) {
       latitude[i] = pos;
       pos+=height[i];
@@ -94,7 +94,8 @@ public class Tree {
     // Analyze the root's height
     Shape shape = node.getShape();
     if (shape!=null) {
-      Contour contour = o.getContour(shape.getBounds2D(), nopt.getPadding(root, o));
+      Contour contour = o.getContour(shape.getBounds2D());
+      contour.pad(nopt.getPadding(root, o));
       height[generation] = Math.max(
         height[generation],
         contour.south-contour.north
@@ -116,14 +117,14 @@ public class Tree {
   /**
    * Return a height for current generation
    */
-  public double getHeight(int generation) {
+  public int getHeight(int generation) {
     return height[generation];
   }
   
   /**
    * Return a position for current generation
    */
-  public double getLatitude(int generation) {
+  public int getLatitude(int generation) {
     return latitude[generation];
   }
   
