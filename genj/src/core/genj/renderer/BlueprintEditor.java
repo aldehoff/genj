@@ -163,7 +163,7 @@ public class BlueprintEditor extends Box {
       g.setColor(html.getText().length()==0 ? getBackground() : Color.white);
       g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
       // render content
-      new EntityRenderer(g, html.getText()).render(g, example, bounds);
+      new EntityRenderer(g, new Blueprint("",html.getText())).render(g, example, bounds);
     }
   } //Preview
 

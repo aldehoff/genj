@@ -1,0 +1,75 @@
+<blueprints>
+
+ <blueprint type="INDI" name="Default"><![CDATA[ 
+	<table><tr valign=top>
+	 <td>
+	  <b><prop path=INDI></b>
+	  <br>
+	  <prop path=INDI:SEX img=yes txt=no>
+	   <i><prop path=INDI:NAME></i>
+	  <br>
+	  <prop path=INDI:BIRT:DATE img=yes>,
+	   <u><prop path=INDI:BIRT:PLAC></u>
+	  <br>
+	  <prop path=INDI:RESI:ADDR img=yes>,
+	   <prop path=INDI:RESI:ADDR:CITY>
+	    <prop path=INDI:RESI:ADDR:POST>
+	 </td><td valign=center>
+	  <prop path=INDI:OBJE:FILE min=30>
+	 </td>
+	</tr></table>
+ ]]></blueprint>
+
+ <blueprint type="INDI" name="Complete"><![CDATA[ 
+
+	<p>Individual <font color=blue><b><prop path=INDI></b></font></p>
+	<table>
+	 <tr><td></td><td></td><td rowspan=5><prop path=INDI:OBJE:FILE maxh=25></td></tr> 
+	 <tr>
+	  <td><b>Name </b></td>
+	  <td><i><prop path=INDI:NAME></i></td>
+	 </tr><tr>
+	  <td><b>Sex  </b></td>
+	  <td><prop path=INDI:SEX img=yes txt=no></td>
+	 </tr><tr>
+	  <td><b>Birth</b></td>
+	  <td><prop path=INDI:BIRT:DATE img=yes>, 
+	   <u><prop path=INDI:BIRT:PLAC></u></td>
+	 </tr><tr>
+	  <td><b>Addr </b></td>
+	  <td><prop path=INDI:RESI:ADDR><br>
+	      <prop path=INDI:RESI:ADDR:CITY><br>
+	      <prop path=INDI:RESI:POST></u>
+	  </td>
+	 </tr> 
+	</table>
+ 
+ ]]></blueprint>
+
+
+ <blueprint type="FAM" name="Default"><![CDATA[ 
+	FAMily id=<prop path=FAM>
+ ]]></blueprint>
+ 
+ <blueprint type="OBJE" name="Default"><![CDATA[ 
+	Multimedia OBJect id=<prop path=OBJE>
+ ]]></blueprint>
+
+ <blueprint type="NOTE" name="Default"><![CDATA[ 
+	NOTE id=<prop path=NOTE> <br> 
+	<prop path=NOTE:NOTE>
+ ]]></blueprint>
+
+ <blueprint type="SOUR" name="Default"><![CDATA[ 
+	SOURce id=<prop path=SOUR>
+ ]]></blueprint>
+
+ <blueprint type="SUBM" name="Default"><![CDATA[ 
+	SUBMitter id=<prop path=SUBM>
+ ]]></blueprint>
+
+ <blueprint type="REPO" name="Default"><![CDATA[ 
+	REPOsitory id=<prop path=REPO>
+ ]]></blueprint>
+
+</blueprints>

@@ -44,16 +44,29 @@ public class BlueprintManager {
   /**
    * Constructor   */
   private BlueprintManager() {
-    // init blueprints
     // FIXME : where do we get/store those from/to
     for (int i=0; i<blueprints.length; i++) {
       List bs = new ArrayList();
-      bs.add(new Blueprint("Minimum", "<b>min</b>imum"));
-      bs.add(new Blueprint("Maximum", "<b>max</b>imum"));
-      bs.add(new Blueprint("Colors" , "<b>co<font color=red>l</font>ors</b>!"));
+      bs.add(new Blueprint("Default", "<b>def</b>ault"));
+      bs.add(new Blueprint("Complete", "<b>compl</b>ete"));
+      bs.add(new Blueprint("Minimum" , "<b>min!</b>"));
       blueprints[i] = bs;
     }
     // done
+  }
+  
+  /**
+   * Blueprint for given type with given name   */
+  public Blueprint getBlueprint(int type, String name) {
+    // look through blueprints for that type
+    List bps = getBlueprints(type);
+    for (int i=0; i<bps.size(); i++) {
+      Blueprint bp = (Blueprint)bps.get(i);
+      // .. found! return
+      if (bp.getName().equals(name)) return bp;   	
+    }
+    // not found! create a dummy
+    return new Blueprint(name, Gedcom.getNameFor(type, false));
   }
   
   /**

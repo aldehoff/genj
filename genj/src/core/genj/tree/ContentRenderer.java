@@ -22,6 +22,7 @@ package genj.tree;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.renderer.Blueprint;
 import genj.renderer.EntityRenderer;
 import gj.awt.geom.Path;
 import gj.model.Arc;
@@ -106,7 +107,7 @@ public class ContentRenderer {
     // prepare renderer
     contentRenderer = new EntityRenderer(
       ug.getGraphics(), 
-      foo
+      new Blueprint("foo", foo)
     );
     // translate to center
     Rectangle2D bounds = model.getBounds();

@@ -19,27 +19,17 @@
  */
 package genj.entity;
 
-import genj.gedcom.Gedcom;
 import genj.renderer.BlueprintList;
-import genj.util.ActionDelegate;
 import genj.view.ApplyResetSupport;
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.event.ActionListener;
 
-import javax.swing.JComboBox;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 
 /**
  * The settings editor for the EntityView
  */
 public class EntityViewSettings extends JPanel implements ApplyResetSupport {
-  
-  /** a drop-down for available entities */
-  private JComboBox dropEntities = new JComboBox();
   
   /** the entity view */
   private EntityView entityView; 
@@ -55,24 +45,11 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
     // keep the view
     entityView = view;
     
-    // get entities
-    for (int i=0;i<Gedcom.NUM_TYPES;i++) {
-      dropEntities.addItem(wrap(i));
-    }
-    dropEntities.setRenderer(new BasicComboBoxRenderer() {
-      public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        value = Gedcom.getNameFor(unwrap(value),true);
-        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-      }
-    });
-    dropEntities.addActionListener((ActionListener)new ActionSelect().as(ActionListener.class));
-    
     // prepare a blueprint list    
     blueprintList = new BlueprintList(view.gedcom);
     
     // do the layout
     setLayout(new BorderLayout());
-    add(dropEntities, BorderLayout.NORTH);
     add(blueprintList, BorderLayout.CENTER);
     
     // reset
@@ -117,15 +94,5 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
     // FIXME : propagate Blueprint
     //textHtml.setText(entityView.getHtml(unwrap(dropEntities.getSelectedItem())));
   }
-
-  /**
-   * Action - selection of an entity type
-   */
-  private class ActionSelect extends ActionDelegate {
-    /** @see genj.util.ActionDelegate#execute() */
-    protected void execute() {
-      reset();
-    }
-  } //ActionSelect
 
 } //EntityViewSettings

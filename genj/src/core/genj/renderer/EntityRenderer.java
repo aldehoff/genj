@@ -93,15 +93,15 @@ public class EntityRenderer {
   /**
    * 
    */  
-  public EntityRenderer(Graphics g, String html) {
+  public EntityRenderer(Graphics g, Blueprint bp) {
 
-    if (g==null||html==null) throw new IllegalArgumentException("Graphics and html must not be null"); 
+    if (g==null||bp==null) throw new IllegalArgumentException("Graphics and blueprint must not be null"); 
     
     // remember Graphics
     graphics = g;
     
     // we wrap the html in html/body
-    html = "<html><body>"+html+"</body></html>";
+    String html = "<html><body>"+bp.getHTML()+"</body></html>";
     
     // read the html
     try {

@@ -24,6 +24,8 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
+import genj.renderer.Blueprint;
+import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -36,7 +38,6 @@ import java.awt.Color;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.util.Enumeration;
 
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
@@ -71,16 +72,6 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     gedcom = ged;
     // listen to gedcom
     gedcom.addListener(new GedcomConnector());
-    // loop for htmls from defaults
-    Enumeration keys = resources.getKeys();
-    while (keys.hasMoreElements()) {
-      String key = keys.nextElement().toString();
-      if (key.startsWith("html.")) {
-        // .. if it's not declared in registry -> grab it
-        if (registry.get(key,(String)null)==null) 
-          registry.put(key, resources.getString(key));
-      }
-    }
     // done    
   }
   
@@ -112,28 +103,19 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
   }
   
   /**
-   * Accessor - HTML for given entity type
-   */
-  public String getHtml(int type) {
-    return registry.get("html."+Gedcom.getTagFor(type),"");
-  }
-  
-  /**
-   * Accessor - HTML for given entity type
-   */
-  public void setHtml(int type, String set) {
-    registry.put("html."+Gedcom.getTagFor(type), set);
-    repaint();
-  }
-    
-  /**
    * Sets the entity to show
    */
   public void setEntity(Entity e) {
     if (e==null) {
-      renderer=new EntityRenderer(getGraphics(), resources.getString("html.select"));
+      renderer=new EntityRenderer(
+        getGraphics(),
+        new Blueprint("foo", resources.getString("html.select"))
+      );
     } else {
-      renderer = new EntityRenderer(getGraphics(), getHtml(e.getType()));
+      renderer = new EntityRenderer(
+        getGraphics(), 
+        BlueprintManager.getInstance().getBlueprint(e.getType(), "min")
+      );
     }
     entity = e;
     repaint();
