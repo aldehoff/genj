@@ -6,19 +6,30 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import genj.gedcom.*;
-import genj.report.*;
-import java.io.*;
+import genj.gedcom.EntityList;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
+import genj.gedcom.Property;
+import genj.report.Report;
+import genj.report.ReportBridge;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.TreeMap;
 
 /**
  * GenJ - Report
+ * Note: this report requires Java2
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 0.02
  */
 public class ReportGedcomStatistics implements Report {
 
+  /** the place that is not known */
+  private final static String UNKNOWN_PLACE = "[unknown]";
+  
   /**
    * Returns the name of this report - should be localized.
    */
@@ -67,7 +78,8 @@ public class ReportGedcomStatistics implements Report {
 
     // We Look thru individuals to check their sex
     // .. at the same time we check for birth places
-    Hashtable places = new Hashtable();
+    TreeMap places = new TreeMap();
+    
     EntityList indis = gedcom.getEntities(gedcom.INDIVIDUALS);
     for (int i=0;i<indis.getSize();i++) {
 
@@ -89,21 +101,21 @@ public class ReportGedcomStatistics implements Report {
       }
       
       // And here comes the check for birth place
-      Property place = indi.getProperty("INDI:BIRT:PLAC");
-      if (place!=null) {
-        
-        // .. check if we know that already (or start at 0)
-        Integer count = (Integer)places.get(place.toString());
-        if (count==null) {
-          count = new Integer(1);
-        } else {
-          count = new Integer(count.intValue()+1);
-        }
-        
-        // .. remember
-        places.put(place.toString(), count);
-        
+      Object place = indi.getProperty("INDI:BIRT:PLAC");
+      if (place==null) {
+        place = UNKNOWN_PLACE;
       }
+       
+      // .. check if we know that already (or start at 0)
+      Integer count = (Integer)places.get(place.toString());
+      if (count==null) {
+        count = new Integer(1);
+      } else {
+        count = new Integer(count.intValue()+1);
+      }
+        
+      // .. remember
+      places.put(place.toString(), count);
       
       // Next one
     }
@@ -137,9 +149,9 @@ public class ReportGedcomStatistics implements Report {
       +numUnknown+" personnes dont le sexe n'est pas connu).");
       
     // Six: We show the birth places
-    Enumeration enum = places.keys();
-    while (enum.hasMoreElements()) {
-      String place = (String)enum.nextElement();
+    Iterator it = places.keySet().iterator();
+    while (it.hasNext()) {
+      String place = (String)it.next();
       Integer count = (Integer)places.get(place);
       bridge.println("     - "+count+" individuals born in "+place);
     }
