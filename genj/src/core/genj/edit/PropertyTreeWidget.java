@@ -43,6 +43,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -331,20 +333,17 @@ public class PropertyTreeWidget extends DnDTree {
     /**
      * DND support - drag
      */
-    public void drag(int mode, List children, Object parent, int index) {
+    public void drag(int action, List children, Object parent, int index) {
       
       // do nothing on copy
-      if (mode==COPY)
+      if (action==COPY)
         return;
       
       // check if this is an in-parent move - we'll leave the
-      // shuffle of the children in parent to drop in that case
+      // shuffle of the children in parent to drop() in that case
       Property newParent = (Property)parent;
-      if (newParent!=null&&newParent.isProperties(children)) {
-        // FIXME
-//        System.out.println("DRAG I P");
-//        return;
-      }
+      if (newParent!=null&&newParent.isProperties(children)) 
+        return;
       
       // start transaction for our gedcom
       gedcom.startTransaction();
@@ -396,13 +395,25 @@ public class PropertyTreeWidget extends DnDTree {
       
       // is this an in-parent move?
       Property newParent = (Property)parent;
-      if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
-        List children = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
-        if (newParent.isProperties(children)) {
-          System.out.println("DROP I P");
-          // FIXME
-//          gedcom.endTransaction();
-//          return children;
+      if (action==MOVE&&transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
+        List dragged = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
+        if (newParent.isProperties(dragged)) {
+          
+          // re-shuffle children
+          for (int i=0,j=dragged.size();i<j;i++) {
+            if (newParent.getPropertyPosition((Property)dragged.get(i))<index)
+              index--;
+          }
+          List shuffle = new ArrayList(Arrays.asList(newParent.getProperties()));
+          shuffle.removeAll(dragged);
+          shuffle.addAll(index, dragged);
+          
+          // commit
+          newParent.setProperties(shuffle);
+          gedcom.endTransaction();
+          
+          // done
+          return dragged;
         }
       }
       

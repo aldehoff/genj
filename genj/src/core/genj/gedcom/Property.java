@@ -342,6 +342,21 @@ public abstract class Property implements Comparable {
   }
   
   /**
+   * Allows to change the order of the properties contained. This
+   * method will throw an IllegalArgumentException if 
+   * ! set.contains(getProperties()) && getProperties.contains(set)
+   */
+  public void setProperties(List set) {
+    // check mutual inclusion
+    if (!(children.containsAll(set)&&set.containsAll(children)))
+      throw new IllegalArgumentException("change of properties not allowed");
+    // FIXME implement change mechanism
+    children.clear();
+    children.addAll(set);
+    // done
+  }
+  
+  /**
    * Returns this property's properties (all children)
    */
   public Property[] getProperties() {
@@ -740,6 +755,6 @@ public abstract class Property implements Comparable {
   public String getPropertyName() {
     return Gedcom.getName(getTag());
   }
-  
+
 } //Property
 
