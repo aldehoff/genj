@@ -22,6 +22,7 @@ package genj.io;
 import java.io.*;
 import java.util.*;
 
+import genj.Version;
 import genj.gedcom.*;
 import genj.util.Trackable;
 
@@ -215,7 +216,7 @@ public class GedcomWriter implements Trackable {
     // Header
     line("HEAD","");
     line(+1,"SOUR","GENJ");
-    line(+1,"VERS","1.1");
+    line(+1,"VERS",Version.getInstance().toString());
     line(+0,"NAME","GenealogyJ");
     line(-1);
     line(+0,"DEST","ANY");
