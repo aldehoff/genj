@@ -100,6 +100,8 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * @see javax.swing.JComboBox#setSelectedItem(java.lang.Object)
    */
   public void setSelectedItem(Object anObject) {
+    // 20030510 mark change in editor
+    editor.setChanged(true);
     // continue
     super.setSelectedItem(anObject);
   }
