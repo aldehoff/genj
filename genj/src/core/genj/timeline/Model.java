@@ -138,15 +138,57 @@ import java.util.Set;
     // done
   }
   
+  /** 
+   * Convert a point in time into a gregorian year (double)
+   */
+  /*package*/ static double toDouble(PointInTime pit, boolean roundUp) throws GedcomException {
+    
+    // all Gregorian for now
+    Calendar calendar = PointInTime.GREGORIAN;
+    
+    if (pit.getCalendar()!=calendar) { 
+      pit = pit.getPointInTime(calendar);
+    }
+    
+    // year
+    int year = pit.getYear();
+    double result = year; 
+
+    // month
+    int month = pit.getMonth();
+    if (month==PointInTime.UNKNOWN)
+      return roundUp ? result+1 : result;
+
+    double months = calendar.getMonths(); 
+    result += month / months;
+
+    // day
+    int day = pit.getDay();
+    if (day==PointInTime.UNKNOWN) 
+      return roundUp ? result+1/months : result;
+
+    double days = calendar.getDays(month, year);
+    result += day/months/days;
+
+    // done
+    return result;
+  }
+  
   /**
    * Returns a point in time for a year (double)
    */
-  protected PointInTime getPointInTime(double year) {
+  /*package*/ static PointInTime toPointInTime(double year) {
+
+    Calendar calendar = PointInTime.GREGORIAN;
+    
+    int months = calendar.getMonths();
     
     int y = (int)Math.floor(year);
-    int d = (int)Math.floor((year%1) * 365);
-    int m = Math.min(11, d/30);
-    d = Math.min(PointInTime.GREGORIAN.getDays(m, y)-1, d-m*30);
+    int m = (int)Math.floor((year%1) * months);
+
+    int days = calendar.getDays(m, y);
+    
+    int d = (int)Math.floor((year%1*months)%1 * days);
     
     return new PointInTime(d, m, y);
   }
@@ -453,42 +495,6 @@ import java.util.Set;
     // after!
     events.add(candidate);
     return true;
-  }
-  
-  /** 
-   * Convert a point in time into a gregorian year (double)
-   */
-  /*package*/ static double toDouble(PointInTime pit, boolean roundUp) throws GedcomException {
-    
-    // all Gregorian for now
-    Calendar calendar = PointInTime.GREGORIAN;
-    
-    if (pit.getCalendar()!=calendar) { 
-      pit = pit.getPointInTime(calendar);
-    }
-    
-    // year
-    int year = pit.getYear();
-    double result = year; 
-
-    // month
-    int month = pit.getMonth();
-    if (month==PointInTime.UNKNOWN)
-      return roundUp ? result+1 : result;
-
-    double months = calendar.getMonths(); 
-    result += month / months;
-
-    // day
-    int day = pit.getDay();
-    if (day==PointInTime.UNKNOWN) 
-      return roundUp ? result+1/months : result;
-
-    double days = calendar.getDays(month, year);
-    result += day/months/days;
-
-    // done
-    return result;
   }
   
   /**

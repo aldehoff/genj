@@ -431,7 +431,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       // calculate year FIXME this isn't accurate yet
       double year = pixel2year(e.getPoint().x);
       // calculate time and days around it
-      PointInTime when = model.getPointInTime(year);
+      PointInTime when = model.toPointInTime(year);
       int days = (int)Math.ceil(5F/DPC.getX()/cmPerYear*365);
       // collect events and their text
       Iterator it = Almanac.getInstance().getEvents(when, days).iterator();
