@@ -23,6 +23,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.io.Filter;
@@ -35,9 +36,10 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.DoubleValueSlider;
-import genj.util.swing.UnitGraphics;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.PopupButton;
 import genj.util.swing.ScreenResolutionScale;
+import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortOverview;
 import genj.view.ContextPopupSupport;
 import genj.view.ContextSupport;
@@ -46,6 +48,7 @@ import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import gj.model.Node;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -54,6 +57,8 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
@@ -434,9 +439,49 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       .setSelected(model.getMode()==Model.ANCESTORS);
     bh.create(new ActionAsDsAnDs(Model.DESCENDANTS))
       .setSelected(model.getMode()==Model.DESCENDANTS);
+      
+    // bookmarks
+    PopupButton pb = new PopupButton("",MetaProperty.get("EVEN").getImage()) {
+      /**
+       * @see genj.util.swing.PopupButton#getActions()
+       */
+      public List getActions() {
+        List bookmarks = new ArrayList(3);
+        bookmarks.add(new ActionBookmark(null));
+        bookmarks.add(ActionDelegate.NOOP);
+        bookmarks.add(new ActionBookmark(new Bookmark("Nils Meier", null, null)));
+        bookmarks.add(new ActionBookmark(new Bookmark("Sven Meier", null, null)));
+        bookmarks.add(new ActionBookmark(new Bookmark("Lars Meier", null, null)));
+        return bookmarks;
+      }
+    };
+    bar.add(pb);
     
     // done
   }
+
+  /**
+   * Action choosing a bookmark
+   */
+  private class ActionBookmark extends ActionDelegate {
+    /** 
+     * Constructor 
+     */
+    private ActionBookmark(Bookmark bookmark) {
+      if (bookmark==null) setText("Create Bookmark");
+      else {
+        setText(bookmark.getName());
+        setImage(Gedcom.getImage(Gedcom.INDIVIDUALS));
+      }
+    } 
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      System.out.println("Showing bookmark "+txt);
+    }
+
+  } //ActionBookmark
 
   /**
    * @see genj.view.ContextSupport#createActions(genj.gedcom.Entity)
