@@ -126,7 +126,6 @@
      <property name="exclude" value="
       genj/app/**, genj/lnf/**, genj/entity/**, genj/report/**, **/*ViewPrinter*.class, **/*ViewSettings*.class
       genj/renderer/BlueprintEditor*, genj/renderer/BlueprintList*
-      genj/view/widgets/*
      "/>
 
      <!-- applet sub -->
