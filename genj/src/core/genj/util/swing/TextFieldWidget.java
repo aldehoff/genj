@@ -106,8 +106,15 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
         setText("");
         isTemplate = false;
       }
-      if (isSelectAllOnFocus)
-        selectAll();
+      if (isSelectAllOnFocus) {
+        // 20040307 wrote my own selectAll() so that the
+        // caret is at position 0 after selection - this
+        // makes sure the beginning of the text is visible
+        if (getDocument() != null) {
+          setCaretPosition(getDocument().getLength());
+          moveCaretPosition(0);
+        }
+      }
     }
     super.processFocusEvent(e);
   }
@@ -131,6 +138,9 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
   public void setText(String txt) {
     super.setText(txt);
     setChanged(false);
+    // 20040307 reset caret to 0 - this makes sure the
+    // first part of the string is visible
+    setCaretPosition(0);
   }
 
   /**
