@@ -377,18 +377,19 @@ public class Indi extends Entity {
     
     // would be in parental family
     Fam fam = getFamc();
-    
-    Indi 
-      husband = fam.getHusband(),
-      wife = fam.getWife();
+    if (fam!=null) {
       
-    if (husband!=null)
-      collect.add(husband);
-    if (wife!=null)
-      collect.add(wife);
-    
-    if (fam!=null)
-      fam.getAncestors(collect);
+      Indi 
+        husband = fam.getHusband(),
+        wife = fam.getWife();
+        
+      if (husband!=null)
+        collect.add(husband);
+      if (wife!=null)
+        collect.add(wife);
+      
+        fam.getAncestors(collect);
+    }
 
     // done      
     return collect;
