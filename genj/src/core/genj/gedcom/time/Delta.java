@@ -149,8 +149,8 @@ public class Delta implements Comparable {
       months += calendar.getMonths();
     } 
     
-    // sanity check
-    if (years<0||months<0||days<0||(years+months+days==0))  
+    // sanity check - 20040316 allowing years==months==days==0 now
+    if (years<0||months<0||days<0)  
       return null;      
 
     // done
