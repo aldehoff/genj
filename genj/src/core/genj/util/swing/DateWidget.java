@@ -95,28 +95,31 @@ public class DateWidget extends JPanel {
     widgetDay.addChangeListener(changeSupport);
     
     // Layout
-    String format, template;
-    switch (new SimpleDateFormat().toPattern().charAt(0)) {
-	    case 'm': case 'M':
-	      template = "<row><calendar/><month/><day/><year/></row>";
-        format = "mmm/dd/yyyy"; 
-        break;
-	    case 'd': case 'D':
-	      template = "<row><calendar/><day/><month/><year/></row>";
-	      format = "dd.mmm.yyyy"; 
-	      break;
-	    default: 
-	      template = "<row><calendar/><year/><month/><day/></row>";
-	      format = "yyyy-mmm-dd"; 
-	      break;
-    }
-    
-    setLayout(new NestedBlockLayout(template));
+    setLayout(new NestedBlockLayout("<row><calendar/><x/><x/><x/></row>"));
     
     add("calendar", widgetCalendar);
-    add("month"   , widgetMonth); 
-    add("day"     , widgetDay) ; 
-    add("year"    , widgetYear); 
+    
+    String format;
+    switch (new SimpleDateFormat().toPattern().charAt(0)) {
+	    case 'm': case 'M':
+        format = "mmm/dd/yyyy"; 
+        add(widgetMonth); 
+        add(widgetDay) ; 
+        add(widgetYear); 
+        break;
+	    case 'd': case 'D':
+	      format = "dd.mmm.yyyy"; 
+        add(widgetDay) ; 
+        add(widgetMonth); 
+        add(widgetYear); 
+	      break;
+	    default: 
+	      format = "yyyy-mmm-dd"; 
+	      add(widgetYear); 
+	      add(widgetMonth); 
+	      add(widgetDay) ; 
+	      break;
+    }
     
     widgetDay.setToolTipText(format);
     widgetMonth.setToolTipText(format);

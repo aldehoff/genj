@@ -187,15 +187,11 @@ public class NestedBlockLayout implements LayoutManager2 {
 
       // look for it
       for (int i=0;i<subs.size();i++) {
-        
         Block sub = (Block)subs.get(i);
         if (sub.remove(component)) {
-          if (sub.size()==0)
-            subs.remove(sub);
           invalidate(false);
           return true;
         }
-        
       }
       
       // not found
@@ -456,7 +452,12 @@ public class NestedBlockLayout implements LayoutManager2 {
     
     /** remove */
     boolean remove(Component component) {
-      return this.component==component;
+      if (this.component==component) {
+        this.component = null;
+        invalidate(false);
+        return true;
+      }
+      return false;
     }
     
     /** add a sub */
@@ -520,10 +521,6 @@ public class NestedBlockLayout implements LayoutManager2 {
    */
   public void addLayoutComponent(Component comp, Object key) {
 
-    // need element qualification
-    if (key==null)
-      throw new IllegalArgumentException("element key mandatory");
-    
     // a cell?
     if (key instanceof Cell) {
       ((Cell)key).setContent(comp);
@@ -531,14 +528,19 @@ public class NestedBlockLayout implements LayoutManager2 {
     }
     
     // lookup cell
-    String element = key.toString();
+    String element = key!=null ? key.toString() : null;
     for (int i=0,j=cells.size();i<j;i++) {
       Cell cell = (Cell)cells.get(i);
-      if (cell.getElement().equals(element)) {
+      // take next available, if key==null
+      // matching element, otherwise
+      if ((element==null&&cell.component==null)||(cell.getElement().equals(element))) {
         cell.setContent(comp);
         return;
       }
     }
+  
+    if (element==null)
+      throw new IllegalArgumentException("no available descriptor element - element qualifier required");
     throw new IllegalArgumentException("element qualifier doesn't match any descriptor element");
 
     // done
