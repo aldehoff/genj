@@ -38,6 +38,8 @@ import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
@@ -60,7 +62,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -140,9 +144,9 @@ import javax.swing.event.TreeSelectionListener;
     setLayout(new BorderLayout());
     add(splitPane, BorderLayout.CENTER);
     
-    // setup keys
-//    new KeyboardShortcut(KeyEvent.VK_UP, KeyboardShortcut.CTRL, new Up()).install(this);
-//    new KeyboardShortcut(KeyEvent.VK_TAB, 0, new Down()).install(this);
+    // setup focus policy
+    setFocusTraversalPolicy(new FocusPolicy());
+    setFocusCycleRoot(true);
     
     // done    
   }
@@ -576,8 +580,12 @@ import javax.swing.event.TreeSelectionListener;
           bean.addChangeListener(this);
   
           // and request focus
-          requestFocusInWindow();
-          bean.requestFocusInWindow();
+          SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+              requestFocusInWindow();
+              bean.requestFocusInWindow();
+            }
+          });
           
         } catch (Throwable t) {
           Debug.log(Debug.WARNING, this, "Property bean "+bean+" failed with "+t.getMessage(), t);
@@ -604,25 +612,32 @@ import javax.swing.event.TreeSelectionListener;
   
   } //InteractionListener
 
-//  /**
-//   * Change tree selection
-//   */
-//  private class Up extends ActionDelegate {
-//    /** callback */
-//    protected void execute() {
-////      tree.getActionMap().get("selectPrevious").actionPerformed(null);
-//    }
-//  }
-//  
-//  /**
-//   * Change tree selection
-//   */
-//  private class Down extends ActionDelegate {
-//    /** callback */
-//    protected void execute() {
-//      System.out.println("down");
-////      tree.getActionMap().get("selectNext").actionPerformed(null);
-//    }
-//  }
+  /**
+   * Intercept focus policy requests to automate tree node traversal on TAB
+   */
+  private class FocusPolicy extends LayoutFocusTraversalPolicy {
+    public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
+      // let super find out who's getting focus
+      Component result = super.getComponentAfter(focusCycleRoot, aComponent);
+      // choose next row in tree IF
+      //  - a bean is still displayed at the moment
+      //  - next component is not part of that bean
+      if (bean!=null&&!SwingUtilities.isDescendingFrom(result, bean)) 
+        tree.setSelectionRow( (tree.getSelectionRows()[0]+1) % tree.getRowCount());
+      // done for me
+      return result;
+    }
+    public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
+      // let super find out who's getting focus
+      Component result = super.getComponentBefore(focusCycleRoot, aComponent);
+      // choose previous row in tree IF
+      //  - a bean is still displayed at the moment
+      //  - prev component is not part of that bean
+      if (bean!=null&&!SwingUtilities.isDescendingFrom(result, bean)) 
+        tree.setSelectionRow( (tree.getSelectionRows()[0]-1) % tree.getRowCount());
+      // done for me
+      return result;
+    }
+  } //FocusPolicy
   
 } //AdvancedEditor
