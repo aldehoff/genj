@@ -32,6 +32,7 @@ Future
 
 1.9 - Aug xx 2002
 
+  I file .properties for file .ged is loaded from same location but stored in user.home (local takes precendence)
   N New Report ReportExec which allows to execute a command line tool
   I EditView Buttons are now always visible (shrinking horizontally) when component is sized too small
   N User can choose Look&Feel (with Skin/Theme support) through AboutDialog (download genj_lnf-x.y.zip to enable)
