@@ -205,8 +205,10 @@ import java.util.Set;
     if (set.isEmpty()) 
       set = Arrays.asList(DEFAULT_PATHS);
       
-    // do it internally
-    setPaths(set);
+    // do it internally - this has been an endless loop
+    // from 2005/05/11 to 2005/11/05 without anyone
+    // noticing :(
+    setPathsInternally(set);
     
     // re-generate events
     createEvents();
