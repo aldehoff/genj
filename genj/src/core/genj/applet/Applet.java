@@ -208,7 +208,7 @@ public class Applet extends java.applet.Applet {
       } else {
         
         // prepare view manager
-        ViewManager vmanager = new ViewManager(registry, null, winMgr, FACTORIES);
+        ViewManager vmanager = new ViewManager(new Registry(registry, "views"), null, winMgr, FACTORIES);
 
         // change what we show
         removeAll();
