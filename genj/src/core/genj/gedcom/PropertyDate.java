@@ -29,7 +29,7 @@ import java.util.StringTokenizer;
  */
 public class PropertyDate extends Property {
 
-  /*package*/ final static String TAG = "DATE";
+  /*package*/ public final static String TAG = "DATE";
 
   /** time values */
   private PIT 

@@ -286,6 +286,13 @@ public class MetaProperty {
     // done
     return type;
   }
+
+  /**
+   * Accessor - some explanationary information about the meta
+   */
+  public String getName() {
+    return Gedcom.getResources().getString(tag+".name");
+  }
   
   /**
    * Accessor - some explanationary information about the meta
