@@ -133,12 +133,12 @@ import java.util.Stack;
   /**
    * Layout a node and all its descendants
    * <il>
-   *  <li>all children of node (without backtrack) are layouted
-   *      recursively and placed into one row - returning a contour
-   *  <li>node is placed as the parent of children - returning a contour
-   *  <li>arcs are layouted between node and children
+   *  <li>all children of node (without backtracking to parent) are layouted
+   *      recursively and placed beside each other (west to east)
+   *  <li>node is placed as the parent of children (north of)
+   *  <li>arcs are layouted between node and its children
+   *  <li>arcs/nodes to children of node are placed relative to its position  
    *  <li>a merged contour for node and its children is calculated
-   *  <li>note: all nodes (exception is node) and arcs have relative positions
    * </il>
    */
   private Contour layoutNode(Node node, Node parent, Tree tree, int generation) {
