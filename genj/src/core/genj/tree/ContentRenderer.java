@@ -158,7 +158,7 @@ public class ContentRenderer {
     Rectangle2D r2d = shape.getBounds2D();
     g.pushClip(x, y, r2d);
     g.pushTransformation();
-    // draw it - FIXME : use a blueprint
+    // draw it
     g.translate(x, y);
     Rectangle r = g.units2pixels(r2d);
     r.x+=2;r.y+=2;r.width-=4;r.height-=4;

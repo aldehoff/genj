@@ -51,14 +51,17 @@ public class BlueprintManager {
    * Constructor   */
   private BlueprintManager() {
     
+    // FIXME save/load
+    
     // load blueprints
     for (int t=0;t<Gedcom.NUM_TYPES;t++) {
+      blueprints[t] = new ArrayList(10);
       String tag = Gedcom.getTagFor(t);
       StringTokenizer names = new StringTokenizer(resources.getString("blueprints."+tag));
       while (names.hasMoreTokens()) {
         String name = names.nextToken();
         String html = resources.getString("blueprints."+tag+"."+name);
-        getBlueprints(t).add(new Blueprint(name,html));
+        addBlueprint(t, new Blueprint(name,html));
       }
     }
     
@@ -84,12 +87,35 @@ public class BlueprintManager {
   /**
    * Blueprints for a given type   */
   public List getBlueprints(int type) {
-    List result = blueprints[type];
-    if (result==null) {
-      result = new ArrayList(10);
-      blueprints[type]=result;
+    return new ArrayList(blueprints[type]);
+  }
+  
+  /**
+   * Adds a blueprint   */
+  public void addBlueprint(int type, Blueprint blueprint) {
+    // fix name for duplicates
+    String name = blueprint.getName();
+    List others = getBlueprints(type);
+    int num = 0;
+    for (int i=0; i < others.size(); i++) {
+      Blueprint other = (Blueprint)others.get(i);
+      if (other.getName().equals(name)) num++;
     }
-    return result;
+    if (num>0) blueprint.setName(name+"-"+num);
+    // keep it
+    blueprints[type].add(blueprint);
+    
+    // done 
+  }
+  
+  /**
+   * Deletes a blueprint   */
+  public void delBlueprint(Blueprint blueprint) {
+    // look for it
+    for (int i = 0; i < blueprints.length; i++) {
+      if (blueprints[i].remove(blueprint)) return;
+    }
+    // done
   }
   
   /**
@@ -127,5 +153,5 @@ public class BlueprintManager {
     }
     registry.put("blueprints", names);
   }
-  
+
 } //BlueprintManager

@@ -28,7 +28,9 @@ import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -39,18 +41,18 @@ import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
  * An editor component for changing a rendering scheme */
-public class BlueprintEditor extends Box {
+public class BlueprintEditor extends JSplitPane {
 
   /** the text are for the html */
   private JTextArea html;
@@ -75,28 +77,41 @@ public class BlueprintEditor extends Box {
     
   /**
    * Constructor   */
-  public BlueprintEditor() { super(BoxLayout.Y_AXIS);
+  public BlueprintEditor() { 
     // preview
     preview = new Preview();
     preview.setBorder(BorderFactory.createTitledBorder("Preview"));
-    // html
-    html = new JTextArea(3,32);
-    html.setFont(new Font("Monospaced", Font.PLAIN, 12));
-    JScrollPane scroll = new JScrollPane(html);
-    scroll.setBorder(BorderFactory.createTitledBorder("HTML"));
-    // buttons
-    Box buttons = new Box(BoxLayout.X_AXIS);
-    ButtonHelper helper = new ButtonHelper().setContainer(buttons).setResources(resources);
-    bInsert = helper.create(new ActionInsert());
+    // edit
+    JPanel edit = new JPanel(new BorderLayout());
+      // html
+      html = new JTextArea(3,32);
+      html.setFont(new Font("Monospaced", Font.PLAIN, 12));
+      JScrollPane scroll = new JScrollPane(html);
+      scroll.setBorder(BorderFactory.createTitledBorder("HTML"));
+      // buttons
+      ButtonHelper helper = new ButtonHelper().setResources(resources);
+      bInsert = helper.create(new ActionInsert());
+    edit.setMinimumSize(new Dimension(0,0));
+    edit.add(scroll, BorderLayout.CENTER);
+    edit.add(bInsert, BorderLayout.SOUTH);
     // layout
-    add(preview);
-    add(scroll);
-    add(buttons);
+    setLeftComponent(preview);
+    setRightComponent(edit);
+    setDividerLocation(Integer.MAX_VALUE);
+    setOrientation(JSplitPane.VERTICAL_SPLIT);
+    setOneTouchExpandable(true);
     // event listening
     html.getDocument().addDocumentListener(preview);
     // intial set
     set(null,null);
     // done
+  }
+  
+  /**
+   * @see javax.swing.JSplitPane#getLastDividerLocation()
+   */
+  public int getLastDividerLocation() {
+    return getSize().height/2;
   }
   
   /**
