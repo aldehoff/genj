@@ -20,10 +20,12 @@
 package genj.timeline;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,13 +58,17 @@ import genj.gedcom.PropertyEvent;
   /** our levels */
   /*package*/List layers;
   
+  /** time per event */
+  private double timePevent = 1/2;
+  
   /**
    * Constructor
    */
-  /*package*/ Model(Gedcom gedcom) {
+  /*package*/ Model(Gedcom gedcom, double timePevent) {
     
     // remember
     this.gedcom = gedcom;
+    this.timePevent = timePevent;
     
     // setup default filter
     filter = new HashSet();
@@ -71,15 +77,23 @@ import genj.gedcom.PropertyEvent;
     }
     
     // gather events for the 1st time
-    insertEvents();
+    createEvents();
     
     // done
   }
   
   /**
+   * change time per event
+   */
+  /*package*/ void setTimePerEvent(double set) {
+    timePevent = set;
+    createEvents();
+  }
+  
+  /**
    * Gather Events
    */
-  private final void insertEvents() {
+  private final void createEvents() {
     
     // reset
     min = Double.MAX_VALUE;
@@ -89,8 +103,17 @@ import genj.gedcom.PropertyEvent;
     layers = new ArrayList(10);
     
     // look for events in INDIs and FAMs
-    insertEventsFrom(gedcom.getEntities(Gedcom.INDIVIDUALS));
-    insertEventsFrom(gedcom.getEntities(Gedcom.FAMILIES   ));
+    createEventsFrom(gedcom.getEntities(Gedcom.INDIVIDUALS));
+    createEventsFrom(gedcom.getEntities(Gedcom.FAMILIES   ));
+    
+    // recheck trailing events in layers
+    checkTrailingEvents();
+    
+    // nothing found -> fallback to this year
+    if (layers.size()==0) {
+      min = Calendar.getInstance().get(Calendar.YEAR);
+      max = min+(double)11/12;
+    }
     
     // done
   }
@@ -99,14 +122,14 @@ import genj.gedcom.PropertyEvent;
    * Gather Events for given entities
    * @param es list of entities to find events in
    */
-  private final void insertEventsFrom(List es) {
+  private final void createEventsFrom(List es) {
     // loop through entities
     for (int i=0; i<es.size(); i++) {
       Entity e = (Entity)es.get(i);
       List ps = e.getProperty().getProperties(PropertyEvent.class);
       for (int j=0; j<ps.size(); j++) {
         PropertyEvent pe = (PropertyEvent)ps.get(j);
-        if (filter.contains(pe.getTag())) insertEventFrom(pe);
+        if (filter.contains(pe.getTag())) createEventFrom(pe);
       }
     }
     // done
@@ -116,7 +139,7 @@ import genj.gedcom.PropertyEvent;
    * Gather Event for given PropertyEvent
    * @param pe property to use
    */
-  private final void insertEventFrom(PropertyEvent pe) {
+  private final void createEventFrom(PropertyEvent pe) {
     // we need a valid date for that event
     PropertyDate date = pe.getDate();
     if (date==null) return;
@@ -161,8 +184,25 @@ import genj.gedcom.PropertyEvent;
    * Insert the Event into a layer
    * @return whether that was successfull
    */
-  private final boolean insertEvent(Event e, List layer) {
-    return false;
+  private final boolean insertEvent(Event candidate, List layer) {
+    // loop through layer
+    ListIterator events = layer.listIterator();
+    do {
+      Event event = (Event)events.next();
+      // before?
+      if (candidate.to<event.from-timePevent) {
+        events.previous();
+        events.add(candidate);
+        return true;
+      }
+      // overlap?
+      if (candidate.from<event.to+timePevent) 
+        return false;
+      // after?
+    } while (events.hasNext());
+    // after!
+    events.add(candidate);
+    return true;
   }
   
   /**
@@ -170,6 +210,19 @@ import genj.gedcom.PropertyEvent;
    */
   private final double wrap(PropertyDate.PointInTime p) {
     return (double)p.getYear(0) + ((double)p.getMonth(1)-1)/12 + ((double)p.getDay(0)/12/31);
+  }
+  
+  /**
+   * Check trailing events - we don't want them closer
+   * than timePerEvent*2 to the previous one
+   */
+  private final void checkTrailingEvents() {
+    // loop layers
+    for (int l=0;l<layers.size();l++) {
+      LinkedList layer = (LinkedList)layers.get(l);
+      Event event = (Event)layer.getLast();
+    }
+    // done
   }
   
   /**

@@ -19,7 +19,10 @@
  */
 package genj.timeline;
 
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.util.Stack;
 
 /**
  * Generic superclass of all renderers
@@ -28,11 +31,14 @@ public abstract class Renderer {
   
   /** resolution to use */
   /*package*/ double dpi = Toolkit.getDefaultToolkit().getScreenResolution();
+  
+  /** a stack of push'd clips */
+  private Stack clipStack = new Stack();
 
   /**
    * Convert cm into pixels
    */
-  protected final int cm2pixels(double cm) {
+  public final int cm2pixels(double cm) {
     // 1 Centimeters = 0.393701  Inches
     return inches2pixels(cm*0.393701);
   }
@@ -40,7 +46,7 @@ public abstract class Renderer {
   /**
    * Convert inches into pixels
    */
-  protected final int inches2pixels(double inches) {
+  public final int inches2pixels(double inches) {
     // pixels = inches * dpi
     return (int)(inches*dpi);
   }
@@ -48,7 +54,7 @@ public abstract class Renderer {
   /**
    * Convert pixels into cm
    */
-  protected final double pixels2cm(int pixels) {
+  public final double pixels2cm(int pixels) {
     // 1 inch = 2.54 cm
     return pixels2inches(pixels)*2.54;
   }
@@ -56,10 +62,25 @@ public abstract class Renderer {
   /**
    * Convert pixels into inches
    */
-  protected final double pixels2inches(int pixels) {
+  public final double pixels2inches(int pixels) {
     // pixels = inches * dpi
     return ((double)pixels)/dpi;
   }
   
+  /**
+   * Pushes a pop'able clip
+   */
+  protected void pushClip(Graphics g, int x, int y, int w, int h) {
+    clipStack.push(g.getClipBounds());
+    g.clipRect(x,y,w,h);
+  }
+  
+  /**
+   * Pop's a previously push'd clip
+   */
+  protected void popClip(Graphics g) {
+    Rectangle r = (Rectangle)clipStack.pop();
+    g.setClip(r.x,r.y,r.width,r.height);
+  }
   
 } //Renderer

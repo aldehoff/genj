@@ -36,6 +36,9 @@ public class ContentRenderer extends Renderer {
   /** centimeters per year */
   /*package*/ double cmPyear = 1.0D;
   
+  /** pixels per event*/
+  /*package*/ int pixelsPevent = 128;
+  
   /** whether we colorize or not */
   /*package*/ boolean colorize = true;
   
@@ -89,33 +92,27 @@ public class ContentRenderer extends Renderer {
 
     boolean em  = event.prop.getEntity().equals(model.gedcom.getLastEntity());
 
-    // color
-    if (colorize) g.setColor(em ? Color.red : Color.black);
-    
     // draw it's extend
+    if (colorize) g.setColor(Color.blue);
     g.drawLine(x1-1, y+fh-1, x1-1, y+fh);
     g.drawLine(x1, y+fh  , x2, y+fh);
     g.drawLine(x2+1, y+fh-1, x2+1, y+fh);
     
     // draw it's text and image (not extending past model.max)
-    ImgIcon img = event.prop.getImage(false);
+    if (colorize) g.setColor(em ? Color.red : Color.black);
     
-    double years = pixels2cm(img.getIconWidth() + fm.stringWidth(event.tag))/cmPyear;
+    ImgIcon img = event.prop.getImage(false);
+    double years = pixels2cm(Math.min(pixelsPevent,img.getIconWidth() + fm.stringWidth(event.tag)))/cmPyear;
     if (event.from+years > model.max) {
       x1 = cm2pixels((model.max-model.min-years)*cmPyear);
     }
+    pushClip(g, x1, y, pixelsPevent, fh+1);
     img.paintIcon(g, x1, y+fh/2-img.getIconHeight()/2);
     x1+=img.getIconWidth();
     g.drawString(event.tag, x1, y + fh - fd);
-      
+    popClip(g);
+    
     // done
-  }
-  
-  /**
-   * Calculates text for given event
-   */
-  private final String calcString(Model.Event event) {
-    return event.prop.getTag() + " of " + event.prop.getEntity() + " (" + event.prop.getDate() + ")";
   }
   
 } //RulerRenderer
