@@ -23,7 +23,6 @@ import gj.util.ArcIterator;
  */
 /*package*/ class DirectedArcIterator extends ArcIterator {
 
-  private Node node;    
   private boolean incoming;
   
   /**
@@ -31,7 +30,6 @@ import gj.util.ArcIterator;
    */
   protected DirectedArcIterator(Node node, boolean incoming) {
     super(node);
-    this.node = node;
     this.incoming = incoming;
   }    
   
@@ -44,7 +42,7 @@ import gj.util.ArcIterator;
     
     do {
       if (!super.next()) return false;
-      isBadDirection = incoming^(arc.getEnd()==node);
+      isBadDirection = incoming^(arc.getEnd()==source);
     } while (isLoop||isBadDirection);
     
     // done

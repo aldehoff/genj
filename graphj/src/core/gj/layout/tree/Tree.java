@@ -16,11 +16,9 @@
 package gj.layout.tree;
 
 import gj.layout.LayoutException;
-import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcIterator;
-import gj.util.ModelHelper;
 import java.awt.Shape;
 import java.util.HashSet;
 import java.util.Set;
@@ -59,7 +57,7 @@ public class Tree {
     // - collect spanned nodes
     height = new double[graph.getNodes().size()];
     nodes = new HashSet(graph.getNodes().size());
-    analyze(root, 0, null, o);
+    analyze(root, null, 0, o);
 
     // Calculate generation's positions    
     latitude = new double[numGenerations];
@@ -76,19 +74,19 @@ public class Tree {
   /**
    * Analyzes one generation
    */
-  private void analyze(Node root, int generation, Arc dontRecurseInto, Orientation o) throws LayoutException {
+  private void analyze(Node node, Node parent, int generation, Orientation o) throws LayoutException {
     
     // this node shouldn't have been visited before
-    if (nodes.contains(root)) {
-      throw new LayoutException("Arc "+dontRecurseInto+" to "+root+" is part of a cycle");
+    if (nodes.contains(node)) {
+      throw new LayoutException("Arc "+parent+"->"+node+" is part of a cycle");
     }
-    nodes.add(root);
+    nodes.add(node);
     
     // update number of generations
     numGenerations = Math.max(numGenerations, generation+1);
 
     // Analyze the root's height
-    Shape shape = root.getShape();
+    Shape shape = node.getShape();
     if (shape!=null) {
       Contour contour = o.getContour(shape.getBounds2D());
       height[generation] = Math.max(
@@ -98,12 +96,12 @@ public class Tree {
     }
    
     // Recurse into children
-    ArcIterator it = new ArcIterator(root);
+    ArcIterator it = new ArcIterator(node);
     while (it.next()) {
       if (!it.isFirst) continue;
       if (it.isLoop) continue;
-      if (it.isDup(dontRecurseInto)) continue;
-      analyze(ModelHelper.getOther(it.arc,root), generation+1, it.arc, o);
+      if (it.dest==parent) continue;
+      analyze(it.dest, node, generation+1, o);
     }
 
     // Done 

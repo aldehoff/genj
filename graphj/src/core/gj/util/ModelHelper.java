@@ -33,14 +33,14 @@ public class ModelHelper {
   /**
    * Translates a node's position
    */
-  public static void translate(Node node, Point2D delta) {
+  public static void move(Node node, Point2D delta) {
     Point2D pos = node.getPosition();
     pos.setLocation( pos.getX() + delta.getX(), pos.getY() + delta.getY());
   }
 
   /**
-   * Checks whether given Node n is neighbour of given nodes. That is
-   *  E node(i), E arc(i,j) where node = node(j)
+   * Checks whether given Node n is neighbour of any of the given nodes. 
+   * That is  E node(i), E arc(i,j) where node = node(j)
    */
   public static boolean isNeighbour(Node node, List nodes) {
     Iterator it = node.getArcs().iterator();

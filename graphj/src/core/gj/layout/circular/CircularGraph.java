@@ -15,11 +15,9 @@
  */
 package gj.layout.circular;
 
-import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcIterator;
-import gj.util.ModelHelper;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,7 +71,7 @@ public class CircularGraph {
   /**
    * Find circles starting at given node
    */
-  private void findCircles(Node node, Arc backtrack, Stack path, Set unvisited) {
+  private void findCircles(Node node, Node parent, Stack path, Set unvisited) {
     
     // have we been here before?
     if (path.contains(node)) {
@@ -94,11 +92,11 @@ public class CircularGraph {
       // don't go twice
       if (!arcs.isFirst) continue;
       // don't go back
-      if (arcs.isDup(backtrack)) continue;
+      if (arcs.dest==parent) continue;
       // don't regard loops
       if (arcs.isLoop) continue;
       // recurse into child
-      findCircles(ModelHelper.getOther(arcs.arc, node), arcs.arc, path, unvisited);
+      findCircles(arcs.dest, node, path, unvisited);
     }
     
     // take current node of stack again

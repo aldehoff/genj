@@ -42,14 +42,12 @@ import java.awt.geom.Point2D;
   /**
    * apply the layout
    */
-  /*package*/ final void layout(Node root, Arc backtrack, double equator, Orientation orientation, ArcOptions arcop) {
+  /*package*/ final void layout(Node node, double equator, Orientation orientation, ArcOptions arcop) {
     // Loop through arcs to children (without backtrack)
-    ArcIterator it = new ArcIterator(root);
+    ArcIterator it = new ArcIterator(node);
     while (it.next()) {
       // no path no interest
       if (it.arc.getPath()==null) continue;
-      // won't go via backtrack
-      if (it.isDup(backtrack)) continue;
       // handle loops separate from specialized
       if (it.isLoop) layout(it.arc);
       else layout(it.arc, equator, orientation, arcop);

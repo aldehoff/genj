@@ -115,7 +115,7 @@ public class Shell {
     frame.setJMenuBar(createMenu());
     
     // Show the whole thing
-    frame.setBounds(16,16,640,400);
+    frame.setBounds(16,16,800,640);
     frame.show();
     
     // Start with a Graph or load a preset

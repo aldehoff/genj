@@ -17,8 +17,10 @@ package gj.util;
 
 import gj.model.Arc;
 import gj.model.Node;
-import java.util.Iterator;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * An iterator for looping over Arcs
@@ -26,44 +28,32 @@ import java.util.List;
 public class ArcIterator {
   
   /** the arcs we've covered already */
-  private Arc[] done;
+  private List arcs;
+  
+  /** the nodes we've visited already */
+  private List visited;
   
   /** the arcs */
-  private Iterator arcs;
+  private ListIterator it;
+  
+  /** the source (fixed) and destination */
+  public Node source, dest;
   
   /** the current arc */
-  public Arc arc = null;
+  public Arc arc;
   
   /** the current's meta information */
   public boolean isLoop;
   public boolean isFirst;
   
-  /** index */
-  private int index = 0;
-  
   /**
    * Constructor
    */
-  public ArcIterator(List arcs) {
-    done = new Arc[arcs.size()];
-    this.arcs = arcs.iterator();
-  }
-  
-  /**
-   * Constructor
-   */
-  public ArcIterator(Node node) {
-    this(node.getArcs());
-  }
-  
-  /**
-   * helper - isDup(a,b) if a.start==b.start && a.end=b.end (or reversed)
-   */
-  public final boolean isDup(Arc other) {
-    if ((arc==null)||(other==null)) return false;
-    if ((arc.getStart()==other.getStart())&&(arc.getEnd()==other.getEnd  ())) return true;
-    if ((arc.getStart()==other.getEnd  ())&&(arc.getEnd()==other.getStart())) return true;
-    return false;    
+  public ArcIterator(Node sOurce) {
+    source = sOurce;
+    arcs = source.getArcs();
+    visited = new ArrayList(arcs.size());
+    it = arcs.listIterator();
   }
   
   /**
@@ -71,28 +61,26 @@ public class ArcIterator {
    */
   public boolean next() {
     
-    // anything more?
-    if (!arcs.hasNext())
-      return false;
+    // no more?
+    if (!it.hasNext()) return false;
   
     // the next
-    arc = (Arc)arcs.next();
+    arc = (Arc)it.next();
     isFirst = true;
     
-    // analyze the arcs we've iterated over already
-    for (int a=0;a<index;a++) {
-      // .. arc could be same twice (loop) -> ignore
-      if (done[a]==arc) return next();
-      // .. arc could be dup of existing -> second or more
-      if (isDup(done[a])) isFirst=false;
-    }
-    done[index++]=arc;
+    // not twice (loop) -> ignore
+    if (arcs.indexOf(arc)<it.previousIndex()) return next();
+    
+    // .. arc could be dup of existing -> second or more
+    dest = ModelHelper.getOther(arc, source);
+    isFirst = !visited.contains(dest);
+    if (isFirst) visited.add(dest);
     
     // loop?
-    isLoop = arc.getStart()==arc.getEnd();
+    isLoop = source==dest;
 
     // done
     return true;
   }
   
-}
+} //ArcIterator

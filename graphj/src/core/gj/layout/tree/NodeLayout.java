@@ -17,7 +17,6 @@ package gj.layout.tree;
 
 import gj.awt.geom.Geometry;
 import gj.awt.geom.Path;
-import gj.model.Arc;
 import gj.model.Node;
 import gj.util.ArcIterator;
 import gj.util.ModelHelper;
@@ -97,7 +96,7 @@ import java.util.Stack;
     result.translate(dlat,dlon);
     
     // transform relative node/arc positions into absolute ones
-    relative2absolute(tree.getRoot(), orientn.getPoint2D(dlat,dlon), null);
+    relative2absolute(tree.getRoot(), null, orientn.getPoint2D(dlat,dlon));
 
     // done
     return result;
@@ -123,7 +122,7 @@ import java.util.Stack;
     result.translate(dlat,dlon);
     
     // transform relative node/arc positions into absolute ones
-    relative2absolute(tree.getRoot(), orientn.getPoint2D(dlat,dlon), null);
+    relative2absolute(tree.getRoot(), null, orientn.getPoint2D(dlat,dlon));
 
     // done
     return result;
@@ -140,7 +139,7 @@ import java.util.Stack;
    *  <li>note: all nodes (exception is node) and arcs have relative positions
    * </il>
    */
-  private Contour layoutNode(Node node, Arc backtrack, Tree tree, int generation) {
+  private Contour layoutNode(Node node, Node parent, Tree tree, int generation) {
     
     // are we looking at an inverted case?
     boolean toggleOrientation = orientntggls.contains(node);
@@ -154,22 +153,21 @@ import java.util.Stack;
     }
 
     // we layout the children
-    Contour[] children = layoutChildren(node, backtrack, tree, generation);
+    Contour[] children = layoutChildren(node, parent, tree, generation);
 
     // we layout the root
-    Contour root = layoutParent(node, backtrack, children, tree, generation);
+    Contour root = layoutParent(node, children, tree, generation);
 
     // we layout the arcs
     alayout.layout(
       node, 
-      backtrack, 
       toggleOrientation ? orientn.getLatitude(node.getPosition()) : root.south, 
       orientn,
       arcop
     );
 
     // make everything children/arcs directly 'under' node relative
-    absolute2relative(node, backtrack);
+    absolute2relative(node, parent);
 
     // The result is a hull comprised of root's and children's hull
     Contour result = Contour.merge(
@@ -196,13 +194,13 @@ import java.util.Stack;
   /**
    * Layout children of root and create contours for them
    */
-  private Contour[] layoutChildren(Node root, Arc backtrack, Tree tree, int generation) {
+  private Contour[] layoutChildren(Node node, Node parent, Tree tree, int generation) {
 
-    Node[] nodes = new Node[root.getArcs().size()];
+    Node[] nodes = new Node[node.getArcs().size()];
     Contour[] contours = new Contour[nodes.length];
     
     // we loop through all arcs leaving this node
-    ArcIterator it = new ArcIterator(root);
+    ArcIterator it = new ArcIterator(node);
     int c=0;while (it.next()) {
 
       // we don't go after seconds
@@ -210,13 +208,13 @@ import java.util.Stack;
       // we don't go after loops
       if (it.isLoop) continue;
       // we don't follow 'back'
-      if (it.isDup(backtrack)) continue;
+      if (it.dest==parent) continue;
 
       // the current child
-      nodes[c] = ModelHelper.getOther(it.arc, root);
+      nodes[c] = it.dest;
 
       // recursive step into child
-      contours[c] = layoutNode(nodes[c], it.arc, tree, generation+1);
+      contours[c] = layoutNode(nodes[c], node, tree, generation+1);
 
       // position 'new' child if not first
       if (c>0) {
@@ -230,7 +228,7 @@ import java.util.Stack;
 
         // place n-th child as close as possible
         contours[c].translate(0, -dlon);
-        ModelHelper.translate(nodes[c],orientn.getPoint2D(dlat, -dlon));
+        ModelHelper.move(nodes[c],orientn.getPoint2D(dlat, -dlon));
                 
         // 'new' child is positioned
       }
@@ -248,40 +246,40 @@ import java.util.Stack;
   /**
    * Place root in parent-position to children create a contour for it
    */
-  private Contour layoutParent(Node node, Arc backtrack, Contour[] children, Tree tree, int generation) {
+  private Contour layoutParent(Node parent, Contour[] children, Tree tree, int generation) {
 
     // the parent's contour
-    Shape shape = node.getShape();
-    Contour parent = orientn.getContour(shape!=null ? shape.getBounds2D() : new Rectangle2D.Double());
-    parent.north -= nodeop.getPadding(node, nodeop.NORTH, orientn);
-    parent.south += nodeop.getPadding(node, nodeop.SOUTH, orientn);
-    parent.west  -= nodeop.getPadding(node, nodeop.WEST , orientn);
-    parent.east  += nodeop.getPadding(node, nodeop.EAST , orientn);
+    Shape shape = parent.getShape();
+    Contour result = orientn.getContour(shape!=null ? shape.getBounds2D() : new Rectangle2D.Double());
+    result.north -= nodeop.getPadding(parent, nodeop.NORTH, orientn);
+    result.south += nodeop.getPadding(parent, nodeop.SOUTH, orientn);
+    result.west  -= nodeop.getPadding(parent, nodeop.WEST , orientn);
+    result.east  += nodeop.getPadding(parent, nodeop.EAST , orientn);
 
     // the parent's position
     double lat,lon;
     if (children.length==0) {
 
       // a leaf is simply placed
-      lon = nodeop.getLongitude(node, 0, 0, 0, 0, orientn);
+      lon = nodeop.getLongitude(parent, 0, 0, 0, 0, orientn);
       lat = 0;
 
     } else {
 
       // calculate min/maxs
       double
-        minc = children[0].getIterator(Contour.WEST).longitude - parent.west,
-        maxc = children[children.length-1].getIterator(Contour.EAST).longitude - parent.east,
+        minc = children[0].getIterator(Contour.WEST).longitude - result.west,
+        maxc = children[children.length-1].getIterator(Contour.EAST).longitude - result.east,
         mint =  Double.MAX_VALUE,
         maxt = -Double.MAX_VALUE;
 
       for (int c=0; c<children.length; c++) {
-        mint = Math.min(mint, children[c].west - parent.west);
-        maxt = Math.max(maxt, children[c].east - parent.east);
+        mint = Math.min(mint, children[c].west - result.west);
+        maxt = Math.max(maxt, children[c].east - result.east);
       }
 
-      lon = nodeop.getLongitude(node, minc, maxc, mint, maxt, orientn);
-      lat = children[0].north - parent.south;
+      lon = nodeop.getLongitude(parent, minc, maxc, mint, maxt, orientn);
+      lat = children[0].north - result.south;
 
     }
 
@@ -289,21 +287,21 @@ import java.util.Stack;
     if (latalign) {
       lat = tree.getLatitude(generation);
       double
-        min = lat - parent.north,
-        max = lat + tree.getHeight(generation) - parent.south;
+        min = lat - result.north,
+        max = lat + tree.getHeight(generation) - result.south;
 
-      lat = nodeop.getLatitude(node, min, max, orientn);
+      lat = nodeop.getLatitude(parent, min, max, orientn);
     }
 
     // place it at (lat,lon)
-    node.getPosition().setLocation(orientn.getPoint2D(lat,lon));
-    parent.translate(lat,lon);
+    parent.getPosition().setLocation(orientn.getPoint2D(lat,lon));
+    result.translate(lat,lon);
     if (latalign) {
-      parent.north = tree.getLatitude(generation);
+      result.north = tree.getLatitude(generation);
     }
 
     // done
-    return parent;
+    return result;
   }
 
   /**
@@ -380,19 +378,19 @@ import java.util.Stack;
    * Transforms absolute positions of direct descendants
    * into relative ones
    */
-  private void absolute2relative(Node node, Arc backtrack) {
+  private void absolute2relative(Node node, Node parent) {
 
     // loop through arcs    
     Point2D delta = Geometry.getNegative(node.getPosition());
     ArcIterator it = new ArcIterator(node);
     while (it.next()) {
       // don't follow backtrack
-      if (it.isDup(backtrack)) continue;
+      if (it.dest==parent) continue;
       // relativate arc
       Path path = it.arc.getPath();
       if (path!=null) path.translate(delta);
       // relativate other
-      if (it.isFirst&&!it.isLoop) ModelHelper.translate(ModelHelper.getOther(it.arc, node), delta);
+      if (it.isFirst&&!it.isLoop) ModelHelper.move(ModelHelper.getOther(it.arc, node), delta);
     }
 
     // done    
@@ -402,16 +400,16 @@ import java.util.Stack;
    * Transforms all relative positions of tree starting
    * at node into absolute ones (recursively)
    */
-  private void relative2absolute(Node node, Point2D delta, Arc backtrack) {
+  private void relative2absolute(Node node, Node parent, Point2D delta) {
 
     // change the node's position
-    ModelHelper.translate(node, delta);
+    ModelHelper.move(node, delta);
 
     // propagate via arcs
     ArcIterator it = new ArcIterator(node);
     while (it.next()) {
       // .. only down the tree
-      if (it.isDup(backtrack)) continue;
+      if (it.dest==parent) continue;
       // .. tell the arc's path
       Path path = it.arc.getPath();
       if (path!=null) path.translate(node.getPosition());
@@ -422,7 +420,7 @@ import java.util.Stack;
       // .. child
       Node child = ModelHelper.getOther(it.arc, node);
       // .. recursion
-      relative2absolute(child, node.getPosition(), it.arc);
+      relative2absolute(child, node, node.getPosition());
     }
 
     // done
