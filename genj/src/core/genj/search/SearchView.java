@@ -27,6 +27,7 @@ import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.WordBuffer;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.ImageIcon;
@@ -41,6 +42,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -61,6 +63,12 @@ import javax.swing.event.ListSelectionListener;
  * View for searching
  */
 public class SearchView extends JPanel implements ToolBarSupport, ContextSupport {
+  
+  /** default values */
+  private final static String[]
+    DEFAULT_OLD_VALUES = {
+      "m(a|e)(i|y)er", ".* /.+/", "^M$"
+    };
   
   /** how many old values we remember */
   private final static int MAX_OLD = 16;
@@ -111,7 +119,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     
     // lookup old search values
     oldPaths = (LinkedList)registry.get("old.paths", new LinkedList());
-    oldValues = (LinkedList)registry.get("old.values", new LinkedList());
+    oldValues = (LinkedList)registry.get("old.values", new LinkedList(Arrays.asList(DEFAULT_OLD_VALUES)));
     
     // prepare results
     listResults = new JList(results);
@@ -439,7 +447,13 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
       super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
       Property prop = (Property)value; 
-      setText(prop.getTag()+' '+prop.getValue());
+      WordBuffer words = new WordBuffer();
+      words.append(prop.getTag());
+      if (prop instanceof Entity) {
+        words.append('@'+((Entity)prop).getId()+'@');
+      }
+      words.append(prop.getValue());
+      setText(words.toString());
       setIcon(prop.getImage(true));
       return this;
     }

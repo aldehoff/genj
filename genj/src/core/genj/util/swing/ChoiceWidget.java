@@ -106,15 +106,6 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   }
   
   /**
-   * @see javax.swing.JComboBox#getSelectedItem()
-   */
-  public Object getSelectedItem() {
-    if (isEditable())
-      return getEditor().getItem();
-    return super.getSelectedItem();
-  }
-  
-  /**
    * @see javax.swing.JComboBox#setEditable(boolean)
    */
   public void setEditable(boolean set) {
@@ -218,7 +209,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     public void focusLost(FocusEvent e) {
       // ignored
     }
-
+    
   } //Editor
 
 } //JComboBox
