@@ -75,18 +75,18 @@ class ProxyEvent extends Proxy {
     Indi indi = (Indi)event.getEntity();
     
     // Calculate label & age
-    String ageat = "Age";
+    String ageat = "proxy.even.age";
     String age;
     if ("BIRT".equals(event.getTag())) {
-      ageat+=" (today)";
+      ageat = "proxy.even.age.today";
       age = indi.getAgeString(PointInTime.getNow());
     } else {
-      age = date!=null ? indi.getAgeString(date.getStart()) : "(unknown)";
+      age = date!=null ? indi.getAgeString(date.getStart()) : resources.getString("proxy.even.age.?");
     }
     
     // layout
     JLabel 
-      label1 = new JLabel(ageat),
+      label1 = new JLabel(resources.getString(ageat)),
       label2 = new JLabel(resources.getString("proxy.even.known")); 
     JTextField txt = new JTextField(age, 10); txt.setEditable(false);
     String[] choices = WindowManager.OPTIONS_YES_NO;
