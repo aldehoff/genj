@@ -56,7 +56,7 @@ public class MLEBean extends PropertyBean {
     // Calculate value to show
     String value = property.getValue();
 
-    tarea = new TextAreaWidget(value,6,20);
+    tarea = new TextAreaWidget(value,3,20);
     tarea.addChangeListener(changeSupport);
     tarea.setLineWrap(true);
     tarea.setWrapStyleWord(true);
