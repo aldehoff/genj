@@ -60,7 +60,7 @@ class HelpWidget extends JPanel {
     
     // Then we check for local language
     String local = dir+"/"+System.getProperty("user.language");
-    if (new File(dir).exists()) {
+    if (new File(local).exists()) {
       return local;
     }
     
