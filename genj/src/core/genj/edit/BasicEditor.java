@@ -379,8 +379,8 @@ import javax.swing.event.ChangeListener;
     
     // maybe a popup bean?
     if (path.startsWith("@")) {
-      PropertyBean bean = new PopupBean(createBean(entity, new TagPath(path.substring(1))));
-      beanPanel.add(bean, bean.getWeight());
+      PopupBean popup = new PopupBean(createBean(entity, new TagPath(path.substring(1))));
+      beanPanel.add(popup);
       // done
       return;
     }
@@ -431,9 +431,7 @@ import javax.swing.event.ChangeListener;
   /**
    * A 'bean' we use for groups
    */
-  private static class PopupBean extends PropertyBean implements ActionListener, PropertyChangeListener {
-    
-    private JButton button; 
+  private static class PopupBean extends JButton implements ActionListener, PropertyChangeListener {
     
     private PropertyBean wrapped;
     
@@ -444,8 +442,6 @@ import javax.swing.event.ChangeListener;
      */
     private PopupBean(PropertyBean wrapped) {
       
-      init(null, wrapped.getProperty(), wrapped.getPath(), null, null);
-      
       this.wrapped = wrapped;
 
       // prepare image
@@ -453,17 +449,12 @@ import javax.swing.event.ChangeListener;
       ImageIcon img = prop.getImage(false);
       if (prop.getParent()==null)
         img = img.getDisabled(50);
+      setIcon(img);
 
-      // create button
-      button = new JButton(img);
-      button.setFocusable(false);
-      button.setBorder(null);
-      button.addActionListener(this);
-      
-      add(button);
-
-      // connect change listening
-      wrapped.addChangeListener(changeSupport);
+      // fix looks
+      setFocusable(false);
+      setBorder(null);
+      addActionListener(this);
       
       // done
     }
@@ -489,10 +480,6 @@ import javax.swing.event.ChangeListener;
       super.removeNotify();
     }
     
-    /** commit */
-    public void commit() {
-    }
-    
     /** button press callback */
     public void actionPerformed(ActionEvent e) {
       // popup not visible?
@@ -507,7 +494,7 @@ import javax.swing.event.ChangeListener;
       popup.show();
       wrapped.requestFocusInWindow();
       // update image
-      button.setIcon(wrapped.getProperty().getImage(false));
+      setIcon(wrapped.getProperty().getImage(false));
     }
     
     /** 
