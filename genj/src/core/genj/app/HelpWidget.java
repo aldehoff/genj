@@ -28,6 +28,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.io.File;
 import java.net.URL;
+import java.util.Locale;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
@@ -113,7 +114,7 @@ class HelpWidget extends JPanel {
     );
     
     // Then we check for local language
-    String local = dir+"/"+System.getProperty("user.language");
+    String local = dir+"/"+Locale.getDefault().getLanguage();
     if (new File(local).exists()) {
       return local;
     }
