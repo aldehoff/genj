@@ -21,7 +21,7 @@ PREPARING IT (unzipped)
 
   + place genj.jar + graphj.jar in [directory]
 
-  + place [file].ged, [file].ged.properties and any images into [directory]
+  + place [file].ged + [file].ged.properties + genj.properties and any images into [directory]
 
   + add a HTML page that includes the following tag
 
@@ -39,6 +39,7 @@ PREPARING IT (unzipped)
     ./[your-html].html
     ./genj.jar
     ./graph.jar
+    ./genj.properties
     ./file.ged
     ./file.ged.properties
     ./image1.jpg
@@ -46,7 +47,7 @@ PREPARING IT (unzipped)
 
 PREPARING IT (zipped)
 
-  + zip [file].ged, [file].get.properties and any images into [file].zip
+  + zip [file].ged + [file].get.properties + genj.properties and any images into [file].zip
 
   + place [file].zip into [directory]
 

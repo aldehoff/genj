@@ -119,6 +119,9 @@ public class Applet extends java.applet.Applet {
     /** gedcom we we load */
     private Gedcom gedcom;
     
+    /** registry we work on */
+    private Registry registry;
+    
     /** throwable we might encounter */
     private Throwable throwable;
 
@@ -161,12 +164,18 @@ public class Applet extends java.applet.Applet {
      */
     protected void execute() {
 
-      // try to create gedcom reader
+      // read 
       try {
-        reader = new GedcomReader(Origin.create(new URL(url)));
-        gedcom = reader.read();
         
-        // give progress a change to update completely
+        // the origin we're loading from
+        Origin origin = Origin.create(new URL(url));
+        
+        // the registry
+        registry = new Registry(origin.open("genj.properties"));
+        
+        // the gedcom file
+        reader = new GedcomReader(origin);
+        gedcom = reader.read();
         Thread.currentThread().sleep(100);
         
       } catch (Throwable t) {
@@ -181,9 +190,6 @@ public class Applet extends java.applet.Applet {
      * @see genj.util.ActionDelegate#postExecute()
      */
     protected void postExecute() {
-
-      // open registry
-      Registry registry = new Registry();
 
       // prepare window manager
       WindowManager winMgr = new DefaultWindowManager(registry);
