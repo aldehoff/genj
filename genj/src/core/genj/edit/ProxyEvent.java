@@ -64,28 +64,29 @@ class ProxyEvent extends Proxy implements ItemListener {
    */
   protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
     
-    // only for individuals 
+    // showing age@event only for individuals 
     if (!(setProp.getEntity() instanceof Indi)) return;
-    
-    // we need a panel for label and text
-    JPanel ageLine = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    ageLine.setAlignmentX(0);
-    JTextField ageText = new JTextField(10);
-    ageLine.add(new JLabel("Age:"));
-    ageLine.add(ageText);
-    ageText.setEditable(false);
-    in.add(ageLine);
-
-    // and setup age info
     PropertyEvent event = (PropertyEvent)setProp;
-    Indi indi = (Indi)event.getEntity();
-
     PropertyDate date = event.getDate(true);
-    String age = null;
-    if (date!=null) {
-      age = indi.getAge(date);
+    Indi indi = (Indi)event.getEntity();
+    
+    // Calculate label & age
+    String ageat = "Age";
+    String age = date!=null ? indi.getAge(date) : "(unknown)";
+    if ("BIRT".equals(event.getTag())) {
+      ageat+=" (today)";
+      age = indi.getAge(null);
     }
-    ageText.setText(age==null ? "(unknown)" : age);
+    
+    // layout
+    JLabel label = new JLabel(ageat); 
+    JTextField txt = new JTextField(age, 10); txt.setEditable(false);
+    
+    JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    panel.setAlignmentX(0);
+    panel.add(label);
+    panel.add(txt);
+    in.add(panel);
 
     // done
   }
