@@ -162,20 +162,20 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    * Create actions for Gedcom
    */
   private void createActions(List result, Gedcom gedcom) {
-    result.add(new CreateStandalone(gedcom, Gedcom.INDIVIDUALS , Images.imgNewIndi      ));
-    result.add(new CreateStandalone(gedcom, Gedcom.FAMILIES    , Images.imgNewFam       ));
-    result.add(new CreateStandalone(gedcom, Gedcom.NOTES       , Images.imgNewNote      ));
-    result.add(new CreateStandalone(gedcom, Gedcom.MULTIMEDIAS , Images.imgNewMedia     ));
-    result.add(new CreateStandalone(gedcom, Gedcom.REPOSITORIES, Images.imgNewRepository));
-    result.add(new CreateStandalone(gedcom, Gedcom.SOURCES     , Images.imgNewSource    ));
-    result.add(new CreateStandalone(gedcom, Gedcom.SUBMITTERS  , Images.imgNewSubmitter ));
+    result.add(new CreateFree(gedcom, Gedcom.INDIVIDUALS , Images.imgNewIndi      ));
+    result.add(new CreateFree(gedcom, Gedcom.FAMILIES    , Images.imgNewFam       ));
+    result.add(new CreateFree(gedcom, Gedcom.NOTES       , Images.imgNewNote      ));
+    result.add(new CreateFree(gedcom, Gedcom.MULTIMEDIAS , Images.imgNewMedia     ));
+    result.add(new CreateFree(gedcom, Gedcom.REPOSITORIES, Images.imgNewRepository));
+    result.add(new CreateFree(gedcom, Gedcom.SOURCES     , Images.imgNewSource    ));
+    result.add(new CreateFree(gedcom, Gedcom.SUBMITTERS  , Images.imgNewSubmitter ));
   }
   
   /**
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi) {
-    result.add(new CreateConnected(indi, Gedcom.NOTES, Images.imgNewNote));
+    result.add(new CreateLinked(indi, Gedcom.NOTES, Images.imgNewNote));
     /*
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.child"  , indi));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.parent", indi));
@@ -297,11 +297,11 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * CreateStandalone - create a standalone entity
    */
-  private static class CreateStandalone extends Create {
+  private static class CreateFree extends Create {
     /**
      * Constructor
      */
-    private CreateStandalone(Gedcom gedcom, int type, ImgIcon img) {
+    private CreateFree(Gedcom gedcom, int type, ImgIcon img) {
       super(gedcom, type, img, EditView.resources.getString("new", Gedcom.getNameFor(type,false)));
     }
     /**
@@ -309,7 +309,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
      */
     protected String getConfirmMessage() {
       // You are about to create a {0} in {1}! This entity is not connected ...
-      return resources.getString("confirm.new.disconnected", new String[] { 
+      return resources.getString("confirm.new.free", new String[] { 
         Gedcom.getNameFor(type,false), gedcom.getName() 
       });
     }
@@ -325,13 +325,13 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * CreateConnected - creates a connected entity
    */
-  private static class CreateConnected extends Create {
+  private static class CreateLinked extends Create {
     /** entity owning the created */
     private Entity owner;
     /**
      * Constructor
      */
-    private CreateConnected(Entity ownr, int typ, ImgIcon img) {
+    private CreateLinked(Entity ownr, int typ, ImgIcon img) {
       super(ownr.getGedcom(), typ, img, EditView.resources.getString("new", Gedcom.getNameFor(typ,false)));
       owner = ownr;
     }
@@ -340,8 +340,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
      */
     protected String getConfirmMessage() {
       // You are about to add a {0} to {1} in {2}!
-      return resources.getString("confirm.new.connected", new String[] { 
-        Gedcom.getNameFor(type,false), owner.getId(), gedcom.getName() 
+      return resources.getString("confirm.new.linked", new String[] { 
+        Gedcom.getNameFor(type,false), gedcom.getName(), owner.getId()
       });
     }
     /**
@@ -349,8 +349,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
      */
     protected void change() throws GedcomException {
       // create the entity
-      focus = gedcom.createEntity(type, null);
-      focus.getProperty().addDefaultProperties();
+      //focus = gedcom.createEntity(type, null);
+      //focus.getProperty().addDefaultProperties();
       // add it to the owner
       
       // done
