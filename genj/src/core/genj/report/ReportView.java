@@ -134,8 +134,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
     // three tabs
     Callback callback = new Callback();
     tabbedPane.add(resources.getString("report.reports"),createReportList(callback));
-    tabbedPane.add(resources.getString("report.output"),createReportOutput(callback));
     tabbedPane.add(resources.getString("report.options"), createReportOptions());
+    tabbedPane.add(resources.getString("report.output"),createReportOutput(callback));
     
     // done
   }
@@ -404,7 +404,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       
       // .. switch to output
       if (report.usesStandardOut()) {
-        tabbedPane.getModel().setSelectedIndex(1);
+        tabbedPane.getModel().setSelectedIndex(2);
       }
       taOutput.setText("");
       
