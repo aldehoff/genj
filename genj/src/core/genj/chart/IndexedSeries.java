@@ -43,9 +43,23 @@ public class IndexedSeries {
   /**
    * Constructor
    */
+  public IndexedSeries(int size) {
+    this("", size);
+  }
+  
+  /**
+   * Constructor
+   */
   public IndexedSeries(String name, int size) {
     this.name = name;
     values = new float[size];
+  }
+  
+  /**
+   * Accssor - name
+   */
+  public void setName(String set) {
+    name = set;
   }
   
   /**
@@ -254,6 +268,5 @@ public class IndexedSeries {
     }
     
   } //Wrapper
-  
-  
+
 } //CategorySeries
