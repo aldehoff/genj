@@ -59,6 +59,12 @@ import javax.swing.event.ListSelectionListener;
  */
 public abstract class Report implements Cloneable {
 
+  /** alignment options */
+  protected final static int
+    ALIGN_LEFT   = 0,
+    ALIGN_CENTER = 1,
+    ALIGN_RIGHT  = 2;
+
   /** one report for all reports */
   private final static Registry REGISTRY = new Registry("genj-reports");
 
@@ -351,28 +357,66 @@ public abstract class Report implements Cloneable {
     return result;
   }
 
-
   /**
-   * Helper methods to right justify monospaced text in a field
+   * Left Align a number as simple text
    */
-	protected final String justify(int num, int width) {
-		return justify(num+"",width);
+	protected final String align(int num, int width) {
+		return align(num+"", width, ALIGN_LEFT);
 	}																				
 
-  protected final String justify(String text, int width) {
-		String spaces = "                               ";
-
-		if (width>spaces.length()) {
-			return null;
-		}
-
-		if (text.length()>=width)
-			return text.substring(0,width-1);
-
-		return spaces.substring(0,width-text.length()-1)+text;
+  /**
+   * Left Align a simple text
+   */
+  protected final String align(String text, int width) {
+    return align(text, width, ALIGN_LEFT);
   }
  
+  /**
+   * Align a simple text 
+   * @param txt the text to align
+   * @param length the length of the result
+   * @param alignment one of LEFT,CENTER,RIGHT
+   */
+  protected final String align(String txt, int length, int alignment) {
 
+    // check txt length
+    int n = txt.length();
+    if (n>length)
+      return txt.substring(0, length);
+    n = length-n;
+
+    // prepare result
+    StringBuffer buffer = new StringBuffer(length);
+    
+    int before,after;
+    switch (alignment) {
+      default:
+      case ALIGN_LEFT:
+        before = 0;
+        break;
+      case ALIGN_CENTER:
+        before = (int)(n*0.5F);
+        break;
+      case ALIGN_RIGHT:
+        before = n;
+        break;
+    }
+    after = n-before;
+    
+    // space before
+    for (int i=0; i<before; i++)
+      buffer.append(' ');
+    
+    // txt
+    buffer.append(txt);
+    
+    // space after
+    for (int i=0; i<after; i++)
+      buffer.append(' ');
+      
+    // done
+    return buffer.toString();
+  }
 
   /**
    * Returns the author of this script

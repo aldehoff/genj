@@ -107,12 +107,12 @@ public class ReportCoverage extends Report {
 	
 			// Print the results
 			// FIXME: this should use locale specific formatting for numbers & %s
-			println(justify(i18n("gen"),5)+
-										 justify(i18n("possible"),14)+
-										 justify(i18n("count"),10)+
-										 justify(i18n("percent"),6)+
-										 justify(i18n("cumulative"),10)+
-										 justify(i18n("percent"),6)
+			println(align(i18n("gen"),5)+
+										 align(i18n("possible"),14)+
+										 align(i18n("count"),10)+
+										 align(i18n("percent"),6)+
+										 align(i18n("cumulative"),10)+
+										 align(i18n("percent"),6)
 										 );
 
 			int cum_count = 0;
@@ -121,12 +121,12 @@ public class ReportCoverage extends Report {
 				int poss = pow2(i);
 				cum_count += count[i];
 				cum_poss += poss;
-				println(justify(i,5)+
-											 justify(poss,14)+
-											 justify(count[i],10)+
-											 justify((count[i]*100/poss),5)+"%"+
-											 justify(cum_count,10)+
-											 justify((cum_count*100/cum_poss),5)+"%"
+				println(align(i,5)+
+											 align(poss,14)+
+											 align(count[i],10)+
+											 align((count[i]*100/poss),5)+"%"+
+											 align(cum_count,10)+
+											 align((cum_count*100/cum_poss),5)+"%"
 											 );
 			}
 			

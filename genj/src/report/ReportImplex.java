@@ -278,14 +278,14 @@ public class ReportImplex extends Report {
         dImplex = Math.round(10000 * (iBasicCumul - iDiffCumul) / iBasicCumul) / 100;
 
         // Display line
-      println(justify(i, 6) +
-              justify(iPossibleCount, 11) +
-              justify(iBasicCount[i], 11) +
-              justify(dCoverage + "%", 11) +
-              justify(iBasicCumul, 11) +
-              justify(dAllCoverage + "%", 11) +
-              justify(iDiffCount[i], 11) +
-              justify(dImplex + "%", 11));
+      println(align(i, 6) +
+              align(iPossibleCount, 11) +
+              align(iBasicCount[i], 11) +
+              align(dCoverage + "%", 11) +
+              align(iBasicCumul, 11) +
+              align(dAllCoverage + "%", 11) +
+              align(iDiffCount[i], 11) +
+              align(dImplex + "%", 11));
     }
   }
 }
