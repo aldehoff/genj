@@ -662,7 +662,7 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
   /**
    * Helper that adds buttons to a panel
    */
-  private AbstractButton addButton(Container c, String action, String text, ImgIcon image, String tip, Insets insets, boolean enabled) {
+  private AbstractButton createButton(Container c, String action, String text, ImgIcon image, String tip, Insets insets, boolean enabled, boolean borderPainted) {
     
     JButton result = new JButton();
 
@@ -675,6 +675,8 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     if (tip!=null) {
       result.setToolTipText(resources.getString(tip));
     }
+    result.setBorderPainted(borderPainted);
+    result.setFocusable(false);
     result.setEnabled(enabled);
     result.setMargin(insets!=null?insets:new Insets(0,0,0,0));
 
@@ -1013,7 +1015,7 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
         String action = (String )creates[c*3+0];
         ImgIcon img   = (ImgIcon)creates[c*3+1];
         String tip    = (String )creates[c*3+2];
-        addButton(createPanel, action, tip, img, null, null, true).setFont(label.getFont());
+        createButton(createPanel, action, tip, img, null, null, true, true).setFont(label.getFont());
       }
     }
 
@@ -1181,11 +1183,11 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     actionCheckStick.setToolTipText(resources.getString("tip.stick"));
 
     Insets i = new Insets(4,4,4,4);
-    actionButtonAdd    = addButton(actionPanel, "ADD"   ,"action.add"   ,null            ,"tip.add_prop" , i, false );
-    actionButtonRemove = addButton(actionPanel, "DEL"   ,"action.del"   ,null            ,"tip.del_prop" , i, false );
-    actionButtonUp     = addButton(actionPanel, "UP"    ,"action.up"    ,null            ,"tip.up_prop"  , i, false );
-    actionButtonDown   = addButton(actionPanel, "DOWN"  ,"action.down"  ,null            ,"tip.down_prop", i, false );
-    actionButtonReturn = addButton(actionPanel, "RETURN",null           ,Images.imgReturn,"tip.return"   , i, false );
+    actionButtonAdd    = createButton(actionPanel, "ADD"   ,"action.add"   ,null            ,"tip.add_prop" , i, false, true );
+    actionButtonRemove = createButton(actionPanel, "DEL"   ,"action.del"   ,null            ,"tip.del_prop" , i, false, true );
+    actionButtonUp     = createButton(actionPanel, "UP"    ,"action.up"    ,null            ,"tip.up_prop"  , i, false, true );
+    actionButtonDown   = createButton(actionPanel, "DOWN"  ,"action.down"  ,null            ,"tip.down_prop", i, false, true );
+    actionButtonReturn = createButton(actionPanel, "RETURN",null           ,Images.imgReturn,"tip.return"   , i, false, true );
     
     actionPanel.add(Box.createHorizontalGlue());
     
@@ -1208,10 +1210,10 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     GridBagHelper h = new GridBagHelper(result);
     
     // add the buttons    
-    h.add(addButton(null, "NAVPREVGEN"  , null, Images.imgNavPrevGen, "tip.nav_prevgen", null, true),1,0,1,2,h.FILL_NONE);
-    h.add(addButton(null, "NAVPREVINGEN", null, Images.imgNavPrevInGen, "tip.nav_previngen", null, true),0,0,1,4,h.FILL_NONE);
-    h.add(addButton(null, "NAVNEXTINGEN", null, Images.imgNavNextInGen, "tip.nav_nextingen", null, true),2,0,1,4,h.FILL_NONE);
-    h.add(addButton(null, "NAVNEXTGEN"  , null, Images.imgNavNextGen, "tip.nav_nextgen", null, true),1,2,1,2,h.FILL_NONE);
+    h.add(createButton(null, "NAVPREVGEN"  , null, Images.imgNavPrevGen, "tip.nav_prevgen", null, true, false),1,0,1,2,h.FILL_NONE);
+    h.add(createButton(null, "NAVPREVINGEN", null, Images.imgNavPrevInGen, "tip.nav_previngen", null, true, false),0,0,1,4,h.FILL_NONE);
+    h.add(createButton(null, "NAVNEXTINGEN", null, Images.imgNavNextInGen, "tip.nav_nextingen", null, true, false),2,0,1,4,h.FILL_NONE);
+    h.add(createButton(null, "NAVNEXTGEN"  , null, Images.imgNavNextGen, "tip.nav_nextgen", null, true, false),1,2,1,2,h.FILL_NONE);
 
     result.setMaximumSize(result.getPreferredSize());
     
