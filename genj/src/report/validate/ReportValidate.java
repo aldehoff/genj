@@ -24,8 +24,11 @@ import java.util.List;
  */
 public class ReportValidate extends Report {
   
-  /** our options */
+  /** whether we consider an empty value to be valid */
   public boolean isEmptyValueValid = true;
+  
+  /** whether we consider 'private' information valid or not */
+  public boolean isPrivateValueValid = true;
 
   /** options of reports are picked up via field-introspection */
   public int
@@ -170,7 +173,7 @@ public class ReportValidate extends Report {
     // ******************** SPECIALIZED TESTS *******************************
 
     // non-valid properties
-    result.add(new TestValid(isEmptyValueValid));
+    result.add(new TestValid(isEmptyValueValid, isPrivateValueValid));
     
     // spouses with wrong gender
     result.add(new TestSpouseGender());
