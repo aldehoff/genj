@@ -144,7 +144,7 @@ import java.awt.geom.Rectangle2D;
       layout.setBalanceChildren(false);
       layout.setRoot(root);
       layout.setVertical(model.isVertical());
-      layout.applyTo(model);
+      layout.layout(model);
     } catch (LayoutException e) {
       e.printStackTrace();
     }
