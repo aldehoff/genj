@@ -19,11 +19,8 @@
  */
 package genj.print;
 
-import genj.util.Resources;
-import java.awt.Dimension;
-import java.awt.Graphics;
-
-import javax.swing.JPanel;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 
 /**
  * Interface between Printer and Renderer
@@ -31,30 +28,8 @@ import javax.swing.JPanel;
 public interface PrintRenderer {
   
   /**
-   * Returns a panel for editing this renderers properties
-   */
-  public JPanel getEditor(Resources resources);
-
-  /**
-   * Returns size of rendering object in pixels
-   */
-  public Dimension getSize();
-
-  /**
-   * Renders print data for page
-   * @param g Graphics to render on
-   */
-  public void renderPage(Graphics g, Dimension dimPages);
-
-  /**
-   * Renders a preview
-   * @param g Graphics to render on
-   * @param zoom zoom rate to use
-   */
-  public void renderPreview(Graphics g, Dimension dimPreview, float zoomPreview);
-
-  /**
-   * Tells the renderer which printer it is used by
-   */
-  public void setPrinter(Printer printer);
+   * Calculates the number of pages (horizontally and vertically)
+   * needed to render the content in given bounds (cm)     */
+  public Point getNumPages(Point2D bounds);
+  
 }
