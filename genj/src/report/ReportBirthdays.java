@@ -13,16 +13,16 @@ import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyDate;
 import genj.report.Report;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * GenJ - Report
  * @author Nils Meier nils@meiers.net
  */
 public class ReportBirthdays extends Report {
+
+  /** whether we sort by day-of-month or date */
+  public boolean isSortDay = true;
 
   /**
    * Returns the version of this script
@@ -74,49 +74,51 @@ public class ReportBirthdays extends Report {
     // find out which month it was
     int month=0; while (month<months.length&&months[month]!=selection) month++;
 
-    // Look for candidates - folks with birthdays in given month
-    List candidates = new ArrayList(100);
-
-    // Sort the individuals by day of month
-    Comparator comparator = new Comparator() {
-      public int compare(Object o1, Object o2) {
-        // O.K. here are the birthdays (might be null!)
-        PropertyDate b1 = ((Indi)o1).getBirthDate();
-        PropertyDate b2 = ((Indi)o2).getBirthDate();
-
-        // So we check whether we can get the day information
-        int
-         d1 = b1!=null ? b1.getStart().getDay() : 0,
-         d2 = b2!=null ? b2.getStart().getDay() : 0;
-
-        // Comparison at last
-        return d1-d2;
-      }
-    }; //Comparator
+    // Loop through individuals - folks with birthdays in given month
+    Entity[] indis;
+    if (isSortDay) {
     
-    // Sorting by date is possible, too 
-    //
-    // Comparator comparator = new genj.gedcom.PropertyComparator("INDI:BIRT:DATE");
-    //
+      // by day of month
+      Comparator comparator = new Comparator() {
+        public int compare(Object o1, Object o2) {
+          // O.K. here are the birthdays (might be null!)
+          PropertyDate b1 = ((Indi)o1).getBirthDate();
+          PropertyDate b2 = ((Indi)o2).getBirthDate();
+  
+          // So we check whether we can get the day information
+          int
+           d1 = b1!=null ? b1.getStart().getDay() : 0,
+           d2 = b2!=null ? b2.getStart().getDay() : 0;
+  
+          // Comparison at last
+          return d1-d2;
+        }
+      }; //Comparator
+      
+      indis = gedcom.getEntities(gedcom.INDI, comparator);
+      
+    } else {
 
-    Entity[] indis = gedcom.getEntities(gedcom.INDI, comparator);
+      // by date      
+      indis = gedcom.getEntities(gedcom.INDI, "INDI:BIRT:DATE");
+      
+    }
+
+    println(i18n("result", selection));
+    
     for (int i=0;i<indis.length;i++) {
+      
       Indi indi = (Indi)indis[i];
+      
       PropertyDate birth = indi.getBirthDate();
       if (birth==null) 
         continue;
-      if (birth.getStart().getMonth() == month)
-        candidates.add(indi);
-    }
 
-    // Show birthdays - a call to i18n localizes 'result' and inserts the given selection
-    println(i18n("result", selection));
-
-    Iterator e = candidates.iterator();
-    while (e.hasNext()) {
-      Indi indi = (Indi)e.next();
-			String[] msgargs = {indi.getName(),
-													indi.getBirthDate()+""};
+      if (birth.getStart().getMonth() != month)
+        continue;
+        
+      String[] msgargs = {indi.getName(),
+                          indi.getBirthDate()+""};
       println(i18n("format",msgargs));
     }
 
