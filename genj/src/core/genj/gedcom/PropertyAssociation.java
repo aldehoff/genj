@@ -45,7 +45,7 @@ public class PropertyAssociation extends PropertyXRef {
    * @return warning as <code>String</code>, <code>null</code> when no warning
    */
   public String getDeleteVeto() {
-    return "The association to the referenced entity is lost";
+    return "The association with the referenced entity is lost";
   }
 
   /**
@@ -89,7 +89,8 @@ public class PropertyAssociation extends PropertyXRef {
 
     // .. update type
     Property type = getProperty("TYPE");
-    if (type!=null) type.setValue(getGedcom().getTagFor(ent.getType()));
+    if (type==null) type = addProperty(new PropertySimpleValue("TYPE"));
+    type.setValue(getGedcom().getTagFor(ent.getType()));
 
     // Done
   }

@@ -119,9 +119,6 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       // .. next
     }
 
-//    // association
-//    result.add(new CreateRelationship(property.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(property) ));
- 
     // delete possible
     result.add(ActionDelegate.NOOP);
     result.add(new DelProperty(property));
@@ -158,9 +155,6 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       }
       // .. next
     }
-
-//  // FIXME ASSO
-//  // result.add(new CreateRelationship(entity.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(entity) ));
 
     // add delete
     result.add(ActionDelegate.NOOP);

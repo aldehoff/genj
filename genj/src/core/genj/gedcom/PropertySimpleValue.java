@@ -38,6 +38,13 @@ public class PropertySimpleValue extends Property {
   }
 
   /**
+   * Constructor with tag
+   */
+  public PropertySimpleValue(String tag) {
+    setTag(tag);
+  }
+
+  /**
    * Returns the tag of this property
    */
   public String getTag() {

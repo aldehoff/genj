@@ -87,15 +87,23 @@ public class MetaProperty {
   /**
    * Constructor
    */
-  private MetaProperty(String tag, Map props, MetaProperty supr) {
-    // remember
+  private MetaProperty(String tag, Map props) {
+    // remember tags&props
     this.tag = tag;
     this.props = props;
-    this.supr = supr;
-    // inherit subs?
+    // find super
+    String path = getAttribute("super", null);
+    if (path!=null) supr = MetaProperty.get(new TagPath(path));
+    // inherit from super?
     if (supr!=null) {
+      // subs
       mapOfSubs.putAll(supr.mapOfSubs);
       listOfSubs.addAll(supr.listOfSubs);
+      // type & image
+      if (getAttribute("type",null)==null)
+        props.put("type", supr.getAttribute("type",null));
+      if (getAttribute("img",null)==null)
+        props.put("img", supr.getAttribute("img",null));
     }
     // done
   }
@@ -250,7 +258,7 @@ public class MetaProperty {
     // current tag in map?
     MetaProperty result = (MetaProperty)mapOfSubs.get(tag);
     if (result==null) {
-      result = new MetaProperty(tag, Collections.EMPTY_MAP, null);
+      result = new MetaProperty(tag, Collections.EMPTY_MAP);
       addSub(result);
     }
     // done
@@ -274,7 +282,7 @@ public class MetaProperty {
     String tag = path.get(pos++);
     MetaProperty result = (MetaProperty)map.get(tag);
     if (result==null) {
-      result = new MetaProperty(tag, Collections.EMPTY_MAP, null);
+      result = new MetaProperty(tag, Collections.EMPTY_MAP);
       if (persist) map.put(tag, result);
     }
     
@@ -402,7 +410,7 @@ public class MetaProperty {
       String tag = tokens.nextToken();
         
       // grab props
-      Map props = new PutOnceHashMap();
+      Map props = new HashMap();
       
       while (tokens.hasMoreTokens()) {
         String prop = tokens.nextToken();
@@ -415,16 +423,8 @@ public class MetaProperty {
       // do we have to take elements from the stack first?
       while (stack.size()>level) pop();
       
-      // check super's properties first
-      MetaProperty supr = null;
-      Object path = props.get("super");
-      if (path!=null) {
-        supr = MetaProperty.get(new TagPath(path.toString()));
-        props.putAll(supr.props);
-      }
-      
       // instantiate
-      MetaProperty meta = new MetaProperty(tag, props, supr);
+      MetaProperty meta = new MetaProperty(tag, props);
       if (level==0) {
         roots.put(tag, meta);
         meta.getType(); // resolve type otherwise getPaths won't find anything
@@ -451,20 +451,5 @@ public class MetaProperty {
     }
     
   } //Parser
-  
-  /**
-   * Map that doesn't overwrite values
-   */
-  private static class PutOnceHashMap extends HashMap {
-    /**
-     * @see java.util.HashMap#put(java.lang.Object, java.lang.Object)
-     */
-    public Object put(Object key, Object value) {
-      if (containsKey(key)) return null;
-      return super.put(key, value);
-    }
-
-  } //FIFO
-  
   
 } //MetaDefinition
