@@ -194,7 +194,7 @@ public class GedcomTableWidget extends JTable {
      * Add a gedcom
      */
     public void addGedcom(Gedcom gedcom) {
-      gedcoms.add(gedcom);
+      gedcoms.addElement(gedcom);
       gedcom.addListener(this);
       fireTableChange(-1);
     }
@@ -203,7 +203,7 @@ public class GedcomTableWidget extends JTable {
      * @see javax.swing.table.TableModel#addTableModelListener(TableModelListener)
      */
     public void addTableModelListener(TableModelListener l) {
-      listeners.add(l);
+      listeners.addElement(l);
     }
   
     /**

@@ -45,7 +45,7 @@ public class MenuHelper  {
   private boolean enabled         = true;
 
   /** Setters */    
-  public MenuHelper popMenu() { menus.remove(menus.lastElement()); return this; }
+  public MenuHelper popMenu() { menus.removeElement(menus.lastElement()); return this; }
   public MenuHelper pushMenu(Object set) { menus.addElement(set); return this; }
   public MenuHelper setCollection(Vector set) { collection=set; return this; }
   public MenuHelper setResources(Resources set) { resources=set; return this; }
