@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.71 $ $Author: nmeier $ $Date: 2004-11-12 17:37:25 $
+ * $Revision: 1.72 $ $Author: nmeier $ $Date: 2004-11-12 19:13:25 $
  */
 package genj.gedcom;
 
@@ -536,14 +536,10 @@ public class Gedcom {
   /**
    * Ends Transaction
    */
-  public synchronized void endTransaction() {
-
-    // Is there a transaction going on?
-    if (transaction==null)
-      return;
+  public synchronized Transaction endTransaction() {
 
     // any changes?
-    if (transaction.hasChanges()) {
+    if (transaction!=null&&transaction.hasChanges()) {
 
       // remember change
       hasUnsavedChanges = true;
@@ -562,9 +558,11 @@ public class Gedcom {
     }
     
     // forget current
+    Transaction result = transaction;
     transaction = null;
     
     // done
+    return result;
   }
 
   /**

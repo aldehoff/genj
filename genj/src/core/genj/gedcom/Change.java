@@ -75,6 +75,10 @@ public abstract class Change {
       return "Changed "+changed.getPath()+" (old: "+old+")";
     }
     
+    public boolean equals(Object o) {
+      PropertyValue that = (PropertyValue)o;
+      return this.changed==that.changed && this.old.equals(that.old);
+    }
   } //PropertyModified
   
   /**
@@ -106,6 +110,14 @@ public abstract class Change {
       root.setProperties(children);
     }
     
+    public String toString() {
+      return "Shuffled "+children+" of "+root.getPath();
+    }
+    
+    public boolean equals(Object o) {
+      PropertyShuffle that = (PropertyShuffle)o;
+      return this.root==that.root && this.children.equals(that.children);
+    }
   } //Shuffle
   
   /**
@@ -116,7 +128,7 @@ public abstract class Change {
     private int      pos;
     private Property added;
     
-    PropertyAdd(Property owner, int pos, Property added) {
+    public PropertyAdd(Property owner, int pos, Property added) {
       super(owner);
       this.added = added;
       this.pos = pos;
@@ -132,6 +144,11 @@ public abstract class Change {
     
     public String toString() {
       return "Added "+added.getPath()+" (pos: "+pos+")";
+    }
+    
+    public boolean equals(Object o) {
+      PropertyAdd that = (PropertyAdd)o;
+      return this.root==that.root && this.pos==that.pos && this.added==that.added;
     }
     
   } //PropertyAdded
@@ -158,6 +175,11 @@ public abstract class Change {
       return removed;
     }
 
+    public boolean equals(Object o) {
+      PropertyDel that = (PropertyDel)o;
+      return this.root==that.root && this.pos==that.pos && this.removed==that.removed;
+    }
+    
     public String toString() {
       return "Removed "+removed.getTag()+" from "+root.getPath()+" (pos: "+pos+")";
     }
