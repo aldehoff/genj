@@ -20,7 +20,7 @@
  * About Menu class - Feedback
  * This class creates the content on the Feedback tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.9 2002-05-20 16:42:13 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.10 2002-05-20 17:29:34 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.3
  *
@@ -208,10 +208,10 @@ public class FeedbackPanel extends JPanel implements ActionListener
           File inputFile = new File(inputFileName);
           // Code to load a text from a file
           if (inputFile.length() > 0) {
-            FileInputStream in = new FileInputStream(inputFile);
-            byte bt[] = new byte[(int)inputFile.length()];
-            in.read(bt);
-            s = new String(bt);
+            Reader in = new InputStreamReader(new FileInputStream(inputFile));
+            char ccs[] = new char[(int)inputFile.length()];
+            in.read(ccs);
+            s = new String(ccs);
             in.close();
             ta1Panel2.setText("");
             ta1Panel2.setText(s);
