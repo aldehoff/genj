@@ -32,6 +32,8 @@ import genj.util.swing.ButtonHelper;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -70,6 +72,7 @@ import javax.swing.border.TitledBorder;
     // Fill Toolbar
     boolean isBar = false;
     bar = new JToolBar();
+    bar.addPropertyChangeListener("orientation", new OrientationListener());
     if (view instanceof ToolBarSupport) {
       ((ToolBarSupport)view).populate(bar);
       bar.add(Box.createGlue());
@@ -159,4 +162,16 @@ import javax.swing.border.TitledBorder;
     // done
   }
 
+  /**
+   * OrientationListener for the Toolbar
+   */
+  private class OrientationListener implements PropertyChangeListener {
+    /**
+     * @see java.beans.PropertyChangeListener#propertyChange(PropertyChangeEvent)
+     */
+    public void propertyChange(PropertyChangeEvent evt) {
+    }
+
+} //OrientationListener
+  
 } //ViewWidget

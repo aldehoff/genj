@@ -19,47 +19,28 @@
  */
 package genj.timeline;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-
-import javax.swing.JComponent;
-import javax.swing.Scrollable;
-
 /**
- * The scala for our content 
+ * Generic superclass of all renderers
  */
-/*package*/ class Ruler extends JComponent {
+public abstract class Renderer {
+  
+  /** resolution to use */
+  /*package*/ double dpi = Double.NaN;
 
-  /** the model */
-  private Model model;
+  /**
+   * Convert cm into pixels
+   */
+  protected int cm2pixels(double cm) {
+    // 1 Centimeters = 0.393701  Inches
+    return inches2pixels(cm*0.393701);
+  }
   
   /**
-   * Constructor
+   * Convert inches into pixels
    */
-  /*package*/ Ruler(Model model) {
-    // remember
-    this.model = model;
-    // done
-  }
-
-  /**
-   * @see javax.swing.JComponent#paintComponent(Graphics)
-   */
-  protected void paintComponent(Graphics g) {
-    Rectangle r = getBounds();
-    g.setColor(Color.white);
-    g.fillRect(0,0,r.width,r.height);
-    g.setColor(Color.blue);
-    g.drawRect(0,0,r.width-1,r.height-1);
-  }
-
-  /**
-   * @see java.awt.Component#getPreferredSize()
-   */
-  public Dimension getPreferredSize() {
-    return new Dimension((int)(model.getSpan()*32),getFontMetrics(getFont()).getHeight());
+  protected int inches2pixels(double inches) {
+    // pixels = inches * dpi
+    return (int)(inches*dpi);
   }
   
-} //Ruler
+} //Renderer

@@ -21,46 +21,34 @@ package genj.timeline;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Rectangle;
-
-import javax.swing.JComponent;
-import javax.swing.Scrollable;
 
 /**
- * The content rendering the timeline model
+ * A renderer knowing how to render a ruler for the timeline
  */
-/*package*/ class Content extends JComponent {
+public class ContentRenderer extends Renderer {
   
-  /** the model */
-  private Model model;
+  /** centimeters per year */
+  /*package*/ double cmPyear = Double.NaN;
+  
+  /** 
+   * Calculates the model size in pixels
+   */
+  public Dimension getDimension(Model model, FontMetrics metrics) {
+    return new Dimension(
+      cm2pixels(model.getSpan()*cmPyear),
+      256
+    );
+  }
   
   /**
-   * Constructor
+   * Renders the model
    */
-  /*package*/ Content(Model model) {
-    
-    // remember
-    this.model = model;
-    
-    // done
+  public void render(Model model, Graphics g) {
+    g.setColor(Color.black);
+    g.drawString("content", 10, 10);
   }
 
-  /**
-   * @see java.awt.Component#getPreferredSize()
-   */
-  public Dimension getPreferredSize() {
-    return new Dimension((int)(model.getSpan()*32),128);
-  }
-
-  /**
-   * @see javax.swing.JComponent#paintComponent(Graphics)
-   */
-  protected void paintComponent(Graphics g) {
-    g.setColor(Color.lightGray);
-    g.fillRect(0,0,getWidth(),getHeight());
-    g.setColor(Color.red);
-    g.drawRect(0,0,getWidth()-1,getHeight()-1);
-  }
-
-} //TimelineContent
+} //RulerRenderer
