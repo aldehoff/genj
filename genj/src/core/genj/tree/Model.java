@@ -364,6 +364,13 @@ public class Model implements Graph, GedcomListener {
     arcs.add(arc);
     return arc;
   }
+  
+  /**
+   * Currently shown entities
+   */
+  /*package*/ Set getEntities() {
+    return entities2nodes.keySet();
+  }
 
   /**
    * Parses the current model starting at root   */

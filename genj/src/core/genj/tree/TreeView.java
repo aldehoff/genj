@@ -24,6 +24,8 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyXRef;
+import genj.io.Filter;
 import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
@@ -40,6 +42,7 @@ import genj.util.swing.ViewPortOverview;
 import genj.view.ContextPopupSupport;
 import genj.view.ContextSupport;
 import genj.view.CurrentSupport;
+import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import gj.model.Node;
@@ -56,7 +59,10 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -68,7 +74,7 @@ import javax.swing.event.ChangeListener;
 /**
  * TreeView
  */
-public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupport, ToolBarSupport, ContextSupport {
+public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupport, ToolBarSupport, ContextSupport, FilterSupport {
   
   /*package*/ static final Resources resources = new Resources(TreeView.class);
   
@@ -492,6 +498,60 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     EntityRenderer result = new EntityRenderer(blueprints[type], contentFont);
     return result;
   }
+
+  /**
+   * @see genj.view.FilterSupport#getFilterName()
+   */
+  public String getFilterName() {
+    return model.getEntities().size()+" shown in "+frame.getTitle();
+  }
+  
+  /** 
+   * @see genj.view.FilterSupport#getFilter()
+   */
+  public Filter getFilter() {
+    return new VisibleFilter(model);
+  }
+  
+  /**
+   * A filter that includes visible indis/families
+   */
+  private static class VisibleFilter implements Filter {
+    /** entities that are 'in' */
+    private Set ents;
+    /** whether we're showing families */
+    private boolean fams;
+    /**
+     * Constructor
+     */
+    private VisibleFilter(Model model) {
+      // all ents from the model
+      ents = new HashSet(model.getEntities());
+      fams = model.isFamilies();
+      // done
+    }
+    /**
+     * @see genj.io.Filter#accept(genj.gedcom.Entity)
+     */
+    public boolean accept(Entity ent) {
+      // fam/indi
+      if (ent.getType()==Gedcom.INDIVIDUALS||(ent.getType()==Gedcom.FAMILIES&&fams))
+        return ents.contains(ent);
+      // maybe a referenced other type?
+      Entity[] refs = PropertyXRef.getReferences(ent);
+      for (int r=0; r<refs.length; r++) {
+        if (ents.contains(refs[r])) return true;
+      }
+      // not
+      return false;
+    }
+    /**
+     * @see genj.io.Filter#accept(genj.gedcom.Property)
+     */
+    public boolean accept(Property property) {
+      return true;
+    }
+  } //VisibleFilter
 
   /**
    * Overview   */

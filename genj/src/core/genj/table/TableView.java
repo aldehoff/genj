@@ -23,7 +23,9 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
+import genj.io.Filter;
 import genj.renderer.PropertyRenderer;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
@@ -33,14 +35,18 @@ import genj.util.swing.HeadlessLabel;
 import genj.util.swing.SortableTableHeader;
 import genj.view.ContextPopupSupport;
 import genj.view.CurrentSupport;
+import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -55,7 +61,7 @@ import javax.swing.table.TableColumnModel;
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport, CurrentSupport, ContextPopupSupport {
+public class TableView extends JPanel implements ToolBarSupport, CurrentSupport, ContextPopupSupport, FilterSupport {
   
   /** a static set of resources */
   /*package*/ final static Resources resources = new Resources("genj.table");
@@ -65,6 +71,9 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
   
   /** the registry we keep */
   private Registry registry;
+  
+  /** the frame we keep */
+  private Frame frame;
   
   /** the table we're using */
   private JTable table;
@@ -83,6 +92,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     // keep some stuff
     this.gedcom = gedcom;
     this.registry = registry;
+    this.frame = frame;
     
     // create the underlying model
     tableModel = new EntityTableModel(gedcom);
@@ -93,7 +103,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     // create our table
     table = new JTable(tableModel, tableModel.createTableColumnModel(640));
     table.setTableHeader(new SortableTableHeader());
-    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     table.setAutoCreateColumnsFromModel(false);
     table.getTableHeader().setReorderingAllowed(false);
@@ -106,6 +116,18 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     // done
   }
   
+  /**
+   * @see java.awt.Component#removeNotify()
+   */
+  public void removeNotify() {
+    // save state
+    saveProperties();
+    // delegate
+    super.removeNotify();
+    // destruct model
+    tableModel.destructor();
+  }
+
   /**
    * Accessor - the gedcom we're focussed on
    */
@@ -257,6 +279,60 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
   }  
   
   /**
+   * @see genj.view.FilterSupport#getFilterName()
+   */
+  public String getFilterName() {
+    return table.getSelectedRowCount()+" selected in "+frame.getTitle();
+  }
+
+  /**
+   * @see genj.view.FilterSupport#getFilter()
+   */
+  public Filter getFilter() {
+    return new SelectionFilter(tableModel, table.getSelectedRows());
+  }
+  
+  /**
+   * SelectionFilter
+   */
+  private static class SelectionFilter implements Filter {
+    /** selected entities */
+    private Set ents = new HashSet();
+    /** type we're looking at */
+    private int type;
+    /**
+     * Constructor
+     */
+    private SelectionFilter(EntityTableModel model, int[] rows) {
+      type = model.getType();
+      for (int r=0; r<rows.length; r++) {
+        ents.add(model.getEntity(rows[r]));
+      }
+    }
+    /**
+     * has to be in res
+     * @see genj.io.Filter#accept(genj.gedcom.Entity)
+     */
+    public boolean accept(Entity ent) {
+      // fam/indi
+      if (ent.getType()==type)
+        return ents.contains(ent);
+      // maybe a referenced other type?
+      Entity[] refs = PropertyXRef.getReferences(ent);
+      for (int r=0; r<refs.length; r++) {
+        if (ents.contains(refs[r])) return true;
+      }
+      // not
+      return false;
+      
+    }
+    /** @see genj.io.Filter#accept(genj.gedcom.Property) */
+    public boolean accept(Property property) {
+      return true;
+    }
+  } //SelectionFilter
+  
+  /**
    * Action - flip view to entity type
    */
   private class ActionChangeType extends ActionDelegate {
@@ -332,16 +408,4 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     }
   } //PropertyTableCellRenderer
     
-  /**
-   * @see java.awt.Component#removeNotify()
-   */
-  public void removeNotify() {
-    // save state
-    saveProperties();
-    // delegate
-    super.removeNotify();
-    // destruct model
-    tableModel.destructor();
-  }
-
 } //TableView

@@ -19,6 +19,9 @@
  */
 package genj.gedcom;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Gedcom Property : ABC
  * Class for encapsulating a property that describes a Reference to an entity
@@ -233,6 +236,23 @@ public abstract class PropertyXRef extends Property {
   public String getDeleteVeto() {
     if (getReferencedEntity()==null) return null;
     return "The reference to the entity is deleted but the entity itself stays";
+  }
+
+  /**
+   * Return references between given ent and all its 'neighbours'
+   * connected through PropertyXRef
+   */
+  public static Entity[] getReferences(Entity ent) {
+    List result = new ArrayList(10);
+    // loop through pxrefs
+    List ps = ent.getProperty().getProperties(PropertyXRef.class);
+    for (int p=0; p<ps.size(); p++) {
+    	PropertyXRef px = (PropertyXRef)ps.get(p);
+      Property target = px.getTarget(); 
+      if (target!=null) result.add(target.getEntity());
+    }
+    // done
+    return (Entity[])result.toArray(new Entity[result.size()]);
   }
 
 } //PropertyXRef

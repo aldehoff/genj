@@ -32,6 +32,7 @@ import genj.util.swing.MenuHelper;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -455,5 +456,29 @@ public class ViewManager {
     
     // done
   }  
+  
+  /**
+   * Returns views and factories with given support 
+   */
+  public Object[] getSupportFor(Class support, Gedcom gedcom) {
+    
+    List result = new ArrayList(16);
+    
+    // loop through factories
+    for (int f=0; f<factories.length; f++) {
+      if (support.isAssignableFrom(factories[f].getClass())) 
+        result.add(factories[f]);
+    }
+    // loop through views
+    Iterator views = viewWidgets.iterator();
+    while (views.hasNext()) {
+      ViewWidget view = (ViewWidget)views.next();
+      if (view.getGedcom()==gedcom && support.isAssignableFrom(view.getView().getClass()))
+        result.add(view.getView());
+    }
+    
+    // done
+    return result.toArray((Object[])Array.newInstance(support, result.size()));
+  }
 
 } //ViewManager

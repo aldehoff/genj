@@ -20,6 +20,7 @@
 package genj.app;
 
 import genj.gedcom.Gedcom;
+import genj.io.Filter;
 import genj.io.GedcomFormatException;
 import genj.io.GedcomIOException;
 import genj.io.GedcomReader;
@@ -48,6 +49,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.swing.Box;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -202,7 +204,10 @@ public class ControlCenter extends JPanel {
    * directory for Gedcom files
    */
   private class GedcomFileChooser extends FileChooser {
-    
+
+    /**
+     * Constructor
+     */    
     protected GedcomFileChooser(JFrame frame, String title, String action) {
       super(frame,title,action,
         new String[]{"ged"}, "GEDCOM (*.ged)",
@@ -214,6 +219,7 @@ public class ControlCenter extends JPanel {
         )
       );
     }
+
   } //GedcomFileChooser
 
   /**
@@ -613,20 +619,37 @@ public class ControlCenter extends JPanel {
    * Action - Save
    */
   private class ActionSave extends ActionDelegate {
-    /** which */
+    /** whether to ask user */
     private boolean ask;
-    /** constructor */
+    /** gedcom */
+    private Gedcom gedcom;
+    /** writer */
+    private GedcomWriter gedWriter; 
+    /** origin to load after successfull save */
+    private Origin newOrigin;
+    /** filters we're using */
+    private Filter[] filters;
+    /** 
+     * Constructor
+     */
     protected ActionSave(boolean ask) {
+      // remember
       this.ask=ask;
+      // text
       if (ask) super.setText("cc.menu.saveas");
       else super.setText("cc.menu.save");
+      // setup
+      super.setAsync(ASYNC_NEW_INSTANCE);
     }
-    /** run */
-    protected void execute() {
+    /**
+     * Initialize save
+     * @see genj.util.ActionDelegate#preExecute()
+     */
+    protected boolean preExecute() {
       
       // Current Gedcom
-      final Gedcom gedcom = tGedcoms.getSelectedGedcom();
-      if (gedcom==null) return;
+      gedcom = tGedcoms.getSelectedGedcom();
+      if (gedcom==null) return false;
       
       // Dialog ?
       Origin origin = gedcom.getOrigin();
@@ -639,20 +662,24 @@ public class ControlCenter extends JPanel {
           App.resources.getString("cc.save.title"),
           App.resources.getString("cc.save.action")
         );
+
+        // .. with options        
+        SaveOptionsWidget options = new SaveOptionsWidget(gedcom);
+        chooser.setAccessory(options);
   
+        // .. ask user
         if (FileChooser.APPROVE_OPTION != chooser.showDialog()) {
-          return;
+          return false;
         }
   
-        // .. take choosen one
+        // .. take choosen one & filters
         file = chooser.getSelectedFile();
-  
-        // .. remember (new) origin
+        filters = options.getFilters();
+
+        // .. create new origin
         try {
-          gedcom.setOrigin(
-            Origin.create(new URL("file","",file.getAbsolutePath()))
-          );
-        } catch (Exception e) {
+          newOrigin = Origin.create(new URL("file","",file.getAbsolutePath()));
+        } catch (Throwable t) {
         }
   
       } else {
@@ -673,14 +700,14 @@ public class ControlCenter extends JPanel {
         );
   
         if (rc==JOptionPane.NO_OPTION) {
-          return;
+          return false;
         }
       }
   
-      // .. open file
-      final FileWriter writer;
+      // .. open writer on file
       try {
-        writer = new FileWriter(file);
+        gedWriter = new GedcomWriter(gedcom,file.getName(),new BufferedWriter(new FileWriter(file)));
+        gedWriter.setFilters(filters);  
       } catch (IOException ex) {
         JOptionPane.showMessageDialog(
           frame,
@@ -688,52 +715,62 @@ public class ControlCenter extends JPanel {
           App.resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE
         );
-        return;
+        return false;
       }
   
-      // .. save data
+      // .. prepare save 
       busyGedcoms.addElement(gedcom);
-  
-      final GedcomWriter gedWriter = new GedcomWriter(gedcom,file.getName(),new BufferedWriter(writer));
-  
-      final Thread threadWriter = new Thread() {
-        // LCD
-        /** main */
-        public void run() {
-  
-          // .. do the write
-          try {
-            gedWriter.writeGedcom();
-          } catch (GedcomIOException ex) {
-            JOptionPane.showMessageDialog(
-              frame,
-              App.resources.getString("cc.save.write_error",""+ex.getLine())+":\n"+ex.getMessage(),
-              App.resources.getString("app.error"),
-              JOptionPane.ERROR_MESSAGE
-            );
-          }
-  
-          // .. finished
-          busyGedcoms.removeElement(gedcom);
-  
-          // .. done
-        }
-        // EOC
-      };
-      threadWriter.start();
-  
-      // .. show progress dialog
+
+      // .. open progress dialog
       new ProgressDialog(
         frame,
         App.resources.getString("cc.save.saving"),
         file.getAbsolutePath(),
         gedWriter,
-        threadWriter
+        super.getThread()
       );
+      
+      // .. continue (async)
+      return true;
+      
+    }
+    
+    /** 
+     * (async) execute
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
   
+      // .. do the write
+      try {
+        gedWriter.writeGedcom();
+      } catch (GedcomIOException ex) {
+        JOptionPane.showMessageDialog(
+          frame,
+          App.resources.getString("cc.save.write_error",""+ex.getLine())+":\n"+ex.getMessage(),
+          App.resources.getString("app.error"),
+          JOptionPane.ERROR_MESSAGE
+        );
+      }
+      
+      // done
+    }
+    
+    /**
+     * (sync) post write
+     * @see genj.util.ActionDelegate#postExecute()
+     */
+    protected void postExecute() {
+      
+      // .. finished
+      busyGedcoms.removeElement(gedcom);
+      
+      // .. open new
+      if (newOrigin!=null) {
+        new ActionOpen(newOrigin).trigger();
+      }
+      
       // .. done
-      return;
-  
     }
     
   } //ActionSave

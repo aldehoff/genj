@@ -24,6 +24,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyXRef;
 import genj.util.Trackable;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -45,6 +46,7 @@ public class GedcomWriter implements Trackable {
   private int line;
   private int entity;
   private boolean cancel=false;
+  private Filter[] filters = new Filter[0];
 
   /**
    * Constructor
@@ -95,6 +97,13 @@ public class GedcomWriter implements Trackable {
    */
   public String getWarnings() {
     return "";
+  }
+  
+  /**
+   * Sets filters to use
+   */
+  public void setFilters(Filter[] fs) {
+    filters = fs;
   }
 
   /**
@@ -171,6 +180,11 @@ public class GedcomWriter implements Trackable {
    * @exception GedcomIOException
    */
   private void writeEntity(Entity ent) throws IOException, GedcomIOException {
+    
+    // Filters
+    for (int f=0; f<filters.length; f++) {
+    	if (filters[f].accept(ent)==false) return;
+    }      
 
     // Entity line
     Property prop  = ent.getProperty();
@@ -237,6 +251,17 @@ public class GedcomWriter implements Trackable {
    * @exception GedcomIOException
    */
   private void writeProperty(String prefix, Property prop) throws IOException, GedcomIOException {
+    
+    // Filters
+    Entity target = null; 
+    if (prop instanceof PropertyXRef) {
+      Property p = ((PropertyXRef)prop).getTarget();
+      if (p!=null) target = p.getEntity();
+    }
+    for (int f=0; f<filters.length; f++) {
+      if (filters[f].accept(prop)==false) return;
+      if (target!=null) if (filters[f].accept(target)==false) return;
+    }      
 
     // This property's value
     if (prop.isMultiLine()==Property.NO_MULTI) {
