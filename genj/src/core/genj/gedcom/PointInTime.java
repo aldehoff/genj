@@ -136,13 +136,19 @@ public class PointInTime implements Comparable {
   }
   
   /**
-   * Get representation in different calendar
+   * Setter
    */
-  public PointInTime get(Calendar cal) throws GedcomException {
+  public void set(Calendar cal) throws GedcomException {
+    // has to be valid
+    if (!isValid())
+      throw new GedcomException("PointInTime not valid - switching calendars n/a");
+    // has to be complete
+    if (!isComplete())
+      throw new GedcomException("PointInTime not complete DD MMM YYYY - switching calendars n/a");
     // convert to julian date
-    int jd = getCalendar().toJulianDay(this);
+    int jd = calendar.toJulianDay(this);
     // convert to new instance
-    return cal.toPointInTime(jd);
+    set(cal.toPointInTime(jd));
   }  
   
   /**
@@ -239,6 +245,13 @@ public class PointInTime implements Comparable {
   }
 
   /**
+   * Checks for completeness - DD MMM YYYY
+   */
+  public boolean isComplete() {
+    return isValid() && year>0 && month>=0 && day>=0;
+  }
+
+  /**
    * Checks for validity
    */
   public boolean isValid() {
@@ -264,23 +277,6 @@ public class PointInTime implements Comparable {
     return compareTo((PointInTime)o, 0);
   }    
 
-  /**
-   * compare two dates (assuming same calendar)
-   * @return <0 if date1<date2, 0 if date1==date2, >0 if data1>date2
-   */
-  public static int compare(int day1, int month1, int year1, int day2, int month2, int year2) {
-    int rc = year1-year2;
-    if (rc!=0) 
-      return rc;
-    rc = month1-month2;
-    if (rc!=0)
-      return rc;
-    rc = day1-day2;
-    if (rc!=0) 
-      return rc;
-    return 0;
-  }
-  
   /**
    * compare to other
    * @param other the pit to compare to
@@ -548,15 +544,15 @@ public class PointInTime implements Comparable {
     /**
      * PIT -> Julian Day
      */
-    public int toJulianDay(PointInTime pit) throws GedcomException {
-      throw new GedcomException("Transformation to Julian Day not supported");
+    protected int toJulianDay(PointInTime pit) throws GedcomException {
+      throw new GedcomException("Transformation "+getName()+" to Julian Day not supported");
     }
     
     /**
      * Julian Day -> PIT
      */
-    public PointInTime toPointInTime(int julianDay) throws GedcomException {
-      throw new GedcomException("Transformation to "+getName()+" not supported");
+    protected PointInTime toPointInTime(int julianDay) throws GedcomException {
+      throw new GedcomException("Transformation Julian Day to "+getName()+" not supported");
     }
     
   } //Calendar
@@ -607,7 +603,7 @@ public class PointInTime implements Comparable {
     /**
      * @see genj.gedcom.PointInTime.Calendar#getJulianDay(genj.gedcom.PointInTime)
      */
-    public int toJulianDay(PointInTime pit) {
+    protected int toJulianDay(PointInTime pit) {
 
       // Communications of the ACM by Henry F. Fliegel and Thomas C. Van Flandern entitled 
       // ``A Machine Algorithm for Processing Calendar Dates''. 
@@ -626,7 +622,7 @@ public class PointInTime implements Comparable {
     /**
      * @see genj.gedcom.PointInTime.Calendar#getPointInTime(int)
      */
-    public PointInTime toPointInTime(int julianDay) {
+    protected PointInTime toPointInTime(int julianDay) {
      
       // see toJulianDay 
       int l = julianDay + 68569;
@@ -667,7 +663,7 @@ public class PointInTime implements Comparable {
     /**
      * @see genj.gedcom.PointInTime.GregorianCalendar#getJulianDay(genj.gedcom.PointInTime)
      */
-    public int toJulianDay(PointInTime pit) {
+    protected int toJulianDay(PointInTime pit) {
       
       // see http://quasar.as.utexas.edu/BillInfo/JulianDatesG.html
       
@@ -692,7 +688,7 @@ public class PointInTime implements Comparable {
     /**
      * @see genj.gedcom.PointInTime.GregorianCalendar#getPointInTime(int)
      */
-    public PointInTime toPointInTime(int julianDay) {
+    protected PointInTime toPointInTime(int julianDay) {
 
       // see toJulianDay
       

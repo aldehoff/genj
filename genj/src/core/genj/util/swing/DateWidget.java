@@ -19,9 +19,10 @@
  */
 package genj.util.swing;
 
+import genj.gedcom.GedcomException;
 import genj.gedcom.PointInTime;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
+import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -51,12 +52,16 @@ public class DateWidget extends JPanel {
   
   /** current calendar */
   private PointInTime.Calendar calendar; 
+  
+  /** window manager */
+  private WindowManager manager;
     
   /**
    * Constructor
    */
-  public DateWidget(PointInTime pit) {
+  public DateWidget(PointInTime pit, WindowManager mgr) {
 
+    manager = mgr;
     calendar = pit.getCalendar();
         
     // create calendar switches
@@ -252,12 +257,16 @@ public class DateWidget extends JPanel {
       try {
         // get current value
         pit = getValue();
-        if (!pit.isValid())
-          throw new IllegalArgumentException("Current date is not valid");
-        // transform to julian day
-        pit = pit.get(newCalendar);
-      } catch (Throwable t) {
-        Debug.log(Debug.WARNING, t, "Switching Calendar failed");
+        pit.set(newCalendar);
+      } catch (GedcomException e) {
+        manager.openDialog(
+          null,
+          "Switching Calendar failed", 
+          manager.IMG_ERROR, 
+          e.getMessage(), 
+          manager.OPTIONS_OK, 
+          DateWidget.this
+        );
         return; 
       }
       // change

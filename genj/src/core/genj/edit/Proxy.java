@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.renderer.EntityRenderer;
 import genj.util.Resources;
+import genj.window.WindowManager;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -86,6 +87,13 @@ import javax.swing.border.EmptyBorder;
    * in case that sub-properties have been created/removed.
    */
   protected abstract void finish();
+  
+  /**
+   * Access to window manager
+   */
+  protected WindowManager getWindowManager() {
+    return view.manager.getWindowManager();
+  }
   
   /**
    * Our content

@@ -122,11 +122,11 @@ class ProxyDate extends Proxy implements ItemListener {
     panel.add(combo);
     combo.addItemListener(this);
 
-    deOne = new DateWidget(p.getStart());
+    deOne = new DateWidget(p.getStart(), getWindowManager());
     deOne.setAlignmentX(0);
     panel.add(deOne);
 
-    deTwo = new DateWidget(p.getEnd());
+    deTwo = new DateWidget(p.getEnd(), getWindowManager());
     deTwo.setAlignmentX(0);
 
     combo.setSelectedIndex( p.getFormat() );
