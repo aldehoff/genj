@@ -209,6 +209,11 @@ public class Content extends Component implements TreeModelListener {
 
     // Signal
     invalidate();
+    
+    // 20020311 - well apparently without a repaint
+    // it can happen that the canvas doesn't refresh
+    // because bounds stay the same (?)
+    repaint();
 
     // Done
   }
