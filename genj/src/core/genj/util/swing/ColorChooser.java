@@ -26,8 +26,8 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractListModel;
 import javax.swing.JColorChooser;
@@ -54,7 +54,7 @@ public class ColorChooser extends JColorChooser {
   private JList listColors = new JList();
   
   /** changed colors */
-  private Map changes = new IdentityHashMap();
+  private List changes = new ArrayList();
     
   /**
    * Constructor
@@ -97,9 +97,13 @@ public class ColorChooser extends JColorChooser {
     // check ColorSet
     for (int i=0; i<comboSets.getModel().getSize(); i++) {
       ColorSet cs = (ColorSet)comboSets.getModel().getElementAt(i);
-      cs.substitute(changes);
+      // loop changes
+      for (int j=0; j<changes.size(); ) {
+      	cs.substitute((Color)changes.get(j++), (Color)changes.get(j++));
+      }
       // next color-set
     }
+    changes.clear();
     comboSets.getModel();
     // done
   }
@@ -120,11 +124,15 @@ public class ColorChooser extends JColorChooser {
   }
   
   /**
-   * Current color (made have been changed)
+   * Current color (may have been changed)
    */
   private Color getColor(Color c) {
-    Color change = (Color)changes.get(c);
-    return change==null?c:change;
+    // check changes
+    for (int i=0; i<changes.size(); i++) {
+      if (changes.get(i++)==c) return (Color)changes.get(i);   	
+    }
+    // done
+    return c;
   }
   
   /**
@@ -186,11 +194,20 @@ public class ColorChooser extends JColorChooser {
      * @see javax.swing.event.ChangeListener#stateChanged(ChangeEvent)
      */
     public void stateChanged(ChangeEvent e) {
+      // make sure it will be shown
+      listColors.repaint();
       // grab current color from color selector
       Color color = getColorSet().getColor(listColors.getSelectedIndex()+1);
-      if (!color.equals(getColor())) changes.put(color, getColor());
-      // show it
-      listColors.repaint();
+      if (!color.equals(getColor())) {
+        for (int i=0; i<changes.size(); i++) {
+          if (changes.get(i++)==color) {
+            changes.set(i, getColor());
+            return;
+          }
+        }
+        changes.add(color);
+        changes.add(getColor());
+      }
       // done
     }
     /**
@@ -201,9 +218,5 @@ public class ColorChooser extends JColorChooser {
       setColor(getColorSet().getColor(listColors.getSelectedIndex()+1));
     }
   } //PickRenderer
-
-  /**
-   * A color model
-   */
     
 } //ColourChooser

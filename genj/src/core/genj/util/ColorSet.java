@@ -115,14 +115,11 @@ public class ColorSet {
   /**
    * Substitutes colors
    */
-  public void substitute(Map map) {
+  public void substitute(Color c, Color s) {
     // check-colors?
     for (int i=0; i<keys.size(); i++) {
-      Color color = getColor(i);
-      Color subst = (Color)map.get(color);
-      if (subst!=null) {
-        setColor(i, subst);
-      }
+      Color old = getColor(i);
+      if (old==c) setColor(i, s);
     }
     // done
   }
