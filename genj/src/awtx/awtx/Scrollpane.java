@@ -237,11 +237,20 @@ public class Scrollpane extends Container {
   /**
    * In case of an invalidation we do our layout
    */
+  /*
+   * 
+    this doesn't seem to work well with changing l&f because
+    at some point invalidate is called and we start to perform
+    layout operations which fails in ComboBox.getPreferredSize()
+    which calls _dependant.getPreferredSize() which is in an
+    instable state at that point
+    
   public void invalidate() {
     super.invalidate();
     doLayout();
     validate();
   }
+  */
 
   /**
    * Makes sure that a given point is visible
