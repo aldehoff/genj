@@ -47,9 +47,6 @@ import javax.swing.border.TitledBorder;
  */
 /*package*/ class ViewWidget extends JPanel {
 
-  /** a Toolbar */
-  private JToolBar bar = new JToolBar();
-  
   /** 
    * Constructor
    */
@@ -62,39 +59,39 @@ import javax.swing.border.TitledBorder;
     Component view = factory.createViewComponent(gedcom, registry, frame);
 
     // Fill Toolbar
-    boolean showBar = false;
+    boolean isBar = false;
+    JToolBar bar = new JToolBar();
     if (view instanceof ToolBarSupport) {
       ((ToolBarSupport)view).populate(bar);
-      showBar=true;
+      bar.add(Box.createGlue());
+      isBar = true;
     }
 
     // add our buttons     
     ButtonHelper bh = new ButtonHelper()
       .setResources(ViewManager.resources)
-      .setInsets(0);
+      .setContainer(bar);
 
     // .. a button for editing the View's settings
     JComponent settings = factory.createSettingsComponent(view);
     if (settings!=null) {
       settings.setBorder(new TitledBorder(frame.getTitle()));
-      bar.add(bh.create(new ActionOpenSettings(settings)));
-      showBar = true;
+      bh.create(new ActionOpenSettings(settings));
+      isBar = true;
     }
   
     // .. a button for printing View
     PrintRenderer renderer = factory.createPrintRenderer(view);
     if (renderer!=null) {
-      bar.add(bh.create(new ActionPrint(renderer, frame)));
-      showBar = true;
+      bh.create(new ActionPrint(renderer, frame));
+      isBar = true;
     }
   
     // setup layout
     setLayout(new BorderLayout());
-    if (showBar) {
-      // add some glue
-      bar.add(Box.createHorizontalGlue());
+    if (isBar) {
       // and a close
-      bar.add(bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(genj.gedcom.Images.get("X"))));
+      bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(genj.gedcom.Images.get("X")));
       // and the bar itself
       add(bar, BorderLayout.SOUTH);
     }

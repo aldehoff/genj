@@ -33,6 +33,7 @@ import java.util.Vector;
 
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
+import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
 /**
@@ -113,8 +114,10 @@ public class ButtonHelper {
     result.setEnabled(isEnabled);
     result.addActionListener((ActionListener)action.as(ActionListener.class));
 
-    if (container!=null)
+    if (container!=null) {
       container.add(result);
+      if (container instanceof JToolBar) result.setMaximumSize(new Dimension(128,128));
+    }
     if (collections.size()>0) {
       Enumeration e = collections.elements();
       while (e.hasMoreElements()) {

@@ -58,7 +58,7 @@ public class ViewManager {
   private static ViewManager instance;
 
   /** resources */
-  /*package*/ final static Resources resources = new Resources("genj.view");
+  public final static Resources resources = new Resources("genj.view");
 
   /** descriptors of views */
   static final private Descriptor[] descriptors = new Descriptor[]{

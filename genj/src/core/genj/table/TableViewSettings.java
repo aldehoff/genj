@@ -116,8 +116,7 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
   public void apply() {
     // Write columns by TagPaths
     TagPath[] paths = pathList.getPaths();
-    table.setTagPaths(eType,paths);
-
+    table.setPaths(eType,paths);
     // Done
   }
 
@@ -134,7 +133,7 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
     cTypes.setSelectedIndex(eType-Gedcom.FIRST_ETYPE);
 
     // Reflect columns by TagPaths
-    TagPath[] selectedPaths = t.getTagPathsFor(eType);
+    TagPath[] selectedPaths = t.getPaths(eType);
     TagPath[] usedPaths     = TagPath.getUsedTagPaths(t.gedcom,eType);
 
     pathTree.setPaths(usedPaths);
