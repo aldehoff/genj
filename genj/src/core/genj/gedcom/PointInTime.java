@@ -305,13 +305,6 @@ public class PointInTime implements Comparable {
   }
 
   /**
-   * String representation
-   */
-  public String toString() {
-    return toString(new WordBuffer(),true).toString();
-  }
-
-  /**
    * String representation (Gedcom format)
    */
   public String getValue() {
@@ -331,6 +324,13 @@ public class PointInTime implements Comparable {
   /**
    * String representation
    */
+  public String toString() {
+    return toString(new WordBuffer(),true).toString();
+  }
+
+  /**
+   * String representation
+   */
   public WordBuffer toString(WordBuffer buffer, boolean localize) {
     
     int 
@@ -343,9 +343,9 @@ public class PointInTime implements Comparable {
         if (day>=0) {
           buffer.append(new Integer(day+1));
         }
-        buffer.append(calendar.getMonth(month, localize, true));
+        buffer.append(calendar.getMonth(month, localize));
       }    
-      buffer.append(new Integer(year));
+      buffer.append(calendar.getYear(year, localize));
     }
     
     return buffer;
@@ -423,6 +423,11 @@ public class PointInTime implements Comparable {
    */
   public static abstract class Calendar {
     
+//    public static final int
+//      GEDCOM = 0,
+//      LONG   = 1,
+//      SHORT  = 2;
+    
     /** fields */
     protected String escape;
     protected String name;
@@ -487,35 +492,42 @@ public class PointInTime implements Comparable {
       }
       throw new NumberFormatException();
     }
-  
+    
     /**
-     * Access to (localized) gedcom months 
+     * Access to (localized) gedcom months
      */
-    public String[] getMonths(boolean localize, boolean abbreviate) {
+    public String[] getMonths(boolean localize) {
       
       String[] result = new String[months.length];
       for (int m=0;m<result.length;m++) {
         String mmm = months[m];
         if (localize) 
-          mmm = abbreviate ? abbreviatedMonthNames.get(mmm).toString() : localizedMonthNames.get(mmm).toString();
+          mmm = localizedMonthNames.get(mmm).toString();
         result[m] = mmm;
       }
       return result;
     }
 
     /**
-     * Returns the localized month as string (either MAY or Mai)
+     * Returns the (localized short) month as string (either MAY or Mai)
      */
-    public String getMonth(int month, boolean localize, boolean abbreviate) {
+    public String getMonth(int month, boolean localize) {
       // what's the numeric value?
       if (month<0||month>=months.length)
         return "";
       // calculate text
       String mmm = months[month];
       if (localize) 
-        mmm = abbreviate ? abbreviatedMonthNames.get(mmm).toString() : localizedMonthNames.get(mmm).toString();
+        mmm = abbreviatedMonthNames.get(mmm).toString();
       // done
       return mmm;
+    }
+    
+    /**
+     * Returns the (localized) year as string
+     */
+    public String getYear(int year, boolean localize) {
+      return ""+year;
     }
 
     /**
@@ -718,6 +730,9 @@ public class PointInTime implements Comparable {
     
     private static final int[] LEAP_YEARS
      = { 3,7,11 };
+     
+    private static final String[] YEARS 
+     = { "An I", "An II", "An III", "An IV", "An V", "An VI", "An VII", "An VIII", "An IX", "An X", "An xI", "An XII", "An XIII", "An XIV" };
     
     /**
      * Constructor
@@ -758,6 +773,13 @@ public class PointInTime implements Comparable {
       if (!super.isValid(day, month, year))
         return false;
         
+      // check range
+      try {
+        toJulianDay(day, month, year);
+      } catch (GedcomException e) {
+        return false;
+      }
+      
       // ok        
       return true;
     }
@@ -766,16 +788,21 @@ public class PointInTime implements Comparable {
      * @see genj.gedcom.PointInTime.Calendar#toJulianDay(genj.gedcom.PointInTime)
      */
     protected int toJulianDay(PointInTime pit) throws GedcomException {
+      return toJulianDay(pit.getDay(), pit.getMonth(), pit.getYear());
+    }
+    protected int toJulianDay(int d, int m, int y) throws GedcomException {
       // calc days
-      int 
-        y = 365*(pit.getYear()-1),
-        m = pit.getMonth()*30,
-        d = pit.getDay();
+      int jd = AN_I + 365*(y-1) + m*30 + d;
       // check leap years (one less day on julian day)
       for (int l=0;l<LEAP_YEARS.length;l++)
-        if (y>LEAP_YEARS[l]) d++; 
+        if (y>LEAP_YEARS[l]) jd++; 
+      // check range
+      if (jd<AN_I)
+        throw new GedcomException("Day lies before French Republican Calendar");
+      if (jd>=UNTIL)
+        throw new GedcomException("Day lies after French Republican Calendar");
       // sum
-      return AN_I + d + m + y;
+      return jd;
     }
     
     /**
@@ -808,6 +835,15 @@ public class PointInTime implements Comparable {
         
       // done
       return new PointInTime(d,m,y,this);
+    }
+    
+    /**
+     * @see genj.gedcom.PointInTime.Calendar#getYear(int, boolean)
+     */
+    public String getYear(int year, boolean localize) {
+      if (!localize||year<1||year>YEARS.length)
+        return ""+year;
+      return YEARS[year-1];
     }
 
   
