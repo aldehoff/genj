@@ -10,8 +10,10 @@
         <include name="**/*.jar"/>
     </fileset>
     <pathelement path ="./language/de"/>
-    <pathelement path ="./language/fr"/>
     <pathelement path ="./language/en"/>
+    <pathelement path ="./language/es"/>
+    <pathelement path ="./language/fr"/>
+    <pathelement path ="./language/it"/>
     <pathelement path ="./language/ja"/>
     <pathelement path ="./src/core"/>
     <pathelement path ="./src/report"/>
@@ -111,8 +113,9 @@
    Distribution - All languages
    -->
   <target name="dist.languages">
-    <antcall target="dist.language"><param name="language" value="en"/></antcall>
     <antcall target="dist.language"><param name="language" value="de"/></antcall>
+    <antcall target="dist.language"><param name="language" value="en"/></antcall>
+    <antcall target="dist.language"><param name="language" value="es"/></antcall>
     <antcall target="dist.language"><param name="language" value="fr"/></antcall>
     <antcall target="dist.language"><param name="language" value="it"/></antcall>
     <antcall target="dist.language"><param name="language" value="ja"/></antcall>
