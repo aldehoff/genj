@@ -24,16 +24,14 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.ArrayList;
+import java.awt.event.ItemEvent;
 import java.util.List;
 
+import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.ListDataListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Caret;
 
 /**
@@ -50,9 +48,6 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   /** our own model */
   private Model model = new Model();
   
-  /** list selection listeners */
-  private List lsListeners = new ArrayList(3);
-
   /**
    * Constructor
    */
@@ -219,20 +214,6 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   }
   
   /**
-   * A selection listener for the contained list
-   */
-  public void addListSelectionListener(ListSelectionListener l) {
-    lsListeners.add(l);
-  }
-      
-  /**
-   * A selection listener for the contained list
-   */
-  public void removeListSelectionListener(ListSelectionListener l) {
-    lsListeners.remove(l);
-  }
-      
-  /**
    * our own editor
    */
   private class Editor extends TextFieldWidget implements ComboBoxEditor, FocusListener, Runnable {
@@ -345,7 +326,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   /**
    * our own model
    */
-  private class Model implements ComboBoxModel {
+  private class Model extends AbstractListModel implements ComboBoxModel {
     
     /** list of values */
     private Object[] values = new Object[0];
@@ -393,11 +374,10 @@ public class ChoiceWidget extends javax.swing.JComboBox {
       selection = seLection;
       // propagate to editor
       editor.setItem(seLection);
-      // notify list selection
-      ListSelectionEvent e = new ListSelectionEvent(this, 0, values.length-1, false);
-      ListSelectionListener[] ls = (ListSelectionListener[])lsListeners.toArray(new ListSelectionListener[lsListeners.size()]);
-      for (int i=0;i<ls.length;i++)
-        ls[i].valueChanged(e);
+      // notify about item state change
+      fireItemStateChanged(new ItemEvent(ChoiceWidget.this, ItemEvent.ITEM_STATE_CHANGED, seLection, ItemEvent.SELECTED));
+      // and notify of data change (combobox specialty)
+      fireContentsChanged(this, -1, -1);
       // done
     }
 
@@ -413,20 +393,6 @@ public class ChoiceWidget extends javax.swing.JComboBox {
      */
     public int getSize() {
       return values.length;
-    }
-
-    /**
-     * @see javax.swing.ListModel#removeListDataListener(javax.swing.event.ListDataListener)
-     */
-    public void removeListDataListener(ListDataListener l) {
-      // ignore - we don't do events
-    }
-
-    /**
-     * @see javax.swing.ListModel#addListDataListener(javax.swing.event.ListDataListener)
-     */
-    public void addListDataListener(ListDataListener l) {
-      // ignore - we don't do events
     }
 
   } //Model

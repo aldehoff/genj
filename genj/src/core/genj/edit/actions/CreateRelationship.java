@@ -27,12 +27,12 @@ import genj.util.swing.ChoiceWidget;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JComponent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 /**
  * Add an entity via relationship (new or existing) 
@@ -121,10 +121,9 @@ public class CreateRelationship extends AbstractChange {
     final ChoiceWidget result = new ChoiceWidget(ents);
     result.setEditable(false);
     result.setSelectedIndex(0);
-    result.addListSelectionListener(new ListSelectionListener() {
-      public void valueChanged(ListSelectionEvent e) {
-        // update existing
-        Object item = result.getSelectedItem();
+    result.addItemListener(new ItemListener() {
+      public void itemStateChanged(ItemEvent e) {
+        Object item = e.getItem();
         existing = item instanceof Entity ? (Entity)item : null;
         // refresh abstract change
         refresh();
