@@ -46,17 +46,13 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
   private TagPathList     pathList;
   private TableView       table;
 
-  /** currently viewed types */
-  private int             eType = Gedcom.INDIVIDUALS;
-
   /**
    * Creates the visual parts of the editor
    */
-  public TableViewSettings(TableView table) {
+  public TableViewSettings(TableView tAble) {
 
     // remember
-    this.table = table;
-    this.eType = table.getType();
+    table = tAble;
 
     // Create!
     GridBagHelper gh = new GridBagHelper(this);
@@ -118,7 +114,7 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
   public void apply() {
     // Write columns by TagPaths
     TagPath[] paths = pathList.getPaths();
-    table.setPaths(eType,paths);
+    table.setPaths(cTypes.getSelectedIndex(),paths);
     // Done
   }
 
@@ -127,24 +123,17 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
    */
   public void reset() {
 
-    // Clear reference to table for listeners
-    TableView t = table;
-    table = null;
-
     // Reflect shown type
-    cTypes.setSelectedIndex(eType);
+    cTypes.setSelectedIndex(table.getType());
 
     // Reflect columns by TagPaths
-    TagPath[] selectedPaths = t.getPaths(eType);
-    TagPath[] usedPaths     = TagPath.getUsedTagPaths(t.getGedcom(),eType);
+    TagPath[] selectedPaths = table.getPaths(table.getType());
+    TagPath[] usedPaths     = TagPath.getUsedTagPaths(table.getGedcom(),table.getType());
 
     pathTree.setPaths(usedPaths);
     pathTree.setSelection(selectedPaths);
 
     pathList.setPaths(selectedPaths);
-
-    // Show table again
-    table = t;
 
     // Done
   }
@@ -157,7 +146,7 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
     /** run */
     public void execute() {
       if (table==null) return;
-      eType = cTypes.getSelectedIndex();
+      table.setType(cTypes.getSelectedIndex());
       reset();
     }
   } //ActionChooseEntity
