@@ -78,7 +78,7 @@
 3 CONT Ottawa, Ontario, K1H1A5, Canada
 3 CITY Ottawa
 3 POST K1H1A5
-0 @I017@ INDI 
+0 @I009@ INDI 
 1 NAME Alisa /Meier/
 1 SEX F
 1 BIRT 
@@ -103,7 +103,7 @@
 1 WIFE @I006@
 1 HUSB @I005@
 1 CHIL @I007@
-1 CHIL @I017@
+1 CHIL @I009@
 0 @N003@ NOTE The author of GenJ
 1 DATE FROM 1996 TO 2000
 0 TRLR 
