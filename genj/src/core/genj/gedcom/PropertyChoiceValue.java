@@ -101,7 +101,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    * Used choices - this won't work unless parent!=null
    */
   public List getChoices() {
-    return getReferenceSet(true).getValues();
+    return getReferenceSet(true).getKeys();
   }
   
   /**

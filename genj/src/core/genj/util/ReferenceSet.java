@@ -15,8 +15,11 @@ import java.util.TreeMap;
  */
 public class ReferenceSet {
 
-  /** the map we use for key->referrers */
+  /** the map we use for key->reference */
   private Map key2references;
+  
+  /** total number of references we know about */
+  private int size = 0;
   
   /**
    * Constructor - uses a TreeMap that keeps
@@ -35,14 +38,14 @@ public class ReferenceSet {
   }
   
   /**
-   * Returns the references for value
+   * Returns the references for a given key
    */
-  public Collection getReferences(Object val) {
+  public Collection getReferences(Object key) {
     // null is ignored
-    if (val==null) 
+    if (key==null) 
       return Collections.EMPTY_LIST;
     // lookup
-    Set references = (Set)key2references.get(val);
+    Set references = (Set)key2references.get(key);
     if (references==null) 
       return Collections.EMPTY_LIST;
     // return references
@@ -50,61 +53,80 @@ public class ReferenceSet {
   }
   
   /**
-   * Returns the reference count of given object
+   * Returns the total number of references 
    */
-  public int getCount(Object val) {
+  public int getSize() {
+    return size;
+  }
+  
+  /**
+   * Returns the number of reference for given key
+   */
+  public int getSize(Object key) {
     // null is ignored
-    if (val==null) return 0;
+    if (key==null) 
+      return 0;
     // lookup
-    Set references = (Set)key2references.get(val);
-    if (references==null) return 0;
+    Set references = (Set)key2references.get(key);
+    if (references==null) 
+      return 0;
     // done
     return references.size();
   }
 
   /**
-   * Add a value
+   * Add a key
    */
-  public boolean add(Object val) {
-    return add(val, null);
+  public boolean add(Object key) {
+    return add(key, null);
   }
 
   /**
-   * Add a value and its reference
+   * Add a key and its reference
+   * @return whether the reference was actually added (could have been known already) 
    */
-  public boolean add(Object val, Object reference) {
+  public boolean add(Object key, Object reference) {
     // null is ignored
-    if (val==null) return false;
+    if (key==null) 
+      return false;
     // lookup
-    Set references = (Set)key2references.get(val);
+    Set references = (Set)key2references.get(key);
     if (references==null) {
       references = new HashSet();
-      key2references.put(val, references);
+      key2references.put(key, references);
     }
-    // keep reference
-    if (reference!=null)
-      references.add(reference);
+    // safety check for reference==null - might be
+    // and still was necessary to keep key    
+    if (reference==null)
+      return false;
+    // add
+    if (!references.add(reference)) 
+      return false;
+    // increase total
+    size++;      
     // done
     return true;
   }
   
   /**
-   * Remove a value for given reference
+   * Remove a reference for given key
    */
-  public boolean remove(Object val, Object reference) {
+  public boolean remove(Object key, Object reference) {
     // null is ignored
-    if (val==null) 
+    if (key==null) 
       return false;
     // lookup
-    Set references = (Set)key2references.get(val);
+    Set references = (Set)key2references.get(key);
     if (references==null) 
       return false;
     // remove
     if (!references.remove(reference))
       return false;
+    // decrease total
+    size--;
     // remove value
     if (references.isEmpty())
-      key2references.remove(val);
+      key2references.remove(key);
     // done
     return true; 
   }
@@ -112,22 +134,22 @@ public class ReferenceSet {
   /**
    * Return all values
    */
-  public List getValues() {
-    return getValues(true);
+  public List getKeys() {
+    return getKeyes(true);
   }
 
   /**
    * Return all values
    * @param sortByKeyOrCount
    */
-  public List getValues(boolean sortByKeyOrCount) {
+  public List getKeyes(boolean sortByKeyOrCount) {
     ArrayList result = new ArrayList(key2references.keySet()); 
     if (sortByKeyOrCount) 
       Collections.sort(result);
     else 
       Collections.sort(result, new Comparator() {
         public int compare(Object o1, Object o2) {
-          return getCount(o1) - getCount(o2);
+          return getSize(o1) - getSize(o2);
         }
       });
       

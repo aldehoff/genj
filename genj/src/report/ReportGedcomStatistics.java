@@ -25,7 +25,7 @@ import java.text.NumberFormat;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.29 2003-09-29 12:44:14 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.30 2003-09-30 17:02:33 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.0
@@ -607,10 +607,10 @@ public class ReportGedcomStatistics extends Report {
     private void reportPlaces(StatisticsPlaces places) {
         
         int number = 0;
-        Iterator p = places.places.getValues(sortByName).iterator();
+        Iterator p = places.places.getKeyes(sortByName).iterator();
         while (p.hasNext()) {
             String place = (String)p.next();
-            number = places.places.getCount(place);
+            number = places.places.getSize(place);
             println("      + "+place+": "+number+" ("+roundNumber((double)number/(double)places.knownPlaces*100, fractionDigits)+"%)");
         }
         println();

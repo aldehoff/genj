@@ -270,7 +270,7 @@ public class PropertyName extends Property {
    * Return all last names
    */
   public List getLastNames() {
-    return getReferenceSet(true).getValues();
+    return getReferenceSet(true).getKeys();
   }
 
   /**
