@@ -94,9 +94,16 @@ public class TagPath {
    * Constructor for TagPath
    */
   public TagPath(TagPath other, String tag) {
-    tags = new String[other.len+1];
+    
+    // setup len
+    len = other.len+1;
+ 
+    // copy and append   
+    tags = new String[len];
     System.arraycopy(other.tags, 0, tags, 0, other.len);
     tags[len-1] = tag;
+    
+    // prepare our hash
     hash = other.hash+tag.hashCode();
   }
 
