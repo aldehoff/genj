@@ -53,9 +53,9 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * Constructor
    */     
   public ChoiceWidget(Object[] values, Object selection) {
-    
-    super(values);
 
+    super(new SortedComboBoxModel(values));
+       
     // always our own editor because 
     // (1) want to use our TextWidget here
     // (2) want to avoid actionPerformed on focusLost (see Editor)
@@ -68,6 +68,9 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     // which isn't overridden by selection if selection
     // isn't in values
     getModel().setSelectedItem(null);
+
+    // create the AutoCompleteListner (which also registers itself)
+    ComboBoxAutoCompleteListener jmgr = new ComboBoxAutoCompleteListener(this);
     
     // try to set selection - not in values is ignored
     setSelectedItem(selection);
@@ -84,7 +87,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * set values
    */
   public void setValues(List values) {
-    setModel(new DefaultComboBoxModel(values.toArray()));  
+    setModel(new SortedComboBoxModel(values.toArray()));  
   }
     
   /**
@@ -205,7 +208,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   /**
    * our own editor
    */
-  private class Editor extends TextFieldWidget implements ComboBoxEditor, FocusListener {
+  public class Editor extends TextFieldWidget implements ComboBoxEditor, FocusListener {
     
     /**
      * Constructor
