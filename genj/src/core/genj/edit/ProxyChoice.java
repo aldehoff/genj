@@ -19,11 +19,10 @@
  */
 package genj.edit;
 
-import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
-import genj.util.swing.SwingFactory;
+import genj.util.swing.ChoiceWidget;
 
-import javax.swing.JLabel;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 /**
@@ -35,7 +34,7 @@ import javax.swing.JPanel;
 class ProxyChoice extends Proxy{
 
   /** members */
-  private SwingFactory.JComboBox combo;
+  private ChoiceWidget choice;
   
   /**
    * Finish editing a property through proxy
@@ -43,12 +42,11 @@ class ProxyChoice extends Proxy{
   protected void finish() {
 
     // Has something been edited ?
-    if ( !hasChanged() )
-      return;
+    if ( !hasChanged() ) return;
 
     // Store changed value
-    Object result = combo.getText();
-    prop.setValue(result!=null?result.toString():"");
+    Object result = choice.getText();
+    property.setValue(result!=null?result.toString():"");
 
     // Done
     return;
@@ -58,33 +56,28 @@ class ProxyChoice extends Proxy{
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-    return combo.hasChanged();
+    return choice.hasChanged();
   }
 
   /**
    * Start editing a property through proxy
    */
-  protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
+  protected JComponent start(JPanel panel) {
 
-    // remember prop
-    prop=setProp;
-    
     // setup choices
     Object[] items = new Object[0];
-    if (prop instanceof PropertyChoiceValue) {
-      items =  ((PropertyChoiceValue)prop).getChoices().toArray();
-    }
+    if (property instanceof PropertyChoiceValue)
+      items =  ((PropertyChoiceValue)property).getChoices().toArray();
 
     // Setup controls
-    combo = new SwingFactory().JComboBox(items, prop.getValue());
-    combo.setEditable(true);
+    choice = new ChoiceWidget(items, property.getValue());
+    choice.setEditable(true);
     
     // layout
-    in.add(combo);
-    
-    SwingFactory.requestFocusFor(combo);
+    panel.add(choice);
     
     // Done
+    return choice;
   }
   
 } //ProxyChoice

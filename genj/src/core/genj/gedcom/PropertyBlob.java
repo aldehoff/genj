@@ -20,12 +20,11 @@
 package genj.gedcom;
 
 import genj.util.Base64;
+import genj.util.ByteArray;
 import genj.util.swing.ImageIcon;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.StringTokenizer;
 
 /**
@@ -74,7 +73,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
-    return "Blob";
+    return "File";
   }
 
   /**
@@ -165,38 +164,25 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   /**
    * Sets value to be taken from file
    */
-  public PropertyBlob setValue(File file) throws GedcomException {
+  public PropertyBlob load(String file) throws GedcomException {
+    
+    // Reset state
+    isIconChecked = false;
+    valueAsIcon   = null;
+    base64        = null;
+    raw           = null;
 
     // Try to open file
-    FileInputStream in;
     try {
-      in = new FileInputStream(file);
-    } catch (FileNotFoundException ex) {
-      throw new GedcomException("Couldn't open file "+file);
+      InputStream in = getGedcom().getOrigin().openFile(file).getInputStream();
+      raw = new ByteArray(in, (int)file.length()).getBytes();
+      in.close();
+    } catch (IOException ex) {
+      throw new GedcomException("Error reading "+file);
     }
 
-    // Reasonable expectedSize ?
-    int len = (int)file.length();
-
-    // Read
-    byte buffer[] = new byte[len];
-    try {
-      len = in.read(buffer);
-    } catch (IOException e) {
-      throw new GedcomException("Error while reading file "+file);
-    } finally {
-      try { in.close(); } catch (Exception ie) {};
-    }
-
-    // .. nothing read ?
-    if (len!=buffer.length)
-      throw new GedcomException("Couldn't read all "+buffer.length+" bytes of file "+file);
-
-    // Successfull new information
-    isIconChecked=false;
-    valueAsIcon   =null;
-    base64        =null;
-    raw           =buffer;
+    // check if we can update the TITL/FORM in parent OBJE
+    Media.updateSubs(getParent(), file);
 
     // Remember changed property
     noteModifiedProperty();

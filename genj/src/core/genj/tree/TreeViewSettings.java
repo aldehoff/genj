@@ -23,10 +23,10 @@ import genj.renderer.BlueprintList;
 import genj.util.ActionDelegate;
 import genj.util.ColorSet;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.ListWidget;
 import genj.util.swing.ColorChooser;
 import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.FontChooser;
-import genj.util.swing.SwingFactory;
 import genj.view.Settings;
 
 import java.awt.Container;
@@ -109,7 +109,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     
     // bookmarks
     Box bookmarks = new Box(BoxLayout.Y_AXIS);
-    bookmarkList = new SwingFactory().JList(null);
+    bookmarkList = new ListWidget();
     bookmarks.add(new JScrollPane(bookmarkList));
     JPanel bookmarkActions = new JPanel();
     ButtonHelper bh = new ButtonHelper().setContainer(bookmarkActions);

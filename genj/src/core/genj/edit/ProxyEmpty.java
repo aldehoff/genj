@@ -19,9 +19,7 @@
  */
 package genj.edit;
 
-import genj.gedcom.Property;
-
-import javax.swing.JLabel;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 /**
@@ -46,8 +44,8 @@ class ProxyEmpty extends Proxy {
   /**
    * Start editing a property through proxy
    */
-  protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
-  // Done
+  protected JComponent start(JPanel in) {
+    return null;
   }
 
-}
+} //ProxyEmpty

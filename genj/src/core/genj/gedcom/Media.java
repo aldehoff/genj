@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import java.io.File;
+
 /**
  * Class for encapsulating multimedia entry in a gedcom file
  */
@@ -39,5 +41,30 @@ public class Media extends Entity {
     Property file = getProperty("FILE", true);
     return (file instanceof PropertyFile) ? (PropertyFile)file : null;    
   }
-  
+
+  /**
+   * Update TITL/FORM in sub-properties
+   */
+  /*package*/ static void updateSubs(Property media, String file) {
+    
+    // check
+    if (media==null) return;
+      
+    // title?
+    Property title = media.getProperty("TITL");
+    if (title==null) {
+      title = media.addProperty(new PropertySimpleValue());
+    }
+    title.setValue(new File(file).getName());
+      
+    // format?
+    Property format = media.getProperty("FORM");
+    if (format==null) {
+      format = media.addProperty(new PropertySimpleValue()); 
+    }
+    format.setValue(PropertyFile.getSuffix(file));
+    
+    // done
+  }
+
 } //Media

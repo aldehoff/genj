@@ -21,14 +21,12 @@ package genj.edit;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomException;
-import genj.gedcom.Property;
-import genj.util.swing.SwingFactory;
+import genj.util.ActionDelegate;
+import genj.util.swing.ButtonHelper;
+import genj.util.swing.TextFieldWidget;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
+import javax.swing.AbstractButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -40,72 +38,12 @@ import javax.swing.event.DocumentListener;
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : ENTITY
  */
-class ProxyEntity extends Proxy implements ActionListener, DocumentListener {
+class ProxyEntity extends Proxy {
 
   /** members */
   private JTextField tfield;
-  private JButton bchange;
+  private AbstractButton bchange;
   private EditView edit;
-
-  /**
-   * When button is pressed
-   */
-  public void actionPerformed(ActionEvent e) {
-
-    // Warn about this action's side-effects
-    int rc = JOptionPane.showConfirmDialog(
-      edit.getFrame(),
-      EditView.resources.getString("proxy.change_id?"),
-      EditView.resources.getString("warning"),
-      JOptionPane.YES_NO_OPTION,
-      JOptionPane.WARNING_MESSAGE
-    );
-
-    if (rc==JOptionPane.NO_OPTION) {
-      return;
-    }
-
-    // Calc parms
-    Gedcom gedcom = prop.getGedcom();
-    Entity entity = prop.getEntity();
-
-    // Can I write ?
-    if (!gedcom.startTransaction()) {
-      return;
-    }
-
-    // Do the change
-    try {
-
-      // .. id
-      gedcom.setId(entity,tfield.getText());
-
-      // .. button off
-      bchange.setEnabled(false);
-
-    } catch (GedcomException ex) {
-
-      // .. error
-      JOptionPane.showMessageDialog(
-        edit.getFrame(),
-        ex.getMessage(),
-        EditView.resources.getString("error"),
-        JOptionPane.ERROR_MESSAGE
-      );
-
-    } finally {
-      gedcom.endTransaction();
-    }
-
-    // Done
-  }
-
-  /**
-   * Trigger for Document changes
-   */
-  public void changedUpdate(DocumentEvent e) {
-    bchange.setEnabled(true);
-  }
 
   /**
    * Finish editing a property through proxy
@@ -121,51 +59,80 @@ class ProxyEntity extends Proxy implements ActionListener, DocumentListener {
   }
 
   /**
-   * Trigger for Document changes
-   */
-  public void insertUpdate(DocumentEvent e) {
-    bchange.setEnabled(true);
-  }
-
-  /**
-   * Trigger for Document changes
-   */
-  public void removeUpdate(DocumentEvent e) {
-    bchange.setEnabled(true);
-  }
-
-  /**
    * Start editing a property through proxy
    */
-  protected void start(JPanel in, JLabel setLabel, Property prop, EditView edit) {
-
-    // Store some data
-    this.edit=edit;
-    this.prop=prop;
+  protected JComponent start(JPanel in) {
 
     // Look for entity
-    Entity e = (Entity)prop;
+    if (!(property instanceof Entity)) return null;
+    Entity e = (Entity)property;
 
     // Label
     JLabel lid = new JLabel(EditView.resources.getString("proxy.id_of_entity"));
     in.add(lid);
 
     // ID ?
-    tfield = createTextField(e.getId(), "!VALUE", this, EditView.resources.getString("proxy.enter_id_here"));
+    tfield = new TextFieldWidget(e.getId(), 80);
+    tfield.setToolTipText(resources.getString("proxy.enter_id_here"));
+    tfield.getDocument().addDocumentListener(new DocumentListener() {
+      public void changedUpdate(DocumentEvent e) {
+        bchange.setEnabled(true);
+      }
+      public void insertUpdate(DocumentEvent e) {
+        bchange.setEnabled(true);
+      }
+      public void removeUpdate(DocumentEvent e) {
+        bchange.setEnabled(true);
+      }
+    });
     in.add(tfield);
-
-    bchange = createButton(
-      EditView.resources.getString("proxy.change"),
-      "CHANGE",
-      false,
-      this,
-      null
-    );
-    in.add(bchange);
-
-    SwingFactory.requestFocusFor(tfield);
+    
+    bchange = new ButtonHelper().setContainer(in).setEnabled(false).create(new ActionChange());
 
     // Done
+    return tfield;
   }
 
-}
+  /**
+   * Action for changing ID
+   */
+  private class ActionChange extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionChange() {
+      setText(resources.getString("proxy.change"));
+      setEnabled(false);
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      // Warn about this action's side-effects
+      int rc = JOptionPane.showConfirmDialog(
+        edit.getFrame(),
+        EditView.resources.getString("proxy.change_id?"),
+        EditView.resources.getString("warning"),
+        JOptionPane.YES_NO_OPTION,
+        JOptionPane.WARNING_MESSAGE
+      );
+      if (rc==JOptionPane.NO_OPTION) return;
+
+      // Calc parms
+      Gedcom gedcom = property.getGedcom();
+      Entity entity = property.getEntity();
+      
+      // Can I write ?
+      if (!gedcom.startTransaction()) return;
+
+      // Do the change
+      gedcom.setId(entity,tfield.getText());
+      
+      // done
+      gedcom.endTransaction();
+      bchange.setEnabled(false);
+    }
+
+  } //ActionChange
+  
+} //ProxyEntity

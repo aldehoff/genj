@@ -19,10 +19,10 @@
  */
 package genj.renderer;
 
+import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyName;
 import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
@@ -361,8 +361,8 @@ public class PropertyRenderer {
     private ImageIcon getImage(Property prop, int preference) {
       // check file for image
       ImageIcon result = null;
-      if (prop instanceof PropertyFile) 
-        result = ((PropertyFile)prop).getValueAsIcon();
+      if (prop instanceof IconValueAvailable) 
+        result = ((IconValueAvailable)prop).getValueAsIcon();
       // fallback
       if (result==null&&isImage(preference)) return broken;
       // done

@@ -256,15 +256,15 @@ public class Gedcom {
    * Sets an entity's id
    * @exception GedcomException if id-argument is null oder of zero length
    */
-  public void setId(Entity entity, String id) throws GedcomException {
+  public void setId(Entity entity, String id) {
     // Known entity?
     if (!entities[entity.getType()].contains(entity)) {
-      throw new GedcomException("Entity isn't member in "+this);
+      throw new IllegalArgumentException("Entity isn't member in "+this);
     }
     // ID o.k. ?
     id = id.trim();
     if (id.length()==0) {
-      throw new GedcomException("Length of entity's ID has to be non-zero");
+      throw new IllegalArgumentException("Length of entity's ID has to be non-zero");
     }
     // Remember change
     noteModifiedProperty(entity);

@@ -40,9 +40,16 @@ public class ByteArray {
    * Constructor
    */
   public ByteArray(InputStream in) throws IOException {
+    this(in, CLUSTER);
+  }
+
+  /**
+   * Constructor
+   */
+  public ByteArray(InputStream in, int cluster) throws IOException {
 
     // Read from stream
-    byte buffer[] = new byte[CLUSTER];
+    byte buffer[] = new byte[cluster];
     int len=0,total=0;
 
     while (true) {

@@ -19,170 +19,153 @@
  */
 package genj.edit;
 
-import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
+import genj.edit.actions.RunExternal;
+import genj.gedcom.GedcomException;
+import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
+import genj.io.FileAssociation;
+import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
+import genj.util.Origin;
+import genj.util.swing.ButtonHelper;
+import genj.util.swing.ImageIcon;
 import genj.util.swing.MenuHelper;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import genj.util.swing.TextFieldWidget;
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 /**
  * A Proxy knows how to generate interaction components that the user
- * will use to change a property : FILE
+ * will use to change a property : FILE / BLOB
  */
-class ProxyFile extends Proxy implements ActionListener{
+class ProxyFile extends Proxy {
 
-  /** members */
-  private EditView     edit;
-  private Frame        frame;
+  /** static image dir */
+  private final static String 
+    IMAGE_DIR = EnvironmentChecker.getProperty(Proxy.class, 
+      new String[]{ "genj.gedcom.dir", "user.home" },
+      ".",
+      "resolve image directory"
+    );
+
+
+  /** preview */
   private JLabel       lImage;
-  private JScrollPane  sImage;
-  private JTextField   tFile;
-
-  /**
-   * User pressed button to select file
-   */
-  public void actionPerformed(ActionEvent e) {
-
-    PropertyFile p = (PropertyFile)prop;
-    String newValue=null;
-    File   newFile =null;
-
-    // Button or text-field ?
-    if (e.getSource()==tFile) {
-      newValue = tFile.getText();
-    } else {
-      // Let the user choose a file
-      String dir = EnvironmentChecker.getProperty(
-        this,
-        new String[]{ "genj.gedcom.dir", "user.home" },
-        ".",
-        "choose multimedia file"
-      );
-      JFileChooser chooser = new JFileChooser(dir);
-      chooser.setDialogTitle("Choose a file");
-
-      int rc=chooser.showDialog(frame, "Choose file");
-
-      // Cancel ?
-      if (JFileChooser.APPROVE_OPTION != rc)
-        return;
-      newFile = chooser.getSelectedFile();
-
-    }
-
-    // Can I write ?
-    Gedcom gedcom = prop.getGedcom();
-
-    if (!gedcom.startTransaction()) {
-      return;
-    }
-
-    // Change File-link
-    if (newFile!=null)
-      p.setValue(newFile);
-    else
-      p.setValue(newValue);
-
-    // Done
-    gedcom.endTransaction();
-
-    // Let it show
-    showFile();
-  }
+  
+  /** enter text */
+  private TextFieldWidget tFile;
 
   /**
    * Finish editing a property through proxy
    */
   protected void finish() {
-    // Done
+    // changes?
+    if (!hasChanged()) return;
+    // propagate
+    if (property instanceof PropertyFile)
+      property.setValue(tFile.getText());
+    if (property instanceof PropertyBlob) try {
+      ((PropertyBlob)property).load(tFile.getText());
+    } catch (GedcomException e) {}
+
+    // done
   }
 
   /**
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-    return false;
+    return tFile.hasChanged();
   }
 
   /**
    * Shows property's image if possible
    */
-  private void showFile() {
+  private void showFile(String file) {
 
-    PropertyFile pFile = (PropertyFile)prop;
-    tFile.setText( pFile.getValue() );
+    // show value
+    tFile.setText(file);
 
-    // Image from File?
-    ImageIcon icon = pFile.getValueAsIcon();
-    if ( (icon==null)||(icon.getIconWidth()<1)||(icon.getIconHeight()<1) ) {
+    // try to open
+    try {
+      Origin.Connection c = property.getGedcom().getOrigin().openFile(file);
+      lImage.setIcon(new ImageIcon(c.getInputStream()));
+      lImage.setText("");
+    } catch (Throwable t) {
       lImage.setText("No preview available");
       lImage.setIcon(null);
-    } else {
-      lImage.setIcon(icon);
-      lImage.setText("");
     }
 
     // Update visually
-    lImage.invalidate();
-    sImage.validate();
+    lImage.revalidate();
+  }
+
+  /**
+   * Shows property's image if possible
+   */
+  private void showFile(PropertyBlob blob) {
+
+    // show value
+    tFile.setText(blob.getValue());
+    tFile.setTemplate(true);
+
+    // try to open
+    ImageIcon img = blob.getValueAsIcon();
+    if (img!=null) {
+      lImage.setIcon(img);
+      lImage.setText("");
+    } else {
+      lImage.setText("No preview available");
+      lImage.setIcon(null);
+    }
+
+    // Update visually
+    lImage.revalidate();
   }
 
   /**
    * Start editing a property through proxy
    */
-  protected void start(JPanel in, JLabel setLabel, Property setProp, EditView setEdit) {
-
-    edit =setEdit        ;
-    prop =setProp        ;
-    frame=edit.getFrame();
-
-    // Add a button for FileChooserAction
-    JPanel p = new JPanel();
-    p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
-    p.setAlignmentX(0);
-
-    tFile = createTextField("", "F", null, null);
-    tFile.setAlignmentY(0.5F);
-    tFile.addActionListener(this);
+  protected JComponent start(JPanel in) {
+    
+    // Create Text and button for current value
+    tFile = new TextFieldWidget("", 80);
+    
+    Box p = new Box(BoxLayout.X_AXIS);
     p.add(tFile);
-
-    JButton bFile = createButton("Choose File", "CHOOSE", true, this, null);
-    bFile.setAlignmentY(0.5F);
-    p.add(bFile);
-
+    p.add(new ButtonHelper().create(new ActionChoose()));
+    p.setAlignmentX(0);
     in.add(p);
 
     // Any graphical information that could be shown ?
     lImage = new JLabel();
-    lImage.setHorizontalAlignment(SwingConstants.CENTER);
     lImage.addMouseListener(new Popup());
-    sImage = new JScrollPane(lImage);
-    sImage.setMinimumSize(new Dimension(0,0));
-    in.add(sImage);
+    lImage.setHorizontalAlignment(SwingConstants.CENTER);
+    
+    JScrollPane scroll = new JScrollPane(lImage);
+    scroll.setAlignmentX(0);
+    in.add(scroll);
 
-    showFile();
-
+    // display what we've got
+    if (property instanceof PropertyFile)
+      showFile(((PropertyFile)property).getValue());
+    if (property instanceof PropertyBlob)
+      showFile((PropertyBlob)property);
+      
     // Done
+    return null;
   }
 
   /**
@@ -193,18 +176,58 @@ class ProxyFile extends Proxy implements ActionListener{
     }
     public void mouseReleased(MouseEvent e) {
       // no popup trigger no action
-      if (!e.isPopupTrigger()) return;
-      // find actions for file
-      List actions = new ArrayList(6);
-      EditViewFactory.createActions(actions, (PropertyFile)prop);
-      if (actions.isEmpty()) return;
-      // show a context menu
-      MenuHelper mh = new MenuHelper().setTarget(lImage);
+      if (!e.isPopupTrigger()) 
+        return;
+      // show a context menu for file
+      String file = tFile.getText();
+      MenuHelper mh = new MenuHelper().setTarget(view);
       JPopupMenu popup = mh.createPopup("");
-      mh.createItems(actions);
-      popup.show(lImage, e.getPoint().x, e.getPoint().y);
+      // lookup associations
+      String suffix = PropertyFile.getSuffix(file);
+      Iterator it = FileAssociation.get(suffix).iterator();
+      while (it.hasNext()) {
+        FileAssociation fa = (FileAssociation)it.next(); 
+        mh.createItem(new RunExternal(property.getGedcom(),file,fa));
+      }
+      // show
+      if (popup.getComponentCount()>0)
+        popup.show(lImage, e.getPoint().x, e.getPoint().y);
       // done
     }
   } //Popup
+
+  /**
+   * Action - Choose file
+   */
+  private class ActionChoose extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    protected ActionChoose() {
+      setText(">>");
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      
+      // Let the user choose a file
+      JFileChooser chooser = new JFileChooser(IMAGE_DIR);
+      chooser.setDialogTitle("Choose a file");
+
+      int rc=chooser.showDialog(view, "Choose file");
+
+      // Cancel ?
+      if (JFileChooser.APPROVE_OPTION != rc)
+        return;
+        
+      // show it 
+      showFile(chooser.getSelectedFile().toString());
+      
+      // remember changed
+      tFile.setChanged(true);
+
+    }
+  } //ActionChoose
   
 } //ProxyFile

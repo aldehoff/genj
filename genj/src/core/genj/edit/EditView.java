@@ -19,7 +19,7 @@
  */
 package genj.edit;
 
-import genj.edit.actions.*;
+import genj.edit.actions.DelProperty;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
@@ -36,6 +36,7 @@ import genj.view.ContextPopupSupport;
 import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -50,7 +51,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -60,7 +60,6 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -148,9 +147,8 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     super.addNotify();
 
     // Check if we can preset something to edit
-    // 20021217 #655478 EditView follows current if closed UNLESS sticky
     Entity entity = preselectEntity;
-    if (entity==null&&isSticky()) {
+    if (entity==null) {
       try { 
         entity = gedcom.getEntity(registry.get("last",(String)null)); 
       } catch (Exception e) {
@@ -402,9 +400,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
            pkg   = me.substring( 0, me.lastIndexOf(".") + 1 ),
            proxy = prop.getProxy();
 
-    if (proxy == "") {
-      return;
-    }
+    if (proxy == "") return;
 
     // Create proxy
     try {
@@ -415,17 +411,10 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       currentProxy = new ProxyUnknown();
     }
 
-    // Add Image+Heading
-    JLabel label = new JLabel();
-    label.setIcon(prop.getImage(true));
-    label.setText(prop.getTag());
-    label.setAlignmentX(0);
-    label.setBorder(new EmptyBorder(2,0,8,0));
-    proxyPane.add(label);
-
     // Add proxy components
     try {
-      currentProxy.start(proxyPane,label,prop,this);
+      JComponent focus = currentProxy.start(proxyPane,prop,this);
+      if (focus!=null) focus.requestFocus();
     } catch (ClassCastException ex) {
       Debug.log(Debug.WARNING, this, "Seems like we're getting bad proxy for property "+prop, ex);
     }

@@ -23,132 +23,99 @@ import genj.gedcom.Entity;
 import genj.gedcom.IconValueAvailable;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
+import genj.util.ActionDelegate;
+import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
-import genj.util.swing.SwingFactory;
 import genj.view.ViewManager;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 /**
  * A proxy for a property that links entities
  */
-class ProxyXRef extends Proxy implements ActionListener  {
-
-  /** the editor */
-  /*package*/ EditView edit;
-
-  /** the textfield we use */
-  private JTextField tfield;
+class ProxyXRef extends Proxy {
 
   /**
    * Finish editing a property through proxy
    */
   protected void finish() {
-
-    // Has something been edited ?
-    if (!hasChanged()) return;
-
-    // Store changed value
-    prop.setValue(tfield.getText());
-
-    // Done
   }
   
-  /**
-   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-   */
-  public void actionPerformed(ActionEvent e) {
-    // get entity
-    Entity target = ((PropertyXRef)prop).getReferencedEntity();
-    if (target!=null) {
-      boolean sticky = edit.setSticky(false);
-      ViewManager.getInstance().setCurrentEntity(target);
-      edit.setSticky(sticky);
-    }
-    // done 
-  }
-
   /**
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-
-    // Already Linked?
-    if (tfield==null) {
-      return false;
-    }
-
-    String id = ((PropertyXRef)prop).getReferencedId();
-    return !tfield.getText().equals(id);
+    return false;
   }
 
   /**
    * Start editing a property through proxy
    */
-  protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
-
-    // Remember property & edit
-    prop=setProp;
-    this.edit=edit;
+  protected JComponent start(JPanel in) {
 
     // Calculate reference information
-    PropertyXRef pxref = (PropertyXRef) prop;
+    PropertyXRef pxref = (PropertyXRef) property;
 
     // Valid link ?
-    if (pxref.getReferencedEntity()!=null) {
+    if (pxref.getReferencedEntity()==null) 
+      return null;
       
-      // Create a link/jump button
-      Property p = pxref.getReferencedEntity();
-      JButton b = createButton(
-        EditView.resources.getString("proxy.jump_to",pxref.getReferencedEntity().getId()),
-        "JUMP",
-        true,
-        this,
-        p.getImage(true)
-      );
-      in.add(b);
-      
-      // Hack to show image for referenced Blob|Image
-      ImageIcon img = null;
-      if (p instanceof IconValueAvailable) {
-        img = ((IconValueAvailable)p).getValueAsIcon();
-      }
-      JComponent preview;
-      if (img!=null) {
-        preview = new JLabel(img);
-      } else {
-        preview = new JTextArea(p.toString());
-        preview.setEnabled(false);
-      }
-
-      JScrollPane jsp = new JScrollPane(preview);
-      jsp.setAlignmentX(0F);
-      in.add(jsp);
-      
-      // done
-      return;
+    // Create a link/jump button
+    Property p = pxref.getReferencedEntity();
+    
+    new ButtonHelper().setContainer(in).create(new ActionJump(pxref.getReferencedEntity()));
+    
+    // Hack to show image for referenced Blob|Image
+    ImageIcon img = null;
+    if (p instanceof IconValueAvailable) {
+      img = ((IconValueAvailable)p).getValueAsIcon();
+    }
+    JComponent preview;
+    if (img!=null) {
+      preview = new JLabel(img);
+    } else {
+      preview = new JTextArea(p.toString());
+      preview.setEnabled(false);
     }
 
-    // Not valid link ?
-    tfield = createTextField(
-      pxref.getReferencedId(),
-      "!VALUE",
-      null,
-      EditView.resources.getString("proxy.enter_id_here")
-    );
-    in.add(tfield);
-    SwingFactory.requestFocusFor(tfield);
-
-    // Done
+    JScrollPane jsp = new JScrollPane(preview);
+    jsp.setAlignmentX(0F);
+    in.add(jsp);
+    
+    // done
+    return null;
   }
 
-}
+  /**
+   * Action - Jump to reference
+   */
+  private class ActionJump extends ActionDelegate {
+    /** the entity to jump to */
+    private Entity entity;
+    /**
+     * Constructor
+     */
+    private ActionJump(Entity e) {    
+      entity = e;
+      setText(resources.getString("proxy.jump_to",entity.getId()));
+      setImage(e.getImage(false));
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      // get entity
+      Entity target = ((PropertyXRef)property).getReferencedEntity();
+      if (target!=null) {
+        boolean sticky = view.setSticky(false);
+        ViewManager.getInstance().setCurrentEntity(target);
+        view.setSticky(sticky);
+      }
+    }
+  } //ActionJump
+  
+} //ProxyXRef

@@ -20,14 +20,12 @@
 package genj.edit;
 
 import genj.gedcom.Indi;
-import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.FlowLayout;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -37,7 +35,7 @@ import javax.swing.JTextField;
  * will use to change a property : *Events*
  * This Proxy was written by Dan Kionka, and only exists to display the age.
  */
-class ProxyEvent extends Proxy implements ItemListener {
+class ProxyEvent extends Proxy {
 
   /**
    * Finish proxying edit for property Birth
@@ -53,20 +51,16 @@ class ProxyEvent extends Proxy implements ItemListener {
   }
 
   /**
-   * Trigger for changes in editing components
-   */
-  public void itemStateChanged(ItemEvent e) {
-  }          
-
-  /**
    * Starts Proxying edit for property Date by filling a vector with
    * components to edit this property
    */
-  protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
+  protected JComponent start(JPanel in) {
     
     // showing age@event only for individuals 
-    if (!(setProp.getEntity() instanceof Indi)) return;
-    PropertyEvent event = (PropertyEvent)setProp;
+    if (!(property.getEntity() instanceof Indi)) return null;
+    if (!(property instanceof PropertyEvent)) return null;
+    
+    PropertyEvent event = (PropertyEvent)property;
     PropertyDate date = event.getDate(true);
     Indi indi = (Indi)event.getEntity();
     
@@ -89,6 +83,7 @@ class ProxyEvent extends Proxy implements ItemListener {
     in.add(panel);
 
     // done
+    return null;
   }
 
-}
+} //ProxyEvent

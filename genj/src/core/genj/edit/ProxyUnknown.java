@@ -19,81 +19,48 @@
  */
 package genj.edit;
 
-import genj.gedcom.Property;
-import genj.util.swing.SwingFactory;
+import genj.util.swing.TextFieldWidget;
 
-import javax.swing.JLabel;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : UNKNOWN
  */
-class ProxyUnknown extends Proxy implements DocumentListener {
+class ProxyUnknown extends Proxy {
 
   /** members */
-  private boolean changed;
-  private JTextField tfield;
-
-  /**
-   * Change notification
-   */
-  public void changedUpdate(DocumentEvent e) {
-    changed = true;
-  }
+  private TextFieldWidget tfield;
 
   /**
    * Finish editing a property through proxy
    */
   protected void finish() {
 
-    // Has something been edited ?
-    if ( !hasChanged() )
-      return;
+    if (hasChanged())
+      property.setValue(tfield.getText());
 
-    // Store changed value
-    prop.setValue(tfield.getText());
-
-    // Done
-    return;
   }
 
   /**
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-    return changed;
-  }
-
-  /**
-   * Document event - insert
-   */
-  public void insertUpdate(DocumentEvent e) {
-    changed = true;
-  }
-
-  /**
-   * Document event - remove
-   */
-  public void removeUpdate(DocumentEvent e) {
-    changed = true;
+    return tfield.hasChanged();
   }
 
   /**
    * Start editing a property through proxy
    */
-  protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
-
-    prop=setProp;
+  protected JComponent start(JPanel in) {
 
     // Setup controls
-    tfield = createTextField(prop.getValue(), "!VALUE", this, null);
+    tfield = new TextFieldWidget(property.getValue(), 0);
     in.add(tfield);
-    SwingFactory.requestFocusFor(tfield);
+    
     // Done
+    return tfield;
   }
 
-}
+} //ProxyUnknown

@@ -28,7 +28,6 @@ import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.SwingFactory;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -242,7 +241,7 @@ public class BlueprintEditor extends JSplitPane {
         );
       }
       // request focus
-      SwingFactory.requestFocusFor(html);
+      html.requestFocus();
       // done
     }
   } //ActionInsert

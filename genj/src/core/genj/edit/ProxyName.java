@@ -19,35 +19,26 @@
  */
 package genj.edit;
 
-import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
-import genj.util.swing.SwingFactory;
+import genj.util.swing.ChoiceWidget;
+import genj.util.swing.TextFieldWidget;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : NAME
  */
-class ProxyName extends Proxy implements DocumentListener {
+class ProxyName extends Proxy {
 
   /** our components */
-  private SwingFactory.JComboBox cLast;
-  private JTextField tFirst, tSuff;
+  private ChoiceWidget cLast;
+  private TextFieldWidget tFirst, tSuff;
 
   /** dirty flag */
   private boolean changed=false;
-
-  /**
-   * Trigger for Document changes
-   */
-  public void changedUpdate(DocumentEvent e) {
-    changed = true;
-  }
 
   /**
    * Finish editing a property through proxy
@@ -55,9 +46,7 @@ class ProxyName extends Proxy implements DocumentListener {
   protected void finish() {
 
     // Has something been edited ?
-    if ( !hasChanged() ) {
-      return;
-    }
+    if ( !hasChanged() ) return;
 
     // ... calc texts
     String first = tFirst.getText().trim();
@@ -65,7 +54,7 @@ class ProxyName extends Proxy implements DocumentListener {
     String suff  = tSuff .getText().trim();
 
     // ... store changed value
-    PropertyName p = (PropertyName) prop;
+    PropertyName p = (PropertyName) property;
     p.setName( first, last, suff );
 
     // Done
@@ -75,52 +64,34 @@ class ProxyName extends Proxy implements DocumentListener {
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-    return changed || cLast.hasChanged();
-  }
-
-  /**
-   * Trigger for Document changes
-   */
-  public void insertUpdate(DocumentEvent e) {
-    changed = true;
-  }
-
-  /**
-   * Trigger for Document changes
-   */
-  public void removeUpdate(DocumentEvent e) {
-    changed = true;
+    return tFirst.hasChanged() || tSuff.hasChanged() || cLast.hasChanged();
   }
 
   /**
    * Start editing a property through proxy
    */
-  protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
+  protected JComponent start(JPanel in) {
 
-    // keep prop and setup name components
-    prop=setProp;
-    
     // first, last, suff
-    PropertyName pname = (PropertyName)prop;
+    PropertyName pname = (PropertyName)property;
     
-    cLast  = factory.JComboBox(pname.getLastNames().toArray(), pname.getLastName());
+    cLast  = new ChoiceWidget(pname.getLastNames().toArray(), pname.getLastName());
     cLast.setEditable(true);
-    tFirst = createTextField( pname.getFirstName(),"FB",this, null  );
-    tSuff  = createTextField( pname.getSuffix(),   "?", this, null );
+    tFirst = new TextFieldWidget(pname.getFirstName(), 80); 
+    tSuff  = new TextFieldWidget(pname.getSuffix()   , 80); 
 
-    in.add(factory.JLabel(pname.getLabelForFirstName()));
+    in.add(new JLabel(pname.getLabelForFirstName()));
     in.add(tFirst);
 
-    in.add(factory.JLabel(pname.getLabelForLastName()));
+    in.add(new JLabel(pname.getLabelForLastName()));
     in.add(cLast);
 
-    in.add(factory.JLabel(pname.getLabelForSuffix()));
+    in.add(new JLabel(pname.getLabelForSuffix()));
     in.add(tSuff);
 
-    // focus to first
-    SwingFactory.requestFocusFor(tFirst);
+    // done
+    return tFirst;
 
-    // Done
   }
 
 } //ProxyName

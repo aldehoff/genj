@@ -20,17 +20,12 @@
 package genj.edit;
 
 import genj.gedcom.Property;
-import genj.util.swing.ImageIcon;
-import genj.util.swing.SwingFactory;
+import genj.util.Resources;
 
-import java.awt.Dimension;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentListener;
+import javax.swing.SwingConstants;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -38,11 +33,17 @@ import javax.swing.event.DocumentListener;
  */
 abstract class Proxy  {
   
-  /** a swing factory */
-  protected SwingFactory factory = new SwingFactory();
-
-  /** the property that is proxy'd */
-  protected Property prop;
+  /** the resources */
+  protected final static Resources resources = EditView.resources;
+  
+  /** the proxied property */
+  protected Property property;
+  
+  /** the edit view */
+  protected EditView view;
+  
+  /** the label header */
+  protected JLabel label;
 
   /**
    * Stop editing a property through proxy. Return <b>true</b>
@@ -57,55 +58,22 @@ abstract class Proxy  {
 
   /**
    * Start editing a property through proxy
+   * @return component to receive focus
    */
-  protected abstract void start(JPanel in, JLabel setLabel, Property setProp, EditView edit);
-
-  /**
-   * Helper : generate JTextField
-   */
-  protected JTextField createTextField(String text, String name, DocumentListener listener, String tip) {
-
-    // Here's the textfield
-    JTextField result = new JTextField(text);
-
-    // we'll make sure that it doesn't grow like crazy
-    // because the box-layout wants to
-    result.setMaximumSize(new Dimension(Integer.MAX_VALUE,result.getPreferredSize().height));
-
-    // the alignment should be that the left's align
-    result.setAlignmentX(0);
-
-    // we also set the name (why?)
-    result.setName(name);
-
-    // and add an optional DocumentListener
-    if (listener!=null) {
-      result.getDocument().addDocumentListener(listener);
-    }
-
-    // tool tip
-    if (tip!=null) {
-      result.setToolTipText(tip);
-    }
-
-    // done
-    return result;
+  protected final JComponent start(JPanel panel, Property prop, EditView edit) {
+    // remember
+    property = prop;
+    view = edit;
+    // setup a label
+    label = new JLabel(prop.getTag(), prop.getImage(true), SwingConstants.LEFT);
+    panel.add(label);
+    // continue with sub-implementation dependent 
+    return start(panel);
   }
-
+  
   /**
-   * Helper : generate JButton
+   * Implementation
    */
-  protected JButton createButton(String text, String command, boolean enabled, ActionListener listener, ImageIcon icon) {
-
-    JButton result = new JButton( text );
-    result.addActionListener(listener);
-    result.setActionCommand(command);
-    result.setEnabled(enabled);
-    if (icon!=null) {
-      result.setIcon(icon);
-    }
-
-    return result;
-  }
+  protected abstract JComponent start(JPanel panel);
 
 } //Proxy

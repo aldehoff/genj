@@ -26,7 +26,8 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.io.Filter;
 import genj.io.GedcomWriter;
-import genj.util.swing.SwingFactory;
+import genj.util.swing.ChoiceWidget;
+import genj.util.swing.TextFieldWidget;
 import genj.view.FilterSupport;
 import genj.view.ViewManager;
 
@@ -40,6 +41,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
@@ -62,35 +64,35 @@ import javax.swing.JTextField;
    */    
   /*package*/ SaveOptionsWidget(Gedcom gedcom) {
     
-    SwingFactory create = new SwingFactory();
-    
     // Options
-    Box options = create.Box(BoxLayout.Y_AXIS);
-    create.JLabel("Encoding");
-    comboEncodings = create.JComboBox(GedcomWriter.ENCODINGS, GedcomWriter.ANSEL);
-    create.pop();
+    Box options = new Box(BoxLayout.Y_AXIS);
+    options.add(new JLabel("Encoding"));
+    comboEncodings = new ChoiceWidget(GedcomWriter.ENCODINGS, GedcomWriter.ANSEL);
+    options.add(comboEncodings);
     
     // entities filter    
-    Box types = create.Box(BoxLayout.Y_AXIS);
+    Box types = new Box(BoxLayout.Y_AXIS);
     for (int t=0; t<Gedcom.NUM_TYPES; t++) {
-      checkEntities[t] = create.JCheckBox(Gedcom.getNameFor(t, true), true);
+      checkEntities[t] = new JCheckBox(Gedcom.getNameFor(t, true), true);
+      types.add(checkEntities[t]);
     }
-    create.pop();
     
     // property filter
-    Box props = create.Box(BoxLayout.Y_AXIS);
-    create.JLabel("Exclude Tags (or Paths):");
-    textTags = create.JTextField("e.g. \"INDI:BIRT:NOTE, ADDR\"", true, 10);
-    create.JLabel("Exclude Values containing:");
-    textValues = create.JTextField("e.g. \"secret, private\"", true, 10);
-    create.pop();
+    Box props = new Box(BoxLayout.Y_AXIS);
+    props.add(new JLabel("Exclude Tags (or Paths):"));
+    textTags = new TextFieldWidget("e.g. \"INDI:BIRT:NOTE, ADDR\"", 10).setTemplate(true);
+    props.add(textTags);
+    props.add(new JLabel("Exclude Values containing:"));
+    textValues = new TextFieldWidget("e.g. \"secret, private\"", 10).setTemplate(true);
+    props.add(textValues);
     
     // others filter
-    Box others = create.Box(BoxLayout.Y_AXIS);
+    Box others = new Box(BoxLayout.Y_AXIS);
     filterViews = (FilterSupport[])ViewManager.getInstance().getSupportFor(FilterSupport.class, gedcom);
     checkViews = new JCheckBox[filterViews.length];
     for (int i=0; i<checkViews.length; i++) {
-      checkViews[i] = create.JCheckBox(filterViews[i].getFilterName(), false);
+      checkViews[i] = new JCheckBox(filterViews[i].getFilterName(), false);
+      others.add(checkViews[i]);
     }
     
     // layout

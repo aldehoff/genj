@@ -215,7 +215,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * Create actions for PropertyFile
    */
-  /*package*/ static void createActions(List result, PropertyFile file) {
+  public static void createActions(List result, PropertyFile file) {
 
     // find suffix
     String suffix = file.getSuffix();

@@ -20,92 +20,54 @@
 package genj.edit;
 
 import genj.gedcom.MultiLineSupport;
-import genj.gedcom.Property;
-import genj.util.swing.SwingFactory;
+import genj.util.swing.TextAreaWidget;
 
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : NAME
  */
-class ProxyMLE extends Proxy implements DocumentListener {
+class ProxyMLE extends Proxy {
 
   /** members */
-  private JTextArea tarea;
-  private boolean changed=false;
-  private int rows;
-
-  /**
-   * Trigger for Document changes
-   */
-  public void changedUpdate(DocumentEvent e) {
-    changed = true;
-  }
+  private TextAreaWidget tarea;
 
   /**
    * Finish editing a property through proxy
    */
   protected void finish() {
 
-    // Has something been edited ?
-    if ( !hasChanged() )
-      return;
-
-    // Calc new value
-    String value = tarea.getText();
-    prop.setValue(value);
-
-    // Done
+    if (hasChanged())
+      property.setValue(tarea.getText());
   }
 
   /**
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-    return changed;
-  }
-
-  /**
-   * Trigger for Document changes
-   */
-  public void insertUpdate(DocumentEvent e) {
-    changed = true;
-  }
-
-  /**
-   * Trigger for Document changes
-   */
-  public void removeUpdate(DocumentEvent e) {
-    changed = true;
+    return tarea.hasChanged();
   }
 
   /**
    * Start editing a property through proxy
    */
-  protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
-
-    // Remember property
-    prop=setProp;
+  protected JComponent start(JPanel in) {
 
     // Calculate value to show
     String value;
-    if (prop instanceof MultiLineSupport) {
-      value = ((MultiLineSupport)prop).getLinesValue();
+    if (property instanceof MultiLineSupport) {
+      value = ((MultiLineSupport)property).getLinesValue();
     } else {
-      value = prop.getValue(); 
+      value = property.getValue(); 
     }
 
-    tarea = new JTextArea(value,6,20);
+    tarea = new TextAreaWidget(value,6,20);
     tarea.setLineWrap(true);
     tarea.setWrapStyleWord(true);
-    tarea.getDocument().addDocumentListener(this);
 
     JScrollPane spane = new JScrollPane(tarea);
     spane.setBorder(BorderFactory.createMatteBorder(4,4,4,4,in.getBackground()));
@@ -113,7 +75,7 @@ class ProxyMLE extends Proxy implements DocumentListener {
     in.add(spane);
 
     // Done
-    SwingFactory.requestFocusFor(tarea);
+    return tarea;
   }
   
 } //ProxyMLE

@@ -122,36 +122,6 @@ public class PropertyFile extends Property implements IconValueAvailable {
   /**
    * Sets this property's value
    */
-  public void setValue(File f) {
-    
-    // delegate to value
-    setValue(f.toString());
-    
-    // check if we can update the TITL/FORM in parent OBJE
-    Property parent = getParent();
-    if (parent instanceof PropertyMedia) {
-      
-      // title?
-      Property title = parent.getProperty("TITL");
-      if (title==null) {
-        title = parent.addProperty(new PropertySimpleValue());
-      }
-      title.setValue(f.getName());
-      
-      // format?
-      Property format = parent.getProperty("FORM");
-      if (format==null) {
-        format = parent.addProperty(new PropertySimpleValue()); 
-      }
-      format.setValue(getSuffix());
-      
-    }    
-    // done
-  }
-
-  /**
-   * Sets this property's value
-   */
   public void setValue(String value) {
 
     // Remember the change
@@ -164,6 +134,10 @@ public class PropertyFile extends Property implements IconValueAvailable {
     isIconChecked = false;
     isRelativeChecked = false;
 
+    // check if we can update the TITL/FORM in parent OBJE
+    Media.updateSubs(getParent(), value);
+    
+    // done    
   }
 
   /**
@@ -201,11 +175,18 @@ public class PropertyFile extends Property implements IconValueAvailable {
    * Calculate suffix of file (empty string if n/a)
    */
   public String getSuffix() {
+    return getSuffix(file);
+  }
+
+  /**
+   * Calculate suffix of file (empty string if n/a)
+   */
+  public static String getSuffix(String value) {
     // check for suffix
     String result = "";
-    if (file!=null) {
-      int i = file.lastIndexOf('.');
-      if (i>=0) result = file.substring(i+1);
+    if (value!=null) {
+      int i = value.lastIndexOf('.');
+      if (i>=0) result = value.substring(i+1);
     }
     // done
     return result;

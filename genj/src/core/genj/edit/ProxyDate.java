@@ -19,17 +19,15 @@
  */
 package genj.edit;
 
-import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.util.swing.DateEntry;
-import genj.util.swing.SwingFactory;
 
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 /**
@@ -63,11 +61,9 @@ class ProxyDate extends Proxy implements ItemListener {
   protected void finish() {
 
     // Something changed ?
-    if (!hasChanged()) {
-      return;
-    }
+    if (!hasChanged()) return;
 
-    PropertyDate p = (PropertyDate)prop;
+    PropertyDate p = (PropertyDate)property;
 
     // Remember format
     p.setFormat(combo.getSelectedIndex());
@@ -110,10 +106,9 @@ class ProxyDate extends Proxy implements ItemListener {
    * Starts Proxying edit for property Date by filling a vector with
    * components to edit this property
    */
-  protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
+  protected JComponent start(JPanel panel) {
 
-    prop=setProp;
-    PropertyDate p = (PropertyDate)prop;
+    PropertyDate p = (PropertyDate)property;
 
     // Components
     combo = new JComboBox();
@@ -124,12 +119,12 @@ class ProxyDate extends Proxy implements ItemListener {
     for (int i = 0; i <= PropertyDate.LAST_ATTRIB; i++) {
       combo.addItem(PropertyDate.getLabelForFormat(i));
     }
-    in.add(combo);
+    panel.add(combo);
     combo.addItemListener(this);
 
     deOne = new DateEntry(p.getStart().getDay(),p.getStart().getMonth(),p.getStart().getYear());
     deOne.setAlignmentX(0);
-    in.add(deOne);
+    panel.add(deOne);
 
     deTwo = new DateEntry(p.getEnd().getDay(),p.getEnd().getMonth(),p.getEnd().getYear());
     deTwo.setAlignmentX(0);
@@ -138,8 +133,8 @@ class ProxyDate extends Proxy implements ItemListener {
     formatChanged = false;
 
     // Done
-    SwingFactory.requestFocusFor(deOne);
+    return deOne;
 
   }
 
-}
+} //ProxyDate
