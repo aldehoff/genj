@@ -232,8 +232,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   public Entity getEntityAt(Point pos) {
     Rectangle2D bounds = model.getBounds();
     return model.getEntityAt(
-      UnitGraphics.pixels2units(pos.x,UNITS)+bounds.getMinX(), 
-      UnitGraphics.pixels2units(pos.y,UNITS)+bounds.getMinY()
+      UnitGraphics.pixels2units(pos.x,UNITS*zoom)+bounds.getMinX(), 
+      UnitGraphics.pixels2units(pos.y,UNITS*zoom)+bounds.getMinY()
     );
   }
 
@@ -272,7 +272,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.cBackground    = Color.white;
       contentRenderer.cIndiShape     = Color.black;
       contentRenderer.cFamShape      = Color.black;
-      contentRenderer.cMarrShape     = Color.black;
       contentRenderer.cArcs          = Color.black;
       contentRenderer.cSelectedShape = Color.red;
       contentRenderer.selection      = currentEntity;
@@ -357,7 +356,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.cBackground    = Color.white;
       contentRenderer.cIndiShape     = Color.black;
       contentRenderer.cFamShape      = Color.green;
-      contentRenderer.cMarrShape     = Color.pink;
       contentRenderer.cArcs          = Color.blue;
       contentRenderer.cSelectedShape = Color.red;
       contentRenderer.selection      = currentEntity;
