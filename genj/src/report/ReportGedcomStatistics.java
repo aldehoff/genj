@@ -25,7 +25,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.49 2004-03-06 19:28:43 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.50 2004-03-06 23:15:38 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -626,34 +626,59 @@ public class ReportGedcomStatistics extends Report {
     private void printAges(int printIndis, int indent, StatisticsIndividuals stats, int which) {
         
         int[] age;
+        int keys;
         
         switch(which) {
             case INDIS:
             case MARRIAGE:
-                if(stats.age.getKeys().size()>0) {
-                    // min. age
-                    printMinMaxAge(printIndis, indent, "minAge", stats.minAge, new ArrayList(stats.age.getReferences(new Integer(stats.minAge))));
-                    // average age
-                    age = calculateAverageAge(stats.sumAge,stats.age.getSize());
-                    println(getIndent(indent)+i18n("avgAge")+" "+new Delta(age[2], age[1], age[0]));
-                    // max. age
-                    printMinMaxAge(printIndis, indent, "maxAge", stats.maxAge, new ArrayList(stats.age.getReferences(new Integer(stats.maxAge))));
+                keys = stats.age.getKeys().size();
+                if(keys>0) {
+                    if(keys==1){
+                        age = calculateAverageAge(stats.sumAge,stats.age.getSize());
+                        println(getIndent(indent)+new Delta(age[2], age[1], age[0])+" "+i18n("oneIndi"));
+                        if(printIndis<3) {
+                            Indi indi = (Indi)new ArrayList(stats.age.getReferences(new Integer(stats.sumAge))).get(0);
+                            String[] output = {indi.getId(), indi.getName()};
+                            println(getIndent(indent+1)+i18n("entity", output));
+                        }
+                    }
+                    else {
+                        // min. age
+                        printMinMaxAge(printIndis, indent, "minAge", stats.minAge, new ArrayList(stats.age.getReferences(new Integer(stats.minAge))));
+                        // average age
+                        age = calculateAverageAge(stats.sumAge,stats.age.getSize());
+                        println(getIndent(indent)+i18n("avgAge")+" "+new Delta(age[2], age[1], age[0]));
+                        // max. age
+                        printMinMaxAge(printIndis, indent, "maxAge", stats.maxAge, new ArrayList(stats.age.getReferences(new Integer(stats.maxAge))));
+                    }
                 }
                 else
-                    println(getIndent(indent)+i18n("missingData"));
+                    println(getIndent(indent)+i18n("noData"));
                 break;
             case CHILDBIRTH:
-                if(stats.childBirthAge.getKeys().size()>0) {
-                    // min. age
-                    printMinMaxAge(printIndis, indent, "minAge", stats.minChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.minChildBirthAge))));
-                    // avg age
-                    age = calculateAverageAge(stats.sumChildBirthAge,stats.childBirthNumber);
-                    println(getIndent(indent)+i18n("avgAge")+" "+new Delta(age[2], age[1], age[0]));
-                    // max. age
-                    printMinMaxAge(printIndis, indent, "maxAge", stats.maxChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.maxChildBirthAge))));
+                keys = stats.childBirthAge.getKeys().size();
+                if(keys>0) {
+                    if(keys==1) {
+                        age = calculateAverageAge(stats.sumChildBirthAge,stats.childBirthNumber);
+                        println(getIndent(indent)+new Delta(age[2], age[1], age[0])+" "+i18n("oneIndi"));
+                        if(printIndis<3) {
+                            Indi indi = (Indi)new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.sumChildBirthAge))).get(0);
+                            String[] output = {indi.getId(), indi.getName()};
+                            println(getIndent(indent+1)+i18n("entity", output));
+                        }
+                    }
+                    else{
+                        // min. age
+                        printMinMaxAge(printIndis, indent, "minAge", stats.minChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.minChildBirthAge))));
+                        // avg age
+                        age = calculateAverageAge(stats.sumChildBirthAge,stats.childBirthNumber);
+                        println(getIndent(indent)+i18n("avgAge")+" "+new Delta(age[2], age[1], age[0]));
+                        // max. age
+                        printMinMaxAge(printIndis, indent, "maxAge", stats.maxChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.maxChildBirthAge))));
+                    }
                 }
                 else
-                    println(getIndent(indent)+i18n("missingData"));
+                    println(getIndent(indent)+i18n("noData"));
                 break;
         }
     }
@@ -694,28 +719,35 @@ public class ReportGedcomStatistics extends Report {
             indent=3;
         }
         else {
-            println(getIndent(2)+lastName);
+            println(getIndent(2)+"\""+lastName+"\""+": "+all.number+" ("+roundNumber((double)all.number/(double)numberAllIndis*100, fractionDigits)+"%)");
             println(getIndent(3)+i18n("ages"));
-            println(getIndent(4)+i18n("number",all.number)+" ("+roundNumber((double)all.number/(double)numberAllIndis*100, fractionDigits)+"%)");
+            println(getIndent(4)+i18n("all"));
             indent=5;
         }
         
-        printAges(printIndis, indent, all, INDIS);
+        if((lastName==null) || (all.number>0))
+            printAges(printIndis, indent, all, INDIS);
         
-        str[0] = Integer.toString(males.number);
-        str[1] = Double.toString(roundNumber((double)males.number/(double)all.number*100, fractionDigits));
-        println(getIndent(indent-1)+i18n("males",str));
-        printAges(printIndis, indent, males, INDIS);
+        if((lastName==null) || (males.number>0)) {
+            str[0] = Integer.toString(males.number);
+            str[1] = Double.toString(roundNumber((double)males.number/(double)all.number*100, fractionDigits));
+            println(getIndent(indent-1)+i18n("males",str));
+            printAges(printIndis, indent, males, INDIS);
+        }
         
-        str[0] = Integer.toString(females.number);
-        str[1] = Double.toString(roundNumber((double)females.number/(double)all.number*100, fractionDigits));
-        println(getIndent(indent-1)+i18n("females",str));
-        printAges(printIndis, indent, females, INDIS);
+        if((lastName==null) || (females.number>0)) {
+            str[0] = Integer.toString(females.number);
+            str[1] = Double.toString(roundNumber((double)females.number/(double)all.number*100, fractionDigits));
+            println(getIndent(indent-1)+i18n("females",str));
+            printAges(printIndis, indent, females, INDIS);
+        }
         
-        str[0] = Integer.toString(unknown.number);
-        str[1] = Double.toString(roundNumber((double)unknown.number/(double)all.number*100, fractionDigits));
-        println(getIndent(indent-1)+i18n("unknown",str));
-        printAges(printIndis, indent, unknown, INDIS);
+        if((lastName==null) || (unknown.number>0)) {
+            str[0] = Integer.toString(unknown.number);
+            str[1] = Double.toString(roundNumber((double)unknown.number/(double)all.number*100, fractionDigits));
+            println(getIndent(indent-1)+i18n("unknown",str));
+            printAges(printIndis, indent, unknown, INDIS);
+        }
         
         if(lastName==null)
             println();
