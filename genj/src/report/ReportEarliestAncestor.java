@@ -9,9 +9,10 @@ import genj.gedcom.DuplicateIDException;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.PropertyDate;
+import genj.gedcom.Property;
 import genj.report.Report;
 import genj.report.ReportBridge;
+
 import java.util.List;
 
 /**
@@ -45,43 +46,44 @@ public class ReportEarliestAncestor implements Report {
   public String getInfo() {
     return "This report prints the earliest ancestor of an individual";
   }
+  
+  /**
+   * Return the individual with the earlier birthdate
+   */
+  private Indi getEarliest(Indi one, Indi two) {
+    Property 
+      bOne = one.getBirthDate(),
+      bTwo = two.getBirthDate();
+    if (bTwo==null) return one;
+    if (bOne==null) return two;
+    return bOne.compareTo(bTwo)<0 ? one : two;
+  }
 
   /**
    * Finding the earliest ancestor recursive.
    */
   public Indi findEarliest (Indi indi) {
 
+    // earlierst is indi himself
     Indi earliest = indi;
-    PropertyDate birth;
 
+    // Check if there are ancestors
     Fam fam = indi.getFamc ();
-    if (fam == null){
-      return (earliest);
-    }
+    if (fam == null)
+      return earliest;
 
-    indi = fam.getHusband ();
-    if (indi != null){
-      indi = findEarliest (indi);
+    // get husband of family and recurse
+    Indi husband = findEarliest(fam.getHusband());
+    if (husband!=null)
+      earliest = getEarliest(earliest, husband);
 
-      birth = indi.getBirthDate();
-
-      if ((birth!=null)&&(birth.compareTo(earliest.getBirthDate())< 0)) {
-        earliest = indi;
-      }
-    }
-
-    indi = fam.getWife ();
-    if (indi != null){
-      indi = findEarliest (indi);
-
-      birth = indi.getBirthDate();
-
-      if ((birth!=null)&&(birth.compareTo(earliest.getBirthDate())<0)) {
-        earliest = indi;
-      }
-    }
-
-    return (earliest);
+    // get wife of family and recurse
+    Indi wife = findEarliest(fam.getHusband());
+    if (wife!=null)
+      earliest = getEarliest(earliest, findEarliest(wife));
+    
+    // done
+    return earliest;
   }
 
 
