@@ -145,10 +145,12 @@ public class App {
         // close all frames we know
         winMgr.closeAll();
         // Store registry 
+        //FIXME - this is called before the GedcomTableWidget is removed so column widths won't be saved
         Registry.saveToDisk();      
         // Flush Debug
         Debug.flush();
         // exit
+        //FIXME - this probably isn't a good idea, but we sometimes hang otherwise
         System.exit(0);
       }
     };
