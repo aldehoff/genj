@@ -201,14 +201,19 @@ public class ChoiceWidget extends JComboBox {
    * @see javax.swing.JComponent#requestFocus()
    */
   public void requestFocus() {
-    getTextEditor().requestFocus();
+    if (isEditable())
+      getTextEditor().requestFocus();
+    else
+      super.requestFocus();
   }
   
   /**
    * @see javax.swing.JComponent#requestFocusInWindow()
    */
   public boolean requestFocusInWindow() {
-    return getTextEditor().requestFocusInWindow();
+    if (isEditable())
+      return getTextEditor().requestFocusInWindow();
+    return super.requestFocusInWindow();
   }
   
   /**
