@@ -227,6 +227,13 @@ class View extends JFrame {
     // Return calculated view
     return new Registry(Registry.getRegistry(name), nameOfView+"."+number);
   }
+  
+  /**
+   * Returns all views
+   */
+  public static Enumeration getAll() {
+    return views.elements();
+  }
 
   /**
    * Opens a view on a gedcom file

@@ -36,6 +36,7 @@ import genj.util.*;
 import genj.util.swing.*;
 import genj.print.*;
 import genj.tool.*;
+import genj.lnf.LnFBridge;
 import genj.option.*;
 import genj.io.*;
 
@@ -207,6 +208,24 @@ public class ControlCenter extends JPanel implements ActionListener {
     add(entityPane ,"South");
 
     // Done
+  }
+  
+  /**
+   * Action About
+   */
+  private void actionAbout() {
+    
+    // know the frame already?
+    JFrame frame = getOpenFrame("ABOUT");
+    if (frame==null) {
+      // create it
+      frame = getFrame(App.resources.getString("cc.title.about"),null,"ABOUT");
+      frame.getContentPane().add(new AboutDialog(frame,this));
+    }
+    frame.pack();
+    frame.show();
+
+    // done      
   }
 
   /**
@@ -516,9 +535,8 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     // ABOUT?
     if (e.getActionCommand().equals("ABOUT")) {
-      AboutDialog.showAboutDialog();
+      actionAbout();
       return;
-
     }
 
     // CLOSE ?
@@ -1172,6 +1190,19 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     // Done
     super.removeNotify();
+  }
+  
+  /**
+   * Sets the LookAndFeel
+   */
+  public void setLnF(LnFBridge.LnF lnf, LnFBridge.LnF.Theme theme) {
+    Vector uis = new Vector();
+    uis.add(frame);
+    Enumeration views = View.getAll();
+    while (views.hasMoreElements()) uis.add(views.nextElement());
+    Enumeration frames = openFrames.elements();
+    while (frames.hasMoreElements()) uis.add(frames.nextElement());
+    LnFBridge.getInstance().setLnF(lnf, theme, uis);
   }
 
   /**

@@ -20,7 +20,7 @@
  *
  * AboutDialog class
  * This class creates the content of AboutDialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.3 2002-08-08 20:18:13 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.4 2002-08-09 17:36:43 nmeier Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -29,6 +29,8 @@
 package genj.app;
 
 import genj.Version;
+import genj.lnf.LnFBridge;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -39,7 +41,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import javax.swing.BorderFactory;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -53,21 +58,22 @@ import javax.swing.border.EmptyBorder;
 /**
  * AboutDialog 
  */
-public class AboutDialog {
+public class AboutDialog extends JPanel{
   
-  /** one static frame we keep around */
-  private static JFrame frame;
-
+  /** the frame we're used it */
+  private JFrame frame;
+  
+  /** the control center */
+  private ControlCenter cc;
+  
   /**
-   * main
+   * Constructor
    */
-  public static void showAboutDialog() {
-    
-    // got a frame already?
-    if (frame!=null) {
-      frame.show();
-      return;
-    }
+  public AboutDialog(JFrame setFrame, ControlCenter setCc) {
+
+    // remember    
+    cc=setCc;
+    frame=setFrame;
     
     // create a north panel
     JLabel pNorth = new JLabel(App.resources.getString("cc.about.dialog.northpanel.label"), null, JLabel.CENTER);
@@ -77,7 +83,7 @@ public class AboutDialog {
     JButton bExit = new JButton(App.resources.getString("cc.about.dialog.exit"));
     bExit.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        frame.hide();
+        frame.dispose();
       }
     });
     pSouth.add(bExit);
@@ -90,24 +96,18 @@ public class AboutDialog {
     pCenter.addTab(App.resources.getString("cc.about.dialog.tab5.title"), null, new LookNFeelPanel(), App.resources.getString("cc.about.dialog.tab5.title.tip"));
 
     // create the main panel    
-    JPanel pMain = new JPanel(new BorderLayout());
-    pMain.add(pNorth , BorderLayout.NORTH );
-    pMain.add(pCenter, BorderLayout.CENTER);
-    pMain.add(pSouth , BorderLayout.SOUTH );
+    setLayout(new BorderLayout());
+    add(pNorth , BorderLayout.NORTH );
+    add(pCenter, BorderLayout.CENTER);
+    add(pSouth , BorderLayout.SOUTH );
     
-    // create and show it
-    frame = new JFrame(App.resources.getString("cc.about.dialog.frame"));
-    frame.getContentPane().add(pMain);
-    frame.setSize(480, 300);
-    frame.show();
-
     // done    
   }
 
   /**
    * Helper to read text from a file
    */
-  protected static void readTextFile(JTextArea ta, String file, String fallback) {
+  protected void readTextFile(JTextArea ta, String file, String fallback) {
     try {
       FileInputStream fin = new FileInputStream(file);
       Reader in = new InputStreamReader(fin);
@@ -122,7 +122,7 @@ public class AboutDialog {
   /**
    * Panel - Authors
    */  
-  private static class AuthorsPanel extends JScrollPane {
+  private class AuthorsPanel extends JScrollPane {
 
     /** 
      * Constructor
@@ -153,7 +153,7 @@ public class AboutDialog {
   /**
    * Panel - Welcome
    */  
-  private static class WelcomePanel extends JPanel  {
+  private class WelcomePanel extends JPanel  {
 
     /**
      * Constructor
@@ -183,7 +183,7 @@ public class AboutDialog {
   /**
    * Panel - Copyright
    */  
-  private static class CopyrightPanel extends JPanel {
+  private class CopyrightPanel extends JPanel {
 
     /** 
      * Constructor
@@ -246,7 +246,71 @@ public class AboutDialog {
   /**
    * Panel - Look&Feel
    */
-  private static class LookNFeelPanel extends JPanel {
-  }
+  private class LookNFeelPanel extends JPanel implements ActionListener {
+
+    /** the combobox with lnfs */
+    private JComboBox comboLnfs;
+    
+    /**
+     * Constructor
+     */
+    protected LookNFeelPanel() {
+      
+      super(new BorderLayout());
+      
+      add(getCenter(),BorderLayout.CENTER);
+      add(getSouth (),BorderLayout.SOUTH );
+      
+    }
+    
+    /**
+     * actionPerformed
+     */
+    public void actionPerformed(ActionEvent e) {
+      LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
+      if (lnf==null) return;
+      cc.setLnF(lnf,null);
+    }
+    
+    /**
+     * Center Panel
+     */
+    private JPanel getCenter() {
+      
+      // what are the LnFs
+      Object[] lnfs = LnFBridge.getInstance().getLnFs();
+      
+      // create a combo with LnFs      
+      comboLnfs = new JComboBox(new DefaultComboBoxModel(lnfs));
+      
+      //String key = bridge.getLnFRegistry(lnf).get("themes.key", (String)null);
+      //String[] themes = bridge.getLnFRegistry(lnf).get("themes", new String[0]);
+      
+      // layout
+      JPanel pResult = new JPanel();
+      pResult.add(comboLnfs);      
+      
+      // done
+      return pResult;
+    }
+    
+    /**
+     * South Panel
+     */
+    private JPanel getSouth() {
+      
+      // apply-button
+      JButton bOk = new JButton("Apply");
+      bOk.addActionListener(this);
+      
+      // layout
+      JPanel pResult = new JPanel();
+      pResult.add(bOk);
+      
+      // done
+      return pResult;
+    }
+    
+  } // LookNFeelPanel
   
-} // Closes AboutDialog class
+}
