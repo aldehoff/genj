@@ -20,7 +20,7 @@
  *
  * AboutDialog class
  * This class creates the content of AboutDialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.4 2002-08-09 17:36:43 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.5 2002-08-09 18:26:52 nmeier Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -59,6 +59,8 @@ import javax.swing.border.EmptyBorder;
  * AboutDialog 
  */
 public class AboutDialog extends JPanel{
+  
+  private final static int DEFAULT_ROWS = 16, DEFAULT_COLS = 40;
   
   /** the frame we're used it */
   private JFrame frame;
@@ -130,8 +132,8 @@ public class AboutDialog extends JPanel{
     protected AuthorsPanel() {
 
       // create contained text area
-      JTextArea text = new JTextArea();
-      text.setLineWrap(true);
+      JTextArea text = new JTextArea(DEFAULT_ROWS,DEFAULT_COLS);
+      text.setLineWrap(false);
       text.setWrapStyleWord(true);
       text.setEditable(false);
       
@@ -143,7 +145,7 @@ public class AboutDialog extends JPanel{
       setViewportView(text);      
       
       setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-      setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+      setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
       // done
       
@@ -163,7 +165,7 @@ public class AboutDialog extends JPanel{
       super(new BorderLayout());
         
       // the text
-      JTextArea text = new JTextArea("\n" + App.resources.getString("cc.about.tab1.text1") +"\n\n");
+      JTextArea text = new JTextArea("\n" + App.resources.getString("cc.about.tab1.text1") +"\n\n",DEFAULT_ROWS,DEFAULT_COLS);
       text.setBorder(new EmptyBorder(3, 3, 3, 3));    
       text.setLineWrap(true);
       text.setWrapStyleWord(true);
@@ -202,7 +204,7 @@ public class AboutDialog extends JPanel{
      */
     private JComponent getNorth() {
       
-      JTextArea text = new JTextArea(App.resources.getString("cc.about.tab4.text1"));
+      JTextArea text = new JTextArea(App.resources.getString("cc.about.tab4.text1"),3,DEFAULT_COLS);
       text.setLineWrap(true);
       text.setWrapStyleWord(true);
       text.setEditable(false);
@@ -223,18 +225,17 @@ public class AboutDialog extends JPanel{
     private JComponent getCenter() {
           
       // the text    
-      JTextArea text = new JTextArea();
+      JTextArea text = new JTextArea(DEFAULT_ROWS,DEFAULT_COLS);
       String path = System.getProperty("user.dir") + File.separatorChar + "doc" + File.separatorChar + "gpl.txt";
       readTextFile(text, path, App.resources.getString("cc.about.file_missing.text") + path);
-      text.setLineWrap(true);
-      text.setWrapStyleWord(true);
+      text.setLineWrap(false);
       text.setEditable(false);
       text.setBorder(new EmptyBorder(3, 3, 3, 3));
       
       // a scroller
       JScrollPane scroll = new JScrollPane(text);
       scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-      scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+      scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
       scroll.setBorder(BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab4.text2.title")));
       
       // done

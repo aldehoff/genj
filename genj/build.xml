@@ -285,9 +285,10 @@
   </target>
 
   <!--
-   Run.preparation
+   Run
    -->
-  <target name="run.init" depends="compile">
+  <target name="run" depends="compile">
+
     <mkdir dir="${dir.run}"/>
     <copy todir="${dir.run}/report">
       <fileset dir="${dir.build}/classes/report"/>
@@ -295,21 +296,17 @@
     <copy todir="${dir.run}/gedcom">
       <fileset dir="./gedcom"/>
     </copy>
-    <copy todir="${dir.run}/lnf">
-      <fileset dir="./lnf"/>
+    <copy todir="${dir.run}/doc">
+      <fileset dir="./doc"/>
     </copy>
     <antcall target="dist.help.language.files">
         <param name="language" value="en"/>
       <param name="dir.help" value="${dir.run}/help"/>
     </antcall>
-  </target>
 
-  <!--
-   Run
-   -->
-  <target name="run" depends="run.init">
     <java classname="genj.app.App" fork="true" dir="${dir.run}">
        <classpath refid="project.class.path"/>
+       <sysproperty key="genj.lnf.dir" value="${dir.lnf}"/>
     </java>
   </target>
 
