@@ -33,7 +33,7 @@ public class ReportAges extends Report {
    * Returns the name of this report - should be localized.
    */
   public String getName() {
-    return "Ages";
+    return i18n("ages");
   }
 
   /**
@@ -41,7 +41,7 @@ public class ReportAges extends Report {
    * @return Information as String
    */
   public String getInfo() {
-    return "This report prints out the age of an individual at all events";
+    return i18n("info");
   }
 
   /**
@@ -61,7 +61,7 @@ public class ReportAges extends Report {
 
     // Show the users in a combo to the user
     Indi indi = (Indi)getEntityFromUser(
-      "Please select an individual", // msg
+      i18n("select"), // msg
       gedcom,                        // our gedcom instance
       Gedcom.INDIVIDUALS,            // type INDIVIDUALS
       "INDI:NAME"                    // sort by name
@@ -85,7 +85,7 @@ public class ReportAges extends Report {
 
     // Give up if no birth date
     if (indi.getBirthDate() == null) {
-      println("no birth date");
+      println(i18n("noresult"));
       return;
     }
 
@@ -109,7 +109,7 @@ public class ReportAges extends Report {
     }
 
     // in case no DEAT, or if he were alive today
-    println("Since birth: " + indi.getAgeString(PointInTime.getNow()));
+    println(i18n("sincebirth") + indi.getAgeString(PointInTime.getNow()));
   }
 
 } //ReportAges
