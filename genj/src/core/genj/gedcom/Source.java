@@ -133,4 +133,14 @@ public class Source extends PropertySource implements Entity {
   public String toString() {
     return getId()+":"+super.toString();
   }
-}
+  
+  /**
+   * @see genj.gedcom.Entity#addLink(Property, String)
+   */
+  public void addLink(Property owner, String tag) {
+    // Create note on owner's end
+    owner.addProperty(new PropertySource(this));
+    // done
+  }
+
+} //Source

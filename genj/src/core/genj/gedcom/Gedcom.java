@@ -209,14 +209,15 @@ public class Gedcom {
     if (!ids[type].contains(which.getId()))
       throw new GedcomException("Unknown entity with id "+which.getId());
 
+    // Tell it
+    which.delNotify();
+
     // Notify deletion
     noteDeletedEntity(which);
 
     // Delete it
     entities[type].remove(which);
     ids     [type].remove(which);
-
-    which.delNotify();
 
     // Done
   }

@@ -134,4 +134,14 @@ public class Submitter extends PropertySubmitter implements Entity {
   public String toString() {
     return getId()+":"+super.toString();
   }
-}
+  
+  /**
+   * @see genj.gedcom.Entity#addLink(Property, String)
+   */
+  public void addLink(Property owner, String tag) {
+    // Create submitter on owner's end
+    owner.addProperty(new PropertySubmitter(this));
+    // done
+  }
+  
+} //Submitter

@@ -123,4 +123,14 @@ public class Media extends PropertyMedia implements Entity {
   public void setId(String id) {
     this.id=id;
   }
-}
+
+  /**
+   * @see genj.gedcom.Entity#addLink(Property, String)
+   */
+  public void addLink(Property owner, String tag) {
+    // Create media on owner's end
+    owner.addProperty(new PropertyMedia(this));
+    // done
+  }
+  
+} //Media

@@ -65,14 +65,14 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
   /**
    * Set the root
    */
-  public void setRoot(Entity entity) {
+  public void setEntity(Entity entity) {
     // remember history
     if (root!=null) {
       history.push(root.getEntity());
       if (history.size()>16) history.removeElementAt(0);
     }
     // change
-    root = entity==null ? null : entity.getProperty();
+    root = entity!=null?entity.getProperty():null;
     fireStructureChanged();
   }
   
@@ -82,10 +82,10 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
   public void setPrevious() {
     // is there one?
     if (history.isEmpty()) return;
+    // don't want current to end up on the stack
+    root = null;
     // set it
-    setRoot((Entity)history.pop());
-    // don't want it on the stack though
-    history.pop();
+    setEntity((Entity)history.pop());
     // done
   }
   
@@ -183,6 +183,14 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
     return root;
   }          
   
+  /** 
+   * Returns root of tree
+   */
+  public Entity getEntity() {
+    if (root==null) return null;
+    return root.getEntity();
+  }
+  
   /**
    * Tells wether object is a leaf
    */
@@ -220,7 +228,8 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
       }
       // Is this a show stopper at this point?
       if (affected==true) {
-        setRoot(null);
+        root=null;
+        fireStructureChanged();
         return;
       }
       // continue

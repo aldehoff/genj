@@ -135,6 +135,13 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     if (entity instanceof Indi) createActions(result, (Indi)entity);
     // fam?
     if (entity instanceof Fam) createActions(result, (Fam)entity);
+    // add standards
+    result.add(ActionDelegate.NOOP);
+    result.add(new CreateLinked(entity, Gedcom.NOTES       , Images.imgNewNote      ));
+    result.add(new CreateLinked(entity, Gedcom.MULTIMEDIAS , Images.imgNewMedia     ));
+    result.add(new CreateLinked(entity, Gedcom.SOURCES     , Images.imgNewSource    ));
+    result.add(new CreateLinked(entity, Gedcom.SUBMITTERS  , Images.imgNewSubmitter ));
+    result.add(new CreateLinked(entity, Gedcom.REPOSITORIES, Images.imgNewRepository));
     // add delete
     result.add(ActionDelegate.NOOP);
     result.add(new Delete(entity));
@@ -175,8 +182,6 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi) {
-    result.add(new CreateLinked(indi, Gedcom.NOTES, Images.imgNewNote));
-    result.add(new CreateLinked(indi, Gedcom.MULTIMEDIAS, Images.imgNewMedia));
     /*
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.child"  , indi));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.parent", indi));
@@ -188,8 +193,6 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    * Create actions for Families
    */
   private void createActions(List result, Fam fam) {
-    result.add(new CreateLinked(fam, Gedcom.NOTES, Images.imgNewNote));
-    result.add(new CreateLinked(fam, Gedcom.MULTIMEDIAS, Images.imgNewMedia));
     /*
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0 , "new.child"  , fam));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.husband", fam));
@@ -308,7 +311,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
      * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
      */
     protected String getConfirmMessage() {
-      // You are about to create a {0} in {1}! This entity is not connected ...
+      // You are about to create a {0} in {1}!\nThis entity will not ...
       return resources.getString("confirm.new.free", new String[] { 
         Gedcom.getNameFor(type,false), gedcom.getName() 
       });
@@ -339,9 +342,9 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
      * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
      */
     protected String getConfirmMessage() {
-      // You are about to add a {0} to {1} in {2}!
+      // You are about to create a {0} in {1}!\n{2} will point to this new entity through a link in its property {3}.
       return resources.getString("confirm.new.linked", new String[] { 
-        Gedcom.getNameFor(type,false), gedcom.getName(), owner.getId()
+        Gedcom.getNameFor(type,false), gedcom.getName(), owner.getId(), Gedcom.getTagFor(type)
       });
     }
     /**
@@ -349,10 +352,10 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
      */
     protected void change() throws GedcomException {
       // create the entity
-      //focus = gedcom.createEntity(type, null);
-      //focus.getProperty().addDefaultProperties();
+      focus = gedcom.createEntity(type, null);
+      focus.getProperty().addDefaultProperties();
       // add it to the owner
-      
+      focus.addLink(owner.getProperty(), "");
       // done
     }
   } //CreateConnected

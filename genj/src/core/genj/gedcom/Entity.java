@@ -81,4 +81,10 @@ public interface Entity {
    */
   public void addForeignXRef(PropertyForeignXRef fxref);
 
-}
+  /**
+   * Adds a link to this entity to given 'new' owner
+   * with suggested tag
+   */
+  public void addLink(Property owner, String tag);
+
+} //Entity

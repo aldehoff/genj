@@ -87,9 +87,6 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
   /** the gedcom we're looking at */
   private Gedcom    gedcom;
   
-  /** the current entity&property */
-  private Entity    currentEntity;
-  
   /** the frame we're in */
   private Frame     frame;
 
@@ -105,8 +102,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
                             actionButtonUp,
                             actionButtonDown,
                             actionButtonReturn,
-                            actionSticky,
-                            actionContextMenu;
+                            actionSticky;
 
   /** everything for the tree */
   private PropertyTree      tree = null;
@@ -165,7 +161,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
 
     // Remember registry
     registry.put("divider",getDividerLocation());
-    registry.put("last", currentEntity!=null?currentEntity.getId():"");
+    registry.put("last", getCurrentEntity()!=null?getCurrentEntity().getId():"");
     registry.put("sticky", actionSticky!=null&&actionSticky.isSelected());
 
     // Continue
@@ -274,7 +270,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
    * @see genj.view.EntityPopupSupport#getEntityAt(Point)
    */
   public Object getContextAt(Point pos) {
-    return currentEntity;
+    return getCurrentEntity();
   }
   
   /**
@@ -296,7 +292,6 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     actionButtonDown   = bh.create(new ActionPropertyUpDown(false));
     actionButtonReturn = bh.setEnabled(true).create(new ActionBack());
     actionSticky       = bh.create(new ActionSticky());
-    actionContextMenu  = bh.create(new ActionContextMenu());
     
     actionSticky.setSelected(registry.get("sticky",false));
 
@@ -314,7 +309,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
    * returns the currently viewed entity
    */
   /*package*/ Entity getCurrentEntity() {
-    return currentEntity;
+    return tree.getPropertyModel().getEntity();
   }
   
   /**
@@ -323,28 +318,17 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
   /*pacakge*/ void setEntity(Entity entity) {
 
     // already?
-    if (currentEntity==entity) return;
+    if (getCurrentEntity()==entity) return;
 
     // Try to stop old editing first
     stopEdit(true);
 
-    // Remember entity
-    currentEntity=entity;
-
     // Reset tree model
-    tree.setRoot(currentEntity);
+    tree.setEntity(entity);
 
     // Pre-selected editing node ?
-    if ((currentEntity!=null)&&(tree.isShowing())) {
+    if ((entity!=null)&&(tree.isShowing())) {
       tree.setSelectionRow(0);
-    }
-    
-    // context-menu button
-    if (actionContextMenu!=null) {
-      ImgIcon img;
-      if (currentEntity==null) img = Gedcom.getImage();
-      else img = Gedcom.getImage(currentEntity.getType());
-      actionContextMenu.setIcon(ImgIconConverter.get(img));
     }
     
     // Done
@@ -413,7 +397,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
 
     // Prepare for finishing changed and finish
     if (commit&&currentProxy!=null&&currentProxy.hasChanged()) {
-      Gedcom gedcom = currentEntity.getGedcom();
+      Gedcom gedcom = getCurrentEntity().getGedcom();
       if (gedcom.startTransaction()) {
         currentProxy.finish();
         gedcom.endTransaction();
@@ -432,24 +416,6 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     // Done
   }
 
-  /**
-   * Action - show context menu
-   */
-  private class ActionContextMenu extends ActionDelegate {
-    /**
-     * Constructor
-     */
-    private ActionContextMenu() {
-      super.setImage(currentEntity==null ? Gedcom.getImage() : Gedcom.getImage(currentEntity.getType()));
-    }
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-      ViewManager.getInstance().showContextMenu(actionContextMenu, new Point(0,0), gedcom, currentEntity);
-    }
-  } //ActionContextMenu
-  
   /**
    * Action - toggle
    */
@@ -476,7 +442,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     }
     /** run */
     protected void execute() {
-      tree.setPrevious();
+      tree.getPropertyModel().setPrevious();
     }
   } //ActionBack
   
@@ -494,10 +460,10 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     protected void execute() {
   
       // Depending on Gedcom of current entity
-      if (currentEntity==null)
-        return;
+      Entity entity = getCurrentEntity();
+      if (entity==null) return;
   
-      Gedcom gedcom = currentEntity.getGedcom();
+      Gedcom gedcom = entity.getGedcom();
   
       // .. Stop Editing
       stopEdit(true);
@@ -561,7 +527,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
         Property pdate = ((PropertyEvent)select).getDate(false);
         if (pdate!=null) select = pdate;
       }
-      tree.setSelectionPath(new TreePath(currentEntity.getProperty().getPathTo(select)));
+      tree.setSelectionPath(new TreePath(entity.getProperty().getPathTo(select)));
       
       // done
     }
@@ -629,7 +595,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
         }
   
         if (veto==null) {
-          currentEntity.getProperty().delProperty( prop );
+          getCurrentEntity().getProperty().delProperty( prop );
           changed = true;
         }
   
@@ -672,7 +638,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
       if (!gedcom.startTransaction()) return;
   
       // .. Calculate property that is moved
-      currentEntity.getProperty().moveProperty(
+      getCurrentEntity().getProperty().moveProperty(
         prop,
         up? Property.UP : Property.DOWN
       );
@@ -720,18 +686,17 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     }
 
     /**
-     * Returns to the previous entity
+     * Access to the underlying model
      */
-    private void setPrevious() {
-      ((PropertyTreeModel)getModel()).setPrevious();
-      expandRows();
+    private PropertyTreeModel getPropertyModel() {
+      return (PropertyTreeModel)getModel();
     }
 
     /**
      * Prepare the tree-model that lies behind the tree.
      */
-    private void setRoot(Entity root) {
-      ((PropertyTreeModel)getModel()).setRoot(root);
+    private void setEntity(Entity entity) {
+      getPropertyModel().setEntity(entity);
       expandRows();
     }
     

@@ -62,6 +62,9 @@ public class Note extends PropertyNote implements Entity {
     // Remove all foreign XRefs
     foreignXRefs.deleteAll();
 
+    // Delete all properties
+    getProperty().delAllProperties();
+
     // Break connection
     this.gedcom = null;
   }
@@ -130,6 +133,15 @@ public class Note extends PropertyNote implements Entity {
    */
   public String toString() {
     return getId()+":"+super.toString();
+  }
+  
+  /**
+   * @see genj.gedcom.Entity#addLink(Property, String)
+   */
+  public void addLink(Property owner, String tag) {
+    // Create note on owner's end
+    owner.addProperty(new PropertyNote(this));
+    // done
   }
   
 } //Note

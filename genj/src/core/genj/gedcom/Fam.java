@@ -334,5 +334,12 @@ public class Fam extends PropertyFam implements Entity {
   public void addForeignXRef(PropertyForeignXRef fxref) {
     throw new RuntimeException("Not supported yet");
   }
+
+  /**
+   * @see genj.gedcom.Entity#addLink(Property, String)
+   */
+  public void addLink(Property owner, String tag) {
+    // done
+  }
   
-}
+} //Fam
