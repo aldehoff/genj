@@ -33,6 +33,7 @@ Future
 
 1.9 - Aug xx 2002
 
+  N Top button bar allows to toggle "text under button icons' with popup
   I refactored multi-threading into ActionDelegate (ReportView and ControlCenter)
   I file .properties for file .ged is loaded from same location but stored in user.home (local takes precendence)
   N New Report ReportExec which allows to execute a command line tool

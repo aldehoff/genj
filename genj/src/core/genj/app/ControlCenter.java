@@ -54,6 +54,7 @@ public class ControlCenter extends JPanel {
   private ControlCenter me;
   private Registry registry;
   private Vector gedcomButtons = new Vector();
+  private Vector tniButtons = new Vector();
 
   /**
    * Constructor
@@ -111,32 +112,40 @@ public class ControlCenter extends JPanel {
     // wether we're showing text on the buttons, too    
     boolean imageAndText = registry.get("imagesandtext", false);
     
-    // the result
-    JPanel result = new JPanel();
-    if (imageAndText) result.setLayout(new GridLayout());
-    else result.setLayout(new BoxLayout(result,BoxLayout.X_AXIS));
-
     // .. Buttons
+    JPanel pButtons = new JPanel(new GridLayout());
     ButtonHelper bh = new ButtonHelper()
       .setResources(App.resources)
       .setInsets(4)
       .setFocusable(false)
-      .setContainer(result)
+      .setContainer(pButtons)
       .setTextAllowed(imageAndText)
       .setShortTexts(true)
-      .setImageOverText(imageAndText)
-      .setFontSize(10);
+      .setImageOverText(true)
+      .setFontSize(10)
+      .addCollection(tniButtons);
 
     bh.setEnabled(true).create(new ActionOpen());
     
-    bh.setEnabled(false).setCollection(gedcomButtons);
+    bh.setEnabled(false).addCollection(gedcomButtons);
     ViewManager.Descriptor[] ds=ViewManager.getInstance().getDescriptors();
     for (int i=0; i<ds.length; i++) {
       JButton b = bh.create(new ActionView(ds[i]));
     }
     
-    bh.setEnabled(true).setCollection(null);
+    bh.setEnabled(true).removeCollection(gedcomButtons);
     bh.create(new ActionSettings());
+
+    // the result
+    JPanel result = new JPanel(new BorderLayout());
+    result.add(pButtons, BorderLayout.WEST);
+    result.add(Box.createGlue(), BorderLayout.CENTER);
+    
+    // Menu
+    MenuHelper mh = new MenuHelper()
+      .setResources(App.resources);
+    mh.createPopup(null, result);
+    mh.createItem(new ActionToggleTnI());
 
     // done
     return result;
@@ -156,18 +165,18 @@ public class ControlCenter extends JPanel {
       .setInsets(4)
       .setFocusable(false)
       .setContainer(result)
-      .setCollection(gedcomButtons)
+      .addCollection(gedcomButtons)
       .setEnabled(false);
       
     bh.create(new ActionCreate(Gedcom.INDIVIDUALS, Images.imgNewIndi, "cc.tip.create_indi"));
     bh.create(new ActionCreate(Gedcom.FAMILIES, Images.imgNewFam, "cc.tip.create_fam"));
     bh.create(new ActionCreate(Gedcom.MULTIMEDIAS, Images.imgNewMedia, "cc.tip.create_media"));
     bh.create(new ActionCreate(Gedcom.NOTES, Images.imgNewNote, "cc.tip.create_note"));
-    bh.setCollection(null);
+    bh.removeCollection(gedcomButtons);
     bh.create(new ActionCreate(Gedcom.SOURCES, Images.imgNewSource, "cc.tip.create_source"));
     bh.create(new ActionCreate(Gedcom.SUBMITTERS, Images.imgNewSubmitter, "cc.tip.create_submitter"));
     bh.create(new ActionCreate(Gedcom.REPOSITORIES, Images.imgNewRepository, "cc.tip.create_repository"));
-    bh.setCollection(gedcomButtons);
+    bh.addCollection(gedcomButtons);
     bh.create(new ActionDelete());
 
     // done
@@ -194,7 +203,7 @@ public class ControlCenter extends JPanel {
       mh.createSeparator().setEnabled(true).setCollection(null);
       mh.createItem(new ActionExit());
 
-    mh.setMenu(null).createMenu("cc.menu.view");
+    mh.popMenu().createMenu("cc.menu.view");
     
       mh.setEnabled(false).setCollection(gedcomButtons);    
       ViewManager.Descriptor[] ds=ViewManager.getInstance().getDescriptors();
@@ -202,7 +211,7 @@ public class ControlCenter extends JPanel {
         mh.createItem(new ActionView(ds[i]));
       mh.setEnabled(true).setCollection(null);    
 
-    mh.setMenu(null).createMenu("cc.menu.tools");
+    mh.popMenu().createMenu("cc.menu.tools");
 
       mh.setEnabled(false).setCollection(gedcomButtons);    
       mh.createItem(new ActionMerge());
@@ -211,7 +220,7 @@ public class ControlCenter extends JPanel {
 
     result.add(Box.createHorizontalGlue());
 
-    mh.setMenu(null).createMenu("cc.menu.help");
+    mh.popMenu().createMenu("cc.menu.help");
     
       mh.createItem(new ActionHelp());
       mh.createItem(new ActionAbout());
@@ -233,6 +242,22 @@ public class ControlCenter extends JPanel {
       );
     }
   } //GedcomFileChooser
+
+  /**
+   * Action - toggle text&images
+   */
+  private class ActionToggleTnI extends ActionDelegate { 
+    /** constructor */
+    protected ActionToggleTnI() {
+      super.setText("cc.menu.tni");
+    }
+    /** run */
+    protected void execute() {
+      boolean set = !registry.get("imagesandtext", false);
+      registry.put("imagesandtext",set);
+      ButtonHelper.setTextAllowed(tniButtons, set);
+    } 
+  }
 
   /**
    * Action - about
