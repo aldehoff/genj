@@ -5,6 +5,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import java.util.Arrays;
+
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
@@ -111,12 +113,17 @@ public class ReportSameValues extends Report {
     Item[] items = new Item[sameProps.length];
     for (int i=0; i<items.length; i++) {
 
+      // "Birth, Meier, Nils (I001)"
       Property prop = sameProps[i];      
-      Entity ent = prop.getEntity();
-      String txt = ent.getId() + ' ' + ent.toString() + ' ' + prop.getPath();
+      Property parent = prop.getParent();
+      String txt = (parent!=null?parent.getName():"") + ", " +prop.getEntity();
 
+      // one item for each
     	items[i] = new Item(txt, prop.getImage(false), prop);
     }
+    
+    // sort 'em
+    Arrays.sort(items);
     
     // show 'em
     showItemsToUser( i18n("xname",val), gedcom, items);
