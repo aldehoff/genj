@@ -59,6 +59,13 @@ public class PropertyAge extends Property {
   public String getTag() {
     return TAG;
   }
+  
+  /**
+   * Label for Age
+   */
+  public static String getLabelForAge() {
+    return Gedcom.getName(TAG);
+  }
 
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
