@@ -59,7 +59,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -409,8 +408,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     public void addNotify() {
       // continue with super
       super.addNotify();
-      // register for tooltips
-      ToolTipManager.sharedInstance().registerComponent(this);
+      // setup listening
       addMouseMotionListener(this);
       Almanac.getInstance().addChangeListener(this);
     }
@@ -419,8 +417,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
      * un-init on remove
      */
     public void removeNotify() {
-      // un-register for tooltips
-      ToolTipManager.sharedInstance().unregisterComponent(this);
+      // setup listening
       removeMouseMotionListener(this);
       Almanac.getInstance().removeChangeListener(this);
       // continue with super
@@ -465,7 +462,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
         getFontMetrics(getFont()).getHeight()+1
       );
     }
-
+    
     /**
      * ignored
      */
@@ -488,7 +485,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
 	      if (almanac.hasNext()) {
 		      text.append("<html><body>");
 		      for (int i=0;i<10&&almanac.hasNext();i++) {
-		        text.append("<div>");
+		        text.append("<div width=\""+TimelineView.this.getWidth()/2+"\">");
 		        text.append(almanac.next());
 		        text.append("</div>");
 		      }
