@@ -26,7 +26,7 @@ import java.util.Collection;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.56 2004-03-21 15:06:32 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.57 2004-06-19 15:52:50 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -774,23 +774,7 @@ public class ReportGedcomStatistics extends Report {
     private void printAges(int printIndis, int indent, StatisticsIndividuals stats, int which) {
         
         int[] age;
-/*        
-        println("maxAge: "+stats.maxAge);
-        println("number maxAge: "+stats.age.getReferences(new Integer(stats.maxAge)).size());
-        Iterator max = stats.age.getReferences(new Integer(stats.maxAge)).iterator();
-        while(max.hasNext()) {
-            Indi indi = (Indi)max.next();
-            println("@"+indi.getId()+"@ "+indi);
-        }
-        
-        println("minAge: "+stats.minAge);
-        println("number minAge: "+stats.age.getReferences(new Integer(stats.minAge)).size());
-        Iterator min = stats.age.getReferences(new Integer(stats.minAge)).iterator();
-        while(min.hasNext()) {
-            Indi indi = (Indi)min.next();
-            println("@"+indi.getId()+"@ "+indi);
-        }
-*/        
+       
         switch(which) {
             case INDIS:
             case MARRIAGE:
@@ -831,7 +815,6 @@ public class ReportGedcomStatistics extends Report {
                         age = calculateAverageAge(stats.sumChildBirthAge,1);
                         println(getIndent(indent, SPACES_PER_LEVEL, getFront(indent))+new Delta(age[2], age[1], age[0])+" "+i18n("oneIndi"));
                         if(printIndis<3) {
-//                            Indi indi = (Indi)new ArrayList(stats.childBirthAge.getReferences((Integer)stats.childBirthAge.getKeys().get(0))).get(0);
                             String[] output = {indi.getId(), indi.getName()};
                             println(getIndent(indent+1, SPACES_PER_LEVEL, getFront(indent+1))+i18n("entity", output));
                         }
