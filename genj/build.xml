@@ -31,7 +31,7 @@
    Initialization
    -->
   <target name="init">
-    <echo>Creating output directories</echo>
+    <echo level="info">Creating output directories</echo>
     <mkdir dir="${dir.build}"/>
     <mkdir dir="${dir.run}"/>
     <mkdir dir="${dir.dist}"/>
@@ -42,9 +42,9 @@
    Contrib Compilation
    -->
   <target name="compile.contrib" depends="init">
-    <echo>**********************************************</echo>
-    <echo>*** Note: JDK 1.4 required for compilation ***</echo>
-    <echo>**********************************************</echo>
+    <echo level="info">**********************************************</echo>
+    <echo level="info">*** Note: JDK 1.4 required for compilation ***</echo>
+    <echo level="info">**********************************************</echo>
     <mkdir dir="${dir.build}/classes/contrib"/>
     <javac srcdir="src/contrib" destdir="${dir.build}/classes/contrib"
            debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
@@ -56,9 +56,9 @@
    Core Compilation
    -->
   <target name="compile.core" depends="init">
-    <echo>**********************************************</echo>
-    <echo>*** Note: JDK 1.4 required for compilation ***</echo>
-    <echo>**********************************************</echo>
+    <echo level="info">**********************************************</echo>
+    <echo level="info">*** Note: JDK 1.4 required for compilation ***</echo>
+    <echo level="info">**********************************************</echo>
     <mkdir dir="${dir.build}/classes/core"/>
     <javac srcdir="src/core" destdir="${dir.build}/classes/core"
            debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
@@ -87,7 +87,7 @@
    Cleaning
    -->
   <target name="clean">
-    <echo>Cleaning output directories</echo>
+    <echo level="info">Cleaning output directories</echo>
     <delete dir="${dir.build}"/>
     <delete dir="${dir.run}"/>
     <delete dir="${dir.dist}"/>
@@ -97,7 +97,7 @@
    Version
    -->
   <target name="version">
-    <echo>Generating version number</echo>
+    <echo level="info">Generating version number</echo>
     <mkdir dir="${dir.build}/version/genj"/>
   	<tstamp>
       <format property="now" pattern="yyyy/MM/dd HH:mm:ss"/>
@@ -289,7 +289,7 @@
    -->
   <target name="dist" depends="init,compile,version,dist.languages,dist.applet,dist.app,dist.help">
 
-     <echo>You can find the distribution bits in ${dir.dist}</echo>
+     <echo level="info">You can find the distribution bits in ${dir.dist}</echo>
 
   </target>
 
@@ -297,7 +297,7 @@
    JavaDoc
    -->
   <target name="javadoc" depends="init">
-    <echo>Generating API documentation</echo>
+    <echo level="info">Generating API documentation</echo>
     <mkdir dir="${dir.build}/javadoc"/>
     <javadoc destdir="${dir.build}/javadoc"
              link="http://java.sun.com/j2se/1.4/docs/api"
@@ -320,7 +320,7 @@
    -->
   <target name="run" depends="compile">
 
-    <echo>Generating and running GenJ test-run</echo>
+    <echo level="info">Generating and running GenJ test-run</echo>
 
     <mkdir dir="${dir.run}"/>
     <copy todir="${dir.run}/report">
@@ -397,15 +397,15 @@
    Information about classpath
    -->
   <target name="classpath" depends="dist">
-    <echo>Classpath is: ${project.class.path}</echo>
+    <echo level="info">Classpath is: ${project.class.path}</echo>
   </target>
 
   <!--
    About
    -->
   <target name="about">
-    <echo>GenJ - Build ${app.version}</echo>
-    <echo>Please specify one of the basic options: clean, run or dist</echo>
+    <echo level="info">GenJ - Build ${app.version}</echo>
+    <echo level="info">Please specify one of the basic options: clean, run or dist</echo>
   </target>
 
 </project>
