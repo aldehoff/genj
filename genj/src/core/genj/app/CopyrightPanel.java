@@ -20,11 +20,12 @@
  * About Menu class - Copyright
  * This class creates the content on the Copyright tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/CopyrightPanel.java,v 1.4 2002-05-18 07:31:26 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/CopyrightPanel.java,v 1.5 2002-05-20 16:41:04 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
- * @version 1.0
+ * @version 1.1
  *
  */
+
 
 package genj.app;
 
@@ -35,6 +36,7 @@ import javax.swing.border.*;
 // Import for layout manager.
 import java.awt.*;
 import java.io.*;
+import java.util.*;
 
 
 public class CopyrightPanel extends JPanel
@@ -89,7 +91,9 @@ public class CopyrightPanel extends JPanel
     panelGpl.setBackground(Color.white);
     panelGpl.setBorder(BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab4.text2.title")));
     taGpl = new JTextArea();
-    readTextFile(taGpl, "./doc/gpl.txt", App.resources.getString("cc.about.tab4.text2"));
+    // We give the path for the gpl.txt file, using a platform-independant construction
+    String pathAndFileToGPLDoc = System.getProperty("user.dir") + File.separatorChar + "doc" + File.separatorChar + "gpl.txt";
+    readTextFile(taGpl, pathAndFileToGPLDoc, App.resources.getString("cc.about.tab4.text2"));
     taGpl.setFont(new Font("Times-Roman", Font.PLAIN, 12));
     taGpl.setLineWrap(true);
     taGpl.setWrapStyleWord(true);
