@@ -1,9 +1,9 @@
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyDate;
 import genj.report.Report;
 import genj.report.ReportBridge;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -110,7 +110,30 @@ public class ReportBirthdays implements Report {
       }
     }
 
-    Comparator comparator = new PropertyComparator("INDI:BIRT:DATE");
+    // Sort the individuals by day of month
+    Comparator comparator = new Comparator() {
+      // LCD
+      public int compare(Object o1, Object o2) {
+        // O.K. here are the birthdays (might be null!)
+        PropertyDate b1 = ((Indi)o1).getBirthDate();
+        PropertyDate b2 = ((Indi)o2).getBirthDate();
+
+        // So we check whether we can get the day information
+        int
+         d1 = b1!=null ? b1.getStart().getDay() : 0,
+         d2 = b2!=null ? b2.getStart().getDay() : 0;
+
+        // Comparison at last
+        return d1-d2;
+      }
+      // EOC
+    };
+    
+    // Change comparator here if you'd rather like to 
+    // sort by year+day
+    //
+    // Comparator comparator = new genj.gedcom.PropertyComparator("INDI:BIRT:DATE");
+    //
     Collections.sort(candidates, comparator);
 
     // Show birthdays
