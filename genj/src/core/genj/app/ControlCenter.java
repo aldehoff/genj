@@ -37,18 +37,22 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.ProgressWidget;
+import genj.view.ContextSupport;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -105,8 +109,32 @@ public class ControlCenter extends JPanel {
     windowManager = winManager;
     printManager = new PrintManager(new Registry(setRegistry, "print"), windowManager);
     viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager, FACTORIES);
+    
     // Table of Gedcoms
     tGedcoms = new GedcomTableWidget(registry);
+    tGedcoms.addMouseListener(new MouseAdapter() {
+      public void mouseClicked(MouseEvent e) {
+        mouseReleased(e);
+      }
+      public void mouseReleased(MouseEvent e) {
+        // waiting for popup trigger
+        if (!e.isPopupTrigger())
+          return;
+        // check row
+        int row = tGedcoms.rowAtPoint(e.getPoint());
+        if (row<0)
+          return;
+        // make sure it's selected
+        tGedcoms.getSelectionModel().setSelectionInterval(row,row);
+        // show context-menu
+        Gedcom gedcom = tGedcoms.getSelectedGedcom();
+        List actions = new ArrayList();
+        actions.add(new ActionClose());
+        actions.add(new ActionSave(false));
+        ContextSupport.Context context = new ContextSupport.Context(null, actions); 
+        viewManager.showContextMenu(tGedcoms, e.getPoint(), gedcom, context);
+      }
+    });
 
     // ... Listening
     tGedcoms.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -769,9 +797,9 @@ public class ControlCenter extends JPanel {
       this.ask = ask;
       // text
       if (ask)
-        super.setText("cc.menu.saveas");
+        super.setText(resources.getString("cc.menu.saveas"));
       else
-        super.setText("cc.menu.save");
+        super.setText(resources.getString("cc.menu.save"));
       // setup
       super.setImage(Images.imgSave);
       super.setAsync(ASYNC_NEW_INSTANCE);
@@ -960,7 +988,7 @@ public class ControlCenter extends JPanel {
   private class ActionClose extends ActionDelegate {
     /** constructor */
     protected ActionClose() {
-      super.setText("cc.menu.close");
+      super.setText(resources.getString("cc.menu.close"));
       super.setImage(Images.imgClose);
     }
     /** run */
