@@ -48,8 +48,8 @@ public class PrintManager {
   //private final static double CM2PRINTUNIT = 1/2.54 * 72;
   
   /** the default resolution in dots per cm */
-  private final static Point2D.Double resolution = 
-    new Point2D.Double(72/2.54, 72/2.54);
+//  private final static Point2D.Double resolution = 
+//    new Point2D.Double(72/2.54, 72/2.54);
 
   /** singleton */
   private static PrintManager instance = null;
@@ -147,10 +147,11 @@ public class PrintManager {
       }
 
       // calculate pages
-      Point pages = renderer.calcPages(
-        new Point2D.Double(pageFormat.getImageableWidth(),pageFormat.getImageableHeight()),
-        resolution
-      );   
+      // FIXME fix resolution if required (e.g. 300)
+      Point2D.Double resolution = new Point2D.Double(72/2.54, 72/2.54);
+      Point2D.Double size = new Point2D.Double(pageFormat.getImageableWidth(),pageFormat.getImageableHeight());
+      
+      Point pages = renderer.calcPages(size, resolution);   
 
       // safety check
       if (pages.x==0||pages.y==0) 
@@ -241,6 +242,15 @@ public class PrintManager {
         pageFormat.getImageableHeight()
       ));
       
+      // FIXME fix resolution if required (e.g. 300)
+      double factor = 300D/72; 
+      g.scale(1/factor, 1/factor);
+      Point2D.Double resolution = new Point2D.Double(300/2.54, 300/2.54);
+      Point2D.Double size = new Point2D.Double(
+        pageFormat.getImageableWidth() * factor,
+        pageFormat.getImageableHeight()* factor
+      );
+
       // render it
       renderer.renderPage(g, page, resolution);
       

@@ -47,8 +47,12 @@ public class TreeViewPrinter implements Printer {
     renderer.cFamShape      = Color.black;
     renderer.cIndiShape     = Color.black;
     renderer.cUnknownShape  = Color.black;
-    renderer.indiRenderer   = tree.getEntityRenderer(Gedcom.INDIVIDUALS);
-    renderer.famRenderer    = tree.getEntityRenderer(Gedcom.FAMILIES   );
+    renderer.indiRenderer   = tree.getEntityRenderer(Gedcom.INDIVIDUALS)
+      .setFontFactor((float)(resolution.getY()*2.54D/72));
+    renderer.famRenderer    = tree.getEntityRenderer(Gedcom.FAMILIES   )
+      .setFontFactor((float)(resolution.getY()*2.54D/72));
+    
+    //FIXME : shouldn't font factor be derived automatically and what about images?
     renderer.render(graphics, tree.getModel());
 
   }
