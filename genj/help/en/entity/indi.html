@@ -1,0 +1,76 @@
+<HTML>
+
+<BODY>
+<H2>Individual</H2>
+
+<P>
+Gedcom information mostly revolves about individuals. That's you, your father,
+your children and any other ancestor or descendant. By clicking on the small
+symbol <img src="../images/Indi.gif"></img> in the <A href="../cc.html">Control Center</A>
+you can very easily enter new information for individuals you know about.
+</P>
+
+<P>
+The creation asks for given, family name and sex. Then you can specify its
+relationship to your existing data. First select any family or individual
+in the <A href="../view/tree.html">Tree View</A> or 
+<A href="../view/table.html">Table View</A>. The radiobuttons below the
+indication of the selected entity allows to specify the new relationship.
+When selecting an individual the new one can be its Sibling, Child, Parent
+(if not already exists) or Spouse. When selecting a family the new individual
+can be Child or Spouse. Make your selection and click on Create.
+</P>
+
+<P>
+When editing an Individual in the <A href="../view/edit.html">Edit View</A>
+you should stick to the Gedcom standard as close as possible. A typical
+individual could consists of this kind of information:
+<PRE>
+@I008@ INDI
+ NAME Nils /Meier/
+ SEX M
+ BIRT
+  DATE 25 MAY 1970
+  PLAC Rendsburg, Germany
+ RESI
+  ADDR 202-1241 Kilborn Place
+  DATE FROM 30 JUL 1999 TO 2000     
+</PRE>
+</P>
+
+<P>
+Just work through the properties of your individuals and change
+their properties. When adding new properties choose from the 
+predefined list or if necessary extend the schema by adding
+new property-tags for special user-properties.
+</P>
+
+<P>
+An important feature of Gedcom is the capability to link
+entities. Individuals are normally not separate - they are
+married, have parents and children. Everytime you create a
+new Individual related to others, they are linked through
+properties. These properties for the individuals are
+FAMC (being a child in a family)or FAMS (being a spouse in
+a family). The properties refer to the family by its
+id. You can explore the relationship between individuals
+and families by following those links. Be careful when
+deleting or creating new links - keeping the overview
+of the referential integrity is not easy :). 
+</P>
+
+<P>
+Assume a special case as an example: You have your family
+tree and found out that an ancestors wife's sister married
+his brother. All those individuals are in your tree already!
+You can now create a new <A>family</A> for this newly
+discovered relationship. But then you don't want to create a new
+individual - you want to link existing entities!
+The solution: Select your ancestor's brother and add a FAMS
+property to it. Then change it to point to the new family
+by entering its ID. Click on the link-button and a HUSB property 
+will automatically be added to that family. The circle is made.
+</P>
+
+</BODY>
+</HTML>

@@ -1,0 +1,65 @@
+GenJ - Applet HOWTO
+
+INTRODUCTION
+
+ There are two basic modes of how to run the GenJ applet. You can
+ either provide your Gedcom information and external files (e.g.
+ pictures, .properties) unzipped relative to a 'current' directory.
+ Or you can zip this information and let GenJ read this information
+ on the fly.
+
+PREPARING IT (unzipped)
+
+ Follow these steps to provide all necessary files for running GenJ
+ as an applet:
+
+  + place genj.jar + applet-unzipped.html in [directory]
+
+  + place [file].ged, [file].ged.properties and any images into [directory]
+
+  + adopt applet's GEDCOM-tag in applet-unzipped.html
+
+     <param name=GEDCOM value="[file].ged">
+
+  + make sure that the result looks like this
+
+    ./applet-unzipped.html
+    ./genj.jar
+    ./file.ged
+    ./file.ged.properties
+    ./image1.jpg
+    ./...
+
+PREPARING IT (zipped)
+
+  + zip [file].ged, [file].get.properties and any images into [file].zip
+
+  + place [file].zip into [directory]
+
+  + adopt applet's GEDCOM-tag in applet-unzipped.html
+
+     <param name=GEDCOM value="[file].zip#[file].ged">
+
+  + make sure that the result looks like this
+
+    ./applet-zipped.html
+    ./genj.jar
+    ./file.zip
+
+PREPARING DETAILS (optional)
+
+  + place results of report "Applet Details" in [directory]/details
+
+  + add applet's GEDCOM-tag in applet-xyz.html
+
+     <param name=DETAIL value="./details">
+
+  + make sure that the result looks like above plus
+
+    ./...
+    ./details/i001.html
+    ./details/...
+    ./details/imageA.jpg
+    ./details/...
+
+

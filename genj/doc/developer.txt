@@ -1,0 +1,76 @@
+GenJ - Developer HOWTO
+
+GETTING IT
+
+ GenJ's source is hosted at http://genj.sourceforge.net. By using
+ cvs/ssh you can get any desired snapshot. The main developem module
+ is ./dev.
+
+ For now I assume that you have cvs/ssh correctly setup on your
+ machine. Set the following environment parameters and cd into
+ an empty directory of choice:
+
+  >cd d:\genj
+  >set cvs_rsh=ssh
+  >set cvsroot=:ext:YOURUSERID@cvs.genj.sourceforge.net:/cvsroot/genj
+  >cvs checkout dev
+
+ This will place all sources into the module directory ./dev - all
+ necessary bits are on your machine now for a complete build (of
+ course you can have a look at the artifacts first).
+
+LOOKING AT IT
+
+ The artifacts that comprise ./dev are:
+
+  ./ant.cmd             - ANT start script
+  ./ant.properties      - Project properties
+  ./ant.xml             - Project ANT makefile
+  ./doc                 - Document files
+  ./gedcom              - Gedcom files
+  ./help                - Help files
+  ./images              - Image files
+  ./language            - Language resource files
+  ./lib                 - Libraries
+  ./script              - Scripts (for distribution)
+  ./src                 - Source
+
+ADOPTING IT
+
+ Download and install the ANT package - get it from http://jakarta.apache.org/ant
+
+ Make sure to open ant.properties and adopt the following settings
+ to your environment:
+
+  dir.dist              - Where to place files that are part of the distribution
+  dir.build             - Where to place files generated during build
+  dir.run               - Where to place files that are prepared for running
+
+ [by default they are defined relative to dir.out]
+
+ Make sure that
+
+  java.exe and javac.exe are in your PATH
+  ANT_HOME points to your ANT installation
+
+WORKING WITH IT
+
+ You can use ant.cmd to perform project operations that are necessary
+ to rebuild/run GenJ on your local machine. Start ant.cmd (or adopt
+ it to your environment) with one of the following parameters:
+
+  init                  - Initialize environment (creates output directories)
+  compile.core          - Compiles the GenJ core
+  compile.report        - Compiles the GenJ reports
+  compile.awtx          - Compiles the AWTx package (ui abstraction library)
+  compile               - Compiles all
+  clean                 - Cleans up any temporary files
+  version               - Spits out version
+  dist                  - Makes a distribution (app, applet, en, de, fr, help, ...)
+  javadoc               - Creats Javadoc for core
+  run                   - Runs GenJ Application
+  classpath             - Spits out the classpath
+  about                 - Spits out disclaimer
+
+ [start with 'ant.cmd run' - this will do the necessary steps to run GenJ]
+
