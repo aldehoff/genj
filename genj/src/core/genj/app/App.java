@@ -101,16 +101,19 @@ public class App {
 
     // Create frame
     frame = createFrame(resources.getString("app.title"),Images.imgGedcom,"main", null);
+    frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     frame.addWindowListener(new WindowAdapter() {
-      public void windowClosed(WindowEvent we) {
-        // tell everyone we're shutting down
-        center.close();
-        Enumeration e = getFrames().elements();
-        while (e.hasMoreElements()) ((JFrame)e.nextElement()).dispose();
-        // Store registry 
-        Registry.saveToDisk();      
-        // exit
-        System.exit(0);
+      public void windowClosing(WindowEvent we) {
+        // let cc handle it
+        if (center.close()) {
+          // close all frames we know
+          Enumeration e = getFrames().elements();
+          while (e.hasMoreElements()) ((JFrame)e.nextElement()).dispose();
+          // Store registry 
+          Registry.saveToDisk();      
+          // exit
+          System.exit(0);
+        }
       }
     });
 

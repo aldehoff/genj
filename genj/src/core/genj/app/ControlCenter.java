@@ -233,7 +233,7 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     if (gedcom.hasUnsavedChanges()) {
       int rc = JOptionPane.showConfirmDialog(
-        this,
+        frame,
         App.resources.getString("cc.close_changes?"),
         App.resources.getString("app.warning"),
         JOptionPane.YES_NO_OPTION
@@ -380,7 +380,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       App.resources.getString("app.cancel"),
     };
 
-    int rc = JOptionPane.showOptionDialog(this,
+    int rc = JOptionPane.showOptionDialog(frame,
       App.resources.getString("cc.open.choice"),
       App.resources.getString("cc.open.title"),
       0,JOptionPane.QUESTION_MESSAGE,null,selections,selections[1]
@@ -408,7 +408,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       if (file.exists()) {
 
       rc = JOptionPane.showConfirmDialog(
-        this,
+        frame,
         App.resources.getString("cc.open.file_exists"),
         App.resources.getString("cc.create.title"),
         JOptionPane.YES_NO_OPTION
@@ -471,7 +471,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       Object options[] = { App.resources.getString("app.ok"), App.resources.getString("app.cancel") };
 
       rc = JOptionPane.showOptionDialog(
-        this,
+        frame,
         message,
         App.resources.getString("cc.open.title"),
         JOptionPane.OK_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,
@@ -489,7 +489,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       try {
         origin = Origin.create(item);
       } catch (MalformedURLException ex) {
-        JOptionPane.showMessageDialog(this,
+        JOptionPane.showMessageDialog(frame,
           App.resources.getString("cc.open.invalid_url"),
           App.resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE
@@ -542,7 +542,7 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     // CLOSE ?
     if (e.getActionCommand().equals("EXIT")) {
-      frame.dispose();
+      close();
       return;
     }
 
@@ -689,7 +689,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     if (ask&&file.exists()) {
 
       int rc = JOptionPane.showConfirmDialog(
-        this,
+        frame,
         App.resources.getString("cc.open.file_exists"),
         App.resources.getString("cc.save.title"),
         JOptionPane.YES_NO_OPTION
@@ -706,7 +706,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       writer = new FileWriter(file);
     } catch (IOException ex) {
       JOptionPane.showMessageDialog(
-        this,
+        frame,
         App.resources.getString("cc.save.open_error",file.getAbsolutePath()),
         App.resources.getString("app.error"),
         JOptionPane.ERROR_MESSAGE
@@ -844,7 +844,7 @@ public class ControlCenter extends JPanel implements ActionListener {
   /**
    * Closes all frame created by this controlcenter
    */
-  void close() {
+  /*package*/ boolean close() {
 
     // Tell the HelpBridge
     if (helpBridge!=null) {
@@ -857,22 +857,23 @@ public class ControlCenter extends JPanel implements ActionListener {
       Gedcom g = (Gedcom)gedcoms.nextElement();
       if (g.hasUnsavedChanges()) {
         int rc = JOptionPane.showConfirmDialog(
-          this,
+          frame,
           App.resources.getString("cc.exit_changes?"),
           App.resources.getString("app.warning"),
           JOptionPane.YES_NO_OPTION
         );
         if (rc==JOptionPane.NO_OPTION) {
-          return;
+          return false;
         }
         break;
       }
     }
-
+    
     // Save settings from GedcomTable
     registry.put("columns",tGedcoms.getColumnWidths());
 
     // Done
+    return true;
   }
 
   /**
@@ -981,7 +982,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       Gedcom g = (Gedcom)gedcoms.elementAt(i);
 
       if (origin.getName().equals(g.getName())) {
-        JOptionPane.showMessageDialog(this,
+        JOptionPane.showMessageDialog(frame,
           App.resources.getString("cc.open.already_open", g.getName() ),
           App.resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE
@@ -1001,7 +1002,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       // .. query for input stream
       in = connection.getInputStream();
     } catch (IOException ex) {
-      JOptionPane.showMessageDialog(this,
+      JOptionPane.showMessageDialog(frame,
         App.resources.getString("cc.open.no_connect_to", origin ) + "\n[" + ex.getMessage() +"]",
         App.resources.getString("app.error"),
         JOptionPane.ERROR_MESSAGE
