@@ -68,12 +68,11 @@ class ViewEditor extends JPanel {
 
     ActionListener alistener = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        if ((currentView==null)||(!currentView.isValid())) {
-          edit(null,null,null);
-          return;
-        }
         if ("CLOSE".equals(e.getActionCommand()))
           frame.dispose();
+        if ((currentView==null)||(!currentView.isValid())) {
+          edit(null,null,null);
+        }
         if ("APPLY".equals(e.getActionCommand())&&(currentView!=null))
           currentInfo.apply();
         if ("RESET".equals(e.getActionCommand())&&(currentView!=null))
@@ -124,6 +123,17 @@ class ViewEditor extends JPanel {
     
     // done
     return result;
+  }
+
+  /**
+   * Static signal that a view shouldn't be edited (anymore)
+   */
+  public static void stopEditing(Component view) {
+    JFrame frame = App.getInstance().getFrame("settings");
+    if (frame==null) return;
+    ViewEditor editor = (ViewEditor)frame.getContentPane().getComponent(0);
+    if (editor.currentView!=view) return;
+    startEditing(null,null);
   }
 
   /**

@@ -119,6 +119,11 @@ class ViewBridge {
           }
         });
         scroll.add2Edge(bh.setImage(Images.imgSettings).setAction("VIEWEDIT").setTip("cc.tip.settings").create());
+        _frame.addWindowListener(new WindowAdapter() {
+          public void windowClosed(WindowEvent e) {
+            ViewEditor.stopEditing(_view);
+          }
+        });
       }
 
       // And a print button in case a PrintRenderer is existing
