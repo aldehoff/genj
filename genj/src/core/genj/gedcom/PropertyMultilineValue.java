@@ -68,25 +68,6 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
     return lines.toString();
   }
   
-//  /**
-//   * Helper to resolve the first line of a multiline value
-//   */
-//  public String getFirstLine() { 
-//
-//    // More than one line ?
-//    int pos = lines.indexOf("\n");
-//    if (pos>=0) 
-//      return lines.substring(0,pos)+"...";
-//      
-//    // Longer than 255?
-//    int lb = Options.getInstance().getValueLineBreak();
-//    if (lines.length()>lb)
-//      return lines.substring(0,lb-3)+"...";
-//
-//    // Value
-//    return lines;
-//  }
-  
   /**
    * @see genj.gedcom.MultiLineProperty#getLineIterator()
    */
@@ -101,118 +82,118 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
     return new ConcContCollector();
   }
   
-  /**
-   * An iterator for lines
-   */
-  private static class ConcContIterator implements Iterator {
-    
-    /** the tag */
-    private String first, current, next;
-    
-    /** the value */
-    private String value;
-    
-    /** the current segment */
-    private int start,end;
-    
-    /** value line break */
-    private int valueLineBreak;
-    
     /**
-     * Constructor
+     * An iterator for lines
      */
-    /*package*/ ConcContIterator(String top, String initValue) {
-      valueLineBreak = Options.getInstance().getValueLineBreak();
-      first = top;
-      setValue(initValue);
-    }
-    
-    /**
-     * @see genj.gedcom.MultiLineProperty.Iterator#setValue(java.lang.String)
-     */
-    public void setValue(String setValue) {
-
-      value = setValue;
-
-      current = first;       
-      start = 0;
-      end = 0;
-
-      next();
-    }
-    
-    /**
-     * @see genj.gedcom.MultiLineSupport.LineIterator#getIndent()
-     */
-    public int getIndent() {
-      return start==0 ? 0 : 1;
-    }
-    
-    /**
-     * @see genj.gedcom.MultiLineSupport.Line#getTag()
-     */
-    public String getTag() {
-      return current;
-    }
-    
-    /**
-     * @see genj.gedcom.MultiLineSupport.Line#getValue()
-     */
-    public String getValue() {
-      return value.substring(start, end).trim();
-    }
+    private static class ConcContIterator implements Iterator {
       
-    /**
-     * @see genj.gedcom.MultiLineSupport.Line#next()
-     */
-    public boolean next() {
+      /** the tag */
+      private String firstTag, currentTag, nextTag;
       
-      // nothing more there?
-      if (end==value.length()) 
-        return false;
-
-      // continue from last end
-      start = end;
+      /** the value */
+      private String value;
       
-      // calc current tag      
-      current = start==0?first:next;
+      /** the current segment */
+      private int start,end;
       
-      // assume taking all
-      end = value.length();
+      /** value line break */
+      private int valueLineBreak;
       
-      // skip leading whitespace
-      while (true) {
-        if (!Character.isWhitespace(value.charAt(start))) break;
-        start++;
-        if (start==end) 
-          return false;
+      /**
+       * Constructor
+       */
+      /*package*/ ConcContIterator(String top, String initValue) {
+        valueLineBreak = Options.getInstance().getValueLineBreak();
+        firstTag = top;
+        setValue(initValue);
       }
       
-      // take all up to next CR
-      // 20030604 value.indexOf() used here previously is 1.4
-      for (int i=start;i<end;i++) {
-        if (value.charAt(i)=='\n') {
-          end = i;
-          next = "CONT";
-          break;
-        }
+      /**
+       * @see genj.gedcom.MultiLineProperty.Iterator#setValue(java.lang.String)
+       */
+      public void setValue(String setValue) {
+  
+        value = setValue;
+  
+        currentTag = firstTag;       
+        nextTag = firstTag;
+        start = 0;
+        end = 0;
+  
+        next();
       }
       
-      // but max of valueLineBreak
-      if (end-start>valueLineBreak) {
-        end = start+valueLineBreak;
-        next = "CONC";
+      /**
+       * @see genj.gedcom.MultiLineSupport.LineIterator#getIndent()
+       */
+      public int getIndent() {
+        return currentTag == firstTag ? 0 : 1;
+      }
+      
+      /**
+       * @see genj.gedcom.MultiLineSupport.Line#getTag()
+       */
+      public String getTag() {
+        return currentTag;
+      }
+      
+      /**
+       * @see genj.gedcom.MultiLineSupport.Line#getValue()
+       */
+      public String getValue() {
+        return value.substring(start, end);
+      }
         
-        // make sure we don't end with white-space
-        while ( (end>start+128) && (Character.isWhitespace(value.charAt(end-1)) || Character.isWhitespace(value.charAt(end))) )
-          end--;
+      /**
+       * @see genj.gedcom.MultiLineSupport.Line#next()
+       */
+      public boolean next() {
+        
+        // nothing more there?
+        if (end==value.length()) 
+          return false;
+  
+        // continue from last end
+        start = end;
+        
+        // calc current tag      
+        currentTag = nextTag;
+        
+        // assume taking all
+        end = value.length();
+        
+        // skip one leading '\n'
+        if (value.charAt(start)=='\n') {
+          start++;
+          if (start==end) 
+            return false;
+        }
+        
+        // take all up to next CR
+        // 20030604 value.indexOf() used here previously is 1.4
+        for (int i=start;i<end;i++) {
+          if (value.charAt(i)=='\n') {
+            end = i;
+            nextTag = "CONT";
+            break;
+          }
+        }
+        
+        // but max of valueLineBreak
+        if (end-start>valueLineBreak) {
+          end = start+valueLineBreak;
+          nextTag = "CONC";
+          
+          // make sure we don't end with white-space
+          while ( (end>start+valueLineBreak) && (Character.isWhitespace(value.charAt(end-1)) || Character.isWhitespace(value.charAt(end))) )
+            end--;
+        }
+        
+        // done
+        return start!=value.length();
       }
       
-      // done
-      return end>start;
-    }
-    
-  } //LineReader
+    } //LineReader
   
   /**
    * An iterator for lines
