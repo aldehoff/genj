@@ -232,11 +232,11 @@ import javax.swing.event.TreeSelectionListener;
         });
         // prepare actions
         ActionDelegate[] actions = {
-          new CloseWindow(resources.getString("action.del")), 
+          new CloseWindow(resources.getString("action.cut")), 
           new CloseWindow(CloseWindow.TXT_CANCEL)
         };
         // ask the user
-        int rc = winManager.openDialog(null, resources.getString("action.cut.tip"), WindowManager.IMG_WARNING, msg, actions, AdvancedEditor.this );
+        int rc = winManager.openDialog(null, resources.getString("action.cut"), WindowManager.IMG_WARNING, msg, actions, AdvancedEditor.this );
         if (rc!=0)
           return;
         // continue
