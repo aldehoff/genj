@@ -30,6 +30,9 @@ public class ReportValidate extends Report {
   
   /** whether we consider 'private' information valid or not */
   public boolean isPrivateValueValid = true;
+  
+  /** whether we consider missing files as valid or not */
+  public boolean isFileNotFoundValid = true;
 
   /** options of reports are picked up via field-introspection */
   public int
@@ -185,7 +188,8 @@ public class ReportValidate extends Report {
     result.add(new TestSpouseGender());
 
     // non existing files
-    result.add(new TestFile());
+    if (!isFileNotFoundValid)
+      result.add(new TestFile());
 
     // ****************** DATE COMPARISON TESTS *****************************
 

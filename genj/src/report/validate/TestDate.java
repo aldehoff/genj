@@ -13,6 +13,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
+import genj.gedcom.time.PointInTime;
 import genj.util.WordBuffer;
 
 import java.util.List;
@@ -113,13 +114,24 @@ import java.util.List;
    * test for error in date1 vs. date2
    */
   private boolean isError(PropertyDate date1, PropertyDate date2) {
-    switch (comparison) {
-      case AFTER:
-        return date1.compareTo(date2) > 0;
-      case BEFORE:
-        return date1.compareTo(date2) < 0;
+
+    // depending on comparison mode      
+    PointInTime pit1, pit2;
+    int sign;    
+    if (comparison==AFTER) {
+      // AFTER
+      pit1 = date1.getStart();
+      pit2 = date2.isRange() ? date2.getEnd() : date2.getStart();
+      sign = 1;
+    } else {
+      // BEFORE
+      pit1 = date1.isRange() ? date1.getEnd() : date1.getStart();
+      pit2 = date2.getStart();
+      sign = -1;
     }
-    return false;
+    
+    // result
+    return pit1.compareTo(pit2)*sign>0;
   }
 
   /**
