@@ -15,7 +15,23 @@ import java.util.TreeMap;
 public class ReferenceSet {
 
   /** the map we use for key->referrers */
-  private Map key2references = new TreeMap();
+  private Map key2references;
+  
+  /**
+   * Constructor - uses a TreeMap that keeps
+   * keys sorted by their natural order
+   */
+  public ReferenceSet() {
+    this(new TreeMap());
+  }
+  
+  /**
+   * Constructor - uses given map for 
+   * tracking key->value Sets
+   */
+  public ReferenceSet(Map map) {
+    key2references = map;
+  }
   
   /**
    * Returns the references for value

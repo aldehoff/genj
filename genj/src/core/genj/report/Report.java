@@ -21,7 +21,6 @@ package genj.report;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.util.Debug;
@@ -43,6 +42,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -58,6 +58,18 @@ import javax.swing.event.ListSelectionListener;
  * Interface of a user definable GenjJ Report
  */
 public abstract class Report implements Cloneable {
+
+  /** options */
+  protected final static int
+    OPTION_YESNO    = 0,
+    OPTION_OKCANCEL = 1,
+    OPTION_OK       = 2;
+    
+  private final static String[][] OPTIONS = {
+    WindowManager.OPTIONS_YES_NO, 
+    WindowManager.OPTIONS_OK_CANCEL,
+    WindowManager.OPTIONS_OK
+  };
 
   /** alignment options */
   protected final static int
@@ -173,14 +185,14 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Helper method that shows (resulting) properties to the user
+   * Helper method that shows (resulting) items to the user
    */
-  protected final void showToUser(String msg, Gedcom gedcom, Property[] props) {
+  protected final void showItemsToUser(String msg, Gedcom gedcom, Item[] items) {
 
     // prepare content
     JPanel content = new JPanel(new BorderLayout());
     content.add(BorderLayout.NORTH, new JLabel(msg));
-    content.add(BorderLayout.CENTER, new JScrollPane(new PropertyList(gedcom, props, viewManager)));
+    content.add(BorderLayout.CENTER, new JScrollPane(new ItemList(gedcom, items, viewManager)));
 
     // open a non-modal dialog
     viewManager.getWindowManager().openNonModalDialog(
@@ -284,17 +296,25 @@ public abstract class Report implements Cloneable {
   /**
    * Helper method that queries the user for yes/no input
    */
-  protected final boolean getValueFromUser(String msg, boolean yesnoORokcancel) {
-    int rc = viewManager.getWindowManager().openDialog(
+  protected final boolean getOptionFromUser(String msg, int option) {
+    return 0==getOptionFromUser(msg, OPTIONS[option]);
+  }
+  
+  /**
+   * Helper method that queries the user for yes/no input
+   */
+  protected final int getOptionFromUser(String msg, String[] options) {
+    
+    return viewManager.getWindowManager().openDialog(
       null,
       getName(),
       WindowManager.IMG_QUESTION,
       msg,
-      yesnoORokcancel ? WindowManager.OPTIONS_YES_NO : WindowManager.OPTIONS_OK_CANCEL,
+      options,
       owner
     );
+    
     // Done
-    return rc==0;
   }
 
   /**
@@ -499,11 +519,12 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * A list of properties - I'm currently simply checking if getParent()!=null
-   * to figure out whether the property is still o.k. (a.k.a. not deleted)
+   * A list of items - I'm currently simply checking if target.getGedcom()!=null
+   * to figure out whether the item is still o.k. to propagate to the view
+   * manager (a.k.a. not deleted)
    * Listening for updates as a GedcomListener was just too much work  ;)
    */
-  private static class PropertyList extends JList implements ListCellRenderer, ListSelectionListener {
+  private static class ItemList extends JList implements ListCellRenderer, ListSelectionListener {
 
     /** the view manager */
     private ViewManager manager;
@@ -517,7 +538,7 @@ public abstract class Report implements Cloneable {
     /**
      * Constructor
      */
-    private PropertyList(Gedcom geDcom, Property[] props, ViewManager maNager) {
+    private ItemList(Gedcom geDcom, Item[] props, ViewManager maNager) {
       super(props);
       // remember
       manager = maNager;
@@ -534,8 +555,15 @@ public abstract class Report implements Cloneable {
      * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
      */
     public void valueChanged(ListSelectionEvent e) {
-      Property prop = (Property)getSelectedValue();
-      if (prop!=null&&prop.getParent()!=null) manager.setContext(prop);
+      // check selected item
+      Item item = (Item)getSelectedValue();
+      if (item==null)
+        return;
+      Property target = item.getTarget();
+      if (target==null)
+        return;
+      // propagate
+      manager.setContext(target);
     }
 
     /**
@@ -544,25 +572,58 @@ public abstract class Report implements Cloneable {
      */
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
       // colors
-      label.setBackground(cellHasFocus ? getSelectionBackground() : getBackground());
-      label.setForeground(cellHasFocus ? getSelectionForeground() : getForeground());
-      // check prop
-      Property prop = (Property)value;
-      if (prop.getParent()==null) {
-        // show placeholder
-        label.setIcon(MetaProperty.IMG_ERROR);
-        label.setText("*deleted*");
-      } else {
-        // show it
-        Entity ent = prop.getEntity();
-        String txt = ent.getId() + ' ' + ent.toString() + ' ' + prop.getPath();
-        label.setText(txt);
-        label.setIcon(prop.getImage(false));
-      }
+      label.setBackground(isSelected ? getSelectionBackground() : getBackground());
+      label.setForeground(isSelected ? getSelectionForeground() : getForeground());
+      // display item
+      Item item = (Item)value;
+      label.setText(item.getName());
+      label.setIcon(item.getImage());
       // done
       return label;
     }
 
   } //PropertyList
+
+  /**
+   * A (result) item can be shown to the user
+   */
+  public static class Item {
+
+    /** attrs */
+    private String name;
+    private ImageIcon img;
+    private Property target;
+    
+    /**
+     * Constructor
+     */
+    public Item(String naMe, ImageIcon imG, Property taRget) {
+      name = naMe;
+      img = imG;
+      target = taRget;
+    }
+    
+    /**
+     * name
+     */
+    private String getName() {
+      return name;
+    }
+    
+    /**
+     * img
+     */
+    private ImageIcon getImage() {
+      return img;
+    }
+    
+    /**
+     * The target of this item
+     */
+    private Property getTarget() {
+      return target.getGedcom()!=null ? target : null;
+    }
+    
+  } //Item
 
 } //Report

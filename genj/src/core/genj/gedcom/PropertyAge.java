@@ -21,7 +21,6 @@ package genj.gedcom;
 
 import genj.util.WordBuffer;
 
-import java.util.Calendar;
 import java.util.StringTokenizer;
 
 /**
@@ -143,7 +142,7 @@ public class PropertyAge extends Property {
   public boolean updateAge() {
 
     // calc delta
-    int[] delta = getDelta(getEarlier(), getLater());
+    int[] delta = PointInTime.getDelta(getEarlier(), getLater());
     if (delta==null)
       return false;
       
@@ -238,77 +237,12 @@ public class PropertyAge extends Property {
   }
 
   /**
-   * Calculate delta of two times years,months,days
-   */
-  private static int[] getDelta(PointInTime earlier, PointInTime later) {
-
-    // null check
-    if (earlier==null||later==null) 
-      return null;
-           
-    // valid?
-    if (!earlier.isValid()||!later.isValid())
-      return null;
-        
-    // ordering?
-    if (earlier.compareTo(later)>0) {
-      PointInTime p = earlier;
-      earlier = later;
-      later = p;
-    }
-  
-    // grab earlier values  
-    int 
-      yearlier = earlier.getYear(),
-      mearlier = Math.max(0,earlier.getMonth()),
-      dearlier = Math.max(0,earlier.getDay  ());
-    
-    // age at what point in time?
-    int 
-      ylater = later.getYear(),
-      mlater = Math.max(0, later.getMonth()),
-      dlater = Math.max(0, later.getDay  ());
-      
-    // calculate deltas
-    int 
-      ydelta = ylater - yearlier,
-      mdelta = mlater - mearlier,
-      ddelta = dlater - dearlier;
-      
-    // check day
-    if (ddelta<0) {
-      // decrease months
-      mdelta -=1;
-      // increase days with days in previous month
-      Calendar c = Calendar.getInstance();
-      c.set(yearlier, mearlier, 1);
-      int days = c.getActualMaximum(Calendar.DATE);
-      ddelta = dlater + (days-dearlier); 
-    }
-    
-    // check month now<then
-    if (mdelta<0) {
-      // decrease years
-      ydelta -=1;
-      // increase months
-      mdelta +=12;
-    } 
-
-    // check valid 
-    if (ydelta<0||mdelta<0||ddelta<0||(ydelta+mdelta+ddelta==0))  
-      return null;
-
-    // done
-    return new int[]{ ydelta, mdelta, ddelta };
-  }
-  
-  /**
    * Calculate an age string "99y 9m 9d"
    */
   public static String getAgeString(PointInTime earlier, PointInTime later) {
 
     // try to calc delta
-    int[] delta = getDelta(earlier,later);
+    int[] delta = PointInTime.getDelta(earlier,later);
     if (delta==null)
       return "";
       

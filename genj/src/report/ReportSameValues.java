@@ -5,6 +5,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
@@ -107,13 +108,18 @@ public class ReportSameValues extends Report {
       return;
     
     // collect parents of sameProps
-//    for (int i=0;i<sameProps.length;i++) {
-//      Property parent = sameProps[i].getParent(); 
-//      if (parent!=null) sameProps[i] = parent;  
-//    }
+    Item[] items = new Item[sameProps.length];
+    for (int i=0; i<items.length; i++) {
+
+      Property prop = sameProps[i];      
+      Entity ent = prop.getEntity();
+      String txt = ent.getId() + ' ' + ent.toString() + ' ' + prop.getPath();
+
+    	items[i] = new Item(txt, prop.getImage(false), prop);
+    }
     
     // show 'em
-    showToUser( i18n("xname",val), gedcom, sameProps);
+    showItemsToUser( i18n("xname",val), gedcom, items);
     
     // done
   }

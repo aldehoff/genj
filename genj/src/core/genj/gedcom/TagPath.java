@@ -36,6 +36,9 @@ public class TagPath {
   /** the list of tags that describe the path */
   private String tags[];
   
+  /** the length (= number of elements) in tags (length<=tags.length) */
+  private int len;
+  
   /** the hash of this path (immutable) */
   private int hash = 0;
   
@@ -52,13 +55,13 @@ public class TagPath {
 
     // Parse path
     StringTokenizer tokens = new StringTokenizer(path,SEPARATOR_STRING,false);
-    int length = tokens.countTokens();
-    if (length==0||path.charAt(0)==SEPARATOR||path.charAt(path.length()-1)==SEPARATOR)
+    len = tokens.countTokens();
+    if (len==0||path.charAt(0)==SEPARATOR||path.charAt(path.length()-1)==SEPARATOR)
       throw new IllegalArgumentException("No valid path '"+path+"'");
 
     // ... setup data
-    tags = new String[length];
-    for (int i=0;i<length;i++) {
+    tags = new String[len];
+    for (int i=0;i<len;i++) {
       String token = tokens.nextToken().trim();
       if (token.length()==0) 
         throw new IllegalArgumentException("No valid path token #"+(i+1)+" in '"+path+"'");
@@ -75,10 +78,11 @@ public class TagPath {
   public TagPath(Property[] props) {
     
     // decompose property path
-    tags = new String[props.length];
+    len = props.length;
+    tags = new String[len];
 
     // grab prop's tags and hash
-    for (int i=0; i<tags.length; i++) {
+    for (int i=0; i<len; i++) {
       tags[i] = props[i].getTag();
       hash += tags[i].hashCode();
     }
@@ -90,19 +94,27 @@ public class TagPath {
    * Constructor for TagPath
    */
   public TagPath(TagPath other, String tag) {
-    tags = new String[other.tags.length+1];
-    System.arraycopy(other.tags, 0, tags, 0, other.tags.length);
-    tags[tags.length-1] = tag;
+    tags = new String[other.len+1];
+    System.arraycopy(other.tags, 0, tags, 0, other.len);
+    tags[len-1] = tag;
     hash = other.hash+tag.hashCode();
   }
 
   /**
    * Constructor for TagPath
    */
-  public TagPath(TagPath other, int len) {
+  public TagPath(TagPath other) {
+    this(other, other.len);
+  }
+
+  /**
+   * Constructor for TagPath
+   */
+  public TagPath(TagPath other, int length) {
     // copyup to len and rehash
+    len = length;
     tags = new String[len];
-    for (int i=0; i<tags.length; i++) {
+    for (int i=0; i<len; i++) {
       tags[i] = other.tags[i];
       hash += tags[i].hashCode();
     }
@@ -116,8 +128,9 @@ public class TagPath {
    */
   public TagPath(Stack path) throws IllegalArgumentException {
     // grab stack elements
-    tags = new String[path.size()];
-    for (int i=0; i<tags.length; i++) {
+    len = path.size();
+    tags = new String[len];
+    for (int i=0; i<len; i++) {
       tags[i] = path.get(i).toString();
       hash += tags[i].hashCode();
     }
@@ -125,14 +138,44 @@ public class TagPath {
   }
   
   /**
+   * Add another path element to the end of this path
+   */
+  public void add(String element) {
+    // ensure capacity
+    if (len==tags.length) {
+      String[] tmp = new String[len+1];
+      System.arraycopy(tags, 0, tmp, 0, len);
+      tags = tmp;
+    }
+    // add element
+    tags[len++] = element;
+    hash += element.hashCode();
+    // done
+  }
+  
+  /**
+   * Removes the last path element from the end of this path
+   */
+  public String pop() {
+    // won't allow illegal path
+    if (len==1)
+      throw new IllegalArgumentException("can't pop < 1");
+    // remove it
+    String result = tags[--len];  
+    hash -= result.hashCode();
+    // done
+    return result;
+  }
+  
+  /**
    * Wether this path starts with prefix
    */
   public boolean startsWith(TagPath prefix) {
     // not if longer
-    if (prefix.tags.length>tags.length) 
+    if (prefix.len>len) 
       return false;
     // check
-    for (int i=0;i<prefix.tags.length;i++) {
+    for (int i=0;i<prefix.len;i++) {
       if (!tags[i].equals(prefix.tags[i])) return false;
     }
     // yes
@@ -145,26 +188,22 @@ public class TagPath {
   public boolean equals(Object obj) {
 
     // Me ?
-    if (obj==this) {
+    if (obj==this) 
       return true;
-    }
 
     // TagPath ?
-    if (!(obj instanceof TagPath)) {
+    if (!(obj instanceof TagPath))
       return false;
-    }
 
     // Size ?
     TagPath other = (TagPath)obj;
-    if (other.tags.length!=tags.length) {
+    if (other.len!=len) 
       return false;
-    }
 
     // Elements ?
-    for (int i=0;i<tags.length;i++) {
-      if (!tags[i].equals(other.tags[i])) {
+    for (int i=0;i<len;i++) {
+      if (!tags[i].equals(other.tags[i])) 
         return false;
-      }
     }
 
     // Equal
@@ -185,7 +224,7 @@ public class TagPath {
    * @return last tag as <code>String</code>
    */
   public String getLast() {
-    return tags[tags.length-1];
+    return tags[len-1];
   }
 
   /**
@@ -193,7 +232,7 @@ public class TagPath {
    * @return length of this path
    */
   public int length() {
-    return tags.length;
+    return len;
   }
   
   /**
@@ -201,7 +240,7 @@ public class TagPath {
    */
   public String toString() {
     String result = tags[0];
-    for (int i=1;i<tags.length;i++)
+    for (int i=1;i<len;i++)
       result = result + ":" + tags[i];
     return result;
   }

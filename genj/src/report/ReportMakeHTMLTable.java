@@ -21,9 +21,9 @@ import java.util.TreeMap;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.17 2003-06-03 00:50:48 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.18 2003-06-10 21:52:25 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class ReportMakeHTMLTable extends Report {
 
@@ -246,9 +246,8 @@ public class ReportMakeHTMLTable extends Report {
     Gedcom gedcom = (Gedcom)context;
 
     // And whether code translation should happen or not
-    isTranslateUnicode2HTML = getValueFromUser(
-      "Do you want to transform Unicode- into HTML-codes (slow)?",
-      true
+    isTranslateUnicode2HTML = getOptionFromUser(
+      "Do you want to transform Unicode- into HTML-codes (slow)?", OPTION_YESNO
     );
 
     // HEAD

@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 /**
@@ -341,34 +340,30 @@ public class MetaProperty {
     // loop through roots
     for (int t=0;t<Gedcom.NUM_TYPES;t++) {
       if (entity<0||entity==t)
-        getPathsRecursively(roots[t], property, new Stack(), result);
+        getPathsRecursively(roots[t], property, new TagPath(Gedcom.getTagFor(entity)), result);
     }
     // done
     return TagPath.toArray(result);
   }
   
-  private static void getPathsRecursively(MetaProperty meta, Class property, Stack stack, Collection result) {
+  private static void getPathsRecursively(MetaProperty meta, Class property, TagPath path, Collection result) {
 
     // something worthwhile to dive into?
     if (!meta.instantiated) 
       return;
     
-    // trace it
-    stack.push(meta.tag);
-
     // type match?
     if (property.isAssignableFrom(meta.getType())) 
-      result.add(new TagPath(stack));
+      result.add(new TagPath(path));
       
     // recurse into
     for (Iterator it=meta.listOfSubs.iterator();it.hasNext();) {
       MetaProperty sub = (MetaProperty)it.next();
-      getPathsRecursively(sub, property, stack, result);
+      path.add(sub.tag);
+      getPathsRecursively(sub, property, path, result);
+      path.pop();
     }
     
-    // rewind
-    stack.pop();
-      
     // done
   }
     
