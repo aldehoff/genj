@@ -19,6 +19,7 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,12 +45,12 @@ public class MutableGraphImpl implements MutableGraph {
   private Rectangle2D bounds = new Rectangle2D.Double();
 
   /** the contained nodes */
-  protected Set nodes = new HashSet(10);
-  private Set immutableNodes = Collections.unmodifiableSet(nodes);
+  protected Collection nodes = new HashSet(10);
+  private Collection immutableNodes = Collections.unmodifiableCollection(nodes);
 
   /** the contained arcs */
-  protected Set arcs = new HashSet(10);
-  private Set immutableArcs= Collections.unmodifiableSet(arcs);
+  protected Collection arcs = new HashSet(10);
+  private Collection immutableArcs= Collections.unmodifiableCollection(arcs);
 
   /** listeners */
   private List listeners = new ArrayList(); 
@@ -139,14 +140,14 @@ public class MutableGraphImpl implements MutableGraph {
   /**
    * @see Graph#getNodes()
    */
-  public Set getNodes() {
+  public Collection getNodes() {
     return immutableNodes;
   }
 
   /**
    * @see Graph#getArcs()
    */
-  public Set getArcs() {
+  public Collection getArcs() {
     return immutableArcs;
   }
 

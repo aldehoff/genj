@@ -18,9 +18,9 @@ package gj.util;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import gj.model.Arc;
 import gj.model.Node;
@@ -94,7 +94,7 @@ public class ModelHelper {
   /**
    * Calculates the dimension of set of nodes
    */
-  public static Rectangle2D getBounds(Set nodes) {
+  public static Rectangle2D getBounds(Collection nodes) {
     // no content?
     if (nodes.isEmpty()) return new Rectangle2D.Double(0,0,0,0);
     // loop through nodes and calculate

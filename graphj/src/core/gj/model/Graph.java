@@ -16,7 +16,7 @@
 package gj.model;
 
 import java.awt.geom.Rectangle2D;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * A Graph contains Nodes (one optional Root) and Arcs and has a 2d size
@@ -26,12 +26,12 @@ public interface Graph {
   /**
    * Access to the graph's nodes - immutable
    */
-  public Set getNodes();
+  public Collection getNodes();
  
   /**
    * Access to the graph's arcs - immutable
    */
-  public Set getArcs();
+  public Collection getArcs();
   
   /**
    * Access to the graph's bounds - mutable

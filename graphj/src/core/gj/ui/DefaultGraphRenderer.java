@@ -29,9 +29,9 @@ import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 
 import gj.util.ArcIterator;
@@ -70,7 +70,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders all Nodes
    */
-  private void renderNodes(Set nodes, GraphGraphics graphics) {
+  private void renderNodes(Collection nodes, GraphGraphics graphics) {
     
     // Loop through the graph's nodes
     Iterator it = nodes.iterator();
@@ -109,7 +109,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders all Arcs
    */
-  private void renderArcs(Set arcs, GraphGraphics graphics) {
+  private void renderArcs(Collection arcs, GraphGraphics graphics) {
     
     // Loop through the graph's arcs
     Iterator it = arcs.iterator();
