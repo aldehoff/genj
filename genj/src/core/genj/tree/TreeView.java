@@ -41,6 +41,7 @@ import genj.gedcom.Property;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ViewPortAdapter;
+import genj.view.ContextPopupSupport;
 import genj.view.CurrentSupport;
 import genj.view.ViewManager;
 import gj.layout.tree.TreeLayoutRenderer;
@@ -49,7 +50,7 @@ import gj.ui.UnitGraphics;
 /**
  * TreeView
  */
-public class TreeView extends JScrollPane implements CurrentSupport {
+public class TreeView extends JScrollPane implements CurrentSupport, ContextPopupSupport {
   
   /*package*/ static final Resources resources = new Resources(TreeView.class); 
   
@@ -96,7 +97,27 @@ public class TreeView extends JScrollPane implements CurrentSupport {
   }
   
   /**
-   * Sets the root of this view/
+   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
+   */
+  public void setCurrentProperty(Property property) {
+  }
+
+  /**
+   * @see genj.view.ContextPopupSupport#getContextAt(Point)
+   */
+  public Object getContextAt(Point pos) {
+    return getEntityAt(pos);
+  }
+
+  /**
+   * @see genj.view.ContextPopupSupport#getContextPopupContainer()
+   */
+  public JComponent getContextPopupContainer() {
+    return content;
+  }
+
+  /**
+   * Sets the root of this view
    */
   public void setRoot(Entity root) {
     // allowed?
@@ -106,11 +127,6 @@ public class TreeView extends JScrollPane implements CurrentSupport {
     // done
   }
 
-  /**
-   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
-   */
-  public void setCurrentProperty(Property property) {
-  }
 
   /**
    * Resolves entity at given position

@@ -100,9 +100,9 @@ public class Model implements Graph {
     bounds.setFrame(0,0,0,0);
     // build and layout the tree
     if (root instanceof Indi)
-      parse((Indi)root);
+      layout((Indi)root);
     else
-      parse((Fam )root);
+      layout((Fam )root);
     // notify
     fireStructureChanged();
     // done
@@ -141,33 +141,55 @@ public class Model implements Graph {
   /**
    * builds the tree for an individual
    */
-  private void parse(Indi indi) {
-    DummyNode dn = new DummyNode();
-    IndiNode in = new IndiNode(indi);
-    new MyArc(dn, in, false);
-    in.addDependants(dn);
-    layout(dn, true);
+  private void layout(Indi indi) {
+    // create tree descendants of ancestor
+    DummyNode dnode = new DummyNode();
+    IndiNode inode = new IndiNode(indi);
+    new MyArc(dnode, inode, false);
+    inode.addDescendants(dnode);
+    layout(dnode, true);
+    // remember
+    Rectangle2D firstHalf = bounds.getFrame();
+    Point2D firstPos = inode.getPosition();
+    // create tree of ancestors
+    inode = new IndiNode(indi);
+    inode.getPosition().setLocation(firstPos);
+    inode.addAncestors();
+    layout(inode, false);
+    // update bounds
+    bounds.add(firstHalf);
+    // done
   }
   
   /**
    * builds the tree for a family
    */
-  private void parse(Fam fam) {
-    FamNode fm = new FamNode(fam);
-    layout(fm, true);
+  private void layout(Fam fam) {
+    // create tree for descendants 
+    FamNode fnode = new FamNode(fam);
+    fnode.addDescendants();
+    layout(fnode, true);
+    Rectangle2D firstHalf = bounds.getFrame();
+    // create tree for ancestors
+    fnode = new FamNode(fam);
+    fnode.addAncestors();
+    layout(fnode, false);
+    // update bounds
+    bounds.add(firstHalf);
+    // done
   }
   
   /**
    * Helper that applies the layout
    */
-  private void layout(Node root, boolean isTopDown) {
+  private void layout(MyNode root, boolean isTopDown) {
     // layout
     try {
       layout.setTopDown(isTopDown);
       layout.setBendArcs(true);
       layout.setDebug(false);
       layout.setNodeOptions(new MyOptions());
-      layout.setLayoutUnreachedNodes(false);
+      layout.setIgnoreUnreachables(true);
       layout.setRoot(root);
       layout.applyTo(this);
     } catch (LayoutException e) {
@@ -284,9 +306,9 @@ public class Model implements Graph {
       super(indi);
     }
     /**
-     * Add dependants - spouses and marriages
+     * Add descendants - spouses and marriages and children
      */
-    private void addDependants(MyNode node) {
+    private void addDescendants(MyNode node) {
       // we wrap an indi
       Indi indi = (Indi)entity;
       // loop through our fams
@@ -294,12 +316,29 @@ public class Model implements Graph {
       for (int f=0; f<fams.length; f++) {
         // the family
         Fam fam = fams[f];
-        // an arc to marr
-        new MyArc(node, new MarrNode(fam), false);
-        if (fam.getNoOfSpouses()>1) 
-          new MyArc(node, new IndiNode(fam.getOtherSpouse(indi)), false);
+        MarrNode mnode = new MarrNode(fam);
+        mnode.addDescendants();
+        // and arc to marr and spouse
+        new MyArc(node, mnode, false);
+        new MyArc(node, new IndiNode(fam.getOtherSpouse(indi)), false);
         // next family
       }
+      // done
+    }
+    /**
+     * Add ancestors
+     */
+    private void addAncestors() {
+      // we wrap an indi (might be a hull though)
+      Indi indi = (Indi)entity;
+      if (indi==null) return;
+      // do we have a family we're child in?
+      Fam famc = indi.getFamc();
+      if (famc==null) return;
+      // add the family
+      FamNode fnode = new FamNode(famc);
+      fnode.addAncestors();
+      new MyArc(this, fnode, true);
       // done
     }
     /**
@@ -320,24 +359,53 @@ public class Model implements Graph {
    * A node for a family
    */
   private class FamNode extends MyNode {
+    /** side we're reducing padding */
+    private int sideWithReducedPadding = MyOptions.SOUTH;
     /**
      * Constructor
      */
     private FamNode(Fam fam) {
       // delegate
       super(fam);
+    }
+    /**
+     * Add descendants
+     */
+    private void addDescendants() {
+      // Looking at the fam
+      Fam fam = (Fam)entity;
       // grab the children
       Indi[] children = fam.getChildren();
       for (int c=0; c<children.length; c++) {
         // here's the child
         Indi child = children[c];
-        // create a node&arc for it
         IndiNode node = new IndiNode(child);
+        // create a node&arc for it
         new MyArc(this, node, true);       
-        // and add dependants
-        node.addDependants(this);
+        // and add descendants
+        node.addDescendants(this);
         // next child
       }
+      // remembering side for reduced padding
+      sideWithReducedPadding = MyOptions.NORTH;
+      // done
+    }
+    /**
+     * Add ancestors
+     */
+    private void addAncestors() {
+      // Looking at the fam
+      Fam fam = (Fam)entity;
+      // husband
+      IndiNode hnode = new IndiNode(fam.getHusband());
+      hnode.addAncestors();
+      IndiNode wnode = new IndiNode(fam.getWife());
+      wnode.addAncestors();      // connect
+      new MyArc(this, wnode, false);
+      new MyArc(this, new MarrNode(fam), false);
+      new MyArc(this, hnode, false);
+      // remembering side for reduced padding
+      sideWithReducedPadding = MyOptions.SOUTH;
       // done
     }
     /**
@@ -350,8 +418,8 @@ public class Model implements Graph {
      * @see genj.tree.Model.MyNode#getPadding(int)
      */
     protected double getPadding(int side) {
-      if (side==MyOptions.NORTH) return -padIndis/2 + padFams/10;
-      // + shapeMarr.getBounds2D().getHeight();
+      if (side==sideWithReducedPadding) 
+        return -padIndis/2 + padFams/10;
       return padFams/2;
     }
   } //MyFNode
@@ -365,9 +433,25 @@ public class Model implements Graph {
      */
     private MarrNode(Fam fam) {
       // delegate
-      super(null);
+      super(fam);
+    }
+    /**
+     * Add descendants
+     */
+    private void addDescendants() {
+      // the fam
+      Fam fam = (Fam)entity;
+      FamNode fnode = new FamNode(fam);
+      // its descendants
+      fnode.addDescendants();
       // add node for fam below
-      new MyArc(this, new FamNode(fam), false);
+      new MyArc(this, fnode, false);
+    }
+    /**
+     * @see genj.tree.Model.MyNode#getContent()
+     */
+    public Object getContent() {
+      return null;
     }
     /**
      * @see genj.tree.Model.MyNode#getShape()
