@@ -24,6 +24,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.IconValueAvailable;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
@@ -36,7 +37,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
-import genj.util.swing.MenuHelper;
+import genj.util.swing.PopupWidget;
 import genj.util.swing.TextFieldWidget;
 import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
@@ -50,8 +51,6 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,13 +67,30 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+/*
+> 
+> First the pull down menu is good, but a pop up window ...
+> Second, it's not easy for the users to write those tag paths. Would
+> it be possible to find something else ?
+> 
+> Third, the layout of the first line could be designed a little bit
+> different 
+> ? The "value" word is too close to the box of the "regular
+> expression" 
+> sentence, the number of occurances is difficult to find that way on
+> the 
+> right side (maybe something looking the same but with the word
+> "occurances" 
+> (translatable of course)) ;-)
+>
+ */
+ 
 /**
  * View for searching
  */
@@ -91,11 +107,12 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   
   /** default values */
   private final static String[]
-    DEFAULT_OLD_VALUES = {
+    DEFAULT_VALUES = {
       "M(a|e)(i|y)er", "San.+Francisco", "^(M|F)"
     },
-    DEFAULT_OLD_PATHS = {
-      "INDI", "FAM", "INDI:NAME", "INDI:BIRT"
+    DEFAULT_PATHS = {
+      "INDI", "INDI:NAME", "INDI:BIRT", "INDI:OCCU", "INDI:NOTE", "INDI:RESI",
+      "FAM"
     }
   ;
   
@@ -108,9 +125,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   /** whether we support regex or not */
   private final boolean isRegExpAvailable = getMatcher("", true)!=null; 
 
-  /** our actions for patterns */
-  private final List actionPatterns = createActionPatterns();
-  
   /** gedcom */
   private Gedcom gedcom;
   
@@ -154,8 +168,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     manager = maNager;
     
     // lookup old search values
-    oldPaths = new LinkedList(Arrays.asList(registry.get("old.paths" , DEFAULT_OLD_PATHS)));
-    oldValues= new LinkedList(Arrays.asList(registry.get("old.values", DEFAULT_OLD_VALUES)));
+    oldPaths = new LinkedList(Arrays.asList(registry.get("old.paths" , DEFAULT_PATHS)));
+    oldValues= new LinkedList(Arrays.asList(registry.get("old.values", DEFAULT_VALUES)));
 
     // prepare an action listener connecting to click
     ActionListener aclick = new ActionListener() {
@@ -168,41 +182,39 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     
     // prepare search criteria
     JLabel labelValue = new JLabel(resources.getString("label.value"));
-    choiceValue = new ChoiceWidget(oldValues);
-    choiceValue.addActionListener(aclick);
-    choiceValue.getEditor().getEditorComponent().addMouseListener(new MouseAdapter() {
-      /**
-       * @see java.awt.event.MouseAdapter#mousePressed(java.awt.event.MouseEvent)
-       */
-      public void mousePressed(MouseEvent e) {
-        mouseReleased(e);
-      }
-      /**
-       * @see java.awt.event.MouseAdapter#mouseReleased(java.awt.event.MouseEvent)
-       */
-      public void mouseReleased(MouseEvent e) {
-        if (isRegExpAvailable&&e.isPopupTrigger())
-          showRegExPopup(e.getComponent(), e.getPoint());
-      }
-    });
-
+    
     checkRegExp = new JCheckBox(resources.getString("label.regexp"), isRegExpAvailable);
     checkRegExp.setEnabled(isRegExpAvailable);
+
+    choiceValue = new ChoiceWidget(oldValues);
+    choiceValue.addActionListener(aclick);
+
+    PopupWidget popupPatterns = new PopupWidget("...", null, createPatternActions());
+    popupPatterns.setMargin(new Insets(0,0,0,0));
 
     JLabel labelPath = new JLabel(resources.getString("label.path"));    
     choicePath = new ChoiceWidget(oldPaths);
     choicePath.addActionListener(aclick);
     
+    PopupWidget popupPaths = new PopupWidget("...", null, createPathActions());
+    popupPaths.setMargin(new Insets(0,0,0,0));
+    
     labelCount = new JLabel();
     
     JPanel paneCriteria = new JPanel();
     GridBagHelper gh = new GridBagHelper(paneCriteria);
-    gh.add(labelValue    ,0,0,1,1);
-    gh.add(checkRegExp   ,1,0,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-    gh.add(labelCount    ,2,0,1,1);
-    gh.add(choiceValue   ,0,1,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL, new Insets(3,3,3,3));
-    gh.add(labelPath     ,0,2,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-    gh.add(choicePath    ,0,3,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL, new Insets(3,3,3,3));
+    // .. line 0
+    gh.add(labelValue    ,0,0,2,1,0, new Insets(0,0,0,8));
+    gh.add(checkRegExp   ,2,0,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+    gh.add(labelCount    ,3,0,1,1);
+    // .. line 1
+    gh.add(popupPatterns ,0,1,1,1);
+    gh.add(choiceValue   ,1,1,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL, new Insets(3,3,3,3));
+    // .. line 2
+    gh.add(labelPath     ,0,2,4,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+    // .. line 3
+    gh.add(popupPaths    ,0,3,1,1);
+    gh.add(choicePath    ,1,3,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL, new Insets(0,3,3,3));
     
     // prepare layout
     setLayout(new BorderLayout());
@@ -316,24 +328,24 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   }
 
   /**
-   * Show a popup for given 
+   * Create preset Path Actions
    */
-  private void showRegExPopup(Component comp, Point point) {
-    // create a popup
-    MenuHelper mh = new MenuHelper();
-    JPopupMenu popup = mh.createPopup("");
-    // fill with reg exp constructs
-    mh.createItems(actionPatterns);
-    // show
-    popup.show(comp, point.x, point.y);
-    choiceValue.getTextWidget().getCaret().setVisible(true);
+  private List createPathActions() {
+    
+    // loop through DEFAULT_PATHS
+    List result = new ArrayList();
+    for (int i=0;i<DEFAULT_PATHS.length;i++) {
+      result.add(new ActionPath(DEFAULT_PATHS[i]));
+    }
+    
     // done
+    return result;
   }
-  
+
   /**
    * Create RegExp Pattern Actions
    */
-  private List createActionPatterns() {
+  private List createPatternActions() {
     // loop until ...
     List result = new ArrayList();
     for (int i=0;;i++) {
@@ -414,6 +426,31 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   }
 
   /**
+   * Action - select predefined paths
+   */
+  private class ActionPath extends ActionDelegate {
+    
+    private TagPath tagPath;
+    
+    /**
+     * Constructor
+     */
+    private ActionPath(String path) {
+      tagPath = new TagPath(path);
+      MetaProperty meta = MetaProperty.get(tagPath);
+      setText(meta.getName());
+      setImage(meta.getImage());
+    }
+    
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      choicePath.setText(tagPath.toString());
+    }
+  } //ActionPath
+
+  /**
    * Action - insert regexp construct
    *   {0} all text
    *   {1} before selection
@@ -427,7 +464,12 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
      * Constructor
      */
     private ActionPattern(String txt, String pat) {
-      super.setText(txt);
+      // make first word bold
+      int i = txt.indexOf(' ');
+      if (i>0)
+        txt = "<html><b>"+txt.substring(0,i)+"</b>&nbsp;&nbsp;&nbsp;"+txt.substring(i)+"</html>";
+          
+      setText(txt);
       pattern = pat;
     }
     /**
