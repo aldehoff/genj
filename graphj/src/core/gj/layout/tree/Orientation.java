@@ -62,9 +62,9 @@ import java.util.Map;
   /*package*/ abstract Point2D.Double getPoint2D(double lat, double lon);
   
   /**
-   * Gets a complement for given NodeLayout
+   * Returns a rotated orientation
    */
-  /*package*/ abstract NodeLayout getComplement(NodeLayout nlayout);
+  /*package*/ abstract Orientation rotate(boolean clockwise);
   
   /**
    * vertical=false, topdown=true
@@ -97,10 +97,8 @@ import java.util.Map;
     /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(lat,-lon);
     }
-    /*package*/ NodeLayout getComplement(NodeLayout nlayout) {
-      NodeLayout result = nlayout.getClone();
-      result.orientn = result.oorientn==this ? truefalse : truetrue;
-      return result;
+    /*package*/ Orientation rotate(boolean clockwise) {
+      return clockwise ? truetrue : truefalse;
     }
   } //falsetrue
 
@@ -131,10 +129,8 @@ import java.util.Map;
     /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(lon,lat);
     }
-    /*package*/ NodeLayout getComplement(NodeLayout nlayout) {
-      NodeLayout result = nlayout.getClone();
-      result.orientn = result.oorientn==this ? falsetrue : falsefalse;
-      return result;
+    /*package*/ Orientation rotate(boolean clockwise) {
+      return clockwise ? falsefalse : falsetrue;
     }
   } //truetrue
 
@@ -169,10 +165,8 @@ import java.util.Map;
     /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(-lat,lon);
     }
-    /*package*/ NodeLayout getComplement(NodeLayout nlayout) {
-      NodeLayout result = nlayout.getClone();
-      result.orientn = result.oorientn==this ? truetrue : truefalse;
-      return result;
+    /*package*/ Orientation rotate(boolean clockwise) {
+      return clockwise ? truefalse : truetrue;
     }
   } //falsefalse
 
@@ -203,55 +197,10 @@ import java.util.Map;
     /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(-lon,-lat);
     }
-    /*package*/ NodeLayout getComplement(NodeLayout nlayout) {
-      NodeLayout result = nlayout.getClone();
-      result.orientn = result.oorientn==this ? falsefalse : falsetrue;
-      return result;
+    /*package*/ Orientation rotate(boolean clockwise) {
+      return clockwise ? falsetrue : falsefalse;
     }
   } //truefalse
-
-  
-//  /**
-//   * PatchedNodeOptions
-//   */
-//  private class PatchedNodeOptions implements NodeOptions {
-//    /** the orignal node options */
-//    private NodeOptions original;
-//    /**
-//     * Constructor
-//     */
-//    private PatchedNodeOptions(NodeOptions originl) {
-//      original = originl;
-//    }
-//    /**
-//     * @see gj.layout.tree.NodeOptions#set(Node)
-//     */
-//    public void set(Node node) {
-//      original.set(node);
-//    }
-//    /**
-//     * @see gj.layout.tree.TreeLayout.DefaultNodeOptions#getAlignment(int)
-//     */
-//    public double getAlignment(int dir) {
-//      if (dir==LON) return isComplement ? 1.0D : 0;
-//      return original.getAlignment(dir);
-//    }
-//    /**
-//     * @see gj.layout.tree.NodeOptions#getPadding(int)
-//     */
-//    public double getPadding(int dir) {
-//      switch (dir) {
-//        case NORTH: default:
-//          return original.getPadding(EAST);
-//        case WEST:
-//          return original.getPadding(NORTH);
-//        case EAST:
-//          return original.getPadding(SOUTH);
-//        case SOUTH:
-//          return original.getPadding(WEST);
-//      }
-//    }
-//  } //ComplementNodeOptions
 
 } //Orientation
 

@@ -24,9 +24,9 @@ public interface NodeOptions {
 
   public final static int
     NORTH = 0,
-    WEST  = 1,
-    EAST  = 2,
-    SOUTH = 3;
+    EAST  = 1,
+    SOUTH = 2,
+    WEST  = 3;
     
   public final static int
     LAT   = 0,

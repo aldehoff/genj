@@ -135,7 +135,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
    * Setter - the alignment of parents
    */
   public void setLonAlignment(double set) {
-    lonAlignment=set;
+    lonAlignment = set;
   }
 
   /**
@@ -149,7 +149,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
    * Setter - the alignment of generations (if isAlignGenerations)
    */
   public void setLatAlignment(double set) {
-    latAlignment=set;
+    latAlignment = set;
   }
 
   /**
@@ -295,10 +295,6 @@ public class TreeLayout extends AbstractLayout implements Layout {
     // something to do for me?
     if (graph.getNodes().isEmpty()) return;
 
-    // constraints check
-    lonAlignment = Math.min(1D, Math.max(0D, lonAlignment));
-    latAlignment = Math.min(1D, Math.max(0D, latAlignment));
-
     // get an orientation
     Orientation orientn = Orientation.get(isVertical,isTopDown);
     
@@ -420,16 +416,19 @@ public class TreeLayout extends AbstractLayout implements Layout {
    * Default NodeOptions
    */
   private class DefaultNodeOptions implements NodeOptions {
+    private Node n;
     /**
      * @see gj.layout.tree.NodeOptions#set(Node)
      */
     public void set(Node node) {
       // ignored
+      n=node;
     }
     /**
      * @see gj.layout.tree.NodeOptions#getAlignment(int)
      */
     public double getAlignment(int dir) {
+      if (n.toString().equals("1")&&dir==LON) return -1;
       return dir==LAT ? latAlignment : lonAlignment;
     }
     /**

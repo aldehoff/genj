@@ -27,17 +27,18 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * The NodeLayout
  */
-/*package*/ class NodeLayout implements Cloneable {
+/*package*/ class NodeLayout {
 
-  /** the original non-cloned layout */
-  /*package*/ Orientation oorientn;
+  /** a stack of orientations to return to */
+  private Stack oldos = new Stack();
   
   /** the orientation in use */
-  /*package*/ Orientation orientn;
+  private Orientation orientn;
   
   /** the node options in use */
   private NodeOptions nodeop;
@@ -55,7 +56,6 @@ import java.util.Set;
    * Constructor
    */
   /*package*/ NodeLayout(Orientation orientation, NodeOptions nodeOptions, boolean isLatAlignmentEnabled, Set orientationToggles, ArcLayout arcLayout) {
-    oorientn = orientation;
     orientn = orientation;
     nodeop  = nodeOptions;
     latalign = isLatAlignmentEnabled;
@@ -64,19 +64,6 @@ import java.util.Set;
     alayout = arcLayout;
   }
   
-  /**
-   * Return a clone
-   */
-  /*package*/ NodeLayout getClone() {
-    try {
-      NodeLayout result = (NodeLayout)super.clone();
-      result.oorientn = oorientn;
-      return result;
-    } catch (CloneNotSupportedException e) {
-      throw new RuntimeException("Couldn't clone NodeLayout - strange");
-    }
-  }
-
   /**
    * Apply to a node - root will stay at present position
    * @param tree the tree to layout
@@ -149,21 +136,26 @@ import java.util.Set;
     
     // are we looking at an inverted case?
     boolean toggleOrientation = orientntggls.contains(node);
-
-    // prepare our Layout we'll be working on
-    NodeLayout layout = toggleOrientation ? orientn.getComplement(this) : this;
+    if (toggleOrientation) {
+      // patch alignment of nodes, too
+      if (oldos.size()==0) nodeop = new AlignNodeOptions(nodeop);
+      // save old orientation
+      oldos.push(orientn);
+      // set new
+      orientn = orientn.rotate((oldos.size()&1)==0);
+    }
 
     // we layout the children
-    Contour[] children = layout.layoutChildren(node, backtrack, tree, generation);
+    Contour[] children = layoutChildren(node, backtrack, tree, generation);
 
     // we layout the root
-    Contour root = layout.layoutParent(node, backtrack, children, tree, generation);
+    Contour root = layoutParent(node, backtrack, children, tree, generation);
 
     // we layout the arcs
-    alayout.applyTo(node, backtrack, toggleOrientation ? Double.NaN : root.south, layout.orientn);
+    alayout.applyTo(node, backtrack, toggleOrientation ? Double.NaN : root.south, orientn);
 
     // make everything children/arcs directly 'under' node relative
-    layout.absolute2relative(node, backtrack);
+    absolute2relative(node, backtrack);
 
     // The result is a hull comprised of root's and children's hull
     Contour result = Contour.merge(
@@ -171,10 +163,15 @@ import java.util.Set;
     );
      
     // If another layout was used to create the contour result
-    if (layout!=this) {
-      // .. we have to transform it
-      Rectangle2D bounds = layout.orientn.getBounds(result);
+    if (toggleOrientation) {
+      // transform result into 2d
+      Rectangle2D bounds = orientn.getBounds(result);
+      // restore old orientation
+      orientn = (Orientation)oldos.pop();
+      // transform result into lat/lon
       result = orientn.getContour(bounds);
+      // restore alignment?
+      if (oldos.size()==0) nodeop = ((AlignNodeOptions)nodeop).getOriginal();
     }
 
     // done
@@ -286,11 +283,24 @@ import java.util.Set;
     } else {
 
       // relative placement above children 0..1
-      double
-        min = children[0].getIterator(Contour.WEST).longitude - parent.west,
-        max = children[children.length-1].getIterator(Contour.EAST).longitude - parent.east;
+      double align = nodeop.getAlignment(nodeop.LON);
+      if (align>=0&&align<=1) {
+        // relative above children
+        double
+          min = children[0].getIterator(Contour.WEST).longitude - parent.west,
+          max = children[children.length-1].getIterator(Contour.EAST).longitude - parent.east;
+        lon = min + (max-min)*align;
+      } else {
+        double 
+          min = Double.MAX_VALUE,
+          max = -Double.MAX_VALUE;
+        for (int c=0; c<children.length; c++) {
+          min = Math.min(min,  children[c].west);
+          max = Math.max(max, children[c].east);
+        }
+        lon = align>1.0D ? max - parent.east : min - parent.west;
+      }
         
-      lon = min + (max-min)*nodeop.getAlignment(nodeop.LON);
       lat = children[0].north - parent.south;
 
     }
@@ -302,7 +312,7 @@ import java.util.Set;
         min = lat - parent.north,
         max = lat + tree.getHeight(generation) - parent.south;
 
-      lat = min + (max-min) * nodeop.getAlignment(nodeop.LAT);
+      lat = min + (max-min) * Math.min(1D, Math.max(0D, nodeop.getAlignment(nodeop.LAT)));
     }
 
     // place it at (lat,lon)
@@ -415,5 +425,56 @@ import java.util.Set;
 
     // done
   }
+
+  
+  /**
+   * AlignNodeOptions
+   */
+  private class AlignNodeOptions implements NodeOptions {
+    /** the orignal node options */
+    private NodeOptions original;
+    /**
+     * Constructor
+     */
+    private AlignNodeOptions(NodeOptions originl) {
+      original = originl;
+    }
+    /**
+     * Returns the original no
+     */
+    /*package*/ NodeOptions getOriginal() {
+      return original;
+    }
+    /**
+     * @see gj.layout.tree.NodeOptions#set(Node)
+     */
+    public void set(Node node) {
+      original.set(node);
+    }
+    /**
+     * @see gj.layout.tree.TreeLayout.DefaultNodeOptions#getAlignment(int)
+     */
+    public double getAlignment(int dir) {
+      if (dir==LON) return (oldos.size()&1)==0 ? 0.0D : 1.0D;
+      return original.getAlignment(dir);
+    }
+    /**
+     * @see gj.layout.tree.NodeOptions#getPadding(int)
+     */
+    public double getPadding(int dir) {
+      if ((oldos.size()&1)==0) return original.getPadding(dir);
+      return original.getPadding((dir+1)&3);
+//      switch (dir) {
+//        case NORTH: default:
+//          return original.getPadding(EAST);
+//        case WEST:
+//          return original.getPadding(NORTH);
+//        case EAST:
+//          return original.getPadding(SOUTH);
+//        case SOUTH:
+//          return original.getPadding(WEST);
+//      }
+    }
+  } //ComplementNodeOptions
 
 } //NodeLayout
