@@ -37,17 +37,22 @@ import javax.swing.text.View;
   
   /** a view (cached) */
   private View view;
+  
+  /** n-th entity  */
+  private int entity;
 
   /** 
    * Constructor
    */
-  /*package*/ Hit(Property setProp, View setView) {
+  /*package*/ Hit(Property setProp, View setView, int setEntity) {
     // keep property
     property = setProp;
     // cache img
     img = property.getImage(false);
     // keep view
     view = setView;
+    // keep sequence
+    entity = setEntity;
     // done
   }
   
@@ -70,6 +75,13 @@ import javax.swing.text.View;
    */
   /*package*/ View getView() {
     return view;
+  }
+ 
+  /**
+   * n-th entity
+   */
+  /*package*/ int getEntity() {
+    return entity;
   }
   
 } //Hit

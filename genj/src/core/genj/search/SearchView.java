@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.GridBagHelper;
@@ -42,6 +43,7 @@ import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
 import java.awt.Point;
@@ -52,8 +54,10 @@ import java.awt.event.MouseEvent;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
@@ -86,8 +90,12 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   /** default values */
   private final static String[]
     DEFAULT_OLD_VALUES = {
-      "m(a|e)(i|y)er", ".* /.+/", "^M$"
-    };
+      "M(a|e)(i|y)er", "San.+Francisco", "^(M|F)"
+    },
+    DEFAULT_OLD_PATHS = {
+      "INDI", "FAM", "INDI:NAME", "INDI:BIRT"
+    }
+  ;
   
   /** how many old values we remember */
   private final static int MAX_OLD = 16;
@@ -144,19 +152,22 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     manager = maNager;
     
     // lookup old search values
-    oldPaths = (LinkedList)registry.get("old.paths", new LinkedList());
-    oldValues = (LinkedList)registry.get("old.values", new LinkedList(Arrays.asList(DEFAULT_OLD_VALUES)));
-    
-    // prepare search criteria
-    JLabel labelValue = new JLabel(resources.getString("label.value"));
-    choiceValue = new ChoiceWidget(oldValues);
-    choiceValue.addActionListener(new ActionListener() {
+    oldPaths = new LinkedList(Arrays.asList(registry.get("old.paths" , DEFAULT_OLD_PATHS)));
+    oldValues= new LinkedList(Arrays.asList(registry.get("old.values", DEFAULT_OLD_VALUES)));
+
+    // prepare an action listener connecting to click
+    ActionListener aclick = new ActionListener() {
       /** button */
       public void actionPerformed(ActionEvent e) {
         bStop.doClick();
         bSearch.doClick();
       }
-    });
+    };
+    
+    // prepare search criteria
+    JLabel labelValue = new JLabel(resources.getString("label.value"));
+    choiceValue = new ChoiceWidget(oldValues);
+    choiceValue.addActionListener(aclick);
     choiceValue.getEditor().getEditorComponent().addMouseListener(new MouseAdapter() {
       /**
        * @see java.awt.event.MouseAdapter#mousePressed(java.awt.event.MouseEvent)
@@ -178,7 +189,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
 
     JLabel labelPath = new JLabel(resources.getString("label.path"));    
     choicePath = new ChoiceWidget(oldPaths);
-    choicePath.setEnabled(false);
+    choicePath.addActionListener(aclick);
     
     labelCount = new JLabel();
     
@@ -218,6 +229,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     gedcom.removeListener(results);
     // keep old
     registry.put("old.values", oldValues);
+    registry.put("old.paths" , oldPaths );
     // continue
     super.removeNotify();
   }
@@ -264,15 +276,15 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   /**
    * Remembers a value
    */
-  private void rememberValue(String value) {
+  private void remember(ChoiceWidget choice, LinkedList old, String value) {
     // not if empty
     if (value.trim().length()==0) return;
     // keep (up to max)
-    oldValues.remove(value);
-    oldValues.addFirst(value);
-    if (oldValues.size()>MAX_OLD) oldValues.removeLast();
+    old.remove(value);
+    old.addFirst(value);
+    if (old.size()>MAX_OLD) old.removeLast();
     // update choice
-    choiceValue.setValues(oldValues);
+    choice.setValues(old);
     // done
   }
 
@@ -364,11 +376,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   /**
    * Create a hit (async)
    */
-  private Hit createHit(Property prop, String value, Matcher.Match[] matches) {
+  private Hit createHit(int entity, Property prop, String html) {
     
-    // calc html
-    String html = createHTML(prop, value, matches);
-
     // 2003/05/09
     //      
     // there's an async search for hits going on in ActionSearch
@@ -395,7 +404,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     // into separate type and use new thread-safe variant here
       
     // instantiate & done
-    return new Hit(prop, viewFactory.setHTML(html));
+    return new Hit(prop, viewFactory.setHTML(html), entity);
   }
 
   /**
@@ -455,8 +464,12 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
    * Action - trigger search
    */
   private class ActionSearch extends ActionDelegate {
+    /** tag path */
+    private TagPath tagPath = null;
     /** count of hits found */
-    private int count;
+    private int hitCount = 0;
+    /** entities found */
+    private Set entities = new HashSet();
     /** hits */
     private List hits = new ArrayList(MAX_HITS);
     /** the current matcher*/
@@ -475,10 +488,12 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       // update buttons
       bSearch.setEnabled(false);
       bStop.setEnabled(true);
-      // prepare matcher
+      // prepare matcher & path
       String value = choiceValue.getText();
+      String path = choicePath.getText();
       try {
         matcher = getMatcher(value, checkRegExp.isSelected());
+        tagPath = path.length()>0 ? new TagPath(path) : null;
       } catch (IllegalArgumentException e) {
         manager.getWindowManager().openDialog(
           null,
@@ -491,7 +506,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
         return false;
       }
       // remember
-      rememberValue(value);
+      remember(choiceValue, oldValues, value);
+      remember(choicePath , oldPaths , path );
       // continue
       return true;
     }
@@ -507,7 +523,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
         results.add(hits);
         hits.clear();
       }
-      labelCount.setText(""+count);
+      labelCount.setText(""+hitCount);
     }
     
     /**
@@ -529,10 +545,11 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
      */
     protected void postExecute() {
       // update count
-      labelCount.setText(""+count);
+      labelCount.setText(""+hitCount);
       // reset our state
+      entities.clear();
       hits.clear();
-      count = 0;
+      hitCount = 0;
       // toggle buttons
       bSearch.setEnabled(true);
       bStop.setEnabled(false);
@@ -551,39 +568,44 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     
     /** search entity (not on EDT) */
     private void search(Entity entity) {
-      search((Property)entity);
+      search(entity, entity, 0);
     }
     
     /** search property (not on EDT) */
-    private void search(Property prop) {
+    private void search(Entity entity, Property prop, int pathIndex) {
       // still going?
       if (getThread().isInterrupted()) return;
+      // check path
+      if (tagPath!=null&&pathIndex<tagPath.length()&&!tagPath.get(pathIndex).equals(prop.getTag()))
+        return;
       // all but transients
       if (!prop.isTransient()) {
         // check prop's value
         String value = prop instanceof MultiLineSupport ? ((MultiLineSupport)prop).getLinesValue() : prop.getValue();
-        search(prop, value);
+        search(entity, prop, value);
       }
       // check subs
       int n = prop.getNoOfProperties();
       for (int i=0;i<n;i++) {
-        search(prop.getProperty(i));
+        search(entity, prop.getProperty(i), pathIndex+1);
       }
       // done
     }
 
     /** search property's value */
-    private void search(Property prop, String value) {
+    private void search(Entity entity, Property prop, String value) {
       // look for matches
       Matcher.Match[] matches = matcher.match(value);
       if (matches.length==0)
         return;
       // too many?
-      if (count==MAX_HITS)
+      if (hitCount==MAX_HITS)
         throw new IndexOutOfBoundsException("Too many hits found! Restricting result to "+MAX_HITS+" hits.");
-      count++;
+      hitCount++;
+      // keep entity
+      entities.add(entity);
       // create a hit
-      Hit hit = createHit(prop, value, matches);
+      Hit hit = createHit(entities.size(), prop, createHTML(prop, value, matches));
       // keep it
       synchronized (hits) {
         hits.add(hit);
@@ -687,14 +709,26 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     /** our label used for rendering */
     private HeadlessLabel label = new HeadlessLabel(); 
 
+    /** background colors */
+    private Color[] bgColors = new Color[3];
+
     /**
      * Constructor
      */
     private ResultWidget() {
       super(results);
+      // colors
+      bgColors[0] = getSelectionBackground();
+      bgColors[1] = getBackground();
+      bgColors[2] = new Color( 
+        Math.max(bgColors[1].getRed  ()-16,  0), 
+        Math.min(bgColors[1].getGreen()+16,255), 
+        Math.max(bgColors[1].getBlue ()-16,  0)
+      );
+      
+      // rendering
       setCellRenderer(this);
       addListSelectionListener(this);
-
       label.setOpaque(true);
     }
     
@@ -702,17 +736,11 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
      * we know about action delegates and will use that here if applicable
      */
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-      // prepare color
-      if (isSelected) {
-        label.setBackground(list.getSelectionBackground());
-        label.setForeground(list.getSelectionForeground());
-      } else {
-        label.setBackground(list.getBackground());
-        label.setForeground(list.getForeground());
-      }
-
-      // prepare hit information
       Hit hit = (Hit)value;
+      
+      // prepare color
+      int c = isSelected ? 0 : 1 + (hit.getEntity()&1);  
+      label.setBackground(bgColors[c]);
       
       // show image
       label.setIcon(hit.getImage());
