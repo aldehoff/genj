@@ -291,11 +291,12 @@ public class BlueprintEditor extends JSplitPane {
         blueprint.getTag();
     }
     /**
-     * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath, int)
+     * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath)
      */
-    public Property getProperty(TagPath path, int filter) {
+    public Property getProperty(TagPath path) {
       // safety check for root-tag
-      if (!path.get(0).equals(getTag())) return null;
+      if (!path.match(0, getTag())) 
+        return null;
       // fake it
       return fakeProperty(this, path, 0);
     }
