@@ -88,7 +88,8 @@ class ProxyEvent extends Proxy {
     JLabel 
       label1 = new JLabel(resources.getString(ageat)),
       label2 = new JLabel(resources.getString("proxy.even.known")); 
-    JTextField txt = new JTextField(age, 10); txt.setEditable(false);
+      // 20040321 increased from 10 to 16 to account for long age string
+    JTextField txt = new JTextField(age, 16); txt.setEditable(false);
     String[] choices = WindowManager.OPTIONS_YES_NO;
     known = new ChoiceWidget(choices, event.isKnownToHaveHappened() ? choices[0] : choices[1]);
     known.setEditable(false);
