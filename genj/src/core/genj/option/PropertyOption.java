@@ -376,6 +376,7 @@ public abstract class PropertyOption extends Option {
       return
         File.class.isAssignableFrom(type)   ||
         String.class.isAssignableFrom(type) ||
+        Long.TYPE.isAssignableFrom(type) ||
         Integer.TYPE.isAssignableFrom(type) ||
         Boolean.TYPE.isAssignableFrom(type);
     }
