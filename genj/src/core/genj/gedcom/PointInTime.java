@@ -37,12 +37,12 @@ public abstract class PointInTime implements Comparable {
   public abstract int getYear();
   
   /**
-   * Returns the month
+   * Returns the month (first month of year is 0=Jan)
    */
   public abstract int getMonth();
 
   /**
-   * Returns the day
+   * Returns the day (first day of month is 1)
    */
   public abstract int getDay();
 
@@ -62,7 +62,7 @@ public abstract class PointInTime implements Comparable {
   public static PointInTime getNow() {
     Calendar now = Calendar.getInstance(); // default to current time
     return getPointInTime(
-      now.get(Calendar.DATE)-1,      
+      now.get(Calendar.DATE),      
       now.get(Calendar.MONTH),      
       now.get(Calendar.YEAR)
     );      
