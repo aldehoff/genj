@@ -205,10 +205,15 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       .setMinimumSize(new Dimension(0,0))
       .setContainer(bar);
     
-    actionButtonAdd    = bh.create(new ActionPropertyAdd());
-    actionButtonRemove = bh.create(new ActionPropertyDel());
-    actionButtonUp     = bh.create(new ActionPropertyUpDown(true));
-    actionButtonDown   = bh.create(new ActionPropertyUpDown(false));
+    actionButtonAdd    = bh.create(new ActionAdd());
+    actionButtonRemove = bh.create(new ActionDel());
+    
+    bh.create(new ActionCut());
+    bh.create(new ActionCopy());
+    bh.create(new ActionPaste());
+    
+    actionButtonUp     = bh.create(new ActionUpDown(true));
+    actionButtonDown   = bh.create(new ActionUpDown(false));
     actionButtonReturn = bh.setEnabled(true).create(new ActionBack());
     actionSticky       = bh.create(new ActionSticky());
     
@@ -367,9 +372,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /**
    * Action - add
    */
-  private class ActionPropertyAdd extends ActionDelegate {
+  private class ActionAdd extends ActionDelegate {
     /** constructor */
-    protected ActionPropertyAdd() {
+    protected ActionAdd() {
       super.setShortText("action.add");
       super.setImage(Images.imgAdd);
       super.setTip("tip.add_prop");
@@ -454,9 +459,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /**
    * Action - del
    */
-  private class ActionPropertyDel extends ActionDelegate {
+  private class ActionDel extends ActionDelegate {
     /** constructor */
-    protected ActionPropertyDel() {
+    protected ActionDel() {
       super.setShortText("action.del").setTip("tip.del_prop");
       super.setImage(Images.imgDelete);
     }
@@ -482,11 +487,11 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /**
    * Action - up/down
    */
-  private class ActionPropertyUpDown extends ActionDelegate {
+  private class ActionUpDown extends ActionDelegate {
     /** which */
     boolean up;
     /** constructor */
-    protected ActionPropertyUpDown(boolean up) {
+    protected ActionUpDown(boolean up) {
       this.up=up;
       if (up) super.setShortText("action.up").setTip("tip.up_prop").setImage(Images.imgUp);
       else super.setShortText("action.down").setTip("tip.down_prop").setImage(Images.imgDown);
@@ -520,6 +525,48 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     }
     
   }  //ActionPropertyUpDown
+  
+  /**
+   * Action - cut
+   */
+  private class ActionCut extends ActionDelegate {
+    /** constructor */
+    private ActionCut() {
+      setEnabled(false);
+      setImage(Images.imgCut);
+    }
+    /** run */
+    protected void execute() {
+    }
+  } //ActionCut
+
+  /**
+   * Action - copy
+   */
+  private class ActionCopy extends ActionDelegate {
+    /** constructor */
+    private ActionCopy() {
+      setEnabled(false);
+      setImage(Images.imgCopy);
+    }
+    /** run */
+    protected void execute() {
+    }
+  } //ActionCopy
+
+  /**
+   * Action - copy
+   */
+  private class ActionPaste extends ActionDelegate {
+    /** constructor */
+    private ActionPaste() {
+      setEnabled(false);
+      setImage(Images.imgPaste);
+    }
+    /** run */
+    protected void execute() {
+    }
+  } //ActionPaste
 
   /**
    * Handling selection of properties

@@ -40,7 +40,10 @@ final public class Images {
     imgUp,
     imgDown,
     imgAdd,
-    imgIndi,
+    
+    imgCut,
+    imgCopy,
+    imgPaste,
     
     imgDelete,
     imgNewFam,
@@ -67,6 +70,10 @@ final public class Images {
     imgUp        = new ImageIcon(this,"images/Up.gif");
     imgDown      = new ImageIcon(this,"images/Down.gif");
     imgAdd       = new ImageIcon(this,"images/Add.gif");
+
+    imgCut       = new ImageIcon(this,"images/Cut.gif");
+    imgCopy      = new ImageIcon(this,"images/Copy.gif");
+    imgPaste     = new ImageIcon(this,"images/Paste.gif");
     
     imgDelete        = new ImageIcon(this,"images/entity/Delete.gif");
     imgNewFam        = new ImageIcon(this,"images/entity/NewFam.gif");
