@@ -1,32 +1,19 @@
 <html>
 <body>
 
-
-<h2>
-  Famille
-</h2>
-
+<h2><a href="../entities.html">Les Entit&eacute;s</a> - Famille</h2>
 
 <p>
-La deuxi&egrave;me entit&eacute; importante est la famille. Elle lie des 
-individus et est trait&eacute;e comme une entit&eacute; s&eacute;par&eacute;e 
-pour tenir compte des cas, o&ugrave; l'un des conjoints, voir m&ecirc;me les 
-deux, est inconnu.
+La deuxi&egrave;me entit&eacute; importante est la famille. Elle lie 
+des individus et est trait&eacute;e comme une entit&eacute; 
+s&eacute;par&eacute;e pour tenir compte des cas, o&ugrave; l'un des 
+conjoints, voir m&ecirc;me les deux, est inconnu.<Br>
+Les exemples de familles que l'on pourra rencontrer, sont tous une 
+sorte d'enveloppe contenant toutes les informations connues relatives 
+&agrave; une simple famille, comme le mariage, le divorce, des notes, 
+des images, etc...
 </p>
 
-<p>
-Lorsque vous cr&eacute;ez une entit&eacute; en cliquant sur 
-<img src="../../images/Fam.gif">, GenJ va vous demander quelques renseignements 
-primordiaux. Ensuite vous allez alors pouvoir sp&eacute;cifier une relation 
-&agrave; l'&eacute;gard d'une autre entit&eacute; dans votre fichier. Simplement 
-cliquez sur un individu dans la visualisation de 
-<a href="../view/tree.html">l'Arbre g&eacute;n&eacute;alogique</a> 
-ou dans la <a href="../view/table.html">Table des Donn&eacute;es</a>
-  et vous pouvez  choisir &agrave; partir des boutons radio si cet individu
-est parent ou enfant (&agrave; condition qu'il ne soit pas d&eacute;j&agrave; 
-enfant dans une autre famille) dans cette famille. Faites votre choix et cliquez 
-sur Cr&eacute;er.
-</p>
 
 <p>
 En &eacute;ditant une Famille dans la 
@@ -38,8 +25,8 @@ famille typique comprend les informations suivantes&nbsp;:
  WIFE @I002@
  HUSB @I001@
  MARR
-  DATE 1964
-  PLAC Flagstaff, USA
+  DATE 1957
+  PLAC Noirmoutier
  CHIL @I004@
  CHIL @I005@
  CHIL @I008@
@@ -51,7 +38,7 @@ Parcourez les propri&eacute;t&eacute;s de vos familles et modifiez les. Quand
 vous ajoutez de nouvelles propri&eacute;t&eacute;s, choisissez les dans la 
 liste pr&eacute;d&eacute;finie ou si cela s'av&egrave;re n&eacute;cessaire et 
 que vous ayez des besoins particuliers, ajoutez de nouvelles &eacute;tiquettes 
-de propri&eacute;t&eacute;s.
+de propri&eacute;t&eacute;s, mais faites le que de manière exceptionnelle.
 </p>
 
 <p>
@@ -69,21 +56,87 @@ l'int&eacute;grit&eacute;
 r&eacute;f&eacute;rentielle n'est pas facile :).
 </p>
 
-<p>
-Prenons &agrave; nouveau l'exemple donn&eacute; &agrave; la section relative 
-&agrave; l'<a href="indi.html">Individu</a>&nbsp;:&nbsp;Vous avez votre arbre 
-g&eacute;n&eacute;alogique et d&eacute;couvrez qu'un anc&ecirc;tre de la soeur 
-d'une &eacute;pouse a &eacute;pous&eacute; le fr&egrave;re de celui-ci. Tous 
-ces individus sont d&eacute;j&agrave; dans votre arbre! Vous pouvez maintenant 
-cr&eacute;er une nouvelle famille pour ce lien nouvellement d&eacute;couvert. 
-Mais vous  ne voulez pas cr&eacute;er un nouvel individu - vous voulez lier 
-des entit&eacute;s existantes! La solution : Choisissez la nouvelle famille 
-pour le fr&egrave;re de votre anc&ecirc;tre et ajoutez-y une propri&eacute;t&eacute; 
-WIFE. Changez-la alors pour pointer sur la soeur en entrant son ID. En cliquant 
-sur le bouton de liaison, une propri&eacute;t&eacute; FAMS sera automatiquement 
-ajout&eacute;e &agrave; la soeur. La boucle est boucl&eacute;e.
-</p>
+<Br>
 
+<table Border="0">
+ <tr> 
+  <td Width=20%>
+    Entit&eacute;
+  </td>
+  <td Width=2%>
+    :
+  </td>
+  <td Width=78%>
+    Famille
+  </td>
+ </tr>
+ <tr>
+  <td Width=20%>
+    Image
+  </td>
+  <td Width=2%>
+    :
+  </td>
+  <td Width=78%>
+    <img src="../../images/Fam.gif">
+  </td>
+ </tr>
+ <tr>
+  <td Width=20%>
+    Etiquette Gedcom
+  </td>
+  <td Width=2%>
+    :
+  </td>
+  <td Width=78%>
+    FAM
+  </td>
+ </tr>
+ <tr valign=top>
+  <td Width=20%>
+    Information Gedcom
+  </td>
+  <td Width=2%>
+    :
+  </td>
+  <td Width=78%>
+    Identifie l'entit&eacute; l&eacute;gale, conventionnelle, etc... 
+    que forment un homme, une femme, et leurs enfants, si ils en ont, 
+    ou une famille cr&eacute;&eacute;e en raison de la naissance d'un 
+    enfant par ses p&egrave;re et m&egrave;re biologiques
+  </td>
+ </tr>
+ <tr>
+  <td Width=20%>
+    Sous&nbsp;Etiquettes
+  </td>
+  <td Width=2%>
+    :
+  </td>
+  <td Width=78%>
+    MARR, DIV, ENGA, ...
+  </td>
+ </tr>
+ <tr valign=top>
+  <td Width=20%>
+    R&eacute;f&eacute;rences&nbsp;&agrave;
+  </td>
+  <td Width=2%>
+    :
+  </td>
+  <td Width=78%>
+   <img src="../../images/IndiMale.gif">&nbsp;HUSB <a href="./indi.html">Mari</a> <br>
+   <img src="../../images/IndiFemale.gif">&nbsp;WIFE <a href="./indi.html">Epouse</a> <br>
+   <img src="../../images/MaleChild.gif">/<img src="../../images/FemaleChild.gif">&nbsp;CHIL <a href="./indi.html">Enfant</a> <br>
+   <img src="../../images/Note.gif">&nbsp;NOTE <a href="./note.html">Note</a>              <br>
+   <img src="../../images/Source.gif">&nbsp;SOUR <a href="./source.html">Source</a>          <br>
+   <img src="../../images/Media.gif">&nbsp;OBJE <a href="./media.html">Objet Multim&eacute;dia</a><br>
+   <img src="../../images/Submitter.gif">&nbsp;SUBM <a href="./submitter.html">Fournisseur d'Information</a>    
+  </td>
+ </tr>
+</table>
+
+<Br>
 
 </body>
 </html>
