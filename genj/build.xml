@@ -4,7 +4,6 @@
 
   <path id="project.class.path">
     <pathelement path ="${dir.build}/version"/>
-    <pathelement path ="${dir.build}/classes/awtx"/>
     <pathelement path ="${dir.build}/classes/core"/>
     <fileset dir="lib">
         <include name="**/*.jar"/>
@@ -17,7 +16,6 @@
     <pathelement path ="./language/ja"/>
     <pathelement path ="./src/core"/>
     <pathelement path ="./src/report"/>
-    <pathelement path ="./src/awtx"/>
     <pathelement path ="./images"/>
   </path>
 
@@ -39,7 +37,7 @@
   <!--
    Core Compilation
    -->
-  <target name="compile.core" depends="init,compile.awtx">
+  <target name="compile.core" depends="init">
     <mkdir dir="${dir.build}/classes/core"/>
     <javac srcdir="src/core" destdir="${dir.build}/classes/core"
            debug="on" optimize="off" deprecation="off" fork="yes" target="1.1">
@@ -53,17 +51,6 @@
   <target name="compile.report" depends="init">
     <mkdir dir="${dir.build}/classes/report"/>
     <javac srcdir="src/report" destdir="${dir.build}/classes/report"
-           debug="on" optimize="off" deprecation="off" fork="yes" target="1.1">
-      <classpath refid="project.class.path"/>
-    </javac>
-  </target>
-
-  <!--
-   AWTx Compilation
-   -->
-  <target name="compile.awtx" depends="init">
-    <mkdir dir="${dir.build}/classes/awtx"/>
-    <javac srcdir="src/awtx" destdir="${dir.build}/classes/awtx"
            debug="on" optimize="off" deprecation="off" fork="yes" target="1.1">
       <classpath refid="project.class.path"/>
     </javac>
@@ -139,7 +126,6 @@
                     ,genj/table/**
                     ,genj/util/*"/>
        <fileset dir="${dir.build}/version"/>
-       <fileset dir="${dir.build}/classes/awtx"/>
        <fileset dir="./images"
            includes="genj/*
                     ,genj/applet/**
@@ -192,7 +178,6 @@
      <delete file="${dir.lib}/genj.jar"/>
      <jar jarfile="${dir.lib}/genj.jar" update="True">
        <fileset dir="${dir.build}/classes/core"/>
-       <fileset dir="${dir.build}/classes/awtx"/>
        <fileset dir="${dir.build}/version"/>
        <fileset dir="./images"/>
        <fileset dir="./language/en"/>
