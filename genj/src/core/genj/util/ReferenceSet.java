@@ -21,6 +21,19 @@ public class ReferenceSet extends AbstractSet {
   } //Ref
 
   /**
+   * Returns the reference count of given object
+   */
+  public int getCount(Object o) {
+    // null is ignored
+    if (o==null) return 0;
+    // increase counter
+    Ref ref = (Ref)key2ref.get(o);
+    if (ref==null) return 0;
+    // done
+    return ref.count;
+  }
+
+  /**
    * @see genj.util.ReferenceSet#add(java.lang.Object)
    */
   public boolean add(Object o) {
