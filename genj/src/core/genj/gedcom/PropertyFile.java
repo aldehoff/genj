@@ -32,6 +32,8 @@ import java.lang.ref.SoftReference;
  */
 public class PropertyFile extends Property implements IconValueAvailable {
   
+  public final static String MINUS_D_KEY = "genj.file.max";
+  
   /** expected tag */
   private final static String TAG = "FILE";
   
@@ -141,7 +143,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
       try {
         // try to create an image if smaller than max load
         in = getGedcom().getOrigin().open(file);
-        if (in.available()<getMaxValueAsIconSize()) {
+        if (in.available()<getMaxValueAsIconSize(false)) {
            
           result = new ImageIcon(file, in);
           
@@ -222,21 +224,22 @@ public class PropertyFile extends Property implements IconValueAvailable {
     if (result==null||!result.exists()||!result.isFile()) return null;
     return result;
   }
-  
+
   /**
-   * Resolve the maximum load   */
-  public static int getMaxValueAsIconSize() {
+   * Resolve the maximum load (whether to return kb)   */
+  public static int getMaxValueAsIconSize(boolean kb) {
     // already known?
-    if (max_load>0) return max_load;
-    // resolve
-    max_load = DEF_MAX_LOAD;
-    try {
-      int i = Integer.parseInt(EnvironmentChecker.getProperty(PropertyFile.class, "genj.file.max", ""+max_load, "Maximum PropertyFile size to load"));
-      if (i>0) max_load = i;
-    } catch (Throwable t) {
-    }
+    if (max_load<=0) {
+      // resolve
+      max_load = DEF_MAX_LOAD;
+      try {
+        int i = Integer.parseInt(EnvironmentChecker.getProperty(PropertyFile.class, MINUS_D_KEY, ""+max_load, "Maximum PropertyFile size to load"));
+        if (i>0) max_load = i;
+      } catch (Throwable t) {
+      }
+    }  
     // done
-    return max_load;
+    return kb ? toKB(max_load) : max_load;
   }
 
   /**
@@ -260,4 +263,10 @@ public class PropertyFile extends Property implements IconValueAvailable {
     return result;
   }
   
+  /**
+   * helper to convert a byte size into kb
+   */
+  public static int toKB(int bytes) {
+    return (int)Math.ceil(bytes/1024D);
+  }
 } //PropertyFile
