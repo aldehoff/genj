@@ -363,14 +363,16 @@ import javax.swing.JScrollPane;
       String file = tFile.getText();
       MenuHelper mh = new MenuHelper().setTarget(view);
       JPopupMenu popup = mh.createPopup("");
-      // zoom levels
-      mh.createItem(new ActionZoom( 10));
-      mh.createItem(new ActionZoom( 25));
-      mh.createItem(new ActionZoom( 50));
-      mh.createItem(new ActionZoom(100));
-      mh.createItem(new ActionZoom(150));
-      mh.createItem(new ActionZoom(200));
-      mh.createItem(new ActionZoom(  0));
+      // zoom levels for images
+      if (img!=null) {
+        mh.createItem(new ActionZoom( 10));
+        mh.createItem(new ActionZoom( 25));
+        mh.createItem(new ActionZoom( 50));
+        mh.createItem(new ActionZoom(100));
+        mh.createItem(new ActionZoom(150));
+        mh.createItem(new ActionZoom(200));
+        mh.createItem(new ActionZoom(  0));
+      }
       // lookup associations
       String suffix = PropertyFile.getSuffix(file);
       Iterator it = FileAssociation.get(suffix).iterator();
