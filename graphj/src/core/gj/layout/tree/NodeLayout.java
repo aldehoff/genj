@@ -279,25 +279,19 @@ import java.util.Stack;
 
     } else {
 
-      // relative placement above children 0..1
-      double align = nodeop.getAlignment(node, nodeop.LON);
-      if (align>=0&&align<=1) {
-        // relative above children
-        double
-          min = children[0].getIterator(Contour.WEST).longitude - parent.west,
-          max = children[children.length-1].getIterator(Contour.EAST).longitude - parent.east;
-        lon = min + (max-min)*align;
-      } else {
-        double 
-          min = Double.MAX_VALUE,
-          max = -Double.MAX_VALUE;
-        for (int c=0; c<children.length; c++) {
-          min = Math.min(min,  children[c].west);
-          max = Math.max(max, children[c].east);
-        }
-        lon = align>1.0D ? max - parent.east + (align-1) : min - parent.west + align;
+      // calculate min/maxs
+      double
+        minc = children[0].getIterator(Contour.WEST).longitude - parent.west,
+        maxc = children[children.length-1].getIterator(Contour.EAST).longitude - parent.east,
+        mint =  Double.MAX_VALUE,
+        maxt = -Double.MAX_VALUE;
+
+      for (int c=0; c<children.length; c++) {
+        mint = Math.min(mint, children[c].west - parent.west);
+        maxt = Math.max(maxt, children[c].east - parent.east);
       }
-        
+
+      lon = nodeop.getLongitude(node, minc, maxc, mint, maxt);
       lat = children[0].north - parent.south;
 
     }
@@ -309,7 +303,7 @@ import java.util.Stack;
         min = lat - parent.north,
         max = lat + tree.getHeight(generation) - parent.south;
 
-      lat = min + (max-min) * Math.min(1D, Math.max(0D, nodeop.getAlignment(node, nodeop.LAT)));
+      lat = nodeop.getLatitude(node, min, max);
     }
 
     // place it at (lat,lon)
@@ -443,11 +437,16 @@ import java.util.Stack;
       return original;
     }
     /**
-     * @see gj.layout.tree.TreeLayout.DefaultNodeOptions#getAlignment(int)
+     * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double)
      */
-    public double getAlignment(Node node, int dir) {
-      if (dir==LON) return (oldos.size()&1)==0 ? 0.0D : 1.0D;
-      return original.getAlignment(node, dir);
+    public double getLatitude(Node node, double min, double max) {
+      return original.getLatitude(node, min, max);
+    }
+    /**
+     * @see gj.layout.tree.NodeOptions#getLongitude(Node, double, double, double, double)
+     */
+    public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
+      return (oldos.size()&1)==0 ? minc : maxc;
     }
     /**
      * @see gj.layout.tree.NodeOptions#getPadding(int)

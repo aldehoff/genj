@@ -28,18 +28,19 @@ public interface NodeOptions {
     SOUTH = 2,
     WEST  = 3;
     
-  public final static int
-    LAT   = 0,
-    LON   = 1;
-  
   /**
    * Padding of a node
    */
   public double getPadding(Node node, int dir);
   
   /**
-   * Alignment of a node
+   * Latitude of a node
    */
-  public double getAlignment(Node node, int dir);
+  public double getLatitude(Node node, double min, double max);
+  
+  /**
+   * Longitude of a node
+   */
+  public double getLongitude(Node node, double minc, double maxc, double mint, double maxt);
     
 } //NodeOptions

@@ -417,18 +417,31 @@ public class TreeLayout extends AbstractLayout implements Layout {
    */
   private class DefaultNodeOptions implements NodeOptions {
     /**
-     * @see gj.layout.tree.NodeOptions#getAlignment(int)
-     */
-    public double getAlignment(Node node, int dir) {
-      return dir==LAT ? latAlignment : lonAlignment;
-    }
-    /**
      * @see gj.layout.tree.NodeOptions#getPadding(int)
      */
     public double getPadding(Node node, int dir) {
+      if (node instanceof NodeOptions) 
+        return ((NodeOptions)node).getPadding(node, dir);
       if (dir==WEST||dir==EAST) return lonPadding/2;
       return latPadding/2;
     }
+    /**
+     * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double)
+     */
+    public double getLatitude(Node node, double min, double max) {
+      if (node instanceof NodeOptions) 
+        return ((NodeOptions)node).getLatitude(node, min, max);
+      return min + (max-min) * Math.min(1D, Math.max(0D, latAlignment));
+    }
+    /**
+     * @see gj.layout.tree.NodeOptions#getLongitude(Node, double, double, double, double)
+     */
+    public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
+      if (node instanceof NodeOptions) 
+        return ((NodeOptions)node).getLongitude(node, minc, maxc, mint, maxt);
+      return minc + (maxc-minc) * Math.min(1D, Math.max(0D, lonAlignment));
+    }
+
   } //DefaultNodeOptions
 
 } //TreeLayout
