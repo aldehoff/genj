@@ -299,6 +299,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
       nodeOptions, 
       arcOptions,
       isLatAlignmentEnabled,
+      isBalanceChildren,
       orientationToggles,
       TreeArcLayout.get(isBendArcs)
     );

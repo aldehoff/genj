@@ -21,7 +21,7 @@ package gj.layout;
 public abstract class AbstractLayout implements Layout {
   
   /** whether we debug or not */
-  private boolean isDebug = true;
+  private boolean isDebug = false;
   
   /** an arc layout for convenience */
   protected ArcLayout arcLayout = new ArcLayout();

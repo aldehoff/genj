@@ -55,14 +55,18 @@ import java.util.Stack;
   /** whether latitude alignment is enabled */
   private boolean latalign;
   
+  /** whether we align children */
+  private boolean balance;
+  
   /**
    * Constructor
    */
-  /*package*/ NodeLayout(Orientation orientation, NodeOptions nodeOptions, ArcOptions arcOptions, boolean isLatAlignmentEnabled, Set orientationToggles, TreeArcLayout arcLayout) {
+  /*package*/ NodeLayout(Orientation orientation, NodeOptions nodeOptions, ArcOptions arcOptions, boolean isLatAlignmentEnabled, boolean isBalanceChildrenEnable, Set orientationToggles, TreeArcLayout arcLayout) {
     orientn = orientation;
     nodeop  = nodeOptions;
     arcop = arcOptions;
     latalign = isLatAlignmentEnabled;
+    balance = isBalanceChildrenEnable;
     if (latalign) orientntggls = new HashSet();
     else orientntggls = orientationToggles;
     alayout = arcLayout;
@@ -142,7 +146,7 @@ import java.util.Stack;
     boolean toggleOrientation = orientntggls.contains(node);
     if (toggleOrientation) {
       // patch alignment of nodes, too
-      if (oldos.size()==0) nodeop = new AlignNodeOptions(nodeop);
+      if (oldos.size()==0) nodeop = new ToggleAlignment(nodeop);
       // save old orientation
       oldos.push(orientn);
       // set new
@@ -181,7 +185,7 @@ import java.util.Stack;
       // transform result into lat/lon
       result = orientn.getContour(bounds);
       // restore alignment?
-      if (oldos.size()==0) nodeop = ((AlignNodeOptions)nodeop).getOriginal();
+      if (oldos.size()==0) nodeop = ((ToggleAlignment)nodeop).getOriginal();
     }
 
     // done
@@ -196,6 +200,7 @@ import java.util.Stack;
 
     Node[] nodes = new Node[root.getArcs().size()];
     Contour[] contours = new Contour[nodes.length];
+    double[][] deltas = new double[nodes.length][0];
     
     // we loop through all arcs leaving this node
     ArcIterator it = new ArcIterator(root);
@@ -222,34 +227,26 @@ import java.util.Stack;
         contours[c].translate(dlat, 0);
     
         // calculate the deltas to previous children
-        double[] deltas = deltas(contours, c, contours[c]);
-        int min = deltas.length-1;
-        for (int d=deltas.length-2; d>=0; d--) min = deltas[d]<deltas[min] ? d : min;
+        deltas[c] = calculateDeltas(contours, c, contours[c]);
+
+        // find minimum delta
+        double dlon = Double.MAX_VALUE;
+        for (int d=0; d<deltas[c].length; d++) dlon = Math.min(deltas[c][d], dlon); 
         
         // place n-th child as close as possible
-        double dlon = -deltas[min];
-        contours[c].translate(0, dlon);
-        ModelHelper.translate(nodes[c],orientn.getPoint2D(dlat,dlon));
-        
-        // balance children from right to left
-// FIXME balancing        
-//        for (int s=c-1;s>min;s--) {
-//          deltas[s]+=dlon;
-//          double olat = orientn.getLatitude (nodes[s].getPosition());
-//          double olon = orientn.getLongitude(nodes[s].getPosition()); 
-//          double nlon = nodeop .getLongitude(nodes[s], olon, olon+deltas[s]);
-//          if (nlon!=olon) {
-//            contours[s].translate(0,nlon-olon);
-//            ModelHelper.translate(nodes[s], orientn.getPoint2D(0,nlon-olon));
-//          }
-//        }
-    
+        contours[c].translate(0, -dlon);
+        ModelHelper.translate(nodes[c],orientn.getPoint2D(dlat, -dlon));
+        for (int d=0; d<deltas[c].length; d++) deltas[c][d] -= dlon;
+                
         // 'new' child is positioned
       }
       
       // one child handled
       c++;
     }
+
+    // balance children
+    if (c>2&&balance) balanceChilden(nodes, contours, deltas, c);
     
     // done
     Object[] result=new Contour[c];
@@ -320,8 +317,11 @@ import java.util.Stack;
 
   /**
    * Calculates the deltas of each contour in cs with c
+   * @param cs contours to compare against
+   * @param css number of contours in cs
+   * @param c contour to compare against
    */
-  private double[] deltas(Contour[] cs, int css, Contour c) {
+  private double[] calculateDeltas(Contour[] cs, int css, Contour c) {
     
     // create a result
     double[] result = new double[css];
@@ -418,17 +418,27 @@ import java.util.Stack;
     // done
   }
 
+  /**
+   * Balance children
+   */
+  private void balanceChilden(Node[] children, Contour[] contours, double[][] deltas, int count) {
+    // FIXME balancing
+    for (int i=0; i<count; i++) {
+      System.out.print(deltas[i].length+ " ");        
+    }
+    System.out.println();
+  }
   
   /**
    * AlignNodeOptions
    */
-  private class AlignNodeOptions implements NodeOptions {
+  private class ToggleAlignment implements NodeOptions {
     /** the orignal node options */
     private NodeOptions original;
     /**
      * Constructor
      */
-    private AlignNodeOptions(NodeOptions originl) {
+    private ToggleAlignment(NodeOptions originl) {
       original = originl;
     }
     /**
