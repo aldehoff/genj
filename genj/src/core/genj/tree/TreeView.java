@@ -426,13 +426,16 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
     if (!(entity instanceof Indi||entity instanceof Fam)) return;
     // Node for it?
     TreeNode node = model.getNode(entity);
-    if (node==null) return;
+    if (node==null) 
+      return;
+    
     // remember
     currentEntity = entity;
     // scroll
     scrollTo(node.pos);
     // make sure it's reflected
     content.repaint();
+    overview.repaint();
     // done
   }
   
@@ -695,10 +698,11 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
       UnitGraphics gw = new UnitGraphics(g,DPMM.getX()*zoomx*zoom, DPMM.getY()*zoomy*zoom);
       
       // init renderer
-      contentRenderer.cIndiShape     = Color.black;
-      contentRenderer.cFamShape      = Color.black;
-      contentRenderer.cArcs          = Color.lightGray;
-      contentRenderer.selection      = null;
+      contentRenderer.cIndiShape     = Color.BLACK;
+      contentRenderer.cFamShape      = Color.BLACK;
+      contentRenderer.cArcs          = Color.LIGHT_GRAY;
+      contentRenderer.cSelectedShape = Color.RED;
+      contentRenderer.selection      = currentEntity;
       contentRenderer.indiRenderer   = null;
       contentRenderer.famRenderer    = null;
       
@@ -810,6 +814,7 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
         // change current!
         currentEntity = (Entity)content;
         repaint();
+        overview.repaint();
         // propagate it
         manager.setContext(new Context(currentEntity));
       }
