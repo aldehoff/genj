@@ -110,7 +110,7 @@ public class Resources {
       // we might end up with resources_fr.properties. So
       // let's kill the default here 
       try { 
-        Locale.setDefault(new Locale(""));
+        Locale.setDefault(new Locale("","",""));
       } catch (Throwable t) {
       }
       
