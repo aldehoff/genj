@@ -12,7 +12,18 @@ import java.util.StringTokenizer;
 public class ReportPhonetics extends Report {
     
     public int outputFormat = 0;
-    public static String[] outputFormats = { "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex" };
+    
+    public static String[] outputFormats = {
+       "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex"
+    };
+    
+    private static Phonetics[] phonetics = { 
+      new Soundex(),
+      new Metaphone(),
+      new DoubleMetaphone(),
+      new Nysiis(),
+      new Phonex()
+    };
     
     /** this report's version */
     public static final String VERSION = "0.1";
@@ -97,70 +108,41 @@ public class ReportPhonetics extends Report {
     
     private void printPhonetic(Indi indi) {
         
+        // grab information from indi
         String firstName = indi.getFirstName();
         String lastName = indi.getLastName();
         
         println("@"+indi.getId()+"@ "+firstName+" "+lastName);
         
-        switch (outputFormat) {
+        // encode in phonetics
+        Phonetics p = phonetics[outputFormat];
+        
+        // print the Soundex codes
+        firstName = p.encode(firstName);
+        if(firstName==null)
+            firstName="";                
+        lastName = p.encode(lastName);
+        if(lastName==null)
+            lastName="";
             
-            case 0 :
-                // print the Soundex codes
-                firstName=Soundex.sencode(firstName);
-                if(firstName==null)
-                    firstName="";                
-                lastName=Soundex.sencode(lastName);
-                if(lastName==null)
-                    lastName="";
-                println("Soundex: "+firstName+" "+lastName);
-                break;
-            case 1 :
-                
-                //print the Metaphone codes
-                firstName=Metaphone.sencode(firstName);
-                if(firstName==null)
-                    firstName="";                
-                lastName=Metaphone.sencode(lastName);
-                if(lastName==null)
-                    lastName="";
-                println("Metaphone: "+firstName+" "+lastName);
-                break;
-                
-            case 2 :
-                //print the Double Metaphone codes
-                firstName=DoubleMetaphone.sencode(firstName);
-                if(firstName==null)
-                    firstName="";
-                lastName=DoubleMetaphone.sencode(lastName);
-                if(lastName==null)
-                    lastName="";                
-                println("DoubleMetaphone: "+firstName+" "+lastName);
-                break;
-                
-            case 3 :
-                //print the NYSIIS codes
-                firstName=Nysiis.sencode(firstName);
-                if(firstName==null)
-                    firstName="";
-                lastName=Nysiis.sencode(lastName);
-                if(lastName==null)
-                    lastName="";                
-                println("NYSIIS: "+firstName+" "+lastName);
-                break;
-                
-            case 4 :
-                //print the Phonex codes
-                firstName=Phonex.sencode(firstName);
-                if(firstName==null)
-                    firstName="";
-                lastName=Phonex.sencode(lastName);
-                if(lastName==null)
-                    lastName="";                
-                println("Phonex: "+firstName+" "+lastName);
-                break;
-        }
+        println(outputFormats[outputFormat]  + ": " + firstName + " " + lastName);
+
+        // done
         println();
     }
+    
+    
+    /**
+     * Our phonetics interface
+     */
+    private interface Phonetics {
+      
+      /** 
+       * encode implementation
+       */
+      public String encode(String name);
+      
+    } //Phonetics
     
     /**
      * from http://www.bgw.org/projects/java/
@@ -175,7 +157,7 @@ public class ReportPhonetics extends Report {
      * org.apache.commons.codec.language package
      */
     
-    static class DoubleMetaphone {
+    static class DoubleMetaphone implements Phonetics {
         
         private int current;
         private int encodeLimit = 4;
@@ -327,11 +309,6 @@ public class ReportPhonetics extends Report {
             current++;
             if (input.charAt(current) == ch)
                 current++;
-        }
-        
-        public static String sencode(String in) {
-            DoubleMetaphone dm = new DoubleMetaphone();
-            return dm.encode(in);
         }
         
         public String encode(String in) {
@@ -1002,7 +979,7 @@ public class ReportPhonetics extends Report {
         }
     } //DoubleMetaphone
     
-    static class Metaphone {
+    static class Metaphone implements Phonetics {
         
         private static String vowels = "AEIOU";
         private static String frontv = "EIY";
@@ -1012,7 +989,7 @@ public class ReportPhonetics extends Report {
         /**
          * get the MetaPhone code for THE FIRST WORD in this string
          */
-        public static String sencode(String txt) {
+        public String encode(String txt) {
             int mtsz = 0;
             boolean hard = false;
             if ((txt == null) || (txt.length() == 0))
@@ -1020,7 +997,7 @@ public class ReportPhonetics extends Report {
             
             // check the first letter is a character
             if (!Character.isLetter(txt.charAt(0)))
-                return sencode(txt.substring(1));
+                return encode(txt.substring(1));
             
             // single character is itself
             if (txt.length() == 1)
@@ -1256,14 +1233,10 @@ public class ReportPhonetics extends Report {
      * also available (Apache Licsence) in the
      * org.apache.commons.codec.language package
      */
-    static class Nysiis {
+    static class Nysiis implements Phonetics {
+      
         boolean debug = false;
         StringBuffer word = null;
-        
-        public static String sencode(String word) {
-            Nysiis ny = new Nysiis();
-            return ny.encode(word);
-        }
         
         /**
          * encode - Nysiis phonetic encoding.
@@ -1475,7 +1448,7 @@ public class ReportPhonetics extends Report {
      * A class to generate a phonex phonetic code of a string
      * @author jerome@hettich.org.uk
      */
-    static class Phonex {
+    static class Phonex implements Phonetics {
         
         static public final char[] CHAR_MAPPING = "01230120022455012623010202".toCharArray();
         
@@ -1492,7 +1465,7 @@ public class ReportPhonetics extends Report {
          * they are ignored but accented characters are NOT (well they
          * will just be ignored too!)
          */
-        public String phonex(String txt) {
+        public String encode(String txt) {
             
             if (txt == null || txt.length() == 0)
                 return null;
@@ -1652,14 +1625,6 @@ public class ReportPhonetics extends Report {
         }
         
         /**
-         * Static method to return the phonex code of a string
-         */
-        public static String sencode(String s) {
-            Phonex encoder = new Phonex();
-            return encoder.phonex(s);
-        }
-        
-        /**
          * Returns the maxCodeLen.
          */
         public int getMaxCodeLen() {
@@ -1683,7 +1648,7 @@ public class ReportPhonetics extends Report {
      * see http://www.generationjava.com/licencing.shtml
      */
     
-    static class Soundex {
+    static class Soundex implements Phonetics {
         
         static public final char[] US_ENGLISH_SOUNDEX_MAPPING = "01230120022455012623010202".toCharArray();
         
@@ -1724,11 +1689,6 @@ public class ReportPhonetics extends Report {
             this.soundexMapping = mapping;
         }
         
-        public static String sencode(String s) {
-            Soundex snd = new Soundex();
-            return snd.soundex(s);
-        }
-        
         /**
          * returns a string stripped of accented characters
          */
@@ -1746,7 +1706,7 @@ public class ReportPhonetics extends Report {
          * Get the SoundEx value of a string.
          * it will return the SoundEx code for the FIRST word in the string
          */
-        public String soundex(String s) {
+        public String encode(String s) {
             if (s == null || s.length() == 0)
                 return null;
             
@@ -1755,7 +1715,7 @@ public class ReportPhonetics extends Report {
             
             // check the first letter is a character
             if (!Character.isLetter(str.charAt(0)))
-                return soundex(str.substring(1));
+                return encode(str.substring(1));
             
             char out[] = { '0', '0', '0', '0' };
             char last, mapped;
