@@ -13,7 +13,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.DateFormatSymbols;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -49,19 +51,19 @@ public class Wikipedia {
   private static Pattern 
   
     // match "== something ==="
-    PATTERN_GROUP = Pattern.compile(" *(=+) *([^=]*?)[ =]*"),
+    REGEXP_GROUP = Pattern.compile(" *(=+) *([^=]*?)[ =]*"),
     
     // match "* [[6. August]] - Event description"
-    PATTERN_EVENT = Pattern.compile("\\*+[ ]*\\[\\[(.+?)\\]\\] *[-:] *(.*)"),
+    REGEXP_EVENT = Pattern.compile("\\*+[ ]*\\[\\[(.+?)\\]\\] *[-:] *(.*)"),
     
     // match "...[[link|text]]..."
-    PATTERN_LINK  = Pattern.compile("\\[\\[([^\\[]*\\|)?([^\\[]*?)\\]\\]"),
+    REGEXP_LINK  = Pattern.compile("\\[\\[([^\\[]*\\|)?([^\\[]*?)\\]\\]"),
     
     // match "January 1", "13.Maerz", "3 fevrier"
-    PATTERN_MONTH = Pattern.compile("[^\\d \\.]+"),
-    PATTERN_DAY   = Pattern.compile("[\\d]+");
+    REGEXP_MONTH = Pattern.compile("[^\\d \\.]+"),
+    REGEXP_DAY   = Pattern.compile("[\\d]+");
   
-  private static Object[] PATTERNSUBS = {
+  private static Object[] REGEXPNSUB = {
       // "'''"
       Pattern.compile("'''(.*?)'''"  ), "<b>$1</b>",
       // "''" 
@@ -88,6 +90,7 @@ public class Wikipedia {
     
     // check args
     String lang, cmd;
+    String[] ignore;
     PrintWriter out = null;
     int first, last;
     try {
@@ -102,24 +105,36 @@ public class Wikipedia {
       months = new DateFormatSymbols(new Locale(lang)).getMonths();
       if (months==null||months.length<12)
         throw new IllegalArgumentException("no month name information for "+lang);
+      for (int i=0;i<months.length;i++)
+        months[i] = months[i].toLowerCase();
       
       // years
       first = Integer.parseInt(args[2]);
       last  = Integer.parseInt(args[3]);
 
+      // ignore
+      if (args.length>=5) {
+        StringTokenizer tokens = new StringTokenizer(args[4], "\\");
+        ignore = new String[tokens.countTokens()];
+        for (int i=0;i<ignore.length;i++) 
+          ignore[i] = tokens.nextToken().toLowerCase();
+      } else {
+        ignore = new String[0];
+      }
+      
       // out
-      if (args.length>4) 
-        out   = getOut(first, last, args[4] , lang);
+      if (args.length>=6) 
+        out   = getOut(first, last, args[5] , lang);
 
     } catch (Throwable t) {
-      log(true, "java genj.almanac.WikipediaImport read LANGUAGE FIRSTYEAR LASTYEAR [DIROUT]");
+      log(true, "java genj.almanac.WikipediaImport read LANGUAGE FIRSTYEAR LASTYEAR IGNORE DIROUT");
       log(false," ("+t.getMessage()+")");
       System.exit(1);
       return;
     }
     
     // run import
-    new Wikipedia().read(lang, first, last, out);
+    new Wikipedia().read(lang, ignore, first, last, out);
     
     // close out
     if (out!=null) {
@@ -143,8 +158,10 @@ public class Wikipedia {
   /**
    * Import
    */
-  private void read(String lang, int first, int last, PrintWriter out) {
+  private void read(String lang, String[] ignore, int first, int last, PrintWriter out) {
 
+    log(true, "Ignoring groups: "+Arrays.asList(ignore));
+    
     // put out disclaimer
     if (out!=null) {
       String[] args = new String[]{ lang, ""+first, ""+last };
@@ -165,7 +182,7 @@ public class Wikipedia {
         String url = new MessageFormat(URL).format(new String[]{ lang, ""+year});
         
         // try to read exports
-        readURL(yyyy, new URL(url), out);
+        readURL(yyyy, ignore, new URL(url), out);
         
         // next
       } catch (IOException e) {
@@ -197,7 +214,7 @@ public class Wikipedia {
     if (!file.canWrite())
       throw new IllegalArgumentException("can't write "+file);
     
-    log(true, "Writing Wikipedia events into "+file);
+    log(true, "Writing Wikipedia events into "+file.getAbsolutePath());
     
     // prepare unix style line delimiters
     System.setProperty("line.separator", "\n");
@@ -215,7 +232,7 @@ public class Wikipedia {
   /**
    * read from Wikipedia URL
    */
-  private void readURL(String yyyy, URL url, PrintWriter out) throws IOException {
+  private void readURL(String yyyy, String[] ignore, URL url, PrintWriter out) throws IOException {
     
     // open pipe
     HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -227,7 +244,7 @@ public class Wikipedia {
       throw new IOException(con.getResponseMessage());
     
     // read
-    readPage(yyyy, in, out);
+    readPage(yyyy, ignore, in, out);
     
     // close it
     con.disconnect();
@@ -238,14 +255,14 @@ public class Wikipedia {
   /**
    * Read Wikipedia history page (UTF-8) from input stream
    */
-  private void readPage(String yyyy, InputStream xml, PrintWriter out) throws IOException {
+  private void readPage(String yyyy, String[] ignore, InputStream xml, PrintWriter out) throws IOException {
     // we're starting without event section
     group = null;
     // read it line by line
     BufferedReader in = new BufferedReader(new InputStreamReader(xml, UTF8));
     while (true) {
       String line = in.readLine();
-      if (line==null||!readLine(yyyy, line, out)) 
+      if (line==null||!readLine(yyyy, ignore, line, out)) 
         break;
     }
     // done
@@ -255,25 +272,32 @@ public class Wikipedia {
    * Read wikipedia line of text - we're looking for 
    * the end of the header, groupings and event lines
    */
-  private boolean readLine(String yyyy, String line, PrintWriter out) {
+  private boolean readLine(String yyyy, String[] ignore, String line, PrintWriter out) {
     
-    // match "== 2ND_LEVEL_GROUP =="
-    Matcher matcher = PATTERN_GROUP.matcher(line);
+    // match "== group"
+    Matcher matcher = REGEXP_GROUP.matcher(line);
     if (matcher.matches()) {
+
       int    lineLevel = matcher.group(1).length();
-      String lineGroup = unformat(matcher.group(2));
-      // are we not in a group yet? 
-      if (group==null) {
-        if (lineLevel==2)
-          group = lineGroup;
+      String lineGroup = unformat(unlinkify(matcher.group(2)));
+
+      if (lineLevel<1||lineLevel>3)
+        return true;
+
+      // one of the ignore groups?
+      if (contains(lineGroup, ignore)) {
+        group = null;
         return true;
       }
-      // don't go into another level-2 group - stop here
-      if (lineLevel==2)
-        return false;
-      // change group for level-3 groups that are not months
-      if (lineLevel==3&&!containsMonth(lineGroup))
-        group = unlinkify(lineGroup);
+
+      // a month? stay with current group!
+      if (contains(lineGroup, months))
+        return true;
+
+      // change group
+      group = lineGroup;
+      
+      return true;
     }
     
     // are we in a group yet?
@@ -281,7 +305,7 @@ public class Wikipedia {
       return true;
     
     // matching an event "* [[15. Juli]] - [[Manitoba]] wird kanadische Provinz"
-    Matcher event = PATTERN_EVENT.matcher(line);
+    Matcher event = REGEXP_EVENT.matcher(line);
     if (event.matches())
       readEvent(yyyy, event, out);
     
@@ -330,7 +354,7 @@ public class Wikipedia {
   private String getYYYYMMDD(String yyyy, String monthday) {
     
     // try month
-    Matcher month = PATTERN_MONTH.matcher(monthday);
+    Matcher month = REGEXP_MONTH.matcher(monthday);
     if (!month.find())
       return null;
     String mm = getMM(month.group(0));
@@ -338,7 +362,7 @@ public class Wikipedia {
       return null;
 
     // try day
-    Matcher day = PATTERN_DAY.matcher(monthday);
+    Matcher day = REGEXP_DAY.matcher(monthday);
     if (!day.find())
       return null;
     String dd = getDD(day.group(0));
@@ -351,10 +375,10 @@ public class Wikipedia {
   }
 
   /**
-   * Turn month name into MM
+   * Turn month name into MM (lower case)
    */
   private String getMM(String month) {
-    
+    month = month.toLowerCase();
     for (int i=1;i<=months.length;i++) {
       if (months[i-1].equals(month))
         return i<10 ? "0"+i : ""+i;
@@ -399,7 +423,7 @@ public class Wikipedia {
     
     if (text.length()>0) {
       // match "...[[link|text]]..."
-      Matcher matcher = PATTERN_LINK.matcher(text);
+      Matcher matcher = REGEXP_LINK.matcher(text);
       text = matcher.replaceAll("$2");
     }
     
@@ -412,20 +436,25 @@ public class Wikipedia {
    */
   private String unformat(String text) {
     // match all patterns
-    for (int i=0;i<PATTERNSUBS.length;) {
-      Matcher matcher = ((Pattern)PATTERNSUBS[i++]).matcher(text);
-      text = matcher.replaceAll(PATTERNSUBS[i++].toString());
+    for (int i=0;i<REGEXPNSUB.length;) {
+      Matcher matcher = ((Pattern)REGEXPNSUB[i++]).matcher(text);
+      text = matcher.replaceAll(REGEXPNSUB[i++].toString());
     }
     // done
     return text;
   }
   
   /**
-   * checks whether a string contains a month name
+   * checks whether a text contains one of given sub-strings (lower case sensitive)
    */
-  private boolean containsMonth(String text) {
-    for (int i=0;i<12;i++) {
-      if (text.indexOf(months[i])>=0)
+  private boolean contains(String text, String[] subs) {
+    text = text.toLowerCase();
+    for (int i=0;i<subs.length;i++) {
+      // just because we're paranoid (months contains '')
+      if (subs[i]==null||subs[i].length()==0)
+        continue;
+      // check containment
+      if (text.indexOf(subs[i])>=0)
         return true;
     }
     return false;

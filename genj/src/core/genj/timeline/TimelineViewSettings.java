@@ -75,8 +75,11 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   };
   
   /** a widget for selecting almanac event libraries / categories */
-  private ListSelectionWidget 
-    almanacCategories = new ListSelectionWidget();
+  private ListSelectionWidget almanacCategories = new ListSelectionWidget() {
+    protected String getText(Object choice) {
+      return "<html><body>"+choice+"</body></html>";
+    }
+  };
   
   /** Checkbox for options */
   private JCheckBox[] checkOptions = {
@@ -204,6 +207,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     
     // almanac categories
     Almanac almanac = Almanac.getInstance();
+    almanac.waitLoaded();
     List cats = almanac.getCategories();
     almanacCategories.setChoices(cats);
     almanacCategories.setSelection(view.getAlmanacCategories());

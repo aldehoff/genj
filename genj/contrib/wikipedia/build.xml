@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Wikipedia" default="wikipedia" basedir=".">
+	
+  <property file="../../build.properties"/>
+  <property file="./build.properties"/>
+	
+  <!--
+   Wikipedia Import of languages
+   -->
+  <target name="wikipedia" depends="compile">
+
+    <antcall target="wikipedia.language">
+      <param name="language" value="de"/>
+      <param name="ignore"   value="Katastrophen\\Sport\\Wissenschaft\\Kultur\\Geboren\\Gestorben\\Halbjahr\\sonstiges\\Bewegende\\Organisationen"/>
+    </antcall>
+    <antcall target="wikipedia.language">
+      <param name="language" value="en"/>
+      <param name="ignore" value="Births\\Deaths\\Year"/>
+    </antcall>
+    <antcall target="wikipedia.language">
+      <param name="language" value="fr"/>
+      <param name="ignore"   value="Sciences\\Arts\\Sports\\Musique\\Physique\\Technologie\\Naissances\\Décès\\Littérature\\Cinéma\\Techniques"/>
+    </antcall>
+  	
+  </target>
+	
+  <!--
+   Wikipedia Import of one language
+   -->
+  <target name="wikipedia.language">
+    <java classname="genj.almanac.Wikipedia" classpath="${dir.build}/classes/wikipedia">
+      <arg value="read"/>
+      <arg value="${language}"/>
+      <arg value="${wikipedia.from}"/>
+      <arg value="${wikipedia.to}"/>
+      <arg value="${ignore}"/>
+      <arg value="contrib/wikipedia"/>
+    </java>
+  </target>
+
+  <!--
+   Necessary Compilation
+   -->
+  <target name="compile">
+  	
+    <mkdir dir="${dir.build}/classes/wikipedia"/>
+  	
+    <javac srcdir="../../src/core" destdir="${dir.build}/classes/wikipedia"
+           encoding="ASCII" source="1.4" target="1.4">
+  	  <filename name="genj/almanac/Wikipedia.java"/>
+    </javac>
+  	
+  </target>
+	
+</project>

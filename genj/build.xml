@@ -94,31 +94,6 @@
   </target>
 
   <!--
-   Wikipedia Import
-   -->
-  <target name="wikipedia" depends="compile">
-    <antcall target="wikipedia.language">
-      <param name="language" value="de"/>
-    </antcall>
-    <antcall target="wikipedia.language">
-      <param name="language" value="en"/>
-    </antcall>
-    <antcall target="wikipedia.language">
-      <param name="language" value="fr"/>
-    </antcall>
-  </target>
-	
-  <target name="wikipedia.language">
-    <java fork="true" classname="genj.almanac.Wikipedia" classpath="${dir.build}/classes/core">
-      <arg value="read"/>
-      <arg value="${language}"/>
-      <arg value="${wikipedia.from}"/>
-      <arg value="${wikipedia.to}"/>
-      <arg value="./contrib/wikipedia"/>
-    </java>
-  </target>
-  	
-  <!--
    Version
    -->
   <target name="version">
