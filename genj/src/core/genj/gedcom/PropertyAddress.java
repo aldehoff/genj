@@ -61,7 +61,8 @@ public class PropertyAddress extends Property {
   public Property addDefaultProperties() {
     noteModifiedProperty();
     addProperty(new PropertyCity(""));
-    addProperty(new PropertyPostalCode(""));
+    // 20030210 zip is a rather new thing - leave it out as default
+    //addProperty(new PropertyPostalCode(""));
     return this;
   }
 
