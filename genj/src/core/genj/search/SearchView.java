@@ -382,26 +382,30 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     //      
     // there's an async search for hits going on in ActionSearch
     // and here we're initializing a hit for each found match. 
-    // We want to create the View async because it takes quite 
-    // some time that we don't want to spend on the EDT.
-    // HeadlessLabel.setHTML does this for us using BasicHTML.
+    // We want to create the text.View for each hit async because 
+    // this takes quite some time that we don't want to spend on 
+    // the EDT.
+    // HeadlessLabel.setHTML does this for us using text.BasicHTML.
     //
-    // Caveat: BasicHTML's root-view Renderer.<init> calls 
-    //   setSize(view.getPreferredSpan(X_AXIS), view.getPreferredSpan(Y_AXIS));
-    // so a layout calculation is triggered unnecessarily while
-    // the EDT at the same time might be busy rendering the view 
-    // hierarchy.
+    // Caveat: text.GlyphView is not thread-safe when it comes
+    // to paint() or
+    //   view.getPreferredSpan(X_AXIS)
+    //   view.getPreferredSpan(Y_AXIS));
+    //                             (@see GlyphView.checkPainter()) 
     //
-    // Effect: The GlyphView type uses one Glyphpainter(1) per 
-    // instance (@see GlyphView.checkPainter()) to #1 calculate
-    // size/preferences AND ALSO #2 render. 
-    // This painter keeps as an internal state the current
-    // font/metrics (@see GlyphPainter1.sync()) which is now
-    // shared by #1 and #2. 
-    // ==> The render result can wrong (noticeably plain/bold)
+    // #1 BasicHTML's root-view Renderer.<init> calls getPreferredSpan()
+    // though which triggers a complete layout calculation using
+    // the global text.GlyphView's renderer.
+    // 
+    // #2 At the same time the EDT might be busy rendering other view 
+    // hierarchies with GlypViews.
+    //
+    // Effect: The global Glyph painter has font/metrics state
+    // (@see GlyphPainter1.sync()) which is now shared by #1 and #2. 
+    // ==> The render result can wrong (noticeably hereplain/bold)
     //
     // Solution: Refactor the view factory code from EntityRenderer
-    // into separate type and use new thread-safe variant here
+    // into separate type and use here instead of BasicHTML.
       
     // instantiate & done
     return new Hit(prop, viewFactory.setHTML(html), entity);
