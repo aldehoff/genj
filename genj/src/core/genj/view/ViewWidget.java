@@ -132,14 +132,6 @@ import javax.swing.border.TitledBorder;
         orientation = SwingConstants.VERTICAL;
       // fix orientation for toolbar
       bar.setOrientation(orientation);
-      // fix orientation for children
-      Component[] cs = bar.getComponents();
-      for (int c=0; c<cs.length; c++) {
-        if (cs[c] instanceof JSlider) {
-          JSlider slider = (JSlider)cs[c];
-          slider.setOrientation(orientation);
-        }
-      }
       // toolbar o.k.
     }
     // done
