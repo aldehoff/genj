@@ -184,7 +184,7 @@ public class MetaProperty {
   private Class getType() {
     // check cached type
     if (type==null) {
-      String clazz = "genj.gedcom.Property"+getProperty("type", "SimpleValue");
+      String clazz = "genj.gedcom."+getProperty("type", "PropertySimpleValue");
       try {
         type = Class.forName(clazz);
 
@@ -412,14 +412,15 @@ public class MetaProperty {
       // instantiate
       MetaProperty meta = new MetaProperty(tag, props, supr);
       if (level==0) {
-        roots.put(tag, meta); 
+        roots.put(tag, meta);
+        meta.getType(); // resolve type otherwise getPaths won't find anything
       } else {
         MetaProperty parent = peek();
         parent.allSubs.put(tag, meta);
         if (!isHidden) parent.visibleSubs.add(meta);
         if (isDefault) parent.defSubs.add(meta);
       }
-        
+      
       // add to end of stack
       stack.add(meta);
     }

@@ -195,7 +195,7 @@ public class Gedcom {
 
     // Generate id if necessary
     if (id==null) id = getRandomIdFor(type);
-    
+
     // The type of the entity
     Class clazz = eTypes[type];
 
@@ -597,7 +597,7 @@ public class Gedcom {
    * Returns a type for given tag
    */
   public static int getTypeFor(String tag) {
-    for (int i=0; i<eTypes.length; i++) {
+    for (int i=0; i<eTags.length; i++) {
       if (eTags[i].equals(tag)) return i;
     }
     throw new IllegalArgumentException("Unknown tag "+tag);
