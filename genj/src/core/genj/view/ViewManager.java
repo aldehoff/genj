@@ -267,9 +267,19 @@ public class ViewManager {
   }
   
   /**
+   * Resolves the Gedcom for given context
+   */
+  private Gedcom getGedcom(Object context) {
+    if (context instanceof Gedcom  ) return (Gedcom)context;
+    if (context instanceof Entity  ) return ((Entity)context).getProperty().getGedcom();
+    if (context instanceof Property) return ((Property)context).getGedcom();
+    throw new IllegalArgumentException("Unknown context "+context);
+  }
+
+  /**
    * Get actions for given entity/gedcom
    */
-  /*package*/ List getActions(Object context) {
+  private List getActions(Object context) {
     // loop through descriptors
     List result = new ArrayList(16);
     for (int f=0; f<factories.length; f++) {
@@ -290,16 +300,6 @@ public class ViewManager {
     }
     // done
     return result;
-  }
-
-  /**
-   * Resolves the Gedcom for given context
-   */
-  private Gedcom getGedcom(Object context) {
-    if (context instanceof Gedcom  ) return (Gedcom)context;
-    if (context instanceof Entity  ) return ((Entity)context).getProperty().getGedcom();
-    if (context instanceof Property) return ((Property)context).getGedcom();
-    throw new IllegalArgumentException("Unknown context "+context);
   }
 
   /**
@@ -401,6 +401,7 @@ public class ViewManager {
     JPopupMenu popup = mh.createPopup("");
     
     // items for property
+  /*
     if (property!=null) {
       List actions = ViewManager.getInstance().getActions(property);
       if (!actions.isEmpty()) {
@@ -409,7 +410,7 @@ public class ViewManager {
         mh.popMenu();
       }
     }
-    
+  */    
     // items for entity
     if (entity!=null) {
       List actions = ViewManager.getInstance().getActions(entity);
