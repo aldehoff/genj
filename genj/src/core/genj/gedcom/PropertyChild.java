@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.util.swing.ImageIcon;
+
 /**
  * Gedcom Property : CHIL
  * The property wrapping the condition of having a child in a family
@@ -28,6 +30,11 @@ public class PropertyChild extends PropertyXRef {
   /** applicable target types */
   public final static int[] 
     TARGET_TYPES = new int[]{ Gedcom.INDIVIDUALS };
+
+  private final static ImageIcon
+    IMG_MALE   = MetaProperty.get(new TagPath("FAM:CHIL")).getImage("male"),
+    IMG_FEMALE = MetaProperty.get(new TagPath("FAM:CHIL")).getImage("female"),
+    IMG_UNKNOWN = MetaProperty.get(new TagPath("FAM:CHIL")).getImage();
 
   /**
    * Empty Constructor
@@ -158,6 +165,21 @@ public class PropertyChild extends PropertyXRef {
    */
   public int[] getTargetTypes() {
     return TARGET_TYPES;
+  }
+
+  /**
+   * Image
+   */
+  public ImageIcon getImage(boolean checkValid) {
+    // validity?
+    if (checkValid&&(!isValid()))
+      return super.getImage(true);
+    // check it
+    switch (getChild().getSex()) {
+      case PropertySex.MALE: return IMG_MALE;
+      case PropertySex.FEMALE: return IMG_FEMALE;
+      default: return IMG_UNKNOWN;
+    }
   }
 
 } //PropertyChild

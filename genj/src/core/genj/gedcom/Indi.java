@@ -23,11 +23,18 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import genj.util.swing.ImageIcon;
+
 /**
  * Class for encapsulating a person
  */
 public class Indi extends Entity {
 
+  private final static ImageIcon
+    IMG_MALE   = MetaProperty.get(new TagPath("INDI")).getImage("male"),
+    IMG_FEMALE = MetaProperty.get(new TagPath("INDI")).getImage("female"),
+    IMG_UNKNOWN = MetaProperty.get(new TagPath("INDI")).getImage();
+    
   /**
    * Adds a family in which the individual is a partner
    */
@@ -493,6 +500,21 @@ public class Indi extends Entity {
   public String toString() {
     String name = getName();
     return name.length()>0 ? name : super.toString();
+  }
+
+  /**
+   * Image
+   */
+  public ImageIcon getImage(boolean checkValid) {
+    // validity?
+    if (checkValid&&(!isValid()))
+      return super.getImage(true);
+    // check it
+    switch (getSex()) {
+      case PropertySex.MALE: return IMG_MALE;
+      case PropertySex.FEMALE: return IMG_FEMALE;
+      default: return IMG_UNKNOWN;
+    }
   }
   
 } //Indi
