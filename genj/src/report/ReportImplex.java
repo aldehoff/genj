@@ -71,16 +71,35 @@ public class ReportImplex extends Report {
     return i18n("info");
   }
 
+
+  /**
+   * @see genj.report.Report#accepts(java.lang.Object)
+   */
+  public String accepts(Object context) {
+    // we accept GEDCOM or Individuals 
+    return context instanceof Indi || context instanceof Gedcom ? getName() : null;  
+  }
+  
   /**
    * This method actually starts this report
    */
   public void start(Object context) {
-    Gedcom gedcom = (Gedcom) context;
+		Indi indi;
 
-    // Show the individual list in a combo
-    Indi indi = (Indi) getEntityFromUser(i18n("select_individual"),
-                                         gedcom, Gedcom.INDIVIDUALS,
-                                         "INDI:NAME");
+		// The script is started with a right click on an individual with the contextual submenu
+    if (context instanceof Indi) {
+      indi = (Indi)context;
+    } else {
+    // No one has been given, we ask the user to select someone in the tree for analysis
+			Gedcom gedcom=(Gedcom)context;
+			indi = (Indi)getEntityFromUser (
+				 i18n("select_individual"),     // msg in resource file
+				 gedcom,
+				 Gedcom.INDIVIDUALS,
+         "INDI:NAME"
+				 );
+		}
+
     if (indi == null)
       return;
 
