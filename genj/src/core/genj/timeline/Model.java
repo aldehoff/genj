@@ -21,11 +21,9 @@ package genj.timeline;
 
 import genj.gedcom.Change;
 import genj.gedcom.Entity;
-import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
@@ -484,25 +482,7 @@ import java.util.Set;
      */
     private final void content() {
       Entity e = pe.getEntity();
-      content = e instanceof Indi ? content((Indi)e) : content((Fam)e);
-    }
-    /**
-     * calculate the content
-     */
-    private final String content(Indi indi) {
-      return indi.getName();
-    }
-    /**
-     * calculate the content
-     */
-    private final String content(Fam fam) {
-      Indi 
-        husband = fam.getHusband(),
-        wife = fam.getWife();
-      if (husband!=null&&wife!=null) return husband.getName() + "+" + wife.getName();
-      if (husband!=null) return husband.getName();
-      if (wife!=null) return wife.getName();
-      return "@"+fam.getId()+"@";
+      content = e.toString();
     }
     /**
      * String representation
