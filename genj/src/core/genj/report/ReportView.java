@@ -141,6 +141,16 @@ public class ReportView extends JPanel implements ToolBarSupport {
   }
   
   /**
+   * @see javax.swing.JComponent#removeNotify()
+   */
+  public void removeNotify() {
+    // continue
+    super.removeNotify();
+    // save report options
+    ReportLoader.getInstance().saveOptions();
+  }
+
+  /**
    * Create tab content for report list/info
    */
   private JPanel createReportList(Callback callback) {
@@ -539,7 +549,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         lVersion .setText(report.getVersion());
         tpInfo   .setText(report.getInfo());
         tpInfo   .setCaretPosition(0);
-        owOptions.setOptions(Option.getOptions(report, report.getI18nProperties()));
+        owOptions.setOptions(report.getOptions());
       }
     }
     

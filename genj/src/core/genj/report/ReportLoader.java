@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * ClassLoad for Reports
  */
-public class ReportLoader {
+/*package*/ class ReportLoader {
 
   /** reports we have */
   private List instances = new ArrayList(10);
@@ -55,14 +55,14 @@ public class ReportLoader {
   /**
    * Clears the report loader's state effectively forcing a reload
    */
-  public static void clear() {
+  /*package*/ static void clear() {
     singleton = null;
   }
   
   /** 
    * Access
    */
-  public static ReportLoader getInstance() {
+  /*package*/ static ReportLoader getInstance() {
     
     // not known yet?
     if (singleton==null)
@@ -191,14 +191,23 @@ public class ReportLoader {
   /**
    * Which reports do we have
    */
-  public Report[] getReports() {
+  /*package*/ Report[] getReports() {
     return (Report[])instances.toArray(new Report[instances.size()]);
+  }
+
+  /**
+   * Save options of all reports
+   */
+  /*package*/ void saveOptions() {
+    Report[] rs = getReports();
+    for (int r=0;r<rs.length;r++)
+      rs[r].saveOptions();
   }
   
   /**
    * Whether reports are in classpath
    */
-  public boolean isReportsInClasspath() {
+  /*package*/ boolean isReportsInClasspath() {
     return isReportsInClasspath;
   }
 

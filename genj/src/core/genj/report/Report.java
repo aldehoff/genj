@@ -23,6 +23,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
+import genj.option.Option;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
@@ -96,7 +97,19 @@ public abstract class Report implements Cloneable {
 
   /** owning component */
   private JComponent owner;
+  
+  /** options */
+  private Option[] options;
 
+  /**
+   * Constructor
+   */
+  protected Report() {
+    
+    registry = new Registry(REGISTRY, getClass().getName());
+    
+  }
+  
   /**
    * integration - private instance for a run
    */
@@ -108,7 +121,6 @@ public abstract class Report implements Cloneable {
       Report result = (Report)clone();
 
       // remember context for result
-      result.registry = new Registry(REGISTRY, getClass().getName());
       result.viewManager = viEwManager;
       result.out = ouT;
       result.owner = owNer;
@@ -131,23 +143,48 @@ public abstract class Report implements Cloneable {
   }
   
   /**
-   * Create a properties set of i18n texts
+   * Store report's options
    */
-  /*package*/ Properties getI18nProperties() {
-    return new Properties() {
+  /*package*/ void saveOptions() {
+    // if known
+    if (options==null)
+      return;
+    // save 'em
+    for (int i=0;i<options.length;i++) {
+      Option option = options[i];
+      registry.put(option.getKey(), option.getValue().toString());
+    }
+    // done
+  }
+  
+  /**
+   * Get report's options
+   */
+  /*package*/ Option[] getOptions() {
+    
+    // already calculated
+    if (options!=null)
+      return options;
+      
+    // calculate options
+    options = Option.getOptions(this, new Properties() {
       public String getProperty(String key) {
         return i18n(key);
       }
-    };
+    });
+    
+    // restore options values
+    for (int i=0;i<options.length;i++) {
+      Option option = options[i];
+      String value = registry.get(option.getKey(), (String)null);
+      if (value!=null) 
+        option.setValue(value);
+    }
+    
+    // done
+    return options;
   }
 
-  /**
-   * Access to context's registry
-   */
-  protected Registry getRegistry() {
-    return registry;
-  }
-  
   /**
    * Flush any of the pending output
    */
