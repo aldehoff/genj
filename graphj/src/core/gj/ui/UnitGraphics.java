@@ -39,6 +39,17 @@ import java.util.Stack;
  * for translations during drawing
  */
 public class UnitGraphics {
+  
+  /** whether we're running in Java 1.4.x */
+  private static final boolean is14 = is14();
+  
+  private static boolean is14() {
+    try {
+      return System.getProperty("java.version").indexOf('4')>0;
+    } catch (Throwable t) {
+      return false;
+    }
+  }
 
   /** the wrapped */
   private Graphics2D graphics;
@@ -106,6 +117,15 @@ public class UnitGraphics {
       RenderingHints.KEY_ANTIALIASING,
       set ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF
     );
+    // in non 1.4 vm it is necessary to set FRACTIONALMETRICS
+    // for text lengths to be accurate - switching this on
+    // on 1.4 would make it look worse :(
+    if (!is14) {
+      graphics.setRenderingHint(
+        RenderingHints.KEY_FRACTIONALMETRICS,
+        set ? RenderingHints.VALUE_FRACTIONALMETRICS_ON : RenderingHints.VALUE_FRACTIONALMETRICS_OFF
+      );
+    }
   }
   
   /**
