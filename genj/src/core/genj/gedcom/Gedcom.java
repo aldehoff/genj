@@ -245,14 +245,15 @@ public class Gedcom implements GedcomListener {
       throw new DuplicateIDException("Family with id "+id+" is alread defined");
     }
 
+    // Generate id if necessary
+    if (id==null) {
+      id = getRandomIdFor(FAMILIES);
+    }
+    
     // Create fam & add to list of indis
     Fam fam = new Fam(this);
     noteAddedEntity(fam);
     entities[FAMILIES].add(fam);
-
-    // Generate id
-    if (id==null)
-      id = getRandomIdFor(FAMILIES);
 
     // Store id
     ids[FAMILIES].put(id,fam);
@@ -298,15 +299,15 @@ public class Gedcom implements GedcomListener {
       throw new DuplicateIDException("Individual with id "+id+" is alread defined");
     }
 
+    // Calculate id if necessary
+    if (id==null) {
+      id = getRandomIdFor(INDIVIDUALS);
+    }
+
     // Create indi & add to list of indis
     Indi indi = new Indi(this);
     noteAddedEntity(indi);
     entities[INDIVIDUALS].add(indi);
-
-    // Calculate id
-    if (id==null) {
-      id = getRandomIdFor(INDIVIDUALS);
-    }
 
     // Store id in individual
     ids[INDIVIDUALS].put(id,indi);
@@ -469,15 +470,15 @@ public class Gedcom implements GedcomListener {
    */
   /*package*/ Media createMedia(String id, Entity attachedTo) throws GedcomException {
 
+    // Generate id if necessary
+    if (id==null) {
+      id = getRandomIdFor(MULTIMEDIAS);
+    }
+
     // Create media & add to list of indis
     Media media = new Media(this);
     noteAddedEntity(media);
     entities[MULTIMEDIAS].add(media);
-
-    // Generate id
-    if (id==null) {
-      id = getRandomIdFor(MULTIMEDIAS);
-    }
 
     // Store id
     ids[MULTIMEDIAS].put(id,media);
@@ -524,15 +525,15 @@ public class Gedcom implements GedcomListener {
    */
   /*package*/ Note createNote(String id, Entity attachedTo) throws GedcomException {
 
+    // Generate id if necessary
+    if (id==null) {
+      id = getRandomIdFor(NOTES);
+    }
+
     // Create note & add to list of notes
     Note note = new Note(this);
     noteAddedEntity(note);
     entities[NOTES].add(note);
-
-    // Generate id
-    if (id==null) {
-      id = getRandomIdFor(NOTES);
-    }
 
     // Store id
     ids[NOTES].put(id,note);
@@ -943,15 +944,14 @@ public class Gedcom implements GedcomListener {
     String result = null;
 
     // We might to do this several times
+    int id = Math.max(g1==null?0:g1.entities[type].getSize(),g2==null?0:g2.entities[type].getSize());
+
     while (true) {
-
-      // Calc integer
-      int numents = Math.max(g1==null?0:g1.entities[type].getSize(),g2==null?0:g2.entities[type].getSize());
-
-      int rnd = ( Math.abs(seed.nextInt()) % ((numents+1)*2) ) + 1;
+      
+      id ++;
 
       // Trim to 000
-      result = ePrefixs[type] + (rnd<100?(rnd<10?"00":"0"):"") + rnd;
+      result = ePrefixs[type] + (id<100?(id<10?"00":"0"):"") + id;
 
       if ((g1!=null)&&(g1.ids[type].contains(result)))
         continue;
