@@ -61,10 +61,8 @@ public class HebrewCalendar extends Calendar {
     if (julianDay<SDN_OFFSET)
       throw new GedcomException(resources.getString("hebrew.bef"));
 
-    // call implementation and fix month&day    
-    PointInTime result = SdnToJewish(julianDay);
-    result.set(result.getDay()-1, result.getMonth()-1, result.getYear());
-    return result;
+    // call implementation
+    return SdnToJewish(julianDay);
   }
   
   /**
@@ -118,6 +116,24 @@ public class HebrewCalendar extends Calendar {
       throw new RuntimeException();
     }
   }
+
+  // =======================================================================
+  // *                   Extensions to algorithm below                     * 
+  // =======================================================================
+
+  private class Molad {
+    int day;
+    int halakim;
+  }
+
+  private class Metonic {
+    int cycle;
+    int year;
+  }
+  
+  private PointInTime wrap(int day, int month, int year) {
+    return new PointInTime(day-1, month-1, year, this);
+  }
   
   // =======================================================================
   // *      Conversion algorithm from Scott E. Lee - see notice above      * 
@@ -152,17 +168,6 @@ public class HebrewCalendar extends Calendar {
       0, 12, 24, 37, 49, 61, 74, 86, 99, 111, 123,
       136, 148, 160, 173, 185, 197, 210, 222
   };
-  
-  private class Molad {
-    int day;
-    int halakim;
-  }
-
-  private class Metonic {
-    int cycle;
-    int year;
-  }
-  
   
   /**
    * Given the year within the 19 year metonic cycle and the time of a molad
@@ -350,7 +355,7 @@ public class HebrewCalendar extends Calendar {
           month = 2;
           day = inputDay - tishri1 - 29;
         }
-        return new PointInTime(day, month, year, this);
+        return wrap(day, month, year);
       }
 
       /* We need the length of the year to figure this out, so find
@@ -387,7 +392,7 @@ public class HebrewCalendar extends Calendar {
           day = inputDay - tishri1 + 178;
         }
         
-        return new PointInTime(day, month, year, this);
+        return wrap(day, month, year);
         
       } else {
         
@@ -395,27 +400,27 @@ public class HebrewCalendar extends Calendar {
           month = 7;
           day = inputDay - tishri1 + 207;
           if (day > 0) 
-            return new PointInTime(day, month, year, this);
+            return wrap(day, month, year);
           (month)--;
           (day) += 30;
           if (day > 0) 
-            return new PointInTime(day, month, year, this);
+            return wrap(day, month, year);
           (month)--;
           (day) += 30;
         } else {
           month = 6;
           day = inputDay - tishri1 + 207;
           if (day > 0) 
-            return new PointInTime(day, month, year, this);
+            return wrap(day, month, year);
           (month)--;
           (day) += 30;
         }
         if (day > 0) 
-          return new PointInTime(day, month, year, this);
+          return wrap(day, month, year);
         (month)--;
         (day) += 29;
         if (day > 0) 
-          return new PointInTime(day, month, year, this);
+          return wrap(day, month, year);
 
         /* We need the length of the year to figure this out, so find
          * Tishri 1 of this year. */
@@ -432,14 +437,14 @@ public class HebrewCalendar extends Calendar {
       /* Heshvan has 30 days */
       if (day <= 30) {
         month = 2;
-        return new PointInTime(day, month, year, this);
+        return wrap(day, month, year);
       }
       day -= 30;
     } else {
       /* Heshvan has 29 days */
       if (day <= 29) {
         month = 2;
-        return new PointInTime(day, month, year, this);
+        return wrap(day, month, year);
       }
       day -= 29;
     }
@@ -447,7 +452,7 @@ public class HebrewCalendar extends Calendar {
     /* It has to be Kislev. */
     month = 3;
     
-    return new PointInTime(day, month, year, this);
+    return wrap(day, month, year);
   }
 
   /**
