@@ -30,6 +30,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Point2D;
 import java.io.DataInputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -99,8 +100,8 @@ public class EntityRenderer {
   /** whether we have a debug mode */
   private boolean isDebug = false; 
   
-  /** our font scaling */
-  private float fontFactor = 1.0F;
+  /** a resolution */
+  private Point2D.Float resolution = null;
 
   /**
    * Constructor
@@ -166,10 +167,12 @@ public class EntityRenderer {
   }
   
   /**
-   * Change the font factor   */
-  public EntityRenderer setFontFactor(float set) {
-    // keep the fFactor
-    fontFactor = set;
+   * Setup specific resolution (in dots per centimeters)   */
+  public EntityRenderer setResolution(Point2D res) {
+    // FIXME what about using this in rendering images, too
+    // keep the resolution
+    resolution = new Point2D.Float();
+    resolution.setLocation(res);
     // done
     return this;
   }
@@ -229,7 +232,10 @@ public class EntityRenderer {
      */
     public Font getFont(AttributeSet attr) {
       Font font = super.getFont(attr);
-      if (fontFactor!=1F) font = font.deriveFont(fontFactor*font.getSize2D());
+      if (resolution!=null) {
+        float factor = resolution.y*2.54F/72; 
+        font = font.deriveFont(factor*font.getSize2D());
+      }
       return font;
     }
   } //MyHTMLDocument

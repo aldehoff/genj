@@ -626,9 +626,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.famRenderer    = getEntityRenderer(Gedcom.FAMILIES   );
       // special handling for adjusting fonts?
       if (isAdjustFonts) {
-        float factor = (float)(UNITS.getY()*2.54D/72);      
-        contentRenderer.indiRenderer.setFontFactor(factor);
-        contentRenderer. famRenderer.setFontFactor(factor);
+        contentRenderer.indiRenderer.setResolution(UNITS);
+        contentRenderer. famRenderer.setResolution(UNITS);
       }
       // let the renderer do its work
       contentRenderer.render(gw, model);
