@@ -408,7 +408,8 @@ public abstract class Property implements Comparable {
       // filter
       if (!child.getTag().equals(tag))
         continue;
-      if (!is(qfilter))
+      // 20031027 changed from is() to child.is()
+      if (!child.is(qfilter))
         continue;
       // hit!        
       result.add(child);  
