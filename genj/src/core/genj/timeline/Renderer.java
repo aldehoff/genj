@@ -19,6 +19,7 @@
  */
 package genj.timeline;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -83,4 +84,11 @@ public abstract class Renderer {
     g.setClip(r.x,r.y,r.width,r.height);
   }
   
+  /**
+   * Sets the given color (can be null) on the Graphics content 
+   */
+  protected void setColor(Graphics g, Color c) {
+    if (c!=null) g.setColor(c);
+  }
+    
 } //Renderer

@@ -45,7 +45,7 @@ import javax.swing.event.ChangeListener;
 
 import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
-import genj.util.ColorAttribute;
+import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.*;
@@ -60,7 +60,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   /*package*/ final static Resources resources = new Resources("genj.timeline");
   
   /** keeping track of our colors */
-  /*package*/ ColorAttribute.Group colorGroup = new ColorAttribute.Group();
+  /*package*/ ColorSet csContent, csRuler;
     
   /** our model */
   private Model model;
@@ -129,11 +129,16 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     isPaintGrid  = regstry.get("paintgrid" , false);
     isPaintTags  = regstry.get("painttags" , false);
 
-    colorGroup.add(regstry, resources, "ruler"   , Color.black, Color.white);
-    colorGroup.add(regstry, resources, "content" , Color.black, Color.white);
-    colorGroup.add(regstry, resources, "tag"     , Color.green, null       );
-    colorGroup.add(regstry, resources, "date"    , Color.gray , null       );
-    colorGroup.add(regstry, resources, "timespan", Color.blue , null       );
+    csContent = new ColorSet("content", Color.white, resources, regstry);
+    csContent.add("text"    , Color.black);
+    csContent.add("tag"     , Color.green);
+    csContent.add("date"    , Color.gray );
+    csContent.add("timespan", Color.blue );
+    csContent.add("grid"    , Color.lightGray);
+   
+    csRuler = new ColorSet("ruler", Color.blue, resources, regstry);
+    csRuler.add("text", Color.black);
+    csRuler.add("tick", Color.white);
     
     // create/keep our sub-parts
     model = new Model(gedcom, (Set)regstry.get("filter", model.DEFAULT_FILTER));
@@ -284,8 +289,9 @@ public class TimelineView extends JPanel implements ToolBarSupport {
      */
     protected void paintComponent(Graphics g) {
       // let the renderer do its work
-      rulerRenderer.foreground = colorGroup.get("ruler", false);
-      rulerRenderer.background = colorGroup.get("ruler", true );
+      rulerRenderer.cBackground = csRuler.getColor("ruler");
+      rulerRenderer.cText = csRuler.getColor("text");
+      rulerRenderer.cTick = csRuler.getColor("tick");
       rulerRenderer.cmPyear = cmPerYear;
       rulerRenderer.render(g, model);
       // done
@@ -318,11 +324,13 @@ public class TimelineView extends JPanel implements ToolBarSupport {
      * @see javax.swing.JComponent#paintComponent(Graphics)
      */
     protected void paintComponent(Graphics g) {
-      // fill the background
-      Rectangle r = getBounds();
-      g.setColor(Color.white);
-      g.fillRect(0,0,r.width,r.height);
       // let the renderer do its work
+      contentRenderer.cBackground = csContent.getColor("content" );
+      contentRenderer.cText       = csContent.getColor("text"    );
+      contentRenderer.cDate       = csContent.getColor("date"    );
+      contentRenderer.cTag        = csContent.getColor("tag"     );
+      contentRenderer.cTimespan   = csContent.getColor("timespan");
+      contentRenderer.cGrid       = csContent.getColor("grid"    );
       contentRenderer.cmPyear = cmPerYear;
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;

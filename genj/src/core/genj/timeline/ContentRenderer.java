@@ -37,9 +37,6 @@ public class ContentRenderer extends Renderer {
   /** centimeters per year */
   /*package*/ double cmPyear = 1.0D;
   
-  /** whether we colorize or not */
-  /*package*/ boolean colorize = true;
-  
   /** whether we paint tags or not */
   /*package*/ boolean paintTags = false;
   
@@ -48,6 +45,24 @@ public class ContentRenderer extends Renderer {
   
   /** whether we paint a grid or not */
   /*package*/ boolean paintGrid = false;
+  
+  /** background color */
+  /*package*/ Color cBackground = null;
+  
+  /** text color */
+  /*package*/ Color cText = null;
+  
+  /** tag color */
+  /*package*/ Color cTag = null;
+  
+  /** date color */
+  /*package*/ Color cDate = null;
+  
+  /** timespane color */
+  /*package*/ Color cTimespan= null;
+  
+  /** timespane color */
+  /*package*/ Color cGrid = null;
   
   /** 
    * Calculates the model size in pixels
@@ -66,6 +81,8 @@ public class ContentRenderer extends Renderer {
     // prepare some data
     FontMetrics fm = g.getFontMetrics();
     Dimension d = getDimension(model, fm);
+    // render background
+    renderBackground(g, d);
     // calculate the clipping
     Clip clip = new Clip(g, fm, model);
     // render grid
@@ -76,20 +93,28 @@ public class ContentRenderer extends Renderer {
   }
   
   /**
+   * Renders the background
+   */
+  private void renderBackground(Graphics g, Dimension d) {
+    setColor(g,cBackground);
+    g.fillRect(0,0,d.width,d.height);
+  }
+  
+  /**
    * Renders a grid
    */
   private final void renderGrid(Graphics g, Model model, Dimension d, Clip clip) {
     // check 
     if (!paintGrid) return;
-    // global color is light gray
-    g.setColor(Color.lightGray);
+    // color 
+    setColor(g, cGrid);
     // prepare data
     int 
       from = (int)model.min,
       to = (int)model.max;
     // loop
     for (int year=from;year<=to;year++) {
-      int x = cm2pixels((year-from)*cmPyear);
+      int x = cm2pixels((year-model.min)*cmPyear);
       g.drawLine(x, 0, x, d.height);
     }
     // done
@@ -99,8 +124,6 @@ public class ContentRenderer extends Renderer {
    * Renders layers
    */
   private final void renderLayers(Graphics g, FontMetrics fm, Model model, Clip clip) {
-    // global color is black
-    g.setColor(Color.black);
     // loop
     List layers = model.layers;
     for (int l=0; l<layers.size(); l++) {
@@ -153,13 +176,13 @@ public class ContentRenderer extends Renderer {
     if (paintDates) txt = txt + '(' + event.pd + ')';
 
     // draw it's extend
-    if (colorize) g.setColor(Color.blue);
+    setColor(g, cTimespan);
     g.drawLine(x1-1, y+lh-2, x1-1, y+lh-1);
     g.drawLine(x1  , y+lh-1, x2  , y+lh-1);
     g.drawLine(x2+1, y+lh-2, x2+1, y+lh-1);
     
     // draw it's text and image (not extending past model.max)
-    if (colorize) g.setColor(em ? Color.red : Color.black);
+    setColor(g, cText);
     
     pushClip(g, x1, y, w, lh);
     ImgIcon img = event.pe.getImage(false);

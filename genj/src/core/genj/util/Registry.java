@@ -388,6 +388,22 @@ public class Registry {
   }
 
   /**
+   * Returns color parameter by key
+   */
+  public Color get(String key, Color def) {
+
+    // Get property by key
+    int result = get(key,Integer.MAX_VALUE);
+
+    // .. existing ?
+    if (result==Integer.MAX_VALUE)
+      return def;
+
+    // done
+    return new Color(result);
+  }
+
+  /**
    * Returns this registry's view
    */
   public String getView() {
@@ -582,6 +598,17 @@ public class Registry {
 
     // Remember
     put(key,(value?"1":"0"));
+
+    // Done
+  }
+  
+  /**
+   * Remembers a boolean value
+   */
+  public void put(String key, Color value) {
+
+    // Remember
+    put(key,value.getRGB());
 
     // Done
   }

@@ -105,7 +105,9 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     panelMain.add(panelOptions, BorderLayout.SOUTH);
     
     // color chooser
-    colorChooser = new ColorChooser(timeline.colorGroup.getAll());
+    colorChooser = new ColorChooser();
+    colorChooser.addSet(timeline.csContent);
+    colorChooser.addSet(timeline.csRuler  );
     
     // add those tabs
     add("Main"  , panelMain);

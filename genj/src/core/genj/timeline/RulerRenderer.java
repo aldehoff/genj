@@ -30,11 +30,8 @@ import java.awt.Graphics;
  */
 public class RulerRenderer extends ContentRenderer {
   
-  /** background color */
-  /*package*/ Color background = null;
-  
-  /** foreground color */
-  /*package*/ Color foreground = null;
+  /** ticks color */
+  /*package*/ Color cTick = null;
   
   /** 
    * Calculates the model size in pixels
@@ -55,17 +52,15 @@ public class RulerRenderer extends ContentRenderer {
     FontMetrics fm = g.getFontMetrics();
     Dimension d = getDimension(model, fm);
     double
-      from = model.min,
-      to   = model.max,
+      from = Math.ceil(model.min),
+      to   = Math.floor(model.max),
       cond = Math.max(1, pixels2cm(fm.stringWidth(" 0000 "))/cmPyear);
     Clip clip = new Clip(g, fm, model);
-    
     // render background
-    if (background!=null) g.setColor(background);
+    setColor(g, cBackground);
     g.fillRect(0,0,d.width,d.height);
 
     // render first year and last
-    if (foreground!=null) g.setColor(foreground);
     from += renderYear(g, model, d, fm, from, 0.0D);
     to -= renderYear(g, model, d, fm, to  , 1.0D);
     
@@ -91,8 +86,8 @@ public class RulerRenderer extends ContentRenderer {
     double gone = renderYear(g, model, d, fm, year, 0.5D);
     
     // recurse into
-    renderSpan(g, model, d, fm, year+gone/2, to         , cond, clip);
-    renderSpan(g, model, d, fm, from       , year-gone/2, cond, clip);
+    renderSpan(g, model, d, fm, Math.ceil(year+gone/2), to         , cond, clip);
+    renderSpan(g, model, d, fm, from       , Math.floor(year-gone/2), cond, clip);
     
     // done
   }
@@ -104,8 +99,10 @@ public class RulerRenderer extends ContentRenderer {
     // what's the x for it
     int x = cm2pixels((year-model.min)*cmPyear);
     // draw a vertical line
+    setColor(g, cTick);
     g.drawLine((int)(x - align), d.height-4, x, d.height);
     // draw the label
+    setColor(g, cText);
     String s = Integer.toString((int)year);
     int fw = fm.stringWidth(s);
     int fd = fm.getDescent();
