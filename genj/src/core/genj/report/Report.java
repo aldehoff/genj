@@ -25,7 +25,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.option.Option;
 import genj.util.Debug;
-import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
@@ -39,6 +38,7 @@ import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -81,7 +81,7 @@ public abstract class Report implements Cloneable {
   private final static Registry REGISTRY = new Registry("genj-reports");
 
   /** language we're trying to use */
-  private final static String lang = EnvironmentChecker.getProperty(Report.class, "user.language", null, "i18n for reports");
+  private final static String lang = Locale.getDefault().getLanguage();
 
   /** i18n texts */
   private Properties i18n;
