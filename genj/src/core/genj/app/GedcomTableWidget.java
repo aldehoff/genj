@@ -239,8 +239,16 @@ import javax.swing.table.TableColumnModel;
     public Object getValueAt(int row, int col) {
       Gedcom gedcom = getGedcom(row);
       if (col==0) return gedcom.getName() + (gedcom.hasUnsavedChanges() ? "*" : "" );
-      return ""+gedcom.getEntities(col-1).size();
+      return new Integer(gedcom.getEntities(col-1).size());
     }
+    
+    /**
+     * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+     */
+    public Class getColumnClass(int col) {
+      return col==0 ? String.class : Integer.class;
+    }
+
   
     /**
      * @see genj.gedcom.GedcomListener#handleChange(Change)
