@@ -20,7 +20,7 @@
  * About Menu class - Feedback
  * This class creates the content on the Feedback tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.3 2002-05-18 07:32:14 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.4 2002-05-18 18:37:52 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.1
  *
@@ -146,7 +146,7 @@ public class FeedbackPanel extends JPanel
     sb.append(" :\n");
     sb.append(App.resources.getString("cc.about.tab3.text2.5"));
     sb.append(". . . . . . . . . . . . . . . . . . . .\n");
-    sb.append("\nThis function is not yet available - Feel free to write the code needed ;-) ");
+    sb.append("\nWARNING : This function is not yet available - Feel free to write the code needed ;-) ");
    	return sb.toString();
   }
   
