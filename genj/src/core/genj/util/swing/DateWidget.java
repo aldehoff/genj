@@ -143,11 +143,15 @@ public class DateWidget extends JPanel {
    * Get current value
    */
   public PointInTime getValue() {
+    // analyze entered text integer values
     int d = string2int(widgetDay.getText(), true);
     int y = string2int(widgetYear.getText(), false);
     int m = string2int(widgetMonth.getText(), true);
-    if (m==PointInTime.UNKNOWN&&widgetMonth.getText().equals(widgetMonth.getSelectedItem())) 
-      m = widgetMonth.getSelectedIndex();    
+    // fallback month - selected specific?
+    if (m==PointInTime.UNKNOWN&&widgetMonth.getText().equals(widgetMonth.getSelectedItem())) {
+      m = widgetMonth.getSelectedIndex();
+      if (m<0) m = PointInTime.UNKNOWN;    
+    }
     return PointInTime.getPointInTime(d, m, y, calendar);
   }
 
