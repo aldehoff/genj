@@ -42,7 +42,6 @@ import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -80,13 +79,11 @@ public class App {
     // Startup Information
     Debug.log(Debug.INFO, App.class, "GenJ App - Version "+Version.getInstance()+" - "+new Date());
     String log = EnvironmentChecker.getProperty(this, new String[]{"genj.debug.file", "user.home"}, null, "choose log-file");
-    if (log!=null) try {
+    if (log!=null) {
       File file = new File(log);
       if (file.isDirectory()) file = new File(file, "genj.log");
-      if (file.createNewFile()) {
-        Debug.setFile(file);
-      }
-    } catch (IOException e) {}
+      Debug.setFile(file);
+    }
     EnvironmentChecker.log();
     
     // init our data
