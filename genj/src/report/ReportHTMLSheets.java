@@ -43,22 +43,56 @@ public class ReportHTMLSheets extends Report {
   private final static String NAMES = "names.html";
   private final static Charset UTF8 = Charset.forName("UTF-8");
 
+  /**
+   * This is the default stylesheet for the generated report sheets - important
+   * elements are
+   * 
+   * TABLE HEADER:
+   * <tr class=header>
+   *  ...
+   * </tr>
+   * 
+   * NAME GROUP:
+   * <namegroup>
+   *  <character>A</character>
+   *   <name>Adam<occurances>(<count>4</count>)</occurances></name>
+   *   ..
+   * </namegroup>
+   * 
+   * PROPERTY/VALUE
+   * <property0>Birth</property0>
+   * <property1>Date</property1>
+   * <property2>Addr</property2>
+   * <property3>City</property3>
+   * ...
+   * <value>Lohmar</value>
+   */
   static final String defaultStylesheet = 
-   "body { background: white; } \n" +
-   "a { color: black; text-decoration: none; } \n" +
-   "a:hover { text-decoration: underline; }\n" +
-   "p { color: black; }\n" +
-   "p.firstchar { color: red; font-weight: bold; }\n" +
-   "p.names { font-style: italic; }\n" +
-   "p.footer { font-size: 10; }\n" +
-   "tr.header { background: yellow; }\n" +
-   "p.prop0 { font-weight: bold; text-decoration: underline; }\n" +
-   "p.prop1 { font-style: italic; text-decoration: underline; }\n" +
-   "p.prop2 { font-style: italic; }";
+   "body { background: white; }" +
+   "a { color: black; text-decoration: none; }" +
+   "a:hover { text-decoration: underline; }" +
+   "p { color: black; }" +
+   "tr.header { background: yellow; }" +
+   "footer { display: block; font-size: 10; }" +
+   "property0 { font-weight: bold; text-decoration: underline; }" +
+   "property1 { margin-left: 1ex; font-style: italic; text-decoration: underline; }" +
+   "property2 { margin-left: 2ex; font-style: italic; }" +
+   "property3 { margin-left: 3ex; font-style: italic; }" +
+   "property4 { margin-left: 4ex; font-style: italic; }" +
+   "value { }" +
+   "namegroup { display: block; }" +
+   "namegroup character { display: block; color: red; font-weight: bold; }" +
+   "namegroup name { margin-right: 1ex; font-style: italic; }" +
+   "namegroup name occurances { color: 00009c; }" +
+   "namegroup name count { color: 3299cc; }";
     
 
   /** options - style sheet */
   public String css = "./style.css";
+
+  /** options - open file after generation */
+  public int openBrowser = 1;
+  public String openBrowsers[] = { CloseWindow.TXT_NO , INDEX, NAMES };
 
   /** A <pre>&nbsp</pre> looks better than an empty String in a HTML cell */
   private final static String SPACE = "&nbsp;";
@@ -208,18 +242,18 @@ public class ReportHTMLSheets extends Report {
       out.print("colspan=2");
     out.print(">");
     
-    out.print("<p class=prop"+level+">");
-    exportSpaces(out, level);
-    StringTokenizer tag = new StringTokenizer(Gedcom.getName(prop.getTag()), " ");
-    while (tag.hasMoreElements())
-      out.print(tag.nextToken()+SPACE);
-    out.print("</p>");
+    out.print("<property"+level+">");
+    out.print(Gedcom.getName(prop.getTag()));
+    out.print("</property"+level+">");
+    
     out.println("</td>");
 
     // second column
     if (showValue) {
       out.print("<td>");
+      out.print("<value>");
       exportPropertyValue(prop, out);
+      out.print("</value>");
       out.println("</td>");
     }
         
@@ -408,7 +442,7 @@ public class ReportHTMLSheets extends Report {
     printOpenHTML(out, gedcom.getName());
     
     // Create link for each last name
-    out.println("<p class=names>");
+    out.println("<namegroup>");
     Iterator it = PropertyName.getLastNames(gedcom, true).iterator();
     char last = ' ';
     while (it.hasNext()) {
@@ -416,14 +450,17 @@ public class ReportHTMLSheets extends Report {
       String name = it.next().toString();
       if (name.length()>0&&Character.toUpperCase(name.charAt(0))!=last) {
         last = Character.toUpperCase(name.charAt(0));
-        out.println("</p>");
-        out.println("<p class=firstchar>"+last+"</p>");
-        out.println("<p class=names>");
+        out.println("</namegroup>");
+        out.println("<namegroup>");
+        out.println("<character>"+last+"</character>");
       }
       // create link to name file
-      out.print("<a href=\""+getFileForIndex(dir).getName()+'#'+name+"\">"+name+"</a><Font color=\"00009c\">(</Font>"+"<Font color=\"3299cc\">"+PropertyName.getLastNameCount(gedcom, name)+"</Font>"+"<Font color=\"00009c\">)</Font> ");
+      out.print("<name>");
+      out.print("<a href=\""+getFileForIndex(dir).getName()+'#'+name+"\">"+name+"</a>");
+      out.print("<occurances>(<count>"+PropertyName.getLastNameCount(gedcom, name)+"</count>)</occurances>");
+      out.print("</name>");
     }
-    out.println("</p>");
+    out.println("</namegroup>");
 
     // TAIL
     printCloseHTML(out);
@@ -444,7 +481,13 @@ public class ReportHTMLSheets extends Report {
     
     println(i18n("exporting", new String[]{ file.getName(), dir.toString() }));
     PrintWriter out = getWriter(new FileOutputStream(file));
-    out.println(defaultStylesheet);
+    StringTokenizer tokens = new StringTokenizer(defaultStylesheet, "}", true);
+    while (tokens.hasMoreTokens()) {
+      String token = tokens.nextToken();
+      out.print(token);
+      if (token.equals("}"))
+        out.println();
+    }
     out.close();
   }
   
@@ -492,7 +535,11 @@ public class ReportHTMLSheets extends Report {
     
     // Bring up the result
     try {
-      showBrowserToUser(getFileForIndex(dir).toURL());
+      switch (openBrowser) {
+        case 0: break;
+        case 1: showBrowserToUser(getFileForIndex(dir).toURL());
+        case 2: showBrowserToUser(getFileForNames(dir).toURL());
+      }
     } catch (MalformedURLException e) {
       // shouldn't happen
     }
@@ -566,11 +613,11 @@ public class ReportHTMLSheets extends Report {
    * Helper - Writes HTML end header and end body information
    */
   private void printCloseHTML(PrintWriter out) {
-    out.print("<p class=footer>");
+    out.print("<footer>");
     out.print("<a href=\""+INDEX+"\">Index</a>");
     out.print(" ");
     out.print("<a href=\""+NAMES+"\">Names</a>");
-    out.println("</p>");
+    out.println("</footer>");
     
     out.println("</body>");
     out.println("</html>");
