@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
 import genj.util.Registry;
@@ -58,14 +59,14 @@ public class NameBean extends PropertyBean {
   /**
    * Initialize
    */
-  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
 
-    super.init(setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setMgr, setReg);
 
     // first, last, suff
     PropertyName pname = (PropertyName)property;
     
-    cLast  = new ChoiceWidget(pname.getLastNames().toArray(), pname.getLastName());
+    cLast  = new ChoiceWidget(PropertyName.getLastNames(setGedcom).toArray(), pname.getLastName());
     cLast.addChangeListener(changeSupport);
     tFirst = new TextFieldWidget(pname.getFirstName(), 10); 
     tFirst.addChangeListener(changeSupport);

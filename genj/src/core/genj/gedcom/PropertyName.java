@@ -149,9 +149,9 @@ public class PropertyName extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ Property init(String tag, String value) throws GedcomException {
-    assume(TAG.equals(tag), UNSUPPORTED_TAG);
-    return super.init(tag,value);
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
+    assume(TAG.equals(meta.getTag()), UNSUPPORTED_TAG);
+    return super.init(meta,value);
   }
 
   /**
@@ -182,7 +182,7 @@ public class PropertyName extends Property {
    */
   public PropertyName setName(String first, String last, String suff) {
 
-    modNotify();
+    propagateModified();
 
     // forget/remember
     rememberLastName(lastName, last);
@@ -231,7 +231,7 @@ public class PropertyName extends Property {
    */
   public void setValue(String newValue) {
 
-    modNotify();
+    propagateModified();
     
     // New empty Value ?
     if (newValue==null) {
@@ -269,38 +269,25 @@ public class PropertyName extends Property {
   /**
    * Return all last names
    */
-  public List getLastNames() {
-    return getReferenceSet(true).getKeys();
+  public static List getLastNames(Gedcom gedcom) {
+    return gedcom.getReferenceSet(TAG).getKeys();
   }
 
   /**
    * Returns all PropertyNames that contain the same name 
    */
   public Property[] getSameLastNames() {
-    return toArray(getReferenceSet(true).getReferences(getLastName()));
+    return toArray(getGedcom().getReferenceSet(TAG).getReferences(getLastName()));
   }
-  
-  /**
-   * Lookup reference set
-   */
-  private ReferenceSet getReferenceSet(boolean notNull) {
-    // look it up
-    Gedcom gedcom = getGedcom();
-    if (gedcom!=null)
-      return gedcom.getReferenceSet(TAG);
-    // none available!
-    if (notNull) throw new IllegalArgumentException("getReferenceSet() n/a with parent==null");
-    return null;
-  }
-
   /**
    * Remember a last name
    */
   private void rememberLastName(String oldName, String newName) {
     // got access to a reference set?
-    ReferenceSet refSet = getReferenceSet(false);
-    if (refSet==null)
+    Gedcom gedcom = getGedcom();
+    if (gedcom==null)
       return;
+    ReferenceSet refSet = gedcom.getReferenceSet(TAG);
     // forget old
     if (oldName!=null&&oldName.length()>0) refSet.remove(oldName, this);
     // remember new

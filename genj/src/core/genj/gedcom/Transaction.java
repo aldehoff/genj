@@ -51,19 +51,31 @@ public class Transaction {
   /** whether we track changes */
   private boolean isTrackChanges = true;
   
+  /** time started */
+  private long time;
+  
   /**
    * Constructor
    */
-  public Transaction(Gedcom ged) {
+  /*package*/ Transaction(Gedcom ged) {
 
     // remember    
     gedcom = ged;
+    
+    time = System.currentTimeMillis();
 
     // prepare tracking changes
     changes = new Set[NUM];
     for (int i=0;i<NUM;i++) {
       changes[i] = new HashSet(64);
     }
+  }
+  
+  /**
+   * accessor - time started
+   */
+  public long getTime() {
+    return time;
   }
   
   /**

@@ -140,7 +140,7 @@ public abstract class PropertyXRef extends Property {
   protected void setTarget(PropertyXRef target) {
 
     // Remember change
-    modNotify();
+    propagateModified();
 
     // Do it
     this.target=target;
@@ -163,7 +163,7 @@ public abstract class PropertyXRef extends Property {
    */
   public void setValue(String vAlue) {
 
-    modNotify();
+    propagateModified();
 
     // referenced entity exists ?
     unlink();
@@ -177,9 +177,9 @@ public abstract class PropertyXRef extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ Property init(String tag, String value) throws GedcomException {
-    assume(getTag().equals(tag), UNSUPPORTED_TAG);
-    return super.init(tag,value);
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
+    assume(getTag().equals(meta.getTag()), UNSUPPORTED_TAG);
+    return super.init(meta, value);
   }
 
 

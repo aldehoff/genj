@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.62 $ $Author: nmeier $ $Date: 2004-06-22 16:57:57 $
+ * $Revision: 1.63 $ $Author: nmeier $ $Date: 2004-07-02 21:20:07 $
  */
 package genj.gedcom;
 
@@ -520,7 +520,8 @@ public class Gedcom {
   /**
    * Returns a readable name for the given tag   */
   public static String getName(String tag) {
-    return resources.getString(tag+".name");
+    String name = resources.getString(tag+".name", false);
+    return name!=null ? name : tag;
   }
 
   /**

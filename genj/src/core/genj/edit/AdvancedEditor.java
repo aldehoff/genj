@@ -20,7 +20,6 @@
 package genj.edit;
 
 import genj.edit.beans.PropertyBean;
-import genj.edit.beans.SimpleValueBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
@@ -169,9 +168,7 @@ import javax.swing.event.TreeSelectionListener;
    * current 
    */
   public Context getContext() {
-    Context ctx = new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
-    ctx.setSource(this);
-    return ctx;
+    return new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
   }
   
   /**
@@ -418,11 +415,7 @@ import javax.swing.event.TreeSelectionListener;
       if (!prop.isSecret()) {
   
         // get a bean for property
-        try {
-          bean = (PropertyBean) Class.forName( "genj.edit.beans." + prop.getProxy() + "Bean").newInstance();
-        } catch (Throwable t) {
-          bean = new SimpleValueBean();
-        }
+        bean = PropertyBean.get(prop);
         
         try {
   
@@ -430,10 +423,10 @@ import javax.swing.event.TreeSelectionListener;
           editPane.add(bean, BorderLayout.CENTER);
   
           // initialize bean
-          bean.init(prop, viewManager, registry);
+          bean.init(gedcom, prop, viewManager, registry);
           
           // and a label to the top
-          final JLabel label = new JLabel(bean.getLabel(), bean.getImage(), SwingConstants.LEFT);
+          final JLabel label = new JLabel(Gedcom.getName(prop.getTag()), prop.getImage(false), SwingConstants.LEFT);
           editPane.add(label, BorderLayout.NORTH);
   
           // and actions to the bottom
@@ -448,8 +441,6 @@ import javax.swing.event.TreeSelectionListener;
           // listen to it
           bean.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-              label.setText(bean.getLabel());
-              label.setIcon(bean.getImage());
               ok.setEnabled(true);
               cancel.setEnabled(true);
             }

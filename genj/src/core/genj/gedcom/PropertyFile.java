@@ -67,9 +67,9 @@ public class PropertyFile extends Property implements IconValueAvailable {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ Property init(String tag, String value) throws GedcomException {
-    assume(TAG.equals(tag), UNSUPPORTED_TAG);
-    return super.init(tag,value);
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
+    assume(TAG.equals(meta.getTag()), UNSUPPORTED_TAG);
+    return super.init(meta, value);
   }
 
   /**
@@ -84,10 +84,13 @@ public class PropertyFile extends Property implements IconValueAvailable {
     // in setValue() the parent might not be set yet so
     // getGedcom() wouldn't work there
     if (!isRelativeChecked) {
-      String relative = getGedcom().getOrigin().calcRelativeLocation(file);
-      if (relative !=null)
-        file = relative;
-      isRelativeChecked = true;
+      Gedcom gedcom = getGedcom();
+      if (gedcom!=null) {
+        String relative = gedcom.getOrigin().calcRelativeLocation(file);
+        if (relative !=null)
+          file = relative;
+        isRelativeChecked = true;
+      }
     }
     return file;
   }
@@ -168,7 +171,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
   public void setValue(String value) {
 
     // Remember the change
-    modNotify();
+    propagateModified();
 
     // Remember the value
     file = value.replace('\\','/');

@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.util.Registry;
@@ -26,6 +27,8 @@ import genj.util.swing.TextAreaWidget;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
+
+import javax.swing.JScrollPane;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -46,9 +49,9 @@ public class MLEBean extends PropertyBean {
   /**
    * Initialize
    */
-  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
 
-    super.init(setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setMgr, setReg);
 
     // Calculate value to show
     String value;
@@ -64,7 +67,10 @@ public class MLEBean extends PropertyBean {
     tarea.setWrapStyleWord(true);
 
     setLayout(new BorderLayout());
-    add(BorderLayout.CENTER, tarea);
+    
+    // 20040701 added forgotten scrollpane - makes bean behave
+    // correctly in layouted environment like BasicEditor's bean panel
+    add(BorderLayout.CENTER, new JScrollPane(tarea));
 
     defaultFocus = tarea;
 

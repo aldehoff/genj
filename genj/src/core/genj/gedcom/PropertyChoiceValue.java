@@ -29,28 +29,14 @@ import java.util.List;
 public class PropertyChoiceValue extends PropertySimpleValue {
 
   /**
-   * Lookup reference set
-   */
-  private ReferenceSet getReferenceSet(boolean notNull) {
-    // look it up
-    Gedcom gedcom = getGedcom();
-    if (gedcom!=null)
-      return gedcom.getReferenceSet(getTag());
-    // none available!
-    if (notNull) throw new IllegalArgumentException("getReferenceSet() n/a with parent==null");
-    return null;
-  }
-
-  /**
    * Remember a value
    */
   private void remember(String oldValue, String newValue) {
-    // remember by tag
-    String tag = getTag();
     // got access to a reference set?
-    ReferenceSet refSet = getReferenceSet(false);
-    if (refSet==null)
+    Gedcom gedcom = getGedcom();
+    if (gedcom==null)
       return;
+    ReferenceSet refSet = gedcom.getReferenceSet(getTag());
     // forget old
     if (oldValue.length()>0) refSet.remove(oldValue, this);
     // remember new
@@ -62,7 +48,13 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    * Returns all Properties that contain the same value
    */
   public Property[] getSameChoices() {
-    return toArray(getReferenceSet(true).getReferences(getValue()));
+    // got access to a reference set?
+    Gedcom gedcom = getGedcom();
+    if (gedcom==null)
+      return new Property[0];
+    ReferenceSet refSet = gedcom.getReferenceSet(getTag());
+    // convert
+    return toArray(refSet.getReferences(getValue()));
   }
   
   /**
@@ -100,8 +92,8 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   /**
    * Used choices (this will not work unless parent not null)
    */
-  public List getChoices() {
-    return getReferenceSet(true).getKeys();
+  public List getChoices(Gedcom gedcom) {
+    return gedcom.getReferenceSet(getTag()).getKeys();
   }
   
   /**

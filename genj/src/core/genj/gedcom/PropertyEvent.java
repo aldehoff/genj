@@ -77,14 +77,14 @@ public class PropertyEvent extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ Property init(String set, String value) throws GedcomException {
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
     // remember tag
-    tag = set;
+    tag = meta.getTag();
     // remember Y
     if (value.toLowerCase().equals("y"))
       knownToHaveHappened = true;
     // continue with super 
-    return super.init(tag,value);
+    return super.init(meta,value);
   }
 
   /**
@@ -119,7 +119,7 @@ public class PropertyEvent extends Property {
    */
   public void setKnownToHaveHappened(boolean set) {
     knownToHaveHappened = set;
-    modNotify();
+    propagateModified();
   }
 
 // Could do an automatic 'y' here but that would pollute

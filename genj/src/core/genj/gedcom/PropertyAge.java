@@ -63,9 +63,9 @@ public class PropertyAge extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  Property init(String tag, String value) throws GedcomException {
-    assume(TAG.equals(tag), UNSUPPORTED_TAG);
-    return super.init(tag, value);
+  Property init(MetaProperty meta, String value) throws GedcomException {
+    assume(TAG.equals(meta.getTag()), UNSUPPORTED_TAG);
+    return super.init(meta, value);
   }
 
   /**
@@ -91,7 +91,7 @@ public class PropertyAge extends Property {
     else
       ageAsString = newValue;
     // notify
-    modNotify();
+    propagateModified();
     // Done
   }
 

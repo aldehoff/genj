@@ -41,8 +41,8 @@ public abstract class Property implements Comparable {
   public static final int
     QUERY_ALL          = 0,
     QUERY_VALID_TRUE   = 1,
-    QUERY_SYSTEM_FALSE = 2,
-    QUERY_FOLLOW_LINK  = 4;
+    QUERY_FOLLOW_LINK  = 4,
+    QUERY_NO_LINK      = 8;
     
   /** parent of this property */
   private Property parent=null;
@@ -65,6 +65,9 @@ public abstract class Property implements Comparable {
   /** a localized label */
   public final static String LABEL = resources.getString("prop");
 
+  /** the meta information */
+  private MetaProperty meta = null;
+
   /**
    * Lifecycle - callback when being added to parent
    */
@@ -81,7 +84,7 @@ public abstract class Property implements Comparable {
     }
 
     // propagate change info
-    changeNotify(this, Transaction.PADD);
+    propagateChanged(this, Transaction.PADD);
     
   }
 
@@ -89,13 +92,18 @@ public abstract class Property implements Comparable {
    * Lifecycle - callback when being removed from parent
    */
   /*package*/ void delNotify() {
-
+  
+    // reset meta
+    meta = null;
+    
     // propagate
-    changeNotify(this, Transaction.PDEL);
-
+    propagateChanged(this, Transaction.PDEL);
+  
     // 20040609 to make move operations possible
     // I'm keeping parent and children from now on
-
+    // this allows to ask a removed child for it's
+    // former parent!
+  
     // propagate to children 
     Property[] props = getProperties();
     for (int i=0,j=props.length;i<j;i++) {
@@ -109,11 +117,8 @@ public abstract class Property implements Comparable {
   /**
    * Lifecycle - callback expected for changes being made 
    */
-  /*package*/ void modNotify() {
-    // tell it to parent
-    if (parent!=null)
-      parent.changeNotify(this, Transaction.PMOD);
-    // done      
+  /*package*/ void propagateModified() {
+    propagateChanged(this, Transaction.PMOD);
   }
   
   /**
@@ -121,10 +126,10 @@ public abstract class Property implements Comparable {
    * 'up' the owner chain
    * @param status Change.PMOD || Change.PDEL || Change.PADD 
    */
-  /*package*/ void changeNotify(Property prop, int status) {
+  /*package*/ void propagateChanged(Property prop, int status) {
     // tell it to parent
     if (parent!=null)
-      parent.changeNotify(prop, status);
+      parent.propagateChanged(prop, status);
     // done      
   }
   
@@ -202,18 +207,23 @@ public abstract class Property implements Comparable {
   /**
    * Adds another property to this property
    */
-  public Property addProperty(Property prop, int pos) {
+  public Property addProperty(Property child, int pos) {
+
+    // check against meta of child
+    if (child.meta!=null && getMetaProperty().get(child.getTag(), false) != child.getMetaProperty())
+      throw new IllegalArgumentException("illegal use of property "+child.getTag()+" in "+getPath());
 
     // position valid?
     if (pos>=0&&pos<children.size())
-      children.add(pos, prop);
+      children.add(pos, child);
     else
-      children.add(prop);
+      children.add(child);
 
     // Notify
-    prop.addNotify(this);
+    child.addNotify(this);
+    
     // Done
-    return prop;
+    return child;
   }
   
   /**
@@ -308,16 +318,18 @@ public abstract class Property implements Comparable {
    */
   public TagPath getPath() {
 
+    // build
     Stack stack = new Stack();
     stack.push(getTag());
-    
     Property parent = getParent();
     while (parent!=null) {
       stack.push(parent.getTag());
       parent = parent.getParent();
     }
 
+    // done
     return new TagPath(stack);
+    
   }
 
   /**
@@ -559,7 +571,9 @@ public abstract class Property implements Comparable {
    * different type that is better suited for the SPECIFIC
    * combination.
    */
-  /*package*/ Property init(String tag, String value) throws GedcomException {
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
+    // remember meta
+    this.meta = meta;
     // assuming concrete sub-type handles tag - keep value
     setValue(value);
     // we stay around
@@ -631,15 +645,6 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Marking a property as system can be honoured by the UI (don't show)
-   */
-  public boolean isSystem() {
-    if (parent==null)
-      return false;
-    return parent.isSystem();
-  }
-
-  /**
    * Adds default properties to this property
    */
   public final Property addDefaultProperties() {
@@ -662,7 +667,9 @@ public abstract class Property implements Comparable {
    * Resolve meta property
    */
   public MetaProperty getMetaProperty() {
-    return MetaProperty.get(getPath());    
+    if (meta==null)
+      meta = MetaProperty.get(getPath());    
+    return meta;
   }
 
   /**
@@ -688,7 +695,7 @@ public abstract class Property implements Comparable {
     if ((criteria&QUERY_VALID_TRUE)!=0&&!isValid())
       return false;
       
-    if ((criteria&QUERY_SYSTEM_FALSE)!=0&&isSystem())
+    if ((criteria&QUERY_NO_LINK)!=0&&this instanceof PropertyXRef)
       return false;
     
     return true;
@@ -723,7 +730,7 @@ public abstract class Property implements Comparable {
     isPrivate = set;
     
     // bookkeeping
-    modNotify();
+    propagateModified();
     
     // done
   }

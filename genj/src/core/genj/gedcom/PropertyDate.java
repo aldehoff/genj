@@ -221,7 +221,7 @@ public class PropertyDate extends Property {
       throw new IllegalArgumentException("Unknown format '"+newFormat+"'");
 
     // remember as modified      
-    modNotify();
+    propagateModified();
 
     // remember
     format=newFormat;
@@ -238,7 +238,7 @@ public class PropertyDate extends Property {
    */
   public void setValue(String newValue) {
 
-    modNotify();
+    propagateModified();
 
     // Reset value
     start.reset();
@@ -305,9 +305,9 @@ public class PropertyDate extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ Property init(String tag, String value) throws GedcomException {
-    assume(TAG.equals(tag), UNSUPPORTED_TAG);
-    return super.init(tag,value);
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
+    assume(TAG.equals(meta.getTag()), UNSUPPORTED_TAG);
+    return super.init(meta, value);
   }
   
   /**
@@ -404,7 +404,7 @@ public class PropertyDate extends Property {
     public void set(int d, int m, int y) {
       
       // note change
-      modNotify();
+      propagateModified();
 
       // assume string is not needed anymore
       dateAsString=null;

@@ -286,6 +286,8 @@ public class PropertyTreeWidget extends DnDTree {
     /** the gedcom we're looking at */
     private Gedcom gedcom;
     
+    private boolean ignoreRemoveInTX = false;
+    
     /**
      * Gedcom to use
      */
@@ -377,15 +379,17 @@ public class PropertyTreeWidget extends DnDTree {
         // remove
         parent.delProperty(child);
         
-        // tell to tree
+        // tell to listeners - we know the old position only at this point
+        // so we supress remove notifications in handleChange. Wish we
+        // could move this to handleChange() instead
         fireTreeNodesRemoved(this, getPathToRoot(parent), new int[]{pos}, null);
 
       }
 
       // end move transaction
-      gedcom.removeGedcomListener(this);
+      ignoreRemoveInTX = true;
       gedcom.endTransaction();      
-      gedcom.addGedcomListener(this);
+      ignoreRemoveInTX = false;
 
       // done for now      
     }
@@ -398,7 +402,7 @@ public class PropertyTreeWidget extends DnDTree {
       // cast        
       Property
         theParent = (Property)parent;
-        
+
       // start transaction
       gedcom.startTransaction();      
 
@@ -410,18 +414,13 @@ public class PropertyTreeWidget extends DnDTree {
         // add copy of child
         child = theParent.addCopy(child, index+i);
         
-        // tell to tree
-        fireTreeNodesInserted(this, getPathToRoot(theParent), new int[]{index+i}, new Object[]{child});
-
-        // expand 
-        expandAll(getPathToRoot(child));
-      
       }
       
       // end insert transaction
-      gedcom.removeGedcomListener(this);
       gedcom.endTransaction();      
-      gedcom.addGedcomListener(this);
+
+      // expand all
+      //expandAllRows();
 
       // done      
     }
@@ -479,9 +478,7 @@ public class PropertyTreeWidget extends DnDTree {
      * Returns child by index of parent
      */
     public Object getChild(Object parent, int index) {
-      Property prop = (Property)parent;
-      Property[] children = prop.getProperties(prop.QUERY_SYSTEM_FALSE);
-      return children[index];
+      return ((Property)parent).getProperty(index);
     }          
   
     /**
@@ -490,20 +487,18 @@ public class PropertyTreeWidget extends DnDTree {
     public int getChildCount(Object parent) {
       if (parent==NULL)
         return 0;
-      Property prop = (Property)parent;
-      return prop.getProperties(prop.QUERY_SYSTEM_FALSE).length;
+      return ((Property)parent).getNoOfProperties();
     }
     
     /**
      * Returns index of given child from parent
      */
     public int getIndexOfChild(Object parent, Object child) {
-      Property prop = (Property)parent;
-      Property[] children = prop.getProperties(prop.QUERY_SYSTEM_FALSE);
-      for (int i=0;i<children.length;i++) {
-        if (children[i]==child) return i; 
-      } 
-      return -1;
+      try {
+        return ((Property)parent).getPropertyPosition((Property)child);
+      } catch (Throwable t) {
+        return -1;
+      }
     }          
   
     /**
@@ -558,28 +553,29 @@ public class PropertyTreeWidget extends DnDTree {
       if (!tx.getChanges(tx.EMOD).contains(entity))
         return;
 
-      // Property added/removed ?
-      Iterator padds = tx.getChanges(tx.PADD).iterator();
-      while (padds.hasNext()) {
-        Property padd = (Property)padds.next();
-        if (!padd.isSystem()) {
-          // reset
-          fireStructureChanged();
-          // show rows
-          expandAllRows();
-          // done
-          return;
-        }
+      // Property added?
+      Set padds = tx.getChanges(tx.PADD);
+      Iterator it = padds.iterator();
+      while (it.hasNext()) {
+        Property padd = (Property)it.next();
+        // wait for the topmost added property
+        if (padds.contains(padd.getParent()))
+          continue;
+        // and signal it's here
+        TreePath path = getPathToRoot(padd.getParent());
+        fireTreeNodesInserted(this, path, new int[]{padd.getParent().getPropertyPosition(padd)}, null);
+        expandAll(path.pathByAddingChild(padd));
       }
-      Iterator pdels = tx.getChanges(tx.PDEL).iterator();
-      while (pdels.hasNext()) {
-        Property pdel = (Property)pdels.next();
-        if (!pdel.isSystem()) {
-          // reset
+      
+      // Property removed?
+      if (!ignoreRemoveInTX) {
+        Iterator pdels = tx.getChanges(tx.PDEL).iterator();
+        while (pdels.hasNext()) {
+          Property pdel = (Property)pdels.next();
+          if (pdel.getEntity()!=entity)
+            continue;
           fireStructureChanged();
-          // show rows
           expandAllRows();
-          // done
           return;
         }
       }

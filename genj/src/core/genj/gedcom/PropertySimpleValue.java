@@ -54,10 +54,10 @@ public class PropertySimpleValue extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ Property init(String set, String value) {
-    tag = set;
+  /*package*/ Property init(MetaProperty meta, String value) {
+    tag = meta.getTag();
     try {
-      return super.init(set, value);
+      return super.init(meta, value);
     } catch (GedcomException e) {
       // don't expect any problems here
       return this;
@@ -76,7 +76,7 @@ public class PropertySimpleValue extends Property {
    * Sets the value of this property
    */
   public void setValue(String value) {
-    modNotify();
+    propagateModified();
     this.value=value;
   }
   

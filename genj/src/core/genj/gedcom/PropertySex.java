@@ -141,9 +141,9 @@ public class PropertySex extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ Property init(String tag, String value) throws GedcomException {
-    assume(TAG.equals(tag), UNSUPPORTED_TAG);
-    return super.init(tag,value);
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
+    assume(TAG.equals(meta.getTag()), UNSUPPORTED_TAG);
+    return super.init(meta, value);
   }
 
   /**
@@ -177,7 +177,7 @@ public class PropertySex extends Property {
    * Accessor for Sex
    */
   public void setSex(int newSex) {
-    modNotify();
+    propagateModified();
     sexAsString = null;
     sex = newSex;
     // Done
@@ -188,7 +188,7 @@ public class PropertySex extends Property {
    */
   public void setValue(String newValue) {
 
-    modNotify();
+    propagateModified();
 
     // Cannot parse anything longer than 1
     if (newValue.length()>1) {

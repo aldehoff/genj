@@ -21,6 +21,7 @@ package genj.edit.beans;
 
 import java.awt.BorderLayout;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.Registry;
 import genj.util.swing.TextFieldWidget;
@@ -56,9 +57,9 @@ public class SimpleValueBean extends PropertyBean {
   /**
    * Initialize
    */
-  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
 
-    super.init(setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setMgr, setReg);
 
     setLayout(new BorderLayout());
 

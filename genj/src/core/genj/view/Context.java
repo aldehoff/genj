@@ -24,8 +24,11 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JComponent;
 
 /**
  * A context represents a 'current context in Gedcom terms', a gedcom
@@ -33,13 +36,23 @@ import java.util.List;
  */  
 public class Context {
   
-  private Object source;
   private ViewManager manager;
   private Gedcom gedcom;
   private Entity entity;
   private Property property;
   private ArrayList actions = new ArrayList();
+  private Component source;
 
+  /**
+   * Copy Constructor
+   */
+  /*package*/ Context(Context that) {
+    gedcom   = that.gedcom;
+    entity   = that.entity;
+    property = that.property;
+    manager  = that.manager;
+  }
+  
   /**
    * Constructor
    */
@@ -98,6 +111,33 @@ public class Context {
    */
   public boolean isValid() {
     return gedcom!=null && (entity!=null||property==null) && (entity==null||gedcom.contains(entity));
+  }
+  
+  /**
+   * Accessor
+   */
+  public void setSource(Component set) {
+    source = set;
+  }
+  
+  /**
+   * Accessor - try to identify a view this context came from
+   */
+  public JComponent getView() {
+    // no source no view
+    if (source==null)
+      return null;
+    // run up the chain
+    while (true) {
+      Component parent = source.getParent();
+      if (parent==null)
+        break;
+      if (parent instanceof ViewContainer)
+        return (JComponent)source;
+      source = parent;
+    }
+    // none found
+    return null;
   }
   
   /**
@@ -164,18 +204,4 @@ public class Context {
     return gedcom+"/"+entity+"/"+property;
   }
 
-  /**
-   * Accessor - source
-   */
-  public Object getSource() {
-    return source;
-  }
-  
-  /**
-   * Accessor - source
-   */
-  public void setSource(Object set) {
-    source = set;
-  }
-  
 } //Context

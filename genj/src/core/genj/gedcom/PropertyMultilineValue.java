@@ -47,9 +47,9 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  Property init(String set, String value) throws GedcomException {
-    tag = set;
-    return super.init(tag,value);
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
+    tag = meta.getTag();
+    return super.init(meta, value);
   }
   
   /**
@@ -57,7 +57,7 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
   public void setValue(String setValue) {
-    modNotify();
+    propagateModified();
     lines = setValue;
   }
 

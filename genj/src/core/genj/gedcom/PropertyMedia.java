@@ -53,14 +53,14 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
    * happend - it's our chance to substitute this with
    * a read-only value if no reference applicable
    */
-  /*package*/ Property init(String tag, String value) throws GedcomException {
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
     // expecting NOTE
-    assume("OBJE".equals(tag), UNSUPPORTED_TAG);
+    assume("OBJE".equals(meta.getTag()), UNSUPPORTED_TAG);
     // ONLY for @..@!!!
     if (value.startsWith("@")&&value.endsWith("@"))
-      return super.init(tag,value);
+      return super.init(meta,value);
     // switch to ro value
-    return new PropertySimpleReadOnly().init(tag, value);
+    return new PropertySimpleReadOnly().init(meta, value);
   }
 
 

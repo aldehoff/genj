@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.util.Registry;
@@ -53,14 +54,14 @@ public class ChoiceBean extends PropertyBean {
   /**
    * Initialize
    */
-  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
 
-    super.init(setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setMgr, setReg);
     
     // setup choices
     Object[] items = new Object[0];
     if (property instanceof PropertyChoiceValue)
-      items =  ((PropertyChoiceValue)property).getChoices().toArray();
+      items = ((PropertyChoiceValue)property).getChoices(setGedcom).toArray();
 
     // Setup controls
     choice = new ChoiceWidget(items, property.getValue());

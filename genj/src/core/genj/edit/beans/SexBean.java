@@ -25,7 +25,6 @@ import genj.gedcom.PropertySex;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.ImageIcon;
 import genj.view.ViewManager;
 
 import javax.swing.AbstractButton;
@@ -65,25 +64,11 @@ public class SexBean extends PropertyBean {
   }
 
   /**
-   * Create a label for the bean
-   */
-  public String getLabel() {
-    return property.getTag() + " - "+ Gedcom.getName(property.getTag());
-  }
-  
-  /**
-   * Image of bean
-   */
-  public ImageIcon getImage() {
-    return PropertySex.getImage(getSex());
-  }
-
-  /**
    * Initialize
    */
-  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
 
-    super.init(setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setMgr, setReg);
   
     // we know it's PropertySex
     PropertySex p = (PropertySex) property;

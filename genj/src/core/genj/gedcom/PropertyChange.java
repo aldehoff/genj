@@ -19,11 +19,11 @@
  */
 package genj.gedcom;
 
-import genj.gedcom.time.*;
+import genj.gedcom.time.PointInTime;
 import genj.util.WordBuffer;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.text.DecimalFormat;
+import java.util.StringTokenizer;
 
 /**
  * CHAN is used by Gedcom to keep track of changes done to entity records.
@@ -39,20 +39,13 @@ import java.util.Date;
  */
 public class PropertyChange extends Property implements MultiLineProperty {
 
-  //tried to parse the decimal-fraction of a second, too, but SS is milliseconds
-  //new SimpleDateFormat("HH:mm:ss.SS"), 
-  
-  private final static SimpleDateFormat[] FORMATS = { 
-    new SimpleDateFormat("HH:mm:ss"),
-    new SimpleDateFormat("HH:mm")
-  };
+  private final static DecimalFormat decimal = new DecimalFormat("00");
   
   private final static String
    CHAN = "CHAN",
    TIME = "TIME",
    DATE = "DATE";
   
-  private PointInTime pit = new PointInTime();
   private long time = -1;
 
   /**
@@ -63,24 +56,32 @@ public class PropertyChange extends Property implements MultiLineProperty {
   }
   
   /**
-   * @see genj.gedcom.Property#isSystem()
-   */
-  public boolean isSystem() {
-    return true;
-  }
-
-  /**
    * Get the last change date
    */
   public String getDateAsString() {
-    return pit.toString(new WordBuffer(), true).toString();    
+    return time<0 ? EMPTY_STRING : PointInTime.getPointInTime(time).toString(new WordBuffer(), true).toString();    
   }
   
   /**
    * Get the last change time
    */
   public String getTimeAsString() {
-    return time<0 ? EMPTY_STRING : FORMATS[0].format(new Date(time));
+    if (time<0)
+      return EMPTY_STRING;
+
+    long
+      sec = (time/1000)%60,
+      min = (time/1000/60)%60,
+      hr  = (time/1000/60/60)%24;
+      
+    StringBuffer buffer = new StringBuffer();
+    buffer.append(decimal.format(hr));
+    buffer.append(':');
+    buffer.append(decimal.format(min));
+    buffer.append(':');
+    buffer.append(decimal.format(sec));
+    
+    return buffer.toString();
   }
   
   /**
@@ -93,32 +94,32 @@ public class PropertyChange extends Property implements MultiLineProperty {
   /**
    * @see genj.gedcom.PropertySimpleValue#setTag(java.lang.String)
    */
-  Property init(String set, String value) throws GedcomException {
-    assume(CHAN.equals(set), UNSUPPORTED_TAG);
-    return super.init(set,value);
+  Property init(MetaProperty meta, String value) throws GedcomException {
+    assume(CHAN.equals(meta.getTag()), UNSUPPORTED_TAG);
+    return super.init(meta,value);
   }
 
   /**
    * Static update
    */
-  /*package*/ static void update(Entity entity) {
-    
+  /*package*/ static void update(Entity entity, Transaction tx) {
+  
+    // is allowed?
+    MetaProperty ment = entity.getMetaProperty();
+    if (!ment.allows(CHAN))
+      return;
+      
     // get PropertyChange
     PropertyChange change = (PropertyChange)entity.getProperty(CHAN);
     if (change==null) {
-      // is allowed?
-      MetaProperty ment = entity.getMetaProperty();
-      if (!ment.allows(CHAN))
-        return;
       // create instance
       change = (PropertyChange)ment.get(CHAN, true).create("");
-      entity.addProperty(change);
+      entity.addProperty(change, Integer.MAX_VALUE);
     }
     
-    // update values
-    change.pit = PointInTime.getNow();
-    change.time = System.currentTimeMillis();
-
+    // update values (tx time is UTC time!)
+    change.setValue(tx.getTime());
+  
     // done
   }
   
@@ -142,26 +143,58 @@ public class PropertyChange extends Property implements MultiLineProperty {
   public String getLinesValue() {
     return getValue();
   }
+
+  /**
+   * Set current value
+   */  
+  public void setValue(long set) {
+
+    // known?
+    if (time==set)
+      return;
+
+    // keep time before propagate so no endless loop happens
+    time = set;
+    
+    // notify
+    propagateModified();
+    
+    // done
+  }
   
   /**
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
   public void setValue(String value) {
+    
+    // notify
+    propagateModified();
+
     // must look like 19 DEC 2003,14:50
     int i = value.indexOf(',');
     if (i<0) 
       return;
-    // parse pit
-    pit = PointInTime.getPointInTime(value.substring(0,i));
-    // parse tiem 
-    for (int f=0;f<FORMATS.length;f++) {
-      try {
-        time = FORMATS[f].parse(value.substring(i+1)).getTime();
-        break;
-      } catch (Throwable t) {
-        time = -1;
-      }
+
+    try {
+      time = 0;
+
+      // parse time hh:mm:ss
+      StringTokenizer tokens = new StringTokenizer(value.substring(i+1), ":");
+      if (tokens.hasMoreTokens())
+        time += Integer.parseInt(tokens.nextToken()) * 60 * 60 * 1000;
+      if (tokens.hasMoreTokens())
+        time += Integer.parseInt(tokens.nextToken()) * 60 * 1000;
+      if (tokens.hasMoreTokens())
+        time += Integer.parseInt(tokens.nextToken()) * 1000;
+        
+      // parse date
+      time += PointInTime.getPointInTime(value.substring(0,i)).getTimeMillis();
+      
+    } catch (Throwable t) {
+
+      time = -1;
     }
+    
     // done
   }
   
@@ -170,7 +203,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    * @see genj.gedcom.Property#getValue()
    */
   public String getValue() {
-    return getDateAsString()+','+getTimeAsString();
+    return time<0 ? EMPTY_STRING : getDateAsString()+','+getTimeAsString();
   }
   
   /**
@@ -180,13 +213,13 @@ public class PropertyChange extends Property implements MultiLineProperty {
     // safety check
     if (!(o instanceof PropertyChange))
       return super.compareTo(o);
-    // compare pit
-    PropertyChange other = (PropertyChange)o;
-    int result = pit.compareTo(other.pit);
-    if (result!=0)
-      return result;
     // compare time
-    return (int)(time-other.time);
+    PropertyChange other = (PropertyChange)o;
+    if (time<other.time)
+      return -1;
+    if (time>other.time)
+      return 1;
+    return 0;
   }
   
   /**
@@ -244,7 +277,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
     /** lines */
     private String[] 
       tags = { CHAN, DATE, TIME  },
-      values = { EMPTY_STRING, pit.getValue(), getTimeAsString() };
+      values = { EMPTY_STRING, PointInTime.getPointInTime(time).getValue(), getTimeAsString() };
       
     /**
      * @see genj.gedcom.MultiLineProperty.Iterator#setValue(java.lang.String)

@@ -50,14 +50,14 @@ public class PropertySource extends PropertyXRef {
    * happend - it's our chance to substitute this with
    * a multilinevalue if no reference applicable
    */
-  /*package*/ Property init(String tag, String value) throws GedcomException {
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
     // expecting NOTE
-    assume("SOUR".equals(tag), UNSUPPORTED_TAG);
+    assume("SOUR".equals(meta.getTag()), UNSUPPORTED_TAG);
     // ONLY for @..@!!!
     if (value.startsWith("@")&&value.endsWith("@"))
-      return super.init(tag,value);
+      return super.init(meta,value);
     // switch to multiline value
-    return new PropertyMultilineValue().init(tag, value);
+    return new PropertyMultilineValue().init(meta, value);
   }
 
 

@@ -168,13 +168,18 @@ public class ViewManager {
     
     // remember context
     Gedcom gedcom = context.getGedcom();
-    gedcom2context.put(gedcom, context);
+    gedcom2context.put(gedcom, new Context(context));
     
     // clear any menu selections
     MenuSelectionManager.defaultManager().clearSelectedPath();
     
     // ignore setContext from now on
     isIgnoreSetContext = true;
+    
+    // see if source is a view which will get context message first
+    JComponent view = context.getView();
+    if (view!=null&&view instanceof ContextListener)
+      ((ContextListener)view).setContext(context);
     
     // loop and tell to views
     Iterator it = key2viewwidget.values().iterator();
@@ -454,6 +459,9 @@ public class ViewManager {
         Context context = provider.getContextAt(e.getPoint());
         if (context==null)
           return;
+          
+        // set source
+        context.setSource(component);
           
         // show context menu
         showContextMenu(context, component, e.getPoint());

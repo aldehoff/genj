@@ -88,9 +88,9 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ Property init(String tag, String value) throws GedcomException {
-    assume(TAG.equals(tag), UNSUPPORTED_TAG);
-    return super.init(tag,value);
+  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
+    assume(TAG.equals(meta.getTag()), UNSUPPORTED_TAG);
+    return super.init(meta,value);
   }
 
   /**
@@ -183,7 +183,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     isIconChecked = false;
 
     // Remember changed property
-    modNotify();
+    propagateModified();
 
     // Done
   }
@@ -194,7 +194,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   public void load(String file, boolean updateSubs) {
     
     // Remember changed property
-    modNotify();
+    propagateModified();
 
     // Reset state
     isIconChecked = false;

@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.util.Registry;
@@ -46,18 +47,11 @@ public class XRefBean extends PropertyBean {
   }
   
   /**
-   * No label
-   */
-  public String getLabel() {
-    return xref==null||xref.isTransient() ? "" : super.getLabel();
-  }
-
-  /**
    * Initialize
    */
-  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
 
-    super.init(setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setMgr, setReg);
 
     // remember xref
     xref = (PropertyXRef)setProp;

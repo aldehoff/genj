@@ -134,7 +134,7 @@ public class TagPath {
    * @exception IllegalArgumentException in case format isn't o.k.
    * @return the path [a:b:c]
    */
-  public TagPath(Stack path) throws IllegalArgumentException {
+  /*package*/ TagPath(Stack path) throws IllegalArgumentException {
     // grab stack elements
     len = path.size();
     tags = new String[len];

@@ -113,7 +113,7 @@ public class PointInTime implements Comparable {
   public int getDay() {
     return day;
   }
-
+  
   /**
    * Accessor to an immutable point in time - now
    */
@@ -136,6 +136,23 @@ public class PointInTime implements Comparable {
     return result;
   }
   
+  /**
+   * Accessor to a point in time from system time long
+   */
+  public static PointInTime getPointInTime(long millis) {
+    // January 1, 1970 = 0 millis = 2440588 julian
+    long julian = 2440588 + (millis / 24 / 60 / 60 / 1000);
+    return GREGORIAN.toPointInTime((int)julian);
+  }
+  
+  /**
+   * Returns the time millis representation
+   */
+  public long getTimeMillis() throws GedcomException {
+    // January 1, 1970 = 0 millis = 2440588 julian
+    return (getJulianDay()-2440588L) * 24*60*60*1000;
+  }
+
   /**
    * Accessor to a calendar transformed copy 
    */

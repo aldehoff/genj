@@ -20,6 +20,7 @@
 package genj.edit.beans;
 
 import genj.edit.actions.RunExternal;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
@@ -71,17 +72,17 @@ public class FileBean extends PropertyBean {
   
   /** a loader per rootpane*/
   private static Map root2loader = new WeakHashMap();
-    
+  
   /**
    * Initialize
    */
-  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
 
-    super.init(setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setMgr, setReg);
     setLayout(new BorderLayout());
-
+    
     // calc directory
-    Origin origin = property.getGedcom().getOrigin();
+    Origin origin = gedcom.getOrigin();
     String dir = origin.isFile() ? origin.getFile().getParent() : null;
     
     // connect file chooser with change support
@@ -113,6 +114,9 @@ public class FileBean extends PropertyBean {
     preview = new Preview();
     
     add(new JScrollPane(preview), BorderLayout.CENTER);
+    
+    // setup a reasonable preferred size
+    setPreferredSize(new Dimension(128,128));
 
     // case FILE
     if (property instanceof PropertyFile) {
@@ -289,7 +293,7 @@ public class FileBean extends PropertyBean {
      */
     public Dimension getPreferredSize() {
       // no image?
-      if (img==null) return new Dimension(0,0);
+      if (img==null) return new Dimension(32,32);
       // 1:1?
       if (zoom==0)
         return new Dimension(img.getIconWidth(), img.getIconHeight());
@@ -332,7 +336,7 @@ public class FileBean extends PropertyBean {
       Iterator it = FileAssociation.getAll(suffix).iterator();
       while (it.hasNext()) {
         FileAssociation fa = (FileAssociation)it.next(); 
-        mh.createItem(new RunExternal(property.getGedcom(),file,fa));
+        mh.createItem(new RunExternal(gedcom,file,fa));
       }
       // show
       if (popup.getComponentCount()>0)
@@ -397,7 +401,7 @@ public class FileBean extends PropertyBean {
       
       // load it
       try {
-          result = new ImageIcon(file, property.getGedcom().getOrigin().open(file));
+          result = new ImageIcon(file, gedcom.getOrigin().open(file));
       } catch (Throwable t) {
       }
       // continue
@@ -427,6 +431,8 @@ public class FileBean extends PropertyBean {
       
       // show
       preview.setImage(result);
+      revalidate();
+      
       result = null;
       
       // done

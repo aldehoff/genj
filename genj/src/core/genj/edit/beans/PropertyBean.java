@@ -26,7 +26,6 @@ import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.ImageIcon;
 import genj.view.ViewManager;
 
 import java.awt.Color;
@@ -50,6 +49,9 @@ public abstract class PropertyBean extends JPanel {
   /** the resources */
   protected final static Resources resources = Resources.get(PropertyBean.class); 
   
+  /** the gedcom object */
+  protected Gedcom gedcom;
+  
   /** the proxied property */
   protected Property property;
   
@@ -72,6 +74,17 @@ public abstract class PropertyBean extends JPanel {
   protected ChangeSupport changeSupport = new ChangeSupport(this);
   
   /**
+   * Accessor
+   */
+  public static PropertyBean get(Property prop) {
+    try {
+      return (PropertyBean) Class.forName( "genj.edit.beans." + prop.getProxy() + "Bean").newInstance();
+    } catch (Throwable t) {
+      return new SimpleValueBean();
+    }
+  }
+  
+  /**
    * Constructor
    */  
   protected PropertyBean() {
@@ -81,12 +94,13 @@ public abstract class PropertyBean extends JPanel {
   /**
    * Setup an editor in given panel
    */
-  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
 
     // remember property
     property = setProp;
     viewManager = setMgr;
     registry = setReg;
+    gedcom = setGedcom;
     
     // done
   }
@@ -112,20 +126,6 @@ public abstract class PropertyBean extends JPanel {
     changeSupport.removeChangeListener(l);
   }
   
-  /**
-   * label for bean
-   */
-  public String getLabel() {
-    return property.getTag() + " - "+ Gedcom.getName(property.getTag());
-  }
-  
-  /**
-   * image for bean
-   */
-  public ImageIcon getImage() {
-    return property.getImage(true);
-  }
-
   /**
    * Commit any changes made by the user
    */

@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.time.PointInTime;
@@ -88,12 +89,11 @@ public class DateBean extends PropertyBean implements ItemListener {
   public void itemStateChanged(ItemEvent e) {
 
     if (PropertyDate.isRange(combo.getSelectedIndex()))
-      deOne.getParent().add(deTwo);
+      add(deTwo);
     else
-      deOne.getParent().remove(deTwo);
+      remove(deTwo);
 
-    deOne.getParent().invalidate();
-    deOne.getParent().validate();
+    revalidate();
 
     // notify of change
     changeSupport.fireChangeEvent();
@@ -104,9 +104,9 @@ public class DateBean extends PropertyBean implements ItemListener {
   /**
    * Initialize
    */
-  public void init(Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
 
-    super.init(setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setMgr, setReg);
 
     // we know it's a date
     PropertyDate p = (PropertyDate)property;

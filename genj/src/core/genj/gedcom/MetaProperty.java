@@ -223,13 +223,13 @@ public class MetaProperty implements Comparable {
     
     try {
       result = (Property)getType().newInstance();
-      result = result.init(tag, value);
+      result = result.init(this, value);
     } catch (Exception e) {
       // 20030530 catch exceptions only - during load
       // an outofmemoryerrror could happen here
       Debug.log(Debug.WARNING, this, e);
       result = new PropertySimpleValue(); 
-      ((PropertySimpleValue)result).init(tag, value);
+      ((PropertySimpleValue)result).init(this, value);
     }
     
     // increate count
@@ -337,12 +337,16 @@ public class MetaProperty implements Comparable {
    * @return zero based index or Integer.MAX_VALUE if unknown
    */
   public int getIndex(String subtag) {
+    // make sure CHAN get's a high one (this should probably be defined in grammar)
+    if (subtag.equals("CHAN"))
+      return Integer.MAX_VALUE;
+    // look through grammar defined subs
     for (int i=0;i<listOfSubs.size();i++) {
       if (((MetaProperty)listOfSubs.get(i)).getTag().equals(subtag))
         return i;
     }
     //20040518 make the index of an unknown subtag as large as possible
-    return Integer.MAX_VALUE;
+    return Integer.MAX_VALUE-1;
   }
   
   /**

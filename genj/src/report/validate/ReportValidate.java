@@ -159,7 +159,8 @@ public class ReportValidate extends Report {
     for (int i=0,j=prop.getNoOfProperties();i<j;i++) {
       // for non-system, non-transient children
       Property child = prop.getProperty(i);
-      if (child.isTransient()||child.isSystem()) continue;
+      if (child.isTransient()) 
+        continue;
       // get child tag
       String ctag = child.getTag();
       // check if it's a custom tag

@@ -38,6 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
@@ -71,6 +72,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   /** current editor */
   private Editor editor;
   
+  private static boolean flip;
+  
   /**
    * Constructor
    */
@@ -84,7 +87,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     manager  = setManager;
 
     // create current editor
+    // FIXME need editor switch
     editor = new AdvancedEditor();
+//    editor = flip ? (Editor)new AdvancedEditor() : new BasicEditor();
+//    flip = !flip;
     editor.init(setGedcom, manager, registry);
 
     // layout
@@ -151,22 +157,25 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
    */
   public void setContext(Context context) {
     
-    // source is editor and not ours?
-    Object source = context.getSource();
-    if (source instanceof Editor && source!=editor)
-      return;
-    
-    // don't follow context if one EditView is looking at this already
-    EditView[] views = getInstances(context.getGedcom());
-    for (int i = 0; i < views.length; i++) {
-      if (views[i].editor.getContext().equals(context))
+    // source is this view?
+    JComponent view = context.getView();
+    if (view instanceof EditView) {
+      if (view!=this)
+        return;
+
+    } else {
+      // don't follow context if one EditView is looking at this already
+      EditView[] views = getInstances(context.getGedcom());
+      for (int i = 0; i < views.length; i++) {
+        if (views[i].editor.getContext().equals(context))
+          return;
+      }
+
+      // not if we're sticky
+      if (isSticky) 
         return;
     }
     
-    // not if we're sticky
-    if (source!=editor&&isSticky) 
-      return;
-      
     // get current
     Context current = editor.getContext();
     if (current.equals(context))
