@@ -177,7 +177,7 @@ public class SortableTableHeader extends JTableHeader {
     /**
      * Sets the sorted Column
      */
-    public void setSortedColumn(int col);
+    public void setSortedColumn(int col, boolean ascending);
   } //SortableTableModel
 
   /**
@@ -197,11 +197,13 @@ public class SortableTableHeader extends JTableHeader {
         return;
       // model that cares?
       TableModel model = getTable().getModel();
-      if (!(model instanceof SortableTableModel)) return;
-      // tell to model
-      ((SortableTableModel)model).setSortedColumn(col);
-      // we do a repaint, too
-      repaint();
+      if (model instanceof SortableTableModel) {
+        // tell to model
+        SortableTableModel stm = (SortableTableModel)model;
+        stm.setSortedColumn(col,!stm.isAscending());
+        // we do a repaint, too
+        repaint();
+      }
       // done       
     }
   } //SortClickMouseListener

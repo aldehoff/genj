@@ -171,8 +171,8 @@ import javax.swing.table.TableColumnModel;
       }
       rows[r] = new Row(e, ps);
     }
-    // no sorting - done
-    if (sortColumn>=0) sortRows();
+    // sort
+    sortRows();
     // done
   }
 
@@ -180,6 +180,10 @@ import javax.swing.table.TableColumnModel;
    * Sorts the rows
    */
   private void sortRows() {
+    // only if column is fine
+    if (sortColumn<0||sortColumn>=getColumnCount()) 
+      return;
+    // do it
     Arrays.sort(rows, new RowComparator());
   }
   
@@ -232,10 +236,13 @@ import javax.swing.table.TableColumnModel;
   /**
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#setSortedColumn(int)
    */
-  public void setSortedColumn(int col) {
+  public void setSortedColumn(int col, boolean ascending) {
+    // remember
     sortColumn = col;
-    sortOrder *= -1;
+    sortOrder = ascending?1:-1;
+    // sort
     sortRows();
+    // notify
     fireTableDataChanged();
   }
 

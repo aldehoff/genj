@@ -256,6 +256,10 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
       int[]    ws = registry.get(tag+".widths", (int[]   )null);
       if (ws!=null) tableModel.setWidths(t,ws);
     }
+    
+    // get sorting
+    tableModel.setSortedColumn(registry.get("sort.col", -1), registry.get("sort.dir", false));
+
     // Done
   }
   
@@ -263,6 +267,9 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
    * Write properties from registry
    */
   private void saveProperties() {
+    // save sorting
+    registry.put("sort.col", tableModel.getSortedColumn());
+    registry.put("sort.dir", tableModel.isAscending());
     // grab the column widths as they are right now
     grabColumnWidths();
     // save current type
