@@ -30,7 +30,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyMultilineValue;
 import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
-import genj.io.GedcomWriter;
+import genj.io.PropertyTransferable;
 import genj.renderer.Options;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
@@ -42,6 +42,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -319,11 +320,37 @@ public class PropertyTreeWidget extends DnDTree {
       // expand all
       expandAllRows();
     }
-  
+
+    /**
+     * Test for parent
+     */
+    private boolean isChildren(Property parent, List children) {
+      for (int c = 0; c < children.size(); c++) {
+        Property child = (Property)children.get(c);
+        if (child.getParent()!=parent) 
+          return false;
+      }
+      return true;
+    }
+    
+    /**
+     * DND support - remove test
+     */
+    public boolean canRemove(List children) {
+      return true;
+    }
+
     /**
      * DND support - remove nodes 
      */
     public void remove(List children, Object target) {
+      
+      Property newParent = (Property)target;
+      
+      // check if all children are of the same parent a.k.a. target
+      // then we simply don't remove them in the first place - this
+      // will only work in same-vm-cases since otherwise target==null
+      boolean isShuffle = newParent!=null&&isChildren(newParent, children);
       
       // start transaction for our gedcom
       gedcom.startTransaction();
@@ -340,8 +367,8 @@ public class PropertyTreeWidget extends DnDTree {
         fireTreeNodesRemoved(this, getPathToRoot(childsParent), new int[]{pos}, new Object[]{child});
       }
       
-      // end transaction if target is not in same gedcom
-      if (gedcom!=((Property)target).getGedcom())
+      // end transaction if newParent is not in same gedcom
+      if (newParent==null||gedcom!=newParent.getGedcom())
         gedcom.endTransaction();
         
       // done
@@ -351,9 +378,19 @@ public class PropertyTreeWidget extends DnDTree {
      * DND support - transferable
      */
     public Transferable getTransferable(List children) {
-      return GedcomWriter.writeTransferable(children);
+      return new PropertyTransferable(children);
     }
 
+    /**
+     * DND support - insert test
+     */
+    public boolean canInsert(Transferable transferable, Object parent, int index, int action) {
+      // copy or move
+      if (!(action==COPY||action==MOVE))
+        return false;
+      return transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR) 
+        || transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR);       
+    }
     /**
      * DND support - insert
      */
@@ -362,29 +399,18 @@ public class PropertyTreeWidget extends DnDTree {
       // start transaction for our gedcom?
       if (!gedcom.isTransaction())
         gedcom.startTransaction();
-        
+      
       // perform copy/move 
+//      Object o1 = transferable.getTransferData(PropertyTransferable.GENJ_FLAVOR);
+      
       try {
-        return GedcomReader.readTransferable(transferable, (Property)parent, index);
+        String s = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
+        return GedcomReader.read(new StringReader(s), (Property)parent, index);
       } finally {
         gedcom.endTransaction();      
       }
       
       // done      
-    }
-
-    /**
-     * DND support - remove test
-     */
-    public boolean canRemove(List children) {
-      return true;
-    }
-
-    /**
-     * DND support - insert test
-     */
-    public boolean canInsert(Transferable transferable, Object parent, int index, int action) {
-      return GedcomReader.canReadTransferable(transferable)&&(action==COPY||action==MOVE);      
     }
 
     /**

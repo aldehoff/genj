@@ -33,15 +33,13 @@ import genj.util.Origin;
 import genj.util.Resources;
 import genj.util.Trackable;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,23 +90,12 @@ public class GedcomReader implements Trackable {
   private List warnings = new ArrayList(128);
   
   /**
-   * Check for suitability of transferable for reading
-   */
-  public static boolean canReadTransferable(Transferable transferable) {
-    return transferable.isDataFlavorSupported(DataFlavor.stringFlavor);
-  }
-  
-  /**
-   * Reading properties from transferable
-   * @param transferable the transferable to read from
+   * Reading properties from reader
    * @param parent the parent to add to
    * @param pos the position to read to or -1 for best placement
    */
-  public static List readTransferable(Transferable transferable, Property parent, int pos) throws IOException, UnsupportedFlavorException {
+  public static List read(Reader reader, Property parent, int pos) throws IOException, UnsupportedFlavorException {
     
-    // get the textual representation
-    String s = transferable.getTransferData(DataFlavor.stringFlavor).toString();
-      
     // read it through custom reader
     GedcomReader instance = new GedcomReader();
     
@@ -116,7 +103,7 @@ public class GedcomReader implements Trackable {
     instance.isIndentForLevels = true;
     
     // faking a buffered read
-    instance.in = new BufferedReader(new StringReader(s));
+    instance.in = new BufferedReader(reader);
     
     // simply read properties into parent
     List result = new ArrayList(16);

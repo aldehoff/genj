@@ -44,8 +44,12 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -258,7 +262,14 @@ import javax.swing.event.TreeSelectionListener;
     /** run */
     protected void execute() {
       try {
-        clipboard.setContents(GedcomWriter.writeTransferable(Collections.singletonList(selection)), null);
+        // Write properties and their subs into a transferable
+        StringWriter out = new StringWriter();
+        try {
+          GedcomWriter.write(Collections.singletonList(selection), out);
+        } catch (IOException e) {
+          // can't happen
+        }
+        clipboard.setContents(new StringSelection(out.toString()), null);
       } catch (Throwable t) {
         Debug.log(Debug.WARNING, AdvancedEditor.this, "Couldn't ask system clipboard for flavor", t);
       }
@@ -303,7 +314,8 @@ import javax.swing.event.TreeSelectionListener;
       // start a transaction and grab from clipboard
       gedcom.startTransaction();
       try {
-        GedcomReader.readTransferable(clipboard.getContents(null), parent, -1);
+        String s = clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
+        GedcomReader.read(new StringReader(s), parent, -1);
       } catch (Throwable t) {
         Debug.log(Debug.WARNING, this, t);
       }

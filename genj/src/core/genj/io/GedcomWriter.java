@@ -30,13 +30,10 @@ import genj.gedcom.time.PointInTime;
 import genj.util.Debug;
 import genj.util.Trackable;
 
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -69,23 +66,11 @@ public class GedcomWriter implements Trackable {
   private String encoding;
 
   /**
-   * Write properties and their subs into a transferable
-   */
-  public static Transferable writeTransferable(List props) {
-    
-    StringWriter out = new StringWriter();
-    try {
-      new GedcomWriter(props, out);
-    } catch (IOException e) {
-      // can't happen
-    }
-    return new StringSelection(out.toString());
-    
-  }
-  
-  /**
    * Constructor used for converting a property into a text representation
    */
+  public static void write(List props, Writer writer) throws IOException {
+    new GedcomWriter(props,writer);
+  }
   private GedcomWriter(List props, Writer writer) throws IOException {
     
     // use a buffered out
