@@ -141,15 +141,23 @@ public class Resources {
     // Done
   }
 
+  /**
+   * Returns a localized string
+   * @param key identifies string to return
+   * @param notNull will return key if resource is not defined
+   */
+  public String getString(String key, boolean notNull) {
+    String result = properties.getProperty(key);
+    if (result==null&&notNull) result = key;
+    return result;
+  }
   
   /**
    * Returns a localized string
    * @param key identifies string to return
    */
   public String getString(String key) {
-    String result = properties.getProperty(key);
-    if (result==null) result = key;
-    return result;
+    return getString(key, true);
   }
 
   /**
