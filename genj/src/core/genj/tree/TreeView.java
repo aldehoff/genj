@@ -32,17 +32,24 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.ButtonHelper;
+import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.ContextPopupSupport;
 import genj.view.CurrentSupport;
+import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import gj.layout.tree.TreeLayoutRenderer;
 import gj.ui.UnitGraphics;
@@ -50,7 +57,7 @@ import gj.ui.UnitGraphics;
 /**
  * TreeView
  */
-public class TreeView extends JScrollPane implements CurrentSupport, ContextPopupSupport {
+public class TreeView extends JScrollPane implements CurrentSupport, ContextPopupSupport, ToolBarSupport {
   
   /*package*/ static final Resources resources = new Resources(TreeView.class); 
   
@@ -68,6 +75,12 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
   
   /** our current selection */
   private Entity currentEntity = null;
+  
+  /** our current zoom */
+  private double zoom = 1.0D;
+  
+  /** overview or not */
+  private boolean overview = false;
   
   /**
    * Constructor
@@ -119,6 +132,24 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
   public JComponent getContextPopupContainer() {
     return content;
   }
+  
+  /**
+   * @see genj.view.ToolBarSupport#populate(JToolBar)
+   */
+  public void populate(JToolBar bar) {
+
+    // zooming!    
+    DoubleValueSlider sliderZoom = new DoubleValueSlider(0.1D,1.0D,1.0D,false);
+    sliderZoom.addChangeListener(new ZoomGlue());
+    sliderZoom.setText("%");
+    bar.add(sliderZoom);
+    
+    // overview
+    ButtonHelper bh = new ButtonHelper().setContainer(bar);
+    bh.create(new ActionOverview());
+    
+    // done
+  }
 
   /**
    * Sets the root of this view
@@ -143,6 +174,46 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
     );
   }
   
+  /**
+   * @see javax.swing.JComponent#paint(Graphics)
+   */
+  public void paint(Graphics g) {
+    
+    // normal paint first
+    super.paint(g);
+    
+    // overview?
+    if (!overview) return;
+    int dim = 128;
+    double zoom = 
+      dim/(Math.max(model.getBounds().getWidth(), model.getBounds().getHeight())*UNITS);
+
+    // clear it
+    g.setColor(Color.white);
+    g.fillRect(0,0,dim,dim);
+
+    // go 2d
+    UnitGraphics ug = new UnitGraphics(g, UNITS*zoom, UNITS*zoom);
+    // init renderer
+    contentRenderer.cBackground    = Color.white;
+    contentRenderer.cIndiShape     = Color.black;
+    contentRenderer.cFamShape      = Color.black;
+    contentRenderer.cMarrShape     = Color.black;
+    contentRenderer.cArcs          = Color.black;
+    contentRenderer.cSelectedShape = Color.red;
+    contentRenderer.selection      = currentEntity;
+    // let the renderer do its work
+    ug.pushTransformation();
+    contentRenderer.render(ug, model);
+    ug.popTransformation();
+
+    // frame it
+    g.setColor(Color.blue);
+    g.drawRect(0,0,dim,dim);
+    
+    // done
+  }
+
   /**
    * The content we use for drawing
    */
@@ -183,8 +254,8 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
     public Dimension getPreferredSize() {
       Rectangle2D bounds = model.getBounds();
       int 
-        w = UnitGraphics.units2pixels(bounds.getWidth (), UNITS),
-        h = UnitGraphics.units2pixels(bounds.getHeight(), UNITS);
+        w = UnitGraphics.units2pixels(bounds.getWidth (), UNITS*zoom),
+        h = UnitGraphics.units2pixels(bounds.getHeight(), UNITS*zoom);
       return new Dimension(w,h);
     }
   
@@ -193,7 +264,7 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
      */
     protected void paintComponent(Graphics g) {
       // go 2d
-      UnitGraphics ug = new UnitGraphics(g, UNITS, UNITS);
+      UnitGraphics ug = new UnitGraphics(g, UNITS*zoom, UNITS*zoom);
       // init renderer
       contentRenderer.cBackground    = Color.white;
       contentRenderer.cIndiShape     = Color.black;
@@ -238,5 +309,39 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
     }
 
   } //MouseGlue
+
+  /**
+   * Glue for zooming
+   */
+  private class ZoomGlue implements ChangeListener {
+    /**
+     * @see javax.swing.event.ChangeListener#stateChanged(ChangeEvent)
+     */
+    public void stateChanged(ChangeEvent e) {
+      DoubleValueSlider dvs = (DoubleValueSlider)e.getSource();
+      zoom = dvs.getValue();
+      content.revalidate();
+      repaint();
+    }
+  } //ZoomGlue
+    
+  /**
+   * Action for opening overview
+   */
+  private class ActionOverview extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionOverview() {
+      super.setImage(Images.imgOverview);
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      overview = !overview;
+      repaint();
+    }
+  } //ActionOverview    
   
 } //TreeView
