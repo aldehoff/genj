@@ -50,7 +50,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   public static String[] getChoices(final Gedcom gedcom, final String tag, boolean sort) {
     
     // lookup choices
-    List choices = gedcom.getReferenceSet(tag).getKeys(null);
+    List choices = gedcom.getReferenceSet(tag).getKeys(sort ? gedcom.getCollator() : null);
 
     // done
     return (String[])choices.toArray(new String[choices.size()]);
