@@ -75,18 +75,18 @@ public class ReportNameHistory extends Report {
     
     // determine range
     int 
-      yearStart = findStart(indis),
-      yearEnd   = PointInTime.getNow().getYear();
+      start  = findStart(indis),
+      length = PointInTime.getNow().getYear() - start + 1;
     
     // prepare a series of 'others'
-    IndexedSeries others = new IndexedSeries(yearEnd-yearStart+1);
+    IndexedSeries others = new IndexedSeries("", start, length);
     
     // loop over individuals
     Map name2series = new TreeMap();
     Iterator iterator = indis.iterator();
     while (iterator.hasNext()) {
       Indi indi = (Indi)iterator.next();
-      analyze(gedcom, indis, indi, yearStart, yearEnd, name2series, others);
+      analyze(gedcom, indis, indi, name2series, others);
     }
     
     // check if got something
@@ -101,7 +101,7 @@ public class ReportNameHistory extends Report {
     }
     
     // show it
-    showChartToUser(new Chart(i18n("title", gedcom.getName()), null, i18n("yaxis"), IndexedSeries.toArray(name2series.values()), yearStart, yearEnd, new DecimalFormat("#"), true));
+    showChartToUser(new Chart(i18n("title", gedcom.getName()), null, i18n("yaxis"), IndexedSeries.toArray(name2series.values()), new DecimalFormat("#"), true));
 
     // done
   }
@@ -133,7 +133,7 @@ public class ReportNameHistory extends Report {
   /**
    * Analyze one individual
    */
-  private void analyze(Gedcom gedcom, Collection indis, Indi indi, int yearStart, int yearEnd, Map name2series, IndexedSeries others) {
+  private void analyze(Gedcom gedcom, Collection indis, Indi indi, Map name2series, IndexedSeries others) {
     
     // check name
 	  PropertyName name = (PropertyName)indi.getProperty("NAME");
@@ -162,14 +162,6 @@ public class ReportNameHistory extends Report {
     if (end==PointInTime.UNKNOWN)
 	    end = start+lifespanWithoutDEAT;
 	  
-	  // check range
-	  if (end<start||end<yearStart||start>yearEnd)
-	    return;
-	  
-	  // convert to indexed start/end 0<index<yearEnd-yearStart
-	  start = Math.max(0                , start-yearStart);
-	  end   = Math.min(yearEnd-yearStart,   end-yearStart);
-	  
 	  // check minimum percentage of name
 	  IndexedSeries series;
 	  if (PropertyName.getPropertyNames(gedcom, last).size()<indis.size()*minUseOfName/100) {
@@ -179,7 +171,7 @@ public class ReportNameHistory extends Report {
 	  } else {
 		  series = (IndexedSeries)name2series.get(last);
 		  if (series==null) {
-		    series = new IndexedSeries(last, yearEnd-yearStart+1);
+		    series = new IndexedSeries(last, others);
 		    name2series.put(last, series);
 		  }
 	  }

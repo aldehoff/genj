@@ -40,19 +40,30 @@ public class IndexedSeries {
   /** values */
   private float[] values;
   
+  /** start */
+  private int start;
+  
   /**
    * Constructor
    */
-  public IndexedSeries(int size) {
-    this("", size);
+  public IndexedSeries(String name, IndexedSeries template) {
+    this(name, template.start, template.values.length);
   }
   
   /**
    * Constructor
    */
   public IndexedSeries(String name, int size) {
+    this(name,0,size);
+  }
+  
+  /**
+   * Constructor
+   */
+  public IndexedSeries(String name, int start, int size) {
     this.name = name;
-    values = new float[size];
+    this.start = start;
+    this.values = new float[size];
   }
   
   /**
@@ -65,33 +76,50 @@ public class IndexedSeries {
   /**
    * Access
    */
-  public float get(int cat) {
-    if (cat<0||cat>=values.length)
-      throw new IllegalArgumentException("No such cell");
-    return values[cat];
+  public float get(int i) {
+    // apply start offset
+    i = i-start;
+    // return
+    return values[i];
   }
   
   /**
    * Cell Access
    */
-  public void set(int cat, float val) {
-    if (cat<0||cat>=values.length)
-      throw new IllegalArgumentException("No such cell");
-    values[cat] = val;
+  public void set(int i, float val) {
+    // apply start offset
+    i = i-start;
+    // check and ignore if out of bounds
+    if (i<0||i>=values.length)
+      return;
+    // return
+    values[i] = val;
   }
   
   /**
    * Cell Access
    */
-  public void inc(int cat) {
-    set(cat, get(cat)+1);
+  public void inc(int i) {
+    // apply start offset
+    i = i-start;
+    // check and ignore if out of bounds
+    if (i<0||i>=values.length)
+      return;
+    // return
+    values[i]++;
   }
   
   /**
    * Cell Access
    */
-  public void dec(int cat) {
-    set(cat, get(cat)-1);
+  public void dec(int i) {
+    // apply start offset
+    i = i-start;
+    // check and ignore if out of bounds
+    if (i<0||i>=values.length)
+      return;
+    // return
+    values[i]--;
   }
   
   /**
@@ -111,8 +139,8 @@ public class IndexedSeries {
   /**
    * Wrap into something JFreeChart can use
    */
-  public static TableXYDataset asTableXYDataset(IndexedSeries[] series, int rangeStart, int rangeEnd) {
-    return new TableXYDatasetImpl(series, rangeStart, rangeEnd);
+  public static TableXYDataset asTableXYDataset(IndexedSeries[] series) {
+    return new TableXYDatasetImpl(series);
   }
   
   /** 
@@ -124,22 +152,24 @@ public class IndexedSeries {
     private IndexedSeries[] series;
     
     /** range */
-    private int rangeStart, rangeEnd;
+    private int start, length;
     
     /**
      * Constructor
      */
-    public TableXYDatasetImpl(IndexedSeries[] series, int rangeStart, int rangeEnd) {
+    public TableXYDatasetImpl(IndexedSeries[] series) {
       
       this.series = series;
-      this.rangeStart = rangeStart;
-      this.rangeEnd = rangeEnd;
-
-      int len = rangeEnd-rangeStart+1;
       
-      for (int i=0;i<series.length;i++) {
-        if (series[i].values.length!=len)
-          throw new IllegalArgumentException("series doesn't match "+len+" elements");
+      if (series.length>0) {
+        start = series[0].start;
+        length = series[0].values.length;
+
+        for (int i=1;i<series.length;i++) {
+          if (series[i].start!=start||series[i].values.length!=length)
+            throw new IllegalArgumentException("series can't be combined into table dataset");
+        }
+        
       }
     }
     
@@ -147,7 +177,7 @@ public class IndexedSeries {
      * THE TableXYDataset requirement - one equal item count
      */
     public int getItemCount() {
-      return rangeEnd-rangeStart+1;
+      return length;
     }
     
     /**
@@ -168,21 +198,21 @@ public class IndexedSeries {
      * # of items in series
      */
     public int getItemCount(int s) {
-      return getItemCount();
+      return length;
     }
 
     /**
      * item x for seriex
      */
-    public Number getX(int s, int item) {
-      return new Integer(rangeStart + item);
+    public Number getX(int s, int i) {
+      return new Integer(start + i);
     }
 
     /**
      * item y for seriex
      */
-    public Number getY(int s, int item) {
-      return new Float(series[s].get(item));
+    public Number getY(int s, int i) {
+      return new Float(series[s].get(start+i));
     }
 
   } //TableXYDatasetImpl

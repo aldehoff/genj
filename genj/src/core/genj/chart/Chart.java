@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.1 $ $Author: nmeier $ $Date: 2004-12-09 03:38:18 $
+ * $Revision: 1.2 $ $Author: nmeier $ $Date: 2004-12-10 14:41:24 $
  */
 package genj.chart;
 
@@ -59,7 +59,7 @@ public class Chart extends JPanel {
   /**
    * Constructor
    */
-  public Chart(String title, String labelAxisX, String labelAxisY, IndexedSeries[] series, final int rangeStart, int rangeEnd, NumberFormat format, boolean stacked) {
+  public Chart(String title, String labelAxisX, String labelAxisY, IndexedSeries[] series, NumberFormat format, boolean stacked) {
 
     // prepare chart setup
     NumberAxis xAxis = new NumberAxis(labelAxisX);
@@ -69,7 +69,7 @@ public class Chart extends JPanel {
     yAxis.setNumberFormatOverride(format);
     
     XYItemRenderer renderer = stacked ? new StackedXYAreaRenderer() : new XYAreaRenderer();
-    XYPlot plot = new XYPlot(IndexedSeries.asTableXYDataset(series, rangeStart, rangeEnd), xAxis, yAxis, renderer);
+    XYPlot plot = new XYPlot(IndexedSeries.asTableXYDataset(series), xAxis, yAxis, renderer);
 
     // init
     init(title, plot);
