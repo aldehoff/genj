@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.util.WordBuffer;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +43,9 @@ public class TagPath {
   /** the position in the path */
   private int position;
   
+  /** the hash of this path (immutable) */
+  private int hash;
+  
   /**
    * Constructor for TagPath
    * @param path path as colon separated string value a:b:c
@@ -61,6 +66,7 @@ public class TagPath {
     }
 
     position = 0;
+    hash = path.hashCode();
 
     // Done
   }
@@ -69,11 +75,19 @@ public class TagPath {
    * Constructor for TagPath
    */
   public TagPath(Property[] props) {
+    
+    // decompose property path
+    WordBuffer b = new WordBuffer(':');
+    
     tags = new String[props.length];
     for (int i=0; i<props.length; i++) {
     	tags[i] = props[i].getTag();
+      b.append(tags[i]);
     }
     position = 0;
+    hash = b.toString().hashCode();
+    
+    // done
   }
 
   /**
@@ -256,4 +270,12 @@ public class TagPath {
   public String toString() {
     return asString();
   }
+  
+  /**
+   * @see java.lang.Object#hashCode()
+   */
+  public int hashCode() {
+    return hash;
+  }
+
 }

@@ -22,6 +22,7 @@ package genj.app;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 import genj.io.Filter;
 import genj.util.swing.SwingFactory;
 import genj.view.FilterSupport;
@@ -69,7 +70,7 @@ import javax.swing.JTextField;
     
     // property filter
     Box props = create.Box(BoxLayout.Y_AXIS);
-    create.JLabel("Exclude Tags:");
+    create.JLabel("Exclude Tags (or Paths):");
     textTags = create.JTextField("e.g. \"INDI:BIRT:NOTE, ADDR\"", true, 10);
     create.JLabel("Exclude Values containing:");
     textValues = create.JTextField("e.g. \"secret, private\"", true, 10);
@@ -134,8 +135,9 @@ import javax.swing.JTextField;
     /**
      * Constructor
      */
-    private FilterProperties(Set tags, List values) {
+    private FilterProperties(Set tags, Set paths, List values) {
       this.tags = tags;
+      this.paths = paths;
       this.values = (String[])values.toArray(new String[0]);
       // done
     }
@@ -147,9 +149,19 @@ import javax.swing.JTextField;
       
       // calculate tags
       Set tags = new HashSet();
+      Set paths = new HashSet();
+      
       StringTokenizer tokens = new StringTokenizer(sTags, ",");
       while (tokens.hasMoreTokens()) {
-        tags.add(tokens.nextToken().trim());
+        String s = tokens.nextToken().trim();
+        if (s.indexOf(':')>0) {
+          try {
+            paths.add(new TagPath(s));
+          } catch (IllegalArgumentException e) { 
+          }
+        } else {
+          tags.add(s);
+        }
       }
       // calculate values
       List values = new ArrayList();
@@ -159,7 +171,7 @@ import javax.swing.JTextField;
       }
      
       // done
-      return (tags.isEmpty() && values.isEmpty()) ? null : new FilterProperties(tags, values);
+      return (tags.isEmpty() && paths.isEmpty() && values.isEmpty()) ? null : new FilterProperties(tags, paths, values);
     }
     
     /**
@@ -175,6 +187,8 @@ import javax.swing.JTextField;
     public boolean accept(Property property) {
       // check if tag is applying
       if (tags.contains(property.getTag())) return false;
+      // check if path is applying
+      if (paths.contains(property.getPath())) return false;
       // check if value is applying
       if (property.isMultiLine()!=Property.NO_MULTI) {
         Enumeration lines = property.getLineIterator();

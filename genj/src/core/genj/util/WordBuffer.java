@@ -46,6 +46,14 @@ public class WordBuffer {
     buffer = new StringBuffer(80);
   }
   
+  /** 
+   * Constructor
+   */
+  public WordBuffer(char fill) {
+    buffer = new StringBuffer(80);
+    filler = ""+fill;
+  }
+  
   /**
    * Set the filler to use between words   */
   public WordBuffer setFiller(String set) {

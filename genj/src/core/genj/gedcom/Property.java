@@ -649,6 +649,13 @@ public abstract class Property implements Comparable {
   public Property getParent() {
     return parent;
   }
+  
+  /**
+   * Returns the path to this property
+   */
+  public TagPath getPath() {
+    return new TagPath(getEntity().getProperty().getPathTo(this));
+  }
 
   /**
    * Returns path of properties to specified property
