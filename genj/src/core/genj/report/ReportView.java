@@ -248,7 +248,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     if (bClose!=null) {
       bClose.setEnabled(!on);
     }
-    bReload.setEnabled(!on);
+    bReload.setEnabled(!loader.isReportsInClasspath());
 
     taOutput.setCursor(Cursor.getPredefinedCursor(
       on?Cursor.WAIT_CURSOR:Cursor.DEFAULT_CURSOR
