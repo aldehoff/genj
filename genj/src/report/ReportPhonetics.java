@@ -186,7 +186,7 @@ public class ReportPhonetics extends Report {
     /**
      * Our phonetics interface
      */
-    private interface Phonetics {
+    interface Phonetics {
         
         /**
          * encode implementation
