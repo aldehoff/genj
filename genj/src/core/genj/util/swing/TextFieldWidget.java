@@ -39,7 +39,14 @@ public class TextFieldWidget extends JTextField {
   private boolean isSelectAllOnFocus = false;
   
   /** change support */
-  private ChangeSupport changeSupport = new ChangeSupport(this);
+  private ChangeSupport changeSupport = new ChangeSupport(this) {
+    public void fireChangeEvent() {
+      // no template anymore
+      isTemplate = false;
+      // continue
+      super.fireChangeEvent();
+    }
+  };
   
   /**
    * Constructor
@@ -82,8 +89,7 @@ public class TextFieldWidget extends JTextField {
   /**
    * Make this a template - the field is set to unchanged, any
    * current value in the text-field is not returned but empty
-   * string until the user changes focus to this component (which
-   * clears the content)
+   * string until the user edits the content
    */
   public TextFieldWidget setTemplate(boolean set) {
     isTemplate = set;
@@ -108,12 +114,10 @@ public class TextFieldWidget extends JTextField {
    * @see java.awt.Component#processFocusEvent(java.awt.event.FocusEvent)
    */
   protected void processFocusEvent(FocusEvent e) {
+    
+    // catch focus gained
     if (e.getID()==FocusEvent.FOCUS_GAINED) {
-      if (isTemplate) {
-        selectAll();
-        isTemplate = false;
-      }
-      if (isSelectAllOnFocus) {
+      if (isTemplate||isSelectAllOnFocus) {
         // 20040307 wrote my own selectAll() so that the
         // caret is at position 0 after selection - this
         // makes sure the beginning of the text is visible
@@ -123,6 +127,8 @@ public class TextFieldWidget extends JTextField {
         }
       }
     }
+    
+    // continue
     super.processFocusEvent(e);
   }
     
