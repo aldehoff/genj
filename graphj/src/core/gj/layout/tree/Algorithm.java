@@ -181,8 +181,14 @@ import java.util.Stack;
       // next
    }
 
+    // create result
+    Branch[] result = (Branch[])children.toArray(new Branch[children.size()]);
+    
+    // balancing?
+    if (balance) calcBalance(result,0,result.length-1,true);
+
     // done
-    return (Branch[])children.toArray(new Branch[children.size()]);
+    return result;
   }
 
 
@@ -398,6 +404,13 @@ import java.util.Stack;
     // done
     return result;
   }
+  
+  /**
+   * Calculate the balance of branches that are placed from west to east 
+   */
+  private void calcBalance(Branch[] branches, int start, int end, boolean right) {
+    // FIXME
+  }
     
   /**
    * AlignNodeOptions
@@ -586,5 +599,5 @@ import java.util.Stack;
       // done
     }
   }
-  
+
 } //NodeLayout
