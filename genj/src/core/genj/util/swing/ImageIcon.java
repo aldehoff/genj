@@ -29,12 +29,14 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageProducer;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.swing.GrayFilter;
 
@@ -51,6 +53,9 @@ public class ImageIcon extends javax.swing.ImageIcon {
 
   /** dpi */
   private Point dpi = null;
+  
+  /** cached overlayed icons */
+  private Map overlays = new WeakHashMap();
   
   /**
    * Private special
@@ -171,8 +176,17 @@ public class ImageIcon extends javax.swing.ImageIcon {
    * Return a version with the given ImageIcon overlayed
    * @param overlay the image to overlay this with (javax.swing.* is enough)
    */ 
-  public ImageIcon getOverLayed(javax.swing.ImageIcon overlay) {
+  public ImageIcon getOverLayed(ImageIcon overlay) {
 
+    System.out.print(name+"+"+overlay.name);
+    
+    // already known?
+    ImageIcon result = (ImageIcon)overlays.get(overlay);
+    if (result!=null) {
+      return result;
+    }
+
+    // create overlay
     int height = Math.max(getIconHeight(), overlay.getIconHeight());
     int width = Math.max(getIconWidth(), overlay.getIconWidth());
 
@@ -186,7 +200,13 @@ public class ImageIcon extends javax.swing.ImageIcon {
     g.drawImage(image2, 0, 0, null);
     g.dispose();
 
-    return new ImageIcon(this, composite);
+    result = new ImageIcon(this, composite);
+
+    // remember
+    overlays.put(overlay, result);
+        
+    // done
+    return result;
   }
   
 } //ImageIcon 
