@@ -246,6 +246,13 @@ public class ReportAppletDetails implements Report {
   public boolean isReadOnly() {
     return true;
   }
+  
+  /**
+   * Helper that resolves a filename for given entity
+   */
+  public static File getFileForEntity(File dir, Entity entity) {
+    return new File(dir, entity.getId()+".html");
+  }
 
   /**
    * Exports the given entity to given directory
@@ -254,7 +261,7 @@ public class ReportAppletDetails implements Report {
 
     bridge.println("Exporting "+ent);
 
-    File file = new File(dir, ent.getId()+".html" );
+    File file = getFileForEntity(dir, ent);
 
     PrintWriter htmlOut = new PrintWriter(new FileOutputStream(file));
 
