@@ -150,15 +150,18 @@ public class PropertyFamilySpouse extends PropertyXRef {
       if (husband!=null)
         fam.swapSpouses();
       // create new back ref
-      setTarget(new PropertyHusband(this));
+      PropertyXRef backref = new PropertyHusband(this);
+      fam.addProperty(backref);
+      setTarget(backref);
     } else {
       // swap if necessary
       if (wife!=null)
         fam.swapSpouses();
       // create new back ref
-      setTarget(new PropertyWife(this));
+      PropertyXRef backref = new PropertyWife(this);
+      fam.addProperty(backref);
+      setTarget(backref);
     }
-    fam.addProperty(getTarget());
 
     // Done
   }
