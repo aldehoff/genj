@@ -99,6 +99,7 @@ import javax.swing.JScrollPane;
   private void showFile(String file) {
 
     // show value
+    tFile.setTemplate(false);
     tFile.setText(file);
 
     // try to open
