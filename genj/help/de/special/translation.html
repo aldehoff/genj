@@ -4,7 +4,7 @@
 <h2>Wie &uuml;bersetze ich GenJ in eine andere Sprache?</h2>
 
 <p>
-Eine vollst&auml;ndige &Uuml;bersetzung besteht aus 3 Teilen:
+Die &Uuml;bersetzung erfordert keine Programmierkenntnisse und es m&uuml;ssen folglich keine Quelldateien (*.java) bearbeitet werden. Die Sprachdaten sind vollst&auml;ndig vom Programm getrennt und liegen in Textdateien. Eine vollst&auml;ndige &Uuml;bersetzung besteht aus 3 Teilen:
 
 <blockquote>
 <ol>
@@ -14,12 +14,12 @@ Eine vollst&auml;ndige &Uuml;bersetzung besteht aus 3 Teilen:
 </ol>
 </blockquote>
 
-Die 3 Teile sind unabh&auml;ngig voneinander, so dass die &Uuml;bersetzung auch schrittweise oder nur zum Teil (beispielsweise GenJ-Programm und Reporte, nicht aber die Anleitung) erfolgen kann. Sie sollten sich bei der &Uuml;bersetzung <b>an einer vorhandenen Sprache orientieren</b>, z. B. Englisch. Wenn Sie CVS-Zugang haben, k&ouml;nnen Sie sich die ben&ouml;tigten Dateien (Sprachvorlagen) vom CVS-Server herunterladen. Die Zugangsdaten stehen auf der Internetseite von GenJ. Ansonsten besuchen Sie das GenJ-Forum und bitten um Zusendung der Sprachvorlagen. Die Sprachdateien liegen in folgenden CVS-Ordnern und sind wie unten angegeben zu bearbeiten. Jedes Verzeichnis enth&auml;lt Unterverzeichnisse, in denen sich ebenfalls Dateien befinden, die zu bearbeiten sind. Bei einer Zusendung per eMail kann die Verzeichnis-Struktur evtl. etwas von der abweichen, die Namen sind jedoch gleich.
+Die 3 Teile sind unabh&auml;ngig voneinander, so dass die &Uuml;bersetzung schrittweise oder nur zum Teil (beispielsweise GenJ-Programm und Reporte, nicht aber die Anleitung) erfolgen kann. Bei der &Uuml;bersetzung sollte <b>eine vorhandene Sprache als Muster</b> verwendet werden, z. B. Englisch. Die ben&ouml;tigten Dateien (Sprachvorlagen) liegen auf dem CVS-Server. Die Zugangsdaten stehen auf der GenJ-Internetseite. Eine andere M&ouml;lichkeit ist das Verschicken per eMail. Wenden Sie sich in diesem Fall bitte an das GenJ-Team oder besuchen Sie das GenJ-Forum. Die Verzeichnis-Struktur kann in diesem Fall geringf&uuml;gig von der CVS-Struktur, die nachfolgend als Beispiel verwendet wird, abweichen. Verzeichnisse enthalten in beiden F&auml;llen Unterverzeichnisse mit zu bearbeitenden Dateien. Die einzelnen Teile werden wie folgt &uuml;bersetzt.
 </p>
 
 <h2>GenJ-Programm</h2>
 <p>
-Der Pfad lautet <tt>dev/genj/language/[Landesk&uuml;rzel der Sprachvorlage, z. B. de=deutsch, en=englisch]</tt>. Es sind alle Dateien mit der Endung *.properties zu bearbeiten, wobei es lediglich <b>die Texte rechts vom Gleichheitszeichen zu &uuml;bersetzen</b> gilt. Die Bezeichnungen links vom Gleichheitszeichen m&uuml;ssen unver&auml;ndert bleiben.
+Der Pfad lautet <tt>dev/genj/language/[Landesk&uuml;rzel der Sprachvorlage, z. B. de=deutsch, en=englisch]</tt>. Von Interesse sind Dateien mit der Endung *.properties, wobei lediglich die Texte rechts vom Gleichheitszeichen &uuml;bersetzt werden. <b>Bezeichnungen links vom Gleichheitszeichen bleiben unver&auml;ndert.</b>
 
 <blockquote>
 <b>Beispiel (en => de)</b><br>
@@ -27,7 +27,7 @@ cc.menu.file = File <b>(englisch Vorlage)</b><br>
 cc.menu.file = Datei <b>(deutsche &Uuml;bersetzung)</b>
 </blockquote>
 
-Zum Schluss sind die *.properties-Dateien umzubenennen, so dass das Landesk&uuml;rzel der neuen Sprache im Namen erscheint. Dabei ist dem K&uuml;rzel ein Unterstrich _ voranzustellen. <b>Hinweis:</b> Englische Sprachdatein haben weder einen Unterstrich noch ein Landesk&uuml;rzel im Dateinamen.
+Bei fehlenden &Uuml;bersetzungen wird automatisch die Standard-Sprache Englisch verwendet. Die *.properties-Dateien werden umbenannt, so dass das Landesk&uuml;rzel der neuen Sprache mit einem vorangestellen Unterstrich _ im Namen erscheint. <b>Hinweis:</b> Englische Sprachdateien (Standard-Sprache) haben weder einen Unterstrich noch ein Landesk&uuml;rzel im Dateinamen.
 
 <blockquote>
 <b>Beispiel (en => de)</b><br>
@@ -35,7 +35,7 @@ resources.properties<br>
 resources_de.properties
 </blockquote>
 
-Nun ist nur noch der Ordner umzubenennen, so dass er das Landesk&uuml;rzel der neuen Sprache als Namen tr&auml;gt und die Programmdateien sind fertig &Uuml;bersetzt.
+Nach Umbenennen des Ordners in das Landesk&uuml;rzel der neuen Sprache sind die Programmdateien fertig &uuml;bersetzt.
 
 <blockquote>
 <b>Beispiel (en => de)</b><br>
@@ -46,7 +46,7 @@ dev/genj/language/de
 
 <h2>Reporte</h2>
 <p>
-Es sind alle *.properties-Dateien in <tt>dev/genj/src/report</tt> zu bearbeiten. Dabei ist pro Eintrag eine neue Zeile hinzuzuf&uuml;gen. Bestehende Eintr&auml;ge k&ouml;nnen durch kopieren und einf&uuml;gen als Vorlage verwendet werden. Links vom Gleichheitszeichen wird ein Punkt gefolgt vom neuen Landesk&uuml;rzel eingetragen. Ein evtl. bestehendes K&uuml;rzel wird &uuml;berschrieben. <b>Hinweis:</b> Englische Eintr&auml;ge haben weder einen Punkt noch ein Landesk&uuml;rzel.
+Hier sind die *.properties-Dateien in <tt>dev/genj/src/report</tt> von Interesse. Pro Eintrag wird eine neue Zeile hinzugef&uuml;gt, wobei bestehende Eintr&auml;ge durch kopieren und einf&uuml;gen als Vorlage verwendet werden k&ouml;nnen. Im neuen Eintrag ist links vom Gleichheitszeichen ein Punkt gefolgt vom neuen Landesk&uuml;rzel hinzuzuf&uuml;gen oder ein vorhandenes K&uuml;rzel entsprechend zu &auml;ndern. <b>Hinweis:</b> Englische Eintr&auml;ge (Standard-Sprache) haben weder einen Punkt noch ein Landesk&uuml;rzel.
 
 <blockquote>
 <b>Beispiel (en => de)</b><br>
@@ -54,7 +54,7 @@ name =<br>
 name.de =
 </blockquote>
 
-Der Text rechts vom Gleichheitszeichen wird in die neue Sprache &uuml;bersetzt. Bei Text, der von <tt>{}</tt> oder <tt>@@</tt> umschlossen sind, handelt es sich um Platzhalter f&uuml;r Variablen. Solche Werte d&uuml;rfen nicht ver&auml;ndert werden, da die Report-Ausgabe sonst falsch formatiert wird. Steuerzeichen beginnen mit <tt>\</tt> wie beispielsweise <tt>\n</tt>. Bei Zeichen in der Form <tt>\u00ED</tt> handelt es sich um Unicode, der bei der Ausf&uuml;hrung von GenJ in lesbare Buchstaben umgewandelt wird.
+Der Text rechts vom Gleichheitszeichen wird &uuml;bersetzt. F&uuml;r fehlende &Uuml;bersetzungen wird automatisch die Standard-Sprache Englisch eingesetzt. Bei Text, der von <tt>{}</tt> oder <tt>@@</tt> umschlossen sind, handelt es sich um Platzhalter f&uuml;r Variablen. Solche Werte bleiben ver&auml;ndert. Steuerzeichen beginnen mit <tt>\</tt> wie beispielsweise <tt>\n</tt>. Bei Zeichen in der Form <tt>\u00ED</tt> handelt es sich um Unicode, der bei der Ausf&uuml;hrung von GenJ in lesbare Buchstaben umgewandelt wird.
 
 <blockquote>
 <b>Beispiel (en => de)</b><br>
@@ -67,7 +67,16 @@ Die &Uuml;bersetzung ist komplett, wenn alle Eintr&auml;ge in den *.properties-D
 
 <h2>Anleitung</h2>
 <p>
-Die Anleitung ist im HTML-Format geschrieben. Somit sind alle *.html-Dateien in <tt>dev/genj/help/[Landesk&uuml;rzel der Sprachvorlage, z. B. de=deutsch, en=englisch]</tt> zu bearbeiten. HTML-Kennzeichen wie <tt>&lt;br&gt;</tt> oder <tt>&lt;/p&gt;</tt> bleiben unver&auml;ndert. Zur &Uuml;bersetzung wird ausschlie&szlig;lich der Text bearbeitet. Nachdem der Ordner umbenannt wurde, so dass er das Landesk&uuml;rzel der neuen Sprache als Namen tr&auml;gt, ist die Anleitung fertig &uuml;bersetzt (siehe Abschnitt GenJ-Programm f&uuml;r ein Beispiel).
+Die Anleitung liegt im HTML-Format vor und ist durch Bilder, die sich in <tt>dev/genj/images</tt> befinden, veranschaulicht. Relevant sind *.html-Dateien in <tt>dev/genj/help/[Landesk&uuml;rzel der Sprachvorlage, z. B. de=deutsch, en=englisch]</tt>, wobei HTML-Befehle wie <tt>&lt;br&gt;</tt> oder <tt>&lt;/p&gt;</tt> unver&auml;ndert &uuml;bernommen werden. Es wird ausschlie&szlig;lich der Text bearbeitet. <font color=red>Bei einer Aktualisierung von Bildern, also Bildschirm-Fotos (Screenshots) von GenJ, sind folgende Hinweise zu beachten:</font>
+<blockquote>
+<ul>
+<li>Die &Uuml;bersetzung der anderen Teile (GenJ-Programm, Reporte) sollte abgeschlossen sein, um eine Vermischung von Sprachen zu vermeiden.</li>
+<li>Bei Verwendung eines anderen Look-and-Feels bzw. Layouts (grafisches Erscheinungsbild) kann es zu unterschiedlichen Programmdarstellungen kommen. F&uuml;r eine einheitliche Darstellung sind im Zweifelsfall alle Screenshots zu ersetzen.</li>
+<li>&Uuml;berschreiben Sie nicht die vorhandenen Dateien in <tt>images</tt>, sondern legen Sie die Bilder direkt im <tt>help</tt>-Verzeichnis ab.</li>
+<li>Verwenden Sie PNG als Bildformat.</li>
+</ul>
+</blockquote>
 
+Nachdem der Ordner in das neue Landesk&uuml;rzel umbenannt wurde, ist die Anleitung fertig &uuml;bersetzt (siehe Abschnitt GenJ-Programm f&uuml;r ein Beispiel).
 </body>
 </html>
