@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.WordBuffer;
-
 import java.util.StringTokenizer;
 
 /**
@@ -35,15 +33,6 @@ public class PropertyAge extends Property {
     
     /** as string */
     private String ageAsString;
-    
-    /** localizations */
-    private final static String
-    YEAR  = Gedcom.resources.getString("time.year"  ),
-    YEARS = Gedcom.resources.getString("time.years" ),
-    MONTH = Gedcom.resources.getString("time.month" ),
-    MONTHS= Gedcom.resources.getString("time.months"),
-    DAY   = Gedcom.resources.getString("time.day"   ),
-    DAYS  = Gedcom.resources.getString("time.days"  );
     
     /**
      * Returns <b>true</b> if this property is valid
@@ -82,11 +71,13 @@ public class PropertyAge extends Property {
      * Accessor Value
      */
     public String getValue() {
+      
       if (ageAsString!=null)
         return ageAsString;
+        
       // since we're expected to return a Gedcom compliant value
       // here we're not localizing the return value (e.g. 1y 2m 3d)       
-      return getAgeString(years,months,days, false, false);
+      return new PointInTime.Delta(days,months,years).toString();
     }
     
     /**
@@ -153,13 +144,13 @@ public class PropertyAge extends Property {
     public boolean updateAge() {
         
         // calc delta
-        int[] delta = PointInTime.getDelta(getEarlier(), getLater());
+        PointInTime.Delta delta = PointInTime.Delta.get(getEarlier(), getLater());
         if (delta==null)
-            return false;
+          return false;
         
-        years = delta[0];
-        months = delta[1];
-        days = delta[2];
+        years = delta.getYears();
+        months = delta.getMonths();
+        days = delta.getDays();
         
         ageAsString = null;
         
@@ -245,63 +236,6 @@ public class PropertyAge extends Property {
         PropertyDate date = ((PropertyEvent)parent).getDate();
         // start of date
         return date!=null ? date.getStart() : null;
-    }
-    
-    /**
-     * Calculate an age string "99y 9m 9d"
-     */
-    public static String getAgeString(PointInTime earlier, PointInTime later, boolean localize, boolean shortWriting) {
-        
-        // try to calc delta
-        int[] delta = PointInTime.getDelta(earlier,later);
-        if (delta==null)
-            return "";
-        
-        // convert into string
-        return getAgeString(delta[0], delta[1], delta[2], localize, shortWriting);
-    }
-    
-    /**
-     * Calculate Age String
-     */
-    public static String getAgeString(int y, int m, int d, boolean localize, boolean shortWriting) {
-        
-        // calculate output
-        WordBuffer buffer = new WordBuffer();
-        if (!localize) {
-            if (y>0) buffer.append(y+"y");
-            if (m>0) buffer.append(m+"m");
-            if (d>0) buffer.append(d+"d");
-        } else {
-            if (y==0&&m==0&&d==0) {
-                if(shortWriting)
-                    return "<1 "+DAY.substring(0,1).toLowerCase();
-                else
-                    return "<1 "+DAY;
-            }
-            if (y>0) {
-                buffer.append(""+y);
-                if(shortWriting)
-                    buffer.append(y==1?YEAR.substring(0,1).toLowerCase() :YEARS.substring(0,1).toLowerCase() );
-                else
-                    buffer.append(y==1?YEAR :YEARS );
-            }
-            if (m>0) {
-                if(shortWriting)
-                    buffer.append(""+m).append(m==1?MONTH.substring(0,1).toLowerCase():MONTHS.substring(0,1).toLowerCase());
-                else
-                    buffer.append(""+m).append(m==1?MONTH:MONTHS);
-            }
-            if (d>0) {
-                if(shortWriting)
-                    buffer.append(""+d).append(d==1?DAY.substring(0,1).toLowerCase()  :DAYS.substring(0,1).toLowerCase()  );
-                else
-                    buffer.append(""+d).append(d==1?DAY  :DAYS  );
-            }
-        }
-        
-        // done
-        return buffer.toString();
     }
     
 } //PropertyAge

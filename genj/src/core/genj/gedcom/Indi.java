@@ -457,13 +457,18 @@ public class Indi extends Entity {
   /**
    * Calculate indi's age at given point in time
    */
-  public String getAgeString(PointInTime pit, boolean localize, boolean shortWriting) {
+  public String getAgeString(PointInTime pit) {
   
     // try to get birth    
     PropertyDate pbirth = getBirthDate();
-    if (pbirth==null) return EMPTY_STRING;
+    if (pbirth==null) 
+      return EMPTY_STRING;
     
-    return PropertyAge.getAgeString(pbirth.getStart(), pit, localize, shortWriting);
+    PointInTime.Delta delta = PointInTime.Delta.get(pbirth.getStart(), pit);
+    if (delta==null)
+      return EMPTY_STRING;
+      
+    return delta.toString();
   }
     
 } //Indi

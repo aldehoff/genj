@@ -30,6 +30,15 @@ import java.util.StringTokenizer;
  * A point in time - either hebrew, roman, frenchr, gregorian or julian
  */
 public class PointInTime implements Comparable {
+
+//  /** localizations */
+//  private final static String
+//  YEAR  = Gedcom.resources.getString("time.year"  ),
+//  YEARS = Gedcom.resources.getString("time.years" ),
+//  MONTH = Gedcom.resources.getString("time.month" ),
+//  MONTHS= Gedcom.resources.getString("time.months"),
+//  DAY   = Gedcom.resources.getString("time.day"   ),
+//  DAYS  = Gedcom.resources.getString("time.days"  );
   
   /** marker for unknown day,month,year */
   public final static int 
@@ -368,16 +377,186 @@ public class PointInTime implements Comparable {
   }
 
   /**
-   * Calculate delta of two times years,months,days
+   * Delta
    */
-  public static int[] getDelta(PointInTime earlier, PointInTime later) {
+  public static class Delta {
 
-// FIXME how does delta look for different calendars?
-//    return earlier.calendar.toJulianDay(later) -
-//      later.calendar.toJulianDay(later); 
+    /** values */
+    private int years, months, days;
+    private Calendar calendar;
     
-    return null;
-  }
+    /**
+     * Constructor
+     */
+    public Delta(int d, int m, int y) {
+      this(d,m,y,GREGORIAN);
+    }
+    
+    /**
+     * Constructor
+     */
+    public Delta(int d, int m, int y, Calendar c) {
+      years = y;
+      months= m;
+      days  = d;
+      calendar = c;
+    }
+    
+    /**
+     * Accessor - years
+     */
+    public int getYears() {
+      return years;
+    }
+    
+    /**
+     * Accessor - months
+     */
+    public int getMonths() {
+      return months;
+    }
+    
+    /**
+     * Accessor - days
+     */
+    public int getDays() {
+      return days;
+    }
+    
+    /**
+     * Accessor - calendar
+     */
+    public Calendar getCalendar() {
+      return calendar;
+    }
+    
+    /**
+     * Factory
+     * @return Delta or null if n/a
+     */
+    public static Delta get(PointInTime earlier, PointInTime later) {
+
+      // null check
+      if (earlier==null||later==null) 
+        return null;
+           
+      // valid?
+      if (!earlier.isValid()||!later.isValid())
+        return null;
+      
+      // same calendar?
+      Calendar calendar = earlier.getCalendar();
+      if (calendar!=later.getCalendar())
+        return null;
+        
+      // ordering?
+      if (earlier.compareTo(later)>0) {
+        PointInTime p = earlier;
+        earlier = later;
+        later = p;
+      }
+  
+      // grab earlier values  
+      int 
+        yearlier =     earlier.getYear (),
+        mearlier = fix(earlier.getMonth()),
+        dearlier = fix(earlier.getDay  ());
+    
+      // age at what point in time?
+      int 
+        ylater =     later.getYear (),
+        mlater = fix(later.getMonth()),
+        dlater = fix(later.getDay  ());
+      
+      // calculate deltas
+      int years  = ylater - yearlier;
+      int months = mlater - mearlier;
+      int days = dlater - dearlier;
+      
+      // check day
+      if (days<0) {
+        // decrease months
+        months --;
+        // increase days with days in previous month
+        days = dlater + (calendar.getDays(mearlier, yearlier)-dearlier); 
+      }
+    
+      // check month now<then
+      if (months<0) {
+        // decrease years
+        years -=1;
+        // increase months
+        months += calendar.getMonths();
+      } 
+      
+      // sanity check
+      if (years<0||months<0||days<0||(years+months+days==0))  
+        return null;      
+
+      // done
+      return new Delta(days, months, years, calendar);
+    }
+    
+    private static int fix(int i) {
+      return i!=UNKNOWN ? i : 0;
+    }
+    
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+      WordBuffer buffer = new WordBuffer();
+      if (years >0) buffer.append(years+"y");
+      if (months>0) buffer.append(months+"m");
+      if (days  >0) buffer.append(days +"d");
+      return buffer.toString();
+    }
+
+//    /**
+//     * Calculate Age String
+//     */
+//    public static String getAgeString(int y, int m, int d, boolean localize, boolean shortWriting) {
+//        
+//        // calculate output
+//        WordBuffer buffer = new WordBuffer();
+//        if (!localize) {
+//            if (y>0) buffer.append(y+"y");
+//            if (m>0) buffer.append(m+"m");
+//            if (d>0) buffer.append(d+"d");
+//        } else {
+//            if (y==0&&m==0&&d==0) {
+//                if(shortWriting)
+//                    return "<1 "+DAY.substring(0,1).toLowerCase();
+//                else
+//                    return "<1 "+DAY;
+//            }
+//            if (y>0) {
+//                buffer.append(""+y);
+//                if(shortWriting)
+//                    buffer.append(y==1?YEAR.substring(0,1).toLowerCase() :YEARS.substring(0,1).toLowerCase() );
+//                else
+//                    buffer.append(y==1?YEAR :YEARS );
+//            }
+//            if (m>0) {
+//                if(shortWriting)
+//                    buffer.append(""+m).append(m==1?MONTH.substring(0,1).toLowerCase():MONTHS.substring(0,1).toLowerCase());
+//                else
+//                    buffer.append(""+m).append(m==1?MONTH:MONTHS);
+//            }
+//            if (d>0) {
+//                if(shortWriting)
+//                    buffer.append(""+d).append(d==1?DAY.substring(0,1).toLowerCase()  :DAYS.substring(0,1).toLowerCase()  );
+//                else
+//                    buffer.append(""+d).append(d==1?DAY  :DAYS  );
+//            }
+//        }
+//        
+//        // done
+//        return buffer.toString();
+//    }
+//    
+
+  } // Delta
 
   /**
    * Calendars we support

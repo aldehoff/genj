@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyAge;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -104,8 +105,7 @@ class ProxyAge extends Proxy {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      String txt = age.getAgeString(age.getEarlier(), age.getLater(), true,false);
-      tfield.setText(txt);
+      tfield.setText(PointInTime.Delta.get(age.getEarlier(), age.getLater()).toString());
       tfield.setChanged(true);
     }
   } //ActionUpdate

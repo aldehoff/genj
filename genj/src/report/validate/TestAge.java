@@ -107,12 +107,12 @@ public class TestAge extends Test {
       return;
     
     // calculate delta
-    int[] delta = PointInTime.getDelta(pit1, pit2);
+    PointInTime.Delta delta = PointInTime.Delta.get(pit1, pit2);
     if (delta==null)
       return;
       
     // test it 
-    if (isError(delta[0])) 
+    if (isError(delta.getYears())) 
       issues.add(getError(indi, prop, report));
     
     // done
