@@ -164,7 +164,9 @@ public class Note extends PropertyNote implements Entity {
   }
 
   /**
-   * Get the first attached not
+   * Get a unique sub-note we use to
+   * keep value-date that someone might
+   * try to store in this node
    */
   private PropertyNote getSubNote(boolean create) {
     for (int i=0;i<getNoOfProperties();i++) {

@@ -38,7 +38,7 @@ import javax.swing.table.TableColumnModel;
       new Filter(Gedcom.MULTIMEDIAS , new String[]{"OBJE","OBJE:FILE"}),
       new Filter(Gedcom.NOTES       , new String[]{"NOTE","NOTE:NOTE"}),
       new Filter(Gedcom.SOURCES     , new String[]{"SOUR"}),
-      new Filter(Gedcom.SUBMITTERS  , new String[]{"SUBM"}),
+      new Filter(Gedcom.SUBMITTERS  , new String[]{"SUBM","SUBM:SUBM"}),
       new Filter(Gedcom.REPOSITORIES, new String[]{"REPO"})
     };
   

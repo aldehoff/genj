@@ -19,15 +19,15 @@
  */
 package genj.gedcom;
 
+import java.util.Enumeration;
+import java.util.StringTokenizer;
+
 /**
  * Gedcom Property : SUBMITTER (entity/property)
  * A property that either consists of SUBMITTER information or
  * refers to a SUBMITTER entity
  */
 public class PropertySubmitter extends PropertyXRef {
-
-  /** the submitter's content */
-  private String submitter;
 
   /**
    * Constructor with reference
@@ -53,26 +53,38 @@ public class PropertySubmitter extends PropertyXRef {
    */
   public PropertySubmitter(String tag, String value) {
     super(null);
-
-    // Setup value
     setValue(value);
+  }
+  
+  /**
+   * Returns a LineIterator which can be used to iterate through
+   * several lines of this submitter
+   */
+  public Enumeration getLineIterator() {
+    // iterate
+    return new StringTokenizer(super.getValue(), "\n");
+  }
+
+  /**
+   * Returns this property's value cut to a first line in
+   * case someone actually asks us
+   */
+  public String getValue() {
+    String result = super.getValue();    
+    int pos = result.indexOf('\n');
+    if (pos>=0) result = result.substring(0,pos)+"...";
+    return result;
   }
 
   /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
-
-    // Entity Submitter? Should be Entity but has to be Submitter to be editable :(
-    if (this instanceof Entity)
-      return "MLE";
-
-    // Property XRef linked to Entity Submitter?
-    if (super.getValue().startsWith("@") || submitter==null)
+    // 20021113 if linked then we stay XRef
+    if (super.getReferencedEntity()!=null)
       return "XRef";
-
-    // Seems to be Property Submitter
-    return "MLE";
+    // multiline
+    return "MLE";    
   }
 
   /**
@@ -81,13 +93,13 @@ public class PropertySubmitter extends PropertyXRef {
    * @return proxy's logical name
    */
   public static String getProxy(TagPath path) {
-// FIXME same as note?
-    // Entity Submitter? Should be Entity but has to be Submitter to be editable :(
-    if (path.length()==1)
-      return "MLE";
 
-    // Property XRef linked to Entity Submitter - or Property Submitter
-    return "XRef";
+    // Entity Note? Should be Entity but has to be Note to be editable :(
+    if (path.length()==1)
+      return "Entity";
+
+    // Could be XRef or MLE
+    return "MLE";
   }
 
   /**
@@ -98,43 +110,35 @@ public class PropertySubmitter extends PropertyXRef {
   }
 
   /**
+   * This property incorporates several lines with newlines
+   */
+  public int isMultiLine() {
+    // not if this is a valid linke
+    if (getReferencedEntity()!=null) return NO_MULTI;
+    // sure bring it on!
+    return MULTI_NEWLINE;
+  }
+
+  /**
    * Links reference to entity (if not already done)
    * @exception GedcomException when processing link would result in inconsistent state
    */
   public void link() throws GedcomException {
 
-    // No Property Submitter?
-    if (submitter!=null) {
-      return;
-    }
+    // something to do ?
+    if (getReferencedEntity()!=null) return;
 
-    // Get enclosing entity ?
-    Entity entity = getEntity();
-
-    // .. Me Submitter-Property or -Entity?
-    if (this==entity) {
-      return;  // outa here
-    }
-
-    // Something to do ?
-    if (getReferencedEntity()!=null) {
-      return;
-    }
-
-    // Look for Submitter
+    // Look for SUBM
     String id = getReferencedId();
-    if (id.length()==0) {
-      return;
-    }
+    if (id.length()==0) return;
 
-    Submitter submitter = (Submitter)getGedcom().getEntity(id, Gedcom.SUBMITTERS);
-    if (submitter == null) {
-        throw new GedcomException(toString()+" not in this gedcom");
-    }
+    Submitter subm = (Submitter)getGedcom().getEntity(id, Gedcom.SUBMITTERS);
+    if (subm == null) 
+      return;
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    submitter.addForeignXRef(fxref);
+    subm.addForeignXRef(fxref);
 
     // ... and point
     setTarget(fxref);
@@ -151,5 +155,14 @@ public class PropertySubmitter extends PropertyXRef {
   public int getExpectedReferencedType() {
     return Gedcom.SUBMITTERS;
   }
-}
+  
+  /**
+   * @see genj.gedcom.PropertyXRef#isValid()
+   */
+  public boolean isValid() {
+    // always
+    return true;
+  }
+
+} //PropertySubmitter
 

@@ -61,6 +61,9 @@ public class Submitter extends PropertySubmitter implements Entity {
     // Remove all foreign XRefs
     foreignXRefs.deleteAll();
 
+    // Delete all properties
+    getProperty().delAllProperties();
+
     // Break connection
     this.gedcom = null;
   }
@@ -90,9 +93,6 @@ public class Submitter extends PropertySubmitter implements Entity {
   /**
    * Returns this entity's id.
    */
-  public String getId(boolean atat) {
-    return atat ? ("@" + id + "@") : id;
-  }
   public String getId() {
     return id;
   }
@@ -131,7 +131,65 @@ public class Submitter extends PropertySubmitter implements Entity {
    * Returns this property as a string
    */
   public String toString() {
-    return getId()+":"+super.toString();
+    // try sub-property
+    PropertySubmitter sub = getSubSubmitter(false);
+    if (sub!=null) return getId()+":"+sub.toString();
+    // fallback id only
+    return getId();
+  }
+  
+  /**
+   * @see genj.gedcom.PropertySubmitter#getProxy()
+   */
+  public String getProxy() {
+    return "Entity";
+  }
+  
+  /**
+   * @see genj.gedcom.PropertySubmitter#link()
+   */
+  public void link() throws GedcomException {
+    throw new IllegalArgumentException();
+  }
+
+  /**
+   * @see genj.gedcom.PropertyNote#setValue(java.lang.String)
+   */
+  public boolean setValue(String v) {
+    // ignoring empty
+    if (v.trim().length()==0) return true;
+    // keep in sub-submitter
+    getSubSubmitter(true).setValue(v);
+    // done
+    return true;
+  }
+
+  /**
+   * Get a unique sub-submitter we use to
+   * keep value-date that someone might
+   * try to store in this node
+   */
+  private PropertySubmitter getSubSubmitter(boolean create) {
+    for (int i=0;i<getNoOfProperties();i++) {
+      Property child = getProperty(i);
+      if (child instanceof PropertySubmitter) {
+        return (PropertySubmitter)child;
+      }
+    }
+    PropertySubmitter result = null; 
+    if (create) {
+      result = new PropertySubmitter(null, ""); 
+      addProperty(result);
+    }
+    return result;
+  }
+
+  /**
+   * @see genj.gedcom.Property#addDefaultProperties()
+   */
+  public Property addDefaultProperties() {
+    getSubSubmitter(true);
+    return this;
   }
   
 } //Submitter
