@@ -24,13 +24,13 @@ import gj.layout.Layout;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
+import gj.ui.LayoutRenderer;
 import gj.ui.UnitGraphics;
-import gj.ui.GraphRenderer;
 
 /**
  * A renderer for TreeLayout
  */
-public class TreeLayoutRenderer implements GraphRenderer {
+public class TreeLayoutRenderer implements LayoutRenderer {
 
   /**
    * @see gj.ui.LayoutRenderer#render(Graph, GraphGraphics)
@@ -57,7 +57,10 @@ public class TreeLayoutRenderer implements GraphRenderer {
       graphics.setColor(Color.lightGray);
       
       Iterator it = tlayout.debugShapes.iterator();
-      while (it.hasNext()) graphics.draw((Shape)it.next(),0,0,false);
+      while (it.hasNext()) {
+        Shape shape = (Shape)it.next();
+        graphics.draw(shape,0,0,false);
+      }
       
       // end debug
     }
@@ -84,6 +87,8 @@ public class TreeLayoutRenderer implements GraphRenderer {
    * frame around its shape
    */
   private void emphasize(Node node, Color color, UnitGraphics graphics) {
+    Shape shape = node.getShape();
+    if (shape==null) return;
     graphics.setColor(color);
     graphics.draw(
       node.getShape(), 

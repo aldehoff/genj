@@ -46,7 +46,7 @@ import gj.model.Node;
 /**
  * A renderer that knows how to render a graph
  */
-public class DefaultGraphRenderer implements GraphRenderer {
+public class DefaultGraphRenderer {
   
   /** an arrow-head to the right */
   private final static Shape ARROW_HEAD = ShapeHelper.createShape(0,0,1,1,new double[]{

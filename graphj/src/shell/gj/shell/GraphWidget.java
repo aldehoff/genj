@@ -27,7 +27,7 @@ import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.ReflectHelper;
 import gj.ui.DefaultGraphRenderer;
-import gj.ui.GraphRenderer;
+import gj.ui.LayoutRenderer;
 import gj.ui.UnitGraphics;
 import gj.util.ArcIterator;
 import java.awt.BorderLayout;
@@ -87,10 +87,10 @@ public class GraphWidget extends JPanel {
   private Content content = new Content();
   
   /** the renderer we're using */
-  private GraphRenderer graphRenderer = new DefaultGraphRenderer();
+  private DefaultGraphRenderer graphRenderer = new DefaultGraphRenderer();
   
   /** more renderers */
-  private GraphRenderer layoutRenderer = null;
+  private LayoutRenderer layoutRenderer = null;
   
   /** the lastly selected element */
   private Node lastSelection = null;
@@ -230,10 +230,10 @@ public class GraphWidget extends JPanel {
   /**
    * Helper that calculates a Renderer for given Layout
    */
-  private GraphRenderer getRenderer(Layout instance) {
+  private LayoutRenderer getRenderer(Layout instance) {
     if (instance==null) return null;
     try {
-      return (GraphRenderer)ReflectHelper.getInstance(instance.getClass().getName()+"Renderer", GraphRenderer.class);
+      return (LayoutRenderer)ReflectHelper.getInstance(instance.getClass().getName()+"Renderer", LayoutRenderer.class);
     } catch (Throwable t) {
       return null;
     }
