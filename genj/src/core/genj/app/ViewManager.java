@@ -20,6 +20,9 @@
 package genj.app;
 
 import genj.gedcom.Gedcom;
+import genj.print.PrintProperties;
+import genj.print.PrintRenderer;
+import genj.print.Printer;
 import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Origin;
@@ -31,6 +34,7 @@ import genj.util.swing.ImgIconConverter;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -189,17 +193,11 @@ public class ViewManager {
       scroll.add2Edge(bh.create(new ActionOpenSettings(vsWidget)));
     }
     
-  /*
-      // And a print button in case a PrintRenderer is existing
-      try {
-        PrintRenderer renderer = (PrintRenderer)Class.forName(view.getClass().getName()+"PrintRenderer").newInstance();
-        renderer.setView(view);
-        scroll.add2Edge(bh.create(new ActionPrint(frame,renderer)));
-      } catch (Throwable t) {
-        // won't support printing
-      }
+    // A button for printing View
+    PrintRenderer renderer = factory.createPrintRenderer(result);
+    if (renderer!=null) {
+      scroll.add2Edge(bh.create(new ActionPrint(renderer, frame)));
     }
-  */
     
     // done
     return result;  
@@ -266,6 +264,26 @@ public class ViewManager {
     
   } //Descriptor
 
+  /**
+   * Action - print view
+   */
+  private class ActionPrint extends ActionDelegate {
+    /** the renderer */
+    private PrintRenderer renderer;
+    /** the frame */
+    private Frame frame;
+    /** constructor */
+    protected ActionPrint(PrintRenderer r, Frame f) {
+      renderer=r;
+      frame=f;
+      super.setImage(Images.imgPrint).setTip("cc.tip.print");
+    }
+    /** run */
+    protected void execute() {
+      Printer.print(frame, renderer, new PrintProperties(frame.getTitle()));
+    }
+  } //ActionOpenSettings
+  
   /**
    * Action - open the settings of a view
    */

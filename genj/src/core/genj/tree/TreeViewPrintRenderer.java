@@ -52,10 +52,10 @@ public class TreeViewPrintRenderer implements PrintRenderer {
   final static String halignments[] = { "renderer.hori.center", "renderer.hori.left", "renderer.hori.right" };
 
   /**
-   * Sets the View that this PrintRenderer should work for
+   * Constructor
    */
-  public void setView(Component component) {
-    model = (TreeModel)((TreeView)component).getModel().clone();
+  public TreeViewPrintRenderer(TreeView view) {
+    model = (TreeModel)view.getModel().clone();
   }
 
   /**

@@ -15,7 +15,7 @@ public class TreeViewFactory implements ViewFactory {
    * @see genj.app.ViewFactory#createPrintRenderer(Component)
    */
   public PrintRenderer createPrintRenderer(Component view) {
-    return null;
+    return new TreeViewPrintRenderer((TreeView)view);
   }
 
   /**
