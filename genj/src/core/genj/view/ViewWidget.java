@@ -46,11 +46,20 @@ import javax.swing.border.TitledBorder;
  * A wrapper for our views enabling action buttons
  */
 /*package*/ class ViewWidget extends JPanel {
-
+  
+  /** the registry this view is for */
+  private Registry registry;
+  
+  /** the toolbar we're using */
+  private JToolBar bar;
+  
   /** 
    * Constructor
    */
   public ViewWidget(JFrame frame, Gedcom gedcom, Registry registry, ViewManager.Descriptor descriptor) {
+    
+    // remember
+    this.registry = registry;
     
     // create a factory
     ViewFactory factory = descriptor.instantiate();
@@ -60,7 +69,7 @@ import javax.swing.border.TitledBorder;
 
     // Fill Toolbar
     boolean isBar = false;
-    JToolBar bar = new JToolBar();
+    bar = new JToolBar();
     if (view instanceof ToolBarSupport) {
       ((ToolBarSupport)view).populate(bar);
       bar.add(Box.createGlue());
@@ -87,14 +96,12 @@ import javax.swing.border.TitledBorder;
       isBar = true;
     }
   
+    // .. a button for closing the View
+    bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(genj.gedcom.Images.get("X")));
+    
     // setup layout
     setLayout(new BorderLayout());
-    if (isBar) {
-      // and a close
-      bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(genj.gedcom.Images.get("X")));
-      // and the bar itself
-      add(bar, BorderLayout.SOUTH);
-    }
+    if (isBar) add(bar, registry.get("toolbar", BorderLayout.SOUTH));
     add(view, BorderLayout.CENTER);
     
     // done
@@ -137,4 +144,19 @@ import javax.swing.border.TitledBorder;
     }
   } //ActionOpenSettings
   
+  /**
+   * @see java.awt.Container#addImpl(Component, Object, int)
+   */
+  protected void addImpl(Component comp, Object constraints, int index) {
+    // go ahead with super
+    super.addImpl(comp, constraints, index);
+    // toolbar?
+    if (comp==bar&&constraints!=null) {
+      registry.put("toolbar", constraints.toString());
+      if (BorderLayout.WEST.equals(constraints)||BorderLayout.EAST.equals(constraints))
+        bar.setOrientation(JToolBar.VERTICAL);
+    }
+    // done
+  }
+
 } //ViewWidget
