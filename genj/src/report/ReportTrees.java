@@ -35,7 +35,7 @@ public class ReportTrees extends Report {
     public int minTreeSize = 2;  // Don't print trees with count less than this
     
     /** this report's version */
-    static final String VERSION = "1.0";
+    static final String VERSION = "1.01";
     
     /**
      * Returns the version of this script
@@ -105,12 +105,6 @@ public class ReportTrees extends Report {
                 stats.trees[curTree] = new AncTree();
                 stats.trees[curTree].name = "@"+indi.getId()+"@ "+indi.getName();
                 stats.trees[curTree].count = analyzeIndividual(indi, stats);
-                if( stats.trees[curTree].count > minTreeSize ) {
-                    Object[] msgargs = {new Integer(curTree),
-                    stats.trees[curTree].name,
-                    new Integer(stats.trees[curTree].count)};
-                    // println(i18n("treecount", msgargs));
-                }
             }
         }
         
