@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.20 2003-05-29 01:38:06 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.21 2003-05-29 20:25:28 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -143,7 +143,7 @@ public class ReportGedcomStatistics extends Report {
     if (place.length()==0) place = UNKNOWN_PLACE;
     
     // keep track
-    stats.birthPlaces.add(place);
+    stats.birthPlaces.add(place, prop);
       
     // Done
   }
@@ -164,7 +164,7 @@ public class ReportGedcomStatistics extends Report {
       if (place.length()==0) place = UNKNOWN_PLACE;
        
       // keep track of that
-      stats.deathPlaces.add(place);
+      stats.deathPlaces.add(place, prop);
       
       // Done
   }
