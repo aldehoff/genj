@@ -23,6 +23,7 @@ import genj.util.swing.ColorChooser;
 import genj.util.swing.DoubleValueSlider;
 import genj.view.ApplyResetSupport;
 
+import java.awt.Container;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JTabbedPane;
@@ -43,7 +44,7 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     sliderCmPadding;
   
   /** colorchooser for colors */
-  private ColorChooser colorChooser;
+  private ColorChooser colors;
 
   /**
    * Constructor   */
@@ -53,63 +54,58 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     tree = view;
     
     // panel for checkbox options    
-    Box panelOptions = new Box(BoxLayout.Y_AXIS);
+    TreeMetrics m = view.model.getMetrics();
+    Box options = new Box(BoxLayout.Y_AXIS);
     
-    sliderCmIndiWidth = new DoubleValueSlider(0.1, 10.0, 1.0, false);
-    sliderCmIndiWidth.setPreferredSliderWidth(64);
-    sliderCmIndiWidth.setAlignmentX(0F);
-    sliderCmIndiWidth.setToolTipText(tree.resources.getString("info.indiwidth.tip"));
-    sliderCmIndiWidth.setText(tree.resources.getString("info.indiwidth"));
-    panelOptions.add(sliderCmIndiWidth);
-
-    sliderCmIndiHeight = new DoubleValueSlider(0.1, 10.0, 1.0, false);
-    sliderCmIndiHeight.setPreferredSliderWidth(64);
-    sliderCmIndiHeight.setAlignmentX(0F);
-    sliderCmIndiHeight.setToolTipText(tree.resources.getString("info.indiheight.tip"));
-    sliderCmIndiHeight.setText(tree.resources.getString("info.indiheight"));
-    panelOptions.add(sliderCmIndiHeight);
-    
-    sliderCmFamWidth = new DoubleValueSlider(0.1, 10.0, 1.0, false);
-    sliderCmFamWidth.setPreferredSliderWidth(64);
-    sliderCmFamWidth.setAlignmentX(0F);
-    sliderCmFamWidth.setToolTipText(tree.resources.getString("info.famwidth.tip"));
-    sliderCmFamWidth.setText(tree.resources.getString("info.famwidth"));
-    panelOptions.add(sliderCmFamWidth);
-
-    sliderCmFamHeight = new DoubleValueSlider(0.1, 10.0, 1.0, false);
-    sliderCmFamHeight.setPreferredSliderWidth(64);
-    sliderCmFamHeight.setAlignmentX(0F);
-    sliderCmFamHeight.setToolTipText(tree.resources.getString("info.famheight.tip"));
-    sliderCmFamHeight.setText(tree.resources.getString("info.famheight"));
-    panelOptions.add(sliderCmFamHeight);
-    
-    sliderCmPadding = new DoubleValueSlider(0.1, 10.0, 1.0, false);
-    sliderCmPadding.setPreferredSliderWidth(64);
-    sliderCmPadding.setAlignmentX(0F);
-    sliderCmPadding.setToolTipText(tree.resources.getString("info.padding.tip"));
-    sliderCmPadding.setText(tree.resources.getString("info.padding"));
-    panelOptions.add(sliderCmPadding);
+    sliderCmIndiWidth = createSlider(options, 1.0, 10.0, m.wIndis, "indiwidth" );
+    sliderCmIndiHeight= createSlider(options, 1.0, 10.0, m.hIndis, "indiheight");
+    sliderCmFamWidth  = createSlider(options, 1.0, 10.0, m.wFams , "famwidth"  );
+    sliderCmFamHeight = createSlider(options, 1.0, 10.0, m.hFams , "famheight" );
+    sliderCmPadding   = createSlider(options, 0.1,  3.0, m.pad   , "padding"   );
     
     // color chooser
-    colorChooser = new ColorChooser();
-    colorChooser.addSet(tree.colors);
+    colors = new ColorChooser();
+    colors.addSet(tree.colors);
     
     // add those tabs
-    add(tree.resources.getString("page.main")  , panelOptions);
-    add(tree.resources.getString("page.colors"), colorChooser);
+    add(tree.resources.getString("page.main")  , options);
+    add(tree.resources.getString("page.colors"), colors);
     
     // reset
     reset();
     
     // done
   }
-
+  
+  /**
+   * Create a slider
+   */
+  private DoubleValueSlider createSlider(Container c, double min, double max, double val, String key) {
+    // create and preset
+    DoubleValueSlider result = new DoubleValueSlider(min, max, val, false);
+    result.setPreferredSliderWidth(64);
+    result.setAlignmentX(0F);
+    result.setText(tree.resources.getString("info."+key));
+    result.setToolTipText(tree.resources.getString("info."+key+".tip"));
+    c.add(result);
+  
+    // done
+    return result;   }
+  
   /**
    * @see genj.view.ApplyResetSupport#apply()
    */
   public void apply() {
     // colors
-    colorChooser.apply();
+    colors.apply();
+    // metrics
+    tree.model.setMetrics(new TreeMetrics(
+      sliderCmIndiWidth .getValue(),
+      sliderCmIndiHeight.getValue(),
+      sliderCmFamWidth  .getValue(),
+      sliderCmFamHeight .getValue(),
+      sliderCmPadding   .getValue()
+    ));
     // make sure that shows
     tree.repaint();
     // done
@@ -120,9 +116,14 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
    */
   public void reset() {
     // colors
-    colorChooser.reset();
-    // colors
-    colorChooser.reset();
+    colors.reset();
+    // metrics
+    TreeMetrics m = tree.model.getMetrics();
+    sliderCmIndiWidth .setValue(m.wIndis);
+    sliderCmIndiHeight.setValue(m.hIndis);
+    sliderCmFamWidth  .setValue(m.wFams );
+    sliderCmFamHeight .setValue(m.hFams );
+    sliderCmPadding   .setValue(m.pad   );
     // done
   }
 
