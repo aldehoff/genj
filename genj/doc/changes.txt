@@ -42,6 +42,9 @@ Future
   O Option for TableView to switch to setCurrentEntity's type
   O TableView should center row after setCurrentEntity (not just show it)
   O TreeView should offer options for ordering children youngest 1st, oldest 1st or as is
+  O TreeView should indicate if there's more data that's not shown (e.g. hidden spouses, hidden parents, hidden children)
+  O Support for multiple pictures or animated gifs (TreeView repaint?)
+  O EditView jump from entity to referencing entity (multiple! "back-link")
   
 2.0 - Oct xx 2002
 
