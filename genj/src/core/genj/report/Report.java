@@ -21,7 +21,6 @@ package genj.report;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
@@ -392,24 +391,12 @@ public abstract class Report implements Cloneable {
   }
   
   /**
-   * Whether the report allows to be run on a property - default false
+   * Whether the report allows to be run on a given context - default
+   * only accepts Gedcom 
+   * @param context will an instance of either Gedcom, Entity or Property
    */
-  public boolean acceptsProperty(Property prop) {
-    return false;
-  }
-
-  /**
-   * Whether the report allows to be run on an entity - default false
-   */
-  public boolean acceptsEntity(int type) {
-    return false;
-  }
-  
-  /**
-   * Whether the report allows to be run on a gedcom file - default true
-   */
-  public boolean acceptsGedcom() {
-    return true;
+  public boolean accepts(Object context) {
+    return context instanceof Gedcom;
   }
 
 } //Report

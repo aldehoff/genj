@@ -47,23 +47,14 @@ public class ReportAncestors extends Report {
   public String getAuthor() {
     return "YON - Jan C. Hardenbergh";
   }
-
-  /**
-   * Individuals are good too
-   * @see genj.report.Report#acceptsEntity(int)
-   */
-  public boolean acceptsEntity(int type) {
-    return type==Gedcom.INDIVIDUALS;  
-  }
   
   /**
-   * Gedcom is fine with us
-   * @see genj.report.Report#acceptsGedcom()
+   * @see genj.report.Report#accepts(java.lang.Object)
    */
-  public boolean acceptsGedcom() {
-    return true;
+  public boolean accepts(Object context) {
+    return context instanceof Indi || context instanceof Gedcom;  
   }
-
+  
   /**
    * This method actually starts this report
    */

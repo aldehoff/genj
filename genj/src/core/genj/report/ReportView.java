@@ -21,8 +21,6 @@ package genj.report;
 
 import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
-import genj.util.EnvironmentChecker;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -72,8 +70,10 @@ public class ReportView extends JPanel implements ToolBarSupport {
     imgReload= new ImageIcon(ReportView.class,"Reload.gif"     );
 
 
-  /** members */
+  /** gedcom this view is for */
   private Gedcom      gedcom;
+  
+  /** components to show report info */
   private JLabel      lAuthor,lVersion;
   private JTextPane   tpInfo;
   private JScrollPane spOutput;
@@ -81,10 +81,17 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private JList       listOfReports;
   private JTabbedPane tabbedPane;
   private AbstractButton bStart,bStop,bClose,bSave,bReload;
-  private static  ReportLoader loader;
+  
+  /** registry for settings */
   private Registry registry;
+  
+  /** resources */
   private Resources resources = Resources.get(this);
+  
+  /** manager */
   private ViewManager manager ;
+
+  /** title of this view */  
   private String title;
 
   /**
@@ -97,9 +104,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
     registry = theRegistry;
     manager  = theManager;
     title    = theTitle;
-
-    // Look for reports
-    loadReports(false);
 
     // Layout for this component
     setLayout(new BorderLayout());
@@ -115,7 +119,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     tabbedPane.add(resources.getString("report.reports"),reportPanel);
 
     // ... List of reports
-    Report reports[] = loader.getReports();
+    Report reports[] = ReportLoader.getInstance().getReports();
     listOfReports = new JList(reports);
     listOfReports.setCellRenderer(new ReportRenderer());
     listOfReports.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -185,32 +189,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
   }
 
   /**
-   * Load Reports from Disk/Net
-   */
-  private void loadReports(boolean force) {
-    
-    // Reload isn't always necessary
-    if ((force==false)&&(loader!=null)) {
-      return;
-    }
-    
-    // The reports are either 
-    String dir = EnvironmentChecker.getProperty(
-      this,
-      new String[]{ "genj.report.dir", "user.dir/report"},
-      "./report",
-      "find report class-files"
-    );
-    File base = new File(dir);
-    Debug.log(Debug.INFO, this,"Reading reports from "+base);
-    
-    // Create the loader
-    loader = new ReportLoader(base);
-    // Done
-  }
-  
-
-  /**
    * Select given report
    */
   private void selectReport(Report report) {
@@ -240,7 +218,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     if (bClose!=null) {
       bClose.setEnabled(!on);
     }
-    bReload.setEnabled(!loader.isReportsInClasspath());
+    bReload.setEnabled(!ReportLoader.getInstance().isReportsInClasspath());
 
     taOutput.setCursor(Cursor.getPredefinedCursor(
       on?Cursor.WAIT_CURSOR:Cursor.DEFAULT_CURSOR
@@ -265,7 +243,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     bStart = bh.create(astart);
     bStop  = bh.setEnabled(false).create(new ActionStop(astart));    
     bSave  = bh.setEnabled(true).create(new ActionSave());
-    bReload= bh.setEnabled(!loader.isReportsInClasspath()).create(new ActionReload());
+    bReload= bh.setEnabled(!ReportLoader.getInstance().isReportsInClasspath()).create(new ActionReload());
    
     // done 
   }
@@ -296,9 +274,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
       tabbedPane.getModel().setSelectedIndex(0);
       selectReport(null);
       // .. do it (forced!);
-      loadReports(true);
+      ReportLoader.clear();
       // .. get them
-      Report reports[] = loader.getReports();
+      Report reports[] = ReportLoader.getInstance().getReports();
       // .. update
       listOfReports.setListData(reports);
       // .. done

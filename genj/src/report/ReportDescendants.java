@@ -50,21 +50,12 @@ public class ReportDescendants extends Report {
   }
 
   /**
-   * Individuals are good too
-   * @see genj.report.Report#acceptsEntity(int)
+   * @see genj.report.Report#accepts(java.lang.Object)
    */
-  public boolean acceptsEntity(int type) {
-    return type==Gedcom.INDIVIDUALS;  
+  public boolean accepts(Object context) {
+    return context instanceof Indi || context instanceof Gedcom;  
   }
   
-  /**
-   * Gedcom is fine with us
-   * @see genj.report.Report#acceptsGedcom()
-   */
-  public boolean acceptsGedcom() {
-    return true;
-  }
-
   /**
    * This method actually starts this report
    */

@@ -20,6 +20,7 @@
 package genj.report;
 
 import genj.util.Debug;
+import genj.util.EnvironmentChecker;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -47,24 +48,54 @@ public class ReportLoader {
   
   /** whether reports are in classpath */
   private boolean isReportsInClasspath = false;
+  
+  /** a singleton */
+  private static ReportLoader singleton;
+  
+  /**
+   * Clears the report loader's state effectively forcing a reload
+   */
+  public static void clear() {
+    singleton = null;
+  }
+  
+  /** 
+   * Access
+   */
+  public static ReportLoader getInstance() {
+    
+    // not known yet?
+    if (singleton==null)
+      singleton = new ReportLoader();
+      
+    // done
+    return singleton;
+      
+  }
 
   /**
    * Constructor
    */
-  public ReportLoader(File basedir) {
+  private ReportLoader() {
+
+    // where are the reports 
+    String dir = EnvironmentChecker.getProperty(
+      ReportLoader.class,
+      new String[]{ "genj.report.dir", "user.dir/report"},
+      "./report",
+      "find report class-files"
+    );
+    File base = new File(dir);
     
-    // load reports
-    if (!basedir.isDirectory()) {
-      return;
-    }
-    
+    Debug.log(Debug.INFO, ReportLoader.class,"Reading reports from "+base);
+      
     // parse report directory
     try {
-      classpath.add(basedir.toURL());
+      classpath.add(base.toURL());
     } catch (MalformedURLException e) {
       // n/a
     }
-    parseDir(basedir, null);
+    parseDir(base, null);
     
     // Prepare classloader
     URLClassLoader cl = new URLClassLoader((URL[])classpath.toArray(new URL[classpath.size()]));
