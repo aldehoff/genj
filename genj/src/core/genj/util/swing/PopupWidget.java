@@ -43,7 +43,10 @@ public class PopupWidget extends JButton {
   
   /** list of actions */
   private List items = new ArrayList();
-  
+
+  /** whether we fire the first of the available actions on popup click */
+  private boolean isFireOnClick = false;
+    
   /**
    * Constructor  
    */
@@ -106,10 +109,12 @@ public class PopupWidget extends JButton {
      * action performed
      */
     protected void fireActionPerformed(ActionEvent e) {
-      // try to fire one of the actions
-      List as = getActions();
-      if (!as.isEmpty())
-        ((ActionDelegate)as.get(0)).trigger();
+      // fire action on popup button press?
+      if (isFireOnClick) { 
+        List as = getActions();
+        if (!as.isEmpty())
+          ((ActionDelegate)as.get(0)).trigger();
+      }
     }
   } //Model
   
@@ -185,6 +190,14 @@ public class PopupWidget extends JButton {
       super.setFocusable(focusable);
     } catch (Throwable t) {
     }
+  }
+  
+  /**
+   * Setting this to true will fire first available action
+   * on popup button click (default off) 
+   */
+  public void setFireOnClick(boolean set) {
+    isFireOnClick = set;
   }
 
 } //PopupButton
