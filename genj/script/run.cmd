@@ -16,7 +16,7 @@ echo  *
 echo  */
 
 set LANG=.\lib\genj_de.zip;.\lib\genj_en.zip;.\lib\genj_fr.zip;.\lib\genj_it.zip;.\lib\genj_es.zip
-set CLASSPATH=.\lib\genj.jar;.\lib\swing.jar;.\lib\jhbasic.jar;%LANG%;%CLASSPATH%
+set CLASSPATH=.\lib\genj.jar;.\lib\swing.jar;.\lib\jhbasic.jar;.\lib\gj.jar;%LANG%;%CLASSPATH%
 
 java -Dgenj.debug.file=.\genj.log genj.app.App
 
