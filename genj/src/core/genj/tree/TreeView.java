@@ -33,6 +33,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.DoubleValueSlider;
+import genj.util.swing.Graphics2D;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ScreenResolutionScale;
@@ -47,6 +48,7 @@ import gj.model.Node;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -105,11 +107,17 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /** whether we use antialising */
   private boolean isAntialiasing = false;
   
+  /** whether we adjust fonts to correct resolution */
+  private boolean isAdjustFonts = false; 
+  
   /** our colors */
   /*package*/ ColorSet colors;
   
   /** our blueprints */
   /*package*/ Blueprint[] blueprints = new Blueprint[Gedcom.NUM_TYPES];
+  
+  /** our content's font */
+  /*package*/ Font contentFont = new Font("SansSerif", 0, 12);
   
   /**
    * Constructor
@@ -121,10 +129,12 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // grab colors
     colors = new ColorSet("content", Color.white, resources, registry);
     colors.add("indis"  , Color.black);
-    colors.add("fams"   , Color.green);
+    colors.add("fams"   , Color.darkGray);
     colors.add("substs" , Color.lightGray);
     colors.add("arcs"   , Color.blue);
     colors.add("selects", Color.red);
+    // grab font
+    contentFont = registry.get("font", contentFont);
     // grab blueprints
     blueprints = BlueprintManager.getInstance().readBlueprints(registry);
     // setup model
@@ -203,6 +213,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     registry.put("hfams"   ,(float)m.hFams );
     registry.put("pad"     ,(float)m.pad   );
     registry.put("antial"  , isAntialiasing );
+    registry.put("font"    , contentFont);
     // blueprints
     BlueprintManager.getInstance().writeBlueprints(blueprints, registry);
     // root    
@@ -230,6 +241,20 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
    */
   public void setAntialiasing(boolean set) {
     isAntialiasing = set;
+  }
+  
+  /**
+   * Access - isAdjustFonts.
+   */
+  public boolean isAdjustFonts() {
+    return isAdjustFonts;
+  }
+
+  /**
+   * Access - isAdjustFonts
+   */
+  public void setAdjustFonts(boolean set) {
+    isAdjustFonts = set;
   }
   
   /**
@@ -372,8 +397,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   
   /**
    * Resolve a renderer   */
-  /*package*/ EntityRenderer getEntityRenderer(Graphics g, int type) {
-    return new EntityRenderer(g, blueprints[type]);
+  /*package*/ EntityRenderer getEntityRenderer(int type) {
+    EntityRenderer result = new EntityRenderer(blueprints[type], contentFont);
+    return result;
   }
 
   /**
@@ -494,7 +520,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      * @see javax.swing.JComponent#paintComponent(Graphics)
      */
     public void paint(Graphics g) {
-      // go 2d
+      // resolve our Graphics
+      if (isAdjustFonts) g = new Graphics2D(g, UNITS);
       UnitGraphics gw = new UnitGraphics(g,UNITS.getX()*zoom, UNITS.getY()*zoom);
       gw.setAntialiasing(isAntialiasing);
       // init renderer
@@ -505,8 +532,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.cArcs          = colors.getColor("arcs");
       contentRenderer.cSelectedShape = colors.getColor("selects");
       contentRenderer.selection      = currentEntity;
-      contentRenderer.indiRenderer   = getEntityRenderer(g, Gedcom.INDIVIDUALS);
-      contentRenderer.famRenderer    = getEntityRenderer(g, Gedcom.FAMILIES   );
+      contentRenderer.indiRenderer   = getEntityRenderer(Gedcom.INDIVIDUALS);
+      contentRenderer.famRenderer    = getEntityRenderer(Gedcom.FAMILIES   );
       // let the renderer do its work
       contentRenderer.render(gw, model);
       // done

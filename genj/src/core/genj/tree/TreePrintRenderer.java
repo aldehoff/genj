@@ -45,8 +45,8 @@ public class TreePrintRenderer implements PrintRenderer {
     renderer.cFamShape      = Color.black;
     renderer.cIndiShape     = Color.black;
     renderer.cUnknownShape  = Color.black;
-    renderer.indiRenderer   = tree.getEntityRenderer(g, Gedcom.INDIVIDUALS);
-    renderer.famRenderer    = tree.getEntityRenderer(g, Gedcom.FAMILIES   );
+    renderer.indiRenderer   = tree.getEntityRenderer(Gedcom.INDIVIDUALS);
+    renderer.famRenderer    = tree.getEntityRenderer(Gedcom.FAMILIES   );
     renderer.render(graphics, tree.model);
 
   }

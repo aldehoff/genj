@@ -22,6 +22,7 @@ package genj.tree;
 import genj.renderer.BlueprintList;
 import genj.util.swing.ColorChooser;
 import genj.util.swing.DoubleValueSlider;
+import genj.util.swing.FontChooser;
 import genj.view.ApplyResetSupport;
 
 import java.awt.Container;
@@ -54,8 +55,12 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
   /** Checkboxes */
   private JCheckBox 
     checkBending = new JCheckBox(TreeView.resources.getString("bend" )),
-    checkAntialiasing = new JCheckBox(TreeView.resources.getString("antialiasing" ))
+    checkAntialiasing = new JCheckBox(TreeView.resources.getString("antialiasing" )),
+    checkAdjustFonts = new JCheckBox(TreeView.resources.getString("adjustfonts" ))
   ;
+  
+  /** font chooser */
+  private FontChooser fontChooser = new FontChooser();
 
   /**
    * Constructor   */
@@ -72,6 +77,10 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     options.add(checkBending);
     checkAntialiasing.setToolTipText(tree.resources.getString("antialiasing.tip"));
     options.add(checkAntialiasing);
+    checkAdjustFonts.setToolTipText(tree.resources.getString("adjustfonts.tip"));
+    options.add(checkAdjustFonts);
+    
+    options.add(fontChooser);    
     
     sliderCmIndiWidth = createSlider(options, 1.0, 16.0, m.wIndis, "indiwidth" );
     sliderCmIndiHeight= createSlider(options, 0.4, 16.0, m.hIndis, "indiheight");
@@ -119,8 +128,11 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     // options
     tree.model.setBendArcs(checkBending.isSelected());
     tree.setAntialiasing(checkAntialiasing.isSelected());
+    tree.setAdjustFonts(checkAdjustFonts.isSelected());
     // colors
     colors.apply();
+    // font
+    tree.contentFont = fontChooser.getSelectedFont();
     // metrics
     tree.model.setMetrics(new TreeMetrics(
       sliderCmIndiWidth .getValue(),
@@ -143,6 +155,9 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     // options
     checkBending.setSelected(tree.model.isBendArcs());
     checkAntialiasing.setSelected(tree.isAntialising());
+    checkAdjustFonts.setSelected(tree.isAdjustFonts());
+    // font
+    fontChooser.setSelectedFont(tree.contentFont);
     // colors
     colors.reset();
     // metrics

@@ -84,7 +84,7 @@ public class Model implements Graph, GedcomListener {
   private Entity root;
 
   /** metrics */
-  private TreeMetrics metrics = new TreeMetrics( 3.0, 2.0, 2.8, 1.0, 1.0 );
+  private TreeMetrics metrics = new TreeMetrics( 6.0, 3.0, 3.0, 1.5, 1.0 );
   
   /**
    * Constructor
