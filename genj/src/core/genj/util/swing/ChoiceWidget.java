@@ -34,14 +34,15 @@ import javax.swing.DefaultComboBoxModel;
  */
 public class ChoiceWidget extends javax.swing.JComboBox {
   
-  /** did we change */
-  private boolean isChanged = false;
+  /** our own editor */
+  private Editor editor = new Editor();
 
   /**
    * Constructor
    */
   public ChoiceWidget(List values) {
     this(values.toArray(), "");
+
     setEditable(true);
   }
   
@@ -51,6 +52,14 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   public ChoiceWidget(Object[] values, Object selection) {
     
     super(values);
+
+    // always our own editor because 
+    // (1) want to use our TextWidget here
+    // (2) want to avoid actionPerformed on focusLost (see Editor)
+    // (3) want to avoid double actionPerformed from JComboBox on 'enter'
+    //     with a changed editor value
+    // caveat: no action performed on select from choices
+    super.setEditor(editor);
     
     // apparently the default model preselects a value
     // which isn't overridden by selection if selection
@@ -63,11 +72,6 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     // alignment fix
     setAlignmentX(LEFT_ALIGNMENT);
     
-    // our editor
-    super.setEditor(editor);
-    
-    // initially unchanged
-    isChanged = false;
   }
   
   /**
@@ -88,20 +92,14 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * Changed?
    */
   public boolean hasChanged() {
-    // check editor
-    Object edit = getEditor();
-    if (edit instanceof Editor && ((Editor)edit).hasChanged() )
-      return true;
-    // check us
-    return isChanged;
+    // check us & editor
+    return editor.hasChanged();
   }
 
   /**
    * @see javax.swing.JComboBox#setSelectedItem(java.lang.Object)
    */
   public void setSelectedItem(Object anObject) {
-    // mark changed
-    isChanged = true;
     // continue
     super.setSelectedItem(anObject);
   }
@@ -152,16 +150,19 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * @see javax.swing.JComboBox#setEditor(javax.swing.ComboBoxEditor)
    */
   public void setEditor(ComboBoxEditor anEditor) {
-    // always our own because 
-    // (1) want to use our TextWidget here
-    // (2) want to avoid actionPerformed on focusLost (see Editor)
-    // (3) want to avoid double actionPerformed from JComboBox on 'enter'
-    //     with a changed editor value
-    // caveat: no action performed on select from choices
-    Editor edit = new Editor();
-    super.setEditor(edit);
-    edit.setChanged(false);
+    // ignore
   }
+  
+  /**
+   * @see javax.swing.JComboBox#setEditable(boolean)
+   */
+  public void setEditable(boolean aFlag) {
+    // continnue
+    super.setEditable(aFlag);
+    // not a change
+    editor.setChanged(false);
+  }
+
 
   /**
    * @see javax.swing.JComboBox#addActionListener(java.awt.event.ActionListener)

@@ -106,7 +106,7 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
    */
   public void setText(String t) {
     super.setText(t);
-    isChanged = false;
+    setChanged(false);
   }
 
   
@@ -114,24 +114,21 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
    * Change notification
    */
   public void changedUpdate(DocumentEvent e) {
-    isChanged = true;
-    isTemplate = false;
+    setChanged(true);
   }
 
   /**
    * Document event - insert
    */
   public void insertUpdate(DocumentEvent e) {
-    isChanged = true;
-    isTemplate = false;
+    setChanged(true);
   }
 
   /**
    * Document event - remove
    */
   public void removeUpdate(DocumentEvent e) {
-    isChanged = true;
-    isTemplate = false;
+    setChanged(true);
   }
 
   /**
