@@ -292,12 +292,6 @@ public class GraphWidget extends JPanel {
       // done
     }
     /** callback */
-    public void mouseDragged(MouseEvent e) {
-      // FIXME Auto-generated method stub
-      super.mouseDragged(e);
-    }
-
-    /** callback */
     public void mouseReleased(MouseEvent e) {
       
       // context menu?
@@ -349,43 +343,56 @@ public class GraphWidget extends JPanel {
    * Mouse Analyzer - Create an Arc
    */
   private class DnDCreateArc extends DnD{
+    /** the from node */
+    private ShellNode from;
     /** a dummy to */
     private ShellNode dummy;
     /** start */
     protected void start(Point at) {
       super.start(at);
+      from = selection;
       dummy = null;
+      selection = null;
     }
     /** stop */
     protected void stop() {
-      if (dummy!=null) {
+      // delete dummy which will also delete the arc
+      if (dummy!=null) 
         dummy.delete();
-      }
+      // done
     }
     /** callback */
     public void mouseReleased(MouseEvent e) {
+      // make sure we're stopped
       stop();
-      if (dummy!=null) {
-        ShellNode to = graph.getNode(content.getPoint(e.getPoint()));
-        if (to!=null) graph.createArc(selection, to);
-        selection = null;
+      // selection made? create arc!
+      if (selection!=null) {
+        selection.getGraph().createArc(from, selection);
       }
+      selection = from;
+      // show
       repaint();
+      // continue
       dndNoOp.start(e.getPoint());
     }
     /** callback */
     public void mouseDragged(MouseEvent e) {
-      // not really draggin yet?
+      // not really dragging yet?
       if (dummy==null) {
-        // have to go outside first
-        if (graph.getNode(content.getPoint(e.getPoint()))==selection)
+        // user has to move mouse outside of shape first (avoid loops)
+        if (graph.getNode(content.getPoint(e.getPoint()))==from)
           return;
         // create dummies
-        dummy = graph.createNode(null, null);      
-        graph.createArc(selection, dummy);
+        dummy = from.getGraph().createNode(null, null);      
+        from.getGraph().createArc(from, dummy);
       }
       // place dummy (tip of arc)
-      dummy.setPosition(content.getPoint(e.getPoint()));
+      graph.setPosition(dummy, content.getPoint(e.getPoint()));
+      // find target
+      selection = graph.getNode(content.getPoint(e.getPoint()));
+      if (selection!=null&&selection.getGraph()!=from.getGraph()) {
+        selection = null;
+      }
       // show
       repaint();
     }
@@ -413,7 +420,7 @@ public class GraphWidget extends JPanel {
     public void mouseMoved(MouseEvent e) {
 
       // change shape
-      Point2D delta = Geometry.sub(selection.getPosition(), content.getPoint(e.getPoint()));
+      Point2D delta = Geometry.sub(graph.getPosition(selection), content.getPoint(e.getPoint()));
       double 
         sx = Math.max(0.1,Math.abs(delta.getX())/dim.width *2),
         sy = Math.max(0.1,Math.abs(delta.getY())/dim.height*2);

@@ -133,12 +133,10 @@ public class ShellNode implements gj.model.Node {
    * Change shape
    */
   public void setShape(Shape set) {
-    // FIXME make sure children fit in
+    // FIXME make sure children fit in + check parent's bound
     
     // change
     shape = set;
-    
-    // FIXME check parent's bounds
     
     // update arcs
     ArcHelper.updateArcs(arcs);
@@ -150,13 +148,21 @@ public class ShellNode implements gj.model.Node {
    * Change content
    */
   public void setContent(Object set) {
+
+    // FIXME check parent's bounds (set==graph?)
     
     // change
     content = set;
     
-    // FIXME what if it's a graph
   }
   
+  /**
+   * The graph of this node
+   */
+  public ShellGraph getGraph() {
+    return graph;
+  }
+
   /**
    * @see java.lang.Object#toString()
    */
