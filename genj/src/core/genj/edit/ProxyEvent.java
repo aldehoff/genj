@@ -79,9 +79,9 @@ class ProxyEvent extends Proxy {
     String age;
     if ("BIRT".equals(event.getTag())) {
       ageat = "proxy.even.age.today";
-      age = indi.getAgeString(PointInTime.getNow());
+      age = indi.getAgeString(PointInTime.getNow(), true);
     } else {
-      age = date!=null ? indi.getAgeString(date.getStart()) : resources.getString("proxy.even.age.?");
+      age = date!=null ? indi.getAgeString(date.getStart(), true) : resources.getString("proxy.even.age.?");
     }
     
     // layout
