@@ -33,7 +33,6 @@ import java.util.Vector;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
@@ -91,7 +90,7 @@ public class ButtonHelper {
   public AbstractButton create(ActionDelegate action) {
     
     // create the button
-    AbstractButton result = action.toggle==null ? (AbstractButton)new JButton() : (AbstractButton)new JToggleButton();
+    AbstractButton result = action.toggle==null ? (AbstractButton)new JButton() : (AbstractButton)new ToggleWidget();
     
     // its text
     String s = string((isShortTexts&&action.stxt!=null) ? action.stxt : action.txt);

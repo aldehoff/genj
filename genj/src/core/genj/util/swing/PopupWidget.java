@@ -19,19 +19,17 @@
  */
 package genj.util.swing;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 /**
  * A button that opens a context-menu on press
  */
-public class PopupButton extends JToggleButton {
+public class PopupWidget extends ToggleWidget {
   
   /** popup */
   private JPopupMenu popup = null;
@@ -42,34 +40,34 @@ public class PopupButton extends JToggleButton {
   /**
    * Constructor  
    */
-  public PopupButton() {
+  public PopupWidget() {
   }
 
   /**
    * Constructor  
    */
-  public PopupButton(Icon icon) {
+  public PopupWidget(Icon icon) {
     this(null, icon);
   }
 
   /**
    * Constructor  
    */
-  public PopupButton(String text) {
+  public PopupWidget(String text) {
     this(text, null);
   }
 
   /**
    * Constructor  
    */
-  public PopupButton(String text, Icon icon) {
+  public PopupWidget(String text, Icon icon) {
     this(text, icon, null);
   }
 
   /**
    * Constructor
    */
-  public PopupButton(String text, Icon icon, List actions) {
+  public PopupWidget(String text, Icon icon, List actions) {
     // delegate
     super(text, icon);
     // keep actions
@@ -77,26 +75,6 @@ public class PopupButton extends JToggleButton {
     // done
   }
   
-  /**
-   * @see javax.swing.JComponent#addNotify()
-   */
-  public void addNotify() {
-    // delegate
-    super.addNotify();
-    // patch max size in toolbar (helps buttons look uniformly in toolbar)
-    if (getToolBar()!=null) 
-      setMaximumSize(new Dimension(128,128));
-    // done
-  }
-  
-  /**
-   * Gets the toolbar we're in (might be null)
-   */
-  private JToolBar getToolBar() {
-    if (!(getParent() instanceof JToolBar)) return null;
-    return (JToolBar)getParent();
-  }
-
   /**
    * Change popup's visibility
    */
@@ -130,7 +108,7 @@ public class PopupButton extends JToggleButton {
         }
 
         // .. show        
-        popup.show(PopupButton.this, x, y);
+        popup.show(PopupWidget.this, x, y);
       }
     }
     

@@ -36,7 +36,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
-import genj.util.swing.PopupButton;
+import genj.util.swing.PopupWidget;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortOverview;
@@ -490,7 +490,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     bar.addSeparator();
         
     // bookmarks
-    PopupButton pb = new PopupButton("",BOOKMARK_ICON) {
+    PopupWidget pb = new PopupWidget("",BOOKMARK_ICON) {
       /**
        * @see genj.util.swing.PopupButton#getActions()
        */
