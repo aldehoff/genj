@@ -156,11 +156,11 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi) {
+    result.add(new CreateConnected(indi, Gedcom.NOTES, Images.imgNewNote));
     /*
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.child"  , indi));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.parent", indi));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.spouse", indi));
-    result.add(new ActionCreate(Images.imgNewNote      , Gedcom.NOTES      , indi ));
     result.add(new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS, indi ));
     */
   }
@@ -276,7 +276,7 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   } //Create
   
   /**
-   * ActionCreateStandalone - create a standalone entity
+   * CreateStandalone - create a standalone entity
    */
   private static class CreateStandalone extends Create {
     /**
@@ -289,6 +289,7 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
      * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
      */
     protected String getConfirmMessage() {
+      // You are about to create a {0} in {1}! This entity is not connected ...
       return resources.getString("confirm.new.disconnected", new String[] { 
         Gedcom.getNameFor(type,false), gedcom.getName() 
       });
@@ -303,10 +304,39 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   } //CreateStandalone 
   
   /**
-   * ActionCreateConnected - creates a connected entity
+   * CreateConnected - creates a connected entity
    */
-  //private static class CreateConnected extends ActionCreate {
-  //} //CreateConnected
+  private static class CreateConnected extends Create {
+    /** entity owning the created */
+    private Entity owner;
+    /**
+     * Constructor
+     */
+    private CreateConnected(Entity ownr, int typ, ImgIcon img) {
+      super(ownr.getGedcom(), typ, img, EditView.resources.getString("new", Gedcom.getNameFor(typ,false)));
+      owner = ownr;
+    }
+    /**
+     * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
+     */
+    protected String getConfirmMessage() {
+      // You are about to add a {0} to {1} in {2}!
+      return resources.getString("confirm.new.connected", new String[] { 
+        Gedcom.getNameFor(type,false), owner.getId(), gedcom.getName() 
+      });
+    }
+    /**
+     * @see genj.edit.EditViewFactory.Change#change()
+     */
+    protected void change() throws GedcomException {
+      // create the entity
+      focus = gedcom.createEntity(type, null);
+      focus.getProperty().addDefaultProperties();
+      // add it to the owner
+      
+      // done
+    }
+  } //CreateConnected
 
   /**
    * ActionDelete - delete an entity
@@ -325,6 +355,7 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
      * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
      */
     protected String getConfirmMessage() {
+      // You are about to delete {0} of type {1} from {2}! Deleting this ...
       return resources.getString("confirm.del", new String[] { 
         candidate.getId(), Gedcom.getNameFor(candidate.getType(),false), gedcom.getName() 
       });

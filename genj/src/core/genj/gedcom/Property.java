@@ -980,12 +980,6 @@ public abstract class Property implements Comparable {
    */
   public String toString() {
     return getValue();
-    /*
-    if (!(this instanceof Entity))
-      return getTag()+" "+getValue();
-    Entity e = (Entity)this;
-    return "@"+e.getId()+"@ "+getTag()+" "+getValue();
-    */
   }
 
   /**
@@ -1035,75 +1029,6 @@ public abstract class Property implements Comparable {
 
     // done
     return result;
-  }
-
-  /**
-   * Adds a note to this property
-   */
-  /*package*/ void addNote(Note note) {
-
-    // New PropertyNote
-    PropertyNote pn = new PropertyNote();
-    addProperty(pn);
-
-    // Put a foreign xref in the note
-    PropertyForeignXRef fxref = new PropertyForeignXRef(pn);
-    note.addForeignXRef(fxref);
-
-    // ... and point
-    pn.setTarget(fxref);
-  }
-
-  /**
-   * Adds a multimedia to this property
-   */
-  /*package*/ void addMedia(Media media) {
-
-    // New PropertyMedia
-    PropertyMedia pm = new PropertyMedia();
-    addProperty(pm);
-
-    // Put a foreign xref in the note
-    PropertyForeignXRef fxref = new PropertyForeignXRef(pm);
-    media.addForeignXRef(fxref);
-
-    // ... and point
-    pm.setTarget(fxref);
-  }
-
-  /**
-   * Adds a source to this property
-   */
-  /*package*/ void addSource(Source source) {
-
-    // New PropertySource
-    PropertySource pm = new PropertySource();
-    addProperty(pm);
-
-    // Put a foreign xref in the note
-    PropertyForeignXRef fxref = new PropertyForeignXRef(pm);
-    source.addForeignXRef(fxref);
-
-    // ... and point
-    pm.setTarget(fxref);
-  }
-
-
-  /**
-   * Adds a repository to this property
-   */
-  /*package*/ void addRepository(Repository repository) {
-
-    // New PropertyRepository
-    PropertyRepository pm = new PropertyRepository();
-    addProperty(pm);
-
-    // Put a foreign xref in the note
-    PropertyForeignXRef fxref = new PropertyForeignXRef(pm);
-    repository.addForeignXRef(fxref);
-
-    // ... and point
-    pm.setTarget(fxref);
   }
 
   /**

@@ -131,4 +131,5 @@ public class Note extends PropertyNote implements Entity {
   public String toString() {
     return getId()+":"+super.toString();
   }
-}
+  
+} //Note
