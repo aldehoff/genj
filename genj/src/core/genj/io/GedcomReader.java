@@ -280,7 +280,7 @@ public class GedcomReader implements Trackable {
 
     // Create Gedcom
     int expected = Math.max((int)length/ENTITY_AVG_SIZE,100);
-    gedcom = new Gedcom(origin,expected);
+    gedcom = new Gedcom(origin);
     xrefs = new ArrayList(expected);
 
     // Read the Header

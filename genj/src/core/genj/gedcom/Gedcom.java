@@ -115,18 +115,26 @@ public class Gedcom {
    * Gedcom's Constructor
    */
   public Gedcom(Origin origin) {
-    this(origin, 100);
+    this(origin, false);
   }
 
   /**
    * Gedcom's Constructor
    */
-  public Gedcom(Origin origin, int initialCapacity) {
+  public Gedcom(Origin origin, boolean createAdam) {
     // safety check
     if (origin==null)
       throw new IllegalArgumentException("Origin has to specified");
     // remember
     this.origin = origin;
+    // create Adam
+    try {
+      Indi adam = (Indi) createEntity(Gedcom.INDI);
+      adam.addDefaultProperties();
+      adam.setName("Adam","");
+      adam.setSex(PropertySex.MALE);
+    } catch (GedcomException e) {
+    }
     // Done
   }
 

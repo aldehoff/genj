@@ -302,6 +302,15 @@ public class Indi extends Entity {
   }
   
   /**
+   * Sets indi's name
+   */
+  public void setName(String first, String last) {
+    PropertyName p = (PropertyName)getProperty(PropertyName.TAG,true);
+    if (p==null) p = (PropertyName)addProperty(new PropertyName()); 
+    p.setName(first, last);
+  }
+  
+  /**
    * Returns indi's name (e.g. "Meier, Nils")
    */
   public String getName() {
@@ -346,6 +355,7 @@ public class Indi extends Entity {
   
   /**
    * Set indi's sex
+   * @param sex one of PropertySex.MALE or PropertySex.FEMALE
    */
   public void setSex(int sex) {
     PropertySex p = (PropertySex)getProperty("SEX",true);
