@@ -175,7 +175,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
    * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
    */
   public void setContext(Property property) {
-    if (!isSticky()) setEntity(property.getEntity());
+    if (!isSticky()) {
+      tree.setProperty(property);
+    } 
   }
 
   /**

@@ -44,7 +44,6 @@ public class PropertyTreeWidget extends TreeWidget {
     // setup callbacks
     setCellRenderer(new Renderer());
     ToolTipManager.sharedInstance().registerComponent(this);
-    
     // done
   }
   
@@ -54,9 +53,19 @@ public class PropertyTreeWidget extends TreeWidget {
   public void setEntity(Entity entity) {
     model.setEntity(entity);
     expandRows();
-    
-    if (getRowCount()>0) setSelectionRow(0);
-    
+  }
+  
+  /**
+   * Set the current property
+   */
+  public void setProperty(Property property) {
+    // set entity first
+    Entity e = property.getEntity();
+    setEntity(e);
+    // select and show property
+    TreePath path = new TreePath(e.getPathTo(property));
+    scrollPathToVisible(path);
+    setSelectionPath(path);
   }
   
   /**
