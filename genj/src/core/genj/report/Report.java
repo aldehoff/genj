@@ -295,20 +295,27 @@ public abstract class Report implements Cloneable {
    * i18n of a string
    */
   protected final String i18n(String key) {
-    return i18n(key, (String[])null);
+    return i18n(key, (Object[])null);
   }
   
   /**
    * i18n of a string
    */
-  protected final String i18n(String key, String sub) {
-    return i18n(key, new String[]{sub});
+  protected final String i18n(String key, int sub) {
+    return i18n(key, new Integer(sub));
   }
   
   /**
    * i18n of a string
    */
-  protected final String i18n(String key, String[] subs) {
+  protected final String i18n(String key, Object sub) {
+    return i18n(key, new Object[]{sub});
+  }
+  
+  /**
+   * i18n of a string
+   */
+  protected final String i18n(String key, Object[] subs) {
     
     // get i18n properties
     if (i18n==null) {
