@@ -111,6 +111,8 @@ public class PrintWidget extends JTabbedPane {
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
     protected void paintComponent(Graphics g) {
+      
+      //FIXME preview please
       g.setColor(Color.gray);
       g.fillRect(0,0,getWidth(),getHeight());
       g.setColor(Color.white);
