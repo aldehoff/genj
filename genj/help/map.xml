@@ -16,6 +16,7 @@
   <mapID target="v.timeline"   url="view/timeline.html" />
   <mapID target="v.report"     url="view/report.html" />
   <mapID target="v.navigator"  url="view/navigator.html" />
+  <mapID target="v.entity"     url="view/entity.html" />
 
   <mapID target="e.indi"      url="entity/indi.html" />
   <mapID target="e.family"    url="entity/fam.html" />
@@ -35,6 +36,7 @@
   <mapID target="img.NewTimeline"   url="../images/NewTimeline.gif" />
   <mapID target="img.NewReport"     url="../images/NewReport.gif"   />
   <mapID target="img.NewNavigator"  url="../images/NewNavigator.gif"   />
+  <mapID target="img.NewEntity"     url="../images/NewEntity.gif"   />
 
   <mapID target="img.Indi"          url="../images/Indi.gif" />
   <mapID target="img.Fam"           url="../images/Fam.gif" />
