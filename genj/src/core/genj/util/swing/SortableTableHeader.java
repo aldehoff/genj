@@ -44,7 +44,7 @@ import javax.swing.table.TableModel;
  * </il>
  */
 public class SortableTableHeader extends JTableHeader {
-
+  
   /** the ui used by the 'original' TableCellRender for header */ 
   private JLabel cachedLabel;
   private TableCellRenderer cachedRenderer;
@@ -82,6 +82,12 @@ public class SortableTableHeader extends JTableHeader {
    * L&F and knows sorting and ImageIcon values
    */
   private class PatchedHeaderRenderer extends JLabel implements TableCellRenderer {
+    
+    /** arrow design */
+    private int[] 
+      xs = new int[]{ 0,+3,-3}, 
+      ya = new int[]{-3,+3,+3},
+      yd = new int[]{+3,-3,-3};
     
     /** keeper of the column */
     private int column;
@@ -124,7 +130,7 @@ public class SortableTableHeader extends JTableHeader {
       if (model instanceof SortableTableModel) {
         SortableTableModel smodel = (SortableTableModel)model;
         if (smodel.getSortedColumn()==column)
-          paintSortIndicator(g,w,h);
+          paintSortIndicator(g,w,h,smodel.isAscending());
       }
       // done
     }
@@ -132,12 +138,13 @@ public class SortableTableHeader extends JTableHeader {
     /**
      * Paints the sort indicator
      */
-    private void paintSortIndicator(Graphics g, int w, int h) {
-      int 
-        x = w-8,
-        y = h/2;
+    private void paintSortIndicator(Graphics g, int w, int h, boolean a) {
+      // position to paint at
+      g.translate(w-8, h/2);
+      // position
       g.setColor(cachedLabel.getForeground());
-      g.fillPolygon(new int[]{ x+0, x+3, x-3}, new int[]{ y-4, y+4, y+4}, 3);
+      g.fillPolygon(xs, a?ya:yd, xs.length);
+      // done
     }
 
     /**
@@ -161,7 +168,18 @@ public class SortableTableHeader extends JTableHeader {
    * A TableModel that supports sorting
    */
   public interface SortableTableModel extends TableModel {
+    /**
+     * Whether sorting is Ascending or Descending
+     */
+    public boolean isAscending();
+    /**
+     * Returns the sorted column
+     */
     public int getSortedColumn();
+    /**
+     * Sets the sorted Column
+     */
+    public void setSortedColumn(int col);
   } //SortableTableModel
 
   /**
@@ -172,6 +190,17 @@ public class SortableTableHeader extends JTableHeader {
      * @see java.awt.event.MouseListener#mouseClicked(MouseEvent)
      */
     public void mouseClicked(MouseEvent e) {
+      // find out which column
+      int col = columnAtPoint(e.getPoint());
+      if (col<0) return;
+      // model that cares?
+      TableModel model = getTable().getModel();
+      if (!(model instanceof SortableTableModel)) return;
+      // tell to model
+      ((SortableTableModel)model).setSortedColumn(col);
+      // we do a repaint, too
+      repaint();
+      // done       
     }
   } //SortClickMouseListener
   

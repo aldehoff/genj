@@ -22,7 +22,10 @@ import javax.swing.table.TableColumnModel;
 /*package*/ class EntityTableModel extends AbstractTableModel implements GedcomListener, SortableTableHeader.SortableTableModel {
   
   /** the sorted column */
-  private int sortedColumn = 0;
+  private int sortedColumn = -1;
+  
+  /** whether sorting is ascending/descending */
+  private boolean sortedAscending = true;
   
   /** the gedcom we're looking at */
   private Gedcom gedcom;
@@ -133,13 +136,6 @@ import javax.swing.table.TableColumnModel;
   }
   
   /**
-   * @see genj.util.swing.JTableHeader.SortableTableModel#getSortedColumn()
-   */
-  public int getSortedColumn() {
-    return sortedColumn;
-  }
-  
-  /**
    * @see javax.swing.table.TableModel#getColumnCount()
    */
   public int getColumnCount() {
@@ -160,6 +156,30 @@ import javax.swing.table.TableColumnModel;
     Entity e = entities[rowIndex];
     filter.paths[columnIndex].setToFirst();
     return e.getProperty().getProperty(filter.paths[columnIndex], false);
+  }
+
+  /**
+   * @see genj.util.swing.SortableTableHeader.SortableTableModel#getSortedColumn()
+   */
+  public int getSortedColumn() {
+    return sortedColumn;
+  }
+
+  /**
+   * @see genj.util.swing.SortableTableHeader.SortableTableModel#isAscending()
+   */
+  public boolean isAscending() {
+    return sortedAscending;
+  }
+
+  /**
+   * @see genj.util.swing.SortableTableHeader.SortableTableModel#setSortedColumn(int)
+   */
+  public void setSortedColumn(int col) {
+    sortedColumn = col;
+    sortedAscending = !sortedAscending;
+    System.out.println(sortedAscending);
+    fireTableDataChanged();
   }
 
   /**
