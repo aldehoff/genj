@@ -536,6 +536,34 @@ import javax.swing.event.TreeSelectionListener;
       // done
     }
     
+    /** 
+     * ask user for commit confirmation
+     */
+    private boolean isCommit() {
+      
+      if (Options.getInstance().isAutoCommit)
+        return true;
+      
+      JCheckBox auto = new JCheckBox(resources.getString("confirm.autocomit"));
+      auto.setFocusable(false);
+      
+      int rc = winManager.openDialog("confirmCommit", 
+          resources.getString("confirm.keep.changes"), WindowManager.IMG_QUESTION, 
+          new JComponent[] {
+          	new JLabel(resources.getString("confirm.keep.changes")),
+          	auto
+      		},
+          CloseWindow.YESandNO(), 
+          editPane);
+      
+      if (rc!=0)
+        return false;
+      
+      Options.getInstance().isAutoCommit = auto.isSelected();
+      
+      return true;
+    }
+    
     /**
      * callback - selection in tree has changed
      */
@@ -548,10 +576,8 @@ import javax.swing.event.TreeSelectionListener;
         Gedcom gedcom = root.getGedcom();
   
         // ask user for commit if
-        if (!gedcom.isTransaction()&&bean!=null&&ok.isEnabled()) {
-          if (0==winManager.openDialog(null, null, WindowManager.IMG_QUESTION, resources.getString("confirm.keep.changes"), CloseWindow.YESandNO(), editPane))
-            ok.trigger();
-        }
+        if (!gedcom.isTransaction()&&bean!=null&&ok.isEnabled()&&isCommit()) 
+          ok.trigger();
   
       }
 

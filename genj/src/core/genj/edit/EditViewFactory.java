@@ -53,7 +53,6 @@ import genj.util.swing.ImageIcon;
 import genj.view.ActionProvider;
 import genj.view.Context;
 import genj.view.ContextListener;
-import genj.view.Options;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 

@@ -43,9 +43,6 @@ public class Options extends OptionProvider {
   /** resources */
   private static Resources resources;
   
-  /** option - whether an editor should */
-  public boolean isOpenEditor = true;
- 
   /** the current screen resolution */
   private Point dpi = new Point( 
     Toolkit.getDefaultToolkit().getScreenResolution(),
