@@ -5,12 +5,15 @@ import genj.gedcom.Entity;
 import genj.gedcom.EntityList;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.Property;
 import genj.gedcom.Selection;
 import genj.gedcom.TagPath;
 import genj.util.ImgIcon;
 import genj.util.swing.SortableTableHeader;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
@@ -106,6 +109,8 @@ import javax.swing.table.TableColumnModel;
     filter = filters[entity];
     // grab entities
     entities = gedcom.getEntities(filter.type).toArray();
+    // no sorting
+    sortedColumn = -1;
     // propagate
     fireTableStructureChanged();
   }
@@ -242,5 +247,18 @@ import javax.swing.table.TableColumnModel;
       widths   = new int[paths.length];
     }
   } //Filter
+  
+  /** 
+   * A wrapper for an entity in this model and its cached properties
+   */
+  private class Entry {
+    /** attributes */
+    Entity e;
+    Property ps[];
+    /** constructor */
+    Entry(Entity e) {
+      this.e = e;
+    }
+  } //Entry
 
 } //TableModel
