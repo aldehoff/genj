@@ -488,7 +488,10 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     bar.add(sliderZoom);
     
     // overview
-    ButtonHelper bh = new ButtonHelper().setContainer(bar).setResources(resources);
+    ButtonHelper bh = new ButtonHelper()
+      .setContainer(bar)
+      .setResources(resources)
+      .setFocusable(false);
     bh.create(new ActionOverview())
       .setSelected(overview.isVisible());
     

@@ -257,7 +257,10 @@ public class ReportView extends JPanel implements ToolBarSupport {
   public void populate(JToolBar bar) {
     
     // Buttons at bottom
-    ButtonHelper bh = new ButtonHelper().setResources(resources).setContainer(bar);
+    ButtonHelper bh = new ButtonHelper()
+      .setResources(resources)
+      .setContainer(bar)
+      .setFocusable(false);
 
     ActionStart astart = new ActionStart();
     bStart = bh.create(astart);

@@ -112,6 +112,7 @@ import javax.swing.SwingConstants;
 
     // add our buttons     
     ButtonHelper bh = new ButtonHelper()
+      .setFocusable(false)
       .setResources(ViewManager.resources)
       .setContainer(bar);
 

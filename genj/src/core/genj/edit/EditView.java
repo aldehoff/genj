@@ -203,6 +203,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
 
     // buttons for property manipulation    
     ButtonHelper bh = new ButtonHelper()
+      .setFocusable(false)
       .setEnabled(false)
       .setResources(resources)
       .setInsets(0)

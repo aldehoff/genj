@@ -240,7 +240,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
    * @see genj.view.ToolBarSupport#populate(javax.swing.JToolBar)
    */
   public void populate(JToolBar bar) {
-    ButtonHelper bh = new ButtonHelper().setContainer(bar);
+    ButtonHelper bh = new ButtonHelper().setContainer(bar).setFocusable(false);
     ActionSearch search = new ActionSearch();
     ActionStop   stop   = new ActionStop  (search);
     bSearch = bh.setEnabled(true ).create(search);
