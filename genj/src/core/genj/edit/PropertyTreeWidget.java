@@ -1,3 +1,22 @@
+/**
+ * GenJ - GenealogyJ
+ *
+ * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ *
+ * This piece of code is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package genj.edit;
 
 import genj.gedcom.Change;
@@ -29,6 +48,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 /**
  * A Property Tree
@@ -49,6 +69,7 @@ public class PropertyTreeWidget extends TreeWidget {
     
     // setup callbacks
     setCellRenderer(new Renderer());
+    getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
     // done
   }
@@ -105,7 +126,9 @@ public class PropertyTreeWidget extends TreeWidget {
    * Allows to return to previous entity
    */
   public void setPreviousEntity() {
-    model.setPrevious();
+    
+    // tell model to go to previous
+    if (!model.setPrevious()) return;
     expandRows();
 
     // select and show property
@@ -120,10 +143,11 @@ public class PropertyTreeWidget extends TreeWidget {
   /**
    * returns the currently selected property
    */
-  public Property getCurrentProperty() {
+  public Property getSelection() {
     // Calculate selection path
     TreePath path = getSelectionPath();
-    if (path==null) return null;
+    if (path==null) 
+      return null;
     // got it
     if (path.getLastPathComponent() instanceof Property)
       return (Property)path.getLastPathComponent();
@@ -143,26 +167,26 @@ public class PropertyTreeWidget extends TreeWidget {
     return (Property)path.getLastPathComponent();
   }
   
-  /**
-   * the selected properties
-   */
-  public Property[] getSelection() {
-    
-    // check selection
-    TreePath paths[] = getSelectionPaths();
-    if ( (paths==null) || (paths.length==0) ) {
-      return new Property[0];
-    }
-
-    // .. remove every selected node
-    Property[] result = new Property[paths.length];
-    for (int i=0;i<paths.length;i++) {
-      result[i] = (Property)paths[i].getLastPathComponent();
-    }
-
-    // done
-    return result;    
-  }
+//  /**
+//   * the selected properties
+//   */
+//  public Property[] getSelection() {
+//    
+//    // check selection
+//    TreePath paths[] = getSelectionPaths();
+//    if ( (paths==null) || (paths.length==0) ) {
+//      return new Property[0];
+//    }
+//
+//    // .. remove every selected node
+//    Property[] result = new Property[paths.length];
+//    for (int i=0;i<paths.length;i++) {
+//      result[i] = (Property)paths[i].getLastPathComponent();
+//    }
+//
+//    // done
+//    return result;    
+//  }
   
   /**
    * @see javax.swing.JTree#getToolTipText(MouseEvent)
@@ -230,14 +254,15 @@ public class PropertyTreeWidget extends TreeWidget {
     /**
      * Sets the root to the previous one
      */
-    public void setPrevious() {
+    public boolean setPrevious() {
       // is there one?
-      if (history.isEmpty()) return;
+      if (history.isEmpty()) return false;
       // don't want current to end up on the stack
       root = null;
       // set it
       setEntity((Entity)history.pop());
       // done
+      return true;
     }
   
     /**

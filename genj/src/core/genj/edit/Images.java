@@ -45,7 +45,7 @@ final public class Images {
     imgCopy,
     imgPaste,
     
-    imgDelete,
+    imgDelEntity,
     imgNewFam,
     imgNewIndi,
     imgNewMedia,
@@ -75,7 +75,7 @@ final public class Images {
     imgCopy      = new ImageIcon(this,"images/Copy.gif");
     imgPaste     = new ImageIcon(this,"images/Paste.gif");
     
-    imgDelete        = new ImageIcon(this,"images/entity/Delete.gif");
+    imgDelEntity     = new ImageIcon(this,"images/entity/Delete.gif");
     imgNewFam        = new ImageIcon(this,"images/entity/NewFam.gif");
     imgNewIndi       = new ImageIcon(this,"images/entity/NewIndi.gif");
     imgNewMedia      = new ImageIcon(this,"images/entity/NewMedia.gif");

@@ -19,9 +19,9 @@
  */
 package genj.edit;
 
-import genj.edit.actions.DelProperty;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.util.ActionDelegate;
@@ -70,7 +70,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
 
   /** buttons we use */
   private AbstractButton    actionButtonAdd,
-                            actionButtonRemove,
+                            actionButtonCut,
+                            actionButtonCopy,
+                            actionButtonPaste,
                             actionButtonUp,
                             actionButtonDown,
                             actionButtonReturn,
@@ -97,7 +99,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     this.manager  = setManager;
 
     // TREE Component's 
-    TreeCallbackHandler callback = new TreeCallbackHandler();
+    Callback callback = new Callback();
     tree = new PropertyTreeWidget(setGedcom);
     tree.addTreeSelectionListener(callback);
     
@@ -187,8 +189,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     TreePath path = tree.getPathForLocation(pos.x, pos.y);
     if (path!=null) tree.setSelectionPath(path);
     // try to resolve a return value
-    Property prop = tree.getCurrentProperty();
-    if (prop!=null) return new Context(prop);
+    Property prop = tree.getSelection();
+    if (prop!=null) 
+      return new Context(prop);
     return new Context(getCurrentEntity());
   }
   
@@ -204,19 +207,24 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       .setInsets(0)
       .setMinimumSize(new Dimension(0,0))
       .setContainer(bar);
-    
+
+    // add new    
     actionButtonAdd    = bh.create(new ActionAdd());
-    actionButtonRemove = bh.create(new ActionDel());
     
-    bh.create(new ActionCut());
-    bh.create(new ActionCopy());
-    bh.create(new ActionPaste());
+    // cut,copy,paste
+    actionButtonCut    = bh.create(new ActionCut());
+    actionButtonCopy   = bh.create(new ActionCopy());
+    actionButtonPaste  = bh.create(new ActionPaste());
     
+    // up, down
     actionButtonUp     = bh.create(new ActionUpDown(true));
     actionButtonDown   = bh.create(new ActionUpDown(false));
-    actionButtonReturn = bh.setEnabled(true).create(new ActionBack());
-    actionSticky       = bh.create(new ActionSticky());
     
+    // return in history
+    actionButtonReturn = bh.setEnabled(true).create(new ActionBack());
+    
+    // toggle sticky
+    actionSticky       = bh.create(new ActionSticky());
     actionSticky.setSelected(registry.get("sticky",false));
 
     // done
@@ -272,23 +280,23 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /**
    * Prepare a proxy for editing a property
    */
-  private void startEdit(boolean keepSimple) {
+  private void startEdit() {
 
     // Property?
-    Property prop = tree.getCurrentProperty();
-    if (prop == null) return;
+    Property prop = tree.getSelection();
+    if (prop == null) 
+      return;
 
     // Calculate editing for property
     String me    = getClass().getName(),
            pkg   = me.substring( 0, me.lastIndexOf(".") + 1 ),
            proxy = prop.getProxy();
 
-    if (proxy == "") return;
+    if (proxy == "") 
+      return;
 
     // Create proxy
     try {
-      if (keepSimple)
-        throw new Exception();
       currentProxy = (Proxy) Class.forName( pkg + "Proxy" + proxy ).newInstance();
     } catch (Exception e) {
       currentProxy = new ProxyUnknown();
@@ -347,7 +355,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     protected ActionSticky() {
       super.setImage(Images.imgStickOff);
       super.setToggle(Images.imgStickOn);
-      super.setTip("tip.stick");
+      super.setTip("action.stick.tip");
     }
     /** run */
     protected void execute() {
@@ -361,7 +369,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   private class ActionBack extends ActionDelegate {
     /** constructor */
     protected ActionBack() {
-      super.setImage(Images.imgReturn).setTip("tip.return");
+      super.setImage(Images.imgReturn).setTip("action.return.tip");
     }
     /** run */
     protected void execute() {
@@ -377,14 +385,15 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     protected ActionAdd() {
       super.setShortText("action.add");
       super.setImage(Images.imgAdd);
-      super.setTip("tip.add_prop");
+      super.setTip("action.add.tip");
     }
     /** run */
     protected void execute() {
   
       // Depending on Gedcom of current entity
       Entity entity = getCurrentEntity();
-      if (entity==null) return;
+      if (entity==null)
+        return;
   
       Gedcom gedcom = entity.getGedcom();
   
@@ -393,7 +402,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   
       // .. only in case of single selection
       TreePath paths[] = tree.getSelectionPaths();
-      if ( (paths==null) || (paths.length!=1) ) return;
+      if ( (paths==null) || (paths.length!=1) ) 
+        return;
       TreePath path = tree.getSelectionPath();
   
       // .. calculate new props
@@ -415,7 +425,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       
       // .. OK or Cancel ?
       if (option!=0) {
-        startEdit(false);
+        startEdit();
         return;
       }
   
@@ -457,34 +467,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   } //ActionPropertyAdd
     
   /**
-   * Action - del
-   */
-  private class ActionDel extends ActionDelegate {
-    /** constructor */
-    protected ActionDel() {
-      super.setShortText("action.del").setTip("tip.del_prop");
-      super.setImage(Images.imgDelete);
-    }
-    /** run */
-    protected void execute() {
-  
-      // .. Stop Editing
-      stopEdit();
-      
-      // go through selection
-      Property[] ps = tree.getSelection();
-      for (int i=0;i<ps.length;i++) {
-        new DelProperty(ps[i], manager).setTarget(EditView.this).trigger();
-      }
-  
-      // go to parent property
-      tree.setSelectionRow(0);
-  
-      // .. done
-    }
-  } //ActionPropertyDel
-  
-  /**
    * Action - up/down
    */
   private class ActionUpDown extends ActionDelegate {
@@ -493,15 +475,16 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     /** constructor */
     protected ActionUpDown(boolean up) {
       this.up=up;
-      if (up) super.setShortText("action.up").setTip("tip.up_prop").setImage(Images.imgUp);
-      else super.setShortText("action.down").setTip("tip.down_prop").setImage(Images.imgDown);
+      if (up) super.setShortText("action.up").setTip("action.up.tip").setImage(Images.imgUp);
+      else super.setShortText("action.down").setTip("action.down.tip").setImage(Images.imgDown);
     }
     /** run */
     protected void execute() {
       
       // get current property
-      Property prop = tree.getCurrentProperty();
-      if (prop==null) return;
+      Property prop = tree.getSelection();
+      if (prop==null)
+        return;
   
       // .. Stop Editing
       stopEdit();
@@ -527,51 +510,125 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   }  //ActionPropertyUpDown
   
   /**
-   * Action - cut
-   */
-  private class ActionCut extends ActionDelegate {
-    /** constructor */
-    private ActionCut() {
-      setEnabled(false);
-      setImage(Images.imgCut);
-    }
-    /** run */
-    protected void execute() {
-    }
-  } //ActionCut
-
-  /**
    * Action - copy
    */
   private class ActionCopy extends ActionDelegate {
     /** constructor */
     private ActionCopy() {
-      setEnabled(false);
       setImage(Images.imgCopy);
+      setTip("action.copy.tip");
     }
     /** run */
     protected void execute() {
+      
+      // check selection
+      Property prop = tree.getSelection();
+      if (prop==null) 
+        return; // shouldn't happen
+        
+      // grab it and its subs
+      Clipboard.getInstance().copy(prop);
+      
+      // deselect to avoid user pasting to same node
+      tree.clearSelection();
+      
+      // done
     }
   } //ActionCopy
 
   /**
-   * Action - copy
+   * Action - cut
+   */
+  private class ActionCut extends ActionCopy {
+    /** constructor */
+    private ActionCut() {
+      super.setImage(Images.imgCut);
+      super.setShortText("action.cut");
+      super.setTip("action.cut.tip");
+    }
+    /** run */
+    protected void execute() {
+      // check selection
+      Property prop = tree.getSelection();
+      if (prop==null) 
+        return; // shouldn't happen
+      // warn about cut
+      String veto = prop.getDeleteVeto();
+      if (veto!=null) { 
+        // Removing property {0} from {1} leads to:\n{2}
+        String msg = resources.getString("cut.warning", new String[] { 
+          prop.getTag(), prop.getEntity().getId(), veto 
+        });
+        // ask the user
+        int option = manager.getWindowManager().openDialog(
+          null,
+          resources.getString("action.cut.tip"),
+          WindowManager.IMG_WARNING,
+          msg,
+          WindowManager.OPTIONS_OK_CANCEL,
+          EditView.this
+        );
+        if (option!=0)
+          return;
+        // continue
+      }
+      // copy first
+      super.execute();
+      // now cut
+      if (!gedcom.startTransaction()) return;
+      prop.getParent().delProperty(prop);
+      gedcom.endTransaction();
+      // done
+    }
+  } //ActionCut
+
+  /**
+   * Action - paste
    */
   private class ActionPaste extends ActionDelegate {
     /** constructor */
     private ActionPaste() {
-      setEnabled(false);
-      setImage(Images.imgPaste);
+      super.setImage(Images.imgPaste);
+      super.setShortText("action.paste");
+      super.setTip("action.paste.tip");
     }
     /** run */
     protected void execute() {
+      
+      // check selection
+      Property prop = tree.getSelection();
+      if (prop==null) 
+        return; // shouldn't happen
+        
+      // paste contents
+      if (!gedcom.startTransaction()) return;
+      Property result = null;
+      try {
+        result = Clipboard.getInstance().paste(prop);
+      } catch (GedcomException e) {
+        manager.getWindowManager().openDialog(
+          null,
+          resources.getString("action.paste.tip"),
+          WindowManager.IMG_WARNING,
+          e.getMessage(),
+          WindowManager.OPTIONS_CANCEL,
+          EditView.this
+        );
+      }
+      gedcom.endTransaction();
+      
+      // propagate
+      if (result!=null)
+        manager.setContext(result);
+      
+      // done
     }
   } //ActionPaste
 
   /**
    * Handling selection of properties
    */
-  private class TreeCallbackHandler implements TreeSelectionListener {
+  private class Callback implements TreeSelectionListener {
     
     /**
      * @see javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event.TreeSelectionEvent)
@@ -581,40 +638,32 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       // stop editing
       stopEdit();
   
-      // Look if exactly one node has been selected
-      if (tree.getSelectionCount()==0||tree.getCurrentProperty()==null) {
+      // Check for 'no selection'
+      Property prop = tree.getSelection(); 
+      if (prop==null) {
         // Disable action buttons
         actionButtonAdd   .setEnabled(false);
-        actionButtonRemove.setEnabled(false);
         actionButtonUp    .setEnabled(false);
         actionButtonDown  .setEnabled(false);
-        // Done
-        return;
-      }
-  
-      if (tree.getSelectionCount()>1) {
-        // En/Disable action buttons
-        actionButtonAdd   .setEnabled(false);
-        actionButtonRemove.setEnabled(true );
-        actionButtonUp    .setEnabled(false);
-        actionButtonDown  .setEnabled(false);
+        actionButtonCut   .setEnabled(false);
+        actionButtonCopy  .setEnabled(false);
+        actionButtonPaste .setEnabled(false);
         // Done
         return;
       }
   
       // Starting with new one
-      startEdit(false);
+      startEdit();
   
-      // Enable action buttons
-      Property prop = tree.getCurrentProperty();
-      
+      // add      
       actionButtonAdd.setEnabled(true);
-      if (prop.getParent()!=null) {
-        actionButtonRemove.setEnabled(true);
-      } else {
-        actionButtonRemove.setEnabled(false);
-      }
+      
+      // cut,copy,paste
+      actionButtonCut  .setEnabled(prop.getParent()!=null);
+      actionButtonCopy .setEnabled(prop.getParent()!=null);
+      actionButtonPaste.setEnabled(!Clipboard.getInstance().isEmpty());
   
+      // up, down
       actionButtonUp    .setEnabled(prop.getPreviousSibling()!=null);
       actionButtonDown  .setEnabled(prop.getNextSibling()    !=null);
   

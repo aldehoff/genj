@@ -22,7 +22,6 @@ package genj.edit;
 import genj.edit.actions.CreateEntity;
 import genj.edit.actions.CreateRelationship;
 import genj.edit.actions.DelEntity;
-import genj.edit.actions.DelProperty;
 import genj.edit.actions.OpenForEdit;
 import genj.edit.actions.RunExternal;
 import genj.edit.actions.SetSubmitter;
@@ -102,10 +101,6 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
       // .. next
     }
 
-    // delete possible
-    result.add(ActionDelegate.NOOP);
-    result.add(new DelProperty(property, manager));
-    
     // done
     return result;
   }
