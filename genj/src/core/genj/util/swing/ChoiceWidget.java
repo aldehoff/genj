@@ -89,6 +89,9 @@ public class ChoiceWidget extends JComboBox {
     // try to set selection - not in values is ignored
     setSelectedItem(selection);
     
+    // enable autocomplete support
+    new AutoCompleteSupport();
+    
     // done
   }
   
@@ -216,8 +219,6 @@ public class ChoiceWidget extends JComboBox {
     // continue
     super.setEditor(set);
     
-    // enable autocomplete support
-    new AutoCompleteSupport();
   }
   
   /**
