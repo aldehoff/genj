@@ -95,6 +95,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   
   /** our current zoom */
   private double zoom = 1.0D;
+
+  /** our current zoom */  
+  private DoubleValueSlider sliderZoom;  
   
   /** the frame we're in */
   private Frame frame;
@@ -115,7 +118,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     content = new Content();
     JScrollPane scroll = new JScrollPane(new ViewPortAdapter(content));
     overview = new Overview(scroll);
-    overview.setVisible(false);
+    overview.setVisible(registry.get("overview", false));
+    overview.setSize(registry.get("overview", new Dimension(64,64)));
+    zoom = registry.get("zoom", 1.0F);
     // setup content
     setLayout(new MyLayout()); 
     add(overview);
@@ -123,6 +128,16 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // init model
     model.setRoot((Fam)gedcm.getEntities(Gedcom.FAMILIES).get(0));
     // done
+  }
+  
+  /**
+   * @see javax.swing.JComponent#removeNotify()
+   */
+  public void removeNotify() {
+    registry.put("overview", overview.isVisible());
+    registry.put("overview", overview.getSize());
+    if (sliderZoom!=null) registry.put("zoom", (float)sliderZoom.getValue());
+    super.removeNotify();
   }
   
   /**
@@ -174,7 +189,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   public void populate(JToolBar bar) {
 
     // zooming!    
-    DoubleValueSlider sliderZoom = new DoubleValueSlider(0.1D,1.0D,1.0D,false);
+    sliderZoom = new DoubleValueSlider(0.1D,1.0D,zoom,false);
     sliderZoom.addChangeListener(new ZoomGlue());
     sliderZoom.setText("%");
     bar.add(sliderZoom);
