@@ -116,60 +116,24 @@
    Distribution - Applet
    -->
   <target name="dist.applet" depends="init,compile,version">
+  
+  	 <!-- what we exclude - would be great to derive that automatically :( -->
+     <property name="exclude" value="
+      genj/app/**, genj/lnf/**, genj/entity/**, genj/nav/**, genj/report/**, **/*ViewPrinter*.class, **/*ViewSettings*.class
+      genj/renderer/BlueprintEditor*, genj/renderer/BlueprintList*
+      genj/view/widgets/*
+     "/>
 
      <!-- create genj_applet_xyz.jar -->
      <delete file="${dir.lib}/genj.jar"/>
      <jar jarfile="${dir.lib}/genj.jar" update="True">
-       <fileset dir="${dir.build}/classes/core"
-           includes="genj/*
-                    ,genj/applet/**
-                    ,genj/gedcom/**
-                    ,genj/io/*
-                    ,genj/tree/**
-                    ,genj/timeline/**
-                    ,genj/table/**
-                    ,genj/util/*"/>
+       <fileset dir="${dir.build}/classes/core" excludes="${exclude}"/>
+       <fileset dir="./images" excludes="${exclude}"/>
+       <fileset dir="./language/en" excludes="${exclude}"/>
+       <fileset dir="./src/core" excludes="${exclude}"
+           includes="**/*.properties"/>
        <fileset dir="${dir.build}/version"/>
-       <fileset dir="./images"
-           includes="genj/*
-                    ,genj/applet/**
-                    ,genj/gedcom/**
-                    ,genj/io/*
-                    ,genj/tree/**
-                    ,genj/timeline/**
-                    ,genj/table/**
-                    ,genj/util/*"/>
-       <fileset dir="./language/en"
-           includes="genj/*
-                    ,genj/applet/**
-                    ,genj/gedcom/**
-                    ,genj/io/*
-                    ,genj/tree/**
-                    ,genj/timeline/**
-                    ,genj/table/**
-                    ,genj/util/*"/>
-       <fileset dir="./src/core" includes="genj/gedcom/*.properties"/>
      </jar>
-
-     <zip zipfile="${dir.dist}/genj_applet-${app.version}.zip" update="True">
-       <fileset dir="${dir.dist}/lib" includes="genj.jar"/>
-       <fileset dir="./doc" includes="applet*.*"/>
-     </zip>
-
-     <!-- create ./applet -->
-     <mkdir dir="${dir.dist}/applet/unzipped"/>
-     <copy file="./doc/applet-unzipped.html" todir="${dir.dist}/applet/unzipped"/>
-     <copy todir="${dir.dist}/applet/unzipped">
-       <fileset dir="./gedcom"/>
-     </copy>
-     <copy file="${dir.dist}/lib/genj.jar" todir="${dir.dist}/applet/unzipped"/>
-
-     <mkdir dir="${dir.dist}/applet/zipped"/>
-     <copy file="./doc/applet-zipped.html" todir="${dir.dist}/applet/zipped"/>
-     <copy file="${dir.dist}/lib/genj.jar" todir="${dir.dist}/applet/zipped"/>
-     <zip zipfile="${dir.dist}/applet/zipped/example.zip">
-       <fileset dir="./gedcom"/>
-     </zip>
 
   </target>
 
