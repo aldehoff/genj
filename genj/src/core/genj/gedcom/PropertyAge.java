@@ -270,8 +270,8 @@ public class PropertyAge extends Property {
       if (d>0) buffer.append(d+"d");
     } else {
       if (y>0) buffer.append(""+y).append(y==1?Gedcom.resources.getString("time.year" ):Gedcom.resources.getString("time.years" ));
-      if (m>0) buffer.append(""+m).append(y==1?Gedcom.resources.getString("time.month"):Gedcom.resources.getString("time.months"));
-      if (d>0) buffer.append(""+d).append(y==1?Gedcom.resources.getString("time.day"  ):Gedcom.resources.getString("time.days"  ));
+      if (m>0) buffer.append(""+m).append(m==1?Gedcom.resources.getString("time.month"):Gedcom.resources.getString("time.months"));
+      if (d>0) buffer.append(""+d).append(d==1?Gedcom.resources.getString("time.day"  ):Gedcom.resources.getString("time.days"  ));
     }
       
     // done
