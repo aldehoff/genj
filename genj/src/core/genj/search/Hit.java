@@ -56,31 +56,37 @@ import javax.swing.ImageIcon;
     String value = prop instanceof MultiLineSupport ? ((MultiLineSupport)prop).getLinesValue() : prop.getValue();
     Matcher.Match[] matches = matcher.match(value);
     // something?
-    return  matches.length==0 ? null : new Hit(prop, value, matches);
+    if (matches.length==0)
+      return null;
+    // calc html
+    StringBuffer html = new StringBuffer(value.length()+matches.length*10);
+    html.append("<html>");
+    html.append("<b>");
+    html.append(prop.getTag());
+    html.append("</b>");
+    if (prop instanceof Entity) {
+      html.append(" @");
+      html.append(((Entity)prop).getId());
+      html.append('@');
+    }
+    html.append(' ');
+    html.append(Matcher.format(value, matches, OPEN, CLOSE, NEWLINE));
+    html.append("</html>");
+    
+    // instantiate & done
+    return new Hit(prop, html.toString());
   }
   
   /** 
    * Constructor
    */
-  private Hit(Property prop, String value, Matcher.Match[] matches) {
+  private Hit(Property prop, String htm) {
     // keep property
     property = prop;
-    // calc img
+    // cache img
     img = property.getImage(false);
-    // calc html
-    StringBuffer buffer = new StringBuffer(value.length()+matches.length*10);
-    buffer.append("<html>");
-    buffer.append("<b>");
-    buffer.append(property.getTag());
-    buffer.append("</b>");
-    if (property instanceof Entity) {
-      buffer.append('@'+((Entity)property).getId()+'@');
-    }
-    buffer.append(' ');
-    buffer.append(Matcher.format(value, matches, OPEN, CLOSE, NEWLINE));
-    buffer.append("</html>");
-    html = buffer.toString();
-    
+    // cache html
+    html = htm;
     // done
   }
   
