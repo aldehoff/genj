@@ -61,6 +61,21 @@ public class Category {
   }
   
   /**
+   * @see java.lang.Object#hashCode()
+   */
+  public int hashCode() {
+    return key.hashCode();
+  }
+
+  /**
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  public boolean equals(Object obj) {
+    Category that = (Category)obj;
+    return this.key.equals(that.key);
+  }
+  
+  /**
    * Accessor
    */
   public String getKey() {

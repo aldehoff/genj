@@ -33,7 +33,6 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -77,7 +76,6 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   
   /** a widget for selecting almanac event libraries / categories */
   private ListSelectionWidget 
-    almanacEvents = new ListSelectionWidget(),
     almanacCategories = new ListSelectionWidget();
   
   /** Checkbox for options */
@@ -125,8 +123,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     
     // panel for history options
     JPanel panelEvents = new JPanel(new BorderLayout());
-    panelEvents.add(almanacCategories, BorderLayout.NORTH);
-    panelEvents.add(almanacEvents, BorderLayout.CENTER);
+    panelEvents.add(almanacCategories, BorderLayout.CENTER);
     
     // color chooser
     colorWidget = new ColorsWidget();
@@ -161,6 +158,9 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
       String key = colors.next().toString();
       view.colors.put(key, colorWidget.getColor(key));
     }
+    
+    // almanac categories
+    view.setAlmanacCategories(almanacCategories.getSelection());
     
     // Done
   }
@@ -202,15 +202,11 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
       colorWidget.addColor(key, name, color);
     }
     
-    // almanac
+    // almanac categories
     Almanac almanac = Almanac.getInstance();
-    List libs = almanac.getLibraries();
-    almanacEvents.setChoices(libs);
-    almanacEvents.setSelection(new HashSet());
     List cats = almanac.getCategories();
     almanacCategories.setChoices(cats);
-    almanacCategories.setSelection(new HashSet());
-    
+    almanacCategories.setSelection(view.getAlmanacCategories());
     
     // Done
   }

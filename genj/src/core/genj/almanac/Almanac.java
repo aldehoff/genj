@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -69,9 +70,6 @@ public class Almanac {
   
   /** events */
   private List events = new ArrayList();
-  
-  /** libraries */
-  private List libraries = new ArrayList();
   
   /** categories */
   private List categories = new ArrayList();
@@ -141,24 +139,17 @@ public class Almanac {
   }
   
   /**
-   * Accessor - libraries
-   */
-  public List getLibraries() {
-    return libraries;
-  }
-  
-  /**
    * Accessor - events by point in time
    */
-  public Iterator getEvents(PointInTime when, int days) throws GedcomException {
-    return new Range(when, days);
+  public Iterator getEvents(PointInTime when, int days, Set cats) throws GedcomException {
+    return new Range(when, days, cats);
   }
   
   /**
    * Accessor - a range of events
    */
-  public Iterator getEvents(int startYear, int endYear) {
-    return new Range(startYear, endYear);
+  public Iterator getEvents(int startYear, int endYear, Set cats) {
+    return new Range(startYear, endYear, cats);
   }
   
   /**
@@ -226,13 +217,10 @@ public class Almanac {
 		 */
 		private void load(File file, Charset charset) throws IOException {
 		  
-		  String lib = file.getName();
-      libraries.add(lib);
-		  
 		  // read its lines
 		  BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset));
 		  for (String line = in.readLine(); line!=null; line = in.readLine()) 
-		    load(lib, line);
+		    load(line);
 		    
 		  // notify about changes
       fireStateChanged(); 
@@ -243,7 +231,7 @@ public class Almanac {
 		/**
 		 * load one line
 		 */
-		private boolean load(String lib, String line) {
+		private boolean load(String line) {
 		  
 		  // check format (B|S)MMDDYYYY some event
 		  if (line.length()<11)
@@ -266,11 +254,14 @@ public class Almanac {
 		  String text = line.substring(10).trim();
 		  if (text.length()==0)
 		    return false;
+		  
+		  // lookup category
+		  Category cat = getCategory(c);
 
       // create event
       Event event;
       try {
-		    event = new Event(lib, getCategory(c), new PointInTime(day-1, month-1, year), text); 
+		    event = new Event(cat, new PointInTime(day-1, month-1, year), text); 
 		  } catch (GedcomException e) {
 		    return false;
 		  }
@@ -303,34 +294,41 @@ public class Almanac {
     private long origin = -1;
     private long originDelta;
     
-    private Object next;
+    private Event next;
+
+    private Set categories;
     
     /**
      * Constructor
      */
-    Range(PointInTime when, int days) throws GedcomException {
+    Range(PointInTime when, int days, Set cats2ignore) throws GedcomException {
 
       endYear = when.getYear();
       
 	    // convert to julian day
 	    origin = when.getJulianDay();
 	    originDelta = days;
-  	    
-	    synchronized (events) {
-	      end = events.size();
-	      start = getStartIndex(endYear);
-        hasNext();
-	    }
 	    
+	    // init
+	    init(endYear, cats2ignore);
+  	    
       // done
     }
     
     /**
      * Constructor
      */
-    Range(int startYear, int endYear) {
+    Range(int startYear, int endYear, Set cats) {
       
       this.endYear = endYear;
+
+      // init
+      init(startYear, cats);
+    }
+    
+    private void init(int startYear, Set cats) {
+      
+      categories = cats;
       
 	    synchronized (events) {
 	      end = events.size();
@@ -346,14 +344,6 @@ public class Almanac {
       next = null;
       start = end;
       return false;
-    }
-    
-    /**
-     * set next
-     */
-    private boolean setNext(Object event) {
-      next = event;
-      return true;
     }
     
     /**
@@ -373,20 +363,24 @@ public class Almanac {
 	        // reached the end?
 	        if (start==end)
 	          return end();
+	        // here's the next
+		      next = (Event)events.get(start++);
+		      // good category?
+		      if (categories!=null&&!categories.contains(next.getCategory()))
+	          continue;
 	        // it's still in year range?
-		      Event e = (Event)events.get(start++);
-		      if (e.getTime().getYear()>endYear) 
+		      if (next.getTime().getYear()>endYear) 
 		        return end();
 		      // check against origin?
-		      if (origin<0) {
-		        return setNext(e);
-		      } else {
-		        long delta = e.getJulian() - origin;
+		      if (origin>0) {
+		        long delta = next.getJulian() - origin;
 		        if (delta>originDelta) 
 			        return end();
-		        if (delta>-originDelta)
-			        return setNext(e);
+		        if (delta<-originDelta)
+		          continue;
 		      }
+		      // found next
+	        return true;
 	      }
       }
     }

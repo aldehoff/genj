@@ -32,6 +32,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A renderer knowing how to render a ruler for the timeline
@@ -40,6 +41,9 @@ public class RulerRenderer extends ContentRenderer {
   
   /** ticks color */
   /*package*/ Color cTick = null;
+  
+  /** almanac categories */
+  /*package*/ Set acats = null;
   
   /** a tick */
   private Shape tickMark, eventMark;
@@ -73,7 +77,7 @@ public class RulerRenderer extends ContentRenderer {
     renderSpan(graphics, model, fm, from, to, width);
     
     // render cday events
-    renderEvents(graphics, from, to);
+    renderAlmanac(graphics, from, to);
     
     // done
   }
@@ -81,14 +85,14 @@ public class RulerRenderer extends ContentRenderer {
   /**
    * Renders CDay event markers
    */
-  private void renderEvents(UnitGraphics g, double from, double to) {
+  private void renderAlmanac(UnitGraphics g, double from, double to) {
     g.setColor(cTimespan);
     Rectangle2D clip = g.getClip();
     int 
     	fromYear = (int)Math.floor(clip.getX()),
   		toYear   = (int)Math.ceil (clip.getMaxX());
     
-    Iterator almanac = Almanac.getInstance().getEvents(fromYear, toYear);
+    Iterator almanac = Almanac.getInstance().getEvents(fromYear, toYear, acats);
     while (almanac.hasNext()) {
       Event event = (Event)almanac.next();
       PointInTime time = event.getTime();

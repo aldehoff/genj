@@ -20,6 +20,7 @@
 package genj.timeline;
 
 import genj.almanac.Almanac;
+import genj.almanac.Category;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
@@ -46,9 +47,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -95,6 +100,9 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
   
   /** the renderer we use for the content */
   private ContentRenderer contentRenderer = new ContentRenderer();
+  
+  /** almanac categories */
+  private List ignoredAlmanacCategories = new ArrayList();
   
   /** min/max's */
   /*package*/ final static double 
@@ -162,6 +170,10 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     colors.put("selected"  , Color.RED  );
     colors = regstry.get("color", colors);
    
+    String[] ignored= regstry.get("almanac.ignore", new String[0]);
+    for (int i=0;i<ignored.length;i++)
+      ignoredAlmanacCategories.add(Almanac.getInstance().getCategory(ignored[i]));
+    
     // create/keep our sub-parts
     model = new Model(gedcom, regstry.get("filter", (String[])null));
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
@@ -206,6 +218,12 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     regstry.put("filter"     , model.getPaths());
     regstry.put("centeryear" , (float)centeredYear);
     regstry.put("color", colors);
+    
+    String[] ignored = new String[ignoredAlmanacCategories.size()];
+    for (int i=0;i<ignored.length;i++)
+      ignored[i] = ((Category)ignoredAlmanacCategories.get(i)).getKey();
+    regstry.put("almanac.ignore", ignored);
+
     // done
     super.removeNotify();
   }
@@ -222,6 +240,25 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
    */
   public Model getModel() {
     return model;
+  }
+  
+  /**
+   * Accessor - almanac categories
+   */
+  public Set getAlmanacCategories() {
+    HashSet result = new HashSet(Almanac.getInstance().getCategories());
+    result.removeAll(ignoredAlmanacCategories);
+    return result;
+  }
+  
+  /**
+   * Accessor - hidden almanac category keys
+   */
+  public void setAlmanacCategories(Set set) {
+    ignoredAlmanacCategories.clear();
+    ignoredAlmanacCategories.addAll(Almanac.getInstance().getCategories());
+    ignoredAlmanacCategories.removeAll(set);
+    repaint();
   }
   
   /**
@@ -406,6 +443,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       rulerRenderer.cText = (Color)colors.get("text");
       rulerRenderer.cTick = rulerRenderer.cText;
       rulerRenderer.cTimespan = (Color)colors.get("timespan");
+      rulerRenderer.acats = getAlmanacCategories();
       // prepare UnitGraphics
       UnitGraphics graphics = new UnitGraphics(
         g,
@@ -413,7 +451,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
         getFontMetrics(getFont()).getHeight()+1
       );
       graphics.translate(-model.min,0);
-      // go for it      
+      // let ruler do its things      
       rulerRenderer.render(graphics, model);
       // done
     }
@@ -438,7 +476,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
      * update tip
      */
     public void mouseMoved(MouseEvent e) {
-      // calculate year FIXME this isn't accurate yet
+      // calculate year
       double year = pixel2year(e.getPoint().x);
       // calculate time and days around it
       PointInTime when = Model.toPointInTime(year);
@@ -446,7 +484,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       // collect events and their text
       WordBuffer text = new WordBuffer();
       try {
-	      Iterator almanac = Almanac.getInstance().getEvents(when, days);
+	      Iterator almanac = Almanac.getInstance().getEvents(when, days, getAlmanacCategories());
 	      if (almanac.hasNext()) {
 		      text.append("<html><body>");
 		      for (int i=0;i<10&&almanac.hasNext();i++) {
