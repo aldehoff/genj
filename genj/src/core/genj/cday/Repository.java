@@ -31,7 +31,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class adds support for a CDAY style event repository with
@@ -63,6 +66,9 @@ public class Repository {
   /** events */
   private List events = new ArrayList();
   
+  /** libraries */
+  private Set libraries = new HashSet();
+  
   /** 
    * Singleton Accessor 
    */
@@ -79,6 +85,13 @@ public class Repository {
     // load what we can find
     new Thread(new Loader()).start();
     // done for now
+  }
+  
+  /**
+   * Accessor - libraries
+   */
+  public Set getLibraries() {
+    return libraries;
   }
   
   /**
@@ -155,7 +168,13 @@ public class Repository {
     synchronized (events) {
       // replace
       events.clear();
-      events.addAll(set);
+      libraries.clear();
+      Iterator it = set.iterator();
+      while (it.hasNext()) {
+        Event event = (Event)it.next();
+        events.add(event);
+        libraries.add(event.getLibrary());
+      }
 	    // sort them
       Collections.sort(events);
     }
@@ -238,18 +257,20 @@ public class Repository {
 		 */
 		private void load(File file, Charset charset) throws IOException {
 		  
+		  String lib = file.getName();
+		  
 		  // read its lines
 		  BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset));
-		  for (String line = in.readLine(); line!=null; line = in.readLine())
-		    load(line);
-		  
+		  for (String line = in.readLine(); line!=null; line = in.readLine()) 
+		    load(lib, line);
+		    
 		  // done
 		}
 		
 		/**
 		 * load one line
 		 */
-		private boolean load(String line) {
+		private boolean load(String lib, String line) {
 		  
 		  // check format (B|S)MMDDYYYY some event
 		  if (line.length()<11)
@@ -280,7 +301,7 @@ public class Repository {
 
 		  // instantiate
 		  try {
-		    result.add(new Event(birthday, new PointInTime(day-1, month-1, year), text)); 
+		    result.add(new Event(lib, birthday, new PointInTime(day-1, month-1, year), text)); 
 		  } catch (GedcomException e) {
 		    return false;
 		  }

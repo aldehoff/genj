@@ -29,12 +29,14 @@ import genj.util.WordBuffer;
  */
 public class Event implements Comparable {
   
+  private String lib;
   private PointInTime pit;
   private String text;
   private boolean isBirthday;
   
   /** constructor */
-  public Event(boolean setBirthday, PointInTime setTime, String setText) throws GedcomException {
+  public Event(String library, boolean setBirthday, PointInTime setTime, String setText) throws GedcomException {
+    lib = library;
     pit = setTime;
     isBirthday = setBirthday;
     text = setText;
@@ -58,6 +60,13 @@ public class Event implements Comparable {
   public int compareTo(Object o) {
     Event that = (Event)o;
     return this.pit.compareTo(that.pit);
+  }
+  
+  /**
+   * Accessor
+   */
+  public String getLibrary() {
+    return lib;
   }
   
   /**
