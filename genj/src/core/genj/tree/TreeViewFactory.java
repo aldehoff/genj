@@ -26,8 +26,6 @@ import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
-import java.awt.Dimension;
-
 import javax.swing.JComponent;
 
 /**
@@ -40,20 +38,6 @@ public class TreeViewFactory implements ViewFactory {
    */
   public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager) {
     return new TreeView(title, gedcom, registry, manager);
-  }
-
-//  /**
-//   * @see genj.app.ViewFactory#createPrintRenderer(Component)
-//   */
-//  public PrintRenderer createPrintRenderer(JComponent view) {
-//    return new TreePrintRenderer((TreeView)view);
-//  }
-
-  /**
-   * @see genj.view.ViewFactory#getDefaultDimension()
-   */
-  public Dimension getDefaultDimension() {
-    return new Dimension(480,480);
   }
 
   /**

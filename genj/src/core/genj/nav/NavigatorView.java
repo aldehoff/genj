@@ -34,6 +34,7 @@ import genj.view.ContextSupport;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
@@ -102,6 +103,13 @@ public class NavigatorView extends JPanel implements ContextSupport {
 
     // done    
 
+  }
+  
+  /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(140,200);
   }
 
   /**

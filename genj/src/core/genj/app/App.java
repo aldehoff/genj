@@ -31,7 +31,6 @@ import genj.util.Resources;
 import genj.window.DefaultWindowManager;
 import genj.window.WindowManager;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
@@ -147,7 +146,7 @@ public class App {
         // tell BlueprintManager
         BlueprintManager.getInstance().shutdown();
         // close all frames we know
-        winMgr.closeAllFrames();
+        winMgr.closeAll();
         // Store registry 
         Registry.saveToDisk();      
         // Flush Debug
@@ -156,7 +155,7 @@ public class App {
         System.exit(0);
       }
     };
-    winMgr.openFrame("cc", resources.getString("app.title"), Gedcom.getImage(), new Dimension(280,180), center, center.getMenuBar(), onClosing, onClose);
+    winMgr.openFrame("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), onClosing, onClose);
 
     // Done
   }

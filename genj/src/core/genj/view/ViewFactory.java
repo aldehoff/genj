@@ -23,8 +23,6 @@ import genj.gedcom.Gedcom;
 import genj.util.Registry;
 import genj.util.swing.ImageIcon;
 
-import java.awt.Dimension;
-
 import javax.swing.JComponent;
 
 /**
@@ -47,9 +45,4 @@ public interface ViewFactory {
    */
   public String getTitle(boolean abbreviate);
 
-  /**
-   * Returns the default size of the view
-   */
-  public Dimension getDefaultDimension();
-  
 } //ViewFactory

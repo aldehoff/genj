@@ -244,6 +244,13 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   }
   
   /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(480,480);
+  }
+
+  /**
    * @see java.awt.Container#doLayout()
    */
   public void doLayout() {

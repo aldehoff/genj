@@ -22,7 +22,6 @@ package genj.window;
 import genj.util.AreaInScreen;
 import genj.util.Registry;
 
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,7 +73,7 @@ public class LightweightWindowManager extends AbstractWindowManager {
     Runnable onClosing = new Runnable() {
       public void run() {}
     };
-    new DefaultWindowManager(registry).openFrame("desktop", "Desktop", null, null, desktop, null, onClosing, null);
+    new DefaultWindowManager(registry).openFrame("desktop", "Desktop", null, desktop, null, onClosing, null);
     // done
     return desktop; 
   }
@@ -82,17 +81,17 @@ public class LightweightWindowManager extends AbstractWindowManager {
   /**
    * @see genj.window.WindowManager#isFrame(java.lang.String)
    */
-  public boolean isFrame(String key) {
+  public boolean isOpen(String key) {
     return key2frame.containsKey(key);
   }
 
   /**
    * @see genj.window.WindowManager#createFrame
    */
-  public void openFrame(final String key, String title, ImageIcon image, Dimension dimension, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
+  public void openFrame(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
 
     // close if already open
-    closeFrame(key);
+    close(key);
 
     // Create a frame
     final JInternalFrame frame = new JInternalFrame(title, true, true, true, false);
@@ -129,10 +128,9 @@ public class LightweightWindowManager extends AbstractWindowManager {
 
     // place
     Rectangle box = registry.get(key,(Rectangle)null);
-    if ((box==null)&&(dimension!=null)) 
-      box = new Rectangle(0,0,dimension.width,dimension.height);
-    if (box==null) {
+    if (box==null) { 
       frame.pack();
+      frame.setBounds(new AreaInScreen(frame.getBounds()));
     } else {
       frame.setBounds(new AreaInScreen(box));
     }
@@ -148,14 +146,14 @@ public class LightweightWindowManager extends AbstractWindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent, java.lang.String[], javax.swing.JComponent, java.lang.Runnable, java.lang.Runnable)
    */
-  public int openDialog(String key, String title, Icon image, Dimension dimension, JComponent content, String[] options, JComponent owner, Runnable onClosing, Runnable onClose) {
+  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, JComponent owner, Runnable onClosing, Runnable onClose) {
     throw new IllegalArgumentException("n/a");
   }
   
   /**
    * @see genj.window.WindowManager#closeAllFrames()
    */
-  public void closeAllFrames() {
+  public void closeAll() {
     JInternalFrame[] frames = (JInternalFrame[])key2frame.values().toArray(new JInternalFrame[0]);
     for (int i = 0; i < frames.length; i++) {
     	frames[i].dispose();
@@ -165,7 +163,7 @@ public class LightweightWindowManager extends AbstractWindowManager {
   /**
    * @see genj.window.WindowManager#closeFrame(java.lang.String)
    */
-  public void closeFrame(String key) {
+  public void close(String key) {
     JInternalFrame frame = (JInternalFrame)key2frame.get(key);
     if (frame!=null) { 
       frame.dispose();

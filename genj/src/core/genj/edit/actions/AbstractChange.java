@@ -116,11 +116,11 @@ import javax.swing.JTextArea;
 
     // Recheck with the user
     int rc = manager.getWindowManager().openDialog(
-      getClass().getName(), null, WindowManager.IMG_QUESTION, null, 
-      options, 
+      getClass().getName(), null, WindowManager.IMG_QUESTION, options, 
       new String[] { resources.getString("confirm.proceed", txt ), WindowManager.OPTION_CANCEL }, 
       target, 
-      null, null
+      null, 
+      null
     );
     if (rc!=0)
       return;

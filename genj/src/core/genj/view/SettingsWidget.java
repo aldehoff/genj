@@ -120,7 +120,7 @@ import javax.swing.border.TitledBorder;
       setText("view.close");
     }
     protected void execute() {
-      viewManager.getWindowManager().closeFrame("settings");
+      viewManager.getWindowManager().close("settings");
     }
   } //ActionClose
   
@@ -158,7 +158,7 @@ import javax.swing.border.TitledBorder;
   /**
    * Gets settings for given view
    */
-  /*package*/ static Settings getSettings(JComponent view) {
+  /*package*/ Settings getSettings(JComponent view) {
     
     // known?
     Class viewType = view.getClass(); 
@@ -168,6 +168,7 @@ import javax.swing.border.TitledBorder;
     // create
     try {
       result = (Settings)Class.forName(viewType.getName()+"Settings").newInstance();
+      result.init(viewManager);
       cache.put(viewType, result);
     } catch (Throwable t) {
     }

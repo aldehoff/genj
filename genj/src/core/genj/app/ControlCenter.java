@@ -59,7 +59,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -113,6 +112,13 @@ public class ControlCenter extends JPanel {
       (Runnable) new ActionLoadLastOpen().as(Runnable.class));
 
     // Done
+  }
+  
+  /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(280,180);
   }
 
   /**
@@ -280,9 +286,9 @@ public class ControlCenter extends JPanel {
         "about",
         resources.getString("cc.menu.about"),
         Gedcom.getImage(),
-        null,
-        new AboutWidget(viewManager), null,
-        null, null
+        new AboutWidget(viewManager),
+        null, null,
+        null
       );
       // done      
     }
@@ -303,9 +309,9 @@ public class ControlCenter extends JPanel {
         "help",
         resources.getString("cc.menu.help"),
         Images.imgHelp,
-        new Dimension(640, 480),
-        new HelpWidget(), null,
-        null, null
+        new HelpWidget(),
+        null, null,
+        null
       );
       // done
     }
@@ -349,7 +355,7 @@ public class ControlCenter extends JPanel {
       }
 
       // Tell it to the app
-      windowManager.closeAllFrames();
+      windowManager.closeAll();
 
       // Done
     }
@@ -441,11 +447,13 @@ public class ControlCenter extends JPanel {
         if (reader!=null) {
           List warnings = reader.getWarnings();
           if (!warnings.isEmpty()) {
-            JOptionPane.showMessageDialog(
-              target,
+            windowManager.openDialog(
+              null,
+              origin.getName(),
+              WindowManager.IMG_WARNING,
               new JScrollPane(new JList(warnings.toArray())),
-              "Warnings",
-              JOptionPane.WARNING_MESSAGE
+              WindowManager.OPTIONS_OK,
+              ControlCenter.this
             );
           }
         }
@@ -511,13 +519,15 @@ public class ControlCenter extends JPanel {
       if (file == null)
         return;
       if (file.exists()) {
-        int rc =
-          JOptionPane.showConfirmDialog(
-            ControlCenter.this,
-            resources.getString("cc.open.file_exists", file.getName()),
-            resources.getString("cc.create.title"),
-            JOptionPane.YES_NO_OPTION);
-        if (rc == JOptionPane.NO_OPTION)
+        int rc = windowManager.openDialog(
+          null,
+          resources.getString("cc.create.title"),
+          WindowManager.IMG_WARNING,
+          resources.getString("cc.open.file_exists", file.getName()),
+          WindowManager.OPTIONS_YES_NO,
+          ControlCenter.this
+        );
+        if (rc!=0)
           return;
       }
       // form the origin
@@ -572,7 +582,6 @@ public class ControlCenter extends JPanel {
         null, 
         resources.getString("cc.open.title"), 
         WindowManager.IMG_QUESTION,
-        null,
         box,
         WindowManager.OPTIONS_OK_CANCEL,
         ControlCenter.this
@@ -783,14 +792,15 @@ public class ControlCenter extends JPanel {
 
         // aks user
         if (ask) {
-          int rc =
-            JOptionPane.showConfirmDialog(
-              ControlCenter.this,
-              resources.getString("cc.open.file_exists", file.getName()),
-              resources.getString("cc.save.title"),
-              JOptionPane.YES_NO_OPTION);
-  
-          if (rc == JOptionPane.NO_OPTION) {
+          int rc = windowManager.openDialog(
+            null,
+            resources.getString("cc.save.title"),
+            WindowManager.IMG_WARNING,
+            resources.getString("cc.open.file_exists", file.getName()),
+            WindowManager.OPTIONS_YES_NO,
+            ControlCenter.this
+          );
+          if (rc!=0) {
             newOrigin = null;
             //20030221 no need to go for newOrigin in postExecute()
             return false;

@@ -146,7 +146,6 @@ public class PrintManager {
         "print",
         resources.getString("dlg.title", title),
         WindowManager.IMG_QUESTION,
-        null,
         widget,
         new String[]{ resources.getString("dlg.label.print"), UIManager.getString("OptionPane.cancelButtonText")},
         owner,

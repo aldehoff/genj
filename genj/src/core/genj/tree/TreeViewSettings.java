@@ -29,6 +29,7 @@ import genj.util.swing.FontChooser;
 import genj.util.swing.ListWidget;
 import genj.util.swing.SpinnerWidget;
 import genj.view.Settings;
+import genj.view.ViewManager;
 
 import java.awt.Container;
 import java.text.NumberFormat;
@@ -89,8 +90,9 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
 
 
   /**
-   * Constructor   */
-  public TreeViewSettings() {
+   * @see genj.view.Settings#init(genj.view.ViewManager)
+   */
+  public void init(ViewManager manager) {
     
     // panel for checkbox options    
     Box options = new Box(BoxLayout.Y_AXIS);
@@ -116,7 +118,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     colors = new ColorChooser();
     
     // blueprint options
-    blueprintList = new BlueprintList();
+    blueprintList = new BlueprintList(manager.getWindowManager());
     
     // bookmarks
     Box bookmarks = new Box(BoxLayout.Y_AXIS);
@@ -180,7 +182,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
   }
   
   /**
-   * @see genj.view.Settings#setView(javax.swing.JComponent)
+   * @see genj.view.Settings#setView(javax.swing.JComponent, genj.view.ViewManager)
    */
   public void setView(JComponent viEw) {
     // stop listening to old?

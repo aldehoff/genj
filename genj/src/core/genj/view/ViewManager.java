@@ -31,7 +31,6 @@ import genj.util.Resources;
 import genj.util.swing.MenuHelper;
 import genj.window.WindowManager;
 
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.lang.reflect.Array;
@@ -215,9 +214,9 @@ public class ViewManager {
         "settings", 
         resources.getString("view.edit.title"),
         Images.imgSettings,
-        new Dimension(256,480),
-        settings, null, 
-        null, null
+        settings,
+        null, null, 
+        null
       );
     } else {
       settings.setViewWidget(viewWidget);
@@ -236,7 +235,7 @@ public class ViewManager {
     String name = origin.getFileName();
     int number;
     for (number=1;;number++) {
-      if (!windowManager.isFrame(name+"."+nameOfView+"."+number)) {
+      if (!windowManager.isOpen(name+"."+nameOfView+"."+number)) {
         break;
       }
     }
@@ -350,7 +349,7 @@ public class ViewManager {
     Runnable onClose = new Runnable() {
       public void run() {
         // close property editor if open and showing settings
-        windowManager.closeFrame("settings");
+        windowManager.close("settings");
         // 20021017 @see note at the bottom of file
         MenuSelectionManager.defaultManager().clearSelectedPath();
         // forget about it
@@ -364,9 +363,9 @@ public class ViewManager {
       key, 
       title, 
       factory.getImage(),
-      factory.getDefaultDimension(),
-      viewWidget, null,
-      null, onClose
+      viewWidget,
+      null, null,
+      onClose
     );
         
     // done
@@ -382,7 +381,7 @@ public class ViewManager {
     while (it.hasNext()) {
       ViewWidget vw = (ViewWidget)it.next();
       if (vw.getGedcom()==gedcom) 
-        windowManager.closeFrame(vw.getKey());
+        windowManager.close(vw.getKey());
     }
     
     // remove its key from gedcom2current

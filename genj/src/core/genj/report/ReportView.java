@@ -162,6 +162,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
   }
 
   /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(480,320);
+  }
+
+  /**
    * Adds a line of ouput
    */
   public void addOutput(String line) {

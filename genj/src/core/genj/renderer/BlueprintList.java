@@ -24,6 +24,7 @@ import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.HeadlessLabel;
+import genj.window.WindowManager;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -33,7 +34,6 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -55,7 +55,7 @@ public class BlueprintList extends JSplitPane {
   private Blueprint[] selection = new Blueprint[Gedcom.NUM_TYPES];
   
   /** we keep one editor */
-  private BlueprintEditor editor = new BlueprintEditor();
+  private BlueprintEditor editor;
 
   /** tree of blueprints */
   private JTree treeBlueprints;
@@ -72,9 +72,18 @@ public class BlueprintList extends JSplitPane {
   /** a reference to the BlueprintManager */
   private final static BlueprintManager bpManager = BlueprintManager.getInstance();
   
+  /** the window manager */
+  private WindowManager windowManager;
+  
   /**
    * Constructor   */
-  public BlueprintList() {
+  public BlueprintList(WindowManager winMgr) {
+    
+    // remember
+    windowManager = winMgr;
+    
+    // create editor
+    editor = new BlueprintEditor(windowManager);
     
     // prepare tree
     Callback glue = new Callback();
@@ -144,12 +153,15 @@ public class BlueprintList extends JSplitPane {
       if (path==null) return;
       Node node = (Node)path.getLastPathComponent();
       // get name
-      String name = JOptionPane.showInputDialog(
-        BlueprintList.this,
+      String name = windowManager.openDialog(
+        null,
+        null,
+        WindowManager.IMG_QUESTION,
         resources.getString("blueprint.add.confirm"),
         "",
-        JOptionPane.OK_CANCEL_OPTION
+        BlueprintList.this
       );
+      if (name==null||name.length()==0) return;
       // get html
       String html = node.blueprint!=null?node.blueprint.getHTML():"";
       // add it
@@ -187,13 +199,15 @@ public class BlueprintList extends JSplitPane {
       if (node.blueprint==null) return;
       // confirm
       Blueprint blueprint = node.blueprint;
-      int rc = JOptionPane.showConfirmDialog(
-        BlueprintList.this, 
+      int rc = windowManager.openDialog(
+        null,
+        null,
+        WindowManager.IMG_QUESTION,
         resources.getString("blueprint.del.confirm", blueprint.getName()),
-        "",
-        JOptionPane.YES_NO_OPTION
-      );
-      if (rc!=JOptionPane.YES_OPTION) return;
+        WindowManager.OPTIONS_OK_CANCEL,
+        BlueprintList.this        
+      ); 
+      if (rc!=0) return;
       // update selection with default
       int type = bpManager.getType(blueprint);
       selection[type] = bpManager.getBlueprint(type, "");

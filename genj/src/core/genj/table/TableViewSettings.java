@@ -30,6 +30,8 @@ import genj.util.GridBagHelper;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.Settings;
+import genj.view.ViewManager;
+
 import java.awt.event.ActionListener;
 
 import javax.swing.AbstractButton;
@@ -51,9 +53,9 @@ public class TableViewSettings extends JPanel implements Settings {
   private Resources       resources = Resources.get(this);
 
   /**
-   * Creates the visual parts of the editor
+   * @see genj.view.Settings#init(genj.view.ViewManager)
    */
-  public TableViewSettings() {
+  public void init(ViewManager manager) {
 
     // Create!
     GridBagHelper gh = new GridBagHelper(this);
@@ -107,7 +109,7 @@ public class TableViewSettings extends JPanel implements Settings {
   }
   
   /**
-   * @see genj.view.Settings#setView(javax.swing.JComponent)
+   * @see genj.view.Settings#setView(javax.swing.JComponent, genj.view.ViewManager)
    */
   public void setView(JComponent view) {
     // remember

@@ -27,7 +27,6 @@ import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -128,9 +127,7 @@ import javax.swing.SwingConstants;
     bh.create(new ActionClose());
 
     // add it
-    Dimension dim = factory.getDefaultDimension();
-    String defaultOrientation = dim.width<dim.height ? BorderLayout.WEST : BorderLayout.SOUTH;
-    add(bar, registry.get("toolbar", defaultOrientation));
+    add(bar, registry.get("toolbar", BorderLayout.WEST));
     
     // done
   }
@@ -222,7 +219,7 @@ import javax.swing.SwingConstants;
     }
     /** run */
     protected void execute() {
-      manager.getWindowManager().closeFrame(key); 
+      manager.getWindowManager().close(key); 
     }
   } //ActionClose
   

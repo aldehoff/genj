@@ -40,6 +40,7 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -120,6 +121,13 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     add(new JScrollPane(table), BorderLayout.CENTER);
     
     // done
+  }
+  
+  /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(480,320);
   }
   
   /**

@@ -169,11 +169,11 @@ public class ReportBridge {
       null, 
       report.getName(), 
       WindowManager.IMG_QUESTION,
-      null,
       choice,
       WindowManager.OPTIONS_OK_CANCEL,
       view,
-      null,null
+      null,
+      null
     );
     
     return rc==0 ? choice.getSelectedItem() : null;
@@ -203,11 +203,11 @@ public class ReportBridge {
       null, 
       "Report Input", 
       WindowManager.IMG_QUESTION,
-      null,
       choice,
       WindowManager.OPTIONS_OK_CANCEL,
       view,
-      null,null
+      null,
+      null
     );
     
     String result = rc==0 ? choice.getText() : null;

@@ -25,8 +25,6 @@ import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
-import java.awt.Dimension;
-
 import javax.swing.JComponent;
 
 /**
@@ -41,13 +39,6 @@ public class EntityViewFactory implements ViewFactory {
     return new EntityView(title, gedcom, registry, manager);
   }
 
-  /**
-   * @see genj.view.ViewFactory#getDefaultDimension()
-   */
-  public Dimension getDefaultDimension() {
-    return new Dimension(320,320);
-  }
-  
   /**
    * @see genj.view.ViewFactory#getImage()
    */

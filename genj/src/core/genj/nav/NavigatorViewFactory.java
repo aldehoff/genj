@@ -26,8 +26,6 @@ import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
-import java.awt.Dimension;
-
 import javax.swing.JComponent;
 
 /**
@@ -42,13 +40,6 @@ public class NavigatorViewFactory implements ViewFactory {
     return new NavigatorView(title,gedcom,registry,manager);
   }
   
-  /**
-   * @see genj.view.ViewFactory#getDefaultDimension()
-   */
-  public Dimension getDefaultDimension() {
-    return new Dimension(140,200);
-  }
-
   /**
    * @see genj.view.ViewFactory#getImage()
    */

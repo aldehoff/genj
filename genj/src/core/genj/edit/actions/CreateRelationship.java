@@ -24,13 +24,13 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Relationship;
 import genj.view.ViewManager;
+import genj.window.WindowManager;
 
 import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 
 /**
  * Add an entity via relationship (new or existing) 
@@ -65,12 +65,15 @@ public class CreateRelationship extends AbstractChange {
       String[] names = new String[types.length];
       for (int n=0;n<types.length;n++) names[n] = Gedcom.getNameFor(types[n], false);
       // show dialog
-      int choice = JOptionPane.showOptionDialog(
-        target, relationship, relationship.getName(),
-        JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-        names, names[0]
+      int choice = manager.getWindowManager().openDialog(
+        null,
+        relationship.getName(),
+        WindowManager.IMG_QUESTION,
+        relationship.toString(),
+        names,
+        target
       );
-      if (choice==JOptionPane.CLOSED_OPTION) return;
+      if (choice<0) return;
       // set targetType
       targetType = types[choice];
     } else {

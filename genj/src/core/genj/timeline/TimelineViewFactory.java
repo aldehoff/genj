@@ -26,8 +26,6 @@ import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
-import java.awt.Dimension;
-
 import javax.swing.JComponent;
 
 /**
@@ -42,13 +40,6 @@ public class TimelineViewFactory implements ViewFactory {
     return new TimelineView(title,gedcom,registry,manager);
   }
   
-  /**
-   * @see genj.view.ViewFactory#getDefaultDimension()
-   */
-  public Dimension getDefaultDimension() {
-    return new Dimension(480,256);
-  }
-
   /**
    * @see genj.view.ViewFactory#getImage()
    */

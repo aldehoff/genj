@@ -32,6 +32,7 @@ import genj.util.swing.ButtonHelper;
 import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -41,7 +42,7 @@ import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -217,6 +218,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   }
   
   /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(256,480);
+  }
+  
+  /**
    * returns the currently viewed entity
    */
   /*package*/ Entity getCurrentEntity() {
@@ -387,25 +395,21 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       Property prop = (Property)path.getLastPathComponent();
   
       // .. Confirm
+      JLabel label = new JLabel(resources.getString("add.choose"));
       ChoosePropertyBean choose = new ChoosePropertyBean(prop, resources);
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
-      Object[] message = new Object[3];
-      message[0] = resources.getString("add.choose");
-      message[1] = choose;
-      message[2] = check;
-  
-      int option = JOptionPane.showOptionDialog(
-        EditView.this,
-        message,
+      int option = manager.getWindowManager().openDialog(
+        null, 
         resources.getString("add.title"),
-        JOptionPane.OK_CANCEL_OPTION,
-        JOptionPane.QUESTION_MESSAGE,
-        null, null, null
-      );
-  
+        WindowManager.IMG_QUESTION,
+        new JComponent[]{ label, choose, check },
+        WindowManager.OPTIONS_OK_CANCEL,
+        EditView.this 
+      ); 
+      
       // .. OK or Cancel ?
-      if (option != JOptionPane.OK_OPTION) {
+      if (option!=0) {
         startEdit(false);
         return;
       }
@@ -414,11 +418,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       Property[] props = choose.getResultingProperties();
   
       if ( (props==null) || (props.length==0) ) {
-        JOptionPane.showMessageDialog(
-          EditView.this,
+        manager.getWindowManager().openDialog(
+          null,
+          null,
+          WindowManager.IMG_ERROR,
           resources.getString("add.must_enter"),
-          resources.getString("error"),
-          JOptionPane.ERROR_MESSAGE
+          WindowManager.OPTIONS_OK,
+          EditView.this
         );
         return;
       }

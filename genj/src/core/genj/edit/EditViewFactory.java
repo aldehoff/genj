@@ -43,7 +43,6 @@ import genj.view.ActionSupport;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -65,13 +64,6 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     return new EditView(title, gedcom, registry, manager);
   }
 
-  /**
-   * @see genj.view.ViewFactory#getDefaultDimension()
-   */
-  public Dimension getDefaultDimension() {
-    return new Dimension(256,480);
-  }
-  
   /**
    * @see genj.view.ViewFactory#getImage()
    */

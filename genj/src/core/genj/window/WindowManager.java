@@ -19,7 +19,6 @@
  */
 package genj.window;
 
-import java.awt.Dimension;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -53,24 +52,26 @@ public interface WindowManager {
     OPTIONS_OK_CANCEL = new String[]{ OPTION_OK, OPTION_CANCEL },
     OPTIONS_OK        = new String[]{ OPTION_OK };
     
-  public void openFrame(String key, String title, ImageIcon image, Dimension dimension, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose);
+  public void openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose);
   
-  public int openDialog(String key, String title, Icon image, Dimension dimension, JComponent content, String[] options, JComponent owner, Runnable onClosing, Runnable onClose);
+  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, JComponent owner, Runnable onClosing, Runnable onClose);
 
-  public int openDialog(String key, String title, Icon image, Dimension dimension, JComponent content, String[] options, JComponent owner);
+  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, JComponent owner);
+
+  public int openDialog(String key, String title, Icon image, JComponent[] content, String[] options, JComponent owner);
 
   public int openDialog(String key, String title, Icon img, String txt, String[] options, JComponent owner);
   
   public String openDialog(String key, String title, Icon img, String txt, String value, JComponent owner);
   
-  public void closeFrame(String key);
+  public void close(String key);
 
-  public void closeAllFrames();
+  public void closeAll();
   
   public List getRootComponents();
   
   public JComponent getRootComponent(String key);
   
-  public boolean isFrame(String key);
+  public boolean isOpen(String key);
 
 } //WindowManager

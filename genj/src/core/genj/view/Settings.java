@@ -26,7 +26,12 @@ import javax.swing.JComponent;
 public interface Settings {
   
   /**
-   * sets the view to look at   */
+   * initializes the setting (once)
+   */
+  public void init(ViewManager manager);
+
+  /**
+   * sets the view to look at (many)   */
   public void setView(JComponent view);
   
   /**

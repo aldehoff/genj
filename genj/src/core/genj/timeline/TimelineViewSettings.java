@@ -26,6 +26,7 @@ import genj.util.Resources;
 import genj.util.swing.ColorChooser;
 import genj.util.swing.SpinnerWidget;
 import genj.view.Settings;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 
@@ -77,9 +78,9 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   private ColorChooser colorChooser;
     
   /**
-   * Constructor
+   * @see genj.view.Settings#init(genj.view.ViewManager)
    */
-  public TimelineViewSettings() {
+  public void init(ViewManager manager) {
     
     // panel for checkbox options    
     Box panelOptions = new Box(BoxLayout.Y_AXIS);
@@ -134,7 +135,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   }
   
   /**
-   * @see genj.view.Settings#setView(javax.swing.JComponent)
+   * @see genj.view.Settings#setView(javax.swing.JComponent, genj.view.ViewManager)
    */
   public void setView(JComponent viEw) {
     // remember

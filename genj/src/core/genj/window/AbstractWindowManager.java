@@ -45,7 +45,7 @@ import javax.swing.SwingConstants;
 public abstract class AbstractWindowManager implements WindowManager {
 
   /**
-   * convenient shortcut
+   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String[], javax.swing.JComponent)
    */
   public int openDialog(String key, String title, Icon img, String txt, String[] options, JComponent owner) {
 
@@ -67,28 +67,44 @@ public abstract class AbstractWindowManager implements WindowManager {
 //      content = new JLabel(txt);
 //    }
     
-    return openDialog(key, title, img, null, content, options, owner, null, null);
+    return openDialog(key, title, img, content, options, owner, null, null);
   }
+  
+  /**
+   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent[], java.lang.String[], javax.swing.JComponent)
+   */
+  public int openDialog(String key, String title, Icon image, JComponent[] content, String[] options, JComponent owner) {
+    // assemble content into Box
+    Box box = new Box(BoxLayout.Y_AXIS);
+    for (int i = 0; i < content.length; i++) {
+      box.add(content[i]);
+      content[i].setAlignmentX(0F);
+    }
+    // delegate
+    return openDialog(key, title, image, box, options, owner);
+  }
+
   
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent, java.lang.String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title, Icon image, Dimension dimension, JComponent content, String[] options, JComponent owner) {
-    return openDialog(key, title, image, dimension, content, options, owner, null, null);
+  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, JComponent owner) {
+    return openDialog(key, title, image, content, options, owner, null, null);
   }
   
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String, javax.swing.JComponent)
    */
   public String openDialog(String key, String title, Icon img, String txt, String value, JComponent owner) {
-    
-    TextFieldWidget tf = new TextFieldWidget(value, 24);
-    Box box = new Box(BoxLayout.Y_AXIS);
-    box.add(new JLabel(txt));
-    box.add(tf);
 
-    int rc = openDialog(key, title, img, null, box, OPTIONS_OK_CANCEL, owner);      
+    // prepare text field and label
+    TextFieldWidget tf = new TextFieldWidget(value, 24);
+    JLabel lb = new JLabel(txt);
     
+    // delegate
+    int rc = openDialog(key, title, img, new JComponent[]{ lb, tf}, OPTIONS_OK_CANCEL, owner);
+    
+    // analyze
     return rc==0?tf.getText().trim():null;
   }
 

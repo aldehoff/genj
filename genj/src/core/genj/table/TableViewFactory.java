@@ -26,8 +26,6 @@ import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
-import java.awt.Dimension;
-
 import javax.swing.JComponent;
 
 /**
@@ -49,13 +47,6 @@ public class TableViewFactory implements ViewFactory {
     return new ImageIcon(this, "images/View.gif");
   }
   
-  /**
-   * @see genj.view.ViewFactory#getDefaultDimension()
-   */
-  public Dimension getDefaultDimension() {
-    return new Dimension(480,320);
-  }
-
   /**
    * @see genj.view.ViewFactory#getName(boolean)
    */

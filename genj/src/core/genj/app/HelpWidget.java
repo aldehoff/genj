@@ -22,6 +22,7 @@ package genj.app;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.io.File;
@@ -29,12 +30,10 @@ import java.net.URL;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 /**
  * A bridge to javax Help System
@@ -78,7 +77,7 @@ class HelpWidget extends JPanel {
     if (pCenter==null) {
       pCenter = new JLabel(
         Resources.get(this).getString("cc.help.help_file_missing"),
-        (Icon)UIManager.get( "OptionPane.errorIcon"),
+        WindowManager.IMG_ERROR,
         SwingConstants.CENTER
       );
     }

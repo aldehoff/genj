@@ -23,7 +23,6 @@ import genj.util.ActionDelegate;
 import genj.util.AreaInScreen;
 import genj.util.Registry;
 
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -53,6 +52,9 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /** open frames */
   private Map key2frame = new HashMap();
 
+  /** open dialogs */
+  private Map key2dlg = new HashMap();
+
   /** 
    * Constructor
    */
@@ -61,19 +63,12 @@ public class DefaultWindowManager extends AbstractWindowManager {
   }
   
   /**
-   * @see genj.window.WindowManager#isFrame(java.lang.String)
-   */
-  public boolean isFrame(String key) {
-    return key2frame.containsKey(key);
-  }
-
-  /**
    * @see genj.window.WindowManager#createFrame
    */
-  public void openFrame(final String key, String title, ImageIcon image, Dimension dimension, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
+  public void openFrame(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
 
     // close if already open
-    closeFrame(key);
+    close(key);
 
     // Create a frame
     final JFrame frame = new JFrame();
@@ -114,11 +109,8 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // place
     Rectangle box = registry.get(key,(Rectangle)null);
     if (box==null) {
-      if (dimension==null) {
-        frame.pack();
-        dimension = frame.getSize();
-      }
-      frame.setBounds(new AreaInScreen(dimension));
+      frame.pack();
+      frame.setBounds(new AreaInScreen(frame.getSize()));
     } else {
       frame.setBounds(new AreaInScreen(box));
     }
@@ -132,7 +124,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent)
    */
-  public int openDialog(final String key, String title, Icon image, Dimension dimension, JComponent content, String[] options, JComponent owner, final Runnable onClosing, final Runnable onClose) {
+  public int openDialog(final String key, String title, Icon image, JComponent content, String[] options, JComponent owner, final Runnable onClosing, final Runnable onClose) {
 
     // Create a dialog 
     final JDialog dlg = new JOptionPane().createDialog(owner, title);
@@ -169,7 +161,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
 
     // remember
     if (key!=null)
-      key2frame.put(key, dlg);
+      key2dlg.put(key, dlg);
 
     // prepare to forget
     dlg.addWindowListener(new WindowAdapter() {
@@ -182,7 +174,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
       public void windowClosed(WindowEvent e) {
         if (key!=null) {
           registry.put(key, dlg.getBounds());
-          key2frame.remove(key);
+          key2dlg.remove(key);
         }
         if (onClose!=null) onClose.run();
       }
@@ -191,11 +183,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // place
     Rectangle box = key!=null ? registry.get(key,(Rectangle)null) : null;
     if (box==null) {
-      if (dimension!=null) {
-        dlg.setSize(dimension);
-      } else {
-        dlg.pack();
-      }
+      dlg.pack();
       dlg.setLocationRelativeTo(owner);
       dlg.setBounds(new AreaInScreen(dlg.getBounds()));
     } else {
@@ -213,24 +201,41 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // done    
     return -1;
   }
+
+  /**
+   * @see genj.window.WindowManager#isFrame(java.lang.String)
+   */
+  public boolean isOpen(String key) {
+    return key2frame.containsKey(key) || key2dlg.containsKey(key);
+  }
   
   /**
    * @see genj.window.WindowManager#closeAllFrames()
    */
-  public void closeAllFrames() {
+  public void closeAll() {
     JFrame[] frames = (JFrame[])key2frame.values().toArray(new JFrame[0]);
     for (int i = 0; i < frames.length; i++) {
     	frames[i].dispose();
+    }
+    JDialog[] dlgs = (JDialog[])key2dlg.values().toArray(new JDialog[0]);
+    for (int i = 0; i < dlgs.length; i++) {
+      dlgs[i].dispose();
     }
   }
   
   /**
    * @see genj.window.WindowManager#closeFrame(java.lang.String)
    */
-  public void closeFrame(String key) {
+  public void close(String key) {
     JFrame frame = (JFrame)key2frame.get(key);
     if (frame!=null) { 
       frame.dispose();
+      return;
+    }
+    JDialog dlg = (JDialog)key2dlg.get(key);
+    if (dlg!=null) {
+      dlg.dispose();
+      return;
     }
   }
   
@@ -239,11 +244,12 @@ public class DefaultWindowManager extends AbstractWindowManager {
    */
   public List getRootComponents() {
     List result = new ArrayList();
-    Iterator frames = key2frame.values().iterator();
-    while (frames.hasNext()) {
-      JFrame frame = (JFrame)frames.next();
-      result.add(frame.getContentPane());   
-    }
+    Iterator frames = key2frame.keySet().iterator();
+    while (frames.hasNext()) 
+      result.add(getRootComponent(frames.next().toString()));
+    Iterator dlgs = key2dlg.keySet().iterator();
+    while (dlgs.hasNext())
+      result.add(getRootComponent(dlgs.next().toString()));
     return result;
   }
   
@@ -252,7 +258,12 @@ public class DefaultWindowManager extends AbstractWindowManager {
    */
   public JComponent getRootComponent(String key) {
     JFrame frame = (JFrame)key2frame.get(key);
-    return frame!=null ? (JComponent)frame.getContentPane().getComponent(0) : null;
+    if (frame!=null) 
+      return (JComponent)frame.getContentPane().getComponent(0);
+    JDialog dlg = (JDialog)key2dlg.get(key);
+    if (dlg!=null) 
+      return (JComponent)dlg.getContentPane().getComponent(0);
+    return null;
   }
 
 } //DefaultWindowManager

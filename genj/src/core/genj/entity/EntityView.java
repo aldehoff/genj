@@ -34,6 +34,7 @@ import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -76,11 +77,15 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
   /** whether we do antialiasing */
   private boolean isAntialiasing = false;
   
+  /** the view manager */
+  /*package*/ ViewManager viewManager;
+  
   /**
    * Constructor
    */
   public EntityView(String title, Gedcom ged, Registry reg, ViewManager manager) {
     // save some stuff
+    viewManager = manager;
     registry = reg;
     gedcom = ged;
     // listen to gedcom
@@ -96,6 +101,13 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
     // done    
   }
   
+  /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(256,160);
+  }
+
   /**
    * @see javax.swing.JComponent#removeNotify()
    */

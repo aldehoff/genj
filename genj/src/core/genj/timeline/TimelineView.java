@@ -211,6 +211,13 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
   }
   
   /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(480,256);
+  }
+  
+  /**
    * Accessor - the model
    */
   public Model getModel() {

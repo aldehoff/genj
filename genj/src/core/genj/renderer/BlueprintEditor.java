@@ -28,6 +28,7 @@ import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -42,7 +43,6 @@ import java.util.Map;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -77,10 +77,15 @@ public class BlueprintEditor extends JSplitPane {
   
   /** whether we've changed */
   private boolean isChanged = false;
+  
+  /** the window manager */
+  private WindowManager windowManager;
     
   /**
    * Constructor   */
-  public BlueprintEditor() { 
+  public BlueprintEditor(WindowManager winMgr) { 
+    // remember
+    windowManager = winMgr;
     // preview
     preview = new Preview();
     preview.setBorder(BorderFactory.createTitledBorder(resources.getString("blueprint.preview")));
@@ -226,11 +231,16 @@ public class BlueprintEditor extends JSplitPane {
       TagPath[] paths = TagPath.filter(MetaProperty.getPaths(Property.class), BlueprintManager.getInstance().getType(blueprint));
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
-      int option = JOptionPane.showConfirmDialog(
-        BlueprintEditor.this, tree, resources.getString("prop.insert.tip"), JOptionPane.OK_CANCEL_OPTION
-      );
+      int option =  windowManager.openDialog(
+        null,
+        resources.getString("prop.insert.tip"),
+        WindowManager.IMG_QUESTION,
+        tree,
+        WindowManager.OPTIONS_OK_CANCEL, 
+        BlueprintEditor.this
+      );        
       // .. OK?
-      if (option != JOptionPane.OK_OPTION) return;
+      if (option!=0) return;
       // add those properties
       paths = tree.getSelection();
       for (int p=0;p<paths.length; p++) {

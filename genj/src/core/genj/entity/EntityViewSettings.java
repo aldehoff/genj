@@ -21,6 +21,7 @@ package genj.entity;
 
 import genj.renderer.BlueprintList;
 import genj.view.Settings;
+import genj.view.ViewManager;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -43,11 +44,11 @@ public class EntityViewSettings extends JTabbedPane implements Settings {
   /** Checkboxes */
   private JCheckBox 
     checkAntialiasing = new JCheckBox(EntityView.resources.getString("antialiasing" ));
-  
+
   /**
-   * Constructor
+   * @see genj.view.Settings#init(genj.view.ViewManager)
    */
-  public EntityViewSettings() {
+  public void init(ViewManager manager) {
     
     // main options
     Box main = new Box(BoxLayout.Y_AXIS);
@@ -56,7 +57,7 @@ public class EntityViewSettings extends JTabbedPane implements Settings {
     main.add(checkAntialiasing);
     
     // blueprint options
-    blueprintList = new BlueprintList();
+    blueprintList = new BlueprintList(manager.getWindowManager());
     
     // add those tabs
     add(entityView.resources.getString("page.main")      , main);
@@ -65,8 +66,9 @@ public class EntityViewSettings extends JTabbedPane implements Settings {
     // done
   }
   
+  
   /**
-   * @see genj.view.Settings#setView(javax.swing.JComponent)
+   * @see genj.view.Settings#setView(javax.swing.JComponent, genj.view.ViewManager)
    */
   public void setView(JComponent view) {
 
