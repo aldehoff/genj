@@ -86,7 +86,7 @@ public class SortableTableHeader extends JTableHeader {
     /** arrow design */
     private int[] 
       xs = new int[]{ 0,+3,-3}, 
-      ya = new int[]{-3,+3,+3},
+      ya = new int[]{-4,+3,+3},
       yd = new int[]{+3,-3,-3};
     
     /** keeper of the column */
