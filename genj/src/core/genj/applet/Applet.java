@@ -177,10 +177,10 @@ public class Applet extends java.applet.Applet {
           registry = new Registry();
         }
         
-        // FIXME need password question trigger from applet parameters if applicable 
-        
         // the gedcom file
-        reader = new GedcomReader(origin); 
+        reader = new GedcomReader(origin);
+        reader.setPassword(Gedcom.PASSWORD_UNKNOWN);
+         
         gedcom = reader.read();
         Thread.currentThread().sleep(100);
         
