@@ -347,9 +347,6 @@ public class EntityRenderer {
     /** the tag path used */
     private TagPath path = null;
     
-    /** maximum horizontal/vertical */
-    private int maxV = 0, maxH = 0;
-     
     /** the cached property we're displaying */
     private Object property = null;
     
@@ -361,6 +358,9 @@ public class EntityRenderer {
     
     /** the cached preferred span */
     private Dimension preferredSpan = null;
+    
+    /** minimum percentage of the rendering space */
+    private int min;
     
     /** 
      * Constructor
@@ -396,9 +396,8 @@ public class EntityRenderer {
           preference = PropertyProxy.PREFER_IMAGE;
       }
       
-      // check max size
-      maxH = getInt(atts, "maxh", 0, 100, 75);
-      maxV = getInt(atts, "maxv", 0, 100, 75);
+      // minimum?
+      min = getInt(atts, "min", 1, 100, 1);
       
       // done
     }
@@ -500,16 +499,22 @@ public class EntityRenderer {
       // check cached preferred Spane
       if (preferredSpan==null) {
         preferredSpan = proxy.getSize(getFontMetrics(), p, preference);
-        preferredSpan.width = Math.min(
-          (int)(root.width  * maxH / 100),
-          preferredSpan.width
-        );  
-        preferredSpan.height = Math.min(
-          (int)(root.height * maxV / 100),
-          preferredSpan.height
-        );  
       }
       return axis==X_AXIS ? preferredSpan.width : preferredSpan.height;
+    }
+    /**
+     * @see javax.swing.text.View#getMinimumSpan(int)
+     */
+    public float getMinimumSpan(int axis) {
+      float pref = getPreferredSpan(axis);
+      if (axis==Y_AXIS) return pref;
+      return Math.min(pref, root.width*min/100);
+    }
+    /**
+     * @see javax.swing.text.View#getMaximumSpan(int)
+     */
+    public float getMaximumSpan(int axis) {
+      return getPreferredSpan(axis);
     }
     /**
      * @see javax.swing.text.View#getBreakWeight(int, float, float)
@@ -519,7 +524,7 @@ public class EntityRenderer {
       if (axis==Y_AXIS) return BadBreakWeight;
       // horizontal might work after our content
       if (len > getPreferredSpan(X_AXIS)) {
-        return ExcellentBreakWeight;//GoodBreakWeight;
+        return GoodBreakWeight;
       }
       return BadBreakWeight;
     }  

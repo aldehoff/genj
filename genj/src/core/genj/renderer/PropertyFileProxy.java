@@ -22,6 +22,7 @@ package genj.renderer;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.util.ImgIcon;
+
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -50,13 +51,19 @@ public class PropertyFileProxy extends PropertyProxy {
     // grab the image
     ImgIcon img = getImage(prop);
     if (img==null) return;
+    int
+      h = img.getIconHeight(),
+      w = img.getIconWidth ();
     // check if we should zoom
     double zoom = Math.min(
-      Math.min(1.0D, ((double)bounds.height)/img.getIconHeight()),
-      Math.min(1.0D, ((double)bounds.width )/img.getIconWidth ())
+      Math.min(1.0D, ((double)bounds.width )/w),
+      Math.min(1.0D, ((double)bounds.height)/h)
     );
-    // paint
-    img.paintIcon(g, bounds.x, bounds.y, zoom);
+    img.paintIcon(g, 
+      (int)(bounds.x + (bounds.width -w*zoom)/2), 
+      (int)(bounds.y + (bounds.height-h*zoom)/2), 
+      zoom
+    );
     // done
   }
   
@@ -65,7 +72,7 @@ public class PropertyFileProxy extends PropertyProxy {
    */
   public float getVerticalAlignment(FontMetrics metrics) {  
     return 1.0F;
-  }  
+  }
   
   /**
    * Helper to get the image of PropertyFile

@@ -116,7 +116,17 @@ public class PropertyProxy {
    * 
    */
   protected void render(Graphics g, Rectangle bounds, String txt) {
+    // check whether we'll have to zoom
     FontMetrics fm = g.getFontMetrics();
+//    float zoom = bounds.width/fm.stringWidth(txt);
+//      g.setFont(g.getFont().deriveFont(AffineTransform.getScaleInstance(zoom, zoom)));
+//      Font oldf = g.getFont();
+//      Font newf = oldf.deriveFont(oldf.getSize()*zoom);
+//      System.out.println(oldf+">"+newf);
+//      g.setFont(newf);
+//      fm = g.getFontMetrics();
+//((Graphics2D)g).scale()
+//    }
     // by default we place the texts base at the bottom of bounds
     int y = bounds.y+bounds.height;
     // if bounds is high enough we patch up by fm's descent
