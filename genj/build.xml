@@ -311,12 +311,20 @@
   </target>
 
   <!--
-   Skinit
+   Skinit - to use this target place copy both files
+   
+     http://javootoo.l2fprod.com/plaf/skinlf/themepacks/beosthemepack.zip   
+     http://www.l2fprod.com/software/skinlf/jnlp/skinlf.jar   
+     
+   into ${dir.run}/skinit
    -->
   <target name="skinit" depends="run.init">
     <java classname="Skinit" fork="true" dir="${dir.run}">
-       <arg line="-pack aquathemepack.zip genj.app.App"/>
-       <classpath refid="project.class.path"/>
+       <arg line="-pack ./skinit/aquathemepack.zip genj.app.App"/>
+       <classpath>
+         <pathelement path="${project.class.path}"/>
+         <pathelement path="${dir.run}/skinit/skinlf.jar"/>
+       </classpath>
     </java>
   </target>
 
