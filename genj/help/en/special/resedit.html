@@ -20,10 +20,14 @@ In it, put the following commands (this example is given for Linux,
 but change it to match your system, of course) :
 </P>
 
-<P>
+<Ul>
 <b>
 <font size="-2">#!/bin/sh<Br>
 	#<Br>
+	<Br>
+	# The following 2 lines are the only ones you have to change to match your system<Br>
+	JAVA_HOME=/usr/local/jdk1.2.2<Br>
+	GENJ_HOME=/home/fm/genj<Br>
 	<Br>
 	echo "/*"<Br>
 	echo " * Resource Editor startup file for Genj"<Br>
@@ -36,33 +40,44 @@ but change it to match your system, of course) :
 	echo " */"<Br>
 	<Br>
 	export CLASSPATH=./lib/resedit.jar:./lib/swing.jar:$CLASSPATH<Br>
-	export PATH=/usr/local/jdk1.2.2/bin:$PATH<Br>
+	export PATH=$JAVA_HOME/bin:$PATH<Br>
 	<Br>
-	cd /home/fm/genj<Br>
-	/usr/local/jdk1.2.2/bin/java com.nm.resedit.Main<Br>
+	cd $GENJ_HOME<Br>
+	$JAVA_HOME/bin/java com.nm.resedit.Main<Br>
 </font>
 </b>
-</P>
+</Ul>
 
-<P>
 To start the resource editor, all you have to do now is to run
 your startup file you've just created by typing "resedit".<Br>
 After clicking on the OPEN button once started up, please select 
-an input archive, <i>(eg. genj.jar)</i>.<Br> 
+an input archive, <i>(eg. genj.jar)</i> - but see N.B. below.<Br> 
 Then either translate the existing texts by loading a TRANSLATION 
-or go through texts manually. In the second case, you have to select 
-a node on the left (corresponds to a directory) to start the 
-translation.<Br>
-Then choose resource lines on the right and enter the translation 
-in the input line at the bottom.<Br>
+or go through texts manually.<Br>
+In the second case, you have to select a node on the left (corresponds 
+to a directory) to start the translation. Then choose resource lines 
+on the right and enter the translation in the input line at the bottom.<Br>
 If you want to load a translation, click on the translate icon on
 the main menu, then select the translation file you want to 
 edit/modify (<i>eg. genj_fr.zip</i>). Once selected, uncheck the 
 option "Default locale or ..." and choose the appropriate locale 
-(in my example, I have to choose "<i>fr</i>"). Once done, you can 
-click on the translate button.<Br>
-<IMG src="../images/Resedit.jpg"></IMG><Br>
+(in my example, I have to choose "<i>fr</i>"). Once done, you have to  
+click on the translate button.
+
+<Ul>
+	<b>N.B.</b> Starting from GenJ v. 1.7 and Resedit 0.02, it's better to open 
+	the <i>genj_en.zip</i> file instead of <i>genj.jar</i>. So click first
+	on the open button, then select genj_en.zip, once done, click on the
+	translate button, and select the translation file you want to edit/modify.
+	etc...(see above).<Br>
+</Ul>
+
+<Center>
+	<IMG src="../images/Resedit.jpg"></IMG>
+</Center>
+
 <Br>
+
 After translating the resource lines, you can SAVE the resulting
 archive to a ZIP or JAR file. You have to specify which locale you
 are referring to, during LOAD, TRANSLATE or SAVE. This corresponds
@@ -70,9 +85,8 @@ to a resources_xyz.properties file schema which is then used by
 the application loading these resources. The name of the files
 you load and save is not important for Java - the locale you choose
 is used inside the language archive only. For organizing the
-files it's simply easier to identify them as file_XY.zip (where
+files it's simply easier to identify them as genj_XY.zip (where
 XY is the contained locale - eg : genj_fr.zip).<Br>
-</P>
 
 <Table border=0>
 	<Tr>
@@ -82,13 +96,13 @@ XY is the contained locale - eg : genj_fr.zip).<Br>
 	</Tr>
 	<Tr>
 		<Td>	
-			<dd>-&nbsp;For Java 1.1: You have to have a 
-			swing.jar library in your classpath.
+			<dd>-&nbsp;For Java 1.1: You must have a swing.jar 
+			library in your classpath.
 		</Td>
 	</Tr>
 	<Tr>
 		<Td>		
-			<dd>-&nbsp;And I saw that to have Resedit to work, 
+			<dd>-&nbsp;And I saw that to have Resedit (v. 0.01) to work, 
 			the genj.jar and genj_XY.zip files must be located in 
 			your main GenJ directory, not in your /genj/lib subdirectory.
 		</Td>
@@ -101,13 +115,15 @@ Actually, those resource files are available :
 <Ul>
 	<li> <b>Dutch</b> resource file : not yet
 	<li> <b>English</b> resource file : genj_en.zip
-	<li> <b>French</b> resource file : genj_fr.zip <font size="-2">(last updated 03/14/2002)</Font>
+	<li> <b>French</b> resource file : genj_fr.zip
 	<li> <b>German</b> resource file : genj_de.zip
 	<li> <b>Italian</b> resource file : soon
 </Ul>
+<font size="-2">(The English, German, and French language files have been 
+updated with the latest genj release)</Font>
 </P>
 
-<Br>
+<Br><Br>
 
 </BODY>
 </HTML>
