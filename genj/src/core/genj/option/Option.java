@@ -158,17 +158,20 @@ public class Option {
       
       if (Modifier.isFinal(mod) || !Modifier.isPublic(mod) || Modifier.isStatic(mod)) 
         continue;
+
+      // int, boolean, String?
+      if (!String.class.isAssignableFrom(type) &&
+          !Integer.TYPE.isAssignableFrom(type) &&
+          !Boolean.TYPE.isAssignableFrom(type) )
+        continue;
         
       // calc name
       String name = field.getName();
       String s = field2name.getProperty(name);
       if (s!=null) name = s;
-      
-      // int, boolean, String?
-      if (String.class.isAssignableFrom(type) ||
-          Integer.TYPE.isAssignableFrom(type) ||
-          Boolean.TYPE.isAssignableFrom(type))
-        result.add(getOption(instance, name, field));
+
+      // keep      
+      result.add(getOption(instance, name, field));
 
       // next
     }
