@@ -40,7 +40,7 @@
   <target name="compile.core" depends="init">
     <mkdir dir="${dir.build}/classes/core"/>
     <javac srcdir="src/core" destdir="${dir.build}/classes/core"
-           debug="on" optimize="off" deprecation="off" fork="yes" target="1.1">
+           debug="on" optimize="off" deprecation="on" fork="yes">
       <classpath refid="project.class.path"/>
     </javac>
   </target>
@@ -51,7 +51,7 @@
   <target name="compile.report" depends="init">
     <mkdir dir="${dir.build}/classes/report"/>
     <javac srcdir="src/report" destdir="${dir.build}/classes/report"
-           debug="on" optimize="off" deprecation="off" fork="yes" target="1.1">
+           debug="on" optimize="off" deprecation="on" fork="yes">
       <classpath refid="project.class.path"/>
     </javac>
   </target>
