@@ -26,7 +26,7 @@ The people behind GenJ (sorted by last name) :
       . Paul Clarke <pjclarke@bigpond.com>
       . Jan Eri <jan.eri@protector-group.no>
       . Michael Gerdau <mgd@technosis.de>
-      . Stan Goodman <stan@hashkedim.com>
+      . Stan Goodman <sgoodman@hashkedim.com>
       . Francois Massonneau <francois@arvernes.com>
       . Shmuel Metz <shmuel@acm.org>
       . Ernst Neubauer and Sohn <e.neubauer@t-online.de>
