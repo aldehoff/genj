@@ -59,6 +59,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.ViewPortAdapter;
+import genj.util.swing.ViewPortOverview;
 import genj.view.ContextPopupSupport;
 import genj.view.ContextSupport;
 import genj.view.CurrentSupport;
@@ -128,7 +129,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
    * @see javax.swing.JComponent#isOptimizedDrawingEnabled()
    */
   public boolean isOptimizedDrawingEnabled() {
-    return false;
+    return !overview.isVisible();
   }
 
   
@@ -237,45 +238,28 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   }
 
   /**
-   * Overview
-   */
-  private class Overview extends JComponent implements ChangeListener, ModelListener, MouseListener, MouseMotionListener {
-    /** keep the viewport */
-    private JViewport viewport;
-    /** the last indicator */
-    private Rectangle last = null; 
+   * Overview   */
+  private class Overview extends ViewPortOverview {
     /**
-     * Constructor
-     */
+     * Constructor     */
     private Overview(JScrollPane scroll) {
-      viewport = scroll.getViewport();
-      viewport.addChangeListener(this);
-      addMouseListener(this); 
-      addMouseMotionListener(this);
+      super(scroll.getViewport());
+      setMaximumSize(new Dimension(128,128));
     }
     /**
-     * @see javax.swing.JComponent#getMaximumSize()
+     * @see java.awt.Component#setSize(java.awt.Dimension)
      */
-    public Dimension getMaximumSize() {
-      return new Dimension(128, 128);
+    public void setSize(Dimension d) {
+      super.setSize(d);
+      setMaximumSize(d);
     }
     /**
-     * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
+     * @see genj.util.swing.ViewPortOverview#paintContent(java.awt.Graphics, double, double)
      */
-    public void paint(Graphics g) {
-      
-      // calc zoom
-      Dimension bounds = getSize();
-      double 
-        zoomx = bounds.width /(model.getBounds().getWidth ()*UNITS),
-        zoomy = bounds.height/(model.getBounds().getHeight()*UNITS);
-  
-      // clear it
-      g.setColor(Color.white);
-      g.fillRect(0,0,bounds.width,bounds.height);
-  
+    protected void renderContent(Graphics g, double zoomx, double zoomy) {
+
       // go 2d
-      UnitGraphics ug = new UnitGraphics(g, UNITS*zoomx, UNITS*zoomy);
+      UnitGraphics ug = new UnitGraphics(g, UNITS*zoomx*zoom, UNITS*zoomy*zoom);
       // init renderer
       contentRenderer.cBackground    = Color.white;
       contentRenderer.cIndiShape     = Color.black;
@@ -290,107 +274,10 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       ug.pushTransformation();
       contentRenderer.render(ug, model);
       ug.popTransformation();
+
+      // done  
+    }
   
-      // frame it
-      g.setColor(Color.blue);
-      g.drawRect(0,0,bounds.width-1,bounds.height-1);
-
-      // reset last
-      last = null;
-      
-      // indicate viewport
-      paintViewport(g);
-      
-      // done
-    }
-    /**
-     * Draw viewport indicator     */
-    private void paintViewport(Graphics g) {
-      // have to undo last one?
-      if (last!=null) {
-        g.setColor(Color.white);
-        g.setXORMode(Color.lightGray);
-        g.fillRect(last.x, last.y, last.width, last.height);
-      }
-      // analyze content
-      Rectangle bounds = viewport.getViewRect();
-      double 
-        xzoom = ((double)getWidth() )/content.getWidth(),
-        yzoom = ((double)getHeight())/content.getHeight();
-      // build rect
-      last = new Rectangle(
-        (int)(bounds.x * xzoom),
-        (int)(bounds.y * yzoom),
-        (int)(bounds.width * xzoom),
-        (int)(bounds.height* yzoom)
-      );
-      // indicate content bounds
-      g.setColor(Color.lightGray);
-      g.setXORMode(Color.white);
-      g.fillRect(last.x, last.y, last.width, last.height);
-      // done
-    }
-    /**
-     * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
-     */
-    public void stateChanged(ChangeEvent arg0) {
-      if (!isVisible()) return;
-      paintViewport(getGraphics());
-    }
-    /**
-     * @see genj.tree.ModelListener#structureChanged(Model)
-     */
-    public void structureChanged(Model model) {
-      repaint();
-    }
-    /**
-     * @see genj.tree.ModelListener#nodesChanged(Model, List)
-     */
-    public void nodesChanged(Model model, List nodes) {
-      repaint();
-    }
-    /**
-     * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-     */
-    public void mouseClicked(MouseEvent e) {
-      // FIXME : change viewport
-    }
-    /**
-     * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-     */
-    public void mousePressed(MouseEvent e) {
-    }
-    /**
-     * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-     */
-    public void mouseReleased(MouseEvent e) {
-    }
-    /**
-     * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-     */
-    public void mouseEntered(MouseEvent e) {
-    }
-    /**
-     * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-     */
-    public void mouseExited(MouseEvent arg0) {
-    }
-    /**
-     * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
-     */
-    public void mouseDragged(MouseEvent e) {
-      // FIXME : scroll viewport
-    }
-
-    /**
-     * @see java.awt.event.MouseMotionListener#mouseMoved(java.awt.event.MouseEvent)
-     */
-    public void mouseMoved(MouseEvent e) {
-      int cursor = Cursor.DEFAULT_CURSOR;
-      if (last.contains(e.getPoint()))
-        cursor = Cursor.MOVE_CURSOR;
-      setCursor(Cursor.getPredefinedCursor(cursor));
-    }
   } //Overview
   
   /**
