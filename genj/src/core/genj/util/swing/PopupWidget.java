@@ -218,16 +218,4 @@ public class PopupWidget extends JButton {
     isFireOnClick = set;
   }
 
-  /**
-   * only in 1.4 - provide for 1.3 envs
-   */  
-  public boolean requestFocusInWindow() {
-    try {
-      return super.requestFocusInWindow();
-    } catch (Throwable t) {
-      super.requestFocus();
-      return true;
-    }
-  }
-
 } //PopupButton

@@ -180,7 +180,14 @@ public class FileChooserWidget extends JPanel {
   public void setAccessory(JComponent set) {
     accessory = set;
   }
-  
+
+  /**
+   * Focus goes to entry field
+   */  
+  public boolean requestFocusInWindow() {
+    return text.requestFocusInWindow();
+  }
+
   /**
    * Choose with file dialog
    */

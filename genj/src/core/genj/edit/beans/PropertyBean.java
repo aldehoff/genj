@@ -147,30 +147,18 @@ public abstract class PropertyBean extends JPanel {
   }
   
   /** 
-   * overridden requestFocus()
-   */
-  public void requestFocus() {
-    if (defaultFocus!=null)
-      defaultFocus.requestFocus();
-  }
-
-  /** 
    * overridden requestFocusInWindow()
    */
   public boolean requestFocusInWindow() {
     if (defaultFocus!=null)
-      try {
         return defaultFocus.requestFocusInWindow();
-      } catch (Throwable t) {
-        defaultFocus.requestFocus();
-      }
-    return true;
+    return super.requestFocusInWindow();
   }
 
   /**
    * A preview component using EntityRenderer for an entity
    */
-  protected class Preview extends JComponent {
+  public class Preview extends JComponent {
     /** entity */
     private Entity entity;
     /** the blueprint renderer we're using */
@@ -191,7 +179,7 @@ public abstract class PropertyBean extends JPanel {
       Insets insets = getInsets();
       Rectangle box = new Rectangle(insets.left,insets.top,getWidth()-insets.left-insets.right,getHeight()-insets.top-insets.bottom);     
       // clear background
-      g.setColor(Color.white); //Color.WHITE is 1.4 only
+      g.setColor(Color.WHITE); 
       g.fillRect(box.x, box.y, box.width, box.height);
       // render entity
       if (renderer==null) 
@@ -199,6 +187,6 @@ public abstract class PropertyBean extends JPanel {
       renderer.render(g, entity, box);
       // done
     }
-  } //Content
+  } //Preview
 
 } //Proxy

@@ -64,29 +64,4 @@ public class TextAreaWidget extends JTextArea {
     requestFocusInWindow();
   }
   
-  /**
-   * @see javax.swing.JComponent#requestFocusInWindow()
-   */
-  public boolean requestFocusInWindow() {
-    try {
-      return super.requestFocusInWindow();
-    } catch (Throwable t) {
-      super.requestFocus();
-      return true;
-    }
-  }
-
-  /**
-   * Overriden to try 1.4's super.setFocusable()
-   * @see java.awt.Component#setFocusable(boolean)
-   */
-  public void setFocusable(boolean focusable) {
-    try {
-      super.setFocusable(focusable);
-    } catch (Throwable t) {
-      // try pre 1.4 instead
-      super.setRequestFocusEnabled(false);
-    }
-  }
-  
 } //TextAreaWidget
