@@ -20,7 +20,7 @@
  * About Dialog class - Feedback
  * This class creates the content on the Feedback tabbed pane in the
  * About Dialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.11 2002-05-21 17:55:59 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.12 2002-05-21 21:12:46 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.3
  *
@@ -46,16 +46,16 @@ public class FeedbackPanel extends JPanel implements ActionListener
   
   // variables for panelUp
   private JPanel panelUp;
-  private JTextArea ta1Panel1;
+  private JTextArea taFeedback;
   
   // variables for panelMiddle
   private JPanel panelMiddle;
-  private JTextArea ta1Panel2;
+  private JTextArea taComments;
   
   // variables for panelBottom
   private JPanel panelBottom;
-  private JButton b1Panel3;
-  private JButton b2Panel3;
+  private JButton bSaveFeedback;
+  private JButton bReloadFeedback;
   private boolean _clickMeMode = true;
   
   
@@ -88,16 +88,16 @@ public class FeedbackPanel extends JPanel implements ActionListener
     panelUp.setLayout(new BorderLayout());
     panelUp.setBackground(Color.white);
     panelUp.setBorder(BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab3.text1.title")));
-    ta1Panel1 = new JTextArea(App.resources.getString("cc.about.tab3.text1"));
+    taFeedback = new JTextArea(App.resources.getString("cc.about.tab3.text1"));
     // Sets the font face and size
-    ta1Panel1.setFont(new Font("Times-Roman", Font.PLAIN, 12));
+    taFeedback.setFont(new Font("Times-Roman", Font.PLAIN, 12));
     // Line wrap is set for the text area and it is not editable
-    ta1Panel1.setLineWrap(true);
-    ta1Panel1.setWrapStyleWord(true);
-    ta1Panel1.setEditable(false);
+    taFeedback.setLineWrap(true);
+    taFeedback.setWrapStyleWord(true);
+    taFeedback.setEditable(false);
     // We add an empty border
-    ta1Panel1.setBorder(new EmptyBorder(3, 3, 3, 3));
-    panelUp.add(ta1Panel1, BorderLayout.CENTER);
+    taFeedback.setBorder(new EmptyBorder(3, 3, 3, 3));
+    panelUp.add(taFeedback, BorderLayout.CENTER);
   }
   
     // This method build the panelMiddle
@@ -105,16 +105,16 @@ public class FeedbackPanel extends JPanel implements ActionListener
     panelMiddle = new JPanel(new BorderLayout());
     panelMiddle.setBackground(Color.white);
     panelMiddle.setBorder(BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab3.text2.title")));
-    ta1Panel2 = new JTextArea(getSystemInfo());
+    taComments = new JTextArea(getSystemInfo());
     // Sets the font face and size
-    ta1Panel2.setFont(new Font("Times-Roman", Font.PLAIN, 12));
+    taComments.setFont(new Font("Times-Roman", Font.PLAIN, 12));
     // Line wrap is set for the text area and it is not editable
-    ta1Panel2.setLineWrap(true);
-    ta1Panel2.setWrapStyleWord(true);
-    ta1Panel2.setEditable(true);
+    taComments.setLineWrap(true);
+    taComments.setWrapStyleWord(true);
+    taComments.setEditable(true);
     // We add an empty border
-    ta1Panel2.setBorder(new EmptyBorder(3, 3, 3, 3));
-    JScrollPane jspta1 = new JScrollPane(ta1Panel2);
+    taComments.setBorder(new EmptyBorder(3, 3, 3, 3));
+    JScrollPane jspta1 = new JScrollPane(taComments);
     panelMiddle.add(jspta1, BorderLayout.CENTER);
   }
   
@@ -123,12 +123,12 @@ public class FeedbackPanel extends JPanel implements ActionListener
     panelBottom = new JPanel();
     panelBottom.setLayout(new FlowLayout(FlowLayout.LEFT));
     panelBottom.setBackground(Color.white);
-    b1Panel3 = new JButton(App.resources.getString("cc.about.tab3.save.button"));
-    b1Panel3.addActionListener(this);
-    b2Panel3 = new JButton(App.resources.getString("cc.about.tab3.reload.button"));
-    b2Panel3.addActionListener(this);
-    panelBottom.add(b1Panel3);
-    panelBottom.add(b2Panel3);
+    bSaveFeedback = new JButton(App.resources.getString("cc.about.tab3.save.button"));
+    bSaveFeedback.addActionListener(this);
+    bReloadFeedback = new JButton(App.resources.getString("cc.about.tab3.reload.button"));
+    bReloadFeedback.addActionListener(this);
+    panelBottom.add(bSaveFeedback);
+    panelBottom.add(bReloadFeedback);
   }
   
     // This method gets the User's system info
@@ -175,11 +175,11 @@ public class FeedbackPanel extends JPanel implements ActionListener
      * if the user click on yes, the method should overwrite the file, if not, nothing
      * happen
      */
-    if (source == b1Panel3) {
+    if (source == bSaveFeedback) {
       if (_clickMeMode) {
         try {
         // Code to write to file
-          String text2save = ta1Panel2.getText();
+          String text2save = taComments.getText();
           byte b[] = text2save.getBytes();
           String outputFileName = "feedback.txt";
           FileOutputStream out = new FileOutputStream(outputFileName);
@@ -190,18 +190,18 @@ public class FeedbackPanel extends JPanel implements ActionListener
           System.out.println("Cannot write to text file feedback.txt");
         }
         // Clear text field
-        ta1Panel2.setText(App.resources.getString("cc.about.tab3.text2.6"));
-        b1Panel3.setText(App.resources.getString("cc.about.tab3.clickagain.button"));
+        taComments.setText(App.resources.getString("cc.about.tab3.text2.6"));
+        bSaveFeedback.setText(App.resources.getString("cc.about.tab3.clickagain.button"));
         _clickMeMode = false;
       }
       else {
         // Save text to file
-        ta1Panel2.setText(getSystemInfo());
-        b1Panel3.setText(App.resources.getString("cc.about.tab3.save.button"));
+        taComments.setText(getSystemInfo());
+        bSaveFeedback.setText(App.resources.getString("cc.about.tab3.save.button"));
         _clickMeMode = true;
       }
     }
-    if (source == b2Panel3) {
+    if (source == bReloadFeedback) {
       if (_clickMeMode) {
         try {
           String inputFileName = "feedback.txt";
@@ -213,11 +213,11 @@ public class FeedbackPanel extends JPanel implements ActionListener
             in.read(ccs);
             s = new String(ccs);
             in.close();
-            ta1Panel2.setText("");
-            ta1Panel2.setText(s);
+            taComments.setText("");
+            taComments.setText(s);
           }
           else {
-            ta1Panel2.setText(getSystemInfo());
+            taComments.setText(getSystemInfo());
           }
         }
         // If something goes wrong, I try to catch the error and display something
