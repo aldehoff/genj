@@ -62,7 +62,7 @@ public class Model implements Graph {
   
   /** the layout we use */
   private TreeLayout layout = new TreeLayout();
-  
+    
   /** parameters */
   private double 
     padIndis    = 1.0D,
@@ -91,22 +91,18 @@ public class Model implements Graph {
    * Sets the root
    */
   public void setRoot(Entity root) {
+    // Indi or Fam plz
+    if (!(root instanceof Indi||root instanceof Fam)) 
+      throw new IllegalArgumentException("Indi or Fam please");
     // clear old
     arcs.clear();
     nodes.clear();
     bounds.setFrame(0,0,0,0);
-    // parse the tree
-    Node node = parse(root);
-    // layout
-    try {
-      layout.setDebug(true);
-      layout.setRoot(node);
-      layout.setNodeOptions(new MyOptions());
-      layout.setBendArcs(true);
-      layout.applyTo(this);
-    } catch (LayoutException e) {
-      e.printStackTrace();
-    }
+    // build and layout the tree
+    if (root instanceof Indi)
+      parse((Indi)root);
+    else
+      parse((Fam )root);
     // notify
     fireStructureChanged();
     // done
@@ -143,30 +139,41 @@ public class Model implements Graph {
   }
   
   /**
-   * builds the tree
-   */
-  private Node parse(Entity entity) {
-    if (entity instanceof Indi) return parse((Indi)entity);
-    if (entity instanceof Fam ) return parse((Fam )entity);
-    throw new IllegalArgumentException("Indi and Fam only");
-  }
-  
-  /**
    * builds the tree for an individual
    */
-  private Node parse(Indi indi) {
+  private void parse(Indi indi) {
     DummyNode dn = new DummyNode();
     IndiNode in = new IndiNode(indi);
     new MyArc(dn, in, false);
     in.addDependants(dn);
-    return dn;
+    layout(dn, true);
   }
   
   /**
    * builds the tree for a family
    */
-  private Node parse(Fam fam) {
-    return new FamNode(fam);
+  private void parse(Fam fam) {
+    FamNode fm = new FamNode(fam);
+    layout(fm, true);
+  }
+  
+  /**
+   * Helper that applies the layout
+   */
+  private void layout(Node root, boolean isTopDown) {
+    // layout
+    try {
+      layout.setTopDown(isTopDown);
+      layout.setBendArcs(true);
+      layout.setDebug(false);
+      layout.setNodeOptions(new MyOptions());
+      layout.setLayoutUnreachedNodes(false);
+      layout.setRoot(root);
+      layout.applyTo(this);
+    } catch (LayoutException e) {
+      e.printStackTrace();
+    }
+    // done
   }
   
   /**
