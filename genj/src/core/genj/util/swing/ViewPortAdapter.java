@@ -52,4 +52,10 @@ public class ViewPortAdapter extends JComponent {
     return comp.getPreferredSize();
   }
   
+  /**
+   * the view
+   */
+  public JComponent getComponent() {
+    return comp;
+  }  
 } //ViewPortAdapter
