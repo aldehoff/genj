@@ -60,28 +60,30 @@ public class GedcomWriter implements Trackable {
   private Filter[] filters = new Filter[0];
   private Enigma enigma = null;
   private String password;
+  private String encoding;
 
   /**
    * Constructor
    * @param ged data to write
    * @param name the logical name (header value)
-   * @param stream the stream to write to
    * @param encoding either IBMPC, ASCII, UNICODE or ANSEL
+   * @param stream the stream to write to
    */
-  public GedcomWriter(Gedcom ged, String name, OutputStream stream) {
+  public GedcomWriter(Gedcom ged, String name, String enc, OutputStream stream) {
     
     Calendar now = Calendar.getInstance();
 
     // init data
     gedcom = ged;
     password = gedcom.getPassword();
+    encoding = enc;
     file = name;
     level = 0;
     line = 1;
     date = PointInTime.getNow().getValue();
     time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
 
-    out = new BufferedWriter(createWriter(stream, ged.getEncoding()));
+    out = new BufferedWriter(createWriter(stream, encoding));
 
     // Done
   }
@@ -98,9 +100,12 @@ public class GedcomWriter implements Trackable {
       // ASCII
       if (Gedcom.ASCII.equals(encoding))
         return new OutputStreamWriter(stream, "ASCII");
-      // ISO-8859-1
-      if (Gedcom.IBMPC.equals(encoding))
+      // Latin1 (ISO-8859-1)
+      if (Gedcom.LATIN1.equals(encoding))
         return new OutputStreamWriter(stream, "ISO-8859-1");
+      // ANSI (Windows-1252)
+      if (Gedcom.ANSI.equals(encoding))
+        return new OutputStreamWriter(stream, "Windows-1252");
       // ANSEL
       if (Gedcom.ANSEL.equals(encoding))
         return new AnselWriter(stream);
@@ -279,7 +284,7 @@ public class GedcomWriter implements Trackable {
     line( 1, "GEDC", "");
     line( 2, "VERS", "5.5");
     line( 2, "FORM", "Lineage-Linked");
-    line( 1, "CHAR", gedcom.getEncoding());
+    line( 1, "CHAR", encoding);
     line( 1, "FILE", file);
     // done
   }

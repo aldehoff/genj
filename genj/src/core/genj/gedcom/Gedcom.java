@@ -48,14 +48,17 @@ public class Gedcom {
   static private Random seed = new Random();
   static /*package*/ Resources resources = Resources.get(Gedcom.class);
 
-  public static final String 
-    UNICODE = "UNICODE", 
-    ASCII = "ASCII", 
-    IBMPC = "IBMPC", 
-    ANSEL = "ANSEL";
-
+  public static final String
+   // standard Gedcom encodings 
+    UNICODE  = "UNICODE", 
+    ASCII    = "ASCII",      // a.k.a US-ASCII
+    ANSEL    = "ANSEL",
+   // non-standard encodings
+    LATIN1   = "LATIN1",     // a.k.a ISO-8859-1
+    ANSI     = "ANSI";       // a.k.a. Windows-1252 (@see http://www.hclrss.demon.co.uk/demos/ansi.html)
+  
   public static final String[] ENCODINGS = { 
-    ANSEL, UNICODE, ASCII, IBMPC 
+    ANSEL, UNICODE, ASCII, LATIN1, ANSI 
   };
 
   public final static String

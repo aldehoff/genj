@@ -723,10 +723,16 @@ public class GedcomReader implements Trackable {
         encoding = Gedcom.ANSEL;
         return;
       } 
-      if (matchHeader(header,Gedcom.IBMPC)) {
-        Debug.log(Debug.INFO, this, "Found "+Gedcom.IBMPC+" - trying encoding ISO-8859-1");
+      if (matchHeader(header,Gedcom.ANSI)) {
+        Debug.log(Debug.INFO, this, "Found "+Gedcom.ANSI+" - trying encoding Windows-1252");
+        reader = new InputStreamReader(this, "Windows-1252"); 
+        encoding = Gedcom.ANSI;
+        return;
+      } 
+      if (matchHeader(header,Gedcom.LATIN1)||matchHeader(header,"IBMPC")) { // legacy - old style ISO-8859-1/latin1
+        Debug.log(Debug.INFO, this, "Found "+Gedcom.LATIN1+" or IBMPC - trying encoding ISO-8859-1");
         reader = new InputStreamReader(this, "ISO-8859-1"); 
-        encoding = Gedcom.IBMPC;
+        encoding = Gedcom.LATIN1;
         return;
       } 
 
