@@ -1,7 +1,11 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <toc version="1.0">
   <tocitem target="intro"       text="@intro@"    />
-  <tocitem target="gedcom"      text="@gedcom@"   />
+  <tocitem target="concepts"    text="@concepts@">
+    <tocitem target="c.gedcom"      text="@c.gedcom@" />
+    <tocitem target="c.paths"       text="@c.paths@"  />
+    <tocitem target="c.context"     text="@c.context@"/>
+  </tocitem>
   <tocitem target="cc"          text="@cc@"       />
   <tocitem target="views"       text="@views@">
     <tocitem target="v.table"       text="@v.table@"       image="img.Table"    />
@@ -12,7 +16,6 @@
     <tocitem target="v.navigator"   text="@v.navigator@"   image="img.Navigator"/>
     <tocitem target="v.entity"      text="@v.entity@"      image="img.Entity"   />
   </tocitem>
-  <tocitem target="context"     text="@context@"/>
   <tocitem target="entities"    text="@entities@">
     <tocitem target="e.indi"        text="@e.indi@"          image="img.Indi"        />
     <tocitem target="e.family"      text="@e.family@"        image="img.Fam"         />

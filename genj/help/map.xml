@@ -2,14 +2,15 @@
 <map version="1.0">
 
   <mapID target="intro"    url="intro.html" />
-  <mapID target="gedcom"   url="gedcom.html" />
+
+  <mapID target="concepts"   url="concepts.html" />
+  <mapID target="c.gedcom"     url="concepts/gedcom.html" />
+  <mapID target="c.context"    url="concepts/context.html" />
+  <mapID target="c.paths"      url="concepts/paths.html" />
+
   <mapID target="cc"       url="cc.html" />
 
   <mapID target="views"      url="views.html" />
-  <mapID target="context"    url="context.html" />
-  <mapID target="entities"   url="entities.html" />
-  <mapID target="specials"   url="specials.html" />
-
   <mapID target="v.edit"       url="view/edit.html" />
   <mapID target="v.tree"       url="view/tree.html" />
   <mapID target="v.table"      url="view/table.html" />
@@ -18,6 +19,7 @@
   <mapID target="v.navigator"  url="view/navigator.html" />
   <mapID target="v.entity"     url="view/entity.html" />
 
+  <mapID target="entities"   url="entities.html" />
   <mapID target="e.indi"         url="entity/indi.html" />
   <mapID target="e.family"       url="entity/fam.html" />
   <mapID target="e.media"        url="entity/media.html" />
@@ -26,6 +28,7 @@
   <mapID target="e.submitter"    url="entity/submitter.html" />
   <mapID target="e.repository"   url="entity/repository.html" />
 
+  <mapID target="specials"   url="specials.html" />
   <mapID target="x.report"    url="special/report.html" />
   <mapID target="x.faq1"      url="special/faq1.html" />
   <mapID target="x.faq2"      url="special/faq2.html" />
