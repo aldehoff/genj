@@ -120,7 +120,7 @@ import javax.swing.JComponent;
       service = getDefaultService();
     setService(service);
 
-    // prepare default print attributes
+    // setup a default job name
     attributes.add(new JobName(title, null));
     
     // restore print attributes
@@ -138,7 +138,7 @@ import javax.swing.JComponent;
     if (service==null)
       throw new PrintException("Couldn't find suitable printer");
     // check suitability
-    Debug.log(Debug.INFO, this, "Found service "+service+" isDocFlavorSupported=="+service.isDocFlavorSupported(FLAVOR));
+    Debug.log(Debug.INFO, this, "Found PrintService "+service+" isDocFlavorSupported=="+service.isDocFlavorSupported(FLAVOR));
     
     if (service.isDocFlavorSupported(FLAVOR))
       return service;
@@ -311,6 +311,17 @@ import javax.swing.JComponent;
   }
   
   /**
+   * transform print attributes to string
+   */
+  private String toString(PrintRequestAttributeSet atts) {
+    WordBuffer buf = new WordBuffer(',');
+    Attribute[] array = attributes.toArray();
+    for (int i = 0; i < array.length; i++) 
+      buf.append(array[i].getClass().getName()+"="+array[i].toString());
+    return buf.toString();
+  }
+  
+  /**
    * Resolve a print attribute
    */
   private PrintRequestAttribute getAttribute(Class category) {
@@ -321,21 +332,23 @@ import javax.swing.JComponent;
     Object result = (PrintRequestAttribute)attributes.get(category);
     if (result instanceof PrintRequestAttribute)
       return (PrintRequestAttribute)result;
-    // get first supported for current attributes
-    result = service.getSupportedAttributeValues(category, null, attributes);
-    // FIXME Debugging why this might return null
+    // make sure we know the media if this is not Media category
+    if (!Media.class.isAssignableFrom(category)) 
+      getAttribute(Media.class);
+    // now grab default for category
+    result = service.getDefaultAttributeValue(category);
+    // fallback to first supported
     if (result==null) {
-      WordBuffer buf = new WordBuffer(',');
-      Attribute[] atts = attributes.toArray();
-      for (int i = 0; i < atts.length; i++) 
-        buf.append(atts[i].getClass().getName()+"="+atts[i].toString());
-      Debug.log(Debug.ERROR, this, "got null for "+category+" with "+buf);
+      result = service.getSupportedAttributeValues(category, null, attributes);
+	    if (result!=null&&result.getClass().isArray()&&result.getClass().getComponentType()==category) {
+	      result = ((Object[])result)[0];
+	    } else {
+	      result = null;
+	      Debug.log(Debug.WARNING, this, "No default "+category+" with "+toString(attributes));
+	    }
     }
-    // grab first
-    if (result.getClass().isArray()&&result.getClass().getComponentType()==category)
-      result = ((Object[])result)[0];
-    // keep it
-    if (result.getClass()==category)
+    // remember
+    if (result!=null)
       attributes.add((PrintRequestAttribute)result);
     // done
     return (PrintRequestAttribute)result;
