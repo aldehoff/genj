@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.23 2003-05-31 19:07:59 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.24 2003-06-01 05:12:30 tfmorris Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -170,27 +170,28 @@ public class ReportGedcomStatistics extends Report {
   private void reportResults(Gedcom gedcom, Statistics stats) {
 
     // Header :
-    println(i18n("header_1")+gedcom.getName()+i18n("header_2")+" :\n");
+    println(i18n("header",gedcom.getName()));
+		println();
     println("  "+i18n("about_people"));
 		
     // One: We show the number of families :
-    println("     - "+gedcom.getEntities(Gedcom.FAMILIES).size()
-      +" "+i18n("families"));
+    println("     - "+
+						i18n("families",gedcom.getEntities(Gedcom.FAMILIES).size()+""));
 
     // Two: We show the number of individuals :
-    println("     - "+gedcom.getEntities(Gedcom.INDIVIDUALS).size()
-      +" "+i18n("individuals"));
+    println("     - "+ i18n("individuals",
+														gedcom.getEntities(Gedcom.INDIVIDUALS).size()+""));
 
     // Three: We show the number of males :
-    println("         . "+stats.numMales+" "+i18n("males"));
+    println("         . "+i18n("males",stats.numMales+""));
 
     // Four: We show the number of females :
-    println("         . "+stats.numFemales+" "+i18n("females"));
+    println("         . "+i18n("females",stats.numFemales+""));
 
     // Five: We show the number of people whose sex is undefined :
-    println("         . "+stats.numUnknown+" "+i18n("sex_unknown"));
+    println("         . "+i18n("sex_unknown",stats.numUnknown+""));
 
-    println("");
+    println();
 
     // Six: We show the birth places
     println("  "+i18n("about_birthplaces"));
@@ -198,7 +199,8 @@ public class ReportGedcomStatistics extends Report {
     while (births.hasNext()) {
       String place = (String)births.next();
       int count = stats.birthPlaces.getCount(place);
-      println("     - "+count+" "+i18n("indi_born")+place);
+			String[] msgargs = {count+"",place};
+      println("     - "+i18n("indi_born",msgargs));
     }
 
     println("");
@@ -209,7 +211,8 @@ public class ReportGedcomStatistics extends Report {
     while (deaths.hasNext()) {
       String place = (String)deaths.next();
       int count = stats.deathPlaces.getCount(place);
-      println("     - "+count+" "+i18n("indi_died")+place);
+			String[] msgargs = {count+"",place};
+      println("     - "+i18n("indi_died",msgargs));
     }
 
     // Done

@@ -118,20 +118,16 @@ public class ReportAncestors extends Report {
       return "?";
     }
     
-    // id
-    String id = '@'+indi.getId()+'@';
-    
-    // name
-    String n = indi.getName();
-    
-    // birth?
-    String b = " b: " + indi.getBirthAsString();
-    
-    // death?
-    String d = " d: " + indi.getDeathAsString();
-    
-    // here's the result 
-    return id + ' ' + n + b + d;
+    // Assemble our substitution arguments
+
+		String[] msgargs = {indi.getId(),
+												indi.getName(),
+												indi.getBirthAsString(),
+												indi.getDeathAsString()};
+
+		// Format the message with localization and return it
+    return i18n("format",msgargs);
+
     
     // Could be a hyperlink, too
     //return "<a href=\"\">" + indi.getName() + "</a>" + b + d;

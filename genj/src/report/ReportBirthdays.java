@@ -116,7 +116,9 @@ public class ReportBirthdays extends Report {
     Iterator e = candidates.iterator();
     while (e.hasNext()) {
       Indi indi = (Indi)e.next();
-      println(indi.getName()+" (*"+indi.getBirthDate()+")");
+			String[] msgargs = {indi.getName(),
+													indi.getBirthDate()+""};
+      println(i18n("format",msgargs));
     }
 
     // Done
