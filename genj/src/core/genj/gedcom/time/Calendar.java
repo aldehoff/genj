@@ -253,5 +253,10 @@ public abstract class Calendar {
    * Julian Day -> PIT
    */
   protected abstract PointInTime toPointInTime(int julianDay) throws GedcomException;
+
+  /** string representation */
+  public String toString() {
+    return getName();
+  }
   
 } //Calendar
