@@ -262,14 +262,15 @@ public class Indi extends PropertyIndi implements Entity {
   /**
    * Calculate indi's age
    * (some code borrowed from jLifelines)
+   * Default to DEAT DATE, use current date if end date missing.
    */
   public String getAge() {
+    return getAge(getDeathDate());
+  }
+  public String getAge(PropertyDate pEnd) {
     PropertyDate pBirth = getBirthDate();
-    PropertyDate pDeath = getDeathDate();
     boolean showMonth, showDay;
     PropertyDate.PointInTime pit;
-
-    // TODO: should check for AGE properties first...
 
     if (pBirth==null)
       return "";
@@ -279,8 +280,8 @@ public class Indi extends PropertyIndi implements Entity {
     showDay   = (pit.getDay()   != null);
 
     Calendar end = Calendar.getInstance(); // default to current time
-    if (pDeath!=null) {
-      pit = pDeath.isRange() ? pDeath.getEnd() : pDeath.getStart();
+    if (pEnd!=null) {
+      pit = pEnd.isRange() ? pEnd.getEnd() : pEnd.getStart();
       end = pit.getCalendar();
       showMonth |= (pit.getMonth() != null);
       showDay   |= (pit.getDay()   != null);
