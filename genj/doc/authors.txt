@@ -8,6 +8,9 @@ The people behind GenJ (sorted by last name) :
 
     Contributors :
       . Jan C.Hardenbergh <jch@world.std.com>
+      . Jerome Hettich <jerome@hettich.org.uk>
+      . Pere Jover <pjover@jazzfree.com>
+      . Bill Kelly <bllklly@acm.org>
       . Daniel P. Kionka <dan@kionka.org>
       . Francois Massonneau <francois@arvernes.com>
       . Sean Timm <TimmSCHome@aol.com>
