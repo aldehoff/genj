@@ -173,5 +173,14 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     List ps = super.getProperties(IconValueAvailable.class);
     return ps.isEmpty() ? null : ((IconValueAvailable)ps.get(0)).getValueAsIcon();
   }
+  
+  /**
+   * Returns the property file for this OBJE
+   */
+  public PropertyFile getFile() {
+    PropertyMedia target = (PropertyMedia )super.getReferencedEntity();
+    if (target!=null) return target.getFile();
+    return (PropertyFile)getProperty(new TagPath("OBJE:FILE"), true);    
+  }
 
-}
+} //PropertyMedia
