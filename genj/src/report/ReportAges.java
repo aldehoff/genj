@@ -29,6 +29,7 @@ public class ReportAges extends Report {
     
     public boolean reportBaptismAge = true;
     public boolean reportMarriageAge = true;
+    public boolean reportDivorceAge = true;
     public boolean reportAgeAtChildBirth = true;
     public boolean reportAgeAtEmigration = true;
     public boolean reportAgeAtImmigration = true;
@@ -179,7 +180,7 @@ public class ReportAges extends Report {
         return Delta.get(newBirth, newEnd);
     }
     
-    private void analyzeTag(Indi indi, String tag, boolean printTag, String errorMessage) {
+    private void analyzeIndiTag(Indi indi, String tag, boolean printTag, String errorMessage) {
         
         int indent = 2;
         if(printTag) {
@@ -202,6 +203,9 @@ public class ReportAges extends Report {
         
     }
     
+    private void analyzeFamTag(Fam fam, String tag, String errorMessage) {
+    }
+    
     private void reportAges(Indi indi) {
         
         Delta age = null;
@@ -219,10 +223,10 @@ public class ReportAges extends Report {
         
         if(reportBaptismAge) {
             println(getIndent(1)+i18n("baptismAge"));
-            analyzeTag(indi, "BAPM", true, "baptismBeforeBirth");
-            analyzeTag(indi, "BAPL", true, "baptismBeforeBirth");
-            analyzeTag(indi, "CHR", true, "baptismBeforeBirth");
-            analyzeTag(indi, "CHRA", true, "baptismBeforeBirth");
+            analyzeIndiTag(indi, "BAPM", true, "baptismBeforeBirth");
+            analyzeIndiTag(indi, "BAPL", true, "baptismBeforeBirth");
+            analyzeIndiTag(indi, "CHR", true, "baptismBeforeBirth");
+            analyzeIndiTag(indi, "CHRA", true, "baptismBeforeBirth");
             println();
         }
         
@@ -246,6 +250,27 @@ public class ReportAges extends Report {
             }
             println();
         }
+        
+        if(reportDivorceAge) {
+            println(getIndent(1)+i18n("divorceAge"));
+            Fam[] fams = indi.getFamilies();
+            if(fams.length==0)
+                println(getIndent(2)+i18n("noDivorce"));
+            else {
+                for(int i=0;i<fams.length;i++) {
+                    Fam fam = fams[i];
+                    println(getIndent(2)+"@"+fam.getId()+"@ "+fam.toString());
+                    if(fam.getDivorceDate() == null)
+                        println(getIndent(3)+i18n("noDivorceDate"));
+                    else {
+                        println(getIndent(3)+i18n("divorce", fam.getDivorceDate()));
+                        age = calculateAge(indi, fam.getDivorceDate(), null);
+                        printAge(age, 4, "divorceBeforeBirth", fam.getDivorceDate());
+                    }
+                }
+            }
+            println();
+        }        
         
         if(reportAgeAtChildBirth) {
             println(getIndent(1)+i18n("ageAtChildBirths"));
@@ -271,19 +296,19 @@ public class ReportAges extends Report {
         
         if(reportAgeAtEmigration) {
             println(getIndent(1)+i18n("emigrationAge"));
-            analyzeTag(indi, "EMIG", false, "emigrationBeforeBirth");
+            analyzeIndiTag(indi, "EMIG", false, "emigrationBeforeBirth");
             println();
         }
         
         if(reportAgeAtImmigration) {
             println(getIndent(1)+i18n("immigrationAge"));
-            analyzeTag(indi, "IMMI", false, "immigrationBeforeBirth");
+            analyzeIndiTag(indi, "IMMI", false, "immigrationBeforeBirth");
             println();
         }
         
         if(reportAgeAtNaturalization) {
             println(getIndent(1)+i18n("naturalizationAge"));
-            analyzeTag(indi, "NATU", false, "naturalizationBeforeBirth");
+            analyzeIndiTag(indi, "NATU", false, "naturalizationBeforeBirth");
             println();
         }
         
