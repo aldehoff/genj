@@ -145,7 +145,7 @@ public abstract class ActionDelegate implements Cloneable {
   protected Thread getThread() {
     if (async!=ASYNC_SAME_INSTANCE) return null;
     synchronized (threadLock) {
-      if (thread==null) thread=new Thread(new CallAsyncExecute());
+      if (thread==null) thread = new Thread(new CallAsyncExecute());
       return thread;
     }
   }
@@ -301,16 +301,23 @@ public abstract class ActionDelegate implements Cloneable {
    */
   private class CallAsyncExecute implements Runnable {
     public void run() {
+      
+      Throwable thrown = null;
       try {
         execute();
       } catch (Throwable t) {
-        // queue handleThrowable
-        SwingUtilities.invokeLater(new CallSyncHandleThrowable(t));
+        thrown = t;
       }
+      
       // forget thread
       synchronized (threadLock) {
-        thread=null;
+        thread = null;
       }
+      
+      // queue handleThrowable
+      if (thrown!=null)
+        SwingUtilities.invokeLater(new CallSyncHandleThrowable(thrown));
+      
       // queue postExecute
       SwingUtilities.invokeLater(new CallSyncPostExecute());
     }
