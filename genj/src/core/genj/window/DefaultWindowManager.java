@@ -213,7 +213,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
     }
     
     // assemble content
-    assembleDialogContent(dlg.getContentPane(), image, content, actions);
+    assembleDialogContent(dlg.getRootPane(), dlg.getContentPane(), image, content, actions);
 
     // DISPOSE_ON_CLOSE?
     dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);

@@ -35,12 +35,15 @@ import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
@@ -84,16 +87,23 @@ public abstract class AbstractWindowManager implements WindowManager {
    */
   public int openDialog(String key, String title, Icon img, String txt, String[] options, Component owner) {
 
+    // create a textpane for the txt
     JTextPane text = new JTextPane();
     text.setText(txt);
     text.setEditable(false);
+    
+    // make sure it doesn't grab focus 
+    // since it's just static text  
+    text.setFocusable(false);
       
+    // wrap in reasonable sized scroll
     JComponent content = new JScrollPane(text) {
       public Dimension getPreferredSize() {
         return new Dimension(240,80);
       }
     };
       
+    // delegate
     return openDialog(key, title, img, content, options, owner);
   }
   
@@ -133,11 +143,16 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * Helper for assembling dialog content
    */
-  protected void assembleDialogContent(Container container, Icon image, JComponent content, ActionDelegate[] actions) {
-    
+  protected void assembleDialogContent(JRootPane root, Container container, Icon image, JComponent content, ActionDelegate[] actions) {
+
     // assemble buttons for actions
     JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
-    new ButtonHelper().setContainer(buttons).create(actions);
+    ButtonHelper bh = new ButtonHelper().setContainer(buttons);
+    for (int a=0; a<actions.length; a++) {
+      AbstractButton b = bh.create(actions[a]);
+      // set default - sadly JRootpane only accepts a JButton
+      if (a==0&&b instanceof JButton) root.setDefaultButton((JButton)b);	
+    }
     
     // prepare an icon
     JLabel icon = new JLabel(image);
@@ -159,7 +174,7 @@ public abstract class AbstractWindowManager implements WindowManager {
     gh.add(content, 1, 0, 1, 1, gh.GROWFILL_BOTH, insets);
     gh.add(buttons, 1, 1, 1, 1, 0);
 
-    // done  
+    // done
   }
   
   /**
