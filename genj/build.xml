@@ -274,6 +274,9 @@
        <fileset dir="${dir.build}" includes="help/**"/>
        <fileset dir="." includes="lib/jhbasic.jar"/>
      </zip>
+  	
+  	 <!-- clean up -->
+     <delete dir="${dir.build}/help"/>
      
   </target>
 
