@@ -146,8 +146,7 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
   public void requestFocus() {
     // try JDK 1.4's requestFocusInWindow instead
     try {
-      getClass().getMethod("requestFocusInWindow", new Class[]{})
-        .invoke(this, new Object[]{});
+      super.requestFocusInWindow();
     } catch (Throwable t) {
       super.requestFocus();
     }
