@@ -186,6 +186,7 @@
 
      <zip zipfile="${dir.dist}/genj_app-${app.version}.zip" update="True">
        <fileset dir="${dir.dist}" includes="lib/genj.jar"/>
+       <fileset dir="." includes="lib/graphj.jar"/>
        <fileset dir="${dir.build}/classes" includes="report/**"/>
        <fileset dir="." includes="gedcom/**"/>
        <fileset dir="." includes="doc/**"/>
@@ -254,7 +255,7 @@
      <antcall target="dist.languages"/>
 
      <!-- do the applet -->
-     <antcall target="dist.applet"/>
+     <!-- <antcall target="dist.applet"/>  -->
 
      <!-- do the application -->
      <antcall target="dist.app"/> 
