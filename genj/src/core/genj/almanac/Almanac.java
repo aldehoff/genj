@@ -19,6 +19,7 @@
  */
 package genj.almanac;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
 import genj.util.Debug;
@@ -376,6 +377,8 @@ public class Almanac {
 		  String text = line.substring(10).trim();
 		  if (text.length()==0)
 		    return null;
+		  if (c.toLowerCase().startsWith("b"))
+		    text = Gedcom.getName("BIRT") + ": " + text;
 		  
 		  // lookup category
 		  List cats = Collections.singletonList(getCategory(c));
