@@ -19,8 +19,6 @@
  */
 package genj.edit.beans;
 
-import java.awt.geom.Point2D;
-
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
@@ -30,11 +28,12 @@ import genj.gedcom.TagPath;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.util.Registry;
-import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.view.ViewManager;
-import genj.window.CloseWindow;
 
+import java.awt.geom.Point2D;
+
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
@@ -46,7 +45,7 @@ import javax.swing.JTextField;
 public class EventBean extends PropertyBean {
 
   /** known to have happened */
-  private ChoiceWidget known;
+  private JCheckBox known;
 
   /**
    * Finish proxying edit for property Birth
@@ -54,7 +53,7 @@ public class EventBean extends PropertyBean {
   public void commit() {
     // known might be null!
     if (known!=null) {
-      ((PropertyEvent)property).setKnownToHaveHappened(known.getSelectedIndex()==0);
+      ((PropertyEvent)property).setKnownToHaveHappened(known.isSelected());
     }
   }
 
@@ -115,15 +114,10 @@ public class EventBean extends PropertyBean {
     if (!"EVEN".equals(property.getTag())) {
       Boolean happened = event.isKnownToHaveHappened();
       if (happened!=null) {
-        
-        String[] choices = new String[]{ CloseWindow.TXT_YES, CloseWindow.TXT_NO };
-        known = new ChoiceWidget(choices, happened.booleanValue() ? choices[0] : choices[1]);
-        known.addChangeListener(changeSupport);
-        known.setEditable(false);
-        
-        add(new JLabel(resources.getString("even.known"))); 
+        known = new JCheckBox(resources.getString("even.known"));
+        known.setSelected(happened.booleanValue());
+        known.addActionListener(changeSupport);
         add(known);
-        
         defaultFocus = known;
       }
     }
