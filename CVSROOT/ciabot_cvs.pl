@@ -63,7 +63,7 @@ $sendmail = '/usr/sbin/sendmail';
 # this on a slower (or overloaded) machine or if you have really a lot of
 # directories.
 # Increasing this could be a very good idea if you're on Sourceforge ;)
-$sync_delay = 15;
+$sync_delay = 5;
 
 # This script can communicate with CIA either by mail or by an XML-RPC
 # interface. The XML-RPC interface is faster and more efficient, however you
