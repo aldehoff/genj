@@ -44,7 +44,7 @@ import java.awt.geom.Rectangle2D;
   protected TreeMetrics metrics;
   
   /** shapes */
-  protected Path shapeMarrs, shapeIndis, shapeFams, shapePlus, shapeMinus; 
+  protected Path shapeMarrs, shapeIndis, shapeFams, shapePlus, shapeMinus, shapeNext; 
 
   /** padding (n, e, s, w) */
   protected double[] padIndis, padMinusPlus; 
@@ -202,8 +202,15 @@ import java.awt.geom.Rectangle2D;
     // minus    
     shapeMinus = new Path();
     shapeMinus.moveTo(new Point2D.Double(-d*0.3, 0));
-    shapeMinus.lineTo(new Point2D.Double( d*0.3, 0));
+    shapeMinus.lineTo(new Point2D.Double(+d*0.3, 0));
     shapeMinus.append(new Rectangle2D.Double(-d/2,-d/2,d,d));
+    
+    // more
+    shapeNext = new Path();
+    shapeNext .moveTo(new Point2D.Double(-d*0.3,-d*0.3));
+    shapeNext .lineTo(new Point2D.Double(+d*0.3,     0));
+    shapeNext .lineTo(new Point2D.Double(-d*0.3,+d*0.3));
+    shapeNext .append(new Rectangle2D.Double(-d/2,-d/2,d,d));
     
     // done
   }
@@ -481,7 +488,7 @@ import java.awt.geom.Rectangle2D;
         padIndis[0],
         0,
         padIndis[2],
-        padIndis[3]
+        0
       };
       
       offsetHusband = model.isVertical() ? 
@@ -551,7 +558,7 @@ import java.awt.geom.Rectangle2D;
       }
 
       // choose one of the families
-      Fam fam = fams[0];
+      Fam fam = model.getFamily(indi, fams, false);
       
       // otherwise indi as husband first of family and arc pivot-indi
       TreeNode nIndi = model.add(new TreeNode(indi,shapeIndis,padHusband) {
@@ -572,6 +579,12 @@ import java.awt.geom.Rectangle2D;
       TreeNode nSpouse = model.add(new TreeNode(fam.getOtherSpouse(indi), shapeIndis, padWife));
       model.add(new TreeArc(pivot, nSpouse, false));
       
+      // add 'next' spouse and arc spouse-next
+      if (fams.length>1&&model.isFoldSymbols()) {
+        TreeNode nNext = model.add(new TreeNode(model.new NextFamily(indi,fams), shapeNext, null));
+        model.add(new TreeArc(nSpouse, nNext, false));
+      }
+            
       // add fam and arc indi-fam
       TreeNode nFam = model.add(new TreeNode(fam, shapeFams, padFams));
       model.add(new TreeArc(nIndi, nFam, false));

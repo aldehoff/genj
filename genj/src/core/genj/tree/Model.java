@@ -82,11 +82,14 @@ public class Model implements GedcomListener {
   /** whether we show toggles for un/folding */
   private boolean isFoldSymbols = true;
   
-  /** entities whose ancestors we're not interested in */
+  /** individuals whose ancestors we're not interested in */
   private Set hideAncestors = new HashSet();
 
-  /** entities whose descendants we're not interested in */
+  /** individuals whose descendants we're not interested in */
   private Set hideDescendants = new HashSet();
+  
+  /** individuals' family */
+  private Map indi2fam = new HashMap();
 
   /** gedcom we're looking at */
   private Gedcom gedcom;
@@ -341,20 +344,6 @@ public class Model implements GedcomListener {
   }
   
   /**
-   * Whether we're hiding descendants of given entity
-   */
-  public boolean isHideDescendants(Indi indi) {
-    return hideDescendants.contains(indi);
-  }
-  
-  /**
-   * Whether we're hiding ancestors of given entity
-   */
-  public boolean isHideAncestors(Indi indi) {
-    return hideAncestors.contains(indi);
-  }
-  
-  /**
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
   public void handleChange(Change change) {
@@ -373,6 +362,8 @@ public class Model implements GedcomListener {
         Bookmark b = (Bookmark)it.next();
         if (deleted.contains(b.getEntity())) it.remove();
       }
+      // indi2fam?
+      indi2fam.keySet().removeAll(deleted);
       // parse now
       update();
       // done
@@ -406,6 +397,40 @@ public class Model implements GedcomListener {
     if (!nodes.isEmpty()) fireNodesChanged(new ArrayList(nodes));
     
     // done
+  }
+  
+  /**
+   * Whether we're hiding descendants of given entity
+   */
+  /*package*/ boolean isHideDescendants(Indi indi) {
+    return hideDescendants.contains(indi);
+  }
+  
+  /**
+   * Whether we're hiding ancestors of given entity
+   */
+  /*package*/ boolean isHideAncestors(Indi indi) {
+    return hideAncestors.contains(indi);
+  }
+  
+  /** 
+   * The current family of individual
+   */
+  /*package*/ Fam getFamily(Indi indi, Fam fams[], boolean next) {
+    // only one?
+    if (fams.length>0) {
+      // lookup map
+      Fam fam = (Fam)indi2fam.get(indi);
+      if (fam==null) fam = fams[0];
+      for (int f=0;f<fams.length;f++) {
+        if (fams[f]==fam) 
+          return fams[(f+(next?1:0))%fams.length];
+      }
+      // invalid fam
+      indi2fam.remove(indi);
+    }
+    // done
+    return fams[0];
   }
   
   /**
@@ -523,6 +548,32 @@ public class Model implements GedcomListener {
       ((ModelListener)listeners.get(l)).bookmarksChanged(this);
     }
   }
+
+  /**
+   * NextFamily
+   */
+  /*package*/ class NextFamily implements Runnable {
+    /** indi */
+    private Indi indi;
+    /** next fams */
+    private Fam fam;
+    /**
+     * constructor
+     * @param individual indi to un/fold
+     * @param fams number of fams to roll over
+     */
+    protected NextFamily(Indi individual, Fam[] fams) {
+      indi = individual;
+      fam = getFamily(indi, fams, true);
+    }
+    /**
+     * perform 
+     */
+    public void run() {
+      indi2fam.put(indi, fam);
+      update();
+    }
+  } //NextFamily
   
   /**
    * FoldUnfold
@@ -534,9 +585,11 @@ public class Model implements GedcomListener {
     private Set set;
     /**
      * constructor
+     * @param individual indi to un/fold
+     * @param ancestors whether to change its ancestors/descendants
      */
-    protected FoldUnfold(Indi which, boolean ancestors) {
-      indi = which;
+    protected FoldUnfold(Indi individual, boolean ancestors) {
+      indi = individual;
       set = ancestors ? hideAncestors : hideDescendants; 
     }
     /**
@@ -546,6 +599,6 @@ public class Model implements GedcomListener {
       if (!set.remove(indi)) set.add(indi);
       update();
     }
-  } //Fold
+  } //FoldUnfold
   
 } //Model
