@@ -517,21 +517,38 @@ public abstract class Property implements Comparable {
    * Returns this property's property by path
    */
   public Property getProperty(TagPath path, int qfilter) {
-
-    // if we're an entity then we check the tag and skip
-    if (this instanceof Entity && !getTag().equals(path.get(0))) return null;
-
-    // look for it
-    return getPropertyRecursively(path, 0, qfilter);
+    return getPropertyRecursively(path, 0, path.get(0), qfilter);
   }
   
-  private Property getPropertyRecursively(TagPath path, int pos, int qfilter) {
+  private Property getPropertyRecursively(TagPath path, int pos, String tag, int qfilter) {
 
-    // Correct here ?
-    if (!path.get(pos).equals(getTag())) return null;
+    // go up parent chain for all coming '..'s
+    if (tag.equals("..")) {
+      Property p = this;
+      do {
+        // get parent
+        p = p.getParent();
+        if (p==null)
+          return null;
+        // skip tag (end?)
+        pos ++;
+        if (pos==path.length())
+          break;
+        // next
+        tag = path.get(pos);
+      } while (tag.equals(".."));
+      
+      // ask p to continue
+      return p.getPropertyRecursively(path, pos-1, ".", qfilter); 
+    }
+    
+    // Correct here - either '.' or matching tag?
+    if (!(tag.equals(".")||tag.equals(getTag()))) 
+      return null;
 
     // test filter
-    if (!is(qfilter)) return null;
+    if (!is(qfilter))
+      return null;
     
     // path traversed? (it's me)
     if (pos==path.length()-1) 
@@ -540,14 +557,14 @@ public abstract class Property implements Comparable {
     // follow a link? (this probably should be into PropertyXref.class - override)
     if ((qfilter&QUERY_FOLLOW_LINK)!=0&&this instanceof PropertyXRef) {
       Property p = ((PropertyXRef)this).getReferencedEntity();
-      if (p!=null) p = p.getPropertyRecursively(path, pos+1, qfilter);
+      if (p!=null) p = p.getPropertyRecursively(path, pos+1, path.get(pos+1), qfilter);
       if (p!=null)
         return p;
     }
     
     // Search in properties
     for (int i=0;i<getNoOfProperties();i++) {
-      Property p = getProperty(i).getPropertyRecursively(path, pos+1, qfilter);
+      Property p = getProperty(i).getPropertyRecursively(path, pos+1, path.get(pos+1), qfilter);
       if (p!=null) 
         return p;
     }
@@ -713,7 +730,7 @@ public abstract class Property implements Comparable {
    * test for given criteria
    */
   private final boolean is(int criteria) {
-
+    
     if ((criteria&QUERY_VALID_TRUE)!=0&&!isValid())
       return false;
       
