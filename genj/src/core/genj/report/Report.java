@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.53 $ $Author: nmeier $ $Date: 2004-12-07 20:28:43 $
+ * $Revision: 1.54 $ $Author: nmeier $ $Date: 2004-12-08 00:15:20 $
  */
 package genj.report;
 
@@ -86,6 +86,10 @@ import org.jfree.data.general.AbstractDataset;
  * Interface of a user definable GenjJ Report
  */
 public abstract class Report implements Cloneable {
+  
+  private final static ImageIcon     
+    IMG_SHELL = new genj.util.swing.ImageIcon(ReportView.class,"ReportShell.gif"), 
+    IMG_GUI   = new genj.util.swing.ImageIcon(ReportView.class,"ReportGui.gif"  );
 
   /** global report options */
   protected Options OPTIONS = Options.getInstance();
@@ -220,7 +224,7 @@ public abstract class Report implements Cloneable {
     // not known?
     if (image==null) {
       // prepare default
-      image = ReportViewFactory.IMG;
+      image = usesStandardOut() ? IMG_SHELL : IMG_GUI;
       // try to load a custom one too
       try {
         String file = getTypeName()+".gif";

@@ -83,8 +83,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
   /** statics */
   private final static ImageIcon 
-    imgShell = new ImageIcon(ReportView.class,"ReportShell.gif"), 
-    imgGui   = new ImageIcon(ReportView.class,"ReportGui.gif"  ),
     imgStart = new ImageIcon(ReportView.class,"Start.gif"      ), 
     imgStop  = new ImageIcon(ReportView.class,"Stop.gif"       ),
     imgSave  = new ImageIcon(ReportView.class,"Save.gif"       ),
@@ -510,11 +508,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       defRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
       Report report = (Report)value;
       defRenderer.setText(report.getName());
-      if (report.usesStandardOut()) {
-        defRenderer.setIcon(imgShell);
-      } else {
-        defRenderer.setIcon(imgGui);
-      }
+      defRenderer.setIcon(report.getImage());
       return defRenderer;
     }
     
