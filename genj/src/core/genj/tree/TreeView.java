@@ -350,8 +350,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      * @see java.awt.Component#setSize(int, int)
      */
     public void setSize(int width, int height) {
-      width = Math.max(16,width);
-      height = Math.max(16,height);
+      width = Math.max(32,width);
+      height = Math.max(32,height);
       super.setSize(width, height);
     }
     /**
