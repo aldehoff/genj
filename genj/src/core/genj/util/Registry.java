@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.17 $ $Author: nmeier $ $Date: 2004-05-21 13:15:33 $
+ * $Revision: 1.18 $ $Author: nmeier $ $Date: 2004-05-23 09:21:13 $
  */
 package genj.util;
 
@@ -48,7 +48,6 @@ public class Registry {
   private String view;
   private Properties properties;
   private Registry parent;
-  private boolean changed;
 
   private static Hashtable registries = new Hashtable();
 
@@ -168,6 +167,34 @@ public class Registry {
     return (Registry)registries.get(name);
   }
   
+  /**
+   * Returns this registry's view
+   */
+  public String getView() {
+
+    // Base of registry ?
+    if (parent==null)
+      return "";
+
+    // View of registry !
+    String s = parent.getView();
+    return (s.length()==0 ? "" : s+".")+view;
+  }
+
+  /**
+   * Returns this registry's view's last part
+   */
+  public String getViewSuffix() {
+
+    String v = getView();
+
+    int pos = v.lastIndexOf('.');
+    if (pos==-1)
+      return v;
+
+    return v.substring(pos+1);
+  }
+
   /**
    * Returns array of ints by key
    */
@@ -358,31 +385,6 @@ public class Registry {
   }
 
   /**
-   * Returns String parameter to key
-   */
-  public String get(String key, String def) {
-
-    // Get property by key
-    String result;
-    if (parent==null) {
-      result = properties.getProperty(key);
-    } else
-      result = parent.get(view+"."+key,def);
-
-    // .. existing ?
-    if (result==null)
-      return def;
-
-    // .. information ?
-    result = result.trim();
-    if (result.length()==0)
-      return def;
-
-    // Done
-    return result;
-  }
-
-  /**
    * Returns vector of strings by key
    */
   /*
@@ -471,31 +473,38 @@ public class Registry {
   }
 
   /**
-   * Returns this registry's view
+   * Returns String parameter to key
    */
-  public String getView() {
+  public String get(String key, String def) {
 
-    // Base of registry ?
+    // Get property by key
+    String result;
     if (parent==null)
-      return "";
+      result = properties.getProperty(key);
+    else
+      result = parent.get(view+"."+key,def);
 
-    // View of registry !
-    String s = parent.getView();
-    return (s.length()==0 ? "" : s+".")+view;
+    // .. existing ? 20040523 removed trim() to allow for leading/trailing space values
+    if (result==null||result.length()==0)
+      return def;
+      
+    // Done
+    return result;
   }
 
   /**
-   * Returns this registry's view's last part
+   * Remembers a String value
    */
-  public String getViewSuffix() {
+  public void put(String key, String value) {
 
-    String v = getView();
+    // store
+    if (parent==null) {
 
-    int pos = v.lastIndexOf('.');
-    if (pos==-1)
-      return v;
-
-    return v.substring(pos+1);
+      // 20040523 removed check for old value - don't need it imho
+      properties.put(key,value);
+    } else {
+      parent.put(view+"."+key,value);
+    }
   }
 
   /**
@@ -629,22 +638,6 @@ public class Registry {
     put(key+".h",value.height);
 
     // Done
-  }
-
-  /**
-   * Remembers a String value
-   */
-  public void put(String key, String value) {
-
-    if (parent==null) {
-      String old = properties.getProperty(key);
-      if ( (old==null) || (!old.equals(value)) ) {
-        changed=true;
-        properties.put(key,value);
-      }
-    } else {
-      parent.put(view+"."+key,value);
-    }
   }
 
   /**
