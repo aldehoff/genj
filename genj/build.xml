@@ -182,6 +182,7 @@
     <antcall target="dist.language"><param name="language" value="pt_BR"/></antcall>
     <antcall target="dist.language"><param name="language" value="nl"/></antcall>
     <antcall target="dist.language"><param name="language" value="ru"/></antcall>
+    <antcall target="dist.language"><param name="language" value="cs"/></antcall>
   </target>
 
   <!--
@@ -243,7 +244,7 @@
      <jar jarfile="${dir.build}/lib/run.jar" update="True">
        <manifest>
          <attribute name="Main-Class" value="genj.app.App"/>
-         <attribute name="Class-Path" value="./lib/genj.jar ./lib/jhbasic.jar ./lib/graphj.jar ./lib/jfreechart.jar ./lib/genj_de.jar ./lib/genj_en.jar ./lib/genj_es.jar ./lib/genj_fr.jar ./lib/genj_it.jar ./lib/genj_ja.jar ./lib/genj_hu.jar ./lib/genj_pt_BR.jar ./lib/genj_ru.jar ./lib/genj_nl.jar"/>
+         <attribute name="Class-Path" value="./lib/genj.jar ./lib/jhbasic.jar ./lib/graphj.jar ./lib/jfreechart.jar ./lib/genj_de.jar ./lib/genj_en.jar ./lib/genj_es.jar ./lib/genj_fr.jar ./lib/genj_it.jar ./lib/genj_ja.jar ./lib/genj_hu.jar ./lib/genj_pt_BR.jar ./lib/genj_ru.jar ./lib/genj_nl.jar ./lib/genj_cs.jar"/>
        </manifest>
      </jar>
      
