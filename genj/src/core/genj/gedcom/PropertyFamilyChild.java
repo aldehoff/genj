@@ -46,15 +46,6 @@ public class PropertyFamilyChild extends PropertyXRef {
   }
 
   /**
-   * Returns a warning string that describes what happens when this
-   * property would be deleted
-   * @return warning as <code>String</code>, <code>null</code> when no warning
-   */
-  public String getDeleteVeto() {
-    return resources.getString("prop.famc.veto");
-  }
-
-  /**
    * Returns the reference to family
    */
   public Fam getFamily() {

@@ -194,8 +194,14 @@ public abstract class PropertyXRef extends Property {
    * @see genj.gedcom.Property#getDeleteVeto()
    */
   public String getDeleteVeto() {
+    // warn if linked
     if (getReferencedEntity()==null) 
       return null;
+    // a specialized message?
+    String key = "prop."+getTag().toLowerCase()+".veto";
+    if (resources.contains(key))
+      return resources.getString(key);
+    // fallback to default
     return resources.getString("prop.xref.veto");
   }
 
