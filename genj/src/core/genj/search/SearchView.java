@@ -110,7 +110,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   /** criterias */
   private ChoiceWidget choicePath, choiceValue;
   private JCheckBox checkAggregate, checkRegExp;
-
+  private JLabel labelCount;
+  
   /** history */
   private LinkedList oldPaths, oldValues;
   
@@ -164,7 +165,10 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
           showRegExPopup(e.getComponent(), e.getPoint());
       }
     });
-    
+
+    checkRegExp = new JCheckBox(resources.getString("label.regexp"), isRegExpAvailable);
+    checkRegExp.setEnabled(isRegExpAvailable);
+
     JLabel labelPath = new JLabel(resources.getString("label.path"));    
     choicePath = new ChoiceWidget(oldPaths);
     choicePath.setEnabled(false);
@@ -172,17 +176,17 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     checkAggregate = new JCheckBox(resources.getString("label.aggregate"));
     checkAggregate.setEnabled(false);
     
-    checkRegExp = new JCheckBox(resources.getString("label.regexp"), isRegExpAvailable);
-    checkRegExp.setEnabled(isRegExpAvailable);
-
+    labelCount = new JLabel();
+    
     JPanel paneCriteria = new JPanel();
     GridBagHelper gh = new GridBagHelper(paneCriteria);
     gh.add(labelValue    ,0,0,1,1);
     gh.add(checkRegExp   ,1,0,1,1);
-    gh.add(choiceValue   ,0,1,2,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-    gh.add(labelPath     ,0,2,2,1);
-    gh.add(choicePath    ,0,3,2,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-    gh.add(checkAggregate,0,4,2,1);
+    gh.add(choiceValue   ,0,1,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+    gh.add(labelPath     ,0,2,3,1);
+    gh.add(choicePath    ,0,3,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+    gh.add(checkAggregate,0,4,2,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+    gh.add(labelCount    ,2,4,1,1);
     
     // prepare layout
     setLayout(new BorderLayout());
@@ -445,6 +449,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
         results.add(hits);
         hits.clear();
       }
+      labelCount.setText(""+count);
     }
     
     /**
@@ -465,6 +470,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
      * after execute (on EDT)
      */
     protected void postExecute() {
+      // update count
+      labelCount.setText(""+count);
       // toggle buttons
       bSearch.setEnabled(true);
       bStop.setEnabled(false);
@@ -507,6 +514,10 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     
     /** got a hit (not on EDT) */
     private void add(Hit hit) {
+      // too many?
+      if (count==MAX_HITS)
+        throw new IndexOutOfBoundsException("Too many hits found! Restricting result to "+MAX_HITS+" hits.");
+      count++;
       // create a view
       listResults.init(hit);
       // synchronized keep
@@ -516,9 +527,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
         // sync (on first)?
         if (hits.size()==1) sync();
       }
-      // too many?
-      if (count++>MAX_HITS)
-        throw new IndexOutOfBoundsException("Too many hits found! Restricting result to "+MAX_HITS+" hits.");
       // done
     }
     
