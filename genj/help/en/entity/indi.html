@@ -1,76 +1,51 @@
-<HTML>
+<html>
 
-<BODY>
-<H2><a href="../entities.html">Entities</a> - Individual</H2>
+<body>
+<h2><a href="../entities.html">Entities</a> - Individual</h2>
 
-<P>
-Gedcom information mostly revolves about individuals. That's you, your father,
-your children and any other ancestor or descendant. By clicking on the small
-symbol <img src="../../images/Indi.gif"></img> in the <A href="../cc.html">Control Center</A>
-you can very easily enter new information for individuals you know about.
-</P>
+<p>
+ The information about individuals is the most important part
+ of any genealogic set of data. In GenJ instances of type
+ Individual act as the container for all information known about 
+ a person like yourself, your father, your children and any other 
+ descendant or ancestor, etc. 
+</p>
 
-<P>
-The creation asks for given, family name and sex. Then you can specify its
-relationship to your existing data. First select any family or individual
-in the <A href="../view/tree.html">Tree View</A> or 
-<A href="../view/table.html">Table View</A>. The radiobuttons below the
-indication of the selected entity allows to specify the new relationship.
-When selecting an individual the new one can be its Sibling, Child, Parent
-(if not already exists) or Spouse. When selecting a family the new individual
-can be Child or Spouse. Make your selection and click on Create.
-</P>
+<p>
+ When modelling relationships between individuals a web
+ of information evolves. This makes it possible to derive
+ information about lineage and families' heritage. 
+ Relationships based on kinship are not captured directly
+ through references to e.g. spouse, children or parents. Instead
+ an indirection through references to <a href="./fam.html">Families</a>
+ is used. So having a spouse means to be spouse in a family
+ with another spouse and having parents means to be child in
+ a family with two spouses.
+</p>
 
-<P>
-When editing an Individual in the <A href="../view/edit.html">Edit View</A>
-you should stick to the Gedcom standard as close as possible. A typical
-individual could consists of this kind of information:
-<PRE>
-@I008@ INDI
- NAME Nils /Meier/
- SEX M
- BIRT
-  DATE 25 MAY 1970
-  PLAC Rendsburg, Germany
- RESI
-  ADDR 202-1241 Kilborn Place
-  DATE FROM 30 JUL 1999 TO 2000     
-</PRE>
-</P>
+<table>
+ <tr> 
+  <td>Entity</td><td>Individual</td>
+ </tr><tr>
+  <td>Image </td><td><img src="../../images/indi.gif"></td>
+ </tr><tr>
+  <td>Gedcom Tag</td><td>INDI</td>
+ </tr><tr>
+  <td>Gedcom Info</td><td>a person</td>
+ </tr><tr>
+  <td>Sub&nbsp;Tags</td><td>NAME, SEX, BIRT, DEAT, RESI, ...</td>
+ </tr><tr valign=top>
+  <td>References&nbsp;to</td><td>
+   <img src="../../images/fam.gif">&nbsp;FAMC child in <a href="./fam.html">Family</a> <br>
+   <img src="../../images/fam.gif">&nbsp;FAMS spouse in <a href="./fam.html">Family</a><br>
+   <img src="../../images/note.gif">&nbsp;NOTE <a href="./note.html">Note</a>              <br>
+   <img src="../../images/repository.gif">&nbsp;REPO <a href="./repository.html">Repository</a>  <br>
+   <img src="../../images/source.gif">&nbsp;SOUR <a href="./source.html">Source</a>          <br>
+   <img src="../../images/media.gif">&nbsp;OBJE <a href="./media.html">Multimedia Object</a><br>
+   <img src="../../images/submitter.gif">&nbsp;SUBM <a href="./submitter.html">Submitter</a>    
+  </td>
+ </tr>
+</table>
 
-<P>
-Just work through the properties of your individuals and change
-their properties. When adding new properties choose from the 
-predefined list or if necessary extend the schema by adding
-new property-tags for special user-properties.
-</P>
-
-<P>
-An important feature of Gedcom is the capability to link
-entities. Individuals are normally not separate - they are
-married, have parents and children. Everytime you create a
-new Individual related to others, they are linked through
-properties. These properties for the individuals are
-FAMC (being a child in a family)or FAMS (being a spouse in
-a family). The properties refer to the family by its
-id. You can explore the relationship between individuals
-and families by following those links. Be careful when
-deleting or creating new links - keeping the overview
-of the referential integrity is not easy :). 
-</P>
-
-<P>
-Assume a special case as an example: You have your family
-tree and found out that an ancestors wife's sister married
-his brother. All those individuals are in your tree already!
-You can now create a new <A>family</A> for this newly
-discovered relationship. But then you don't want to create a new
-individual - you want to link existing entities!
-The solution: Select your ancestor's brother and add a FAMS
-property to it. Then change it to point to the new family
-by entering its ID. Click on the link-button and a HUSB property 
-will automatically be added to that family. The circle is made.
-</P>
-
-</BODY>
-</HTML>
+</body>
+</html>
