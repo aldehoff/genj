@@ -169,10 +169,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   public void removeNotify() {
     
     // remember context
-    if (isSticky) {
-      Entity e = editor.getContext().getEntity();
-      registry.put("sticky", e!=null?e.getId():"");
-    }
+    Entity e = null;
+    if (isSticky) 
+      e = editor.getContext().getEntity();
+    registry.put("sticky", e!=null?e.getId():"");
 
     // remember mode
     registry.put("advanced", mode.advanced);
