@@ -38,7 +38,7 @@ import java.util.StringTokenizer;
 /**
  * Wrapper for a Property
  */
-public class MetaProperty {
+public class MetaProperty implements Comparable {
 
   /** static - flags */
   public final static int
@@ -143,6 +143,14 @@ public class MetaProperty {
     // done
   }
   
+  /**
+   * A comparison based on tag name
+   */
+  public int compareTo(Object o) {
+    MetaProperty other = (MetaProperty)o;
+    return getTag().compareTo(other.getTag());
+  }
+
   /**
    * Test
    */
