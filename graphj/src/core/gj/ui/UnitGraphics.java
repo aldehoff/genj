@@ -17,9 +17,11 @@ package gj.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -27,6 +29,7 @@ import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Stack;
 
@@ -60,6 +63,12 @@ public class UnitGraphics {
   
   /** the horizontal/vertical unit */
   private double xunit, yunit;
+
+  /** a line */
+  private Line2D.Double line = new Line2D.Double();
+  
+  /** the fontmetrics */
+  private FontMetrics fontMetrics;
   
   /**
    * Constructor
@@ -73,6 +82,7 @@ public class UnitGraphics {
    */
   public UnitGraphics(Graphics2D graphcs, double unitX, double unitY) {
     graphics = graphcs;
+    fontMetrics = graphics.getFontMetrics();
     xunit = unitX;
     yunit = unitY;
   }
@@ -92,6 +102,24 @@ public class UnitGraphics {
    */
   public void translate(double x, double y) {
     graphics.translate(units2pixels(x, xunit), units2pixels(y, yunit));
+  }
+
+  /**
+   * Draw a line 
+   */
+  public void draw(double x1, double y1, double x2, double y2) {
+    draw(x1,y1,x2,y2,0,0);
+  }
+  
+  /**
+   * Draw a line with delta
+   */
+  public void draw(double x1, double y1, double x2, double y2, int dx, int dy) {
+    line.x1=x1*xunit+dx;
+    line.y1=y1*yunit+dy;
+    line.x2=x2*xunit+dx;
+    line.y2=y2*yunit+dy;
+    graphics.draw(line);
   }
 
   /** 
@@ -122,7 +150,7 @@ public class UnitGraphics {
     sy *= yunit;
     if (sx!=1.0D||sy!=1.0D) {
       if (at==null) at = new AffineTransform();
-      at.scale(sx,sy);
+      at.scale(Double.isNaN(sx)?1.0D:sx,Double.isNaN(sy)?1.0D:sy);
     }
 
     // rotate
@@ -149,12 +177,36 @@ public class UnitGraphics {
    * Draw text at given position
    */
   public void draw(String txt, double x, double y) {
-    FontMetrics fm = graphics.getFontMetrics();
-    int 
-      w  = fm.stringWidth(txt),
-      dx = -w/2,
-      dy = fm.getHeight()/2-fm.getDescent();
+    draw(txt, x, y, 0.5D);
+  }
+
+  /**
+   * Draw text at given position
+   */
+  public void draw(String txt, double x, double y, double align) {
+    draw(txt, x, y, align, 0, fontMetrics.getHeight()/2-fontMetrics.getDescent());
+  }
+
+  /**
+   * Draw text at given position
+   */
+  public void draw(String txt, double x, double y, double align, int dx, int dy) {
+    
+    // fix alignment
+    dx += - (int)( fontMetrics.stringWidth(txt) * align);
+
+    // draw      
     graphics.drawString(txt, units2pixels(x, xunit)+dx, units2pixels(y, yunit)+dy);
+  }
+  
+  /**
+   * Draw Image at fiven position
+   */
+  public void draw(Image img, double x, double y) {
+    int 
+      ix = units2pixels(x, xunit),
+      iy = units2pixels(y, yunit) - img.getHeight(null)/2;
+    graphics.drawImage(img, ix, iy, null);
   }
   
   /**
@@ -162,6 +214,14 @@ public class UnitGraphics {
    */
   public void setColor(Color color) {
     if (color!=null) graphics.setColor(color);
+  }
+  
+  /**
+   * Set a font
+   */
+  public void setFont(Font font) {
+    graphics.setFont(font);
+    fontMetrics = graphics.getFontMetrics();
   }
   
   /** 
@@ -186,6 +246,18 @@ public class UnitGraphics {
   }
   
   /**
+   * Checks whether given rectangle is clipped
+   */
+  public boolean isClipped(double x1, double y1, double x2, double y2) {
+    Rectangle r = graphics.getClipBounds();
+    if (x1*xunit>r.getMaxX()) return true;
+    if (x2*xunit<r.getMinX()) return true;
+    if (y1*yunit>r.getMaxY()) return true;
+    if (y2*yunit<r.getMinY()) return true;
+    return false;
+  }
+  
+  /**
    * Pushes a pop'able clip
    */
   public void pushClip(double x, double y, Rectangle2D r) {
@@ -201,7 +273,7 @@ public class UnitGraphics {
       x = (int)Math.ceil(x1*xunit),
       y = (int)Math.ceil(y1*yunit),
       w = (int)Math.floor(x2*xunit)-x,
-      h = (int)Math.floor(y2*xunit)-y;
+      h = (int)Math.floor(y2*yunit)-y;
     graphics.clipRect(x,y,w,h);
   }
   
@@ -211,6 +283,19 @@ public class UnitGraphics {
   public void popClip() {
     Rectangle r = (Rectangle)clipStack.pop();
     graphics.setClip(r.x,r.y,r.width,r.height);
+  }
+  
+  /**
+   * Returns the clip in unit space
+   */
+  public Rectangle2D getClip() {
+    Rectangle r = graphics.getClipBounds();
+    return new Rectangle2D.Double(
+      r.getMinX()/xunit,
+      r.getMinY()/yunit,
+      r.getWidth()/xunit,
+      r.getHeight()/yunit
+    );
   }
   
   /**
@@ -224,7 +309,7 @@ public class UnitGraphics {
    * pixels2unit
    */
   public static double pixels2units(int i, double unit) {
-    return ((double)i)*unit;
+    return ((double)i)/unit;
   }
 
 } //UnitGraphics

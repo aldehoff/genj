@@ -75,6 +75,7 @@
                     ,gj/layout/*
                     ,gj/layout/tree/**
                     ,gj/model/*
+                    ,gj/ui/UnitGraphics.class
                     ,gj/util/*"/>
      </jar>
   </target>
