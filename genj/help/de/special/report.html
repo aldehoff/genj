@@ -1,0 +1,200 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=us-ascii">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 9">
+<meta name=Originator content="Microsoft Word 9">
+<link rel=File-List href="./de%20f%20report-Dateien/filelist.xml">
+<title>Report Writing</title>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>Marcus Sandberg</o:Author>
+  <o:LastAuthor>Marcus Sandberg</o:LastAuthor>
+  <o:Revision>4</o:Revision>
+  <o:Created>2004-01-14T19:54:00Z</o:Created>
+  <o:LastSaved>2004-01-14T20:16:00Z</o:LastSaved>
+  <o:Pages>2</o:Pages>
+  <o:Words>358</o:Words>
+  <o:Characters>2044</o:Characters>
+  <o:Company>Marcus Sandberg</o:Company>
+  <o:Lines>17</o:Lines>
+  <o:Paragraphs>4</o:Paragraphs>
+  <o:CharactersWithSpaces>2510</o:CharactersWithSpaces>
+  <o:Version>9.6926</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:Zoom>150</w:Zoom>
+  <w:HyphenationZone>21</w:HyphenationZone>
+ </w:WordDocument>
+</xml><![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p
+	{font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+pre
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Courier New";}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 70.85pt 2.0cm 70.85pt;
+	mso-header-margin:35.4pt;
+	mso-footer-margin:35.4pt;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+</head>
+
+<body lang=DE link=blue vlink=blue style='tab-interval:35.4pt'>
+
+<div class=Section1>
+
+<h2><span lang=EN-GB style='mso-ansi-language:EN-GB'>Report Erstellung<o:p></o:p></span></h2>
+
+<p>Ein GenJ Report ist eine Java Klasse welche die Schnittstelle <i>genj.report.Report
+</i>implementiert. Um eigene Funktionalit&auml;t zu erstellen, definieren Sie Ihre
+eigene Klasse in einer Quelldatei and kopieren Sie diese Datei in das Report-Unterverzeichnis
+.\report (der Dateiname muss mit &#8222;Report*&#8220; beginnen). </p>
+
+<p>Lassen Sie uns annehmen, dass wir einen Testreport mit dem Namen &quot;Test1&quot;
+erstellen wollen. Zuerst erstellen Sie eine Textdatei mit Namen
+ReportTest1.java im Verzeichnis ./report. Dann kompilieren Sie die Datei, in
+dem sie das Skript zum Kompilieren, welches sich im gleichen Verzeichnis
+befindet, starten. Dieses Skript startet javac &#8211; den JAVA Compiler. Das
+Ergebnis ist eine Datei mit Namen ReportTest1.class, welche GenJ laden und
+ausf&uuml;hren kann, nachdem sie Sie in der <a href="..\view\report.html">Report Ansicht</a>
+ausgew&auml;hlt haben. </p>
+
+<p>Lassen Sie uns einen Blick auf das Beispiel ReportTest1.java werfen. Es
+enth&auml;lt eine <i>public class</i>-Definition, welche dem Report Auftrag entspricht
+(<i>implements Report</i>). Ein Teil dieses Auftrages ist das Verhalten f&uuml;r
+alle folgenden Methoden zu definieren: <o:p></o:p></p>
+
+<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
+mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
+mso-ascii-font-family:"Times New Roman"'><il>&middot;</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
+</span>getName <o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
+mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
+mso-ascii-font-family:"Times New Roman"'>&middot;</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
+</span>getInfo <o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
+mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
+mso-ascii-font-family:"Times New Roman"'>&middot;</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
+</span>start <o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
+mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
+mso-ascii-font-family:"Times New Roman"'>&middot;</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
+</span>usesStandardOut <o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
+mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
+mso-ascii-font-family:"Times New Roman"'>&middot;</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
+</span>getAuthor <o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
+mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
+mso-ascii-font-family:"Times New Roman"'>&middot;</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
+</span>isReadOnly </il><o:p></o:p></span></p>
+
+<p class=MsoNormal>Sehen Sie sich das unten stehende Beispiel an oder die
+herunterladbare API an, um besser zu verstehen was diese Methoden tun. Die
+wichtigste Methode ist <i>start</i> &#8211; Sie ist der Haupteinstiegspunkt f&uuml;r die
+Logik des Report: </p>
+
+<pre><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></pre><pre><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></pre><pre><span style="mso-spacerun: yes">&nbsp; </span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>import genj.gedcom.*;<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>import genj.report.*;<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>import java.io.*;<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp; </span>* A report named Foo<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>public class ReportFoo implements Report {<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* The name of the report<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>public String getName() {<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return &quot;Foo&quot;;<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* Information about the report<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>public String getInfo() {<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return &quot;This report is oh so good\nPlease try it now!&quot;;<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* The main entry point for the report<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>public boolean start(ReportBridge bridge, Gedcom gedcom) throws InterruptedException {<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>bridge.println(&quot;Hello World&quot;);<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return true;<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* Whether this report uses StandardOut or its own windows/dialogs<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>public boolean usesStandardOut() {<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return true;<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* The author of this report<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'> <span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;</span>public String getAuthor() {<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return &quot;Nils Meier <nils@meiers.net>&quot;;<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* Whether this report will change the Gedcom data it is running on<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>public boolean isReadOnly() {<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return false;<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>}<o:p></o:p></span></pre><pre><span
+lang=EN-GB style='mso-ansi-language:EN-GB'> <o:p></o:p></span></pre>
+
+<p>Innerhalb der <i>start</i> Methode k&ouml;nnen auf alle Informationen des Gedcom Objektes
+zugegriffen werden. Sie m&uuml;ssen die GenJ API (eine HTML Klassenreferenz) herunterladen,
+um die M&ouml;glichkeiten der GenJ Kernklassen zu erforschen. Um sich vertraut zu
+machen, sollten Sie damit beginnen bestehende Reports zu ver&auml;ndern oder zu
+erweitern. </p>
+
+</div>
+
+</body>
+
+</html>

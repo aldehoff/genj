@@ -237,9 +237,10 @@
   <!--
    Distribution - All Helps
    -->
-  <target name="dist.help">
+  <target name="dist.help" depends="init">
     <antcall target="dist.help.language"><param name="language" value="en"/></antcall>
     <antcall target="dist.help.language"><param name="language" value="fr"/></antcall>
+    <antcall target="dist.help.language"><param name="language" value="de"/></antcall>
   </target>
 
   <!--
