@@ -251,6 +251,11 @@ import javax.swing.SwingConstants;
    */
   private class EntityPopupMouseListener extends MouseAdapter {
     public void mousePressed(MouseEvent e) {
+      // double-click?
+      if (e.getClickCount()>1) {
+        //FIXME setCurrentEntity(emphasized)
+        return;
+      }
       // 20020829 on some OSes isPopupTrigger() will
       // be true on mousePressed
       mouseReleased(e);
