@@ -35,20 +35,16 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 
 /**
  * Component for editing genealogic entity properties
@@ -109,31 +105,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     if (registry.get("advanced", false))
       mode.trigger();
 
-    // setup key bindings
-    // FIXME testing keybindings
-    Action foo = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
-        //System.out.println(e);
-      }
-    };
-
-    installShortcut("alt pressed UP", foo);
-    installShortcut("alt pressed DOWN", foo);
-    installShortcut("alt pressed LEFT", foo);
-    installShortcut("alt pressed RIGHT", foo);
-    
     // Done
-  }
-  
-  private void installShortcut(String key, Action action) {
-    KeyStroke keystroke = KeyStroke.getKeyStroke(key);
-    if (keystroke==null)
-      return;
-    getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-      keystroke, action.toString()
-    );
-    getActionMap().put(action.toString(), action);
-    // done
   }
   
   /**
