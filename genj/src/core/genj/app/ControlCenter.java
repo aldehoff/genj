@@ -372,12 +372,14 @@ public class ControlCenter extends JPanel implements ActionListener {
         App.resources.getString("cc.create.action")
       );
 
-      if (FileChooser.APPROVE_OPTION != chooser.showDialog())
-      return;
+      if (FileChooser.APPROVE_OPTION != chooser.showDialog()) {
+        return;
+      }
 
       final File file = chooser.getSelectedFile();
-      if (file==null)
-      return;
+      if (file==null) {
+        return;
+      }
 
       if (file.exists()) {
 
@@ -1169,12 +1171,14 @@ public class ControlCenter extends JPanel implements ActionListener {
    * Creates a FileChooser for given arguments
    */
   private FileChooser createFileChooser(JFrame frame, String title, String action) {
+   
     return new FileChooser(
       frame,
       title,
       action,
       new String[]{"ged"},
-      "GEDCOM (*.ged)"
+      "GEDCOM (*.ged)",
+      System.getProperty("genj.gedcom.dir")
     );
   }
 }

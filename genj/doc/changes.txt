@@ -24,6 +24,7 @@ Future
 
 1.8 - Mar xx 2002 (not released)
 
+  N System parameters : genj.report.dir + genj.help.dir + genj.gedcom.dir
   C EditView's create-entity actions will result in confirmation-prompt when clicked
   C Applet opens detail browser window on (new "Browser Details") button click and not single click
   C Applet's default-size for windows is now 640/480

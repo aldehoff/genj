@@ -82,8 +82,8 @@ public class FileChooser extends JFileChooser {
   /**
    * Constructor
    */
-  public FileChooser(JFrame frame, String title, String command, String[] fileExtensions, String fileDescription) {
-    super(".");
+  public FileChooser(JFrame frame, String title, String command, String[] fileExtensions, String fileDescription, String baseDir) {
+    super(baseDir!=null?baseDir:".");
     this.frame  =frame;
     this.command=command;
     extensions  = fileExtensions;

@@ -404,20 +404,30 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
   }
 
   /**
-   * Load Reports from Disk/Net
-   */
-  private void loadReports(boolean force) {
-
-    // Reload isn't always necessary
-    if ((force==false)&&(loader!=null)) {
-      return;
-    }
-
-    // Create the loader
-    loader = new ReportLoader(new File(System.getProperty("user.dir"),"report"));
-
-    // Done
-  }
+	 * Load Reports from Disk/Net
+	 */
+	private void loadReports(boolean force) {
+	  
+	  // Reload isn't always necessary
+	  if ((force==false)&&(loader!=null)) {
+	    return;
+	  }
+	  
+	  // The reports are either 
+	  File base;
+	  if (System.getProperty("genj.report.dir")!=null) {
+	    // .. in "genj.report.dir"
+	    base = new File(System.getProperty("genj.report.dir"));
+	  } else {
+	    // .. or in "user.dir"/report
+	    base = new File(System.getProperty("user.dir"),"report");
+	  }
+	  System.out.println("[Debug]Reading reports from "+base);
+	  
+	  // Create the loader
+	  loader = new ReportLoader(base);
+	  // Done
+	}
 
   /**
    * Helper for easy button creation

@@ -112,6 +112,12 @@ public class ReportLoader extends ClassLoader {
       return c;
     }
 
+		// Maybe super can load it?
+		c = super.loadClass(name, resolve);
+		if (c!=null) {
+		  return c;
+		}
+
     // Load from reports-directory
     File file = new File(basedir,name.replace('.',File.separatorChar)+".class");
     c = loadClass(file);

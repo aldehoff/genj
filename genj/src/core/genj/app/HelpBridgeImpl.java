@@ -45,19 +45,38 @@ class HelpBridgeImpl implements HelpBridge {
     registry.put("help",broker.getSize());
     registry.put("help",broker.getLocation());
   }
+  
+  /**
+   * Whether a directory with that name exists
+   */
+  private boolean exists(String dir) {
+    return new File(dir).exists();
+  }
 
   /**
-   * Calculate help-directory location
+   * Calculate help-directory location 'help'
    */
-  private String calcHelp(boolean useEn) {
-
-    return
-      System.getProperty("user.dir")
-        + "/help/"
-        + (useEn?"en":Locale.getDefault().getLanguage())
-        + "/helpset.xml";
-
+  private String calcHelpBase() {
+    
+    // First we look in "genj.help.dir"
+    String dir = System.getProperty("genj.help.dir");
+    if ((dir==null)||(!exists(dir))) {
+      // .. otherwise we'll use "user.dir"/help
+      dir = System.getProperty("user.dir")+"/help";
+    }
+    
+    // Then we check for local language
+    String local = dir+"/"+Locale.getDefault().getLanguage();
+    if (exists(local)) {
+      return local;
+    }
+    
+    // ... otherwise en language
+    return dir+"/en";
+    
   }
+  
+
 
   /**
    * Opens the help
@@ -75,17 +94,8 @@ class HelpBridgeImpl implements HelpBridge {
 
     String file;
     try {
-      file = calcHelp(false);
-      if (!new File(file).exists()) {
-        System.out.println("Tried to find help in " + file );
-        file = calcHelp(true);
-        if (!new File(file).exists()) {
-          System.out.println("Tried to find help in " + file + " ... sorry :(" );
-          return;
-        }
-      }
-
-      System.out.println("Using help in " + file );
+      file = calcHelpBase() + "/helpset.xml";
+      System.out.println("[Debug]Using help in " + file );
       URL url = new URL("file","", file);
       hs = new HelpSet(null,url);
 
