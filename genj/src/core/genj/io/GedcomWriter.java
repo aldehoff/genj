@@ -80,7 +80,7 @@ public class GedcomWriter implements Trackable {
     level = 0;
     line = 1;
     date = PointInTime.getDateString(now);
-    time = new SimpleDateFormat("HH:mm:ss").format(now);
+    time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
 
     out = new BufferedWriter(createWriter(stream, encoding));
 
