@@ -207,6 +207,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   public void populate(JToolBar bar) {
     // create buttons for mode switch
     ButtonHelper bh = new ButtonHelper();
+    bh.setFocusable(false);
     for (int t=0;t<Gedcom.NUM_TYPES;t++) {
       bar.add(bh.create(new ActionChangeType(t)));
     }
