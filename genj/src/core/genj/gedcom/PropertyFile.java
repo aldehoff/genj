@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import genj.util.EnvironmentChecker;
 import genj.util.swing.ImageIcon;
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +29,11 @@ import java.io.InputStream;
  * Gedcom Property : FILE
  */
 public class PropertyFile extends Property implements IconValueAvailable {
-
+  
+  /** maximum we load of image */
+  private final static int DEF_MAX_LOAD = 128*1024;  
+  private static int max_load = -1;
+  
   /** the file-name */
   private String  file;
 
@@ -121,7 +126,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
     // Open InputStream
     try {
       // try to create an image
-      valueAsIcon = new ImageIcon(getInputStream());
+      valueAsIcon = new ImageIcon(getInputStream(), getMaxLoad());
       // 20021205 for tiffs we get an image with size (-1,-1);
       if (valueAsIcon!=null&&(valueAsIcon.getIconWidth()<=0||valueAsIcon.getIconHeight()<=0))
         valueAsIcon = null;
@@ -162,4 +167,21 @@ public class PropertyFile extends Property implements IconValueAvailable {
   public InputStream getInputStream() throws IOException {
     return getGedcom().getOrigin().openFile(file).getInputStream();
   }
-}
+  
+  /**
+   * Resolve the maximum load   */
+  private int getMaxLoad() {
+    // already known?
+    if (max_load>0) return max_load;
+    // resolve
+    max_load = DEF_MAX_LOAD;
+    try {
+      int i = Integer.parseInt(EnvironmentChecker.getProperty(this, "genj.file.max", ""+max_load, "Maximum PropertyFile size to load"));
+      if (i>0) max_load = i;
+    } catch (Throwable t) {
+    }
+    // done
+    return max_load;
+  }
+  
+} //PropertyFile

@@ -63,11 +63,18 @@ public class ImageIcon extends javax.swing.ImageIcon {
   public ImageIcon(Icon icon) {
     super(read(icon));
   }
+
+  /**
+   * Alternative Constructor
+   */
+  public ImageIcon(InputStream in) {
+    this(read(in, Integer.MAX_VALUE));
+  }
   
   /**
    * Alternative Constructor   */
-  public ImageIcon(InputStream in) {
-    super(read(in));
+  public ImageIcon(InputStream in, int max) {
+    super(read(in, max));
   }
   
   /**
@@ -122,9 +129,9 @@ public class ImageIcon extends javax.swing.ImageIcon {
   /**
    * Reads image data from input stream
    */
-  private static byte[] read(InputStream in) {
+  private static byte[] read(InputStream in, int max) {
     try {
-      return new ByteArray(in).getBytes();
+      return new ByteArray(in, max).getBytes();
     } catch (IOException ex) {
       return null;
     }

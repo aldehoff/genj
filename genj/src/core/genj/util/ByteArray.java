@@ -37,16 +37,16 @@ public class ByteArray {
   private byte[] bits = EMPTY;
 
   /**
-   * Accessor for bytes
+   * Constructor
    */
-  public byte[] getBytes() {
-    return bits;
+  public ByteArray(InputStream in) throws IOException {
+    this(in, Integer.MAX_VALUE);
   }
 
   /**
    * Constructor
    */
-  public ByteArray(InputStream in) throws IOException {
+  public ByteArray(InputStream in, int max) throws IOException {
 
     // Read from stream
     byte buffer[] = new byte[CLUSTER];
@@ -56,13 +56,13 @@ public class ByteArray {
 
       // Read !
       try {
-        len = in.read(buffer,total,buffer.length-total);
+        len = in.read(buffer,total,Math.min(buffer.length-total, max-total));
       } catch (IOException ex) {
         throw ex;
       }
 
       // End of stream ?
-      if (len<0)
+      if (len<0||total==max)
         break;
 
       // Increment amount read !
@@ -87,4 +87,11 @@ public class ByteArray {
     // Done
   }
 
-}
+  /**
+   * Accessor for bytes
+   */
+  public byte[] getBytes() {
+    return bits;
+  }
+
+} //ByteArray
