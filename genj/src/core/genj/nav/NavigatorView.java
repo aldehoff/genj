@@ -51,7 +51,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 /**
@@ -302,7 +301,6 @@ public class NavigatorView extends JPanel implements ContextSupport {
       result.setRequestFocusEnabled(false);
     }
    
-    result.setBorder(new EmptyBorder(2,2,2,2));
     result.setEnabled(false);
     result.setToolTipText(resources.getString(key));
 

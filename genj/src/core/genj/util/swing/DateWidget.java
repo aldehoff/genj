@@ -27,7 +27,6 @@ import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Insets;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.SimpleDateFormat;
@@ -72,7 +71,6 @@ public class DateWidget extends JPanel {
     
     // initialize Sub-components
     widgetCalendar = new PopupWidget(); 
-    widgetCalendar.setMargin(new Insets(1,1,1,1));
     widgetCalendar.setActions(switches);
     
     widgetYear  = new TextFieldWidget("",4+1);
