@@ -20,6 +20,7 @@
 package genj.util.swing;
 
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.ImgIcon;
 import genj.util.Resources;
 
@@ -88,6 +89,7 @@ public class MenuHelper  {
     // start listening for it
     component.addMouseListener(new MouseAdapter() {
       public void mouseReleased(MouseEvent e) {
+        Debug.log(Debug.INFO, this, "popup("+e.isPopupTrigger()+")");
         if (e.isPopupTrigger()) {
           result.show(e.getComponent(),e.getX(), e.getY());
         }
