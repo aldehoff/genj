@@ -175,6 +175,20 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     }
     
     /**
+     * @see java.awt.Component#addFocusListener(java.awt.event.FocusListener)
+     */
+    public synchronized void addFocusListener(FocusListener l) {
+      // BasicComboBoxUI has the annoying habit of listening
+      // to focusLost to fire another actionperformed if 
+      //   !editor.getItem().equals( comboBox.getSelectedItem())
+      // so I'm filtering that listener here
+      if (l.getClass().getName().indexOf("$EditorFocusListener")>0)
+        return;
+      // continue
+      super.addFocusListener(l);
+    }
+    
+    /**
      * @see javax.swing.ComboBoxEditor#getEditorComponent()
      */
     public Component getEditorComponent() {
