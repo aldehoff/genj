@@ -40,14 +40,14 @@ import javax.swing.ImageIcon;
   /** the property */
   private Property property;
   
-  /** the image (cached) */
+  /** an image (cached) */
   private ImageIcon img; 
-  
+
   /** the value (cached) */
   private String value;
   
-  /** the matched value in html (lazy) */
-  private String html;
+  /** an attribute (cached) */
+  private Object attrib;
   
   /** the matches (cached) */
   private Matcher.Match[] matches;
@@ -62,7 +62,6 @@ import javax.swing.ImageIcon;
     // something?
     return  matches.length==0 ? null : new Hit(prop, value, matches);
   }
-  
   
   /** 
    * Constructor
@@ -83,6 +82,20 @@ import javax.swing.ImageIcon;
   }
   
   /**
+   * Get a cached attribute
+   */
+  /*package*/ Object getAttribute() {
+    return attrib;
+  }
+  
+  /**
+   * Set a cached attribute
+   */
+  /*package*/ void setAttribute(Object attr) {
+    attrib = attr;
+  }
+  
+  /**
    * Image (lazy once)
    */
   /*package*/ ImageIcon getImage() {
@@ -92,25 +105,24 @@ import javax.swing.ImageIcon;
   }
   
   /**
-   * HTML (lazy once)
+   * HTML representation
    */
-  /*package*/ String getHtml() {
-    // already?
-    if (html!=null)
-      return html;
+  /*package*/ String getHTML() {
+        
     // calc html
-    WordBuffer words = new WordBuffer();
-    words.append("<html>");
-    words.append("<b>");
-    words.append(property.getTag());
-    words.append("</b>");
+    WordBuffer html = new WordBuffer();
+    html.append("<html>");
+    html.append("<b>");
+    html.append(property.getTag());
+    html.append("</b>");
     if (property instanceof Entity) {
-      words.append('@'+((Entity)property).getId()+'@');
+      html.append('@'+((Entity)property).getId()+'@');
     }
-    words.append(Matcher.format(value, matches, OPEN, CLOSE, NEWLINE));
-    words.append("</html>");
-    html = words.toString();
+    html.append(Matcher.format(value, matches, OPEN, CLOSE, NEWLINE));
+    html.append("</html>");
+    
     // done
-    return html;
+    return html.toString();
   }
+  
 } //Hit

@@ -19,8 +19,10 @@
  */
 package genj.search;
 
+import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -28,6 +30,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
+import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
@@ -39,7 +42,6 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -47,7 +49,6 @@ import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -56,10 +57,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingConstants;
-import javax.swing.ToolTipManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.View;
 
 /**
  * View for searching
@@ -168,11 +168,23 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
 
     // done
   }
+
+  /**
+   * @see javax.swing.JComponent#addNotify()
+   */
+  public void addNotify() {
+    // start listening
+    gedcom.addListener(results);
+    // continue
+    super.addNotify();
+  }
   
   /**
    * @see javax.swing.JComponent#removeNotify()
    */
   public void removeNotify() {
+    // stop listening
+    gedcom.removeListener(results);
     // keep old
     registry.put("old.values", oldValues);
     // continue
@@ -408,7 +420,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   /**
    * Our result bucket
    */
-  private class Results extends AbstractListModel {
+  private class Results extends AbstractListModel implements GedcomListener {
     
     /** the results */
     private List hits = new ArrayList(255);
@@ -442,6 +454,14 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     }
     
     /**
+     * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
+     */
+    public void handleChange(Change change) {
+      if (change.isChanged(Change.PDEL))
+        clear();
+    }
+    
+    /**
      * @see javax.swing.ListModel#getElementAt(int)
      */
     public Object getElementAt(int index) {
@@ -468,8 +488,10 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
    * our specialized list
    */  
   private class ResultWidget extends JList implements ListSelectionListener, ListCellRenderer {
-    /** the default renderer */
-    private DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer(); 
+    
+    /** our label used for rendering */
+    private HeadlessLabel label = new HeadlessLabel(); 
+    
     /**
      * Constructor
      */
@@ -477,56 +499,46 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       super(results);
       setCellRenderer(this);
       addListSelectionListener(this);
-      defaultRenderer.setVerticalAlignment(SwingConstants.TOP);
-      defaultRenderer.setVerticalTextPosition(SwingConstants.TOP);
-    }
-    
-    /**
-     * @see javax.swing.JComponent#addNotify()
-     */
-    public void addNotify() {
-      // continue
-      super.addNotify();
-      // ready for tooltips
-      ToolTipManager.sharedInstance().registerComponent(this);
-    }
-    
-    /**
-     * @see javax.swing.JComponent#removeNotify()
-     */
-    public void removeNotify() {
-      // stop tooltips
-      ToolTipManager.sharedInstance().unregisterComponent(this);
-      // continue
-      super.removeNotify();
-    }
-    
-    /**
-     * @see javax.swing.JList#getToolTipText(java.awt.event.MouseEvent)
-     */
-    public String getToolTipText(MouseEvent event) {
-      // something to show?
-      int i = locationToIndex(event.getPoint());
-      if (i<0) return null;
-      // return text  
-      Hit hit = results.getHit(i);
-      return hit.getHtml();
-    }
 
+      label.setOpaque(true);
+      label.setFont(getFont());
+    }
+    
     /**
      * we know about action delegates and will use that here if applicable
      */
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-      // delegate component preparation to super
-      defaultRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+      // prepare color
+      if (isSelected) {
+        label.setBackground(list.getSelectionBackground());
+        label.setForeground(list.getSelectionForeground());
+      } else {
+        label.setBackground(list.getBackground());
+        label.setForeground(list.getForeground());
+      }
+
       // prepare hit information
       Hit hit = (Hit)value;
-      Property prop = hit.getProperty(); 
-      // show hit information
-      defaultRenderer.setText(hit.getHtml());
-      defaultRenderer.setIcon(hit.getImage());
+      
+      // show image
+      label.setIcon(hit.getImage());
+
+      // show text view
+      View view = (View)hit.getAttribute();
+      if (view==null) {
+        
+        // create view
+        view = label.setHTML(hit.getHTML());
+  
+        // cache
+        hit.setAttribute(view);
+        
+      } else {
+        label.setView(view);
+      }    
+      
       // done
-      return defaultRenderer;
+      return label;
     }
     /**
      * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)

@@ -7,6 +7,7 @@ import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
+import genj.util.swing.HeadlessLabel;
 import genj.util.swing.TreeWidget;
 
 import java.awt.Component;
@@ -19,11 +20,12 @@ import java.util.Map;
 import java.util.Stack;
 
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.text.View;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
@@ -188,8 +190,8 @@ public class PropertyTreeWidget extends TreeWidget {
     /** the gedcom we're looking at */
     private Gedcom gedcom;
     
-    /** cached html per property */
-    private Map property2html =  new HashMap();
+    /** cached object per property */
+    private Map property2cachedValue =  new HashMap();
 
     /**
      * Constructor
@@ -256,7 +258,7 @@ public class PropertyTreeWidget extends TreeWidget {
 
       // update cache of htmls
       for (int i=props.size()-1;i>=0;i--) {
-        property2html.remove(props.get(i));
+        property2cachedValue.remove(props.get(i));
       }
 
       // Do it for all changed properties
@@ -289,7 +291,7 @@ public class PropertyTreeWidget extends TreeWidget {
     public void fireStructureChanged() {
 
       // clear cache of htmls
-      property2html.clear();
+      property2cachedValue.clear();
 
       // propagate even
       Object[] path = new Object[]{ root!=null ? (Object)root : ""};
@@ -340,53 +342,19 @@ public class PropertyTreeWidget extends TreeWidget {
       if (root==null) return null;
       return root.getEntity();
     }
+
+    /**
+     * Get cached value for given property
+     */    
+    private Object getCachedValue(Property prop) {
+      return property2cachedValue.get(prop);
+    }
     
     /**
-     * Get cached html for given property
-     */
-    public String getHtml(Property prop) {
-
-      // cached?
-      String result = (String)property2html.get(prop);
-      if (result!=null)
-        return result;
-        
-      // create html text
-      StringBuffer html = new StringBuffer();
-      
-      html.append("<html>");
-      
-      if (prop instanceof Entity) {
-        html.append("@").append(((Entity)prop).getId()).append("@ ");
-        html.append("<b>").append(prop.getTag()).append("</b>");
-      } else {
-        if (!prop.isTransient())
-          html.append(" <b>").append(prop.getTag()).append("</b> ");
-          
-        if (prop instanceof MultiLineSupport) {
-          
-          char[] chars = ((MultiLineSupport)prop).getLinesValue().toCharArray();
-          for (int i=0; i<chars.length; i++) {
-            char c = chars[i];
-            if (c=='\n') html.append("<br>");
-            else html.append(c);
-          }
-          
-        } else {
-          html.append(prop.getValue());
-        }
-      }
-
-      html.append("</html>");
-
-      // convert
-      result = html.toString();
-
-      // remember
-      property2html.put(prop, result);
-      
-      // done
-      return result;    
+     * Set cached value for given property
+     */    
+    private void setCachedValue(Property prop, Object value) {
+      property2cachedValue.put(prop, value);
     }
   
     /**
@@ -462,34 +430,82 @@ public class PropertyTreeWidget extends TreeWidget {
   /**
    * Our renderer
    */
-  private class Renderer extends DefaultTreeCellRenderer {
+  private class Renderer extends HeadlessLabel implements TreeCellRenderer {
+    
+    /** a default we keep around for colors */
+    private DefaultTreeCellRenderer defaultRenderer = new DefaultTreeCellRenderer();
 
     /**
      * Constructor
      */
     private Renderer() {
-      setVerticalAlignment(SwingConstants.TOP);
-      setVerticalTextPosition(SwingConstants.TOP);
+      setOpaque(true);
+      setFont(PropertyTreeWidget.this.getFont());
     }
     
     /**
      * @see javax.swing.tree.DefaultTreeCellRenderer#getTreeCellRendererComponent(javax.swing.JTree, java.lang.Object, boolean, boolean, boolean, int, boolean)
      */
     public Component getTreeCellRendererComponent(JTree tree, Object object, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-      
-      // delegate to super
-      super.getTreeCellRendererComponent(tree, "", sel, expanded, leaf, row, hasFocus);
 
       // no property no luck      
       if (!(object instanceof Property))
         return this;
       Property prop = (Property)object;
 
+      // prepare color
+      if (sel) {
+        setBackground(defaultRenderer.getBackgroundSelectionColor());
+        setForeground(defaultRenderer.getTextSelectionColor());
+      } else {
+        setBackground(defaultRenderer.getBackgroundNonSelectionColor());
+        setForeground(defaultRenderer.getTextNonSelectionColor());
+      }
+
       // calc image        
       setIcon(prop.getImage(true));
       
-      // & text
-      setText(model.getHtml(prop));
+      // calc text view
+      View view = (View)model.getCachedValue(prop);
+      if (view==null) {
+
+        // create html text
+        StringBuffer html = new StringBuffer();
+      
+        html.append("<html>");
+      
+        if (prop instanceof Entity) {
+          html.append("@").append(((Entity)prop).getId()).append("@ ");
+          html.append("<b>").append(prop.getTag()).append("</b>");
+        } else {
+          if (!prop.isTransient())
+            html.append(" <b>").append(prop.getTag()).append("</b> ");
+          
+          if (prop instanceof MultiLineSupport) {
+          
+            char[] chars = ((MultiLineSupport)prop).getLinesValue().toCharArray();
+            for (int i=0; i<chars.length; i++) {
+              char c = chars[i];
+              if (c=='\n') html.append("<br>");
+              else html.append(c);
+            }
+          
+          } else {
+            html.append(prop.getValue());
+          }
+        }
+
+        html.append("</html>");
+
+        // convert
+        view = setHTML(html.toString());
+        
+        // remember
+        model.setCachedValue(prop, view);
+      
+        // done
+      }
+      setView(view);
 
       // done
       return this;
