@@ -22,15 +22,18 @@ package genj.gedcom;
 import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.swing.ImageIcon;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 
 /**
  * Gedcom Property : FILE
  */
 public class PropertyFile extends Property implements IconValueAvailable {
   
+  /** expected tag */
   private final static String TAG = "FILE";
   
   /** maximum we load of image */
@@ -40,14 +43,11 @@ public class PropertyFile extends Property implements IconValueAvailable {
   /** the file-name */
   private String  file;
 
-  /** whether we have an image yet */
-  private boolean isIconChecked = false;
-
   /** whether file-name is relative or absolute */
   private boolean isRelativeChecked = false;
 
   /** the image */
-  private ImageIcon valueAsIcon   = null;
+  private Object valueAsIcon = null;
 
   /**
    * Returns the logical name of the proxy-object which knows this object
@@ -78,6 +78,9 @@ public class PropertyFile extends Property implements IconValueAvailable {
     if (file==null)
       return EMPTY_STRING;
 
+    // we're checking the value for relative here because
+    // in setValue() the parent might not be set yet so
+    // getGedcom() wouldn't work there
     if (!isRelativeChecked) {
       String relative = getGedcom().getOrigin().calcRelativeLocation(file);
       if (relative !=null)
@@ -92,33 +95,66 @@ public class PropertyFile extends Property implements IconValueAvailable {
    */
   public synchronized ImageIcon getValueAsIcon() {
 
-    // Already calculated?
-    if (isIconChecked) {
-      return valueAsIcon;
+    // ever loaded?
+    if (valueAsIcon instanceof SoftReference) {
+      
+      // check reference
+      ImageIcon result = (ImageIcon)((SoftReference)valueAsIcon).get();
+      if (result!=null)
+        return result;
+     
+      // reference was cut
+      valueAsIcon = null;   
     }
-    isIconChecked = true;
-    valueAsIcon   = null;
+
+    // never loaded or cut reference? 
+    if (valueAsIcon==null) {
+      
+      // load it
+      ImageIcon result = loadValueAsIcon();
+      
+      // remember
+      if (result!=null)
+        valueAsIcon = new SoftReference(result);
+      else
+        valueAsIcon = new Object(); // NULL
+
+      // done    
+      return result;
+    }
+
+    // checked and never loaded
+    return null;
+  }
+  
+  /**
+   * Tries to Load the date of the referenced file 
+   */
+  private synchronized ImageIcon loadValueAsIcon() {
+
+    ImageIcon result = null;
 
     // Check File for Image ?
-    if ((file==null)||(file.trim().length()==0)) {
-      return null;
-    }
+    if (file!=null&&file.trim().length()>0) {
 
-    // Open InputStream
-    try {
-      // try to create an image if smaller than max load
-      Origin.Connection c = getGedcom().getOrigin().openFile(file);
-      if (c.getLength()<getMaxValueAsIconSize()) { 
-        valueAsIcon = new ImageIcon(file, c.getInputStream());
-        // 20021205 for tiffs we get an image with size (-1,-1);
-        if (valueAsIcon!=null&&(valueAsIcon.getIconWidth()<=0||valueAsIcon.getIconHeight()<=0))
-          valueAsIcon = null;
+      // Open InputStream
+      try {
+        // try to create an image if smaller than max load
+        Origin.Connection c = getGedcom().getOrigin().openFile(file);
+        if (c.getLength()<getMaxValueAsIconSize()) {
+           
+          result = new ImageIcon(file, c.getInputStream());
+          
+          // make sure the result makes sense
+          if (result.getIconWidth()<=0||result.getIconHeight()<=0)
+            result = null;
+        }
+      } catch (Throwable t) {
       }
-    } catch (Throwable t) {
     }
 
-    // Done
-    return valueAsIcon;
+    // done
+    return result;
   }
 
   /**
@@ -130,11 +166,11 @@ public class PropertyFile extends Property implements IconValueAvailable {
     noteModifiedProperty();
 
     // Remember the value
-    file=value.replace('\\','/');
-
-    // Reinit our icon calculation
-    isIconChecked = false;
+    file = value.replace('\\','/');
     isRelativeChecked = false;
+    
+    // Reinit our icon calculation
+    valueAsIcon = null;
 
     // check if we can update the TITL/FORM in parent OBJE
     Media.updateSubs(getParent(), value);
