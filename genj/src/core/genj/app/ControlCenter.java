@@ -49,8 +49,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -349,9 +349,9 @@ public class ControlCenter extends JPanel {
       // Remember open gedcoms
       boolean unsaved = false;
       Vector save = new Vector();
-      Enumeration gedcoms = tGedcoms.getAllGedcoms().elements();
-      while (gedcoms.hasMoreElements()) {
-        Gedcom gedcom = (Gedcom) gedcoms.nextElement();
+      Iterator gedcoms = tGedcoms.getAllGedcoms().iterator();
+      while (gedcoms.hasNext()) {
+        Gedcom gedcom = (Gedcom) gedcoms.next();
         if (gedcom.getOrigin() != null) {
           save.addElement("" + gedcom.getOrigin());
         }
@@ -644,22 +644,16 @@ public class ControlCenter extends JPanel {
     private boolean open(Origin origin) {
 
       // Check if already open
-      Vector gedcoms = tGedcoms.getAllGedcoms();
-      for (int i = 0; i < gedcoms.size(); i++) {
-
-        Gedcom g = (Gedcom) gedcoms.elementAt(i);
-
-        if (origin.getName().equals(g.getName())) {
-          windowManager.openDialog(
-            null, 
-            g.getName(), 
-            WindowManager.IMG_ERROR, 
-            resources.getString("cc.open.already_open", g.getName()),
-            WindowManager.OPTIONS_OK,
-            ControlCenter.this
-          );
-          return false;
-        }
+      if (tGedcoms.containsGedcom(origin.getName())) {
+        windowManager.openDialog(
+          null, 
+          origin.getName(), 
+          WindowManager.IMG_ERROR, 
+          resources.getString("cc.open.already_open", origin.getName()),
+          WindowManager.OPTIONS_OK,
+          ControlCenter.this
+        );
+        return false;
       }
 
       // Open Connection and get input stream
@@ -900,14 +894,7 @@ public class ControlCenter extends JPanel {
       
       // .. open new
       if (newOrigin != null) {
-
-        Enumeration gedcoms = tGedcoms.getAllGedcoms().elements();
-        while (gedcoms.hasMoreElements()) {
-          Gedcom gedcom = (Gedcom) gedcoms.nextElement();
-          if (gedcom.getOrigin().getName().equals(newOrigin.getName()))
-            removeGedcom(gedcom);
-        }
-
+        tGedcoms.removeGedcom(newOrigin.getName());
         new ActionOpen(newOrigin).trigger();
       }
 

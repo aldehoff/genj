@@ -26,7 +26,8 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.SortableTableHeader;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -117,9 +118,34 @@ public class GedcomTableWidget extends JTable {
   }
   
   /**
+   * Remove gedcom by name
+   */
+  public boolean removeGedcom(String name) {
+    for (int i=0; i<model.getRowCount(); i++) {
+      Gedcom gedcom = model.getGedcom(i);
+      if (gedcom.getName().equals(name)) {
+        model.removeGedcom(gedcom);
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  /**
+   * Check for gedcom with name
+   */
+  public boolean containsGedcom(String name) {
+    for (int i=0; i<model.getRowCount(); i++) {
+      if (model.getGedcom(i).getName().equals(name))
+        return true;
+    }
+    return false;
+  }
+  
+  /**
    * Accessor for model
    */
-  public Vector getAllGedcoms() {
+  public List getAllGedcoms() {
     return model.getAllGedcoms();
   }
   
@@ -135,7 +161,7 @@ public class GedcomTableWidget extends JTable {
    */
   public void addGedcom(Gedcom gedcom) {
     model.addGedcom(gedcom);
-    Vector gs = model.getAllGedcoms();
+    List gs = model.getAllGedcoms();
     getSelectionModel().setSelectionInterval(gs.size()-1,gs.size()-1);
   }
 
@@ -149,10 +175,10 @@ public class GedcomTableWidget extends JTable {
   /**
    * A model keeping track of a bunch of Gedcoms
    */
-  public class Model extends AbstractTableModel implements GedcomListener {
+  private class Model extends AbstractTableModel implements GedcomListener {
     
     /** the Gedcoms we know about */
-    private Vector gedcoms = new Vector(10);
+    private List gedcoms = new ArrayList(10);
     
     /**
      * Selected Gedcom
@@ -160,21 +186,28 @@ public class GedcomTableWidget extends JTable {
     public Gedcom getSelectedGedcom() {
       int row = getSelectedRow();
       if (row==-1) return null;
-      return (Gedcom)gedcoms.elementAt(row);
+      return getGedcom(row);
+    }
+    
+    /**
+     * Gedcom by row
+     */
+    public Gedcom getGedcom(int row) {
+      return (Gedcom)gedcoms.get(row);
     }
   
     /**
      * All Gedcoms
      */
-    public Vector getAllGedcoms() {
+    public List getAllGedcoms() {
       return gedcoms;
     }
-  
+    
     /**
      * Add a gedcom
      */
     public void addGedcom(Gedcom gedcom) {
-      gedcoms.addElement(gedcom);
+      gedcoms.add(gedcom);
       gedcom.addListener(this);
       fireTableDataChanged();
     }
@@ -183,9 +216,16 @@ public class GedcomTableWidget extends JTable {
      * Removes a gedcom
      */
     public void removeGedcom(Gedcom gedcom) {
-      gedcoms.removeElement(gedcom);
+      gedcoms.remove(gedcom);
       gedcom.removeListener(this);
       fireTableDataChanged();
+    }
+    
+    /**
+     * Gedcom 2 row
+     */
+    public int getRowFor(Gedcom gedcom) {
+      return gedcoms.indexOf(gedcom);
     }
 
     /**
@@ -206,8 +246,8 @@ public class GedcomTableWidget extends JTable {
      * @see javax.swing.table.TableModel#getValueAt(int, int)
      */
     public Object getValueAt(int row, int col) {
-      Gedcom gedcom = (Gedcom)gedcoms.elementAt(row);
-      if (col==0) return gedcom.getName();
+      Gedcom gedcom = (Gedcom)gedcoms.get(row);
+      if (col==0) return gedcom.getName() + (gedcom.hasUnsavedChanges() ? "*" : "" );
       return ""+gedcom.getEntities(col-1).size();
     }
   
@@ -215,11 +255,8 @@ public class GedcomTableWidget extends JTable {
      * @see genj.gedcom.GedcomListener#handleChange(Change)
      */
     public void handleChange(Change change) {
-      if (change.isChanged(change.EADD)||change.isChanged(change.EDEL)) {
-        int row = getSelectedRow();
-        fireTableDataChanged();
-        if (row>=0) getSelectionModel().setSelectionInterval(row,row);
-      }
+      int i = getRowFor(change.getGedcom());
+      if (i>=0) fireTableRowsUpdated(i,i);
     }
 
   } // Model
