@@ -58,7 +58,7 @@ public class Report4Generations extends Report {
    * Returns the name of this report - should be localized.
    */
   public String getName() {
-    return "Four Generations Chart";
+    return i18n("report_name");
   }  
 
   /**
@@ -66,7 +66,7 @@ public class Report4Generations extends Report {
    * @return Information as String
    */
   public String getInfo() {
-    return "Make a chart of four generations of ancestors of an individual";
+    return i18n("info");
   }
 
   /**
