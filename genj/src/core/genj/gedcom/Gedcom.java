@@ -19,13 +19,15 @@
  */
 package genj.gedcom;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import genj.util.Origin;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * The object-representation of a Gedom file
@@ -66,8 +68,8 @@ public class Gedcom {
   private Origin origin;
   
   /** entities */
-  private List[]  entities = new List[NUM_TYPES];
-  private IDMap[] ids = new IDMap[NUM_TYPES];
+  private List[] entities    = new List   [NUM_TYPES];
+  private Map[]  id2entities = new HashMap[NUM_TYPES];
   
   /** change/transaction support */
   private boolean isTransaction = false;
@@ -99,8 +101,8 @@ public class Gedcom {
     this.origin = origin;
     // init
     for (int i=0;i<entities.length;i++) {
-      entities[i] = new ArrayList  (initialCapacity);
-      ids     [i] = new IDMap(initialCapacity);
+      entities   [i] = new ArrayList(initialCapacity);
+      id2entities[i] = new HashMap  (initialCapacity);
     }
     // Done
   }
@@ -112,13 +114,6 @@ public class Gedcom {
     return origin;
   }
 
-  /**
-   * Sets the origin of this gedcom
-   */
-  public void setOrigin(Origin newOrigin) {
-    origin = newOrigin;
-  }
-  
   /**
    * Returns the submitter of this gedcom (might be null)
    */
@@ -158,41 +153,30 @@ public class Gedcom {
   }
 
   /**
+   * Creates a non-related entity with id
+   */
+  public Entity createEntity(int type) throws GedcomException {
+    return createEntity(type, null);
+  }    
+    
+  /**
    * Create a entity by tag
    * @exception GedcomException in case of unknown tag for entity
    */
   public Entity createEntity(String tag, String id) throws GedcomException {
     // check tag
-    for (int e=0; e<eTags.length; e++) {
-      if (eTags[e].equals(tag)) return createEntity(e, id);
+    for (int type=0; type<NUM_TYPES; type++) {
+      if (eTags[type].equals(tag)) return createEntity(type, id);
     }
     // unknown tag
-    throw new GedcomException("Unknown tag for entity");
+    throw new IllegalArgumentException("unknown tag");
   }
   
   /**
-   * Create a entity by class
-   * @exception GedcomException in case of unknown tag for entity
-   */
-  public Entity createEntity(Class type, String id) throws GedcomException {
-    // check tag
-    for (int e=0; e<eTypes.length; e++) {
-      if (eTypes[e].equals(type)) return createEntity(e, id);
-    }
-    // unknown tag
-    throw new GedcomException("Unknown type for entity");
-  }
-  
-  /**
-   * Creates a non-related entity with id
+   * Creates an entity
    */
   public Entity createEntity(int type, String id) throws GedcomException {
     
-    // Check the id
-    if ((id!=null)&&(ids[type].contains(id))) {
-      throw new DuplicateIDException(eTags[type]+" with id "+id+" is alread defined");
-    }
-
     // Generate id if necessary
     if (id==null) id = getRandomIdFor(type);
 
@@ -200,7 +184,7 @@ public class Gedcom {
     Class clazz = eTypes[type];
 
     // Create entity
-    Entity result;
+    Entity result; 
     try {
       result = (Entity)clazz.newInstance();
     } catch (Throwable t) {
@@ -212,7 +196,7 @@ public class Gedcom {
     entities[type].add(result);
     
     // Store id
-    ids[type].put(id,result);
+    id2entities[type].put(id,result);
     
     // Mark change
     noteAddedEntity(result);
@@ -234,7 +218,7 @@ public class Gedcom {
     int type = which.getType();
 
     // Entity exists ?
-    if (!ids[type].contains(which.getId()))
+    if (!id2entities[type].containsKey(which.getId()))
       throw new GedcomException("Unknown entity with id "+which.getId());
 
     // Tell it
@@ -244,38 +228,11 @@ public class Gedcom {
     noteDeletedEntity(which);
 
     // Delete it
-    entities[type].remove(which);
-    ids     [type].remove(which);
+    entities   [type].remove(which);
+    id2entities[type].remove(which);
     
     if (submitter==which) submitter = null;
 
-    // Done
-  }
-
-  /**
-   * Sets an entity's id
-   * @exception GedcomException if id-argument is null oder of zero length
-   */
-  public void setId(Entity entity, String id) {
-    // Known entity?
-    if (!entities[entity.getType()].contains(entity)) {
-      throw new IllegalArgumentException("Entity isn't member in "+this);
-    }
-    // ID o.k. ?
-    id = id.trim();
-    if (id.length()==0) {
-      throw new IllegalArgumentException("Length of entity's ID has to be non-zero");
-    }
-    // Remember change
-    noteModifiedProperty(entity);
-    // Prepare change
-    int type = entity.getType();
-    // Change it by removing old id
-    ids[type].remove(entity);
-    // .. remember as new
-    ids[type].put(id,entity);
-    // ... store info in entity
-    entity.setId(id);
     // Done
   }
 
@@ -299,30 +256,32 @@ public class Gedcom {
   }
 
   /**
-   * Returns the entity with given id
+   * Returns the entity with given id (or null)
    */
-  public Entity getEntity(String id) throws DuplicateIDException {
-    if (id==null) throw new IllegalArgumentException("id cannot be null");
-    Entity result = null;
-    for (int i=0;i<ids.length;i++) {
-      result = ids[i].get(id);
-      if (result!=null)
-        break;
+  public Entity getEntity(String id) {
+    // arg check
+    if (id==null) 
+      throw new IllegalArgumentException("id cannot be null");
+    // loop all types
+    for (int t=0;t<NUM_TYPES;t++) {
+      Entity e = getEntity(id, t);
+      if (e!=null) return e;
     }
-    return result;
+    // not found
+    return null;
   }
 
   /**
    * Returns the entity with given id of given type or null if not exists
    */
-  public Entity getEntity(String id, int type) throws DuplicateIDException {
-    return ids[type].get(id);
+  public Entity getEntity(String id, int type) {
+    return (Entity)id2entities[type].get(id);
   }
 
   /**
    * Creates a random ID for given type of entity which is free in this Gedcom
    */
-  public String getRandomIdFor(int type) {
+  private String getRandomIdFor(int type) {
     // We might to do this several times
     String result;
     int id = entities[type].size();
@@ -332,21 +291,11 @@ public class Gedcom {
       // trim to 000
       result = ePrefixs[type] + (id<100?(id<10?"00":"0"):"") + id;
       // try it
-      if (!ids[type].contains(result)) break;
+      if (!id2entities[type].containsKey(result)) break;
       // try again
     };
+    // done
     return result;
-  }
-
-  /**
-   * Returns wether there are two entities with same ID
-   */
-  public boolean hasDuplicates() {
-    for (int i=0;i<ids.length;i++) {
-      if (ids[i].hasDuplicates())
-      return true;
-    }
-    return false;
   }
 
   /**
@@ -416,8 +365,9 @@ public class Gedcom {
     modifiedProperties = null;
 
     // ... send message to all listeners
-    for (int i=listeners.size()-1;i>=0;i--) {
-      ((GedcomListener)listeners.get(i)).handleChange(change);
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      gls[l].handleChange(change);
     }
 
     // ... End
@@ -428,22 +378,10 @@ public class Gedcom {
   }
 
   /**
-   * Notification that a set of entities have been added.
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteAddedEntities(List entities) {
-    // Is there a transaction running?
-    if (!isTransaction) {
-      return;
-    }
-    addedEntities.addAll(entities);
-  }
-
-  /**
    * Notification that an entity has been added.
    * That change will be notified to listeners after unlocking write.
    */
-  void noteAddedEntity(Entity entity) {
+  /*package*/ void noteAddedEntity(Entity entity) {
 
     // Is there a transaction running?
     if (!isTransaction) {
@@ -456,7 +394,7 @@ public class Gedcom {
    * Notification that a property has been added.
    * That change will be notified to listeners after unlocking write.
    */
-  void noteAddedProperty(Property prop) {
+  /*package*/ void noteAddedProperty(Property prop) {
 
     // Is there a transaction running?
     if (!isTransaction) {
@@ -468,25 +406,10 @@ public class Gedcom {
   }
 
   /**
-   * Notification that a set of entities have been deleted.
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteDeletedEntities(List entities) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-        return;
-    }
-
-    deletedEntities.addAll(entities);
-    // Done
-  }
-
-  /**
    * Notification that an entity has been deleted.
    * That change will be notified to listeners after unlocking write.
    */
-  void noteDeletedEntity(Entity entity) {
+  /*package*/ void noteDeletedEntity(Entity entity) {
 
     // Is there a transaction running?
     if (!isTransaction) {
@@ -503,7 +426,7 @@ public class Gedcom {
    * Notification that a property has been deleted.
    * That change will be notified to listeners after unlocking write.
    */
-  void noteDeletedProperty(Property prop) {
+  /*package*/ void noteDeletedProperty(Property prop) {
 
     // Is there a transaction running?
     if (!isTransaction)
@@ -519,7 +442,7 @@ public class Gedcom {
    * Notification that a property has been modified
    * That change will be notified to listeners after unlocking write.
    */
-  void noteModifiedProperty(Property property) {
+  /*package*/ void noteModifiedProperty(Property property) {
 
     // Is there a transaction running?
     if (!isTransaction)

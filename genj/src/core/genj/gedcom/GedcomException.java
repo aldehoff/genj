@@ -25,16 +25,10 @@ package genj.gedcom;
 public class GedcomException extends Exception {
 
   /**
-   * GedcomException constructor.
-   */
-  public GedcomException() {
-    super();
-  }
-
-  /**
    * GedcomException constructor
    */
   public GedcomException(String s) {
     super(s);
   }          
-}
+  
+} //GedcomException

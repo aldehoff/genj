@@ -20,7 +20,6 @@
 package genj.tree;
 
 import genj.gedcom.Change;
-import genj.gedcom.DuplicateIDException;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -389,12 +388,9 @@ public class Model implements GedcomListener {
    */  
   private Collection getEntities(Collection ids) {
     List result = new ArrayList();
-    Iterator is = ids.iterator();
-    while (is.hasNext()) {
-      try {
-        result.add(gedcom.getEntity(is.next().toString()));
-      } catch (DuplicateIDException de) {
-      }
+    for (Iterator it = ids.iterator(); it.hasNext(); ) {
+      Entity e = gedcom.getEntity(it.next().toString());
+      if (e!=null) result.add(e);
     }
     return result;
   }

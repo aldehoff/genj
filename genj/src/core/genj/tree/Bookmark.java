@@ -19,7 +19,6 @@
  */
 package genj.tree;
 
-import genj.gedcom.DuplicateIDException;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -58,11 +57,7 @@ public class Bookmark extends ActionDelegate {
     String id = s.substring(0,at);
     
     // resolve entity
-    try {
-      entity = ged.getEntity(id);
-    } catch (DuplicateIDException e) {
-      throw new IllegalArgumentException("id "+id+" is not unique");
-    }
+    entity = ged.getEntity(id);
     if (!(entity instanceof Indi||entity instanceof Fam))
       throw new IllegalArgumentException("id "+id+" doesn't point to Indi or Fam");
   
@@ -112,4 +107,4 @@ public class Bookmark extends ActionDelegate {
   }
   
 
-} //Snapshot
+} //Bookmark

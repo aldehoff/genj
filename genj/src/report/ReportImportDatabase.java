@@ -180,7 +180,7 @@ public class ReportImportDatabase implements Report {
       String sex  = indiRow.getString(COL_SEX  );
       String famc = indiRow.getString(COL_FAMC );
 
-      Indi indi = (Indi)gedcom.createEntity(Indi.class, id);
+      Indi indi = (Indi)gedcom.createEntity(Gedcom.INDIVIDUALS);
       if (name!=null) {
         indi.addProperty(new PropertyName       (name));
       }
@@ -208,7 +208,7 @@ public class ReportImportDatabase implements Report {
       String husb = famRow.getString(COL_HUSB);
       String wife = famRow.getString(COL_WIFE);
 
-      Fam fam = (Fam)gedcom.createEntity(Fam.class, id);
+      Fam fam = (Fam)gedcom.createEntity(Gedcom.FAMILIES);
       if (husb!=null) {
         xref = new PropertyHusband(husb);
         fam.addProperty(xref);

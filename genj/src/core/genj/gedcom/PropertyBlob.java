@@ -165,10 +165,11 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
   public String getLinesValue() {
-    if (base64==null) {
+    if (base64!=null) 
+      return base64;
+    if (raw!=null)
       return Base64.encode(raw);
-    }
-    return base64;
+    return EMPTY_STRING;
   }
 
   /**
@@ -181,19 +182,22 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     valueAsIcon   = null;
     base64        = null;
     raw           = null;
-
-    // Try to open file
-    try {
-      InputStream in = getGedcom().getOrigin().openFile(file).getInputStream();
-      raw = new ByteArray(in, (int)file.length()).getBytes();
-      in.close();
-    } catch (IOException ex) {
-      throw new GedcomException("Error reading "+file);
+    
+    // file?
+    if (file.length()!=0) {
+      // Try to open file
+      try {
+        InputStream in = getGedcom().getOrigin().openFile(file).getInputStream();
+        raw = new ByteArray(in, (int)file.length()).getBytes();
+        in.close();
+      } catch (IOException ex) {
+        throw new GedcomException("Error reading "+file);
+      }
+  
+      // check if we can update the TITL/FORM in parent OBJE
+      Media.updateSubs(getParent(), file);
     }
-
-    // check if we can update the TITL/FORM in parent OBJE
-    Media.updateSubs(getParent(), file);
-
+    
     // Remember changed property
     noteModifiedProperty();
 

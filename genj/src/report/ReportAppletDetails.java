@@ -29,7 +29,7 @@ import java.util.StringTokenizer;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.22 2003-03-18 01:42:11 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.23 2003-05-11 04:05:34 nmeier Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -235,14 +235,9 @@ public class ReportAppletDetails implements Report {
     if ( propertiesToLink.contains(tag) ) {
       String idStr = value.replace('@',' ').trim();
       if ( !(prop instanceof Fam) ) {
-        try {
-          Indi individual = (Indi)prop.getGedcom().getEntity(idStr, Gedcom.INDIVIDUALS);
-          if ( individual != null ) {
-            value = individual.getName();
-          }
-        }
-        catch ( genj.gedcom.DuplicateIDException x ) {
-          // ignore exception
+        Indi individual = (Indi)prop.getGedcom().getEntity(idStr, Gedcom.INDIVIDUALS);
+        if ( individual != null ) {
+          value = individual.getName();
         }
       }
       out.println("<tr><td valign=TOP><b><u>"
