@@ -19,74 +19,35 @@
  */
 package genj.search;
 
-import genj.gedcom.Entity;
-import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 
 import javax.swing.ImageIcon;
+import javax.swing.text.View;
 
 /**
  * A search hit
  */
 /*package*/ class Hit {
 
-  /** formatting */
-  private final static String
-   OPEN = "<font color=red>",
-   CLOSE = "</font>",
-   NEWLINE = "<br>";
-  
   /** the property */
   private Property property;
   
   /** an image (cached) */
   private ImageIcon img; 
   
-  /** html (cached) */
-  private String html;
+  /** a view (cached) */
+  private View view;
 
-  /** an arbitray (cached) attribute */
-  private Object attr;
-  
-  /**
-   * test for hit
-   */
-  /*package*/ static Hit test(Matcher matcher, Property prop) {
-    // test value
-    String value = prop instanceof MultiLineSupport ? ((MultiLineSupport)prop).getLinesValue() : prop.getValue();
-    Matcher.Match[] matches = matcher.match(value);
-    // something?
-    if (matches.length==0)
-      return null;
-    // calc html
-    StringBuffer html = new StringBuffer(value.length()+matches.length*10);
-    html.append("<html>");
-    html.append("<b>");
-    html.append(prop.getTag());
-    html.append("</b>");
-    if (prop instanceof Entity) {
-      html.append(" @");
-      html.append(((Entity)prop).getId());
-      html.append('@');
-    }
-    html.append(' ');
-    html.append(Matcher.format(value, matches, OPEN, CLOSE, NEWLINE));
-    html.append("</html>");
-    
-    // instantiate & done
-    return new Hit(prop, html.toString());
-  }
-  
   /** 
    * Constructor
    */
-  private Hit(Property prop, String htm) {
+  /*package*/ Hit(Property setProp, View setView) {
     // keep property
-    property = prop;
+    property = setProp;
     // cache img
     img = property.getImage(false);
-    // cache html
-    html = htm;
+    // keep view
+    view = setView;
     // done
   }
   
@@ -105,24 +66,10 @@ import javax.swing.ImageIcon;
   }
   
   /**
-   * HTML
+   * View
    */
-  /*package*/ String getHTML() {
-    return html;
-  }
-  
-  /**
-   * Arbitrary attribute
-   */
-  /*package*/ Object getAttribute() {
-    return attr;
-  }
-  
-  /**
-   * Arbitrary attribute
-   */
-  /*package*/ void setAttribute(Object attrib) {
-    attr = attrib;
+  /*package*/ View getView() {
+    return view;
   }
   
 } //Hit

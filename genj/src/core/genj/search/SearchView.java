@@ -23,6 +23,7 @@ import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
@@ -42,6 +43,7 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -66,15 +68,20 @@ import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.View;
 
 /**
  * View for searching
  */
 public class SearchView extends JPanel implements ToolBarSupport, ContextSupport {
+
+  /** formatting */
+  private final static String
+   OPEN = "<font color=red>",
+   CLOSE = "</font>",
+   NEWLINE = "<br>";
   
   /** max # hits */
-  private final static int MAX_HITS = 100;
+  private final static int MAX_HITS = 255;
   
   /** default values */
   private final static String[]
@@ -104,12 +111,15 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   private ViewManager manager;
   
   /** shown results */
-  private ResultWidget listResults;
   private Results results = new Results();
-  
+  private ResultWidget listResults = new ResultWidget();
+
+  /** headless label used for view creation */
+  private HeadlessLabel viewFactory = new HeadlessLabel(listResults.getFont()); 
+
   /** criterias */
   private ChoiceWidget choicePath, choiceValue;
-  private JCheckBox checkAggregate, checkRegExp;
+  private JCheckBox checkRegExp;
   private JLabel labelCount;
   
   /** history */
@@ -136,9 +146,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     // lookup old search values
     oldPaths = (LinkedList)registry.get("old.paths", new LinkedList());
     oldValues = (LinkedList)registry.get("old.values", new LinkedList(Arrays.asList(DEFAULT_OLD_VALUES)));
-    
-    // prepare results
-    listResults = new ResultWidget(); 
     
     // prepare search criteria
     JLabel labelValue = new JLabel(resources.getString("label.value"));
@@ -173,20 +180,16 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     choicePath = new ChoiceWidget(oldPaths);
     choicePath.setEnabled(false);
     
-    checkAggregate = new JCheckBox(resources.getString("label.aggregate"));
-    checkAggregate.setEnabled(false);
-    
     labelCount = new JLabel();
     
     JPanel paneCriteria = new JPanel();
     GridBagHelper gh = new GridBagHelper(paneCriteria);
     gh.add(labelValue    ,0,0,1,1);
-    gh.add(checkRegExp   ,1,0,1,1);
-    gh.add(choiceValue   ,0,1,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+    gh.add(checkRegExp   ,1,0,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+    gh.add(labelCount    ,2,0,1,1);
+    gh.add(choiceValue   ,0,1,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL, new Insets(3,3,3,3));
     gh.add(labelPath     ,0,2,3,1);
-    gh.add(choicePath    ,0,3,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-    gh.add(checkAggregate,0,4,2,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-    gh.add(labelCount    ,2,4,1,1);
+    gh.add(choicePath    ,0,3,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL, new Insets(3,3,3,3));
     
     // prepare layout
     setLayout(new BorderLayout());
@@ -337,6 +340,63 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     }
     return result; 
   }
+  
+  /**
+   * Create html (async) 
+   */
+  private String createHTML(Property prop, String value, Matcher.Match[] matches) {
+    StringBuffer html = new StringBuffer(value.length()+matches.length*10);
+    html.append("<html>");
+    html.append("<b>");
+    html.append(prop.getTag());
+    html.append("</b>");
+    if (prop instanceof Entity) {
+      html.append(" @");
+      html.append(((Entity)prop).getId());
+      html.append('@');
+    }
+    html.append(' ');
+    html.append(Matcher.format(value, matches, OPEN, CLOSE, NEWLINE));
+    html.append("</html>");
+    return html.toString();
+  }
+  
+  /**
+   * Create a hit (async)
+   */
+  private Hit createHit(Property prop, String value, Matcher.Match[] matches) {
+    
+    // calc html
+    String html = createHTML(prop, value, matches);
+
+    // 2003/05/09
+    //      
+    // there's an async search for hits going on in ActionSearch
+    // and here we're initializing a hit for each found match. 
+    // We want to create the View async because it takes quite 
+    // some time that we don't want to spend on the EDT.
+    // HeadlessLabel.setHTML does this for us using BasicHTML.
+    //
+    // Caveat: BasicHTML's root-view Renderer.<init> calls 
+    //   setSize(view.getPreferredSpan(X_AXIS), view.getPreferredSpan(Y_AXIS));
+    // so a layout calculation is triggered unnecessarily while
+    // the EDT at the same time might be busy rendering the view 
+    // hierarchy.
+    //
+    // Effect: The GlyphView type uses one Glyphpainter(1) per 
+    // instance (@see GlyphView.checkPainter()) to #1 calculate
+    // size/preferences AND ALSO #2 render. 
+    // This painter keeps as an internal state the current
+    // font/metrics (@see GlyphPainter1.sync()) which is now
+    // shared by #1 and #2. 
+    // ==> The render result can wrong (noticeably plain/bold)
+    //
+    // Solution: Refactor the view factory code from EntityRenderer
+    // into separate type and use new thread-safe variant here
+      
+    // instantiate & done
+    return new Hit(prop, viewFactory.setHTML(html));
+  }
 
   /**
    * Action - insert regexp construct
@@ -398,7 +458,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     /** count of hits found */
     private int count;
     /** hits */
-    private List hits = new ArrayList(255);
+    private List hits = new ArrayList(MAX_HITS);
     /** the current matcher*/
     private Matcher matcher;
     /** constructor */
@@ -410,10 +470,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
      * before execute (sync)
      */
     protected boolean preExecute() {
-      // clear old
-      hits.clear();
+      // reset results
       results.clear();
-      count = 0;
       // update buttons
       bSearch.setEnabled(false);
       bStop.setEnabled(true);
@@ -472,6 +530,9 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     protected void postExecute() {
       // update count
       labelCount.setText(""+count);
+      // reset our state
+      hits.clear();
+      count = 0;
       // toggle buttons
       bSearch.setEnabled(true);
       bStop.setEnabled(false);
@@ -500,9 +561,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       // all but transients
       if (!prop.isTransient()) {
         // check prop's value
-        Hit hit = Hit.test(matcher, prop);
-        if (hit!=null)
-          add(hit);
+        String value = prop instanceof MultiLineSupport ? ((MultiLineSupport)prop).getLinesValue() : prop.getValue();
+        search(prop, value);
       }
       // check subs
       int n = prop.getNoOfProperties();
@@ -511,18 +571,21 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       }
       // done
     }
-    
-    /** got a hit (not on EDT) */
-    private void add(Hit hit) {
+
+    /** search property's value */
+    private void search(Property prop, String value) {
+      // look for matches
+      Matcher.Match[] matches = matcher.match(value);
+      if (matches.length==0)
+        return;
       // too many?
       if (count==MAX_HITS)
         throw new IndexOutOfBoundsException("Too many hits found! Restricting result to "+MAX_HITS+" hits.");
       count++;
-      // create a view
-      listResults.init(hit);
-      // synchronized keep
+      // create a hit
+      Hit hit = createHit(prop, value, matches);
+      // keep it
       synchronized (hits) {
-        // keep
         hits.add(hit);
         // sync (on first)?
         if (hits.size()==1) sync();
@@ -558,7 +621,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     private List hits = new ArrayList(255);
     
     /**
-     * clear the results
+     * clear the results (sync to EDT)
      */
     private void clear() {
       // nothing to do?
@@ -572,7 +635,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     }
     
     /**
-     * add a result
+     * add a result (sync to EDT)
      */
     private void add(List list) {
       // nothing to do?
@@ -624,9 +687,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     /** our label used for rendering */
     private HeadlessLabel label = new HeadlessLabel(); 
 
-    /** our label used for (async) view calculation */
-    private HeadlessLabel viewFactory = new HeadlessLabel(); 
-    
     /**
      * Constructor
      */
@@ -636,15 +696,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       addListSelectionListener(this);
 
       label.setOpaque(true);
-      label.setFont(getFont());
-      viewFactory.setFont(getFont());
-    }
-    
-    /**
-     * Create (async) view for given hit
-     */
-    private void init(Hit hit) {
-      hit.setAttribute(viewFactory.setHTML(hit.getHTML()));
     }
     
     /**
@@ -667,7 +718,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       label.setIcon(hit.getImage());
 
       // show text view
-      label.setView((View)hit.getAttribute());
+      label.setView(hit.getView());
 
       // done
       return label;
