@@ -204,6 +204,7 @@ import javax.swing.event.ChangeListener;
         "INDI:BIRT:PLAC", 
         "INDI:DEAT:DATE",  
         "INDI:DEAT:PLAC",
+        "INDI:OCCU",
         "INDI:OCCU:DATE",
         "INDI:OCCU:PLAC",
         "INDI:RESI:DATE",
