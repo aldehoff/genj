@@ -18,10 +18,8 @@ import genj.report.Report;
 
 import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -29,10 +27,8 @@ import java.util.TreeMap;
  */
 public class ReportNameHistory extends Report {
   
-  private final static String OTHER = "ZZZZZZZZZZZZZZZZZ";
-  
   /** whether to group non-considered names */
-  public boolean makeGroupOther = true;
+  public boolean makeGroupOther = false;
   
   /** lifespan we assume if there's no death */
   private int lifespanWithoutDEAT = 80;
@@ -82,8 +78,10 @@ public class ReportNameHistory extends Report {
       yearStart = findStart(indis),
       yearEnd   = PointInTime.getNow().getYear();
     
+    // prepare a series of 'others'
+    IndexedSeries others = new IndexedSeries(yearEnd-yearStart+1);
+    
     // loop over individuals
-    Set others = new HashSet();
     Map name2series = new TreeMap();
     Iterator iterator = indis.iterator();
     while (iterator.hasNext()) {
@@ -95,10 +93,12 @@ public class ReportNameHistory extends Report {
     if (name2series.isEmpty()) 
       return;
     
-    // name the group 'other' now
-    IndexedSeries other = (IndexedSeries)name2series.get(OTHER);
-    if (other!=null) 
-      other.setName(others.size()+" Other Names");
+    // name the group 'other' now: "14 Other Names"
+    int numOthers = (PropertyName.getLastNames(gedcom).size()-name2series.size());
+    if (numOthers>0) {
+	    others.setName(i18n("others", numOthers));
+	    name2series.put(String.valueOf('\uffff'), others);
+    }
     
     // show it
     showChartToUser(new Chart(getName(), null, i18n("yaxis"), IndexedSeries.toArray(name2series.values()), yearStart, yearEnd, new DecimalFormat("#"), true));
@@ -133,7 +133,7 @@ public class ReportNameHistory extends Report {
   /**
    * Analyze one individual
    */
-  private void analyze(Gedcom gedcom, Collection indis, Indi indi, int yearStart, int yearEnd, Map name2series, Set others) {
+  private void analyze(Gedcom gedcom, Collection indis, Indi indi, int yearStart, int yearEnd, Map name2series, IndexedSeries others) {
     
     // check name
 	  PropertyName name = (PropertyName)indi.getProperty("NAME");
@@ -143,13 +143,6 @@ public class ReportNameHistory extends Report {
 	  if (last.length()==0)
 	    return;
     
-	  // check minimum percentage of name
-	  if (PropertyName.getPropertyNames(gedcom, last).size()<indis.size()*minUseOfName/100) {
-	    if (!makeGroupOther) return;
-	    others.add(last);
-	    last = OTHER;
-	  }
-	  
 	  // calculate start
 	  int start;
 	  try {
@@ -177,12 +170,21 @@ public class ReportNameHistory extends Report {
 	  start = Math.max(0                , start-yearStart);
 	  end   = Math.min(yearEnd-yearStart,   end-yearStart);
 	  
-	  // increase indexedseries for last-name throughout lifespan (start to end)
-	  IndexedSeries series = (IndexedSeries)name2series.get(last);
-	  if (series==null) {
-	    series = new IndexedSeries(last, yearEnd-yearStart+1);
-	    name2series.put(last, series);
+	  // check minimum percentage of name
+	  IndexedSeries series;
+	  if (PropertyName.getPropertyNames(gedcom, last).size()<indis.size()*minUseOfName/100) {
+	    if (!makeGroupOther) 
+	      return;
+	    series = others;
+	  } else {
+		  series = (IndexedSeries)name2series.get(last);
+		  if (series==null) {
+		    series = new IndexedSeries(last, yearEnd-yearStart+1);
+		    name2series.put(last, series);
+		  }
 	  }
+	  
+	  // increase indexedseries for last-name throughout lifespan (start to end)
 	  for (;start<=end;start++) 
 	    series.inc(start);
 	  
