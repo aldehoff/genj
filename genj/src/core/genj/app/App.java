@@ -37,6 +37,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -216,7 +217,7 @@ public class App {
    * Creates a Dialog which remembers it's position from last time
    * It's modal by default and contains OK and Cancel buttons
    */
-  public Dialog createDialog(String title, String key, Dimension dimension, JComponent owner, JComponent content) {
+  public Dialog createDialog(String title, String key, Dimension dimension, JComponent owner, JComponent content, String[] choices) {
     // find owner
     JFrame frame = null;
     Component cursor = owner;
@@ -232,7 +233,7 @@ public class App {
       if (cursor==null) break;
     }
     // create it
-    return new App.Dialog(title, key, dimension, frame, content);
+    return new App.Dialog(title, key, dimension, frame, content, choices);
   }
 
   /**
@@ -309,7 +310,7 @@ public class App {
     /**
      * Constructor
      */
-    protected Dialog(String title, String key, Dimension dimension, JFrame owner, JComponent content) {
+    protected Dialog(String title, String key, Dimension dimension, JFrame owner, JComponent content, String[] choices) {
       super(owner);
       
       // 1st remember
@@ -324,7 +325,7 @@ public class App {
       Container c = getContentPane();
       c.setLayout(new BorderLayout());
       c.add(content, BorderLayout.CENTER);
-      c.add(createButtons(), BorderLayout.SOUTH); 
+      c.add(createButtons(choices), BorderLayout.SOUTH); 
       
       // 4th defaults
       setModal(true);
@@ -366,11 +367,13 @@ public class App {
 
     /**
      * Create Dialog buttons     */
-    private JPanel createButtons() {
+    private JPanel createButtons(String[] choices) {
       JPanel result = new JPanel();
-      ButtonHelper bh = new ButtonHelper().setContainer(result).setResources(resources);
-      result.add(bh.create(new Choice("swing.OptionPane.okButtonText"    ,0)));
-      result.add(bh.create(new Choice("swing.OptionPane.cancelButtonText",1)));
+      result.setLayout(new FlowLayout(FlowLayout.RIGHT));
+      ButtonHelper bh = new ButtonHelper().setContainer(result);
+      for (int i=0; i<choices.length; i++) {
+        result.add(bh.create(new Choice(choices[i],i)));
+      }
       return result;
     }
     
