@@ -71,6 +71,7 @@ import javax.swing.event.ListSelectionListener;
 public class ControlCenter extends JPanel {
 
   /** members */
+  private JMenuBar menuBar; 
   private GedcomTableWidget tGedcoms;
   private Vector busyGedcoms;
   private Registry registry;
@@ -79,7 +80,7 @@ public class ControlCenter extends JPanel {
   private Resources resources = Resources.get(this);
   private WindowManager windowManager;
   private ViewManager viewManager;
-  private PrintManager printManager; 
+  private PrintManager printManager;
     
   /**
    * Constructor
@@ -107,6 +108,9 @@ public class ControlCenter extends JPanel {
     add(createToolBar(), "North");
     add(new JScrollPane(tGedcoms), "Center");
 
+    // Init menu bar at this point (so it's ready when the first file is loaded)
+    menuBar = createMenuBar();
+
     // Load known gedcoms
     SwingUtilities.invokeLater(
       (Runnable) new ActionLoadLastOpen().as(Runnable.class));
@@ -121,6 +125,39 @@ public class ControlCenter extends JPanel {
     return new Dimension(280,180);
   }
 
+  /**
+   * Adds another Gedcom to the list of Gedcoms
+   */
+  /*package*/ void addGedcom(Gedcom gedcom) {
+    tGedcoms.addGedcom(gedcom);
+  }
+
+  /**
+   * Removes a Gedcom from the list of Gedcoms
+   */
+  /*package*/ void removeGedcom(Gedcom gedcom) {
+    
+    // close views
+    viewManager.closeViews(gedcom);
+
+    // forget about it
+    tGedcoms.removeGedcom(gedcom);
+  }
+  
+  /**
+   * Exit action
+   */
+  /*package*/ ActionDelegate getExitAction() {
+    return new ActionExit().setTarget(this);
+  }
+  
+  /**
+   * Returns a menu for frame showing this controlcenter
+   */
+  /*package*/ JMenuBar getMenuBar() {
+    return menuBar;
+  }
+  
   /**
    * Returns a button bar for the top
    */
@@ -164,37 +201,11 @@ public class ControlCenter extends JPanel {
     // done
     return result;
   }
-
-  /**
-   * Adds another Gedcom to the list of Gedcoms
-   */
-  /*package*/ void addGedcom(Gedcom gedcom) {
-    tGedcoms.addGedcom(gedcom);
-  }
-
-  /**
-   * Removes a Gedcom from the list of Gedcoms
-   */
-  /*package*/ void removeGedcom(Gedcom gedcom) {
-    
-    // close views
-    viewManager.closeViews(gedcom);
-
-    // forget about it
-    tGedcoms.removeGedcom(gedcom);
-  }
   
   /**
-   * Exit action
+   * Creates our MenuBar
    */
-  /*package*/ ActionDelegate getExitAction() {
-    return new ActionExit().setTarget(this);
-  }
-  
-  /**
-   * Returns a menu for frame showing this controlcenter
-   */
-  /*package*/ JMenuBar getMenuBar() {
+  private JMenuBar createMenuBar() {
 
     MenuHelper mh = new MenuHelper().setResources(resources);
 
