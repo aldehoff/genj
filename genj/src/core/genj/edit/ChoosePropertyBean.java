@@ -21,20 +21,18 @@ package genj.edit;
 
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyUnknown;
 import genj.util.Resources;
-import java.awt.Color;
+
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -75,7 +73,6 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     lChoose = new JList(defs);
     lChoose.setEnabled(defs.length>0);
     lChoose.setCellRenderer(new MetaDefRenderer());
-    if (defs.length==0) lChoose.setPrototypeCellValue(new PropertyUnknown("XXXXX",""));
     lChoose.addListSelectionListener(this);
     JScrollPane sp = new JScrollPane(lChoose);
     add(sp,1,2,1,1,true);
@@ -208,41 +205,17 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
   /**
    * Tag List Cell Renderer
    */
-  class MetaDefRenderer extends JLabel implements ListCellRenderer {
-
-    /** whether the tag in the list is selected or not */
-    boolean isSelected;
+  class MetaDefRenderer extends DefaultListCellRenderer implements ListCellRenderer {
 
     /**
      * Return component for rendering list element
      */
     public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
-      MetaProperty def = (MetaProperty)value;
-      setText(def.getTag());
-      setIcon(def.getImage());
-      this.isSelected = isSelected;
+      super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+        MetaProperty def = (MetaProperty)value;
+        setText(def.getTag());
+        setIcon(def.getImage());
       return this;
-    }
-
-    /**
-     * paint is subclassed to draw the background correctly.  JLabel
-     * currently does not allow backgrounds other than white, and it
-     * will also fill behind the icon.  Something that isn't desirable.
-     */
-    public void paint(Graphics g) {
-
-      Color bColor;
-
-      if (isSelected) {
-        bColor = Color.yellow;
-      } else {
-        bColor = (getParent() != null) ? getParent().getBackground() : getBackground();
-      }
-
-      g.setColor(bColor);
-      g.fillRect(0 , 0, getWidth()-1, getHeight()-1);
-
-      super.paint(g);
     }
 
   } //MetaDefRenderer

@@ -69,10 +69,12 @@ public class MetaProperty {
 
     // Remember data
     theTag = tag;
-
+    
     // Figure out the class
     try {
-      theClass = Class.forName(Property.class.getName()+type);
+      // easy for null
+      if (type==null) theClass = PropertyUnknown.class;
+      else theClass = Class.forName(Property.class.getName()+type);
     } catch (Throwable throwable) {
       Debug.log(Debug.WARNING, this, "meta.properties #"+tag+" points to non existing type Property"+type);
       theClass = PropertyUnknown.class;
