@@ -42,10 +42,10 @@ public class ColumnLayout implements LayoutManager2 {
   private class Column {
     
     /** weight of column */
-    Point2D.Double weight = new Point2D.Double();
+    Point2D.Double weight;
 
     /** preferred size of column */
-    Dimension size;
+    Dimension preferred;
 
     /** rows in column */
     ArrayList rows = new ArrayList(16);
@@ -54,19 +54,35 @@ public class ColumnLayout implements LayoutManager2 {
     Column() {
     }
     
-    /** Last row */
-    Row getLastRow() {
-      if (rows.isEmpty())
-        rows.add(new Row());
-      return (Row)rows.get(rows.size()-1);
+    /** add a component */
+    void add(Component comp, Object constraints) {
+      
+      // grab last row
+      Row row; 
+      if (rows.isEmpty()) {
+        row = new Row();
+        rows.add(row);
+      } else {
+        row = (Row)rows.get(rows.size()-1);
+      }
+      
+      // add it there
+      row.add(comp, constraints);
+      
+      // invalidate state
+      invalidate(false);
+      
+      // done
     }
     
     /** new row */
     void add(Row row) {
+      
       // remember
       rows.add(row);
-      // reset size
-      size = null;
+      
+      // invalidate state
+      invalidate(false);
     }
     
     /** remove component */
@@ -79,6 +95,8 @@ public class ColumnLayout implements LayoutManager2 {
           // remove row if empty
           if (row.size()==0)
             rows.remove(row);
+          // invalidate state
+          invalidate(false);
           return true;
         }
       }
@@ -95,25 +113,28 @@ public class ColumnLayout implements LayoutManager2 {
     /** preferred dim */
     Dimension preferred() {
       // known?
-      if (size!=null)
-        return size;
-      size = new Dimension();
+      if (preferred!=null)
+        return preferred;
+      preferred = new Dimension();
       // loop over rows
       Iterator it = rows.iterator();
       while (it.hasNext()) {
         Row row = (Row)it.next();
         Dimension dim = row.preferred();
-        size.width  = Math.max(size.width, dim.width);
-        size.height+= dim.height;
+        preferred.width  = Math.max(preferred.width, dim.width);
+        preferred.height+= dim.height;
       }
       // done
-      return size;
+      return preferred;
     }
     
     /** invalidate */
-    void invalidate() {
-      size = null;
-      for (int r=0;r<rows.size();r++) {
+    void invalidate(boolean recurse) {
+      
+      preferred = null;
+      weight = null;
+
+      if (recurse) for (int r=0;r<rows.size();r++) {
         Row row = (Row)rows.get(r);
         row.invalidate();
       }
@@ -142,10 +163,10 @@ public class ColumnLayout implements LayoutManager2 {
   private class Row {
 
     /** weight of row */
-    Point2D.Double weight = new Point2D.Double();
+    Point2D.Double weight;
 
-    /** size of row */
-    Dimension size = new Dimension();
+    /** preferred dimension of row */
+    Dimension preferred;
     
     /** components in row */
     ArrayList comps = new ArrayList(4);
@@ -157,19 +178,24 @@ public class ColumnLayout implements LayoutManager2 {
     void add(Component c, Object constraint) {
       // remember
       comps.add(c);
-      if (constraint instanceof Point2D) {
+      // any constraints to take into consideration?
+      if (constraint instanceof Point2D) 
         comp2weight.put(c, constraint);
-        Point2D p2d = (Point2D)constraint;
-        weight.x += p2d.getX();
-        weight.y += p2d.getY();
-      }
-      // reset size
-      size = null;
+      // invalidate state
+      invalidate();
     }
     
     /** remove component */
     boolean remove(Component comp) {
-      return comps.remove(comp);
+      // remove it
+      if (!comps.remove(comp))
+        return false;
+      // any constraints to take into consideration?
+      comp2weight.remove(comp);
+      // invalidate state
+      invalidate();
+      // done
+      return true;
     }
     
     /** size */
@@ -180,24 +206,25 @@ public class ColumnLayout implements LayoutManager2 {
     /** preferred dim */
     Dimension preferred() {
       // known?
-      if (size!=null)
-        return size;
-      size = new Dimension();
+      if (preferred!=null)
+        return preferred;
+      preferred = new Dimension();
       // loop over comps
       Iterator it = comps.iterator();
       while (it.hasNext()) {
         Component comp = (Component)it.next();
         Dimension dim = comp.getPreferredSize();
-        size.width += dim.width;
-        size.height = Math.max(size.height, dim.height);
+        preferred.width += dim.width;
+        preferred.height = Math.max(preferred.height, dim.height);
       }
       // done
-      return size;
+      return preferred;
     }
     
     /** invalidate */
     void invalidate() {
-      size = null;
+      preferred = null;
+      weight = null;
     }
     
     /** layout */
@@ -239,7 +266,7 @@ public class ColumnLayout implements LayoutManager2 {
    */
   public void addLayoutComponent(Component comp, Object constraints) {
     // fill current row
-    getLastColumn().getLastRow().add(comp, constraints);
+    getLastColumn().add(comp, constraints);
   }
 
   /**
@@ -249,7 +276,7 @@ public class ColumnLayout implements LayoutManager2 {
    */
   public void addLayoutComponent(String name, Component comp) {
     // fill current row
-    getLastColumn().getLastRow().add(comp, null);
+    getLastColumn().add(comp, null);
   }
 
   /**
@@ -263,7 +290,7 @@ public class ColumnLayout implements LayoutManager2 {
       Column col = (Column)columns.get(c);
       if (col.remove(comp)) {
         // remove column if empty
-        if (col.size()==0&&columns.size()==1)
+        if (col.size()==0)
           columns.remove(col);
         break;
       }
@@ -306,21 +333,21 @@ public class ColumnLayout implements LayoutManager2 {
   public void invalidateLayout(Container target) {
     for (int c=0;c<columns.size();c++) {
       Column col = (Column)columns.get(c);
-      col.invalidate();
+      col.invalidate(true);
     }
   }
 
   /**
    * Start a new row
    */
-  public void startNextRow(Container parent) {
+  public void endRow(Container parent) {
     getLastColumn().add(new Row());
   }
   
   /**
    * Start a new column in parent
    */
-  public void startNextColumn(Container parent) {
+  public void endColumn(Container parent) {
     columns.add(new Column());
   }
   

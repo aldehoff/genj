@@ -310,11 +310,11 @@ import javax.swing.event.ChangeListener;
         if (token.equals(" "))
           continue;
         if (token.equals("\n")) {
-          layout.startNextRow(beanPanel);
+          layout.endRow(beanPanel);
           continue;
         }
         if (token.equals("\t")) {
-          layout.startNextColumn(beanPanel);
+          layout.endColumn(beanPanel);
           continue;
         }
         
