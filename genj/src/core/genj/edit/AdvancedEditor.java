@@ -213,7 +213,7 @@ import javax.swing.event.TreeSelectionListener;
       if (veto!=null) { 
         // Removing property {0} from {1} leads to:\n{2}
         String msg = resources.getString("del.warning", new String[] { 
-          selection.getTag(), selection.getEntity().getId(), veto 
+          selection.getTag(), selection.getEntity().toString(), veto 
         });
         // prepare actions
         ActionDelegate[] actions = {
