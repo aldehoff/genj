@@ -27,6 +27,7 @@ import genj.util.Resources;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Arrays;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
@@ -60,6 +61,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     // keep parent and calculate possible properties
     parent = pArent;
     MetaProperty[] defs = parent.getMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+    Arrays.sort(defs);
         
     // Layout
     GridBagHelper gh = new GridBagHelper(this);
