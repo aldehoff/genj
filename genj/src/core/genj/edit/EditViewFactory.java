@@ -139,23 +139,26 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     result.add(new DelEntity(entity, manager));
     
     // add an "edit in EditView"
-    if (!isEditViewVisible(manager, entity.getGedcom())) {
+    if (!isEditViewAvailable(manager, entity.getGedcom())) {
       result.add(ActionDelegate.NOOP);
       result.add(new OpenForEdit(entity, manager));
     }
     // done
     return result;
   }
-  
+
   /**
-   * Test for visible EditView
+   * Tests if there's a visible EditView that is not sticky
    */
-  public static boolean isEditViewVisible(ViewManager manager, Gedcom gedcom) {
-    return manager.getInstances(EditView.class, gedcom).length>0;
+  public static boolean isEditViewAvailable(ViewManager manager, Gedcom gedcom) {
+    EditView[] edits = (EditView[])manager.getInstances(EditView.class, gedcom);
+    for (int i=0;i<edits.length;i++)
+      if (!edits[i].isSticky()) return true;
+    return false;
   }
   
   /**
-   * Open for edit
+   * Open a new EditView
    */
   public static void openForEdit(ViewManager manager, Entity entity) {
     new OpenForEdit(entity, manager).trigger();

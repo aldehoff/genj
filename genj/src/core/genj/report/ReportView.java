@@ -649,7 +649,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         return;
 
       // make sure an EditView is open
-      if (!EditViewFactory.isEditViewVisible(manager, gedcom)) {
+      if (!EditViewFactory.isEditViewAvailable(manager, gedcom)) {
         EditViewFactory.openForEdit(manager, entity);
       }
         

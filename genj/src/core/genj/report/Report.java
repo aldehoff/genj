@@ -19,6 +19,7 @@
  */
 package genj.report;
 
+import genj.edit.EditViewFactory;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
@@ -620,6 +621,9 @@ public abstract class Report implements Cloneable {
       Property target = item.getTarget();
       if (target==null)
         return;
+      // make sure an EditView is opened
+      if (!EditViewFactory.isEditViewAvailable(manager, target.getGedcom()))
+        EditViewFactory.openForEdit(manager, target.getEntity());
       // propagate
       manager.setContext(target);
     }
