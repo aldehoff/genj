@@ -3,68 +3,56 @@
 <body>
 <h2><a href="../views.html">Views</a> - Edit View</h2>
 
-<table><tr><td>
+<table><tr><td valign=top>
 
  <p>
-  As discussed in the section about <a href="../concepts/gedcom.html">Gedcom</a>
-  one entity consists of a hierarchy of properties and their values.
-  After opening this view it will follow any selection that you might
-  make in any view in GenJ. The hierarchy of properties of the selected 
-  entity will be displayed including symbols that represent each property,
-  the Tags and values.
- </p>
- 
- <p>
-  Explore the tree of properties and use the scrollbars at the right and
-  bottom if necessary. After clicking on a property an editor for that
-  type of property will appear in the bottom half if applicable. Change
-  values there if desired.
+  This view allows to edit the values associated with an entity (or record)
+  within GenJ. This could be a place or a date pertaining to a person. It
+  also could be the name of an external file. All the displayed fields can
+  receive data and all changes have to be committed by clicking on 'OK'
+  at the bottom. To cancel and revert back to the current state click on 'Cancel'.
  </p>
 
- <p>
-  Some of the properties contain references to other entities (e.g. HUSB keeps
-  a reference of a family's husband and FAMS the reference of a spouse's family).
-  Click twice on such a node and the current entity will be switched to that
-  target.
- </p>
- 
-</td><td>
+</td><td valign=top>
 
   <blockquote><img src="../../images/screenshots/edit1.png"></blockquote>
 
 </td></tr></table>
 
-<p>
- The plus-button in the toolbar (see below) allows to add new properties. 
- An additional property is added as a sub-property of the currently 
- selected property.
- A dialog will present all Gedcom compliant sub-properties - choose one
- or more and they're inserted. You can also add properties through custom
- Tags in the same dialog but it's advised to do so sparingly as to not
- divert too far from the standard.
-</p>
+<table><tr><td valign=top>
 
-<p>
- Don't forget the <a href="../concepts/context.html">Context Menu</a> to 
- perform complex actions on properties and the entity, too. 
- Try a right-click on one of the displayed nodes and discover what you can do.
-</p>
+ <p>
+  There's an underlying structure to every entity in
+  <a href="../concepts/gedcom.html">Gedcom</a> that can be made visible
+  by clicking on the mode-button.
+  This might be necessary at times to investigate the hierarchy of 
+  (extended) properties and their values. In this mode any selection
+  to a nodes in the hierarchy at the top is followed with an editor 
+  at the bottom for that specific Gedcom property. Every displayed
+  node at the top will also show a <a href="../concepts/context.html">Context Menu</a>
+  if clicked with the right mouse-button.
+ </p>
+ 
+</td><td>
 
-<a name=toolbar>
+  <blockquote><img src="../../images/screenshots/edit2.png"></blockquote>
+
+</td></tr></table>
+
 <h3>Toolbar</h3>
 
-<p>
-  <blockquote><img src="../../images/screenshots/edit2.png"></blockquote>
- <ol>
-  <li>add a property to selected property (continues in dialog)
-  <li>remove currently selected property
-  <li>move currently selected property up
-  <li>move currently selected property down
-  <li>return to the last entity shown before the current one
-  <li>toggle sticky (stick with current entity - don't follow selection in other view)
-  <li>close view
- </ol>
-</p>
+ <p>
+  <blockquote><img src="../../images/screenshots/edit3.png"></blockquote>
+   <il>
+    <li> go back to the last entity edited
+    <li> pin the editor to the currently edited entity (won't follow focus)
+    <li> undo the last set of changes committed with 'OK'
+    <li> redo the last set of changes undone with undo
+    <li> perform actions on the currently edited entity (e.g. add a spouse or child to a person)
+    <li> switch between 'Standard' and 'Gedcom' mode
+   <il>
+ </p>
+ 
 
 <h3>Settings</h3>
 
