@@ -51,6 +51,7 @@ public class PropertySubmitter extends PropertyXRef {
    */
   public PropertySubmitter(String tag, String value) {
     super(null);
+    setValue(value);
   }
   
   /**
