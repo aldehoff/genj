@@ -61,6 +61,11 @@ public class ReportExec implements Report {
     
     // get the name of the executable
     String cmd = bridge.getValueFromUser("Please enter path and name of the executable to run", new String[0], "executables");
+
+    if(cmd == null) {
+    	bridge.println("Operation cancelled by user");
+    	return true;
+    }
     
     // run it
     try {
