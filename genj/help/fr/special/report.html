@@ -1,25 +1,39 @@
 <HTML>
-
 <BODY>
-<H2>Report Writing</H2>
+
+<H2>Ecrire des Rapports (Scripts)</H2>
 
 <P>
-A GenJ report is a Java class that implements the interface <I>genj.report.Report</I>.
-Writing your own functionality starts by defining your own class in a source-file
-and placing that file into the reports-subdirectory (its name has to start with Report*).
-</P>
-<P>
-Let's assume we want to write a test-report named "Test1". First create a text-file
-named ReportTest1.java in ./reports. Then compile it by running the compile-script 
-in the same directory. This script runs javac - the java compiler. The end-result is
-a file named ReportTest1.class which GenJ can load and execute after it's selected
-in the <A href="../view/report.html">Report View</A>.
+Un rapport (script) pour GenJ est une classe Java qui met en oeuvre l'interface 
+<I>genj.report.Report</I>. Ecrire votre propre fonction, utilitaire, 
+d&eacute;bute en d&eacute;finissant votre propre classe dans un fichier source 
+et en pla&ccedil;ant ce fichier dans le sous r&eacute;pertoire des rapports 
+(Son nom doit cependant commencer par Report*).
 </P>
 
 <P>
-Let's have a look at the sample ReportTest1.java. It contains one public class-definition
-that conforms to the Report contract (<I>implements Report</I>). Part of that contract
-is to supply behaviour for all of the following methods:
+Supposons que nous souhaitions &eacute;crire un rapport-test nomm&eacute; "Test1". 
+Commen&ccedil;ons par &eacute;crire un fichier de type texte d&eacute;nomm&eacute; 
+ReportTest1.java dans le r&eacute;pertoire ./reports. Bien entendu si vous 
+n'&eacute;crivez rien dedans et le laissez vide, &ccedil;a ne pourra jamais marcher. 
+Il va vous falloir mettre un peu de code Java dedans. Il faut ensuite lancer le 
+script de compilation dans le m&ecirc;me r&eacute;pertoire. Ce script lance 
+l'ex&eacute;cutable "javac" - le compilateur java. Une fois la compilation 
+termin&eacute;e, un fichier d&eacute;nomm&eacute; ReportTest1.class va 
+&ecirc;tre cr&eacute;&eacute; et GenJ va pouvoir le charger et l'ex&eacute;cuter 
+apr&eacute;s que vous l'ayez s&eacute;lectionn&eacute; dans la 
+<A href="../view/report.html">Fen&ecirc;tre des Rapports</A>.
+</P>
+
+<P>
+Jetons un coup d'oeil &agrave; l'exemple ReportTest1.java ci-apr&eacute;s. Il 
+contient la d&eacute;finition d'une classe publique (attention en langage 
+java on parle de public class, pas question de traduire ce genre de terme) 
+qui respecte les r&egrave;gles et caract&eacute;ristiques des rapports 
+(<I>implements Report</I>). Partie de ces r&egrave;gles est de fournir le 
+comportement pour toutes les m&eacute;thodes suivantes (attention le terme 
+m&eacute;thode fait r&eacute;f&eacute;rence &agrave; ce qu'on appelle 
+"method" en language java)&nbsp;:
 <blockquote>
 <il>
 <li>getName
@@ -30,9 +44,9 @@ is to supply behaviour for all of the following methods:
 <li>isReadOnly
 </il>
 </blockquote>
-See the example below or the downloadable API to learn more about what those methods
-are there for. The most important one is <I>start</I> - it's the main entrypoint into
-the report's logic:
+Regardez l'exemple qui suit ou reprenez l'API pour en savoir plus sur le pourquoi 
+de ces m&eacute;thodes. La plus importante est <I>start</I> - c'est le point 
+d'acc&egrave;s principal dans la logique d'un rapport:
 
  <PRE>
 
@@ -41,26 +55,26 @@ the report's logic:
   import java.io.*;
 
   /**
-   * A report named Foo
+   * Un rapport d&eacute;nomm&eacute; Foo
    */
   public class ReportFoo implements Report {
 
     /**
-     * The name of the report
+     * On retourne le nom du rapport
      */
     public String getName() {
       return "Foo";
     }
 
     /**
-     * Information about the report
+     * Informations sur ce que fait ce rapport
      */
     public String getInfo() {
       return "This report is oh so good\nPlease try it now!";
     }
 
     /**
-     * The main entry point for the report
+     * Le point d'acc&egrave;s principal du rapport
      */
     public boolean start(ReportBridge bridge, Gedcom gedcom) throws InterruptedException {
 
@@ -70,21 +84,21 @@ the report's logic:
     }
 
     /**
-     * Whether this report uses StandardOut or its own windows/dialogs
+     * Ce rapport utilise t'il la sortie standard ou ses propres fen&ecirc;tres/dialogues
      */
     public boolean usesStandardOut() {
       return true;
     }
 
     /**
-     * The author of this report
+     * L'auteur du rapport
      */
     public String getAuthor() {
       return "Nils Meier <nils@meiers.net>";
     }
 
     /**
-     * Whether this report will change the Gedcom data it is running on
+     * Ce rapport va t'il modifier les donn&eacute;es Gedcom contenues dans le fichier qu'il lit
      */
     public boolean isReadOnly() {
       return false;
@@ -94,11 +108,15 @@ the report's logic:
 </P>
 
 <P>
-Inside the start-method all the information in the Gedcom-object can be accessed.
-You will have to download the GenJ API (a HTML class reference) to explore the 
-possibilities captured in the GenJ core-classes. For starters you should try to
-extend the already existing reports.
+A l'int&eacute;rieur de la m&eacute;thode "start", toutes les informations sur l'objet 
+Gedcom sont accessibles. Vous devrez r&eacute;cup&eacute;rer l'API de GenJ (un outil 
+r&eacute;f&eacute;ren&ccedil;ant toutes les classes au format HTML) pour explorer 
+toutes les possibilit&eacute;s que l'on peut reprendre dans les classes du source 
+de GenJ. Pour les d&eacute;butants, vous devriez commencer par am&eacute;liorer 
+les rapports d&eacute;j&agrave; existants.
 </P>
+
+<Br>
 
 </BODY>
 </HTML>
