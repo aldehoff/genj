@@ -249,7 +249,7 @@ import javax.swing.table.TableColumnModel;
     TableColumnModel columns = new DefaultTableColumnModel();
     for (int c=0; c<filter.paths.length; c++) {
       TableColumn col = new TableColumn(c);
-      col.setHeaderValue(paths[c].getLast());
+      col.setHeaderValue(paths[c]);
       col.setPreferredWidth(widths.length>c&&widths[c]>0?widths[c]:total/filter.paths.length);
       columns.addColumn(col);
     }
