@@ -39,6 +39,9 @@ public class Options extends OptionProvider implements OptionMetaInfo {
   
   /** option - where lines of multi line values should be broken */
   private int valueLineBreak = 255;
+  
+  /** option - text symbol for marriage */
+  protected String txtMarriageSymbol = "+";
 
   /**
    * Singleton access
@@ -73,6 +76,23 @@ public class Options extends OptionProvider implements OptionMetaInfo {
    */
   public void setValueLineBreak(int set) {
     valueLineBreak = Math.max(40,set);
+  }
+
+  /**
+   * accessor - text marriage symbol
+   */
+  public String getTxtMarriageSymbol() {
+    return txtMarriageSymbol;
+  }
+
+  /**
+   * accessor - text marriage symbol
+   */
+  public void setTxtMarriageSymbol(String set) {
+    if (set!=null&&set.trim().length()>0)
+      txtMarriageSymbol = set;
+    else
+      txtMarriageSymbol = "+";
   }
 
   /** 

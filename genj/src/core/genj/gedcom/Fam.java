@@ -260,7 +260,8 @@ public class Fam extends Entity {
    */
   public String toString() {
     
-    WordBuffer wb = new WordBuffer('+');
+    WordBuffer wb = new WordBuffer();
+    wb.setFiller(Options.getInstance().getTxtMarriageSymbol());
 
     Indi husband = getHusband();
     if (husband!=null) wb.append(husband.toString());
