@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.edit.actions.Undo;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
@@ -65,6 +66,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   /** actions we offer */
   private Sticky sticky = new Sticky();
   private Back   back   = new Back(); 
+  private Undo   undo;
 
   /** whether we're sticky */
   private  boolean isSticky = false;
@@ -86,6 +88,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     registry = setRegistry;
     manager  = setManager;
 
+    // prepare undo action
+    undo = new Undo(gedcom, manager);
+    
     // create current editor
     // FIXME need editor switch
     editor = new AdvancedEditor();
@@ -116,6 +121,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     }
     setContext(context);
 
+    // listen for available undos
+    gedcom.addGedcomListener(undo);
+
     // continue
     super.addNotify();    
   }
@@ -128,6 +136,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     // remember context
     Entity e = editor.getContext().getEntity();
     registry.put("last", e!=null?e.getId():"");
+
+    // dont listen for available undos
+    gedcom.removeGedcomListener(undo);
 
     // forget this instance
     instances.remove(this);
@@ -201,6 +212,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       .setResources(resources)
       .setInsets(0)
       .setMinimumSize(new Dimension(0,0))
+      .setTextAllowed(false)
       .setContainer(bar);
 
     // return in history
@@ -208,6 +220,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     
     // toggle sticky
     bh.create(sticky);
+    
+    // toggle sticky
+    bh.create(undo);
     
     // done
   }
@@ -282,6 +297,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       // keep it
       stack.push(context);
     }
-  } //ActionBack
+  } //Back
   
 } //EditView

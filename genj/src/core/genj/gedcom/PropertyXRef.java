@@ -60,12 +60,17 @@ public abstract class PropertyXRef extends Property {
     // Let it through
     super.delNotify(tx);
     
-    // Are we referencing something that still has parent?
-    if (target==null||target.getParent()==null)
+    // are we referencing something that points back?
+    if (target==null)
       return;
 
-    // ... delete back referencing property
-    target.getParent().delProperty(target);
+    // is it owned by a parent?
+    if (target.getParent()==null)
+      return;
+      
+    // ... delete back referencing property unless this is a rollback
+    if (!tx.isRollback())
+      target.getParent().delProperty(target);
 
   }
 

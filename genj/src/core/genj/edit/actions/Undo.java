@@ -21,13 +21,15 @@ package genj.edit.actions;
 
 import genj.edit.Images;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
+import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
 import genj.view.ViewManager;
 
 /**
  * Undo on Gedcom
  */  
-public class Undo extends ActionDelegate {
+public class Undo extends ActionDelegate implements GedcomListener {
   
   /** the gedcom */
   private Gedcom gedcom;
@@ -36,9 +38,9 @@ public class Undo extends ActionDelegate {
    * Constructor
    */
   public Undo(Gedcom gedcom, ViewManager mgr) {
-    setImage(Images.imgReturn);
+    setImage(Images.imgUndo);
     setText(AbstractChange.resources.getString("undo"));    
-    
+    setEnabled(gedcom.canUndo());
     this.gedcom = gedcom;
   }
 
@@ -47,6 +49,13 @@ public class Undo extends ActionDelegate {
    */
   protected void execute() {
     gedcom.undo();
+  }
+  
+  /**
+   * Callback for gedcom events
+   */
+  public void handleChange(Transaction tx) {
+    setEnabled(gedcom.canUndo());
   }
   
 } //Undo

@@ -87,7 +87,7 @@ public class Transaction {
   /**
    * accessor - time started
    */
-  public long getTime() {
+  /*package*/ long getTime() {
     return time;
   }
   

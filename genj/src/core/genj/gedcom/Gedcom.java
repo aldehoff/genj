@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.65 $ $Author: nmeier $ $Date: 2004-07-20 20:50:33 $
+ * $Revision: 1.66 $ $Author: nmeier $ $Date: 2004-07-22 06:15:36 $
  */
 package genj.gedcom;
 
@@ -490,6 +490,11 @@ public class Gedcom {
       // need to notify?
       if (transaction.hasChanges()) {
 
+        // remember
+        if (!transaction.isRollback())
+        // FIXME got to limit the number of kept transactions and allow to redo transactions that were undone (linked list)
+          transactions.push(transaction);
+
         // remember change
         hasUnsavedChanges = true;
 
@@ -501,12 +506,6 @@ public class Gedcom {
         
         // done
       }
-      
-      // remember
-      if (!transaction.isRollback())
-        transactions.push(transaction);
-            
-      System.out.println(transaction);
       
     } finally {
       transaction = null;

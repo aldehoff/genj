@@ -268,6 +268,9 @@ public class PropertyTreeWidget extends DnDTree {
       property2view.clear();
   }
 
+  // keep a reference to transaction for removeFrom()
+  private static Transaction removeTransaction = null;
+
   /**
    * Our model
    */
@@ -355,7 +358,7 @@ public class PropertyTreeWidget extends DnDTree {
         theParent = (Property)parent;
 
       // start transaction 
-      // FIXME TODAY need to make both transactions into one for undo
+      // FIXME need to make both transactions into one for undo
        
       gedcom.startTransaction();      
   

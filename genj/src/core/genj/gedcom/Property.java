@@ -171,10 +171,8 @@ public abstract class Property implements Comparable {
     addProperty(copy, pos);
     
     // link it if applicable
-    try {
-      if (copy instanceof PropertyXRef) {
-        ((PropertyXRef)copy).link();
-      }
+    if (copy instanceof PropertyXRef) try {
+      ((PropertyXRef)copy).link();
     } catch (GedcomException e) {
     }
     
@@ -246,34 +244,26 @@ public abstract class Property implements Comparable {
     return child;
   }
   
-    /**
-     * Removes a property by looking in the property's properties
-     * list and eventually calling delProperty recursively
-     */
-    public void delProperty(Property deletee) {
-  
-      // find position (throw outofbounds if n/a)
-      int pos = 0;
-      for (;;pos++) {
-        if (children.get(pos)==deletee)
-          break;
-      }
-      
-      // tell about it
-      propagateRemoved(this, pos, deletee);
-    
-      // remove   
-      children.remove(pos);
-  
-      // 20040717 once I checked recursively for 'which' but decided
-      // now to only allow deletion of immediate children
-  //    // Look for second class properties
-  //    for (int i=0;i<children.size();i++) {
-  //      if (getProperty(i).delProperty(which)) 
-  //        return true;
-  //    }
-  
+  /**
+   * Removes a property by looking in the property's properties
+   * list and eventually calling delProperty recursively
+   */
+  public void delProperty(Property deletee) {
+
+    // find position (throw outofbounds if n/a)
+    int pos = 0;
+    for (;;pos++) {
+      if (children.get(pos)==deletee)
+        break;
     }
+    
+    // tell about it
+    propagateRemoved(this, pos, deletee);
+  
+    // remove   
+    children.remove(pos);
+
+  }
   
   /**
    * Returns a warning string that describes what happens when this

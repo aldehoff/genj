@@ -153,12 +153,15 @@ public abstract class Change {
    */  
   public static class EntityAdded extends Change {
     
+    Gedcom gedcom;
+    
     EntityAdded(Entity newEntity) {
       super(newEntity);
+      gedcom = newEntity.getGedcom();
     }
     
     void undo() {
-      entity.getGedcom().deleteEntity(entity);
+      gedcom.deleteEntity(entity);
     }
 
     public String toString() {
