@@ -41,8 +41,10 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Model of our tree
@@ -62,7 +64,7 @@ public class Model implements Graph, GedcomListener {
   private Collection arcs = new ArrayList(100);
 
   /** nodes */
-  private Collection nodes = new ArrayList(100);
+  private Map entities2nodes = new IdentityHashMap(100);
 
   /** bounds */
   private Rectangle2D bounds = new Rectangle2D.Double();
@@ -285,6 +287,13 @@ public class Model implements Graph, GedcomListener {
   }
   
   /**
+   * A node for entity (might be null)
+   */
+  public Node getNode(Entity e) {
+    return (Node)entities2nodes.get(e);
+  }
+
+  /**
    * @see gj.model.Graph#getArcs()
    */
   public Collection getArcs() {
@@ -302,7 +311,7 @@ public class Model implements Graph, GedcomListener {
    * @see gj.model.Graph#getNodes()
    */
   public Collection getNodes() {
-    return nodes;
+    return entities2nodes.values();
   }
 
   /**
@@ -339,7 +348,7 @@ public class Model implements Graph, GedcomListener {
   private void parse() {
     // clear old
     arcs.clear();
-    nodes.clear();
+    entities2nodes.clear();
     bounds.setFrame(0,0,0,0);
     // something to do?
     if (root==null) return;
@@ -372,7 +381,7 @@ public class Model implements Graph, GedcomListener {
     }
     // create gridcache
     cache = new GridCache(bounds, 4*Math.max(heightIndis+heightFams, widthIndis+widthFams));
-    Iterator it = nodes.iterator();
+    Iterator it = getNodes().iterator();
     while (it.hasNext()) {
       MyNode n = (MyNode)it.next();
       Shape s = n.getShape();
@@ -432,8 +441,9 @@ public class Model implements Graph, GedcomListener {
       entity = enTity;
       shape = sHape;
       padding = padDing;
-      // publish
-      nodes.add(this);
+      // publish - entity maps to node (entity shouldn't be used
+      // twice and null's are marked so that nodes won't get lost
+      entities2nodes.put(entity==null?(Object)this:entity, this);
       // done
     }
     

@@ -64,7 +64,6 @@ public class ContentRenderer {
   
   /**
    * Render the content
-   * FIXME : have to do drawing optimizations
    */
   public void render(UnitGraphics ug, Model model) {  
     // translate to center

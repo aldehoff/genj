@@ -183,20 +183,20 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // allowed?
     if (!(entity instanceof Indi||entity instanceof Fam)) return;
     // Node for it?
-//    Node node = model.getNode(entity);
-//    if (node==null) return;
+    Node node = model.getNode(entity);
+    if (node==null) return;
     // remember
     currentEntity = entity;
     // scroll
-//    Rectangle2D b = model.getBounds();
-//    Point2D     p = node.getPosition();
-//    Dimension   d = getSize();
-//    content.scrollRectToVisible(new Rectangle(
-//      UnitGraphics.units2pixels( p.getX() - b.getMinX(), UNITS*zoom ) - d.width /2,
-//      UnitGraphics.units2pixels( p.getY() - b.getMinY(), UNITS*zoom ) - d.height/2,
-//      d.width ,
-//      d.height
-//    ));
+    Rectangle2D b = model.getBounds();
+    Point2D     p = node.getPosition();
+    Dimension   d = getSize();
+    content.scrollRectToVisible(new Rectangle(
+      UnitGraphics.units2pixels( p.getX() - b.getMinX(), UNITS*zoom ) - d.width /2,
+      UnitGraphics.units2pixels( p.getY() - b.getMinY(), UNITS*zoom ) - d.height/2,
+      d.width ,
+      d.height
+    ));
     // make sure it's reflected
     content.repaint();
     // done
@@ -298,6 +298,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     if (!(root instanceof Indi||root instanceof Fam)) return;
     // keep it
     model.setRoot(root);
+    // make it current
+    currentEntity = null;
+    setCurrentEntity(root);
     // done
   }
 
@@ -455,6 +458,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       // a new sleection?
       Entity entity = getEntityAt(e.getPoint());
       if (entity==null||entity==currentEntity) return;
+      // note it already
+      currentEntity = entity;
+      repaint();
       // propagate it
       ViewManager.getInstance().setCurrentEntity(entity);
       // done
@@ -467,8 +473,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       // double -> root
       if (e.getClickCount()>1) {
         Entity entity = getEntityAt(e.getPoint());
-        if (entity==null) return;
-        model.setRoot(currentEntity);
+        if (entity!=null) setRoot(entity);
       }
       // done
     }
