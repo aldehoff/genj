@@ -33,7 +33,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
@@ -202,7 +201,7 @@ public class PrintManager {
     protected void execute() {
       // this is on another thread
       try {
-        Debug.log(Debug.INFO, this, "Printing to "+getPrintService());
+        Debug.log(Debug.INFO, this, "Printing to "+getPrintService()+"("+job+")");
         job.print();
       } catch (PrinterException pe) {
         throwable = pe;
@@ -244,7 +243,7 @@ public class PrintManager {
      * Callback for actual printing  
      * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
      */
-    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+    public int print(Graphics graphics, PageFormat ignore, int pageIndex) throws PrinterException {
   
       // what's the current page
       int 
@@ -254,30 +253,20 @@ public class PrintManager {
 
       page = pageIndex;
 
+      // clip to page bounds (seems like the clip already set can't be trusted)
+      Rectangle page = getImageable();
+      graphics.setClip(page);
+      
       // draw border
-      Graphics2D g = (Graphics2D)graphics;
-      g.setColor(Color.black);
-      
-      g.draw(new Rectangle2D.Double(
-        pageFormat.getImageableX(),
-        pageFormat.getImageableY(),
-        pageFormat.getImageableWidth(),
-        pageFormat.getImageableHeight()
-      ));
-      
-      
+      graphics.setColor(Color.lightGray);
+      graphics.drawRect(page.x,page.y,page.width,page.height);
+
       // translate for content
-      graphics.translate(
-        (int)pageFormat.getImageableX(), 
-        (int)pageFormat.getImageableY()
-      );
-      graphics.translate(
-        -(int)(col*pageFormat.getImageableWidth ()), 
-        -(int)(row*pageFormat.getImageableHeight())
-      );
+      Rectangle imageable = getImageable();
+      graphics.translate(imageable.x - col*imageable.width, imageable.y - row*imageable.height);
 
       // render it
-      renderer.renderPage(g, new Point(col, row), getResolution(), false);
+      renderer.renderPage((Graphics2D)graphics, new Point(col, row), getResolution(), false);
       
       // done
       return PAGE_EXISTS;
@@ -298,6 +287,7 @@ public class PrintManager {
      * Show page dialog     */
     /*package*/ void showPageDialog() {
       pageFormat = job.pageDialog(pageFormat);
+      job.validatePage(pageFormat);
       // preserve page format
       registry.put("printer.orientation", pageFormat.getOrientation());
       // reset pages
@@ -329,8 +319,10 @@ public class PrintManager {
     /**
      * PageSize in dots
      */
-    /*package*/ Dimension getPageSize() {
-      return new Dimension(
+    /*package*/ Rectangle getPage() {
+      return new Rectangle(
+        0,
+        0,
         (int)pageFormat.getWidth(),
         (int)pageFormat.getHeight()
       );

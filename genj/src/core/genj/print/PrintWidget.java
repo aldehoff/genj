@@ -159,14 +159,13 @@ public class PrintWidget extends JTabbedPane {
      */
     public Dimension getPreferredSize() {
       // calculate
-      Rectangle2D page = calcPage(0,0);
       Point pages = task.getPages(); 
+      Rectangle2D page = calcPage(pages.x-1,pages.y-1);
       Point dpi = App.getInstance().getDPI();
-      double 
-        width = (pages.x*(page.getWidth ()+pad) + pad)*dpi.x*zoom,
-        height= (pages.y*(page.getHeight()+pad) + pad)*dpi.y*zoom;
-      // done
-      return new Dimension((int)width, (int)height);
+      return new Dimension(
+        (int)((page.getMaxX()+1)*dpi.x*zoom),
+        (int)((page.getMaxY()+1)*dpi.y*zoom)
+      );
     }
 
     /**
@@ -174,10 +173,10 @@ public class PrintWidget extends JTabbedPane {
      */
     private Rectangle2D calcPage(int x, int y) {
       Point dpi = task.getResolution();
-      Dimension psize = task.getPageSize();
+      Rectangle page = task.getPage();
       double 
-       w = (double)psize.width /dpi.x,
-       h = (double)psize.height/dpi.y;
+       w = (double)page.width /dpi.x,
+       h = (double)page.height/dpi.y;
       return new Rectangle2D.Double(
         pad + x*(w+pad),
         pad + y*(h+pad), 
@@ -212,9 +211,7 @@ public class PrintWidget extends JTabbedPane {
       Printer renderer = task.getRenderer();
       Point pages = task.getPages(); 
       Point dpi = App.getInstance().getDPI();
-      dpi.x *= zoom;
-      dpi.y *= zoom;
-      UnitGraphics ug = new UnitGraphics(g, dpi.x, dpi.y);
+      UnitGraphics ug = new UnitGraphics(g, dpi.x*zoom, dpi.y*zoom);
       for (int y=0;y<pages.y;y++) {
         for (int x=0;x<pages.x;x++) {
           // calculate layout
@@ -231,13 +228,13 @@ public class PrintWidget extends JTabbedPane {
           ug.setColor(Color.gray);
           ug.draw(String.valueOf(x+y*pages.x+1),page.getCenterX(),page.getCenterY(),0.5D,0.5D);
           // draw content
-          // FIXME 
-//          ug.pushTransformation();
-//          ug.pushClip(page);
-//          ug.translate(page.getMinX() - (x*isize.getX()), page.getMinY() - (y*isize.getY()));
-//          renderer.renderPage(ug.getGraphics(), new Point(x,y), dpi, true);
-//          ug.popTransformation();
-//          ug.popClip();
+          ug.pushTransformation();
+          ug.pushClip(imageable);
+          ug.translate(imageable.getMinX() - (x*imageable.getWidth()), imageable.getMinY() - (y*imageable.getHeight()));
+          ug.getGraphics().scale(zoom,zoom);
+          renderer.renderPage(ug.getGraphics(), new Point(x,y), dpi, true);
+          ug.popTransformation();
+          ug.popClip();
           // next   
         }
       }
