@@ -1,275 +1,304 @@
-/**
- * GenJ - GenealogyJ
- *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
- *
- * This piece of code is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
- *
- * This code is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 package genj.app;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
+import genj.gedcom.Change;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
+import genj.gedcom.Selection;
+import genj.util.ImgIcon;
+import genj.util.Registry;
+import genj.util.swing.ImgIconConverter;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.Component;
+import java.util.Enumeration;
+import java.util.Vector;
 
-import genj.*;
-import genj.gedcom.*;
-import genj.util.*;
-import awtx.table.*;
-import awtx.Table;
+import javax.swing.ImageIcon;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
-/**
- * A component showing Gedcoms
- */
-public class GedcomTable extends Table {
-
-  /** members */
-  private GTableModel model;
-
+public class GedcomTable extends JTable {
+  
   /** default column headers */
-  private static final Object defaultHeaders[] = {
+  private static final Object headers[] = {
     App.resources.getString("cc.column_header.name"),
-    Gedcom.getImage(Gedcom.INDIVIDUALS),
-    Gedcom.getImage(Gedcom.FAMILIES),
-    Gedcom.getImage(Gedcom.MULTIMEDIAS),
-    Gedcom.getImage(Gedcom.NOTES),
-    Gedcom.getImage(Gedcom.SOURCES),
-    Gedcom.getImage(Gedcom.SUBMITTERS)
+    ImgIconConverter.get(Gedcom.getImage(Gedcom.INDIVIDUALS)),
+    ImgIconConverter.get(Gedcom.getImage(Gedcom.FAMILIES)),
+    ImgIconConverter.get(Gedcom.getImage(Gedcom.MULTIMEDIAS)),
+    ImgIconConverter.get(Gedcom.getImage(Gedcom.NOTES)),
+    ImgIconConverter.get(Gedcom.getImage(Gedcom.SOURCES)),
+    ImgIconConverter.get(Gedcom.getImage(Gedcom.SUBMITTERS))
   };
 
   /** default column widths */
   private static final int defaultWidths[] = {
-    48,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24
+    48, 24, 24, 24, 24, 24, 24
   };
 
-  /**
-   * Our header renderer
-   */
-  class GHeaderRenderer extends DefaultHeaderCellRenderer {
-    // LCD
-    /** rendering */
-    public void render(Graphics g, Rectangle rect, Object o, FontMetrics fm) {
-      // Text?
-      String text;
-      if (o instanceof String) {
-        text = (String)o;
-      } else {
-        text = "";
-      }
-      super.render(g,rect,text,fm);
-
-      // Image?
-      if (o instanceof ImgIcon) {
-        // .. draw image
-        g.drawImage(
-          ((ImgIcon)o).getImage(),
-          rect.x+4,
-          rect.y,
-          null
-        );
-      }
-      // Done
-    }
-    // EOC
-  }
-
-
-  /**
-   * Class for encapsulating all Gedcoms in a model for Table
-   */
-  class GTableModel extends AbstractTableModel implements  GedcomListener {
-    // LCD
-    /** member */
-    private Vector gedcoms = new Vector();
-    /** constructor */
-    GTableModel() {
-    }
-    /** constructor */
-    GTableModel(Vector pGedcoms) {
-      // Register as Listener
-      Gedcom gedcom;
-      for (int i=0;i<pGedcoms.size();i++) {
-        gedcom = (Gedcom)pGedcoms.elementAt(i);
-        gedcom.addListener(this);
-        gedcoms.addElement(gedcom);
-      }
-    }
-    /** returns number of Rows - that's the number of gedcoms */
-    public int getNumRows() {
-      return gedcoms.size();
-    }
-    /** returns number of Columns for initialization */
-    public int getNumColumns() {
-      return defaultHeaders.length;
-    }
-    /** compares two given rows */
-    public int compareRows(int first, int second, int column) {
-      return 0;
-    }
-    /** returns the Cell Object row,col - that's one of the gedcoms */
-    public Object getObjectAt(int row, int col) {
-      Gedcom gedcom = (Gedcom)gedcoms.elementAt(row);
-      String txt=null;
-
-      switch (col) {
-      case 0 :
-        txt   = gedcom.getName();
-        break;
-      case 1 :
-      case 2 :
-      case 3 :
-      case 4:
-        txt   = ""+gedcom.getEntities(Gedcom.FIRST_ETYPE+col-1).getSize();
-        break;
-      case 5 :
-        txt   = "0";
-        break;
-      case 6 :
-        txt   = "0";
-        break;
-      }
-      return txt;
-    }
-    /** returns the Header Object col - that's one of the headline images  */
-    public Object getHeaderAt(int col) {
-      return defaultHeaders[col];
-    }
-    /** callback that a change in a Gedcom-object took place. */
-    public void handleChange(Change change) {
-      if (  (!change.isChanged(Change.EADD))
-        &&(!change.isChanged(Change.EDEL)) ) {
-        return;
-      }
-      for (int i=0;i<gedcoms.size();i++) {
-        if (gedcoms.elementAt(i)==change.getGedcom()) {
-          fireRowsChanged(new int[]{i});
-        }
-      }
-    }
-    /**
-     * callback that an entity has been selected.
-     */
-    public void handleSelection(Selection selection) {
-    }
-    /**
-     * callback that the gedcom is being closed
-     */
-    public void handleClose(Gedcom which) {
-      // De-Register as listener
-      which.removeListener(this);
-      // Forget about it
-      gedcoms.removeElement(which);
-      // Update GUI
-      fireNumRowsChanged();
-    }
-    /** returns the Gedcom at given index */
-    public Gedcom getGedcom(int which) {
-      return (Gedcom)gedcoms.elementAt(which);
-    }
-    /** callback that a new gedcom has been opened */
-    public void addGedcom(Gedcom which) {
-
-      // Register as listener
-      which.addListener(this);
-
-      // Remember
-      gedcoms.addElement(which);
-
-      // Update GUI
-      fireNumRowsChanged();
-
-      // Select first
-      setSelectedRow(getNumRows()-1);
-
-      // Done
-    }
-    /** returns the Gedcoms in this model */
-    Vector getGedcoms() {
-      return gedcoms;
-    }
-    // EOC
-  }
-
+  /** a registry */
+  private Registry registry;
+  
+  /** a model */
+  private Model model;
+  
   /**
    * Constructor
    */
   public GedcomTable() {
-
+    
     // Prepare a model
-    model = new GTableModel();
-    setModel(model);
-
-    // Prepare rendering
-    CellRenderer[] renderers = new CellRenderer[defaultHeaders.length];
-    CellRenderer hrenderer = new GHeaderRenderer();
-    for (int c=0;c<defaultHeaders.length;c++) {
-      renderers[c] = hrenderer;
+    model = new Model();
+    
+    // Prepare a column model
+    TableColumnModel cm = new DefaultTableColumnModel();
+    getTableHeader().setDefaultRenderer(new HeaderCellRenderer());
+    
+    for (int h=0; h<headers.length; h++) {
+      TableColumn col = new TableColumn(h);
+      col.setHeaderValue(headers[h]);
+      col.setPreferredWidth(defaultWidths[h]);
+      cm.addColumn(col);
     }
-    setHeaderCellRenderers(renderers);
+    setModel(model);
+    setColumnModel(cm);
 
-    // Done
+    // change looks    
+    setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+    
+    // done
   }
-
+  
   /**
-   * Add a Gedcom to this table
+   * Tells us where to look for stored information
    */
-  public void addGedcom(Gedcom which) {
-    model.addGedcom(which);
+  public void setRegistry(Registry registry) {
+    // remember
+    this.registry=registry;
+    // grab the preferred columns
+    int[] widths = registry.get("columns",(int[])null);
+    for (int c=0; c<widths.length; c++) {
+      getColumnModel().getColumn(c).setPreferredWidth(widths[c]);
+    }    
+    // done
   }
-
+  
   /**
-   * Returns the Gedcom at given index
+   * Hooking into the tear-down process to store our
+   * settings in (set) registry
    */
-  public Gedcom getGedcom(int row) {
-    return model.getGedcom(row);
+  public void removeNotify() {
+    // remember our layout
+    if (registry!=null) {
+      int[] widths = new int[headers.length];
+      for (int c=0; c<widths.length; c++) {
+        widths[c] = getColumnModel().getColumn(c).getWidth();
+      }
+      registry.put("columns", widths);
+    }
+    // continue
+    super.removeNotify();
   }
-
+  
   /**
-   * Returns the currently kept Gedcoms
+   * Accessor for model
    */
-  public Vector getGedcoms() {
-    return model.getGedcoms();
+  public Vector getAllGedcoms() {
+    return model.getAllGedcoms();
   }
-
+  
   /**
-   * Returns the actual selected Gedcom - or null if none selected
+   * The selected gedcom
    */
   public Gedcom getSelectedGedcom() {
-    int row = getSelectedRow();
-    if (row<0)
-      return null;
-    return model.getGedcom(row);
+    return model.getSelectedGedcom();
+  }
+  
+  /**
+   * Add a gedcom
+   */
+  public void addGedcom(Gedcom gedcom) {
+    model.addGedcom(gedcom);
   }
 
   /**
-   * Sets a column width for this GedcomTable - null means default
+   * A model keeping track of a bunch of Gedcoms
    */
-  public boolean setColumnWidths(int widths[]) {
-
-    if (widths==null) {
-      widths = this.defaultWidths;
+  public class Model implements TableModel, GedcomListener {
+    
+    /** the Gedcoms we know about */
+    private Vector gedcoms = new Vector(10);
+    
+    /** the listeners */
+    private Vector listeners = new Vector(2);
+    
+    /**
+     * Selected Gedcom
+     */
+    public Gedcom getSelectedGedcom() {
+      int row = getSelectedRow();
+      if (row==-1) return null;
+      return (Gedcom)gedcoms.elementAt(row);
+    }
+  
+    /**
+     * All Gedcoms
+     */
+    public Vector getAllGedcoms() {
+      return gedcoms;
+    }
+  
+    /**
+     * Add a gedcom
+     */
+    public void addGedcom(Gedcom gedcom) {
+      gedcoms.add(gedcom);
+      gedcom.addListener(this);
+      fireTableChange(-1);
     }
 
-    return super.setColumnWidths(widths);
-  }
+    /**
+     * @see javax.swing.table.TableModel#addTableModelListener(TableModelListener)
+     */
+    public void addTableModelListener(TableModelListener l) {
+      listeners.add(l);
+    }
+  
+    /**
+     * @see javax.swing.table.TableModel#getColumnClass(int)
+     */
+    public Class getColumnClass(int columnIndex) {
+      return String.class;
+    }
+  
+    /**
+     * @see javax.swing.table.TableModel#getColumnCount()
+     */
+    public int getColumnCount() {
+      return headers.length;
+    }
+  
+    /**
+     * @see javax.swing.table.TableModel#getColumnName(int)
+     */
+    public String getColumnName(int columnIndex) {
+      return ""+columnIndex;
+    }
+  
+    /**
+     * @see javax.swing.table.TableModel#getRowCount()
+     */
+    public int getRowCount() {
+      return gedcoms.size();
+    }
+  
+    /**
+     * @see javax.swing.table.TableModel#getValueAt(int, int)
+     */
+    public Object getValueAt(int row, int col) {
+      Gedcom gedcom = (Gedcom)gedcoms.elementAt(row);
+      if (col==0) return gedcom.getName();
+      return ""+gedcom.getEntities(Gedcom.FIRST_ETYPE+(col-1)).getSize();
+    }
+  
+    /**
+     * @see javax.swing.table.TableModel#isCellEditable(int, int)
+     */
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+      return false;
+    }
+  
+    /**
+     * @see javax.swing.table.TableModel#removeTableModelListener(TableModelListener)
+     */
+    public void removeTableModelListener(TableModelListener l) {
+      listeners.remove(l);
+    }
+  
+    /**
+     * @see javax.swing.table.TableModel#setValueAt(Object, int, int)
+     */
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+      // ignored
+    }
+    
+    /**
+     * notification that num
+     */
+    public void fireTableChange(int row) {
+      TableModelEvent ev = (row<0 ? new TableModelEvent(this) : new TableModelEvent(this,row) );
+      Enumeration e = listeners.elements();
+      while (e.hasMoreElements()) {
+        ((TableModelListener)e.nextElement()).tableChanged(ev);
+      }
+    }
+  
+    /**
+     * @see genj.gedcom.GedcomListener#handleChange(Change)
+     */
+    public void handleChange(Change change) {
+      if (change.isChanged(change.EADD)||change.isChanged(change.EDEL)) {
+        Gedcom gedcom = change.getGedcom();
+        for (int g=0;g<gedcoms.size(); g++) {
+          if (gedcoms.elementAt(g)==gedcom) {
+            fireTableChange(g);
+            break;
+          }
+        }
+      }
+    }
+
+    /**
+     * @see genj.gedcom.GedcomListener#handleClose(Gedcom)
+     */
+    public void handleClose(Gedcom which) {
+      gedcoms.remove(which);
+      fireTableChange(-1);
+    }
+
+    /**
+     * @see genj.gedcom.GedcomListener#handleSelection(Selection)
+     */
+    public void handleSelection(Selection selection) {
+    }
+
+  } // Model
+
+  /**
+   * Our own TableCellRenderer for the header - because the
+   * default one doesn't handle images :(
+   */
+  private class HeaderCellRenderer extends DefaultTableCellRenderer {
+    public Component getTableCellRendererComponent(JTable table, Object value,
+                       boolean isSelected, boolean hasFocus, int row, int column) {
+      if (table != null) {
+        JTableHeader header = table.getTableHeader();
+        if (header != null) {
+          setForeground(header.getForeground());
+          setBackground(header.getBackground());
+          setFont(header.getFont());
+        }
+      }
+      setHorizontalAlignment(CENTER);
+      if (value instanceof ImageIcon) {
+        setIcon((ImageIcon)value);
+        value=null;
+      } else {
+        setIcon(null);
+      }
+      setText((value == null) ? "" : value.toString());
+      setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+      return this;
+    }
+  } // HeaderCellRenderer
+
 }

@@ -212,7 +212,7 @@ public class MergeTransaction implements Transaction {
     g2.endTransaction();
 
     // Done
-    center.registerGedcom(result);
+    center.addGedcom(result);
   }
 
   /**

@@ -20,8 +20,13 @@
 package genj.app;
 
 import javax.help.*;
+import javax.swing.JFrame;
+
 import java.net.*;
 import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.io.*;
 
 import genj.util.Registry;
@@ -47,27 +52,20 @@ class HelpBridgeImpl implements HelpBridge {
   }
   
   /**
-   * Whether a directory with that name exists
-   */
-  private boolean exists(String dir) {
-    return new File(dir).exists();
-  }
-
-  /**
    * Calculate help-directory location 'help'
    */
   private String calcHelpBase() {
     
     // First we look in "genj.help.dir"
     String dir = System.getProperty("genj.help.dir");
-    if ((dir==null)||(!exists(dir))) {
+    if ((dir==null)||(!new File(dir).exists())) {
       // .. otherwise we'll use "user.dir"/help
       dir = System.getProperty("user.dir")+"/help";
     }
     
     // Then we check for local language
     String local = dir+"/"+System.getProperty("user.language");
-    if (exists(local)) {
+    if (new File(dir).exists()) {
       return local;
     }
     
@@ -75,36 +73,34 @@ class HelpBridgeImpl implements HelpBridge {
     return dir+"/en";
     
   }
-  
-
 
   /**
    * Opens the help
    */
   public void open(Registry registry) {
 
-    if (broker!=null) {
-      broker.setSize(broker.getSize());
-      broker.setLocation(broker.getLocation());
-      broker.setDisplayed(true);
-      return;
-    }
-
-    HelpSet hs=null;
-
-    String file;
     try {
-      file = calcHelpBase() + "/helpset.xml";
+      
+      String file = calcHelpBase() + "/helpset.xml";
       System.out.println("[Debug]Using help in " + file );
       URL url = new URL("file","", file);
-      hs = new HelpSet(null,url);
+      HelpSet hs = new HelpSet(null,url);
 
-    } catch (Exception e1) {
+      JHelpContentViewer content = new JHelpContentViewer(hs);
+      content.getModel().setCurrentID(hs.getHomeID());
+      JHelpNavigator nav = (JHelpNavigator) hs.getNavigatorView("TOC").createNavigator(content.getModel());
+
+      JFrame frame = App.getInstance().createFrame("foo",null,"help",new Dimension(320,256));
+      Container c = frame.getContentPane();
+      c.setLayout(new BorderLayout());
+      c.add(content, BorderLayout.CENTER);
+      c.add(nav    , BorderLayout.WEST);
+      
+      frame.pack();
+      frame.show();
+
+    } catch (Throwable t) {
     }
-
-    broker = hs.createHelpBroker();
-    broker.setSize(registry.get("help",new java.awt.Dimension(640,480)));
-    broker.setLocation(registry.get("help",new java.awt.Point(0,0)));
-    broker.setDisplayed(true);
+    
   }
 }

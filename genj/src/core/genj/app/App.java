@@ -51,7 +51,7 @@ public class App {
   private Registry registry = Registry.getRegistry("genj");
   private Hashtable openFrames = new Hashtable();
   private static App instance;
-  protected final static Resources resources = new Resources("genj.app");
+  /*package*/ final static Resources resources = new Resources("genj.app");
 
   /**
    * Application Constructor
@@ -102,9 +102,6 @@ public class App {
     // Create the desktop
     ControlCenter center = new ControlCenter(frame,registry);
     frame.getContentPane().add(center);
-
-    // Menu-Bar
-    frame.setJMenuBar(center.getMenu());
 
     // Show it
     frame.pack();

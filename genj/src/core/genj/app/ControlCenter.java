@@ -22,7 +22,6 @@ package genj.app;
 import javax.swing.*;
 import javax.swing.event.*;
 
-
 import java.awt.*;
 import java.awt.event.*;
 import java.net.*;
@@ -46,14 +45,13 @@ public class ControlCenter extends JPanel implements ActionListener {
 
   /** members */
   private GedcomTable tGedcoms;
-  private JButton bNewIndi,bNewFam,bNewMedia,bNewNote,bNewSource,bNewSubmitter,bNewRepository,bDelEntity,bUndo;
-  private JButton bOpenGedcom,bNewTable,bNewTree,bNewTimeline,bNewEdit,bNewReport,bNewNavigator,bSettings;
   private JFrame frame;
   private Vector busyGedcoms;
   private ControlCenter me;
   private JMenu gedcomMenu,toolMenu,helpMenu;
   private Registry registry;
   private HelpBridge helpBridge;
+  private Vector gedcomButtons = new Vector();
 
   /**
    * Constructor
@@ -73,35 +71,26 @@ public class ControlCenter extends JPanel implements ActionListener {
         shutdown();
       }
     });
+    frame.setJMenuBar(createMenuBar());
 
     // Table of Gedcoms
     tGedcoms = new GedcomTable();
-    tGedcoms.setColumnWidths(registry.get("columns",(int[])null));
+    tGedcoms.setRegistry(registry);
 
     // ... Listening
-    awtx.table.TableListener tlistener = new awtx.table.TableListener() {
-      // LCD
-      /** callback in case that a row has been selected */
-      public void rowSelectionChanged(int[] rows) {
+    ListSelectionListener tlistener = new ListSelectionListener() {
+      public void valueChanged(ListSelectionEvent lse) {
         // Calc Gedcom
-        int row = tGedcoms.getSelectedRow();
-        Gedcom gedcom = (row < 0 ? null : tGedcoms.getGedcom(row));
+        Gedcom gedcom = tGedcoms.getSelectedGedcom();
 
         // Check if action on selected item is possible
         boolean on = (gedcom!=null);
 
-        // Switch on/off Buttons
-        bNewTable    .setEnabled(on);
-        bNewTree     .setEnabled(on);
-        bNewTimeline .setEnabled(on);
-        bNewEdit     .setEnabled(on);
-        bNewNavigator.setEnabled(on);
-        bNewReport   .setEnabled(on);
-        bNewIndi     .setEnabled(on);
-        bNewFam      .setEnabled(on);
-        bNewMedia    .setEnabled(on);
-        bNewNote     .setEnabled(on);
-        bDelEntity   .setEnabled(on);
+        // Switch on/off AbstractButtons related to Gedcom
+        Enumeration e = gedcomButtons.elements();
+        while (e.hasMoreElements()) {
+          ((AbstractButton)e.nextElement()).setEnabled(on);
+        }
 
         // Switch on/off menu
         if (gedcomMenu!=null) {
@@ -119,45 +108,8 @@ public class ControlCenter extends JPanel implements ActionListener {
         }
         // Done
       }
-      /** callback in case of a double click or enter */
-      public void actionPerformed(int row) {
-      }
-      // EOC
     };
-    tGedcoms.addTableListener(tlistener);
-
-    // We handle the PopupProcess
-    awtx.table.PopupProvider provider = new awtx.table.PopupProvider() {
-      // LCD
-      /** How to provide a popup for Table */
-      public void providePopup(Component c, int x, int y) {
-        // Gedcom
-        Gedcom gedcom = tGedcoms.getSelectedGedcom();
-        if (gedcom==null)
-          return;
-        // Create popup
-        JPopupMenu jpopup = new JPopupMenu();
-        // Add our actions
-        boolean busy=busyGedcoms.contains(gedcom);
-        addItemTo(jpopup,App.resources.getString("cc.menu.save"  ),"SAVE"   ,!busy);
-        addItemTo(jpopup,App.resources.getString("cc.menu.saveas"),"SAVEAS" ,!busy);
-        addItemTo(jpopup,App.resources.getString("cc.menu.close" ),"CLOSE"  ,!busy);
-        // Show it
-        jpopup.show(c,x,y);
-        // Done
-      }
-      /** Helper for menu actions */
-      private void addItemTo(JPopupMenu menu,String text,String action,boolean enabled) {
-        // create entry
-        JMenuItem mi = new JMenuItem(text);
-        mi.setEnabled(enabled);
-        mi.setActionCommand(action);
-        mi.addActionListener(me);
-        menu.add(mi);
-      }
-      // EOC
-    };
-    tGedcoms.setPopupProvider(provider);
+    tGedcoms.getSelectionModel().addListSelectionListener(tlistener);
 
     // Create Pane for buttons
     JPanel gedcomPane = new JPanel();
@@ -168,57 +120,45 @@ public class ControlCenter extends JPanel implements ActionListener {
       .setResources(App.resources)
       .setListener(this)
       .setInsets(4)
-      .setFocusable(false);
+      .setFocusable(false)
+      .setContainer(gedcomPane);
 
-    bOpenGedcom  = bh.setImage(Images.imgGedcom      ).setAction("OPEN"        ).setTip("cc.tip.open_file"     ).setEnabled(true ).create();
-    bNewTable    = bh.setImage(Images.imgNewTable    ).setAction("NEWTABLE"    ).setTip("cc.tip.open_table"    ).setEnabled(false).create();
-    bNewTree     = bh.setImage(Images.imgNewTree     ).setAction("NEWTREE"     ).setTip("cc.tip.open_tree"     ).setEnabled(false).create();
-    bNewTimeline = bh.setImage(Images.imgNewTimeline ).setAction("NEWTIMELINE" ).setTip("cc.tip.open_timeline" ).setEnabled(false).create();
-    bNewEdit     = bh.setImage(Images.imgNewEdit     ).setAction("NEWEDIT"     ).setTip("cc.tip.open_edit"     ).setEnabled(false).create();
-    bNewReport   = bh.setImage(Images.imgNewReport   ).setAction("NEWREPORT"   ).setTip("cc.tip.open_report"   ).setEnabled(false).create();
-    bNewNavigator= bh.setImage(Images.imgNewNavigator).setAction("NEWNAVIGATOR").setTip("cc.tip.open_navigator").setEnabled(false).create();
-    bSettings    = bh.setImage(Images.imgSettings    ).setAction("VIEWEDIT"    ).setTip("cc.tip.settings"      ).setEnabled(true ).create();
-
-    // .. Layout
-    gedcomPane.add(bOpenGedcom);
-    gedcomPane.add(bNewTable   );
-    gedcomPane.add(bNewTree    );
-    gedcomPane.add(bNewTimeline);
-    gedcomPane.add(bNewEdit    );
-    gedcomPane.add(bNewReport  );
-    gedcomPane.add(bNewNavigator);
-    gedcomPane.add(bSettings   );
+    bh.setImage(Images.imgGedcom      ).setAction("OPEN"        ).setTip("cc.tip.open_file"     ).setEnabled(true ).create();
+    bh.setCollection(gedcomButtons);
+    bh.setImage(Images.imgNewTable    ).setAction("NEWTABLE"    ).setTip("cc.tip.open_table"    ).setEnabled(false).create();
+    bh.setImage(Images.imgNewTree     ).setAction("NEWTREE"     ).setTip("cc.tip.open_tree"     ).setEnabled(false).create();
+    bh.setImage(Images.imgNewTimeline ).setAction("NEWTIMELINE" ).setTip("cc.tip.open_timeline" ).setEnabled(false).create();
+    bh.setImage(Images.imgNewEdit     ).setAction("NEWEDIT"     ).setTip("cc.tip.open_edit"     ).setEnabled(false).create();
+    bh.setImage(Images.imgNewReport   ).setAction("NEWREPORT"   ).setTip("cc.tip.open_report"   ).setEnabled(false).create();
+    bh.setImage(Images.imgNewNavigator).setAction("NEWNAVIGATOR").setTip("cc.tip.open_navigator").setEnabled(false).create();
+    bh.setImage(Images.imgSettings    ).setAction("VIEWEDIT"    ).setTip("cc.tip.settings"      ).setEnabled(true ).create();
 
     // Actions Pane
     JPanel entityPane = new JPanel();
     entityPane.setLayout(new BoxLayout(entityPane,BoxLayout.X_AXIS));
 
     // .. Buttons
-    bh.setEnabled(false);
-    bNewIndi      = bh.setImage(Images.imgNewIndi      ).setAction("NEWINDI"      ).setTip("cc.tip.create_indi"       ).create();
-    bNewFam       = bh.setImage(Images.imgNewFam       ).setAction("NEWFAM"       ).setTip("cc.tip.create_fam"        ).create();
-    bNewMedia     = bh.setImage(Images.imgNewMedia     ).setAction("NEWMEDIA"     ).setTip("cc.tip.create_media"      ).create();
-    bNewNote      = bh.setImage(Images.imgNewNote      ).setAction("NEWNOTE"      ).setTip("cc.tip.create_note"       ).create();
-    bNewSource    = bh.setImage(Images.imgNewSource    ).setAction("NEWSOURCE"    ).setTip("cc.tip.create_source"     ).create();
-    bNewSubmitter = bh.setImage(Images.imgNewSubmitter ).setAction("NEWSUBMITTER" ).setTip("cc.tip.create_submitter"  ).create();
-    bNewRepository= bh.setImage(Images.imgNewRepository).setAction("NEWREPOSITORY").setTip("cc.tip.create_repository" ).create();
-    bDelEntity    = bh.setImage(Images.imgDelEntity    ).setAction("DEL"          ).setTip("cc.tip.delete_entity"     ).create();
-
-    entityPane.add(bNewIndi     );
-    entityPane.add(bNewFam      );
-    entityPane.add(bNewMedia    );
-    entityPane.add(bNewNote     );
-    entityPane.add(bNewSource   );
-    entityPane.add(bNewSubmitter);
-    entityPane.add(bNewRepository);
-    entityPane.add(bDelEntity   );
-    //    entityPane.add(bUndo        );
+    bh.setEnabled(false)
+      .setContainer(entityPane);
+    bh.setImage(Images.imgNewIndi      ).setAction("NEWINDI"      ).setTip("cc.tip.create_indi"       ).create();
+    bh.setImage(Images.imgNewFam       ).setAction("NEWFAM"       ).setTip("cc.tip.create_fam"        ).create();
+    bh.setImage(Images.imgNewMedia     ).setAction("NEWMEDIA"     ).setTip("cc.tip.create_media"      ).create();
+    bh.setImage(Images.imgNewNote      ).setAction("NEWNOTE"      ).setTip("cc.tip.create_note"       ).create();
+    bh.setImage(Images.imgNewSource    ).setAction("NEWSOURCE"    ).setTip("cc.tip.create_source"     ).create();
+    bh.setImage(Images.imgNewSubmitter ).setAction("NEWSUBMITTER" ).setTip("cc.tip.create_submitter"  ).create();
+    bh.setImage(Images.imgNewRepository).setAction("NEWREPOSITORY").setTip("cc.tip.create_repository" ).create();
+    bh.setImage(Images.imgDelEntity    ).setAction("DEL"          ).setTip("cc.tip.delete_entity"     ).create();
 
     // Layout
     setLayout(new BorderLayout());
     add(gedcomPane ,"North");
-    add(tGedcoms    ,"Center");
+    add(new JScrollPane(tGedcoms), "Center");
     add(entityPane ,"South");
+
+    // Load known gedcoms
+    SwingUtilities.invokeLater(new Runnable() { public void run() {
+      loadLastOpen();
+    }});
 
     // Done
   }
@@ -280,7 +220,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       null
     );
 
-    OptionDelEntity option = new OptionDelEntity(frame,tGedcoms.getGedcoms(),tGedcoms.getSelectedGedcom());
+    OptionDelEntity option = new OptionDelEntity(frame,tGedcoms.getAllGedcoms(),tGedcoms.getSelectedGedcom());
     frame.getContentPane().add(option);
     frame.pack();
     frame.show();
@@ -322,7 +262,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       null
     );
 
-    Transaction transaction = new MergeTransaction(gedcom, tGedcoms.getGedcoms(),this);
+    Transaction transaction = new MergeTransaction(gedcom, tGedcoms.getAllGedcoms(),this);
 
     TransactionPanel tpanel = new TransactionPanel(frame,transaction);
     frame.getContentPane().add(tpanel);
@@ -373,7 +313,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       null
     );
 
-    OptionNewEntity option = new OptionNewEntity(frame,type,tGedcoms.getGedcoms(),tGedcoms.getSelectedGedcom());
+    OptionNewEntity option = new OptionNewEntity(frame,type,tGedcoms.getAllGedcoms(),tGedcoms.getSelectedGedcom());
     frame.getContentPane().add(option);
     frame.pack();
     frame.show();
@@ -440,7 +380,7 @@ public class ControlCenter extends JPanel implements ActionListener {
         return;
       }
 
-      registerGedcom(new Gedcom(origin));
+      addGedcom(new Gedcom(origin));
       return;
     }
 
@@ -787,7 +727,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       null
     );
 
-    Transaction transaction = new VerifyTransaction(gedcom, tGedcoms.getGedcoms());
+    Transaction transaction = new VerifyTransaction(gedcom, tGedcoms.getAllGedcoms());
 
     TransactionPanel tpanel = new TransactionPanel(frame,transaction);
     frame.getContentPane().add(tpanel);
@@ -798,33 +738,10 @@ public class ControlCenter extends JPanel implements ActionListener {
   }
 
   /**
-   * Helper method for menu
+   * Adds another Gedcom to the list of Gedcoms
    */
-  private void addItemTo(JMenu menu,String text,String action) {
-    JMenuItem mi = new JMenuItem(text);
-    mi.setActionCommand(action);
-    mi.addActionListener(this);
-    menu.add(mi);
-  }
-
-  /**
-   * Called when component is first shown
-   */
-  public void addNotify() {
-
-    super.addNotify();
-
-    // Load known gedcoms
-    SwingUtilities.invokeLater(new Runnable() {
-      // LCD
-      /** main */
-      public void run() {
-        loadLastOpen();
-      }
-      // EOC
-    });
-
-    // Done
+  public void addGedcom(Gedcom gedcom) {
+    tGedcoms.addGedcom(gedcom);
   }
 
   /**
@@ -832,31 +749,36 @@ public class ControlCenter extends JPanel implements ActionListener {
    */
   private boolean shutdown() {
 
-    // Unsaved changes ?
-    Enumeration gedcoms = tGedcoms.getGedcoms().elements();
+    // Remember open gedcoms
+    boolean unsaved = false;
+    Vector save = new Vector();
+    Enumeration gedcoms = tGedcoms.getAllGedcoms().elements();
     while (gedcoms.hasMoreElements()) {
-      Gedcom g = (Gedcom)gedcoms.nextElement();
-      if (g.hasUnsavedChanges()) {
-        int rc = JOptionPane.showConfirmDialog(
-          frame,
-          App.resources.getString("cc.exit_changes?"),
-          App.resources.getString("app.warning"),
-          JOptionPane.YES_NO_OPTION
-        );
-        if (rc==JOptionPane.NO_OPTION) {
-          return false;
-        }
-        break;
+      Gedcom gedcom = (Gedcom)gedcoms.nextElement();
+      if (gedcom.getOrigin()!=null) {
+        save.addElement(""+gedcom.getOrigin());
+      }
+      unsaved |= gedcom.hasUnsavedChanges();
+    }
+    registry.put("open",save);
+
+    // Unsaved changes ?
+    if (unsaved) {
+      int rc = JOptionPane.showConfirmDialog(
+        frame,
+        App.resources.getString("cc.exit_changes?"),
+        App.resources.getString("app.warning"),
+        JOptionPane.YES_NO_OPTION
+      );
+      if (rc==JOptionPane.NO_OPTION) {
+        return false;
       }
     }
-    
+
     // Tell the HelpBridge
     if (helpBridge!=null) {
       helpBridge.close(registry);
     }
-
-    // Save settings from GedcomTable
-    registry.put("columns",tGedcoms.getColumnWidths());
 
     // Tell it to the app
     App.getInstance().shutdown();
@@ -868,48 +790,40 @@ public class ControlCenter extends JPanel implements ActionListener {
   /**
    * Returns a menu for frame showing this controlcenter
    */
-  /*package*/ JMenuBar getMenu() {
+  private JMenuBar createMenuBar() {
+    
+    MenuHelper mh = new MenuHelper().setListener(this).setResources(App.resources);
+    
+    JMenuBar result = mh.createBar();
 
     // Create Menues
-    if (gedcomMenu==null) {
-
-      gedcomMenu = new JMenu(App.resources.getString("cc.menu.file"));
-
+    mh.setText("cc.menu.file").createMenu();
+    
       // Create Items
-      addItemTo(gedcomMenu,App.resources.getString("cc.menu.open"  ) ,"OPEN" );
-      gedcomMenu.addSeparator();
-      addItemTo(gedcomMenu,App.resources.getString("cc.menu.save"  ) ,"SAVE"  );
-      addItemTo(gedcomMenu,App.resources.getString("cc.menu.saveas") ,"SAVEAS");
-      addItemTo(gedcomMenu,App.resources.getString("cc.menu.close" ) ,"CLOSE" );
-      gedcomMenu.addSeparator();
-      addItemTo(gedcomMenu,App.resources.getString("cc.menu.exit"  ) ,"EXIT" );
+      mh.setText("cc.menu.open"  ).setAction("OPEN"  ).createItem();
+      mh.createSeparator().setEnabled(false).setCollection(gedcomButtons);
+      mh.setText("cc.menu.save"  ).setAction("SAVE"  ).createItem();
+      mh.setText("cc.menu.saveas").setAction("SAVEAS").createItem();
+      mh.setText("cc.menu.close" ).setAction("CLOSE" ).createItem();
+      mh.createSeparator().setEnabled(true).setCollection(null);
+      mh.setText("cc.menu.exit"  ).setAction("EXIT"  ).createItem();
 
-    }
+    mh.setMenu(null).setText("cc.menu.tools").createMenu();
 
-    if (toolMenu==null) {
+      mh.setEnabled(false).setCollection(gedcomButtons);    
+      mh.setText("cc.menu.merge" ).setAction("MERGE" ).createItem();
+      mh.setText("cc.menu.verify").setAction("VERIFY").createItem();
+      mh.setEnabled(true).setCollection(null);    
 
-      toolMenu = new JMenu(App.resources.getString("cc.menu.tools"  ));
+    result.add(Box.createHorizontalGlue());
 
-      addItemTo(toolMenu,App.resources.getString("cc.menu.merge" ) ,"MERGE" );
-      addItemTo(toolMenu,App.resources.getString("cc.menu.verify") ,"VERIFY");
-
-    }
-
-    if (helpMenu==null) {
-      helpMenu = new JMenu(App.resources.getString("cc.menu.help"  ));
-      addItemTo(helpMenu,App.resources.getString("cc.menu.contents"),"CONTENTS");
-      addItemTo(helpMenu,App.resources.getString("cc.menu.about"),"ABOUT");
-    }
-
-    // Create JMenuBar
-    JMenuBar menuBar = new JMenuBar();
-    menuBar.add(gedcomMenu);
-    menuBar.add(toolMenu);
-    menuBar.add(Box.createHorizontalGlue());
-    menuBar.add(helpMenu);
+    mh.setMenu(null).setText("cc.menu.help").createMenu();
+    
+      mh.setText("cc.menu.contents").setAction("CONTENTS").createItem();
+      mh.setText("cc.menu.about"   ).setAction("ABOUT"   ).createItem();
 
     // Done
-    return menuBar;
+    return result;
   }
 
   /**
@@ -951,7 +865,7 @@ public class ControlCenter extends JPanel implements ActionListener {
   private void readGedcomFrom(Origin origin) {
 
     // Check if already open
-    Vector gedcoms = tGedcoms.getGedcoms();
+    Vector gedcoms = tGedcoms.getAllGedcoms();
     for (int i=0;i<gedcoms.size();i++) {
 
       Gedcom g = (Gedcom)gedcoms.elementAt(i);
@@ -995,10 +909,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       public void run() {
         String err=null;
         try {
-          // .. read it
-          Gedcom newGedcom = gedReader.readGedcom();
-          // .. done
-          registerGedcom(newGedcom);
+          addGedcom(gedReader.readGedcom());
         } catch (GedcomIOException ex) {
           err = App.resources.getString("cc.open.read_error",""+ex.getLine())+":\n"+ex.getMessage();
         } catch (GedcomFormatException ex) {
@@ -1029,34 +940,6 @@ public class ControlCenter extends JPanel implements ActionListener {
   }
 
   /**
-   * Includes the given Gedcom to be ready for working on
-   */
-  public void registerGedcom(Gedcom gedcom) {
-    tGedcoms.addGedcom(gedcom);
-  }
-
-  /**
-   * Called when component is dismissed
-   */
-  public void removeNotify() {
-
-    // Remember open gedcoms
-    Vector gedcoms = tGedcoms.getGedcoms();
-    Vector save = new Vector(gedcoms.size());
-    Gedcom gedcom;
-    for (int i=0;i<gedcoms.size();i++) {
-      gedcom = (Gedcom)gedcoms.elementAt(i);
-      if (gedcom.getOrigin()!=null) {
-        save.addElement(""+gedcom.getOrigin());
-      }
-    }
-    registry.put("open",save);
-
-    // Done
-    super.removeNotify();
-  }
-  
-  /**
    * Creates a FileChooser for given arguments
    */
   private FileChooser createFileChooser(JFrame frame, String title, String action) {
@@ -1070,4 +953,5 @@ public class ControlCenter extends JPanel implements ActionListener {
       System.getProperty("genj.gedcom.dir")
     );
   }
+  
 }

@@ -622,7 +622,8 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
         .setResources(resources)
         .setInsets(0)
         .setMinimumSize(new Dimension(0,0))
-        .setHorizontalAlignment(SwingConstants.LEADING);
+        .setHorizontalAlignment(SwingConstants.LEADING)
+        .setContainer(createPanel);
 
       // Create Buttons
       Object[] creates = entity2create[entity.getType()];
@@ -631,7 +632,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
         String action = (String )creates[c*3+0];
         ImgIcon img   = (ImgIcon)creates[c*3+1];
         String txt    = (String )creates[c*3+2];
-        bh.setText(txt).setAction(action).setImage(img).create(createPanel);
+        bh.setText(txt).setAction(action).setImage(img).create();
       }
       
       // glue
@@ -806,13 +807,14 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       .setResources(resources)
       .setListener(new PropertyDelegate())
       .setInsets(0)
-      .setMinimumSize(new Dimension(0,0));
+      .setMinimumSize(new Dimension(0,0))
+      .setContainer(actionPanel);
     
-    actionButtonAdd    = bh.setAction("add" ).setText("action.add" ).setTip("tip.add_prop" ).create(actionPanel);
-    actionButtonRemove = bh.setAction("del" ).setText("action.del" ).setTip("tip.del_prop" ).create(actionPanel);
-    actionButtonUp     = bh.setAction("up"  ).setText("action.up"  ).setTip("tip.up_prop"  ).create(actionPanel);
-    actionButtonDown   = bh.setAction("down").setText("action.down").setTip("tip.down_prop").create(actionPanel);
-    actionButtonReturn = bh.setAction("back").setText(null).setImage(Images.imgReturn).setTip("tip.return" ).create(actionPanel);
+    actionButtonAdd    = bh.setAction("add" ).setText("action.add" ).setTip("tip.add_prop" ).create();
+    actionButtonRemove = bh.setAction("del" ).setText("action.del" ).setTip("tip.del_prop" ).create();
+    actionButtonUp     = bh.setAction("up"  ).setText("action.up"  ).setTip("tip.up_prop"  ).create();
+    actionButtonDown   = bh.setAction("down").setText("action.down").setTip("tip.down_prop").create();
+    actionButtonReturn = bh.setAction("back").setText(null).setImage(Images.imgReturn).setTip("tip.return" ).create();
 
     actionPanel.add(actionCheckStick);
     

@@ -26,6 +26,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.util.Vector;
 
 import javax.swing.JButton;
 
@@ -48,6 +49,7 @@ public class ButtonHelper {
   private String action           = null;
   private Dimension minSize       = null;
   private int horizontalAlignment = -1;
+  private Vector collection       = null;
 
   /** Setters */    
   public ButtonHelper setText(String set) { text=set; return this; }
@@ -65,13 +67,14 @@ public class ButtonHelper {
   public ButtonHelper setAction(String set) { action=set; return this; }
   public ButtonHelper setMinimumSize(Dimension set) { minSize=set; return this; }
   public ButtonHelper setHorizontalAlignment(int set) { horizontalAlignment=set; return this; }
+  public ButtonHelper setCollection(Vector set) { collection=set; return this; }
 
   /**
-   * Creates the button and adds it to given Container
+   * Creates the button and adds it to given Vector
    */
-  public JButton create(Container in) {
+  public JButton create(Vector in) {
     JButton result = create();
-    in.add(result);
+    in.addElement(result);
     return result;
   }
     
@@ -109,6 +112,8 @@ public class ButtonHelper {
 
     if (container!=null)
       container.add(result);
+    if (collection!=null)
+      collection.addElement(result);
 
     return result;
   }

@@ -19,32 +19,96 @@
  */
 package genj.util.swing;
 
+import genj.util.ImgIcon;
+import genj.util.Resources;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Vector;
+
 import javax.swing.*;
 
 /**
  * Class which provides some static helpers for menu-handling
  */
 public class MenuHelper  {
+  
+  private String text             = null;
+  private String action           = null;
+  private ImgIcon image           = null;
+  private JMenu menu              = null;  
+  private ActionListener listener = null;
+  private Vector collection       = null;
+  private Resources resources     = null;
+  private JMenuBar bar            = null;
+  private boolean enabled         = true;
+
+  /** Setters */    
+  public MenuHelper setText(String set) { text=set; return this; }
+  public MenuHelper setAction(String set) { action=set; return this; }
+  public MenuHelper setImage(ImgIcon set) { image=set; return this; }
+  public MenuHelper setMenu(JMenu set) { menu=set; return this; }
+  public MenuHelper setListener(ActionListener set) { listener=set; return this; }
+  public MenuHelper setCollection(Vector set) { collection=set; return this; }
+  public MenuHelper setResources(Resources set) { resources=set; return this; }
+  public MenuHelper setBar(JMenuBar set) { bar=set; return this; }
+  public MenuHelper setEnabled(boolean set) { enabled=set; return this; }
 
   /**
-   * Helper that adds a menu item to a menu
+   * Creates a menubar
    */
-  static public JMenuItem addMenuItem(JMenu menu, String txt, String action, ImageIcon img, JMenuItem mi, ActionListener listener) {
+  public JMenuBar createBar() {
+    JMenuBar result = new JMenuBar();
+    setBar(result);
+    return result;
+  }
 
-    if (img!=null) {
-      mi.setIcon(img);
-    }
-    if (txt!=null) {
-      mi.setText(txt);
-    }
+  /**
+   * Creates a menu
+   */
+  public JMenu createMenu() {
+    JMenu result = new JMenu();
+    init(result);
+    if ((menu==null)&&(bar!=null)) bar.add(result);
+    setMenu(result);
+    return result;
+  }
 
-    mi.setActionCommand(action);
-    mi.addActionListener(listener);
-    mi.setHorizontalTextPosition(AbstractButton.RIGHT);
-    menu.add(mi);
+  /**
+   * Creates an item
+   */
+  public JMenuItem createItem() {
+    JMenuItem result = new JMenuItem();
+    init(result);
+    return result;
+  }
+  
+  /**
+   * Init of item or menu
+   */
+  private void init(JMenuItem result) {
+    if (image!=null) result.setIcon(ImgIconConverter.get(image));
+    if (text!=null) result.setText(getText(text));
+    if (action!=null) result.setActionCommand(action);
+    if (listener!=null) result.addActionListener(listener);
+    if (menu!=null) menu.add(result);
+    if (collection!=null) collection.addElement(result);
+    result.setEnabled(enabled);
+  }
+  
+  /**
+   * Creates an separator
+   */
+  public MenuHelper createSeparator() {
+    if (menu!=null) menu.addSeparator();
+    return this;
+  }
 
-    return mi;
+  /**
+   * Helper resolving a text
+   */
+  private String getText(String txt) {
+    if (resources==null) return txt;
+    return resources.getString(txt);
   }
 }
