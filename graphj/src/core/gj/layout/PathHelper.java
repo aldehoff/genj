@@ -114,17 +114,25 @@ public class PathHelper {
       return path;
     }
 
-    // Parallels for i>1
-    if (i>0) {
+    // Parallels for i>1 and with shape
+    if (i>0&&s1!=null&&s2!=null) {
       
       i++;
 
-      double lastAngle = Geometry.getAngle(p1,p2);
+      Rectangle2D 
+        r1 = s1.getBounds2D(),
+        r2 = s2.getBounds2D();
+        
+      double distance = Math.min(
+        Math.min(r1.getWidth(),r1.getHeight()),
+        Math.min(r2.getWidth(),r2.getHeight())
+      ) *0.2;
 
+      double lastAngle = Geometry.getAngle(p1,p2);
       double RIGHTANGLE = 2*Math.PI/4;
       
       double 
-        c     = ((i&1)==0?1:-1)*(i>>1)*6,
+        c     = ((i&1)==0?1:-1)*(i>>1)*distance,
         alpha = lastAngle + (reversed?RIGHTANGLE:-RIGHTANGLE),
         dx    = Math.cos(alpha)*c,
         dy    = Math.sin(alpha)*c;
@@ -132,7 +140,7 @@ public class PathHelper {
       Point2D
         a = new Point2D.Double(p1.getX() + dx, p1.getY() + dy ),
         b = new Point2D.Double(p2.getX() + dx, p2.getY() + dy );
-
+        
       path.moveTo(calculateProjection(b, a, p1, s1));
       path.lineTo(calculateProjection(a, b, p2, s2));
       
