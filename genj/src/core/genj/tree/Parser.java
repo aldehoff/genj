@@ -23,10 +23,10 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import gj.layout.LayoutException;
-import gj.layout.tree.TreeLayout;
 import gj.layout.tree.Orientation;
+import gj.layout.tree.TreeLayout;
+import gj.model.Arc;
 import gj.model.Node;
-
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
@@ -460,7 +460,7 @@ import java.awt.geom.Rectangle2D;
       if (at!=null) throw new IllegalArgumentException("at is not supported");
       // parse under pivot
       TreeNode pivot = model.add(new TreeNode(null, null, null));
-      TreeNode node = iterate(indi, pivot);
+      TreeNode node = iterate(indi, pivot, 0);
       // do the layout
       super.layout(pivot, true);
       // done
@@ -470,7 +470,7 @@ import java.awt.geom.Rectangle2D;
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
      */
     protected TreeNode parse(Fam fam, Point2D at) {
-      TreeNode node = iterate(fam, null);
+      TreeNode node = iterate(fam, null, 0);
       node.padding = padIndis; // patch first fams padding
       if (at!=null) node.getPosition().setLocation(at);
       super.layout(node, true);
@@ -483,21 +483,40 @@ import java.awt.geom.Rectangle2D;
      * @param pivot all nodes of descendant are added to pivot
      * @return MyNode
      */
-    private TreeNode iterate(Indi indi, TreeNode pivot) {
+    private TreeNode iterate(Indi indi, TreeNode pivot, final int group) {
       // create node for indi
       TreeNode node = model.add(new TreeNode(indi, shapeIndis, padIndis) {
-        /** patch latitude */
+        /** patch longitude */
         public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
           return minc + o.getLongitude( alignOffsetIndiAbove1stFam );
         }
       });
-      model.add(new TreeArc(pivot, node, pivot.getShape()!=null));
+      // create an arc for pivot to indi
+      model.add(new TreeArc(pivot, node, pivot.getShape()!=null) {
+        /**
+         * @see genj.tree.TreeArc#getPort(gj.model.Arc, gj.model.Node)
+         */
+        public Point2D getPort(Arc arc, Node node, Orientation orntn) {
+          // delegate to super if end of arc
+          if (node==arc.getEnd()) return super.getPort(arc, node, orntn);
+          // the start of an arc is moved in longitude by 
+          //   ([w/h]Fams+padFams) * group
+          // so that it starts under the appropriate marriage
+          double dlon = 
+            group*(padFams[1]+padFams[3]+(model.isVertical()?metrics.wFams:metrics.hFams));
+          Point2D 
+            o = node.getPosition(),
+            d = orntn.getPoint2D(0, dlon),
+            n = new Point2D.Double(o.getX()+d.getX(), o.getY()+d.getY());
+          return n;
+        }
+      });
       // loop through our fams
       Fam[] fams = indi.getFamilies();
       TreeNode fam1 = null;
       for (int f=0; f<fams.length; f++) {
         // add arc : node-fam
-        TreeNode fami = iterate(fams[f], fam1);
+        TreeNode fami = iterate(fams[f], fam1, f);
         if (fam1==null) fam1 = fami;
         model.add(new TreeArc(node, fami, false));
         // add arcs : pivot-marr, pivot-spouse
@@ -512,7 +531,7 @@ import java.awt.geom.Rectangle2D;
      * parses a fam and its descendants
      * @parm pivot all nodes of descendant are added to pivot
      */
-    private TreeNode iterate(Fam fam, TreeNode pivot) {
+    private TreeNode iterate(Fam fam, TreeNode pivot, int group) {
       // node for fam
       TreeNode node = model.add(new TreeNode(fam, shapeFams, padFams));
       // pivot is me if unset
@@ -521,7 +540,7 @@ import java.awt.geom.Rectangle2D;
       Indi[] children = fam.getChildren();
       for (int c=0; c<children.length; c++) {
         // create an arc from node to node for indi
-        iterate(children[c], pivot);       
+        iterate(children[c], pivot, group);       
          // next child
       }
       // done

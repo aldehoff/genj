@@ -19,14 +19,18 @@
  */
 package genj.tree;
 
+import java.awt.geom.Point2D;
+
 import gj.awt.geom.Path;
+import gj.layout.tree.ArcOptions;
+import gj.layout.tree.Orientation;
 import gj.model.Arc;
 import gj.model.Node;
 
 /**
  * An arc in our genealogy tree
  */
-/*package*/ class TreeArc implements Arc {
+/*package*/ class TreeArc implements Arc, ArcOptions {
   
   /** start */
   private TreeNode start;
@@ -39,6 +43,9 @@ import gj.model.Node;
   
   /**
    * Constructor
+   * @param n1 first node
+   * @param n2 second node
+   * @param p whether the arc should be visible (has a path) or not
    */
   /*package*/ TreeArc(TreeNode n1, TreeNode n2, boolean p) {
     // remember
@@ -68,5 +75,13 @@ import gj.model.Node;
   public Path getPath() {
     return path;
   }
+  
+  /**
+   * @see gj.layout.tree.ArcOptions#getPort(gj.model.Arc, gj.model.Node)
+   */
+  public Point2D getPort(Arc arc, Node node, Orientation o) {
+    return node.getPosition();
+  }
+
 } //TreeArc
   
