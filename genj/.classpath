@@ -2,6 +2,7 @@
 <classpath>
     <classpathentry kind="src" path="src/core"/>
     <classpathentry kind="src" path="src/report"/>
+    <classpathentry kind="src" path="src/contrib"/>
     <classpathentry kind="lib" path="images"/>
     <classpathentry kind="lib" path="lib/jhbasic.jar"/>
     <classpathentry kind="lib" path="lib/graphj.jar"/>
