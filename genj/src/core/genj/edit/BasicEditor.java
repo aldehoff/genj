@@ -301,7 +301,7 @@ import javax.swing.event.ChangeListener;
       for (int i=0,j=beanPanel.getComponentCount();i<j;i++) {
         JComponent c = (JComponent)beanPanel.getComponent(i);
         if (c instanceof PropertyBean && ((PropertyBean)c).getPath().equals(path)) {
-          System.out.println(c.requestFocusInWindow());
+          c.requestFocusInWindow();
           break;
         }
       }
