@@ -32,10 +32,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Vector;
 
 /**
  * Registry - improved java.util.Properties
@@ -54,8 +56,20 @@ public class Registry {
    * afterwards and won't be saved
    */
   public Registry() {
+    // view is empty (root)
     view       ="";
-    properties =new Properties();
+    // patch properties that keeps order
+    properties = new Properties() {
+      /**
+       * @see java.util.Hashtable#keys()
+       */
+      public synchronized Enumeration keys() {
+        Vector result = new Vector(super.keySet()); 
+        Collections.sort(result);
+        return result.elements();
+      }
+    };
+    // done
   }
 
   /**
