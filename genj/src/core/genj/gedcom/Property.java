@@ -658,7 +658,13 @@ public abstract class Property implements Comparable {
   /**
    * Accessor - private
    */
-  public void setPrivate(boolean set) {
+  public void setPrivate(boolean set, boolean recursively) {
+    if (recursively) {
+      for (int c=0;c<getNoOfProperties();c++) {
+        Property child = getProperty(c);
+        child.setPrivate(set, recursively);
+      }
+    }
     isPrivate = set;
     modNotify();
   }

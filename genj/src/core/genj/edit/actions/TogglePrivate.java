@@ -19,10 +19,12 @@
  */
 package genj.edit.actions;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.view.ViewManager;
+import genj.window.WindowManager;
 
 /**
  * TogglePrivate - toggle "private" of a property
@@ -44,11 +46,28 @@ public class TogglePrivate extends ActionDelegate {
     setImage(MetaProperty.IMG_PRIVATE); 
     setText(AbstractChange.resources.getString(!prop.isPrivate()?"private":"public"));
   }
+  
   /**
    * @see genj.util.ActionDelegate#execute()
    */
   protected void execute() {
-    property.setPrivate(!property.isPrivate());
+
+    int recursive = manager.getWindowManager().openDialog(
+      null,
+      txt,
+      WindowManager.IMG_QUESTION,
+      AbstractChange.resources.getString("recursive"),
+      WindowManager.OPTIONS_YES_NO,
+      target
+    );
+
+    Gedcom gedcom = property.getGedcom();
+
+    if (gedcom.startTransaction()) { 
+      property.setPrivate(!property.isPrivate(), recursive==0);
+      gedcom.endTransaction();
+    }
+
   }
   
 } //OpenForEdit
