@@ -21,13 +21,11 @@ package genj.search;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.WordBuffer;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.ImageIcon;
@@ -41,6 +39,7 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -56,6 +55,9 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -63,6 +65,9 @@ import javax.swing.event.ListSelectionListener;
  * View for searching
  */
 public class SearchView extends JPanel implements ToolBarSupport, ContextSupport {
+  
+  /** max # hits */
+  private final static int MAX_HITS = 100;
   
   /** default values */
   private final static String[]
@@ -122,10 +127,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     oldValues = (LinkedList)registry.get("old.values", new LinkedList(Arrays.asList(DEFAULT_OLD_VALUES)));
     
     // prepare results
-    listResults = new JList(results);
-    ListCallback lc = new ListCallback();
-    listResults.setCellRenderer(lc);
-    listResults.addListSelectionListener(lc);
+    listResults = new ResultWidget(); 
     
     // prepare search criteria
     JLabel labelValue = new JLabel(resources.getString("label.value"));
@@ -197,7 +199,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     int row = listResults.locationToIndex(pos);
     if (row>=0) {
       listResults.setSelectedIndex(row);
-      context = results.getProperty(row);
+      context = results.getHit(row).getProperty();
     } 
     return new Context(context);
   }  
@@ -260,6 +262,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
    * Action - trigger search
    */
   private class ActionSearch extends ActionDelegate {
+    /** count of hits found */
+    private int count;
     /** hits */
     private List hits = new ArrayList(255);
     /** the current matcher*/
@@ -276,6 +280,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       // clear old
       hits.clear();
       results.clear();
+      count = 0;
       // update buttons
       bSearch.setEnabled(false);
       bStop.setEnabled(true);
@@ -310,13 +315,29 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       results.add(hits);
       hits.clear();
     }
+    
+    /**
+     * @see genj.util.ActionDelegate#handleThrowable(java.lang.String, java.lang.Throwable)
+     */
+    protected void handleThrowable(String phase, Throwable t) {
+      manager.getWindowManager().openDialog(
+        null,
+        null,
+        WindowManager.IMG_INFORMATION,
+        t.getMessage() ,
+        WindowManager.OPTIONS_OK,
+        SearchView.this 
+      );
+    }
 
     /**
      * after execute (on EDT)
      */
     protected void postExecute() {
+      // toggle buttons
       bSearch.setEnabled(true);
       bStop.setEnabled(false);
+      // done
     }
     
     /** got a hit */
@@ -325,6 +346,9 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       hits.add(hit);
       // sync (on first)?
       if (hits.size()==1) sync();
+      // too many?
+      if (count++>MAX_HITS)
+        throw new IndexOutOfBoundsException("Too many hits found! Restricting result to "+MAX_HITS+" hits.");
       // done
     }
     
@@ -347,17 +371,13 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     private void search(Property prop) {
       // still going?
       if (getThread().isInterrupted()) return;
-      // check prop for value
-      String value = prop instanceof MultiLineSupport ? ((MultiLineSupport)prop).getLinesValue() : prop.getValue();
-      Matcher.Match[] matches = matcher.match(value);
-
-// FIXME use matches      
-//      for (int i = 0; i < matches.length; i++) {
-//        System.out.println(value.substring(matches[i].start, matches[i].end));      	
-//      }
-        
-      if (matches.length>0)      
-        add(prop);
+      // all but transients
+      if (!prop.isTransient()) {
+        // check prop's value
+        Hit hit = Hit.test(matcher, prop);
+        if (hit!=null)
+          add(hit);
+      }
       // check subs
       int n = prop.getNoOfProperties();
       for (int i=0;i<n;i++) {
@@ -391,18 +411,18 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   private class Results extends AbstractListModel {
     
     /** the results */
-    private List properties = new ArrayList(255);
+    private List hits = new ArrayList(255);
     
     /**
      * clear the results
      */
     private synchronized void clear() {
       // nothing to do?
-      if (properties.isEmpty())
+      if (hits.isEmpty())
         return;
       // clear&notify
-      int size = properties.size();
-      properties.clear();
+      int size = hits.size();
+      hits.clear();
       fireIntervalRemoved(this, 0, size-1);
       // done
     }
@@ -415,9 +435,9 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       if (list.isEmpty()) 
         return;
       // remember 
-      int size = properties.size();
-      properties.addAll(list);
-      fireIntervalAdded(this, size, properties.size()-1);
+      int size = hits.size();
+      hits.addAll(list);
+      fireIntervalAdded(this, size, hits.size()-1);
       // done
     }
     
@@ -425,44 +445,88 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
      * @see javax.swing.ListModel#getElementAt(int)
      */
     public Object getElementAt(int index) {
-      return properties.get(index);
+      return hits.get(index);
     }
     
     /**
      * @see javax.swing.ListModel#getSize()
      */
     public int getSize() {
-      return properties.size();
+      return hits.size();
     }
     
     /**
      * access to property
      */
-    private Property getProperty(int i) {
-      return (Property)properties.get(i);
+    private Hit getHit(int i) {
+      return (Hit)hits.get(i);
     }
 
   } //Results
 
   /**
-   * our specialized renderer
+   * our specialized list
    */  
-  private class ListCallback extends DefaultListCellRenderer implements ListSelectionListener {
+  private class ResultWidget extends JList implements ListSelectionListener, ListCellRenderer {
+    /** the default renderer */
+    private DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer(); 
+    /**
+     * Constructor
+     */
+    private ResultWidget() {
+      super(results);
+      setCellRenderer(this);
+      addListSelectionListener(this);
+      defaultRenderer.setVerticalAlignment(SwingConstants.TOP);
+      defaultRenderer.setVerticalTextPosition(SwingConstants.TOP);
+    }
+    
+    /**
+     * @see javax.swing.JComponent#addNotify()
+     */
+    public void addNotify() {
+      // continue
+      super.addNotify();
+      // ready for tooltips
+      ToolTipManager.sharedInstance().registerComponent(this);
+    }
+    
+    /**
+     * @see javax.swing.JComponent#removeNotify()
+     */
+    public void removeNotify() {
+      // stop tooltips
+      ToolTipManager.sharedInstance().unregisterComponent(this);
+      // continue
+      super.removeNotify();
+    }
+    
+    /**
+     * @see javax.swing.JList#getToolTipText(java.awt.event.MouseEvent)
+     */
+    public String getToolTipText(MouseEvent event) {
+      // something to show?
+      int i = locationToIndex(event.getPoint());
+      if (i<0) return null;
+      // return text  
+      Hit hit = results.getHit(i);
+      return hit.getHtml();
+    }
+
     /**
      * we know about action delegates and will use that here if applicable
      */
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-      super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-      Property prop = (Property)value; 
-      WordBuffer words = new WordBuffer();
-      words.append(prop.getTag());
-      if (prop instanceof Entity) {
-        words.append('@'+((Entity)prop).getId()+'@');
-      }
-      words.append(prop.getValue());
-      setText(words.toString());
-      setIcon(prop.getImage(true));
-      return this;
+      // delegate component preparation to super
+      defaultRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+      // prepare hit information
+      Hit hit = (Hit)value;
+      Property prop = hit.getProperty(); 
+      // show hit information
+      defaultRenderer.setText(hit.getHtml());
+      defaultRenderer.setIcon(hit.getImage());
+      // done
+      return defaultRenderer;
     }
     /**
      * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
@@ -470,9 +534,10 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     public void valueChanged(ListSelectionEvent e) {
       int row = listResults.getSelectedIndex();
       if (row>=0) {
-        manager.setContext(results.getProperty(row));
+        manager.setContext(results.getHit(row).getProperty());
       }
     }
   } //Renderer
-
+  
+ 
 } //SearchView

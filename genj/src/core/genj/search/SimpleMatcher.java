@@ -47,7 +47,7 @@ public class SimpleMatcher extends Matcher {
       start = input.toLowerCase().indexOf(pattern, start);
       if (start<0) break;
       end = start + pattern.length();
-      result.add(new Match(start, end-1));
+      result.add(new Match(start, end-start));
       start = end;
     }
   }

@@ -50,7 +50,7 @@ public class RegExMatcher extends Matcher {
     java.util.regex.Matcher m = compiled.matcher(input);
     while (true) {
       if (!m.find()) return;
-      result.add(new Match(m.start(), m.end()));
+      result.add(new Match(m.start(), m.end()-m.start()));
     }
     // done
   }
