@@ -68,22 +68,21 @@ public class ReportEvents extends Report {
     
     /** month of the date limit */
     public int month = new GregorianCalendar().get(Calendar.MONTH) + 1;
-    public String[] months =
-    { i18n("month.jan"), i18n("month.feb"), i18n("month.mar"), i18n("month.apr"), i18n("month.may"), i18n("month.jun"), i18n("month.jul"), i18n("month.aug"), i18n("month.sep"), i18n("month.oct"), i18n("month.nov"), i18n("month.dec")};
+    public String[] months = PointInTime.GREGORIAN.getMonths(true);
     
     /** year of the date limit */
     public int year = new GregorianCalendar().get(Calendar.YEAR);
     
     /** how the day should be handled */
-    public int handleDay = 2;
+    public int handleDay = 3;
     public String[] handleDays = { i18n("date.min"), i18n("date.max"), i18n("date.fix"), i18n("date.ignore")};
     
     /** how the day should be handled */
-    public int handleMonth = 2;
+    public int handleMonth = 3;
     public String[] handleMonths = handleDays;
     
     /** how the day should be handled */
-    public int handleYear = 2;
+    public int handleYear = 3;
     public String[] handleYears = handleDays;
     
     /** this report's version */
