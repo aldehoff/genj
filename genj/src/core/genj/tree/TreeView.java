@@ -369,6 +369,12 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       UnitGraphics.pixels2units(pos.y,UNITS.getY()*zoom)+bounds.getMinY()
     );
   }
+  
+  /**
+   * Resolve a renderer   */
+  /*package*/ EntityRenderer getEntityRenderer(Graphics g, int type) {
+    return new EntityRenderer(g, blueprints[type]);
+  }
 
   /**
    * Overview   */
@@ -496,8 +502,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.cArcs          = colors.getColor("arcs");
       contentRenderer.cSelectedShape = colors.getColor("selects");
       contentRenderer.selection      = currentEntity;
-      contentRenderer.indiRenderer   = new EntityRenderer(g, blueprints[Gedcom.INDIVIDUALS]);
-      contentRenderer.famRenderer    = new EntityRenderer(g, blueprints[Gedcom.FAMILIES   ]);
+      contentRenderer.indiRenderer   = getEntityRenderer(g, Gedcom.INDIVIDUALS);
+      contentRenderer.famRenderer    = getEntityRenderer(g, Gedcom.FAMILIES   );
       // let the renderer do its work
       contentRenderer.render(ug, model);
       // done

@@ -120,10 +120,10 @@ import javax.swing.border.TitledBorder;
     }
   
     // .. a button for printing View
-    //PrintRenderer renderer = factory.createPrintRenderer(view);
-    //if (renderer!=null) {
-      bh.create(new ActionPrint(null, frame));
-    //}
+    PrintRenderer renderer = factory.createPrintRenderer(view);
+    if (renderer!=null) {
+      bh.create(new ActionPrint(renderer, frame));
+    }
   
     // .. a button for closing the View
     bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(Images.imgClose));
@@ -244,7 +244,7 @@ import javax.swing.border.TitledBorder;
     }
     /** run */
     protected void execute() {
-      PrintManager.getInstance().showPrintDialog(ViewWidget.this); 
+      PrintManager.getInstance().print(renderer, ViewWidget.this); 
     }
   } //ActionOpenSettings
   

@@ -673,8 +673,8 @@ public class EntityRenderer {
       Property p = getProperty();
       if (p==null) return;
       // setup painting attributes and bounds
-      g.setColor(getForeground());
-      g.setFont(getFont());
+      g.setColor(super.getForeground());
+      g.setFont(super.getFont());
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       // debug?
       if (isDebug) {      

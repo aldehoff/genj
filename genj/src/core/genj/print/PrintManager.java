@@ -38,20 +38,20 @@ import java.io.File;
 
 import javax.print.PrintService;
 import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.ResolutionSyntax;
 import javax.print.attribute.standard.Destination;
 import javax.print.attribute.standard.OrientationRequested;
+import javax.print.attribute.standard.PrinterResolution;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
 
 /**
  * A manager for printing */
 public class PrintManager {
-
-  //    1 printunit = 1/72 inch => 1 inch = 1 printunit * 72
-  // &  1 inch = 2.54 cm => 1 cm = inch / 2.54
-  // => 1 cm = 1 printunit * 72 / 2.54
-  private final static double CM2PRINTUNIT = 72 / 2.54;
-
+  
+  // 1 printunit = 1/72 inch = 1/72 * 2.54 cm
+  // => cm / 2.54 * 72 = printunit
+  private final static double CM2PRINTUNIT = 1/2.54 * 72;
 
   /** singleton */
   private static PrintManager instance = null;
@@ -75,9 +75,9 @@ public class PrintManager {
   /**
    * Show a print dialog
    */
-  public boolean showPrintDialog(JComponent owner) {
+  public boolean print(PrintRenderer renderer, JComponent owner) {
     // our own task for printing
-    new PrintTask(owner);    
+    new PrintTask(renderer, owner);    
     // done
     return false;
   }
@@ -95,15 +95,24 @@ public class PrintManager {
     /** the current page format */
     private PageFormat pageFormat;
     
+    /** the current renderer */
+    private PrintRenderer renderer;
+    
     /**
      * Constructor     */
-    private PrintTask(JComponent owner) {
+    private PrintTask(PrintRenderer reNderer, JComponent owner) {
+      
+      // remember renderer
+      renderer = reNderer;
       
       // create a job
       job = PrinterJob.getPrinterJob();
       
       // restore service?
-      setPrintService(registry.get("printer",""));
+      setPrintService(registry.get("printer.service",""));
+      
+      // restore orientation
+      setPortrait(registry.get("printer.portrait", true));
 
       // show dialog
       boolean cont = showDialog(owner);
@@ -115,7 +124,10 @@ public class PrintManager {
       }
       
       // remember service
-      registry.put("printer", getPrintService().getName());
+      registry.put("printer.service", getPrintService().getName());
+
+      // remember orientation
+      registry.put("printer.portrait", isPortrait());
 
       // print it
       print();      
@@ -161,6 +173,22 @@ public class PrintManager {
     }
     
     /**
+     * Current orientation     */
+    /*package*/ void setPortrait(boolean set) {
+      if (set)  
+        getPageFormat().setOrientation(PageFormat.PORTRAIT);
+      else
+        getPageFormat().setOrientation(PageFormat.LANDSCAPE);
+    }
+    
+    /**
+     * Current orientation
+     */
+    /*package*/ boolean isPortrait() {
+      return getPageFormat().getOrientation()==PageFormat.PORTRAIT;
+    }
+        
+    /**
      * PageFormat     */
     /*package*/ PageFormat getPageFormat() {
       if (pageFormat==null) pageFormat = job.defaultPage();
@@ -177,17 +205,13 @@ public class PrintManager {
         set.add(OrientationRequested.LANDSCAPE);
       else
         set.add(OrientationRequested.PORTRAIT);
+      set.add(new PrinterResolution(300,300,ResolutionSyntax.DPI));
         
       // FIXME : hack to redirect into file
       set.add(new Destination(new File("d:/temp/tst.ps").toURI()));
 
       // glue to us as the printable     
-      PrintRenderer renderer = new TestRenderer();
-      Point pages = renderer.getNumPages(new Point2D.Double(
-        getPageFormat().getImageableWidth()  / CM2PRINTUNIT,
-        getPageFormat().getImageableHeight() / CM2PRINTUNIT
-      ));   
-      job.setPrintable(new PrintableImpl(pages, new TestRenderer()));
+      job.setPrintable(new PrintableImpl(getPageFormat(), renderer));
       
       // call
       try {
@@ -237,20 +261,26 @@ public class PrintManager {
     
     /**
      * Constructor     */
-    /*package*/ PrintableImpl(Point paGes, PrintRenderer rendErer) {
+    /*package*/ PrintableImpl(PageFormat pageFormat, PrintRenderer rendErer) {
 
-      // safety check
-      if (paGes.x==0||paGes.y==0||rendErer==null) 
-        throw new IllegalArgumentException();
-      
       // remember renderer
       renderer = rendErer;
       
+      // calculate pages
+      Point pages = renderer.getNumPages(new Point2D.Double(
+        pageFormat.getImageableWidth()  / CM2PRINTUNIT,
+        pageFormat.getImageableHeight() / CM2PRINTUNIT
+      ));   
+
+      // safety check
+      if (pages.x==0||pages.y==0) 
+        throw new IllegalArgumentException("Renderer returned zero pages");
+      
       // setup pages
-      pageSequence = new Point[paGes.x*paGes.y];
+      pageSequence = new Point[pages.x*pages.y];
       int i = 0;
-      for (int x=0; x<paGes.x; x++) {
-      	for (int y=0; y<paGes.y; y++) {
+      for (int x=0; x<pages.x; x++) {
+      	for (int y=0; y<pages.y; y++) {
           pageSequence[i++] = new Point(x,y);       	
         }
       }
@@ -269,7 +299,7 @@ public class PrintManager {
       if (pageIndex==pageSequence.length) return NO_SUCH_PAGE;
       Point page = pageSequence[pageIndex]; 
 
-      // draw borderr
+      // draw border
       Graphics2D g = (Graphics2D)graphics;
       g.setColor(Color.black);
       
@@ -279,9 +309,13 @@ public class PrintManager {
         pageFormat.getImageableWidth(),
         pageFormat.getImageableHeight()
       ));
+      
+      double factor = 1;//72.0D/300;
+      
+      g.scale(factor,factor);
 
       // create our graphics set to cm's
-      UnitGraphics ug = new UnitGraphics(graphics, CM2PRINTUNIT, CM2PRINTUNIT);
+      UnitGraphics ug = new UnitGraphics(graphics, CM2PRINTUNIT/factor, CM2PRINTUNIT/factor);
       
       // render it
       renderer.renderPage(page, ug);
@@ -293,42 +327,37 @@ public class PrintManager {
 
   } //PrintableImpl  
 
-  /**
-   * TestRenderer   */
-  private class TestRenderer implements PrintRenderer {
-    /**
-     * @see genj.print.PrintRenderer#getNumPages(java.awt.geom.Point2D)
-     */
-    public Point getNumPages(Point2D pageSize) {
-      System.out.println(pageSize);
-      return new Point(3,2);
-    }
-    /**
-     * @see genj.print.PrintRenderer#renderPage(java.awt.Point, gj.ui.UnitGraphics)
-     */
-    public void renderPage(Point page, UnitGraphics g) {
-
-      Rectangle2D clip = g.getClip();
-      g.translate(
-        clip.getX() + clip.getWidth()/2,
-        clip.getY() + clip.getHeight()/2
-      );
-
+//  /**
+//   * TestRenderer//   */
+//  private class TestRenderer implements PrintRenderer {
+//    /**
+//     * @see genj.print.PrintRenderer#getNumPages(java.awt.geom.Point2D)
+//     */
+//    public Point getNumPages(Point2D pageSize) {
+//      System.out.println(pageSize);
+//      return new Point(3,2);
+//    }
+//    /**
+//     * @see genj.print.PrintRenderer#renderPage(java.awt.Point, gj.ui.UnitGraphics)
+//     */
+//    public void renderPage(Point page, UnitGraphics g) {
+//
+//      Rectangle2D clip = g.getClip();
 //      g.translate(
-//        21.5/2,
-//        28.0/2
+//        clip.getX() + clip.getWidth()/2,
+//        clip.getY() + clip.getHeight()/2
 //      );
-      
-      g.draw(new Rectangle2D.Double(-21.5/4, -28.0/4, 21.5/2, 28.0/2),0,0,false);
-      g.draw("Page x="+page.x, 0, 0, 0.0D);
-      g.draw("Page y="+page.y, 0, 0, 1.0D);
-      
-      int h = g.getFontMetrics().getHeight();
-      
-      g.draw(-21.5/4, 0, 21.5/4, 0, 0, -h/2);
-      g.draw(-21.5/4, 0, 21.5/4, 0, 0, h/2);
-      
-    }
-  } //TestRenderer
+//
+//      g.draw(new Rectangle2D.Double(-21.5/4, -28.0/4, 21.5/2, 28.0/2),0,0,false);
+//      g.draw("Page x="+page.x, 0, 0, 0.0D);
+//      g.draw("Page y="+page.y, 0, 0, 1.0D);
+//      
+//      int h = g.getFontMetrics().getHeight();
+//      
+//      g.draw(-21.5/4, 0, 21.5/4, 0, 0, -h/2);
+//      g.draw(-21.5/4, 0, 21.5/4, 0, 0, h/2);
+//      
+//    }
+//  } //TestRenderer
 
 } //PrintManager
