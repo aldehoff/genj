@@ -314,9 +314,26 @@ public class ViewManager {
    * Calculate a logical key for given factory
    */
   private String getKey(ViewFactory factory) {
-    String pkg = factory.getClass().getPackage().getName();
-    int lastdot = pkg.lastIndexOf('.');
-    return lastdot<0 ? pkg : pkg.substring(lastdot+1);
+    
+    String key = factory.getClass().getName();
+    
+    // get rid of classname
+    int lastdot = key.lastIndexOf('.');
+    if (lastdot>0) key = key.substring(0, lastdot);
+    
+    // get rid of pre-packages
+    while (true) {
+      int dot = key.indexOf('.');
+      if (dot<0) break;
+      key = key.substring(dot+1);
+    }
+System.out.println(key);
+    return key.toLowerCase();    
+// 20030521 interestingly getPackage() doesn't
+// always seem to return something (e.g. Konqueror applet)
+//    String pkg = factory.getClass().getPackage().getName();
+//    int lastdot = pkg.lastIndexOf('.');
+//    return lastdot<0 ? pkg : pkg.substring(lastdot+1);
   }
 
   /**
