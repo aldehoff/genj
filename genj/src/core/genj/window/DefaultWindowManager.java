@@ -59,7 +59,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * Frame implementation
    */
-  protected Object openFrameImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, final Runnable onClosing, final Runnable onClose) {
+  protected Object openFrameImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, final Runnable close) {
     
     // Create a frame
     final JFrame frame = new JFrame() {
@@ -73,8 +73,6 @@ public class DefaultWindowManager extends AbstractWindowManager {
         closeNotify(key, getBounds(), getExtendedState()==MAXIMIZED_BOTH);
         // continue
         super.dispose();
-        // callback?
-        if (onClose!=null) onClose.run();
       }
     };
 
@@ -87,14 +85,14 @@ public class DefaultWindowManager extends AbstractWindowManager {
     frame.getContentPane().add(content);
 
     // DISPOSE_ON_CLOSE?
-    if (onClosing==null) {
+    if (close==null) {
       frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     } else {
       // responsibility to dispose passed to onClosing?
       frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
       frame.addWindowListener(new WindowAdapter() {
         public void windowClosing(WindowEvent e) {
-          onClosing.run();
+          close.run();
         }
       });
     }

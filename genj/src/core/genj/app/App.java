@@ -34,6 +34,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 /**
@@ -43,16 +44,46 @@ public class App {
   
   /** constants */
   private final static String SWING_RESOURCES_KEY_PREFIX = "swing.";
-  private final static String FRAME_KEY_PREFIX = "frame.";
 
   /**
-   * Main of app
+   * GenJ Main Method
    */
   public static void main(java.lang.String[] args) {
 
-    // Startup and catch Swing missing
+    // Catch anything that might happen
     try {
-      init();
+      
+      // Startup Information
+      Debug.log(Debug.INFO, App.class, "GenJ App - Build "+Version.getInstance().getBuildString()+" started at "+new Date());
+      String log = EnvironmentChecker.getProperty(App.class, new String[]{"genj.debug.file", "user.home/.genj/genj.log"}, "", "choose log-file");
+      if (log.length()>0) {
+        File file = new File(log);
+        if (file.exists()&&file.length()>Options.getInstance().getMaxLogSizeKB()*1024)
+          file.delete();
+        Debug.setFile(file);
+      }
+      EnvironmentChecker.log();
+      
+      // check VM version
+      if (!EnvironmentChecker.isJava14(App.class)) {
+        if (EnvironmentChecker.getProperty(App.class, "genj.forcevm", null, "Check force of VM")==null) {
+          Debug.log(Debug.ERROR, App.class, "Need Java 1.4 to run GenJ");
+          System.exit(1);
+          return;
+        }
+      }
+      
+      // init our data
+      Registry registry = new Registry("genj");
+      
+      // Startup the UI
+      SwingUtilities.invokeLater(new Startup(registry));
+      
+      // Hook into Shutdown
+      Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(registry)));
+
+      // Done
+      
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, App.class, "Cannot instantiate App", t);
       Debug.flush();
@@ -61,99 +92,104 @@ public class App {
   }
   
   /**
-   * main
+   * Our startup code
    */
-  private static void init() {
-
-    // Startup Information
-    Debug.log(Debug.INFO, App.class, "GenJ App - Build "+Version.getInstance().getBuildString()+" started at "+new Date());
-    String log = EnvironmentChecker.getProperty(App.class, new String[]{"genj.debug.file", "user.home/.genj/genj.log"}, "", "choose log-file");
-    if (log.length()>0) {
-      File file = new File(log);
-      if (file.exists()&&file.length()>Options.getInstance().getMaxLogSizeKB()*1024)
-        file.delete();
-      Debug.setFile(file);
-    }
-    EnvironmentChecker.log();
+  private static class Startup implements Runnable {
     
-    // check VM version
-    if (!EnvironmentChecker.isJava14(App.class)) {
-      if (EnvironmentChecker.getProperty(App.class, "genj.forcevm", null, "Check force of VM")==null) {
-        Debug.log(Debug.ERROR, App.class, "Need Java 1.4 to run GenJ");
-        System.exit(1);
-        return;
-      }
+    private Registry registry;
+    
+    /**
+     * Constructor
+     */
+    private Startup(Registry registry) {
+      this.registry = registry;
     }
     
-    // init our data
-    final Registry registry = new Registry("genj");
-    
-    // initialize options
-    OptionProvider.restoreAll(registry);
+    /**
+     * Constructor
+     */
+    public void run() {
+      
+      Debug.log(Debug.INFO, this, "Startup");
+      
+      // initialize options
+      OptionProvider.restoreAll(registry);
 
-    // get app resources now
-    Resources resources = Resources.get(App.class);
+      // get app resources now
+      Resources resources = Resources.get(App.class);
 
-    // Make sure that Swing shows our localized texts
-    initSwing(resources);
+      // Make sure that Swing shows our localized texts
+      initSwing(resources);
 
-    // create window manager
-    final WindowManager winMgr = new DefaultWindowManager(new Registry(registry, "window"));
-    
-    // Disclaimer - check version and registry value
-    String version = Version.getInstance().getVersionString();
-    if (!version.equals(registry.get("disclaimer",""))) {
-      // keep it      
-      registry.put("disclaimer", version);
-      // show disclaimer
-      winMgr.openDialog("disclaimer", "Disclaimer", WindowManager.IMG_INFORMATION, resources.getString("app.disclaimer"), CloseWindow.OK(), null);    
+      // create window manager
+      WindowManager winMgr = new DefaultWindowManager(new Registry(registry, "window"));
+      
+      // Disclaimer - check version and registry value
+      String version = Version.getInstance().getVersionString();
+      if (!version.equals(registry.get("disclaimer",""))) {
+        // keep it      
+        registry.put("disclaimer", version);
+        // show disclaimer
+        winMgr.openDialog("disclaimer", "Disclaimer", WindowManager.IMG_INFORMATION, resources.getString("app.disclaimer"), CloseWindow.OK(), null);    
+      }
+      
+      // setup control center
+      ControlCenter center = new ControlCenter(registry, winMgr);
+
+      // show it
+      winMgr.openFrame("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), center.getExitAction());
+
+      // done
+      Debug.log(Debug.INFO, this, "/Startup");
     }
     
-    // setup control center
-    final ControlCenter center = new ControlCenter(registry, winMgr);
+    /**
+     * Initialize Swing resources
+     */  
+    private static void initSwing(Resources resources) {
+      
+      Iterator keys = resources.getKeys();
+      while (keys.hasNext()) {
+        String key = (String)keys.next();
+        if (key.indexOf(SWING_RESOURCES_KEY_PREFIX)==0) {
+          UIManager.put(
+            key.substring(SWING_RESOURCES_KEY_PREFIX.length()),
+            resources.getString(key)
+          );
+        }
+      }
+      
+    }
     
-    Runnable onClosing = new Runnable() {
-      public void run() {
-        center.getExitAction().trigger();
-      }
-    };
-    Runnable onClose = new Runnable() {
-      public void run() {
-        // close all frames we know
-        winMgr.closeAll();
-        // persist options
-        OptionProvider.persistAll(registry);
-        // Store registry 
-        Registry.persist();      
-        // Flush Debug
-        Debug.flush();
-        // exit - open for discussion: instead of exit() we could
-        // make sure that all threads terminate nicely and the vm
-        // shuts down by itself PENDING
-        System.exit(0);
-      }
-    };
-    winMgr.openFrame("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), onClosing, onClose);
-
-    // done with this thread
-  }
+  } //Startup
 
   /**
-   * Initialize Swing resources
-   */  
-  private static void initSwing(Resources resources) {
+   * Our shutdown code
+   */
+  private static class Shutdown implements Runnable {
     
-    Iterator keys = resources.getKeys();
-    while (keys.hasNext()) {
-      String key = (String)keys.next();
-      if (key.indexOf(SWING_RESOURCES_KEY_PREFIX)==0) {
-        UIManager.put(
-          key.substring(SWING_RESOURCES_KEY_PREFIX.length()),
-          resources.getString(key)
-        );
-      }
+    private Registry registry;
+    
+    /**
+     * Constructor
+     */
+    private Shutdown(Registry registry) {
+      this.registry = registry;
     }
-    
-  }
-
+    /**
+     * do the shutdown
+     */
+    public void run() {
+      Debug.log(Debug.INFO, this, "Shutdown");
+	    // persist options
+	    OptionProvider.persistAll(registry);
+	    // Store registry 
+	    Registry.persist();      
+	    // done
+      Debug.log(Debug.INFO, this, "/Shutdown");
+	    // Flush Debug
+	    Debug.flush();
+    }
+  } //Shutdown
+  
 } //App

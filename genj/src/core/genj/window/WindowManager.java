@@ -49,11 +49,10 @@ public interface WindowManager {
    * @param image image for titlebar
    * @param content component to be shown in frame
    * @param menu menubar to be shown in frame
-   * @param onClosing code to run on closing (frame won't close automatically if != null)
-   * @param onClose code to run on close
+   * @param close code to run on closing (frame won't close automatically if != null)
    * @return key 
    */
-  public String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose);
+  public String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable close);
 
   /**
    * Opens a frame with one close button

@@ -19,6 +19,7 @@
  */
 package genj.window;
 
+import genj.util.ActionDelegate;
 import genj.util.Registry;
 
 import java.awt.Dimension;
@@ -93,7 +94,7 @@ public class LightweightWindowManager extends DefaultWindowManager {
   /**
    * Our implementation for opening a frame
    */
-  protected Object openFrameImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, final Runnable onClosing, final Runnable onClose) {
+  protected Object openFrameImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, final ActionDelegate close) {
     
     // Create a frame
     final JInternalFrame frame = new JInternalFrame(title, true, true, true, true) {
@@ -101,9 +102,6 @@ public class LightweightWindowManager extends DefaultWindowManager {
       public void dispose() {
         // forget and keep bounds
         closeNotify(key, getBounds(), isMaximum());
-        // callback?
-        if (onClose!=null) 
-          onClose.run();
         // continue
         super.dispose();
       }
@@ -117,14 +115,14 @@ public class LightweightWindowManager extends DefaultWindowManager {
     frame.getContentPane().add(content);
 
     // DISPOSE_ON_CLOSE?
-    if (onClosing==null) {
+    if (close==null) {
       frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
     } else {
       // delegate responsibility to close
       frame.setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
       frame.addInternalFrameListener(new InternalFrameAdapter() {
         public void internalFrameClosing(InternalFrameEvent e) {
-          onClosing.run();
+          close.trigger();
         }
       });
     }

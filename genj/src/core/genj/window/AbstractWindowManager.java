@@ -92,13 +92,13 @@ public abstract class AbstractWindowManager implements WindowManager {
     panel.add(BorderLayout.CENTER, content);
     panel.add(BorderLayout.SOUTH , south  );
     // delegate
-    return openFrame(key, title, image, panel, null, null, null);
+    return openFrame(key, title, image, panel, null, null);
   }
 
   /**
    * Core frame handling implementation
    */
-  public final String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose) {
+  public final String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable close) {
     // create a key?
     if (key==null) 
       key = getTemporaryKey();
@@ -108,7 +108,7 @@ public abstract class AbstractWindowManager implements WindowManager {
     Rectangle bounds = registry.get(key, (Rectangle)null);
     boolean maximized = registry.get(key+".maximized", false);
     // deal with it in impl
-    Object frame = openFrameImpl(key, title, image, content, menu, bounds, maximized, onClosing, onClose);
+    Object frame = openFrameImpl(key, title, image, content, menu, bounds, maximized, close);
     // remember it
     key2framedlg.put(key, frame);
     // done
@@ -118,7 +118,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * Implementation for core frame handling
    */
-  protected abstract Object openFrameImpl(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, Runnable onClosing, Runnable onClose);
+  protected abstract Object openFrameImpl(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, Runnable close);
   
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String[], javax.swing.JComponent)

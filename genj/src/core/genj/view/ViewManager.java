@@ -220,8 +220,7 @@ public class ViewManager {
         resources.getString("view.edit.title"),
         Images.imgSettings,
         settings,
-        null, null, 
-        null
+        null, null
       );
     } else {
       settings.setViewWidget(viewWidget);
@@ -319,10 +318,12 @@ public class ViewManager {
     key2viewwidget.put(key, viewWidget);
 
     // prepare to forget
-    Runnable onClose = new Runnable() {
+    Runnable close = new Runnable() {
       public void run() {
         // close property editor if open and showing settings
         windowManager.close("settings");
+        // now close view
+        windowManager.close(key);
         // 20021017 @see note at the bottom of file
         MenuSelectionManager.defaultManager().clearSelectedPath();
         // forget about it
@@ -337,8 +338,8 @@ public class ViewManager {
       title, 
       factory.getImage(),
       viewWidget,
-      null, null,
-      onClose
+      null, 
+      close
     );
         
     // done
