@@ -3,7 +3,7 @@
 <body>
 
 <h2>Frequently Asked Questions</h2>
-
+<a name="index">
 <p>
 <ol>
  <li> <a Href="#1">What is GenJ all about?</a>
@@ -18,6 +18,21 @@
  <li> <a Href="#10">Why do size and resolution of images changed during program usage?</a>
  <li><a href="#11">How can I get in touch with GenJ users or developers? Where can I get further information about GenJ? </a> </li>
 </ol>
+<Table Width="100%" Border="0">
+  <Tr>
+    <Td Width="60%">
+      &nbsp;<Br>
+    </Td>
+    <Td Width="40%">
+      <p align="left">
+        <Font size="-2">
+          Click on the letter "<Font color="red">Q</Font>" in front
+          of a question to jump back to the question index.<Br>
+        </Font>
+      </p>
+    </Td>
+  </Tr>
+</Table>
 <p>
 
 <Center>
@@ -26,23 +41,23 @@
 
 
 <a name = "1"><p>
-  <b>Q</b> What is GenJ all about?<br>
+  <b><a Href="#index"><Font color="red">Q</Font></a></b> What is GenJ all about?<br>
   <b>A</b> GenealogyJ (in short GenJ) is a viewer and editor for genealogic data stored in Gedcom format.
 </p>
 
 <a name = "2"><p>
-  <b>Q</b> Is there a discussion forum devoted to GenJ ?<br>
+  <b><a Href="#index"><Font color="red">Q</Font></a></b> Is there a discussion forum devoted to GenJ ?<br>
   <b>A</b> Yes, please go to our
     <a href="http://genj.sourceforge.net/forum">forum @ genj.sourceforge.net</a>
 <p>
 
 <a name = "3"><p>
- <b>Q</b> What does Gedcom stand for?<br>
+ <b><a Href="#index"><Font color="red">Q</Font></a></b> What does Gedcom stand for?<br>
  <b>A</b> Please read the explanation <a href="./../concepts/gedcom.html">here</A>.
 </p>
 
 <a name = "4"><p>
- <b>Q</b> How do I get pictures to show up in Tree View?<br>
+ <b><a Href="#index"><Font color="red">Q</Font></a></b> How do I get pictures to show up in Tree View?<br>
  <b>A</b> 
  To show a picture for every person in the main Tree view add
  a multimedia property (OBJE) to your individuals. Simply bring
@@ -55,7 +70,7 @@
 </p>
 
 <a name = "5"><p>
- <b>Q</b> Can I change the language that GenJ speaks?<br>
+ <b><a Href="#index"><Font color="red">Q</Font></a></b> Can I change the language that GenJ speaks?<br>
  <b>A</b> 
   Please download the appropriate language pack (genj_ll-x.y.zip) for GenJ
   (e.g. genj_fr-2.0.zip) from the 
@@ -69,7 +84,7 @@
 </p>
 
 <a name = "6"><p>
- <b>Q</b> Can I make a centimeter look like one on my screen?<br>
+ <b><a Href="#index"><Font color="red">Q</Font></a></Font></a></b> Can I make a centimeter look like one on my screen?<br>
  <b>A</b> GenJ uses real-world metrics for various components (e.g. in
   <a href="../view/tree.html">Tree View</a>). To make lengths of lines and
   sizes of boxes appear correctly on your screen you'll have to tell GenJ
@@ -81,7 +96,7 @@
 </p>
 
 <a name = "7"><p>
- <b>Q</b> Can I change the boring gray look?<br>
+ <b><a Href="#index"><Font color="red">Q</Font></a></b> Can I change the boring gray look?<br>
  <b>A</b> GenJ uses the Swing Toolkit for presenting information to the
  user. This by default looks gray - it's called <em>Metal</em>. GenJ
  allows to change the current Look&Feel. 
@@ -93,7 +108,7 @@
   Now you can select a Look&Feel (and optionally a Theme).
 
 <a name = "8"><p>
- <b>Q</b> I have an existing person and I want to make it a child of 
+ <b><a Href="#index"><Font color="red">Q</Font></a></b> I have an existing person and I want to make it a child of 
  another existing person. The only available options I can see is to 
  add a *new* child/parent to an existing record, but there doesn't seem 
  to be an option to add an *existing* person as a child/parent. How do 
@@ -106,18 +121,18 @@
  the 'existing' one is built.
 </p>
 <a name = "9"><p>
- <b>Q</b> How do I add the ADOP(tion) property in the right way?<br>
+ <b><a Href="#index"><Font color="red">Q</Font></a></b> How do I add the ADOP(tion) property in the right way?<br>
  <b>A</b> For the person you want to add the relationship to, add the person as a child of the adopted family: go to the FAM(ily) entity, select "Family => Add Child", and select the person to add as an adopted child from the drop down menu. This will put the FAMC property on the person's INDI entity. Next, go to the INDI entity for the person and create the ADOP property on the INDI entity. Next drag and drop (or cut/paste in 2.2+MDI version) the FAMC property from being under the INDI to being under the ADOP property. To specify who adopted the child, select the nested FAMC property that was just moved in the Edit INDI view and add an ADOP property to it. Select the newly created ADOP property and a new option will appear in the edit window to select the person who adopted the child: (HUSB=husband, or male spouse of the FAMily; WIFE=wife, or female spouse of the FAMily; BOTH=both the spouses adopted the child).
 </p>
 <a name = "10"><p>
- <b>Q</b> Why do size and resolution of images changed during program usage?<br>
+ <b><a Href="#index"><Font color="red">Q</Font></a></b> Why do size and resolution of images changed during program usage?<br>
  <b>A</b> The blueprints do play a role in the outcome of the rendering. Depending on how much has to be shown in a box the space for an image can be limited. It will be shrunk to make space for the text. If there's enough space then the image uses up to it's real dimensions (pixel dimensions *and* resolution) space. That's why they can look different.
 </p>
 
 <a name="11"><p>
- <b>F</b> How can I get in touch with GenJ users or developers? Where can I get further information about GenJ?<br>
+ <b><a Href="#index"><Font color="red">Q</Font></a></b> How can I get in touch with GenJ users or developers? Where can I get further information about GenJ?<br>
 <b>A</b>
-Visit the <a href="http://genj.sourceforge.net">GenJ homepage</a>, the <a href="http://sourceforge.net/projects/genj">GenJ project site</a>, or the chat at irc.freenode.net in #genj.</p>
+Visit the <a href="http://genj.sourceforge.net">GenJ homepage</a>, the <a href="http://sourceforge.net/projects/genj">GenJ project site</a>, or the IRC channel <b><font color="orange">#genj</font></b> at <b><font color="orange">irc.freenode.net</font></b>.</p>
 <Br>
 
 </body>
