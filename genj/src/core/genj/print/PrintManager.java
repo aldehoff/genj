@@ -39,6 +39,7 @@ import java.awt.print.PrinterJob;
 
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 /**
  * A manager for printing */
@@ -142,27 +143,20 @@ public class PrintManager {
       widget = new PrintWidget(this, resources);
       
       // show it in dialog
-      winMgr.openDialog(
+      int choice = winMgr.openDialog(
         "print",
         resources.getString("dlg.title", title),
-        null,
+        WindowManager.IMG_QUESTION,
         null,
         widget,
-        owner 
+        new String[]{ resources.getString("dlg.label.print"), UIManager.getString("OptionPane.cancelButtonText")},
+        owner,
+        null,
+        null
       );
       
-    int ok = -1;        
-//      int ok = App.getInstance().createDialog(
-//        resources.getString("dlg.title", title), 
-//        "print", 
-//        new Dimension(480,320), 
-//        owner, 
-//        widget,
-//        new String[]{ resources.getString("dlg.label.print"), UIManager.getString("OptionPane.cancelButtonText")}
-//      ).packAndShow();
-      
       // check choice
-      if (ok!=0||getPages().x==0||getPages().y==0) {
+      if (choice!=0||getPages().x==0||getPages().y==0) {
         job.cancel();
         return false;
       }

@@ -27,16 +27,15 @@ import genj.gedcom.GedcomException;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.view.ViewManager;
+import genj.window.WindowManager;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
@@ -101,7 +100,7 @@ import javax.swing.JTextArea;
     confirm.setEditable(false);
 
     // prepare options
-    List options = new ArrayList();
+    Box options = new Box(BoxLayout.Y_AXIS);
     
     JComponent c = getOptions();
     if (c!=null) {
@@ -114,12 +113,17 @@ import javax.swing.JTextArea;
       options.add(c);
     }
     options.add(new JScrollPane(confirm));
-    options.add(new JLabel(resources.getString("confirm.proceed")));
 
     // Recheck with the user
-    if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(target, options.toArray(), txt, 0)) {
+    int rc = manager.getWindowManager().openDialog(
+      getClass().getName(), null, WindowManager.IMG_QUESTION, null, 
+      options, 
+      new String[] { resources.getString("confirm.proceed", txt ), WindowManager.OPTION_CANCEL }, 
+      target, 
+      null, null
+    );
+    if (rc!=0)
       return;
-    }
     
     // lock gedcom
     if (!gedcom.startTransaction()) return;
@@ -127,12 +131,7 @@ import javax.swing.JTextArea;
     try {
       change();
     } catch (GedcomException ex) {
-      JOptionPane.showMessageDialog(
-        target,
-        ex.getMessage(),
-        ex.toString(),
-        JOptionPane.ERROR_MESSAGE
-      );
+      manager.getWindowManager().openDialog(null, WindowManager.IMG_ERROR, ex.getMessage(), null, target);
     }
     // unlock gedcom
     gedcom.endTransaction();

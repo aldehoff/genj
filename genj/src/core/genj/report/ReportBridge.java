@@ -21,15 +21,16 @@ package genj.report;
 
 import genj.util.Debug;
 import genj.util.Registry;
+import genj.util.swing.ChoiceWidget;
+import genj.window.WindowManager;
+
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Vector;
 
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 
 /**
  * A Bridge between a running report and the environment it's running in
@@ -39,9 +40,6 @@ public class ReportBridge {
   private StringBuffer buffer = new StringBuffer(16*1024);
   private final static long FLUSH_WAIT = 100;
   private long         last = -1;
-
-  public static final int ERROR_MESSAGE       = JOptionPane.ERROR_MESSAGE      ;
-  public static final int INFORMATION_MESSAGE = JOptionPane.INFORMATION_MESSAGE;
 
   private Registry     registry;
   private ReportView   view;
@@ -139,6 +137,13 @@ public class ReportBridge {
   public Registry getRegistry() {
     return registry;
   }
+  
+  /**
+   * Helper that shows a simple text message to user
+   */
+  public void showMessageToUser(String msg) {
+    view.getViewManager().getWindowManager().openDialog(null, WindowManager.IMG_INFORMATION, msg, null, view);
+  }
 
   /**
    * Helper method that queries the user for a value by
@@ -154,23 +159,28 @@ public class ReportBridge {
    */
   public Object getValueFromUser(String msg, Object[] choices, Object selected) {
 
-    Object result = JOptionPane.showInputDialog(
-      view,
-      msg,
-      "Report Input",
-      JOptionPane.QUESTION_MESSAGE,
+    ChoiceWidget choice = new ChoiceWidget(choices, selected);
+    choice.setEditable(false);
+    
+    int rc = view.getViewManager().getWindowManager().openDialog(
+      null, 
+      "Report Input", 
+      WindowManager.IMG_QUESTION,
       null,
-      choices,
-      selected);
-
-    return result;
+      choice,
+      WindowManager.OPTIONS_OK_CANCEL,
+      view,
+      null,null
+    );
+    
+    return rc==0 ? choice.getSelectedItem() : null;
   }
 
   /**
    * Helper method that queries the user for a value giving him a
    * choice of remembered values
    */
-  public String getValueFromUser(String msg, String[] choices, String key) {
+  public String getValueFromUser(String key, String msg, String[] choices) {
 
     // Choice to include already entered stuff?
     if ((key!=null)&&(registry!=null)) {
@@ -182,27 +192,25 @@ public class ReportBridge {
       }
     }
 
-    // Create our visual element
-    JComboBox combo = new JComboBox(choices);
-    combo.setEditable(true);
-
-    // And let the user choose
-    int rc = JOptionPane.showConfirmDialog(
+    // show 'em
+    ChoiceWidget choice = new ChoiceWidget(choices, "");
+    choice.setEditable(true);
+    
+    int rc = view.getViewManager().getWindowManager().openDialog(
+      null, 
+      "Report Input", 
+      WindowManager.IMG_QUESTION,
+      null,
+      choice,
+      WindowManager.OPTIONS_OK_CANCEL,
       view,
-      new Object[]{ msg, combo },
-      "Report Input",
-      JOptionPane.OK_CANCEL_OPTION
+      null,null
     );
-
-    // Abort?
-    if (rc!=JOptionPane.OK_OPTION) {
-      return null;
-    }
-
-    String result = combo.getEditor().getItem().toString();
+    
+    String result = rc==0 ? choice.getText() : null;
 
     // Remember?
-    if ((key!=null)&&(registry!=null)) {
+    if (key!=null&&result!=null&&result.length()>0) {
 
       Vector v = new Vector(choices.length+1);
       v.addElement(result);
@@ -221,17 +229,15 @@ public class ReportBridge {
    * Helper method that queries the user for yes/no input
    */
   public boolean getValueFromUser(String msg, boolean yesnoORokcancel) {
-
-    // And let the user choose
-    int rc = JOptionPane.showConfirmDialog(
-      view,
+    int rc = view.getViewManager().getWindowManager().openDialog(
+      null, 
+      WindowManager.IMG_QUESTION, 
       msg,
-      "Report Input",
-      yesnoORokcancel?JOptionPane.YES_NO_OPTION:JOptionPane.OK_CANCEL_OPTION
+      yesnoORokcancel ? WindowManager.OPTIONS_YES_NO : WindowManager.OPTIONS_OK_CANCEL,
+      view
     );
-
     // Done
-    return rc==JOptionPane.YES_OPTION;
+    return rc==0;
   }
 
   /**
@@ -243,18 +249,4 @@ public class ReportBridge {
     log(awriter.toString());
   }
 
-  /**
-   * Shows a message to the user with option OK
-   */
-  public void showMessageToUser(int type, String msg) {
-
-    JOptionPane.showMessageDialog(
-      view,
-      msg,
-      "Report Output",
-      type
-    );
-
-  }
-
-}
+} //ReportBridge

@@ -190,14 +190,14 @@ public class ViewManager {
   /**
    * The print manager
    */
-  /*package*/ PrintManager getPrintManager() {
+  public PrintManager getPrintManager() {
     return printManager;
   }
   
   /**
    * The window manager
    */
-  /*package*/ WindowManager getWindowManager() {
+  public WindowManager getWindowManager() {
     return windowManager;
   }
   

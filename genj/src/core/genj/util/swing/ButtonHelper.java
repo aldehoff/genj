@@ -83,6 +83,15 @@ public class ButtonHelper {
     group = new ButtonGroup();
     return group;
   }
+
+  /**
+   * Creates buttons
+   */
+  public void create(ActionDelegate[] actions) {
+    for (int i = 0; i < actions.length; i++) {
+      create(actions[i]);
+    }
+  }
   
   /**
    * Creates the button

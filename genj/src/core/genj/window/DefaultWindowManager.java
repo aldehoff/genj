@@ -19,6 +19,7 @@
  */
 package genj.window;
 
+import genj.util.ActionDelegate;
 import genj.util.AreaInScreen;
 import genj.util.Registry;
 
@@ -32,17 +33,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 /**
  * The default 'heavyweight' window manager
  */
-public class DefaultWindowManager implements WindowManager {
+public class DefaultWindowManager extends AbstractWindowManager {
   
   /** registry */
   private Registry registry;
@@ -65,7 +68,7 @@ public class DefaultWindowManager implements WindowManager {
   }
 
   /**
-   * @see genj.window.WindowManager#createFrame(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent, java.lang.Runnable)
+   * @see genj.window.WindowManager#createFrame
    */
   public void openFrame(final String key, String title, ImageIcon image, Dimension dimension, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
 
@@ -110,10 +113,12 @@ public class DefaultWindowManager implements WindowManager {
 
     // place
     Rectangle box = registry.get(key,(Rectangle)null);
-    if ((box==null)&&(dimension!=null)) 
-      box = new Rectangle(0,0,dimension.width,dimension.height);
     if (box==null) {
-      frame.pack();
+      if (dimension==null) {
+        frame.pack();
+        dimension = frame.getSize();
+      }
+      frame.setBounds(new AreaInScreen(dimension));
     } else {
       frame.setBounds(new AreaInScreen(box));
     }
@@ -127,39 +132,84 @@ public class DefaultWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent)
    */
-  public boolean openDialog(String key, String title, ImageIcon image, Dimension dimension, JComponent content, JComponent owner) {
+  public int openDialog(final String key, String title, Icon image, Dimension dimension, JComponent content, String[] options, JComponent owner, final Runnable onClosing, final Runnable onClose) {
 
-    // need pane
-    JOptionPane op = new JOptionPane(
-      content,
-      JOptionPane.QUESTION_MESSAGE,
-      JOptionPane.OK_CANCEL_OPTION
-    );
+    // Create a dialog 
+    final JDialog dlg = new JOptionPane().createDialog(owner, title);
+    dlg.getContentPane().removeAll();
     
-    // need dialog
-    JDialog dlg = op.createDialog(owner, title);
+    // setup looks
     dlg.setResizable(true);
+    dlg.setModal(true);
     
+    // setup choices
+    final int choice;
+    
+    if (options==null) options = new String[] { UIManager.getString("OptionPane.okButtonText")};
+    ActionDelegate[] actions = new ActionDelegate[options.length];
+    for (int i=0; i<options.length; i++) {
+      actions[i] = new ActionDelegate() {
+        /** choose an option */
+        protected void execute() {
+          setEnabled(false);
+          dlg.dispose();
+        }
+      }.setText(options[i]);
+    }
+    
+    // assemble content
+    assembleDialogContent(dlg.getContentPane(), image, content, actions);
+
+    // DISPOSE_ON_CLOSE?
+    if (onClosing==null) {
+      dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+    } else {
+      dlg.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+    }
+
+    // remember
+    if (key!=null)
+      key2frame.put(key, dlg);
+
+    // prepare to forget
+    dlg.addWindowListener(new WindowAdapter() {
+      public void windowClosing(WindowEvent e) {
+        if (onClosing!=null) try {
+          onClosing.run();
+        } catch (Throwable t) {
+        }
+      }
+      public void windowClosed(WindowEvent e) {
+        if (key!=null) {
+          registry.put(key, dlg.getBounds());
+          key2frame.remove(key);
+        }
+        if (onClose!=null) onClose.run();
+      }
+    });
+
     // place
-    Rectangle box = registry.get(key,(Rectangle)null);
-    if ((box==null)&&(dimension!=null)) 
-      box = new Rectangle(0,0,dimension.width,dimension.height);
+    Rectangle box = key!=null ? registry.get(key,(Rectangle)null) : null;
     if (box==null) {
-      dlg.pack();
+      if (dimension==null) {
+        dlg.pack();
+        dimension = dlg.getSize();
+      }
+      dlg.setBounds(new AreaInScreen(dimension));
     } else {
       dlg.setBounds(new AreaInScreen(box));
     }
 
-    // show    
+    // show
     dlg.show();
-    dlg.dispose();
-
+    
     // analyze
-    Object result = op.getValue();
-    
+    for (int i=0; i<actions.length; i++) {
+      if (!actions[i].enabled) return i;
+    }
+        
     // done    
-    return false;
-    
+    return -1;
   }
   
   /**

@@ -30,6 +30,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -47,7 +48,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -76,6 +76,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private static  ImageIcon imgShell,imgGui;
   private Registry registry;
   private Resources resources = Resources.get(this);
+  private ViewManager manager ;
 
   /**
    * Constructor
@@ -88,6 +89,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     // Data
     gedcom   = theGedcom;
     registry = theRegistry;
+    manager  = theManager;
 
     imgShell = new ImageIcon(this,"ReportShell.gif");
     imgGui   = new ImageIcon(this,"ReportGui.gif"  );
@@ -169,6 +171,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
     if (!spOutput.getVerticalScrollBar().getValueIsAdjusting()) {
       taOutput.setCaretPosition(taOutput.getText().length()-1);
     }
+  }
+  
+  /**
+   * Returns the view manager
+   */
+  public ViewManager getViewManager() {
+    return manager;
   }
 
   /**
@@ -426,7 +435,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
   
       // .. exits ?
       if (file.exists()) {
-        if (JOptionPane.NO_OPTION==JOptionPane.showConfirmDialog(ReportView.this,"File exists. Overwrite?","Save",JOptionPane.YES_NO_OPTION)) {
+        int rc = manager.getWindowManager().openDialog(null, WindowManager.IMG_WARNING, "File exists. Overwrite?", WindowManager.OPTIONS_YES_NO, ReportView.this);
+        if (rc!=0) {
           return;
         }
       }
@@ -436,7 +446,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
       try {
         writer = new FileWriter(file);
       } catch (IOException ex) {
-        JOptionPane.showMessageDialog(ReportView.this,"Error while saving to\n"+file.getAbsolutePath(),"File Error",JOptionPane.ERROR_MESSAGE);
+        manager.getWindowManager().openDialog(
+          null, 
+          WindowManager.IMG_ERROR, 
+          "Error while saving to\n"+file.getAbsolutePath(), 
+          null,
+          ReportView.this
+        );
         return;
       }
   

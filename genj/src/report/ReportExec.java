@@ -60,7 +60,7 @@ public class ReportExec implements Report {
   public boolean start(ReportBridge bridge, Gedcom gedcom) {
     
     // get the name of the executable
-    String cmd = bridge.getValueFromUser("Please enter path and name of the executable to run", new String[0], "executables");
+    String cmd = bridge.getValueFromUser( "executables", "Please enter path and name of the executable to run", new String[0]);
 
     if(cmd == null) {
     	bridge.println("Operation cancelled by user");

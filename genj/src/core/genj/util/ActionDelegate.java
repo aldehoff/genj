@@ -19,13 +19,13 @@
  */
 package genj.util;
 
-import java.awt.Component;
 import java.awt.Frame;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
 /**
@@ -43,12 +43,12 @@ public abstract class ActionDelegate implements Cloneable {
     ASYNC_NEW_INSTANCE   = 2;
   
   /** attributes */
-  public ImageIcon img,roll,toggle;
-  public String    txt;
-  public String    stxt;
-  public String    tip;
-  public Component target;
-  public boolean  enabled = true;
+  public ImageIcon  img,roll,toggle;
+  public String     txt;
+  public String     stxt;
+  public String     tip;
+  public JComponent target;
+  public boolean   enabled = true;
   
   /** whether we're async or not */
   private int async = ASYNC_NOT_APPLICABLE;
@@ -171,7 +171,7 @@ public abstract class ActionDelegate implements Cloneable {
   /**
    * Set frame
    */
-  public ActionDelegate setTarget(Component t) {
+  public ActionDelegate setTarget(JComponent t) {
     target = t;
     return this;
   }

@@ -39,6 +39,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.ScreenResolutionScale;
 import genj.view.ViewManager;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -57,7 +58,6 @@ import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -362,7 +362,7 @@ public class AboutWidget extends JPanel{
         App app = App.getInstance();
         // check language 
         if (choiceLanguages.hasChanged()) {
-          JOptionPane.showMessageDialog(AboutWidget.this, resources.getString("cc.about.dialog.restart"));
+          viewManager.getWindowManager().openDialog(null, WindowManager.IMG_WARNING, resources.getString("cc.about.dialog.restart"), WindowManager.OPTIONS_OK, AboutWidget.this);
           app.setLanguage(choiceLanguages.getSelectedItem().toString());
         }
         // update screen resolution

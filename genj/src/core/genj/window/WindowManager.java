@@ -22,19 +22,43 @@ package genj.window;
 import java.awt.Dimension;
 import java.util.List;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenuBar;
+import javax.swing.UIManager;
 
 /**
  * The manager for window creation/handling
  */
 public interface WindowManager {
   
+  /** predefined images */
+  public final static Icon
+    IMG_ERROR = UIManager.getIcon("OptionPane.errorIcon"),
+    IMG_INFORMATION = UIManager.getIcon("OptionPane.informationIcon"),
+    IMG_WARNING = UIManager.getIcon("OptionPane.warningIcon"),
+    IMG_QUESTION = UIManager.getIcon("OptionPane.questionIcon");
+
+  /** predefined options */
+  public final static String
+    OPTION_YES = UIManager.getString("OptionPane.yesButtonText"),
+    OPTION_NO  = UIManager.getString("OptionPane.noButtonText" ),
+    OPTION_OK  = UIManager.getString("OptionPane.okButtonText" ),
+    OPTION_CANCEL = UIManager.getString("OptionPane.cancelButtonText");
+
+  /** predefined option groups */
+  public final static String[]
+    OPTIONS_YES_NO    = new String[]{ OPTION_YES, OPTION_NO },
+    OPTIONS_OK_CANCEL = new String[]{ OPTION_OK, OPTION_CANCEL },
+    OPTIONS_OK        = new String[]{ OPTION_OK };
+    
   public void openFrame(String key, String title, ImageIcon image, Dimension dimension, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose);
   
-  public boolean openDialog(String key, String title, ImageIcon image, Dimension dimension, JComponent content, JComponent owner);
+  public int openDialog(String key, String title, Icon image, Dimension dimension, JComponent content, String[] options, JComponent owner, Runnable onClosing, Runnable onClose);
 
+  public int openDialog(String key, Icon img, String txt, String[] options, JComponent owner);
+  
   public void closeFrame(String key);
 
   public void closeAllFrames();

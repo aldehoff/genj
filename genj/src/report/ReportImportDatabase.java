@@ -252,19 +252,19 @@ public class ReportImportDatabase implements Report {
   public boolean start(ReportBridge bridge, Gedcom gedcom) {
 
     // Get the database URL and driver name
-    String driver = bridge.getValueFromUser("Please enter/choose the database driver", drivers      , "dbdriver");
+    String driver = bridge.getValueFromUser("dbdriver", "Please enter/choose the database driver", drivers      );
     if (driver==null) {
       return false;
     }
-    String url = bridge.getValueFromUser("Please enter the database url"          , urls         , "dburl" );
+    String url = bridge.getValueFromUser("dburl", "Please enter the database url"          , urls          );
     if (url   ==null) {
       return false;
     }
-    String user   = bridge.getValueFromUser("Please enter the user name"             , new String[0], "dbuser");
+    String user   = bridge.getValueFromUser("dbuser", "Please enter the user name"             , new String[0]);
     if (user  ==null) {
       return false;
     }
-    String pass   = bridge.getValueFromUser("Please enter the password"              , new String[0], "dbpass");
+    String pass   = bridge.getValueFromUser("dbpass", "Please enter the password"              , new String[0]);
     if (pass  ==null) {
       return false;
     }
@@ -294,9 +294,9 @@ public class ReportImportDatabase implements Report {
     }
 
     if (success) {
-      bridge.showMessageToUser(bridge.INFORMATION_MESSAGE, "Done - please see Output for details!");
+      bridge.showMessageToUser("Done - please see Output for details!");
     } else {
-      bridge.showMessageToUser(bridge.ERROR_MESSAGE      , "An error occurred - please see Output for details!");
+      bridge.showMessageToUser("An error occurred - please see Output for details!");
     }
 
     // Done

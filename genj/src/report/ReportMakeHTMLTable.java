@@ -22,9 +22,9 @@ import java.util.TreeMap;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.14 2003-03-13 18:50:28 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.15 2003-05-06 04:59:11 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class ReportMakeHTMLTable implements Report {
 
@@ -245,9 +245,9 @@ public class ReportMakeHTMLTable implements Report {
 
     // Let's ask the user for a details-html directory
     String detailsUrl = bridge.getValueFromUser(
+      "output",
       "Enter the path to output directory of report 'Applet Details' if applicable.\nThis information is used for hyperlinks in the table.\nExample: ./details",
-      new String[0],
-      "report.makehtmltable.output"
+      new String[0]
     );
     if ((detailsUrl!=null)&&(!detailsUrl.endsWith("/"))) {
       detailsUrl += '/';
