@@ -23,13 +23,23 @@ import java.util.Iterator;
  */
 public class ReportDemography extends Report {
   
-  /** the categories to use */ 
-  public int ageGrouping = 0;
-  public static String[] ageGroupings = { 
-      "0,10,20,30,40,...",
-      "0,5,10,15,20,25,...",
-  };
+  /** how to group ages */ 
+  private int ageGroupSize = 10;
 
+  /**
+   * Accessor - age grouping
+   */
+  public int getAgeGroupSize() {
+    return ageGroupSize;
+  }
+  
+  /**
+   * Accessor - age grouping
+   */
+  public void setAgeGroupSize(int set) {
+    ageGroupSize = Math.max(1, Math.min(25, set));
+  }
+  
   /**
    * n/a
    */
@@ -46,13 +56,15 @@ public class ReportDemography extends Report {
     Gedcom gedcom = (Gedcom)context;
     
     // gather data - we're using two series, one for males the other
-    // for females. The categories we're collecting is ages/lifespans
-    // for people between 0-9 and 10-19 etc. years old
-    int res = ageGrouping==0 ? 10 : 5;
-    String[] categories = new String[100/res + 1];
-    categories[0] = "100+"; 
+    // for females. 
+    String[] categories = new String[100/ageGroupSize + 1];
+    int max = 100/ageGroupSize*ageGroupSize;
+    categories[0] = max+"+"; 
     for (int i=1;i<categories.length;i++) {
-      categories[i] = (100 - (i*res)) + "+";
+      if (ageGroupSize<5 && i%Math.ceil(5/ageGroupSize)!=0)
+        categories[i] = "";
+      else
+        categories[i] = (max - (i*ageGroupSize)) + "+";
     }
 
     // create category series for that
@@ -81,11 +93,11 @@ public class ReportDemography extends Report {
       // for the male series we decrease the number of individuals
       // and for females we increase. That's how we get the male
       // bars on the left and the females on the right of the axis.
-      int col = years>=100 ? 0 : categories.length - (years/res) - 1;
+      int group = years>=max ? 0 : categories.length - (years/ageGroupSize) - 1;
       if (indi.getSex() == PropertySex.MALE)
-        males.dec(col);
+        males.dec(group);
       else
-        females.inc(col);
+        females.inc(group);
 
       // next
     }
