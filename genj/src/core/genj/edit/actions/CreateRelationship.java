@@ -22,6 +22,7 @@ package genj.edit.actions;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.gedcom.PropertyComparator;
 import genj.gedcom.Relationship;
 import genj.util.swing.ChoiceWidget;
 import genj.view.ViewManager;
@@ -35,19 +36,19 @@ import java.util.List;
 import javax.swing.JComponent;
 
 /**
- * Add an entity via relationship (new or existing) 
+ * Add an entity via relationship (new or existing)
  */
 public class CreateRelationship extends AbstractChange {
-  
+
   /** the target type */
   private int targetType;
 
   /** the relationship */
   private Relationship relationship;
-  
+
   /** the referenced entity */
   private Entity existing;
-  
+
   /**
    * Constructor
    */
@@ -55,7 +56,7 @@ public class CreateRelationship extends AbstractChange {
     super(relatshp.getGedcom(), relatshp.getImage().getOverLayed(imgNew), resources.getString("new", relatshp.getName(false)), manager);
     relationship = relatshp;
   }
-  
+
   /**
    * @see genj.edit.actions.CreateRelationship#execute()
    */
@@ -85,12 +86,12 @@ public class CreateRelationship extends AbstractChange {
     // continue
     super.execute();
   }
-  
+
   /**
    * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
    */
   protected String getConfirmMessage() {
-    
+
     // You are about to create a {0} in {1}! / You are about to reference {0} in {1}!
     // This {0} will be {1}.
     String about = existing==null ?
@@ -98,26 +99,34 @@ public class CreateRelationship extends AbstractChange {
      :
       resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom});
 
-    // relationship detail      
+    // relationship detail
     String detail = resources.getString("confirm.new.related", relationship.getName(true) );
-    
+
     // Entity comment?
     String comment = resources.getString("confirm."+Gedcom.getTagFor(targetType));
-    
+
     // combine
     return about + '\n' + detail + '\n' + comment ;
   }
-  
+
   /**
    * @see genj.edit.actions.AbstractChange#getOptions()
    */
   protected JComponent getOptions() {
-    
+
     // selection of existing
     List ents = gedcom.getEntities(targetType);
-    Collections.sort(ents);
+
+    // sort list
+    if (targetType == gedcom.INDIVIDUALS) {
+      // Individiauls are sorted by name
+      Collections.sort(ents, new PropertyComparator("INDI:NAME"));
+    }
+    else {
+      Collections.sort(ents);
+    }
     ents.add(0, "*New*" );
-    
+
     final ChoiceWidget result = new ChoiceWidget(ents);
     result.setEditable(false);
     result.setSelectedIndex(0);
@@ -128,13 +137,13 @@ public class CreateRelationship extends AbstractChange {
         // refresh abstract change
         refresh();
       }
-  
+
     });
-    
+
     // done
     return result;
   }
-  
+
   /**
    * @see genj.edit.EditViewFactory.Change#change()
    */
@@ -152,6 +161,6 @@ public class CreateRelationship extends AbstractChange {
     }
     // done
   }
-  
+
 } //CreateRelationship
 
