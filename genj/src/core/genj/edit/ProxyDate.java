@@ -20,6 +20,7 @@
 package genj.edit;
 
 import genj.gedcom.PropertyDate;
+import genj.gedcom.time.PointInTime;
 import genj.util.swing.DateWidget;
 
 import java.awt.Dimension;
@@ -61,7 +62,8 @@ class ProxyDate extends Proxy implements ItemListener {
   protected void finish() {
 
     // Something changed ?
-    if (!hasChanged()) return;
+    if (!hasChanged()) 
+      return;
 
     PropertyDate p = (PropertyDate)property;
 
@@ -69,11 +71,16 @@ class ProxyDate extends Proxy implements ItemListener {
     p.setFormat(combo.getSelectedIndex());
 
     // Remember One
-    p.getStart().set(deOne.getValue());
-
+    PointInTime start = deOne.getValue();
+    if (start!=null)
+      p.getStart().set(start);
+  
     // Remember Two
-    if ( p.isRange() )
-      p.getEnd().set(deTwo.getValue());
+    if ( p.isRange() ) {
+      PointInTime end = deTwo.getValue();
+      if (end!=null)
+        p.getEnd().set(deTwo.getValue());
+    }
 
     // Done
   }

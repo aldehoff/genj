@@ -38,8 +38,10 @@ public class FrenchRCalendar extends Calendar {
   private static final int[] LEAP_YEARS
    = { 3,7,11 };
    
+  private static final String YEARS_PREFIX = "An ";
+   
   private static final String[] YEARS 
-   = { "An I", "An II", "An III", "An IV", "An V", "An VI", "An VII", "An VIII", "An IX", "An X", "An XI", "An XII", "An XIII", "An XIV" };
+   = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV" };
   
   /**
    * Constructor
@@ -126,9 +128,24 @@ public class FrenchRCalendar extends Calendar {
    */
   public String getYear(int year, boolean localize) {
     if (!localize||year<1||year>FrenchRCalendar.YEARS.length)
-      return ""+year;
-    return FrenchRCalendar.YEARS[year-1];
+      return super.getYear(year, localize);
+    return YEARS_PREFIX+FrenchRCalendar.YEARS[year-1];
   }
 
+  /**
+   * Getting into hook to parse a valid year - check for our years
+   * @see genj.gedcom.time.Calendar#getYear(java.lang.String)
+   */
+  public int getYear(String year) throws GedcomException {
+    // strip any 'An '
+    if (year.startsWith(YEARS_PREFIX))
+      year = year.substring(YEARS_PREFIX.length());
+    // look for years
+    for (int y=0;y<YEARS.length;y++)
+      if (YEARS[y].equals(year))
+        return y+1;
+    // let super do it
+    return super.getYear(year);
+  }
 
 } //FrenchRCalendar

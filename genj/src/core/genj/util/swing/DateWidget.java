@@ -20,6 +20,7 @@
 package genj.util.swing;
 
 import genj.gedcom.GedcomException;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
 import genj.util.ActionDelegate;
@@ -27,14 +28,13 @@ import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * Generic component for editing dates
@@ -73,7 +73,7 @@ public class DateWidget extends JPanel {
     widgetCalendar = new PopupWidget(); 
     widgetCalendar.setActions(switches);
     
-    widgetYear  = new TextFieldWidget("",4+1);
+    widgetYear  = new TextFieldWidget("",5+1);
     
     widgetMonth = new ChoiceWidget();
     widgetMonth.setIgnoreCase(true);
@@ -96,11 +96,19 @@ public class DateWidget extends JPanel {
     super.setToolTipText(format);
     
     // Listeners
-    Events e = new Events();
-    widgetDay  .addFocusListener(e);
-    widgetYear .addFocusListener(e);
-    widgetMonth.getEditor().getEditorComponent().addFocusListener(e);
-    addFocusListener(e);
+    DocumentListener listener = new DocumentListener() {
+      public void changedUpdate(DocumentEvent e) {
+      }
+      public void insertUpdate(DocumentEvent e) {
+        updateStatus();
+      }
+      public void removeUpdate(DocumentEvent e) {
+        updateStatus();
+      }
+    };
+    widgetDay  .getDocument().addDocumentListener(listener);
+    widgetYear .getDocument().addDocumentListener(listener);
+    widgetMonth.getTextWidget().getDocument().addDocumentListener(listener);
     
     // Status
     setValue(pit);
@@ -121,10 +129,10 @@ public class DateWidget extends JPanel {
     calendar = pit.getCalendar();
 
     // update year widget
-    widgetYear.setText(int2string(pit.getYear (), false));
+    widgetYear.setText(calendar.getYear(pit.getYear (), true));
 
     // update day widget
-    widgetDay.setText(int2string(pit.getDay  (), true ));
+    widgetDay.setText(calendar.getDay(pit.getDay()));
 
     // update month widget
     String[] months = calendar.getMonths(true);
@@ -146,24 +154,62 @@ public class DateWidget extends JPanel {
    * Get current value
    */
   public PointInTime getValue() {
-    // analyze entered text integer values
-    int d = string2int(widgetDay.getText(), true);
-    int y = string2int(widgetYear.getText(), false);
-    int m = string2int(widgetMonth.getText(), true);
-    // fallback month - selected specific?
-    if (m==PointInTime.UNKNOWN&&widgetMonth.getText().equals(widgetMonth.getSelectedItem())) {
-      m = widgetMonth.getSelectedIndex();
-      if (m<0) m = PointInTime.UNKNOWN;    
+
+    int 
+      d = PointInTime.UNKNOWN,
+      m = PointInTime.UNKNOWN,
+      y = PointInTime.UNKNOWN;
+      
+    // analyze day
+    String day = widgetDay.getText().trim();
+    if (day.length()>0) {
+      try {
+        d = Integer.parseInt(day) - 1;
+      } catch (NumberFormatException e) {
+        return null; 
+      }
     }
-    return new PointInTime(d, m, y, calendar);
+    // analyze year
+    String year = widgetYear.getText().trim();
+    if (year.length()>0) {
+      try {
+        y = calendar.getYear(year);
+      } catch (GedcomException e) {
+        return null; 
+      }
+    }
+    // analyze month
+    String month = widgetMonth.getText();
+    if (month.length()>0) {
+      if (month.equals(widgetMonth.getSelectedItem())) {
+        m = widgetMonth.getSelectedIndex();
+      } else try {
+        m = Integer.parseInt(month) - 1;
+      } catch (NumberFormatException e) {
+        return null;
+      }
+    }
+    // all valid?
+    PointInTime result = new PointInTime(d, m, y, calendar);
+    // done 
+    return result.isValid() ? result : null;
   }
 
   /**
    * Update the status icon
    */
   private void updateStatus() {
-    widgetCalendar.setIcon(calendar.getImage());        
-    widgetCalendar.setEnabled(getValue().isValid());
+    // check whether valid
+    PointInTime pit = getValue(); 
+    if (pit==null||!pit.isValid()) {
+      // show 'X' on disabled button
+      widgetCalendar.setEnabled(false);
+      widgetCalendar.setIcon(MetaProperty.IMG_ERROR);
+    } else {
+      // show current calendar on enabled button
+      widgetCalendar.setEnabled(true);
+      widgetCalendar.setIcon(calendar.getImage());       
+    }
   }
 
   /**
@@ -190,62 +236,11 @@ public class DateWidget extends JPanel {
   }
 
   /**
-   * transfer a date int into String
-   */
-  private String int2string(int i, boolean zeroBased) {
-    if (i==PointInTime.UNKNOWN)
-      return "";
-    if (zeroBased)
-      i++;    
-    return Integer.toString(i);
-  }
-  
-  /**
-   * transfer a data string into int
-   */
-  private int string2int(String s, boolean zeroBased) {
-    try {
-      return Integer.parseInt(s) - (zeroBased?1:0);
-    } catch (NumberFormatException e) {
-      return PointInTime.UNKNOWN;
-    }
-  }
-
-  /**
    * @see javax.swing.JComponent#requestFocus()
    */
   public void requestFocus() {
-    // try JDK 1.4's requestFocusInWindow instead
-    try {
-      super.requestFocusInWindow();
-    } catch (Throwable t) {
-      super.requestFocus();
-    }
+    getComponent(1).requestFocus();
   }
-  
-  /**
-   * Glue to events
-   */
-  private class Events implements FocusListener {
-    /** callback - focus gained */
-    public void focusGained(FocusEvent e) {
-      // me?
-      if (e.getSource()==DateWidget.this) {
-        getComponent(1).requestFocus();
-        return;
-      }
-      // one of the textfields!
-      if (e.getSource() instanceof JTextField)
-        ((JTextField) e.getSource()).selectAll();
-      // done
-    }
-    /** callback - focus lost */
-    public void focusLost(FocusEvent e) {
-      // one of the textfields!
-      if (e.getSource() instanceof JTextField)
-        updateStatus();
-    }
-  } //Events
   
   /**
    * Action to switch calendar
@@ -265,10 +260,10 @@ public class DateWidget extends JPanel {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      PointInTime pit;
+      PointInTime pit = getValue();
+      if (pit==null)
+        return;
       try {
-        // get current value
-        pit = getValue();
         pit.set(newCalendar);
       } catch (GedcomException e) {
         int rc = manager.openDialog(

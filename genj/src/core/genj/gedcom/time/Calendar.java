@@ -100,6 +100,15 @@ public abstract class Calendar {
   }
   
   /**
+   * Returns the (localized) day
+   */
+  public String getDay(int day) {
+    if (day==PointInTime.UNKNOWN)
+      return "";
+    return ""+(day+1);
+  }
+  
+  /**
    * Access to (localized) gedcom months
    */
   public String[] getMonths(boolean localize) {
@@ -133,7 +142,21 @@ public abstract class Calendar {
    * Returns the (localized) year as string
    */
   public String getYear(int year, boolean localize) {
+    if (year==PointInTime.UNKNOWN)
+      return "";
     return ""+year;
+  }
+  
+  /**
+   * Returns the year from a string - opportunity for special year designations
+   * to be introduced
+   */
+  public int getYear(String year) throws GedcomException {
+    try {
+      return Integer.parseInt(year);
+    } catch (NumberFormatException e) {
+      throw new GedcomException(year+" is not a valid year");
+    }
   }
 
   /**
