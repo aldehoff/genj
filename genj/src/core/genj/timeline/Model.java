@@ -357,16 +357,8 @@ import java.util.Set;
     PropertyDate pd = pe.getDate();
     if (pd==null) return;
     // get start (has to be valid) and end (has to be valid if range)
-    PointInTime
-      start = pd.getStart(),
-      end   = pd.getEnd();
-    if (!start.isValid()) 
+    if (!pd.getStart().isValid()||(pd.isRange()&&!pd.getEnd().isValid())) 
       return;
-    if (pd.isRange()) {
-      if (!end.isValid())
-        return;
-      end = start;
-    }
     // create event 
     insertEvent(new Event(pe, pd));
     // done
@@ -426,6 +418,8 @@ import java.util.Set;
    * An event in our model
    */
   /*package*/ class Event {
+     // FIXME use julian day for even tracking
+
     /** state */
     /*package*/ double from, to;
     /*package*/ PropertyEvent pe;
@@ -440,7 +434,7 @@ import java.util.Set;
       pd = propDate;
       // setup time
       from = toDouble(propDate.getStart(), propDate.getFormat()==propDate.AFT);
-      to  = toDouble(propDate.getEnd(), true);
+      to  = toDouble(propDate.isRange() ? propDate.getEnd() : propDate.getStart(), true);
       // calculate content
       content();
       // done
