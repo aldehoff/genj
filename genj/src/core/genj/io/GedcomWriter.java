@@ -34,8 +34,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
@@ -83,38 +83,39 @@ public class GedcomWriter implements Trackable {
     date = PointInTime.getNow().getValue();
     time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
 
-    out = new BufferedWriter(createWriter(stream, encoding));
+    out = new BufferedWriter(new OutputStreamWriter(stream, getCharset(enc)));
 
     // Done
   }
 
   /**
-   * Initialize the writer we're using
+   * Create the charset we're using for out
    */
-  private Writer createWriter(OutputStream stream, String encoding) {
+  private Charset getCharset(String encoding) {
+
     // Attempt encoding
     try {
       // Unicode
       if (Gedcom.UNICODE.equals(encoding))
-        return new OutputStreamWriter(stream, "UTF-8");
+        return Charset.forName("UTF-8");
       // ASCII
       if (Gedcom.ASCII.equals(encoding))
-        return new OutputStreamWriter(stream, "ASCII");
+        return Charset.forName("ASCII");
       // Latin1 (ISO-8859-1)
       if (Gedcom.LATIN1.equals(encoding))
-        return new OutputStreamWriter(stream, "ISO-8859-1");
+        return Charset.forName("ISO-8859-1");
       // ANSI (Windows-1252)
       if (Gedcom.ANSI.equals(encoding))
-        return new OutputStreamWriter(stream, "Windows-1252");
-      // ANSEL
-      if (Gedcom.ANSEL.equals(encoding))
-        return new AnselWriter(stream);
-    } catch (UnsupportedEncodingException e) {
+        return Charset.forName("Windows-1252");
+    } catch (UnsupportedCharsetException e) {
     }
-    // not supported
-    encoding = null;
-    Debug.log(Debug.WARNING, this, "Couldn't create writer for encoding " + encoding);
-    return new OutputStreamWriter(stream);
+
+    // ANSEL (in any case)
+    if (!Gedcom.ANSEL.equals(encoding)) {
+      encoding = null;
+      Debug.log(Debug.WARNING, this, "Couldn't resolve charset for encoding " + encoding);
+    }
+    return new AnselCharset();
   }
 
   /**

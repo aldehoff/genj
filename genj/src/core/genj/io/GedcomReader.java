@@ -38,7 +38,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -93,19 +93,10 @@ public class GedcomReader implements Trackable {
     InputStream oin = org.open();
 
     // prepare sniffer
-    InputStreamSniffer sniffer = new InputStreamSniffer(oin);
+    SniffedInputStream sin = new SniffedInputStream(oin);
     
-    // get reader
-    Reader reader;
-    try {
-      reader = sniffer.getReader();
-    } catch (Throwable t) {
-      Debug.log(Debug.WARNING, this, "Failed to create reader: "+t.getMessage());
-      reader = new InputStreamReader(sniffer);
-    }
-
     // init some data
-    in       = new BufferedReader(reader);
+    in       = new BufferedReader(new InputStreamReader(sin, sin.getCharset()));
     line     = 0;
     origin   = org;
     length   = oin.available();
@@ -113,7 +104,7 @@ public class GedcomReader implements Trackable {
     read     = 0;
     warnings = new ArrayList(128);
     gedcom   = new Gedcom(origin);
-    gedcom.setEncoding(sniffer.getEncoding());
+    gedcom.setEncoding(sin.getEncoding());
     
     // Done
   }
@@ -649,25 +640,26 @@ public class GedcomReader implements Trackable {
   } //XRef
   
   /**
-   * EncodingInputStream
+   * SniffedInputStream
    */
-  private static class InputStreamSniffer extends BufferedInputStream {
+  private static class SniffedInputStream extends BufferedInputStream {
     
     private final byte[]
       BOM_UTF8    = { (byte)0xEF, (byte)0xBB, (byte)0xBF },
       BOM_UTF16BE = { (byte)0xFE, (byte)0xFF },
       BOM_UTF16LE = { (byte)0xFF, (byte)0xFE };
       
-    private Reader reader;
     private String encoding;
-
+    private Charset charset;
+    
     /**
      * Constructor
      */
-    private InputStreamSniffer(InputStream in) throws IOException {
+    private SniffedInputStream(InputStream in) throws IOException {
+      
       super(in, 4096);
 
-      // fill buffer
+      // fill buffer and reset
       super.mark(4096); 
       super.read();
       super.reset();
@@ -675,18 +667,19 @@ public class GedcomReader implements Trackable {
       // BOM present?
       if (matchPrefix(BOM_UTF8)) {
         Debug.log(Debug.INFO, this, "Found BOM_UTF8 - trying encoding UTF-8");
-        reader = new InputStreamReader(this, "");
+        charset = Charset.forName("UTF-8");
         encoding = Gedcom.UNICODE;
         return;
       }
       if (matchPrefix(BOM_UTF16BE)) {
         Debug.log(Debug.INFO, this, "Found BOM_UTF16BE - trying encoding UTF-16BE");
+        charset = Charset.forName("UTF-16BE");
         encoding = Gedcom.UNICODE;
         return;
       }
       if (matchPrefix(BOM_UTF16LE)) {
         Debug.log(Debug.INFO, this, "Found BOM_UTF16LE - trying encoding UTF-16LE");
-        reader = new InputStreamReader(this, "UTF-16LE");
+        charset = Charset.forName("UTF-16LE");
         encoding = Gedcom.UNICODE;
         return;
       }
@@ -697,38 +690,38 @@ public class GedcomReader implements Trackable {
       // tests
       if (matchHeader(header,Gedcom.UNICODE)) {
         Debug.log(Debug.INFO, this, "Found "+Gedcom.UNICODE+" - trying encoding UTF-8");
-        reader = new InputStreamReader(this, "UTF-8");
+        charset = Charset.forName("UTF-8");
         encoding = Gedcom.UNICODE;
         return;
       } 
       if (matchHeader(header,Gedcom.ASCII)) {
         Debug.log(Debug.INFO, this, "Found "+Gedcom.ASCII+" - trying encoding ASCII");
-        reader = new InputStreamReader(this, "ASCII");
+        charset = Charset.forName("ASCII");
         encoding = Gedcom.ASCII;
         return;
       } 
       if (matchHeader(header,Gedcom.ANSEL)) {
         Debug.log(Debug.INFO, this, "Found "+Gedcom.ANSEL+" - trying encoding ANSEL");
-        reader = new AnselReader(this);
+        charset = new AnselCharset();
         encoding = Gedcom.ANSEL;
         return;
       } 
       if (matchHeader(header,Gedcom.ANSI)) {
         Debug.log(Debug.INFO, this, "Found "+Gedcom.ANSI+" - trying encoding Windows-1252");
-        reader = new InputStreamReader(this, "Windows-1252"); 
+        charset = Charset.forName("Windows-1252");
         encoding = Gedcom.ANSI;
         return;
       } 
       if (matchHeader(header,Gedcom.LATIN1)||matchHeader(header,"IBMPC")) { // legacy - old style ISO-8859-1/latin1
         Debug.log(Debug.INFO, this, "Found "+Gedcom.LATIN1+" or IBMPC - trying encoding ISO-8859-1");
-        reader = new InputStreamReader(this, "ISO-8859-1"); 
+        charset = Charset.forName("ISO-8859-1");
         encoding = Gedcom.LATIN1;
         return;
       } 
 
       // no clue - will default to Ansel
       Debug.log(Debug.INFO, this, "Could not sniff encoding - trying ANSEL");
-      reader = new AnselReader(this);
+      charset = new AnselCharset();
       encoding = Gedcom.ANSEL;
     }
     
@@ -758,10 +751,10 @@ public class GedcomReader implements Trackable {
     }
           
     /**
-     * result - reader
+     * result - charset
      */
-    /*result*/ Reader getReader() {
-      return reader;
+    /*result*/ Charset getCharset() {
+      return charset;
     }
     
     /**
