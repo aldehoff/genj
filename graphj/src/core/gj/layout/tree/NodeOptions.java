@@ -33,18 +33,13 @@ public interface NodeOptions {
     LON   = 1;
   
   /**
-   * Set to given node
-   */
-  public void set(Node node);
-
-  /**
    * Padding of a node
    */
-  public double getPadding(int dir);
+  public double getPadding(Node node, int dir);
   
   /**
    * Alignment of a node
    */
-  public double getAlignment(int dir);
+  public double getAlignment(Node node, int dir);
     
 } //NodeOptions

@@ -417,21 +417,15 @@ public class TreeLayout extends AbstractLayout implements Layout {
    */
   private class DefaultNodeOptions implements NodeOptions {
     /**
-     * @see gj.layout.tree.NodeOptions#set(Node)
-     */
-    public void set(Node node) {
-      // ignored
-    }
-    /**
      * @see gj.layout.tree.NodeOptions#getAlignment(int)
      */
-    public double getAlignment(int dir) {
+    public double getAlignment(Node node, int dir) {
       return dir==LAT ? latAlignment : lonAlignment;
     }
     /**
      * @see gj.layout.tree.NodeOptions#getPadding(int)
      */
-    public double getPadding(int dir) {
+    public double getPadding(Node node, int dir) {
       if (dir==WEST||dir==EAST) return lonPadding/2;
       return latPadding/2;
     }

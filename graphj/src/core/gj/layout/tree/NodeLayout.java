@@ -261,16 +261,13 @@ import java.util.Stack;
    */
   private Contour layoutParent(Node node, Arc backtrack, Contour[] children, Tree tree, int generation) {
 
-    // prepare NodeOptions to point to current node
-    nodeop.set(node);
-
     // the parent's contour
     Shape shape = node.getShape();
     Contour parent = shape==null ? new Contour() : orientn.getContour(shape.getBounds2D());
-    parent.north -= nodeop.getPadding(nodeop.NORTH);
-    parent.south += nodeop.getPadding(nodeop.SOUTH);
-    parent.west  -= nodeop.getPadding(nodeop.WEST );
-    parent.east  += nodeop.getPadding(nodeop.EAST );
+    parent.north -= nodeop.getPadding(node, nodeop.NORTH);
+    parent.south += nodeop.getPadding(node, nodeop.SOUTH);
+    parent.west  -= nodeop.getPadding(node, nodeop.WEST );
+    parent.east  += nodeop.getPadding(node, nodeop.EAST );
 
     // the parent's position
     double lat,lon;
@@ -283,7 +280,7 @@ import java.util.Stack;
     } else {
 
       // relative placement above children 0..1
-      double align = nodeop.getAlignment(nodeop.LON);
+      double align = nodeop.getAlignment(node, nodeop.LON);
       if (align>=0&&align<=1) {
         // relative above children
         double
@@ -298,7 +295,7 @@ import java.util.Stack;
           min = Math.min(min,  children[c].west);
           max = Math.max(max, children[c].east);
         }
-        lon = align>1.0D ? max - parent.east : min - parent.west;
+        lon = align>1.0D ? max - parent.east + (align-1) : min - parent.west + align;
       }
         
       lat = children[0].north - parent.south;
@@ -312,7 +309,7 @@ import java.util.Stack;
         min = lat - parent.north,
         max = lat + tree.getHeight(generation) - parent.south;
 
-      lat = min + (max-min) * Math.min(1D, Math.max(0D, nodeop.getAlignment(nodeop.LAT)));
+      lat = min + (max-min) * Math.min(1D, Math.max(0D, nodeop.getAlignment(node, nodeop.LAT)));
     }
 
     // place it at (lat,lon)
@@ -446,34 +443,18 @@ import java.util.Stack;
       return original;
     }
     /**
-     * @see gj.layout.tree.NodeOptions#set(Node)
-     */
-    public void set(Node node) {
-      original.set(node);
-    }
-    /**
      * @see gj.layout.tree.TreeLayout.DefaultNodeOptions#getAlignment(int)
      */
-    public double getAlignment(int dir) {
+    public double getAlignment(Node node, int dir) {
       if (dir==LON) return (oldos.size()&1)==0 ? 0.0D : 1.0D;
-      return original.getAlignment(dir);
+      return original.getAlignment(node, dir);
     }
     /**
      * @see gj.layout.tree.NodeOptions#getPadding(int)
      */
-    public double getPadding(int dir) {
-      if ((oldos.size()&1)==0) return original.getPadding(dir);
-      return original.getPadding((dir+1)&3);
-//      switch (dir) {
-//        case NORTH: default:
-//          return original.getPadding(EAST);
-//        case WEST:
-//          return original.getPadding(NORTH);
-//        case EAST:
-//          return original.getPadding(SOUTH);
-//        case SOUTH:
-//          return original.getPadding(WEST);
-//      }
+    public double getPadding(Node node, int dir) {
+      if ((oldos.size()&1)!=0) dir = (dir+1)&3;
+      return original.getPadding(node, dir);
     }
   } //ComplementNodeOptions
 
