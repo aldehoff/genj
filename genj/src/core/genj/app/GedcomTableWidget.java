@@ -32,6 +32,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
@@ -82,7 +83,7 @@ public class GedcomTableWidget extends JTable {
     
     // Prepare a column model
     TableColumnModel cm = new DefaultTableColumnModel();
-    getTableHeader().setDefaultRenderer(new HeaderCellRenderer());
+    getTableHeader().setDefaultRenderer(new PatchedTableCellRenderer());
     
     for (int h=0; h<headers.length; h++) {
       TableColumn col = new TableColumn(h);
@@ -298,31 +299,42 @@ public class GedcomTableWidget extends JTable {
   } // Model
 
   /**
-   * Our own TableCellRenderer for the header - because the
-   * default one doesn't handle images :(
+   * Our own TableHeader intercepting anyones attempt to
+   * change the default renderer
    */
-  private class HeaderCellRenderer extends DefaultTableCellRenderer {
+  private class PatchedTableCellRenderer implements TableCellRenderer  {
+
+    private TableCellRenderer other, def = new DefaultTableCellRenderer();
+      
+    /**
+     * Constructor
+     */
+    protected PatchedTableCellRenderer() {
+      other = getTableHeader().getDefaultRenderer();
+    }
+    
+    /**
+     * @see TableCellRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object, boolean, boolean, int, int)
+     */
     public Component getTableCellRendererComponent(JTable table, Object value,
                        boolean isSelected, boolean hasFocus, int row, int column) {
-      if (table != null) {
-        JTableHeader header = table.getTableHeader();
-        if (header != null) {
-          setForeground(header.getForeground());
-          setBackground(header.getBackground());
-          setFont(header.getFont());
-        }
-      }
-      setHorizontalAlignment(CENTER);
+
+      Component result = null;
+      if (other!=null) result = other.getTableCellRendererComponent(table,value,isSelected,hasFocus,row,column);
+      if (!(result instanceof JLabel)) result = def.getTableCellRendererComponent(table,value,isSelected,hasFocus,row,column);
+     
+      JLabel label = (JLabel)result;
       if (value instanceof ImageIcon) {
-        setIcon((ImageIcon)value);
+        label.setIcon((ImageIcon)value);
         value=null;
       } else {
-        setIcon(null);
+        label.setIcon(null);
       }
-      setText((value == null) ? "" : value.toString());
-      setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-      return this;
+      label.setText((value == null) ? "" : value.toString());
+      
+      return result;
     }
-  } // HeaderCellRenderer
+    
+  } //PatchedTableCellRenderer
 
 }
