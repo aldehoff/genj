@@ -217,14 +217,14 @@ public class ReportEvents extends Report {
         // look for births?
         if (reportBirth) {
             if (checkDate(indi.getBirthDate()))
-                births.add(new Hit(indi.getBirthDate(), indi));
+                births.add(new Hit(indi.getBirthDate(), indi, ""));
         }
         
         if(reportBaptism) {
-            analyzeTag(indi, "INDI:BAPM", baptisms);
-            analyzeTag(indi, "INDI:BAPL", baptisms);
-            analyzeTag(indi, "INDI:CHR", baptisms);
-            analyzeTag(indi, "INDI:CHRA", baptisms);
+            analyzeTag(indi, "INDI:BAPM", baptisms, true);
+            analyzeTag(indi, "INDI:BAPL", baptisms, true);
+            analyzeTag(indi, "INDI:CHR", baptisms, true);
+            analyzeTag(indi, "INDI:CHRA", baptisms, true);
         }
         
         // look for marriages?
@@ -233,7 +233,7 @@ public class ReportEvents extends Report {
             for (int j = 0; j < fams.length; j++) {
                 Fam fam = fams[j];
                 if (checkDate(fam.getMarriageDate()))
-                    marriages.add(new Hit(fam.getMarriageDate(), fam));
+                    marriages.add(new Hit(fam.getMarriageDate(), fam, ""));
             }
         }
         
@@ -243,33 +243,37 @@ public class ReportEvents extends Report {
             for (int j = 0; j < fams.length; j++) {
                 Fam fam = fams[j];
                 if (checkDate(fam.getDivorceDate()))
-                    divorces.add(new Hit(fam.getDivorceDate(), fam));
+                    divorces.add(new Hit(fam.getDivorceDate(), fam, ""));
             }
         }
         
         if(reportEmigration)
-            analyzeTag(indi, "INDI:EMIG", emigrations);
+            analyzeTag(indi, "INDI:EMIG", emigrations, false);
         
         if(reportImmigration)
-            analyzeTag(indi, "INDI:IMMI", immigrations);
+            analyzeTag(indi, "INDI:IMMI", immigrations, false);
         
         if(reportNaturalization)
-            analyzeTag(indi, "INDI:NATU", naturalizations);
+            analyzeTag(indi, "INDI:NATU", naturalizations, false);
         
         // look for deaths?
         if (reportDeath) {
             if (checkDate(indi.getDeathDate()))
-                deaths.add(new Hit(indi.getDeathDate(), indi));
+                deaths.add(new Hit(indi.getDeathDate(), indi, ""));
         }
         
         // done
     }
     
-    private void analyzeTag(Indi indi, String tag, ArrayList list) {
+    private void analyzeTag(Indi indi, String tag, ArrayList list, boolean saveTag) {
         if((indi.getProperty(new TagPath(tag))!=null) && (indi.getProperty(new TagPath(tag+":DATE"))!=null)) {
             PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath(tag+":DATE"));
-            if(checkDate(prop))
-                list.add(new Hit(prop, indi));
+            if(checkDate(prop)) {
+                if(saveTag)
+                    list.add(new Hit(prop, indi, tag));
+                else
+                    list.add(new Hit(prop, indi, ""));
+            }
         }
     }
     
@@ -296,7 +300,10 @@ public class ReportEvents extends Report {
     private void report(Hit hit) {
         if (hit.who instanceof Indi) {
             Indi indi = (Indi) hit.who;
-            println("      " + hit.when + " @" + indi.getId() + "@ " + indi.getName());
+            String tag = "";
+            if(hit.tag.length() > 0)
+                tag = hit.tag+": ";
+            println("      " + tag + hit.when + " @" + indi.getId() + "@ " + indi.getName());
         }
         if (hit.who instanceof Fam) {
             Fam fam = (Fam) hit.who;
@@ -388,11 +395,13 @@ public class ReportEvents extends Report {
      * Wrapping an Event hit
      */
     private class Hit implements Comparable {
+        String tag;
         PointInTime when;
         Entity who;
         PointInTime compare;
         // Constructor
-        Hit(PropertyDate date, Entity ent) {
+        Hit(PropertyDate date, Entity ent, String path) {
+            tag = path;
             when = date.getStart();
             if (isSortDay)
                 // blocking out year (to a Gregorian LEAP 4 - don't want to make it invalid) so that month and day count
