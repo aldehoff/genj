@@ -23,9 +23,8 @@ Future
   O Reports should translate dates to a more readable format (e.g. MAR becomes March)
   O EditView/PropertySex should allow for male/female/unknown
   O Localize Print texts
-  
-  I Printing dialogs remember parameters now (e.g. margins)
-  B Printing forgets about paper orientation between pages
+  O Printing dialogs remember parameters now (e.g. margins)
+  O Printing forgets about paper orientation between pages
 
 1.8 - Mar xx 2002 (not released)
 
