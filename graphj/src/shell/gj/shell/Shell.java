@@ -38,6 +38,7 @@ import gj.io.GraphReader;
 import gj.io.GraphWriter;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
+import gj.layout.random.RandomLayout;
 
 import gj.model.Graph;
 import gj.model.MutableGraph;
@@ -258,9 +259,16 @@ public class Shell {
       graph.getBounds().setRect(0,0,graphScroll.getWidth(), graphScroll.getHeight());
       // apply it?
       if (!isAnimation) {
-        layout.applyTo(graph);
-        // reflect change      
-        graphWidget.revalidate();
+        try {
+          layout.applyTo(graph);
+        } catch (LayoutException e) {
+          new RandomLayout().applyTo(graph);
+          // can't handle it really
+          throw e;
+        } finally {
+          // reflect change      
+          graphWidget.revalidate();
+        }
         // dont' continue
         return false;
       }

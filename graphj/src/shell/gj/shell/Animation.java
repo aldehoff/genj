@@ -17,6 +17,7 @@
 import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.layout.PathHelper;
+import gj.layout.random.RandomLayout;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
@@ -76,7 +77,14 @@ import java.util.List;
     }
     
     // do the layout
-    layout.applyTo(graph);
+    try {
+      layout.applyTo(graph);
+    } catch (LayoutException e) {
+      // make sure the graph is at least some how in place
+      new RandomLayout().applyTo(graph);
+      // can't handle it really
+      throw e;
+    }
     
     // collect new values
     for (m=0;m<moves.length;m++) {
