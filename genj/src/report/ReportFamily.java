@@ -6,7 +6,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-import java.util.List;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.Entity;
