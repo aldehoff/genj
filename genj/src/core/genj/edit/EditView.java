@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.edit.actions.*;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
@@ -104,7 +105,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   private JMenuBar          menuActions;
   
   /** an entity to show in next open EditView */
-  /*package*/ static Entity preselectEntity = null;
+  private static Entity preselectEntity = null;
   
   /**
    * Constructor
@@ -313,6 +314,13 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     actionSticky.setSelected(registry.get("sticky",false));
 
     // done
+  }
+  
+  /**
+   * Open EditView on entity   */
+  public static void open(Entity entity) {
+    preselectEntity = entity;
+    ViewManager.getInstance().openView(EditViewFactory.class, entity.getGedcom());
   }
 
   /**
@@ -594,7 +602,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       // .. remove every selected node
       for (int i=0;i<paths.length;i++) {
         Property prop = (Property)paths[i].getLastPathComponent();
-        new EditViewFactory.PDelete(prop).setTarget(EditView.this).trigger();
+        new DelProperty(prop).setTarget(EditView.this).trigger();
       }
   
       // go to parent property
