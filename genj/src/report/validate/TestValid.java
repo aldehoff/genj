@@ -18,19 +18,15 @@ import genj.gedcom.TagPath;
  */
 /*package*/ class TestValid extends Test {
 
-  /** whether no-information is considered to be valid */
-  private boolean isEmptyValid;
+  /** the report */
+  private ReportValidate report;
   
-  /** whether private information is considered to be valid */
-  private boolean isPrivateIsValid;
-
   /**
    * Constructor
    */
-  /*package*/ TestValid(boolean emptyIsValid, boolean privateIsValid) {
+  /*package*/ TestValid(ReportValidate report) {
     super((String[])null, Property.class);
-    isEmptyValid = emptyIsValid;
-    isPrivateIsValid = privateIsValid;
+    this.report = report;
   }
   
   /**
@@ -39,7 +35,7 @@ import genj.gedcom.TagPath;
   /*package*/ void test(Property prop, TagPath path, List issues, ReportValidate report) {
     
     // always an issue with private
-    if (!isPrivateIsValid&&prop.isPrivate()) {
+    if (!report.isPrivateValueValid&&prop.isPrivate()) {
       // got an issue with that
       issues.add(new Issue(report.i18n("err.private", path.toString()), prop.getImage(true), prop));
     }
@@ -49,7 +45,7 @@ import genj.gedcom.TagPath;
       return;
       
     // no issue if isEmptyValid&&getValue() is empty
-    if (isEmptyValid&&prop.getValue().length()==0)
+    if (report.isEmptyValueValid&&prop.getValue().length()==0)
       return;
       
     // got an issue with that

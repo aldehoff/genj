@@ -34,6 +34,9 @@ public class ReportValidate extends Report {
   /** whether we consider missing files as valid or not */
   public boolean isFileNotFoundValid = true;
 
+  /** whether we consider underscore tags to be valid custom tags */
+  public boolean isUnderscoreValid = true;
+
   /** options of reports are picked up via field-introspection */
   public int
     maxLife      = 90,
@@ -150,6 +153,9 @@ public class ReportValidate extends Report {
       tst.test(prop, path, issues, this);
       // next
     }
+    // don't recurse into custom underscore tags
+    if (isUnderscoreValid&&prop.getTag().startsWith("_"))
+      return;
     // recurse into all its properties
     for (int i=0,j=prop.getNoOfProperties();i<j;i++) {
       // for non-system, non-transient children
@@ -157,8 +163,11 @@ public class ReportValidate extends Report {
       if (child.isTransient()||child.isSystem()) continue;
       // get child tag
       String ctag = child.getTag();
+      // check if it's a custom tag
+      if (isUnderscoreValid&&ctag.startsWith("_"))
+        continue;
       // check if Gedcom grammar allows it
-      if (!ctag.startsWith("_")&&!meta.allows(ctag)) {
+      if (!meta.allows(ctag)) {
         String msg = i18n("err.notgedcom", new String[]{ctag,path.toString()});
         issues.add(new Issue(msg, MetaProperty.IMG_ERROR, child));
         continue;
@@ -182,7 +191,7 @@ public class ReportValidate extends Report {
     // ******************** SPECIALIZED TESTS *******************************
 
     // non-valid properties
-    result.add(new TestValid(isEmptyValueValid, isPrivateValueValid));
+    result.add(new TestValid(this));
     
     // spouses with wrong gender
     result.add(new TestSpouseGender());
