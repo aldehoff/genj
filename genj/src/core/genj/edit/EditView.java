@@ -44,10 +44,10 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
 
   private JPanel            actionPanel;
   private AbstractButton    actionButtonAdd,
-                            actionButtonRemove,
-                            actionButtonUp,
-                            actionButtonDown,
-                            actionButtonReturn;
+                             actionButtonRemove,
+                             actionButtonUp,
+                             actionButtonDown,
+                             actionButtonReturn;
   private JCheckBox         actionCheckStick;
 
   private JPanel            createPanel;
@@ -247,17 +247,14 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     split.setContinuousLayout(true);
     add(split,BorderLayout.CENTER);
 
-    Runnable run = new Runnable() {
-      /** we have to defer the setDividerLocation - FIXME: still? */
-      public void run() {
-        int loc = registry.get("divider",-1);
-        if (loc!=-1) {
-          split.setDividerLocation(loc);
-        }
-      }
-    };
-    SwingUtilities.invokeLater(run);
-
+    // 20020401 This seemed to be a problem with pre-jdk-1.4's 
+    // swing (even tried to defer it by putting it on another
+    // thread. Now it seems to work again/
+    int loc = registry.get("divider",-1);
+    if (loc!=-1) {
+      split.setDividerLocation(loc);
+    }
+    
     // NEW Component
     createPanel = new JPanel();
     createPanel.setLayout(new FlowLayout(FlowLayout.LEFT,0,0));
