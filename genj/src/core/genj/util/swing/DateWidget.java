@@ -156,9 +156,10 @@ public class DateWidget extends JPanel {
   public PointInTime getValue() {
 
     int 
-      d = PointInTime.UNKNOWN,
-      m = PointInTime.UNKNOWN,
-      y = PointInTime.UNKNOWN;
+      u = PointInTime.UNKNOWN,
+      d = u,
+      m = u,
+      y = u;
       
     // analyze day
     String day = widgetDay.getText().trim();
@@ -189,10 +190,16 @@ public class DateWidget extends JPanel {
         return null;
       }
     }
-    // all valid?
+    
+    // generate result
     PointInTime result = new PointInTime(d, m, y, calendar);
+    
+    // is it valid?
+    if ((d==u&&m==u&&y==u)||result.isValid())
+      return result;
+    
     // done 
-    return result.isValid() ? result : null;
+    return null;
   }
 
   /**
