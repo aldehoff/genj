@@ -22,6 +22,8 @@ package genj.gedcom;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -100,41 +102,48 @@ public class Indi extends Entity {
   }
   
   /**
-   * Calculate the 'younger' sibling
+   * Calculate the 'younger' siblings
    */
-  public Indi getOlderSibling() {
+  public Indi[] getOlderSiblings() {
     
     // this is a child in a family?
     Fam f = getFamc();
-    if (f==null) return null;
+    if (f==null) 
+      return new Indi[0];
     
     // what are the children of that one
+    LinkedList result = new LinkedList();
     Indi[] cs = f.getChildren();
     for (int c=0;c<cs.length;c++) {
-      if (cs[c]==this) return (c>0) ? cs[c-1] : null;
+      if (cs[c]==this) break;
+      result.addFirst(cs[c]);
     }
     
-    // there's no previous one
-    return null;
+    // done
+    return toArray(result);
   }
   
   /**
    * Calculate the 'older' sibling
    */
-  public Indi getYoungerSibling() {
+  public Indi[] getYoungerSiblings() {
     
     // this is a child in a family?
     Fam f = getFamc();
-    if (f==null) return null;
+    if (f==null) 
+      return new Indi[0];
     
     // what are the children of that one
+    LinkedList result = new LinkedList();
+    
     Indi[] cs = f.getChildren();
     for (int c=cs.length-1;c>=0;c--) {
-      if (cs[c]==this) return (c<cs.length-1) ? cs[c+1] : null;
+      if (cs[c]==this) break;
+      result.addFirst(cs[c]);
     }
     
-    // there's no previous one
-    return null;
+    // done
+    return toArray(result);
   }
   
   /** 
@@ -418,6 +427,13 @@ public class Indi extends Entity {
   public String toString() {
     String name = getName();
     return name.length()>0 ? name : super.toString();
+  }
+  
+  /**
+   * list of indis to array
+   */
+  public static Indi[] toArray(Collection c) {
+    return (Indi[])c.toArray(new Indi[c.size()]);    
   }
 
   /**
