@@ -24,6 +24,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Panel;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -38,7 +39,7 @@ import javax.swing.event.ChangeListener;
 
 /**
  * A component showing an overview for a viewport */
-public class ViewPortOverview extends JComponent {
+public class ViewPortOverview extends Panel {
   
   /** the square dimension used for resizing */
   private final static int DIM_RESIZE = 3;
@@ -221,7 +222,7 @@ public class ViewPortOverview extends JComponent {
       // assuming default
       int cursor = Cursor.DEFAULT_CURSOR;
       // maybe scroll view?
-      if (last.contains(p))
+      if (last!=null&&last.contains(p))
         cursor = Cursor.MOVE_CURSOR;
       // check if resize
       if (isResize(p))

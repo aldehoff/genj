@@ -85,9 +85,8 @@ public class ContentRenderer {
   private void renderNodes(UnitGraphics g, Model model) {
     // clip is the range we'll be looking in range
     Rectangle2D clip = g.getClip();
-    // FIXME : has to grow by maximum node size
     // loop
-    Iterator it = model.getEntitiesIn(clip).iterator();//model.getNodes().iterator();
+    Iterator it = model.getEntitiesIn(clip).iterator();
     while (it.hasNext()) {
       // grab node
       Node node = (Node)it.next();

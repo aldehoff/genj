@@ -59,62 +59,102 @@ public class GridCache {
   /**
    * Adds an Object to the grid
    */
-  public void put(Object object, Point2D p) {
-    // safety check
-    if (!system.contains(p)) 
-      throw new IllegalArgumentException("Object outside system");
-    // calc row/col
+  public void put(Object object, Rectangle2D range, Point2D pos) {
+    // Clip
     int
-      col = (int)Math.floor((p.getX()-system.getMinX())/resolution),
-      row = (int)Math.floor((p.getY()-system.getMinY())/resolution);
+      scol = (int)Math.floor((range.getMinX()+pos.getX() - system.getMinX())/resolution),
+      srow = (int)Math.floor((range.getMinY()+pos.getY() - system.getMinY())/resolution),
+      ecol = (int)Math.ceil ((range.getMaxX()+pos.getX() - system.getMinX())/resolution),
+      erow = (int)Math.ceil ((range.getMaxY()+pos.getY() - system.getMinY())/resolution);
+      
+    if (scol>grid[0].length||srow>grid.length||ecol<0||erow<0) return;
+    if (srow<0) srow = 0;
+    if (erow>grid.length) erow = grid.length;
+    if (scol<0) scol = 0;
+    if (ecol>grid[0].length) ecol = grid[0].length;
+      
     // keep it
+    for (int row=srow;row<erow;row++) {
+      for (int col=scol;col<ecol;col++) {
+        put(object, row, col);
+      }
+    }
+    // done
+  }
+  
+  /**
+   * Adds an Object to the grid
+   */
+  public void put(Object object, int row, int col) {
+    // what's there right now?
     Object old = grid[row][col]; 
     if (old==null) {
       // keep as simple entry if possible
       grid[row][col] = object;
     } else {
       // add to existing list or create new list
-      if (old instanceof List) {
-        ((List)old).add(object);
+      if (old instanceof EntryList) {
+        ((EntryList)old).add(object);
       } else {
-        List l = new ArrayList(8);
+        List l = new EntryList();
         l.add(old);
         l.add(object);
         grid[row][col] = l;
       }
     }
-    // done
-  }
+    // done   
+  }  
 
   /**
    * Gets objects by coordinate
    */
   public List get(Rectangle2D range) {
     
-    // safety check
-    range = system.createIntersection(range);
-    // prepare a result
-    List result = new ArrayList(10);
-    
-    // calc row/col
-    int
-      col = (int)Math.floor((range.getMinX()-system.getMinX())/resolution),
-      row = (int)Math.floor((range.getMinY()-system.getMinY())/resolution),
-      ecol = (int)Math.ceil((range.getMaxX()-system.getMinX())/resolution),
-      erow = (int)Math.ceil((range.getMaxY()-system.getMinY())/resolution);
+    List result = new ArrayList();
 
-    // grab the ones we can find
-    for (; row<erow; row++) {
-      for (; col<ecol; col++) {
-        Object o = grid[row][col];
-        if (o==null) continue;
-        if (o instanceof List) result.addAll((List)o);
-        else result.add(o);
+    // Clip
+    int
+      scol = (int)Math.floor((range.getMinX() - system.getMinX())/resolution),
+      srow = (int)Math.floor((range.getMinY() - system.getMinY())/resolution),
+      ecol = (int)Math.ceil ((range.getMaxX() - system.getMinX())/resolution),
+      erow = (int)Math.ceil ((range.getMaxY() - system.getMinY())/resolution);
+      
+    if (scol>grid[0].length||srow>grid.length||ecol<0||erow<0) return result;
+    if (srow<0) srow = 0;
+    if (erow>grid.length) erow = grid.length;
+    if (scol<0) scol = 0;
+    if (ecol>grid[0].length) ecol = grid[0].length;
+      
+    // look it
+    for (int row=srow;row<erow;row++) {
+      for (int col=scol;col<ecol;col++) {
+        get(result, row, col);
       }
     }
     
     // done
     return result;
   }
-    
+
+  /**
+   * Get the content of a grid cell   */
+  public void get(List list, int row, int col) {
+    // what's in the grid?
+    Object o = grid[row][col];
+    if (o==null) return;
+    if (o instanceof EntryList) list.addAll((EntryList)o);
+    else list.add(o);
+    // done
+  }
+
+  /**
+   * Our own list used in the grid
+   */
+  private class EntryList extends ArrayList {
+    /**
+     * Constructor     */
+    private EntryList() {
+      super(8);
+    }
+  } //EntryList       
 } //GridCache

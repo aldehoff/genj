@@ -81,16 +81,16 @@ public class Model implements Graph, GedcomListener {
     padding     = 1.0D,
     widthIndis  = 3.0D,
     widthFams   = 2.8D,
-    widthMarrs  = widthIndis/16,
+    widthMarrs  = widthIndis/8,
     heightIndis = 2.0D,
     heightFams  = 1.0D,
-    heightMarrs = heightIndis/16;
+    heightMarrs = heightIndis/8;
 
   /** shape of marriage rings */
   private Shape 
     shapeMarrs = calcMarriageRings(),
-    shapeIndis = new Rectangle2D.Double(-widthIndis/2,-heightIndis/2,widthIndis,heightIndis),
-    shapeFams  = new Rectangle2D.Double(-widthFams /2,-heightFams /2,widthFams ,heightFams );
+    shapeIndis  = new Rectangle2D.Double(-widthIndis/2,-heightIndis/2,widthIndis,heightIndis),
+    shapeFams   = new Rectangle2D.Double(-widthFams /2,-heightFams /2,widthFams ,heightFams );
 
   /** padding of nodes */
   private double[] // n, e, s, w
@@ -104,12 +104,11 @@ public class Model implements Graph, GedcomListener {
       (widthIndis+padding)/2 - widthMarrs/2,
       -padding/2, 
       (widthIndis+padding)/2 - widthMarrs/2,
-      -padding/2 
+      -padding/2
     },
     padMarrs = padMarrsV,
     padFamsD = new double[]{
       -padding*0.4,
-      //-padding/2*0.8,      
       padding*0.2,      
       padding/2,
       0      
@@ -320,11 +319,12 @@ public class Model implements Graph, GedcomListener {
     // update bounds
     bounds.add(r);
     // create gridcache
-    cache = new GridCache(bounds, Math.max(heightIndis+heightFams, widthIndis+widthFams));
+    cache = new GridCache(bounds, 4*Math.max(heightIndis+heightFams, widthIndis+widthFams));
     Iterator it = nodes.iterator();
     while (it.hasNext()) {
       MyNode n = (MyNode)it.next();
-      cache.put(n, n.getPosition());
+      Shape s = n.getShape();
+      if (s!=null) cache.put(n, s.getBounds2D(), n.getPosition());
     }
     // notify
     fireStructureChanged();
@@ -345,8 +345,8 @@ public class Model implements Graph, GedcomListener {
    */
   private Shape calcMarriageRings() {
     Ellipse2D
-      a = new Ellipse2D.Double(-widthMarrs+widthMarrs/4,-heightMarrs/2,widthMarrs,heightMarrs),
-      b = new Ellipse2D.Double(           -widthMarrs/4,-heightMarrs/2,widthMarrs,heightMarrs);
+      a = new Ellipse2D.Double(-widthMarrs/2,-heightMarrs/2,widthMarrs*0.6,heightMarrs),
+      b = new Ellipse2D.Double( widthMarrs/2-widthMarrs*0.6,-heightMarrs/2,widthMarrs*0.6,heightMarrs);
     GeneralPath result = new GeneralPath(a);      
     result.append(b,false);
     return result;
@@ -355,7 +355,7 @@ public class Model implements Graph, GedcomListener {
   /**
    * A node for an entity
    */
-  private class MyNode implements Node, NodeOptions {
+  /*private*/ class MyNode implements Node, NodeOptions {
     
     /** the entity */
     protected Entity entity;
@@ -609,14 +609,22 @@ public class Model implements Graph, GedcomListener {
       // node for the fam
       MyNode node = new MyNode(fam, shapeFams, padFamsA);
       // husband & wife
-      int spouses = fam.getNoOfSpouses();
-      new MyArc(node, iterate(fam.getWife(), spouses==2?LEFT:CENTER), false);
-      new MyArc(node, new MyNode(fam, shapeMarrs, padMarrs), false);
-      new MyArc(node, iterate(fam.getHusband(), spouses==2?RIGHT:CENTER), false);
+      Indi
+        husb = fam.getHusband(),
+        wife = fam.getWife();
+      new MyArc(node, iterate(wife, hasParents(husb)?LEFT:CENTER), false);
+      new MyArc(node, new MyNode(null, shapeMarrs, padMarrs), false);
+      new MyArc(node, iterate(husb, hasParents(wife)?RIGHT:CENTER), false);
       // done
       return node;
     }
     /**
+     * helper that checks if an individual is child in a family
+     */
+    private boolean hasParents(Indi indi) {
+      if (indi==null) return false;
+      return indi.getFamc()!=null;
+    }    /**
      * parse an individual and its ancestors     */
     private MyNode iterate(Indi indi, final int alignment) {
       // node for indi      
@@ -756,7 +764,7 @@ public class Model implements Graph, GedcomListener {
         if (fam1==null) fam1 = fami;
         new MyArc(node, fami, false);
         // add arcs " pivot-marr, pivot-spouse
-        new MyArc(pivot, new MyNode(fams[f], shapeMarrs, padMarrs), false);
+        new MyArc(pivot, new MyNode(null, shapeMarrs, padMarrs), false);
         new MyArc(pivot, new MyNode(fams[f].getOtherSpouse(indi), shapeIndis, padIndis), false);
         // next family
       }

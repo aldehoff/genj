@@ -178,7 +178,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // get and show
     currentEntity = entity;
     content.repaint();
-    overview.repaint();
+    //overview.repaint();
     // done
   }
   
@@ -278,22 +278,29 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     private Overview(JScrollPane scroll) {
       super(scroll.getViewport());
       model.addListener(this);
-      setMaximumSize(new Dimension(128,128));
+//      super.setMaximumSize(new Dimension(128,128));
+      super.setSize(new Dimension(128,128));
     }
     /**
-     * @see javax.swing.JComponent#removeNotify()
+     * @see java.awt.Container#getMaximumSize()
      */
-    public void removeNotify() {
-      super.removeNotify();
-      model.removeListener(this);
+    public Dimension getMaximumSize() {
+      return super.getSize();
     }
-    /**
-     * @see java.awt.Component#setSize(java.awt.Dimension)
-     */
-    public void setSize(Dimension d) {
-      super.setSize(d);
-      setMaximumSize(d);
-    }
+//    /**
+//     * @see javax.swing.JComponent#removeNotify()
+//     */
+//    public void removeNotify() {
+//      super.removeNotify();
+//      model.removeListener(this);
+//    }
+//    /**
+//     * @see java.awt.Component#setSize(java.awt.Dimension)
+//     */
+//    public void setSize(Dimension d) {
+//      super.setSize(d);
+//      setMaximumSize(d);
+//    }
     /**
      * @see genj.util.swing.ViewPortOverview#paintContent(java.awt.Graphics, double, double)
      */
@@ -307,8 +314,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.cFamShape      = Color.black;
       contentRenderer.cArcs          = Color.lightGray;
       contentRenderer.cUnknownShape  = Color.white;
-      contentRenderer.cSelectedShape = Color.red;
-      contentRenderer.selection      = currentEntity;
+      //contentRenderer.cSelectedShape = Color.white;
+      contentRenderer.selection      = null;
       contentRenderer.isRenderContent= false;
       // let the renderer do its work
       ug.pushTransformation();
