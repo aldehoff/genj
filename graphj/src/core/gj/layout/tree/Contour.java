@@ -61,6 +61,12 @@ package gj.layout.tree;
     
   private double[][] data = null;
   private int     [] size = null;
+
+  /**
+   * Constructor
+   */    
+  /*package*/ Contour() {
+  }
     
   /**
    * Constructor

@@ -37,8 +37,6 @@ import gj.layout.AbstractLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.layout.PathHelper;
-import gj.layout.tree.NodeOptions.Alignment;
-import gj.layout.tree.NodeOptions.Padding;
 
 import gj.model.Arc;
 import gj.model.Graph;
@@ -260,6 +258,13 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
   }
   
   /**
+   * Sets custom node options to use during layout
+   */
+  public void setNodeOptions(NodeOptions no) {
+    nodeOptions = no;
+  }
+  
+  /**
    * @see gj.layout.Layout#applyTo(Graph)
    */
   public void applyTo(Graph graph) throws LayoutException {
@@ -399,27 +404,24 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
    * Default NodeOptions
    */
   private class DefaultNodeOptions implements NodeOptions {
-    /** an instance of alignment */
-    private Alignment alignment = new Alignment();
-    /** an instance of padding */
-    private Padding padding = new Padding();
     /**
-     * @see gj.layout.tree.NodeOptions#getAlignment(Node)
+     * @see gj.layout.tree.NodeOptions#set(Node)
      */
-    public Alignment getAlignment(Node node) {
-      alignment.lon = lonAlignment;
-      alignment.lat = latAlignment;
-      return alignment;
+    public void set(Node node) {
+      // ignored
     }
     /**
-     * @see gj.layout.tree.NodeOptions#getPadding(Node)
+     * @see gj.layout.tree.NodeOptions#getAlignment(int)
      */
-    public Padding getPadding(Node node) {
-      padding.west  = lonPadding/2;
-      padding.east  = padding.west;
-      padding.north = latPadding/2;
-      padding.south = padding.north;
-      return padding;
+    public double getAlignment(int dir) {
+      return dir==LAT ? latAlignment : lonAlignment;
+    }
+    /**
+     * @see gj.layout.tree.NodeOptions#getPadding(int)
+     */
+    public double getPadding(int dir) {
+      if (dir==WEST||dir==EAST) return lonPadding/2;
+      return latPadding/2;
     }
   } //DefaultNodeOptions
 

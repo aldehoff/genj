@@ -15,7 +15,6 @@
    -->
   <target name="init">
     <mkdir dir="${dir.build}"/>
-    <echo>${classpath}</echo>
   </target>
 
   <!--
@@ -63,6 +62,21 @@
     <java classname="gj.shell.Shell" fork="true">
        <classpath refid="classpath"/>
     </java>
+  </target>
+  
+  <!--
+   Dist TreeLayout
+   -->
+  <target name="dist.tree" depends="compile">
+     <delete file="${dir.build}/gj-tree.jar"/>
+     <jar jarfile="${dir.build}/gj-tree.jar" update="True">
+       <fileset dir="${dir.build}/classes/core"
+           includes="gj/awt/geom/*
+                    ,gj/layout/*
+                    ,gj/layout/tree/**
+                    ,gj/model/*
+                    ,gj/util/*"/>
+     </jar>
   </target>
   
 </project>

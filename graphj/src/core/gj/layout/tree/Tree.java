@@ -21,6 +21,8 @@ import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcIterator;
 import gj.util.ModelHelper;
+
+import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,11 +93,14 @@ public class Tree {
     numGenerations = Math.max(numGenerations, generation+1);
 
     // Analyze the root's height
-    Contour contour = o.getContour(root.getShape().getBounds2D());
-    height[generation] = Math.max(
-      height[generation],
-      contour.south-contour.north
-    );
+    Shape shape = root.getShape();
+    if (shape!=null) {
+      Contour contour = o.getContour(shape.getBounds2D());
+      height[generation] = Math.max(
+        height[generation],
+        contour.south-contour.north
+      );
+    }
    
     // Recurse into children
     ArcIterator it = new ArcIterator(root);

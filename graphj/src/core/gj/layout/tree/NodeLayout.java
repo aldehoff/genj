@@ -16,10 +16,13 @@
 package gj.layout.tree;
 
 import gj.awt.geom.Geometry;
+import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Node;
 import gj.util.ArcIterator;
 import gj.util.ModelHelper;
+
+import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
@@ -184,15 +187,15 @@ import java.awt.geom.Rectangle2D;
 
     // grab some information
     Orientation orientation = tlayout.getOrientation();
-    NodeOptions.Padding pad = tlayout.nodeOptions.getPadding(node);
-    NodeOptions.Alignment align = tlayout.nodeOptions.getAlignment(node);
+    NodeOptions no = tlayout.nodeOptions; no.set(node);
 
     // the parent's contour
-    Contour parent = orientation.getContour(node.getShape().getBounds2D());
-    parent.north -= pad.north;
-    parent.south += pad.south;
-    parent.west  -= pad.west ;
-    parent.east  += pad.east ;
+    Shape shape = node.getShape();
+    Contour parent = shape==null ? new Contour() : orientation.getContour(shape.getBounds2D());
+    parent.north -= no.getPadding(no.NORTH);
+    parent.south += no.getPadding(no.SOUTH);
+    parent.west  -= no.getPadding(no.WEST );
+    parent.east  += no.getPadding(no.EAST );
 
     // the parent's position
     double lat,lon;
@@ -209,7 +212,7 @@ import java.awt.geom.Rectangle2D;
         min = children[0].getIterator(Contour.WEST).longitude - parent.west,
         max = children[children.length-1].getIterator(Contour.EAST).longitude - parent.east;
         
-      lon = min + (max-min)*align.lon;
+      lon = min + (max-min)*no.getAlignment(no.LON);
       lat = children[0].north - parent.south;
 
     }
@@ -221,7 +224,7 @@ import java.awt.geom.Rectangle2D;
         min = lat - parent.north,
         max = lat + tree.getHeight(generation) - parent.south;
 
-      lat = min + (max-min)*align.lat;
+      lat = min + (max-min) * no.getAlignment(no.LAT);
     }
 
     // place it at (lat,lon)
@@ -296,7 +299,8 @@ import java.awt.geom.Rectangle2D;
       // don't follow backtrack
       if (it.isDup(backtrack)) continue;
       // relativate arc
-      it.arc.getPath().translate(delta);
+      Path path = it.arc.getPath();
+      if (path!=null) path.translate(delta);
       // relativate other
       if (it.isFirst&&!it.isLoop) ModelHelper.translate(ModelHelper.getOther(it.arc, node), delta);
     }
@@ -318,8 +322,9 @@ import java.awt.geom.Rectangle2D;
     while (it.next()) {
       // .. only down the tree
       if (it.isDup(backtrack)) continue;
-      // .. tell the arc
-      it.arc.getPath().translate(node.getPosition());
+      // .. tell the arc's path
+      Path path = it.arc.getPath();
+      if (path!=null) path.translate(node.getPosition());
       // .. never loop'd
       if (it.isLoop) continue;
       // .. 1st only

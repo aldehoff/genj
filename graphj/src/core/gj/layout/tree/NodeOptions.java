@@ -22,28 +22,29 @@ import gj.model.Node;
  */
 public interface NodeOptions {
 
+  public final static int
+    NORTH = 0,
+    WEST  = 1,
+    EAST  = 2,
+    SOUTH = 3;
+    
+  public final static int
+    LAT   = 0,
+    LON   = 1;
+  
+  /**
+   * Set to given node
+   */
+  public void set(Node node);
+
   /**
    * Padding of a node
    */
-  public Padding getPadding(Node node);
+  public double getPadding(int dir);
   
   /**
    * Alignment of a node
    */
-  public Alignment getAlignment(Node node);
-  
-  /**
-   * Padding of a node
-   */
-  public class Padding {
-    public double north, south, west, east;
-  } //Padding
-  
-  /**
-   * Alignment of a node
-   */
-  public class Alignment {
-    public double lat, lon;
-  } //Alignment
-  
+  public double getAlignment(int dir);
+    
 } //NodeOptions
