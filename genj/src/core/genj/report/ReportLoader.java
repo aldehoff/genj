@@ -77,32 +77,30 @@ public class ReportLoader extends ClassLoader {
       Debug.log(Debug.WARNING, this,"File "+file+" couldn't be loaded :(");
     }
 
-    // Construct class
-    Class c;
+    // Get the class
     try {
-      c = defineClass(null,classdata,0,classdata.length);
+      // transform bytes into class
+      Class c = defineClass(null,classdata,0,classdata.length);
+      // resolve (link) it
+      resolveClass(c);
+      // Remember in cache
+      cache.put(c.getName(),c);
+      // done
+      return c;
     } catch (ClassFormatError err) {
       Debug.log(Debug.WARNING, this,"File "+file+" isn't a valid class-file :(");
-      return null;
-    }
-
-    // Resolve it
-    try {
-      resolveClass(c);
     } catch (IncompatibleClassChangeError err) {
-      Debug.log(Debug.WARNING, this,"File "+file+" is incompatible - don't ask me what that means :(");
-      return null;
+      Debug.log(Debug.WARNING, this, err);
+    } catch (Throwable t) {
+      Debug.log(Debug.ERROR, this,"Class in "+file.getName()+" couldn't be resolved",t);
     }
 
-    // Remember in cache
-    cache.put(c.getName(),c);
-
-    // Done
-    return c;
+    // Done (failed)
+    return null;
   }
 
   /**
-   * Load a class
+   * Overriden class loading
    * @exception ClassNotFoundException in case Class couldn't be loaded
    */
   protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
@@ -113,12 +111,10 @@ public class ReportLoader extends ClassLoader {
       return c;
     }
 
-		// Maybe super can load it?
+    // Maybe super can load it?
     try {
-			c = super.loadClass(name, resolve);
-			if (c!=null) {
-			  return c;
-			}
+      c = super.loadClass(name, resolve);
+      if (c!=null) return c;
     } catch (Throwable t) {
     }
 
@@ -163,11 +159,11 @@ public class ReportLoader extends ClassLoader {
               
     try {
                     
-	    // If the report can be loaded by the default
-	    // classloader then we fall back on that one
-	    String name = file.getAbsoluteFile().getName().replace(File.separatorChar,'.');
+      // If the report can be loaded by the default
+      // classloader then we fall back on that one
+      String name = file.getAbsoluteFile().getName().replace(File.separatorChar,'.');
       name = name.substring(0,name.lastIndexOf(".class"));
-	    type = super.loadClass(name, true);
+      type = super.loadClass(name, true);
 
       if (!warnedAboutClasspath) {
         warnedAboutClasspath = true;
