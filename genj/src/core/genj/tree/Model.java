@@ -33,7 +33,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +56,7 @@ public class Model implements Graph, GedcomListener {
   private Collection arcs = new ArrayList(100);
 
   /** nodes */
-  private Map entities2nodes = new IdentityHashMap(100);
+  private Map entities2nodes = new HashMap(100);
 
   /** bounds */
   private Rectangle2D bounds = new Rectangle2D.Double();
