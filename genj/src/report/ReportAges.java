@@ -20,7 +20,7 @@ import genj.report.Report;
 public class ReportAges extends Report {
 
   /** this report's version */
-  public static final String VERSION = "0.1";
+  public static final String VERSION = "0.2";
 
   /**
    * Returns the version of this script
@@ -52,20 +52,32 @@ public class ReportAges extends Report {
   }
 
   /**
+   * @see genj.report.Report#accepts(java.lang.Object)
+   */
+  public String accepts(Object context) {
+    // we accept GEDCOM or Individuals 
+    return context instanceof Indi || context instanceof Gedcom ? getName() : null;  
+  }
+  
+  /**
    * This method actually starts this report
    */
   public void start(Object context) {
-    
-    // expecting gedcom only
-    Gedcom gedcom = (Gedcom)context;
+    Indi indi;
 
-    // Show the users in a combo to the user
-    Indi indi = (Indi)getEntityFromUser(
-      i18n("select"), // msg
-      gedcom,                        // our gedcom instance
-      Gedcom.INDIVIDUALS,            // type INDIVIDUALS
-      "INDI:NAME"                    // sort by name
-    );
+		// If we were passed a person to start at, use that
+    if (context instanceof Indi) {
+      indi = (Indi)context;
+    } else {
+    // Otherwise, ask the user select the root of the tree for analysis
+			Gedcom gedcom=(Gedcom)context;
+			indi = (Indi)getEntityFromUser (
+				 i18n("select"), // msg
+				 gedcom,                        // our gedcom instance
+				 Gedcom.INDIVIDUALS,            // type INDIVIDUALS
+				 "INDI:NAME"                    // sort by name
+				 );
+		}
 
     if (indi==null) return;
 
