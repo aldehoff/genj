@@ -276,6 +276,9 @@ import java.awt.geom.Rectangle2D;
     /** how we pad husband, wife */
     private double[] padHusband, padWife;
     
+    /** offset of spouses */
+    private double offsetSpouse;
+    
     /**
      * Constructor
      */
@@ -303,6 +306,9 @@ import java.awt.geom.Rectangle2D;
         padIndis[2],
         padIndis[3]
       };
+      
+      offsetSpouse = (model.isVertical() ? metrics.wIndis : metrics.hIndis) / 2;
+      
       // done      
     }
     /**
@@ -312,34 +318,22 @@ import java.awt.geom.Rectangle2D;
 
       // node for the fam
       TreeNode node = model.add(new TreeNode(fam, shapeFams, padFams));
+      
+      // grab wife&husb
+      Indi wife = fam.getWife();
+      Indi husb = fam.getHusband();
 
       // node for wife & arc fam-wife 
-      Indi wife = fam.getWife();
-      TreeNode nWife = model.add(new TreeNode(wife, shapeIndis, padHusband) {
-        /**
-         * @see genj.tree.TreeNode#getLongitude(gj.model.Node, gj.layout.tree.Branch[], gj.layout.tree.Orientation)
-         */
-        public double getLongitude(Node node, Branch[] children, Orientation o) {
-          return Branch.getMaxLongitude(children) - metrics.wIndis/2;
-        }
-      });
-      model.add(new TreeArc(node, parse(wife, nWife), false)); 
+      TreeNode nWife = model.add(new TreeNode(wife, shapeIndis, padHusband));
+      model.add(new TreeArc(node, parse(wife, nWife, hasParents(husb)?-offsetSpouse:0), false)); 
       
       // node for marr & arc fam-marr 
       TreeNode nMarr = model.add(new TreeNode(null, shapeMarrs, null));
       model.add(new TreeArc(node, nMarr, false));
       
       // node for husband & arc fam-husb 
-      Indi husb = fam.getHusband();
-      TreeNode nHusb = model.add(new TreeNode(husb, shapeIndis, padWife) {
-        /**
-         * @see genj.tree.TreeNode#getLongitude(gj.model.Node, gj.layout.tree.Branch[], gj.layout.tree.Orientation)
-         */
-        public double getLongitude(Node node, Branch[] children, Orientation o) {
-          return Branch.getMinLongitude(children) + metrics.wIndis/2;
-        }
-      });
-      model.add(new TreeArc(node, parse(husb, nHusb), false));
+      TreeNode nHusb = model.add(new TreeNode(husb, shapeIndis, padWife));
+      model.add(new TreeArc(node, parse(husb, nHusb, hasParents(wife)?+offsetSpouse:0), false));
       
       // done
       return node;
@@ -349,13 +343,13 @@ import java.awt.geom.Rectangle2D;
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
      */
     protected TreeNode parse(Indi indi) {
-      return parse(indi, model.add(new TreeNode(indi, shapeIndis, padIndis)));
+      return parse(indi, model.add(new TreeNode(indi, shapeIndis, padIndis)), 0);
     }
     
     /**
      * parse an individual's ancestors
      */
-    private TreeNode parse(Indi indi, TreeNode nIndi) {
+    private TreeNode parse(Indi indi, TreeNode nIndi, double align) {
       // might be a placeholder call
       if (indi==null) return nIndi;
       // do we have a family we're child in? 
@@ -365,8 +359,13 @@ import java.awt.geom.Rectangle2D;
         if (model.isHideAncestors(indi)) {
           insertPlusMinus(indi, nIndi, true, true);
         } else {
-          TreeNode nMinus = nIndi;//FIXME insertPlusMinus(indi, nIndi, true, false);
+          
+          // patch with minus
+          TreeNode nMinus = insertPlusMinus(indi, nIndi, true, false);
           model.add(new TreeArc(nMinus, parse(famc), true));
+          
+          // patch alignment
+          nMinus.align = align;
         }
       }
       // done
@@ -378,6 +377,7 @@ import java.awt.geom.Rectangle2D;
      */
     private boolean hasParents(Indi indi) {
       if (indi==null) return false;
+      if (model.isHideAncestors(indi)) return false;
       return indi.getFamc()!=null;
     }
     

@@ -51,6 +51,9 @@ import java.util.List;
   /** padding */
   /*package*/ double[] padding;
   
+  /** alignment switch */
+  /*package*/ double align = 0;
+  
   /**
    * Constructor
    */
@@ -102,8 +105,14 @@ import java.util.List;
    * @see gj.layout.tree.NodeOptions#getLongitude(gj.model.Node, gj.layout.tree.Branch[], gj.layout.tree.Orientation)
    */
   public double getLongitude(Node node, Branch[] children, Orientation o) {
-    // default is centered
-    return Branch.getLongitude(children, 0.5, o);
+    // centered
+    if (align==0) 
+      return Branch.getLongitude(children, 0.5, o);
+    // west of branches
+    if (align<0)
+      return Branch.getMaxLongitude(children) + align;
+    // east of branches
+    return Branch.getMinLongitude(children) + align;
   }
   
   /**
