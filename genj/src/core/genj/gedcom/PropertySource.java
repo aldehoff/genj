@@ -139,7 +139,7 @@ public class PropertySource extends PropertyXRef {
       return;
     }
 
-    Source source = getGedcom().getSourceFromId(id);
+    Source source = (Source)getGedcom().getEntity(id, Gedcom.SOURCES);
     if (source == null) {
       throw new GedcomException("Couldn't find entity with ID "+id);
     }

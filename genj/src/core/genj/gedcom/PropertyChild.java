@@ -99,7 +99,7 @@ public class PropertyChild extends PropertyXRef {
 
     // Look for child (not-existing -> Gedcom throws Exception)
     String id = getReferencedId();
-    Indi child = getGedcom().getIndiFromId(id);
+    Indi child = (Indi)getGedcom().getEntity(id, Gedcom.INDIVIDUALS);
 
     if (child==null) {
       throw new GedcomException("Couldn't find child with ID "+id);

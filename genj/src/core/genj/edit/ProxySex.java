@@ -48,9 +48,9 @@ class ProxySex extends Proxy implements ItemListener {
       return;
     // Gather data change
     if ( rbMale.getModel().isSelected() == true)
-      ((PropertySex)prop).setSex(Gedcom.MALE);
+      ((PropertySex)prop).setSex(PropertySex.MALE);
     if ( rbFemale.getModel().isSelected() == true)
-      ((PropertySex)prop).setSex(Gedcom.FEMALE);
+      ((PropertySex)prop).setSex(PropertySex.FEMALE);
     // Done
   }
 
@@ -75,9 +75,9 @@ class ProxySex extends Proxy implements ItemListener {
     // Gather data change
     ImgIcon img;
     if ( rbMale.getModel().isSelected() == true)
-      img=((PropertySex)prop).getDefaultImage(Gedcom.MALE);
+      img=((PropertySex)prop).getDefaultImage(PropertySex.MALE);
     else
-      img=((PropertySex)prop).getDefaultImage(Gedcom.FEMALE);
+      img=((PropertySex)prop).getDefaultImage(PropertySex.FEMALE);
 
     // Image change
     label.setIcon(ImgIconConverter.get(img));
@@ -94,8 +94,8 @@ class ProxySex extends Proxy implements ItemListener {
     prop=setProp;
     PropertySex p = (PropertySex) prop;
 
-    rbMale   = new JRadioButton( p.getLabelForSex(Gedcom.MALE)   );
-    rbFemale = new JRadioButton( p.getLabelForSex(Gedcom.FEMALE) );
+    rbMale   = new JRadioButton( p.getLabelForSex(PropertySex.MALE)   );
+    rbFemale = new JRadioButton( p.getLabelForSex(PropertySex.FEMALE) );
 
     rbMale.setBorder(BorderFactory.createEmptyBorder(4,4,4,4));
     rbFemale.setBorder(BorderFactory.createEmptyBorder(4,4,4,4));

@@ -175,12 +175,14 @@ public class TreeModel implements GedcomListener, Cloneable {
 
     if (setRootId!=null) {
       try {
-      rootEntity =gedcom.getEntityFromId(setRootId);
+      rootEntity =gedcom.getEntity(setRootId);
       } catch (DuplicateIDException die) {
       }
     }
-    if ((rootEntity==null)&&(gedcom.getEntities(Gedcom.INDIVIDUALS).size()>0)) {
-      rootEntity = gedcom.getIndi(0);
+    
+    List list = gedcom.getEntities(Gedcom.INDIVIDUALS);
+    if ((rootEntity==null)&&(!list.isEmpty())) {
+      rootEntity = (Entity)list.get(0);
     }
 
     if (setStoppersId==null)
@@ -191,7 +193,7 @@ public class TreeModel implements GedcomListener, Cloneable {
       Entity e;
       for (int i=0;i<setStoppersId.length;i++) {
       try {
-        e = gedcom.getEntityFromId(setStoppersId[i]);
+        e = gedcom.getEntity(setStoppersId[i]);
         if (e!=null)
         stoppers.addElement(e);
       } catch (DuplicateIDException die) {
@@ -1135,9 +1137,10 @@ public class TreeModel implements GedcomListener, Cloneable {
       // Root deleted ?
       List deleted = change.getEntities(Change.EDEL);
       if (deleted.contains(rootEntity)) {
-        if (gedcom.getEntities(Gedcom.INDIVIDUALS).size()>0) {
+        List list = gedcom.getEntities(Gedcom.INDIVIDUALS);
+        if (!list.isEmpty()) {
           // BUG this was '1' ... hmmm .. and there was no check for size
-          rootEntity = gedcom.getIndi(0);
+          rootEntity = (Entity)list.get(0);
         } else {
           rootEntity=null;
         }
@@ -1145,15 +1148,17 @@ public class TreeModel implements GedcomListener, Cloneable {
 
       // Could be new root
       while (rootEntity==null) {
-      if (gedcom.getEntities(Gedcom.INDIVIDUALS).size()>0) {
-        rootEntity=gedcom.getIndi(0);
+        List list = gedcom.getEntities(Gedcom.INDIVIDUALS);
+        if (!list.isEmpty()) {
+          rootEntity=(Entity)list.get(0);
+          break;
+        }
+        list = gedcom.getEntities(Gedcom.FAMILIES);
+        if (!list.isEmpty()) {
+          rootEntity=(Entity)list.get(0);
+          break;
+        }
         break;
-      }
-      if (gedcom.getEntities(Gedcom.FAMILIES).size()>0) {
-        rootEntity=gedcom.getFam(0);
-        break;
-      }
-      break;
       }
 
       // Rebuild tree

@@ -148,7 +148,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     String last = registry.get("last",(String)null);
     if (last!=null) {
       try { 
-        entity = gedcom.getEntityFromId(last); 
+        entity = gedcom.getEntity(last); 
       } catch (Exception e) {
         entity = ViewManager.getInstance().getCurrentEntity(gedcom);
       }

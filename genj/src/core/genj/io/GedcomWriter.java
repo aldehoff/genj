@@ -200,7 +200,7 @@ public class GedcomWriter implements Trackable {
       throw new GedcomIOException("Error while writing",line);
     } finally {
       // .. Clear changes in gedcom
-      gedcom.setUnsavedChanges(false);
+      gedcom.setUnchanged();
     }
 
     // Done

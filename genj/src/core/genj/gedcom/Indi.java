@@ -33,13 +33,7 @@ public class Indi extends PropertyIndi implements Entity {
   /**
    * Constructor for Individual
    */
-  /*package*/ Indi(Gedcom gedcom) {
-
-    // Call super's constructor
-    super();
-
-    // Entity
-    this.gedcom = gedcom;
+  /*package*/ Indi() {
   }
 
   /**

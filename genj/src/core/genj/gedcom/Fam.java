@@ -30,9 +30,7 @@ public class Fam extends PropertyFam implements Entity {
   /**
    * Default constructor
    */
-  Fam(Gedcom gedcom) {
-    // Entity
-    this.gedcom = gedcom;
+  /*package*/ Fam() {
   }
 
   /**
@@ -252,8 +250,8 @@ public class Fam extends PropertyFam implements Entity {
   /*package*/ Fam setParents(Indi husband, Indi wife) throws GedcomException {
 
     // Check for sex
-    if (   ((husband!=null)&&(husband.getSex()!=Gedcom.MALE  ))
-      || ((wife   !=null)&&(wife.getSex()   !=Gedcom.FEMALE))  ) {
+    if (   ((husband!=null)&&(husband.getSex()!=PropertySex.MALE  ))
+      || ((wife   !=null)&&(wife.getSex()   !=PropertySex.FEMALE))  ) {
       Indi t=husband;husband=wife;wife=t;
     }
 

@@ -42,6 +42,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -110,7 +111,10 @@ public class NavigatorView extends JPanel implements CurrentSupport {
   public void setCurrentEntity(Entity e) {
     
     // no entity
-    if ((e == null)&&(gedcom.getEntities(Gedcom.INDIVIDUALS).size()>0)) e=gedcom.getIndi(0);
+    if (e == null) {
+      List list = gedcom.getEntities(Gedcom.INDIVIDUALS);
+      if (!list.isEmpty()) e=(Entity)list.get(0);
+    }
     if (e == null) {
       // data
       indi = null;

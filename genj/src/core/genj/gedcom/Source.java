@@ -35,13 +35,8 @@ public class Source extends PropertySource implements Entity {
   /**
    * Constructor for Source
    */
-  /*package*/ Source(Gedcom gedcom) {
-
-    // Call super's constructor
+  /*package*/ Source() {
     super(null);
-
-    // Entity
-    this.gedcom = gedcom;
   }
 
   /**

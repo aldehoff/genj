@@ -135,7 +135,7 @@ public class PropertyRepository extends PropertyXRef {
       return;
     }
 
-    Repository repository = getGedcom().getRepositoryFromId(id);
+    Repository repository = (Repository)getGedcom().getEntity(id, Gedcom.REPOSITORIES);
     if (repository == null) {
       throw new GedcomException("Couldn't find entity with ID "+id);
     }

@@ -33,13 +33,8 @@ public class Submitter extends PropertySubmitter implements Entity {
   /**
    * Constructor for Submitter
    */
-  /*package*/ Submitter(Gedcom gedcom) {
-
-    // Call super's constructor
+  /*package*/ Submitter() {
     super(null);
-
-    // Entity
-    this.gedcom = gedcom;
   }
 
   /**

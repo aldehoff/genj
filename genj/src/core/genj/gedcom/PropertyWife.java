@@ -97,7 +97,7 @@ public class PropertyWife extends PropertyXRef {
 
     // Look for wife (not-existing -> Gedcom throws Exception)
     String id = getReferencedId();
-    Indi wife = getGedcom().getIndiFromId(id);
+    Indi wife = (Indi)getGedcom().getEntity(id, Gedcom.INDIVIDUALS);
     if (wife==null)
       throw new GedcomException("Couldn't find wife with ID "+id);
 

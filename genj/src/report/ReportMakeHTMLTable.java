@@ -14,9 +14,9 @@ import java.util.*;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.11 2002-10-08 04:02:01 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.12 2002-10-19 17:37:31 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class ReportMakeHTMLTable implements Report {
 
@@ -163,10 +163,10 @@ public class ReportMakeHTMLTable implements Report {
     htmlCell(bridge,indi.getFirstName());
 
     switch (indi.getSex()) {
-    case Gedcom.MALE:
+    case PropertySex.MALE:
             htmlCell(bridge,"Male");
             break;
-    case Gedcom.FEMALE:
+    case PropertySex.FEMALE:
             htmlCell(bridge,"Female");
             break;
     default:

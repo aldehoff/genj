@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.14 2002-10-08 04:02:01 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.15 2002-10-19 17:37:31 nmeier Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -220,7 +220,7 @@ public class ReportAppletDetails implements Report {
       String idStr = value.replace('@',' ').trim();
       if ( !(prop instanceof PropertyFam) ) {
         try {
-          Indi individual = prop.getGedcom().getIndiFromId(idStr);
+          Indi individual = (Indi)prop.getGedcom().getEntity(idStr, Gedcom.INDIVIDUALS);
           if ( individual != null ) {
             value = individual.getName();
           }

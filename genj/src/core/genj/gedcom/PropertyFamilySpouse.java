@@ -93,8 +93,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
 
     // Look for family (not-existing -> Gedcom throws Exception)
     String id = getReferencedId();
-    Fam fam = getGedcom().getFamFromId(id);
-
+    Fam fam = (Fam)getGedcom().getEntity(id, Gedcom.FAMILIES);
     if (fam==null)
       throw new GedcomException("Couldn't find family with ID "+id);
 
@@ -139,7 +138,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
 
     // .. new back referencing property
     PropertyXRef px;
-    if (indi.getSex()==Gedcom.MALE) {
+    if (indi.getSex()==PropertySex.MALE) {
       if (husband!=null)
       throw new GedcomException("Family @"+fam.getId()+"@ can't have two husbands");
       px = new PropertyHusband(this);

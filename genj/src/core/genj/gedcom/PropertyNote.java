@@ -202,7 +202,7 @@ public class PropertyNote extends PropertyXRef {
       return;
     }
 
-    Note note = getGedcom().getNoteFromId(id);
+    Note note = (Note)getGedcom().getEntity(id, Gedcom.NOTES);
     if (note == null) {
         throw new GedcomException(toString()+" not in this gedcom");
     }

@@ -69,7 +69,7 @@ class ProxyEntity extends Proxy implements ActionListener, DocumentListener {
     try {
 
       // .. id
-      gedcom.setIdOf(entity,tfield.getText());
+      gedcom.setId(entity,tfield.getText());
 
       // .. button off
       bchange.setEnabled(false);

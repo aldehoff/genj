@@ -32,13 +32,8 @@ public class Media extends PropertyMedia implements Entity {
   /**
    * Constructor for Multimedia
    */
-  /*package*/ Media(Gedcom gedcom) throws GedcomException {
-
-    // Call super's constructor
+  /*package*/ Media() {
     super(null);
-
-    // Entity
-    this.gedcom = gedcom;
   }
 
   /**

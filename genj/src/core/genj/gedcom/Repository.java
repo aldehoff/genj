@@ -33,13 +33,8 @@ public class Repository extends PropertyRepository implements Entity {
   /**
    * Constructor for Repository
    */
-  /*package*/ Repository(Gedcom gedcom) {
-
-    // Call super's constructor
+  /*package*/ Repository() {
     super(null);
-
-    // Entity
-    this.gedcom = gedcom;
   }
 
   /**

@@ -130,7 +130,7 @@ public class PropertySubmitter extends PropertyXRef {
       return;
     }
 
-    Submitter submitter = getGedcom().getSubmitterFromId(id);
+    Submitter submitter = (Submitter)getGedcom().getEntity(id, Gedcom.SUBMITTERS);
     if (submitter == null) {
         throw new GedcomException(toString()+" not in this gedcom");
     }

@@ -584,7 +584,7 @@ public class TreeView extends Scrollpane implements ToolBarSupport, ContextMenuS
     String[] bids   = registry.get("bookmark.id"  ,new String[0]);
     if (bnames.length==bids.length) { try {
       for (int i=0;i<bnames.length;i++) {
-        Entity e = gedcom.getEntityFromId(bids[i]);
+        Entity e = gedcom.getEntity(bids[i]);
         if (e==null) {
           continue;
         }

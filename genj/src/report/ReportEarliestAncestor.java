@@ -126,7 +126,7 @@ public class ReportEarliestAncestor implements Report {
     // Search earliest
     Indi indi;
     try {
-      indi = gedcom.getIndiFromId(id);
+      indi = (Indi)gedcom.getEntity(id, Gedcom.INDIVIDUALS);
     } catch (DuplicateIDException e) {
       bridge.println ("There are more than one individuals with that ID");
       return false;

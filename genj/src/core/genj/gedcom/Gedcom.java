@@ -32,39 +32,35 @@ import genj.util.Resources;
  */
 public class Gedcom {
 
+  /** origin of this Gedcom */
+  private Origin           origin;
+
+  /** entities */
+  private List[]           entities = new List[NUM_TYPES];
+  private IDMap[]          ids = new IDMap[NUM_TYPES];
+  
+  /** change/transaction support */
   private boolean          isTransaction = false;
   private boolean          hasUnsavedChanges;
-  private Origin           origin;
-  private List             listeners = new ArrayList(10);
   private List             addedEntities     ,
                            deletedEntities   ;
   private List             addedProperties   ,
                            deletedProperties ,
                            modifiedProperties;
-  private List[]           entities = new List[LAST_ETYPE-FIRST_ETYPE+1];
-  private IDHashtable[]    ids = new IDHashtable[LAST_ETYPE-FIRST_ETYPE+1];
 
+  /** listeners */
+  private List             listeners = new ArrayList(10);
+
+  /** static resourcs */
   static private Random    seed = new Random();
   static private Resources resources;
-
-  public final static int
-    REL_NONE    = 1,
-    REL_PARENT  = 2,
-    REL_CHILD   = 3,
-    REL_SPOUSE  = 4,
-    REL_SIBLING = 5;
-
-  public final static int
-    TAG_ENTITY_SOURCE   = 1,
-    TAG_PROPERTY_SOURCE = 2;
-
-  public final static int
-    MALE   = 1,
-    FEMALE = 2;
 
   private final static String[]
     ePrefixs  = { "I", "F", "M", "N", "S", "B", "R"},
     eTags     = { "INDI", "FAM", "OBJE", "NOTE", "SOUR", "SUBM", "REPO" };
+    
+  private final static Class[]
+    eTypes    = { Indi.class, Fam.class, Media.class, Note.class, Source.class, Submitter.class, Repository.class };
 
   public final static int
     INDIVIDUALS  = 0,
@@ -74,8 +70,7 @@ public class Gedcom {
     SOURCES      = 4,
     SUBMITTERS   = 5,
     REPOSITORIES = 6,
-    FIRST_ETYPE  = INDIVIDUALS,
-    LAST_ETYPE   = REPOSITORIES;
+    NUM_TYPES    = 7;
 
   /**
    * Gedcom's Constructor
@@ -96,9 +91,30 @@ public class Gedcom {
     // init
     for (int i=0;i<entities.length;i++) {
       entities[i] = new ArrayList  (initialCapacity);
-      ids     [i] = new IDHashtable(initialCapacity);
+      ids     [i] = new IDMap(initialCapacity);
     }
     // Done
+  }
+
+  /**
+   * Returns the origin of this gedcom
+   */
+  public Origin getOrigin() {
+    return origin;
+  }
+
+  /**
+   * Sets the origin of this gedcom
+   */
+  public void setOrigin(Origin newOrigin) {
+    origin = newOrigin;
+  }
+  
+  /**
+   * toString overridden
+   */
+  public String toString() {
+    return getName();
   }
 
   /**
@@ -109,664 +125,75 @@ public class Gedcom {
   }
 
   /**
-   * Creates a child for given fam
-   * @exception GedcomException in case of error during creation
-   */
-  private Indi createChildOf(Fam fam, String lastName, String firstName, int sex) throws GedcomException {
-
-    // Create new child & add to list of indis
-    Indi child = createIndi(lastName,firstName,sex);
-
-    // Connect fam, and child
-    fam.addChild(child);
-
-    // Done
-    return child;
+   * Removes a Listener from receiving notifications
+    */
+  public synchronized void removeListener(GedcomListener which) {
+    listeners.remove(which);
   }
 
-  /**
-   * Creates a child for given indi
-   * @exception GedcomException in of error during creation
-   */
-  private Indi createChildOf(Indi indi, String lastName, String firstName, int sex) throws GedcomException {
-
-    // Can new child be another child in indi's 1st fam ?
-    Fam fam = indi.getFam(0);
-
-    if (fam==null) {
-      fam = createFam();
-      // Connect Fam, Indi and Spouse
-      fam.setParents(indi,null);
-    }
-
-    // Create child in family
-    return createChildOf(fam,lastName,firstName,sex);
-
-  }
   /**
    * Create a entity by tag
    * @exception GedcomException in case of unknown tag for entity
    */
   public Entity createEntity(String tag, String id) throws GedcomException {
-
-    // Indi ?
-    if (getTagFor(INDIVIDUALS).equals(tag.toUpperCase())) {
-      return createIndi(id);
+    // check tag
+    for (int e=0; e<eTags.length; e++) {
+      if (eTags[e].equals(tag)) return createEntity(e, id);
     }
-    // Fam ?
-    if (getTagFor(FAMILIES).equals(tag.toUpperCase())) {
-      return createFam(id);
-    }
-    // Media ?
-    if (getTagFor(MULTIMEDIAS).equals(tag.toUpperCase())) {
-      return createMedia(id);
-    }
-    // Notes
-    if (getTagFor(NOTES).equals(tag.toUpperCase())) {
-      return createNote(id);
-    }
-    // Sources
-    if (getTagFor(SOURCES).equals(tag.toUpperCase())) {
-      return createSource(id);
-    }
-    // Submitters
-    if (getTagFor(SUBMITTERS).equals(tag.toUpperCase())) {
-      return createSubmitter(id);
-    }
-    // Repository
-    if (getTagFor(REPOSITORIES).equals(tag.toUpperCase())) {
-      return createRepository(id);
-    }
-    // Unknown
+    // unknown tag
     throw new GedcomException("Unknown tag for entity");
   }
-
+  
   /**
-   * Creates a non-related family
-   * @exception GedcomException in of error during creation
+   * Create a entity by class
+   * @exception GedcomException in case of unknown tag for entity
    */
-  public Fam createFam() throws GedcomException {
-    return createFam(null);
+  public Entity createEntity(Class type, String id) throws GedcomException {
+    // check tag
+    for (int e=0; e<eTypes.length; e++) {
+      if (eTypes[e].equals(type)) return createEntity(e, id);
+    }
+    // unknown tag
+    throw new GedcomException("Unknown type for entity");
   }
-
+  
   /**
-   * Creates a family in gedcom (related or not)
-   * @exception GedcomException in case relative of family is not member of same gedcom
+   * Creates a non-related entity with id
    */
-  public Fam createFam(int memberIs, Entity member) throws GedcomException {
-
-    // Is the member of that fam a member of this gedcom (individual)
-    if (member!=null && !is(member)) {
-      throw new GedcomException("Given Relative isn't individual in this gedcom");
-    }
-
-    // Prepare variable of returned individual
-    Fam newfam = null;
-
-    // Check relation
-    switch (memberIs) {
-      // .. no relationship
-      case REL_NONE:
-        newfam = createFam();
-        break;
-      // .. parent
-      case REL_PARENT:
-        // .. parm o.k.
-        if ( (member==null) || (member instanceof Fam) )
-          throw new GedcomException("Creating a family with given parent needs parameter parent !");
-        // .. do it
-        newfam = createFamilyFor((Indi)member);
-        break;
-      // .. new child
-      case REL_CHILD:
-        // .. parm o.k.
-        if ( (member==null) || (member instanceof Fam) )
-          throw new GedcomException("Creating a family with given child needs parameter child !");
-        // .. do it
-        newfam = createParentalFamilyFor((Indi)member);
-        break;
-    // .. end case
-    }
-
-    // No supported relation ?
-    if (newfam==null)
-      throw new GedcomException("Gedcom.Unsupported relation !");
-
-    // Done
-    return newfam;
-  }
-
-  /**
-   * Creates a non-related family
-   * @exception GedcomException in of error during creation
-   */
-  public Fam createFam(String id) throws GedcomException {
-
-    // Check the id
-    if ((id!=null)&&(ids[FAMILIES].contains(id))) {
-      throw new DuplicateIDException("Family with id "+id+" is alread defined");
-    }
-
-    // Generate id if necessary
-    if (id==null) {
-      id = getRandomIdFor(FAMILIES);
-    }
+  public Entity createEntity(int type, String id) throws GedcomException {
     
-    // Create fam & add to list of indis
-    Fam fam = new Fam(this);
-    noteAddedEntity(fam);
-    entities[FAMILIES].add(fam);
-
-    // Store id
-    ids[FAMILIES].put(id,fam);
-
-    fam.setId(id);
-
-    // Done
-    return fam;
-  }
-
-  /**
-   * Creates a family for a given parent
-   * @exception GedcomException in case of error during creation
-   */
-  private Fam createFamilyFor(Indi indi) throws GedcomException {
-
-    // Create family & add to list of fams
-    Fam fam = createFam();
-
-    // Connect Fam &  Indi
-    fam.setParents(indi,null);
-
-    // Create child in family
-    return fam;
-  }
-
-  /**
-   * Creates a non-related individual
-   * @exception GedcomException in of error during creation
-   */
-  public Indi createIndi() throws GedcomException {
-    return createIndi(null);
-  }
-
-  /**
-   * Creates a non-related individual
-   * @exception GedcomException in of error during creation
-   */
-  public Indi createIndi(String id) throws GedcomException {
-
     // Check the id
-    if ((id!=null)&&(ids[INDIVIDUALS].contains(id))) {
-      throw new DuplicateIDException("Individual with id "+id+" is alread defined");
+    if ((id!=null)&&(ids[type].contains(id))) {
+      throw new DuplicateIDException(eTags[type]+" with id "+id+" is alread defined");
     }
-
-    // Calculate id if necessary
-    if (id==null) {
-      id = getRandomIdFor(INDIVIDUALS);
-    }
-
-    // Create indi & add to list of indis
-    Indi indi = new Indi(this);
-    noteAddedEntity(indi);
-    entities[INDIVIDUALS].add(indi);
-
-    // Store id in individual
-    ids[INDIVIDUALS].put(id,indi);
-    indi.setId(id);
-
-    // Done
-    return indi;
-  }
-
-  /**
-   * Creates a non-related individual
-   * @exception GedcomException in of error during creation
-   */
-  public Indi createIndi(String lastName, String firstName, int sex) throws GedcomException {
-
-    Indi indi = createIndi(null);
-
-    // NAME
-    if ((lastName!=null)&&(firstName!=null)) {
-      PropertyName pn = new PropertyName();
-      pn.setName(firstName, lastName);
-      indi.addProperty(pn);
-    }
-
-    // SEX
-    if ((sex == Gedcom.MALE) || (sex == Gedcom.FEMALE)) {
-      indi.addProperty(new PropertySex(sex));
-    } else {
-      indi.addProperty(new PropertySex());
-    }
-
-    // BIRT
-    indi.addProperty(Property.createInstance("BIRT", true));
-
-    // DEAT
-    indi.addProperty(Property.createInstance("DEAT", true));
-
-    // OCCU
-    indi.addProperty(Property.createInstance("OCCU", true));
-
-    // ADDR
-    indi.addProperty(Property.createInstance("ADDR", true));
-
-    // NOTE
-    indi.addProperty(Property.createInstance("NOTE", true));
-
-    return indi;
-  }
-
-  /**
-   * Creates a new person in gedcom (related or not)
-   * @exception GedcomException in of error during creation
-   */
-  public Indi createIndi(String lastName, String firstName, int sex, int relatedTo, Entity relative)  throws GedcomException {
-
-    // Is the relative a member of this gedcom
-    if (relative!=null&&!is(relative)) {
-      throw new GedcomException("Gedcom.Given Relative isn't member of this gedcom");
-    }
-
-    // Prepare variable of returned individual
-    Indi newindi = null;
-
-    // Check relation
-    switch (relatedTo) {
-      // .. no relationship
-      case REL_NONE:
-        newindi = createIndi(lastName,firstName,sex);
-        break;
-      // .. new parent
-      case REL_PARENT:
-        // .. parm o.k.
-        if ( (relative==null) || (relative instanceof Fam) )
-          throw new GedcomException("Creating a parent needs parameter child !");
-        // .. do it
-        newindi = createParentOf((Indi)relative,lastName,firstName,sex);
-        break;
-      // .. new child
-      case REL_CHILD:
-        // .. parm o.k.
-        if (relative==null)
-          throw new GedcomException("Creating a child needs parameter parent !");
-        // .. do it
-        if (relative instanceof Fam)
-          newindi = createChildOf((Fam)relative,lastName,firstName,sex);
-        else
-          newindi = createChildOf((Indi)relative,lastName,firstName,sex);
-        break;
-      // .. new spouse
-      case REL_SPOUSE:
-        // .. parm o.k.
-        if (relative==null)
-          throw new GedcomException("Creating a spouse needs parameter spouse !");
-        // .. do it
-        if (relative instanceof Fam)
-          newindi = createSpouseOf((Fam)relative,lastName,firstName,sex);
-        else
-          newindi = createSpouseOf((Indi)relative,lastName,firstName,sex);
-        break;
-      // .. new sibling
-      case REL_SIBLING:
-        // .. parm o.k.
-        if ( (relative==null) || (relative instanceof Fam) )
-          throw new GedcomException("Creating a sibling needs parameter sibling !");
-        // .. do it
-        newindi = createSiblingOf((Indi)relative,lastName,firstName,sex);
-        break;
-    // .. end case
-    }
-
-    // No supported relation ?
-    if (newindi==null)
-      throw new GedcomException("Gedcom.Unsupported relation !");
-
-    // Done
-    return newindi;
-  }
-
-  /**
-   * Creates a non-related media
-   * @exception GedcomException in of error during creation
-   */
-  public Media createMedia() throws GedcomException {
-    return createMedia(null, null);
-  }
-
-  /**
-   * Creates a related media
-   * @exception GedcomException in of error during creation
-   */
-  public Media createMedia(Entity attachedTo) throws GedcomException {
-    return createMedia(null, attachedTo);
-  }
-
-  /**
-   * Creates a non-related media
-   * @exception GedcomException in of error during creation
-   */
-  /*package*/ Media createMedia(String id) throws GedcomException {
-    return createMedia(id,null);
-  }
-
-  /**
-   * Creates a related media
-   * @exception GedcomException in of error during creation
-   */
-  /*package*/ Media createMedia(String id, Entity attachedTo) throws GedcomException {
 
     // Generate id if necessary
-    if (id==null) {
-      id = getRandomIdFor(MULTIMEDIAS);
+    if (id==null) id = getRandomIdFor(type);
+    
+    // The type of the entity
+    Class clazz = eTypes[type];
+
+    // Create entity
+    Entity result;
+    try {
+      result = (Entity)clazz.newInstance();
+    } catch (Throwable t) {
+      throw new GedcomException("Unexpected problem creating instance of "+eTags[type]);
     }
-
-    // Create media & add to list of indis
-    Media media = new Media(this);
-    noteAddedEntity(media);
-    entities[MULTIMEDIAS].add(media);
-
+     
+    // Connect and initialize
+    result.setGedcom(this);
+    result.setId(id);
+    entities[type].add(result);
+    
     // Store id
-    ids[MULTIMEDIAS].put(id,media);
-
-    media.setId(id);
-
-    // Attach?
-    if (attachedTo!=null) {
-      media.getProperty().addDefaultProperties();
-      attachedTo.getProperty().addMedia(media);
-    }
+    ids[type].put(id,result);
+    
+    // Mark change
+    noteAddedEntity(result);
 
     // Done
-    return media;
-  }
-
-  /**
-   * Creates a non-related note
-   * @exception GedcomException in of error during creation
-   */
-  public Note createNote() throws GedcomException {
-    return createNote(null, null);
-  }
-
-  /**
-   * Creates a related note
-   * @exception GedcomException in of error during creation
-   */
-  public Note createNote(Entity attachedTo) throws GedcomException {
-    return createNote(null, attachedTo);
-  }
-
-  /**
-   * Creates a non-related note
-   * @exception GedcomException in of error during creation
-   */
-  /*package*/ Note createNote(String id) throws GedcomException {
-    return createNote(id, null);
-  }
-
-  /**
-   * Creates a non-related note
-   * @exception GedcomException in of error during creation
-   */
-  /*package*/ Note createNote(String id, Entity attachedTo) throws GedcomException {
-
-    // Generate id if necessary
-    if (id==null) {
-      id = getRandomIdFor(NOTES);
-    }
-
-    // Create note & add to list of notes
-    Note note = new Note(this);
-    noteAddedEntity(note);
-    entities[NOTES].add(note);
-
-    // Store id
-    ids[NOTES].put(id,note);
-    note.setId(id);
-
-    // Attach?
-    if (attachedTo!=null) {
-      attachedTo.getProperty().addNote(note);
-    }
-
-    // Done
-    return note;
-  }
-
-  /**
-   * Creates a Repository entity.
-   * @exception GedcomException in of error during creation
-   */
-  /*package*/ Source createSource(String id) throws GedcomException {
-    return createSource(id, null);
-  }
-
-  /**
-   * Creates a Repository entity.
-   * @exception GedcomException in of error during creation
-   */
-  /*package*/ Source createSource(String id, Entity attachedTo) throws GedcomException {
-
-    // Generate id if necessary
-    if (id==null) {
-      id = getRandomIdFor(SOURCES);
-    }
-
-    // Create source & add to list of sources
-    Source source = new Source(this);
-    noteAddedEntity(source);
-    entities[SOURCES].add(source);
-
-    // Store id
-    ids[SOURCES].put(id,source);
-    source.setId(id);
-
-    // Attach?
-    if (attachedTo!=null) {
-      attachedTo.getProperty().addSource(source);
-    }
-    // Done
-    return source;
-  }
-
-  /**
-   * Creates a non-related submitter
-   * @exception GedcomException in of error during creation
-   * dkionka: blindly copied createNote()
-   */
-  /*package*/ Submitter createSubmitter(String id) throws GedcomException {
-
-    // Generate id if necessary
-    if (id==null) {
-      id = getRandomIdFor(SUBMITTERS);
-    }
-
-    // Create submitter & add to list of submitters
-    Submitter submitter = new Submitter(this);
-    noteAddedEntity(submitter);
-    entities[SUBMITTERS].add(submitter);
-
-    // Store id
-    ids[SUBMITTERS].put(id,submitter);
-    submitter.setId(id);
-
-    // Done
-    return submitter;
-  }
-
-  /**
-   * Creates a Repository entity.
-   * @exception GedcomException in of error during creation
-   */
-  /*package*/ Repository createRepository(String id) throws GedcomException {
-    return createRepository(id, null);
-  }
-
-  /**
-   * Creates a Repository entity.
-   * @exception GedcomException in of error during creation
-   */
-  /*package*/ Repository createRepository(String id, Entity attachedTo) throws GedcomException {
-
-    // Generate id if necessary
-    if (id==null) {
-      id = getRandomIdFor(REPOSITORIES);
-    }
-
-    // Create repository & add to list of repositorys
-    Repository repository = new Repository(this);
-    noteAddedEntity(repository);
-    entities[REPOSITORIES].add(repository);
-    // Store id
-    ids[REPOSITORIES].put(id,repository);
-    repository.setId(id);
-
-    // Attach?
-    if (attachedTo!=null) {
-      attachedTo.getProperty().addRepository(repository);
-    }
-    // Done
-    return repository;
-  }
-
-  /**
-   * Creates a family as childhood for given indi
-   * @exception GedcomException in case individual already has parents
-   */
-  private Fam createParentalFamilyFor(Indi indi) throws GedcomException {
-
-    // Does that indi already have a childhood ?
-    if ( indi.getFamc() != null)
-      throw new GedcomException("Individual has parents already");
-
-    // Create family & add to list of fams
-    Fam fam = createFam();
-
-    // Connect Fam &  Indi
-    fam.addChild(indi);
-
-    // Create child in family
-    return fam;
-  }
-
-  /**
-   * Creates a parent for given indi
-   * @exception GedcomException in case individual already has two parents
-   */
-  private Indi createParentOf(Indi indi, String lastName, String firstName, int sex) throws GedcomException {
-
-    // Prepare fam for new Parent
-    Fam fam;
-
-    // Check if indi has one or two parents
-    if (indi.getFamc()!=null) {
-      // .. existing fam
-      fam = indi.getFamc();
-      // .. two spouses ?
-      if (!fam.hasMissingSpouse()) {
-        throw new GedcomException("Tried to create 3rd spouse in family !");
-      }
-      // .. max one spouse !
-      Indi spouse = fam.getOtherSpouse(null);
-      if (spouse!=null) {
-        sex = PropertySex.calcOppositeSex(spouse, sex);
-      }
-    } else {
-      // .. fam
-      fam = createFam();
-      fam.addChild(indi);
-    }
-
-    // Create new parent & add to list of indis
-    Indi parent = createIndi(lastName,firstName,sex);
-
-    // Connect fam & parent
-    fam.setParents(parent,fam.getOtherSpouse(null));
-
-    // Done
-    return parent;
-  }
-
-  /**
-   * Creates a sibling for given indi
-   * @exception GedcomException in case of error during creation
-   */
-  private Indi createSiblingOf(Indi indi, String lastName, String firstName, int sex) throws GedcomException {
-
-    // Prepare fam for Parent of siblings
-    Fam fam;
-
-    // Check if indi has parental family
-    if (indi.getFamc()!=null) {
-      fam = indi.getFamc();
-    } else {
-      fam = createFam();
-      fam.addChild(indi);
-    }
-
-    // Create new sibling & add to list of indis
-    Indi sibling = createIndi(lastName,firstName,sex);
-
-    // Connect fam & parent
-    fam.addChild(sibling);
-
-    // Done
-    return sibling;
-  }
-
-  /**
-   * Creates a spouse for given relative fam
-   * @exception GedcomException in case family already has two spouses
-   */
-  private Indi createSpouseOf(Fam fam, String lastName, String firstName, int sex) throws GedcomException {
-
-    // Check if fam has a missing spouse
-    if (!fam.hasMissingSpouse())
-      throw new GedcomException("Tried to create 3rd spouse in family !");
-
-    // Create new spouse & add to list of indis
-    Indi spouse = createIndi(
-      lastName,
-      firstName,
-      PropertySex.calcOppositeSex(fam.getOtherSpouse(null),sex)
-    );
-
-    // Connect fam, spouse and indi
-    fam.setParents(spouse,fam.getOtherSpouse(null));
-
-    // Done
-    return spouse;
-  }
-
-  /**
-   * Creates a spouse for given relative indi
-   * @exception GedcomException in case of error during creation
-   */
-  private Indi createSpouseOf(Indi indi, String lastName, String firstName, int sex) throws GedcomException {
-
-    // Can new spouse be missing partner in indi's 1st fam ?
-    if ( (indi.getNoOfFams()>0) && (indi.getFam(0).hasMissingSpouse()) ) {
-      return createSpouseOf(indi.getFam(0),lastName,firstName,sex);
-    }
-
-    // Create new spouse & add to list of indis
-    Indi spouse = createIndi(
-      lastName,
-      firstName,
-      PropertySex.calcOppositeSex(indi, sex)
-    );
-
-    // Create family & add to list of fams
-    Fam fam = createFam();
-
-    // Connect Fam, Indi and Spouse
-    fam.setParents(indi,spouse);
-
-    // Done
-    return spouse;
+    return result;
   }
 
   /**
@@ -792,6 +219,146 @@ public class Gedcom {
     which.delNotify();
 
     // Done
+  }
+
+  /**
+   * Sets an entity's id
+   * @exception GedcomException if id-argument is null oder of zero length
+   */
+  public void setId(Entity entity, String id) throws GedcomException {
+    // Known entity?
+    if (!entities[entity.getType()].contains(entity)) {
+      throw new GedcomException("Entity isn't member in "+this);
+    }
+    // ID o.k. ?
+    id = id.trim();
+    if (id.length()==0) {
+      throw new GedcomException("Length of entity's ID has to be non-zero");
+    }
+    // Remember change
+    noteModifiedProperty(entity.getProperty());
+    // Prepare change
+    int type = entity.getType();
+    // Change it by removing old id
+    ids[type].remove(entity);
+    // .. remember as new
+    ids[type].put(id,entity);
+    // ... store info in entity
+    entity.setId(id);
+    // Done
+  }
+
+  /**
+   * Returns number of all entities
+   */
+  public int getNoOfEntities() {
+    int total = 0;
+    for (int i=0;i<entities.length;i++) {
+      total+=entities[i].size();
+    }
+    return total;
+  }
+
+  /**
+   * Returns all entities
+   */
+  public List[] getEntities() {
+    return entities;
+  }
+
+  /**
+   * Returns entities of given type
+   */
+  public List getEntities(int type) {
+    return entities[type];
+  }
+
+  /**
+   * Returns the entity with given id
+   */
+  public Entity getEntity(String id) throws DuplicateIDException {
+    Entity result = null;
+    for (int i=0;i<ids.length;i++) {
+      result = ids[i].get(id);
+      if (result!=null)
+        break;
+    }
+    return result;
+  }
+
+  /**
+   * Returns the entity with given id of given type or null if not exists
+   */
+  public Entity getEntity(String id, int type) throws DuplicateIDException {
+    return ids[type].get(id);
+  }
+
+  /**
+   * Creates a random ID for given type of entity which is free in this Gedcom
+   */
+  public String getRandomIdFor(int type) {
+    // We might to do this several times
+    String result;
+    int id = entities[type].size();
+    while (true) {
+      // next one
+      id ++;
+      // trim to 000
+      result = ePrefixs[type] + (id<100?(id<10?"00":"0"):"") + id;
+      // try it
+      if (!ids[type].contains(result)) break;
+      // try again
+    };
+    return result;
+  }
+
+  /**
+   * Returns wether there are two entities with same ID
+   */
+  public boolean hasDuplicates() {
+    for (int i=0;i<ids.length;i++) {
+      if (ids[i].hasDuplicates())
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Has the gedcom unsaved changes ?
+   */
+  public boolean hasUnsavedChanges() {
+    return hasUnsavedChanges;
+  }
+
+  /**
+   * Clears flag for unsaved changes
+   */
+  public void setUnchanged() {
+    hasUnsavedChanges=false;
+  }
+  
+  /**
+   * Starts changing of mankind
+   */
+  public synchronized boolean startTransaction() {
+
+    // Is there a transaction running?
+    if (isTransaction) {
+      return false;
+    }
+
+    // Start
+    isTransaction = true;
+
+    // ... prepare rememberance of changes
+    addedEntities      = new ArrayList(64);
+    deletedEntities    = new ArrayList(64);
+    addedProperties    = new ArrayList(64);
+    deletedProperties  = new ArrayList(64);
+    modifiedProperties = new ArrayList(64);
+
+    // .. done
+    return true;
   }
 
   /**
@@ -832,227 +399,6 @@ public class Gedcom {
 
     // ... Done
     return change;
-  }
-
-  /**
-   * Returns all entities
-   */
-  public List[] getEntities() {
-    return entities;
-  }
-
-  /**
-   * Returns entities of given type
-   */
-  public List getEntities(int type) {
-    return entities[type];
-  }
-
-  /**
-   * Returns the entity with given id
-   */
-  public Entity getEntityFromId(String id) throws DuplicateIDException {
-    Entity result = null;
-    for (int i=0;i<ids.length;i++) {
-      result = ids[i].get(id);
-      if (result!=null)
-        break;
-    }
-    return result;
-  }
-
-  /**
-   * Returns the entity with given id of given type or null if not exists
-   */
-  public Entity getEntityFromId(String id, int type) throws DuplicateIDException {
-    return ids[type].get(id);
-  }
-
-  /**
-   * Returns the family at the given index
-   */
-  public Fam getFam(int index) {
-    return (Fam)entities[FAMILIES].get(index);
-  }
-
-  /**
-   * Returns the family with given id
-   */
-  public Fam getFamFromId(String id) throws DuplicateIDException {
-    return (Fam)ids[FAMILIES].get(id);
-  }
-
-  /**
-   * Returns IDHashtables with IDs of entities
-   */
-  public IDHashtable[] getIDs() {
-    return ids;
-  }
-
-  /**
-   * Returns the individual at the given position
-   */
-  public Indi getIndi(int index) {
-    return (Indi)entities[INDIVIDUALS].get(index);
-  }
-
-  /**
-   * Returns the individual with given id
-   */
-  public Indi getIndiFromId(String id) throws DuplicateIDException {
-    return (Indi)ids[INDIVIDUALS].get(id);
-  }
-
-  /**
-   * Returns the multimedia at the given position
-   */
-  public Media getMedia(int index) {
-    return (Media)entities[MULTIMEDIAS].get(index);
-  }
-
-  /**
-   * Returns the multimedia with given id
-   */
-  public Media getMediaFromId(String id) throws DuplicateIDException {
-    return (Media)ids[MULTIMEDIAS].get(id);
-  }
-
-  /**
-   * Returns the name of this gedcom
-   */
-  public String getName() {
-    return origin.getName();
-  }
-
-  /**
-   * Returns the readable name of the given entity type
-   */
-  public static String getNameFor(int type, boolean plural) {
-    return getResources().getString("type."+ePrefixs[type]+(plural?"s":""));
-  }
-
-  /**
-   * Returns number of all entities
-   */
-  public int getNoOfEntities() {
-
-    int total = 0;
-    for (int i=0;i<entities.length;i++) {
-      total+=entities[i].size();
-    }
-
-    return total;
-  }
-
-  /**
-   * Returns the note at the given position
-   */
-  public Note getNote(int index) {
-    return (Note)entities[NOTES].get(index);
-  }
-
-  /**
-   * Returns the note with given id
-   */
-  public Note getNoteFromId(String id) throws DuplicateIDException {
-    return (Note)ids[NOTES].get(id);
-  }
-
-  /**
-   * Returns the source with given id
-   */
-  public Source getSourceFromId(String id) throws DuplicateIDException {
-    return (Source)ids[SOURCES].get(id);
-  }
-
-  /**
-   * Returns the submitter with given id
-   */
-  public Submitter getSubmitterFromId(String id) throws DuplicateIDException {
-    return (Submitter)ids[SUBMITTERS].get(id);
-  }
-
-  /**
-   *
-   * Returns the repository with given id
-   */
-  public Repository getRepositoryFromId(String id) throws DuplicateIDException {
-    return (Repository)ids[REPOSITORIES].get(id);
-  }
-
-  /**
-   * Returns the origin of this gedcom
-   */
-  public Origin getOrigin() {
-    return origin;
-  }
-
-  /**
-   * Returns the prefix of the given entity type
-   */
-  public static String getPrefixFor(int type) {
-    return ePrefixs[type];
-  }
-
-  /**
-   * Creates a random ID for given type of entity which is free in this Gedcom
-   */
-  public String getRandomIdFor(int type) {
-    // We might to do this several times
-    String result;
-    int id = entities[type].size();
-    while (true) {
-      // next one
-      id ++;
-      // trim to 000
-      result = ePrefixs[type] + (id<100?(id<10?"00":"0"):"") + id;
-      // try it
-      if (!ids[type].contains(result)) break;
-      // try again
-    };
-    return result;
-  }
-
-  /**
-   * Returns the Resources (lazily)
-   */
-  public static Resources getResources() {
-    if (resources==null) {
-      resources = new Resources("genj.gedcom");
-    }
-    return resources;
-  }
-
-  /**
-   * Returns the tag for given entity type
-   */
-  public static String getTagFor(int type) {
-    return eTags[type];
-  }
-  
-  /**
-   * Returns wether there are two entities with same ID
-   */
-  public boolean hasDuplicates() {
-    for (int i=0;i<ids.length;i++) {
-      if (ids[i].hasDuplicates())
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Has the gedcom unsaved changes ?
-   */
-  public boolean hasUnsavedChanges() {
-    return hasUnsavedChanges;
-  }
-
-  /**
-   * Check if entity is member
-   */
-  private boolean is(Entity member) {
-    return getEntities(member.getType()).contains(member);
   }
 
   /**
@@ -1155,101 +501,31 @@ public class Gedcom {
   }
 
   /**
-   * Removes a Listener from receiving notifications
-    */
-  public synchronized void removeListener(GedcomListener which) {
-    listeners.remove(which);
+   * Returns the name of this gedcom
+   */
+  public String getName() {
+    return origin.getName();
   }
 
   /**
-   * Sets an entity's id
-   * @exception GedcomException if id-argument is null oder of zero length
+   * Returns the readable name of the given entity type
    */
-  public void setIdOf(Entity entity, String id) throws GedcomException {
-
-    // Known entity?
-    if (!entities[entity.getType()].contains(entity)) {
-      throw new GedcomException("Illegal argument for this Gedcom");
-    }
-
-    // ID o.k. ?
-    id = id.trim();
-    if (id.length()==0) {
-      throw new GedcomException("Length of entity's ID has to be non-zero");
-    }
-
-    // Remember change
-    noteModifiedProperty(entity.getProperty());
-
-    // Prepare change
-    int type = entity.getType();
-
-    // Change it by removing old id
-    ids[type].remove(entity);
-
-    // .. remember as new
-    ids[type].put(id,entity);
-
-    // ... store info in entity
-    entity.setId(id);
-
-    // Done
+  public static String getNameFor(int type, boolean plural) {
+    return getResources().getString("type."+ePrefixs[type]+(plural?"s":""));
   }
 
   /**
-   * Sets the origin of this gedcom
+   * Returns the prefix of the given entity type
    */
-  public void setOrigin(Origin newOrigin) {
-
-    // Remember new origin
-    origin = newOrigin;
-
-    // Done
+  public static String getPrefixFor(int type) {
+    return ePrefixs[type];
   }
 
   /**
-   * Clears flag for unsaved changes
+   * Returns an image for Gedcom
    */
-  public void setUnsavedChanges(boolean set) {
-    hasUnsavedChanges=set;
-  }
-  /**
-   * Starts changing of mankind
-   */
-  public synchronized boolean startTransaction() {
-
-    // Is there a transaction running?
-    if (isTransaction) {
-      return false;
-    }
-
-    // Start
-    isTransaction = true;
-
-    // ... prepare rememberance of changes
-    addedEntities      = new ArrayList(64);
-    deletedEntities    = new ArrayList(64);
-    addedProperties    = new ArrayList(64);
-    deletedProperties  = new ArrayList(64);
-    modifiedProperties = new ArrayList(64);
-
-    // .. done
-    return true;
-  }
-
-  /**
-   * toString overridden
-   */
-  public String toString() {
-    return getName();
-  }
-
-  /**
-   * Returns all Entities with given id
-   * @param which one of INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES
-   */
-  public List getEntitiesFromId(int which, String id) {
-    return ids[which].getAll(id);
+  public static ImgIcon getImage() {
+    return Images.get("ged");
   }
 
   /**
@@ -1264,265 +540,20 @@ public class Gedcom {
   }
   
   /**
-   * Returns an image for Gedcom
+   * Returns the Resources (lazily)
    */
-  public static ImgIcon getImage() {
-    return Images.get("ged");
-  }
-
-  /**
-   * Little helper that retuns type for given entity and know
-   * how to handle null
-   */
-  public static int getType(Entity entity) {
-    if (entity==null) {
-      return -1;
+  public static Resources getResources() {
+    if (resources==null) {
+      resources = new Resources("genj.gedcom");
     }
-    return entity.getType();
+    return resources;
   }
 
   /**
-   * Creates a random ID for given type of entity which is free in two Gedcoms
+   * Returns the tag for given entity type
    */
-  /*
-  public static String getRandomIdFor(int type, Gedcom g1, Gedcom g2) {
-
-    String result = null;
-
-    // We might to do this several times
-    int id = Math.max(g1==null?0:g1.entities[type].size(),g2==null?0:g2.entities[type].size());
-
-    while (true) {
-      
-      id ++;
-
-      // Trim to 000
-      result = ePrefixs[type] + (id<100?(id<10?"00":"0"):"") + id;
-
-      if ((g1!=null)&&(g1.ids[type].contains(result)))
-        continue;
-      if ((g2!=null)&&(g2.ids[type].contains(result)))
-        continue;
-
-      // Found one
-      break;
-    };
-
-    // Done
-    return result;
+  public static String getTagFor(int type) {
+    return eTags[type];
   }
-  */
   
-  /**
-   * Merging of two Gedcom candidates - all unsatisfied links in those
-   * candidates will be removed and all entities get new IDs.
-   * @param g1 candidate 1
-   * @param g2 candidate 2
-   * @param options a value of TAG_ENTITY_SOURCE, TAG_PROPERTY_SOURCE
-   *        for tagging all entities where they came from and/or all
-   *        properties of merged entities.
-   */
-  /*
-  public static Gedcom merge(final Gedcom g1, final Gedcom g2, Entity[][] matches, int options) {
-    // Valid parameters?
-    if ((g1==null)||(g2==null))
-      throw new IllegalArgumentException("Candidates have to be non null");
-    if (g1==g2)
-      throw new IllegalArgumentException("Candidates have to be not equal");
-
-    // Prepare candidates
-    g1.close();
-    g2.close();
-
-    g1.removeDuplicates();
-    g2.removeDuplicates();
-
-    g1.removeUnsatisfiedLinks();
-    g2.removeUnsatisfiedLinks();
-
-    // Create new Gedcom
-    final Gedcom result;
-    try {
-      result = new Gedcom(
-        Origin.create(g2.getOrigin(),"Merged.ged"),
-        g1.getNoOfEntities()+g2.getNoOfEntities()
-      );
-    } catch (java.net.MalformedURLException muex) {
-      Debug.log(Debug.ERROR, Gedcom.class, "Fatal error creating new origin from "+g1.getName()+" and "+g2.getName(), muex);
-      return null;
-    }
-
-    // Any tagging ?
-    Note n1=null,
-       n2=null;
-    if (((options&TAG_ENTITY_SOURCE)!=0)||((options&TAG_PROPERTY_SOURCE)!=0)) {
-
-      // .. Prepare Source Tags
-      n1 = new Note(result);
-      n2 = new Note(result);
-      n1.setValue("Source is "+g1.getOrigin()+"\n Merged on "+new Date());
-      n2.setValue("Source is "+g2.getOrigin()+"\n Merged on "+new Date());
-    }
-
-    // Merge matched entities
-    for (int m=0;m<matches.length;m++) {
-
-      // Two to One
-      Entity e1 = matches[m][0];
-      Entity e2 = matches[m][1];
-
-      // Tag kept properties from G2 (if needed)
-      if ((options&TAG_PROPERTY_SOURCE)!=0) {
-        for (int p=0;p<e2.getProperty().getNoOfProperties();p++) {
-          Property prop = e2.getProperty().getProperty(p);
-          prop.addProperty(new PropertyNote(n2));
-        }
-      }
-
-      // Move properties from G1 (and tag moved properties if needed)
-      for (int p=0;p<e1.getProperty().getNoOfProperties();p++) {
-
-        Property prop = e1.getProperty().getProperty(p);
-  
-        // .. A PropertyXRef?
-        if (prop instanceof PropertyXRef)
-          continue;
-  
-        // .. Tag it
-        if ((options&TAG_PROPERTY_SOURCE)!=0)
-          prop.addProperty(new PropertyNote(n1));
-  
-        // .. Add it
-        e2.getProperty().addProperty(prop);
-      }
-
-      // Forget entity E1 in G1
-      e1.getGedcom().entities[e1.getType()].del(e1);
-
-      // next Entity to be merged
-    }
-
-    // Tag entities from two sources
-    if ((options&TAG_ENTITY_SOURCE)!=0) {
-
-      // .. Tag entities
-      for (int l=0;l<g1.entities.length;l++) {
-        for (int e=0;e<g1.entities[l].getSize();e++) {
-          g1.entities[l].get(e).getProperty().addProperty(new PropertyNote(n1));
-        }
-      }
-
-      // .. Tag entities
-      for (int l=0;l<g2.entities.length;l++) {
-        for (int e=0;e<g2.entities[l].getSize();e++) {
-          g2.entities[l].get(e).getProperty().addProperty(new PropertyNote(n2));
-        }
-      }
-
-      // .. done
-    }
-
-    // Fill in entities
-    if (n1!=null) {
-      result.entities[n1.getType()].add(n1);
-      result.entities[n2.getType()].add(n2);
-    }
-
-    for (int i=0;i<g1.entities.length;i++) {
-      // .. add entities of type from G1
-      result.entities[i].add(g1.entities[i]);
-      // .. add entities of type from G1
-      result.entities[i].add(g2.entities[i]);
-      // .. loop through entities of type from Result
-      for (int e=0;e<result.entities[i].getSize();e++) {
-        Entity ent=result.entities[i].get(e);
-        // .. remember Daddy
-        ent.setGedcom(result);
-        // .. get new ID
-        String id = result.getRandomIdFor(ent.getType());
-        // .. change entity
-        ent.setId(id);
-        // .. remember ID
-        result.ids[ent.getType()].put(id,ent);
-      }
-    }
-
-    // Done
-    return result;
-  }
-*/    
-  /**
-   * Removes all duplicates in Gedcom
-   */
-  /*
-  public void removeDuplicates() {
-    for (int i=0;i<ids.length;i++) {
-
-      // .. indefinite?
-      if (!ids[i].hasDuplicates())
-        continue;
-
-      // .. make definit!
-      List ents = ids[i].getDuplicates();
-      for (int e=0;e<ents.length;e++) {
-        // .. change id
-        try {
-          setIdOf(ents[e],getRandomIdFor(ents[e].getType()));
-        } catch (GedcomException ex) {
-          // can't happen
-        }
-
-        // .. next
-      }
-
-      // .. next
-    }
-    // Done
-  }
-  */
-  /**
-   * Remove unsatisfied links (PropertyXRef) from Gedcom
-   */
-/* 
-  public void removeUnsatisfiedLinks() {
-
-    // Get list of EntityLists
-    for (int t=0;t<entities.length;t++) {
-      for (int e=0;e<entities[t].getSize();e++) {
-        removeUnsatisfiedLinks(entities[t].get(e).getProperty());
-      }
-    }
-
-    // Done
-  }
-*/
-
-  /**
-   * Helper that removes unsatisfied links (PropertyXRef) from Property
-   */
-/*
-  private void removeUnsatisfiedLinks(Property property) {
-
-    // Check wether any property of this property is unsatisfied
-    for (int p=property.getNoOfProperties()-1;p>=0;p--) {
-
-      // .. candidate
-      Property prop = property.getProperty(p);
-
-      // .. unsatisfied XRef?
-      if ( (prop instanceof PropertyXRef)&&(!((PropertyXRef)prop).isValid()) ) {
-        // .. delete
-        property.delProperty(prop);
-      } else {
-        // .. divide & conquer
-        removeUnsatisfiedLinks(prop);
-      }
-
-      // .. next candidate
-    }
-
-    // Done
-  }
-*/
-
 } //Gedcom

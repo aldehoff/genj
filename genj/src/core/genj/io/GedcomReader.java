@@ -162,7 +162,7 @@ public class GedcomReader implements Trackable {
     Property prop=null;
     try {
       // Fix duplicates?
-      if ((fixDuplicateIDs)&&(gedcom.getEntityFromId(xref)!=null)) {
+      if ((fixDuplicateIDs)&&(gedcom.getEntity(xref)!=null)) {
         ent=gedcom.createEntity(tag, null);
       } else {
         ent=gedcom.createEntity(tag,xref);

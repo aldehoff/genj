@@ -188,7 +188,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
   public void populate(JToolBar bar) {
     // create buttons for mode switch
     ButtonHelper bh = new ButtonHelper();
-    for (int t=0;t<Gedcom.LAST_ETYPE;t++) {
+    for (int t=0;t<Gedcom.NUM_TYPES;t++) {
       bar.add(bh.create(new ActionChangeType(t)));
     }
     // done
@@ -234,7 +234,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     tableModel.setType(registry.get("type", Gedcom.INDIVIDUALS));
     
     // get paths&widths
-    for (int t=0; t<Gedcom.LAST_ETYPE; t++) {
+    for (int t=0; t<Gedcom.NUM_TYPES; t++) {
       String tag = Gedcom.getTagFor(t);
       String[] ps = registry.get(tag+".paths" , (String[])null);
       if (ps!=null) tableModel.setPaths(t, ps);
@@ -253,7 +253,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     // save current type
     registry.put("type",tableModel.getType());
     // save paths&widths
-    for (int t=0; t<Gedcom.LAST_ETYPE; t++) {
+    for (int t=0; t<Gedcom.NUM_TYPES; t++) {
       String tag = Gedcom.getTagFor(t);
       registry.put(tag+".paths", tableModel.getPaths(t));
       registry.put(tag+".widths", tableModel.getWidths(t));

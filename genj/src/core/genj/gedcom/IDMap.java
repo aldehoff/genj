@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Class for Hashtable of IDs
  */
-public class IDHashtable {
+public class IDMap {
 
   private Map hashtable;
   private List duplicates;
@@ -36,7 +36,7 @@ public class IDHashtable {
   /**
    * Constructor
    */
-  public IDHashtable(int initialCapacity) {
+  public IDMap(int initialCapacity) {
     hashtable  = new HashMap(initialCapacity);
     duplicates = new ArrayList(16);
   }

@@ -34,7 +34,7 @@ public abstract class PropertyIndi extends Property{
    */
   public void addDefaultProperties() {
     addProperty(new PropertyName());
-    addProperty(new PropertySex(Gedcom.MALE));
+    addProperty(new PropertySex(PropertySex.MALE));
     addProperty(new PropertyEvent("BIRT"));
     addProperty(new PropertyEvent("DEAT"));
   }

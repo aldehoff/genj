@@ -127,7 +127,7 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
       return;
     }
 
-    Media media = getGedcom().getMediaFromId(id);
+    Media media = (Media)getGedcom().getEntity(id, Gedcom.MULTIMEDIAS);
     if (media==null) {
       throw new GedcomException("Couldn't find entity with ID "+id);
     }

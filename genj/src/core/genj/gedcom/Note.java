@@ -33,13 +33,8 @@ public class Note extends PropertyNote implements Entity {
   /**
    * Constructor for Note
    */
-  /*package*/ Note(Gedcom gedcom) {
-
-    // Call super's constructor
+  /*package*/ Note() {
     super(null);
-
-    // Entity
-    this.gedcom = gedcom;
   }
 
   /**

@@ -167,7 +167,7 @@ public class ReportImportDatabase implements Report {
       String sex  = indiRow.getString(COL_SEX  );
       String famc = indiRow.getString(COL_FAMC );
 
-      Indi indi = gedcom.createIndi(id);
+      Indi indi = (Indi)gedcom.createEntity(Indi.class, id);
       if (name!=null) {
         indi.addProperty(new PropertyName       ("",name));
       }
@@ -195,7 +195,7 @@ public class ReportImportDatabase implements Report {
       String husb = famRow.getString(COL_HUSB);
       String wife = famRow.getString(COL_WIFE);
 
-      Fam fam = gedcom.createFam(id);
+      Fam fam = (Fam)gedcom.createEntity(Fam.class, id);
       if (husb!=null) {
         xref = new PropertyHusband("",husb);
         fam.addProperty(xref);

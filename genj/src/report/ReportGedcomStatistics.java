@@ -9,6 +9,7 @@
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.PropertySex;
 import genj.report.Report;
 import genj.report.ReportBridge;
 
@@ -23,7 +24,7 @@ import java.util.TreeMap;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.14 2002-10-08 04:02:01 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.15 2002-10-19 17:37:31 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -161,10 +162,10 @@ public class ReportGedcomStatistics implements Report {
       // Here comes the Sex check
       int sex = indi.getSex();
       switch (indi.getSex()) {
-        case Gedcom.MALE:
+        case PropertySex.MALE:
             stats.numMales++;
             break;
-        case Gedcom.FEMALE:
+        case PropertySex.FEMALE:
             stats.numFemales++;
             break;
         default:

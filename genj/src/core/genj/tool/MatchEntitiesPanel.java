@@ -223,7 +223,7 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
 
             // .. get entity
             Entity e1 = (Entity)entlists[i].get(e);
-            Entity e2 = candidates[1].getEntityFromId(e1.getId(),e1.getType());
+            Entity e2 = candidates[1].getEntity(e1.getId(),e1.getType());
 
             // .. and twin
             if (e2!=null) {

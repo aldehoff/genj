@@ -62,7 +62,7 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
     textHtml.setFont(new Font("Monospaced", Font.PLAIN, 12));
     
     // get entities
-    for (int i=Gedcom.FIRST_ETYPE;i<=Gedcom.LAST_ETYPE;i++) {
+    for (int i=0;i<Gedcom.NUM_TYPES;i++) {
       dropEntities.addItem(wrap(i));
     }
     dropEntities.setRenderer(new BasicComboBoxRenderer() {

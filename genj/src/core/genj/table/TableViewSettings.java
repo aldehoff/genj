@@ -62,7 +62,7 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
     // Chooseable type
     cTypes = new JComboBox();
 
-    for (int i=Gedcom.FIRST_ETYPE;i<=Gedcom.LAST_ETYPE;i++) {
+    for (int i=0;i<Gedcom.NUM_TYPES;i++) {
       cTypes.addItem(Gedcom.getNameFor(i,true));
     }
     cTypes.addActionListener((ActionListener)new ActionChooseEntity().as(ActionListener.class));
@@ -130,7 +130,7 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
     table = null;
 
     // Reflect shown type
-    cTypes.setSelectedIndex(eType-Gedcom.FIRST_ETYPE);
+    cTypes.setSelectedIndex(eType);
 
     // Reflect columns by TagPaths
     TagPath[] selectedPaths = t.getPaths(eType);

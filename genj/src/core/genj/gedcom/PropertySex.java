@@ -31,8 +31,8 @@ public class PropertySex extends Property {
 
   /** sexes */
   private static final int UNKNOWN = -1;
-  public static final int MALE    = Gedcom.MALE;
-  public static final int FEMALE  = Gedcom.FEMALE;
+  public static final int MALE    = 1;
+  public static final int FEMALE  = 2;
 
   /** the sex code */
   private int sex;
