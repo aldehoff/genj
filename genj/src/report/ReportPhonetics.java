@@ -2,7 +2,10 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Entity;
 import genj.report.Report;
+import genj.util.ReferenceSet;
 
+import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.StringTokenizer;
 
 /**
@@ -12,18 +15,21 @@ import java.util.StringTokenizer;
 public class ReportPhonetics extends Report {
     
     public int outputFormat = 0;
+    public boolean reportFirstNames = true;
     
     public static String[] outputFormats = {
-       "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex"
+        "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex"
     };
     
-    private static Phonetics[] phonetics = { 
-      new Soundex(),
-      new Metaphone(),
-      new DoubleMetaphone(),
-      new Nysiis(),
-      new Phonex()
+    private static Phonetics[] phonetics = {
+        new Soundex(),
+        new Metaphone(),
+        new DoubleMetaphone(),
+        new Nysiis(),
+        new Phonex()
     };
+    
+    private static final int SPACES_PER_LEVEL = 3;
     
     /** this report's version */
     public static final String VERSION = "0.1";
@@ -101,8 +107,46 @@ public class ReportPhonetics extends Report {
         } else {
             Gedcom gedcom = (Gedcom) context;
             Entity[] indis = gedcom.getEntities(gedcom.INDI, "");
-            for (int i = 0; i < indis.length; i++)
-                printPhonetic((Indi) indis[i]);
+            printPhonetic(indis);
+        }
+    }
+    
+    private void printPhonetic(Entity[] indis) {
+        Indi indi = null;
+        String str = "";
+        
+        println(i18n("outputFormat")+": "+outputFormats[outputFormat]);
+        println();
+        
+        if(reportFirstNames) {
+            ReferenceSet names = new ReferenceSet();
+            for (int i = 0; i < indis.length; i++) {
+                indi = (Indi) indis[i];
+                names.add(indi.getLastName(), indi);
+            }
+            Iterator last = names.getKeys(true).iterator();
+            while(last.hasNext()) {
+                str = (String)last.next();
+                println(getIndent(1, SPACES_PER_LEVEL, "")+str+": "+encode(str));
+                Iterator first = names.getReferences(str).iterator();
+                while(first.hasNext()) {
+                    indi  = (Indi)first.next();
+                    str = indi.getFirstName();
+                    println(getIndent(2, SPACES_PER_LEVEL, "")+"@"+indi.getId()+"@ "+str+": "+encode(str));
+                }
+            }
+        }
+        else {
+            TreeSet names = new TreeSet();
+            for (int i = 0; i < indis.length; i++) {
+                indi = (Indi) indis[i];
+                names.add(indi.getLastName());
+            }
+            Iterator it = names.iterator();
+            while(it.hasNext()) {
+                str = (String)it.next();
+                println(str+": "+encode(str));
+            }
         }
     }
     
@@ -111,24 +155,25 @@ public class ReportPhonetics extends Report {
         // grab information from indi
         String firstName = indi.getFirstName();
         String lastName = indi.getLastName();
-        
-        println("@"+indi.getId()+"@ "+firstName+" "+lastName);
-        
-        // encode in phonetics
-        Phonetics p = phonetics[outputFormat];
-        
-        // print the Soundex codes
-        firstName = p.encode(firstName);
-        if(firstName==null)
-            firstName="";                
-        lastName = p.encode(lastName);
-        if(lastName==null)
-            lastName="";
-            
-        println(outputFormats[outputFormat]  + ": " + firstName + " " + lastName);
 
-        // done
+        println(i18n("outputFormat")+": "+outputFormats[outputFormat]);
         println();
+        
+        if(reportFirstNames) {
+            println(firstName+": "+encode(firstName));
+            println(lastName+": "+encode(lastName));
+        }
+        else {
+            println(lastName+": "+encode(lastName));
+        }
+    }
+    
+    private String encode(String input) {
+        Phonetics p = phonetics[outputFormat];
+        String s = p.encode(input);
+        if(s==null)
+            return "";
+        return s;
     }
     
     
@@ -136,12 +181,12 @@ public class ReportPhonetics extends Report {
      * Our phonetics interface
      */
     private interface Phonetics {
-      
-      /** 
-       * encode implementation
-       */
-      public String encode(String name);
-      
+        
+        /**
+         * encode implementation
+         */
+        public String encode(String name);
+        
     } //Phonetics
     
     /**
@@ -1234,7 +1279,7 @@ public class ReportPhonetics extends Report {
      * org.apache.commons.codec.language package
      */
     static class Nysiis implements Phonetics {
-      
+        
         boolean debug = false;
         StringBuffer word = null;
         
