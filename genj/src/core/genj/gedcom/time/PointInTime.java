@@ -58,13 +58,27 @@ public class PointInTime implements Comparable {
   /**
    * Constructor
    */
-  protected PointInTime() {
+  public PointInTime() {
   }
 
   /**
    * Constructor
    */
-  protected PointInTime(int d, int m, int y, Calendar cal) {
+  public PointInTime(Calendar cal) {
+    calendar = cal;
+  }
+  
+  /**
+   * Constructor
+   */
+  public PointInTime(int d, int m, int y) {
+    this(d,m,y,GREGORIAN);
+  }
+  
+  /**
+   * Constructor
+   */
+  public PointInTime(int d, int m, int y, Calendar cal) {
     day = d;
     month = m;
     year = y;
@@ -101,31 +115,11 @@ public class PointInTime implements Comparable {
   }
 
   /**
-   * Accessor to an immutable point in time
-   * @param d day (zero based)
-   * @param m month (zero based)
-   * @param y year
-   */
-  public static PointInTime getPointInTime(int d, int m, int y) {
-    return getPointInTime(d,m,y,GREGORIAN);
-  }
-  
-  /**
-   * Accessor to an immutable point in time
-   * @param d day (zero based)
-   * @param m month (zero based)
-   * @param y year
-   */
-  public static PointInTime getPointInTime(int d, int m, int y, Calendar calendar) {
-    return new PointInTime(d, m, y, calendar);
-  }
-  
-  /**
    * Accessor to an immutable point in time - now
    */
   public static PointInTime getNow() {
     java.util.Calendar now = java.util.Calendar.getInstance(); // default to current time
-    return getPointInTime(
+    return new PointInTime(
       now.get(now.DATE) - 1,      
       now.get(now.MONTH),      
       now.get(now.YEAR)
@@ -165,6 +159,11 @@ public class PointInTime implements Comparable {
    * Setter
    */
   public void set(Calendar cal) throws GedcomException {
+    // is ok for 'empty' pit
+    if (day==UNKNOWN&&month==UNKNOWN&&year==UNKNOWN) {
+      calendar = cal;
+      return;
+    }
     // has to be valid
     if (!isValid())
       throw new GedcomException(resources.getString("pit.invalid"));
@@ -178,12 +177,20 @@ public class PointInTime implements Comparable {
   }  
   
   /**
-   * Setter (implementation dependant)
+   * Setter
    */
   public void set(int d, int m, int y) {
+    set(d,m,y,calendar);
+  }
+  
+  /**
+   * Setter (implementation dependant)
+   */
+  public void set(int d, int m, int y, Calendar cal) {
     day = d;
     month = m;
     year = y;
+    calendar = cal;
     jd = UNKNOWN;
   }
   
@@ -226,7 +233,7 @@ public class PointInTime implements Comparable {
       
       // switch to next 'first'
       if (!tokens.hasMoreTokens())
-        return false;
+        return true;  // calendar only is fine - empty pit
       first = tokens.nextToken();
 
     }
@@ -282,12 +289,22 @@ public class PointInTime implements Comparable {
    * Checks for validity
    */
   public boolean isValid() {
+    
+    // ok if known JD    
     if (jd!=UNKNOWN)
       return true;
+
+    // ok for empty
+    if (day==UNKNOWN&&month==UNKNOWN&&year==UNKNOWN)
+      return true;
+
+    // try calculating JD
     try {
       jd = calendar.toJulianDay(this);
     } catch (GedcomException e) {
     }
+    
+    // done
     return jd!=UNKNOWN;
   }
     

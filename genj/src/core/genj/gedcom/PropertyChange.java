@@ -52,7 +52,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    TIME = "TIME",
    DATE = "DATE";
   
-  private PointInTime pit = PointInTime.getPointInTime(-1,-1,-1);
+  private PointInTime pit = new PointInTime();
   private long time = -1;
 
   /**

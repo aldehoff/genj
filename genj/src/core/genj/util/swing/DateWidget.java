@@ -130,11 +130,15 @@ public class DateWidget extends JPanel {
     String[] months = calendar.getMonths(true);
     widgetMonth.setValues(Arrays.asList(months));
     try {
+      widgetMonth.setSelectedItem(null);
       widgetMonth.setSelectedItem(months[pit.getMonth()]);
       widgetMonth.setChanged(false);
     } catch (ArrayIndexOutOfBoundsException e) {
     }
-
+    
+    // focus
+    getComponent(1).requestFocus();
+    
     // done
   }
   
@@ -151,7 +155,7 @@ public class DateWidget extends JPanel {
       m = widgetMonth.getSelectedIndex();
       if (m<0) m = PointInTime.UNKNOWN;    
     }
-    return PointInTime.getPointInTime(d, m, y, calendar);
+    return new PointInTime(d, m, y, calendar);
   }
 
   /**
@@ -267,15 +271,17 @@ public class DateWidget extends JPanel {
         pit = getValue();
         pit.set(newCalendar);
       } catch (GedcomException e) {
-        manager.openDialog(
+        int rc = manager.openDialog(
           null,
           "Switching Calendar failed", 
           manager.IMG_ERROR, 
           e.getMessage(), 
-          manager.OPTIONS_OK, 
+          new String[]{ manager.OPTION_OK, "Reset" }, 
           DateWidget.this
         );
-        return; 
+        if (rc==0) 
+          return;
+        pit = new PointInTime(newCalendar);
       }
       // change
       setValue(pit);
