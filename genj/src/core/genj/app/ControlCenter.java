@@ -417,14 +417,15 @@ public class ControlCenter extends JPanel {
           if (rc==0) {
             removeGedcom(gedcom);
             new ActionSave(gedcom) {
+              // after the save
               protected void postExecute() {
                 // super first
                 super.postExecute();
-                // keep if still unsaved changes present
-                if (gedcom.hasUnsavedChanges()) {
-                  addGedcom(gedcom);
+                // add gedcom again we removed temporarily
+                addGedcom(gedcom);
+                // stop still unsaved changes that didn't make it through saving
+                if (gedcom.hasUnsavedChanges()) 
                   return;
-                }
                 // continue with exit
                 getExitAction().trigger();
               }
