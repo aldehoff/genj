@@ -24,9 +24,9 @@ import genj.gedcom.time.PointInTime;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -90,26 +90,25 @@ public class Indi extends Entity {
   }
   
   /**
-   * Calculate the 'older' siblings - a list ordered by position in fam
+   * Calculate the 'younger' siblings - a list ordered by position in fam
    */
-  public Indi[] getOlderSiblings() {
+  public Indi[] getYoungerSiblings() {
     
     // this is a child in a family?
     Fam fam = getFamc();
     if (fam==null) 
       return new Indi[0];
     
-    // fine me in the list of siblings
+    // sort siblings
     Indi[] siblings = fam.getChildren();
-    int sibling = 0;
-    while (sibling<siblings.length) {
-      if (siblings[sibling++]==this) break;
-    }
-
-    // wrap up the rest
-    List result = new ArrayList(siblings.length);
-    while (sibling<siblings.length) {
-      result.add(siblings[sibling++]);
+    Arrays.sort(siblings, new PropertyComparator("INDI:BIRT:DATE", true));
+    
+    // grab everything up to me
+    List result = new ArrayList(siblings.length-1);
+    for (int i=0,j=siblings.length;i<j;i++) {
+      if (siblings[i]==this)
+        break;
+      result.add(0, siblings[i]);
     }
     
     // done
@@ -119,23 +118,23 @@ public class Indi extends Entity {
   /**
    * Calculate the 'older' sibling
    */
-  public Indi[] getYoungerSiblings() {
+  public Indi[] getOlderSiblings() {
     
     // this is a child in a family?
     Fam fam = getFamc();
     if (fam==null) 
       return new Indi[0];
     
-    // fine me in the list of siblings
+    // sort siblings
     Indi[] siblings = fam.getChildren();
-    int sibling = siblings.length-1;
-    while (sibling>=0)
-      if (siblings[sibling--]==this) break;
-
-    // wrap up the rest
-    LinkedList result = new LinkedList();
-    while (sibling>=0) {
-      result.add(siblings[sibling--]);
+    Arrays.sort(siblings, new PropertyComparator("INDI:BIRT:DATE", false));
+    
+    // grab everything up to me (reversed)
+    List result = new ArrayList(siblings.length-1);
+    for (int i=0,j=siblings.length;i<j;i++) {
+      if (siblings[i]==this)
+        break;
+      result.add(0, siblings[i]);
     }
     
     // done
