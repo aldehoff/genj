@@ -82,9 +82,11 @@ public class PropertyAge extends Property {
      * Accessor Value
      */
     public String getValue() {
-        if (ageAsString!=null)
-            return ageAsString;
-        return getAgeString(years,months,days, true, true);
+      if (ageAsString!=null)
+        return ageAsString;
+      // since we're expected to return a Gedcom compliant value
+      // here we're not localizing the return value (e.g. 1y 2m 3d)       
+      return getAgeString(years,months,days, false, false);
     }
     
     /**
