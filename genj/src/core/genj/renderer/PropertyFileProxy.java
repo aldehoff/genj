@@ -19,7 +19,6 @@
  */
 package genj.renderer;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.util.swing.ImageIcon;
@@ -37,17 +36,9 @@ import javax.swing.text.html.ImageView;
  * first last suffix
  */
 public class PropertyFileProxy extends PropertyProxy {
-  
-  private ImageIcon broken;
-  
-  {
-    try {
-      broken = new ImageIcon(new ImageView(null).getNoImageIcon());
-    } catch (Throwable t) {
-      t.printStackTrace();
-      broken = Gedcom.getImage();
-    }
-  }
+
+  /** an replacement for a 'broken' image */  
+  private final static ImageIcon broken = new ImageIcon(new ImageView(null).getNoImageIcon());
 
   /**
    * @see genj.renderer.PropertyProxy#getSize(FontMetrics, Property, boolean, boolean)
