@@ -23,7 +23,6 @@ import genj.edit.EditViewFactory;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyComparator;
 import genj.option.Option;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
@@ -31,6 +30,7 @@ import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
 import genj.view.ViewManager;
+import genj.view.widgets.SelectEntityWidget;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -39,7 +39,6 @@ import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -269,16 +268,20 @@ public abstract class Report implements Cloneable {
    * @param tag the tag of the entities to show
    * @param sortPath path to sort by or null
    */
-  public final Entity getEntityFromUser(String msg, Gedcom gedcom, String tag, String sortPath) {
-    // grab entities
-    Object[] ents = gedcom.getEntities(tag).toArray();
-    if (ents.length==0)
-      return null;
-    // sort
-    if (sortPath!=null)
-      Arrays.sort(ents, new PropertyComparator(sortPath));
-    // show
-    return (Entity)getValueFromUser(msg, ents, ents[0]);
+  public final Entity getEntityFromUser(String msg, Gedcom gedcom, String tag) {
+    
+    SelectEntityWidget select = new SelectEntityWidget(tag, gedcom.getEntities(tag), "");
+
+    int rc = viewManager.getWindowManager().openDialog(
+      null,
+      getName(),
+      WindowManager.IMG_QUESTION,
+      new JComponent[]{new JLabel(msg),select},
+      WindowManager.OPTIONS_OK_CANCEL,
+      owner
+    );
+
+    return rc==0 ? select.getEntity() : null;
   }
 
   /**
@@ -662,7 +665,7 @@ public abstract class Report implements Cloneable {
      * The target of this item
      */
     private Property getTarget() {
-      return target.getGedcom()!=null ? target : null;
+      return target==null ? null : target.getGedcom()==null ? null : target;
     }
     
   } //Item

@@ -71,7 +71,7 @@ public class ReportDescendants extends Report {
 
       // otherwise assume gedcom and let user choose one
       Gedcom gedcom = (Gedcom)context;
-      indi = (Indi)getEntityFromUser(i18n("descendants.of"), gedcom, Gedcom.INDI, "INDI:NAME");
+      indi = (Indi)getEntityFromUser(i18n("descendants.of"), gedcom, Gedcom.INDI);
       if (indi==null) 
         return;
       

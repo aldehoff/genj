@@ -100,12 +100,7 @@ public class ReportAncestorStatistics extends Report {
     else {
       // No one has been given, we ask the user to select someone in the tree for analysis
       Gedcom gedcom = (Gedcom) context;
-      indi = (Indi) getEntityFromUser(
-          i18n("select_individual"), // msg in resource file
-          gedcom,
-          Gedcom.INDI,
-          "INDI:NAME"
-          );
+      indi = (Indi) getEntityFromUser(i18n("select_individual"), gedcom, Gedcom.INDI);
     }
 
     if (indi == null)

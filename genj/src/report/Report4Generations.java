@@ -96,12 +96,7 @@ public class Report4Generations extends Report {
     } else {
     // Otherwise, ask the user select the root of the tree for analysis
 			Gedcom gedcom=(Gedcom)context;
-			indi = (Indi)getEntityFromUser (
-				 i18n("select"), // msg
-				 gedcom,                        // our gedcom instance
-				 Gedcom.INDI,                   // type INDIVIDUALS
-				 "INDI:NAME"                    // sort by name
-				 );
+			indi = (Indi)getEntityFromUser (i18n("select"), gedcom, Gedcom.INDI);
 		}
 
     if (indi==null) {
