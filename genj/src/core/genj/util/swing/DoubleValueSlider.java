@@ -20,9 +20,12 @@
 package genj.util.swing;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
+import java.text.MessageFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,10 +64,19 @@ public class DoubleValueSlider extends JPanel {
   /** the listeners */
   private List listeners = new ArrayList();
   
+  /** the text */
+  private String text = null;
+
+  /** utils we use */
+  private NumberFormat nf = NumberFormat.getInstance();
+  private MessageFormat mf = new MessageFormat("");
+  
   /**
    * Constructor
    */
   public DoubleValueSlider(double min, double max, double val, boolean exponential) {
+    // set fraction digits on number format
+    nf.setMaximumFractionDigits(1);
     // add sub-components
     setLayout(layouts[0]);
     setOpaque(false);
@@ -107,7 +119,29 @@ public class DoubleValueSlider extends JPanel {
    * Set the text to show
    */
   public void setText(String txt) {
-    label.setText(txt);
+    if (txt.indexOf("{0}")<0) {
+      label.setText(txt);
+    } else {
+      text = txt;
+      updateText();
+    }
+  }
+  
+  /** 
+   * sets the preferred width of the slider   */
+  public void setPreferredSliderWidth(int width) {
+    slider.setPreferredSize(new Dimension(width, slider.getPreferredSize().height));
+  }
+  
+  /**
+   * Updates the showing text   */
+  private void updateText() {
+    // not if not text available
+    if (text==null) return;
+    // do it
+    mf.applyPattern(text);
+    label.setText(mf.format(new Object[]{ nf.format(getValue()) }));
+    // done
   }
   
   /**
@@ -165,6 +199,7 @@ public class DoubleValueSlider extends JPanel {
      * @see javax.swing.event.ChangeListener#stateChanged(ChangeEvent)
      */
     public void stateChanged(ChangeEvent e) {
+      updateText();
       e = new ChangeEvent(DoubleValueSlider.this);
       for (int l=0; l<listeners.size(); l++) {
         ((ChangeListener)listeners.get(l)).stateChanged(e);
