@@ -22,12 +22,11 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.GregorianCalendar;
 
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.55 2004-03-21 14:17:32 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.56 2004-03-21 15:06:32 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -275,8 +274,6 @@ public class ReportGedcomStatistics extends Report {
         (analyzeDeathPlaces==false))
             return;
         
-        long start = new GregorianCalendar().getTimeInMillis();
-        
         Gedcom gedcom = (Gedcom)context;
         
         // what to analyze
@@ -417,10 +414,7 @@ public class ReportGedcomStatistics extends Report {
             println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("deathPlaces")+": "+new Integer(deaths.places.getKeys().size()));
             reportPlaces(reportIndisToDeathPlaces, sortDeathPlacesByName, deaths);
         }
-        
-        long end = new GregorianCalendar().getTimeInMillis();
-        long time = end-start;
-        println("time: "+time);
+       
     }
     
     /** Rounds a number to a specified number digits in the fraction portion
@@ -661,8 +655,8 @@ public class ReportGedcomStatistics extends Report {
             StatisticsIndividuals unknown = new StatisticsIndividuals();
             unknown.which=UNKNOWN;
             // fill the statistics
-            analyzeIndividuals((Entity[])lastNames.lastNamesIndis.getReferences(name).toArray(new Entity[lastNames.lastNamesIndis.getSize(name)]), all, males, females, unknown);
-            analyzeFamilies((Entity[])familiesToLastName.toArray(new Entity[familiesToLastName.size()]), name, families);
+            analyzeIndividuals((Entity[])lastNames.lastNamesIndis.getReferences(name).toArray(new Entity[0]), all, males, females, unknown);
+            analyzeFamilies((Entity[])familiesToLastName.toArray(new Entity[0]), name, families);            
             // store the statistics
             lastNames.lastNamesStatistic.add(name, all);
             lastNames.lastNamesStatistic.add(name, males);
