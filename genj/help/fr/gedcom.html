@@ -1,85 +1,1 @@
-<HTML>
-
-<BODY>
-<H2>Gedcom</H2>
-
-<P>
-Gedcom is a standard for exchanging genealogic information in an electronic 
-format. It is similiar to XML in it's structure but it's not quite as well defined. 
-</P>
-
-<P>
-Generally all Gedcom information is hierarchically structured. An entity
-(like Person, Family or Note) has several properties which in turn can
-have several properties. There's no limit on the number of levels. Beside
-the standard properties (like Date, Name, Sex, etc.) it is o.k. to 
-come up with custom properties supporting personal needs.
-</P>
-
-<P>
-Since Gedcom doesn't know the notion of closing and ending Tags (like XML)
-it is based on lines of different indentation. Indentation is specified
-by a number - then follows the Tag identifying the property type.
-Here is an example (sub-properties are indented here for readability only):
-</P>
-
-<PRE>
-0 INDI @I001@
-  1 NAME Nils /Meier/
-  1 SEX M
-  1 BIRT
-    2 DATE 25 May 1970
-    2 PLAC Rendsburg, Germany
-  1 GRAD
-    2 DATE 10 Dec 1996 
-    2 PLAC Friedrich Wilhelm University Bonn
-    2 TYPE Diplom Informatiker
-  1 RESI
-    2 DATE FROM Jul 1999 TO DEC 2000
-    2 ADDR 202-1241 Kilborn Place
-      3 CONT Ontario, Canada
-      3 CITY Ottawa
-      3 POST K1H1A5    
-  1 NOTE @N003@
-</PRE>
-
-<P>
-Special properties have a certain format for the contained data (e.g. Name /Last Name/).
-Some properties reference other entities - here the NOTE-property links to
-a note in the same Gedcom file.
-</P>
-
-<P>
-The power of Family Tree for Java is that it allows this nested information to
-be edited in hierarchical-view way. Also all know properties are treated in a
-special way, allowing for specific editing forms. Since Family Tree knows about
-properties which reference other entities, it handles the referential integrity, too.
-</P>
-
-<P>
-The user can specify new properties required for individual needs. Carefull thought
-should be given to that though because deviation from the Gedcom standard makes
-it harder to give meaning to the entered data. As shown in the section about
-<A href="view/report.html">Reports</A> (agents runing on Gedcom data) they 
-can be written by anyone with a Java SDK using the infrastructure GenJ provides.
-But if every end-user makes up his own structure the information is harder to retrieve -
-for example: Is every ADDR-property an address where someone once lived
-or is it the current address? Gedcom suggest the event RESI for that purpose : it describes
-the event of dwelling at a certain place for a period of time (see above). 
-GenJ knows about the Gedcom standard and will suggest sub-properties to add to
-properties. We'll discuss this in more detail in the section about the 
-different supported <A href="entities.html">Entities</A>.
-</P>
-
-<P>
-In the future someone will come up with a new standard for keeping
-genealogic information (probably in XML). But setting a worldwide standard is
-not easy. Therefor we should try to stick as closely to Gedcom as
-possible. To say it differently : transformation into the new standard 
-will be very easy if we stick to a common base right now :).
-</P>
-
-
-</BODY>
-
-</HTML>
+<html><body><h2>  Le Format Gedcom</h2><p>Gedcom est une norme dans le monde de l'informatique, permettant l'&eacute;change d'informations g&eacute;n&eacute;alogiques. Cette norme ressemble &agrave; la norme XML dans sa structure, tout en &eacute;tant moins bien d&eacute;finie.<br></p><p>G&eacute;n&eacute;ralement toute information Gedcom est structur&eacute;e de mani&egrave;re hi&eacute;rarchique. Une entit&eacute; (comme un Individu, une Famille, une Note) a plusieurs propri&eacute;t&eacute;s qui, &agrave; leur tour peuvent avoir eux-m&ecirc;mes plusieurs autres propri&eacute;t&eacute;s (ici le mot "propri&eacute;t&eacute;" doit &ecirc;tre pris dans le sens "objet", "&eacute;l&eacute;ment"). Il n'y a pas de limites au nombre de niveaux. En plus des propri&eacute;t&eacute; standards (Date, Nom, Sexe, etc.) vous pouvez ajouter vos propres&nbsp; propri&eacute;t&eacute;s pour r&eacute;pondre &agrave; vos besoins personnels.</p><p>Comme Gedcom ne poss&egrave;de pas la notion d'&eacute;tiquettes de fermeture et d'arr&ecirc;t (comme le format XML), il utilise des lignes ayant un d&eacute;coupage diff&eacute;rent. Ce d&eacute;coupage est d&eacute;finie par un nombre entier qui est suivi d'une &eacute;tiquette d&eacute;finissant le type de propri&eacute;t&eacute;.<br>Ci-dessous se trouve un exemple (les sous-propri&eacute;t&eacute;s sont mis en retrait dans la pr&eacute;sentation, seulement pour une meilleure lisibilit&eacute;) :</p><pre>0 INDI @I001@  1 NAME Nils /Meier/  1 SEX M  1 BIRT    2 DATE 25 May 1970    2 PLAC Rendsburg, Germany  1 GRAD    2 DATE 10 Dec 1996     2 PLAC Friedrich Wilhelm University Bonn    2 TYPE Diplom Informatiker  1 RESI    2 DATE FROM Jul 1999 TO DEC 2000    2 ADDR 202-1241 Kilborn Place      3 CONT Ontario, Canada      3 CITY Ottawa      3 POST K1H1A5      1 NOTE @N003@</pre><p>Certaines propri&eacute;t&eacute;s ont un format sp&eacute;cifique du fait des donn&eacute;es qu'elles contiennent (par exemple Nom /Pr&eacute;nom/). D'autres propri&eacute;t&eacute;s renvoient &agrave; d'autres entit&eacute;s - ici la propri&eacute;t&eacute; NOTE renvoie par un lien &agrave; une note dans le m&ecirc;me fichier Gedcom.</p><p>La puissance de GenealogyJ est due au fait qu'il permet d'&eacute;diterdes informations organis&eacute;es en "poup&eacute;es russes" avec unevue qu'on pourrait qualifier de hi&eacute;rarchique. De la m&ecirc;me mani&egrave;re toutes les propri&eacute;t&eacute;s connues sont trait&eacute;s de fa&ccedil;on sp&eacute;cifique permettant l'&eacute;dition gr&acirc;ce &agrave; des masques de saisie d&eacute;di&eacute;s. Puisque GenJ connait les attributs qui r&eacute;f&eacute;rencent d'autres entit&eacute;s, il g&egrave;re &eacute;galement l'int&eacute;grit&eacute; r&eacute;f&eacute;rentielle.&nbsp;</p><p>L'utilisateur peut d&eacute;finir de nouvelles propri&eacute;t&eacute;s pour des besoins particuliers. Une grande attention doit cependant &ecirc;tre apport&eacute;e &agrave; leur conception car un &eacute;cart par rapport &agrave; la norme Gedcom peut rendre les donn&eacute;es entr&eacute;es difficile &agrave; interpr&eacute;ter. Comme indiqu&eacute; dans le paragraphe traitant des <a href="view/report.html">Rapports</a>(scripts utilisant les donn&eacute;es contenues dans le fichier Gedcom) elles peuvent (ces propri&eacute;t&eacute;s) &ecirc;tre &eacute;crites par quelqu'un qui poss&eacute;de un SDK (Standard Development Kit) Java &agrave; l'aide de l'infrastructure que GenJ fournit.<br>Mais si chaque utilisateur final b&acirc;tit sa propre structure l'informationest difficile &agrave; retrouver - par exemple : est-ce que la propri&eacute;t&eacute;-ADDR est une adresse ou quelqu'un a v&eacute;cu un jour, ou est-ce son adresse actuelle ? Gedcom propose l'&eacute;v&eacute;nement RESI &agrave; cette fin : il d&eacute;crit l'&eacute;v&eacute;nement de demeurer &agrave; un certain endroit pendant un certain temps (voir ci-dessus).<br>GenJ connait la norme Gedcom et proposera des sous-attributs &agrave; ajouter aux attributs. Nous discuterons ceci plus en d&eacute;tail dans le paragraphe  sur les diff&eacute;rentes <a href="entities.html">Entit&eacute;s</a>support&eacute;es.</p><p>Dans le futur on peut s'attendre &agrave; une nouvelle norme( probablementen XML) destin&eacute;e &agrave; g&eacute;rer et conserver les informations g&eacute;n&eacute;alogiques. Mais la mise en place d'une nouvelle norme internationale n'est pas une chose facile. Aussi nous devons essayer de coller le plus pr&egrave;s possible &agrave; la norme Gedcom. Si on veut le dire autrement : le passage &agrave; nouvelle norme sera plus facile si nous adh&eacute;rons &agrave; une base commune d&egrave;s maintenant.<br></p></body></html>
