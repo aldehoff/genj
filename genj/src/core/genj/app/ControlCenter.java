@@ -410,7 +410,7 @@ public class ControlCenter extends JPanel {
       // Unsaved changes ?
       if (unsaved) {
         int rc = windowManager.openDialog(
-          null, 
+          "confirm-exit", 
           null, 
           WindowManager.IMG_WARNING, 
           resources.getString("cc.exit_changes?"), 
