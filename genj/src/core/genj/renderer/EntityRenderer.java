@@ -710,7 +710,7 @@ public class EntityRenderer {
     public void paint(Graphics g, Shape allocation) {
       // find property
       Property p = getProperty();
-      if (p==null) return;
+      if (p==null&&!prenderer.isNullRenderer()) return;
       // setup painting attributes and bounds
       g.setColor(super.getForeground());
       g.setFont(super.getFont());
@@ -732,7 +732,7 @@ public class EntityRenderer {
     protected Dimension getPreferredSpan() {
       // get the property
       Property p = getProperty();
-      if (p==null) return new Dimension(0,0);
+      if (p==null&&!prenderer.isNullRenderer()) return new Dimension(0,0);
       return prenderer.getSize(getFontMetrics(), p, preference, resolution);
     }
     /**

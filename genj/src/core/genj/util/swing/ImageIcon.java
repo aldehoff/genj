@@ -59,6 +59,13 @@ public class ImageIcon extends javax.swing.ImageIcon {
   }
   
   /**
+   * Alternative Constructor
+   */
+  public ImageIcon(Class from, String name) {
+    this(from.getResourceAsStream(name));
+  }
+  
+  /**
    * Alternative Constructor   */
   public ImageIcon(Icon icon) {
     super(read(icon));

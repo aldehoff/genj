@@ -50,6 +50,12 @@ public class PropertyRenderer {
   /** a default PropertyProxy */
   /*package*/ final static PropertyRenderer DEFAULT_PROPERTY_PROXY = new PropertyRenderer();
 
+  /** an replacement for a 'broken' image */  
+  private final static ImageIcon broken = 
+    //new ImageIcon(new javax.swing.text.html.ImageView(null).getNoImageIcon());
+    //new ImageIcon(Object.class.getResourceAsStream("/javax/swing/text/html/icons/image-failed.gif"));
+    new ImageIcon(PropertyRenderer.class, "Broken.gif");
+
   /** cached renderer instances */
   private static Map cache = new HashMap();
 
@@ -175,6 +181,13 @@ public class PropertyRenderer {
   protected boolean isText(int preference) {
     return preference==PREFER_TEXT||preference==PREFER_IMAGEANDTEXT||preference==PREFER_DEFAULT;
   }
+  
+  /**
+   * Whether this renderer wants to paint NULL
+   */
+  protected boolean isNullRenderer() {
+    return false;
+  }
 
   /**
    * Sex
@@ -287,11 +300,6 @@ public class PropertyRenderer {
   
   } //Name
 
-  /** an replacement for a 'broken' image */  
-  private final static ImageIcon broken = 
-    //new ImageIcon(new javax.swing.text.html.ImageView(null).getNoImageIcon());
-    new ImageIcon(Object.class.getResourceAsStream("/javax/swing/text/html/icons/image-failed.gif"));
-  
   /**
    * File
    */
@@ -326,6 +334,13 @@ public class PropertyRenderer {
     }
     
     /**
+     * @see genj.renderer.PropertyRenderer#isNullRenderer()
+     */
+    protected boolean isNullRenderer() {
+      return true;
+    }
+    
+    /**
      * 
      */
     public float getVerticalAlignment(FontMetrics metrics) {  
@@ -336,6 +351,7 @@ public class PropertyRenderer {
      * Helper to get the image of PropertyFile
      */
     private ImageIcon getImage(Property prop) {
+      if (prop==null) return broken;
       ImageIcon result = null;
       if (prop instanceof PropertyFile) { 
         PropertyFile file = (PropertyFile)prop;
