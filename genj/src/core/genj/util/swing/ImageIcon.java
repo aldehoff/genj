@@ -72,6 +72,12 @@ public class ImageIcon extends javax.swing.ImageIcon {
   public ImageIcon(String naMe, byte[] data) {
     super(data);
 
+    // 20040304 checking for valid width/height now - just discovered
+    // that ImageIcon might otherwise accept no-image date without
+    // a notice (and then ProxyFile not realizing it's NOT an image) 
+    if (getIconHeight()<0||getIconWidth()<0)
+      throw new IllegalArgumentException();
+
     // keep name & bytes
     setDescription(naMe);
     bytes = data;
