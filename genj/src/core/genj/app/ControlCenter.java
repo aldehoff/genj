@@ -144,9 +144,11 @@ public class ControlCenter extends JPanel implements ActionListener {
     bh.setImage(Images.imgNewFam       ).setAction("NEWFAM"       ).setTip("cc.tip.create_fam"        ).create();
     bh.setImage(Images.imgNewMedia     ).setAction("NEWMEDIA"     ).setTip("cc.tip.create_media"      ).create();
     bh.setImage(Images.imgNewNote      ).setAction("NEWNOTE"      ).setTip("cc.tip.create_note"       ).create();
+    bh.setCollection(null);
     bh.setImage(Images.imgNewSource    ).setAction("NEWSOURCE"    ).setTip("cc.tip.create_source"     ).create();
     bh.setImage(Images.imgNewSubmitter ).setAction("NEWSUBMITTER" ).setTip("cc.tip.create_submitter"  ).create();
     bh.setImage(Images.imgNewRepository).setAction("NEWREPOSITORY").setTip("cc.tip.create_repository" ).create();
+    bh.setCollection(gedcomButtons);
     bh.setImage(Images.imgDelEntity    ).setAction("DEL"          ).setTip("cc.tip.delete_entity"     ).create();
 
     // Layout
