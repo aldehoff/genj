@@ -19,6 +19,9 @@
  */
 package genj.gedcom;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import genj.util.WordBuffer;
 
 /**
@@ -110,33 +113,62 @@ public class Fam extends Entity {
    * Returns the wife of the family
    */
   public Indi getWife() {
-    Property wife = getProperty(new TagPath("FAM:WIFE"),QUERY_VALID_TRUE);
-    if (wife==null) return null;
-    return ((PropertyWife)wife).getWife();
+    
+    Property wife = getProperty("WIFE", true);
+    if (wife instanceof PropertyWife) 
+      return ((PropertyWife)wife).getWife();
+    return null;
   }
 
   /**
-   * Checks wether this family is descendant of individual
+   * Calculate a set of ancestors of this family
+   * (husband + wife and their ancestors) 
    */
-  /*package*/ boolean isDescendantOf(Indi indi) {
-
-    // Prepare VARs
-    Indi husband,wife;
-
+  public Set getAncestors() {
+    return getAncestors(new HashSet());
+  }
+  
+  /*package*/ Set getAncestors(Set collect) {
+    
     // Husband ?
-    husband = getHusband();
-    if ((husband!=null)&&(husband.isDescendantOf(indi))) {
-      return true;
+    Indi husband = getHusband();
+    if (husband!=null&&!collect.contains(husband)) {
+      collect.add(husband); 
+      husband.getAncestors(collect);
     }
-
+  
     // Wife ?
-    wife = getWife();
-    if ((wife!=null)&&(wife.isDescendantOf(indi))) {
-      return true;
+    Indi wife = getWife();
+    if (wife!=null&&!collect.contains(wife)) {
+      collect.add(wife); 
+      wife.getAncestors(collect);
     }
-
-    // Not descendant
-    return false;
+      
+    // done
+    return collect;
+  }
+  
+  /**
+   * Calculate a set of descendants of this family
+   * (children and their descendants) 
+   */
+  public Set getDescendants() {
+    return getDescendants(new HashSet());
+  }
+  
+  /*package*/ Set getDescendants(Set collect) {
+    
+    // children?
+    Indi[] children = getChildren();
+    for (int c=0; c<children.length; c++) {
+      Indi child = children[c];
+      if (collect.contains(child)) continue;
+      collect.add(child);
+      child.getDescendants(collect);    	
+    }
+    
+    // done
+    return collect;
   }
 
   /**

@@ -136,7 +136,7 @@ public class PropertyChild extends PropertyXRef {
     }
 
     // Child is ancestor of husband or wife ?
-    if (fam.isDescendantOf(child)) {
+    if (fam.getAncestors().contains(child)) {
       throw new GedcomException("Individual @"+id+"@ is ancestor of family @"+fam.getId()+"@");
     }
 

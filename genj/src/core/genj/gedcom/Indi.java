@@ -23,8 +23,10 @@ import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class for encapsulating a person
@@ -364,36 +366,40 @@ public class Indi extends Entity {
   }
 
   /**
-   * Checks wether this individual is descendant of individual
+   * Return all ancestors of this individual
    */
-  /*package*/ boolean isDescendantOf(Indi indi) {
-
-    // Me ?
-    if (this==indi) {
-      return true;
-    }
-
-    // Childhood ?
+  public Set getAncestors() {
+    return getAncestors(new HashSet());
+  }
+  
+  /*package*/ Set getAncestors(Set collect) {
+    
+    // would be in parental family
     Fam fam = getFamc();
-    if (fam==null) {
-      return false;
-    }
+    if (fam!=null)
+      fam.getAncestors(collect);
 
-    // Recursive call
-    return fam.isDescendantOf(indi);
+    // done      
+    return collect;
   }
 
-
   /**
-   * Checks wether this individual is descendant of family 
+   * Returns all descendants for this individual
    */
-  /*package*/ boolean isDescendantOf(Fam fam) {
-    // fam's children
-    Indi[] children = fam.getChildren();
-    for (int c=0; c<children.length; c++) {
-      if (isDescendantOf(children[c])) return true;
+  public Set getDescendants() {
+    return getDescendants(new HashSet());
+  }
+  
+  /*package*/ Set getDescendants(Set collect) {
+    
+    // fams?
+    Fam[] fams = getFamilies();
+    for (int f=0; f<fams.length; f++) {
+      fams[f].getDescendants(collect);      
     }
-    return false;
+    
+    // done
+    return collect;
   }
 
   /**
