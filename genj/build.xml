@@ -34,10 +34,7 @@
     <mkdir dir="${dir.build}"/>
     <mkdir dir="${dir.run}"/>
     <mkdir dir="${dir.dist}"/>
-    <!-- create ./lib -->
-    <property name="dir.lib" value="${dir.build}/lib"/>
-    <delete dir="${dir.lib}"/>
-    <mkdir dir="${dir.lib}"/>
+    <mkdir dir="${dir.build}/lib"/>
   </target>
 
   <!--
@@ -117,13 +114,13 @@
   <target name="dist.language">
 
     <!-- create genj_ll.jar -->
-    <jar jarfile="${dir.lib}/genj_${language}.jar" update="True">
+    <jar jarfile="${dir.build}/lib/genj_${language}.jar" update="True">
       <fileset dir="./language/${language}"/>
     </jar>
 
     <!-- create genj_ll-xyz.zip -->
     <zip zipfile="${dir.dist}/genj_${language}-${app.version}.zip" update="True">
-      <fileset dir="${dir.lib}/.." includes="lib/genj_${language}.jar"/>
+      <fileset dir="${dir.build}" includes="lib/genj_${language}.jar"/>
     </zip>
   </target>
 
@@ -183,8 +180,8 @@
   <target name="dist.app" depends="compile">
 
      <!-- create genj.jar -->
-     <delete file="${dir.lib}/genj.jar"/>
-     <jar jarfile="${dir.lib}/genj.jar" update="True">
+     <delete file="${dir.build}/lib/genj.jar"/>
+     <jar jarfile="${dir.build}/lib/genj.jar" update="True">
        <fileset dir="${dir.build}/classes/contrib"/>
        <fileset dir="${dir.build}/classes/core"/>
        <fileset dir="${dir.build}/version"/>
@@ -195,8 +192,8 @@
      </jar>
      
      <!-- create run.jar -->
-     <delete file="${dir.lib}/run.jar"/>
-     <jar jarfile="${dir.lib}/run.jar" update="True">
+     <delete file="${dir.build}/lib/run.jar"/>
+     <jar jarfile="${dir.build}/lib/run.jar" update="True">
        <manifest>
          <attribute name="Main-Class" value="genj.app.App"/>
          <attribute name="Class-Path" value="./lib/genj.jar ./lib/jhbasic.jar ./lib/graphj.jar ./lib/genj_de.jar ./lib/genj_en.jar ./lib/genj_es.jar ./lib/genj_fr.jar ./lib/genj_it.jar ./lib/genj_ja.jar ./lib/genj_hu.jar  ./lib/genj_pt_BR.jar"/>
@@ -210,8 +207,8 @@
      
      <!-- create genj_app-xyz.zip -->
      <zip zipfile="${dir.dist}/genj_app-${app.version}.zip" update="True">
-       <zipfileset dir="${dir.lib}" includes="run.jar"/>
-       <zipfileset dir="${dir.lib}/.." includes="lib/genj.jar"/>
+       <zipfileset dir="${dir.build}/lib" includes="run.jar"/>
+       <zipfileset dir="${dir.build}" includes="lib/genj.jar"/>
        <zipfileset dir="." includes="lib/graphj.jar"/>
        <zipfileset dir="${dir.build}/classes" includes="report/**"/>
        <zipfileset dir="." includes="gedcom/**"/>
@@ -283,21 +280,9 @@
   <!--
    Distribution
    -->
-  <target name="dist" depends="init,compile,version">
+  <target name="dist" depends="init,compile,version,dist.languages,dist.applet,dist.app,dist.help">
 
-     <echo>Generating distribution bits</echo>
-
-     <!-- do the languages -->
-     <antcall target="dist.languages"/>
-
-     <!-- do the applet -->
-     <antcall target="dist.applet"/>
-
-     <!-- do the application -->
-     <antcall target="dist.app"/> 
-
-     <!-- do the help -->
-     <antcall target="dist.help"/>
+     <echo>You can find the distribution bits in ${dir.dist}</echo>
 
   </target>
 
