@@ -801,6 +801,7 @@ public class Model implements Graph, GedcomListener {
      */
     public MyNode parse(Fam fam, Point2D at) {
       MyNode node = iterate(fam, null);
+      node.padding = padIndis; // patch first fams padding
       if (at!=null) node.getPosition().setLocation(at);
       super.layout(node, true);
       return node;
