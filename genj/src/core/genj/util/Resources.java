@@ -19,22 +19,36 @@
  */
 package genj.util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Class which provides localized text-resources for a package
+ * Resource files all follow these rules
+ * <il>
+ *  <li>reside in directory relative to class being used in e.g. ./genj/app
+ *  <li>are names resources[_xy[_ab]].properties
+ *  <li>are UTF-8 encoded
+ *  <li>contain comment lines starting with '#'
+ *  <li>contain content lines "key = value"
+ *  <li>value can contain \n for newline
+ *  <li>contain content continuation starting with '+'
+ * </il>
  */
 public class Resources {
   
   /** keep track of loaded resources */
   private static Map instances = new HashMap();
 
-  /** the wrapped properties  */
-  private Properties properties = new Properties();
+  /** the mapping key, resource  */
+  private HashMap key2resource = new HashMap();
 
   /** the package name this resource is for */
   private String pkg;
@@ -127,27 +141,71 @@ public class Resources {
 
     // have to load the defaults 
     try {
-      properties.load(getClass().getResourceAsStream(calcFile(pkg, null)));
+      load(getClass().getResourceAsStream(calcFile(pkg, null)));
     } catch (Throwable t) {
       Debug.log(Debug.WARNING, this,"Couldn't read default resources for package '"+pkg+"'");
     }
     
     // try to load the appropriate language - english is default though
     if (lang!=null&&!"en".equals(lang)) try {
-      properties.load(getClass().getResourceAsStream(calcFile(pkg, lang)));
+      load(getClass().getResourceAsStream(calcFile(pkg, lang)));
     } catch (Throwable t) {
     }
 
     // Done
   }
-
+  
+  /**
+   * Loads key/value pairs from inputstream with unicode content
+   */
+  private void load(InputStream in) throws IOException {
+    try {
+      BufferedReader lines = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+      // loop over all lines
+      String key, val, last = null;
+      while (true) {
+        // next line
+        String line = lines.readLine();
+        if (line==null) 
+          break;
+        // trim and check
+        line = line.trim();
+        // .. nothing?
+        if (line.length()==0)
+          continue;
+        // .. comment?
+        char c = line.charAt(0); 
+        if (c=='#') 
+          continue;
+        // .. continuation or key=value
+        if (last!=null&&(c=='+'||c=='&')) {
+          key = last;
+          val = getString(key, "");
+          if (c=='+') val += '\n';
+          val += line.substring(1);
+        } else {
+          int i = line.indexOf('=');
+          if (i<0) continue;
+          key = line.substring(0, i).trim();
+          val = line.substring(i+1).trim();
+        }
+        // remember
+        key2resource.put(key, val);
+        // next
+        last = key;
+      }
+    } catch (UnsupportedEncodingException e) {
+      throw new IOException(e.getMessage());
+    }
+  }
+  
   /**
    * Returns a localized string
    * @param key identifies string to return
    * @param notNull will return key if resource is not defined
    */
   public String getString(String key, boolean notNull) {
-    String result = properties.getProperty(key);
+    String result = (String)key2resource.get(key);
     if (result==null&&notNull) result = key;
     return result;
   }
@@ -194,7 +252,7 @@ public class Resources {
    * Returns the available Keys
    */
   public Iterator getKeys() {
-    return properties.keySet().iterator();
+    return key2resource.keySet().iterator();
   }
   
 } //Resources
