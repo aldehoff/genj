@@ -278,6 +278,7 @@ public class Gedcom {
    * Returns the entity with given id
    */
   public Entity getEntity(String id) throws DuplicateIDException {
+    if (id==null) throw new IllegalArgumentException("id cannot be null");
     Entity result = null;
     for (int i=0;i<ids.length;i++) {
       result = ids[i].get(id);
@@ -438,6 +439,7 @@ public class Gedcom {
       return;
     }
     addedProperties.add(prop);
+    modifiedProperties.add(prop);
     // Done
   }
 
@@ -484,6 +486,8 @@ public class Gedcom {
       return;
 
     deletedProperties.add(prop);
+    modifiedProperties.add(prop);
+    
     // Done
   }
 
