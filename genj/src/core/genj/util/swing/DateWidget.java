@@ -121,14 +121,17 @@ public class DateWidget extends JPanel {
     // keep calendar    
     calendar = pit.getCalendar();
 
-    // update widgets
+    // update year widget
     widgetYear.setText(int2string(pit.getYear (), false));
 
+    // update day widget
     widgetDay.setText(int2string(pit.getDay  (), true ));
-    
-    widgetMonth.setValues(Arrays.asList(calendar.getMonths(true, false)));
+
+    // update month widget
+    String[] months = calendar.getMonths(true);
+    widgetMonth.setValues(Arrays.asList(months));
     try {
-      widgetMonth.setSelectedItem(calendar.getMonth(pit.getMonth(), true, false));
+      widgetMonth.setSelectedItem(months[pit.getMonth()]);
       widgetMonth.setChanged(false);
     } catch (ArrayIndexOutOfBoundsException e) {
     }
