@@ -37,6 +37,8 @@ Future
   C Applet opens detail browser window on (new "Browser Details") button click and not single click
   C Applet's default-size for windows is now 640/480
   B Link to image in help HTML is broken (resedit.html)
+  I Updated resedit.html in help menu to match resedit v.1.02
+  I ReportGedcomStatistics gives stats on birth and death places
   I ReportMakeHTMLTable orders alphabetically by name
   I Javadoc now has links to Sun's Java2 API
 
