@@ -33,6 +33,37 @@ public class PropertyRelationship extends Property {
   
   /** relationships */
   private static TreeMap relationships = new TreeMap();
+  
+  static {
+    remember("Witness");
+    remember("Informant");
+  }
+  
+  /**
+   * Remember a relationship
+   */
+  private static void remember(String rela) {
+    // don't remember empty 
+    if (rela.length()==0) return;
+    // get old count
+    Integer i = (Integer)relationships.get(rela);
+    if (i==null) relationships.put(rela, new Integer(1));
+    else relationships.put(rela, new Integer(i.intValue()+1));
+    // done
+  }
+
+  /**
+   * Forget a relationship
+   */
+  private static void forget(String rela) {
+    // only if it's still being remembered
+    Integer i = (Integer)relationships.get(rela);
+    if (i==null) return;
+    // decrease old count
+    if (i.intValue()<2) relationships.remove(rela);
+    else relationships.put(rela, new Integer(i.intValue()-1));
+    // done
+  }
 
   /**
    * Constructor 
@@ -60,20 +91,12 @@ public class PropertyRelationship extends Property {
    */
   public boolean setValue(String value) {
     // forget old
-    Integer i = (Integer)relationships.get(relationship);
-    if (i!=null) {
-      if (i.intValue()<2) relationships.remove(relationship);
-      else relationships.put(relationship, new Integer(i.intValue()-1));
-    }
+    forget(relationship);
     // change
     noteModifiedProperty();
     relationship=value;
     // remember new
-    if (relationship.length()>0) {
-      i = (Integer)relationships.get(relationship);
-      if (i==null) relationships.put(value, new Integer(1));
-      else relationships.put(value, new Integer(i.intValue()+1));
-    }
+    remember(relationship);
     // done
     return true;
   }
@@ -82,7 +105,7 @@ public class PropertyRelationship extends Property {
    * @see genj.gedcom.PropertyRelationship#delNotify()
    */
   public void delNotify() {
-    setValue("");
+    forget(relationship);
     super.delNotify();
   }
   
