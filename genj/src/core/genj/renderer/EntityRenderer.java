@@ -106,16 +106,13 @@ public class EntityRenderer {
    * Constructor
    */  
   public EntityRenderer(Blueprint bp) {
-    this(bp, null, 1F);
+    this(bp, null);
   }
     
   /**
    * Constructor
    */  
-  public EntityRenderer(Blueprint bp, Font font, float fFactor) {
-
-    // keep the fFactor
-    fontFactor = fFactor;
+  public EntityRenderer(Blueprint bp, Font font) {
 
     // we wrap the html in html/body
     StringBuffer html = new StringBuffer();
@@ -166,6 +163,14 @@ public class EntityRenderer {
     root = new RootView(factory.create(doc.getDefaultRootElement()));
 
     // done    
+  }
+  
+  /**
+   * Change the font factor   */
+  public void setFontFactor(float set) {
+    // keep the fFactor
+    fontFactor = set;
+    // done
   }
   
   /**

@@ -134,6 +134,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     colors.add("selects", Color.red);
     // grab font
     contentFont = registry.get("font", contentFont);
+    isAdjustFonts = registry.get("adjust", isAdjustFonts);
     // grab blueprints
     blueprints = BlueprintManager.getInstance().readBlueprints(registry);
     // setup model
@@ -213,6 +214,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     registry.put("pad"     ,(float)m.pad   );
     registry.put("antial"  , isAntialiasing );
     registry.put("font"    , contentFont);
+    registry.put("adjust"  , isAdjustFonts);
     // blueprints
     BlueprintManager.getInstance().writeBlueprints(blueprints, registry);
     // root    
@@ -397,11 +399,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /**
    * Resolve a renderer   */
   /*package*/ EntityRenderer getEntityRenderer(int type) {
-    EntityRenderer result = new EntityRenderer(
-      blueprints[type], 
-      contentFont,
-      (float)(isAdjustFonts ? UNITS.getY()*2.54D/72 : 1D)      
-    );
+    EntityRenderer result = new EntityRenderer(blueprints[type], contentFont);
     return result;
   }
 
@@ -536,6 +534,12 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.selection      = currentEntity;
       contentRenderer.indiRenderer   = getEntityRenderer(Gedcom.INDIVIDUALS);
       contentRenderer.famRenderer    = getEntityRenderer(Gedcom.FAMILIES   );
+      // special handling for adjusting fonts?
+      if (isAdjustFonts) {
+        float factor = (float)(UNITS.getY()*2.54D/72);      
+        contentRenderer.indiRenderer.setFontFactor(factor);
+        contentRenderer. famRenderer.setFontFactor(factor);
+      }
       // let the renderer do its work
       contentRenderer.render(gw, model);
       // done
