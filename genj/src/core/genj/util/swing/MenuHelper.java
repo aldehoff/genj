@@ -88,6 +88,9 @@ public class MenuHelper  {
     
     // start listening for it
     component.addMouseListener(new MouseAdapter() {
+      public void mousePressed(MouseEvent e) {
+        mouseReleased(e);
+      }
       public void mouseReleased(MouseEvent e) {
         Debug.log(Debug.INFO, this, "popup("+e.isPopupTrigger()+")");
         if (e.isPopupTrigger()) {
