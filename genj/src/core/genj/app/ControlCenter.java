@@ -229,7 +229,7 @@ public class ControlCenter extends JPanel implements ActionListener {
   /**
    * Action closing Gedcom
    */
-  private void actionClose(Gedcom gedcom) {
+  private void actionCloseGedcom(Gedcom gedcom) {
 
     if (gedcom.hasUnsavedChanges()) {
       int rc = JOptionPane.showConfirmDialog(
@@ -541,8 +541,10 @@ public class ControlCenter extends JPanel implements ActionListener {
     }
 
     // CLOSE ?
-    if (e.getActionCommand().equals("EXIT"))
-      close();
+    if (e.getActionCommand().equals("EXIT")) {
+      frame.dispose();
+      return;
+    }
 
     // New Gedcom ?
     if (e.getActionCommand().equals("OPEN")) {
@@ -633,7 +635,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     }
     // Close ?
     if (e.getActionCommand().equals("CLOSE")) {
-      actionClose(gedcom);
+      actionCloseGedcom(gedcom);
       return;
     }
     // Settings?
