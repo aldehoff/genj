@@ -101,8 +101,8 @@ public class FileBean extends PropertyBean {
     defaultFocus = chooser;
 
     // add filechooser if permissions are ok
-    try {
-
+    if (dir!=null) try {
+      
       SecurityManager sm = System.getSecurityManager();
       if (sm!=null) 
         sm.checkPermission( new FilePermission(dir, "read"));      
