@@ -44,10 +44,12 @@ public class CreateEntity extends AbstractChange {
   protected String getConfirmMessage() {
     // You are about to create a {0} in {1}!
     String about = resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom});
-    // This entity will not be connected ... / This entity will be {0}.
+    // This entity will not be connected ... 
     String detail = resources.getString("confirm.new.unrelated");
+    // Entity comment?
+    String comment = resources.getString("confirm."+Gedcom.getTagFor(type));
     // done
-    return about + '\n' + detail;
+    return about + '\n' + detail + '\n' + comment ;
   }
   
   /**

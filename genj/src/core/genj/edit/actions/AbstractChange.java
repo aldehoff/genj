@@ -91,7 +91,7 @@ import javax.swing.JTextArea;
   protected void execute() {
     
     // prepare confirmation message for user
-    final JTextArea confirm = new JTextArea(getConfirmMessage(), 4, 40);
+    final JTextArea confirm = new JTextArea(getConfirmMessage(), 6, 40);
     confirm.setWrapStyleWord(true);
     confirm.setLineWrap(true);
     confirm.setEditable(false);

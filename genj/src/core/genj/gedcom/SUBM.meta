@@ -1,7 +1,0 @@
-0 SUBM img=Submitter.gif
-1  NAME default type=Name img=Name.gif
-1  ADDR type=MultilineValue img=Addr.gif
-2   CITY default type=SimpleValue img=Place.gif
-2   POST type=SimpleValue img=Code.gif
-2   CTRY type=SimpleValue img=Place.gif
-1  PHON type=SimpleValue img=Phone.gif

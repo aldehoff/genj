@@ -53,7 +53,7 @@ public class MetaProperty {
   private static Map roots = new HashMap();
   
   /** static - one parser that is triggered */
-  private static Parser parser = new Parser();
+  private static GrammerParser parser = new GrammerParser();
   
   /** super */
   private MetaProperty supr;
@@ -97,6 +97,22 @@ public class MetaProperty {
     String result = (String)props.get(key);
     if (result==null) result = fallback;
     return result;
+  }
+
+  /**
+   * Inherit subs from super
+   */
+  private void inherit() {
+      
+    // super?
+    if (supr==null) return;
+    
+    // grab subs
+    allSubs.putAll(supr.allSubs);
+    defSubs.addAll(supr.defSubs);
+    visibleSubs.addAll(supr.visibleSubs);
+    
+    // done
   }
   
   /**
@@ -308,9 +324,9 @@ public class MetaProperty {
   }
   
   /**
-   * Parers for our descriptors
+   * The Gedcom Grammer read
    */
-  private static class Parser {
+  private static class GrammerParser {
     
     /** the current stack of MetaProperties */
     private List stack = new ArrayList();
@@ -318,24 +334,21 @@ public class MetaProperty {
     /**
      * Constructor
      */
-    Parser() {
-      
-      // loop over types and parse 'em
+    GrammerParser() {
+      // parse grammar.properties
       try {
-        for (int t=0;t<Gedcom.NUM_TYPES;t++) {
-          parse(MetaProperty.class.getResourceAsStream(Gedcom.getTagFor(t)+".meta"), t);
-        }
-      } catch (Throwable t) {
-        Debug.log(Debug.ERROR, MetaProperty.class, "Error reading meta-definition", t);
+        parse(MetaProperty.class.getResourceAsStream("grammar.properties"));
+      } catch (IOException e) {
+        Debug.log(Debug.ERROR, this, e.getMessage(), e);
+        throw new Error();
       }
-
       // done    
     }
     
     /**
      * parse input
      */
-    private void parse(InputStream in, int entity) throws IOException {
+    private void parse(InputStream in) throws IOException {
 
       BufferedReader reader = new BufferedReader(new InputStreamReader(in));      
     
@@ -348,10 +361,10 @@ public class MetaProperty {
         
         // .. and trim
         line = line.trim();
-        if (line.length()==0) continue;
+        if (line.length()==0||line.startsWith("#")) continue;
         
         // work on line
-        push(line, entity);
+        push(line);
         
         // continue 
       }
@@ -362,7 +375,7 @@ public class MetaProperty {
     /**
      * push a line
      */
-    private void push(String line, int entity) {
+    private void push(String line) {
 
       // break into tokens
       StringTokenizer tokens = new StringTokenizer(line);
@@ -417,11 +430,8 @@ public class MetaProperty {
     private MetaProperty pop() {
       // here's the one going away
       MetaProperty meta = (MetaProperty)stack.remove(stack.size()-1);
-      // in case it has a super type we add its subs now
-      if (meta.supr!=null) {
-        meta.allSubs.putAll(meta.supr.allSubs);
-        meta.defSubs.addAll(meta.supr.defSubs);
-      }
+      // tell it to inherit now (after it has been read completely!)
+      meta.inherit();
       // done 
       return meta;
     }

@@ -64,10 +64,15 @@ public class CreateRelationship extends AbstractChange {
       resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom})
      :
       resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom});
-      
+
+    // relationship detail      
     String detail = resources.getString("confirm.new.related", relationship );
     
-    return about + '\n' + detail;
+    // Entity comment?
+    String comment = resources.getString("confirm."+Gedcom.getTagFor(type));
+    
+    // combine
+    return about + '\n' + detail + '\n' + comment ;
   }
   
   /**
