@@ -65,11 +65,4 @@ public class TextAreaWidget extends JTextArea {
     changeSupport.removeChangeListener(l);
   }
   
-  /**
-   * @see javax.swing.JComponent#requestFocus()
-   */
-  public void requestFocus() {
-    requestFocusInWindow();
-  }
-  
 } //TextAreaWidget

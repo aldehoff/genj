@@ -156,13 +156,5 @@ public class TextFieldWidget extends JTextField {
     // first part of the string is visible
     setCaretPosition(0);
   }
-
-  /**
-   * @see javax.swing.JComponent#requestFocus()
-   */
-  public void requestFocus() {
-    requestFocusInWindow();
-  }
-  
   
 } //JTextField

@@ -201,7 +201,7 @@ public class ChoiceWidget extends JComboBox {
    * @see javax.swing.JComponent#requestFocus()
    */
   public void requestFocus() {
-    requestFocusInWindow();
+    getTextEditor().requestFocus();
   }
   
   /**
