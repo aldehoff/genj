@@ -22,18 +22,29 @@ package genj.gedcom;
 import java.util.Comparator;
 
 /**
- * A path based comparator of properties
+ * A path based comparator of properties where prop[i]<prop[i+1] (unless reversed)
  */
 public class PropertyComparator implements Comparator {
   
   /** the path we're sorting by */
   private TagPath path;
+  
+  /** whether comparison is reversed */
+  private int reversed = 1;
 
   /**
    * Constructor
    */
   public PropertyComparator(String path) {
     this(new TagPath(path));
+  }
+  
+  /**
+   * Constructor
+   */
+  public PropertyComparator(String path, boolean reversed) {
+    this(path);
+    this.reversed = reversed ? -1 : 1;
   }
   
   /**
@@ -53,12 +64,12 @@ public class PropertyComparator implements Comparator {
       p2 = ((Property)o2).getProperty(path);
     
     // null?
-    if (p1==p2) return 0;
-    if (p1==null) return 1;
-    if (p2==null) return -1;
+    if (p1==p2  ) return  0;
+    if (p1==null) return  1 * reversed;
+    if (p2==null) return -1 * reversed;
     
     // let p's compare themselves
-    return p1.compareTo(p2);
+    return p1.compareTo(p2) * reversed;
     
   }
 
