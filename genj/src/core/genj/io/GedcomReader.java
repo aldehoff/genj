@@ -247,8 +247,12 @@ public class GedcomReader implements Trackable {
       throw new GedcomFormatException(msg,line);
     }
     
-    if (xref.length()==0)
-      addWarning(line, "Entity/record "+tag+" without valid @xref@");
+    // warn about missing xref if it's a well known type
+    for (int i=0;i<Gedcom.ENTITIES.length;i++) {
+      if (tag.equals(Gedcom.ENTITIES[i])&&xref.length()==0) {
+        addWarning(line, Gedcom.getName(tag)+" without valid @xref@");
+      }
+    }
 
     // Create entity and read its properties
     try {
