@@ -345,7 +345,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     tree.setEntity(entity);
 
     // Pre-selected editing node ?
-    if ((entity!=null)&&(tree.isShowing())) {
+    if ((entity!=null)) {//&&(tree.isShowing())) {
       tree.setSelectionRow(Math.min(1,tree.getRowCount()));
     }
     
