@@ -45,8 +45,8 @@ import java.util.List;
 
   /** animation status */
   private long 
-    totalTime = 1000,
-    frameTime = 1000/60,
+    totalTime = 1000    ,
+    frameTime = 1000/60 ,
     lastFrame, 
     startFrame;
   

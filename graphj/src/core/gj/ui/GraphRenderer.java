@@ -31,20 +31,20 @@ public interface GraphRenderer {
    * @param layout the layout that has been applied to the graph (might be null)
    * @param graphics the GraphGraphics to use
    */
-  public void render(Graph graph, Layout layout, GraphGraphics graphics);
+  public void render(Graph graph, Layout layout, UnitGraphics graphics);
 
   /**
    * Callback for rendering one node
    * @param node the node to render
    * @param graphics the GraphGraphics to use
    */
-  public void renderNode(Node node, GraphGraphics graphics);
+  public void renderNode(Node node, UnitGraphics graphics);
 
   /**
    * Callback for rendering one arc
    * @param arc the arc to render
    * @param graphics the GraphGraphics to use
    */
-  public void renderArc(Arc arc, GraphGraphics graphics);
+  public void renderArc(Arc arc, UnitGraphics graphics);
     
 }

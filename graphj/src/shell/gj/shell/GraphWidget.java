@@ -15,68 +15,51 @@
  */
 package gj.shell;
 
-import java.awt.BasicStroke;
+import gj.awt.geom.Dimension2D;
+import gj.awt.geom.Path;
+import gj.awt.geom.ShapeHelper;
+import gj.layout.Layout;
+import gj.layout.PathHelper;
+import gj.model.Arc;
+import gj.model.MutableGraph;
+import gj.model.Node;
+import gj.shell.swing.SwingHelper;
+import gj.shell.swing.UnifiedAction;
+import gj.shell.util.ReflectHelper;
+import gj.ui.DefaultGraphRenderer;
+import gj.ui.GraphRenderer;
+import gj.ui.UnitGraphics;
+import gj.util.ArcIterator;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.TexturePaint;
-import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-
-import gj.awt.geom.Dimension2D;
-import gj.awt.geom.ShapeHelper;
-import gj.awt.geom.Path;
-
-import gj.layout.Layout;
-import gj.layout.PathHelper;
-import gj.model.Arc;
-import gj.model.Graph;
-import gj.model.Node;
-import gj.model.MutableGraph;
-
-import gj.shell.swing.*;
-import gj.shell.util.ReflectHelper;
-
-import gj.ui.GraphGraphics;
-import gj.ui.DefaultGraphRenderer;
-import gj.ui.GraphRenderer;
-
-import gj.util.ArcIterator;
+import javax.swing.JScrollPane;
 
 /**
  * Displaying a Graph with user input
  */
-public class GraphWidget extends JComponent {
+public class GraphWidget extends JPanel {
   
   /** the Shapes we know */
   protected Shape[] shapes = new Shape[] {
@@ -97,11 +80,11 @@ public class GraphWidget extends JComponent {
     })
   };
   
-  /** the origin of the graph */
-  private Point2D.Double origin = new Point2D.Double(0,0);
-
   /** the graph we're displaying */
   private MutableGraph graph;
+  
+  /** the content for the graph */
+  private Content content = new Content();
   
   /** the renderer we're using */
   private GraphRenderer graphRenderer = new DefaultGraphRenderer();
@@ -112,8 +95,8 @@ public class GraphWidget extends JComponent {
   /** the lastly selected element */
   private Node lastSelection = null;
   
-  /** the lastly clicked position */
-  private Point2D lastPosition = null;
+  /** the last moust event */
+  private MouseEvent lastEvent = null;
   
   /** whether quicknode is enabled */
   private boolean quickNode = false;
@@ -163,76 +146,13 @@ public class GraphWidget extends JComponent {
     pmCanvas.add(new ActionCreateNode());
     pmCanvas.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleQuickNode()));
     
-    // We want to know when the size changes
-    this.addComponentListener(new ComponentAdapter() {
-      /**
-       * @see ComponentListener#componentResized(ComponentEvent)
-       */
-      public void componentResized(ComponentEvent e) {
-        revalidate();
-      }
-    });
+    // Layout
+    setLayout(new BorderLayout());
+    add(new JScrollPane(content), BorderLayout.CENTER);
     
     // Done
   }
   
-  /**
-   * Callback - painting
-   */
-  public void paintComponent(Graphics g) {
-    
-    // No graph
-    if (graph==null) {
-      // Clear the background 
-      g.setColor(Color.gray);
-      g.fillRect(0, 0, getSize().width, getSize().height);
-      // Done
-      return;
-    }
-    
-    // Convert g->graphics
-    Graphics2D graphics = SwingHelper.getGraphics2D(g,isAntialiasing());
-    
-    // Clear the background
-    graphics.setColor(Color.white);
-    graphics.fillRect(0,0,getSize().width, getSize().height);
-      
-    synchronized (graph) {
-    
-      // Move the origin 0,0 to 64,64
-      graphics.translate(origin.getX(),origin.getY());
-      
-      // Create a GraphGraphics
-      GraphGraphics gg = new GraphGraphics(graphics);
-      
-      // LayoutRenderer?
-      if (layoutRenderer!=null) {
-        layoutRenderer.render(graph,currentLayout,gg);
-      }
-      
-      // Render the graph
-      graphRenderer.render(graph, currentLayout, gg);
-      
-      // Is the a current to render?
-      if (lastSelection!=null) {
-        gg.setColor(Color.blue);
-        gg.draw(
-          lastSelection.getShape(), 
-          lastSelection.getPosition().getX(), 
-          lastSelection.getPosition().getY(),
-          1,1,0,false
-        );
-      }
-      
-      // And let the MouseAnalyzer do what it needs to do
-      if (dndCurrent!=null)
-        dndCurrent.paint(gg);
-
-    }
-        
-    // Done
-  }
-
   /**
    * Accessor - Graph
    */
@@ -269,13 +189,13 @@ public class GraphWidget extends JComponent {
   /**
    *  Creates a node at given position in canvase
    */
-  public void createNode(Point2D position, Object content) {
+  public void createNode(double x, double y, Object object) {
     
     // let the graph do it
     graph.createNode(
-      new Point2D.Double(position.getX()-origin.getX(),position.getY()-origin.getY()),
+      new Point2D.Double(x,y),
       shapes[0],
-      content
+      object
     );
     
     // show it
@@ -283,39 +203,18 @@ public class GraphWidget extends JComponent {
   }
   
   /**
-   * @see Component#getPreferredSize()
-   */
-  public Dimension getPreferredSize() {
-    int w=128,h=128;
-    if (graph!=null) {
-      w = (int)Math.ceil(graph.getBounds().getWidth()+1);
-      h = (int)Math.ceil(graph.getBounds().getHeight()+1);
-    }
-    return new Dimension(w,h);
-  }
-
-  /**
    * @see JComponent#revalidate()
    */
   public void revalidate() {
-    // set the origin
-    if (graph!=null) {
-      synchronized (graph) {
-        origin.setLocation(
-          -graph.getBounds().getX() + (getWidth()-graph.getBounds().getWidth())/2,
-          -graph.getBounds().getY() + (getHeight()-graph.getBounds().getHeight())/2
-        );
-      }
-    }
-    // display
-    repaint();
+    if (content!=null) content.revalidate();
     super.revalidate();
+    repaint();
   }
   
   /**
    * Accessor - the current selection
    */
-  public Node getSelection() {
+  private Node getSelection() {
     return lastSelection;
   }
   
@@ -325,7 +224,7 @@ public class GraphWidget extends JComponent {
   public void setCurrentLayout(Layout layout) {
     currentLayout = layout;
     layoutRenderer = getRenderer(layout);
-    revalidate();
+    repaint();
   }
   
   /**
@@ -386,14 +285,14 @@ public class GraphWidget extends JComponent {
     public void start(MouseEvent e) {
       // already someone there?
       if (dndCurrent!=null) {
-        removeMouseListener(dndCurrent);
-        removeMouseMotionListener(dndCurrent);
+        content.removeMouseListener(dndCurrent);
+        content.removeMouseMotionListener(dndCurrent);
       }
       // switch
       dndCurrent = this;
       // start to listen
-      addMouseListener(dndCurrent);
-      addMouseMotionListener(dndCurrent);
+      content.addMouseListener(dndCurrent);
+      content.addMouseMotionListener(dndCurrent);
       // done
     }
     /** callback - node has changed */
@@ -423,21 +322,18 @@ public class GraphWidget extends JComponent {
     /** callback */
     public void mouseMoved(MouseEvent e) {}
     /** paint */
-    public void paint(GraphGraphics gg) {}
+    public void paint(UnitGraphics gg) {}
     /**
      * Tries to find an element by coordinate
      */
-    protected Node getElement(int x, int y) {
-      // adjusting the position to graph-space
-      x -= origin.getX();
-      y -= origin.getY();
+    protected Node getElement(double x, double y) {
       // try to find a node
-      Point2D selectionPosition = null;
+      Point2D pos = null;
       Iterator nodes = graph.getNodes().iterator();
       while (nodes.hasNext()) {
         Node node = (Node)nodes.next();
-        selectionPosition = node.getPosition();
-        if (node.getShape().contains(x-selectionPosition.getX(),y-selectionPosition.getY())) {
+        pos = node.getPosition();
+        if (node.getShape().contains(x-pos.getX(),y-pos.getY())) {
           return node;
         }
       }
@@ -462,7 +358,7 @@ public class GraphWidget extends JComponent {
       // nothing to do?
       if (graph==null) return;
       // something there?
-      Node node = getElement(e.getX(), e.getY());
+      Node node = getElement(content.getX(e), content.getY(e));
       if (node==null) {
         lastSelection = null;
         return;
@@ -484,14 +380,14 @@ public class GraphWidget extends JComponent {
       if ((e.getModifiers()&e.BUTTON3_MASK)!=0) {
       //if (e.getButton()==e.BUTTON3) {
         // popup
-        lastPosition = e.getPoint();
+        lastEvent = e;
         JPopupMenu menu = lastSelection!=null ? getNodePopupMenu() : getCanvasPopupMenu();
-        menu.show(GraphWidget.this,e.getX(),e.getY());
+        menu.show(content,e.getX(),e.getY());
         return;
       }
       if ((e.getModifiers()&e.BUTTON1_MASK)!=0) {
       //if (e.getButton()==e.BUTTON1) {
-        if (quickNode) createNode(e.getPoint(),""+(graph.getNodes().size()+1));
+        if (quickNode) createNode(content.getX(e), content.getY(e),""+(graph.getNodes().size()+1));
         return;
       }
     }
@@ -506,10 +402,10 @@ public class GraphWidget extends JComponent {
     /** start */
     public void start(MouseEvent e) {
       super.start(e);
-      node = getElement(e.getX(),e.getY());
+      node = getElement(content.getX(e), content.getY(e));
       offset.setLocation(
-        e.getX() - origin.getX() - node.getPosition().getX(),
-        e.getY() - origin.getY() - node.getPosition().getY()
+        e.getX() - node.getPosition().getX(),
+        e.getY() - node.getPosition().getY()
       );
     }
     /** callback */
@@ -520,8 +416,8 @@ public class GraphWidget extends JComponent {
     public void mouseDragged(MouseEvent e) {
       // move the node
       node.getPosition().setLocation(
-        e.getX() - origin.getX() - offset.getX(),
-        e.getY() - origin.getY() - offset.getY()
+        e.getX() - offset.getX(),
+        e.getY() - offset.getY()
       );
       // update after change of a Node
       nodeChanged(node);
@@ -541,7 +437,7 @@ public class GraphWidget extends JComponent {
     }
     /** callback */
     public void mouseReleased(MouseEvent e) {
-      Node to = getElement(e.getX(), e.getY());
+      Node to = getElement(content.getX(e), content.getY(e));
       if (to!=null) {
         Arc arc = graph.createArc(from, to, new Path());
         PathHelper.update(arc.getPath(), from.getPosition(), from.getShape(), to.getPosition(), to.getShape(), 0,false);
@@ -551,15 +447,12 @@ public class GraphWidget extends JComponent {
     }
     /** callback */
     public void mouseMoved(MouseEvent e) {
-      to.setLocation(
-        e.getX()-origin.getX(), 
-        e.getY()-origin.getY()
-      );
+      to.setLocation(content.getX(e), content.getY(e));
       // show it
       repaint();
     }
     /** paint */
-    public void paint(GraphGraphics gg) {
+    public void paint(UnitGraphics gg) {
       graphRenderer.renderArc(this, gg);
     }
     /** @see gj.model.Arc#getStart() */
@@ -601,14 +494,14 @@ public class GraphWidget extends JComponent {
     /** callback */
     public void mouseMoved(MouseEvent e) {
       fac.setLocation(
-        Math.max(0.1,Math.abs(e.getX()-origin.x-pos.x)/dim.w*2),
-        Math.max(0.1,Math.abs(e.getY()-origin.y-pos.y)/dim.h*2)
+        Math.max(0.1,Math.abs(e.getX()-pos.x)/dim.w*2),
+        Math.max(0.1,Math.abs(e.getY()-pos.y)/dim.h*2)
       );
       // show it
       repaint();
     }
     /** paint */
-    public void paint(GraphGraphics gg) {
+    public void paint(UnitGraphics gg) {
       graphRenderer.renderNode(this,gg);
     }
     /** @see gj.model.Node#getArcs() */
@@ -697,7 +590,7 @@ public class GraphWidget extends JComponent {
     protected void execute() {
       String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
       if (txt==null) return;
-      createNode(lastPosition, txt);
+      createNode(content.getX(lastEvent), content.getY(lastEvent), txt);
     }
   }
 
@@ -727,4 +620,98 @@ public class GraphWidget extends JComponent {
     }
   }
   
-}
+  /**
+   * The content we use for drawing
+   */
+  private class Content extends JComponent {
+
+    /**
+     * Constructor
+     */
+    private Content() {
+    } 
+    
+    /**
+     * transform MouseEvent into user space
+     */
+    private double getX(MouseEvent e) {
+      return e.getX() - getXOffset();
+    }
+    
+    /**
+     * transform MouseEvent into user space
+     */
+    private double getY(MouseEvent e) {
+      return e.getY() - getYOffset();
+    }
+    
+    /**
+     * Calculate x offset for centered graph
+     */
+    private int getXOffset() {
+      if (graph==null) return 0;
+      Rectangle2D bounds = graph.getBounds();
+      return (int)(-bounds.getX()+(getWidth()-bounds.getWidth())/2);
+    }
+    
+    /**
+     * Calculate y offset for centered graph
+     */
+    private int getYOffset() {
+      if (graph==null) return 0;
+      Rectangle2D bounds = graph.getBounds();
+      return (int)(-bounds.getY()+(getHeight()-bounds.getHeight())/2);
+    }
+    
+    /**
+     * @see java.awt.Component#getPreferredSize()
+     */
+    public Dimension getPreferredSize() {
+      if (graph==null) return new Dimension();
+      return new Dimension(
+        (int)Math.ceil(graph.getBounds().getWidth()),
+        (int)Math.ceil(graph.getBounds().getHeight())
+      );
+    }
+  
+    /**
+     * @see javax.swing.JComponent#paintComponent(Graphics)
+     */
+    protected void paintComponent(Graphics g) {
+      // clear background
+      g.setColor(Color.white);
+      g.fillRect(0,0,getWidth(),getHeight());
+      // synchronize on graph and go?
+      if (graph==null) return;
+      synchronized (graph) {
+        // create our working graphics
+        UnitGraphics graphics = new UnitGraphics(g, 1.0D, 1.0D);
+        graphics.setAntialiasing(isAntialiasing);
+        // paint at 0,0
+        graphics.translate(getXOffset(),getYOffset());
+        // LayoutRenderer?
+        if (layoutRenderer!=null) 
+          layoutRenderer.render(graph,currentLayout,graphics);
+        // let the renderer do its work
+        graphRenderer.render(graph, currentLayout, graphics);
+        // done
+        // Is the a current to render?
+        if (lastSelection!=null) {
+          graphics.setColor(Color.blue);
+          graphics.draw(
+            lastSelection.getShape(), 
+            lastSelection.getPosition().getX(), 
+            lastSelection.getPosition().getY(),
+            1,1,0,false
+          );
+        }
+        // And let the MouseAnalyzer do what it needs to do
+        if (dndCurrent!=null)
+          dndCurrent.paint(graphics);
+      }
+      // done
+    }
+    
+  } //Content
+  
+} //GraphWidget

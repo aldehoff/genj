@@ -48,7 +48,6 @@ import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.Properties;
 import gj.shell.util.ReflectHelper;
-import gj.ui.GraphGraphics;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -78,9 +77,6 @@ public class Shell {
   /** the graph widget we show */
   private GraphWidget graphWidget;
 
-  /** the scrolling we wrap the graph widget in */  
-  private JScrollPane graphScroll;
-  
   /** the layout widget we show */
   private LayoutWidget layoutWidget;
   
@@ -121,7 +117,6 @@ public class Shell {
     layoutWidget.setLayouts(layouts);
     layoutWidget.setBorder(BorderFactory.createEtchedBorder());
     layoutWidget.addActionListener(new ActionExecuteLayout());
-    graphScroll = new JScrollPane(graphWidget);
     
     // Create our frame
     frame = new JFrame("GraphJ - Shell") {
@@ -133,7 +128,7 @@ public class Shell {
     frame.setDefaultCloseOperation(frame.DISPOSE_ON_CLOSE);
     Container container = frame.getContentPane();
     container.setLayout(new BorderLayout());
-    container.add(graphScroll , BorderLayout.CENTER);
+    container.add(graphWidget, BorderLayout.CENTER);
     container.add(layoutWidget, BorderLayout.EAST  );
     
     // Our default button
@@ -230,7 +225,7 @@ public class Shell {
       content.commit();
     }
     // create the graph      
-    Rectangle2D box = new Rectangle2D.Double(0,0,graphScroll.getSize().width,graphScroll.getSize().height);
+    Rectangle2D box = new Rectangle2D.Double(0,0,graphWidget.getWidth(),graphWidget.getHeight());
     MutableGraph graph = createMutableGraph(box);
     factory.create(graph,graphWidget.shapes[0]);
     setGraph(graph);
@@ -256,7 +251,7 @@ public class Shell {
       // tell the graph Widget
       graphWidget.setCurrentLayout(layout);
       // increase size of Graph to visible maximum for starters
-      graph.getBounds().setRect(0,0,graphScroll.getWidth(), graphScroll.getHeight());
+      graph.getBounds().setRect(0, 0, graphWidget.getWidth(), graphWidget.getHeight());
       // apply it?
       if (!isAnimation) {
         try {

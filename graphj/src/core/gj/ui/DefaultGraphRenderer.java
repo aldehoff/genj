@@ -56,7 +56,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * The rendering functionality
    */
-  public void render(Graph graph, Layout layout, GraphGraphics graphics) {
+  public void render(Graph graph, Layout layout, UnitGraphics graphics) {
     
     // the arcs
     renderArcs(graph.getArcs(),graphics);    
@@ -70,7 +70,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders all Nodes
    */
-  private void renderNodes(Collection nodes, GraphGraphics graphics) {
+  private void renderNodes(Collection nodes, UnitGraphics graphics) {
     
     // Loop through the graph's nodes
     Iterator it = nodes.iterator();
@@ -87,7 +87,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
     // Done
   }
 
-  public void renderNode(Node node, GraphGraphics graphics) {
+  public void renderNode(Node node, UnitGraphics graphics) {
 
     double 
       x = node.getPosition().getX(),
@@ -100,7 +100,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
     // and content    
     Object content = node.getContent();
     if (content!=null) {
-      graphics.draw(content.toString(), x,y, true);
+      graphics.draw(content.toString(), x,y);
     }
 
     // done
@@ -109,7 +109,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders all Arcs
    */
-  private void renderArcs(Collection arcs, GraphGraphics graphics) {
+  private void renderArcs(Collection arcs, UnitGraphics graphics) {
     
     // Loop through the graph's arcs
     Iterator it = arcs.iterator();
@@ -124,7 +124,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders an Arc
    */
-  public void renderArc(Arc arc, GraphGraphics graphics) {
+  public void renderArc(Arc arc, UnitGraphics graphics) {
     
     Path path = arc.getPath();
     
@@ -132,7 +132,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
     graphics.setColor(Color.red);
     
     // the path's shape
-    graphics.draw(path,false);
+    graphics.draw(path,0,0,false);
     
     // and it's end
     Point2D p = path.getLastPoint();

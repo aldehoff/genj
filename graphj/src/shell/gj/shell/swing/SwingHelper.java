@@ -73,16 +73,6 @@ public class SwingHelper {
     return JOptionPane.showConfirmDialog(parent,content,title,type);
   }
   
-  /**
-   * Helper that returns a Graphics2D for given Graphics
-   */
-  public static Graphics2D getGraphics2D(Graphics graphics, boolean antiAliasing) {
-    Graphics2D result = (Graphics2D)graphics;
-    if (antiAliasing)
-      result.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-    return result;
-  }
-  
   /** 
    * Helper that returns a JCheckBoxMenuItem which knows how
    * to handle our UnifiedAction's isSelected

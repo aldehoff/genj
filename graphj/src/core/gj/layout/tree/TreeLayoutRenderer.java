@@ -24,7 +24,7 @@ import gj.layout.Layout;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
-import gj.ui.GraphGraphics;
+import gj.ui.UnitGraphics;
 import gj.ui.GraphRenderer;
 
 /**
@@ -35,7 +35,7 @@ public class TreeLayoutRenderer implements GraphRenderer {
   /**
    * @see gj.ui.LayoutRenderer#render(Graph, GraphGraphics)
    */
-  public void render(Graph graph, Layout layout, GraphGraphics graphics) {
+  public void render(Graph graph, Layout layout, UnitGraphics graphics) {
 
     // the layout has to ours
     if (!(layout instanceof TreeLayout)) return;
@@ -57,7 +57,7 @@ public class TreeLayoutRenderer implements GraphRenderer {
       graphics.setColor(Color.lightGray);
       
       Iterator it = tlayout.debugShapes.iterator();
-      while (it.hasNext()) graphics.draw((Shape)it.next(),false);
+      while (it.hasNext()) graphics.draw((Shape)it.next(),0,0,false);
       
       // end debug
     }
@@ -66,16 +66,16 @@ public class TreeLayoutRenderer implements GraphRenderer {
   }
 
   /**
-   * @see gj.ui.GraphRenderer#renderArc(Arc, GraphGraphics)
+   * @see gj.ui.GraphRenderer#renderArc(Arc, UnitGraphics)
    */
-  public void renderArc(Arc arc, GraphGraphics graphics) {
+  public void renderArc(Arc arc, UnitGraphics graphics) {
     // noop
   }
 
   /**
-   * @see gj.ui.GraphRenderer#renderNode(Node, GraphGraphics)
+   * @see gj.ui.GraphRenderer#renderNode(Node, UnitGraphics)
    */
-  public void renderNode(Node node, GraphGraphics graphics) {
+  public void renderNode(Node node, UnitGraphics graphics) {
     // noop
   }
 
@@ -83,7 +83,7 @@ public class TreeLayoutRenderer implements GraphRenderer {
    * Helper that 'emphasizes' a node by drawing a coloured
    * frame around its shape
    */
-  private void emphasize(Node node, Color color, GraphGraphics graphics) {
+  private void emphasize(Node node, Color color, UnitGraphics graphics) {
     graphics.setColor(color);
     graphics.draw(
       node.getShape(), 
