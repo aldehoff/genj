@@ -565,7 +565,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
           resources.getString("action.cut.tip"),
           WindowManager.IMG_WARNING,
           msg,
-          WindowManager.OPTIONS_OK_CANCEL,
+          new String[] { resources.getString("action.cut"), WindowManager.OPTION_CANCEL },
           EditView.this
         );
         if (option!=0)
@@ -600,6 +600,16 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       if (prop==null) 
         return; // shouldn't happen
         
+      // ask
+      if (0!=manager.getWindowManager().openDialog(
+        null,
+        resources.getString("action.paste.tip"),
+        WindowManager.IMG_QUESTION,
+        Clipboard.getInstance().toString(),
+        new String[]{ resources.getString("action.paste"), WindowManager.OPTION_CANCEL},
+        EditView.this
+      )) return;        
+        
       // paste contents
       if (!gedcom.startTransaction()) return;
       Property result = null;
@@ -611,7 +621,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
           resources.getString("action.paste.tip"),
           WindowManager.IMG_WARNING,
           e.getMessage(),
-          WindowManager.OPTIONS_CANCEL,
+          WindowManager.OPTIONS_OK,
           EditView.this
         );
       }

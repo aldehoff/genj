@@ -84,6 +84,13 @@ public class Clipboard {
     // apply copy
     return copy.paste(where);
   }
+  
+  /**
+   * String representation
+   */
+  public String toString() {
+    return copy==null ? "" : copy.toString();
+  }
 
   /**
    * A Copy 
@@ -136,7 +143,7 @@ public class Clipboard {
           ((PropertyXRef)prop).link();
         }
         // recurse into subs
-        for (int s=0; s<subs.size(); s++) {
+        for (int s=0, t=subs.size(); s<t; s++) {
         	((Copy)subs.get(s)).pasteRecursively(prop, meta);
         }
       } catch (GedcomException e) {
@@ -146,6 +153,42 @@ public class Clipboard {
       }
       // done
       return prop;
+    }
+    
+    /**
+     * append a string representation
+     */
+    public void append(StringBuffer buffer, int level) {
+
+      // add newline
+      if (buffer.length()>0) buffer.append('\n');
+      // add indentation      
+      for (int i=0;i<level;i++) buffer.append(' ');
+      // add 'tag '
+      buffer.append(tag).append(' ');
+      // add value
+      char[] val = value.toCharArray();
+      for (int c=0;c<val.length;c++) {
+        buffer.append(val[c]);
+        if (val[c]=='\n')
+          for (int i=0;i<level+1;i++) buffer.append(' ');
+      }
+      // add subs
+      for (int s=0, t=subs.size(); s<t; s++) {
+        ((Copy)subs.get(s)).append(buffer, level+1);
+      }
+      // done
+    }
+    
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+      // collection
+      StringBuffer buffer = new StringBuffer();
+      append(buffer, 0);
+      // done
+      return buffer.toString();
     }
     
   } //Copy
