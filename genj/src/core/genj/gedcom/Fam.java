@@ -254,15 +254,19 @@ public class Fam extends Entity {
     // check gender of spouse 
     switch (spouse.getSex()) {
       default:
+      case PropertySex.UNKNOWN:
+        // remember new spouse
+        if (husband!=null) setWife(spouse);
+        else setHusband(spouse);
+        // done
+        break;
       case PropertySex.MALE:
         // remember new husband
         setHusband(spouse);
         // keep old husband as wife if necessary
         if (husband!=null)
           wife = setWife(husband);
-        // make sure wife's gender is fine
-        if (wife!=null&&wife.getSex()!=PropertySex.FEMALE)
-          wife.setSex(PropertySex.FEMALE);
+        // done
         break;
       case PropertySex.FEMALE:
         // remember new wife
@@ -270,9 +274,7 @@ public class Fam extends Entity {
         // keep old wife as husband if necessary
         if (wife!=null)
           husband = setHusband(wife);
-        // make sure husband's gender is fine
-        if (husband!=null&&husband.getSex()!=PropertySex.MALE)
-          husband.setSex(PropertySex.MALE);
+        // done
         break;
     }
     
@@ -327,14 +329,10 @@ public class Fam extends Entity {
     setWife(null);
     setHusband(null);
       
-    if (wife!=null) {
+    if (wife!=null)
       setHusband(wife);
-      wife.setSex(PropertySex.MALE);
-    }
-    if (husband!=null) { 
+    if (husband!=null)
       setWife(husband);
-      husband.setSex(PropertySex.FEMALE);
-    }
       
   }
   
