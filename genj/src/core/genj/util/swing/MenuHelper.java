@@ -76,7 +76,7 @@ public class MenuHelper  {
   public JMenuItem createItem(ActionDelegate action) {
     
     JMenuItem result = new JMenuItem();
-    result.addActionListener(action);
+    result.addActionListener((ActionListener)action.as(ActionListener.class));
     if (action.txt!=null) result.setText(string(action.txt));
     if (action.img!=null) result.setIcon(ImgIconConverter.get(action.img));
     result.setEnabled(enabled);

@@ -32,9 +32,11 @@ import genj.Version;
 import genj.lnf.LnFBridge;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
+import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -80,8 +82,7 @@ public class AboutWidget extends JPanel{
     
     // create a south panel
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    JButton bExit = new JButton(App.resources.getString("view.close"));
-    bExit.addActionListener(new ActionDelegate.ActionDisposeFrame(setFrame));
+    JButton bExit = new ButtonHelper().setResources(App.resources).create(new ActionDelegate.ActionDisposeFrame(setFrame).setText("view.close"));
     pSouth.add(bExit);
 
     // create a center panel
@@ -259,7 +260,12 @@ public class AboutWidget extends JPanel{
      * Apply the LnF
      */
     private class ActionApply extends ActionDelegate {
-      public void run() {
+      /** constructor */
+      protected ActionApply() {
+        setText("cc.about.tab4.button.apply");
+      }
+      /** run */
+      public void execute() {
         LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
         if (lnf==null) return;
         App.getInstance().setLnF(lnf,(LnFBridge.Theme)comboThemes.getSelectedItem());
@@ -270,7 +276,7 @@ public class AboutWidget extends JPanel{
      * Update the LnF selection
      */
     private class ActionUpdate extends ActionDelegate {
-      public void run() {
+      public void execute() {
         LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
         if (lnf==null) return; // shouldn't be but old Swing might
         LnFBridge.Theme[] themes = lnf.getThemes();
@@ -304,9 +310,8 @@ public class AboutWidget extends JPanel{
       comboThemes = new JComboBox();
       
       comboLnfs = new JComboBox(new DefaultComboBoxModel(lnfs));
-      comboLnfs.setActionCommand("update");
       comboLnfs.setSelectedItem(LnFBridge.getInstance().getLastLnF());
-      comboLnfs.addActionListener(new ActionUpdate());
+      comboLnfs.addActionListener((ActionListener)new ActionUpdate().as(ActionListener.class));
       
       // layout
       JPanel pResult = new JPanel();
@@ -317,7 +322,7 @@ public class AboutWidget extends JPanel{
       gh.add(comboThemes            , 1,1,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
       
       // show status
-      new ActionUpdate().run();
+      new ActionUpdate().execute();
       
       // done
       return pResult;
@@ -329,9 +334,7 @@ public class AboutWidget extends JPanel{
     private JPanel getSouth() {
       
       // apply-button
-      JButton bOk = new JButton(App.resources.getString("cc.about.tab4.button.apply"));
-      bOk.setActionCommand("apply");
-      bOk.addActionListener(new ActionApply());
+      JButton bOk = new ButtonHelper().setResources(App.resources).create(new ActionApply());
       
       // layout
       JPanel pResult = new JPanel();

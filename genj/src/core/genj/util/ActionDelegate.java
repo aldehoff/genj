@@ -7,22 +7,25 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 /**
  * An Action
  */
-public abstract class ActionDelegate implements ActionListener {
+public abstract class ActionDelegate {
   
   public ImgIcon img,roll;
   public String  txt;
   public String  tip;
   
   /**
-   * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
+   * the interal triggering callback
    */
-  public final void actionPerformed(ActionEvent e) {
+  protected final void trigger() {
     // run & catch
     try {
-      run();
+      execute();
     } catch (Throwable t) {
       t.printStackTrace();
     }
@@ -32,8 +35,7 @@ public abstract class ActionDelegate implements ActionListener {
   /**
    * Implementor's functionality
    */
-  protected void run() {
-  }
+  protected abstract void execute();
   
   /**
    * Image 
@@ -79,25 +81,90 @@ public abstract class ActionDelegate implements ActionListener {
       frame = f;
     }
     /** run */
-    public void run() {
+    public void execute() {
       frame.dispose();
+    }
+  }
+
+  /**
+   * Returns this delegate wrapped in a proxy now triggered
+   * by that contract (without selector)
+   */  
+  public Object as(Class contract) {
+    return as(contract,null);
+  }
+
+  /**
+   * Returns this delegate wrapped in a proxy now triggered
+   * by that contract (with selector)
+   */  
+  public Object as(Class contract, String selector) {
+    // this will have to be done through java.lang.reflect.Proxy at some point
+    if (contract==WindowListener.class) {
+      return new AsWindowListener(selector);
+    }
+    if (contract==ActionListener.class) {
+      return new AsActionListener();
+    }
+    if (contract==Runnable.class) {
+      return new AsRunnable();
+    }
+    if (contract==ListSelectionListener.class) {
+      return new AsListSelectionListener();
+    }
+    // don't know
+    throw new RuntimeException("Unsupported contract '"+contract+"' for ActionDelegate");
+  }
+
+  /**
+   * A converter - WindowListener
+   */
+  private class AsWindowListener extends WindowAdapter {
+    /** selector */
+    private String selector;
+    /** constructor */
+    protected AsWindowListener(String s) {
+      selector=s;
+    }
+    /** the routed close */
+    public void windowClosed(WindowEvent e) {
+      if ("windowClosed".equals(selector)) trigger();
+    }
+    /** the routed closing */
+    public void windowClosing(WindowEvent e) {
+      if ("windowClosing".equals(selector)) trigger();
     }
   }
   
   /**
-   * A specialized WindowClosed delegate
+   * A converter - ListSelectionListener
    */
-  public static class WindowClosedRouter extends WindowAdapter implements WindowListener {
-    /** the target we're routing to */
-    private ActionDelegate delegate;
-    /** constructor */
-    public WindowClosedRouter(ActionDelegate delegate) {
-      this.delegate=delegate;
-    }
-    /** the routed close */
-    public void windowClosed(WindowEvent e) {
-      delegate.actionPerformed(null);
+  private class AsListSelectionListener implements ListSelectionListener {
+    /** the routed selection */
+    public void valueChanged(ListSelectionEvent e) {
+      trigger();
     }
   }
+  
+  /**
+   * A converter - Runnable.run
+   */
+  private class AsRunnable implements Runnable {
+    /** the routed call */
+    public void run() {
+      trigger();
+    }
+  }
+
+  /**
+   * A converter - ActionListener
+   */
+  private class AsActionListener implements ActionListener {
+    /** the routed call */
+    public void actionPerformed(ActionEvent e) {
+      trigger();
+    }
+  }
+  
 }
 

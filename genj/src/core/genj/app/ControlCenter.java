@@ -68,11 +68,7 @@ public class ControlCenter extends JPanel {
 
     // Initialize the frame
     frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    frame.addWindowListener(new WindowAdapter() {
-      public void windowClosing(WindowEvent we) {
-        new ActionExit().run();
-      }
-    });
+    frame.addWindowListener((WindowListener)new ActionExit().as(WindowListener.class,"windowClosing"));
     frame.setJMenuBar(getMenuBar());
 
     // Table of Gedcoms
@@ -80,24 +76,7 @@ public class ControlCenter extends JPanel {
     tGedcoms.setRegistry(registry);
 
     // ... Listening
-    ListSelectionListener tlistener = new ListSelectionListener() {
-      public void valueChanged(ListSelectionEvent lse) {
-        // Calc Gedcom
-        Gedcom gedcom = tGedcoms.getSelectedGedcom();
-
-        // Check if action on selected item is possible
-        boolean on = (gedcom!=null);
-
-        // Switch on/off AbstractButtons related to Gedcom
-        Enumeration e = gedcomButtons.elements();
-        while (e.hasMoreElements()) {
-          ((AbstractButton)e.nextElement()).setEnabled(on);
-        }
-        
-        // Done
-      }
-    };
-    tGedcoms.getSelectionModel().addListSelectionListener(tlistener);
+    tGedcoms.getSelectionModel().addListSelectionListener((ListSelectionListener)new ActionToggleButtons().as(ListSelectionListener.class));
 
     // Create Pane for buttons
     JPanel gedcomPane = getTopButtonBar();
@@ -112,7 +91,7 @@ public class ControlCenter extends JPanel {
     add(entityPane ,"South");
 
     // Load known gedcoms
-    SwingUtilities.invokeLater(new ActionLoadLastOpen());
+    SwingUtilities.invokeLater((Runnable)new ActionLoadLastOpen().as(Runnable.class));
 
     // Done
   }
@@ -256,7 +235,7 @@ public class ControlCenter extends JPanel {
       super.setText("cc.menu.about");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       // know the frame already?
       JFrame frame = App.getInstance().getFrame("about");
       if (frame==null) {
@@ -278,7 +257,7 @@ public class ControlCenter extends JPanel {
       super.setText("cc.menu.contents");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       // know the frame already?
       JFrame frame = App.getInstance().getFrame("help");
       if (frame==null) {
@@ -300,7 +279,7 @@ public class ControlCenter extends JPanel {
       super.setText("cc.menu.exit");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       // Remember open gedcoms
       boolean unsaved = false;
       Vector save = new Vector();
@@ -346,7 +325,7 @@ public class ControlCenter extends JPanel {
       super.setText("cc.menu.open");
     }
     /** run */    
-    protected void run() {
+    protected void execute() {
   
       // ... ask for way to open
       String selections[] = {
@@ -583,11 +562,10 @@ public class ControlCenter extends JPanel {
 
   /**
    * Action - LoadLastOpen
-   * the application was closed
    */
-  private class ActionLoadLastOpen implements Runnable {
+  private class ActionLoadLastOpen extends ActionDelegate {
     /** run */
-    public void run() {
+    public void execute() {
       String[] gedcoms = registry.get("open",new String[0]);
       for (int g=0;g<gedcoms.length;g++) {
         try {
@@ -608,7 +586,7 @@ public class ControlCenter extends JPanel {
       super.setTip("cc.tip.delete_entity");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       // Setup delete dialog
       JFrame frame = App.getInstance().createFrame(
         App.resources.getString("cc.title.delete_entity"),
@@ -637,7 +615,7 @@ public class ControlCenter extends JPanel {
       else super.setText("cc.menu.save");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
@@ -762,7 +740,7 @@ public class ControlCenter extends JPanel {
       super.setText("cc.menu.close");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
   
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
@@ -800,7 +778,7 @@ public class ControlCenter extends JPanel {
       super.setText("cc.menu.merge");
     }    
     /** run */
-    protected void run() {
+    protected void execute() {
   
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
@@ -835,7 +813,7 @@ public class ControlCenter extends JPanel {
       super.setText("cc.menu.verify");
     }    
     /** run */
-    protected void run() {
+    protected void execute() {
   
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
@@ -870,7 +848,7 @@ public class ControlCenter extends JPanel {
       super.setTip("cc.tip.settings");
     }    
     /** run */
-    protected void run() {
+    protected void execute() {
       ViewEditor.startEditing(null,"");
     } 
   } // ActionSettings
@@ -891,7 +869,7 @@ public class ControlCenter extends JPanel {
     }
     
     /** run */
-    protected void run() {
+    protected void execute() {
   
       ImgIcon img;
       int otype;
@@ -934,7 +912,7 @@ public class ControlCenter extends JPanel {
   } //ActionCreate
 
   /**
-   * ActionView
+   * Action - View
    */
   protected class ActionView extends ActionDelegate { 
     /** which (ViewBridge.getDescriptors() index) */
@@ -946,7 +924,7 @@ public class ControlCenter extends JPanel {
       super.setImage(which.img);
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
       if (gedcom==null) return;
@@ -956,4 +934,21 @@ public class ControlCenter extends JPanel {
     } 
   } //ActionView
       
+  /**
+   * Action - ActionToggleButtons
+   */
+  private class ActionToggleButtons extends ActionDelegate {
+    /** run */
+    protected void execute() {
+      // is a gedcom selected
+      boolean on = (tGedcoms.getSelectedGedcom()!=null);
+      // Switch on/off AbstractButtons related to Gedcom
+      Enumeration e = gedcomButtons.elements();
+      while (e.hasMoreElements()) {
+        ((AbstractButton)e.nextElement()).setEnabled(on);
+      }
+      // Done
+    }
+  } //ActionToggleButtons    
+  
 }

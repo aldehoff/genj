@@ -20,6 +20,8 @@
 package genj.app;
 
 import genj.util.ActionDelegate;
+import genj.util.swing.ButtonHelper;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.io.File;
@@ -85,8 +87,9 @@ class HelpWidget extends JPanel {
     
     // create south component
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    JButton bExit = new JButton(App.resources.getString("view.close"));
-    bExit.addActionListener(new ActionDelegate.ActionDisposeFrame(frame));
+    JButton bExit = new ButtonHelper()
+      .setResources(App.resources)
+      .create(new ActionDelegate.ActionDisposeFrame(frame).setText("view.close"));
     pSouth.add(bExit);
     
     // layout

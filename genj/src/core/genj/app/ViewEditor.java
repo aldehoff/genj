@@ -90,7 +90,7 @@ public class ViewEditor extends JPanel {
    */
   private class ActionApply extends ActionDelegate {
     protected ActionApply() { super.setText("view.apply"); }
-    protected void run() {
+    protected void execute() {
       if (currentInfo!=null) currentInfo.apply();
     }
   }
@@ -100,7 +100,7 @@ public class ViewEditor extends JPanel {
    */
   private class ActionReset extends ActionDelegate {
     protected ActionReset() { super.setText("view.reset"); }
-    protected void run() {
+    protected void execute() {
       if (currentInfo!=null) currentInfo.reset();
     }
   }
@@ -159,7 +159,7 @@ public class ViewEditor extends JPanel {
         App.resources.getString("cc.title.settings_edit"),
         Images.imgSettings,
         "settings",
-        new Dimension(256,320)
+        new Dimension(256,480)
       );
       instance = new ViewEditor(frame);
       frame.getContentPane().add(instance);

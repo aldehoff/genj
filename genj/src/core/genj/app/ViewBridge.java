@@ -109,7 +109,7 @@ public class ViewBridge {
       // A button for editing the View's settings
       if (ViewEditor.getViewInfo(view)!=null) {
         scroll.add2Edge(bh.create(new ActionStartEdit(view,frame.getTitle())));
-        frame.addWindowListener(new ActionDelegate.WindowClosedRouter(new ActionStopEdit(view)));
+        frame.addWindowListener((WindowListener)new ActionStopEdit(view).as(WindowListener.class, "windowClosed"));
       }
 
       // And a print button in case a PrintRenderer is existing
@@ -233,7 +233,7 @@ public class ViewBridge {
       title=t;
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       ViewEditor.startEditing(view,title);
     }
   } //ActionViewEdit
@@ -249,7 +249,7 @@ public class ViewBridge {
       view=v;
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       ViewEditor.stopEditing(view);
     }
   } //ActionViewEdit
@@ -269,7 +269,7 @@ public class ViewBridge {
       renderer=r;
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       Printer.print(frame, renderer, new PrintProperties(frame.getTitle()));
     }
   }

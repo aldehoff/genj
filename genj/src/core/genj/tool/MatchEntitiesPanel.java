@@ -199,7 +199,7 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
       else super.setText("Don't match");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       MatchModel matches = (MatchModel)tMatch.getModel();
       if (all) {
         matches.removeAll();

@@ -181,7 +181,7 @@ public class NavigatorView extends JPanel {
       super.setRollover(Images.imgNavFatherOn).setImage(Images.imgNavFatherOff).setTip("tip.nav_father"  );
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       indi.getGedcom().fireEntitySelected(null, indi.getFather(), false);
     }
   }
@@ -195,7 +195,7 @@ public class NavigatorView extends JPanel {
       super.setRollover(Images.imgNavMotherOn).setImage(Images.imgNavMotherOff).setTip("tip.nav_mother"  );
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       indi.getGedcom().fireEntitySelected(null, indi.getMother(), false);
     }
   }
@@ -209,7 +209,7 @@ public class NavigatorView extends JPanel {
       super.setRollover(Images.imgNavYoungerSiblingOn).setImage(Images.imgNavYoungerSiblingOff).setTip("tip.nav_ysibling");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       indi.getGedcom().fireEntitySelected(null, indi.getYoungerSibling(), false);
     }
   }      
@@ -223,7 +223,7 @@ public class NavigatorView extends JPanel {
       super.setRollover(Images.imgNavOlderSiblingOn).setImage(Images.imgNavOlderSiblingOff).setTip("tip.nav_osibling");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       indi.getGedcom().fireEntitySelected(null, indi.getOlderSibling(), false);
     }
   }
@@ -237,7 +237,7 @@ public class NavigatorView extends JPanel {
       super.setRollover(Images.imgNavPartnerOn).setImage(Images.imgNavPartnerOff).setTip("tip.nav_partner" );
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       indi.getGedcom().fireEntitySelected(null, indi.getPartners()[0], false);
     }
   }
@@ -251,7 +251,7 @@ public class NavigatorView extends JPanel {
       super.setRollover(Images.imgNavChildOn).setImage(Images.imgNavChildOff).setTip("tip.nav_child"   );
     }
     /** run */
-    protected void run() {
+    protected void execute() {
       indi.getGedcom().fireEntitySelected(null, indi.getChildren()[0], false);
     }
   }

@@ -61,7 +61,7 @@ public class TableViewInfo extends JPanel implements ViewInfo {
     for (int i=Gedcom.FIRST_ETYPE;i<=Gedcom.LAST_ETYPE;i++) {
       cTypes.addItem(Gedcom.getNameFor(i,true));
     }
-    cTypes.addActionListener(new ActionChooseEntity());
+    cTypes.addActionListener((ActionListener)new ActionChooseEntity().as(ActionListener.class));
 
     // Tree of TagPaths
     pathTree = new TagPathTree();
@@ -188,7 +188,7 @@ public class TableViewInfo extends JPanel implements ViewInfo {
   private class ActionChooseEntity extends ActionDelegate {
     /** constructor */
     /** run */
-    public void run() {
+    public void execute() {
       if (table==null) return;
       eType = cTypes.getSelectedIndex();
       readFromTable();
@@ -208,7 +208,7 @@ public class TableViewInfo extends JPanel implements ViewInfo {
       else setText("info.down");
     }
     /** run */
-    public void run() {
+    public void execute() {
       if (up)
         pathList.up();
       else 

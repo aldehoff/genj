@@ -872,7 +872,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     } 
     
     /** run */
-    public void run() {
+    public void execute() {
   
       // Recheck with the user
       String message = resources.getString(
@@ -947,7 +947,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       super.setImage(Images.imgReturn).setTip("tip.return");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
   
       // Return to last entity from return-stack
       int last = returnStack.size()-1;
@@ -974,7 +974,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       super.setTip("tip.add_prop");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
   
       // Depending on Gedcom of current entity
       if (entity==null)
@@ -1063,7 +1063,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       super.setText("action.del").setTip("tip.del_prop");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
   
       TreePath paths[] = treeOfProps.getSelectionPaths();
       boolean changed = false;
@@ -1149,7 +1149,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       else super.setText("action.down").setTip("tip.down_prop");
     }
     /** run */
-    protected void run() {
+    protected void execute() {
   
       // .. LockWrite
       if (!gedcom.startTransaction()) {
