@@ -21,6 +21,7 @@ package genj.util.swing;
 
 import genj.util.ByteArray;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
@@ -71,8 +72,8 @@ public class ImageIcon extends javax.swing.ImageIcon {
   }
   
   // FIXME needs to be derived
-  private Point dpi = ScreenResolutionScale.getSystemDPI();
-   //new Point(200,200);
+  private Point dpi = //ScreenResolutionScale.getSystemDPI();
+   new Point(200,200);
   
   /**
    * Returns resolution (dpi)
@@ -86,6 +87,14 @@ public class ImageIcon extends javax.swing.ImageIcon {
    */
   public Point2D getPhysicalSize() {
     return new Point2D.Double((double)getIconWidth()/dpi.x,(double)getIconHeight()/dpi.y);
+  }
+  
+  /**
+   * Size in target space (dpi)
+   */
+  public Dimension getSize(Point dpiTarget) {
+    Point2D size = getPhysicalSize();
+    return new Dimension((int)(size.getX()*dpiTarget.x), (int)(size.getY()*dpiTarget.y));
   }
   
   /**

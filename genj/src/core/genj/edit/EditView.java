@@ -63,7 +63,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   private Frame     frame;
 
   /** the registry we use */
-  private Registry registry;
+  /*package*/ Registry registry;
 
   /** the resources we use */
   static final Resources resources = Resources.get(EditView.class);

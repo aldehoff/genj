@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.app.App;
 import genj.edit.actions.RunExternal;
 import genj.gedcom.GedcomException;
 import genj.gedcom.PropertyBlob;
@@ -31,26 +32,29 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.TextFieldWidget;
+import genj.util.swing.UnitGraphics;
 
-import java.awt.event.MouseAdapter;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Iterator;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
 
 /**
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : FILE / BLOB
  */
-// FIXME checkout dpi of pic
-class ProxyFile extends Proxy {
+/*package*/ class ProxyFile extends Proxy {
 
   /** static image dir */
   private final static String 
@@ -62,7 +66,7 @@ class ProxyFile extends Proxy {
 
 
   /** preview */
-  private JLabel       lImage;
+  private Preview preview;
   
   /** enter text */
   private TextFieldWidget tFile;
@@ -101,15 +105,12 @@ class ProxyFile extends Proxy {
     // try to open
     try {
       Origin.Connection c = property.getGedcom().getOrigin().openFile(file);
-      lImage.setIcon(new ImageIcon(c.getInputStream()));
-      lImage.setText("");
+      preview.setImage(c.getInputStream());
     } catch (Throwable t) {
-      lImage.setText("No preview available");
-      lImage.setIcon(null);
+      preview.setImage(null);
     }
 
-    // Update visually
-    lImage.revalidate();
+    // done
   }
 
   /**
@@ -122,17 +123,14 @@ class ProxyFile extends Proxy {
     tFile.setTemplate(true);
 
     // try to open
-    ImageIcon img = blob.getValueAsIcon();
-    if (img!=null) {
-      lImage.setIcon(img);
-      lImage.setText("");
+    byte[] data = blob.getBlobData();
+    if (data!=null) {
+      preview.setImage(new ByteArrayInputStream(data));
     } else {
-      lImage.setText("No preview available");
-      lImage.setIcon(null);
+      preview.setImage(null);
     }
 
-    // Update visually
-    lImage.revalidate();
+    // done
   }
 
   /**
@@ -151,11 +149,9 @@ class ProxyFile extends Proxy {
     in.add(p);
 
     // Any graphical information that could be shown ?
-    lImage = new JLabel();
-    lImage.addMouseListener(new Popup());
-    lImage.setHorizontalAlignment(SwingConstants.CENTER);
+    preview = new Preview();
     
-    JScrollPane scroll = new JScrollPane(lImage);
+    JScrollPane scroll = new JScrollPane(preview);
     scroll.setAlignmentX(0);
     in.add(scroll);
 
@@ -168,34 +164,6 @@ class ProxyFile extends Proxy {
     // Done
     return null;
   }
-
-  /**
-   * Popup   */
-  private class Popup extends MouseAdapter {
-    public void mousePressed(MouseEvent e) {
-      mouseReleased(e);
-    }
-    public void mouseReleased(MouseEvent e) {
-      // no popup trigger no action
-      if (!e.isPopupTrigger()) 
-        return;
-      // show a context menu for file
-      String file = tFile.getText();
-      MenuHelper mh = new MenuHelper().setTarget(view);
-      JPopupMenu popup = mh.createPopup("");
-      // lookup associations
-      String suffix = PropertyFile.getSuffix(file);
-      Iterator it = FileAssociation.get(suffix).iterator();
-      while (it.hasNext()) {
-        FileAssociation fa = (FileAssociation)it.next(); 
-        mh.createItem(new RunExternal(property.getGedcom(),file,fa));
-      }
-      // show
-      if (popup.getComponentCount()>0)
-        popup.show(lImage, e.getPoint().x, e.getPoint().y);
-      // done
-    }
-  } //Popup
 
   /**
    * Action - Choose file
@@ -230,5 +198,148 @@ class ProxyFile extends Proxy {
 
     }
   } //ActionChoose
+  
+  /**
+   * Action - zoom
+   */
+  private class ActionZoom extends ActionDelegate {
+    /** the level of zoom */
+    private int zoom;
+    /**
+     * Constructor
+     */
+    protected ActionZoom(int zOOm) {
+      zoom = zOOm;
+      setText(zoom+"%");
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      preview.setZoom((float)zoom/100);
+    }
+  } //ActionZoom
+  
+  /**
+   * Preview
+   */
+  private class Preview extends JComponent implements MouseListener {
+    /** our image */
+    private ImageIcon img;
+    /** 'our' dpi */
+    private Point dpi;
+    /**
+     * Constructor
+     */
+    protected Preview() {
+      addMouseListener(this);
+      setZoom(view.registry.get("file.zoom", 1.0F));
+    }
+    /**
+     * Sets the zoom level
+     */
+    protected void setZoom(float zoom) {
+      view.registry.put("file.zoom", zoom);
+      dpi = App.getInstance().getDPI();
+      dpi.x = (int)(dpi.x*zoom);
+      dpi.y = (int)(dpi.y*zoom);
+      revalidate();
+      repaint();
+    }
+    /**
+     * Sets the image to preview
+     */
+    protected void setImage(InputStream in) {
+      if (in==null) {
+        img = null;
+      } else {
+        img = new ImageIcon(in);
+      }
+      revalidate();
+      repaint();
+    }
+    /**
+     * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
+     */
+    protected void paintComponent(Graphics g) {
+      // no image?
+      if (img==null) return;
+      // Paint in physical size
+      UnitGraphics ug = new UnitGraphics(g, 1, 1);
+      // calculate factor - the image's dpi might be
+      // different than that of the rendered surface
+      Point idpi = img.getResolution();
+      double
+       scalex = (double)dpi.x/idpi.x, 
+       scaley = (double)dpi.y/idpi.y;
+      ug.scale(scalex,scaley);
+      // paint
+      ug.draw(img, 0, 0, 0, 0);
+      // done
+    }
+    /**
+     * @see javax.swing.JComponent#getPreferredSize()
+     */
+    public Dimension getPreferredSize() {
+      // no image?
+      if (img==null) return new Dimension(0,0);
+      // check physical size
+      return img.getSize(dpi);
+    }
+    /**
+     * callback - mouse pressed
+     */
+    public void mousePressed(MouseEvent e) {
+      mouseReleased(e);
+    }
+    /**
+     * callback - mouse released
+     */
+    public void mouseReleased(MouseEvent e) {
+      // no popup trigger no action
+      if (!e.isPopupTrigger()) 
+        return;
+      // show a context menu for file
+      String file = tFile.getText();
+      MenuHelper mh = new MenuHelper().setTarget(view);
+      JPopupMenu popup = mh.createPopup("");
+      // zoom levels
+      mh.createItem(new ActionZoom( 10));
+      mh.createItem(new ActionZoom( 50));
+      mh.createItem(new ActionZoom(100));
+      mh.createItem(new ActionZoom(150));
+      mh.createItem(new ActionZoom(200));
+      // lookup associations
+      String suffix = PropertyFile.getSuffix(file);
+      Iterator it = FileAssociation.get(suffix).iterator();
+      while (it.hasNext()) {
+        FileAssociation fa = (FileAssociation)it.next(); 
+        mh.createItem(new RunExternal(property.getGedcom(),file,fa));
+      }
+      // show
+      if (popup.getComponentCount()>0)
+        popup.show(this, e.getPoint().x, e.getPoint().y);
+      // done
+    }
+    /**
+     * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
+     */
+    public void mouseExited(MouseEvent e) {
+      // ignored
+    }
+    /**
+     * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
+     */
+    public void mouseEntered(MouseEvent e) {
+      // ignored
+    }
+    /**
+     * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
+     */
+    public void mouseClicked(MouseEvent e) {
+      // ignored
+    }
+
+  } //Preview
   
 } //ProxyFile

@@ -41,7 +41,7 @@ import javax.swing.border.EmptyBorder;
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property
  */
-abstract class Proxy  {
+/*package*/ abstract class Proxy  {
   
   /** the resources */
   protected final static Resources resources = EditView.resources;
