@@ -974,9 +974,8 @@ public class ControlCenter extends JPanel {
           result.renameTo(bak);
         }
         
-        // .. copy from temp to file
+        // .. and now !finally! move from temp to result
         temp.renameTo(result);
-        temp.delete();
        
         // .. note changes are saved now
         if (newOrigin == null) 
