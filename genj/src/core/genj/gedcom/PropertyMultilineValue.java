@@ -190,11 +190,14 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
       }
       
       // take all up to next CR
-      int cr = value.indexOf("\n", start);
-      if (cr>=0) {
-        end = cr;
-        next = "CONT";
-      } 
+      // 20030604 value.indexOf() used here previously is 1.4
+      for (int i=start;i<end;i++) {
+        if (value.charAt(i)=='\n') {
+          end = i;
+          next = "CONT";
+          break;
+        }
+      }
       
       // but max of 255
       if (end-start>255) {
