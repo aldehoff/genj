@@ -86,18 +86,28 @@ public abstract class ActionDelegate implements Cloneable {
     
     // execute
     if (preExecuteOk) try {
+      
       if (async!=ASYNC_NOT_APPLICABLE) {
+        
         synchronized (threadLock) {
           getThread().start();
         }
+        
+      } else {
+        execute();
       }
-      else execute();
+      
     } catch (Throwable t) {
       handleThrowable("execute(sync)", t);
+     
+      // guide into sync'd postExecute because
+      // getThread().start() might fail in 
+      // certain security contexts (e.g. applet)
+      preExecuteOk = false;
     }
     
     // post
-    if ((async==ASYNC_NOT_APPLICABLE)||(!preExecuteOk)) try {
+    if (async==ASYNC_NOT_APPLICABLE||!preExecuteOk) try {
       postExecute();
     } catch (Throwable t) {
       handleThrowable("postExecute", t);
@@ -294,11 +304,14 @@ public abstract class ActionDelegate implements Cloneable {
       try {
         execute();
       } catch (Throwable t) {
+        // queue handleThrowable
         SwingUtilities.invokeLater(new CallSyncHandleThrowable(t));
       }
+      // forget thread
       synchronized (threadLock) {
         thread=null;
       }
+      // queue postExecute
       SwingUtilities.invokeLater(new CallSyncPostExecute());
     }
   } //AsyncExecute
