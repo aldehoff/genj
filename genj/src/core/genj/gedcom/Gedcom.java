@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.72 $ $Author: nmeier $ $Date: 2004-11-12 19:13:25 $
+ * $Revision: 1.73 $ $Author: nmeier $ $Date: 2004-11-12 19:55:20 $
  */
 package genj.gedcom;
 
@@ -580,11 +580,12 @@ public class Gedcom {
     // there?
     if (undos.isEmpty())
       throw new IllegalArgumentException("undo not possible");
-    Transaction undo = (Transaction)undos.remove(undos.size()-1);
 
     // Is there a transaction running?
     if (transaction!=null)
       throw new IllegalStateException("Cannot undo while concurrent transaction is active");
+
+    Transaction undo = (Transaction)undos.remove(undos.size()-1);
 
     // start one
     transaction = new Transaction(this);
