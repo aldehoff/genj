@@ -74,9 +74,9 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     options.add(checkAntialiasing);
     
     sliderCmIndiWidth = createSlider(options, 1.0, 16.0, m.wIndis, "indiwidth" );
-    sliderCmIndiHeight= createSlider(options, 1.0, 16.0, m.hIndis, "indiheight");
+    sliderCmIndiHeight= createSlider(options, 0.4, 16.0, m.hIndis, "indiheight");
     sliderCmFamWidth  = createSlider(options, 1.0, 16.0, m.wFams , "famwidth"  );
-    sliderCmFamHeight = createSlider(options, 1.0, 16.0, m.hFams , "famheight" );
+    sliderCmFamHeight = createSlider(options, 0.4, 16.0, m.hFams , "famheight" );
     sliderCmPadding   = createSlider(options, 0.1,  4.0, m.pad   , "padding"   );
     
     // color chooser
