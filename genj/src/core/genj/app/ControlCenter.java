@@ -240,7 +240,7 @@ public class ControlCenter extends JPanel {
         new String[]{"ged"}, "GEDCOM (*.ged)",
         EnvironmentChecker.getProperty(
           ControlCenter.this,
-          new String[]{ "genj.gedcom.dir", "user.home" },
+          new String[]{ "genj.gedcom.dir" },
           ".",
           "choose gedcom file"
         )
