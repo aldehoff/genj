@@ -22,6 +22,7 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
+import genj.gedcom.TagPath;
 import genj.gedcom.time.Delta;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -56,9 +57,9 @@ public class AgeBean extends PropertyBean {
   /**
    * Start editing a property
    */
-  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
 
-    super.init(setGedcom, setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setPath, setMgr, setReg);
 
     // keep age
     age = (PropertyAge)property;

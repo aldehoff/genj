@@ -22,6 +22,7 @@ package genj.edit.beans;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
@@ -74,6 +75,9 @@ public abstract class PropertyBean extends JPanel {
   /** change support */
   protected ChangeSupport changeSupport = new ChangeSupport(this);
   
+  /** an optional path */
+  private TagPath path;
+  
   /**
    * Accessor
    */
@@ -95,13 +99,14 @@ public abstract class PropertyBean extends JPanel {
   /**
    * Setup an editor in given panel
    */
-  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
 
     // remember property
     property = setProp;
     viewManager = setMgr;
     registry = setReg;
     gedcom = setGedcom;
+    path = setPath;
     
     // done
   }
@@ -155,6 +160,13 @@ public abstract class PropertyBean extends JPanel {
     return super.requestFocusInWindow();
   }
 
+  /**
+   * An optional path 
+   */
+  public TagPath getPath() {
+    return path;
+  }
+  
   /**
    * A preview component using EntityRenderer for an entity
    */

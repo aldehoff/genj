@@ -523,7 +523,7 @@ import javax.swing.event.TreeSelectionListener;
           editPane.add(bean, BorderLayout.CENTER);
   
           // initialize bean
-          bean.init(gedcom, prop, viewManager, registry);
+          bean.init(gedcom, prop, null, viewManager, registry);
           
           // and a label to the top
           final JLabel label = new JLabel(Gedcom.getName(prop.getTag()), prop.getImage(false), SwingConstants.LEFT);

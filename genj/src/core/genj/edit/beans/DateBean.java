@@ -22,6 +22,7 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
+import genj.gedcom.TagPath;
 import genj.gedcom.time.PointInTime;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -100,9 +101,9 @@ public class DateBean extends PropertyBean {
   /**
    * Initialize
    */
-  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
 
-    super.init(setGedcom, setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setPath, setMgr, setReg);
     
     // we know it's a date
     PropertyDate p = (PropertyDate)property;

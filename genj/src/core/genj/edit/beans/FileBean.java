@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
+import genj.gedcom.TagPath;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.Origin;
@@ -77,9 +78,9 @@ public class FileBean extends PropertyBean {
   /**
    * Initialize
    */
-  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
 
-    super.init(setGedcom, setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setPath, setMgr, setReg);
     setLayout(new BorderLayout());
     
     // calc directory

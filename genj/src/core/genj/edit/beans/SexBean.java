@@ -22,6 +22,7 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
+import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
@@ -67,9 +68,9 @@ public class SexBean extends PropertyBean {
   /**
    * Initialize
    */
-  public void init(Gedcom setGedcom, Property setProp, ViewManager setMgr, Registry setReg) {
+  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
 
-    super.init(setGedcom, setProp, setMgr, setReg);
+    super.init(setGedcom, setProp, setPath, setMgr, setReg);
   
     // use our layout
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
