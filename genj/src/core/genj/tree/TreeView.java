@@ -360,7 +360,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     
     for (int i=0; i<set.length; i++) {
       if (!blueprints[i].equals(set[i])) {
-        blueprints = set;
+        blueprints[i] = set[i];
         renderers[i] = null;
         b = true;
       }
