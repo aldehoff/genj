@@ -264,10 +264,10 @@ import java.util.Stack;
     // the parent's contour
     Shape shape = node.getShape();
     Contour parent = shape==null ? new Contour() : orientn.getContour(shape.getBounds2D());
-    parent.north -= nodeop.getPadding(node, nodeop.NORTH);
-    parent.south += nodeop.getPadding(node, nodeop.SOUTH);
-    parent.west  -= nodeop.getPadding(node, nodeop.WEST );
-    parent.east  += nodeop.getPadding(node, nodeop.EAST );
+    parent.north -= nodeop.getPadding(node, nodeop.NORTH, orientn);
+    parent.south += nodeop.getPadding(node, nodeop.SOUTH, orientn);
+    parent.west  -= nodeop.getPadding(node, nodeop.WEST , orientn);
+    parent.east  += nodeop.getPadding(node, nodeop.EAST , orientn);
 
     // the parent's position
     double lat,lon;
@@ -291,7 +291,7 @@ import java.util.Stack;
         maxt = Math.max(maxt, children[c].east - parent.east);
       }
 
-      lon = nodeop.getLongitude(node, minc, maxc, mint, maxt);
+      lon = nodeop.getLongitude(node, minc, maxc, mint, maxt, orientn);
       lat = children[0].north - parent.south;
 
     }
@@ -303,7 +303,7 @@ import java.util.Stack;
         min = lat - parent.north,
         max = lat + tree.getHeight(generation) - parent.south;
 
-      lat = nodeop.getLatitude(node, min, max);
+      lat = nodeop.getLatitude(node, min, max, orientn);
     }
 
     // place it at (lat,lon)
@@ -439,21 +439,21 @@ import java.util.Stack;
     /**
      * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double)
      */
-    public double getLatitude(Node node, double min, double max) {
-      return original.getLatitude(node, min, max);
+    public double getLatitude(Node node, double min, double max, Orientation o) {
+      return original.getLatitude(node, min, max, o);
     }
     /**
      * @see gj.layout.tree.NodeOptions#getLongitude(Node, double, double, double, double)
      */
-    public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
+    public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
       return (oldos.size()&1)==0 ? minc : maxc;
     }
     /**
      * @see gj.layout.tree.NodeOptions#getPadding(int)
      */
-    public double getPadding(Node node, int dir) {
+    public double getPadding(Node node, int dir, Orientation o) {
       if ((oldos.size()&1)!=0) dir = (dir+1)&3;
-      return original.getPadding(node, dir);
+      return original.getPadding(node, dir, o);
     }
   } //ComplementNodeOptions
 

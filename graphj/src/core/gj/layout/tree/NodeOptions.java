@@ -31,7 +31,7 @@ public interface NodeOptions {
   /**
    * Callback - Padding of a node
    */
-  public double getPadding(Node node, int dir);
+  public double getPadding(Node node, int dir, Orientation o);
   
   /**
    * Callback - Latitude of a node
@@ -40,7 +40,7 @@ public interface NodeOptions {
    * @param max the maximum latitude to keep the node and its shape in its generation
    * @return the latitude
    */
-  public double getLatitude(Node node, double min, double max);
+  public double getLatitude(Node node, double min, double max, Orientation o);
   
   /**
    * Callback - Longitude of a node
@@ -50,6 +50,6 @@ public interface NodeOptions {
    * @param mint the minimum latitude to keep the node and its shape above its sub-tree
    * @param maxt the maximum latitude to keep the node and its shape above its sub-tree
    */
-  public double getLongitude(Node node, double minc, double maxc, double mint, double maxt);
+  public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o);
     
 } //NodeOptions

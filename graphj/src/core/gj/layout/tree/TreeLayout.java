@@ -419,26 +419,26 @@ public class TreeLayout extends AbstractLayout implements Layout {
     /**
      * @see gj.layout.tree.NodeOptions#getPadding(int)
      */
-    public double getPadding(Node node, int dir) {
+    public double getPadding(Node node, int dir, Orientation o) {
       if (node instanceof NodeOptions) 
-        return ((NodeOptions)node).getPadding(node, dir);
+        return ((NodeOptions)node).getPadding(node, dir, o);
       if (dir==WEST||dir==EAST) return lonPadding/2;
       return latPadding/2;
     }
     /**
      * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double)
      */
-    public double getLatitude(Node node, double min, double max) {
+    public double getLatitude(Node node, double min, double max, Orientation o) {
       if (node instanceof NodeOptions) 
-        return ((NodeOptions)node).getLatitude(node, min, max);
+        return ((NodeOptions)node).getLatitude(node, min, max, o);
       return min + (max-min) * Math.min(1D, Math.max(0D, latAlignment));
     }
     /**
      * @see gj.layout.tree.NodeOptions#getLongitude(Node, double, double, double, double)
      */
-    public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
+    public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
       if (node instanceof NodeOptions) 
-        return ((NodeOptions)node).getLongitude(node, minc, maxc, mint, maxt);
+        return ((NodeOptions)node).getLongitude(node, minc, maxc, mint, maxt, o);
       return minc + (maxc-minc) * Math.min(1D, Math.max(0D, lonAlignment));
     }
 

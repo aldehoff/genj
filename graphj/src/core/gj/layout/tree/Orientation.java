@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * An Orientation
  */
-/*package*/ abstract class Orientation {
+public abstract class Orientation {
   
   /** orientations */
   private static final Map orientations = new HashMap();
@@ -44,12 +44,12 @@ import java.util.Map;
   /**
    * Returns the longitude for a 2D position
    */
-  /*package*/ abstract double getLongitude(Point2D p);
+  public abstract double getLongitude(Point2D p);
 
   /**
    * Returns the latitude for a 2D position
    */
-  /*package*/ abstract double getLatitude(Point2D p);
+  public abstract double getLatitude(Point2D p);
 
   /**
    * Returns the surface with lat/lon's for given 2D bounds
@@ -85,10 +85,10 @@ import java.util.Map;
     /*package*/ Rectangle2D.Double getBounds(Contour c) {
       return new Rectangle2D.Double(c.north, -c.east, c.south-c.north, c.east-c.west);
     }
-    /*package*/ double getLongitude(Point2D p) {
+    public double getLongitude(Point2D p) {
       return -p.getY();
     }
-    /*package*/ double getLatitude(Point2D p) {
+    public double getLatitude(Point2D p) {
       return p.getX();
     }
     /*package*/ Contour getContour(Rectangle2D r) {
@@ -117,10 +117,10 @@ import java.util.Map;
     /*package*/ Rectangle2D.Double getBounds(Contour c) {
       return new Rectangle2D.Double(c.west, c.north, c.east-c.west, c.south-c.north);
     }
-    /*package*/ double getLongitude(Point2D p) {
+    public double getLongitude(Point2D p) {
       return p.getX();
     }
-    /*package*/ double getLatitude(Point2D p) {
+    public double getLatitude(Point2D p) {
       return p.getY();
     }
     /*package*/ Contour getContour(Rectangle2D r) {
@@ -153,10 +153,10 @@ import java.util.Map;
     /*package*/ Rectangle2D.Double getBounds(Contour c) {
       return new Rectangle2D.Double(-c.south, c.west, c.south-c.north, c.east-c.west);
     }
-    /*package*/ double getLatitude(Point2D p) {
+    public double getLatitude(Point2D p) {
       return -p.getX();
     }
-    /*package*/ double getLongitude(Point2D p) {
+    public double getLongitude(Point2D p) {
       return p.getY();
     }
     /*package*/ Contour getContour(Rectangle2D r) {
@@ -188,10 +188,10 @@ import java.util.Map;
     /*package*/ Contour getContour(Rectangle2D r) {
       return new Contour(-r.getMaxY(), -r.getMaxX(), -r.getMinX(), -r.getMinY());
     }
-    /*package*/ double getLatitude(Point2D p) {
+    public double getLatitude(Point2D p) {
       return -p.getY();
     }
-    /*package*/ double getLongitude(Point2D p) {
+    public double getLongitude(Point2D p) {
       return -p.getX();
     }
     /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
