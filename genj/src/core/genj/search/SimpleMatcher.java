@@ -19,7 +19,9 @@
  */
 package genj.search;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 
 /**
@@ -27,29 +29,44 @@ import java.util.List;
  */
 public class SimpleMatcher extends Matcher {
   
-  /** the pattern we're looking for */
-  private String pattern; 
+  /** the words we're looking for */
+  private String[] words;
   
   /**
    * @see genj.search.Matcher#init(java.lang.String)
    */
   public void init(String pattern) {
-    this.pattern = pattern.toLowerCase();
+    StringTokenizer tokens = new StringTokenizer(pattern.toLowerCase());
+    words = new String[tokens.countTokens()];
+    for (int i=0;i<words.length;i++)
+      words[i] = tokens.nextToken();
   }
   
   /**
    * @see genj.search.Matcher#match(java.lang.String, java.util.List)
    */
   protected void match(String input, List result) {
+    
+    input = input.toLowerCase();
+    
+    ArrayList matches = new ArrayList(words.length);
+    
     // search for matches
-    int end, start = 0;  
-    while (true) {
-      start = input.toLowerCase().indexOf(pattern, start);
-      if (start<0) break;
-      end = start + pattern.length();
-      result.add(new Match(start, end-start));
-      start = end;
+    for (int i=0;i<words.length;i++) {
+
+      int start = input.indexOf(words[i]);
+      if (start<0) 
+        return;
+      
+      while (start>=0) {
+        int end = start + words[i].length();
+        matches.add(new Match(start, end-start));
+        start = input.indexOf(words[i], start+1);
+      }
     }
+    
+    // all found
+    result.addAll(matches);
   }
 
 } //RegExMatcher

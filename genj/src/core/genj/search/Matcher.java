@@ -47,50 +47,6 @@ public abstract class Matcher {
   protected abstract void match(String value, List result);
   
   /**
-   * formats a search value according to given matches 
-   */
-  public static String format(String value, Match[] matches, String open, String close, String newline) {
-    // no matches?
-    if (matches.length==0) return value;
-
-    // loop over matches
-    char[] chars = value.toCharArray();
-    StringBuffer buffer = new StringBuffer(chars.length+matches.length*8);
-    int pos = 0;
-    for (int i = 0; i < matches.length; i++) {
-      Matcher.Match match = matches[i];
-      // PREFIX...
-      if (match.pos>0)
-        append(buffer, chars, pos, match.pos-pos, newline);
-      // match?
-      if (match.len>0) {
-        // prefix-OPEN-...
-        buffer.append(open);
-        // prefix-open-MATCH...
-        append(buffer, chars, match.pos, match.len, newline);
-        // prefix-open-match-CLOSE...
-        buffer.append(close);
-      }
-      // next
-      pos = match.pos+match.len;
-    }
-    // prefix-open-match-close-...-POSTFIX
-    if (pos<chars.length)
-      append(buffer, chars, pos, chars.length-pos, newline);
-
-    // done
-    return buffer.toString();  
-  }
-  
-  private static void append(StringBuffer buffer, char[] chars, int pos, int len, String newline) {
-    for (int i=0; i<len; i++) {
-      char c = chars[pos+i];
-      if (c=='\n') buffer.append(newline);
-      else buffer.append(chars[pos+i]);    	
-    }
-  }
-  
-  /**
    * A match
    */
   public static class Match {

@@ -21,13 +21,27 @@ package genj.search;
 
 import genj.gedcom.Property;
 
+import java.awt.Color;
+
 import javax.swing.ImageIcon;
-import javax.swing.text.View;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 /**
  * A search hit
  */
 /*package*/ class Hit {
+  
+  private final static SimpleAttributeSet 
+    RED  = new SimpleAttributeSet(),
+    BOLD = new SimpleAttributeSet();
+  
+  static {
+    StyleConstants.setForeground(RED, Color.RED);
+    StyleConstants.setBold(BOLD, true);
+  }
 
   /** the property */
   private Property property;
@@ -35,8 +49,8 @@ import javax.swing.text.View;
   /** an image (cached) */
   private ImageIcon img; 
   
-  /** a view (cached) */
-  private View view;
+  /** a document (cached) */
+  private StyledDocument doc;
   
   /** n-th entity  */
   private int entity;
@@ -44,16 +58,40 @@ import javax.swing.text.View;
   /** 
    * Constructor
    */
-  /*package*/ Hit(Property setProp, View setView, int setEntity) {
+  /*package*/ Hit(Property setProp, String value, Matcher.Match[] matches, int setEntity) {
     // keep property
     property = setProp;
     // cache img
     img = property.getImage(false);
-    // keep view
-    view = setView;
     // keep sequence
     entity = setEntity;
+    // prepare document
+    doc = new DefaultStyledDocument();
+    try {
+      // keep tag
+      String tag = " "+setProp.getTag()+" ";
+      doc.insertString(0, tag, BOLD);
+      // keep value
+      doc.insertString(tag.length(), value, null);
+      // format for matches
+      for (int i=0;i<matches.length;i++) {
+        Matcher.Match m = matches[i];
+        doc.setCharacterAttributes(tag.length()+m.pos, m.len, RED, false);
+      }
+      // keep image
+      SimpleAttributeSet img = new SimpleAttributeSet();
+      StyleConstants.setIcon(img, setProp.getImage(false));
+      doc.insertString(0, " ", img);
+    } catch (Throwable t) {
+    }
     // done
+  }
+  
+  /**
+   * Document
+   */
+  /*package*/ StyledDocument getDocument() {
+    return doc;
   }
   
   /**
@@ -70,13 +108,6 @@ import javax.swing.text.View;
     return img;
   }
   
-  /**
-   * View
-   */
-  /*package*/ View getView() {
-    return view;
-  }
- 
   /**
    * n-th entity
    */

@@ -69,6 +69,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
@@ -123,9 +124,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
   /** resources */
   /*package*/ static Resources resources = Resources.get(SearchView.class);
   
-  /** whether we support regex or not */
-  private final boolean isRegExpAvailable = getMatcher("", true)!=null; 
-
   /** gedcom */
   private Gedcom gedcom;
   
@@ -168,9 +166,10 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     registry = reGistry;
     manager = maNager;
     
-    // lookup old search values
+    // lookup old search values & settings
     oldPaths = new LinkedList(Arrays.asList(registry.get("old.paths" , DEFAULT_PATHS)));
     oldValues= new LinkedList(Arrays.asList(registry.get("old.values", DEFAULT_VALUES)));
+    boolean useRegEx = registry.get("regexp", false);
 
     // prepare an action listener connecting to click
     ActionListener aclick = new ActionListener() {
@@ -183,9 +182,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     
     // prepare search criteria
     JLabel labelValue = new JLabel(resources.getString("label.value"));
-    
-    checkRegExp = new JCheckBox(resources.getString("label.regexp"), isRegExpAvailable);
-    checkRegExp.setEnabled(isRegExpAvailable);
+    checkRegExp = new JCheckBox(resources.getString("label.regexp"), useRegEx);
 
     choiceValue = new ChoiceWidget(oldValues);
     choiceValue.addActionListener(aclick);
@@ -259,6 +256,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     // stop listening
     gedcom.removeGedcomListener(results);
     // keep old
+    registry.put("regexp"    , checkRegExp.isSelected());
     registry.put("old.values", oldValues);
     registry.put("old.paths" , oldPaths );
     // continue
@@ -297,18 +295,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
    */
   private Matcher getMatcher(String pattern, boolean regex) {
 
-    Matcher result = null;
-    
-    // regexp?
-    if (regex)  {
-      try {
-        result = new RegExMatcher(); 
-      } catch (Throwable t) {
-        return null;
-      }
-    } else {
-      result = new SimpleMatcher();
-    }
+    Matcher result = regex ? (Matcher)new RegExMatcher() : (Matcher)new SimpleMatcher();
     
     // init
     result.init(pattern);
@@ -357,64 +344,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     return result; 
   }
   
-  /**
-   * Create html (async) 
-   */
-  private String createHTML(Property prop, String value, Matcher.Match[] matches) {
-    StringBuffer html = new StringBuffer(value.length()+matches.length*10);
-    html.append("<html>");
-    html.append("<b>");
-    html.append(prop.getTag());
-    html.append("</b>");
-    if (prop instanceof Entity) {
-      html.append(" @");
-      html.append(((Entity)prop).getId());
-      html.append('@');
-    }
-    html.append(' ');
-    html.append(Matcher.format(value, matches, OPEN, CLOSE, NEWLINE));
-    html.append("</html>");
-    return html.toString();
-  }
-  
-  /**
-   * Create a hit (async)
-   */
-  private Hit createHit(int entity, Property prop, String html) {
-    
-    // 2003/05/09
-    //      
-    // there's an async search for hits going on in ActionSearch
-    // and here we're initializing a hit for each found match. 
-    // We want to create the text.View for each hit async because 
-    // this takes quite some time that we don't want to spend on 
-    // the EDT.
-    // HeadlessLabel.setHTML does this for us using text.BasicHTML.
-    //
-    // Caveat: text.GlyphView is not thread-safe when it comes
-    // to paint() or
-    //   view.getPreferredSpan(X_AXIS)
-    //   view.getPreferredSpan(Y_AXIS));
-    //                             (@see GlyphView.checkPainter()) 
-    //
-    // #1 BasicHTML's root-view Renderer.<init> calls getPreferredSpan()
-    // though which triggers a complete layout calculation using
-    // the global text.GlyphView's renderer.
-    // 
-    // #2 At the same time the EDT might be busy rendering other view 
-    // hierarchies with GlypViews.
-    //
-    // Effect: The global Glyph painter has font/metrics state
-    // (@see GlyphPainter1.sync()) which is now shared by #1 and #2. 
-    // ==> The render result can wrong (noticeably hereplain/bold)
-    //
-    // Solution: Refactor the view factory code from EntityRenderer
-    // into separate type and use here instead of BasicHTML.
-      
-    // instantiate & done
-    return new Hit(prop, viewFactory.setHTML(html), entity);
-  }
-
   /**
    * Action - select predefined paths
    */
@@ -633,7 +562,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       // keep entity
       entities.add(entity);
       // create a hit
-      Hit hit = createHit(entities.size(), prop, createHTML(prop, value, matches));
+      Hit hit = new Hit(prop, value, matches, entities.size());
       // keep it
       synchronized (hits) {
         hits.add(hit);
@@ -754,8 +683,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
    */  
   private class ResultWidget extends JList implements ListSelectionListener, ListCellRenderer, MouseListener  {
     
-    /** our label used for rendering */
-    private HeadlessLabel label = new HeadlessLabel();
+    /** our text component for rendering */
+    private JTextPane text = new JTextPane();
     
     /** background colors */
     private Color[] bgColors = new Color[3];
@@ -778,7 +707,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       setCellRenderer(this);
       addListSelectionListener(this);
       addMouseListener(this);
-      label.setOpaque(true);
+      text.setOpaque(true);
     }
     
     /**
@@ -789,20 +718,19 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       
       // prepare color
       int c = isSelected ? 0 : 1 + (hit.getEntity()&1);  
-      label.setBackground(bgColors[c]);
+      text.setBackground(bgColors[c]);
       
       // show image
-      label.setIcon(hit.getImage());
+      // FIXME image?
+      //label.setIcon(hit.getImage());
 
       // show text view
-      label.setView(hit.getView());
+      text.setDocument(hit.getDocument());
       
-      // patch max - how to enable word wrap
-      // label.setMaximumSize(new Dimension(getSize().width, Integer.MAX_VALUE));
-
       // done
-      return label;
+      return text;
     }
+    
     /**
      * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
      */
