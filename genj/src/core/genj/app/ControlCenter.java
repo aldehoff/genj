@@ -656,7 +656,7 @@ public class ControlCenter extends JPanel {
       new ProgressDialog(
         frame,
         resources.getString("cc.open.loading"),
-        "" + origin,
+        origin.getName(),
         reader,
         getThread());
 
