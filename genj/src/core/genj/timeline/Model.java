@@ -139,6 +139,19 @@ import java.util.Set;
   }
   
   /**
+   * Returns a point in time for a year (double)
+   */
+  protected PointInTime getPointInTime(double year) {
+    
+    int y = (int)Math.floor(year);
+    int d = (int)Math.floor((year%1) * 365);
+    int m = Math.min(11, d/30);
+    d = Math.min(PointInTime.GREGORIAN.getDays(m, y)-1, d-m*30);
+    
+    return new PointInTime(d, m, y);
+  }
+  
+  /**
    * Returns an event by year/layer
    */
   protected Event getEvent(double year, int layer) {

@@ -19,8 +19,10 @@
  */
 package genj.timeline;
 
+import genj.cday.Repository;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.time.PointInTime;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.SliderWidget;
@@ -40,6 +42,7 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -357,7 +361,29 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
   /**
    * The ruler 'at the top'
    */
-  private class Ruler extends JComponent {
+  private class Ruler extends JComponent implements MouseMotionListener {
+    
+    /**
+     * init on add
+     */
+    public void addNotify() {
+      // continue with super
+      super.addNotify();
+      // register for tooltips
+      ToolTipManager.sharedInstance().registerComponent(this);
+      addMouseMotionListener(this);
+    }
+    
+    /**
+     * un-init on remove
+     */
+    public void removeNotify() {
+      // un-register for tooltips
+      ToolTipManager.sharedInstance().unregisterComponent(this);
+      removeMouseMotionListener(this);
+      // continue with super
+      super.removeNotify();
+    }
     
     /**
      * @see javax.swing.JComponent#paintComponent(Graphics)
@@ -388,6 +414,22 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
         content.getPreferredSize().width,
         getFontMetrics(getFont()).getHeight()+1
       );
+    }
+
+    /**
+     * ignored
+     */
+    public void mouseDragged(MouseEvent e) {
+    }
+
+    /**
+     * update tip
+     */
+    public void mouseMoved(MouseEvent e) {
+      double year = pixel2year(e.getPoint().x);
+      PointInTime when = model.getPointInTime(year);
+      Object event = Repository.getInstance().getEvent(when);
+      setToolTipText(event==null ? "" : event.toString());
     }
     
   } //Ruler
