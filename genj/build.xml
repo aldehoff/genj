@@ -182,6 +182,7 @@
        <fileset dir="./images"/>
        <fileset dir="./language/en"/>
        <fileset dir="./src/core" includes="**/*.properties"/>
+       <fileset dir="./src/core" includes="**/*.meta"/>
      </jar>
      
      <!-- create run.jar -->

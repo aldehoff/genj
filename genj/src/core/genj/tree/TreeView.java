@@ -966,9 +966,19 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       }
       
       // Ask for name of bookmark
-      name = JOptionPane.showInputDialog(target, resources.getString("bookmark.name"), name);
-      if (name==null)  return;
-      name = name.trim();
+      //name = JOptionPane.showInputDialog(target, resources.getString("bookmark.name"), name);
+      
+      Object input = JOptionPane.showInputDialog(
+        target, 
+        resources.getString("bookmark.name"),
+        frame.getTitle(),
+        JOptionPane.QUESTION_MESSAGE, 
+        null, 
+        null,
+        name);
+      
+      if (input==null)  return;
+      name = input.toString().trim();
       if (name.length()==0)  return;
       
       // create it

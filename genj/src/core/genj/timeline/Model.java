@@ -31,6 +31,7 @@ import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyName;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -186,9 +187,9 @@ import java.util.Set;
   /**
    * Sets the filter - set of Tags we consider
    */
-  public void setFilter(Set set) {
+  public void setFilter(Collection c) {
     filter.clear();
-    filter.addAll(set);
+    filter.addAll(c);
     createEvents();
   }
   

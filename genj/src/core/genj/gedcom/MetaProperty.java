@@ -31,11 +31,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -76,9 +73,9 @@ public class MetaProperty {
   private Map props;
   
   /** subs */
-  private Set defSubs = new LinkedHashSet();
-  private Map allSubs = new LinkedHashMap();
-  private Set visibleSubs = new LinkedHashSet();
+  private List defSubs = new ArrayList(16);
+  private List visibleSubs = new ArrayList(16);
+  private Map  allSubs = new HashMap();
     
 
   /**
@@ -309,7 +306,7 @@ public class MetaProperty {
           parse(MetaProperty.class.getResourceAsStream(Gedcom.getTagFor(t)+".meta"));
         }
       } catch (Throwable t) {
-        Debug.log(Debug.ERROR, MetaProperty.class, "Error reading meta.xml", t);
+        Debug.log(Debug.ERROR, MetaProperty.class, "Error reading meta-definition", t);
       }
 
       // done    

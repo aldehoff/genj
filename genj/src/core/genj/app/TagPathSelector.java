@@ -28,8 +28,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -47,7 +47,6 @@ public class TagPathSelector extends JComponent {
 
   /** members */
   private JList lChoose;
-  private Set entries = new LinkedHashSet(64);
   private Set selection = new HashSet();
   private boolean isChanged = false;
 
@@ -78,7 +77,7 @@ public class TagPathSelector extends JComponent {
   /**
    * Returns selected tags
    */
-  public Set getSelection() {
+  public Collection getSelection() {
     return selection;
   }
 
@@ -110,13 +109,8 @@ public class TagPathSelector extends JComponent {
    * Sets the tags used by this list
    */
   public void setPaths(List paths) {
-    
-    // gather the entries
-    entries.clear();
-    entries.addAll(paths);
-
     // set it
-    lChoose.setListData(entries.toArray());
+    lChoose.setListData(paths.toArray());
     // done
   }
 

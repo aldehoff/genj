@@ -47,7 +47,7 @@ import javax.swing.event.ListSelectionListener;
 
 /**
  * The settings component for the Tree View */
-public class TreeViewSettings extends JTabbedPane implements Settings, ModelListener {
+public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree.ModelListener {
 
   /** keeping track of tree these settings are for */
   private TreeView view;
