@@ -61,7 +61,7 @@ public class Option {
   /**
    * Accessor - type of this option
    */ 
-  private Class getType() {
+  public Class getType() {
     return field.getType();
   }
   

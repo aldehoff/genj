@@ -22,11 +22,14 @@ package genj.option;
 import java.awt.BorderLayout;
 
 import javax.swing.DefaultCellEditor;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -66,20 +69,26 @@ public class OptionsWidget extends JPanel {
           return new DefaultCellEditor(new JComboBox(moption.getChoices()));
         }
         // boolean option?
-        if (option.getValue() instanceof Boolean)
-          return getDefaultEditor(Boolean.class);
-        // default 
-        return getDefaultEditor(Object.class);
+        if (option.getType()==Boolean.TYPE)
+          return new DefaultCellEditor(new JCheckBox());
+        // all else
+        return new DefaultCellEditor(new JTextField());
       }
       /** we know how to find the correct renderer */
       public TableCellRenderer getCellRenderer(int row, int col) {
+        // easy for first column
         if (col==0)
-          return super.getDefaultRenderer(Object.class);
-        Object val = model.getOption(row).getValue();
-        if (val==null) 
-          val = new Object();
-        // default 
-        return getDefaultRenderer(val.getClass());
+          return new DefaultTableCellRenderer();
+        // check boolean
+        Option option = model.getOption(row);
+        if (option.getType()==Boolean.TYPE) {
+          TableCellRenderer result = getDefaultRenderer(Boolean.class);
+          if (result instanceof JCheckBox)
+            ((JCheckBox)result).setHorizontalAlignment(JCheckBox.LEFT);
+          return result;
+        }
+        // all else
+        return new DefaultTableCellRenderer();
       }
     };
     
