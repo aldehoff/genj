@@ -27,6 +27,7 @@ import genj.gedcom.PropertySex;
 import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
+import genj.util.MnemonicAndText;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
@@ -61,14 +62,12 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
   private static Resources resources = Resources.get(NavigatorView.class);
 
   private final static String 
-    FATHER   = "tip.father",
-    MOTHER   = "tip.mother",
-    YSIBLING = "tip.ysibling",
-    OSIBLING = "tip.osibling",
-    PARTNER  = "tip.partner",
-    CHILD    = "tip.child";
-
-  private final static int gp = 70;
+    FATHER   = "father",
+    MOTHER   = "mother",
+    YSIBLING = "ysibling",
+    OSIBLING = "osibling",
+    PARTNER  = "partner",
+    CHILD    = "child";
 
   private final static ImageIcon
     imgYSiblings = new ImageIcon(NavigatorView.class,"YSiblings.gif"),
@@ -78,14 +77,6 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     imgMother    = Indi.IMG_FEMALE,
     imgMPartner  = Indi.IMG_MALE,
     imgFPartner  = Indi.IMG_FEMALE;
-
-//    imgNavYoungerSiblingOff= imgNavYoungerSiblingOn.getDisabled(gp),
-//    imgNavOlderSiblingOff  = imgNavYoungerSiblingOn.getDisabled(gp),
-//    imgNavChildOff         = imgNavChildOn.getDisabled(gp),
-//    imgNavFatherOff        = imgNavFatherOn.getDisabled(gp),
-//    imgNavMotherOff        = imgNavMotherOn.getDisabled(gp),
-//    imgNavMalePartnerOff   = imgNavMalePartnerOn.getDisabled(gp),
-//    imgNavFemalePartnerOff = imgNavFemalePartnerOn.getDisabled(gp);
 
 
   /** the label holding information about the current individual */
@@ -135,9 +126,45 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
       if (first!=null) setCurrentEntity(first);
     }
     
+//    // setup key bindings
+//    new Shortcut(FATHER  );
+//    new Shortcut(MOTHER  );
+//    new Shortcut(YSIBLING);
+//    new Shortcut(OSIBLING);
+//    new Shortcut(PARTNER );
+//    new Shortcut(CHILD   );
+
     // done    
 
   }
+
+//  /**
+//   * A shortcut
+//   */
+//  private class Shortcut extends AbstractAction {
+//    /** relative key */
+//    String relative;
+//    /** constructor */
+//    Shortcut(String relative) {
+//      
+//      // remember shortcut's relative 
+//      this.relative = relative;
+//
+//      // identify mnemonic
+//      MnemonicAndText mat = new MnemonicAndText(resources.getString(relative));
+//      
+//      KeyStroke keystroke = KeyStroke.getKeyStroke("control "+mat.getMnemonic());
+//      if (keystroke!=null) {
+//        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(keystroke, relative);
+//        //getInputMap(WHEN_FOCUSED).put(keystroke, relative);
+//        getActionMap().put(relative, this);
+//      }
+//    }
+//    /** performed */
+//    public void actionPerformed(ActionEvent e) {
+//      getPopup(relative).doClick();
+//    }
+//  } //Shortcut
   
   /**
    * @see javax.swing.JComponent#removeNotify()
@@ -296,7 +323,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     result.setFireOnClick(true);
     result.setFocusable(false);
     result.setEnabled(false);
-    result.setToolTipText(resources.getString(key));
+    result.setToolTipText(new MnemonicAndText(resources.getString(key)).getText("Ctrl-"));
 
     // remember    
     key2popup.put(key, result);

@@ -140,6 +140,10 @@ import javax.swing.event.TreeSelectionListener;
     setLayout(new BorderLayout());
     add(splitPane, BorderLayout.CENTER);
     
+    // setup keys
+//    new KeyboardShortcut(KeyEvent.VK_UP, KeyboardShortcut.CTRL, new Up()).install(this);
+//    new KeyboardShortcut(KeyEvent.VK_TAB, 0, new Down()).install(this);
+    
     // done    
   }
   
@@ -221,7 +225,7 @@ import javax.swing.event.TreeSelectionListener;
           new CloseWindow(CloseWindow.TXT_CANCEL)
         };
         // ask the user
-        int rc = winManager.openDialog(null, resources.getString("action.cut"), WindowManager.IMG_WARNING, msg, actions, AdvancedEditor.this );
+        int rc = winManager.openDialog("cut.warning", resources.getString("action.cut"), WindowManager.IMG_WARNING, msg, actions, AdvancedEditor.this );
         if (rc!=0)
           return;
         // continue
@@ -600,5 +604,25 @@ import javax.swing.event.TreeSelectionListener;
   
   } //InteractionListener
 
-
+//  /**
+//   * Change tree selection
+//   */
+//  private class Up extends ActionDelegate {
+//    /** callback */
+//    protected void execute() {
+////      tree.getActionMap().get("selectPrevious").actionPerformed(null);
+//    }
+//  }
+//  
+//  /**
+//   * Change tree selection
+//   */
+//  private class Down extends ActionDelegate {
+//    /** callback */
+//    protected void execute() {
+//      System.out.println("down");
+////      tree.getActionMap().get("selectNext").actionPerformed(null);
+//    }
+//  }
+  
 } //AdvancedEditor
