@@ -27,8 +27,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -53,7 +55,7 @@ public class ButtonHelper {
   private Dimension minSize       = null;
   private Dimension maxSize       = null;
   private int horizontalAlignment = -1;
-  private Vector collections      = new Vector();
+  private List collections        = new ArrayList();
   private boolean isTextAllowed   = true;
   private boolean isImageAllowed  = true;
   private boolean isImageOverText = false;
@@ -72,8 +74,8 @@ public class ButtonHelper {
   public ButtonHelper setMinimumSize(Dimension set) { minSize=set; return this; }
   public ButtonHelper setMaximumSize(Dimension set) { maxSize=set; return this; }
   public ButtonHelper setHorizontalAlignment(int set) { horizontalAlignment=set; return this; }
-  public ButtonHelper addCollection(Vector set) { collections.addElement(set); return this; }
-  public ButtonHelper removeCollection(Vector set) { collections.removeElement(set); return this; }
+  public ButtonHelper addCollection(Collection set) { collections.add(set); return this; }
+  public ButtonHelper removeCollection(Collection set) { collections.remove(set); return this; }
   public ButtonHelper setImageAllowed(boolean set) { isImageAllowed=set; return this; }
   public ButtonHelper setTextAllowed(boolean set) { isTextAllowed=set; return this; }
   public ButtonHelper setImageOverText(boolean set) { isImageOverText=set; return this; }
@@ -161,9 +163,9 @@ public class ButtonHelper {
       if (container instanceof JToolBar) result.setMaximumSize(new Dimension(128,128));
     }
     if (collections.size()>0) {
-      Enumeration e = collections.elements();
-      while (e.hasMoreElements()) {
-        ((Vector)e.nextElement()).addElement(result);
+      Iterator it = collections.iterator();
+      while (it.hasNext()) {
+        ((Collection)it.next()).add(result);
       }
     }
 
@@ -195,20 +197,20 @@ public class ButtonHelper {
   /**
    * Helper that en/disables a set of buttons
    */
-  public static void setEnabled(Vector v, boolean set) {
-    Enumeration e = v.elements();
-    while (e.hasMoreElements()) {
-      ((AbstractButton)e.nextElement()).setEnabled(set);
+  public static void setEnabled(Collection c, boolean set) {
+    Iterator cs = c.iterator();
+    while (cs.hasNext()) {
+      ((AbstractButton)cs.next()).setEnabled(set);
     }
   }
   
   /**
    * Helper that sets/unsets text for a set of buttons
    */
-  public static void setTextAllowed(Vector v, boolean set) {
-    Enumeration e = v.elements();
-    while (e.hasMoreElements()) {
-      AbstractButton b = (AbstractButton)e.nextElement();
+  public static void setTextAllowed(Collection c, boolean set) {
+    Iterator cs = c.iterator();
+    while (cs.hasNext()) {
+      AbstractButton b = (AbstractButton)cs.next();
       if (set) {
         Object s = b.getClientProperty("save.text");
         if (s!=null) b.setText(s.toString());
