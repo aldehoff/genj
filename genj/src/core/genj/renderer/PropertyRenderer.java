@@ -246,7 +246,7 @@ public class PropertyRenderer {
       do {
         lines++;
         width = Math.max(width, metrics.stringWidth(line.getValue()));
-      } while (line.next());
+      } while (line.next()>0);
       // done
       return new Dimension(width, metrics.getHeight()*lines);
     }
@@ -283,7 +283,7 @@ public class PropertyRenderer {
         // .. break if not visible anymore
         if (r.y>m) break;
         
-      } while (line.next());
+      } while (line.next()>0);
       // done
     }
     

@@ -19,22 +19,36 @@
  */
 package genj.gedcom;
 
+import genj.util.WordBuffer;
+
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.Date;
 
 /**
+ * CHAN is used by Gedcom to keep track of changes done to entity records.
+ * We simply fold 
+ * <pre>
+ *  1 CHAN
+ *  2  DATE
+ *  3   TIME
+ * </pre>
+ * into this one property, update the pointintime and time and offer
+ * the same three lines on save
  * @author nmeier
  */
-public class PropertyChange extends PropertySimpleValue {
+public class PropertyChange extends Property implements MultiLineSupport {
+  
+  private final static SimpleDateFormat
+   FORMAT = new SimpleDateFormat("HH:mm:ss");
   
   private final static String
-   TAG =  "CHAN",
-   SUB_TIME = "TIME",
-   SUB_DATE = "DATE";
+   CHAN = "CHAN",
+   TIME = "TIME",
+   DATE = "DATE";
   
-  /** internal flag to break endless loops on change */
-  private boolean ignoreChangeNotify = false;
-  
+  private PointInTime pit = PointInTime.getNow();
+  private long time = -1;
+
   /**
    * @see genj.gedcom.Property#isReadOnly()
    */
@@ -53,45 +67,29 @@ public class PropertyChange extends PropertySimpleValue {
    * Get the last change date
    */
   public String getDateAsString() {
-    Property date = lookup(this, SUB_DATE, false);
-    return date!=null ? date.getValue() : "";
+    return pit.toString(new WordBuffer(), true).toString();    
   }
   
   /**
    * Get the last change time
    */
   public String getTimeAsString() {
-    Property date = lookup(this, SUB_DATE, false);
-    if (date==null)
-      return EMPTY_STRING;
-    Property time = lookup(date, SUB_TIME, false);
-    return time!=null ? time.getValue() : EMPTY_STRING;
-  }
-  
-  /**
-   * Lookup contained DATE
-   */
-  private Property lookup(Property parent, String tag, boolean create) {
-    Property result = parent.getProperty(tag);
-    if (result==null&&create) {
-      result = new PropertySimpleReadOnly(tag);
-      parent.addProperty(result);
-    }
-    return result;
+    return time<0 ? EMPTY_STRING : FORMAT.format(new Date(time));
   }
   
   /**
    * @see genj.gedcom.Property#getTag()
    */
   public String getTag() {
-    return TAG;
+    return CHAN;
   }
   
   /**
    * @see genj.gedcom.PropertySimpleValue#setTag(java.lang.String)
    */
-  void setTag(String set) {
-    // ignored
+  Property init(String set, String value) throws GedcomException {
+    assume(CHAN.equals(set), UNSUPPORTED_TAG);
+    return super.init(set,value);
   }
 
   /**
@@ -100,7 +98,7 @@ public class PropertyChange extends PropertySimpleValue {
   /*package*/ static void update(Entity entity) {
     
     // get PropertyChange
-    PropertyChange change = (PropertyChange)entity.getProperty(TAG);
+    PropertyChange change = (PropertyChange)entity.getProperty(CHAN);
     if (change==null) {
       change = new PropertyChange();
       entity.addProperty(change);
@@ -115,35 +113,93 @@ public class PropertyChange extends PropertySimpleValue {
    */
   private void update() {
 
-    // ignore what's going on?
-    if (ignoreChangeNotify||!getGedcom().isTransaction())
-      return;
-          
-    ignoreChangeNotify = true;
-        
     // update values
-    Property 
-      date = lookup(this, SUB_DATE, true),
-      time = lookup(date, SUB_TIME, true);
-    updateDate(date);
-    updateTime(time);
-    
+    pit = PointInTime.getNow();
+    time = System.currentTimeMillis();
+
     // done
-    ignoreChangeNotify = false;
   }
   
   /**
-   * Update the date portion
+   * Callback for properties that we might be able to
+   * append - we do TIME and DATE
+   * @see genj.gedcom.MultiLineSupport#append(int, java.lang.String, java.lang.String)
    */
-  private void updateDate(Property date) {  
-    date.setValue(PointInTime.getNow().toGedcomString());
+  public boolean append(int level, String tag, String value) {
+    if (level==1&&TIME.equals(tag)) { 
+      pit = PointInTime.getPointInTime(value);
+      return true;
+    }
+    if (level==2&&TIME.equals(tag)) {
+      try {
+        time = FORMAT.parse(value).getTime();
+      } catch (Throwable t) {
+        time = -1;
+      }
+      return true;
+    }
+    return true;
+  }
+
+  /**
+   * @see genj.gedcom.MultiLineSupport#getLines()
+   */
+  public Line getLines() {
+    return new Lines();
   }
   
   /**
-   * Update the time portion
+   * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
-  private void updateTime(Property time) {  
-    time.setValue(new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime()));
+  public String getLinesValue() {
+    return EMPTY_STRING;
   }
+  
+  /**
+   * @see genj.gedcom.Property#setValue(java.lang.String)
+   */
+  public void setValue(String value) {
+    // ignored
+  }
+  
+  /**
+   * @see genj.gedcom.Property#getValue()
+   */
+  public String getValue() {
+    return EMPTY_STRING;
+  }
+  
+  /**
+   * Iterator for lines
+   */
+  private class Lines implements MultiLineSupport.Line {
+    /** tracking line index */
+    int i = 0;
+    /** lines */
+    private String[] 
+      tags = { CHAN, DATE, TIME  },
+      values = { EMPTY_STRING, pit.toGedcomString(), getTimeAsString() };
+    private int[]
+      indents = { 1, 2};
+    /**
+     * @see genj.gedcom.MultiLineSupport.Line#getTag()
+     */
+    public String getTag() {
+      return tags[i];
+    }
+    /**
+     * @see genj.gedcom.MultiLineSupport.Line#getValue()
+     */
+    public String getValue() {
+      return values[i];
+    }
+    /**
+     * @see genj.gedcom.MultiLineSupport.Line#next()
+     */
+    public int next() {
+      return i==indents.length ? 0 : indents[i++];
+    }
+  } //Lines
+
   
 } //PropertyChange

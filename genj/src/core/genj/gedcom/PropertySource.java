@@ -23,10 +23,9 @@ import genj.util.swing.ImageIcon;
 
 /**
  * Gedcom Property : SOURCE 
- * A property that either consists of SOURCE information or
- * refers to a SOURCE entity
+ * A property that links to an existing SOURCE entity
  */
-public class PropertySource extends PropertyXRef implements MultiLineSupport {
+public class PropertySource extends PropertyXRef {
 
   /** applicable target types */
   public final static int[] 
@@ -47,15 +46,20 @@ public class PropertySource extends PropertyXRef implements MultiLineSupport {
   }
 
   /**
-   * Returns the logical name of the proxy-object which knows this object
+   * This will be called once when instantiation has
+   * happend - it's our chance to substitute this with
+   * a multilinevalue if no reference applicable
    */
-  public String getProxy() {
-    // 20021113 if linked then we stay XRef
-    if (super.getReferencedEntity()!=null)
-      return super.getProxy();
-    // multiline
-    return "MLE";    
+  /*package*/ Property init(String tag, String value) throws GedcomException {
+    // expecting NOTE
+    assume("SOUR".equals(tag), UNSUPPORTED_TAG);
+    // ONLY for @..@!!!
+    if (value.startsWith("@")&&value.endsWith("@"))
+      return super.init(tag,value);
+    // switch to multiline value
+    return new PropertyMultilineValue().init(tag, value);
   }
+
 
   /**
    * Returns the tag of this property
@@ -99,35 +103,6 @@ public class PropertySource extends PropertyXRef implements MultiLineSupport {
     return TARGET_TYPES;
   }
 
-  /**
-   * @see genj.gedcom.PropertyXRef#isValid()
-   */
-  public boolean isValid() {
-    // always
-    return true;
-  }
-  
-  /**
-   * @see genj.gedcom.PropertyXRef#getValue()
-   */
-  public String getValue() {
-    return PropertyMultilineValue.getFirstLine(super.getValue());
-  }
-
-  /**
-   * @see genj.gedcom.MultiLineSupport#getLines()
-   */
-  public Line getLines() {
-    return new PropertyMultilineValue.MLLine(getTag(), super.getValue());
-  }
-
-  /**
-   * @see genj.gedcom.MultiLineSupport#getLinesValue()
-   */
-  public String getLinesValue() {
-    return super.getValue();
-  }
-  
   /**
    * @see genj.gedcom.PropertyXRef#overlay(genj.util.swing.ImageIcon)
    */

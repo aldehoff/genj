@@ -40,8 +40,8 @@ public class PropertySimpleValue extends Property {
   /**
    * Constructor with tag
    */
-  public PropertySimpleValue(String tag) {
-    setTag(tag);
+  public PropertySimpleValue(String set) {
+    tag = set;
   }
 
   /**
@@ -54,8 +54,14 @@ public class PropertySimpleValue extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ void setTag(String set) {
+  /*package*/ Property init(String set, String value) {
     tag = set;
+    try {
+      return super.init(set, value);
+    } catch (GedcomException e) {
+      // don't expect any problems here
+      return this;
+    }
   }
 
   /**

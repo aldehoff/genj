@@ -217,6 +217,9 @@ public class GedcomReader implements Trackable {
         ent=gedcom.createEntity(tag, xref);
       }
       
+      // preserve value for those who care
+      ent.setValue(value);
+      
       // Read entity's properties till end of record
       readProperties(ent, MetaProperty.get(ent), 1);
 
@@ -517,64 +520,48 @@ public class GedcomReader implements Trackable {
    * @exception GedcomFormatException reading Gedcom-data brought up wrong format
    */
   private void readProperties(Property of, MetaProperty meta, int currentlevel) throws GedcomIOException, GedcomFormatException {
-  
-    // Property with multiLine?
-    if (of instanceof MultiLineSupport) {
-  
-      StringBuffer bvalue = new StringBuffer(value);
-      while (peekLine()) {
-        
-        // .. CONT or CONC?
-        boolean 
-          isCont = tag.equals("CONT"),
-          isConc = tag.equals("CONC");
-          
-        // still multiline?
-        if (!(isCont||isConc)||(level!=currentlevel)) break;
-  
-        // .. Take it
-        readLine();
-  
-        // .. remember another value line
-        if (isCont) bvalue.append("\n");
-        bvalue.append(value);
-        
-        // .. next
-      }
-  
-      // Change value
-      of.setValue(bvalue.toString());
-    }
+
+    MultiLineSupport multi = (of instanceof MultiLineSupport) ? (MultiLineSupport)of : null;
   
     // Get properties of property
     Property prop;
     do {
   
-      // .. try to get next property
+      // try to get next property
       if (!readLine()) 
         throw new GedcomFormatException("Unexpected end of record",line);
   
-      // .. end of property ?
+      // end of property ?
       if (level<currentlevel) 
         break;
+        
+      // can 'of' consume it?
+      if (multi!=null&&multi.append(level-currentlevel+1, tag, value)) 
+        continue;
+        
+      // skip if level>currentLevel?
+      if (level>currentlevel) {
+        warnings.add("Line "+line+": Skipping "+tag+" because of level "+level+" - expected "+currentlevel);
+        continue;
+      }
   
-      // .. get meta property for child
+      // get meta property for child
       MetaProperty child = meta.get(tag, true);
   
-      // .. create property instance
+      // create property instance
       prop = child.create(value);
       
-      // .. and add to prop
+      // and add to prop
       of.addProperty(prop);
   
-      // .. a reference ? Remember !
+      // a reference ? Remember !
       if (prop instanceof PropertyXRef)
         xrefs.add(new XRef(line,(PropertyXRef)prop));
   
-      // .. recurse into its properties
+      // recurse into its properties
       readProperties(prop, child, currentlevel+1);
       
-      // .. next property
+      // next property
     } while (true);
   
     // restore what we haven't consumed

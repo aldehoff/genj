@@ -86,7 +86,7 @@ public abstract class Relationship {
       // keep owner      
       this.owner = owner;
       this.mxref = mxref;
-      this.xref = (PropertyXRef)mxref.create("");
+      this.xref = (PropertyXRef)mxref.create("@@"); //@@ makes sure we'll get a xref for note/submitter
       // update target types
       targetTypes = xref.getTargetTypes();
       // done

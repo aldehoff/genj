@@ -26,20 +26,19 @@ import genj.util.swing.ImageIcon;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.StringTokenizer;
 
 /**
  * Gedcom Property : BLOB
  */
 public class PropertyBlob extends Property implements MultiLineSupport, IconValueAvailable {
   
-  private final static String BLOB = "BLOB";
+  private final static String TAG = "BLOB";
 
   /** the raw bytes */
   private byte[]  raw;
 
   /** the base64 string */
-  private String  base64;
+  private StringBuffer base64;
 
   /** transformed to image */
   private ImageIcon valueAsIcon;
@@ -53,18 +52,17 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   public byte[] getBlobData() {
 
     // Already present ?
-    if (raw!=null) {
+    if (raw!=null) 
       return raw;
-    }
 
     // No Base64 present ?
-    if (base64==null) {
+    if (base64==null)
       return null;
-    }
 
     // Decode Base64
     try {
       raw = Base64.decode(base64);
+      base64 = null; 
     } catch (IllegalArgumentException e) {
       return null;
     }
@@ -91,14 +89,15 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    * Returns the tag of this property
    */
   public String getTag() {
-    return BLOB;
+    return TAG;
   }
   
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ void setTag(String tag) throws GedcomException {
-    assume(BLOB.equals(tag), UNSUPPORTED_TAG);
+  /*package*/ Property init(String tag, String value) throws GedcomException {
+    assume(TAG.equals(tag), UNSUPPORTED_TAG);
+    return super.init(tag,value);
   }
 
   /**
@@ -151,15 +150,13 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    */
   public MultiLineSupport.Line getLines() {
 
-    if (raw!=null) {
-      String b64 = Base64.encode(raw);
-      return new Base64Iterator(b64);
-    }
-    if (base64!=null) {
-      return new Base64Iterator(base64);
-    }
+    if (raw!=null) 
+      return new Base64Iterator(Base64.encode(raw));
 
-    return new Base64Iterator(EMPTY_STRING);
+    if (base64!=null) 
+      return new Base64Iterator(base64);
+
+    return new Base64Iterator(new StringBuffer());
   }
   
   /**
@@ -167,17 +164,61 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    */
   public String getLinesValue() {
     if (base64!=null) 
-      return base64;
+      return base64.toString();
     if (raw!=null)
-      return Base64.encode(raw);
+      return Base64.encode(raw).toString();
     return EMPTY_STRING;
   }
 
   /**
-   * Sets value to be taken from file
+   * Sets a property value line
    */
-  public PropertyBlob load(String file) throws GedcomException {
+  public void setValue(String value) {
+
+    // reset current data
+    raw    = null;
     
+    // collect value
+    base64 = new StringBuffer(4*4096);
+    base64.append(value.trim());
+    
+    // Successfull new information
+    isIconChecked = false;
+    valueAsIcon   = null;
+
+    // Remember changed property
+    modNotify();
+
+    // Done
+  }
+  
+  /**
+   * @see genj.gedcom.MultiLineSupport#append(int, java.lang.String, java.lang.String)
+   */
+  public boolean append(int level, String taG, String vaLue) {
+    // gotta be in base64 mode
+    if (base64==null)
+      return false;
+    // only level 1 (direct children)
+    if (level!=1)
+      return false;
+    // gotta be CONT 
+    if (!"CONT".equals(taG))
+      return false;
+    // grab it
+    base64.append(vaLue.trim());
+    // accepted
+    return true;
+  }
+
+  /**
+   * Sets this property's value
+   */
+  public void load(String file, boolean updateSubs) {
+    
+    // Remember changed property
+    modNotify();
+
     // Reset state
     isIconChecked = false;
     valueAsIcon   = null;
@@ -192,55 +233,9 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
         raw = new ByteArray(in, in.available()).getBytes();
         in.close();
       } catch (IOException ex) {
-        throw new GedcomException("Error reading "+file);
+        return;
       }
-  
-      // 20030518 don't automatically update TITL/FORM
-      // will be prompted in ProxyFile
     }
-    
-    // Remember changed property
-    modNotify();
-
-    // Done
-    return this;
-  }
-
-  /**
-   * Sets a property value line
-   */
-  public void setValue(String value) {
-
-    // reset current data
-    raw    = null;
-    base64 = null;
-    
-    // collect value
-    StringBuffer buf = new StringBuffer();
-    StringTokenizer lines = new StringTokenizer(value);
-    while (lines.hasMoreTokens()) {
-      buf.append(lines.nextToken());
-    }
-    if (buf.length()>0) 
-      base64 = buf.toString();
-
-    // Successfull new information
-    isIconChecked = false;
-    valueAsIcon   = null;
-
-    // Remember changed property
-    modNotify();
-
-    // Done
-  }          
-
-  /**
-   * Sets this property's value
-   */
-  public void load(String file, boolean updateSubs) {
-    
-    // set value
-    setValue(file);
     
     // check
     Property media = getParent();
@@ -265,10 +260,10 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   /**
    * Member class for iterating through adress' lines of base64-encoded data
    */
-  private class Base64Iterator implements MultiLineSupport.Line {
+  private static class Base64Iterator implements MultiLineSupport.Line {
 
     /** the base64 string */
-    private String base64;
+    private StringBuffer base64;
 
     /** the offset in the string */
     private int offset;
@@ -277,14 +272,14 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     private final int LINE = 72;
 
     /** Constructor */
-    public Base64Iterator(String base64) {
+    public Base64Iterator(StringBuffer base64) {
       this.base64 = base64;
       this.offset = 0;
     }
     
     /** current tag */
     public String getTag() {
-      return offset==0 ? PropertyBlob.this.getTag() : "CONT";
+      return offset==0 ? TAG : "CONT";
     }
 
     /** Returns the next line of this iterator */
@@ -293,10 +288,11 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     }
 
     /** set to next */
-    public boolean next() {
-      if (offset>=base64.length()) return false;
-      offset+=LINE;
-      return true;
+    public int next() {
+      if (offset+LINE>=base64.length()) 
+        return 0;
+      offset += LINE;
+      return 1;
     }
 
   } //Base64Iterator

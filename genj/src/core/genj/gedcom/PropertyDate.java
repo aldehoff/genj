@@ -295,8 +295,9 @@ public class PropertyDate extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ void setTag(String tag) throws GedcomException {
+  /*package*/ Property init(String tag, String value) throws GedcomException {
     assume(TAG.equals(tag), UNSUPPORTED_TAG);
+    return super.init(tag,value);
   }
   
   /**

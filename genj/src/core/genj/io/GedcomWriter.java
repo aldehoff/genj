@@ -149,19 +149,13 @@ public class GedcomWriter implements Trackable {
 
   /**
    * Helper for writing Gedcom-line
-   */
-  private void line(int ldelta) {
-    level += ldelta;
-  }
-
-  /**
-   * Helper for writing Gedcom-line
    * @exception IOException
    * @exception GedcomIOException
    */
   private void line(int ldelta, String tag, String value) throws IOException, GedcomIOException {
     level += ldelta;
     line(tag, value);
+    level -= ldelta;
   }
 
   /**
@@ -270,27 +264,22 @@ public class GedcomWriter implements Trackable {
   private void writeHeader() throws IOException, GedcomIOException {
 
     // Header
-      line("HEAD", "");
-      line(+1, "SOUR", "GENJ");
-      line(+1, "VERS", Version.getInstance().toString());
-      line(+0, "NAME", "GenealogyJ");
-      line(+0, "CORP", "Nils Meier");
-      line(+1, "ADDR", "http://genj.sourceforge.net");
-      line(-1);
-      line(-1);
-      line(+0, "DEST", "ANY");
-      line(+0, "DATE", date);
-      line(+1, "TIME", time);
-      line(-1);
+    line("HEAD", "");
+    line( 1, "SOUR", "GENJ");
+    line( 2, "VERS", Version.getInstance().toString());
+    line( 2, "NAME", "GenealogyJ");
+    line( 2, "CORP", "Nils Meier");
+    line( 3, "ADDR", "http://genj.sourceforge.net");
+    line( 1, "DEST", "ANY");
+    line( 1, "DATE", date);
+    line( 2, "TIME", time);
     if (gedcom.getSubmitter()!=null)
-      line(+0, "SUBM", '@'+gedcom.getSubmitter().getId()+'@');
-      line(+0, "GEDC", "");
-      line(+1, "VERS", "5.5");
-      line(+0, "FORM", "Lineage-Linked");
-      line(-1);
-      line(+0, "CHAR", encoding);
-      line(+0, "FILE", file);
-      line(-1);
+      line( 1, "SUBM", '@'+gedcom.getSubmitter().getId()+'@');
+    line( 1, "GEDC", "");
+    line( 2, "VERS", "5.5");
+    line( 2, "FORM", "Lineage-Linked");
+    line( 1, "CHAR", encoding);
+    line( 1, "FILE", file);
     // done
   }
 
@@ -321,21 +310,19 @@ public class GedcomWriter implements Trackable {
 
       // .. more lines from iterator
       MultiLineSupport.Line lines = ((MultiLineSupport)prop).getLines();
-      line(0, prefix + lines.getTag(), lines.getValue());
-      line(1);
-      while (lines.next())
-        line(0, lines.getTag(), lines.getValue());
-      line(-1);
+      line(prefix + lines.getTag(), lines.getValue());
+      for (int delta=lines.next();delta>0;delta=lines.next())
+        line(delta, lines.getTag(), lines.getValue());
 
     } else {
       
       // .. just a single line
-      line(0, prefix + prop.getTag(), prop.getValue());
+      line(prefix + prop.getTag(), prop.getValue());
       
     }
 
-    // Properties
-    line(1);
+    // Sub Properties
+    level++;
 
     int num = prop.getNoOfProperties();
     for (int i = 0; i < num; i++) {
@@ -345,7 +332,9 @@ public class GedcomWriter implements Trackable {
       }
     }
 
-    line(-1);
+    level--;
+    
+    // done
   }
 
   /**

@@ -23,11 +23,10 @@ import genj.util.swing.ImageIcon;
 
 
 /**
- * Gedcom Property : NOTE (entity/property)
- * A property that either consists of NOTE information or
- * refers to a NOTE entity
+ * Gedcom Property : NOTE 
+ * A property that links an existing note
  */
-public class PropertyNote extends PropertyXRef implements MultiLineSupport {
+public class PropertyNote extends PropertyXRef {
 
   /** applicable target types */
   public final static int[] 
@@ -46,17 +45,22 @@ public class PropertyNote extends PropertyXRef implements MultiLineSupport {
   public PropertyNote(PropertyXRef target) {
     super(target);
   }
-
+  
   /**
-   * Returns the logical name of the proxy-object which knows this object
+   * This will be called once when instantiation has
+   * happend - it's our chance to substitute this with
+   * a multilinevalue if no reference applicable
    */
-  public String getProxy() {
-    // 20021113 if linked then we stay XRef
-    if (super.getReferencedEntity()!=null)
-      return super.getProxy();
-    // multiline
-    return "MLE";    
+  /*package*/ Property init(String tag, String value) throws GedcomException {
+    // expecting NOTE
+    assume("NOTE".equals(tag), UNSUPPORTED_TAG);
+    // ONLY for @..@!!!
+    if (value.startsWith("@")&&value.endsWith("@"))
+      return super.init(tag,value);
+    // switch to multiline value
+    return new PropertyMultilineValue().init(tag, value);
   }
+
 
   /**
    * Returns the tag of this property
@@ -70,21 +74,23 @@ public class PropertyNote extends PropertyXRef implements MultiLineSupport {
    * @exception GedcomException when processing link would result in inconsistent state
    */
   public void link() throws GedcomException {
-
+    
     // something to do ?
-    if (getReferencedEntity()!=null) return;
+    if (getReferencedEntity()!=null) 
+      return;
 
     // Look for Note
     String id = getReferencedId();
     if (id.length()==0) return;
 
-    Note note = (Note)getGedcom().getEntity(id, Gedcom.NOTES);
-    if (note == null) 
+    // .. ignore when not found - play inline note
+    Note enote = (Note)getGedcom().getEntity(id, Gedcom.NOTES);
+    if (enote==null) 
       return;
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    note.addProperty(fxref);
+    enote.addProperty(fxref);
 
     // ... and point
     setTarget(fxref);
@@ -99,35 +105,6 @@ public class PropertyNote extends PropertyXRef implements MultiLineSupport {
     return TARGET_TYPES;
   }
   
-  /**
-   * @see genj.gedcom.PropertyXRef#isValid()
-   */
-  public boolean isValid() {
-    // always
-    return true;
-  }
-  
-  /**
-   * @see genj.gedcom.PropertyXRef#getValue()
-   */
-  public String getValue() {
-    return PropertyMultilineValue.getFirstLine(super.getValue());
-  }
-
-  /**
-   * @see genj.gedcom.MultiLineSupport#getLines()
-   */
-  public Line getLines() {
-    return new PropertyMultilineValue.MLLine(getTag(), super.getValue());
-  }
-
-  /**
-   * @see genj.gedcom.MultiLineSupport#getLinesValue()
-   */
-  public String getLinesValue() {
-    return super.getValue();
-  }
-
   /**
    * @see genj.gedcom.PropertyXRef#overlay(genj.util.swing.ImageIcon)
    */

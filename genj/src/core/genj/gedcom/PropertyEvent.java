@@ -77,8 +77,9 @@ public class PropertyEvent extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ void setTag(String set) throws GedcomException {
+  /*package*/ Property init(String set, String value) throws GedcomException {
     tag = set;
+    return super.init(tag,value);
   }
 
   /**

@@ -24,6 +24,11 @@ package genj.gedcom;
  * CONCatenated or CONTinued
  */
 public interface MultiLineSupport {
+  
+  /**
+   * Append another line
+   */
+  public boolean append(int level, String tag, String value);
 
   /**
    * Return the multiline iterator
@@ -40,10 +45,15 @@ public interface MultiLineSupport {
    */
   public interface Line {
     
+    /** tag for line */
     public String getTag();
-    public String getValue();
-    public boolean next();
     
-  } //Iterator
+    /** value for line */
+    public String getValue();
+    
+    /** set to next line and return level delta (normally 1, no next 0) */ 
+    public int next();
+    
+  } //a line
 
 } //MultiLineSupport

@@ -23,7 +23,13 @@ package genj.gedcom;
 /**
  * Gedcom Property with multiple lines
  */
-public class PropertyMultilineValue extends PropertySimpleValue implements MultiLineSupport {
+public class PropertyMultilineValue extends Property implements MultiLineSupport {
+  
+  /** the tag */
+  private String tag;
+  
+  /** our value */
+  private StringBuffer value = new StringBuffer(80);
   
   /**
    * Which Proxy to use for this property
@@ -31,21 +37,65 @@ public class PropertyMultilineValue extends PropertySimpleValue implements Multi
   public String getProxy() {
     return "MLE";
   }
+  
+  /**
+   * @see genj.gedcom.Property#getTag()
+   */
+  public String getTag() {
+    return tag;
+  }
+
+  /**
+   * @see genj.gedcom.Property#setTag(java.lang.String)
+   */
+  Property init(String set, String value) throws GedcomException {
+    tag = set;
+    return super.init(tag,value);
+  }
+  
+  /**
+   * @see genj.gedcom.Property#setValue(java.lang.String)
+   */
+  public void setValue(String set) {
+    modNotify();
+    value.setLength(0);
+    value.append(set);
+  }
 
   /**
    * Accessor Value
    */
   public String getValue() {
-    return getFirstLine(super.getValue());
+    return getFirstLine(value);
+  }
+  
+  /**
+   * @see genj.gedcom.MultiLineSupport#append(int, java.lang.String, java.lang.String)
+   */
+  public boolean append(int level, String taG, String vaLue) {
+    // only level 1 (direct children)
+    if (level!=1)
+      return false;
+    // gotta be CONT or CONC
+    boolean 
+      isCont = "CONT".equals(taG),
+      isConc = "CONC".equals(taG);
+    if (!(isConc||isCont))
+      return false;
+    // grab it
+    if (isCont) value.append('\n');
+    value.append(vaLue);
+    // accepted
+    return true;
   }
   
   /**
    * Helper to resolve the first line of a multiline value
    */
-  /*package*/ static String getFirstLine(String value) { 
+  /*package*/ static String getFirstLine(StringBuffer value) { 
 
     // More than one line ?
-    int pos = value.indexOf('\n');
+    int pos = value.indexOf("\n");
     if (pos>=0) 
       return value.substring(0,pos)+"...";
       
@@ -54,14 +104,14 @@ public class PropertyMultilineValue extends PropertySimpleValue implements Multi
       return value.substring(0,252)+"...";
 
     // Value
-    return value;
+    return value.toString();
   }
   
   /**
    * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
   public String getLinesValue() {
-    return super.getValue();
+    return value.toString();
   }
 
   
@@ -69,7 +119,7 @@ public class PropertyMultilineValue extends PropertySimpleValue implements Multi
    * @see genj.gedcom.MultiLineSupport#getLines()
    */
   public Line getLines() {
-    return new MLLine(getTag(), super.getValue());
+    return new MLLine(getTag(), value);
   }
   
   /**
@@ -81,7 +131,7 @@ public class PropertyMultilineValue extends PropertySimpleValue implements Multi
     private String tag, next;
     
     /** the value */
-    private String value;
+    private StringBuffer value;
     
     /** the current segment */
     private int start,end;
@@ -89,7 +139,7 @@ public class PropertyMultilineValue extends PropertySimpleValue implements Multi
     /**
      * Constructor
      */
-    /*package*/ MLLine(String top, String linesValue) {
+    /*package*/ MLLine(String top, StringBuffer linesValue) {
       
       tag = top;
       next = top;
@@ -117,12 +167,13 @@ public class PropertyMultilineValue extends PropertySimpleValue implements Multi
     /**
      * @see genj.gedcom.MultiLineSupport.Line#next()
      */
-    public boolean next() {
+    public int next() {
       
       tag = next;
       
       // nothing more there?
-      if (end==value.length()) return false;
+      if (end==value.length()) 
+        return 0;
       
       // continue from last end
       start = end;
@@ -134,11 +185,12 @@ public class PropertyMultilineValue extends PropertySimpleValue implements Multi
       while (true) {
         if (!Character.isWhitespace(value.charAt(start))) break;
         start++;
-        if (start==end) return false;
+        if (start==end) 
+          return 0;
       }
       
       // take all up to next CR
-      int cr = value.indexOf('\n', start);
+      int cr = value.indexOf("\n", start);
       if (cr>=0) {
         end = cr;
         next = "CONT";
@@ -155,7 +207,7 @@ public class PropertyMultilineValue extends PropertySimpleValue implements Multi
       }
       
       // done
-      return end>start;
+      return end>start ? 1 : 0;
     }
     
   } //MLLine

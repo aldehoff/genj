@@ -192,17 +192,14 @@ public class MetaProperty {
     
     try {
       result = (Property)getType().newInstance();
-      result.setTag(tag);
+      result = result.init(tag, value);
     } catch (Exception e) {
       // 20030530 catch exceptions only - during load
       // an outofmemoryerrror could happen here
       Debug.log(Debug.WARNING, this, e);
       result = new PropertySimpleValue(); 
-      ((PropertySimpleValue)result).setTag(tag);
+      ((PropertySimpleValue)result).init(tag, value);
     }
-    
-    // initialize value
-    result.setValue(value);
     
     // increate count
     instantiated = true;

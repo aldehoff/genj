@@ -57,15 +57,6 @@ public abstract class PropertyXRef extends Property {
   }
 
   /**
-   * Constructor with Tag,Value parameters
-   * @param tag property's tag
-   * @param value property's value
-   */
-  public PropertyXRef(String tag, String value) {
-    setValue(value);
-  }
-
-  /**
    * Method for notifying being removed from another parent
    */
   public void delNotify() {
@@ -184,15 +175,11 @@ public abstract class PropertyXRef extends Property {
   }
   
   /**
-   * @see genj.gedcom.Property#getTag()
-   */
-  public abstract String getTag();
-
-  /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ void setTag(String tag) throws GedcomException {
+  /*package*/ Property init(String tag, String value) throws GedcomException {
     assume(getTag().equals(tag), UNSUPPORTED_TAG);
+    return super.init(tag,value);
   }
 
 

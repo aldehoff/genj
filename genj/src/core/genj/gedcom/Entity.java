@@ -170,6 +170,7 @@ public abstract class Entity extends Property {
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
   public void setValue(String value) {
+    // ignored
   }
 
   /**

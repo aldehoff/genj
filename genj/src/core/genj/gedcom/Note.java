@@ -24,11 +24,11 @@ import genj.util.swing.ImageIcon;
 /**
  * Class for encapsulating a note
  */
-public class Note extends Entity implements MultiLineSupport{
+public class Note extends Entity implements MultiLineSupport {
 
   /** a delegate for keep the text data crammed in here by Gedcom grammar */
   private Delegate delegate = new Delegate();
-
+  
   /**
    * Notification to entity that it has been added to a Gedcom
    */
@@ -48,6 +48,7 @@ public class Note extends Entity implements MultiLineSupport{
    * @see genj.gedcom.Entity#setValue(java.lang.String)
    */
   public void setValue(String newValue) {
+    // keep it in delegate
     delegate.setValue(newValue);
   }
   
@@ -74,6 +75,15 @@ public class Note extends Entity implements MultiLineSupport{
   public Line getLines() {
     return delegate.getLines();
   }
+  
+  /**
+   * @see genj.gedcom.MultiLineSupport#append(int, java.lang.String, java.lang.String)
+   */
+  public boolean append(int level, String tag, String value) {
+    // keep it in delegate
+    return delegate.append(level, tag, value);
+  }
+
 
   /**
    * Delegate 
@@ -100,7 +110,7 @@ public class Note extends Entity implements MultiLineSupport{
     public ImageIcon getImage(boolean checkValid) {
       return Note.this.getImage(false);
     }
-
+    
     /**
      * @see genj.gedcom.Property#isTransient()
      */

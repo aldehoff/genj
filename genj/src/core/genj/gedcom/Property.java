@@ -558,7 +558,11 @@ public abstract class Property implements Comparable {
   /**
    * Sets this property's tag
    */
-  /*package*/ void setTag(String tag) throws GedcomException {
+  /*package*/ Property init(String tag, String value) throws GedcomException {
+    // assuming concrete sub-type handles tag - keep value
+    setValue(value);
+    // we stay around
+    return this;
   }
   
   /**
