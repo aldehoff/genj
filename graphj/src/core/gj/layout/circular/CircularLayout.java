@@ -17,10 +17,12 @@ package gj.layout.circular;
 
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import gj.awt.geom.Geometry;
 import gj.layout.AbstractLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
@@ -40,10 +42,7 @@ public class CircularLayout extends AbstractLayout implements Layout {
   private final static double TWOPI = 2*Math.PI;
   
   /** padding */
-  private double padNodes = 16.0D;
-  
-  /** start degree (0-1) */
-  private double startDegree = 0.0D;
+  private double padNodes = 4.0D;
   
   /** whether we're generating a single circle or not */
   private boolean isSingleCircle = true;
@@ -77,36 +76,28 @@ public class CircularLayout extends AbstractLayout implements Layout {
   }
   
   /**
-   * Getter - startDegree
-   */
-  public double getStartDegree() {
-    return startDegree;
-  }
-  
-  /**
-   * Setter - startDegree
-   */
-  public void setStartDegree(double set) {
-    startDegree=set;
-  }
-  
-  /**
    * @see gj.layout.Layout#applyTo(Graph)
    */
   public void applyTo(Graph graph) throws LayoutException {
     
-    // value check
-    startDegree = Math.max(0.0D,Math.min(1.0D,startDegree));
+    // no purpose in empty|1-ary graph
+    if (graph.getNodes().size()<2) return;
     
-    // analyze the circle
-    Circle circle = new Circle(graph.getNodes());
+    // create a CircularGraph
+    CircularGraph cgraph = new CircularGraph(graph, isSingleCircle);
     
-    // put 'em in a circle
-    int count = graph.getNodes().size();
-    for (int n=0;n<circle.nodes.length;n++) {
-      double x = Math.sin(circle.degrees[n])*circle.radius;
-      double y = Math.cos(circle.degrees[n])*circle.radius;
-      circle.nodes[n].getPosition().setLocation(x,y);
+    // analyze the circle(s)
+    Iterator it = cgraph.getCircles().iterator();
+    double x=0,y=0;
+    while (it.hasNext()) {
+      
+      // look at a circle
+      CircularGraph.Circle circle = (CircularGraph.Circle)it.next();
+      System.out.println(circle);
+      layout(circle, x, y);
+      
+      // next
+      x+=160;
     }
     
     // update the arcs
@@ -118,65 +109,59 @@ public class CircularLayout extends AbstractLayout implements Layout {
     
     // done
     graph.getBounds().setRect(ModelHelper.getBounds(graph.getNodes()));
-  }
-
+  } 
+  
   /**
-   * The circle in a graph
+   * layout a circle
    */
-  private class Circle {
+  private void layout(CircularGraph.Circle circle, double cx, double cy) {
     
-    /** nodes */
-    protected Node[] nodes;
+    // nodes
+    Node[] nodes = new Node[circle.getNodes().size()];
+    circle.getNodes().toArray(nodes);
     
-    /** nodes' degrees */
-    protected double[] degrees;
-    
-    /** radius */
-    protected double radius = 0;
-    
-    /**
-     * Constructor
-     */
-    protected Circle(Set members) {
-      
-      // prepare space
-      nodes = new Node[members.size()];
-      degrees = new double[nodes.length];
-      
-      // gather these values
-      double circumference = 0;
-      
-      // analyze nodes in circle
-      Iterator it = members.iterator();
-      for (int n=0;it.hasNext();n++) {
-        
-        // .. the node
-        Node node = (Node)it.next();
-        Rectangle2D bounds = node.getShape().getBounds2D();
-        double size = Math.max(bounds.getWidth(), bounds.getHeight()) + padNodes;
-        
-        // .. keep what we need
-        nodes[n] = node;
-        degrees[n] = size;
-        
-        // .. increase circ
-        circumference += size;
-      }
-      
-      // calculate radius (c=2PIr => r=c/2/PI)
-      radius = circumference/TWOPI;
-      
-      // calculate degrees
-      double pointer = startDegree*TWOPI;
-      for (int n=0;n<nodes.length;n++) {
-        double ds = degrees[n]*TWOPI/circumference;
-        degrees[n] = pointer + ds/2;
-        pointer += ds;
-      }
-
-      // Done      
+    // one node only?
+    if (nodes.length==1) {
+      nodes[0].getPosition().setLocation(cx,cy);
+      return;
     }
     
-  } //Circle
-  
-}
+    // nodes' degrees and global circumference
+    double[] degrees = new double[nodes.length];
+    double circumference = 0;
+    
+    // analyze nodes in circle
+    for (int n=0;n<nodes.length;n++) {
+        
+      // .. its size - the length of vector (x,y)
+      Rectangle2D bounds = nodes[n].getShape().getBounds2D();
+      double size = Geometry.getLength(bounds.getWidth()+padNodes, bounds.getHeight()+padNodes);
+        
+      // .. keep what we need
+      degrees[n] = size;
+        
+      // .. increase circ
+      circumference += size;
+    }
+      
+    // calculate radius (c=2PIr => r=c/2/PI)
+    double radius = circumference/TWOPI;
+      
+    // calculate degrees
+    double pointer = 0;
+    for (int n=0;n<nodes.length;n++) {
+      double ds = degrees[n]*TWOPI/circumference;
+      degrees[n] = pointer + ds/2;
+      pointer += ds;
+    }
+
+    // put 'em in a circle
+    for (int n=0;n<nodes.length;n++) {
+      double x = cx + Math.sin(degrees[n])*radius;
+      double y = cy + Math.cos(degrees[n])*radius;
+      nodes[n].getPosition().setLocation(x,y);
+    }
+    
+  }
+
+} //CircularLayout
