@@ -75,8 +75,8 @@ class ProxyAge extends Proxy {
     panel.setAlignmentX(0F);
 
     GridBagHelper gh = new GridBagHelper(panel);
-    gh.setParameter(gh.GROW_HORIZONTAL);
     gh.add(tfield                                       ,0,0);
+    gh.setParameter(gh.GROWFILL_HORIZONTAL);
     gh.add(new JLabel(TEMPLATE)                         ,1,0);
     gh.setParameter(0);
     gh.add(new ButtonHelper().create(new ActionUpdate()),2,0);
@@ -96,6 +96,7 @@ class ProxyAge extends Proxy {
      */
     private ActionUpdate() {
       setImage(property.getImage(false));
+      setTip(resources.getString("proxy.age.tip"));
       if (age.getEarlier()==null||age.getLater()==null)
         setEnabled(false);
     }
