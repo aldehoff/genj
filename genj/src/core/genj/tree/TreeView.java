@@ -36,7 +36,6 @@ import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ScreenResolutionScale;
-import genj.util.swing.ViewPortAdapter;
 import genj.util.swing.ViewPortOverview;
 import genj.view.ContextPopupSupport;
 import genj.view.ContextSupport;
@@ -172,7 +171,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // setup child components
     contentRenderer = new ContentRenderer();
     content = new Content();
-    JScrollPane scroll = new JScrollPane(new ViewPortAdapter(content));
+    JScrollPane scroll = new JScrollPane(content);
     overview = new Overview(scroll);
     overview.setVisible(registry.get("overview", false));
     overview.setSize(registry.get("overview", new Dimension(64,64)));
