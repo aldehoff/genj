@@ -18,8 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  *
- * AboutMenu Class written by Francois Massonneau <frmas@free.fr>
- * v. 1.00
+ * AboutMenu class
+ * This class creates the content of AboutMenu application
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutMenu.java,v 1.2 2002-05-11 19:20:25 island1 Exp $
+ * @author Francois Massonneau <frmas@free.fr>
+ * @version 1.0
  *
  */
  
