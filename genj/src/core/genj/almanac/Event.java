@@ -38,7 +38,7 @@ public class Event implements Comparable {
     lib = library;
     pit = setTime;
     cat = setCat;
-    text = setText;
+    text = cat.format(setText);
     // make sure its julian day is good
     pit.getJulianDay();
   }
