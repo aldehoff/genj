@@ -140,7 +140,7 @@ public class LnFBridge {
   public static class LnF {
     
     /** members */
-    private String name,type,archive;
+    private String name,type,archive,url,version;
     private Theme[] themes;
     private ClassLoader cl;
     private Theme lastTheme;
@@ -151,8 +151,10 @@ public class LnFBridge {
      */
     protected LnF(Registry registry) {
       // members
-      name = registry.get("name","?");
-      type = registry.get("type","?");
+      name = registry.get("name","");
+      type = registry.get("type","");
+      url = registry.get("url","");
+      version = registry.get("version","");
       archive = registry.get("jar",(String)null);
       
       // themes
@@ -161,6 +163,9 @@ public class LnFBridge {
       for (int t=0; t<ts.length; t++) {
         themes[t] = new Theme(ts[t]);
       }
+      
+      // debug
+      Debug.log(Debug.INFO, this, "Found Look&Feel "+name+" version="+version+" url="+url+" archive="+archive);
       
       // done
     }
