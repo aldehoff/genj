@@ -49,9 +49,8 @@ import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -70,110 +69,6 @@ import javax.swing.event.ChangeListener;
  * The basic version of an editor for a entity. Tries to hide Gedcom complexity from the user while being flexible in what it offers to edit information pertaining to an entity.
  */
 /* package */class BasicEditor extends Editor implements GedcomListener {
-
-  // templates for entities
-  //
-  //  'INDI'           - label        - Individual
-  //   INDI:BIRT:DATE  - bean         - date of birth
-  //  (INDI:BIRT:NOTE) - wrapped bean - note for birth 
-  //  (?INDI:RESI:PLAC) - wrapped bean - place of residence (if exists)
-  //
-  private final static HashMap TEMPLATES = new HashMap();
-  
-  
-  static {
-    
-    TEMPLATES.put(Gedcom.INDI,
-     "'INDI'\n"+
-     " INDI:NAME INDI:SEX\n"+
-     "'INDI:BIRT' (INDI:BIRT:NOTE)\n"+
-     " INDI:BIRT:DATE\n"+
-     " INDI:BIRT:PLAC\n"+
-     "'INDI:DEAT' (INDI:DEAT:NOTE)\n"+
-     " INDI:DEAT:DATE\n"+ 
-     " INDI:DEAT:PLAC\n"+ 
-     "'INDI:OCCU' (INDI:OCCU:NOTE)\n"+
-     " INDI:OCCU\n"+
-     " INDI:OCCU:DATE\n"+
-     " INDI:OCCU:PLAC\n"+
-     "'INDI:RESI' (INDI:RESI:NOTE) (?INDI:RESI:PLAC)\n"+
-     " INDI:RESI:DATE\n"+
-     " INDI:RESI:ADDR\n"+
-     "'INDI:RESI:ADDR:CITY' INDI:RESI:ADDR:CITY\n"+
-     "'INDI:RESI:ADDR:POST' INDI:RESI:ADDR:POST\t"+
-     "'INDI:OBJE'\n"+
-     "'INDI:OBJE:TITL' INDI:OBJE:TITL\n"+
-     " INDI:OBJE:FILE\n"+
-     "'INDI:NOTE'\n"+
-     " INDI:NOTE");
-    
-    TEMPLATES.put(Gedcom.FAM,
-     "'FAM'\n"+
-     "'FAM:MARR' (FAM:MARR:NOTE)\n"+
-     " FAM:MARR:DATE\n"+
-     " FAM:MARR:PLAC\n"+
-     "'FAM:ENGA'\n"+
-     " FAM:ENGA:DATE\n"+
-     " FAM:ENGA:PLAC\n"+
-     "'FAM:DIV'\n"+
-     " FAM:DIV:DATE\n"+
-     " FAM:DIV:PLAC\n"+
-     "'FAM:EVEN'\n"+
-     "'FAM:EVEN:TYPE' FAM:EVEN:TYPE\n"+
-     " FAM:EVEN:DATE\n"+
-     " FAM:EVEN:PLAC\t"+
-     "'FAM:OBJE'\n"+
-     "'FAM:OBJE:TITL' FAM:OBJE:TITL\n"+
-     " FAM:OBJE:FILE\n"+
-     "'FAM:NOTE'\n"+
-     " FAM:NOTE");
-  
-    TEMPLATES.put(Gedcom.OBJE,
-      "'OBJE'\n"+
-      "'OBJE:TITL' OBJE:TITL\n"+
-      "'OBJE:FORM' OBJE:FORM\n"+
-      " OBJE:BLOB\n"+
-      "'OBJE:NOTE'\n"+
-      " OBJE:NOTE");
-    
-    TEMPLATES.put(Gedcom.NOTE,
-      "'NOTE'\n"+
-      " NOTE:NOTE");
-      
-    TEMPLATES.put(Gedcom.REPO,
-      "'REPO'\n"+
-      "'REPO:NAME' REPO:NAME\n"+
-      "'REPO:ADDR'\n"+
-      " REPO:ADDR\n"+
-      "'REPO:ADDR:CITY' REPO:ADDR:CITY\n"+
-      "'REPO:ADDR:POST' REPO:ADDR:POST\n"+
-      "'REPO:NOTE'\n"+
-      " REPO:NOTE");
-    
-    TEMPLATES.put(Gedcom.SOUR,
-      "'SOUR:AUTH'\nSOUR:AUTH\n"+
-      "'SOUR:TITL'\nSOUR:TITL\n"+
-      "'SOUR:TEXT'\nSOUR:TEXT\n"+
-      "'SOUR:OBJE'\n"+
-      "'SOUR:OBJE:TITL' SOUR:OBJE:TITL\n"+
-      " SOUR:OBJE:FILE\n"+
-      "'SOUR:NOTE'\n"+
-      " SOUR:NOTE");
-    
-    TEMPLATES.put(Gedcom.SUBM,
-      "'SUBM:NAME' SUBM:NAME\n"+
-      "'SUBM:ADDR'\n"+
-      " SUBM:ADDR\n"+
-      "'SUBM:ADDR:CITY' SUBM:ADDR:CITY\n"+
-      "'SUBM:ADDR:POST' SUBM:ADDR:POST\n"+
-      "'SUBM:OBJE'\n"+
-      "'SUBM:OBJE:TITL' SUBM:OBJE:TITL\n"+
-      " SUBM:OBJE:FILE\n"+
-      "'SUBM:LANG' SUBM:LANG\n"+
-      "'SUBM:RFN' SUBM:RFN\n"+
-      "'SUBM:RIN' SUBM:RIN");
-  }
-  
 
   /** colors for tabborders */
   private final static Color[] COLORS = { Color.GRAY, new Color(192, 48, 48), new Color(48, 48, 128), new Color(48, 128, 48), new Color(48, 128, 128), new Color(128, 48, 128), new Color(96, 64, 32), new Color(32, 64, 96) };
@@ -222,7 +117,7 @@ import javax.swing.event.ChangeListener;
     setFocusCycleRoot(true);
 
     // create panels for beans and links
-    beanPanel = new JPanel(new NestedBlockLayout(true, 3));
+    beanPanel = new JPanel();
     beanPanel.setBorder(new EmptyBorder(2,2,2,2));
 
     // create panel for actions
@@ -332,9 +227,20 @@ import javax.swing.event.ChangeListener;
     beanPanel.removeAll();
     beans.clear();
 
-    // setup for new entity
-    if (entity!=null) 
-      createBeans(entity);
+    // setup new layout
+    if (entity!=null) try {
+      
+      // setup layoute for new entity
+      NestedBlockLayout layout = new NestedBlockLayout(getClass().getResourceAsStream("basic/"+entity.getTag()+".xml"));
+      beanPanel.setLayout(layout);
+
+      Iterator cells = layout.getCells().iterator();
+      while (cells.hasNext()) 
+        parseCell((NestedBlockLayout.Cell)cells.next());
+      
+    } catch (Throwable t) {
+      Debug.log(Debug.ERROR, this, t);
+    }
 
     // start without ok and cancel
     ok.setEnabled(false);
@@ -345,6 +251,50 @@ import javax.swing.event.ChangeListener;
     repaint();
 
     // done
+  }
+
+  /**
+   * Init a cell 
+   */
+  private void parseCell(NestedBlockLayout.Cell cell) {
+    
+    TagPath path = new TagPath(cell.getAttribute("path"));
+    
+    // a label?
+    if ("label".equals(cell.getElement())) {
+      MetaProperty meta = MetaProperty.get(path);
+      JLabel label;
+      if (Entity.class.isAssignableFrom(meta.getType()))
+        label = new JLabel(meta.getName() + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
+      else
+        label = new JLabel(meta.getName());
+      
+      beanPanel.add(label, cell);
+      return;
+    }
+    
+    // a bean?
+    if ("bean".equals(cell.getElement())) {
+      // conditional?
+      if (cell.getAttribute("ifexists")!=null) {
+        if (entity.getProperty(path)==null)
+          return;
+      }
+      // create bean
+      PropertyBean bean = createBean(entity, path);
+      // popup or normal?
+      if (cell.getAttribute("popup")!=null) {
+        beanPanel.add(new PopupBean(bean), cell);
+      } else {
+        cell.setWeight(bean.getWeight());
+        beanPanel.add(bean, cell);
+      }
+      
+      return;
+    }
+
+    // bug in the descriptor
+    throw new IllegalArgumentException("Template element "+cell.getElement()+" is unkown");
   }
   
   /**
@@ -382,80 +332,6 @@ import javax.swing.event.ChangeListener;
     return bean;
   }
   
-  /**
-   * parse entity and path
-   */
-  private void createBeans(Entity entity, String path) {
-  
-    // a label e.g. 'INDI'?
-    if (path.startsWith("'")&&path.endsWith("'")) {
-      path = path.substring(1, path.length()-1);
-      // add label
-      MetaProperty meta = MetaProperty.get(new TagPath(path));
-      if (Entity.class.isAssignableFrom(meta.getType()))
-        beanPanel.add(new JLabel(meta.getName() + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT));
-      else
-        beanPanel.add(new JLabel(meta.getName()));
-      // done
-      return;
-    } 
-    
-    // a wrapped bean e.g. (INDI:BIRT:NOTE) or conditional (?INDI:BIRT:NOTE) ?
-    if (path.startsWith("(")&&path.endsWith(")")) {
-      path = path.substring(1, path.length()-1);
-      if (path.startsWith("?")) {
-        path = path.substring(1);
-        if (entity.getProperty(new TagPath(path))==null)
-          return;
-      }
-      PopupBean popup = new PopupBean(createBean(entity, new TagPath(path)));
-      beanPanel.add(popup);
-      // done
-      return;
-    }
-    
-    // standard bean e.g. INDI:NAME!
-    PropertyBean bean = createBean(entity, new TagPath(path));
-    beanPanel.add(bean, bean.getWeight());
-
-    // done
-  }
-  
-  /**
-   * setup bean panel
-   */
-  private void createBeans(Entity entity) {
-
-    NestedBlockLayout layout = (NestedBlockLayout)beanPanel.getLayout();
-
-    // apply template
-    String template = (String)TEMPLATES.get(entity.getTag());
-    if (template==null)
-      return;
-    
-    StringTokenizer rows = new StringTokenizer(template, "\n\t", true);
-    while (rows.hasMoreTokens()) {
-      String row = rows.nextToken();
-      // new row?
-      if (row.equals("\n")) {
-        layout.createBlock(1);
-        continue;
-      }
-      // new column?
-      if (row.equals("\t")) {
-        layout.createBlock(0);
-        continue;
-      }
-      // parse elements
-      StringTokenizer paths = new StringTokenizer(row, " ");
-      while (paths.hasMoreTokens()) 
-        createBeans(entity, paths.nextToken().trim());
-      // next row
-    }
-
-    // done
-  }
-
   /**
    * A 'bean' we use for groups
    */

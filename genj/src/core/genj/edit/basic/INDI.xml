@@ -1,0 +1,29 @@
+
+ <row>
+  <col>
+   <row><label path="INDI"/></row>
+   <row><bean path="INDI:NAME"/><bean path="INDI:SEX"/></row>
+   <row><label path="INDI:BIRT"/><bean path="INDI:BIRT:NOTE" popup="true"/></row>
+   <row><bean path="INDI:BIRT:DATE"/></row>
+   <row><bean path="INDI:BIRT:PLAC"/></row>
+   <row><label path="INDI:DEAT"/><bean path="INDI:DEAT:NOTE" popup="true"/></row>
+   <row><bean path="INDI:DEAT:DATE"/></row>
+   <row><bean path="INDI:DEAT:PLAC"/> </row>
+   <row><label path="INDI:OCCU"/><bean path="INDI:OCCU:NOTE" popup="true"/></row>
+   <row><bean path="INDI:OCCU"/></row>
+   <row><bean path="INDI:OCCU:DATE"/></row>
+   <row><bean path="INDI:OCCU:PLAC"/></row>
+   <row><label path="INDI:RESI"/><bean path="INDI:RESI:NOTE" popup="true"/><bean path="INDI:RESI:PLAC" popup="true" ifexists="true"/></row>
+   <row><bean path="INDI:RESI:DATE"/></row>
+   <row><bean path="INDI:RESI:ADDR"/></row>
+   <row><label path="INDI:RESI:ADDR:CITY"/><bean path="INDI:RESI:ADDR:CITY"/></row>
+   <row><label path="INDI:RESI:ADDR:POST"/><bean path="INDI:RESI:ADDR:POST"/></row>
+  </col>
+  <col>
+   <row><label path="INDI:OBJE"/></row>
+   <row><label path="INDI:OBJE:TITL"/><bean path="INDI:OBJE:TITL"/></row>
+   <row><bean path="INDI:OBJE:FILE"/></row>
+   <row><label path="INDI:NOTE"/></row>
+   <row><bean path="INDI:NOTE"/></row>
+  </col>
+ </row>

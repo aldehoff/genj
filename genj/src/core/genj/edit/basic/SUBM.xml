@@ -1,0 +1,16 @@
+  <col>
+   <row><label path="SUBM"/></row>
+   <row><label path="SUBM:NAME"/><bean path="SUBM:NAME"/></row>
+   <row><label path="SUBM:ADDR"/></row>
+   <row><bean path="SUBM:ADDR"/></row>
+   <row><label path="SUBM:ADDR:CITY"/><bean path="SUBM:ADDR:CITY"/></row>
+   <row><label path="SUBM:ADDR:POST"/><bean path="SUBM:ADDR:POST"/></row>
+   <row><label path="SUBM:OBJE"/></row>
+   <row><label path="SUBM:OBJE:TITL"/><bean path="SUBM:OBJE:TITL"/></row>
+   <row><bean path="SUBM:OBJE:FILE"/></row>
+   <row><label path="SUBM:LANG"/><bean path="SUBM:LANG"/></row>
+   <row><label path="SUBM:RFN"/><bean path="SUBM:RFN"/></row>
+   <row><label path="SUBM:RIN"/><bean path="SUBM:RIN"/></row>
+  </col>
+
+ 

@@ -1,0 +1,8 @@
+  <col>
+   <row><label path="OBJE"/></row>
+   <row><label path="OBJE:TITL"/><bean path="OBJE:TITL"/></row>
+   <row><label path="OBJE:FORM"/><bean path="OBJE:FORM"/></row>
+   <row><bean path="OBJE:BLOB"/></row>
+   <row><label path="OBJE:NOTE"/></row>
+   <row><bean path="OBJE:NOTE"/></row>
+  </col>

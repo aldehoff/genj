@@ -1,0 +1,4 @@
+ <col>
+  <row><label path="NOTE"/></row>
+  <row><bean path="NOTE:NOTE"/></row>
+ </col>

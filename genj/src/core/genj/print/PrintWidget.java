@@ -38,7 +38,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
@@ -82,13 +81,18 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
   
   private JPanel createFirstPage() {
     
+    String LAYOUT_TEMPLATE = 
+      "<col>"+
+      "<row><lprinter/><printers wx=\"1\"/><settings/></row>"+
+      "<row><lpreview/></row>"+
+      "<row><preview wx=\"1\" wy=\"1\"/></row>"+
+      "</col>";
+    
     // setup layout
-    JPanel page = new JPanel();
-    NestedBlockLayout layout = new NestedBlockLayout(false, 2);
-    page.setLayout(layout);
+    JPanel page = new JPanel(new NestedBlockLayout(LAYOUT_TEMPLATE));
     
     // 'printer'
-    page.add(new JLabel(resources.getString("printer")));
+    page.add("lprinter", new JLabel(resources.getString("printer")));
     
     // choose service
     services = new ChoiceWidget(task.getServices(), task.getService());
@@ -101,19 +105,17 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
           task.setService((PrintService)services.getSelectedItem());
       }
     });
-    page.add(services, new Point2D.Double(1,0));
+    page.add("printers", services);
 
     // settings
-    page.add(new ButtonHelper().create(new Settings()));
+    page.add("settings", new ButtonHelper().create(new Settings()));
     
     // 'preview'
-    layout.createBlock(0);
-    page.add(new JLabel(resources.getString("preview")));
+    page.add("lpreview", new JLabel(resources.getString("preview")));
     
     // the actual preview
-    layout.createBlock(0);
     preview = new Preview();
-    page.add(new JScrollPane(preview), new Point2D.Double(1,1));
+    page.add("preview", new JScrollPane(preview));
     
     // done
     return page;    

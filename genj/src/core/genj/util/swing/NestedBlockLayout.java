@@ -26,36 +26,148 @@ import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * A layout that arranges components in nested blocks (rows, columns)
+ * A layout that arranges components in nested blocks of rows and columns
+ * <!ELEMENT layout (row|col)>
+ * <!ELEMENT row (col*|*)>
+ * <!ELEMENT col (row*|*)>
  */
 public class NestedBlockLayout implements LayoutManager2 {
 
   /** one root row is holds all the columns */
   private Block root;
   
-  /** level of components */
-  private int componentLevel = 1;
-  
   /** padding */
   private int padding = 1;
+  
+  /** mapping key 2 cell */
+  private List cells = new ArrayList(16);
   
   /**
    * Constructor
    */
-  public NestedBlockLayout(boolean startWithRow, int componentLevel) {
-    
-    if (componentLevel<1)
-      throw new IllegalArgumentException(componentLevel+"<1");
+  public NestedBlockLayout(String descriptor) {
+    try {
+      init(new StringReader(descriptor));
+    } catch (IOException e) {
+      // can't happen
+    }
+  }
 
-    root = startWithRow ? (Block)new Row() : (Block)new Column();
-    
-    this.componentLevel = componentLevel;
-    
+  /**
+   * Constructor
+   */
+  public NestedBlockLayout(Reader descriptor) throws IOException {
+    init(descriptor);
   }
   
+  /**
+   * Constructor
+   */
+  public NestedBlockLayout(InputStream descriptor) throws IOException {
+    init(new InputStreamReader(descriptor));
+  }
+  
+  /**
+   * Accessor to cell definitions
+   */
+  public Collection getCells() {
+    return cells;
+  }
+  
+  /**
+   * Post Constructor Initializer
+   */
+  private void init(Reader descriptor) throws IOException {
+    
+    // parse descriptor
+    try {
+	    SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+	    parser.parse(new InputSource(descriptor), new DescriptorHandler());
+    } catch (IOException ioe) {
+      throw (IOException)ioe;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    
+    // done
+  }
+  
+  /**
+   * Our descriptor parser
+   */
+  private class DescriptorHandler extends DefaultHandler {
+    
+    private Stack stack = new Stack();
+    
+    public void startElement(java.lang.String uri, java.lang.String localName, java.lang.String qName, Attributes attributes) throws org.xml.sax.SAXException {
+      // new block!
+      Block block = getBlock(qName, attributes);
+      // add to parent
+      if (stack==null) 
+        throw new SAXException("unexpected element");
+      if (!stack.isEmpty()) {
+        Block parent = (Block)stack.peek();
+	      parent.add(block);
+      }
+      // throw on stack
+      stack.add(block);
+      // done
+    }
+    
+    private Block getBlock(String element, Attributes attrs) {
+      // row?
+      if ("row".equals(element)) 
+        return new Row();
+      // column?
+      if ("col".equals(element))
+        return new Column();
+      // a cell!
+      Cell cell =  new Cell(element, attrs);
+      // remember
+      cells.add(cell);
+      // done
+      return cell;
+    }
+    
+    public void endElement(java.lang.String uri, java.lang.String localName, java.lang.String qName) throws org.xml.sax.SAXException {
+      
+      // check
+      if (stack==null||stack.size()==0)
+        throw new SAXException("unexpected /element");
+
+      // pop last
+      Block block = (Block)stack.pop();
+      
+      // are we done?
+      if (stack.isEmpty()) {
+        root = block;
+        stack = null;
+      }
+    }
+    
+  };
+
   /**
    * an block in the layout
    */
@@ -97,28 +209,10 @@ public class NestedBlockLayout implements LayoutManager2 {
     }
     
     /** add sub */
-    void add(Block block, int level) {
-      
-      if (level==0) {
-        if (block==null)
-          block = sub();
-        subs.add(block);
-      } else {
-        Block sub;
-        if (subs.isEmpty()) {
-          sub = sub();
-          subs.add(sub);
-        } else {
-          sub = (Block)subs.get(subs.size()-1);
-        }
-        sub.add(block, level-1);
-      }
-      
+    void add(Block block) {
+      subs.add(block);
       invalidate(false);
     }
-    
-    /** create sub */
-    abstract Block sub();
     
     /** invalidate state */
     void invalidate(boolean recurse) {
@@ -149,9 +243,11 @@ public class NestedBlockLayout implements LayoutManager2 {
    */
   private class Row extends Block {
 
-    /** create a sub */
-    Block sub() {
-      return new Column();
+    /** add a sub */
+    void add(Block sub) {
+      if (sub instanceof Row)
+        throw new IllegalArgumentException("row can't contain row");
+      super.add(sub);
     }
     
     /** preferred size */
@@ -226,12 +322,14 @@ public class NestedBlockLayout implements LayoutManager2 {
    * a column
    */
   private class Column extends Block {
-    
-    /** create a sub */
-    Block sub() {
-      return new Row();
+
+    /** add a sub */
+    void add(Block sub) {
+      if (sub instanceof Column)
+        throw new IllegalArgumentException("column can't contain column");
+      super.add(sub);
     }
-    
+
     /** preferred size */
     Dimension preferred() {
       // known?
@@ -303,20 +401,57 @@ public class NestedBlockLayout implements LayoutManager2 {
   /**
    * Component
    */
-  private class Cell extends Block {
-
+  public class Cell extends Block {
+    
+    /** a unique element id */
+    private String element;
+    
+    /** attributes */
+    private Map attrs = new HashMap();
+    
     /** wrapped component */
     private Component component;
     
     /** weight constraints */
-    private Point2D constraints;
-    
+    private Point2D.Float weight = new Point2D.Float();
+
     /** constructor */
-    Cell(Component set, Object constraints) {
-      component = set;
+    private Cell(String element, Attributes attributes) {
       
-      // remember weight constraints
-      this.constraints = constraints instanceof Point2D ? (Point2D)constraints : new Point2D.Double();
+      // keep key
+      this.element = element;
+      
+      for (int i=0,j=attributes.getLength();i<j;i++) 
+        attrs.put(attributes.getQName(i), attributes.getValue(i));
+      
+      // look for weight info
+      String wx = getAttribute("wx");
+      if (wx!=null)
+        weight.x = Float.parseFloat(wx);
+      String wy = getAttribute("wy");
+      if (wy!=null)
+        weight.y = Float.parseFloat(wy);
+
+    }
+    
+    /** set contained content */
+    void setContent(Component component) {
+      this.component = component;
+    }
+    
+    /** element */
+    public String getElement() {
+      return element;
+    }
+    
+    /** attribute */
+    public String getAttribute(String attr) {
+      return (String)attrs.get(attr);
+    }
+    
+    /** set weight of cell */
+    public void setWeight(Point2D weight) {
+      if (weight!=null) this.weight.setLocation(weight);
     }
     
     /** remove */
@@ -324,14 +459,9 @@ public class NestedBlockLayout implements LayoutManager2 {
       return this.component==component;
     }
     
-    /** add */
-    void add(Block block, int level) {
-      throw new IllegalArgumentException();
-    }
-    
-    /** sub */
-    Block sub() {
-      throw new IllegalArgumentException();
+    /** add a sub */
+    void add(Block sub) {
+      throw new IllegalArgumentException("cell can't contain row, column or other cell");
     }
     
     /** preferred */
@@ -340,19 +470,26 @@ public class NestedBlockLayout implements LayoutManager2 {
       if (preferred!=null)
         return preferred;
       // calc
-      preferred = new Dimension(component.getPreferredSize());
-      preferred.width += padding*2;
-      preferred.height += padding*2;
-      return preferred;
+      if (component==null)
+        preferred = new Dimension();
+      else {
+	      preferred = new Dimension(component.getPreferredSize());
+	      preferred.width += padding*2;
+	      preferred.height += padding*2;
+      }
+	    return preferred;
     }
     
     /** weight */
     Point2D weight() {
-      return constraints;
+      return weight;
     }
     
     /** layout */
     void layout(Rectangle in) {
+      
+      if (component==null)
+        return;
       
       // calculate what's available
       Rectangle avail = new Rectangle(in.x+padding, in.y+padding, in.width-padding*2, in.height-padding*2);
@@ -379,27 +516,39 @@ public class NestedBlockLayout implements LayoutManager2 {
   } //Cell
   
   /**
-   * Constructor
-   */
-  private NestedBlockLayout() {
-  }
-  
-  /**
    * Component/Layout lifecycle callback
-   * @param comp the added component
-   * @param constraints a Point2D for x/y weight (if applicable)
    */
-  public void addLayoutComponent(Component comp, Object constraints) {
-    root.add(new Cell(comp, constraints), componentLevel-1);
+  public void addLayoutComponent(Component comp, Object key) {
+
+    // need element qualification
+    if (key==null)
+      throw new IllegalArgumentException("element key mandatory");
+    
+    // a cell?
+    if (key instanceof Cell) {
+      ((Cell)key).setContent(comp);
+      return;
+    }
+    
+    // lookup cell
+    String element = key.toString();
+    for (int i=0,j=cells.size();i<j;i++) {
+      Cell cell = (Cell)cells.get(i);
+      if (cell.getElement().equals(element)) {
+        cell.setContent(comp);
+        return;
+      }
+    }
+    throw new IllegalArgumentException("element qualifier doesn't match any descriptor element");
+
+    // done
   }
 
   /**
    * Component/Layout lifecycle callback
-   * @param comp the added component
-   * @param name name of component is ignored
    */
-  public void addLayoutComponent(String name, Component comp) {
-    addLayoutComponent(comp, null);
+  public void addLayoutComponent(String element, Component comp) {
+    addLayoutComponent(comp, element);
   }
 
   /**
@@ -445,15 +594,6 @@ public class NestedBlockLayout implements LayoutManager2 {
     root.invalidate(true);
   }
 
-  /**
-   * Start a new block
-   */
-  public void createBlock(int level) {
-    if (level>=componentLevel)
-      throw new IllegalArgumentException(level+">="+componentLevel);
-    root.add(null, level);
-  }
-  
   /**
    * our preferred layout size
    */

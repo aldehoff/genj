@@ -32,8 +32,6 @@ import genj.util.Registry;
 import genj.util.swing.NestedBlockLayout;
 import genj.view.ViewManager;
 
-import java.awt.geom.Point2D;
-
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -76,8 +74,7 @@ public class EventBean extends PropertyBean {
     if (!(property instanceof PropertyEvent))
       return;
     
-    NestedBlockLayout layout = new NestedBlockLayout(false, 2);
-    setLayout(layout);
+    setLayout(new NestedBlockLayout("<col><row><at/><age wx=\"1\"/></row><row><known/></row></col>"));
     
     PropertyEvent event = (PropertyEvent)property;
     PropertyDate date = event.getDate(true);
@@ -105,10 +102,9 @@ public class EventBean extends PropertyBean {
       txt.setEditable(false);
       txt.setFocusable(false);
       
-      add(new JLabel(resources.getString(ageat)));
-      add(txt, new Point2D.Double(1,0));
+      add("at", new JLabel(resources.getString(ageat)));
+      add("age", txt);
       
-      layout.createBlock(0);
     }
 
     // show event-has-happened?
@@ -118,7 +114,9 @@ public class EventBean extends PropertyBean {
         known = new JCheckBox(resources.getString("even.known"));
         known.setSelected(happened.booleanValue());
         known.addActionListener(changeSupport);
-        add(known);
+        
+        add("known", known);
+        
         defaultFocus = known;
       }
     }
