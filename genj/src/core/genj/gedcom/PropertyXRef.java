@@ -265,25 +265,25 @@ public abstract class PropertyXRef extends Property {
     return super.getMetaProperties(filter);
   }
 
-  /**
-   * @see genj.gedcom.Property#getPropertyRecursively(genj.gedcom.TagPath, int, boolean)
-   */
-  protected Property getPropertyRecursively(TagPath path, int pos, boolean validOnly) {
-    
-    // let super go ahead
-    Property result = super.getPropertyRecursively(path, pos, validOnly);
-    if (result!=null) return result;
-    
-    // a target to try?
-    Entity entity = getReferencedEntity();
-    if (target==null) return null;
-    
-    // check it out
-    if (path.get(pos).equals(getTag())) 
-      return entity.getPropertyRecursively(path, pos+1, validOnly);
-    
-    // done
-    return null;
-  }
+//  /**
+//   * @see genj.gedcom.Property#getPropertyRecursively(genj.gedcom.TagPath, int, boolean)
+//   */
+//  protected Property getPropertyRecursively(TagPath path, int pos, boolean validOnly) {
+//    
+//    // let super go ahead
+//    Property result = super.getPropertyRecursively(path, pos, validOnly);
+//    if (result!=null) return result;
+//    
+//    // a target to try?
+//    Entity entity = getReferencedEntity();
+//    if (target==null) return null;
+//    
+//    // check it out
+//    if (path.get(pos).equals(getTag())) 
+//      return entity.getPropertyRecursively(path, pos+1, validOnly);
+//    
+//    // done
+//    return null;
+//  }
 
 } //PropertyXRef
