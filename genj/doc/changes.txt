@@ -2,7 +2,6 @@ N New - B Bug fixed - I Improved - C Changed - O Open
 
 Future
 
-  O Extended set of entities (REPOSITORY, SOURCE, SUBMITTER)
   O Merging with improved intelligence e.g.
     - Identify matching information when merging entities
     - Remove redundant information
@@ -11,18 +10,13 @@ Future
   O Printing with Title/Pagenumber/Filename/Author/GenerationPerPage
   O Global tree-file attributes (e.g. Notes)
   O A better method of assigning IDs to entities (a system that means a little bit more than randomness)
-  O Find entities in tree view by text
-  O Different fonts for properties in Tree
+  O Searching capability (incl. regular expressions)
   O Cut/Copy/Paste for properties in the EditView
   O New Tool - run a command line script
   O OBJE-FILE reference should allow to start external viewer via mouse-click
-  O TimelineView should use more vertical space if available to allow for more text (horizontal)
   O Configurable selection of Views in Applet
   O Reports should translate dates to a more readable format (e.g. MAR becomes March)
-  O EditView/PropertySex should allow for male/female/unknown
-  O Localize Print texts
-  O Printing dialogs remember parameters now (e.g. margins)
-  O Printing forgets about paper orientation between pages
+  O Localize Printing labels and remember print parameters
   O Wizard that asks what to do after deletion of entities (remove empty family, remove lost branch, ...)
   O Report to re-layout all entity IDs (logical numbering, format, etc.)
   O Descendants view a la http://worldconnect.rootsweb.com/cgi-bin/igm.cgi?op=DESC&db=timmsc&id=I008
@@ -31,14 +25,17 @@ Future
   O some.ged.properties files should be read by CC from the same directory as the .ged-file (and saved there, too)
   O Table view for families should list all children, not just first child.
   O Merge and Verify should be reports
-
-1.9 - Aug xx 2002
-
   O Improved windows placement (applet layouts views tree NW, table NE, overview S)
   O EditView should show button for 'Create New Individual' when no individual set
     (works nicely when the user has created an empty tree)
   O View-Menu in ControlCenter to open up views
+  O Use colors to distinguish different events in TimelineView
 
+1.9 - Aug xx 2002
+
+  N A new PropertySex is now unset when created - the user has to choose male/female eventually
+  N Special entities REPOSITORY, SOURCE, SUBMITTER are now supported internally
+  N NavigatorView
   N Dates are localized in TableView, TimelineView and TreeView now
   B GedcomWriter now writes correct version information
   N A new About window has been added, implementing Welcome, Authors, Feedback and Copyright tabbed panes
