@@ -959,6 +959,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     JMenuBar menuBar = new JMenuBar();
     menuBar.add(gedcomMenu);
     menuBar.add(toolMenu);
+    menuBar.add(Box.createHorizontalGlue());
     menuBar.add(helpMenu);
 
     // Done
