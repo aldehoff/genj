@@ -94,6 +94,8 @@ public class MutableGraphImpl implements MutableGraph {
     NodeImpl 
       iFrom = getImpl(from),
       iTo   = getImpl(to);
+      
+    if (path==null) path = new Path();
 
     ArcImpl arc = new ArcImpl(iFrom, iTo, path);
     iFrom.addArc(arc);
