@@ -293,7 +293,18 @@ public abstract class Property implements Comparable {
    *          1 this &gt; property
    */
   public int compareTo(Object o) {
+    // safety check
     if (!(o instanceof Property)) throw new ClassCastException("compareTo("+o+")");
+    // entity?
+    if (this instanceof Entity) {
+      try {
+        return
+          Integer.parseInt(((Entity)this).getId().substring(1))
+          -
+          Integer.parseInt(((Entity)o).getId().substring(1));
+      } catch (Exception e) {
+      }
+    }
     return getValue().compareTo(((Property)o).getValue());
   }
 

@@ -40,24 +40,6 @@ public abstract class PropertyIndi extends Property{
   }
 
   /**
-   * Compares this property to another property
-   * @return -1 this < property <BR>
-   *          0 this = property <BR>
-   *          1 this > property
-   */
-  public int compareTo(Object o) {
-    if (!(o instanceof PropertyIndi)) return super.compareTo(o);
-    try {
-      return
-        Integer.parseInt(getEntity().getId().substring(1))
-        -
-        Integer.parseInt(((Property)o).getEntity().getId().substring(1));
-    } catch (Exception e) {
-    }
-    return super.compareTo(o);
-  }
-
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
