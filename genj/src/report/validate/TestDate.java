@@ -114,6 +114,10 @@ import java.util.List;
    * test for error in date1 vs. date2
    */
   private boolean isError(PropertyDate date1, PropertyDate date2) {
+    
+    // check valid first
+    if (!(date1.isValid()&&date2.isValid()))
+      return false;
 
     // depending on comparison mode      
     PointInTime pit1, pit2;
