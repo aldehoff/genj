@@ -26,9 +26,9 @@
     <tocitem target="e.repository"  text="@e.repository@"    image="img.Repository"  />
   </tocitem>
   <tocitem target="specials"    text="@specials@">
+    <tocitem target="x.blueprint"   text="@x.blueprint@"/>
     <tocitem target="x.report"      text="@x.report@"   />
-    <tocitem target="x.faq1"        text="@x.faq1@"     />
-    <tocitem target="x.faq2"        text="@x.faq2@"     />
+    <tocitem target="x.faq"         text="@x.faq@"     />
   </tocitem>
   <tocitem target="team"        text="@team@"/>
 </toc>

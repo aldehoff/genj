@@ -29,9 +29,9 @@
   <mapID target="e.repository"   url="entity/repository.html" />
 
   <mapID target="specials"   url="specials.html" />
+  <mapID target="x.blueprint" url="special/blueprint.html" />
   <mapID target="x.report"    url="special/report.html" />
-  <mapID target="x.faq1"      url="special/faq1.html" />
-  <mapID target="x.faq2"      url="special/faq2.html" />
+  <mapID target="x.faq"       url="special/faq.html" />
 
   <mapID target="team"      url="team.html" />
 

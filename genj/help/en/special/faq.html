@@ -2,13 +2,14 @@
 
 <body>
 
-<h2>Frequently Asked Questions - General</h2>
+<h2>Frequently Asked Questions</h2>
 
 <p>
 <ol>
  <li> <a Href="#1">What is GenJ ?</a>
  <li> <a Href="#2">Is there a mailing list and/or a newsgroup devoted  to GenJ ?</a>
  <li> <a Href="#3">What does Gedcom mean ?</a>
+ <li> <a Href="#4">How do I get pictures to show up in Tree View?</a>
 </ol>
 <p>
 
@@ -52,6 +53,20 @@
   <font color="green">What does Gedcom mean ?</font><br>
   <font color="green"><b>A</b></font> - 
     Please read on <a href="./../concepts/gedcom.html">here</A>.
+</p>
+
+<a name = "4"><p>
+<Font color="red"><b>Q</b></Font> - 
+  <Font color="green">How do I get pictures to show up in Tree View?</Font><br>
+  <Font color="green"><b>A</b></Font> - 
+ To show a picture for every person in the main Tree view add
+ a multimedia property (OBJE) to your individuals. Simply bring
+ up an indivdual in <a href="../view/edit.html">Edit View</a>, choose the topmost
+ property INDI, click on '+' and choose OBJE to be added.
+ Point the sub-property OBJE|FILE to a file in your computer's 
+ file-system (click on the button 'choose file') and the images
+ will be picked up by <a href="../view/tree.html">Tree View</a> (it's looking
+ for INDI:OBJE:FILE automatically).
 </p>
 
 </body>
