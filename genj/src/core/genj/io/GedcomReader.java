@@ -27,7 +27,6 @@ import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
-import genj.gedcom.Submission;
 import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Trackable;
@@ -443,8 +442,6 @@ public class GedcomReader implements Trackable {
     // .. get new
     try {
       
-      //Thread.currentThread().sleep(100);
-
       // Read
       do {
 
@@ -456,9 +453,6 @@ public class GedcomReader implements Trackable {
           break;
         }
         
-        // 20030530 I think we can forget about this call
-        //gedcomLine.trim();
-
         // .. update statistics
         read+=gedcomLine.length()+2;
         if (length>0) {
@@ -517,7 +511,8 @@ public class GedcomReader implements Trackable {
         // 20030530 o.k. gotta switch to delim "\n" because we want everything 
         // to end of line including contained spaces 
         value = tokens.nextToken("\n");
-        // strip leading space that forms delimiter to tag/xref
+        // 20030609 strip leading space that forms delimiter to tag/xref
+        // (this was trim() once but identified as too greedy)
         if (value.startsWith(" "))
           value = value.substring(1);
       } else {
