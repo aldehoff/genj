@@ -26,8 +26,13 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyXRef;
 import genj.util.Trackable;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.List;
@@ -37,35 +42,71 @@ import java.util.List;
  */
 public class GedcomWriter implements Trackable {
 
+  public static final String
+    UNICODE = "UNICODE",
+    ASCII   = "ASCII",
+    IBMPC   = "IBMPC",
+    ANSEL   = "ANSEL";
+    
+  public static final String[] ENCODINGS = {
+    IBMPC, ANSEL, ASCII, UNICODE
+  };
+
   private Gedcom gedcom;
   private BufferedWriter out;
   private String file;
   private String date;
+  private String encoding;
   private int level;
-  private int total,progress;
+  private int total, progress;
   private int line;
   private int entity;
-  private boolean cancel=false;
+  private boolean cancel = false;
   private Filter[] filters = new Filter[0];
 
   /**
    * Constructor
-   * @param gedcom Gedcom object to write
-   * @param out BufferedWriter to write to
+   * @param ged data to write
+   * @param name the logical name (header value)
+   * @param stream the stream to write to
+   * @param encoding either IBMPC, ASCII, UNICODE or ANSEL
    */
-  public GedcomWriter(Gedcom gedcom, String file, BufferedWriter out) {
+  public GedcomWriter(Gedcom ged, String name, OutputStream stream, String enc) throws UnsupportedEncodingException {
 
-    // Remember some data
-    this.gedcom=gedcom;
-    this.out   =out   ;
-    this.file  =file  ;
-
-    // Initializer calculation values
-    level=0;
-    line =1;
-    date =PropertyDate.getString(Calendar.getInstance());
+    // init data
+    gedcom = ged;
+    file = name;
+    level = 0;
+    line = 1;
+    date = PropertyDate.getString(Calendar.getInstance());
+    encoding = enc;
+    out = new BufferedWriter(initOut(stream));
 
     // Done
+  }
+
+  /**
+   * Initialize the writer we're using
+   */
+  private Writer initOut(OutputStream stream) throws UnsupportedEncodingException {
+    // Unicode
+    if (UNICODE.equals(encoding)) {
+      return new OutputStreamWriter(stream, "Unicode");
+    }
+    // ASCII
+    if (ASCII.equals(encoding)) {
+      return new OutputStreamWriter(stream, "ASCII");
+    }
+    // ISO-8859-1
+    if (IBMPC.equals(encoding)) {
+      return new OutputStreamWriter(stream, "ISO-8859-1");
+    }
+    // ANSEL
+    if (ANSEL.equals(encoding)) {
+      return new AnselWriter(stream);
+    }
+    // not supported
+    throw new UnsupportedEncodingException(encoding+" is not a supported encoding");
   }
 
   /**
@@ -79,17 +120,17 @@ public class GedcomWriter implements Trackable {
    * Returns progress of save in %
    */
   public int getProgress() {
-    if (progress==0) {
+    if (progress == 0) {
       return 0;
     }
-    return progress*100/total;
+    return progress * 100 / total;
   }
 
   /**
    * Returns state as explanatory string
    */
   public String getState() {
-    return line+" Lines & "+entity+" Entities";
+    return line + " Lines & " + entity + " Entities";
   }
 
   /**
@@ -98,12 +139,13 @@ public class GedcomWriter implements Trackable {
   public String getWarnings() {
     return "";
   }
-  
+
   /**
    * Sets filters to use
    */
   public void setFilters(Filter[] fs) {
-    if (fs==null) fs = new Filter[0];
+    if (fs == null)
+      fs = new Filter[0];
     filters = fs;
   }
 
@@ -111,7 +153,7 @@ public class GedcomWriter implements Trackable {
    * Helper for writing Gedcom-line
    */
   private void line(int ldelta) {
-    level+=ldelta;
+    level += ldelta;
   }
 
   /**
@@ -119,9 +161,10 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void line(int ldelta, String tag, String value) throws IOException, GedcomIOException {
-    level+=ldelta;
-    line(tag,value);
+  private void line(int ldelta, String tag, String value)
+    throws IOException, GedcomIOException {
+    level += ldelta;
+    line(tag, value);
   }
 
   /**
@@ -129,11 +172,12 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void line(String tag, String value) throws IOException, GedcomIOException {
+  private void line(String tag, String value)
+    throws IOException, GedcomIOException {
 
     // Still Operation ?
     if (cancel) {
-      throw new GedcomIOException("Operation cancelled",line);
+      throw new GedcomIOException("Operation cancelled", line);
     }
 
     // Indent
@@ -142,13 +186,13 @@ public class GedcomWriter implements Trackable {
       out.write(' ');
     */
     // Level+Tag+Value
-    String l = ""+level;
-    out.write(l    ,0,l    .length());
+    String l = "" + level;
+    out.write(l, 0, l.length());
     out.write(' ');
-    out.write(tag  ,0,tag  .length());
+    out.write(tag, 0, tag.length());
     out.write(' ');
-    if (value!=null)
-      out.write(value,0,value.length());
+    if (value != null)
+      out.write(value, 0, value.length());
     out.newLine();
 
     // next
@@ -162,13 +206,14 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void writeEntities(Gedcom ged) throws IOException, GedcomIOException {
+  private void writeEntities(Gedcom ged)
+    throws IOException, GedcomIOException {
 
     // Loop through EntityLists
-    for (int i=0;i<ged.NUM_TYPES;i++) {
+    for (int i = 0; i < ged.NUM_TYPES; i++) {
       List ents = ged.getEntities(i);
-      for (int j=0;j<ents.size();j++) {
-        writeEntity((Entity)ents.get(j));
+      for (int j = 0; j < ents.size(); j++) {
+        writeEntity((Entity) ents.get(j));
       }
     }
 
@@ -181,15 +226,16 @@ public class GedcomWriter implements Trackable {
    * @exception GedcomIOException
    */
   private void writeEntity(Entity ent) throws IOException, GedcomIOException {
-    
+
     // Filters
-    for (int f=0; f<filters.length; f++) {
-    	if (filters[f].accept(ent)==false) return;
-    }      
+    for (int f = 0; f < filters.length; f++) {
+      if (filters[f].accept(ent) == false)
+        return;
+    }
 
     // Entity line
-    Property prop  = ent.getProperty();
-    writeProperty("@"+ent.getId()+"@ ",prop);
+    Property prop = ent.getProperty();
+    writeProperty("@" + ent.getId() + "@ ", prop);
 
     // Done
     entity++;
@@ -216,7 +262,7 @@ public class GedcomWriter implements Trackable {
       out.close();
 
     } catch (IOException ex) {
-      throw new GedcomIOException("Error while writing",line);
+      throw new GedcomIOException("Error while writing", line);
     }
 
     // Done
@@ -231,15 +277,15 @@ public class GedcomWriter implements Trackable {
   private void writeHeader() throws IOException, GedcomIOException {
 
     // Header
-    line("HEAD","");
-    line(+1,"SOUR","GENJ");
-    line(+1,"VERS",Version.getInstance().toString());
-    line(+0,"NAME","GenealogyJ");
+    line("HEAD", "");
+    line(+1, "SOUR", "GENJ");
+    line(+1, "VERS", Version.getInstance().toString());
+    line(+0, "NAME", "GenealogyJ");
     line(-1);
-    line(+0,"DEST","ANY");
-    line(+0,"CHAR","IBMPC");
-    line(+0,"FILE",file);
-    line(+0,"DATE",date);
+    line(+0, "DEST", "ANY");
+    line(+0, "CHAR", encoding);
+    line(+0, "FILE", file);
+    line(+0, "DATE", date);
     line(-1);
   }
 
@@ -248,34 +294,39 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void writeProperty(String prefix, Property prop) throws IOException, GedcomIOException {
-    
+  private void writeProperty(String prefix, Property prop)
+    throws IOException, GedcomIOException {
+
     // Filters
-    Entity target = null; 
+    Entity target = null;
     if (prop instanceof PropertyXRef) {
-      Property p = ((PropertyXRef)prop).getTarget();
-      if (p!=null) target = p.getEntity();
+      Property p = ((PropertyXRef) prop).getTarget();
+      if (p != null)
+        target = p.getEntity();
     }
-    for (int f=0; f<filters.length; f++) {
-      if (filters[f].accept(prop)==false) return;
-      if (target!=null) if (filters[f].accept(target)==false) return;
-    }      
+    for (int f = 0; f < filters.length; f++) {
+      if (filters[f].accept(prop) == false)
+        return;
+      if (target != null)
+        if (filters[f].accept(target) == false)
+          return;
+    }
 
     // This property's value
-    if (prop.isMultiLine()==Property.NO_MULTI) {
+    if (prop.isMultiLine() == Property.NO_MULTI) {
       // .. just a single line
-      line(0,prefix+prop.getTag(),prop.getValue());
+      line(0, prefix + prop.getTag(), prop.getValue());
     } else {
       // .. more lines from iterator
       Enumeration iterator = prop.getLineIterator();
       // .. just one though?
-      if ( !iterator.hasMoreElements() ) {
-        line(0,prefix+prop.getTag(),"");
+      if (!iterator.hasMoreElements()) {
+        line(0, prefix + prop.getTag(), "");
       } else {
-        line(0,prefix+prop.getTag(),iterator.nextElement().toString());
+        line(0, prefix + prop.getTag(), iterator.nextElement().toString());
         line(1);
         while (iterator.hasMoreElements()) {
-          line (0,"CONT",iterator.nextElement().toString());
+          line(0, "CONT", iterator.nextElement().toString());
         }
         line(-1);
       }
@@ -285,10 +336,10 @@ public class GedcomWriter implements Trackable {
     line(1);
 
     int num = prop.getNoOfProperties();
-    for (int i=0;i<num;i++) {
+    for (int i = 0; i < num; i++) {
       Property pi = prop.getProperty(i);
-      if (!pi.isTransient()) {  
-        writeProperty("",pi);
+      if (!pi.isTransient()) {
+        writeProperty("", pi);
       }
     }
 
@@ -303,6 +354,6 @@ public class GedcomWriter implements Trackable {
   private void writeTail() throws IOException, GedcomIOException {
 
     // Tailer
-    line("TRLR","");
+    line("TRLR", "");
   }
 }

@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.io.Filter;
+import genj.io.GedcomWriter;
 import genj.util.swing.SwingFactory;
 import genj.view.FilterSupport;
 import genj.view.ViewManager;
@@ -38,6 +39,7 @@ import java.util.StringTokenizer;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
@@ -49,7 +51,8 @@ import javax.swing.JTextField;
   /** components */
   private JCheckBox[] checkEntities = new JCheckBox[Gedcom.NUM_TYPES];
   private JCheckBox[] checkViews;
-  private JTextField textTags, textValues;
+  private JTextField  textTags, textValues;
+  private JComboBox   comboEncodings;
   
   /** filters */
   private FilterSupport[] filterViews;
@@ -60,6 +63,12 @@ import javax.swing.JTextField;
   /*package*/ SaveOptionsWidget(Gedcom gedcom) {
     
     SwingFactory create = new SwingFactory();
+    
+    // Options
+    Box options = create.Box(BoxLayout.Y_AXIS);
+    create.JLabel("Encoding");
+    comboEncodings = create.JComboBox(GedcomWriter.ENCODINGS, GedcomWriter.IBMPC);
+    create.pop();
     
     // entities filter    
     Box types = create.Box(BoxLayout.Y_AXIS);
@@ -85,13 +94,21 @@ import javax.swing.JTextField;
     }
     
     // layout
+    add("Options", options);
     add("Filter by Entities", types);
-    add("by Properties"   , props);
-    add("by View", others);
+    add("Filter by Properties"   , props);
+    add("Filter by View", others);
     
     // done
   }
 
+  /**
+   * The choosen encoding
+   */
+  public Object getEncoding() {
+    return comboEncodings.getSelectedItem();
+  }
+  
   /**
    * The choosen filters
    */

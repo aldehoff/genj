@@ -22,14 +22,11 @@ package genj.util.swing;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Stack;
 
 import javax.swing.Box;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -153,6 +150,24 @@ public class SwingFactory {
     JCheckBox result = new JCheckBox(txt, checked);
     wrap(result);
     return result; 
+  }
+  
+  /**
+   * Creates a combobox
+   */
+  public JComboBox JComboBox(Object[] values, Object selection) {
+    JComboBox result = new JComboBox(values) {
+      /**
+       * @see javax.swing.JComponent#getMaximumSize()
+       */
+      public Dimension getMaximumSize() {
+        return new Dimension(super.getMaximumSize().width, super.getPreferredSize().height);
+      }
+    };
+    result.setAlignmentX(result.LEFT_ALIGNMENT);
+    result.setSelectedItem(selection);
+    wrap(result);
+    return result;
   }
   
 } //WidgetFactory

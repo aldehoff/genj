@@ -41,6 +41,7 @@ public class GedcomReader implements Trackable {
 
   private Gedcom         gedcom;
   private BufferedReader in;
+  private InputStream    oin;
 
   private int progress;
   private int level;
@@ -68,13 +69,14 @@ public class GedcomReader implements Trackable {
    * Constructor
    * @param in BufferedReader to read from
    */
-  public GedcomReader(InputStream in, Origin origin, long length) {
+  public GedcomReader(InputStream stream, Origin org, long len) {
 
     // Remember some data
-    this.in    = new BufferedReader(new InputStreamReader(in));
-    this.line  =0 ;
-    this.origin=origin;
-    this.length=length;
+    oin    = stream;
+    in     = new BufferedReader(new InputStreamReader(stream));
+    line   = 0;
+    origin = org;
+    length = len;
 
     // Init some data
     level=0;
@@ -279,18 +281,26 @@ public class GedcomReader implements Trackable {
     // 1 SOUR
     // 2 VERS
     // 2 NAME
+    // 1 CHAR
     // 1 DATE
     if (!readLine()||(level!=0)||(!tag.equals("HEAD"))) {
       throw new GedcomFormatException("Expected 0 HEAD",line);
     }
 
     do {
+      // read until end of header
       if (!readLine()) {
         throw new GedcomFormatException("Unexpected end of header",line);
       }
       if (level==0) {
         break;
       }
+      // check for encoding
+      if (level==1&&"CHAR".equals(tag)) {
+        System.out.println(value);
+        in = new BufferedReader(new AnselReader(in));
+      }
+      // done
     } while (true);
 
     // Last still to be used
@@ -332,7 +342,13 @@ public class GedcomReader implements Trackable {
       do {
 
         line++;
-        gedcomLine = in.readLine().trim();
+        gedcomLine = in.readLine();
+        
+        if (gedcomLine==null) {
+          gedcomLine="";
+          break;
+        }
+        gedcomLine.trim();
 
         // .. update statistics
         read+=gedcomLine.length()+2;
