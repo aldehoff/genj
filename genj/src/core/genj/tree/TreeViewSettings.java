@@ -100,10 +100,16 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     add(tree.resources.getString("page.colors"), colors);
     add(tree.resources.getString("page.blueprints"), blueprintList);
     
+    // done
+  }
+  
+  /**
+   * @see java.awt.Component#addNotify()
+   */
+  public void addNotify() {
+    super.addNotify();
     // reset
     reset();
-    
-    // done
   }
   
   /**
