@@ -29,7 +29,7 @@ import genj.util.*;
 /**
  * Gedcom Property : FILE
  */
-public class PropertyFile extends Property {
+public class PropertyFile extends Property implements IconValueAvailable {
 
   /** the file-name */
   private String  file;

@@ -28,7 +28,7 @@ import genj.util.*;
 /**
  * Gedcom Property : BLOB
  */
-public class PropertyBlob extends Property {
+public class PropertyBlob extends Property implements IconValueAvailable {
 
   /** the raw bytes */
   private byte[]  raw;

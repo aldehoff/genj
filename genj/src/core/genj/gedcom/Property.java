@@ -678,11 +678,8 @@ public abstract class Property {
    * Returns this property's properties which are of given type
    */
   public Vector getProperties(Class type) {
-    
     Vector props = new Vector(3);
-    
     internalGetProperties(props, type);
-    
     return props;
   }
   
@@ -690,11 +687,12 @@ public abstract class Property {
    * Fills list of properties with properties of given type
    */
   private void internalGetProperties(Vector props, Class type) {
-    if (getClass().equals(type)) {
-      props.addElement(this);
-    }
     for (int c=0;c<getNoOfProperties();c++) {
-      getProperty(c).internalGetProperties(props, type);
+      Property child = getProperty(c);
+      if (type.isAssignableFrom(child.getClass())) {
+        props.addElement(child);
+      }
+      child.internalGetProperties(props, type);
     }
   }
 

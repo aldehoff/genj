@@ -29,6 +29,7 @@ import javax.swing.event.*;
 
 import genj.gedcom.*;
 import genj.util.*;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * A proxy for a property that links entities
@@ -259,6 +260,8 @@ class ProxyXRef extends Proxy implements ActionListener  {
 
     // Valid link ?
     if (pxref.getReferencedEntity()!=null) {
+      
+      // Create a link/jump button
       Property p = pxref.getReferencedEntity().getProperty();
       JButton b = createButton(
         EditView.resources.getString("proxy.jump_to",pxref.getReferencedEntity().getId()),
@@ -267,14 +270,26 @@ class ProxyXRef extends Proxy implements ActionListener  {
         this,
         p.getImage(true)
       );
-
       in.add(b);
+      
+      // Hack to show image for referenced Blob|Image
+      ImgIcon img = null;
+      if (p instanceof IconValueAvailable) {
+        img = ((IconValueAvailable)p).getValueAsIcon();
+      }
+      JComponent preview;
+      if (img!=null) {
+        preview = new JLabel(ImgIconConverter.get(img));
+      } else {
+        preview = new JTextArea(p.toString());
+        preview.setEnabled(false);
+      }
 
-      JTextArea ta = new JTextArea(p.toString());
-      ta.setEditable(false);
-      JScrollPane jsp = new JScrollPane(ta);
+      JScrollPane jsp = new JScrollPane(preview);
       jsp.setAlignmentX(0F);
       in.add(jsp);
+      
+      // done
       return;
     }
 

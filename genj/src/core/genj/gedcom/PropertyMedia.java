@@ -19,13 +19,15 @@
  */
 package genj.gedcom;
 
+import java.util.Vector;
+
 import genj.util.*;
 
 /**
  * Gedcom Property : MEDIA (entity)
  * Property wrapping a reference to a multiMedia object
  */
-public class PropertyMedia extends PropertyXRef {
+public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
 
   /**
    * Constructor with reference
@@ -157,6 +159,14 @@ public class PropertyMedia extends PropertyXRef {
    */
   public int getExpectedReferencedType() {
     return Gedcom.MULTIMEDIAS;
+  }
+
+  /**
+   * Returns an ImgIcon if existing in one of the sub-properties
+   */
+  public ImgIcon getValueAsIcon() {
+    Vector ps = super.getProperties(IconValueAvailable.class);
+    return ps.isEmpty() ? null : ((IconValueAvailable)ps.firstElement()).getValueAsIcon();
   }
 
 }
