@@ -45,22 +45,11 @@ import java.util.Iterator;
  */
 public class GedcomWriter implements Trackable {
 
-  public static final String 
-    UNICODE = "UNICODE", 
-    ASCII = "ASCII", 
-    IBMPC = "IBMPC", 
-    ANSEL = "ANSEL";
-
-  public static final String[] ENCODINGS = { 
-    ANSEL, UNICODE, ASCII, IBMPC 
-  };
-
   private Gedcom gedcom;
   private BufferedWriter out;
   private String file;
   private String date;
   private String time;
-  private String encoding = null;
   private int level;
   private int total, progress;
   private int line;
@@ -75,10 +64,8 @@ public class GedcomWriter implements Trackable {
    * @param stream the stream to write to
    * @param encoding either IBMPC, ASCII, UNICODE or ANSEL
    */
-  public GedcomWriter(Gedcom ged, String name, OutputStream stream, String encoding) {
+  public GedcomWriter(Gedcom ged, String name, OutputStream stream) {
     
-    if (encoding==null) encoding = ANSEL;
-
     Calendar now = Calendar.getInstance();
 
     // init data
@@ -89,7 +76,7 @@ public class GedcomWriter implements Trackable {
     date = PointInTime.getNow().toGedcomString();
     time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
 
-    out = new BufferedWriter(createWriter(stream, encoding));
+    out = new BufferedWriter(createWriter(stream, ged.getEncoding()));
 
     // Done
   }
@@ -97,21 +84,20 @@ public class GedcomWriter implements Trackable {
   /**
    * Initialize the writer we're using
    */
-  private Writer createWriter(OutputStream stream, String enc) {
+  private Writer createWriter(OutputStream stream, String encoding) {
     // Attempt encoding
-    encoding = enc;
     try {
       // Unicode
-      if (UNICODE.equals(encoding))
+      if (Gedcom.UNICODE.equals(encoding))
         return new OutputStreamWriter(stream, "UTF-8");
       // ASCII
-      if (ASCII.equals(encoding))
+      if (Gedcom.ASCII.equals(encoding))
         return new OutputStreamWriter(stream, "ASCII");
       // ISO-8859-1
-      if (IBMPC.equals(encoding))
+      if (Gedcom.IBMPC.equals(encoding))
         return new OutputStreamWriter(stream, "ISO-8859-1");
       // ANSEL
-      if (ANSEL.equals(encoding))
+      if (Gedcom.ANSEL.equals(encoding))
         return new AnselWriter(stream);
     } catch (UnsupportedEncodingException e) {
     }
@@ -286,7 +272,7 @@ public class GedcomWriter implements Trackable {
     line( 1, "GEDC", "");
     line( 2, "VERS", "5.5");
     line( 2, "FORM", "Lineage-Linked");
-    line( 1, "CHAR", encoding);
+    line( 1, "CHAR", gedcom.getEncoding());
     line( 1, "FILE", file);
     // done
   }

@@ -25,7 +25,6 @@ import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.io.Filter;
-import genj.io.GedcomWriter;
 import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.TextFieldWidget;
@@ -70,7 +69,7 @@ import javax.swing.JTextField;
     // Options
     Box options = new Box(BoxLayout.Y_AXIS);
     options.add(new JLabel(resources.getString("save.options.encoding")));
-    comboEncodings = new ChoiceWidget(GedcomWriter.ENCODINGS, GedcomWriter.ANSEL);
+    comboEncodings = new ChoiceWidget(Gedcom.ENCODINGS, Gedcom.ANSEL);
     comboEncodings.setEditable(false);
     options.add(comboEncodings);
     

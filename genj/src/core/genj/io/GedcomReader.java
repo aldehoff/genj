@@ -82,39 +82,33 @@ public class GedcomReader implements Trackable {
     
     // open origin
     InputStream oin = org.open();
+
+    // prepare sniffer
+    InputStreamSniffer sniffer = new InputStreamSniffer(oin);
     
+    // get reader
+    Reader reader;
+    try {
+      reader = sniffer.getReader();
+    } catch (Throwable t) {
+      Debug.log(Debug.WARNING, this, "Failed to create reader: "+t.getMessage());
+      reader = new InputStreamReader(sniffer);
+    }
+
     // init some data
-    in       = new BufferedReader(createReader(oin));
+    in       = new BufferedReader(reader);
     line     = 0;
     origin   = org;
     length   = oin.available();
     level    = 0;
     read     = 0;
     warnings = new ArrayList(128);
+    gedcom   = new Gedcom(origin);
+    gedcom.setEncoding(sniffer.getEncoding());
     
     // Done
   }
 
-  /**
-   * Initialize the reader we're using
-   */
-  private Reader createReader(InputStream stream) throws IOException {
-    
-    // prepare sniffer
-    InputStreamSniffer sniffer = new InputStreamSniffer(stream);
-    
-    // attempt it
-    Reader result;
-    try {
-      result = sniffer.getReader();
-    } catch (Throwable t) {
-      Debug.log(Debug.WARNING, this, "Failed to create reader: "+t.getMessage());
-      result = new InputStreamReader(sniffer);
-    }
-
-    return result;
-  }
-  
   /**
    * Backdoor switch that triggers automatic fixing of duplicate IDs
    */
@@ -251,10 +245,8 @@ public class GedcomReader implements Trackable {
     }
     
     // try it
-    Gedcom result;
-    
     try {
-      result = readGedcom();
+      readGedcom();
     } catch (Throwable t) {
       // 20030530 what abbout OutOfMemoryError
       throw new GedcomIOException(t.toString(), line);
@@ -268,19 +260,18 @@ public class GedcomReader implements Trackable {
     }
 
     // done
-    return result;
+    return gedcom;
   }
   
   /**
    * Read Gedcom as a whole
    *
    */
-  private Gedcom readGedcom() throws GedcomIOException, GedcomFormatException {
+  private void readGedcom() throws GedcomIOException, GedcomFormatException {
 
 
     // Create Gedcom
     int expected = Math.max((int)length/ENTITY_AVG_SIZE,100);
-    gedcom = new Gedcom(origin);
     xrefs = new ArrayList(expected);
 
     // Read the Header
@@ -339,7 +330,6 @@ public class GedcomReader implements Trackable {
     }
 
     // Done
-    return gedcom;
   }
 
   /**
@@ -586,6 +576,9 @@ public class GedcomReader implements Trackable {
       BOM_UTF8    = { (byte)0xEF, (byte)0xBB, (byte)0xBF },
       BOM_UTF16BE = { (byte)0xFE, (byte)0xFF },
       BOM_UTF16LE = { (byte)0xFF, (byte)0xFE };
+      
+    private Reader reader;
+    private String encoding;
 
     /**
      * Constructor
@@ -598,46 +591,53 @@ public class GedcomReader implements Trackable {
       super.read();
       super.reset();
       
-    }
-    
-    /**
-     * Resolve fit reader
-     */
-    private Reader getReader() throws IOException {
-      
       // BOM present?
       if (matchPrefix(BOM_UTF8)) {
         log("BOM_UTF8", "UTF-8");
-        return new InputStreamReader(this, "UTF-8");
+        reader = new InputStreamReader(this, "UTF-8");
+        encoding = Gedcom.UNICODE;
+        return;
       }
       if (matchPrefix(BOM_UTF16BE)) {
         log("BOM_UTF16BE", "UTF-16BE");
-        return new InputStreamReader(this, "UTF-16BE");
+        reader = new InputStreamReader(this, "UTF-16BE");
+        encoding = Gedcom.UNICODE;
+        return;
       }
       if (matchPrefix(BOM_UTF16LE)) {
         log("BOM_UTF16LE", "UTF-16LE");
-        return new InputStreamReader(this, "UTF-16LE");
+        reader = new InputStreamReader(this, "UTF-16LE");
+        encoding = Gedcom.UNICODE;
+        return;
       }
       
       // sniff gedcom header
       String header = new String(super.buf, super.pos, super.count);
       
       // tests
-      if (matchHeader(header,GedcomWriter.UNICODE)) {
-        log(GedcomWriter.UNICODE, "UTF-8");
-        return new InputStreamReader(this, "UTF-8");
+      if (matchHeader(header,Gedcom.UNICODE)) {
+        log(Gedcom.UNICODE, "UTF-8");
+        reader = new InputStreamReader(this, "UTF-8");
+        encoding = Gedcom.UNICODE;
+        return;
       } 
-      if (matchHeader(header,GedcomWriter.ASCII)) {
-        log(GedcomWriter.ASCII);
-        return new InputStreamReader(this, "ASCII");
+      if (matchHeader(header,Gedcom.ASCII)) {
+        log(Gedcom.ASCII);
+        reader = new InputStreamReader(this, "ASCII");
+        encoding = Gedcom.ASCII;
+        return;
       } 
-      if (matchHeader(header,GedcomWriter.ANSEL)) {
-        log(GedcomWriter.ANSEL);
-        return new AnselReader(this);
+      if (matchHeader(header,Gedcom.ANSEL)) {
+        log(Gedcom.ANSEL);
+        reader = new AnselReader(this);
+        encoding = Gedcom.ANSEL;
+        return;
       } 
-      if (matchHeader(header,GedcomWriter.IBMPC)) {
-        log(GedcomWriter.IBMPC, "ISO-8859-1");
-        return new InputStreamReader(this, "ISO-8859-1"); 
+      if (matchHeader(header,Gedcom.IBMPC)) {
+        log(Gedcom.IBMPC, "ISO-8859-1");
+        reader = new InputStreamReader(this, "ISO-8859-1"); 
+        encoding = Gedcom.IBMPC;
+        return;
       } 
 
       // no clue
@@ -683,6 +683,20 @@ public class GedcomReader implements Trackable {
       return true;
     }
           
+    /**
+     * result - reader
+     */
+    /*result*/ Reader getReader() {
+      return reader;
+    }
+    
+    /**
+     * result - encoding
+     */
+    /*result*/ String getEncoding() {
+      return encoding;
+    }
+    
   } //InputStreamSniffer
   
 } //GedcomReader

@@ -833,7 +833,7 @@ public class ControlCenter extends JPanel {
         // .. take choosen one & filters
         file = chooser.getSelectedFile();
         filters = options.getFilters();
-        encoding = options.getEncoding().toString();
+        gedcom.setEncoding(options.getEncoding().toString());
 
         // .. create new origin
         try {
@@ -876,7 +876,7 @@ public class ControlCenter extends JPanel {
       // .. open writer on file
       try {
         gedWriter =
-          new GedcomWriter(gedcom, file.getName(), new FileOutputStream(file), encoding);
+          new GedcomWriter(gedcom, file.getName(), new FileOutputStream(file));
         gedWriter.setFilters(filters);
       } catch (IOException ex) {
         windowManager.openDialog(
