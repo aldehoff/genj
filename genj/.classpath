@@ -8,17 +8,8 @@
 	<classpathentry kind="lib" path="lib/jhbasic.jar"/>
 	<classpathentry kind="lib" path="lib/graphj.jar"/>
 	<classpathentry kind="lib" path="language/en"/>
-	<classpathentry kind="lib" path="language/de"/>
-	<classpathentry kind="lib" path="language/fr"/>
-	<classpathentry kind="lib" path="language/hu"/>
-	<classpathentry kind="lib" path="language/es"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="language/it"/>
-	<classpathentry kind="lib" path="language/ja"/>
-	<classpathentry kind="lib" path="language/nl"/>
-	<classpathentry kind="lib" path="language/pt_BR"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/jfreechart.jar"/>
-	<classpathentry kind="lib" path="language/ru"/>
 	<classpathentry kind="output" path="build/classes/lostnfound"/>
 </classpath>
