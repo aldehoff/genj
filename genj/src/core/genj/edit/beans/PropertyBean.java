@@ -63,9 +63,6 @@ public abstract class PropertyBean extends JPanel {
   /** current registry */
   protected Registry registry;
   
-  /** change state */
-  private boolean changed = false;
-  
   /** buttons */
   protected AbstractButton ok, cancel;
 
@@ -76,7 +73,7 @@ public abstract class PropertyBean extends JPanel {
   protected ChangeSupport changeSupport = new ChangeSupport(this);
   
   /** an optional path */
-  private TagPath path;
+  protected TagPath path;
   
   /**
    * Accessor
@@ -156,8 +153,18 @@ public abstract class PropertyBean extends JPanel {
    */
   public boolean requestFocusInWindow() {
     if (defaultFocus!=null)
-        return defaultFocus.requestFocusInWindow();
+      return defaultFocus.requestFocusInWindow();
     return super.requestFocusInWindow();
+  }
+
+  /** 
+   * overridden requestFocus()
+   */
+  public void requestFocus() {
+    if (defaultFocus!=null)
+      defaultFocus.requestFocus();
+    else 
+      super.requestFocus();
   }
 
   /**
