@@ -63,6 +63,16 @@ import javax.swing.event.ListSelectionListener;
  */
 public class ReportView extends JPanel implements ToolBarSupport {
 
+  /** statics */
+  private final static ImageIcon 
+    imgShell = new ImageIcon(ReportView.class,"ReportShell.gif"), 
+    imgGui   = new ImageIcon(ReportView.class,"ReportGui.gif"  ),
+    imgStart = new ImageIcon(ReportView.class,"Start.gif"      ), 
+    imgStop  = new ImageIcon(ReportView.class,"Stop.gif"       ),
+    imgSave  = new ImageIcon(ReportView.class,"Save.gif"       ),
+    imgReload= new ImageIcon(ReportView.class,"Reload.gif"     );
+
+
   /** members */
   private Gedcom      gedcom;
   private JLabel      lAuthor,lVersion;
@@ -73,7 +83,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private JTabbedPane tabbedPane;
   private AbstractButton bStart,bStop,bClose,bSave,bReload;
   private static  ReportLoader loader;
-  private static  ImageIcon imgShell,imgGui;
   private Registry registry;
   private Resources resources = Resources.get(this);
   private ViewManager manager ;
@@ -89,9 +98,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
     registry = theRegistry;
     manager  = theManager;
     title    = theTitle;
-
-    imgShell = new ImageIcon(this,"ReportShell.gif");
-    imgGui   = new ImageIcon(this,"ReportGui.gif"  );
 
     // Look for reports
     loadReports(false);
@@ -287,7 +293,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
    */
   private class ActionReload extends ActionDelegate {
     protected ActionReload() {
-      setText("report.reload").setTip("report.reload.tip");
+      setImage(imgReload);
+      setTip("report.reload.tip");
     }
     protected void execute() {
       // show first page and unselect report
@@ -309,7 +316,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private class ActionStop extends ActionDelegate {
     private ActionStart start;
     protected ActionStop(ActionStart start) {
-      setText("report.stop"  ).setTip("report.stop.tip");
+      setImage(imgStop);
+      setTip("report.stop.tip");
       this.start=start;
     }
     protected void execute() {
@@ -326,7 +334,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
     private String status;
     protected ActionStart() {
       setAsync(ASYNC_SAME_INSTANCE);
-      setText("report.start" ).setTip("report.start.tip");
+      setImage(imgStart);
+      setTip("report.start.tip");
     }
     /**
      * pre execute
@@ -403,6 +412,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
      */
     protected void postExecute() {
   
+      // nothing to do?
+      if (bridge==null) return;
+  
       // .. end output
       bridge.log("");
       bridge.log("<!--");
@@ -422,7 +434,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
    */
   private class ActionSave extends ActionDelegate {
     protected ActionSave() {
-      setText("report.save").setTip("report.save.tip");
+      setImage(imgSave);
+      setTip("report.save.tip");
     }
     protected void execute() {
 
