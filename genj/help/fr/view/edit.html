@@ -1,143 +1,157 @@
 <HTML>
 <BODY>
 
-<H2>
-  Fen&ecirc;tre d'Edition
-</H2>
+<h2><a href="../views.html">Vues</a> - Fen&ecirc;tre d'Edition</h2>
 
-<P>
-Le format Gedcom nous apporte un nombre illimit&eacute; 
-d'<A href="../entities.html">entit&eacute;s</A> au sein d'un 
-m&ecirc;me fichier. Chaque entit&eacute; a un nombre illimit&eacute; 
-de propri&eacute;t&eacute;s qui peuvent s'imbriquer dans un nombre 
-illimit&eacute; de niveaux. Pour pouvoir &eacute;diter une entit&eacute;, 
-il faut donc que GenJ pr&eacute;sente une arborescence de ces 
-propri&eacute;t&eacute;s.
-</P>
+<table>
+ <tr>
+  <td>
 
-<P>
-Vous pouvez ouvrir autant de vues d'Edition que vous le souhaitez - 
-elles seront toutes en interaction avec ce qui peut &ecirc;tre 
-modifi&eacute; dans le fichier &agrave; partir duquel elles ont 
-&eacute;t&eacute; ouvertes. Une fois que vous avez choisi une 
-entit&eacute; dans la fen&ecirc;tre du Tableau des Donn&eacute;es ou 
-de l'Arbre G&eacute;n&eacute;alogique, elle sera affich&eacute; dans 
-la fen&ecirc;tre d'Edition. Si jamais vous voulez que 
-l'&eacute;diteur reste sur une entit&eacute; particuli&egrave;re, 
-s&eacute;lectionnez l&agrave; dans l'une ou l'autre vue et cliquez 
-sur le petit symbole en haut &agrave; droite (il repr&eacute;sente 
-une petite aiguille). Maintenant l'&eacute;diteur restera centr&eacute; 
-sur cette entit&eacute;.
-</P>
+<p>
+  Comme nous l'avons vu dans la section relative au format 
+  <a href="../concepts/gedcom.html">Gedcom</a>, 
+  une entit&eacute; consiste en un empilement de propri&eacute;t&eacute;s, 
+  arrang&eacute;es selon une hi&eacute;rarchie, et auxquelles on 
+  associe une valeur pour chacune d'elles.<Br>
+  Vous pouvez ouvrir autant de vues d'Edition que vous le souhaitez -
+  elles seront toutes en interaction avec ce qui peut &ecirc;tre 
+  modifi&eacute; dans le fichier &agrave; partir duquel elles ont 
+  &eacute;t&eacute; ouvertes.<Br>
+  Apr&eacute;s avoir ouvert cette vue, le contenu de la fen&ecirc;tre 
+  affichera n'importe quelle entit&eacute; que vous pouvez avoir 
+  s&eacute;lectionn&eacute; dans une autre vue. Exemple une fois que 
+  vous avez choisi une entit&eacute; dans la fen&ecirc;tre du Tableau 
+  des Donn&eacute;es ou de l'Arbre G&eacute;n&eacute;alogique, elle 
+  sera affich&eacute; dans la fen&ecirc;tre d'Edition. Si jamais vous 
+  voulez que l'&eacute;diteur reste sur une entit&eacute; 
+  particuli&egrave;re, s&eacute;lectionnez l&agrave; dans l'une ou 
+  l'autre vue et cliquez sur le petit symbole en haut &agrave; droite 
+  (il repr&eacute;sente une petite aiguille). Maintenant 
+  l'&eacute;diteur restera centr&eacute; sur cette entit&eacute;.<Br>
+  La hi&eacute;rarchie des propri&eacute;t&eacute;s de l'entit&eacute; 
+  s&eacute;lectionn&eacute;e sera affich&eacute;e par tout d'abord 
+  des symboles qui repr&eacute;sentent chaque propri&eacute;t&eacute;, 
+  ensuite les Etiquettes, et enfin leur valeurs.<Br>
+  <Br>
+  On pourrait essayer de donner une autre explication en disant que 
+  le format Gedcom nous apporte un nombre illimit&eacute; 
+  d'<A href="../entities.html">entit&eacute;s</A> au sein d'un 
+  m&ecirc;me fichier. Chaque entit&eacute; a un nombre illimit&eacute; 
+  de propri&eacute;t&eacute;s qui peuvent s'imbriquer dans un nombre 
+  illimit&eacute; de niveaux. Pour pouvoir &eacute;diter une 
+  entit&eacute;, il faut donc que GenJ pr&eacute;sente une 
+  arborescence de ces propri&eacute;t&eacute;s.
+</p>
 
-<P>
-Vous pouvez vous d&eacute;placer dans l'arborescence des 
-propri&eacute;t&eacute;s en ouvrant et fermant les sous-r&eacute;pertoires 
-et en choisissant chacune des propri&eacute;t&eacute;s. Une fois 
-s&eacute;lectionn&eacute;e, la propri&eacute;t&eacute; est 
-&eacute;galement affich&eacute;e dans la partie basse de la 
-fen&ecirc;tre - c'est &agrave; cet endroit qu'il vous est possible de 
-l'&eacute;diter, et donc de la modifier.
-</P>
+  </td>
+  <td>
+    <blockquote>
+      <img src="../../images/screenshots/edit1.png">
+    </blockquote>
+  </td>
+ </tr>
+</table>
 
-<P>
-Une remarque : Pour des propri&eacute;t&eacute;s particuli&egrave;res, 
-on trouve un certain nombre d'&eacute;diteurs pr&eacute;d&eacute;finies. 
-La plupart des propri&eacute;t&eacute;s tiennent en effet sur une seule 
-ligne, mais parfois elles utilisent un format particulier. Par exemple 
-le NOM (NAME)&nbsp;:&nbsp; son format est <B>NAME first /last/</B> 
-(pr&eacute;nom / nom de famille). Si vous s&eacute;lectionnez la 
-propri&eacute;t&eacute; NAME (NOM) un &eacute;diteur un peu sp&eacute;cial 
-appara&icirc;tra en bas de la fen&ecirc;tre pour vous permettre de 
-modifier les informations dans des champs appropri&eacute;s. Si GenJ 
-ne connait pas un &eacute;diteur qui peut correspondre &agrave; la 
-propri&eacute;t&eacute; s&eacute;lectionn&eacute;e ou aux donn&eacute;es 
-contenues dans cette propri&eacute;t&eacute; (ex. une mauvaise date) 
-vous pourrez quand m&ecirc;me changer cette valeur avec l'&eacute;diteur 
-par d&eacute;faut.
-</P>
+<p>
+ Explorez cette arborescence de propri&eacute;t&eacute;s en utilisant 
+ si besoin est les ascenseurs &agrave; droite et en bas. Vous pourrez 
+ vous d&eacute;placer dans cette succession de propri&eacute;t&eacute;s 
+ en ouvrant et fermant les sous-r&eacute;pertoires et en choisissant 
+ chacune des propri&eacute;t&eacute;s. Une fois 
+ s&eacute;lectionn&eacute;e, la propri&eacute;t&eacute; est 
+ &eacute;galement affich&eacute;e dans la partie basse de la 
+ fen&ecirc;tre - c'est &agrave; cet endroit qu'il vous est possible 
+ de l'&eacute;diter, et donc de la modifier.
+</p>
 
-<P>
-Un cas un peu particulier est celui des liens entre les 
-entit&eacute;s - par exemple si un individu est mari&eacute;, il est 
-aussi un mari dans une famille. Gedcom conserve cette information en 
-ajoutant une propri&eacute;t&eacute; dans la famille et une au niveau 
-de la personne elle-m&ecirc;me. La famille connait la propri&eacute;t&eacute; 
-HUSB - le mari ou WIFE - la femme. La personne quant &agrave; elle, 
-connait la propri&eacute;t&eacute; FAMS - la famille dans laquelle 
-il/ou elle est l'&eacute;pou(x)(se).
-</P>
+<p>
+ Une remarque : Pour des propri&eacute;t&eacute;s particuli&egrave;res, 
+ on trouve un certain nombre d'&eacute;diteurs pr&eacute;d&eacute;finies. 
+ La plupart des propri&eacute;t&eacute;s tiennent en effet sur une seule 
+ ligne, mais parfois elles utilisent un format particulier. Par exemple 
+ le NOM (NAME)&nbsp;:&nbsp; son format est <B>NAME first /last/</B> 
+ (pr&eacute;nom / nom de famille). Si vous s&eacute;lectionnez la 
+ propri&eacute;t&eacute; NAME (NOM) un &eacute;diteur un peu sp&eacute;cial 
+ appara&icirc;tra en bas de la fen&ecirc;tre pour vous permettre de 
+ modifier les informations dans des champs appropri&eacute;s. Si GenJ 
+ ne connait pas un &eacute;diteur qui peut correspondre &agrave; la 
+ propri&eacute;t&eacute; s&eacute;lectionn&eacute;e ou aux donn&eacute;es 
+ contenues dans cette propri&eacute;t&eacute; (ex. une mauvaise date) 
+ vous pourrez quand m&ecirc;me changer cette valeur avec l'&eacute;diteur 
+ par d&eacute;faut.
+</p>
 
-<P>
-Si vous s&eacute;lectionnez une propri&eacute;t&eacute; comme HUSB, WIFE, 
-FAMS ou FAMC, un &eacute;diteur apparaitra mais qui sera diff&eacute;rent 
-selon l'&eacute;tat du lien&nbsp;:
-<OL>
-<LI> lien actif - un bouton pour permettre d'acc&eacute;der &agrave; 
- l'entit&eacute; qui est li&eacute;e
-<LI> lien rompu - un champ de saisie pour pouvoir modifier la 
- r&eacute;f&eacute;rence vers une future entit&eacute; li&eacute;e, un bouton 
- pour trouver une autre entit&eacute; &agrave; lier par une recherche 
- textuelle et un bouton pour effectuer l'op&eacute;ration de liaison.
-</OL>
-</P>
+<p>
+  Quelques propri&eacute;t&eacute;s contiennent des 
+  r&eacute;f&eacute;rences &agrave; d'autres entit&eacute;s (exemples : 
+  HUSB (mari), apporte une r&eacute;f&eacute;rence &agrave; la 
+  famille du mari, et FAMS (famille que l'on forme entre deux 
+  conjoints) fait r&eacute;f&eacute;rence &agrave; la famille d'un 
+  conjoint). Double cliquez sur un tel noeud, et l'entit&eacute; sur 
+  laquelle vous &ecirc;tes, va basculer sur cette cible.
+</p>
 
-<P>
-Les boutons en haut de cette fen&ecirc;tre d'Edition, vous 
-permettent d'ajouter ou de supprimer des propri&eacute;t&eacute;s. Bien 
-entendu cela s'applique &agrave; la propri&eacute;t&eacute; qui vient 
-d'&ecirc;tre s&eacute;lectionn&eacute;e. Vous pouvez &eacute;galement 
-d&eacute;placer vers le haut ou vers le bas les propri&eacute;t&eacute;s 
-au niveau de l'arborescence &agrave; laquelle elles appartiennent (ex. pour 
-la propri&eacute;t&eacute; ADDR qui est compos&eacute;e de deux 
-sous-propri&eacute;t&eacute;s CITY et POST, vous pouvez mettre POST 
-avant CITY ou l'inverse. Vous pouvez aussi d&eacute;placer la 
-propri&eacute;t&eacute; ADDR (qui contient les deux 
-sous-propri&eacute;t&eacute;s ci-dessus) avant ou apr&eacute;s les 
-autres propri&eacute;t&eacute;s que poss&eacute;de une personne - si on 
-trouve BIRT - DEAT - OCCU - ADDR - NOTE, on peut d&eacute;placer ADDR 
-pour qu'il soit avant OCCU. En d&eacute;pla&ccedil;ant ADDR on 
-d&eacute;place en m&ecirc;me temps ses deux sous-propri&eacute;t&eacute;s 
-que sont CITY et POST)
-</P>
+<p>
+ Le bouton "+" sur la barre d'outils (voir ci-apr&eacute;s) vous permet 
+ d'ajouter de nouvelles propri&eacute;t&eacute;s. En cliquant dessus, 
+ une nouvelle propri&eacute;t&eacute; et ses sous-propri&eacute;t&eacute;s 
+ associ&eacute;es seront ajout&eacute;es.<Br>
+ Une boite de dialogue vous donnera une liste des 
+ sous-propri&eacute;t&eacute;s li&eacute;es &agrave; cette 
+ propri&eacute;t&eacute; que vous voulez ajouter. Ces 
+ sous-propri&eacute;t&eacute;s sont celles autoris&eacute;es par le 
+ format Gedcom. Vous pouvez en choisir une ou plusieurs selon vos 
+ besoins. GenJ vous offre la possibilit&eacute; d'ajouter des 
+ sous-propri&eacute;t&eacute;s de votre propre cru - il vous suffit 
+ d'utiliser la partie basse de l'&eacute;diteur pour le faire, mais 
+ il faut que vous ayez conscience de deux choses : d'une part il faut 
+ faire commencer le nom de cette sous-propri&eacute;t&eacute;, de ce 
+ nouveau label, par un signe "_", comme par exemple "_URL", et d'autre 
+ part il vraiment que vous utilisiez cette possibilit&eacute; avec le 
+ plus de parcimonie possible - Evitez au maximum de cr&eacute;er 
+ ces nouveaux labels, car le jour ou vous voudrez &eacute;changer vos 
+ fichiers Gedcom, ils ne r&eacute;pondront plus &agrave; la norme, et 
+ vous perdrez plein d'informations.
+</p>
 
-<P>
-Quand vous ajoutez une propri&eacute;t&eacute;, une boite de dialogue 
-appara&icirc;t pour vous permettre de choisir parmi un certain nombre de 
-sous-propri&eacute;t&eacute;s connues (identifi&eacute;es par des 
-&eacute;tiquettes). S&eacute;lectionnez une des propri&eacute;t&eacute;s 
-et une description appara&icirc;tra dans la fen&ecirc;tre de droite. Si 
-vous avez besoin d'ajouter une propri&eacute;t&eacute; qui n'est pas dans 
-la liste, s&eacute;lectionnez le 2.bouton-radio et entrez une &eacute;tiquette 
-de d&eacute;finition de votre choix. N'oubliez pas de lire ce qui est mis 
-sur la conformit&eacute; avec le standard <A href="../gedcom.html">Gedcom</A> 
-et sur l'importance qu'il y a &agrave; &ecirc;tre tr&eacute;s prudent 
-&agrave; effectuer ce genre de choses.
-</P>
+<p>
+ N'oubliez pas les possibilit&eacute;s que vous offre le 
+ <a href="../concepts/context.html">Menu Contextuel</a> pour 
+ effectuer des actions complexes sur les propri&eacute;t&eacute;s et 
+ les entit&eacute;s &eacute;galement. Essayez un clic droit sur l'un 
+ des noeuds qui est affich&eacute;, et d&eacute;couvrez ce que vous 
+ pouvez faire.
+</p>
 
-<P>
-Quand vous s&eacute;lectionnez une des propri&eacute;t&eacute;s connues, 
-vous pouvez &eacute;galement demander &agrave; GenJ d'ajouter les 
-sous-propri&eacute;t&eacute;s par d&eacute;faut en cochant l'onglet du 
-bas pr&eacute;vu &agrave; cet effet.
-</P>
+<a name=toolbar>
+<h3><u>Barre d'Outils</u></h3>
+  <blockquote><img src="../../images/screenshots/edit2.png"></blockquote>
+ <ol>
+  <li>Ajoute une propri&eacute;t&eacute; &agrave; la 
+  propri&eacute;t&eacute; s&eacute;lectionn&eacute;e (cette 
+  s&eacute;lection se poursuivra par l'interm&eacute;diaire d'une 
+  boite de dialogue).
+  <li>Supprime l'entit&eacute; actuellement s&eacute;lectionn&eacute;e.
+  <li>D&eacute;place vers le haut la propri&eacute;t&eacute; 
+  actuellement s&eacute;lectionn&eacute;e.
+  <li>D&eacute;place vers le bas la propri&eacute;t&eacute; 
+  actuellement s&eacute;lectionn&eacute;e.
+  <li>Revient &agrave; l'entit&eacute; pr&eacute;c&eacute;demment 
+  affich&eacute;e donc avant celle 
+  actuellement pr&eacute;sent&eacute;e.
+  <li>Fige oui/non le pr&eacute;sent affichage (l'entit&eacute; 
+  actuellement affich&eacute;e restera &agrave; l'&eacute;cran, 
+  m&ecirc;me si l'on se d&eacute;place vers d'autres entit&eacute;s 
+  dans d'autres vues).
+  <li>Ferme cette fen&ecirc;tre d'Edition.
+ </ol>
 
-<P>
-Les boutons situ&eacute;s en bas de cette fen&ecirc;tre peuvent &ecirc;tre 
-utilis&eacute;s pour ajouter de fa&ccedil;on plus rapide des informations 
-GEDCOM &agrave; partir de l'entit&eacute; s&eacute;lectionn&eacute;e. Il 
-y a des boutons pour&nbsp;:
-<ul>
-<li>Cr&eacute;er et ajouter un(e) conjoint(e)
-<li>Cr&eacute;er et ajouter un enfant
-<li>Cr&eacute;er et ajouter un parent
-<li>Cr&eacute;er et attacher une note
-<li>Cr&eacute;er et attacher un objet multim&eacute;dio
-</ul>
-La nouvelle entit&eacute; sera s&eacute;lectionn&eacute;e automatiquement, 
-vous pourrez donc ajouter des informations tr&eacute;s rapidement, ex. 
-en d&eacute;marrant avec une personne.
-</P>
+<h3><u>Param&egrave;trages</u></h3>
+ Il n'y a aucun param&egrave;trage disponible &agrave; l'heure actuelle 
+ pour cette vue.
+
+<Br>
+
 
 </BODY>
 </HTML>
