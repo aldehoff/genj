@@ -30,6 +30,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.swing.AbstractButton;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
@@ -135,6 +136,11 @@ public class ButtonHelper {
     if (container!=null) {
       container.add(result);
       if (container instanceof JToolBar) result.setMaximumSize(new Dimension(128,128));
+      if (container.getLayout() instanceof BoxLayout) {
+        result.setMaximumSize(new Dimension(Integer.MAX_VALUE,result.getMaximumSize().height));
+        result.setAlignmentX(0.5F);
+        result.setAlignmentY(0.5F);
+      }
     }
     if (collections.size()>0) {
       Enumeration e = collections.elements();

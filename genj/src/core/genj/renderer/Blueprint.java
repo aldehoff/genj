@@ -30,6 +30,13 @@ public class Blueprint {
   private String html;
   
   /**
+   * Constructor
+   */
+  public Blueprint(String name, String html) {
+    setName(name);
+    setHTML(html);  }
+    
+  /**
    * Accessor - html
    */
   public void setHTML(String hTml) {
@@ -57,6 +64,11 @@ public class Blueprint {
     return name;
   }
 
-  
+  /**
+   * @see java.lang.Object#toString()
+   */
+  public String toString() {
+    return getName();
+  }
   
 } //RenderingScheme

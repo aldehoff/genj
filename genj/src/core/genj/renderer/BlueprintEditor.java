@@ -28,6 +28,7 @@ import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -154,6 +155,8 @@ public class BlueprintEditor extends Box {
       bounds.y += insets.top ;
       bounds.width -= insets.left+insets.right;
       bounds.height-= insets.top +insets.bottom;
+      g.setColor(Color.white);
+      g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
       new EntityRenderer(g, html.getText()).render(g, example, bounds);
     }
   } //Preview
@@ -163,8 +166,8 @@ public class BlueprintEditor extends Box {
   private class ActionInsert extends ActionDelegate {
     /** constructor */
     private ActionInsert() {
-      super.setText("insert");
-      super.setTip("insert.tip");
+      super.setText("prop.insert");
+      super.setTip("prop.insert.tip");
     }
     /** @see genj.util.ActionDelegate#execute() */
     protected void execute() {

@@ -552,6 +552,16 @@ public class Gedcom {
   }
 
   /**
+   * Returns a type for given class
+   */
+  public static int getTypeFor(Class clazz) {
+    for (int i=0; i<eTypes.length; i++) {
+      if (eTypes[i]==clazz) return i;
+    }
+    throw new IllegalArgumentException("Unknown class "+clazz);
+  }
+
+  /**
    * Returns the Resources (lazily)
    */
   public static Resources getResources() {
