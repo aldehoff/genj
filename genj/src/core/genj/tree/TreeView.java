@@ -102,7 +102,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   private Registry registry;
   
   /** whether we use antialising */
-  private boolean isAntialising = false;
+  private boolean isAntialiasing = false;
   
   /** our colors */
   /*package*/ ColorSet colors;
@@ -140,7 +140,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       registry.get("hfams" ,(float)defm.hFams ),
       registry.get("pad"   ,(float)defm.pad   )
     ));
-    isAntialising = registry.get("antial", false);
+    isAntialiasing = registry.get("antial", false);
 
     // setup child components
     contentRenderer = new ContentRenderer();
@@ -201,7 +201,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     registry.put("wfams"   ,(float)m.wFams );
     registry.put("hfams"   ,(float)m.hFams );
     registry.put("pad"     ,(float)m.pad   );
-    registry.put("antial"  , isAntialising );
+    registry.put("antial"  , isAntialiasing );
     // blueprints
     BlueprintManager.getInstance().writeBlueprints(blueprints, registry);
     // root    
@@ -221,14 +221,14 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
    * Accessor - isAntialising.
    */
   public boolean isAntialising() {
-    return isAntialising;
+    return isAntialiasing;
   }
 
   /**
    * Accessor - isAntialising.
    */
-  public void setAntialising(boolean set) {
-    isAntialising = set;
+  public void setAntialiasing(boolean set) {
+    isAntialiasing = set;
   }
   
   /**
@@ -485,7 +485,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     public void paint(Graphics g) {
       // go 2d
       UnitGraphics ug = new UnitGraphics(g, UNITS.getX()*zoom, UNITS.getY()*zoom);
-      ug.setAntialiasing(isAntialising);
+      ug.setAntialiasing(isAntialiasing);
       // init renderer
       contentRenderer.cBackground    = colors.getColor("content");
       contentRenderer.cIndiShape     = colors.getColor("indis");

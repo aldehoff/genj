@@ -21,21 +21,27 @@ package genj.entity;
 
 import genj.renderer.BlueprintList;
 import genj.view.ApplyResetSupport;
-import java.awt.BorderLayout;
 
-import javax.swing.JPanel;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JTabbedPane;
 
 
 /**
  * The settings editor for the EntityView
  */
-public class EntityViewSettings extends JPanel implements ApplyResetSupport {
+public class EntityViewSettings extends JTabbedPane implements ApplyResetSupport {
   
   /** the entity view */
   private EntityView entityView; 
   
   /** the scheme editor */
   private BlueprintList blueprintList;
+  
+  /** Checkboxes */
+  private JCheckBox 
+    checkAntialiasing = new JCheckBox(EntityView.resources.getString("antialiasing" ));
   
   /**
    * Constructor
@@ -45,12 +51,18 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
     // keep the view
     entityView = view;
     
-    // prepare a blueprint list    
-    blueprintList = new BlueprintList(view.gedcom);
+    // main options
+    Box main = new Box(BoxLayout.Y_AXIS);
+
+    checkAntialiasing.setToolTipText(EntityView.resources.getString("antialiasing.tip"));
+    main.add(checkAntialiasing);
     
-    // do the layout
-    setLayout(new BorderLayout());
-    add(blueprintList, BorderLayout.CENTER);
+    // blueprint options
+    blueprintList = new BlueprintList(entityView.gedcom);
+    
+    // add those tabs
+    add(entityView.resources.getString("page.main")      , main);
+    add(entityView.resources.getString("page.blueprints"), blueprintList);
     
     // reset
     reset();    
@@ -76,6 +88,7 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
    * @see genj.app.ViewSettingsWidget#apply()
    */
   public void apply() {
+    entityView.setAntialiasing(checkAntialiasing.isSelected());
     entityView.setBlueprints(blueprintList.getSelection());
   }
 
@@ -83,6 +96,7 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
    * @see genj.app.ViewSettingsWidget#reset()
    */
   public void reset() {
+    checkAntialiasing.setSelected(entityView.isAntialiasing());
     blueprintList.setSelection(entityView.getBlueprints());
   }
 

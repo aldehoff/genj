@@ -72,6 +72,9 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
   /** a manager we're using */
   private BlueprintManager bpManager = BlueprintManager.getInstance();
   
+  /** whether we do antialiasing */
+  private boolean isAntialiasing = false;
+  
   /**
    * Constructor
    */
@@ -81,8 +84,10 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     gedcom = ged;
     // listen to gedcom
     gedcom.addListener(new GedcomConnector());
-    // resolve blueprints
+    // resolve from registry
     blueprints = bpManager.readBlueprints(registry);
+    isAntialiasing  = registry.get("antial"  , false);
+    
     // done    
   }
   
@@ -102,6 +107,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     super.removeNotify();
     // store blueprints
     bpManager.writeBlueprints(blueprints, registry);
+    registry.put("antial"  , isAntialiasing );
     // done
   }
 
@@ -114,7 +120,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     g.setColor(Color.white);
     g.fillRect(0,0,bounds.width,bounds.height);
     g.setColor(Color.black);
-    new UnitGraphics(g,1,1).setAntialiasing(true);
+    if (isAntialiasing) new UnitGraphics(g,1,1).setAntialiasing(true);
     renderer.render(g, entity, new Rectangle(0,0,bounds.width,bounds.height));
   }
 
@@ -141,6 +147,20 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     // repaint
     repaint();
     // done
+  }
+  
+  /**
+   * Sets isAntialiasing   */
+  public void setAntialiasing(boolean set) {
+    isAntialiasing = set;
+    repaint();
+  }
+  
+  /**
+   * Gets isAntialiasing
+   */
+  public boolean isAntialiasing() {
+    return isAntialiasing;
   }
   
   /** 

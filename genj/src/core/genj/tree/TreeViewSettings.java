@@ -52,9 +52,9 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
   private BlueprintList blueprintList;
 
   /** Checkboxes */
-  JCheckBox 
+  private JCheckBox 
     checkBending = new JCheckBox(TreeView.resources.getString("bend" )),
-    checkAntialising = new JCheckBox(TreeView.resources.getString("antialising" ))
+    checkAntialiasing = new JCheckBox(TreeView.resources.getString("antialiasing" ))
   ;
 
   /**
@@ -70,8 +70,8 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
 
     checkBending.setToolTipText(tree.resources.getString("bend.tip"));
     options.add(checkBending);
-    checkAntialising.setToolTipText(tree.resources.getString("antialising.tip"));
-    options.add(checkAntialising);
+    checkAntialiasing.setToolTipText(tree.resources.getString("antialiasing.tip"));
+    options.add(checkAntialiasing);
     
     sliderCmIndiWidth = createSlider(options, 1.0, 16.0, m.wIndis, "indiwidth" );
     sliderCmIndiHeight= createSlider(options, 1.0, 16.0, m.hIndis, "indiheight");
@@ -118,7 +118,7 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
   public void apply() {
     // options
     tree.model.setBendArcs(checkBending.isSelected());
-    tree.setAntialising(checkAntialising.isSelected());
+    tree.setAntialiasing(checkAntialiasing.isSelected());
     // colors
     colors.apply();
     // metrics
@@ -142,7 +142,7 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
   public void reset() {
     // options
     checkBending.setSelected(tree.model.isBendArcs());
-    checkAntialising.setSelected(tree.isAntialising());
+    checkAntialiasing.setSelected(tree.isAntialising());
     // colors
     colors.reset();
     // metrics
