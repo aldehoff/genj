@@ -239,12 +239,20 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
 
   /**
    * Overview   */
-  private class Overview extends ViewPortOverview {
+  private class Overview extends ViewPortOverview implements ModelListener {
     /**
      * Constructor     */
     private Overview(JScrollPane scroll) {
       super(scroll.getViewport());
+      model.addListener(this);
       setMaximumSize(new Dimension(128,128));
+    }
+    /**
+     * @see javax.swing.JComponent#removeNotify()
+     */
+    public void removeNotify() {
+      super.removeNotify();
+      model.removeListener(this);
     }
     /**
      * @see java.awt.Component#setSize(java.awt.Dimension)
@@ -276,6 +284,18 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       ug.popTransformation();
 
       // done  
+    }
+    /**
+     * @see genj.tree.ModelListener#nodesChanged(genj.tree.Model, java.util.List)
+     */
+    public void nodesChanged(Model arg0, List arg1) {
+      repaint();
+    }
+    /**
+     * @see genj.tree.ModelListener#structureChanged(genj.tree.Model)
+     */
+    public void structureChanged(Model arg0) {
+      repaint();
     }
   
   } //Overview
