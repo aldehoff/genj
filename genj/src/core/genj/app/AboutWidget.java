@@ -31,6 +31,7 @@ package genj.app;
 import genj.Version;
 import genj.lnf.LnFBridge;
 import genj.util.ActionDelegate;
+import genj.util.EnvironmentChecker;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 
@@ -131,8 +132,15 @@ public class AboutWidget extends JPanel{
       text.setLineWrap(false);
       text.setWrapStyleWord(true);
       text.setEditable(false);
+
+      String dir = EnvironmentChecker.getProperty(
+        this,
+        new String[]{ "user.dir" },
+        ".",
+        "get authors.txt"
+      );
       
-      String path = System.getProperty("user.dir") + File.separatorChar + "doc" + File.separatorChar + "authors.txt";
+      String path = dir + File.separatorChar + "doc" + File.separatorChar + "authors.txt";
       
       readTextFile(text, path, App.resources.getString("cc.about.file_missing.text") + path);
 
@@ -221,7 +229,14 @@ public class AboutWidget extends JPanel{
           
       // the text    
       JTextArea text = new JTextArea(DEFAULT_ROWS,DEFAULT_COLS);
-      String path = System.getProperty("user.dir") + File.separatorChar + "doc" + File.separatorChar + "gpl.txt";
+      String dir = EnvironmentChecker.getProperty(
+        this,
+        new String[]{ "user.dir" },
+        ".",
+        "read gpl.txt"
+      );
+      
+      String path = dir + File.separatorChar + "doc" + File.separatorChar + "gpl.txt";
       readTextFile(text, path, App.resources.getString("cc.about.file_missing.text") + path);
       text.setLineWrap(false);
       text.setEditable(false);

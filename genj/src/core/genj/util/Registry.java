@@ -558,7 +558,13 @@ public class Registry {
    * Calculates a filename for given registry name
    */
   private static File getFile(String name) {
-    return new File(System.getProperty("user.home"),name+".properties");
+    String dir = EnvironmentChecker.getProperty(
+      Registry.class,
+      new String[]{ "user.home" },
+      ".",
+      "calculate dir for registry file"
+    );
+    return new File(dir,name+".properties");
   }
 
   /**

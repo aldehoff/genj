@@ -238,7 +238,12 @@ public class ControlCenter extends JPanel {
     protected GedcomFileChooser(JFrame frame, String title, String action) {
       super(frame,title,action,
         new String[]{"ged"}, "GEDCOM (*.ged)",
-        System.getProperty("genj.gedcom.dir")
+        EnvironmentChecker.getProperty(
+          ControlCenter.this,
+          new String[]{ "genj.gedcom.dir", "user.home" },
+          ".",
+          "choose gedcom file"
+        )
       );
     }
   } //GedcomFileChooser
@@ -624,8 +629,8 @@ public class ControlCenter extends JPanel {
   private class ActionLoadLastOpen extends ActionDelegate {
     /** run */
     public void execute() {
-      String[] defaults = System.getProperty("genj.gedcom.dir")!=null ?
-        new String[0] : new String[]{"file:./gedcom/example.ged"};
+      String example = "./gedcom/example.ged";
+      String[] defaults = new File(example).exists() ? new String[]{"file:"+example} : new String[0];
       String[] gedcoms = registry.get("open",defaults);
       for (int g=0;g<gedcoms.length;g++) {
         try {

@@ -54,7 +54,7 @@ public class App {
   private final static String FRAME_KEY_PREFIX = "frame.";
 
   /** members */
-  private Registry registry = new Registry("genj");
+  private Registry registry;
   private Hashtable openFrames = new Hashtable();
   private static App instance;
   /*package*/ final static Resources resources = new Resources("genj.app");
@@ -65,10 +65,15 @@ public class App {
   private App() {
 
     // Startup Information
-    String log = System.getProperty("genj.debug.file");
-    if (log!=null) Debug.setFile(new File(log));
     Debug.log(Debug.INFO, App.class, "GenJ App - Version "+Version.getInstance()+" - "+new Date());
+    String log = EnvironmentChecker.getProperty(
+      this, new String[]{ "genj.debug.file" }, null, "choose log-file"
+    );
+    if (log!=null) Debug.setFile(new File(log));
     EnvironmentChecker.log();
+    
+    // init our data
+    registry = new Registry("genj");
     
     // Make sure that Swing shows our localized texts
     Enumeration keys = resources.getKeys();
@@ -253,5 +258,5 @@ public class App {
     
     // remember
   }
-
+  
 }

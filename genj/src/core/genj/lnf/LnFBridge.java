@@ -38,6 +38,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import genj.util.Debug;
+import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 
 /**
@@ -58,6 +59,9 @@ public class LnFBridge {
   
   /** last */
   private static LnF lastLnF;
+  
+  /** dir */
+  private static String dir;
   
   /**
    * Accessor - singleton
@@ -116,8 +120,14 @@ public class LnFBridge {
    * Directory of LnF
    */
   private static String getLnFDir() {
-    String dir = System.getProperty("genj.lnf.dir");
-    if (dir==null) dir = LNF_DIR;
+    if (dir==null) {
+      dir = EnvironmentChecker.getProperty(
+        LnFBridge.class,
+        new String[]{ "genj.lnf.dir"},
+        LNF_DIR,
+        "read lnf.properties"
+      );
+    }
     return dir;
   }
   

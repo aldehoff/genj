@@ -218,14 +218,13 @@ public class ReportView extends JPanel {
     }
     
     // The reports are either 
-    File base;
-    if (System.getProperty("genj.report.dir")!=null) {
-      // .. in "genj.report.dir"
-      base = new File(System.getProperty("genj.report.dir"));
-    } else {
-      // .. or in "user.dir"/report
-      base = new File(System.getProperty("user.dir"),"report");
-    }
+    String dir = EnvironmentChecker.getProperty(
+      this,
+      new String[]{ "genj.report.dir", "user.dir/report"},
+      "./report",
+      "find report class-files"
+    );
+    File base = new File(dir);
     Debug.log(Debug.INFO, this,"Reading reports from "+base);
     
     // Create the loader

@@ -21,6 +21,7 @@ package genj.app;
 
 import genj.util.ActionDelegate;
 import genj.util.Debug;
+import genj.util.EnvironmentChecker;
 import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
@@ -53,11 +54,12 @@ class HelpWidget extends JPanel {
   private String calcHelpBase() {
     
     // First we look in "genj.help.dir"
-    String dir = System.getProperty("genj.help.dir");
-    if ((dir==null)||(!new File(dir).exists())) {
-      // .. otherwise we'll use "user.dir"/help
-      dir = System.getProperty("user.dir")+"/help";
-    }
+    String dir = EnvironmentChecker.getProperty(
+      this,
+      new String[]{ "genj.help.dir", "user.dir/help"},
+      ".",
+      "read help"
+    );
     
     // Then we check for local language
     String local = dir+"/"+System.getProperty("user.language");
@@ -65,7 +67,7 @@ class HelpWidget extends JPanel {
       return local;
     }
     
-    // ... otherwise en language
+    // ... otherwise fallback to 'en' language
     return dir+"/en";
     
   }
