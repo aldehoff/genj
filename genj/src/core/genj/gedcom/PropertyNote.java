@@ -253,7 +253,7 @@ public class PropertyNote extends PropertyXRef {
 
     Entity e = getReferencedEntity();
     if (e==null) {
-      return emptyNotNull(note);
+      return note==null ? "" : note;
     }
 
     return super.toString();

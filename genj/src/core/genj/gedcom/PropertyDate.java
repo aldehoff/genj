@@ -428,7 +428,7 @@ public class PropertyDate extends Property {
     /**
      * Checks for validity
      */
-    private boolean isValid() {
+    public boolean isValid() {
   
       // YYYY or MMM YYYY or DD MMMM YYYY
       if (year==null)

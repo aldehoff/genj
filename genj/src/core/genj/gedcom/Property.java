@@ -689,8 +689,8 @@ public abstract class Property implements Comparable {
   /**
    * Returns this property's properties which are of given type
    */
-  public Vector getProperties(Class type) {
-    Vector props = new Vector(3);
+  public List getProperties(Class type) {
+    List props = new ArrayList(10);
     internalGetProperties(props, type);
     return props;
   }
@@ -698,11 +698,11 @@ public abstract class Property implements Comparable {
   /** 
    * Fills list of properties with properties of given type
    */
-  private void internalGetProperties(Vector props, Class type) {
+  private void internalGetProperties(List props, Class type) {
     for (int c=0;c<getNoOfProperties();c++) {
       Property child = getProperty(c);
       if (type.isAssignableFrom(child.getClass())) {
-        props.addElement(child);
+        props.add(child);
       }
       child.internalGetProperties(props, type);
     }
@@ -1099,29 +1099,6 @@ public abstract class Property implements Comparable {
     pm.setTarget(fxref);
   }
 
-  /**
-   * Helper that returns an empty String and not null
-   */
-  protected String emptyNotNull(String text) {
-    if (text==null) {
-      return "";
-    }
-    return text;
-  }
-  
-  /**
-   * Helper that tests an string for null or empty
-   */
-  public static boolean isEmptyOrNull(String txt) {
-    if (txt==null) {
-      return true;
-    }
-    if (txt.trim().length()==0) {
-      return true;
-    }
-    return false;
-  }
-  
   /**
    * Set of sub-properties 
    */

@@ -172,5 +172,11 @@ public class PropertyEvent extends Property {
     return result;
   }
 
+  /**
+   * Text representation (e.g. BIRT@7 MAY 2002)
+   */
+  public String toString() {
+    return getTag()+'@'+getDateAsString();
+  }
 
-}
+} //PropertyEvent
