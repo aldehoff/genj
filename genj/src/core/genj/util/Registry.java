@@ -370,9 +370,10 @@ public class Registry {
 
     // New one !
     Registry r = new Registry(
-      // This doesn't seem to work under OS/2
-      //new File(System.getProperty("user.dir"),name+".properties"),
-      new File(name+".properties"),
+      // 20020308 Want to base a registry to on the user's home-directory!
+      // Previously: "This doesn't seem to work under OS/2" ... hmmm
+      //        Had: new File(name+".properties"),
+      new File(System.getProperty("user.dir"),name+".properties"),
       name
     );
     registries.put(name,r);
