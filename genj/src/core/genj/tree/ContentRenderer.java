@@ -30,9 +30,9 @@ import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Iterator;
 
-import genj.renderer.UnitGraphics;
 import gj.awt.geom.Path;
 import gj.model.Arc;
+import gj.ui.UnitGraphics;
 
 /**
  * The renderer knowing how to render the content of tree's model
