@@ -158,6 +158,20 @@ public class PropertySex extends Property {
       return "F";
     return EMPTY_STRING;
   }
+  
+  /**
+   * String representation
+   */
+  public String toString() {
+    return toString(true);
+  }
+
+  /**
+   * String representation
+   */
+  public String toString(boolean localize) {
+    return localize ? getLabelForSex(sex) : getValue();
+  }
 
   /**
    * Accessor for Sex

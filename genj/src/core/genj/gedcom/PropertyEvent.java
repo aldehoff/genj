@@ -101,13 +101,6 @@ public class PropertyEvent extends Property {
   }
 
   /**
-   * Text representation (e.g. BIRT 7 MAY 2002)
-   */
-  public String toString() {
-    return getTag()+' '+getDateAsString();
-  }
-
-  /**
    * Returns the list of paths which identify PropertyEvents
    */
   public static TagPath[] getTagPaths() {

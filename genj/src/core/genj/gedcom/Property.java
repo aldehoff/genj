@@ -565,9 +565,11 @@ public abstract class Property implements Comparable {
    * NM 19990715 introduced to allow access to a property on a
    *             more abstract level than getValue()
    * NM 20020221 changed to return value only
+   * NM sometime changed to return TAG VALUE
+   * NM 20040317 changed back to return value only - avoids need for renderer everywhere where a simple text representation is needed
    */
   public String toString() {
-    return getTag()+' '+getValue();
+    return getValue();
   }
   
   /**
