@@ -320,9 +320,6 @@ public class TreeLayout extends AbstractLayout implements Layout {
       Tree tree = new Tree(graph,root,latPadding,orientn);
       unvisited.removeAll(tree.getNodes());
 
-      // place root and layout
-      root.getPosition().setLocation(bounds.getMaxX(), bounds.getMaxY());
-      
       // update bounds
       bounds.add(nlayout.layout(tree, isDebug()?debugShapes:null));
       
