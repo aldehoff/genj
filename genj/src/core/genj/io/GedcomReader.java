@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -685,19 +684,18 @@ public class GedcomReader implements Trackable {
       
       // BOM present?
       if (matchPrefix(BOM_UTF8)) {
-        log("BOM_UTF8", "UTF-8");
-        reader = new InputStreamReader(this, "UTF-8");
+        Debug.log(Debug.INFO, this, "Found BOM_UTF8 - trying encoding UTF-8");
+        reader = new InputStreamReader(this, "");
         encoding = Gedcom.UNICODE;
         return;
       }
       if (matchPrefix(BOM_UTF16BE)) {
-        log("BOM_UTF16BE", "UTF-16BE");
-        reader = new InputStreamReader(this, "UTF-16BE");
+        Debug.log(Debug.INFO, this, "Found BOM_UTF16BE - trying encoding UTF-16BE");
         encoding = Gedcom.UNICODE;
         return;
       }
       if (matchPrefix(BOM_UTF16LE)) {
-        log("BOM_UTF16LE", "UTF-16LE");
+        Debug.log(Debug.INFO, this, "Found BOM_UTF16LE - trying encoding UTF-16LE");
         reader = new InputStreamReader(this, "UTF-16LE");
         encoding = Gedcom.UNICODE;
         return;
@@ -708,48 +706,36 @@ public class GedcomReader implements Trackable {
       
       // tests
       if (matchHeader(header,Gedcom.UNICODE)) {
-        log(Gedcom.UNICODE, "UTF-8");
+        Debug.log(Debug.INFO, this, "Found "+Gedcom.UNICODE+" - trying encoding UTF-8");
         reader = new InputStreamReader(this, "UTF-8");
         encoding = Gedcom.UNICODE;
         return;
       } 
       if (matchHeader(header,Gedcom.ASCII)) {
-        log(Gedcom.ASCII);
+        Debug.log(Debug.INFO, this, "Found "+Gedcom.ASCII+" - trying encoding ASCII");
         reader = new InputStreamReader(this, "ASCII");
         encoding = Gedcom.ASCII;
         return;
       } 
       if (matchHeader(header,Gedcom.ANSEL)) {
-        log(Gedcom.ANSEL);
+        Debug.log(Debug.INFO, this, "Found "+Gedcom.ANSEL+" - trying encoding ANSEL");
         reader = new AnselReader(this);
         encoding = Gedcom.ANSEL;
         return;
       } 
       if (matchHeader(header,Gedcom.IBMPC)) {
-        log(Gedcom.IBMPC, "ISO-8859-1");
+        Debug.log(Debug.INFO, this, "Found "+Gedcom.IBMPC+" - trying encoding ISO-8859-1");
         reader = new InputStreamReader(this, "ISO-8859-1"); 
         encoding = Gedcom.IBMPC;
         return;
       } 
 
-      // no clue
-      throw new UnsupportedEncodingException("can't sniff encoding");
+      // no clue - will default to Ansel
+      Debug.log(Debug.INFO, this, "Could not sniff encoding - trying ANSEL");
+      reader = new AnselReader(this);
+      encoding = Gedcom.ANSEL;
     }
     
-    /**
-     * Log an encoding mesage
-     */
-    private void log(String encoding) {
-      log(encoding, encoding);
-    }
-    
-    /**
-     * Log an encoding mesage
-     */
-    private void log(String found, String encoding) {
-      Debug.log(Debug.INFO, this, "Found "+found+" - trying encoding "+encoding);
-    }
-
     /**
      * Match a header encoding
      */
