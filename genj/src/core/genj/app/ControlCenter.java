@@ -239,7 +239,7 @@ public class ControlCenter extends JPanel {
     bh.setEnabled(false).addCollection(gedcomButtons).setResources(null);
     ViewFactory[] factories = viewManager.getFactories();
     for (int i = 0; i < factories.length; i++) {
-      bh.create(new ActionView(factories[i]));
+      bh.create(new ActionView(-1, factories[i]));
     }
     bh.setEnabled(true).removeCollection(gedcomButtons).setResources(resources);
 
@@ -247,7 +247,7 @@ public class ControlCenter extends JPanel {
 
     // Menu
     MenuHelper mh = new MenuHelper().setResources(resources);
-    mh.createPopup(null, result);
+    mh.createPopup(result);
     mh.createItem(new ActionToggleTnI());
 
     // done
@@ -279,7 +279,7 @@ public class ControlCenter extends JPanel {
     mh.setEnabled(false).setCollection(gedcomButtons).setResources(null);
     ViewFactory[] factories = viewManager.getFactories();
     for (int i = 0; i < factories.length; i++)
-      mh.createItem(new ActionView(factories[i]));
+      mh.createItem(new ActionView(i+1, factories[i]));
     mh.setEnabled(true).setCollection(null).setResources(resources);
 
     result.add(Box.createHorizontalGlue());
@@ -1062,9 +1062,9 @@ public class ControlCenter extends JPanel {
     /** which ViewFactory */
     private ViewFactory factory;
     /** constructor */
-    protected ActionView(ViewFactory vw) {
+    protected ActionView(int i, ViewFactory vw) {
       factory = vw;
-      super.setText(factory.getTitle(false));
+      super.setText( (i>0 ? Integer.toString(i) + ' ' : "") +factory.getTitle(false));
       super.setShortText(factory.getTitle(true));
       super.setTip(
         resources.getString("cc.tip.open_view", factory.getTitle(false)));

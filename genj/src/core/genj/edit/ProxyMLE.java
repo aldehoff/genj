@@ -38,14 +38,6 @@ class ProxyMLE extends Proxy {
    */
   protected void commit() {
     property.setValue(tarea.getText());
-    tarea.setChanged(false);
-  }
-
-  /**
-   * Returns change state of proxy
-   */
-  protected boolean hasChanged() {
-    return tarea.hasChanged();
   }
 
   /**
@@ -61,7 +53,7 @@ class ProxyMLE extends Proxy {
       value = property.getValue(); 
     }
 
-    tarea = new TextAreaWidget(value,6,20);
+    tarea = new TextAreaWidget(change, value,6,20);
     tarea.setLineWrap(true);
     tarea.setWrapStyleWord(true);
 

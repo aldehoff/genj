@@ -46,13 +46,6 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
   }
   
   /**
-   * Returns change state of proxy
-   */
-  protected boolean hasChanged() {
-    return false;
-  }
-  
-  /**
    * Nothing to edit
    */  
   protected boolean isEditable() {

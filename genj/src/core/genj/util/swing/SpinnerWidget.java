@@ -20,12 +20,11 @@
 package genj.util.swing;
 
 import genj.util.GridBagHelper;
+import genj.util.ObservableBoolean;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.text.Format;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +56,9 @@ public class SpinnerWidget extends JPanel {
   /** change listener */
   private ChangeListener modelListener;
   
+  /** our observable for tracking changes */
+  private ObservableBoolean change = new ObservableBoolean();
+  
   /** format */
   private Format format = null;
 
@@ -68,7 +70,7 @@ public class SpinnerWidget extends JPanel {
     // setup
     setAlignmentX(0);
     
-    tfield = new TextFieldWidget("", setCols);
+    tfield = new TextFieldWidget(change, "", setCols);
     tfield.setHorizontalAlignment(SwingConstants.RIGHT);
     anorth = new AB(SwingConstants.NORTH);
     asouth = new AB(SwingConstants.SOUTH);
@@ -96,14 +98,14 @@ public class SpinnerWidget extends JPanel {
       }
     };
     
-    tfield.addFocusListener(new FocusAdapter() {
-      /**
-       * @see genj.util.swing.SpinnerWidget#focusLost(java.awt.event.FocusEvent)
-       */
-      public void focusLost(FocusEvent e) {
-        commit();
-      }
-    });
+//    tfield.addFocusListener(new FocusAdapter() {
+//      /**
+//       * @see genj.util.swing.SpinnerWidget#focusLost(java.awt.event.FocusEvent)
+//       */
+//      public void focusLost(FocusEvent e) {
+//        commit();
+//      }
+//    });
     
     // remember model
     setModel(setModel);
@@ -160,11 +162,6 @@ public class SpinnerWidget extends JPanel {
    * Set to next value
    */
   public void setNext() {
-    // only if changed
-    if (tfield.hasChanged()) try {
-      commit();
-    } catch (IllegalArgumentException e) {
-    }
     // propagate next
     model.setValue(model.getNextValue());
     // select
@@ -176,28 +173,10 @@ public class SpinnerWidget extends JPanel {
    * Set to previous value
    */
   public void setPrevious() {
-    // only if changed
-    if (tfield.hasChanged()) try {
-      commit();
-    } catch (IllegalArgumentException e) {
-    }
     // propagate prev
     model.setValue(model.getPreviousValue());
   }
   
-  /**
-   * Commit currently edited value
-   */
-  public void commit() throws IllegalArgumentException {
-    model.setValue(tfield.getText());
-  }
-  
-  /**
-   * Whether we've changed
-   */
-  public boolean hasChanged() {
-    return tfield.hasChanged();
-  }
   
   /**
    * Our arrow button

@@ -35,9 +35,6 @@ class ProxyName extends Proxy {
   private ChoiceWidget cLast;
   private TextFieldWidget tFirst, tSuff;
 
-  /** dirty flag */
-  private boolean changed=false;
-
   /**
    * Finish editing a property through proxy
    */
@@ -52,18 +49,7 @@ class ProxyName extends Proxy {
     PropertyName p = (PropertyName) property;
     p.setName( first, last, suff );
 
-    tFirst.setChanged(false);
-    cLast .setChanged(false);
-    tSuff .setChanged(false);
-    
     // Done
-  }
-
-  /**
-   * Returns change state of proxy
-   */
-  protected boolean hasChanged() {
-    return tFirst.hasChanged() || tSuff.hasChanged() || cLast.hasChanged();
   }
 
   /**
@@ -77,9 +63,9 @@ class ProxyName extends Proxy {
     // first, last, suff
     PropertyName pname = (PropertyName)property;
     
-    cLast  = new ChoiceWidget(pname.getLastNames().toArray(), pname.getLastName());
-    tFirst = new TextFieldWidget(pname.getFirstName(), 10); 
-    tSuff  = new TextFieldWidget(pname.getSuffix()   , 10); 
+    cLast  = new ChoiceWidget(change, pname.getLastNames().toArray(), pname.getLastName());
+    tFirst = new TextFieldWidget(change, pname.getFirstName(), 10); 
+    tSuff  = new TextFieldWidget(change, pname.getSuffix()   , 10); 
 
     result.add(new JLabel(pname.getLabelForFirstName()));
     result.add(tFirst);

@@ -47,14 +47,6 @@ class ProxyAge extends Proxy {
    */
   protected void commit() {
     property.setValue(tfield.getText());
-    tfield.setChanged(false);
-  }
-
-  /**
-   * Returns change state of proxy
-   */
-  protected boolean hasChanged() {
-    return tfield.hasChanged();
   }
 
   /**
@@ -65,7 +57,7 @@ class ProxyAge extends Proxy {
     age = (PropertyAge)property;
     
     // create input
-    tfield = new TextFieldWidget(property.getValue(), TEMPLATE.length());
+    tfield = new TextFieldWidget(change, property.getValue(), TEMPLATE.length());
 
     // layout
     Editor result = new Editor();
@@ -102,7 +94,6 @@ class ProxyAge extends Proxy {
       if (delta==null)
         return;
       tfield.setText(delta.getValue());
-      tfield.setChanged(true);
     }
   } //ActionUpdate
 

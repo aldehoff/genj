@@ -415,7 +415,7 @@ public class PropertyTreeWidget extends TreeWidget {
      * @see genj.gedcom.GedcomListener#handleChange(Change)
      */
     public void handleChange(Transaction tx) {
-
+      
       // Could we be affected at all?
       if (root==null) 
         return;

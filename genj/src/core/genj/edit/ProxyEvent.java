@@ -45,18 +45,10 @@ class ProxyEvent extends Proxy {
    */
   protected void commit() {
     // known might be null!
-    if (known!=null&&known.hasChanged()) {
+    if (known!=null) {
       ((PropertyEvent)property).setKnownToHaveHappened(known.getSelectedIndex()==0);
-      known.setChanged(false);
+      known.getChangeState().set(false);
     }
-  }
-
-  /**
-   * Returns change state of proxy
-   */
-  protected boolean hasChanged() {
-    // known might be null!
-    return known!=null&&known.hasChanged();
   }
 
   /**
@@ -96,10 +88,11 @@ class ProxyEvent extends Proxy {
     JLabel 
       label1 = new JLabel(resources.getString(ageat)),
       label2 = new JLabel(resources.getString("proxy.even.known")); 
-      // 20040321 increased from 10 to 16 to account for long age string
+    
+    // 20040321 increased from 10 to 16 to account for long age string
     JTextField txt = new JTextField(age, 16); txt.setEditable(false);
     String[] choices = WindowManager.OPTIONS_YES_NO;
-    known = new ChoiceWidget(choices, event.isKnownToHaveHappened() ? choices[0] : choices[1]);
+    known = new ChoiceWidget(change, choices, event.isKnownToHaveHappened() ? choices[0] : choices[1]);
     known.setEditable(false);
     
     GridBagHelper gh = new GridBagHelper(result);

@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.renderer.EntityRenderer;
 import genj.util.ActionDelegate;
+import genj.util.ObservableBoolean;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.window.WindowManager;
@@ -42,6 +43,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -65,7 +68,10 @@ import javax.swing.border.EmptyBorder;
   protected JLabel label;
   
   /** buttons */
-  private AbstractButton ok, cancel;
+  protected AbstractButton ok, cancel;
+  
+  /** change support */
+  protected ObservableBoolean change = new ObservableBoolean();  
 
   /**
    * Setup an editor in given panel
@@ -97,6 +103,14 @@ import javax.swing.border.EmptyBorder;
       ok = bh.create(new OK());
       cancel = bh.create(new Cancel());
       panel.add(BorderLayout.SOUTH, buttons);
+      
+      change.addChangeListener(new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+          ok.setEnabled(change.get());
+          cancel.setEnabled(change.get());
+        }
+      });
+      
     }
     
     // propagate layout change
@@ -105,6 +119,10 @@ import javax.swing.border.EmptyBorder;
 
     // set focus
     editor.requestFocus();
+
+    // we're ready for changes now
+    change.set(false);
+    
 
     // done
   }
@@ -117,7 +135,10 @@ import javax.swing.border.EmptyBorder;
   /**
    * Returns change state of proxy
    */
-  protected abstract boolean hasChanged();
+  protected final boolean hasChanged() {
+    // only if property is still in entity/gedcom and change state is true
+    return property.getGedcom()!=null & change.get();
+  }
 
   /**
    * Commit any changes made by the user
@@ -221,7 +242,8 @@ import javax.swing.border.EmptyBorder;
       } finally {
         gedcom.endTransaction();
       }
-    
+
+      change.set(false);    
     }
 
   } //OK

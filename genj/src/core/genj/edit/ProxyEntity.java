@@ -46,13 +46,6 @@ class ProxyEntity extends Proxy {
   }
 
   /**
-   * Returns change state of proxy
-   */
-  protected boolean hasChanged() {
-    return false;
-  }
-
-  /**
    * Nothing to edit
    */  
   protected boolean isEditable() {

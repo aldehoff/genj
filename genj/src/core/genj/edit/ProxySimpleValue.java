@@ -40,15 +40,7 @@ class ProxySimpleValue extends Proxy {
   protected void commit() {
     if (tfield!=null) {
       property.setValue(tfield.getText());
-      tfield.setChanged(false);
     }
-  }
-
-  /**
-   * Returns change state of proxy
-   */
-  protected boolean hasChanged() {
-    return tfield!=null&&tfield.hasChanged();
   }
 
   /**
@@ -70,7 +62,7 @@ class ProxySimpleValue extends Proxy {
     if (property.isReadOnly()) {
       result.add(BorderLayout.NORTH, new JLabel(property.getValue()));
     } else {
-      tfield = new TextFieldWidget(property.getValue(), 0);
+      tfield = new TextFieldWidget(change, property.getValue(), 0);
       result.add(BorderLayout.NORTH, tfield);
       result.setFocus(tfield);
     }

@@ -442,7 +442,7 @@ public class ViewManager {
     // create a popup
     MenuHelper mh = new MenuHelper().setTarget(container);
     mh.setTarget(container);
-    JPopupMenu popup = mh.createPopup("");
+    JPopupMenu popup = mh.createPopup();
 
     // the context might have some actions we're going to add
     mh.createItems(context.getActions());

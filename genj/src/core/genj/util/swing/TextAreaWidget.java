@@ -19,71 +19,44 @@
  */
 package genj.util.swing;
 
+import genj.util.ObservableBoolean;
+
 import javax.swing.JTextArea;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
  * Our own JTextArea
  */
-public class TextAreaWidget extends JTextArea implements DocumentListener {
+public class TextAreaWidget extends JTextArea {
 
-  /** change flag */  
-  private boolean isChanged = false;
+  /** wrapped observable */  
+  private ObservableBoolean change;
 
   /**
    * Constructor
    */
   public TextAreaWidget(String text, int rows, int cols) {
+    this(null, text, rows, cols);
+  }
+
+  /**
+   * Constructor
+   */
+  public TextAreaWidget(ObservableBoolean observable, String text, int rows, int cols) {
     super(text, rows, cols);
-    getDocument().addDocumentListener(this);
+    
     setAlignmentX(0);
+    
+    change = observable!=null ? observable : new ObservableBoolean();
+    getDocument().addDocumentListener(observable);
   }
 
   /**
-   * @see javax.swing.text.JTextComponent#setText(java.lang.String)
+   * Accessor - observable
    */
-  public void setText(String t) {
-    super.setText(t);
-    setChanged(false);
-  }
-
-
-  /**
-   * Test for change
-   */
-  public boolean hasChanged() {
-    return isChanged;
+  public ObservableBoolean getChangeState() {
+    return change;
   }
     
-  /**
-   * Set change
-   */
-  public void setChanged(boolean set) {
-    isChanged = set;
-  }
-
-  /**
-   * Change notification
-   */
-  public void changedUpdate(DocumentEvent e) {
-    isChanged = true;
-  }
-
-  /**
-   * Document event - insert
-   */
-  public void insertUpdate(DocumentEvent e) {
-    isChanged = true;
-  }
-
-  /**
-   * Document event - remove
-   */
-  public void removeUpdate(DocumentEvent e) {
-    isChanged = true;
-  }
-
   /**
    * Overridden to try 1.4's requestFocusInWindow
    * @see javax.swing.JComponent#requestFocus()

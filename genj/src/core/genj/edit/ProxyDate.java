@@ -37,7 +37,6 @@ import javax.swing.JComboBox;
 class ProxyDate extends Proxy implements ItemListener {
 
   /** members */
-  private boolean formatChanged = false;
   private int currentDate;
   private JComboBox combo;
   private DateWidget deOne, deTwo;
@@ -77,19 +76,7 @@ class ProxyDate extends Proxy implements ItemListener {
         p.getEnd().set(deTwo.getValue());
     }
     
-    // clear change flag
-    deOne.setChanged(false);
-    deTwo.setChanged(false);
-    formatChanged = false;
-
     // Done
-  }
-
-  /**
-   * Returns change state of proxy
-   */
-  protected boolean hasChanged() {
-    return ( (deOne.hasChanged()) || (deTwo.hasChanged()) || (formatChanged) );
   }
 
   /**
@@ -97,7 +84,7 @@ class ProxyDate extends Proxy implements ItemListener {
    */
   public void itemStateChanged(ItemEvent e) {
 
-    formatChanged = true;
+    change.set(true);
 
     if (PropertyDate.isRange(combo.getSelectedIndex()))
       deOne.getParent().add(deTwo);
@@ -134,17 +121,18 @@ class ProxyDate extends Proxy implements ItemListener {
 
     WindowManager mgr = view.manager.getWindowManager();
 
-    deOne = new DateWidget(p.getStart(), mgr);
+    deOne = new DateWidget(change, p.getStart(), mgr);
     deOne.setAlignmentX(0);
     result.add(deOne);
     result.setFocus(deOne);
 
-    deTwo = new DateWidget(p.getEnd(), mgr);
+    deTwo = new DateWidget(change, p.getEnd(), mgr);
     deTwo.setAlignmentX(0);
 
     combo.setSelectedIndex( p.getFormat() );
-    formatChanged = false;
 
+    change.set(false);
+    
     // Done
     return result;
 

@@ -300,6 +300,7 @@ public class AboutWidget extends JPanel{
       // what are the languages
       choiceLanguages = new ChoiceWidget(getAvailableLanguages(), App.getInstance().getLanguage());
       choiceLanguages.setEditable(false);
+      choiceLanguages.getChangeState().set(false);
       gh.add(new JLabel(resources.getString("cc.about.tab4.language")), 0, 0);
       gh.add(choiceLanguages, 1, 0);
 
@@ -363,7 +364,7 @@ public class AboutWidget extends JPanel{
       public void execute() {
         App app = App.getInstance();
         // check language 
-        if (choiceLanguages.hasChanged()) {
+        if (choiceLanguages.getChangeState().get()) {
           viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_WARNING, resources.getString("cc.about.dialog.restart"), WindowManager.OPTIONS_OK, AboutWidget.this);
           app.setLanguage(choiceLanguages.getSelectedItem().toString());
         }

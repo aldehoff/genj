@@ -91,16 +91,7 @@ import javax.swing.JScrollPane;
     if (property instanceof PropertyBlob) 
       ((PropertyBlob)property).load(file, updateFormatAndTitle);
 
-    tFile.setChanged(false);
-        
     // done
-  }
-
-  /**
-   * Returns change state of proxy
-   */
-  protected boolean hasChanged() {
-    return tFile.hasChanged();
   }
 
   /**
@@ -153,7 +144,7 @@ import javax.swing.JScrollPane;
     GridBagHelper gh = new GridBagHelper(result);
     
     // Create Text and button for current value
-    tFile = new TextFieldWidget("", 10);
+    tFile = new TextFieldWidget(change, "", 10);
     result.setFocus(tFile);
 
     // but check permissions first
@@ -229,9 +220,6 @@ import javax.swing.JScrollPane;
       // show it 
       showFile(file.toString(), true);
       
-      // remember changed
-      tFile.setChanged(true);
-
     }
   } //ActionChoose
   
@@ -359,7 +347,7 @@ import javax.swing.JScrollPane;
       // show a context menu for file
       String file = tFile.getText();
       MenuHelper mh = new MenuHelper().setTarget(view);
-      JPopupMenu popup = mh.createPopup("");
+      JPopupMenu popup = mh.createPopup();
       // zoom levels for images
       if (img!=null) {
         mh.createItem(new ActionZoom( 10));

@@ -19,31 +19,30 @@
  */
 package genj.util.swing;
 
+import genj.util.ObservableBoolean;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Caret;
 
 /**
  * Our own JComboBox
  */
-public class ChoiceWidget extends javax.swing.JComboBox {
+public class ChoiceWidget extends JComboBox {
   
-  /** our own editor */
-  private Editor editor = new Editor();
-  
-  /** our own change flag */
-  private boolean hasChanged = false;
+  /** our observable for tracking changes */
+  private ObservableBoolean change;
   
   /** our own model */
   private Model model = new Model();
@@ -69,6 +68,13 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * Constructor
    */     
   public ChoiceWidget(Object[] values, Object selection) {
+    this(null, values, selection);
+  }
+  
+  /**
+   * Constructor
+   */
+  public ChoiceWidget(ObservableBoolean setChange, Object[] values, Object selection) {
 
     // do our model
     setModel(model);
@@ -81,24 +87,34 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     // caveat: no action performed on select from choices
     super.setEditor(editor);
     
-    // default is sorted
-    setEditable(true);
-
     // set the values now
     model.setValues(values);
        
-    // try to set selection - not in values is ignored
-    setSelectedItem(selection);
-    
-    // we're not changed at this point
-    editor.setChanged(false);
-    hasChanged = false;
-    
     // alignment fix
     setAlignmentX(LEFT_ALIGNMENT);
     
+    // keep observable
+    change = setChange!=null ? setChange : new ObservableBoolean();
+    
+    // init editor
+    super.setEditor(new Editor());
+    
+    // try to set selection - not in values is ignored
+    setSelectedItem(selection);
+    
+    // default is editable
+    setEditable(true);
+
+    // done
   }
   
+  /**
+   * Accessor - observable
+   */
+  public ObservableBoolean getChangeState() {
+    return change;
+  }
+    
   /**
    * set values
    */
@@ -118,29 +134,12 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   }
     
   /**
-   * Changed?
-   */
-  public boolean hasChanged() {
-    return isEditable() ? editor.hasChanged() : hasChanged;
-  }
-  
-  /**
-   * Set change
-   */
-  public void setChanged(boolean set) {
-    hasChanged = set;
-    editor.setChanged(set);
-  }
-
-  /**
    * Changes the currently selected item
    * @see javax.swing.JComboBox#setSelectedItem(java.lang.Object)
    */
   public void setSelectedItem(Object anObject) {
     // we're changed
-    hasChanged = true;
-    // 20030510 mark change in editor
-    editor.setChanged(true);
+    change.set(true);
     // continue
     super.setSelectedItem(anObject);
   }
@@ -149,7 +148,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * Accessor - whether a selectAll() should occur on focus gained
    */
   public void setSelectAllOnFocus(boolean set) {
-    editor.setSelectAllOnFocus(set);
+    ((Editor)getEditor()).setSelectAllOnFocus(set);
   }
     
   /**
@@ -166,14 +165,14 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   public void setText(String text) {
     if (!isEditable) 
       throw new IllegalArgumentException("setText && !isEditable n/a");
-    editor.setText(text);
+    ((Editor)getEditor()).setText(text);
   }
   
   /**
    * Access to editor
    */
   public TextFieldWidget getTextWidget() {
-    return editor;
+    return ((Editor)getEditor());
   }
   
   /**
@@ -208,12 +207,14 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * @see javax.swing.JComponent#requestFocus()
    */
   public void requestFocus() {
-    // try JDK 1.4's requestFocusInWindow instead
-    try {
-      super.requestFocusInWindow();
-    } catch (Throwable t) {
-      super.requestFocus();
-    }
+    ((Editor)editor).requestFocus();
+  }
+  
+  /**
+   * @see javax.swing.JComponent#requestFocusInWindow()
+   */
+  public boolean requestFocusInWindow() {
+    return ((Editor)editor).requestFocusInWindow();
   }
   
   /**
@@ -224,34 +225,23 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   }
   
   /**
-   * @see javax.swing.JComboBox#setEditable(boolean)
-   */
-  public void setEditable(boolean aFlag) {
-    // continnue
-    super.setEditable(aFlag);
-    // not a change
-    editor.setChanged(false);
-  }
-
-
-  /**
    * @see javax.swing.JComboBox#addActionListener(java.awt.event.ActionListener)
    */
   public void addActionListener(ActionListener l) {
-    editor.addActionListener(l);
+    getEditor().addActionListener(l);
   }
       
   /**
    * @see javax.swing.JComboBox#removeActionListener(java.awt.event.ActionListener)
    */
   public void removeActionListener(ActionListener l) {
-    editor.removeActionListener(l);
+    getEditor().removeActionListener(l);
   }
   
   /**
    * our own editor
    */
-  private class Editor extends TextFieldWidget implements ComboBoxEditor, FocusListener, Runnable {
+  private class Editor extends TextFieldWidget implements ComboBoxEditor, DocumentListener, Runnable {
     
     private boolean ignoreInsertUpdate = false;
     
@@ -259,22 +249,8 @@ public class ChoiceWidget extends javax.swing.JComboBox {
      * Constructor
      */
     private Editor() {
-      super("", 12);
-      ChoiceWidget.this.addFocusListener(this);
-    }
-    
-    /**
-     * @see java.awt.Component#addFocusListener(java.awt.event.FocusListener)
-     */
-    public synchronized void addFocusListener(FocusListener l) {
-      // BasicComboBoxUI has the annoying habit of listening
-      // to focusLost to fire another actionperformed if 
-      //   !editor.getItem().equals( comboBox.getSelectedItem())
-      // so I'm filtering that listener here
-      if (l.getClass().getName().indexOf("$EditorFocusListener")>0)
-        return;
-      // continue
-      super.addFocusListener(l);
+      super(change, "", 12);
+      getDocument().addDocumentListener(this);
     }
     
     /**
@@ -307,31 +283,28 @@ public class ChoiceWidget extends javax.swing.JComboBox {
       ignoreInsertUpdate = true;
       super.setText(t);
       ignoreInsertUpdate = false;
-      super.setChanged(true);
+    }
+
+    /**
+     * DocumentListener - callback
+     */
+    public void removeUpdate(DocumentEvent e) {
+      // ignored
     }
     
     /**
-     * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+     * DocumentListener - callback
      */
-    public void focusGained(FocusEvent e) {
-      this.requestFocus();
-    }
-
-    /**
-     * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
-     */
-    public void focusLost(FocusEvent e) {
+    public void changedUpdate(DocumentEvent e) {
       // ignored
     }
-
+    
     /**
      * When something is typed in the editor's document we 
      * invoke a (delayed) auto complete on run()
      * @see genj.util.swing.TextFieldWidget#insertUpdate(javax.swing.event.DocumentEvent)
      */
     public void insertUpdate(DocumentEvent e) {
-      // let super do its thing
-      super.insertUpdate(e);
       // add a auto-complete callback
       if (!ignoreInsertUpdate)
         SwingUtilities.invokeLater(this);
@@ -420,7 +393,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
       // remember
       selection = seLection;
       // propagate to editor
-      editor.setItem(seLection);
+      getEditor().setItem(seLection);
       // notify about item state change
       fireItemStateChanged(new ItemEvent(ChoiceWidget.this, ItemEvent.ITEM_STATE_CHANGED, seLection, ItemEvent.SELECTED));
       // and notify of data change (combobox specialty)

@@ -24,6 +24,7 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
 import genj.util.ActionDelegate;
+import genj.util.ObservableBoolean;
 import genj.util.WordBuffer;
 import genj.window.WindowManager;
 
@@ -34,8 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
  * Generic component for editing dates
@@ -54,11 +53,22 @@ public class DateWidget extends JPanel {
   /** window manager */
   private WindowManager manager;
     
+  /** our observable for tracking changes */
+  private ObservableBoolean change;
+  
   /**
    * Constructor
    */
   public DateWidget(PointInTime pit, WindowManager mgr) {
+    this(null, pit, mgr);
+  }
 
+  /**
+   * Constructor
+   */
+  public DateWidget(ObservableBoolean observable, PointInTime pit, WindowManager mgr) {
+
+    change = observable!=null ? observable : new ObservableBoolean();
     manager = mgr;
     calendar = pit.getCalendar();
         
@@ -71,14 +81,14 @@ public class DateWidget extends JPanel {
     widgetCalendar = new PopupWidget(); 
     widgetCalendar.setActions(switches);
     
-    widgetYear  = new TextFieldWidget("",5+1);
+    widgetYear  = new TextFieldWidget(observable, "",5+1);
     widgetYear.setSelectAllOnFocus(true);
     
-    widgetMonth = new ChoiceWidget();
+    widgetMonth = new ChoiceWidget(observable, new Object[0], null);
     widgetMonth.setIgnoreCase(true);
     widgetMonth.setSelectAllOnFocus(true);
 
-    widgetDay   = new TextFieldWidget("",2+1);
+    widgetDay   = new TextFieldWidget(observable, "",2+1);
     widgetDay.setSelectAllOnFocus(true);
     
     // Layout
@@ -100,28 +110,10 @@ public class DateWidget extends JPanel {
     widgetMonth.setToolTipText(format);
     widgetYear.setToolTipText(format);
     
-    // Listeners
-    DocumentListener listener = new DocumentListener() {
-      public void changedUpdate(DocumentEvent e) {
-      }
-      public void insertUpdate(DocumentEvent e) {
-        updateStatus();
-      }
-      public void removeUpdate(DocumentEvent e) {
-        updateStatus();
-      }
-    };
-    widgetDay  .getDocument().addDocumentListener(listener);
-    widgetYear .getDocument().addDocumentListener(listener);
-    widgetMonth.getTextWidget().getDocument().addDocumentListener(listener);
-    
     // Status
     setValue(pit);
     updateStatus();
 
-    // Reset changed
-    setChanged(false);
-    
     // Done
   }
   
@@ -145,7 +137,6 @@ public class DateWidget extends JPanel {
     try {
       widgetMonth.setSelectedItem(null);
       widgetMonth.setSelectedItem(months[pit.getMonth()]);
-      widgetMonth.setChanged(false);
     } catch (ArrayIndexOutOfBoundsException e) {
     }
     
@@ -234,22 +225,6 @@ public class DateWidget extends JPanel {
   }
 
   /**
-   * Set change status
-   */
-  public void setChanged(boolean set) {
-    widgetDay.setChanged(set);
-    widgetYear.setChanged(set);
-    widgetMonth.setChanged(set);
-  }
-
-  /**
-   * Returns true when user has changed day/month/year
-   */
-  public boolean hasChanged() {
-    return widgetDay.hasChanged() || widgetYear.hasChanged() || widgetMonth.hasChanged();
-  }
-
-  /**
    * @see javax.swing.JComponent#requestFocus()
    */
   public void requestFocus() {
@@ -311,7 +286,6 @@ public class DateWidget extends JPanel {
       }
       // change
       setValue(pit);
-      setChanged(true);
       // update current status
       updateStatus();
     }

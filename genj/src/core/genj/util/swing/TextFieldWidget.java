@@ -19,25 +19,26 @@
  */
 package genj.util.swing;
 
+import genj.util.ObservableBoolean;
+
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
 
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.JTextField;
 
 /**
  * Our own JTextField
  */
-public class TextFieldWidget extends javax.swing.JTextField implements DocumentListener {
+public class TextFieldWidget extends JTextField {
 
-  /** change flag */  
-  private boolean isChanged = false;
-  
   /** whether we're a template */
   private boolean isTemplate = false;
   
   /** whether we do a selectAll() on focus */
   private boolean isSelectAllOnFocus = false;
+  
+  /** an observable we offer */
+  private ObservableBoolean change;
   
   /**
    * Constructor
@@ -50,11 +51,26 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
    * Constructor
    */
   public TextFieldWidget(String text, int cols) {
+    this(null, text, cols);
+  }
+
+  /** 
+   * Constructor
+   */
+  public TextFieldWidget(ObservableBoolean chan, String text, int cols) {
     super(text, cols);
-    getDocument().addDocumentListener(this);
     setAlignmentX(0);
+    change = chan!=null ? chan : new ObservableBoolean();
+    getDocument().addDocumentListener(change);
   }
   
+  /**
+   * Accessor - observable
+   */
+  public ObservableBoolean getChangeState() {
+    return change;
+  }
+    
   /**
    * Make this a template - the field is set to unchanged, any
    * current value in the text-field is not returned but empty
@@ -63,24 +79,7 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
    */
   public TextFieldWidget setTemplate(boolean set) {
     isTemplate = set;
-    isChanged = false;
     return this;
-  }
-  
-  /**
-   * Test for change - whether the user has made a change
-   * to the text-field's content
-   */
-  public boolean hasChanged() {
-    return isChanged;
-  }
-  
-  /**
-   * Set change - simulating the user having made a change
-   * to the text-field's content (or not)
-   */
-  public void setChanged(boolean set) {
-    isChanged = set;
   }
   
   /**
@@ -132,36 +131,15 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
   }
   
   /**
-   * Sets the content - any user change is revoked (hasChanged=false)
+   * Sets the content 
    * @see javax.swing.text.JTextComponent#setText(java.lang.String)
    */
   public void setText(String txt) {
     super.setText(txt);
-    setChanged(false);
+    
     // 20040307 reset caret to 0 - this makes sure the
     // first part of the string is visible
     setCaretPosition(0);
-  }
-
-  /**
-   * Change notification
-   */
-  public void changedUpdate(DocumentEvent e) {
-    setChanged(true);
-  }
-
-  /**
-   * Document event - insert
-   */
-  public void insertUpdate(DocumentEvent e) {
-    setChanged(true);
-  }
-
-  /**
-   * Document event - remove
-   */
-  public void removeUpdate(DocumentEvent e) {
-    setChanged(true);
   }
 
   /**

@@ -20,24 +20,21 @@
 package genj.edit;
 
 import genj.gedcom.PropertySex;
+import genj.util.ActionDelegate;
+import genj.util.swing.ButtonHelper;
 
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-
-import javax.swing.ButtonGroup;
+import javax.swing.AbstractButton;
 import javax.swing.JRadioButton;
 
 /**
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : SEX
  */
-class ProxySex extends Proxy implements ItemListener {
+class ProxySex extends Proxy {
 
   /** members */
-  private JRadioButton[] rbSex = new JRadioButton[3];
+  private AbstractButton[] buttons = new AbstractButton[3];
   
-  private boolean changed = false;
-
   /**
    * Finish editing a property through proxy
    */
@@ -45,77 +42,55 @@ class ProxySex extends Proxy implements ItemListener {
     
     // Gather data change
     PropertySex sex = (PropertySex)property; 
-    for (int i=0;i<rbSex.length;i++) {
-      if (rbSex[i].isSelected()) {
+    for (int i=0;i<buttons.length;i++) {
+      if (buttons[i].isSelected()) {
         sex.setSex(i);
         break;
       }
     }
     
-    changed = false;
-    
     // Done
   }
-
-  /**
-   * Returns change state of proxy
-   */
-  protected boolean hasChanged() {
-    return changed;
-  }
-
-  /**
-   * RadioButton has been selected
-   */
-  public void itemStateChanged(ItemEvent e) {
-
-    // We're waiting for selection only
-    if (e.getStateChange() != e.SELECTED)
-      return;
-
-    changed=true;
-
-    // Gather data change
-    PropertySex sex = (PropertySex)property;
-     
-    for (int i=0;i<rbSex.length;i++) {
-      if (rbSex[i].isSelected()) {
-        label.setIcon(sex.getImage(i));
-        break;
-      }
-    }
-
-    // Done
-  }          
 
   /**
    * Start editing a property through proxy
    */
   protected Editor getEditor() {
+  
+    // we know it's PropertySex
+    PropertySex p = (PropertySex) property;
 
+    // prepare result
     Editor result = new Editor();
     result.setBoxLayout();
-    PropertySex p = (PropertySex) property;
-    ButtonGroup bg = new ButtonGroup();
 
-    for (int i=0;i<rbSex.length;i++) {
-      rbSex[i] = new JRadioButton( p.getLabelForSex(i) );
-      result.add(rbSex[i]);
-      
-      rbSex[i].getModel().setGroup(bg);
-      rbSex[i].getModel().addItemListener(this);
-    }
+    // create buttons    
+    ButtonHelper bh = new ButtonHelper()
+      .setButtonType(JRadioButton.class)
+      .setContainer(result);
+    bh.createGroup();
+    for (int i=0;i<buttons.length;i++)
+      buttons[i] = bh.create( new Gender(i) );
+    buttons[p.getSex()].setSelected(true);
     
-    rbSex[p.getSex()].setSelected(true);
-    
-    result.setFocus(rbSex[p.getSex()]);
-
-    // reset changed
-    changed = false;
+    result.setFocus(buttons[p.getSex()]);
 
     // Done
     return result;
   }
+  
+  private class Gender extends ActionDelegate {
+    int sex;
+    private Gender(int sex) {
+      this.sex = sex;
+      setText(PropertySex.getLabelForSex(sex));
+    }
+    protected void execute() {
+      change.set(true);
+      label.setIcon(PropertySex.getImage(sex));
+    }
+
+  } //Gender
 
 } //ProxySex
 
