@@ -354,41 +354,16 @@ import java.util.Set;
    * @param pe property to use
    */
   private final void createEventFrom(PropertyEvent pe) {
-    // we need a valid date for that event
+    // we need a valid date for new event
     PropertyDate pd = pe.getDate();
-    if (pd==null||!pd.isValid()) 
+    if (pd==null||!pd.isValid())
       return;
-    // get start and end
-    int start,end;
-    try {
-      start = getJulianDay(pd.getStart(), false);
-      end   = pd.isRange() ? getJulianDay(pd.getEnd(), true) : start;
+    // get it 
+    try { 
+      insertEvent(new Event(pe, pd));
     } catch (GedcomException e) {
-      return;
     }
-    if (start==PointInTime.UNKNOWN||end==PointInTime.UNKNOWN) 
-      return;
-    // create event 
-    insertEvent(new Event(pe, pd, start, end));
     // done
-  }
-  
-  /**
-   * Calculate julian date for point of time
-   */
-  private int getJulianDay(PointInTime pit, boolean roundUp) throws GedcomException {
-    PointInTime.Calendar
-      cal = pit.getCalendar();
-    int
-      day = pit.getDay(),
-      month = pit.getMonth(),
-      year = pit.getYear();
-    if (month==PointInTime.UNKNOWN)
-      month = roundUp ? cal.getMonths()-1 : 0;
-    if (day==PointInTime.UNKNOWN)
-      day = roundUp ? cal.getDays(month, year) : 0;
-    
-    return PointInTime.getPointInTime(day,month,year,cal).getJulianDay();
   }
   
   /**
@@ -445,23 +420,24 @@ import java.util.Set;
    * An event in our model
    */
   /*package*/ class Event {
-
     /** state */
-    /*package*/ int from, to;
+    /*package*/ double from, to;
     /*package*/ PropertyEvent pe;
     /*package*/ PropertyDate pd;
     /*package*/ String content;
-    
     /** 
      * Constructor
      */
-    Event(PropertyEvent propEvent, PropertyDate propDate, int jd1, int jd2) {
+    Event(PropertyEvent propEvent, PropertyDate propDate) throws GedcomException {
       // remember
       pe = propEvent;
       pd = propDate;
       // setup time
-      from = jd1;
-      to  = jd2;
+      from = toDouble(propDate.getStart(), propDate.getFormat()==propDate.AFT);
+      to  = propDate.isRange() ? toDouble(propDate.getEnd(), false) : from;
+      // from<to?
+      if (from>to)
+        throw new GedcomException("");
       // calculate content
       content();
       // done
@@ -469,20 +445,35 @@ import java.util.Set;
     /**
      * Calculate to
      */
-    private double toDouble(PointInTime pit, boolean roundUp) {
+    private double toDouble(PointInTime pit, boolean roundUp) throws GedcomException {
+      
+      // all Gregorian for now
+      PointInTime.Calendar calendar = PointInTime.GREGORIAN;
+      
+      if (pit.getCalendar()!=calendar) { 
+        pit = pit.getPointInTime(calendar);
+      }
+      
       // year
-      double result = pit.getYear();
+      int year = pit.getYear();
+      double result = year; 
+
       // month
       int month = pit.getMonth();
-      if (month<0||month>=12)
+      if (month==pit.UNKNOWN)
         return roundUp ? result+1 : result;
-      result += ((double)month)/12.0D;
+
+      double months = calendar.getMonths(); 
+      result += month / months;
+
       // day
       int day = pit.getDay();
-      if (day<0||day>31) {
-        return roundUp ? result+1D/12 : result;
-      }
-      result += ((double)day)/12/31;
+      if (day==PointInTime.UNKNOWN) 
+        return roundUp ? result+1/months : result;
+
+      double days = calendar.getDays(month, year);
+      result += day/months/days;
+
       // done
       return result;
     }

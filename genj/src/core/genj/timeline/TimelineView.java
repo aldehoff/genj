@@ -49,7 +49,7 @@ import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-// FIXME needs to refactored around multiple calendars/meaning of years
+
 
 /**
  * Component for showing entities' events in a timeline view
@@ -169,7 +169,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     // all that fits in a scrollpane
     scrollContent = new JScrollPane(new ViewPortAdapter(content));
     scrollContent.setColumnHeaderView(new ViewPortAdapter(ruler));
-//    scrollContent.getHorizontalScrollBar().addAdjustmentListener(new ChangeCenteredYear());
+    scrollContent.getHorizontalScrollBar().addAdjustmentListener(new ChangeCenteredYear());
    
     // layout
     setLayout(new BorderLayout());
