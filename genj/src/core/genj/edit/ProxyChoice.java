@@ -33,10 +33,14 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 /**
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : Choice (e.g. RELA)
+ * @author nils@meiers.net
+ * @author Tomas Dahlqvist fix for prefix lookup
  */
 class ProxyChoice extends Proxy{
 
@@ -92,6 +96,7 @@ class ProxyChoice extends Proxy{
     
     editor = new Editor();
     combo.setEditor(editor);
+    combo.addPopupMenuListener(editor);
     editor.setText(prop.getValue());
     
     // layout
@@ -105,7 +110,7 @@ class ProxyChoice extends Proxy{
   /**
    * our own editor
    */
-  private static class Editor extends JTextField implements ComboBoxEditor, DocumentListener {
+  private class Editor extends JTextField implements ComboBoxEditor, DocumentListener, PopupMenuListener {
     
     /** change flag */  
     private boolean changed = false;
@@ -174,6 +179,36 @@ class ProxyChoice extends Proxy{
      */
     public void removeUpdate(DocumentEvent e) {
       changed = true;
+    }
+    
+    /**
+     * @see javax.swing.event.PopupMenuListener#popupMenuCanceled(javax.swing.event.PopupMenuEvent)
+     */
+    public void popupMenuCanceled(PopupMenuEvent e) {
+      // ignored
+    }
+
+    /**
+     * @see javax.swing.event.PopupMenuListener#popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent)
+     */
+    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+      // ignored
+    }
+
+    /**
+     * @see javax.swing.event.PopupMenuListener#popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent)
+     */
+    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+      // try to find prefix in combo
+      String pre = getText();
+      for (int i=0; i<combo.getItemCount(); i++) {
+        String item = (String) combo.getItemAt(i);
+        if (item.regionMatches(true, 0, pre, 0, pre.length())) {
+          combo.setSelectedIndex(i);
+          break;
+        }
+      }
+      // done
     }
 
   } //Editor
