@@ -343,6 +343,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     private Mode() {
       setImage(Images.imgView);
       setEditor(new BasicEditor());
+      setTip("action.mode");
     }
     protected void execute() {
       advanced = !advanced;
