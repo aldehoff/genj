@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class Indi extends Entity {
 
-  private final static ImageIcon
+  public final static ImageIcon
     IMG_MALE   = MetaProperty.get(new TagPath("INDI")).getImage("male"),
     IMG_FEMALE = MetaProperty.get(new TagPath("INDI")).getImage("female"),
     IMG_UNKNOWN = MetaProperty.get(new TagPath("INDI")).getImage();
