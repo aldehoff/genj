@@ -25,18 +25,95 @@ import java.util.Calendar;
 /**
  * @author nmeier
  */
-public class PropertyChange extends PropertyNoValue {
+public class PropertyChange extends PropertySimpleValue {
   
   private final static String
+   TAG =  "CHAN",
    SUB_TIME = "TIME",
    SUB_DATE = "DATE";
   
+  /** internal flag to break endless loops on change */
   private boolean ignoreChangeNotify = false;
+  
+  /**
+   * @see genj.gedcom.Property#isReadOnly()
+   */
+  public boolean isReadOnly() {
+    return true;
+  }
+  
+  /**
+   * @see genj.gedcom.Property#isSystem()
+   */
+  public boolean isSystem() {
+    return true;
+  }
+
+  /**
+   * Get the last change date
+   */
+  public String getDateAsString() {
+    Property date = lookup(this, SUB_DATE, false);
+    return date!=null ? date.getValue() : "";
+  }
+  
+  /**
+   * Get the last change time
+   */
+  public String getTimeAsString() {
+    Property date = lookup(this, SUB_DATE, false);
+    if (date==null)
+      return EMPTY_STRING;
+    Property time = lookup(date, SUB_TIME, false);
+    return time!=null ? time.getValue() : EMPTY_STRING;
+  }
+  
+  /**
+   * Lookup contained DATE
+   */
+  private Property lookup(Property parent, String tag, boolean create) {
+    Property result = parent.getProperty(tag);
+    if (result==null&&create) {
+      result = new PropertySimpleReadOnly(tag);
+      parent.addProperty(result);
+    }
+    return result;
+  }
+  
+  /**
+   * @see genj.gedcom.Property#getTag()
+   */
+  public String getTag() {
+    return TAG;
+  }
+  
+  /**
+   * @see genj.gedcom.PropertySimpleValue#setTag(java.lang.String)
+   */
+  void setTag(String set) {
+    // ignored
+  }
+
+  /**
+   * Static update
+   */
+  /*package*/ static void update(Entity entity) {
+    
+    // get PropertyChange
+    PropertyChange change = (PropertyChange)entity.getProperty(TAG);
+    if (change==null) {
+      change = new PropertyChange();
+      entity.addProperty(change);
+    }
+    change.update();
+    
+    // done
+  }
   
   /**
    * Update change date/time
    */
-  /*package*/ void update() {
+  private void update() {
 
     // ignore what's going on?
     if (ignoreChangeNotify||!getGedcom().isTransaction())
@@ -44,19 +121,10 @@ public class PropertyChange extends PropertyNoValue {
           
     ignoreChangeNotify = true;
         
-    // make sure we got date/time
-    Property date = getProperty(SUB_DATE);
-    if (date==null) {
-      date = new PropertySimpleValue(SUB_DATE);
-      addProperty(date);
-    }
-    Property time = date.getProperty(SUB_TIME);
-    if (time==null) {
-      time = new PropertySimpleValue(SUB_TIME);
-      date.addProperty(time);
-    }
-    
     // update values
+    Property 
+      date = lookup(this, SUB_DATE, true),
+      time = lookup(date, SUB_TIME, true);
     updateDate(date);
     updateTime(time);
     

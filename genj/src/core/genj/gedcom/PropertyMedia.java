@@ -54,7 +54,14 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     if (super.getReferencedEntity()!=null)
       return super.getProxy();
     // empty
-    return "Empty";    
+    return "SimpleValue";    
+  }
+  
+  /**
+   * @see genj.gedcom.Property#isReadOnly()
+   */
+  public boolean isReadOnly() {
+    return true;
   }
 
   /**

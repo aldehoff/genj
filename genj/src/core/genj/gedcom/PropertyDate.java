@@ -139,7 +139,7 @@ public class PropertyDate extends Property {
    * Returns generic proxy's logical name
    */
   public String getProxy() {
-    if (dateAsString!=null) return "Unknown";
+    if (dateAsString!=null) return super.getProxy();
     return "Date";
   }
 
@@ -410,47 +410,6 @@ public class PropertyDate extends Property {
      */
     private void set(PIT other) {
       set(other.day, other.month, other.year);
-    }
-    
-    /**
-     * Setter
-     */
-    private boolean set(StringTokenizer tokens) {
-  
-      // Number of tokens ?
-      switch (tokens.countTokens()) {
-        default : // TOO MANY
-          return false;
-        case 0 : // NONE
-          return false;
-        case 1 : // YYYY
-          try {
-            year = Integer.parseInt(tokens.nextToken());
-          } catch (NumberFormatException e) {
-            return false;
-          }
-          return year>=0;
-        case 2 : // MMM YYYY
-          try {
-            month = getMonth ( tokens.nextToken() );
-            year  = Integer.parseInt( tokens.nextToken() );
-          } catch (NumberFormatException e) {
-            return false;
-          }
-          break;
-        case 3 : // DD MMM YYYY
-          try {
-            day   = Integer.parseInt( tokens.nextToken() ) - 1;
-            month = getMonth ( tokens.nextToken() );
-            year  = Integer.parseInt( tokens.nextToken() );
-          } catch (NumberFormatException e) {
-            return false;
-          }
-          break;
-      }
-  
-      // Passed
-      return true;
     }
     
   } // class PointInTime

@@ -19,7 +19,6 @@
  */
 package genj.edit;
 
-import genj.gedcom.Entity;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 
@@ -36,8 +35,8 @@ import javax.swing.JPanel;
  */
 class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
 
-  /** references entity */
-  private Entity entity;
+  /** xref */
+  private PropertyXRef xref;
   
   /** bottom preview */
   private Preview preview;
@@ -47,7 +46,7 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    */
   protected void finish() {
     // not if no entity - noone was listening and preview==null 20030420
-    if (entity==null) return;
+    if (xref==null||xref.getReferencedEntity()==null) return;
     // update looks
     setArmed(false);
     view.tree.removeMouseMotionListener(this);
@@ -69,11 +68,11 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
   protected JComponent start(JPanel in) {
 
     // Calculate reference information
-    entity = ((PropertyXRef) property).getReferencedEntity();
+    xref = (PropertyXRef)property;
 
     // setup content
-    if (entity!=null) {
-      preview = new Preview(entity);
+    if (xref.getReferencedEntity()!=null) {
+      preview = new Preview(xref.getReferencedEntity());
       in.add(preview);
       
       view.tree.addMouseMotionListener(this);
@@ -91,7 +90,7 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    * @see genj.edit.Proxy#isClickAction()
    */
   protected boolean isClickAction() {
-    return entity!=null;
+    return xref!=null&&xref.getReferencedEntity()!=null;
   }
   
   /**
@@ -99,7 +98,7 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    */
   private void jump() {
     boolean sticky = view.setSticky(false);
-    view.manager.setContext(entity);
+    view.manager.setContext(xref.getTarget());
     view.setSticky(sticky);
   }
 

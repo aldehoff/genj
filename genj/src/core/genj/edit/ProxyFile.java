@@ -138,7 +138,10 @@ import javax.swing.JScrollPane;
     tFile.setTemplate(true);
 
     // .. preview
-    preview.setImage(new ImageIcon(blob.getTitle(), blob.getBlobData()));
+    try {
+      preview.setImage(new ImageIcon(blob.getTitle(), blob.getBlobData()));
+    } catch (Throwable t) {
+    }
 
     // done
   }

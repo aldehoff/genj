@@ -50,7 +50,7 @@ public class Fam extends Entity {
    * Returns child #i
    */
   public Indi getChild(int which) {
-    Property[] chils = getProperties("CHIL",true);
+    Property[] chils = getProperties("CHIL",QUERY_VALID_TRUE);
     if (which > chils.length) {
       throw new IllegalArgumentException("Family doesn't have "+which+" children");
     }
@@ -61,7 +61,7 @@ public class Fam extends Entity {
    * Returns children
    */
   public Indi[] getChildren() {
-    Property chils[] = getProperties("CHIL", true);
+    Property chils[] = getProperties("CHIL", QUERY_VALID_TRUE);
     Indi result[] = new Indi[chils.length];
     for (int i=0;i<result.length;i++) {
       result[i] = ((PropertyChild)chils[i]).getChild();
@@ -83,7 +83,7 @@ public class Fam extends Entity {
    * The number of children
    */
   public int getNoOfChildren() {
-    Property[] chils = getProperties("CHIL", true);
+    Property[] chils = getProperties("CHIL", QUERY_VALID_TRUE);
     return chils.length;
   }
   
@@ -110,7 +110,7 @@ public class Fam extends Entity {
    * Returns the wife of the family
    */
   public Indi getWife() {
-    Property wife = getProperty(new TagPath("FAM:WIFE"),true);
+    Property wife = getProperty(new TagPath("FAM:WIFE"),QUERY_VALID_TRUE);
     if (wife==null) return null;
     return ((PropertyWife)wife).getWife();
   }
@@ -145,7 +145,7 @@ public class Fam extends Entity {
   /*package*/ void setHusband(Indi husband) throws GedcomException {
     
     // Remove old husband
-    PropertyHusband ph = (PropertyHusband)getProperty(new TagPath("FAM:HUSB"),false);
+    PropertyHusband ph = (PropertyHusband)getProperty(new TagPath("FAM:HUSB"),QUERY_VALID_TRUE);
     if (ph!=null) delProperty(ph);
     
     // Add new husband
@@ -173,7 +173,7 @@ public class Fam extends Entity {
   /*package*/ void setWife(Indi wife) throws GedcomException {
 
     // Remove old wife
-    PropertyWife pw = (PropertyWife)getProperty(new TagPath("FAM:WIFE"),true);
+    PropertyWife pw = (PropertyWife)getProperty(new TagPath("FAM:WIFE"),QUERY_VALID_TRUE);
     if (pw!=null) delProperty(pw);
 
     // Add new wife
@@ -235,7 +235,7 @@ public class Fam extends Entity {
    */
   public PropertyDate getMarriageDate() {
     // Calculate MARR|DATE
-    return (PropertyDate)getProperty(new TagPath("FAM:MARR:DATE"),true);
+    return (PropertyDate)getProperty(new TagPath("FAM:MARR:DATE"),QUERY_VALID_TRUE);
   }
 
 } //Fam

@@ -122,7 +122,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
 
     // Connect back from family (maybe using invalid back reference)
     PropertyHusband ph;
-    ps = fam.getProperties(new TagPath("FAM:HUSB"),false);
+    ps = fam.getProperties(new TagPath("FAM:HUSB"),QUERY_ALL);
     for (int i=0;i<ps.length;i++) {
       ph = (PropertyHusband)ps[i];
       if ( (!ph.isValid()) && (ph.getReferencedId().equals(indi.getId())) ) {
@@ -134,7 +134,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
       }
     }
     PropertyWife pw;
-    ps = fam.getProperties(new TagPath("FAM:WIFE"),false);
+    ps = fam.getProperties(new TagPath("FAM:WIFE"),QUERY_ALL);
     for (int i=0;i<ps.length;i++) {
       pw = (PropertyWife)ps[i];
       if ( (!pw.isValid()) && (pw.getReferencedId().equals(indi.getId())) ) {

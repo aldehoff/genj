@@ -22,27 +22,26 @@ package genj.gedcom;
 /**
  * A property that doesn't have a value
  */
-public class PropertyNoValue extends PropertySimpleValue {
-  
-  /**
-   * @see genj.gedcom.Property#getValue()
-   */
-  public String getValue() {
-    return EMPTY_STRING;
-  }
-  
-  /**
-   * @see genj.gedcom.Property#setValue(java.lang.String)
-   */
-  public void setValue(String newValue) {
-  }
+public class PropertySimpleReadOnly extends PropertySimpleValue {
 
   /**
-   * @see genj.gedcom.Property#getProxy()
+   * Constructor
    */
-  public String getProxy() {
-    return "Empty";
+  public PropertySimpleReadOnly() {
   }
-
+  
+  /**
+   * Constructor
+   */
+  public PropertySimpleReadOnly(String tag) {
+    super(tag);
+  }
+  
+  /**
+   * @see genj.gedcom.PropertySimpleValue#isReadOnly()
+   */
+  public boolean isReadOnly() {
+    return true;
+  }
 
 } //PropertyWithoutValue

@@ -295,14 +295,11 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
            pkg   = me.substring( 0, me.lastIndexOf(".") + 1 ),
            proxy = prop.getProxy();
 
-    if (proxy == "") 
-      return;
-
     // Create proxy
     try {
       currentProxy = (Proxy) Class.forName( pkg + "Proxy" + proxy ).newInstance();
     } catch (Exception e) {
-      currentProxy = new ProxyUnknown();
+      currentProxy = new ProxySimpleValue();
     }
 
     // Add proxy components
@@ -330,8 +327,11 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       if (currentProxy.hasChanged()) {
         Gedcom gedcom = getCurrentEntity().getGedcom();
         if (gedcom.startTransaction()) {
-          currentProxy.finish();
-          gedcom.endTransaction();
+          try {
+            currentProxy.finish();
+          } finally {
+            gedcom.endTransaction();
+          }
         }
       } else {
         currentProxy.finish();
@@ -655,10 +655,11 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
 
       // stop editing
       stopEdit();
-  
+
       // Check for 'no selection'
       Property prop = tree.getSelection(); 
       if (prop==null) {
+
         // Disable action buttons
         actionButtonAdd   .setEnabled(false);
         actionButtonUp    .setEnabled(false);
@@ -666,6 +667,19 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
         actionButtonCut   .setEnabled(false);
         actionButtonCopy  .setEnabled(false);
         actionButtonPaste .setEnabled(false);
+
+// FIXME
+//        // can we restore the old?
+//        TreePath path = e.getOldLeadSelectionPath();
+//        if (path!=null) {
+//          Property old = (Property)path.getLastPathComponent();
+//          if (old!=null&&old.getParent()!=null) try {
+//            tree.setSelectionPath(path);
+//          } catch (Throwable t) {
+//            // can happen if old isn't valid anymore
+//          }
+//        }
+
         // Done
         return;
       }
@@ -682,8 +696,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       actionButtonPaste.setEnabled(Clipboard.getInstance().getCopy()!=null);
   
       // up, down
-      actionButtonUp    .setEnabled(prop.getPreviousSibling()!=null);
-      actionButtonDown  .setEnabled(prop.getNextSibling()    !=null);
+// FIXME      
+//      actionButtonUp    .setEnabled(prop.getPreviousSibling()!=null);
+//      actionButtonDown  .setEnabled(prop.getNextSibling()    !=null);
   
       // Done
     }

@@ -11,8 +11,8 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertySex;
-import genj.gedcom.TagPath;
 import genj.report.Report;
+
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -21,9 +21,9 @@ import java.util.TreeMap;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.16 2003-05-28 19:23:00 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.17 2003-06-03 00:50:48 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class ReportMakeHTMLTable extends Report {
 
@@ -184,9 +184,9 @@ public class ReportMakeHTMLTable extends Report {
     // Birth Date
     try {
       // ... this might fail in case we don't get a PropertyEvent back
-      PropertyEvent event = (PropertyEvent)indi.getProperty(new TagPath("BIRT"),true);
-      PropertyDate date = (PropertyDate)event.getProperty(new TagPath("DATE"),true);
-      Property place = event.getProperty(new TagPath("PLAC"),true);
+      PropertyEvent event = (PropertyEvent)indi.getProperty("BIRT");
+      PropertyDate date = (PropertyDate)event.getProperty("DATE");
+      Property place = event.getProperty("PLAC");
       htmlCell(date);
       htmlCell(place);
     } catch (Exception e) {
@@ -195,9 +195,9 @@ public class ReportMakeHTMLTable extends Report {
     }
 
     try {
-      PropertyEvent event = (PropertyEvent)indi.getProperty(new TagPath("DEAT"),true);
-      PropertyDate date = (PropertyDate)event.getProperty(new TagPath("DATE"),true);
-      Property place = event.getProperty(new TagPath("PLAC"),true);
+      PropertyEvent event = (PropertyEvent)indi.getProperty("DEAT");
+      PropertyDate date = (PropertyDate)event.getProperty("DATE");
+      Property place = event.getProperty("PLAC");
       htmlCell(date);
       htmlCell(place);
     } catch (Exception e) {

@@ -22,6 +22,7 @@ package genj.gedcom;
 import genj.util.WordBuffer;
 
 import java.util.Calendar;
+import java.util.StringTokenizer;
 
 /**
  * A point in time
@@ -69,10 +70,60 @@ public abstract class PointInTime implements Comparable {
   }  
   
   /**
+   * Accessor to an immutable point in time
+   * @param string e.g. 25 MAY 1970
+   */
+  public static PointInTime getPointInTime(String string) {
+    Impl result = new Impl(-1,-1,-1);
+    result.set(new StringTokenizer(string));
+    return result;
+  }
+  
+  /**
    * Setter (implementation dependant)
    */
   public void set(int d, int m, int y) {
     throw new IllegalArgumentException("not supported");
+  }
+  
+  /**
+   * Setter
+   */
+  public boolean set(StringTokenizer tokens) {
+    // Number of tokens ?
+    switch (tokens.countTokens()) {
+      default : // TOO MANY
+        return false;
+      case 0 : // NONE
+        return false;
+      case 1 : // YYYY
+        try {
+          set(-1,-1,Math.max(-1,Integer.parseInt(tokens.nextToken())));
+        } catch (NumberFormatException e) {
+          break;
+        }
+        return getYear()>=0;
+      case 2 : // MMM YYYY
+        try {
+          set(-1, getMonth (tokens.nextToken()), Integer.parseInt( tokens.nextToken() ));
+        } catch (NumberFormatException e) {
+          break;
+        }
+        return getYear()>=0;
+      case 3 : // DD MMM YYYY
+        try {
+          set(
+            Integer.parseInt( tokens.nextToken() ) - 1,
+            getMonth ( tokens.nextToken() ),
+            Integer.parseInt( tokens.nextToken() )
+          );
+        } catch (NumberFormatException e) {
+          break;
+        }
+        return getYear()>=0&&getDay()>=0&&getDay()<=31;
+    }
+    // didn't work
+    return false;
   }
 
   /**

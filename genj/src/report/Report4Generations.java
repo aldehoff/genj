@@ -284,10 +284,10 @@ public class Report4Generations extends Report {
     // death?
     String d = " d: " + indi.getDeathAsString();
     
-    Property place = indi.getProperty(new TagPath("INDI:BIRT:PLAC"),true);
+    Property place = indi.getProperty(new TagPath("INDI:BIRT:PLAC"));
 
     // 
-    Property propTitle = indi.getProperty(new TagPath("INDI:TITL"),true);
+    Property propTitle = indi.getProperty(new TagPath("INDI:TITL"));
 
     // String t = indi.getProperty(new TagPath("INDI:TITL"),true).toString();
     String title = (propTitle == null)?"":propTitle.toString();
@@ -316,7 +316,7 @@ public class Report4Generations extends Report {
     else
 	name = n.substring(l.length()+2) + " "+ l;
 
-    Property propTitle = indi.getProperty(new TagPath("INDI:TITL"),true);
+    Property propTitle = indi.getProperty(new TagPath("INDI:TITL"));
     
     // String t = indi.getProperty(new TagPath("INDI:TITL"),true).toString();
     if (propTitle != null)

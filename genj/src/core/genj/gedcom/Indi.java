@@ -66,7 +66,7 @@ public class Indi extends Entity {
    * Deletes a family in which the person was a partner
    */
   /*package*/ Indi delFam(int which ) {
-    Property[] fams = getProperties(new TagPath("INDI:FAMS"),true);
+    Property[] fams = getProperties(new TagPath("INDI:FAMS"),QUERY_VALID_TRUE);
     if (which > fams.length)
       throw new IllegalArgumentException("Individual isn't spouse in "+which+" families");
     delProperty(fams[which-1]);
@@ -77,7 +77,7 @@ public class Indi extends Entity {
    * Deletes the family in which the Individual was child
    */
   /*package*/ Indi delFamc() {
-    Property prop = getProperty(new TagPath("INDI:FAMC"),true);
+    Property prop = getProperty(new TagPath("INDI:FAMC"),QUERY_VALID_TRUE);
     if (prop==null) {
       return this;
     }
@@ -90,7 +90,7 @@ public class Indi extends Entity {
    */
   public PropertyDate getBirthDate() {
     // Calculate BIRT|DATE
-    return (PropertyDate)getProperty(new TagPath("INDI:BIRT:DATE"),true);
+    return (PropertyDate)getProperty(new TagPath("INDI:BIRT:DATE"),QUERY_VALID_TRUE);
   }
 
   /**
@@ -98,7 +98,7 @@ public class Indi extends Entity {
    */
   public PropertyDate getDeathDate() {
     // Calculate DEAT|DATE
-    return (PropertyDate)getProperty(new TagPath("INDI:DEAT:DATE"),true);
+    return (PropertyDate)getProperty(new TagPath("INDI:DEAT:DATE"),QUERY_VALID_TRUE);
   }
   
   /**
@@ -236,7 +236,7 @@ public class Indi extends Entity {
    * Returns the selected family in which the individual is a partner
    */
   public Fam getFam(int which) {
-    Property[] props = getProperties("FAMS", true);
+    Property[] props = getProperties("FAMS", QUERY_VALID_TRUE);
     if (which>=props.length) {
       return null;
     }
@@ -331,14 +331,14 @@ public class Indi extends Entity {
    * Returns the number of families in which the individual is a partner
    */
   public int getNoOfFams() {
-    return getProperties("FAMS",true).length;
+    return getProperties("FAMS",QUERY_VALID_TRUE).length;
   }
   
   /**
    * Returns the families in which this individual is a partner
    */
   public Fam[] getFamilies() {
-    Property[] props = getProperties("FAMS",true);
+    Property[] props = getProperties("FAMS",QUERY_VALID_TRUE);
     Fam[] result = new Fam[props.length];
     for (int f=0; f<result.length; f++) {
       result[f] = ((PropertyFamilySpouse)props[f]).getFamily();

@@ -67,6 +67,7 @@ public class PropertyTreeWidget extends TreeWidget {
   public PropertyTreeWidget(Property setRoot) {
     this(setRoot.getGedcom());
     setRoot(setRoot);
+    setExpandsSelectedPaths(true);
   }
     
   /**
@@ -343,7 +344,8 @@ public class PropertyTreeWidget extends TreeWidget {
      */
     public Object getChild(Object parent, int index) {
       Property prop = (Property)parent;
-      return prop.getProperty(index);
+      Property[] children = prop.getProperties(prop.QUERY_SYSTEM_FALSE);
+      return children[index];
     }          
   
     /**
@@ -351,15 +353,19 @@ public class PropertyTreeWidget extends TreeWidget {
      */
     public int getChildCount(Object parent) {
       Property prop = (Property)parent;
-      return prop.getNoOfProperties();
-    }          
-  
+      return prop.getProperties(prop.QUERY_SYSTEM_FALSE).length;
+    }
+    
     /**
      * Returns index of given child from parent
      */
     public int getIndexOfChild(Object parent, Object child) {
-      // Calculate index by fiven parent property
-      return ((Property)parent).getIndexOf((Property)child);
+      Property prop = (Property)parent;
+      Property[] children = prop.getProperties(prop.QUERY_SYSTEM_FALSE);
+      for (int i=0;i<children.length;i++) {
+        if (children[i]==child) return i; 
+      } 
+      return -1;
     }          
   
     /**

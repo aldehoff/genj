@@ -85,10 +85,16 @@ public abstract class Entity extends Property {
     gedcom.getTransactionChanges(Change.EMOD).add(this);
     
     // Reflect change of property
-    PropertyChange change = (PropertyChange)getProperty("CHAN");
-    if (change!=null) change.update();
+    PropertyChange.update(this);
     
     // done
+  }
+  
+  /**
+   * Return the last change of this entity (might be null)
+   */
+  public PropertyChange getLastChange() {
+    return (PropertyChange)getProperty("CHAN");
   }
 
   /**

@@ -137,7 +137,7 @@ public class PropertyName extends Property {
    */
   public String getProxy() {
     if (nameAsString!=null)
-      return "Unknown";
+      return super.getProxy();
     return "Name";
   }
 

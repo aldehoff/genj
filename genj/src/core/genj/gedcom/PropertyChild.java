@@ -141,7 +141,7 @@ public class PropertyChild extends PropertyXRef {
     }
 
     // Connect back from child (maybe using back reference)
-    ps = child.getProperties(new TagPath("INDI:FAMC"),false);
+    ps = child.getProperties(new TagPath("INDI:FAMC"),QUERY_ALL);
     PropertyFamilyChild pfc;
     for (int i=0;i<ps.length;i++) {
       pfc = (PropertyFamilyChild)ps[i];

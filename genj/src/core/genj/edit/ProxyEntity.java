@@ -20,9 +20,11 @@
 package genj.edit;
 
 import genj.gedcom.Entity;
+import genj.gedcom.PropertyChange;
 
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -59,10 +61,16 @@ class ProxyEntity extends Proxy {
     if (!(property instanceof Entity)) return null;
     
     Entity e = (Entity)property;
-
-    // Layout
+    
+    // add a preview
     in.add(new Preview(e));
 
+    // add change date/time
+    PropertyChange change = e.getLastChange();
+    if (change!=null) {
+      in.add(new JLabel(resources.getString("proxy.entity.change", new String[] {change.getDateAsString(), change.getTimeAsString()} )));      
+    }
+    
     // Done
     return null;
   }

@@ -19,33 +19,51 @@
  */
 package genj.edit;
 
+import genj.util.swing.TextFieldWidget;
+
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
  * A Proxy knows how to generate interaction components that the user
- * will use to change a property : EMPTY
+ * will use to change a property : UNKNOWN
  */
-class ProxyEmpty extends Proxy {
+class ProxySimpleValue extends Proxy {
+
+  /** members */
+  private TextFieldWidget tfield;
 
   /**
    * Finish editing a property through proxy
    */
   protected void finish() {
+    if (hasChanged())
+      property.setValue(tfield.getText());
   }
 
   /**
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-    return false;
+    return tfield!=null&&tfield.hasChanged();
   }
 
   /**
    * Start editing a property through proxy
    */
   protected JComponent start(JPanel in) {
-    return null;
+
+    // readOnly()?
+    if (property.isReadOnly()) {
+      in.add(new JLabel(property.getValue()));
+    } else {
+      tfield = new TextFieldWidget(property.getValue(), 0);
+      in.add(tfield);
+    }
+    
+    // Done
+    return tfield;
   }
 
-} //ProxyEmpty
+} //ProxyUnknown

@@ -35,6 +35,12 @@ public abstract class Property implements Comparable {
   protected final static String 
     EMPTY_STRING = "",
     UNSUPPORTED_TAG = "Unsupported Tag";
+    
+  /** query flags */
+  public static final int
+    QUERY_ALL          = 0,
+    QUERY_VALID_TRUE   = 1,
+    QUERY_SYSTEM_FALSE = 2;
 
   /** parent of this property */
   private Property parent=null;
@@ -196,48 +202,48 @@ public abstract class Property implements Comparable {
     return imageErr;
   }
 
-  /**
-   * Returns the index of given property or -1 when not found.
-   * @param prop Property to look for
-   */
-  public int getIndexOf(Property prop) {
+//  /**
+//   * Returns the index of given property or -1 when not found.
+//   * @param prop Property to look for
+//   */
+//  public int getIndexOf(Property prop) {
+//
+//    // Look through properties
+//    for (int i=0;i<getNoOfProperties();i++) {
+//      if (getProperty(i)==prop) {
+//        return i;
+//      }
+//    }
+//
+//    // Not found
+//    return -1;
+//  }
 
-    // Look through properties
-    for (int i=0;i<getNoOfProperties();i++) {
-      if (getProperty(i)==prop) {
-        return i;
-      }
-    }
-
-    // Not found
-    return -1;
-  }
-
-  /**
-   * Returns the next sibling of this property
-   * @return property beside or null
-   */
-  public Property getNextSibling() {
-
-    // No parent ?
-    if (parent==null) {
-      return null;
-    }
-
-    // Wich index is this one ?
-    int index = parent.getIndexOf(this);
-    if (index==-1) {
-      return null;
-    }
-
-    // Me the last ?
-    if (index==parent.getNoOfProperties()-1) {
-      return null;
-    }
-
-    // Return next sibling
-    return parent.getProperty(index+1);
-  }
+//  /**
+//   * Returns the next sibling of this property
+//   * @return property beside or null
+//   */
+//  public Property getNextSibling() {
+//
+//    // No parent ?
+//    if (parent==null) {
+//      return null;
+//    }
+//
+//    // Wich index is this one ?
+//    int index = parent.getIndexOf(this);
+//    if (index==-1) {
+//      return null;
+//    }
+//
+//    // Me the last ?
+//    if (index==parent.getNoOfProperties()-1) {
+//      return null;
+//    }
+//
+//    // Return next sibling
+//    return parent.getProperty(index+1);
+//  }
 
   /**
    * Calculates the number of properties this property has.
@@ -246,25 +252,32 @@ public abstract class Property implements Comparable {
     return children.size();
   }
 
-  /**
-   * Calculates the number of properties this property has.
-   * When recursive is true, sub-properties are counted recursively, too.
-   * When valid is true, only valid sub-properties are counted.
-   */
-  public int getNoOfProperties(boolean recursive, boolean validOnly) {
-
-    // recursive
-    int result = 0;
-    for (int i=0;i<children.size();i++) {
-      Property child = getProperty(i); 
-      if (child.isValid() || !validOnly)
-        result ++;
-      if (recursive)
-        result += child.getNoOfProperties(true,validOnly);
-    }
-
-    return result;
-  }
+//  /**
+//   * Calculates the number of properties this property has.
+//   * When recursive is true, sub-properties are counted recursively, too.
+//   * When valid is true, only valid sub-properties are counted.
+//   */
+//  public int getNoOfProperties(boolean recursive, int qfilter) {
+//
+//    // recursive
+//    int result = 0;
+//    for (int i=0;i<children.size();i++) {
+//      Property child = getProperty(i); 
+//      if (tst(qfilter, QUERY_VALID_TRUE  )&&!child.isValid())
+//        continue;
+//      if (tst(qfilter, QUERY_SYSTEM_FALSE)&&child.isSystem())
+//        continue;
+//
+//      // grab it
+//      result ++;
+//        
+//      // recursive step
+//      if (recursive)
+//        result += child.getNoOfProperties(true,qfilter);
+//    }
+//
+//    return result;
+//  }
 
   /**
    * Returns the property this property belongs to
@@ -319,31 +332,31 @@ public abstract class Property implements Comparable {
     // not found
   }
   
-  /**
-   * Returns the previous sibling of this property
-   * @return property beside or null
-   */
-  public Property getPreviousSibling() {
-
-    // No parent ?
-    if (parent==null) {
-      return null;
-    }
-
-    // Wich index is this one ?
-    int index = parent.getIndexOf(this);
-    if (index==-1) {
-      return null;
-    }
-
-    // Me the first ?
-    if (index==0) {
-      return null;
-    }
-
-    // Return previous sibling
-    return parent.getProperty(index-1);
-  }
+//  /**
+//   * Returns the previous sibling of this property
+//   * @return property beside or null
+//   */
+//  public Property getPreviousSibling() {
+//
+//    // No parent ?
+//    if (parent==null) {
+//      return null;
+//    }
+//
+//    // Wich index is this one ?
+//    int index = parent.getIndexOf(this);
+//    if (index==-1) {
+//      return null;
+//    }
+//
+//    // Me the first ?
+//    if (index==0) {
+//      return null;
+//    }
+//
+//    // Return previous sibling
+//    return parent.getProperty(index-1);
+//  }
   
   /**
    * Returns this property's properties (all children)
@@ -351,28 +364,50 @@ public abstract class Property implements Comparable {
   public Property[] getProperties() {
     return toArray(children);
   }
+  
+  /**
+   * Returns this property's properties adhering criteria
+   */
+  public Property[] getProperties(int criteria) {
+    List result = new ArrayList(children.size());
+    for (int i=0;i<children.size();i++) {
+      Property child = (Property)children.get(i);
+      if (!child.is(criteria))
+        continue;
+      result.add(child);
+    }
+    return toArray(result);
+  }  
 
   /**
    * Returns this property's properties by tag
    * (only valid children are considered)
    */
   public Property[] getProperties(String tag) {
-    return getProperties(tag, true);
+    return getProperties(tag, QUERY_VALID_TRUE);
   }
 
   /**
    * Returns this property's properties by tag
    */
-  public Property[] getProperties(String tag, boolean validOnly) {
+  public Property[] getProperties(String tag, int qfilter) {
+    
     // safety check
     if (tag.indexOf(':')>0) throw new IllegalArgumentException("Path not allowed");
+    
     // loop children
     ArrayList result = new ArrayList();
     for (int c=0;c<getNoOfProperties();c++) {
       Property child = getProperty(c);
-      if (child.getTag().equals(tag)&&(!validOnly||child.isValid()))
-        result.add(child);  
+      // filter
+      if (!child.getTag().equals(tag))
+        continue;
+      if (!is(qfilter))
+        continue;
+      // hit!        
+      result.add(child);  
     }
+    
     // not found
     return toArray(result);
   }
@@ -399,33 +434,34 @@ public abstract class Property implements Comparable {
   /**
    * Returns this property's properties by path
    */
-  public Property[] getProperties(TagPath path, boolean validOnly) {
+  public Property[] getProperties(TagPath path, int qfilter) {
 
     // Gather 'em
     List result = new ArrayList(children.size());
-    getPropertiesRecursively(path, 0, result, validOnly);
+    getPropertiesRecursively(path, 0, result, qfilter);
 
     // done
     return toArray(result);
   }
 
-  private List getPropertiesRecursively(TagPath path, int pos, List fill, boolean validOnly) {
+  private List getPropertiesRecursively(TagPath path, int pos, List fill, int qfilter) {
 
     // Correct here ?
     if (!path.get(pos).equals(getTag())) return fill;
 
     // Me the last one?
     if (pos==path.length()-1) {
-      // .. only when valid
-      if ( (!validOnly) || (isValid()) ) 
+      
+      if (is(qfilter)) 
         fill.add(this);
+        
       // .. done
       return fill;
     }
 
     // Search in properties
     for (int i=0;i<children.size();i++) {
-      getProperty(i).getPropertiesRecursively(path,pos+1,fill,validOnly);
+      getProperty(i).getPropertiesRecursively(path,pos+1,fill,qfilter);
     }
 
     // done
@@ -468,28 +504,28 @@ public abstract class Property implements Comparable {
    * Returns this property's property by path
    */
   public Property getProperty(TagPath path) {
-    return getProperty(path, true);
+    return getProperty(path, QUERY_VALID_TRUE);
   }
   
   /**
    * Returns this property's property by path
    */
-  public Property getProperty(TagPath path, boolean validOnly) {
+  public Property getProperty(TagPath path, int qfilter) {
 
     // if we're an entity then we check the tag and skip
     if (this instanceof Entity && !getTag().equals(path.get(0))) return null;
 
     // look for it
-    return getPropertyRecursively(path, 0, validOnly);
+    return getPropertyRecursively(path, 0, qfilter);
   }
   
-  private Property getPropertyRecursively(TagPath path, int pos, boolean validOnly) {
+  private Property getPropertyRecursively(TagPath path, int pos, int qfilter) {
 
     // Correct here ?
     if (!path.get(pos).equals(getTag())) return null;
 
-    // Validity?
-    if (validOnly && !isValid()) return null;
+    // test filter
+    if (!is(qfilter)) return null;
     
     // Me?
     if (pos==path.length()-1) 
@@ -497,7 +533,7 @@ public abstract class Property implements Comparable {
 
     // Search in properties
     for (int i=0;i<getNoOfProperties();i++) {
-      Property p = getProperty(i).getPropertyRecursively(path, pos+1, validOnly);
+      Property p = getProperty(i).getPropertyRecursively(path, pos+1, qfilter);
       if (p!=null) return p;
     }
 
@@ -509,7 +545,7 @@ public abstract class Property implements Comparable {
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
-    return "Unknown";
+    return "SimpleValue";
   }
 
   /**
@@ -606,6 +642,20 @@ public abstract class Property implements Comparable {
   }
 
   /**
+   * A read-only attribute that can be honoured by the UI
+   */
+  public boolean isReadOnly() {
+    return false;
+  }
+
+  /**
+   * Marking a property as system can be honoured by the UI (don't show)
+   */
+  public boolean isSystem() {
+    return false;
+  }
+
+  /**
    * Adds default properties to this property
    */
   public final Property addDefaultProperties() {
@@ -637,6 +687,20 @@ public abstract class Property implements Comparable {
    */
   protected static Property[] toArray(Collection ps) {
     return (Property[])ps.toArray(new Property[ps.size()]);
+  }
+  
+  /**
+   * test for given criteria
+   */
+  private final boolean is(int criteria) {
+
+    if ((criteria&QUERY_VALID_TRUE)!=0&&!isValid())
+      return false;
+      
+    if ((criteria&QUERY_SYSTEM_FALSE)!=0&&isSystem())
+      return false;
+    
+    return true;
   }
   
 } //Property
