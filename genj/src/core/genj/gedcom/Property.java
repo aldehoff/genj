@@ -719,10 +719,19 @@ public abstract class Property implements Comparable {
   /**
    * Resolves end-user information about this property - by
    * default whatever is in the language resource files
-   * @return info or null
+   * @return name and info or null
    */
   public String getInfo() {
     return getMetaProperty().getInfo();
+  }
+  
+  /**
+   * Resolves end-user information about this property - by
+   * default whatever is in the language resource files
+   * @return name
+   */
+  public String getName() {
+    return Gedcom.getName(getTag());
   }
   
 } //Property
