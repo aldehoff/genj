@@ -2,26 +2,70 @@
 <body>
 
 <h2>
-  Les diff&eacute;rentes possibilit&eacute;s de Visualisation
+  Travailler avec les divers Fen\u00EAtres de Visualisation
 </h2>
 
 <p>
-Les vues suivantes permettent d'acc&eacute;der aux informations contenues 
-dans votre fichier Gedcom et ainsi les modifier. Elles peuvent toutes 
-&ecirc;tre ouvertes en cliquant sur le symbole correspondant dans le 
-<a href="cc.html">Centre de Contr&ocirc;le</a> 
-apr&egrave;s avoir s&eacute;lectionn&eacute; un des fichiers 
-charg&eacute;s&nbsp;:
+ Une fois que vous avez ouvert un fichier contenant des données généalogiques au 
+ format Gedcom (*.ged), à partir du <a href="cc.html">Centre de Controle</a> vous 
+ pouvez ouvrir plusieurs types de visualisation.
 </p>
 
-<BLOCKQUOTE>
-<img src=".././images/views/Table.gif">&nbsp;<A href="./view/table.html">Tableau des Donn&eacute;es</A><BR>
-<img src=".././images/views/Tree.gif">&nbsp;<A href="./view/tree.html">Arbre G&eacute;n&eacute;alogique</A><BR>
-<img src=".././images/views/Timeline.gif">&nbsp;<A href="./view/timeline.html">Chronologie des &Eacute;v&egrave;nements</A><BR>
-<img src=".././images/views/Edit.gif">&nbsp;<A href="./view/edit.html">L'Editeur</A><BR>
-<img src=".././images/views/Report.gif">&nbsp;<A href="./view/report.html">Les Rapports</A><BR>
-<img src=".././images/views/Navigator.gif">&nbsp;<A href="./view/navigator.html">Le Navigateur</A>
-</BLOCKQUOTE>
+<p>
+ Ces visualisations travaillent sur les mêmes données - cela veut dire que 
+ <ul>
+  <li>les changements effectués dans une fenêtre seront immédiatement effectifs 
+  dans les autres fenêtres pour le même fichier,
+  <li>les évènements sélectionnés dans une fenêtre vont être transmis aux 
+  autres fenêtres pour le même fichier (*),
+  <li>la fermeture d'un fichier entrainera immédiatement la fermeture de 
+  toutes les fenêtres ouvertes sur ce fichier,
+  <li><a href="./context.html">les menus contextuels</a> lient les actions 
+  de tous les types de visualisation sur le même fichier en un endroit
+ </ul>
+ <p align=right><font size=-2>
+    * les changements dans la sélection d'une fenêtre peuvent ne pas 
+    provoquer un changement dans une autre si cette dernière ne peut 
+    pas suivre la sélection
+ </font></p>
+</p>
+
+<p>
+ Typically you will open one instance per type of view - not necessarily
+ all but combinations that help to navigate and understand the underlying
+ data. For example
+ <ul>
+  <li>Tree&Table View to browse the existing information
+  <li>Table&Edit View to cleanup, catalog and edit the existing information
+  <li>Report View to run reports on large files
+ </ul>
+</p>
+
+<p>
+ The combination is not limited and you'll soon get a feeling for which 
+ combination of views fullfills your needs. The views will remember the 
+ position and size of the enclosing windows so position them as required
+ and they will pop-up at the same place next time. You can also open
+ several instances of the same view to check out different angles - in
+ that case they're numbered sequentially.
+</p>
+
+<p>
+ Voici la liste des diff\u00E9rentes fen\u00EAtres de visualisation \u00E0 votre disposition:
+  <BLOCKQUOTE>
+   <img src="../images/views/Table.gif"     >&nbsp;<A href="./view/table.html"    >Tableau des Donn&eacute;es              </A><Br>
+   <img src="../images/views/Tree.gif"      >&nbsp;<A href="./view/tree.html"     >Arbre G&eacute;n&eacute;alogique        </A><Br>
+   <img src="../images/views/Timeline.gif"  >&nbsp;<A href="./view/timeline.html" >Chronologie des &Eacute;v&egrave;nements</A><Br>
+   <img src="../images/views/Edit.gif"      >&nbsp;<A href="./view/edit.html"     >L'Editeur                               </A><Br>
+   <img src="../images/views/Report.gif"    >&nbsp;<A href="./view/report.html"   >Les Rapports                            </A><Br>
+   <img src="../images/views/Navigator.gif" >&nbsp;<A href="./view/navigator.html">Le Navigateur                           </A><Br>
+   <img src="../images/views/Entity.gif"    >&nbsp;<A href="./view/entity.html"   >Visualisation d'une Entit\u00E9         </A>
+  </BLOCKQUOTE>
+ <p align=right><font size=-2>
+   Veuillez suivre les liens pour avoir plus d'information sur chaque vue 
+   individuellement.
+ </font></p>
+</p>
 
 </body>
 </html>
