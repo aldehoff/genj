@@ -450,9 +450,8 @@ public class GedcomReader implements Trackable {
         tempSubmitter = value; 
         
       // check for language
-      if (level==1&&"LANG".equals(tag)) {
+      if (level==1&&"LANG".equals(tag)&&value.length()>0) {
         gedcom.setLanguage(value);
-        
         Debug.log(Debug.INFO, this, "Found LANG "+value+" - Locale is "+gedcom.getLocale());
       }
         
