@@ -72,12 +72,22 @@ public class ReportBridge {
   }
 
   /**
+   * Write an arbitrary Object to the log
+   */
+  public void println(Object o) throws ReportCancelledException {
+    if (o==null) {
+      return;
+    }
+    println(o.toString());
+  }
+  
+  /**
    * Write a String to the log
    */
   public void println(String s) throws ReportCancelledException {
 
     // Our hook into checking for Interrupt
-    if (view.isInterrupted())
+    if ((view!=null)&&(view.isInterrupted()))
       throw new ReportCancelledException();
 
     // Append it
@@ -92,7 +102,11 @@ public class ReportBridge {
   public void flush() {
 
     last = new Date().getTime();
-    view.addOutput(buffer.toString());
+    if (view!=null) {
+      view.addOutput(buffer.toString());
+    } else {
+      System.out.print(buffer.toString());
+    }
     buffer.setLength(0);
 
   }
@@ -100,7 +114,7 @@ public class ReportBridge {
   /**
    * Constructor
    */
-  /*package*/ ReportBridge(ReportView theView, Registry theRegistry) {
+  public ReportBridge(ReportView theView, Registry theRegistry) {
     view     = theView;
     registry = theRegistry;
   }
@@ -160,7 +174,7 @@ public class ReportBridge {
   public String getValueFromUser(String msg, String[] choices, String key) {
 
     // Choice to include already entered stuff?
-    if (key!=null) {
+    if ((key!=null)&&(registry!=null)) {
 
       // Do we know values for this already?
       String[] presets = registry.get(key, (String[])null);
@@ -189,7 +203,7 @@ public class ReportBridge {
     String result = combo.getEditor().getItem().toString();
 
     // Remember?
-    if (key!=null) {
+    if ((key!=null)&&(registry!=null)) {
 
       Vector v = new Vector(choices.length+1);
       v.addElement(result);

@@ -1031,4 +1031,18 @@ public abstract class Property {
     }
     return text;
   }
+  
+  /**
+   * Helper that tests an string for null or empty
+   */
+  public static boolean isEmptyOrNull(String txt) {
+    if (txt==null) {
+      return true;
+    }
+    if (txt.trim().length()==0) {
+      return true;
+    }
+    return false;
+  }
 }
+

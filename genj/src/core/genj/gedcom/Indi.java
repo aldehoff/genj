@@ -133,11 +133,40 @@ public class Indi extends PropertyIndi implements Entity {
   }
 
   /**
+   * Calculate indi's death date
+   */
+  public PropertyDate getDeathDate() {
+
+    // Calculate DEAT|DATE
+    PropertyDate p = (PropertyDate)getProperty(new TagPath("INDI:DEAT:DATE"),true);
+    if (p==null) {
+      return null;
+    }
+
+    // Return string value
+    return p;
+  }
+
+  /**
    * Calculate indi's birth date
    */
   public String getBirthAsString() {
 
     PropertyDate p = getBirthDate();
+    if (p==null) {
+      return "";
+    }
+
+    // Return string value
+    return p.toString();
+  }
+
+  /**
+   * Calculate indi's death date
+   */
+  public String getDeathAsString() {
+
+    PropertyDate p = getDeathDate();
     if (p==null) {
       return "";
     }

@@ -201,4 +201,17 @@ public class EntityList implements Cloneable {
       break;
     }
   }
+  
+  /**
+   * Returns the elements as an array
+   */
+  public Entity[] toArray() {
+    Entity[] result = new Entity[vector.size()];
+    Enumeration es = vector.elements();
+    for (int e=0;es.hasMoreElements();e++) {
+      result[e] = (Entity) es.nextElement();
+    }
+    return result;
+  }
 }
+
