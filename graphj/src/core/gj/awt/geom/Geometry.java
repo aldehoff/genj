@@ -115,6 +115,16 @@ public class Geometry {
   }
   
   /**
+   * The length of a vector
+   * <pre>
+   *  c^2=x^2+y^2 => c=sqt(x^2+y^2)
+   * </pre>
+   */    
+  public static double getLength(double x, double y) {
+    return Math.sqrt(x*x + y*y);
+  }
+  
+  /**
    * Calculates the intersecting points of a line and a shape
    * @param aStart+aEnd line segment describing line A
    * @param shape the shape described through given PathIterator
