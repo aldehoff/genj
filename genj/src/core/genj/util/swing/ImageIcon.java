@@ -48,32 +48,33 @@ import javax.swing.GrayFilter;
  * </il> */
 public class ImageIcon extends javax.swing.ImageIcon {
   
-  /** name */
-  private String name;
-
   /** dpi */
   private Point dpi = null;
   
   /** cached overlayed icons */
   private Map overlays = new WeakHashMap();
   
+  /** byte size */
+  private int byteSize = -1;
+  
   /**
    * Private special
    */
   private ImageIcon(ImageIcon original, Image copy) {
     super(copy);
-    this.dpi = original.dpi;
-    this.name = original.name;
+    dpi = original.dpi;
+    setDescription(original.getDescription());
   }
   
   /** 
    * Overriden default
    */
-  public ImageIcon(String name, byte[] data) {
+  public ImageIcon(String naMe, byte[] data) {
     super(data);
 
     // keep name
-    this.name = name;
+    setDescription(naMe);
+    byteSize = data.length;
 
     // sniff resolution
     String msg;
@@ -133,6 +134,13 @@ public class ImageIcon extends javax.swing.ImageIcon {
   }
   
   /**
+   * Size in bytes (might be unknown -1)
+   */
+  public int getByteSize() {
+    return byteSize;
+  }
+  
+  /**
    * @see javax.swing.ImageIcon#paintIcon(java.awt.Component, java.awt.Graphics, int, int)
    */
   public ImageIcon paintIcon(Graphics g, int x, int y) {
@@ -178,8 +186,6 @@ public class ImageIcon extends javax.swing.ImageIcon {
    */ 
   public ImageIcon getOverLayed(ImageIcon overlay) {
 
-    System.out.print(name+"+"+overlay.name);
-    
     // already known?
     ImageIcon result = (ImageIcon)overlays.get(overlay);
     if (result!=null) {
