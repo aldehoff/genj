@@ -27,6 +27,7 @@ import genj.util.swing.HeadlessLabel;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.List;
 
 import javax.swing.AbstractButton;
@@ -80,18 +81,19 @@ public class BlueprintList extends JSplitPane {
     treeBlueprints.setShowsRootHandles(false);
     treeBlueprints.setCellRenderer(glue);
     treeBlueprints.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-//    for (int r=0;r<treeBlueprints.getRowCount();r++)
-//      treeBlueprints.expandRow(r);
     treeBlueprints.getSelectionModel().addTreeSelectionListener(glue);
     
     // left section
     Box left = new Box(BoxLayout.Y_AXIS);
-    left.add(new JScrollPane(treeBlueprints));
+    JScrollPane scroll = new JScrollPane(treeBlueprints);
+    scroll.setAlignmentX(0);
+    left.add(scroll);
     
     ButtonHelper bh = new ButtonHelper()
       .setContainer(left)
       .setResources(resources)
-      .setEnabled(false);
+      .setEnabled(false)
+      .setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     bAdd = bh.create(new ActionAdd());
     bDel = bh.create(new ActionDel());
     // children

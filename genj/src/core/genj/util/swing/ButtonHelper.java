@@ -30,7 +30,6 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.swing.AbstractButton;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
@@ -50,6 +49,7 @@ public class ButtonHelper {
   private Container container     = null;
   private ButtonGroup group       = null;
   private Dimension minSize       = null;
+  private Dimension maxSize       = null;
   private int horizontalAlignment = -1;
   private Vector collections      = new Vector();
   private boolean isTextAllowed   = true;
@@ -67,6 +67,7 @@ public class ButtonHelper {
   public ButtonHelper setResources(Resources set) { resources=set; return this; }
   public ButtonHelper setContainer(Container set) { container=set; return this; }
   public ButtonHelper setMinimumSize(Dimension set) { minSize=set; return this; }
+  public ButtonHelper setMaximumSize(Dimension set) { maxSize=set; return this; }
   public ButtonHelper setHorizontalAlignment(int set) { horizontalAlignment=set; return this; }
   public ButtonHelper addCollection(Vector set) { collections.addElement(set); return this; }
   public ButtonHelper removeCollection(Vector set) { collections.removeElement(set); return this; }
@@ -109,6 +110,8 @@ public class ButtonHelper {
       result.setMargin(insets);
     if (minSize!=null)
       result.setMinimumSize(minSize);
+    if (maxSize!=null)
+      result.setMaximumSize(maxSize);
     if (isImageOverText) {
       result.setVerticalTextPosition(SwingConstants.BOTTOM);
       result.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -136,11 +139,6 @@ public class ButtonHelper {
     if (container!=null) {
       container.add(result);
       if (container instanceof JToolBar) result.setMaximumSize(new Dimension(128,128));
-      if (container.getLayout() instanceof BoxLayout) {
-        result.setMaximumSize(new Dimension(Integer.MAX_VALUE,result.getMaximumSize().height));
-        result.setAlignmentX(0.5F);
-        result.setAlignmentY(0.5F);
-      }
     }
     if (collections.size()>0) {
       Enumeration e = collections.elements();
