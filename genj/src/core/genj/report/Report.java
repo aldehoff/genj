@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.51 $ $Author: nmeier $ $Date: 2004-12-06 21:18:25 $
+ * $Revision: 1.52 $ $Author: nmeier $ $Date: 2004-12-07 18:00:11 $
  */
 package genj.report;
 
@@ -40,6 +40,7 @@ import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -49,6 +50,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -65,6 +68,17 @@ import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StackedBarRenderer;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.general.AbstractDataset;
 
 
 /**
@@ -259,6 +273,38 @@ public abstract class Report implements Cloneable {
   }
   
   /**
+   * Helper method that shows a chart to the user
+   */
+  public final void showChartToUser(String title, CategorySheet sheet, NumberFormat format, boolean isStacked, boolean isVertical) {
+
+    // wrap into JFreeChart
+    CategoryAxis categoryAxis = new CategoryAxis();
+    NumberAxis valueAxis = new NumberAxis();
+    valueAxis.setNumberFormatOverride(format);
+
+    BarRenderer renderer;
+    if (isStacked) {
+	    renderer = new StackedBarRenderer();
+    } else {
+      renderer = new BarRenderer();
+    }
+    
+    // TODO parameterize colors
+    renderer.setSeriesPaint(0, Color.BLUE);
+    renderer.setSeriesPaint(1, Color.RED);
+    
+    // prepare plot
+    CategoryPlot plot = new CategoryPlot(new DSWrapper(sheet), categoryAxis, valueAxis, renderer);
+    plot.setOrientation(!isVertical ? PlotOrientation.VERTICAL : PlotOrientation.HORIZONTAL);
+
+    // create jfreechart
+    JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+    
+    // show it
+    showComponentToUser(new ChartPanel(chart));
+  }
+  
+  /**
    * Helper method that shows a component to the user
    */
   public final void showComponentToUser(JComponent component) {
@@ -266,7 +312,7 @@ public abstract class Report implements Cloneable {
     // open a non-modal dialog
     viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#component",getName(),ReportViewFactory.IMG,component,CloseWindow.OK(),owner);
     
-    
+    // done
   }
 
   /**
@@ -782,5 +828,126 @@ public abstract class Report implements Cloneable {
     }
     
   } //Item
+
+  /**
+   * A datasheet that can be shown in a chart
+   */
+  public static class CategorySheet {
+
+    private String[] series, cats;
+    private float[][] data;
+    
+    /**
+     * Constructor
+     */
+    public CategorySheet(String[] series, String[] cats) {
+      this.series = series;
+      this.cats = cats;
+      data = new float[series.length][cats.length];
+    }
+    
+    /**
+     * Cell Access
+     */
+    public float get(int serie, int cat) {
+      if (serie>=series.length||cat>=cats.length)
+        throw new IllegalArgumentException("No such cell");
+      return data[serie][cat];
+    }
+    
+    /**
+     * Cell Access
+     */
+    public void set(int serie, int cat, float val) {
+      if (serie>=series.length||cat>=cats.length)
+        throw new IllegalArgumentException("No such cell");
+      data[serie][cat] = val;
+    }
+    
+    /**
+     * Cell Access
+     */
+    public void inc(int serie, int cat) {
+      set(serie, cat, get(serie, cat)+1);
+    }
+    
+    /**
+     * Cell Access
+     */
+    public void dec(int serie, int cat) {
+      set(serie, cat, get(serie, cat)-1);
+    }
+    
+  } //CategorySheet
+
+  /** 
+   * Wrapper for jfreechart DataSet
+   */
+  private static class DSWrapper extends AbstractDataset implements CategoryDataset {
+
+    /** wrapped */
+    private CategorySheet sheet;
+    
+    /** constructor */
+    private DSWrapper(CategorySheet sheet) {
+      this.sheet = sheet;
+    }
+    
+    /** row for index */
+    public Comparable getRowKey(int pos) {
+      return sheet.series[pos];
+    }
+
+    /** index for row */
+    public int getRowIndex(Comparable row) {
+      for (int i=0; i<sheet.series.length; i++) 
+        if (sheet.series[i].equals(row)) return i;
+      throw new IllegalArgumentException();
+    }
+
+    /** all row keys  */
+    public List getRowKeys() {
+      return Arrays.asList(sheet.series);
+    }
+
+    /** column for index */
+    public Comparable getColumnKey(int pos) {
+      return sheet.cats[pos];
+    }
+
+    /** index for column */
+    public int getColumnIndex(Comparable col) {
+      for (int i=0; i<sheet.cats.length; i++) 
+        if (sheet.cats[i].equals(col)) return i;
+      throw new IllegalArgumentException();
+    }
+
+    /** all columns */
+    public List getColumnKeys() {
+      return Arrays.asList(sheet.cats);
+    }
+
+    /** value for col, row */
+    public Number getValue(Comparable row, Comparable col) {
+      return getValue(getRowIndex(row), getColumnIndex(col));
+    }
+
+    /** value for col, row */
+    public Number getValue(int row, int col) {
+      return new Float(sheet.data[row][col]);
+    }
+    
+    /** #rows */
+    public int getRowCount() {
+      return sheet.series.length;
+    }
+
+    /** #cols */
+    public int getColumnCount() {
+      return sheet.cats.length;
+    }
+    
+  } //DataSheetWrapper
+
 
 } //Report
