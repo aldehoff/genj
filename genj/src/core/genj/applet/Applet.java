@@ -36,6 +36,19 @@ import java.net.URL;
  */
 public class Applet extends java.applet.Applet {
 
+  /** views we offer */
+  static final private String[] FACTORIES = new String[]{
+    "genj.table.TableViewFactory",
+    "genj.tree.TreeViewFactory",
+    "genj.timeline.TimelineViewFactory",
+    "genj.edit.EditViewFactory",
+    //"genj.report.ReportViewFactory",
+    "genj.nav.NavigatorViewFactory",
+    "genj.entity.EntityViewFactory", 
+    "genj.search.SearchViewFactory" 
+  };
+
+
   /** whether we're initialized */
   private boolean isInitialized = false;
 
@@ -65,7 +78,12 @@ public class Applet extends java.applet.Applet {
     }
     
     // prepare window manager
-    ViewManager vmanager = new ViewManager(registry, null, new DefaultWindowManager(registry));
+    ViewManager vmanager = new ViewManager(
+      registry, 
+      null, 
+      new DefaultWindowManager(registry), 
+      FACTORIES
+    );
 
     // add center
     setLayout(new BorderLayout());

@@ -22,6 +22,7 @@ package genj.applet;
 import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
+import genj.util.WordBuffer;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.LinkWidget;
 import genj.view.ViewFactory;
@@ -72,8 +73,15 @@ public class ControlCenter extends JPanel {
     
     JPanel p = new JPanel(new GridLayout(2,1));
     p.setOpaque(false);
-    p.add(new JLabel("Foo.ged", SwingConstants.CENTER));
-    p.add(new JLabel("1200 Individuals", SwingConstants.CENTER));
+    p.add(new JLabel(gedcom.getName(), SwingConstants.CENTER));
+    
+    WordBuffer words = new WordBuffer();
+    int i = Gedcom.INDIVIDUALS;
+    words.append(gedcom.getEntities(i).size()+" "+gedcom.getNameFor(i, true));
+    int f = Gedcom.FAMILIES;
+    words.append(gedcom.getEntities(f).size()+" "+gedcom.getNameFor(f, true));
+    
+    p.add(new JLabel(words.toString(), SwingConstants.CENTER));
     
     return p;
   }

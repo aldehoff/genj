@@ -25,7 +25,6 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.print.PrintManager;
 import genj.renderer.BlueprintManager;
-import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -56,20 +55,8 @@ public class ViewManager {
   /** registry */
   private Registry registry;
 
-  /** factories of views */
-  static final private String[] FACTORIES = new String[]{
-    "genj.table.Table",
-    "genj.tree.Tree",
-    "genj.timeline.Timeline",
-    "genj.edit.Edit",
-    "genj.report.Report",
-    "genj.nav.Navigator",
-    "genj.entity.Entity", 
-    "genj.search.Search" 
-  };
-  
   /** factory instances of views */
-  static private ViewFactory[] factories = null;
+  private ViewFactory[] factories = null;
   
   /** open views */
   private Map key2viewwidget = new HashMap();
@@ -89,11 +76,22 @@ public class ViewManager {
   /**
    * Constructor
    */
-  public ViewManager(Registry reGistry, PrintManager pManager, WindowManager wManager) {
+  public ViewManager(Registry reGistry, PrintManager pManager, WindowManager wManager, String[] factoryTypes) {
+    // remember
     registry = reGistry;
     printManager = pManager;
     windowManager = wManager;
     blueprintManager = new BlueprintManager(registry);
+    // creat list of factories
+    factories = new ViewFactory[factoryTypes.length];
+    for (int f=0;f<factories.length;f++) {    
+      try {
+        factories[f] = (ViewFactory)Class.forName(factoryTypes[f]).newInstance();
+      } catch (Throwable t) {
+        throw new IllegalArgumentException("Factory of type "+factories[f]+" cannot be instantiated ("+t.getMessage()+")");
+      }
+    }
+    // done
   }
 
   /**
@@ -111,21 +109,6 @@ public class ViewManager {
    * Returns all known view factories
    */
   public ViewFactory[] getFactories() {
-    // already computed?
-    if (factories!=null) return factories;
-    // create 'em
-    List result = new ArrayList();
-    for (int f=0; f<FACTORIES.length; f++) {
-      try {
-        result.add((ViewFactory)Class.forName(FACTORIES[f]+"ViewFactory").newInstance());
-      } catch (Throwable t) {
-        Debug.log(Debug.ERROR, this, "ViewFactory "+FACTORIES[f]+" couldn't be instantiated");
-      }
-    }
-    // convert to array
-    factories = new ViewFactory[result.size()];
-    result.toArray(factories);
-    // done
     return factories;
   }
   
