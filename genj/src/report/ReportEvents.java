@@ -6,9 +6,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.gedcom.Entity;
 import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyDate;
 import genj.report.Report;
@@ -38,8 +39,10 @@ public class ReportEvents extends Report {
     public boolean reportMarriage = true;
     /** day of the date limit */
     public int day = new GregorianCalendar().get(Calendar.DAY_OF_MONTH);
+    public String[] days = { "1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31" };
     /** month of the date limit */
     public int month = new GregorianCalendar().get(Calendar.MONTH)+1;
+    public String[] months = { i18n("month.jan"), i18n("month.feb"),  i18n("month.mar"),  i18n("month.apr"),  i18n("month.may"),  i18n("month.jun"),  i18n("month.jul"),  i18n("month.aug"),  i18n("month.sep"),  i18n("month.oct"),  i18n("month.nov"),  i18n("month.dec") };
     /** year of the date limit */
     public int year = new GregorianCalendar().get(Calendar.YEAR);
     /** how the day should be handled */
@@ -55,9 +58,6 @@ public class ReportEvents extends Report {
     
     /** this report's version */
     public static final String VERSION = "1.0";
-    /** constants for indicating the sort order in the report output */
-    private static final int DAY = 0;
-    private static final int YEAR = 1;
     
     /**
      * Returns the version of this script
@@ -117,7 +117,7 @@ public class ReportEvents extends Report {
                     Fam[] fams = indi.getFamilies();
                     for(int j=0;j<fams.length;j++) {
                         if((fams[j].getMarriageDate()!=null)&&(fams[j].getMarriageDate().getStart()!=null)&&(checkDate(fams[j].getMarriageDate().getStart())))
-                            addToReferenceSet(fams[j].getMarriageDate().getStart(), indi, marriages);
+                            addToReferenceSet(fams[j].getMarriageDate().getStart(), fams[j], marriages);
                     }
                 }
                 if(reportDeath) {
@@ -126,8 +126,8 @@ public class ReportEvents extends Report {
                 }
             }
             
-            println(i18n("day")+": "+day+" ("+getHandle(handleDay)+")");
-            println(i18n("month")+": "+month+" ("+getHandle(handleMonth)+")");
+            println(i18n("day")+": "+(day+1)+" ("+getHandle(handleDay)+")");
+            println(i18n("month")+": "+(month+1)+" ("+getHandle(handleMonth)+")");
             println(i18n("year")+": "+year+" ("+getHandle(handleYear)+")");
             println();
             
@@ -158,16 +158,16 @@ public class ReportEvents extends Report {
         }
     }
     
-    private void addToReferenceSet(PointInTime date, Indi indi, ReferenceSet set) {
+    private void addToReferenceSet(PointInTime date, Entity entity, ReferenceSet set) {
         if(isSortDay) {
             int month = date.getMonth();
             if(set.getReferences(new Integer(month)).size()==0)
                 set.add(new Integer(month), new ReferenceSet());
             ReferenceSet r = (ReferenceSet)set.getReferences(new Integer(month)).iterator().next();
-            r.add(date, indi);
+            r.add(date, entity);
         }
         else
-            set.add(date, indi);
+            set.add(date, entity);
     }
     
     private void report(ReferenceSet indis) {
@@ -200,8 +200,15 @@ public class ReportEvents extends Report {
         if(date.getDay()!=-1) {
             ArrayList list = new ArrayList(indis.getReferences(date));
             for(int j=0;j<list.size();j++) {
-                Indi indi = (Indi)list.get(j);
-                println("      "+date+" @"+indi.getId()+"@ "+indi.getName());
+                Object obj = list.get(j);
+                if(obj instanceof Indi) {
+                    Indi indi = (Indi)obj;
+                    println("      "+date+" @"+indi.getId()+"@ "+indi.getName());
+                }
+                if(obj instanceof Fam) {
+                    Fam fam = (Fam)obj;
+                    println("      "+date+" @"+fam.getId()+"@ "+fam.toString()+" (@"+fam.getHusband().getId()+"@ + @"+fam.getWife().getId()+"@)");
+                }
             }
         }
     }
@@ -209,20 +216,20 @@ public class ReportEvents extends Report {
     private boolean checkDate(PointInTime date) {
         boolean d = false, m = false, y = false;
         
-        if((handleDay==0)&&(day<=(date.getDay()+1))) // day = minimum
+        if((handleDay==0)&&(day<=date.getDay())) // day = minimum
             d = true;
-        else if((handleDay==1)&&(day>=(date.getDay()+1))) // day = maximum
+        else if((handleDay==1)&&(day>=date.getDay())) // day = maximum
             d = true;
-        else if((handleDay==2)&&(day==(date.getDay()+1))) // day = fix
+        else if((handleDay==2)&&(day==date.getDay())) // day = fix
             d = true;
         else if(handleDay==3) // day = ignore
             d = true;
         
-        if((handleMonth==0)&&(month<=(date.getMonth()+1))) // month = minimum
+        if((handleMonth==0)&&(month<=date.getMonth())) // month = minimum
             m = true;
-        else if((handleMonth==1)&&(month>=(date.getMonth()+1))) // month = maximum
+        else if((handleMonth==1)&&(month>=date.getMonth())) // month = maximum
             m = true;
-        else if((handleMonth==2)&&(month==(date.getMonth()+1))) // month = fix
+        else if((handleMonth==2)&&(month==date.getMonth())) // month = fix
             m = true;
         else if(handleMonth==3) // month = ignore
             m = true;
