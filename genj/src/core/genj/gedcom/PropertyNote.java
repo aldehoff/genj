@@ -159,6 +159,8 @@ public class PropertyNote extends PropertyXRef {
    * This property incorporates several lines with newlines
    */
   public int isMultiLine() {
+    // not if this is a valid linke
+    if (getReferencedEntity()!=null) return NO_MULTI;
     // sure bring it on!
     return MULTI_NEWLINE;
   }
