@@ -642,7 +642,7 @@ public class Registry {
       // Open known file
       try {
         FileOutputStream out = new FileOutputStream(getFile(key));
-        registry.properties.save(out,key);
+        registry.properties.store(out,key);
         out.flush();
         out.close();
       } catch (IOException ex) {
