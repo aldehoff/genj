@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import genj.gedcom.time.*;
 import genj.util.WordBuffer;
 
 import java.text.SimpleDateFormat;

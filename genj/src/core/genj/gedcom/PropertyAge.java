@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.gedcom.time.Delta;
+import genj.gedcom.time.PointInTime;
 
 /**
  * Gedcom Property : AGE
@@ -28,7 +30,7 @@ public class PropertyAge extends Property {
   public final static String TAG = "AGE";
 
   /** the age */
-  private PointInTime.Delta age = new PointInTime.Delta(0, 0, 0);
+  private Delta age = new Delta(0, 0, 0);
 
   /** as string */
   private String ageAsString;
@@ -99,7 +101,7 @@ public class PropertyAge extends Property {
   public boolean updateAge() {
 
     // calc delta
-    PointInTime.Delta delta = PointInTime.Delta.get(getEarlier(), getLater());
+    Delta delta = Delta.get(getEarlier(), getLater());
     if (delta == null)
       return false;
       

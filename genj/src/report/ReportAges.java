@@ -8,9 +8,10 @@
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
+import genj.gedcom.time.Delta;
+import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
 /**
@@ -150,7 +151,7 @@ public class ReportAges extends Report {
      * @param pit point of time for the end
      * @return String[] : [day, month, year] or null if <CODE>end</CODE> < <CODE>birth</CODE>
      */
-    private PointInTime.Delta calculateAge(Indi indi, PropertyDate end, PointInTime pit) {
+    private Delta calculateAge(Indi indi, PropertyDate end, PointInTime pit) {
       
         PropertyDate birth = indi.getBirthDate();
         PointInTime newBirth = calculateAveragePointInTime(birth);
@@ -175,13 +176,13 @@ public class ReportAges extends Report {
             newEnd = pit;
         }
         
-        return PointInTime.Delta.get(newBirth, newEnd);
+        return Delta.get(newBirth, newEnd);
     }
     
     
     private void reportAges(Indi indi) {
         
-        PointInTime.Delta age = null;
+        Delta age = null;
         
         // give up if no birth date
         if (indi.getBirthDate() == null) {
@@ -336,7 +337,7 @@ public class ReportAges extends Report {
         }
     }
     
-    private void printAge(PointInTime.Delta age, int indent, String errorMessage, PropertyDate errorDate) {
+    private void printAge(Delta age, int indent, String errorMessage, PropertyDate errorDate) {
         if(age == null) {
             if(errorDate!=null)
                 println(getIndent(indent)+i18n(errorMessage, errorDate));

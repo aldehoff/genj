@@ -10,11 +10,12 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.PointInTime;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
+import genj.gedcom.time.Delta;
+import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 import genj.util.ReferenceSet;
 
@@ -25,7 +26,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.45 2004-02-27 20:43:04 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.46 2004-02-28 05:07:55 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -350,7 +351,7 @@ public class ReportGedcomStatistics extends Report {
      * @param indi individual for the calculation
      * @param end end date for age calculation
      */
-    private PointInTime.Delta getAge(Indi indi, PropertyDate end, int which) {
+    private Delta getAge(Indi indi, PropertyDate end, int which) {
       
         String message = null;
         PropertyDate birth = indi.getBirthDate();
@@ -389,7 +390,7 @@ public class ReportGedcomStatistics extends Report {
         
         PointInTime newBirth = calculateAveragePointInTime(birth);
         PointInTime newEnd = calculateAveragePointInTime(end);
-        return PointInTime.Delta.get(newBirth, newEnd);
+        return Delta.get(newBirth, newEnd);
     }
     
     /** Rounds a number to a specified number digits in the fraction portion
@@ -453,7 +454,7 @@ public class ReportGedcomStatistics extends Report {
      * @param gender to store the results of <CODE>indi</CODE>
      * @param all to store results of all individuals
      */
-    private void analyzeAge(Indi indi, PointInTime.Delta age, StatisticsIndividuals single, StatisticsIndividuals all, int which) {
+    private void analyzeAge(Indi indi, Delta age, StatisticsIndividuals single, StatisticsIndividuals all, int which) {
         
         int a = age.getYears()*360+age.getMonths()*30+age.getDays();
         switch(which) {
@@ -506,7 +507,7 @@ public class ReportGedcomStatistics extends Report {
             
             Indi indi = (Indi)e[i];
             all.number++;
-            PointInTime.Delta age = null;
+            Delta age = null;
             
             // get age when birth and death date are known and aren't ranges
             if((indi.getBirthDate()!=null)&&(indi.getDeathDate()!=null))
@@ -609,7 +610,7 @@ public class ReportGedcomStatistics extends Report {
      */
     private void analyzeFamilies(Entity[] e, String lastName, StatisticsFamilies families) {
         
-        PointInTime.Delta age = null;
+        Delta age = null;
         for(int i=0;i<e.length;i++) {
             Fam fam = (Fam)e[i];
             
@@ -701,7 +702,7 @@ public class ReportGedcomStatistics extends Report {
                     printMinMaxAge(printIndis, indent, "minAge", stats.minAge, new ArrayList(stats.age.getReferences(new Integer(stats.minAge))));
                     // average age
                     age = calculateAverageAge(stats.sumAge,stats.age.getSize());
-                    println(getIndent(indent)+i18n("avgAge")+" "+new PointInTime.Delta(age[0], age[1], age[2]));
+                    println(getIndent(indent)+i18n("avgAge")+" "+new Delta(age[0], age[1], age[2]));
                     // max. age
                     printMinMaxAge(printIndis, indent, "maxAge", stats.maxAge, new ArrayList(stats.age.getReferences(new Integer(stats.maxAge))));
                 }
@@ -714,7 +715,7 @@ public class ReportGedcomStatistics extends Report {
                     printMinMaxAge(printIndis, indent, "minAge", stats.minChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.minChildBirthAge))));
                     // avg age
                     age = calculateAverageAge(stats.sumChildBirthAge,stats.childBirthNumber);
-                    println(getIndent(indent)+i18n("avgAge")+" "+new PointInTime.Delta(age[0], age[1], age[2]));
+                    println(getIndent(indent)+i18n("avgAge")+" "+new Delta(age[0], age[1], age[2]));
                     // max. age
                     printMinMaxAge(printIndis, indent, "maxAge", stats.maxChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.maxChildBirthAge))));
                 }
@@ -734,7 +735,7 @@ public class ReportGedcomStatistics extends Report {
     private void printMinMaxAge(int reportIndis, int indent, String prefix, int age, ArrayList ages) {
         
         int[] avg = calculateAverageAge(age,1);
-        println(getIndent(indent)+i18n(prefix)+" "+new PointInTime.Delta(avg[2], avg[1], avg[0]));
+        println(getIndent(indent)+i18n(prefix)+" "+new Delta(avg[2], avg[1], avg[0]));
         if(reportIndis<3) {
             for(int i=0;i<ages.size();i++) {
                 Indi indi = (Indi)ages.get(i);

@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import genj.gedcom.time.*;
 import genj.util.WordBuffer;
 
 import java.util.StringTokenizer;
@@ -326,7 +327,7 @@ public class PropertyDate extends Property {
   /**
    * Returns this date as a string
    */
-  public String toString(boolean localize, PointInTime.Calendar calendar) {
+  public String toString(boolean localize, Calendar calendar) {
     
     // as string?
     if (dateAsString!=null) 

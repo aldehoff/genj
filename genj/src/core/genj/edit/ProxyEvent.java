@@ -20,9 +20,9 @@
 package genj.edit;
 
 import genj.gedcom.Indi;
-import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
+import genj.gedcom.time.PointInTime;
 import genj.util.GridBagHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.window.WindowManager;

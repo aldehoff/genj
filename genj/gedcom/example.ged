@@ -5,8 +5,8 @@
 2 CORP Nils Meier
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
-1 DATE 17 DEC 2003
-2 TIME 15:14:01
+1 DATE 22 FEB 2004
+2 TIME 10:44:50
 1 GEDC
 2 VERS 5.5
 2 FORM Lineage-Linked
@@ -67,7 +67,7 @@
 1 SEX M
 1 BIRT
 2 DATE 25 MAY 1970
-2 PLAC Rendsburg
+2 PLAC [private]XRmwhrdtCp0cjgWTtnjHCQ==
 1 GRAD
 2 DATE 10 DEC 1996
 2 PLAC Friedrich Wilhelm University Bonn
@@ -97,6 +97,9 @@
 2 DATE FROM 1 SEP 2001
 2 PLAC San Francisco, California, USA
 1 OCCU SWEngineer
+1 CHAN
+2 DATE 21 FEB 2004
+3 TIME 14:12:15
 0 @I009@ INDI
 1 NAME Alisa /Meier/
 1 SEX F

@@ -20,7 +20,8 @@
 package genj.util.swing;
 
 import genj.gedcom.GedcomException;
-import genj.gedcom.PointInTime;
+import genj.gedcom.time.Calendar;
+import genj.gedcom.time.PointInTime;
 import genj.util.ActionDelegate;
 import genj.window.WindowManager;
 
@@ -51,7 +52,7 @@ public class DateWidget extends JPanel {
   private ArrayList switches;
   
   /** current calendar */
-  private PointInTime.Calendar calendar; 
+  private Calendar calendar; 
   
   /** window manager */
   private WindowManager manager;
@@ -249,11 +250,11 @@ public class DateWidget extends JPanel {
    */
   private class SwitchCalendar extends ActionDelegate {
     /** the calendar to switch to */
-    private PointInTime.Calendar newCalendar;
+    private Calendar newCalendar;
     /**
      * Constructor
      */
-    private SwitchCalendar(PointInTime.Calendar cal) {
+    private SwitchCalendar(Calendar cal) {
       newCalendar = cal;
       setImage(newCalendar.getImage());
       setText(newCalendar.getName());

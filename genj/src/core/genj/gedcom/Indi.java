@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import genj.gedcom.time.*;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
@@ -464,7 +465,7 @@ public class Indi extends Entity {
     if (pbirth==null) 
       return EMPTY_STRING;
     
-    PointInTime.Delta delta = PointInTime.Delta.get(pbirth.getStart(), pit);
+    Delta delta = Delta.get(pbirth.getStart(), pit);
     if (delta==null)
       return EMPTY_STRING;
       

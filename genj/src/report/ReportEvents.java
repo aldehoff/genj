@@ -10,8 +10,8 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyDate;
+import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
 import java.util.ArrayList;

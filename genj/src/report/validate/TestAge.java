@@ -8,10 +8,11 @@
 package validate;
 
 import genj.gedcom.Indi;
-import genj.gedcom.PointInTime;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
+import genj.gedcom.time.Delta;
+import genj.gedcom.time.PointInTime;
 import genj.util.WordBuffer;
 
 import java.util.List;
@@ -107,7 +108,7 @@ public class TestAge extends Test {
       return;
     
     // calculate delta
-    PointInTime.Delta delta = PointInTime.Delta.get(pit1, pit2);
+    Delta delta = Delta.get(pit1, pit2);
     if (delta==null)
       return;
       

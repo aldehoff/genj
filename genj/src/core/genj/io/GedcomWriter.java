@@ -24,9 +24,9 @@ import genj.crypto.Enigma;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MultiLineProperty;
-import genj.gedcom.PointInTime;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.time.PointInTime;
 import genj.util.Debug;
 import genj.util.Trackable;
 

@@ -26,12 +26,13 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
-import genj.gedcom.PointInTime;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyName;
 import genj.gedcom.TagPath;
+import genj.gedcom.time.Calendar;
+import genj.gedcom.time.PointInTime;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -448,7 +449,7 @@ import java.util.Set;
     private double toDouble(PointInTime pit, boolean roundUp) throws GedcomException {
       
       // all Gregorian for now
-      PointInTime.Calendar calendar = PointInTime.GREGORIAN;
+      Calendar calendar = PointInTime.GREGORIAN;
       
       if (pit.getCalendar()!=calendar) { 
         pit = pit.getPointInTime(calendar);

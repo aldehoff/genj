@@ -19,8 +19,8 @@
  */
 package genj.edit;
 
-import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyAge;
+import genj.gedcom.time.Delta;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
@@ -105,7 +105,7 @@ class ProxyAge extends Proxy {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      PointInTime.Delta delta = PointInTime.Delta.get(age.getEarlier(), age.getLater());
+      Delta delta = Delta.get(age.getEarlier(), age.getLater());
       if (delta==null)
         return;
       tfield.setText(delta.getValue());
