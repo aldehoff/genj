@@ -189,6 +189,19 @@ public class DateEntry extends JPanel {
   }
   
   /**
+   * @see javax.swing.JComponent#requestFocus()
+   */
+  public void requestFocus() {
+    // try JDK 1.4's requestFocusInWindow instead
+    try {
+      getClass().getMethod("requestFocusInWindow", new Class[]{})
+        .invoke(this, new Object[]{});
+    } catch (Throwable t) {
+      requestFocus();
+    }
+  }
+  
+  /**
    * Glue to events
    */
   private class Events implements DocumentListener, FocusListener {

@@ -133,6 +133,18 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     // done
   }
 
+  /**
+   * @see javax.swing.JComponent#requestFocus()
+   */
+  public void requestFocus() {
+    // try JDK 1.4's requestFocusInWindow instead
+    try {
+      getClass().getMethod("requestFocusInWindow", new Class[]{})
+        .invoke(this, new Object[]{});
+    } catch (Throwable t) {
+      requestFocus();
+    }
+  }
       
   /**
    * our own editor
