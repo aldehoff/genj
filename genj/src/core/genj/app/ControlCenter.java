@@ -55,7 +55,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
@@ -574,15 +574,12 @@ public class ControlCenter extends JPanel {
       ChoiceWidget choice = new ChoiceWidget(choices, "");
       choice.setEditable(true);
       JLabel label = new JLabel(resources.getString("cc.open.enter_url"));
-      Box box = new Box(BoxLayout.Y_AXIS);
-      box.add(label);
-      box.add(choice);
       
       int rc = windowManager.openDialog(
         null, 
         resources.getString("cc.open.title"), 
         WindowManager.IMG_QUESTION,
-        box,
+        new JComponent[]{label,choice},
         WindowManager.OPTIONS_OK_CANCEL,
         ControlCenter.this
       );

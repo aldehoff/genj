@@ -32,8 +32,6 @@ import genj.window.WindowManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -100,8 +98,6 @@ import javax.swing.JTextArea;
     confirm.setEditable(false);
 
     // prepare options
-    Box options = new Box(BoxLayout.Y_AXIS);
-    
     JComponent c = getOptions();
     if (c!=null) {
       c.addPropertyChangeListener(new PropertyChangeListener() {
@@ -110,17 +106,14 @@ import javax.swing.JTextArea;
           confirm.setText(getConfirmMessage());
         }
       });
-      options.add(c);
     }
-    options.add(new JScrollPane(confirm));
 
     // Recheck with the user
     int rc = manager.getWindowManager().openDialog(
-      getClass().getName(), null, WindowManager.IMG_QUESTION, options, 
+      getClass().getName(), null, WindowManager.IMG_QUESTION, 
+      new JComponent[]{ c, new JScrollPane(confirm)} , 
       new String[] { resources.getString("confirm.proceed", txt ), WindowManager.OPTION_CANCEL }, 
-      target, 
-      null, 
-      null
+      target 
     );
     if (rc!=0)
       return;

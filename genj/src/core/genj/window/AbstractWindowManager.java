@@ -29,7 +29,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -74,9 +73,12 @@ public abstract class AbstractWindowManager implements WindowManager {
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent[], java.lang.String[], javax.swing.JComponent)
    */
   public int openDialog(String key, String title, Icon image, JComponent[] content, String[] options, JComponent owner) {
-    // assemble content into Box
-    Box box = new Box(BoxLayout.Y_AXIS);
+    // assemble content into Box (don't use Box here because
+    // Box extends Container in pre JDK 1.4)
+    JPanel box = new JPanel();
+    box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
     for (int i = 0; i < content.length; i++) {
+      if (content[i]==null) continue;
       box.add(content[i]);
       content[i].setAlignmentX(0F);
     }
