@@ -95,15 +95,8 @@ public class DefaultDnDTreeModel extends DefaultTreeModel implements DnDTreeMode
 
   /**
    * Insert children.
-   * 
-   * @param transferable
-   *          transferable to insert
-   * @param parent
-   *          parent to insert into
-   * @param index
-   *          index of children to insert
    */
-  public void insert(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException {
+  public List insert(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException {
     
     if (action != MOVE) 
       throw new IllegalArgumentException("action not supported: " + action);
@@ -118,6 +111,8 @@ public class DefaultDnDTreeModel extends DefaultTreeModel implements DnDTreeMode
     for (int c = 0; c < children.size(); c++) {
       insertNodeInto((MutableTreeNode) children.get(c), (MutableTreeNode) parent, index + c);
     }
+    
+    return children;
   }
 
   public boolean isNodeAncestor(TreeNode test, TreeNode node) {

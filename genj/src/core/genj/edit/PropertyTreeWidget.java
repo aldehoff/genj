@@ -27,7 +27,6 @@ import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyChange;
 import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
@@ -196,8 +195,10 @@ public class PropertyTreeWidget extends DnDTree {
    */
   public void setSelection(Property select) {
     // safety check
-    if (model.root==null||select==null)
+    if (model.root==null||select==null||select.getEntity()==null) {
+      clearSelection();
       return;
+    }
     // show and select
     TreePath tpath = model.getPathToRoot(select);
     scrollPathToVisible(tpath);
@@ -354,7 +355,7 @@ public class PropertyTreeWidget extends DnDTree {
     /**
      * DND support - insert
      */
-    public void insert(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException {
+    public List insert(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException {
 
       // start transaction for our gedcom?
       if (!gedcom.isTransaction())
@@ -362,7 +363,7 @@ public class PropertyTreeWidget extends DnDTree {
         
       // perform copy/move 
       try {
-        GedcomReader.readTransferable(transferable, (Property)parent, index);
+        return GedcomReader.readTransferable(transferable, (Property)parent, index);
       } finally {
         gedcom.endTransaction();      
       }
@@ -460,47 +461,36 @@ public class PropertyTreeWidget extends DnDTree {
       if (!tx.get(Transaction.ENTITIES_MODIFIED).contains(entity))
         return;
         
-      // FIXME apparently DnDTree's childIndex get messe up through structure change leading to bad path selection happening
-      Property sel = getSelection();
-
+      // always try to stay with current selection
+      Property selection = getSelection();
+      
       // follow changes
       Change[] changes = tx.getChanges();
       for (int i=0;i<changes.length;i++) {
-        
-        Change change = changes[i];
-        
         // applicable?
+        Change change = changes[i];
         if (change.getEntity()!=entity)
           continue;
-          
-        // add?
-        if (change instanceof Change.PropertyAdded) {
-          if (!(change.getProperty() instanceof PropertyChange))
-            sel = change.getProperty();
+        // structure change?
+        if (change instanceof Change.PropertyRemoved||change instanceof Change.PropertyAdded) {
+          if (change instanceof Change.PropertyAdded)
+            selection = change.getProperty();
           setRoot(root);
           break;
         }
-        
-        // remove?
-        if (change instanceof Change.PropertyRemoved) {
-          setRoot(root);
-          break;
-        }
-        
         // simple change?
         if (change instanceof Change.PropertyChanged) {
           // .. forget cached value for prop
           property2view.remove(change.getProperty());
           // .. tell about it
           fireTreeNodesChanged(this, getPathFor(change.getProperty()), null, null);
-          continue;
         }
+        // go on checking
       }
       
-      // restore selection?
-      if (sel!=null&&sel.getEntity()==entity) 
-        setSelection(sel);
-
+      // restore selection
+      setSelection(selection);
+      
       // Done
     }
   

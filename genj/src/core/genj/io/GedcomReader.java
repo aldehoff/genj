@@ -41,7 +41,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -101,36 +100,43 @@ public class GedcomReader implements Trackable {
   
   /**
    * Reading properties from transferable
+   * @param transferable the transferable to read from
+   * @param parent the parent to add to
+   * @param pos the position to read to or -1 for best placement
    */
-  public static void readTransferable(Transferable transferable, Property parent, int pos) throws IOException, UnsupportedFlavorException {
+  public static List readTransferable(Transferable transferable, Property parent, int pos) throws IOException, UnsupportedFlavorException {
     
     // get the textual representation
     String s = transferable.getTransferData(DataFlavor.stringFlavor).toString();
       
-    // read it
-    new GedcomReader(parent, pos, new StringReader(s));
-
-    // done
-  }
-  private GedcomReader(Property parent, int pos, Reader reader) throws GedcomIOException, IOException {
+    // read it through custom reader
+    GedcomReader instance = new GedcomReader();
     
     // we expect indent encoded through leading spaced
-    isIndentForLevels = true;
+    instance.isIndentForLevels = true;
     
     // faking a buffered read
-    in = new BufferedReader(reader);
+    instance.in = new BufferedReader(new StringReader(s));
     
     // simply read properties into parent
+    List result = new ArrayList(16);
     try {
-      readProperties(parent, pos, parent.getMetaProperty(), -1);
+      instance.readProperties(parent, pos, parent.getMetaProperty(), -1, result);
     } catch (GedcomFormatException e) {
       // ignoring any problem
     }
     
     // link what needs linkage
-    linkReferences();
+    instance.linkReferences();
 
     // done
+    return result;
+  }
+  
+  /**
+   * Constructor
+   */
+  private GedcomReader() {
   }
   
   /**
@@ -266,7 +272,7 @@ public class GedcomReader implements Trackable {
       ent.setValue(value);
       
       // Read entity's properties till end of record
-      readProperties(ent, 0, ent.getMetaProperty(), 0);
+      readProperties(ent, 0, ent.getMetaProperty(), 0, null);
 
     } catch (GedcomException ex) {
       skipEntity(ex.getMessage());
@@ -575,7 +581,7 @@ public class GedcomReader implements Trackable {
    * @exception GedcomIOException reading from <code>BufferedReader</code> failed
    * @exception GedcomFormatException reading Gedcom-data brought up wrong format
    */
-  private void readProperties(Property prop, int pos, MetaProperty meta, int currentlevel) throws GedcomIOException, GedcomFormatException {
+  private void readProperties(Property prop, int pos, MetaProperty meta, int currentlevel, List trackAdded) throws GedcomIOException, GedcomFormatException {
 
     // read more for multiline property prop?
     if (prop instanceof MultiLineProperty) {
@@ -634,6 +640,10 @@ public class GedcomReader implements Trackable {
       // create property instance
       sub = submeta.create(value);
       
+      // track it?
+      if (trackAdded!=null)
+        trackAdded.add(sub);
+      
       // and add to prop
       if (pos<0)
         prop.addProperty(sub, true);
@@ -645,7 +655,7 @@ public class GedcomReader implements Trackable {
         xrefs.add(new XRef(line,(PropertyXRef)sub));
   
       // recurse into its properties
-      readProperties(sub, 0, submeta, level);
+      readProperties(sub, 0, submeta, level, null);
       
       // next property
     } while (true);
