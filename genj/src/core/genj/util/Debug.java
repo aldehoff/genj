@@ -70,32 +70,46 @@ public class Debug {
   
   /**
    * Log
-   *  WARNING:type:message
+   *  LEVEL:type:throwable:tmessage:message
    */
   public static void log(int level, Object source, String msg) {
-    synchronized (mutex) {
-      Class type = source instanceof Class ? (Class)source : source.getClass();
-      out.println(LEVELS[level]+':'+type.getName()+':'+msg);
-      if ((out!=System.out)&&out.checkError()) {
-        out = System.out;
-        log(ERROR, Debug.class, "Problems sending debugging to log - switching to System.out");
-        log(level, source, msg);
-      }
-    }
+    log(level, source, msg, null);
   }
   
   /**
    * Log
-   *  WARNING:type:message
-   *  STACKTRACE:exception:message
+   *  LEVEL:type:throwable:tmessage:message
    *  ...
    */
   public static void log(int level, Object source, String msg, Throwable t) {
     synchronized (mutex) {
-      log(level,source,msg);
-      log(STACK,t,t.getMessage());
-      t.printStackTrace(out);
+      
+      Class type = source instanceof Class ? (Class)source : source.getClass();
+      
+      StringBuffer buf = new StringBuffer(120);
+      
+      buf.append(LEVELS[level]);
+      buf.append(':');
+      buf.append(type.getName());
+      buf.append(':');
+      if (t!=null) buf.append(t.getClass().getName());
+      buf.append(':');
+      if (t!=null) buf.append(t.getMessage()!=null?t.getMessage():"");
+      buf.append(':');
+      if (msg!=null) buf.append(msg);
+      
+      out.println(buf.toString());
+      if (level==ERROR) {
+        t.printStackTrace(out);
+      }
+      
+      if ((out!=System.out)&&out.checkError()) {
+        out = System.out;
+        log(ERROR, Debug.class, "Problems sending debugging to log - switching to System.out");
+        log(level, source, msg, t);
+      }
     }
+    
   }
   
   /**
