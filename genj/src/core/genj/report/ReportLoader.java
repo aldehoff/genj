@@ -38,6 +38,15 @@ public class ReportLoader {
 
   /** reports we have */
   private List instances = new ArrayList(10);
+  
+  /** report files */
+  private List reports = new ArrayList(10);
+  
+  /** classpath */
+  private List classpath = new ArrayList(10);
+  
+  /** whether reports are in classpath */
+  private boolean isReportsInClasspath = false;
 
   /**
    * Constructor
@@ -49,28 +58,13 @@ public class ReportLoader {
       return;
     }
     
-    // Look into report directory
-    List 
-      reports = new ArrayList(),
-      classpath = new ArrayList();
-
-    try {      
+    // parse report directory
+    try {
       classpath.add(basedir.toURL());
-      
-      String[] files = basedir.list();
-      for (int i=0;i<files.length;i++) {
-        File file = new File(basedir, files[i]);
-        String report = isReport(file);
-        if (report!=null) reports.add(report);
-        if (isLibrary(file)) {
-          Debug.log(Debug.INFO, this, "report library "+file.toURL());
-          classpath.add(file.toURL());
-        } 
-      }
-      
     } catch (MalformedURLException e) {
       // n/a
     }
+    parseDir(basedir, null);
     
     // Prepare classloader
     URLClassLoader cl = new URLClassLoader((URL[])classpath.toArray(new URL[classpath.size()]));
@@ -81,6 +75,10 @@ public class ReportLoader {
       String rname = rs.next().toString(); 
       try {
         Report r = (Report)cl.loadClass(rname).newInstance();
+        if (!isReportsInClasspath&&r.getClass().getClassLoader()!=cl) {
+          Debug.log(Debug.WARNING, this, "Reports are in classpath and can't be reloaded");
+          isReportsInClasspath = true;
+        }
         instances.add(r);
       } catch (Throwable t) {
         Debug.log(Debug.WARNING, this, "Failed to instantiate "+rname, t);
@@ -98,6 +96,45 @@ public class ReportLoader {
   }
   
   /**
+   * Parse directory for lib- and report files
+   */
+  private void parseDir(File dir, String pkg) { 
+
+    // loop files and directories
+    String[] files = dir.list();
+    for (int i=0;i<files.length;i++) {
+      File file = new File(dir, files[i]);
+      
+      // dir?
+      if (file.isDirectory()) {
+        parseDir(file, (pkg==null?"":pkg+".")+file.getName());
+        continue;
+      }
+
+      // report class file?
+      String report = isReport(file, pkg);
+      if (report!=null) {
+        reports.add(report);
+        continue;
+      } 
+      
+      // library?
+      if (isLibrary(file)) {
+        try {
+          Debug.log(Debug.INFO, this, "report library "+file.toURL());
+          classpath.add(file.toURL());
+        } catch (MalformedURLException e) {
+          // n/a
+        }
+      }
+      
+      // next 
+    }
+      
+    // done
+  }
+  
+  /**
    * Criteria for library
    */
   private boolean isLibrary(File file) {
@@ -109,14 +146,15 @@ public class ReportLoader {
   /**
    * Criteria for report
    */
-  private String isReport(File file) {
-    if ( file.isDirectory() ||
+  private String isReport(File file, String pkg) {
+    if ( (pkg!=null&&pkg.startsWith("genj")) || 
+         file.isDirectory() ||
          !file.getName().endsWith(".class") ||
          !file.getName().startsWith("Report") ||
          file.getName().indexOf("$")>0 )
       return null;
     String name = file.getName();
-    return name.substring(0, name.length()-".class".length());
+    return (pkg==null?"":pkg+".") + name.substring(0, name.length()-".class".length());
   }
 
   /**
@@ -124,6 +162,13 @@ public class ReportLoader {
    */
   public Report[] getReports() {
     return (Report[])instances.toArray(new Report[instances.size()]);
+  }
+  
+  /**
+   * Whether reports are in classpath
+   */
+  public boolean isReportsInClasspath() {
+    return isReportsInClasspath;
   }
 
 } //ReportLoader
