@@ -66,7 +66,7 @@ class HelpBridgeImpl implements HelpBridge {
     }
     
     // Then we check for local language
-    String local = dir+"/"+Locale.getDefault().getLanguage();
+    String local = dir+"/"+System.getProperty("user.language");
     if (exists(local)) {
       return local;
     }
