@@ -74,6 +74,9 @@ public class ChoiceWidget extends JComboBox {
     // default is editable
     setEditable(true);
 
+    // default max rows is 16
+    setMaximumRowCount(8);
+
     // do our model
     setModel(model);
 
@@ -111,7 +114,18 @@ public class ChoiceWidget extends JComboBox {
     model.setValues(values.toArray());
     // done  
   }
-    
+
+  /**
+   * Patch preferred size. The default behavior of JComboBox can
+   * lead to pretty wide preferred sizes if contained values are
+   * long.
+   */
+  public Dimension getPreferredSize() {
+    Dimension result = super.getPreferredSize();
+    result.width = Math.min(128, result.width);
+    return result;
+  }
+      
   /**
    * @see javax.swing.JComponent#getMaximumSize()
    */
