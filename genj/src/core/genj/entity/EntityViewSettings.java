@@ -68,7 +68,7 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
     dropEntities.addActionListener((ActionListener)new ActionSelect().as(ActionListener.class));
     
     // prepare a blueprint list    
-    blueprintList = new BlueprintList();
+    blueprintList = new BlueprintList(view.gedcom);
     
     // do the layout
     setLayout(new BorderLayout());

@@ -64,9 +64,6 @@ public class BlueprintEditor extends Box {
   /** the gedcom we're looking at*/
   private Gedcom gedcom;
   
-  /** the type we're editing for */
-  private int type;
-  
   /** the current scheme */
   private Blueprint blueprint;
 
@@ -98,22 +95,22 @@ public class BlueprintEditor extends Box {
     // event listening
     html.getDocument().addDocumentListener(preview);
     // intial set
-    set(null,0,null);
+    set(null,null);
     // done
   }
   
   /**
    * Set Gedcom, Blueprint
    */
-  public void set(Gedcom geDcom, int tYpe, Blueprint scHeme) {
+  public void set(Gedcom geDcom, Blueprint scHeme) {
     boolean b;
     if (geDcom==null||scHeme==null) {
       gedcom = null;
       blueprint = null;
+      html.setText("");
       b = false;
     } else {
       gedcom = geDcom;
-      type = tYpe;
       blueprint = scHeme;
       html.setText(blueprint.getHTML());
       b = true;
@@ -149,14 +146,17 @@ public class BlueprintEditor extends Box {
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
     protected void paintComponent(Graphics g) {
+      // fix bounds (border changes insets)
       Rectangle bounds = getBounds();
       Insets insets = getInsets();
       bounds.x += insets.left;
       bounds.y += insets.top ;
       bounds.width -= insets.left+insets.right;
       bounds.height-= insets.top +insets.bottom;
-      g.setColor(Color.white);
+      // clear background
+      g.setColor(html.getText().length()==0 ? getBackground() : Color.white);
       g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
+      // render content
       new EntityRenderer(g, html.getText()).render(g, example, bounds);
     }
   } //Preview
@@ -173,7 +173,9 @@ public class BlueprintEditor extends Box {
     protected void execute() {
       // create a tree of available TagPaths
       TagPathTree tree = new TagPathTree(); 
-      tree.setPaths(TagPath.getUsedTagPaths(gedcom,type));      
+      tree.setPaths(TagPath.getUsedTagPaths(
+        gedcom, BlueprintManager.getInstance().getType(blueprint)
+      ));      
       // Recheck with the user
       int option = JOptionPane.showConfirmDialog(
         BlueprintEditor.this, tree, resources.getString("insert.tip"), JOptionPane.OK_CANCEL_OPTION
