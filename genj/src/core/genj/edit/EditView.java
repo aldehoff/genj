@@ -27,6 +27,7 @@ import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
 import genj.view.ToolBarSupport;
@@ -35,6 +36,7 @@ import genj.view.ViewManager;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,10 +67,12 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   static final Resources resources = Resources.get(EditView.class);
 
   /** actions we offer */
-  private Sticky sticky = new Sticky();
-  private Back   back   = new Back(); 
-  private Undo   undo;
-  private Redo   redo;
+  private Sticky   sticky = new Sticky();
+  private Back     back   = new Back(); 
+  private Undo     undo;
+  private Redo     redo;
+  private Basic    basic    = new Basic();
+  private Advanced advanced = new Advanced();
 
   /** whether we're sticky */
   private  boolean isSticky = false;
@@ -94,17 +98,37 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     undo = new Undo(gedcom, manager);
     redo = new Redo(gedcom, manager);
     
-    // create current editor
-    // FIXME need editor switch
-    editor = new AdvancedEditor();
-//    editor = flip ? (Editor)new AdvancedEditor() : new BasicEditor();
-//    flip = !flip;
-    editor.init(setGedcom, manager, registry);
-
-    // layout
-    add(editor, BorderLayout.CENTER);
+    // setup editor
+    basic.execute();
 
     // Done
+  }
+  
+  /**
+   * Set editor to use
+   */
+  private void setEditor(Editor set) {
+
+    // get old context
+    Context old = editor!=null ? editor.getContext() : null;
+      
+    // remove old editor 
+    removeAll();
+      
+    // keep new
+    editor = set;
+    editor.init(gedcom, manager, registry);
+
+    // add to layout
+    add(editor, BorderLayout.CENTER);
+
+    // restore old context
+    if (old!=null)
+      editor.setContext(old);
+      
+    // show
+    revalidate();
+    repaint();
   }
 
   /**
@@ -230,6 +254,12 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     bh.create(undo);
     bh.create(redo);
     
+    // add basic/advanced
+    bar.addSeparator();
+    List modes = Arrays.asList(new Object[]{ basic, advanced });
+    PopupWidget popup = new PopupWidget("", Images.imgView, modes);
+    bar.add(popup);
+    
     // done
   }
   
@@ -304,5 +334,35 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       stack.push(context);
     }
   } //Back
+  
+  /**
+   * Action - advanced
+   */
+  private class Advanced extends ActionDelegate {
+    private Advanced() {
+      setText("Advanced Mode");
+    }
+    public boolean isEnabled() {
+      return !(editor instanceof AdvancedEditor);
+    }
+    protected void execute() {
+      setEditor(new AdvancedEditor());
+    }
+  } //Advanced
+  
+  /**
+   * Action - basic
+   */
+  private class Basic extends ActionDelegate {
+    private Basic() {
+      setText("Basic Mode");
+    }
+    public boolean isEnabled() {
+      return !(editor instanceof BasicEditor);
+    }
+    protected void execute() {
+      setEditor(new BasicEditor());
+    }
+  } //Basic
   
 } //EditView
