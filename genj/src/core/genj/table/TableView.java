@@ -434,6 +434,10 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
 
     /** callback - selection changed */
     public void valueChanged(ListSelectionEvent e) {
+      
+      // adjusting?
+      if (e.getValueIsAdjusting())
+        return;
 
       // check selection
       int 
