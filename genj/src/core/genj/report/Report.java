@@ -117,6 +117,9 @@ public abstract class Report implements Cloneable {
 
     try {
 
+      // make sure options are initialized
+      getOptions();
+
       // clone this
       Report result = (Report)clone();
 
@@ -124,7 +127,7 @@ public abstract class Report implements Cloneable {
       result.viewManager = viEwManager;
       result.out = ouT;
       result.owner = owNer;
-
+      
       // done
       return result;
 
