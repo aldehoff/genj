@@ -27,9 +27,11 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.SortableTableHeader;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
@@ -153,14 +155,14 @@ import javax.swing.table.TableColumnModel;
    * Returns the entity at given row index
    */
   /*package*/ Entity getEntity(int row) {
-    return rows[row].e;
+    return rows[row].getEntity();
   }
   
   /**
    * Returns the property at given row/col
    */
   /*package*/ Property getProperty(int row, int col) {
-    return rows[row].ps[col];
+    return rows[row].getColumns()[col];
   }
   
   /**
@@ -168,7 +170,7 @@ import javax.swing.table.TableColumnModel;
    */
   /*package*/ int getRow(Entity e) {          
     for (int r=0; r<rows.length; r++) {
-      if (rows[r].e==e) return r;
+      if (rows[r].getEntity()==e) return r;
     }
     return -1;
   }
@@ -181,14 +183,8 @@ import javax.swing.table.TableColumnModel;
     List es = gedcom.getEntities(filter.type);
     // build rows
     rows = new Row[es.size()];
-    TagPath[] tps = filter.paths;
     for (int r=0; r<rows.length; r++) {
-      Entity e = (Entity)es.get(r);
-      Property[] ps = new Property[tps.length];
-      for (int p=0; p<ps.length; p++) {
-        ps[p] = e.getProperty(tps[p], false);
-      }
-      rows[r] = new Row(e, ps);
+      rows[r] = new Row((Entity)es.get(r), filter.paths);
     }
     // sort
     sortRows();
@@ -235,7 +231,7 @@ import javax.swing.table.TableColumnModel;
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
   public Object getValueAt(int rowIndex, int columnIndex) {
-    return rows[rowIndex].ps[columnIndex];
+    return rows[rowIndex].getColumns()[columnIndex];
   }
 
   /**
@@ -269,13 +265,31 @@ import javax.swing.table.TableColumnModel;
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
   public void handleChange(Change change) {
+    // a drastic change (entities added/deleted) ? 
     if (change.isChanged(Change.EADD)||change.isChanged(Change.EDEL)) {
+      // rebuild!
       prepareRows();
       fireTableDataChanged();
+      // done
       return;
     }
-    if (rows.length>0)
-      fireTableRowsUpdated(0, rows.length-1);
+    // any rows to update?
+    Set emods = change.getEntities(change.EMOD);
+    int 
+     first = -1,
+     last  = -1; 
+    for (int r=0;r<rows.length;r++) {
+      Row row = rows[r];
+      if (emods.contains(row.getEntity())) {
+        row.invalidate();
+        if (first<0) first = r;
+        last = r; 
+      }
+        
+    }
+    if (first>=0)
+      fireTableRowsUpdated(first, last);
+    // done 
   }
 
   /**
@@ -326,8 +340,8 @@ import javax.swing.table.TableColumnModel;
     public int compare(Object o1, Object o2) {
       // here's the rows
       Property[] 
-        row1 = ((Row)o1).ps,
-        row2 = ((Row)o2).ps;
+        row1 = ((Row)o1).getColumns(),
+        row2 = ((Row)o2).getColumns();
       // null?
       if (row1[sortColumn]==row2[sortColumn]) 
         return  0;
@@ -340,20 +354,4 @@ import javax.swing.table.TableColumnModel;
     }
   } //RowComparator
   
-  /**
-   * A row in this model
-   */
-  private class Row {
-    /** attributes */
-    Entity e;
-    Property[] ps;
-    /**
-     * Constructor
-     */
-    Row(Entity entity, Property[] properties) {
-      e = entity;
-      ps = properties;
-    }
-  } //Row
-
 } //TableModel
