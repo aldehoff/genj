@@ -358,17 +358,17 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Left Align a number as simple text
+   * Right Align a number as simple text
    */
   protected final String align(int num, int width) {
-    return align(num+"", width, ALIGN_LEFT);
+    return align(num+"", width, ALIGN_RIGHT);
   }
 
   /**
    * Left Align a simple text
    */
   protected final String align(String text, int width) {
-    return align(text, width, ALIGN_LEFT);
+    return align(text, width, ALIGN_RIGHT);
   }
 
   /**
