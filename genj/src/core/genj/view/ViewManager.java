@@ -269,29 +269,47 @@ public class ViewManager {
   /**
    * Get actions for given entity/gedcom
    */
-  /*package*/ List getActions(Object object) {
+  /*package*/ List getActions(Object context) {
     // loop through descriptors
     List result = new ArrayList(16);
     for (int f=0; f<factories.length; f++) {
-      if (factories[f] instanceof ContextMenuSupport) {
-        ContextMenuSupport cms = (ContextMenuSupport)factories[f];
-        List as = object instanceof Gedcom ? cms.createActions((Gedcom)object) : cms.createActions((Entity)object);
+      if (factories[f] instanceof ContextSupport) {
+        List as = getActions((ContextSupport)factories[f], context);
         if (as!=null) result.add(as);
       }
     }
     // loop through views
-    Gedcom gedcom = object instanceof Gedcom ? (Gedcom)object : ((Entity)object).getGedcom();
+    Gedcom gedcom = getGedcom(context);
     Iterator views = viewWidgets.iterator();
     while (views.hasNext()) {
       ViewWidget view = (ViewWidget)views.next();
-      if (view.getGedcom()==gedcom&&view.getView() instanceof ContextMenuSupport) {
-        ContextMenuSupport cms = (ContextMenuSupport)view.getView();
-        List as = object instanceof Gedcom ? cms.createActions((Gedcom)object) : cms.createActions((Entity)object);
+      if (view.getGedcom()==gedcom&&view.getView() instanceof ContextSupport) {
+        List as = getActions((ContextSupport)view.getView(), context);
         if (as!=null) result.add(as);
       }
     }
     // done
     return result;
+  }
+
+  /**
+   * Resolves the Gedcom for given context
+   */
+  private Gedcom getGedcom(Object context) {
+    if (context instanceof Gedcom  ) return (Gedcom)context;
+    if (context instanceof Entity  ) return ((Entity)context).getProperty().getGedcom();
+    if (context instanceof Property) return ((Property)context).getGedcom();
+    throw new IllegalArgumentException("Unknown context "+context);
+  }
+
+  /**
+   * Resolves the context information from support/context
+   */
+  private List getActions(ContextSupport cs, Object context) {
+    if (context instanceof Gedcom  ) return cs.createActions((Gedcom  )context);
+    if (context instanceof Entity  ) return cs.createActions((Entity  )context);
+    if (context instanceof Property) return cs.createActions((Property)context);
+    throw new IllegalArgumentException("Unknown context "+context);
   }
 
   /**
@@ -358,19 +376,39 @@ public class ViewManager {
 
     // done
   }
-
+  
   /**
    * Show a context menu for given point - at this
    * point we assume that view instanceof EntityPopupSupport
    */
-  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, Entity entity) {
+  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, Object context) {
     
     // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();
 
+    // we need Entity, property and Gedcom (above) from context
+    Entity entity = null;
+    Property property = null;
+    if (context instanceof Entity) {
+      entity = (Entity)context;
+    } else if (context instanceof Property) {
+      property = (Property)context;
+      entity = property.getEntity();
+    }
+
     // create a popup
     MenuHelper mh = new MenuHelper();
     JPopupMenu popup = mh.createPopup("");
+    
+    // items for property
+    if (property!=null) {
+      List actions = ViewManager.getInstance().getActions(property);
+      if (!actions.isEmpty()) {
+        mh.createMenu(property.getTag(), property.getImage(false));
+        mh.createItems(actions);
+        mh.popMenu();
+      }
+    }
     
     // items for entity
     if (entity!=null) {
@@ -395,27 +433,6 @@ public class ViewManager {
       popup.show(container, point.x, point.y);
     
     // done
-  }
+  }  
 
-  // 20021017 strangely Popups for JPopupMenu don't seem to
-  // disappear even though of mouse-clicks somewhere in the
-  // view. Calling
-  //  MenuSelectionManager.defaultManager().clearSelectedPath();
-  // before bringing up a popup makes sure that it disappears 
-  // when anything is clicking in the view.
-  // Also popups are not removed by Swing after opening up
-  // a JPopupMenu in one view and clicking on components in 
-  // another view. We could do some stuff with windowDeactivated 
-  // but that seems too much to bother. So for now we'll call
-  //  MenuSelectionManager.defaultManager().clearSelectedPath();
-  // which will get rid of the popup anytime 
-  //  setCurrentEntity() 
-  // is called. That will make sure there's no current-change
-  // with a popup still being open for the last current.
-  // Lastly we also call 
-  //  MenuSelectionManager.defaultManager().clearSelectedPath();
-  // in removeNotify() when a view is removed. Otherwise Swing
-  // might keep a popup open in another view showing items that
-  // are applicable to an already closed view.
-  
-} //ViewManager
+} //ViewManager

@@ -36,7 +36,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImgIconConverter;
 import genj.util.swing.HeadlessLabel;
 import genj.view.CurrentSupport;
-import genj.view.EntityPopupSupport;
+import genj.view.ContextPopupSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -82,7 +82,7 @@ import javax.swing.tree.TreePath;
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends JSplitPane implements CurrentSupport, ToolBarSupport, EntityPopupSupport {
+public class EditView extends JSplitPane implements CurrentSupport, ToolBarSupport, ContextPopupSupport {
 
   /** the gedcom we're looking at */
   private Gedcom    gedcom;
@@ -266,14 +266,14 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
   /**
    * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
    */
-  public JComponent getEntityPopupContainer() {
+  public JComponent getContextPopupContainer() {
     return tree;
   }
 
   /**
    * @see genj.view.EntityPopupSupport#getEntityAt(Point)
    */
-  public Entity getEntityAt(Point pos) {
+  public Object getContextAt(Point pos) {
     return currentEntity;
   }
   

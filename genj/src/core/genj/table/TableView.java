@@ -52,7 +52,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.SortableTableHeader;
 import genj.view.CurrentSupport;
-import genj.view.EntityPopupSupport;
+import genj.view.ContextPopupSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.gedcom.*;
@@ -60,7 +60,7 @@ import genj.gedcom.*;
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport, CurrentSupport, EntityPopupSupport {
+public class TableView extends JPanel implements ToolBarSupport, CurrentSupport, ContextPopupSupport {
   
   /** a static set of resources */
   /*package*/ final static Resources resources = new Resources("genj.table");
@@ -197,14 +197,14 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
   /**
    * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
    */
-  public JComponent getEntityPopupContainer() {
+  public JComponent getContextPopupContainer() {
     return table;
   }
 
   /**
-   * @see genj.view.EntityPopupSupport#getEntityAt(Point)
+   * @see genj.view.EntityPopupSupport#getContextAt(Point)
    */
-  public Entity getEntityAt(Point pos) {
+  public Object getContextAt(Point pos) {
     int row = table.rowAtPoint(pos);
     if (row<0) return null;
     table.getSelectionModel().setSelectionInterval(row, row);

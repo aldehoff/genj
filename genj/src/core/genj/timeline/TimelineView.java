@@ -28,7 +28,7 @@ import genj.util.Resources;
 import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.CurrentSupport;
-import genj.view.EntityPopupSupport;
+import genj.view.ContextPopupSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -59,7 +59,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Component for showing entities' events in a timeline view
  */
-public class TimelineView extends JPanel implements ToolBarSupport, CurrentSupport, EntityPopupSupport {
+public class TimelineView extends JPanel implements ToolBarSupport, CurrentSupport, ContextPopupSupport {
 
   /** resources */
   /*package*/ final static Resources resources = new Resources("genj.timeline");
@@ -316,19 +316,19 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
   /**
    * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
    */
-  public JComponent getEntityPopupContainer() {
+  public JComponent getContextPopupContainer() {
     return content;
   }
 
   /**
-   * @see genj.view.EntityPopupSupport#getEntityAt(Point)
+   * @see genj.view.EntityPopupSupport#getContextAt(Point)
    */
-  public Entity getEntityAt(Point pos) {
+  public Object getContextAt(Point pos) {
     // is there an event?
     Model.Event event = getEventAt(pos);
     if (event==null) return null;
     // grab its entity
-    return event.getEntity();
+    return event.getProperty();
   }
 
   /**

@@ -162,10 +162,10 @@ import javax.swing.border.TitledBorder;
    */
   private void installPopupSupport() {
     // check for support
-    if (!(view instanceof EntityPopupSupport)) return;
+    if (!(view instanceof ContextPopupSupport)) return;
     // install it
-    EntityPopupSupport eps = (EntityPopupSupport)view;
-    eps.getEntityPopupContainer().addMouseListener(new EntityPopupMouseListener());
+    ContextPopupSupport eps = (ContextPopupSupport)view;
+    eps.getContextPopupContainer().addMouseListener(new EntityPopupMouseListener());
     // done
   }
   
@@ -296,8 +296,8 @@ import javax.swing.border.TitledBorder;
       // no popup trigger no action
       if (!e.isPopupTrigger()) return;
       // show a context menu
-      EntityPopupSupport esp = (EntityPopupSupport)view;
-      ViewManager.getInstance().showContextMenu(esp.getEntityPopupContainer(), e.getPoint(), gedcom, esp.getEntityAt(e.getPoint()));
+      ContextPopupSupport esp = (ContextPopupSupport)view;
+      ViewManager.getInstance().showContextMenu(esp.getContextPopupContainer(), e.getPoint(), gedcom, esp.getContextAt(e.getPoint()));
       // done
     }
   } //EntityPopupMouseListener

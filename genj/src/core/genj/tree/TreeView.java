@@ -22,13 +22,14 @@ package genj.tree;
 import genj.gedcom.DuplicateIDException;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.AreaInScreen;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.view.ContextMenuSupport;
+import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -51,6 +52,7 @@ import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JToolBar;
+import sun.security.krb5.internal.crypto.e;
 
 import awtx.ComponentProvider;
 import awtx.Rootpane;
@@ -60,7 +62,7 @@ import awtx.Scrollpane;
 /**
  * This class shows persons and families from a mankind object in a tree-view way
  */
-public class TreeView extends Scrollpane implements ToolBarSupport, ContextMenuSupport {
+public class TreeView extends Scrollpane implements ToolBarSupport, ContextSupport {
 
   private Content                content;
   private Gedcom                 gedcom;
@@ -643,7 +645,14 @@ public class TreeView extends Scrollpane implements ToolBarSupport, ContextMenuS
   } //ActionOverview
 
   /**
-   * @see genj.view.ViewFactory#createActions(Entity)
+   * @see genj.view.ContextSupport#createActions(Property)
+   */
+  public List createActions(Property property) {
+    return null;
+  }
+  
+  /**
+   * @see genj.view.ContextSupport#createActions(Entity)
    */
   public List createActions(Entity entity) {
     List result = new ArrayList(1);
@@ -652,7 +661,7 @@ public class TreeView extends Scrollpane implements ToolBarSupport, ContextMenuS
   }
   
   /**
-   * @see genj.view.ContextMenuSupport#createActions(Gedcom)
+   * @see genj.view.ContextSupport#createActions(Gedcom)
    */
   public List createActions(Gedcom gedcom) {
     return null;

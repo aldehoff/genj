@@ -36,20 +36,22 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
+import genj.gedcom.Property;
 import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.view.ContextMenuSupport;
+import genj.view.ContextPopupSupport;
+import genj.view.ContextSupport;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
 /**
  * The factory for the TableView
  */
-public class EditViewFactory implements ViewFactory, ContextMenuSupport {
+public class EditViewFactory implements ViewFactory, ContextSupport {
   
   /** resources we use */
   private final static Resources resources = EditView.resources;
@@ -106,6 +108,23 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
     return resources.getString("title" + (abbreviate?".short":""));
   }
   
+  /**
+   * @see genj.view.ContextSupport#createActions(Property)
+   */
+  public List createActions(Property property) {
+    // create the actions
+    List result = new ArrayList();
+    // one dummy
+    ActionDelegate ad = new ActionDelegate() {
+      protected void execute() {
+      }
+    };
+    ad.setText("Foo");
+    result.add(ad);
+    // done
+    return result;
+  }
+
   /**
    * @see genj.view.ViewFactory#createActions(Entity)
    */
