@@ -120,7 +120,11 @@ public class PropertyFile extends Property implements IconValueAvailable {
 
     // Open InputStream
     try {
+      // try to create an image
       valueAsIcon = new ImageIcon(getInputStream());
+      // 20021205 for tiffs we get an image with size (-1,-1);
+      if (valueAsIcon!=null&&(valueAsIcon.getIconWidth()<=0||valueAsIcon.getIconHeight()<=0))
+        valueAsIcon = null;
     } catch (Throwable t) {
     }
 
