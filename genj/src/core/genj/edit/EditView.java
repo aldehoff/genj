@@ -659,8 +659,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       actionButtonAdd.setEnabled(true);
       
       // cut,copy,paste
-      actionButtonCut  .setEnabled(prop.getParent()!=null);
-      actionButtonCopy .setEnabled(prop.getParent()!=null);
+      actionButtonCut  .setEnabled(prop.getParent()!=null&&!prop.isTransient());
+      actionButtonCopy .setEnabled(prop.getParent()!=null&&!prop.isTransient());
       actionButtonPaste.setEnabled(!Clipboard.getInstance().isEmpty());
   
       // up, down
