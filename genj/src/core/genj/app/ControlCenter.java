@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -396,14 +397,16 @@ public class ControlCenter extends JPanel {
     protected void execute() {
       // Remember open gedcoms
       boolean unsaved = false;
-      Vector save = new Vector();
-      Iterator gedcoms = tGedcoms.getAllGedcoms().iterator();
-      while (gedcoms.hasNext()) {
+      Collection save = new ArrayList();
+      for (Iterator gedcoms=tGedcoms.getAllGedcoms().iterator(); gedcoms.hasNext(); ) {
+        // next gedcom
         Gedcom gedcom = (Gedcom) gedcoms.next();
-        if (gedcom.getOrigin() != null) {
-          save.addElement("" + gedcom.getOrigin());
-        }
         unsaved |= gedcom.hasUnsavedChanges();
+        // skip those without origin - 20040217 is that even likely?
+        if (gedcom.getOrigin() == null)
+          continue;
+        // keep as opened
+        save.add(gedcom.hasPassword() ? gedcom.getOrigin() + "," + gedcom.getPassword() : gedcom.getOrigin().toString());
       }
       registry.put("open", save);
 
@@ -779,17 +782,29 @@ public class ControlCenter extends JPanel {
   private class ActionLoadLastOpen extends ActionDelegate {
     /** run */
     public void execute() {
+      
       String example = "./gedcom/example.ged";
       String[] defaults =
         new File(example).exists() ? new String[] { "file:" + example }
       : new String[0];
-      String[] gedcoms = registry.get("open", defaults);
-      for (int g = 0; g < gedcoms.length; g++) {
+      
+      String[] lasts = registry.get("open", defaults);
+      for (int i=0; i<lasts.length; i++) {
         try {
-          new ActionOpen(Origin.create(gedcoms[g])).trigger();
+          String last = lasts[i];
+          String pwd = null;
+          int comma = last.indexOf(',');
+          if (comma>0) {
+            pwd = last.substring(comma+1);
+            last = last.substring(0, comma);
+          }
+          ActionOpen open = new ActionOpen(Origin.create(last));
+          if (pwd!=null) open.password = pwd;
+          open.trigger();
         } catch (MalformedURLException x) {
         }
       }
+      
     }
   } //LastOpenLoader
 

@@ -579,4 +579,12 @@ public class Gedcom {
     return password;
   }
   
+  /**
+   * Accessor - password
+   * @return password!=PASSWORD_UNKNOWN!=PASSWORD_NOT_SET
+   */
+  public boolean hasPassword() {
+    return password!=PASSWORD_NOT_SET && password!=PASSWORD_UNKNOWN;
+  }
+  
 } //Gedcom
