@@ -25,7 +25,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -58,28 +57,28 @@ public class UnitGraphics {
   /** the fontmetrics */
   private FontMetrics fontMetrics;
 
-  /** dot-per-centimeters */
-  private static Point2D.Double dpc = new Point2D.Double(
-    Toolkit.getDefaultToolkit().getScreenResolution(),
-    Toolkit.getDefaultToolkit().getScreenResolution()
-  );
-  
-  /**
-   * Resolution for centimeters
-   */
-  public static Point2D getDPC() {
-    // 1 cm = 0.393701*inches
-    return new Point2D.Double(0.393701D * dpc.x, 0.393701D * dpc.y);
-  }
-  
-  /**
-   * Accessor - resolution for centimeters
-   */    
-  public static void setDPC(Point2D set) {
-    // 1 cm = 0.393701*inches
-    dpc.x = set.getX() / 0.393701D;
-    dpc.y = set.getY() / 0.393701D;
-  }
+//  /** dot-per-centimeters */
+//  private static Point2D.Double dpc = new Point2D.Double(
+//    Toolkit.getDefaultToolkit().getScreenResolution(),
+//    Toolkit.getDefaultToolkit().getScreenResolution()
+//  );
+//  
+//  /**
+//   * Resolution for centimeters
+//   */
+//  public static Point2D getDPC() {
+//    // 1 cm = 0.393701*inches
+//    return new Point2D.Double(0.393701D * dpc.x, 0.393701D * dpc.y);
+//  }
+//  
+//  /**
+//   * Accessor - resolution for centimeters
+//   */    
+//  public static void setDPC(Point2D set) {
+//    // 1 cm = 0.393701*inches
+//    dpc.x = set.getX() / 0.393701D;
+//    dpc.y = set.getY() / 0.393701D;
+//  }
   
   /**
    * Constructor
