@@ -19,8 +19,10 @@
  */
 package genj.timeline;
 
+import java.awt.BorderLayout;
 import java.awt.Frame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 import genj.gedcom.Gedcom;
@@ -32,10 +34,35 @@ import genj.view.ToolBarSupport;
  */
 public class TimelineView extends JPanel implements ToolBarSupport {
   
+  /** our model */
+  private Model model;
+  
+  /** our content */
+  private Content content;
+  
+  /** our ruler */
+  private Ruler ruler;
+  
   /**
    * Constructor
    */
   public TimelineView(Gedcom gedcom, Registry registry, Frame frame) {
+    
+    // create our sub-parts
+    model = new Model(gedcom);
+    content = new Content(model);
+    ruler = new Ruler(model);
+    
+    // all that fits in a scrollpane
+    JScrollPane scroll = new JScrollPane(content);
+    scroll.setColumnHeaderView(ruler);
+        
+    
+    // layout
+    setLayout(new BorderLayout());
+    add(scroll, BorderLayout.CENTER);
+    
+    // done
   }
 
   /**
