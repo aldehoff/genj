@@ -65,15 +65,17 @@ public class PropertySource extends PropertyXRef {
   /**
    * Adds all default properties to this property
    */
-  public void addDefaultProperties() {
+  public Property addDefaultProperties() {
 
     noteModifiedProperty();
 
     // Just add 'em
     if (this instanceof Entity) {
-	addProperty(new PropertyGenericAttribute("TITL"));
+      addProperty(new PropertyGenericAttribute("TITL"));
     }
+    
     // Done
+    return this;
   }
 
   /**

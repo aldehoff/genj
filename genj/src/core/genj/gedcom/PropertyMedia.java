@@ -57,7 +57,7 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
   /**
    * Adds all default properties to this property
    */
-  public void addDefaultProperties() {
+  public Property addDefaultProperties() {
 
     noteModifiedProperty();
 
@@ -66,9 +66,10 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     addProperty(new PropertyGenericAttribute("FORM"));
 
     // 20021002 encourage PropertyFile
-    addProperty(new PropertyFile());
+    addProperty(new PropertyFile().addDefaultProperties());
 
     // Done
+    return this;
   }
 
   /**

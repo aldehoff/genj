@@ -83,10 +83,11 @@ public class PropertyAddress extends Property {
   /**
    * Adds all known properties to this property
    */
-  public void addDefaultProperties() {
+  public Property addDefaultProperties() {
     noteModifiedProperty();
     addProperty(new PropertyCity(""));
     addProperty(new PropertyPostalCode(""));
+    return this;
   }
 
   /**

@@ -58,9 +58,10 @@ public class PropertyEvent extends Property {
   /**
    * Adds all default properties to this property
    */
-  public void addDefaultProperties() {
-    addProperty(new PropertyDate());
+  public Property addDefaultProperties() {
+    addProperty(new PropertyDate().addDefaultProperties());
     addProperty(new PropertyPlace(""));
+    return this;
   }
 
   /**

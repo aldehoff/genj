@@ -233,7 +233,8 @@ public abstract class Property implements Comparable {
   /**
    * Adds default properties to this property
    */
-  public void addDefaultProperties() {
+  public Property addDefaultProperties() {
+    return this;
   }
 
   /**

@@ -30,8 +30,9 @@ public abstract class PropertyFam extends Property {
   /**
    * Adds all default properties to this property
    */
-  public void addDefaultProperties() {
-    addProperty(new PropertyEvent("MARR"));
+  public Property addDefaultProperties() {
+    addProperty(new PropertyEvent("MARR").addDefaultProperties());
+    return this;
   }
 
   /**

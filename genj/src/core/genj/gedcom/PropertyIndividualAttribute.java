@@ -53,16 +53,16 @@ public class PropertyIndividualAttribute extends Property {
   /**
    * Adds all default properties to this property
    */
-  public void addDefaultProperties() {
+  public Property addDefaultProperties() {
 
     // RESIdence ?
     if (getTag().equals("RESI")) {
       addProperty(new PropertyAddress());
       addProperty(new PropertyDate());
-      return;
     }
 
     // Done
+    return this;
   }
 
   /**

@@ -34,9 +34,11 @@ import javax.swing.JTextArea;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -116,11 +118,11 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
     if (entity instanceof Fam) createActions(result, (Fam)entity);
     // add delete
     result.add(ActionDelegate.NOOP);
-    result.add(new ActionDelete(entity));
+    result.add(new Delete(entity));
     // add an "edit in EditView"
     if (!ViewManager.getInstance().isOpenView(EditView.class)) {
       result.add(ActionDelegate.NOOP);
-      result.add(new ActionEdit(entity));
+      result.add(new Edit(entity));
     }
     // done
     return result;
@@ -141,47 +143,51 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
    * Create actions for Gedcom
    */
   private void createActions(List result, Gedcom gedcom) {
-    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS , gedcom));
-    result.add(new ActionCreate(Images.imgNewFam       , Gedcom.FAMILIES    , gedcom));
-    result.add(new ActionCreate(Images.imgNewNote      , Gedcom.NOTES       , gedcom));
-    result.add(new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS , gedcom));
-    result.add(new ActionCreate(Images.imgNewRepository, Gedcom.REPOSITORIES, gedcom));
-    result.add(new ActionCreate(Images.imgNewSource    , Gedcom.SOURCES     , gedcom));
-    result.add(new ActionCreate(Images.imgNewSubmitter , Gedcom.SUBMITTERS  , gedcom));
+    result.add(new CreateStandalone(gedcom, Gedcom.INDIVIDUALS , Images.imgNewIndi      ));
+    result.add(new CreateStandalone(gedcom, Gedcom.FAMILIES    , Images.imgNewFam       ));
+    result.add(new CreateStandalone(gedcom, Gedcom.NOTES       , Images.imgNewNote      ));
+    result.add(new CreateStandalone(gedcom, Gedcom.MULTIMEDIAS , Images.imgNewMedia     ));
+    result.add(new CreateStandalone(gedcom, Gedcom.REPOSITORIES, Images.imgNewRepository));
+    result.add(new CreateStandalone(gedcom, Gedcom.SOURCES     , Images.imgNewSource    ));
+    result.add(new CreateStandalone(gedcom, Gedcom.SUBMITTERS  , Images.imgNewSubmitter ));
   }
   
   /**
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi) {
+    /*
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.child"  , indi));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.parent", indi));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.spouse", indi));
     result.add(new ActionCreate(Images.imgNewNote      , Gedcom.NOTES      , indi ));
     result.add(new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS, indi ));
+    */
   }
   
   /**
    * Create actions for Families
    */
   private void createActions(List result, Fam fam) {
+    /*
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0 , "new.child"  , fam));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.husband", fam));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.wife"   , fam));
     result.add(new ActionCreate(Images.imgNewNote      , Gedcom.NOTES      , fam));
     result.add(new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS, fam));
+    */
   }
   
   /**
    * ActionEdit - edit an entity
    */
-  private class ActionEdit extends ActionDelegate {
+  private class Edit extends ActionDelegate {
     /** the entity to edit */
     private Entity candidate;
     /**
      * Constructor
      */
-    private ActionEdit(Entity entity) {
+    private Edit(Entity entity) {
       candidate = entity;
       setImage(Images.imgView);
       setText(EditView.resources.getString("edit", getTitle(false)));
@@ -195,145 +201,140 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
       ev.setEntity(candidate);
     }
   }
+  
+  /**
+   * ActionChange - change the gedcom information
+   */
+  private static abstract class Change extends ActionDelegate {
+    /** the gedcom we're working on */
+    protected Gedcom gedcom;
+    /** the entity that should receive the focus after creation */
+    protected Entity focus;
+    /**
+     * Constructor
+     */
+    protected Change(Gedcom ged, ImgIcon img, String text) {
+      gedcom = ged;
+      super.setImage(img);
+      super.setText(text);
+    }
+    /** 
+     * Returns the confirmation message
+     */
+    protected abstract String getConfirmMessage();
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      
+      // prepare text for user
+      JTextArea text = new JTextArea(getConfirmMessage(), 4, 40);
+      text.setWrapStyleWord(true);
+      text.setLineWrap(true); 
+
+      // Recheck with the user
+      int option = JOptionPane.showConfirmDialog(
+        null, new Object[]{ new JScrollPane(text), new JLabel(resources.getString("confirm.proceed"))}, resources.getString("title"), 0
+      );
+      // .. Yes or NO?
+      if (option != JOptionPane.YES_OPTION) {
+        return;
+      }
+      // lock gedcom
+      if (!gedcom.startTransaction()) return;
+      // let sub-class handle create
+      try {
+        change();
+      } catch (GedcomException e) {
+        Debug.log(Debug.ERROR, this, "Unexpected problem while changing gedcom", e);
+      }
+      // unlock gedcom
+      gedcom.endTransaction();
+      // set focus?
+      if (focus!=null) ViewManager.getInstance().setCurrentEntity(focus);
+      // done
+    }
+    /**
+     * perform the actual change
+     */
+    protected abstract void change() throws GedcomException;
+  } //Change
+
+  /**
+   * ActionCreate - create an entity
+   */
+  private static abstract class Create extends Change { 
+    /** the type that is created */
+    protected int type;
+    /**
+     * Constructor
+     */
+    protected Create(Gedcom ged, int typ, ImgIcon img, String text) {
+      super(ged, img, text);
+      type   = typ;
+    }
+  } //Create
+  
+  /**
+   * ActionCreateStandalone - create a standalone entity
+   */
+  private static class CreateStandalone extends Create {
+    /**
+     * Constructor
+     */
+    private CreateStandalone(Gedcom gedcom, int type, ImgIcon img) {
+      super(gedcom, type, img, EditView.resources.getString("new", Gedcom.getNameFor(type,false)));
+    }
+    /**
+     * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
+     */
+    protected String getConfirmMessage() {
+      return resources.getString("confirm.new.disconnected", new String[] { 
+        Gedcom.getNameFor(type,false), gedcom.getName() 
+      });
+    }
+    /**
+     * @see genj.edit.EditViewFactory.Change#change()
+     */
+    protected void change() throws GedcomException {
+      focus = gedcom.createEntity(type, null);
+      focus.getProperty().addDefaultProperties();
+    }
+  } //CreateStandalone 
+  
+  /**
+   * ActionCreateConnected - creates a connected entity
+   */
+  //private static class CreateConnected extends ActionCreate {
+  //} //CreateConnected
 
   /**
    * ActionDelete - delete an entity
    */  
-  private static class ActionDelete extends ActionDelegate {
+  private static class Delete extends Change {
     /** the candidate to delete */
     private Entity candidate;
     /**
      * Constructor
      */
-    private ActionDelete(Entity entity) {
-      // preset
-      super.setImage(Images.imgDelete);
-      super.setText(EditView.resources.getString("delete"));
-      // remember
+    private Delete(Entity entity) {
+      super(entity.getGedcom(), Images.imgDelete, EditView.resources.getString("delete"));
       candidate = entity;
-      // done
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
      */
-    protected void execute() {
+    protected String getConfirmMessage() {
+      return resources.getString("confirm.del", new String[] { 
+        candidate.getId(), Gedcom.getNameFor(candidate.getType(),false), gedcom.getName() 
+      });
+    }
+    /**
+     * @see genj.edit.EditViewFactory.Change#change()
+     */
+    protected void change() throws GedcomException {
+      candidate.getGedcom().deleteEntity(candidate);
     }
   } //ActionDelete
-
-  /**
-   * ActionCreate - create an entity
-   */  
-  private static class ActionCreate extends ActionDelegate {
-    /** confirmation message */
-    private String message;
-    /** the confirmation type */
-    private boolean isWarning = false;
-    /**
-     * Constructor
-     */
-    private ActionCreate(ImgIcon img, int t, Gedcom gedcom) {
-      String type = Gedcom.getNameFor(t,false);
-      // preset
-      super.setImage(img);
-      super.setText(EditView.resources.getString("new", type));
-      // calculate message
-      message = 
-        resources.getString("new.confirm", new String[] { 
-          type, gedcom.getName(), type 
-        })
-        + '\n' +
-        resources.getString("new.warning");
-      isWarning = true;
-      // done
-    }
-    /**
-     * Constructor
-     */
-    private ActionCreate(ImgIcon img, int t, Entity entity) {
-      String type = Gedcom.getNameFor(t,false);
-      // preset
-      super.setImage(img);
-      super.setText(EditView.resources.getString("new", type));
-      // calculate message
-      message = 
-        resources.getString("new.confirm", new String[] { 
-          type, entity.getId(), type
-        });
-      // done
-    }
-    /**
-     * Constructor
-     */
-    private ActionCreate(ImgIcon img, int t, int r, String key, Entity entity) {
-      String type = Gedcom.getNameFor(t,false);
-      String name = resources.getString(key);
-      // preset
-      super.setImage(img);
-      super.setText(EditView.resources.getString("new", name));
-      // calculate message
-      message = 
-        resources.getString("new.confirm", new String[] { 
-          name, entity.getId(), type
-        });
-      // done
-    }
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-
-      // prepare text for user
-      JTextArea text = new JTextArea(message, 4, 40);
-      text.setWrapStyleWord(true);
-      text.setLineWrap(true); 
-
-      // Recheck with the user
-      int option = JOptionPane.showOptionDialog(
-        null, new JScrollPane(text), resources.getString("title"),
-        JOptionPane.OK_CANCEL_OPTION,
-        isWarning ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
-        null, null, null
-      );
-      
-      // .. OK or Cancel ?
-      if (option != JOptionPane.OK_OPTION) {
-        return;
-      }
-
-  /*
-      // Lock write
-      if (!startTransaction("Couldn't lock Gedcom for write")) {
-        return;
-      }
-
-      // Try to create
-      Entity old = entity;
-      Entity created = null;
-      try {
-        switch (type) {
-          case Gedcom.INDIVIDUALS:
-            created = gedcom.createIndi("", "", 0, relation, entity);
-            break;
-          case Gedcom.NOTES:
-            created = gedcom.createNote(entity);
-            break;
-          case Gedcom.MULTIMEDIAS:
-            created = gedcom.createMedia(entity);
-            break;
-        }
-      } catch (GedcomException ex) {
-        JOptionPane.showMessageDialog(
-          getFrame(),
-          ex.getMessage(),
-          EditView.resources.getString("error"),
-          JOptionPane.ERROR_MESSAGE
-        );
-      }
-
-      // End transaction
-      endTransaction();
- */
-    }
-  } //ActionCreate
 
 } //EditViewFactory
