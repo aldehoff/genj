@@ -17,9 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
+ * About Menu class - Welcome
  * This class creates the content on the Welcome tabbed pane in the
  * About Menu application
- * AboutMenu Class written by Francois Massonneau <frmas@free.fr>
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/WelcomePanel.java,v 1.3 2002-05-11 06:27:30 island1 Exp $
+ * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
  */
