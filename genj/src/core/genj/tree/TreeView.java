@@ -26,6 +26,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.ColorSet;
+import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
@@ -114,13 +115,14 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     colors.add("arcs"   , Color.blue);
     colors.add("selects", Color.red);
     
-    // setup sub-parts
+    // setup model
     model = new Model(gedcm);
-    model.setOptions(
-      registry.get("vertical",true),
-      registry.get("families",true),
-      registry.get("bendarcs",true)
-    );
+    model.setVertical(registry.get("vertical",true));
+    model.setFamilies(registry.get("families",true));
+    model.setBendArcs(registry.get("bend"    ,true));
+    model.setMode(registry.get("mode", 0));
+
+    // setup child components
     contentRenderer = new ContentRenderer();
     content = new Content();
     JScrollPane scroll = new JScrollPane(new ViewPortAdapter(content));
@@ -128,12 +130,13 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     overview.setVisible(registry.get("overview", false));
     overview.setSize(registry.get("overview", new Dimension(64,64)));
     zoom = registry.get("zoom", 1.0F);
-    // setup content
+    
+    // setup layout
     setLayout(new MyLayout()); 
     add(overview);
     add(scroll);
 
-    // init model
+    // set root
     Entity root;
     try { 
       root = gedcm.getEntity(registry.get("root",(String)null));
@@ -154,7 +157,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     if (sliderZoom!=null) registry.put("zoom", (float)sliderZoom.getValue());
     registry.put("vertical", model.isVertical());
     registry.put("families", model.isFamilies());
-    registry.put("bendarcs", model.isBendArcs());
+    registry.put("bend"    , model.isBendArcs());
+    registry.put("mode"    , model.getMode());
     if (model.getRoot()!=null) registry.put("root", model.getRoot().getId());
     super.removeNotify();
   }
@@ -211,11 +215,33 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     sliderZoom = new DoubleValueSlider(0.1D,1.0D,zoom,false);
     sliderZoom.addChangeListener(new ZoomGlue());
     sliderZoom.setText("%");
+    sliderZoom.setAlignmentX(0F);
     bar.add(sliderZoom);
     
     // overview
-    ButtonHelper bh = new ButtonHelper().setContainer(bar);
+    ButtonHelper bh = new ButtonHelper().setContainer(bar).setResources(resources);
     bh.create(new ActionOverview());
+    
+    // vertical/horizontal
+    bh.create(new ActionOrientation())
+      .setSelected(model.isVertical());
+    
+    // families?
+    bh.create(new ActionFamsAndSpouses())
+      .setSelected(model.isFamilies());
+    
+    // bending?
+    bh.create(new ActionBend())
+      .setSelected(model.isBendArcs());
+    
+    // modes
+    bh.createGroup();
+    bh.create(new ActionAsDsAnDs(Model.ANCESTORS_AND_DESCENDANTS))
+      .setSelected(model.getMode()==Model.ANCESTORS_AND_DESCENDANTS);
+    bh.create(new ActionAsDsAnDs(Model.ANCESTORS))
+      .setSelected(model.getMode()==Model.ANCESTORS);
+    bh.create(new ActionAsDsAnDs(Model.DESCENDANTS))
+      .setSelected(model.getMode()==Model.DESCENDANTS);
     
     // done
   }
@@ -546,5 +572,104 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       setRoot(root);
     }
   } //ActionTree
-    
+
+  /**
+   * Actions As/Ds/AnDs
+   */
+  private class ActionAsDsAnDs extends ActionDelegate {
+    /** the mode this toggles */
+    private int mode;
+    /**
+     * Constructor     */
+    private ActionAsDsAnDs(int moDe) {
+      // remember
+      mode = moDe; 
+      // image
+      ImgIcon i = null;
+      String t = null;
+      switch (mode) {
+        case Model.ANCESTORS_AND_DESCENDANTS:
+          i = Images.imgAnDs;
+          t = "ancestorsdescendants.tip";
+          break;
+        case Model.DESCENDANTS:
+          i = Images.imgDs; 
+          t = "descendants.tip";
+          break;
+        case Model.ANCESTORS: 
+          i = Images.imgAs; 
+          t = "ancestors.tip";
+          break;
+      }
+      super.setImage(i);
+      super.setToggle(i);
+      super.setTip(t);
+      // done      
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      model.setMode(mode);
+    }
+  } //ActionAsDsAnDs
+  
+  /**
+   * Action Orientation change   */
+  private class ActionOrientation extends ActionDelegate {
+    /**
+     * Constructor     */
+    private ActionOrientation() {
+      super.setImage(Images.imgHori);
+      super.setToggle(Images.imgVert);
+      super.setTip("orientation.tip");
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      model.setVertical(!model.isVertical());
+    }
+  } //ActionOrientation
+  
+  /**
+   * Action Families n Spouses
+   */
+  private class ActionFamsAndSpouses extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionFamsAndSpouses() {
+      super.setImage(Images.imgDontFams);
+      super.setToggle(Images.imgDoFams);
+      super.setTip("families.tip");
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      model.setFamilies(!model.isFamilies());
+    }
+  } //ActionOrientation
+
+  /**
+   * Action Bend Arcs
+   */
+  private class ActionBend extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionBend() {
+      super.setImage(Images.imgDontBend);
+      super.setToggle(Images.imgDoBend);
+      super.setTip("bend.tip");
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      model.setBendArcs(!model.isBendArcs());
+    }
+  } //ActionOrientation
+       
 } //TreeView

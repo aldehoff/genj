@@ -25,7 +25,6 @@ import genj.view.ApplyResetSupport;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
 import javax.swing.JTabbedPane;
 
 /**
@@ -34,13 +33,6 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
 
   /** keeping track of tree these settings are for */
   private TreeView tree;
-
-  /** Checkbox for options */
-  private JCheckBox[] checkOptions = {
-    new JCheckBox(TreeView.resources.getString("info.vertical" )),
-    new JCheckBox(TreeView.resources.getString("info.familiesnspouses")),
-    new JCheckBox(TreeView.resources.getString("info.bendarcs"))
-  };
 
   /** sliders for box size */
   private DoubleValueSlider 
@@ -62,10 +54,6 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     
     // panel for checkbox options    
     Box panelOptions = new Box(BoxLayout.Y_AXIS);
-    for (int i=0; i<checkOptions.length; i++) {
-      checkOptions[i].setAlignmentX(0F);
-      panelOptions.add(checkOptions[i]);
-    }
     
     sliderCmIndiWidth = new DoubleValueSlider(0.1, 10.0, 1.0, false);
     sliderCmIndiWidth.setPreferredSliderWidth(64);
@@ -122,12 +110,6 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
   public void apply() {
     // colors
     colorChooser.apply();
-    // orientation
-    tree.model.setOptions(
-      checkOptions[0].isSelected(), //vertical
-      checkOptions[1].isSelected(), //showfams
-      checkOptions[2].isSelected() //bendarcs
-    );
     // make sure that shows
     tree.repaint();
     // done
@@ -139,12 +121,6 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
   public void reset() {
     // colors
     colorChooser.reset();
-    // orientation
-    checkOptions[0].setSelected(tree.model.isVertical());
-    // families
-    checkOptions[1].setSelected(tree.model.isFamilies());
-    // bendarcs
-    checkOptions[2].setSelected(tree.model.isBendArcs());
     // colors
     colorChooser.reset();
     // done

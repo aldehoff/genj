@@ -49,6 +49,12 @@ import java.util.List;
  */
 public class Model implements Graph, GedcomListener {
   
+  /** possible modes */
+  public final static int
+    ANCESTORS_AND_DESCENDANTS = 0,
+    DESCENDANTS               = 1,
+    ANCESTORS                 = 2; 
+  
   /** listeners */
   private List listeners = new ArrayList(3);
 
@@ -75,6 +81,9 @@ public class Model implements Graph, GedcomListener {
   
   /** whether we bend arcs or not */
   private boolean isBendArcs = true;
+  
+  /** the mode we're in */
+  private int mode = ANCESTORS_AND_DESCENDANTS;
     
   /** parameters */
   private double 
@@ -170,10 +179,26 @@ public class Model implements Graph, GedcomListener {
   }
   
   /**
+   * Accessor - wether we're vertical
+   */
+  public void setVertical(boolean set) {
+    isVertical = set;
+    parse();
+  }
+  
+  /**
    * Accessor - wether we bend arcs or not
    */
   public boolean isBendArcs() {
     return isBendArcs;
+  }
+  
+  /**
+   * Accessor - wether we bend arcs or not
+   */
+  public void setBendArcs(boolean set) {
+    isBendArcs = set;
+    parse();
   }
   
   /**
@@ -184,17 +209,32 @@ public class Model implements Graph, GedcomListener {
   } 
   
   /**
-   * Accessor - options
+   * Accessor - whether we model families
    */
-  public void setOptions(boolean vertical, boolean families, boolean bendarcs) {
-    // change 
-    isBendArcs = bendarcs;
-    isVertical = vertical;
-    isFamilies = families;
-    // update
+  public void setFamilies(boolean set) {
+    isFamilies = set;
     parse();
-    // done
-  }
+  } 
+  
+  /**
+   * Accessor - the mode
+   */
+  public int getMode() {
+    return mode;
+  } 
+  
+  /**
+   * Accessor - the mode
+   */
+  public void setMode(int set) {
+    switch (set) {
+      case ANCESTORS:
+      case DESCENDANTS:
+      case ANCESTORS_AND_DESCENDANTS:
+        mode = set;
+    }
+    parse();
+  } 
   
   /**
    * Add listener
@@ -309,15 +349,27 @@ public class Model implements Graph, GedcomListener {
       pa = isFamilies ? (Parser)new AncestorsWithFams() : new AncestorsNoFams();
     // prepare marr padding
     padMarrs = isVertical ? padMarrsV : padMarrsH;
-    // parse its descendants
-    MyNode node = pd.parse(root, null);
-    // keep bounds
-    Rectangle2D r = bounds.getFrame();
-    Point2D p = node.getPosition();
-    // parse its ancestors while preserving position
-    node = pa.parse(root, p);    
-    // update bounds
-    bounds.add(r);
+    // do it
+    switch (mode) {
+      case ANCESTORS_AND_DESCENDANTS: 
+        // parse its descendants
+        MyNode node = pd.parse(root, null);
+        // keep bounds
+        Rectangle2D r = bounds.getFrame();
+        Point2D p = node.getPosition();
+        // parse its ancestors while preserving position
+        node = pa.parse(root, p);    
+        // update bounds
+        bounds.add(r);
+        // done
+        break;
+      case ANCESTORS:
+        pa.parse(root, null);
+        break;
+      case DESCENDANTS:
+        pd.parse(root, null);
+        break;
+    }
     // create gridcache
     cache = new GridCache(bounds, 4*Math.max(heightIndis+heightFams, widthIndis+widthFams));
     Iterator it = nodes.iterator();

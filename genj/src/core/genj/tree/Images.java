@@ -30,13 +30,16 @@ final class Images {
 
   static ImgIcon
     imgView,
-    imgMinus,
-    imgPlus,
-    imgMore,
-    imgIndisFields,
-    imgFamsFields,
     imgOverview,
-    imgRoot;
+    imgAs,
+    imgDs,
+    imgAnDs,
+    imgHori,
+    imgVert,
+    imgDoFams,
+    imgDontFams,
+    imgDoBend,
+    imgDontBend;
 
   /**
    * Constructor which pre-loads all images
@@ -45,12 +48,20 @@ final class Images {
 
     imgView        = new ImgIcon(this,"images/View.gif"       );
 
-    imgMinus       = new ImgIcon(this,"images/Minus.gif"      );
-    imgPlus        = new ImgIcon(this,"images/Plus.gif"       );
-    imgMore        = new ImgIcon(this,"images/More.gif"       );
-    imgIndisFields = new ImgIcon(this,"images/IndisFields.gif");
-    imgFamsFields  = new ImgIcon(this,"images/FamsFields.gif" );
     imgOverview    = new ImgIcon(this,"images/Overview.gif"   );
-    imgRoot        = new ImgIcon(this,"images/Root.gif"       );
+    
+    imgAs          = new ImgIcon(this,"images/As.gif"         );
+    imgDs          = new ImgIcon(this,"images/Ds.gif"         );
+    imgAnDs        = new ImgIcon(this,"images/AnDs.gif"       );
+    
+    imgHori        = new ImgIcon(this,"images/Hori.gif"       );
+    imgVert        = new ImgIcon(this,"images/Vert.gif"       );
+    
+    imgDoFams      = new ImgIcon(this,"images/DoFams.gif"     ); 
+    imgDontFams    = new ImgIcon(this,"images/DontFams.gif"   ); 
+
+    imgDoBend      = new ImgIcon(this,"images/DoBend.gif"     ); 
+    imgDontBend    = new ImgIcon(this,"images/DontBend.gif"   ); 
   }
-}
+  
+} //Images
