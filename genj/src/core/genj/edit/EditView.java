@@ -150,16 +150,16 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     super.addNotify();
 
     // Check if we can preset something to edit
+    // 20021217 #655478 EditView follows current if closed UNLESS sticky
     Entity entity = preselectEntity;
-    if (entity==null) {
-      String last = registry.get("last",(String)null);
-      if (last!=null) {
-        try { 
-          entity = gedcom.getEntity(last); 
-        } catch (Exception e) {
-          entity = ViewManager.getInstance().getCurrentEntity(gedcom);
-        }
+    if (entity==null&&isSticky()) {
+      try { 
+        entity = gedcom.getEntity(registry.get("last",(String)null)); 
+      } catch (Exception e) {
       }
+    }
+    if (entity==null) {
+      entity = ViewManager.getInstance().getCurrentEntity(gedcom);
     }
     setEntity(entity);
     preselectEntity=null;
@@ -174,7 +174,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     // Remember registry
     registry.put("divider",splitPane.getDividerLocation());
     registry.put("last", getCurrentEntity()!=null?getCurrentEntity().getId():"");
-    registry.put("sticky", actionSticky!=null&&actionSticky.isSelected());
+    registry.put("sticky", isSticky());
 
     // Continue
     super.removeNotify();
@@ -261,7 +261,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
    * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
    */
   public void setCurrentEntity(Entity entity) {
-    if (actionSticky==null||!actionSticky.isSelected()) setEntity(entity);
+    if (!isSticky()) setEntity(entity);
   }
 
   /**
@@ -359,6 +359,12 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     actionSticky.setSelected(set);
   }
 
+  /**
+   * Check sticky status
+   */
+  /*package*/ boolean isSticky() {
+    return actionSticky!=null && actionSticky.isSelected();
+  }
   /**
    * Updates the menu
    */
