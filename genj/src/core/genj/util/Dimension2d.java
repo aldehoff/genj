@@ -19,6 +19,7 @@
  */
 package genj.util;
 
+import java.awt.Dimension;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
 
@@ -57,6 +58,20 @@ public class Dimension2d extends Dimension2D {
   
   public String toString() {
     return width + " x " + height;
+  }
+  
+  public Dimension toDimension() {
+    return new Dimension(
+      (int)Math.ceil(width),
+      (int)Math.ceil(height)
+    );
+  }
+
+  public static Dimension getDimension(Dimension2D dim) {
+    return new Dimension(
+      (int)Math.ceil(dim.getWidth()),
+      (int)Math.ceil(dim.getHeight())
+    );
   }
   
 } //Dimension2d
