@@ -58,6 +58,7 @@ public class Model implements Graph, GedcomListener {
 
   /** nodes */
   private Map entities2nodes = new HashMap(100);
+  private Collection nodes = new ArrayList(100);
 
   /** bounds */
   private Rectangle2D bounds = new Rectangle2D.Double();
@@ -293,7 +294,7 @@ public class Model implements Graph, GedcomListener {
    * @see gj.model.Graph#getNodes()
    */
   public Collection getNodes() {
-    return entities2nodes.values();
+    return nodes;
   }
   
   /**
@@ -342,6 +343,7 @@ public class Model implements Graph, GedcomListener {
     Object key = node.entity;
     if (key==null) key = node;
     entities2nodes.put(key, node);
+    nodes.add(node);
     return node;
   }
   
@@ -357,6 +359,7 @@ public class Model implements Graph, GedcomListener {
   private void parse() {
     // clear old
     arcs.clear();
+    nodes.clear();
     entities2nodes.clear();
     bounds.setFrame(0,0,0,0);
     // something to do?
