@@ -501,7 +501,7 @@ import java.awt.geom.Rectangle2D;
       // parse under artificial pivot
       TreeNode nPivot = model.add(new TreeNode(null, null, null));
       // the origin is not nPivot!!!
-      origin = recurse(indi, nPivot);
+      origin = parse(indi, nPivot);
       // done
       return nPivot;
     }
@@ -509,9 +509,22 @@ import java.awt.geom.Rectangle2D;
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
      */
     protected TreeNode parse(Fam fam) {
-      TreeNode nFam = recurse(fam);
-      nFam.padding = padIndis; // patch first fams padding
+      
+      // node for fam (note patched padding)
+      TreeNode nFam = model.add(new TreeNode(fam, shapeFams, padIndis));
+      
+      // grab the children
+      Indi[] children = fam.getChildren();
+      for (int c=0; c<children.length; c++) {
+        // create an arc from node to node for indi
+        parse(children[c], nFam);       
+         // next child
+      }
+
+      // the origin is the fam      
       origin = nFam;
+      
+      // done
       return nFam;
     }
         
@@ -521,7 +534,7 @@ import java.awt.geom.Rectangle2D;
      * @param pivot all nodes of descendant are added to pivot
      * @return MyNode
      */
-    private TreeNode recurse(Indi indi, TreeNode pivot) {
+    private TreeNode parse(Indi indi, TreeNode pivot) {
 
       // lookup its families      
       Fam[] fams = indi.getFamilies();
@@ -555,29 +568,31 @@ import java.awt.geom.Rectangle2D;
       TreeNode nSpouse = new TreeNode(fam.getOtherSpouse(indi), shapeIndis, padWife);
       model.add(new TreeArc(pivot, model.add(nSpouse), false));
       
-      // add arc : marr-fam
-      TreeNode nFam = recurse(fam);
+      // add fam and arc indi-fam
+      TreeNode nFam = model.add(new TreeNode(fam, shapeFams, padFams));
       model.add(new TreeArc(nIndi, nFam, false));
       
-      // done
-      return nIndi;
-    }
-    
-    /**
-     * recurses into fam and its descendants
-     */
-    private TreeNode recurse(Fam fam) {
-      // node for fam
-      TreeNode nFam = model.add(new TreeNode(fam, shapeFams, padFams));
       // grab the children
       Indi[] children = fam.getChildren();
       for (int c=0; c<children.length; c++) {
-        // create an arc from node to node for indi
-        recurse(children[c], nFam);       
-         // next child
+        
+        // on first : no descendants for indi?
+        if (c==0) {
+          if (model.isHideDescendants(indi)) {
+            insertPlusMinus(indi, nFam, false, true);
+            break;
+          }
+          nFam = insertPlusMinus(indi, nFam, false, false);
+        }
+
+        // recurse into child        
+        parse(children[c], nFam);
+        
+        // next child       
       }
+      
       // done
-      return nFam;
+      return nIndi;
     }
     
   } //DescendantsWithFams
