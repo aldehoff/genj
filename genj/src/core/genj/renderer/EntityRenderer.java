@@ -114,9 +114,9 @@ public class EntityRenderer {
   /**
    * 
    */
-  public void render(Graphics g, Dimension d) {
-    root.setSize(d.width,d.height);
-    root.paint(g, new Rectangle(0,0,d.width,d.height));
+  public void render(Graphics g, Rectangle r) {
+    root.setSize(r.width,r.height);
+    root.paint(g, r);
   }
   
   /**

@@ -31,7 +31,6 @@ import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -97,7 +96,7 @@ public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport
     g.setColor(Color.white);
     g.fillRect(0,0,bounds.width,bounds.height);
     g.setColor(Color.black);
-    renderer.render(g, new Dimension(bounds.width,bounds.height/2));
+    renderer.render(g, new Rectangle(0,0,bounds.width,bounds.height/2));
   }
 
   /**

@@ -22,6 +22,7 @@ package genj.tree;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.renderer.EntityRenderer;
 import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Node;
@@ -62,10 +63,18 @@ public class ContentRenderer {
   /** whether to render content */
   /*package*/ boolean isRenderContent = true;
   
+  /** the entity renderer we're using */
+  private EntityRenderer contentRenderer;
+  
   /**
    * Render the content
    */
   public void render(UnitGraphics ug, Model model) {  
+    // prepare renderer
+    contentRenderer = new EntityRenderer(
+      ug.getGraphics(), 
+      "<font color=#ff0000>Individual</font>'s <b>content</b>"
+    );
     // translate to center
     Rectangle2D bounds = model.getBounds();
     ug.translate(-bounds.getX(), -bounds.getY());
@@ -142,12 +151,15 @@ public class ContentRenderer {
   private void renderContent(UnitGraphics g, double x, double y, Shape shape, Object content) {
     // safety check
     if (!isRenderContent||content==null) return;
-    // preserve clip
-    g.pushClip(x, y, shape.getBounds2D());
-    // draw it
-    // FIXME : render properties here
-    g.draw(content.toString(), x, y);
-    // restore clip
+    // preserve clip&transformation
+    Rectangle2D r = shape.getBounds2D();
+    g.pushClip(x, y, r);
+    g.pushTransformation();
+    // draw it - FIXME : render appropriate entity content here
+    g.translate(x, y);
+    contentRenderer.render(g.getGraphics(), g.units2pixels(r));
+    // restore clip&transformation
+    g.popTransformation();    
     g.popClip();
     // done
   }

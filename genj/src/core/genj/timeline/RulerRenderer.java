@@ -26,6 +26,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 
 /**
  * A renderer knowing how to render a ruler for the timeline
@@ -92,7 +93,8 @@ public class RulerRenderer extends ContentRenderer {
     if (to-from<width||to-from<1) return;
 
     // clipp'd out?
-    if (g.isClipped(from, 0, to, 1)) return;
+    Rectangle2D clip = g.getClip();
+    if (!clip.intersects(from, 0, to-from, 1)) return;
     
     // calculate center year    
     double year = Math.rint((from+to)/2);
