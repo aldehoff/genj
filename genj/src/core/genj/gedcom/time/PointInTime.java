@@ -294,9 +294,10 @@ public class PointInTime implements Comparable {
     if (jd!=UNKNOWN)
       return true;
 
-    // ok for empty
+    // quick empty check 20040301 where lenient here before but lead to problems
+    // relying on valid dates that *CAN* be compared reliably
     if (day==UNKNOWN&&month==UNKNOWN&&year==UNKNOWN)
-      return true;
+      return false;
 
     // try calculating JD
     try {
