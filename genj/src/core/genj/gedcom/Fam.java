@@ -230,4 +230,12 @@ public class Fam extends Entity {
     return wb.length()>0 ? wb.toString() : super.toString();
   }
   
+  /**
+   * Calculate fam's Marriage date
+   */
+  public PropertyDate getMarriageDate() {
+    // Calculate MARR|DATE
+    return (PropertyDate)getProperty(new TagPath("FAM:MARR:DATE"),true);
+  }
+
 } //Fam

@@ -124,8 +124,18 @@ public class MetaProperty {
    * Add a sub
    */
   private void addSub(MetaProperty sub) {
+    // keep key->sub
     mapOfSubs.put(sub.tag, sub);
+    // keep list (replace existing!)
+    for (int i=0; i<listOfSubs.size(); i++) {
+      MetaProperty other = (MetaProperty)listOfSubs.get(i);
+      if (other.tag.equals(sub.tag)) {
+        listOfSubs.set(i, sub);
+        return;       
+      }
+    }
     listOfSubs.add(sub);
+    // done
   }
   
   /**

@@ -87,28 +87,16 @@ public class Indi extends Entity {
    * Calculate indi's birth date
    */
   public PropertyDate getBirthDate() {
-
     // Calculate BIRT|DATE
-    PropertyDate p = (PropertyDate)getProperty(new TagPath("INDI:BIRT:DATE"),true);
-    if (p==null)
-      return null;
-
-    // found
-    return p;
+    return (PropertyDate)getProperty(new TagPath("INDI:BIRT:DATE"),true);
   }
 
   /**
    * Calculate indi's death date
    */
   public PropertyDate getDeathDate() {
-
     // Calculate DEAT|DATE
-    PropertyDate p = (PropertyDate)getProperty(new TagPath("INDI:DEAT:DATE"),true);
-    if (p==null)
-      return null;
-
-    // found
-    return p;
+    return (PropertyDate)getProperty(new TagPath("INDI:DEAT:DATE"),true);
   }
   
   /**

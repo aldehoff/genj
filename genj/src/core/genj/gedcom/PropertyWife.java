@@ -26,6 +26,8 @@ package genj.gedcom;
  */
 public class PropertyWife extends PropertyXRef {
 
+  public final static String TAG = "WIFE";
+
   /** applicable target types */
   public final static int[] 
     TARGET_TYPES = new int[]{ Gedcom.INDIVIDUALS };
@@ -63,7 +65,7 @@ public class PropertyWife extends PropertyXRef {
    * Returns the Gedcom-Tag of this property
    */
   public String getTag() {
-    return "WIFE";
+    return TAG;
   }
 
   /**

@@ -187,19 +187,52 @@ public class PropertyAge extends Property {
 
   /**
    * Calculates earlier point in time (the birth)
+   * 
+   *  INDI:EVENT:AGE -> INDI:BIRT:DATE
+   * 
+   *  FAM:MARR:HUSB:AGE -> FAM:HUSB -> INDI:BIRT:DATE
+   * 
+   *  FAM:MARR:WIFE:AGE -> FAM:WIFE -> INDI:BIRT:DATE
    */
   public PointInTime getEarlier() {
-    Indi indi = (Indi)getEntity();
-    PropertyDate birth = indi.getBirthDate();
+    Entity e = getEntity();
+    // might FAM:MARR:WIFE|HUSB:AGE
+    if (e instanceof Fam) {
+      Property parent = getParent();
+      if (parent.getTag().equals(PropertyHusband.TAG))
+        e = ((Fam)e).getHusband();
+      if (parent.getTag().equals(PropertyWife.TAG))
+        e = ((Fam)e).getWife();
+    }
+    // check individual?
+    if (!(e instanceof Indi)) return null;
+    // date
+    PropertyDate birth = ((Indi)e).getBirthDate();
     return birth!=null ? birth.getStart() : null;
   }
 
   /**
    * Calculates later point in time (the event)
+   * 
+   * INDI:EVENT:AGE -> INDI:EVENT:DATE
+   * 
+   * FAM:EVENT:HUSB:AGE -> FAM:EVENT:DATE
+   * 
+   * FAM:EVENT:WIFE:AGE -> FAM:EVENT:DATE
+   * 
    */
   public PointInTime getLater() {
-    PropertyEvent event = (PropertyEvent)getParent();
-    PropertyDate date = event.getDate();
+    Property parent = getParent();
+    // might FAM:MARR:WIFE|HUSB:AGE
+    if (parent.getTag().equals(PropertyHusband.TAG)||parent.getTag().equals(PropertyWife.TAG)) {
+      // one more up
+      parent = parent.getParent();
+    }
+    // check event
+    if (!(parent instanceof PropertyEvent))
+      return null;
+    PropertyDate date = ((PropertyEvent)parent).getDate();
+    // start of date
     return date!=null ? date.getStart() : null;
   }
 
