@@ -66,7 +66,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    * Get the last change time
    */
   public String getTimeAsString() {
-    if (time<0)
+    if (time<=0)
       return EMPTY_STRING;
 
     long
