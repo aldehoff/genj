@@ -69,8 +69,8 @@ public class ResumeView extends JPanel implements ToolBarSupport {
   /** language resources we use */  
   private final static Resources resources = new Resources("genj.resume");
   
-  /** htmls for entities */
-  private Map htmls = prepareDefaults();
+  /** a registry we keep */
+  private Registry registry;
   
   /** the renderer we're using */      
   private EntityRenderer renderer = NORENDERER;
@@ -81,29 +81,24 @@ public class ResumeView extends JPanel implements ToolBarSupport {
   /**
    * Constructor
    */
-  public ResumeView(Gedcom gedcom, Registry registry, Frame frame) {
+  public ResumeView(Gedcom gedcom, Registry reg, Frame frame) {
+    // save some stuff
+    registry = reg;
     // listen to gedcom
     gedcom.addListener(new GedcomConnector());
-    // done    
-  }
-
-  /**
-   * Prepare default HTMLs for entities
-   */
-  private static Map prepareDefaults() {
-    // loop for htmls
-    HashMap result = new HashMap();
+    // loop for htmls from defaults
     Enumeration keys = resources.getKeys();
     while (keys.hasMoreElements()) {
       String key = keys.nextElement().toString();
-      if (key.startsWith("default.")) 
-        result.put(key.substring("default.".length()), resources.getString(key));
+      if (key.startsWith("html.")) {
+        // .. if it's not declared in registry -> grab it
+        if (registry.get(key,(String)null)==null) 
+          registry.put(key, resources.getString(key));
+      }
     }
-    // done
-    return result;
+    // done    
   }
-    
-  
+
   /**
    * @see javax.swing.JComponent#paintComponent(Graphics)
    */
@@ -125,16 +120,14 @@ public class ResumeView extends JPanel implements ToolBarSupport {
    * Accessor - HTML for given entity type
    */
   public String getHtml(int type) {
-    Object result = htmls.get(Gedcom.getTagFor(type));
-    if (result==null) result="?";
-    return result.toString();
+    return registry.get("html."+Gedcom.getTagFor(type),"");
   }
   
   /**
    * Accessor - HTML for given entity type
    */
   public void setHtml(int type, String set) {
-    htmls.put(Gedcom.getTagFor(type), set);
+    registry.put("html."+Gedcom.getTagFor(type), set);
     Entity e = renderer.getEntity(); 
     renderer = NORENDERER;
     setEntity(e);

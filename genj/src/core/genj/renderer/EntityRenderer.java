@@ -84,9 +84,6 @@ public class EntityRenderer {
   /** all PropertyViews we know */
   private List propViews = new ArrayList(16);
   
-  /** all SkipViews we know */
-  private List skipViews = new ArrayList(16);
-  
   /** the proxies we know */
   private static Map proxies = new HashMap(10);
   
@@ -94,6 +91,9 @@ public class EntityRenderer {
    * 
    */  
   public EntityRenderer(String html) {
+    
+    // we wrap the html in html/body
+    html = "<html><body>"+html+"</body></html>";
     
     // read the html
     try {
@@ -165,8 +165,6 @@ public class EntityRenderer {
    */
   private class ModifiedHTMLFactory extends HTMLFactory {
     
-    private boolean skip = false;
-  
     /**
      * @see javax.swing.text.ViewFactory#create(Element)
      */
@@ -181,12 +179,6 @@ public class EntityRenderer {
       } else {
         result = super.create(elem);
       }
-      
-      // check if the element is "if"
-      if ("if".equals(elem.getName())) {
-        skip=!skip;
-      }
-      if (skip) skipViews.add(result);
       
       // done
       return result;
@@ -267,10 +259,6 @@ public class EntityRenderer {
      */    
     public void setSize(float width, float height) {
       view.setSize(width, height);
-      Iterator it = skipViews.iterator();
-      while (it.hasNext()) {
-        ((View)it.next()).setSize(0,0);
-      }
     }
 
     /**
