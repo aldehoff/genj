@@ -22,6 +22,7 @@ package genj.util.swing;
 import genj.util.ActionDelegate;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -92,6 +93,18 @@ public class PopupWidget extends JButton {
     setMargin(new Insets(2,2,2,2));
     // done
   }
+  
+  /**
+   * intercept add
+   */
+  public void addNotify() {
+    // continue
+    super.addNotify();
+    // check container - don't mind resizing in toolbar
+    if (getParent() instanceof JToolBar) 
+      setMaximumSize(new Dimension(128,128));
+  }
+
   
   /**
    * Our special model
