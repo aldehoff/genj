@@ -327,12 +327,13 @@ public class UnitGraphics {
    * dimension to pixels
    */
   public Rectangle units2pixels(Rectangle2D bounds) {
-    return new Rectangle(
-      units2pixels(bounds.getMinX(), xunit),
-      units2pixels(bounds.getMinY(), yunit),
-      units2pixels(bounds.getWidth(), xunit),
-      units2pixels(bounds.getHeight(), yunit)
-    );
+    int
+      x1 = (int)Math.ceil(bounds.getMinX  ()*xunit),
+      y1 = (int)Math.ceil(bounds.getMinY  ()*yunit),
+      x2 = (int)Math.floor (bounds.getMaxX  ()*xunit),
+      y2 = (int)Math.floor (bounds.getMaxY  ()*yunit);
+      
+    return new Rectangle(x1,y1,x2-x1,y2-y1);
   }
 
   /**
