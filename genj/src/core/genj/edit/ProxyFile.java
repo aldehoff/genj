@@ -38,6 +38,7 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.ByteArrayInputStream;
+import java.io.FilePermission;
 import java.io.InputStream;
 import java.util.Iterator;
 
@@ -61,7 +62,6 @@ import javax.swing.JScrollPane;
       ".",
       "resolve image directory"
     );
-
 
   /** preview */
   private Preview preview;
@@ -141,10 +141,22 @@ import javax.swing.JScrollPane;
     
     JPanel p = new JPanel();
     p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
-    p.add(tFile);
-    p.add(new ButtonHelper().create(new ActionChoose()));
     p.setAlignmentX(0);
     in.add(p);
+
+    // but check permissions first
+    try {
+
+      System.getSecurityManager().checkPermission(
+        new FilePermission(IMAGE_DIR, "read")
+      );      
+      
+      // a text-field and button for file
+      p.add(tFile);
+      p.add(new ButtonHelper().create(new ActionChoose()));
+
+    } catch (SecurityException se) {
+    }
 
     // Any graphical information that could be shown ?
     preview = new Preview();
@@ -171,7 +183,11 @@ import javax.swing.JScrollPane;
      * Constructor
      */
     protected ActionChoose() {
-      setText(">>");
+      
+      // a simple button with only an image
+      setImage(property.getImage(false));
+
+      // done
     }
     /**
      * @see genj.util.ActionDelegate#execute()
