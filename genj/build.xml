@@ -150,6 +150,7 @@
      <!-- create genj.jar -->
      <delete file="${dir.build}/applet/genj.jar"/>
      <jar jarfile="${dir.build}/applet/genj.jar" update="True">
+       <fileset dir="${dir.build}/classes/contrib" excludes="${exclude}"/>
        <fileset dir="${dir.build}/classes/core" excludes="${exclude}"/>
        <fileset dir="./images" excludes="${exclude}"/>
        <fileset dir="./language/en" excludes="${exclude}"/>
@@ -177,6 +178,7 @@
      <!-- create genj.jar -->
      <delete file="${dir.lib}/genj.jar"/>
      <jar jarfile="${dir.lib}/genj.jar" update="True">
+       <fileset dir="${dir.build}/classes/contrib"/>
        <fileset dir="${dir.build}/classes/core"/>
        <fileset dir="${dir.build}/version"/>
        <fileset dir="./images"/>
