@@ -69,7 +69,7 @@ import javax.swing.JToolBar;
 public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport {
 
   /** language resources we use */  
-  private final static Resources resources = new Resources("genj.entity");
+  /*package*/ final static Resources resources = new Resources("genj.entity");
   
   /** a registry we keep */
   private Registry registry;

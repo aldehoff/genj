@@ -29,6 +29,9 @@ final public class Images {
   private static Images instance = new Images();
 
   public static ImgIcon
+  
+    imgView,
+    
     imgStickOn,
     imgStickOff,
     imgReturn,
@@ -53,6 +56,8 @@ final public class Images {
    * Constructor which pre-loads all images
    */
   private Images() {
+    
+    imgView      = new ImgIcon(this,"images/View.gif");
 
     imgStickOn   = new ImgIcon(this,"images/StickOn.gif");
     imgStickOff  = new ImgIcon(this,"images/StickOff.gif");

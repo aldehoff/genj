@@ -29,6 +29,7 @@ final class Images {
   private static Images instance = new Images();
 
   static ImgIcon
+    imgView,
     imgMinus,
     imgPlus,
     imgMore,
@@ -41,6 +42,8 @@ final class Images {
    * Constructor which pre-loads all images
    */
   private Images() {
+
+    imgView        = new ImgIcon(this,"images/View.gif"       );
 
     imgMinus       = new ImgIcon(this,"images/Minus.gif"      );
     imgPlus        = new ImgIcon(this,"images/Plus.gif"       );

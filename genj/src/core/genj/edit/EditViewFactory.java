@@ -20,6 +20,7 @@
 package genj.edit;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.view.ContextMenuSupport;
 import genj.view.ViewFactory;
+import genj.view.ViewManager;
 
 /**
  * The factory for the TableView
@@ -60,6 +62,7 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   ;
   
   private final ActionDelete aDelete = new ActionDelete();
+  private final ActionDelegate aNOOP = ActionDelegate.NOOP;
 
   /** actions on entities */
   private ActionDelegate[] gedcom2create = new ActionDelegate[] {
@@ -69,9 +72,9 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   /** actions on entities */
   private ActionDelegate[][] entity2create = new ActionDelegate[][] {
     // INDIVIDUALS
-    { aDelete,aChild,aParent,aSpouse,aNote,aMedia }, 
+    { aChild,aParent,aSpouse,aNote,aMedia,aNOOP,aDelete }, 
     // FAMILIES
-    { aDelete,aChild,aNote,aSpouse,aMedia }, 
+    { aChild,aNote,aSpouse,aMedia,aNOOP,aDelete }, 
     // MULTIMEDIAS
     { aDelete }, 
     // NOTES
@@ -107,6 +110,34 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   }
   
   /**
+   * @see genj.view.ViewFactory#getDefaultDimension()
+   */
+  public Dimension getDefaultDimension() {
+    return new Dimension(256,480);
+  }
+  
+  /**
+   * @see genj.view.ViewFactory#getImage()
+   */
+  public ImgIcon getImage() {
+    return Images.imgView;
+  }
+  
+  /**
+   * @see genj.view.ViewFactory#getKey()
+   */
+  public String getKey() {
+    return "edit";
+  }
+
+  /**
+   * @see genj.view.ViewFactory#getName(boolean)
+   */
+  public String getTitle(boolean abbreviate) {
+    return resources.getString("title" + (abbreviate?".short":""));
+  }
+  
+  /**
    * @see genj.view.ViewFactory#createActions(Entity)
    */
   public List createActions(Entity entity) {
@@ -114,6 +145,11 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
     List result = new ArrayList();
     ActionDelegate[] actions = entity2create[entity.getType()];
     for (int a=0; a<actions.length; a++) result.add(actions[a]);
+    // add an "edit in EditView"
+    if (!ViewManager.getInstance().isOpen(EditView.class)) {
+      result.add(ActionDelegate.NOOP);
+      result.add(new ActionEdit(entity));
+    }
     // done
     return result;
   }
@@ -128,6 +164,30 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
     for (int a=0; a<actions.length; a++) result.add(actions[a]);
     // done
     return result;
+  }
+  
+  /**
+   * ActionEdit - edit an entity
+   */
+  private class ActionEdit extends ActionDelegate {
+    /** the entity to edit */
+    private Entity candidate;
+    /**
+     * Constructor
+     */
+    private ActionEdit(Entity entity) {
+      candidate = entity;
+      setImage(Images.imgView);
+      setText(EditView.resources.getString("edit", getTitle(false)));
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      EditView ev = (EditView)ViewManager.getInstance().openView(EditViewFactory.this, candidate.getGedcom());
+      ev.setSticky(false);
+      ev.setEntity(candidate);
+    }
   }
 
   /**

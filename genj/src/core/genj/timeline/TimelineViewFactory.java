@@ -20,6 +20,7 @@
 package genj.timeline;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.List;
 
@@ -28,9 +29,10 @@ import javax.swing.JComponent;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.util.ImgIcon;
+import genj.view.ViewFactory;
 import genj.print.PrintRenderer;
 import genj.util.Registry;
-import genj.view.ViewFactory;
 
 /**
  * The factory for the TableView
@@ -56,6 +58,34 @@ public class TimelineViewFactory implements ViewFactory {
    */
   public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
     return new TimelineView(gedcom,registry,frame);
+  }
+  
+  /**
+   * @see genj.view.ViewFactory#getDefaultDimension()
+   */
+  public Dimension getDefaultDimension() {
+    return new Dimension(480,256);
+  }
+
+  /**
+   * @see genj.view.ViewFactory#getImage()
+   */
+  public ImgIcon getImage() {
+    return new ImgIcon(this, "View.gif");
+  }
+
+  /**
+   * @see genj.view.ViewFactory#getKey()
+   */
+  public String getKey() {
+    return "timeline";
+  }
+
+  /**
+   * @see genj.view.ViewFactory#getName(boolean)
+   */
+  public String getTitle(boolean abbreviate) {
+    return TimelineView.resources.getString("title" + (abbreviate?".short":""));
   }
 
 } //TimelineViewFactory

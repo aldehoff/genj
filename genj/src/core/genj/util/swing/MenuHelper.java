@@ -159,7 +159,7 @@ public class MenuHelper  {
       Object o = it.next();
       if (o instanceof List) {
         // a separator
-        createSeparator();
+        createSeparator(false);
         // recurse
         createItems((List)o);
       } else {
@@ -175,12 +175,20 @@ public class MenuHelper  {
    */
   public JMenuItem createItem(ActionDelegate action) {
     
+    // a NOOP results in separator
+    if (action == ActionDelegate.NOOP) {
+      createSeparator(false);
+      return null;
+    }
+    
+    // create a menu item
     JMenuItem result = new JMenuItem();
     result.addActionListener((ActionListener)action.as(ActionListener.class));
     if (action.txt!=null) result.setText(string(action.txt));
     if (action.img!=null) result.setIcon(ImgIconConverter.get(action.img));
     result.setEnabled(enabled);
-    
+  
+    // add it to current menu on stack  
     Object menu = peekMenu();
     if (menu instanceof JMenu)
       ((JMenu)menu).add(result);
@@ -189,22 +197,39 @@ public class MenuHelper  {
     if (menu instanceof JMenuBar)
       ((JMenuBar)menu).add(result);
       
+    // put it in collection if applicable
     if (collection!=null) collection.addElement(result);
     
+    // done
     return result;
   }
-  
+
   /**
    * Creates an separator
    */
   public MenuHelper createSeparator() {
-
+    return createSeparator(true);
+  }
+  
+  /**
+   * Creates an separator
+   * @param force whether to force the separator even though the current
+   * menu is empty
+   */
+  public MenuHelper createSeparator(boolean force) {
+    // try to create one
     Object menu = peekMenu();
-    if (menu instanceof JMenu)
-      ((JMenu)menu).addSeparator();
-    if (menu instanceof JPopupMenu)
-      ((JPopupMenu)menu).addSeparator();
-      
+    if (menu instanceof JMenu) {
+      JMenu jmenu = (JMenu)menu;
+      if (force||jmenu.getItemCount()>0)
+        jmenu.addSeparator();
+    }
+    if (menu instanceof JPopupMenu) {
+      JPopupMenu pmenu = (JPopupMenu)menu;
+      if (force||pmenu.getComponentCount()>0)
+        pmenu.addSeparator();
+    }
+    // done      
     return this;
   }
 

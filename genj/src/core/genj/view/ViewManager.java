@@ -27,6 +27,7 @@ import genj.print.PrintProperties;
 import genj.print.PrintRenderer;
 import genj.print.Printer;
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.ImgIcon;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -67,16 +68,19 @@ public class ViewManager {
   /** resources */
   public final static Resources resources = new Resources("genj.view");
 
-  /** descriptors of views */
-  static final private Descriptor[] descriptors = new Descriptor[]{
-    new Descriptor("genj.table.TableViewFactory"      ,"table"    ,Images.imgTable    , new Dimension(480,320)),
-    new Descriptor("genj.tree.TreeViewFactory"        ,"tree"     ,Images.imgTree     , new Dimension(480,480)),
-    new Descriptor("genj.timeline.TimelineViewFactory","timeline" ,Images.imgTimeline , new Dimension(480,256)),
-    new Descriptor("genj.edit.EditViewFactory"        ,"edit"     ,Images.imgEdit     , new Dimension(256,480)),
-    new Descriptor("genj.report.ReportViewFactory"    ,"report"   ,Images.imgReport   , new Dimension(480,320)),
-    new Descriptor("genj.nav.NavigatorViewFactory"    ,"navigator",Images.imgNavigator, new Dimension(140,200)),
-    new Descriptor("genj.entity.EntityViewFactory"    ,"entity"   ,Images.imgEntity   , new Dimension(320,320))
+  /** factories of views */
+  static final private String[] FACTORIES = new String[]{
+    "genj.table.TableViewFactory",
+    "genj.tree.TreeViewFactory",
+    "genj.timeline.TimelineViewFactory",
+    "genj.edit.EditViewFactory",
+    "genj.report.ReportViewFactory",
+    "genj.nav.NavigatorViewFactory",
+    "genj.entity.EntityViewFactory" 
   };
+  
+  /** factory instances of views */
+  static private ViewFactory[] factories = null;
   
   /** open views */
   private List viewWidgets = new LinkedList();
@@ -93,10 +97,25 @@ public class ViewManager {
   }
 
   /**
-   * Returns all known descriptors
+   * Returns all known view factories
    */
-  public Descriptor[] getDescriptors() {
-    return descriptors;
+  public ViewFactory[] getFactories() {
+    // already computed?
+    if (factories!=null) return factories;
+    // create 'em
+    List result = new ArrayList();
+    for (int f=0; f<FACTORIES.length; f++) {
+      try {
+        result.add((ViewFactory)Class.forName(FACTORIES[f]).newInstance());
+      } catch (Throwable t) {
+        Debug.log(Debug.ERROR, this, "ViewFactory "+FACTORIES[f]+" couldn't be instantiated");
+      }
+    }
+    // convert to array
+    factories = new ViewFactory[result.size()];
+    result.toArray(factories);
+    // done
+    return factories;
   }
   
   /**
@@ -244,10 +263,9 @@ public class ViewManager {
   /*package*/ List getActions(Object object) {
     // loop through descriptors
     List result = new ArrayList(16);
-    for (int d=0; d<descriptors.length; d++) {
-      Descriptor descriptor = descriptors[d];
-      if (descriptor.factory instanceof ContextMenuSupport) {
-        ContextMenuSupport cms = (ContextMenuSupport)descriptor.factory;
+    for (int f=0; f<factories.length; f++) {
+      if (factories[f] instanceof ContextMenuSupport) {
+        ContextMenuSupport cms = (ContextMenuSupport)factories[f];
         List as = object instanceof Gedcom ? cms.createActions((Gedcom)object) : cms.createActions((Entity)object);
         if (as!=null) result.add(as);
       }
@@ -269,22 +287,23 @@ public class ViewManager {
 
   /**
    * Opens a view on a gedcom file
+   * @return the view component
    */
-  public void openView(Descriptor descriptor, Gedcom gedcom) {
+  public Component openView(ViewFactory factory, Gedcom gedcom) {
     
     // get a registry 
-    Registry registry = getRegistry(gedcom, descriptor.key);
+    Registry registry = getRegistry(gedcom, factory.getKey());
     
     // a frame
     JFrame frame = App.getInstance().createFrame(
-      gedcom.getName()+" - "+descriptor.getTitle()+" ("+registry.getViewSuffix()+")",
-      descriptor.img,
+      gedcom.getName()+" - "+factory.getTitle(false)+" ("+registry.getViewSuffix()+")",
+      factory.getImage(),
       gedcom.getName() + "." + registry.getView(),
-      descriptor.dim
+      factory.getDefaultDimension()
     );
     
     // the viewwidget
-    ViewWidget viewWidget = new ViewWidget(frame,gedcom,registry,descriptor);
+    ViewWidget viewWidget = new ViewWidget(frame,gedcom,registry,factory);
 
     // show it
     frame.getContentPane().add(viewWidget);
@@ -295,6 +314,21 @@ public class ViewManager {
     viewWidgets.add(viewWidget);
     
     // done
+    return viewWidget.getView();
+  }
+  
+  /**
+   * Checks whether a view instance for given type is open
+   */
+  public boolean isOpen(Class view) {
+    // look through views
+    Iterator it = viewWidgets.iterator();
+    while (it.hasNext()) {
+      ViewWidget vw = (ViewWidget)it.next();
+      if (vw.getView().getClass().equals(view)) return true;
+    }
+    // none
+    return false;
   }
   
   /**
@@ -317,52 +351,4 @@ public class ViewManager {
     
   }
 
-  /**
-   * A descriptor of a View
-   */
-  public static class Descriptor {
-    
-    public ViewFactory factory;
-    public String key;
-    public ImgIcon img;
-    public Dimension dim;
-    
-    /**
-     * Constructor
-     */
-    protected Descriptor(String f, String k, ImgIcon i, Dimension d) {
-      // remember
-      key=k;img=i;dim=d;
-      // create
-      try {
-        factory = (ViewFactory)Class.forName(f).newInstance();
-      } catch (Throwable t) {
-        throw new RuntimeException("ViewFactory "+factory+" couldn't be instantiated");
-      }
-      // done
-    }
-    
-    /**
-     * Return a title representation
-     */
-    public String getTitle() {    
-      return resources.getString("view.title."+key);
-    }
-    
-    /**
-     * Return a short representation
-     */
-    public String getShortTitle() {    
-      return resources.getString("view.short."+key);
-    }
-
-    /**
-     * Return a tip representation
-     */
-    public String getTip() {    
-      return resources.getString("view.tip."+key);
-    }
-    
-  } //Descriptor
-
-}
+} //ViewManager

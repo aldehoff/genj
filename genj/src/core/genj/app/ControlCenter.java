@@ -119,9 +119,9 @@ public class ControlCenter extends JPanel {
     bh.setEnabled(true).create(new ActionOpen());
     
     bh.setEnabled(false).addCollection(gedcomButtons).setResources(null);
-    ViewManager.Descriptor[] ds=ViewManager.getInstance().getDescriptors();
-    for (int i=0; i<ds.length; i++) {
-      bh.create(new ActionView(ds[i]));
+    ViewFactory[] factories = ViewManager.getInstance().getFactories();
+    for (int i=0; i<factories.length; i++) {
+      bh.create(new ActionView(factories[i]));
     }
     
     bh.setEnabled(true).removeCollection(gedcomButtons).setResources(App.resources);
@@ -159,9 +159,9 @@ public class ControlCenter extends JPanel {
     mh.popMenu().createMenu("cc.menu.view");
     
       mh.setEnabled(false).setCollection(gedcomButtons).setResources(null);    
-      ViewManager.Descriptor[] ds=ViewManager.getInstance().getDescriptors();
-      for (int i=0; i<ds.length; i++) 
-        mh.createItem(new ActionView(ds[i]));
+      ViewFactory[] factories = ViewManager.getInstance().getFactories();
+      for (int i=0; i<factories.length; i++) 
+        mh.createItem(new ActionView(factories[i]));
       mh.setEnabled(true).setCollection(null).setResources(App.resources);    
 
     mh.popMenu().setEnabled(false).createMenu("cc.menu.tools");
@@ -832,15 +832,15 @@ public class ControlCenter extends JPanel {
    * Action - View
    */
   protected class ActionView extends ActionDelegate { 
-    /** which (ViewBridge.getDescriptors() index) */
-    private ViewManager.Descriptor which;
+    /** which ViewFactory */
+    private ViewFactory factory;
     /** constructor */
-    protected ActionView(ViewManager.Descriptor which) {
-      this.which = which;
-      super.setText(which.getTitle());
-      super.setShortText(which.getShortTitle());
-      super.setTip(which.getTip());
-      super.setImage(which.img);
+    protected ActionView(ViewFactory vw) {
+      factory = vw;
+      super.setText(factory.getTitle(false));
+      super.setShortText(factory.getTitle(true));
+      super.setTip(App.resources.getString("cc.tip.open_view", factory.getTitle(false)));
+      super.setImage(factory.getImage());
     }
     /** run */
     protected void execute() {
@@ -848,7 +848,7 @@ public class ControlCenter extends JPanel {
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
       if (gedcom==null) return;
       // Create new View
-      ViewManager.getInstance().openView(which,gedcom);
+      ViewManager.getInstance().openView(factory,gedcom);
     } 
   } //ActionView
       

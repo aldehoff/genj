@@ -152,7 +152,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
         entity = ViewManager.getInstance().getCurrentEntity(gedcom);
       }
     }
-    setCurrentEntity(entity);
+    setEntity(entity);
     
     // Done
   }
@@ -318,7 +318,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
   /**
    * Set the entity to display
    */
-  private void setEntity(Entity entity) {
+  /*pacakge*/ void setEntity(Entity entity) {
 
     // Try to stop old editing first
     stopEdit(true);
@@ -337,6 +337,13 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     }
 
     // Done
+  }
+  
+  /**
+   * Change sticky status
+   */
+  /*package*/ void setSticky(boolean set) {
+    actionSticky.setSelected(set);
   }
 
   /**

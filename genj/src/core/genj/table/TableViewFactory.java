@@ -20,15 +20,16 @@
 package genj.table;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.List;
 
 import javax.swing.JComponent;
 
-
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
+import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.view.ViewFactory;
 
@@ -56,6 +57,34 @@ public class TableViewFactory implements ViewFactory {
    */
   public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
     return new TableView(gedcom,registry,frame);
+  }
+  
+  /**
+   * @see genj.view.ViewFactory#getImage()
+   */
+  public ImgIcon getImage() {
+    return new ImgIcon(this, "images/View.gif");
+  }
+  
+  /**
+   * @see genj.view.ViewFactory#getDefaultDimension()
+   */
+  public Dimension getDefaultDimension() {
+    return new Dimension(480,320);
+  }
+
+  /**
+   * @see genj.view.ViewFactory#getKey()
+   */
+  public String getKey() {
+    return "table";
+  }
+
+  /**
+   * @see genj.view.ViewFactory#getName(boolean)
+   */
+  public String getTitle(boolean abbreviate) {
+    return TableView.resources.getString("title" + (abbreviate?".short":""));
   }
 
 } //TableViewFactory

@@ -29,13 +29,6 @@ final public class Images {
   private static Images instance = new Images();
 
   public static ImgIcon
-    imgTable,
-    imgTimeline,
-    imgTree,
-    imgEdit,
-    imgReport,
-    imgNavigator,
-    imgEntity,
     imgSettings,
     imgPrint,
     imgClose;
@@ -45,13 +38,6 @@ final public class Images {
    */
   private Images() {
 
-    imgTable     = new ImgIcon(this,"images/Table.gif");
-    imgTimeline  = new ImgIcon(this,"images/Timeline.gif");
-    imgTree      = new ImgIcon(this,"images/Tree.gif");
-    imgEdit      = new ImgIcon(this,"images/Edit.gif");
-    imgReport    = new ImgIcon(this,"images/Report.gif");
-    imgNavigator = new ImgIcon(this,"images/Navigator.gif");
-    imgEntity    = new ImgIcon(this,"images/Entity.gif");
     imgSettings  = new ImgIcon(this,"images/Settings.gif");
     imgPrint     = new ImgIcon(this,"images/Print.gif");
     imgClose     = new ImgIcon(this,"images/Close.gif");

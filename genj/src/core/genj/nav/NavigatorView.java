@@ -55,7 +55,7 @@ import javax.swing.JPanel;
  */
 public class NavigatorView extends JPanel implements CurrentSupport {
   
-  private static Resources resources = new Resources(NavigatorView.class);
+  /*package*/ static Resources resources = new Resources(NavigatorView.class);
   
   /** the label holding information about the current individual */
   private JLabel label;

@@ -34,6 +34,7 @@ import genj.util.swing.MenuHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
@@ -90,7 +91,7 @@ import javax.swing.border.TitledBorder;
   /** 
    * Constructor
    */
-  /*package*/ ViewWidget(JFrame frame, Gedcom gedcom, Registry registry, ViewManager.Descriptor descriptor) {
+  /*package*/ ViewWidget(JFrame frame, Gedcom gedcom, Registry registry, ViewFactory factory) {
     
     // remember
     this.registry = registry;
@@ -98,14 +99,14 @@ import javax.swing.border.TitledBorder;
     this.frame = frame;
     
     // create the view component
-    view = descriptor.factory.createViewComponent(gedcom, registry, frame);
+    view = factory.createViewComponent(gedcom, registry, frame);
 
     // setup layout
     setLayout(new BorderLayout());
     add(view, BorderLayout.CENTER);
 
     // install a toolbar
-    installToolBar(descriptor, view, frame);
+    installToolBar(view, frame, factory);
     
     // install popup support
     installPopupSupport();
@@ -116,7 +117,7 @@ import javax.swing.border.TitledBorder;
   /**
    * Helper that creates the toolbar for the view
    */
-  private void installToolBar(ViewManager.Descriptor descriptor, Component view, Frame frame) {
+  private void installToolBar(Component view, Frame frame, ViewFactory factory) {
     
     // only if ToolBarSupport
     if (!(view instanceof ToolBarSupport)) return;
@@ -134,14 +135,14 @@ import javax.swing.border.TitledBorder;
       .setContainer(bar);
 
     // .. a button for editing the View's settings
-    settings = descriptor.factory.createSettingsComponent(view);
+    settings = factory.createSettingsComponent(view);
     if (settings!=null) {
       settings.setBorder(new TitledBorder(frame.getTitle()));
       bh.create(new ActionOpenSettings());
     }
   
     // .. a button for printing View
-    PrintRenderer renderer = descriptor.factory.createPrintRenderer(view);
+    PrintRenderer renderer = factory.createPrintRenderer(view);
     if (renderer!=null) {
       bh.create(new ActionPrint(renderer, frame));
     }
@@ -150,8 +151,9 @@ import javax.swing.border.TitledBorder;
     bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(Images.imgClose));
 
     // add it
-    String o = descriptor.dim.width<descriptor.dim.height ? BorderLayout.WEST : BorderLayout.SOUTH;
-    add(bar, registry.get("toolbar", o));
+    Dimension dim = factory.getDefaultDimension();
+    String defaultOrientation = dim.width<dim.height ? BorderLayout.WEST : BorderLayout.SOUTH;
+    add(bar, registry.get("toolbar", defaultOrientation));
     
     // done
   }
@@ -190,7 +192,6 @@ import javax.swing.border.TitledBorder;
     if (entity!=null) {
       List actions = ViewManager.getInstance().getActions(entity);
       if (!actions.isEmpty()) {
-        //mh.createItem(entity.getId(), entity.getProperty().getImage(false), true);
         mh.createMenu(entity.getId(), entity.getProperty().getImage(false));
         mh.createItems(actions);
         mh.popMenu();
@@ -200,8 +201,6 @@ import javax.swing.border.TitledBorder;
     // items for gedcom
     List actions = ViewManager.getInstance().getActions(gedcom);
     if (!actions.isEmpty()) {
-      //if (popup.getComponentCount()>0) mh.createSeparator();
-      //mh.createItem(gedcom.getName(), Gedcom.getImage(), true);
       mh.createMenu(gedcom.getName(), Gedcom.getImage());
       mh.createItems(actions);
       mh.popMenu();

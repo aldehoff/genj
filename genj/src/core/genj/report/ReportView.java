@@ -52,7 +52,7 @@ public class ReportView extends JPanel {
   private static  ReportLoader loader;
   private static  ImageIcon imgShell,imgGui;
   private Registry registry;
-  private final static Resources resources = new Resources(ReportView.class);
+  /*package*/ final static Resources resources = new Resources(ReportView.class);
 
   /**
    * Report Renderer

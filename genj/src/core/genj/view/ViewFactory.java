@@ -20,6 +20,7 @@
 package genj.view;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import javax.swing.JComponent;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
+import genj.util.ImgIcon;
 import genj.util.Registry;
 
 /**
@@ -49,5 +51,25 @@ public interface ViewFactory {
    * Callback for creating a printer for a view
    */
   public PrintRenderer createPrintRenderer(Component view);
+  
+  /**
+   * Returns an image for this view
+   */
+  public ImgIcon getImage();
+  
+  /**
+   * Returns a key for this view
+   */
+  public String getKey();
+  
+  /**
+   * Returns a localized title for this view
+   */
+  public String getTitle(boolean abbreviate);
+
+  /**
+   * Returns the default size of the view
+   */
+  public Dimension getDefaultDimension();
   
 } //ViewFactory

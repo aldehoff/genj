@@ -71,7 +71,7 @@ public class TreeView extends Scrollpane implements ToolBarSupport, ContextMenuS
   private Window                 overview;
   private PropertyChangeSupport  pcsupport;
   private Vector                 bookmarks = new Vector();
-  private final static Resources resources = new Resources(TreeView.class);
+  /*package*/ final static Resources resources = new Resources(TreeView.class);
 
   /**
    * Constructor

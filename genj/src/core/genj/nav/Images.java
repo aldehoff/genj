@@ -29,6 +29,7 @@ final public class Images {
   private static Images instance = new Images();
 
   public static ImgIcon
+    imgView,
     imgNavYoungerSiblingOn,
     imgNavYoungerSiblingOff,
     imgNavOlderSiblingOn,
@@ -46,6 +47,7 @@ final public class Images {
    * Constructor which pre-loads all images
    */
   private Images() {
+    imgView = new ImgIcon(this,"View.gif");
     imgNavYoungerSiblingOn   = new ImgIcon(this,"NavYoungerSiblingOn.gif");
     imgNavYoungerSiblingOff  = new ImgIcon(this,"NavYoungerSiblingOff.gif");
     imgNavOlderSiblingOn  = new ImgIcon(this,"NavOlderSiblingOn.gif");

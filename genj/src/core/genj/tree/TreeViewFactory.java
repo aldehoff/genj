@@ -20,6 +20,7 @@
 package genj.tree;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
+import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.view.EntityPopupSupport;
 import genj.view.ViewFactory;
@@ -60,5 +62,33 @@ public class TreeViewFactory implements ViewFactory{
   public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
     return new TreeView(gedcom, registry, frame);
   }
+  
+  /**
+   * @see genj.view.ViewFactory#getDefaultDimension()
+   */
+  public Dimension getDefaultDimension() {
+    return new Dimension(480,480);
+  }
 
+  /**
+   * @see genj.view.ViewFactory#getImage()
+   */
+  public ImgIcon getImage() {
+    return Images.imgView;
+  }
+  
+  /**
+   * @see genj.view.ViewFactory#getKey()
+   */
+  public String getKey() {
+    return "tree";
+  }
+
+  /**
+   * @see genj.view.ViewFactory#getName(boolean)
+   */
+  public String getTitle(boolean abbreviate) {
+    return TreeView.resources.getString("title" + (abbreviate?".short":""));
+  }
+  
 } //TreeViewFactory

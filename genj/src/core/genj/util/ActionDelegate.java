@@ -40,6 +40,9 @@ import javax.swing.event.ListSelectionListener;
  */
 public abstract class ActionDelegate implements Cloneable {
   
+  /** a noop ActionDelegate */
+  public static final ActionDelegate NOOP = new ActionNOOP();
+  
   /** async modes */
   public static final int 
     ASYNC_NOT_APPLICABLE = 0,
@@ -219,22 +222,6 @@ public abstract class ActionDelegate implements Cloneable {
   }
   
   /**
-   * A default Frame close Action
-   */
-  public static class ActionDisposeFrame extends ActionDelegate {
-    /** a frame */
-    private Frame frame;
-    /** constructor */
-    public ActionDisposeFrame(Frame f) {
-      frame = f;
-    }
-    /** run */
-    public void execute() {
-      frame.dispose();
-    }
-  }
-
-  /**
    * Returns this delegate wrapped in a proxy now triggered
    * by that contract (without selector)
    */  
@@ -318,6 +305,33 @@ public abstract class ActionDelegate implements Cloneable {
     }
   } //SyncHandleThrowable
 
+  /**
+   * Action - noop
+   */
+  private static class ActionNOOP extends ActionDelegate {
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      // ignored
+    }
+  } //ActionNOOP
   
+  /**
+   * A default Frame close Action
+   */
+  public static class ActionDisposeFrame extends ActionDelegate {
+    /** a frame */
+    private Frame frame;
+    /** constructor */
+    public ActionDisposeFrame(Frame f) {
+      frame = f;
+    }
+    /** run */
+    public void execute() {
+      frame.dispose();
+    }
+  }
+
 } //ActionDelegate
 
