@@ -19,7 +19,7 @@
  */
 package genj.gedcom;
 
-import java.util.NoSuchElementException;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 
 /**
@@ -29,32 +29,6 @@ public class PropertyCause extends Property {
 
   /** the cause description */
   private String cause;
-
-  /**
-   * Member class for iterating through cause's lines
-   */
-  private class CauseLineIterator implements Property.LineIterator {
-
-    /** tokens */
-    private StringTokenizer tokens;
-
-    /** constructor */
-    CauseLineIterator() {
-      tokens = new StringTokenizer(cause,"\n");
-    }
-
-    /** more? */
-    public boolean hasMoreValues() {
-      return tokens.hasMoreTokens();
-    }
-
-    /** Returns the next line of this iterator */
-    public String getNextValue() throws NoSuchElementException {
-      return tokens.nextToken();
-    }
-
-    // EOC
-  }
 
   /**
    * Constructor of cause Gedcom-line
@@ -74,8 +48,8 @@ public class PropertyCause extends Property {
    * Returns a LineIterator which can be used to iterate through
    * several lines of this cause
    */
-  public LineIterator getLineIterator() {
-    return new CauseLineIterator();
+  public Enumeration getLineIterator() {
+    return new StringTokenizer(cause,"\n");
   }
 
   /**

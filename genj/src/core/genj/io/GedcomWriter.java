@@ -28,6 +28,7 @@ import genj.util.Trackable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -243,15 +244,15 @@ public class GedcomWriter implements Trackable {
       line(0,prefix+prop.getTag(),prop.getValue());
     } else {
       // .. more lines from iterator
-      Property.LineIterator iterator = prop.getLineIterator();
+      Enumeration iterator = prop.getLineIterator();
       // .. just one though?
-      if ( !iterator.hasMoreValues() ) {
+      if ( !iterator.hasMoreElements() ) {
         line(0,prefix+prop.getTag(),"");
       } else {
-        line(0,prefix+prop.getTag(),iterator.getNextValue());
+        line(0,prefix+prop.getTag(),iterator.nextElement().toString());
         line(1);
-        while (iterator.hasMoreValues()) {
-          line (0,"CONT",iterator.getNextValue());
+        while (iterator.hasMoreElements()) {
+          line (0,"CONT",iterator.nextElement().toString());
         }
         line(-1);
       }

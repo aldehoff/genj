@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Vector;
 
 /**
@@ -184,22 +183,6 @@ public abstract class Property implements Comparable {
 
     // .. done
 
-  }
-
-  /**
-   * Interface for an Iterator that enables the interested to
-   * iterate through multiple lines of data
-   */
-  public interface LineIterator {
-    /**
-     * Returns wether this iterator has more lines
-     */
-    public boolean hasMoreValues();
-    /**
-     * Returns the next line of this iterator
-     */
-    public String getNextValue() throws NoSuchElementException;
-    // EOC
   }
 
   /**
@@ -580,7 +563,7 @@ public abstract class Property implements Comparable {
    * Should be implemented by properties with several lines.
    * Returns null when single line only
    */
-  public LineIterator getLineIterator() {
+  public Enumeration getLineIterator() {
     return null;
   }
 

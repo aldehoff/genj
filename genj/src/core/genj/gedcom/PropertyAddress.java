@@ -19,7 +19,7 @@
  */
 package genj.gedcom;
 
-import java.util.NoSuchElementException;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 
 /**
@@ -29,31 +29,6 @@ public class PropertyAddress extends Property {
 
   /** the address */
   private String address;
-
-  /**
-   * Member class for iterating through adress' lines
-   */
-  private class AddressLineIterator implements Property.LineIterator {
-
-    /** tokens */
-    private StringTokenizer tokens;
-
-    /** Constructor which inits tokens */
-    AddressLineIterator() {
-      tokens = new StringTokenizer(address,"\n");
-    }
-
-    /** Returns wether this iterator has more lines */
-    public boolean hasMoreValues() {
-      return tokens.hasMoreTokens();
-    }
-
-    /** Returns the next line of this iterator */
-    public String getNextValue() throws NoSuchElementException {
-      return tokens.nextToken();
-    }
-
-  }
 
   /**
    * Constructor of address Gedcom-line
@@ -94,8 +69,8 @@ public class PropertyAddress extends Property {
    * Returns a LineIterator which can be used to iterate through
    * several lines of this address
    */
-  public LineIterator getLineIterator() {
-    return new AddressLineIterator();
+  public Enumeration getLineIterator() {
+    return new StringTokenizer(address,"\n");
   }
 
   /**

@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -206,13 +207,13 @@ public class PropertyRenderer {
      */
     public Dimension getSize(FontMetrics metrics, Property prop, int preference) {
       // check lines 
-      Property.LineIterator it = prop.getLineIterator();
+      Enumeration it = prop.getLineIterator();
       if (it==null) return new Dimension(0,0);
       // count 'em
       int lines = 0;
       int width = 0;
-      while (it.hasMoreValues()) {
-        width = Math.max(width, metrics.stringWidth(it.getNextValue()));
+      while (it.hasMoreElements()) {
+        width = Math.max(width, metrics.stringWidth(it.nextElement().toString()));
         lines++;
       }
       // done
@@ -224,7 +225,7 @@ public class PropertyRenderer {
      */
     public void render( Graphics g, Rectangle bounds, Property prop, int preference) {
       // get lines
-      Property.LineIterator it = prop.getLineIterator();
+      Enumeration it = prop.getLineIterator();
       if (it==null) return;
       // paint
       Rectangle clip = g.getClipBounds();
@@ -236,9 +237,9 @@ public class PropertyRenderer {
       r.y = bounds.y;
       r.width = bounds.width;
       r.height= h;
-      while (it.hasMoreValues()) {
+      while (it.hasMoreElements()) {
         // .. line at a time
-        String line = it.getNextValue();
+        String line = it.nextElement().toString();
         super.render(g, r, line);
         // .. movin' down
         r.y += h;

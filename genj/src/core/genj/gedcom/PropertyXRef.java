@@ -172,7 +172,7 @@ public abstract class PropertyXRef extends Property {
   /**
    * Sets this property's value as string.
    */
-  public boolean setValue(String value) {
+  public boolean setValue(String vAlue) {
 
     noteModifiedProperty();
 
@@ -180,7 +180,7 @@ public abstract class PropertyXRef extends Property {
     unlink();
 
     // remember value
-    this.value=value.replace('@',' ').trim();
+    value = vAlue.replace('@',' ').trim();
 
     // done
     return true;

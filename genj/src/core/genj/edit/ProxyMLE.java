@@ -21,6 +21,7 @@ package genj.edit;
 
 import genj.gedcom.Property;
 
+import java.util.Enumeration;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -95,12 +96,12 @@ class ProxyMLE extends Proxy implements DocumentListener {
     // Calculate value to show
     String value="";
 
-    Property.LineIterator iterator = prop.getLineIterator();
+    Enumeration iterator = prop.getLineIterator();
     if (iterator==null) {
       value = prop.getValue();
     } else {
-      while (iterator.hasMoreValues())
-      value += iterator.getNextValue() +"\n";
+      while (iterator.hasMoreElements())
+        value += iterator.nextElement() +"\n";
     }
     tarea = new JTextArea(value,6,20);
     tarea.setLineWrap(true);

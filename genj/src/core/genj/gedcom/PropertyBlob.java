@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.NoSuchElementException;
 
 /**
@@ -47,7 +48,7 @@ public class PropertyBlob extends Property implements IconValueAvailable {
   /**
    * Member class for iterating through adress' lines of base64-encoded data
    */
-  private class Base64LineIterator implements Property.LineIterator {
+  private class Base64LineIterator implements Enumeration {
 
     /** the base64 string */
     private String base64;
@@ -65,12 +66,12 @@ public class PropertyBlob extends Property implements IconValueAvailable {
     }
 
     /** whether this iterator has more lines */
-    public boolean hasMoreValues() {
+    public boolean hasMoreElements() {
       return (offset < base64.length());
     }
 
     /** Returns the next line of this iterator */
-    public String getNextValue() throws NoSuchElementException {
+    public Object nextElement() throws NoSuchElementException {
 
       String result;
       try {
@@ -141,7 +142,7 @@ public class PropertyBlob extends Property implements IconValueAvailable {
    * Returns a LineIterator which can be used to iterate through
    * several lines of this address
    */
-  public LineIterator getLineIterator() {
+  public Enumeration getLineIterator() {
 
     if (raw!=null) {
       String b64 = Base64.encode(raw);

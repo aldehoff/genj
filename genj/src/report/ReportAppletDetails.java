@@ -21,12 +21,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.18 2002-11-13 16:26:49 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.19 2002-11-15 07:45:18 nmeier Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -211,9 +212,9 @@ public class ReportAppletDetails implements Report {
 
     String value = "";
     if (prop.isMultiLine() != Property.NO_MULTI) {
-      Property.LineIterator li = prop.getLineIterator();
-      while (li.hasMoreValues()) {
-        value += li.getNextValue() + '\n';
+      Enumeration li = prop.getLineIterator();
+      while (li.hasMoreElements()) {
+        value += li.nextElement() + "\n";
       }
     } else {
       value = prop.getValue();

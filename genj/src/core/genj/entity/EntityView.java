@@ -50,6 +50,9 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
 
   /** language resources we use */  
   /*package*/ final static Resources resources = new Resources("genj.entity");
+
+  /** a dummy blueprint */
+  private final static Blueprint BLUEPRINT_SELECT = new Blueprint("", resources.getString("html.select"));
   
   /** a registry we keep */
   private Registry registry;
@@ -106,19 +109,19 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
    * Sets the entity to show
    */
   public void setEntity(Entity e) {
-    if (e==null) {
-      renderer=new EntityRenderer(
-        getGraphics(),
-        new Blueprint("foo", resources.getString("html.select"))
-      );
-    } else {
-      renderer = new EntityRenderer(
-        getGraphics(), 
-        BlueprintManager.getInstance().getBlueprint(e.getType(), "min")
-      );
-    }
+    // resolve blueprint & renderer
+    Blueprint blueprint;
+    if (e==null) blueprint = BLUEPRINT_SELECT;
+    else blueprint = BlueprintManager.getInstance().getBlueprint(e.getType(), "Default");
+    renderer=new EntityRenderer(
+      getGraphics(),
+      blueprint
+    );
+    // remember    
     entity = e;
+    // repaint
     repaint();
+    // done
   }
   
   /**

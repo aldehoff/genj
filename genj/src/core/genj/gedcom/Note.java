@@ -130,7 +130,64 @@ public class Note extends PropertyNote implements Entity {
    * Returns this property as a string
    */
   public String toString() {
-    return getId()+":"+super.toString();
+    // try sub-property
+    PropertyNote sub = getSubNote(false);
+    if (sub!=null) return getId()+":"+sub.toString();
+    // fallback id only
+    return getId();
+  }
+  
+  /**
+   * @see genj.gedcom.PropertyNote#getProxy()
+   */
+  public String getProxy() {
+    return "Entity";
+  }
+  
+  /**
+   * @see genj.gedcom.PropertyNote#link()
+   */
+  public void link() throws GedcomException {
+    throw new IllegalArgumentException();
   }
 
+  /**
+   * @see genj.gedcom.PropertyNote#setValue(java.lang.String)
+   */
+  public boolean setValue(String v) {
+    // ignoring empty
+    if (v.trim().length()==0) return true;
+    // keep in sub-note
+    getSubNote(true).setValue(v);
+    // done
+    return true;
+  }
+
+  /**
+   * Get the first attached not
+   */
+  private PropertyNote getSubNote(boolean create) {
+    for (int i=0;i<getNoOfProperties();i++) {
+      Property child = getProperty(i);
+      if (child instanceof PropertyNote) {
+        return (PropertyNote)child;
+      }
+    }
+    PropertyNote result = null; 
+    if (create) {
+      result = new PropertyNote(null, ""); 
+      addProperty(result);
+    }
+    return result;
+  }
+
+  /**
+   * @see genj.gedcom.Property#addDefaultProperties()
+   */
+  public Property addDefaultProperties() {
+    getSubNote(true);
+    return this;
+  }
+
+  
 } //Note
