@@ -34,7 +34,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.List;
