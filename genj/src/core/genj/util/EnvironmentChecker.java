@@ -56,6 +56,13 @@ public class EnvironmentChecker {
   /**
    * Returns a (system) property
    */
+  public static String getProperty(Object receipient, String key, String fallback, String msg) {
+    return getProperty(receipient, new String[]{key}, fallback, msg);
+  }
+
+  /**
+   * Returns a (system) property
+   */
   public static String getProperty(Object receipient, String[] keys, String fallback, String msg) {
     // see if one key fits
     String key = null, val, postfix;
