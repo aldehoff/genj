@@ -34,6 +34,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -45,9 +46,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -89,16 +88,17 @@ public class GraphWidget extends JPanel {
   private Content content = new Content();
   
   /** the renderer we're using */
-  private GraphRenderer graphRenderer = new GraphRenderer();
+  private GraphRenderer graphRenderer = new GraphRenderer() {
+    protected Color getColor(Node node) {
+      return node==selection?Color.blue:Color.black;
+    }
+  };
   
   /** more renderers */
   private LayoutRenderer layoutRenderer = null;
   
   /** the lastly selected element */
-  private Node lastSelection = null;
-  
-  /** the last moust event */
-  private MouseEvent lastEvent = null;
+  private Node selection = null;
   
   /** whether quicknode is enabled */
   private boolean quickNode = false;
@@ -114,14 +114,6 @@ public class GraphWidget extends JPanel {
     dndResizeNode = new DnDResizeNode(),
     dndCurrent = null;
     
-  /** our popups */
-  private JPopupMenu
-    pmNode,
-    pmCanvas;
-    
-  /** a layout's menu */
-  private JMenu mLayout;    
-    
   /** a layout we know about */
   private Layout currentLayout;
     
@@ -129,24 +121,6 @@ public class GraphWidget extends JPanel {
    * Constructor
    */
   public GraphWidget() {
-    
-    // Create the popups
-    pmNode = new JPopupMenu();
-    pmNode.add(new ActionResizeNode());
-    pmNode.add(new ActionDeleteNode());
-    pmNode.add(new ActionCreateArc());
-    pmNode.add(new ActionSetNodeContent());
-    JMenu mShape = new JMenu("Set Shape");
-    for (int i=0;i<shapes.length;i++)
-      mShape.add(new ShapeMenuItemWidget(shapes[i], new ActionSetNodeShape(shapes[i])));
-    pmNode.add(mShape);
-    mLayout = new JMenu();
-    mLayout.setVisible(false);
-    pmNode.add(mLayout);
-    
-    pmCanvas = new JPopupMenu();
-    pmCanvas.add(new ActionCreateNode());
-    pmCanvas.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleQuickNode()));
     
     // Layout
     setLayout(new BorderLayout());
@@ -163,7 +137,7 @@ public class GraphWidget extends JPanel {
     // cleanup data
     graph = setGraph;
     graphBounds = setBounds;
-    lastSelection = null;
+    selection = null;
     
     // make sure that's reflected
     revalidate();
@@ -190,35 +164,12 @@ public class GraphWidget extends JPanel {
   }
   
   /**
-   *  Creates a node at given position in canvase
-   */
-  public void createNode(double x, double y, Object object) {
-    
-    // let the graph do it
-    graph.addNode(
-      new Point2D.Double(x,y),
-      shapes[0],
-      object
-    );
-    
-    // show it
-    repaint();
-  }
-  
-  /**
    * @see JComponent#revalidate()
    */
   public void revalidate() {
     if (content!=null) content.revalidate();
     super.revalidate();
     repaint();
-  }
-  
-  /**
-   * Accessor - the current selection
-   */
-  private Node getSelection() {
-    return lastSelection;
   }
   
   /** 
@@ -245,49 +196,115 @@ public class GraphWidget extends JPanel {
   /**
    * Returns the popup for nodes
    */
-  private JPopupMenu getNodePopupMenu() {
-    
+  private JPopupMenu getNodePopupMenu(Point where) {
+
+    // Create the popups
+    JPopupMenu result = new JPopupMenu();
+    result.add(new ActionResizeNode());
+    result.add(new ActionDeleteNode());
+    result.add(new ActionCreateArc(where));
+    result.add(new ActionSetNodeContent());
+    JMenu mShape = new JMenu("Set Shape");
+    for (int i=0;i<shapes.length;i++)
+      mShape.add(new ShapeMenuItemWidget(shapes[i], new ActionSetNodeShape(shapes[i])));
+    result.add(mShape);
+
     // do we have a a layout with input for the node's menu?
-    if (currentLayout==null) {
-      // fallback to invisible
-      mLayout.setVisible(false);
-      // done
-      return pmNode;
-    }
+    if (currentLayout==null) 
+      return result;
+      
+    // continue with menu's submenu
+    JMenu mLayout = new JMenu();
     
     // collect public setters(Node)
     Method[] actions = ReflectHelper.getMethods(currentLayout, "", new Class[]{ Node.class});
     if (actions.length>0) {
-      mLayout.removeAll();
       // add add actions
       for (int a=0; a<actions.length; a++) {
         mLayout.add(new ActionNodeLayoutMethod(actions[a]));
       }
       // visible now
-      mLayout.setVisible(true);
       mLayout.setText(currentLayout.toString());
-      return pmNode;
+      result.add(mLayout);
     }
 
     // done
-    return pmNode;    
+    return result;    
   }
   
   /**
    * Returns the popup for canvas
    */
-  private JPopupMenu getCanvasPopupMenu() {
-    return pmCanvas;
+  private JPopupMenu getCanvasPopupMenu(Point pos) {
+    
+    JPopupMenu result = new JPopupMenu();
+    result.add(new ActionCreateNode(pos));
+    result.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleQuickNode()));
+    return result;
   }
 
+  /**
+   * Tries to find an element at given position
+   */
+  private Node getElement(Point screen) {
+    Point at = screen2model(screen);
+    // try to find a node
+    Iterator nodes = graph.getNodes().iterator();
+    while (nodes.hasNext()) {
+      Node node = (Node)nodes.next();
+      Point2D pos = node.getPosition();
+      if (node.getShape().contains(at.x-pos.getX(),at.y-pos.getY())) {
+        return node;
+      }
+    }
+    // try to find an arc
+    // TODO
+    // nothing found
+    return null;    
+  }
+    
+  /**
+   *  Creates a node at given position
+   */
+  private void createNode(Point screen, Object object) {
+
+    // let the graph do it
+    graph.addNode(screen2model(screen), shapes[0], object);
+    
+    // show it
+    repaint();
+  }
+  
+  /**
+   * Convert screen postition to model
+   */
+  private Point screen2model(Point p) {
+    return new Point(
+      p.x - content.getXOffset(),
+      p.y - content.getYOffset()
+    );
+  }
+  
+  /** 
+   * Update nodes arcs
+   */
+  private void updateArcs(Node node) {
+    // update it's arcs
+    ArcIterator it = new ArcIterator(node);
+    while (it.next()) ArcHelper.update(it.arc);
+    // show it
+    repaint();
+  }
+  
   /**
    * Mouse Analyzer
    */
   private abstract class DnD extends MouseAdapter implements MouseMotionListener {
     /** start */
-    public void start(MouseEvent e) {
+    protected void start(Point p) {
       // already someone there?
       if (dndCurrent!=null) {
+        dndCurrent.stop();
         content.removeMouseListener(dndCurrent);
         content.removeMouseMotionListener(dndCurrent);
       }
@@ -298,14 +315,8 @@ public class GraphWidget extends JPanel {
       content.addMouseMotionListener(dndCurrent);
       // done
     }
-    /** callback - node has changed */
-    protected void nodeChanged(Node node) {
-      // update it's arcs
-      ArcIterator it = new ArcIterator(node);
-      while (it.next()) ArcHelper.update(it.arc);
-      // show it
-      repaint();
-    }
+    /** stop */
+    protected void stop() { }
     /** callback */
     public void mousePressed(MouseEvent e) {}
     /** callback */
@@ -314,77 +325,48 @@ public class GraphWidget extends JPanel {
     public void mouseDragged(MouseEvent e) {}
     /** callback */
     public void mouseMoved(MouseEvent e) {}
-    /** paint */
-    public void paint(Graphics2D g) {}
-    /**
-     * Tries to find an element by coordinate
-     */
-    protected Node getElement(double x, double y) {
-      // try to find a node
-      Point2D pos = null;
-      Iterator nodes = graph.getNodes().iterator();
-      while (nodes.hasNext()) {
-        Node node = (Node)nodes.next();
-        pos = node.getPosition();
-        if (node.getShape().contains(x-pos.getX(),y-pos.getY())) {
-          return node;
-        }
-      }
-      // try to find an arc
-      // TODO
-      // nothing found
-      return null;    
-    }
-    
   } // EOC
   
   /**
    * Mouse Analyzer - Waiting
    */
   private class DnDIdle extends DnD {
-    /** start */
-    public void start(Node node, MouseEvent e) {
-      super.start(e);
-    }
     /** callback */
     public void mousePressed(MouseEvent e) {
       // nothing to do?
       if (graph==null) return;
       // something there?
-      Node node = getElement(content.getX(e), content.getY(e));
+      Node node = getElement(e.getPoint());
       if (node==null) {
-        lastSelection = null;
+        selection = null;
+        repaint();
         return;
       }
       // new?
-      if (node!=lastSelection) {
-        lastSelection = node;
+      if (node!=selection) {
+        selection = node;
         repaint();
       }
       // start dragging?
       if ((e.getModifiers()&e.BUTTON1_MASK)!=0) {
-      //if (e.getButton()==e.BUTTON1) {
-        dndMoveNode.start(e);
+        dndMoveNode.start(e.getPoint());
       }
       // done
     }
     /** callback */
     public void mouseReleased(MouseEvent e) {
       if ((e.getModifiers()&e.BUTTON3_MASK)!=0) {
-      //if (e.getButton()==e.BUTTON3) {
         // popup
-        lastEvent = e;
-        JPopupMenu menu = lastSelection!=null ? getNodePopupMenu() : getCanvasPopupMenu();
+        JPopupMenu menu = selection!=null ? getNodePopupMenu(e.getPoint()) : getCanvasPopupMenu(e.getPoint());
         menu.show(content,e.getX(),e.getY());
         return;
       }
       if ((e.getModifiers()&e.BUTTON1_MASK)!=0) {
-      //if (e.getButton()==e.BUTTON1) {
-        if (quickNode) createNode(content.getX(e), content.getY(e),""+(graph.getNodes().size()+1));
+        if (quickNode) createNode(e.getPoint(),""+(graph.getNodes().size()+1));
         return;
       }
     }
-  } // EOC
+  } //DnDIdle
   
   /**
    * Mouse Analyzer - Drag a Node
@@ -393,17 +375,17 @@ public class GraphWidget extends JPanel {
     private Node node;
     private Point2D.Double offset = new Point2D.Double();
     /** start */
-    public void start(MouseEvent e) {
-      super.start(e);
-      node = getElement(content.getX(e), content.getY(e));
+    protected void start(Point at) {
+      super.start(at);
+      node = getElement(at);
       offset.setLocation(
-        e.getX() - node.getPosition().getX(),
-        e.getY() - node.getPosition().getY()
+        at.getX() - node.getPosition().getX(),
+        at.getY() - node.getPosition().getY()
       );
     }
     /** callback */
     public void mouseReleased(MouseEvent e) {
-      dndNoOp.start(e);
+      dndNoOp.start(e.getPoint());
     }
     /** callback */
     public void mouseDragged(MouseEvent e) {
@@ -413,108 +395,86 @@ public class GraphWidget extends JPanel {
         e.getY() - offset.getY()
       );
       // update after change of a Node
-      nodeChanged(node);
+      updateArcs(node);
     }
-  } // EOC
+  } //DnDMoveNode
   
   /**
    * Mouse Analyzer - Create an Arc
    */
-  private class DnDCreateArc extends DnD implements Arc {
-    private Node from;
-    private Point2D to = new Point2D.Double();
+  private class DnDCreateArc extends DnD{
+    private Arc arc;
+    private Node dummy;
+    private Path path = new Path();
     /** start */
-    public void start(MouseEvent e) {
-      super.start(e);
-      from = lastSelection;
+    protected void start(Point at) {
+      super.start(at);
+      dummy = graph.addNode(screen2model(at), null, null);      
+      arc = graph.addArc(selection, dummy, path);
+      repaint();
+    }
+    /** stop */
+    protected void stop() {
+      if (arc!=null) {
+        graph.removeArc(arc);
+        graph.removeNode(dummy);
+        arc=null;
+      }
     }
     /** callback */
     public void mouseReleased(MouseEvent e) {
-      Node to = getElement(content.getX(e), content.getY(e));
+      stop();
+      Node to = getElement(e.getPoint());
       if (to!=null) {
-        ArcHelper.update(graph.addArc(from, to, new Path()));
+        graph.addArc(selection, to, null);
+        updateArcs(to);
       }
       repaint();
-      dndNoOp.start(e);
+      dndNoOp.start(e.getPoint());
     }
     /** callback */
     public void mouseMoved(MouseEvent e) {
-      to.setLocation(content.getX(e), content.getY(e));
-      // show it
-      repaint();
+      dummy.getPosition().setLocation(screen2model(e.getPoint()));
+      updateArcs(dummy);
     }
-    /** paint */
-    public void paint(Graphics2D g) {
-      graphRenderer.renderArc(this, g);
-    }
-    /** @see gj.model.Arc#getStart() */
-    public Node getStart() {
-      return from;
-    }
-    /** @see gj.model.Arc#getEnd() */
-    public Node getEnd() {
-      return from;
-    }
-    /** @see gj.model.Arc#getPath() */
-    public Path getPath() {
-      return ArcHelper.update(new Path(), from.getPosition(),from.getShape(),to,null);
-    }
-  } // EOC
+  } //DnDCreateArc
 
   /**
    * Mouse Analyzer - Resize a Node
    */
-  private class DnDResizeNode extends DnD implements Node {
+  private class DnDResizeNode extends DnD {
     /** our state */
-    private Point2D.Double pos = new Point2D.Double();
     private Dimension2D.Double dim = new Dimension2D.Double();
-    private Point2D.Double fac = new Point2D.Double();
+    private Shape shape = null;
+    private Point2D.Double factor = new Point2D.Double();
     /** start */
-    public void start(MouseEvent e) {
-      super.start(e);
-      pos.setLocation(lastSelection.getPosition());
-      dim.setSize(lastSelection.getShape().getBounds2D());
-      fac.setLocation(0,0);
+    protected void start(Point pos) {
+      super.start(pos);
+      // remember
+      shape = selection.getShape();
+      dim.setSize(selection.getShape().getBounds2D());
     }
     /** callback */
     public void mouseReleased(MouseEvent e) {
-      dndNoOp.start(e);
-      graph.setShape(lastSelection,getShape());
-      // update after change of a Node
-      nodeChanged(lastSelection);
+      dndNoOp.start(e.getPoint());
     }
     /** callback */
     public void mouseMoved(MouseEvent e) {
-      fac.setLocation(
-        Math.max(0.1,Math.abs(content.getX(e)-pos.x)/dim.w*2),
-        Math.max(0.1,Math.abs(content.getY(e)-pos.y)/dim.h*2)
+      // change shape
+      Point2D oldPos = selection.getPosition();
+      Point newPos = screen2model(e.getPoint());
+      factor.setLocation(
+        Math.max(0.1,Math.abs(newPos.x-oldPos.getX())/dim.w*2),
+        Math.max(0.1,Math.abs(newPos.y-oldPos.getY())/dim.h*2)
       );
+      GeneralPath gp = new GeneralPath(shape);
+      gp.transform(AffineTransform.getScaleInstance(factor.x,factor.y));
+      graph.setShape(selection,gp);
+      updateArcs(selection);
       // show it
       repaint();
     }
-    /** paint */
-    public void paint(Graphics2D g) {
-      graphRenderer.renderNode(this,g);
-    }
-    /** @see gj.model.Node#getArcs() */
-    public List getArcs() {
-      return new ArrayList();
-    }
-    /** @see gj.model.Node#getContent() */
-    public Object getContent() {
-      return null;
-    }
-    /** @see gj.model.Node#getPosition() */
-    public Point2D getPosition() {
-      return pos;
-    }
-    /** @see gj.model.Node#getShape() */
-    public Shape getShape() {
-      GeneralPath gp = new GeneralPath(lastSelection.getShape());
-      gp.transform(AffineTransform.getScaleInstance(fac.x,fac.y));
-      return gp;
-    }
-  } // EOC
+  } //DnDResizeNode
 
   /**
    * How to handle - Delete a Node
@@ -524,11 +484,11 @@ public class GraphWidget extends JPanel {
     protected void execute() {
       int i = SwingHelper.showDialog(GraphWidget.this, "Delete Node", "Are you sure?", SwingHelper.DLG_YES_NO);
       if (SwingHelper.OPTION_YES!=i) return;
-      graph.removeNode(lastSelection);
-      lastSelection=null;
+      graph.removeNode(selection);
+      selection=null;
       repaint();
     }
-  }
+  } //ActionDeleteNode
 
   /**
    * How to handle - Sets a Node's Shape
@@ -539,9 +499,8 @@ public class GraphWidget extends JPanel {
       shape = set;
     }
     protected void execute() {
-      graph.setShape(lastSelection,shape);
-      //dndResizeNode.start(null);
-      dndResizeNode.nodeChanged(lastSelection);
+      graph.setShape(selection,shape);
+      updateArcs(selection);
     }
   }
 
@@ -549,8 +508,9 @@ public class GraphWidget extends JPanel {
    * How to handle - Creats an arc
    */
   private class ActionCreateArc extends UnifiedAction {
-    protected ActionCreateArc() { super("Arc to"); }
-    protected void execute() { dndCreateArc.start(null);  }
+    private Point start;
+    protected ActionCreateArc(Point where) { super("Arc to"); start=where; }
+    protected void execute() { dndCreateArc.start(start);  }
   }
   
   /**
@@ -561,7 +521,7 @@ public class GraphWidget extends JPanel {
     protected void execute() {
       String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
       if (txt==null) return;
-      graph.setContent(lastSelection,txt);
+      graph.setContent(selection,txt);
       repaint();
     }
   }
@@ -578,11 +538,12 @@ public class GraphWidget extends JPanel {
    * How to handle - Create a node
    */
   private class ActionCreateNode extends UnifiedAction {
-    protected ActionCreateNode() { super("Create node"); }
+    private Point pos;
+    protected ActionCreateNode(Point set) { super("Create node"); pos = set; }
     protected void execute() {
       String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
       if (txt==null) return;
-      createNode(content.getX(lastEvent), content.getY(lastEvent), txt);
+      createNode(pos, txt);
     }
   }
 
@@ -606,7 +567,7 @@ public class GraphWidget extends JPanel {
     }
     protected void execute() { 
       try {
-        method.invoke(currentLayout, new Object[]{ getSelection()});
+        method.invoke(currentLayout, new Object[]{ selection });
       } catch (Exception e) {}
       repaint();
     }
@@ -622,20 +583,6 @@ public class GraphWidget extends JPanel {
      */
     private Content() {
     } 
-    
-    /**
-     * transform MouseEvent into user space
-     */
-    private double getX(MouseEvent e) {
-      return e.getX() - getXOffset();
-    }
-    
-    /**
-     * transform MouseEvent into user space
-     */
-    private double getY(MouseEvent e) {
-      return e.getY() - getYOffset();
-    }
     
     /**
      * Calculate x offset for centered graph
@@ -692,18 +639,6 @@ public class GraphWidget extends JPanel {
           layoutRenderer.render(graph,currentLayout,graphics);
         // let the renderer do its work
         graphRenderer.render(graph, currentLayout, graphics);
-        // Is the a current to render?
-        if (lastSelection!=null) {
-          graphics.setColor(Color.blue);
-          graphRenderer.draw(
-            lastSelection.getShape(), 
-            lastSelection.getPosition(), 
-            graphics
-          );
-        }
-        // And let the MouseAnalyzer do what it needs to do
-        if (dndCurrent!=null)
-          dndCurrent.paint(graphics);
       }
 
       // done

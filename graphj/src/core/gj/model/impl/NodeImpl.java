@@ -16,8 +16,9 @@
 package gj.model.impl;
 
 import gj.model.Node;
+
+import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +30,7 @@ import java.util.List;
 public class NodeImpl implements Node {
   
   /** the default shape */
-  private static Shape DEFAULT_SHAPE = new  Ellipse2D.Double(-16,-16,32,32);
+  private static Shape EMPTY_SHAPE = new Rectangle();
 
   /** the content of this node */
   private Object content;
@@ -52,11 +53,7 @@ public class NodeImpl implements Node {
     
     this.position = position;
     this.content = content;
-    this.shape = shape;
-    
-    if (this.shape==null) {
-      this.shape = DEFAULT_SHAPE;
-    }
+    this.shape = shape!=null ? shape : EMPTY_SHAPE;
   }
   
   /**

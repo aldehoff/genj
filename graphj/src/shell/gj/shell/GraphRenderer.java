@@ -36,7 +36,7 @@ import java.util.Iterator;
 /**
  * A renderer that knows how to render a graph
  */
-public class GraphRenderer {
+public abstract class GraphRenderer {
   
   /** an arrow-head to the right */
   private final static Shape ARROW_HEAD = ShapeHelper.createShape(0,0,1,1,new double[]{
@@ -49,13 +49,18 @@ public class GraphRenderer {
   public void render(Graph graph, Layout layout, Graphics2D graphics) {
 
     // the arcs
-    renderArcs(graph.getArcs(),graphics);    
+    renderArcs(graph.getArcs(), graphics);    
     
     // the nodes
-    renderNodes(graph.getNodes(),graphics);
+    renderNodes(graph.getNodes(), graphics);
 
     // done
   }
+  
+  /**
+   * Attribute resolver
+   */
+  protected abstract Color getColor(Node node);
   
   /**
    * Renders all Nodes
@@ -77,11 +82,11 @@ public class GraphRenderer {
     // Done
   }
 
-  public void renderNode(Node node, Graphics2D graphics) {
+  private void renderNode(Node node, Graphics2D graphics) {
 
     // draw its shape
     Point2D pos = node.getPosition();
-    graphics.setColor(Color.black);
+    graphics.setColor(getColor(node));
     draw(node.getShape(), pos, graphics);
 
     // and content    
@@ -118,7 +123,7 @@ public class GraphRenderer {
   /**
    * Renders an Arc
    */
-  public void renderArc(Arc arc, Graphics2D graphics) {
+  private void renderArc(Arc arc, Graphics2D graphics) {
     
     Path path = arc.getPath();
     
@@ -139,13 +144,13 @@ public class GraphRenderer {
   /**
    * Helper that renders a shape at given position
    */
-  public static void draw(Shape shape, Point2D at, Graphics2D graphics) {
+  private void draw(Shape shape, Point2D at, Graphics2D graphics) {
     draw(shape, at, 0, false, graphics);
   }
   /**
    * Helper that renders a shape at given position with given rotation
    */
-  public static void draw(Shape shape, Point2D at, double theta, boolean fill, Graphics2D graphics) {
+  private void draw(Shape shape, Point2D at, double theta, boolean fill, Graphics2D graphics) {
     AffineTransform old = graphics.getTransform();
     graphics.translate(at.getX(), at.getY());
     graphics.rotate(theta);
@@ -157,7 +162,7 @@ public class GraphRenderer {
   /**
    * Helper that renders a string at given position
    */
-  public static void draw(String str, Point2D at, Graphics2D graphics) {
+  private void draw(String str, Point2D at, Graphics2D graphics) {
     float
       x = (float)at.getX(),
       y = (float)at.getY();

@@ -15,8 +15,7 @@
  */
 package gj.layout;
 
-import gj.util.*;
-import gj.util.*;
+import gj.util.ArcHelper;
 
 /**
  * Base for Layouts (optional)
