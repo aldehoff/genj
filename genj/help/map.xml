@@ -18,6 +18,7 @@
   <mapID target="v.report"     url="view/report.html" />
   <mapID target="v.navigator"  url="view/navigator.html" />
   <mapID target="v.entity"     url="view/entity.html" />
+  <mapID target="v.search"     url="view/search.html" />
 
   <mapID target="entities"   url="entities.html" />
   <mapID target="e.indi"         url="entity/indi.html" />
@@ -43,6 +44,7 @@
   <mapID target="img.Report"     url="../images/views/Report.gif"   />
   <mapID target="img.Navigator"  url="../images/views/Navigator.gif"   />
   <mapID target="img.Entity"     url="../images/views/Entity.gif"   />
+  <mapID target="img.Search"     url="../images/views/Search.gif"   />
 
   <mapID target="img.Indi"          url="../images/Indi.gif" />
   <mapID target="img.Fam"           url="../images/Fam.gif" />

@@ -15,6 +15,7 @@
     <tocitem target="v.report"      text="@v.report@"      image="img.Report"   />
     <tocitem target="v.navigator"   text="@v.navigator@"   image="img.Navigator"/>
     <tocitem target="v.entity"      text="@v.entity@"      image="img.Entity"   />
+    <tocitem target="v.search"      text="@v.search@"      image="img.Search"   />
   </tocitem>
   <tocitem target="entities"    text="@entities@">
     <tocitem target="e.indi"        text="@e.indi@"          image="img.Indi"        />
