@@ -123,8 +123,9 @@ public class TableViewSettings extends JPanel implements Settings {
    */
   public void apply() {
     // Write columns by TagPaths
+    String tag = Gedcom.ENTITIES[cTypes.getSelectedIndex()];
     TagPath[] paths = pathList.getPaths();
-    table.setPaths(Gedcom.ENTITIES[cTypes.getSelectedIndex()],paths);
+    table.setPaths(tag, paths);
     // Done
   }
 
@@ -133,13 +134,11 @@ public class TableViewSettings extends JPanel implements Settings {
    */
   public void reset() {
 
-//    // don't set something that's ok already - otherwise another reset() is triggered
-//    if (Gedcom.ETYPES[cTypes.getSelectedIndex()]!=table.getType()) 
-//      cTypes.setSelectedIndex(table.getType());
-
     // Reflect columns by TagPaths
-    TagPath[] selectedPaths = table.getPaths(table.getType());
-    TagPath[] usedPaths     = MetaProperty.getPaths(table.getType(), Property.class);
+    String tag = Gedcom.ENTITIES[cTypes.getSelectedIndex()];
+    
+    TagPath[] selectedPaths = table.getPaths(tag);
+    TagPath[] usedPaths     = MetaProperty.getPaths(tag, Property.class);
 
     pathTree.setPaths(usedPaths, selectedPaths);
     pathList.setPaths(selectedPaths);

@@ -62,7 +62,7 @@ import javax.swing.table.TableColumnModel;
  * Component for showing entities of a gedcom file in a tabular way
  */
 public class TableView extends JPanel implements ToolBarSupport, ContextSupport, FilterSupport {
-  
+
   /** a static set of resources */
   private Resources resources = Resources.get(this);
   
@@ -108,11 +108,16 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     loadProperties();
     
     // create our table
-    table = new JTable(tableModel, tableModel.createTableColumnModel(640));
+    table = new JTable(tableModel, tableModel.createTableColumnModel(640)) {
+      /** whenever new columns need to be created */
+      public void createDefaultColumnsFromModel() {
+        setColumnModel(tableModel.createTableColumnModel(super.getWidth()));
+      }
+    };
     table.setTableHeader(new SortableTableHeader());
     table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-    table.setAutoCreateColumnsFromModel(false);
+    table.setAutoCreateColumnsFromModel(true);
     table.getTableHeader().setReorderingAllowed(false);
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
     table.getSelectionModel().addListSelectionListener(selectionCallback);
@@ -141,47 +146,62 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     // destruct model
     tableModel.destructor();
   }
+ 
+  /**
+   * Accessor - the paths we're using for given type
+   */
+  /*package*/ void setPaths(String type, TagPath[] set) {
+    tableModel.getMode(type).setPaths(set);
+  }
 
   /**
-   * Accessor - the gedcom we're focussed on
-   */
-  public Gedcom getGedcom() {
-    return gedcom;
-  }
-  
-  /**
    * Accessor - the paths we're using for given type
    */
-  public TagPath[] getPaths(String type) {
-    return tableModel.getPaths(type);
-  }
-  
-  /**
-   * Accessor - the paths we're using for given type
-   */
-  public void setPaths(String type, TagPath[] set) {
-    tableModel.setPaths(type,set);
-    table.setColumnModel(tableModel.createTableColumnModel(getWidth()));
-  }
-  
-  /**
-   * Returns the type of entities to look at
-   */
-  public String getType() {
-    return tableModel.getType();
+  /*package*/ TagPath[] getPaths(String type) {
+    return tableModel.getMode(type).getPaths();
   }
 
   /**
    * Sets the type of entities to look at
    */
-  public void setType(String type) {
-    // grab the column widths as they are right now
+  /*package*/ void setType(String type) {
     grabColumnWidths();
-    // set the new type
-    tableModel.setType(type);
-    table.setColumnModel(tableModel.createTableColumnModel(getWidth()));
-    // done
+    tableModel.setMode(type);
   }
+
+//  /**
+//   * Accessor - the paths we're using for given type
+//   */
+//  public TagPath[] getPaths(String type) {
+//    return tableModel.getPaths(type);
+//  }
+//  
+//  /**
+//   * Accessor - the paths we're using for given type
+//   */
+//  public void setPaths(String type, TagPath[] set) {
+//    tableModel.setPaths(type,set);
+//    table.setColumnModel(tableModel.createTableColumnModel(getWidth()));
+//  }
+//  
+//  /**
+//   * Returns the type of entities to look at
+//   */
+//  public String getType() {
+//    return tableModel.getType();
+//  }
+//
+//  /**
+//   * Sets the type of entities to look at
+//   */
+//  public void setType(String type) {
+//    // grab the column widths as they are right now
+//    grabColumnWidths();
+//    // set the new type
+//    tableModel.setType(type);
+//    table.setColumnModel(tableModel.createTableColumnModel(getWidth()));
+//    // done
+//  }
 
   /**
    * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
@@ -248,7 +268,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     for (int c=0; c<columns.getColumnCount(); c++) {
       widths[c] = columns.getColumn(c).getWidth();
     }
-    tableModel.setWidths(tableModel.getType(),widths);
+    tableModel.getMode().setWidths(widths);
     // done
   }
 
@@ -257,21 +277,25 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
    */
   private void loadProperties() {
 
-    // get current filter
-    tableModel.setType(registry.get("type", Gedcom.INDI));
-    
     // get paths&widths
     for (int t=0; t<Gedcom.ENTITIES.length; t++) {
+      
       String tag = Gedcom.ENTITIES[t];
+      EntityTableModel.Mode mode = tableModel.getMode(tag);
+      
       String[] ps = registry.get(tag+".paths" , (String[])null);
-      if (ps!=null) tableModel.setPaths(tag, ps);
+      if (ps!=null) mode.setPaths(TagPath.toArray(ps));
+      
       int[]    ws = registry.get(tag+".widths", (int[]   )null);
-      if (ws!=null) tableModel.setWidths(tag,ws);
-    }
-    
-    // get sorting
-    tableModel.setSortedColumn(registry.get("sort.col", -1), registry.get("sort.dir", false));
+      if (ws!=null) mode.setWidths(ws);
 
+      mode.setSort(registry.get(tag+".sort", new Point()));
+
+    }
+
+    // get current filter
+    tableModel.setMode(registry.get("type", Gedcom.INDI));
+    
     // Done
   }
   
@@ -279,9 +303,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
    * Write properties from registry
    */
   private void saveProperties() {
-    // save sorting
-    registry.put("sort.col", tableModel.getSortedColumn());
-    registry.put("sort.dir", tableModel.isAscending());
     // grab the column widths as they are right now
     grabColumnWidths();
     // save current type
@@ -289,8 +310,11 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     // save paths&widths
     for (int t=0; t<Gedcom.ENTITIES.length; t++) {
       String tag = Gedcom.ENTITIES[t];
-      registry.put(tag+".paths", tableModel.getPaths(tag));
-      registry.put(tag+".widths", tableModel.getWidths(tag));
+      EntityTableModel.Mode mode = tableModel.getMode(tag);
+      
+      registry.put(tag+".paths" , mode.getPaths());
+      registry.put(tag+".widths", mode.getWidths());
+      registry.put(tag+".sort"  , mode.getSort());
     }
     // Done
   }  

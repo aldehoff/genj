@@ -28,6 +28,7 @@ import genj.gedcom.TagPath;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.SortableTableHeader;
 
+import java.awt.Point;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -50,19 +51,19 @@ import javax.swing.table.TableColumnModel;
   private Gedcom gedcom;
   
   /** the modes we know about */  
-  private Map filters = new HashMap();
+  private Map modes = new HashMap();
     {
-      filters.put(Gedcom.INDI, new Filter(Gedcom.INDI, new String[]{"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"}));
-      filters.put(Gedcom.FAM , new Filter(Gedcom.FAM , new String[]{"FAM" ,"FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" }));
-      filters.put(Gedcom.OBJE, new Filter(Gedcom.OBJE, new String[]{"OBJE","OBJE:TITL"}));
-      filters.put(Gedcom.NOTE, new Filter(Gedcom.NOTE, new String[]{"NOTE","NOTE:NOTE"}));
-      filters.put(Gedcom.SOUR, new Filter(Gedcom.SOUR, new String[]{"SOUR","SOUR:TITL", "SOUR:TEXT"}));
-      filters.put(Gedcom.SUBM, new Filter(Gedcom.SUBM, new String[]{"SUBM","SUBM:NAME" }));
-      filters.put(Gedcom.REPO, new Filter(Gedcom.REPO, new String[]{"REPO","REPO:NAME", "REPO:NOTE"}));
+      modes.put(Gedcom.INDI, new Mode(Gedcom.INDI, new String[]{"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"}));
+      modes.put(Gedcom.FAM , new Mode(Gedcom.FAM , new String[]{"FAM" ,"FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" }));
+      modes.put(Gedcom.OBJE, new Mode(Gedcom.OBJE, new String[]{"OBJE","OBJE:TITL"}));
+      modes.put(Gedcom.NOTE, new Mode(Gedcom.NOTE, new String[]{"NOTE","NOTE:NOTE"}));
+      modes.put(Gedcom.SOUR, new Mode(Gedcom.SOUR, new String[]{"SOUR","SOUR:TITL", "SOUR:TEXT"}));
+      modes.put(Gedcom.SUBM, new Mode(Gedcom.SUBM, new String[]{"SUBM","SUBM:NAME" }));
+      modes.put(Gedcom.REPO, new Mode(Gedcom.REPO, new String[]{"REPO","REPO:NAME", "REPO:NOTE"}));
     };
   
   /** the current mode */
-  private Filter filter;
+  private Mode mode;
   
   /** the rows */
   private Row[] rows;
@@ -73,8 +74,9 @@ import javax.swing.table.TableColumnModel;
   /*pacakge*/ EntityTableModel(Gedcom gedcom) {
     // remember
     this.gedcom=gedcom;
-    // set starting type
-    setType(Gedcom.INDI);
+    // init empty rows of mode INDI
+    mode = getMode(Gedcom.INDI);
+    rows = new Row[0];
     // start listening
     gedcom.addListener(this);
     // done
@@ -90,61 +92,39 @@ import javax.swing.table.TableColumnModel;
   }
 
   /**
-   * Get paths for given type
+   * Returns current mode
    */
-  /*package*/ TagPath[] getPaths(String tag) {
-    Filter f = (Filter)filters.get(tag);
-    return f!=null ? f.paths : new TagPath[0];
+  /*package*/ Mode getMode() {
+    return mode;
   }
   
   /**
-   * Sets paths for given type
+   * Returns a mode for given tag
    */
-  /*package*/ void setPaths(String tag, String[] paths) {
-    setPaths(tag, calcPaths(paths));
-  }
-  
-  /**
-   * Sets paths for given type
-   */
-  /*package*/ void setPaths(String tag, TagPath[] paths) {
-    Filter f = (Filter)filters.get(tag);
-    if (f!=null) f.paths = paths;
-    prepareRows();
-    fireTableStructureChanged();
-  }
-  
-  /**
-   * Sets withs for given type
-   */
-  /*package*/ void setWidths(String tag, int[] widths) {
-    Filter f = (Filter)filters.get(tag);
-    if (f!=null) f.widths = widths;
-  }
-  
-  /**
-   * Gets withs for given type
-   */
-  /*package*/ int[] getWidths(String tag) {
-    Filter f = (Filter)filters.get(tag);
-    return f!=null ? f.widths : new int[0];
+  /*package*/ Mode getMode(String tag) {
+    // known mode?
+    Mode mode = (Mode)modes.get(tag); 
+    if (mode==null) {
+      mode = new Mode(tag, new String[0]);
+      modes.put(tag, mode);
+    }
+    return mode;
   }
   
   /**
    * Sets the entity type we're looking at
    */
-  /*package*/ void setType(String tag) {
-    // known filter?
-    Filter set = (Filter)filters.get(tag); 
-    if (set==null)
-      return;
+  /*package*/ void setMode(String tag) {
+    // look it up
+    Mode set = getMode(tag);
     // already?
-    if (set==filter) 
+    if (mode==set)
       return;
-    // remember
-    filter = set;
-    // build data
+    mode = set;
+    // build rows
     prepareRows();
+    // and sort
+    sortRows();
     // propagate
     fireTableStructureChanged();
   }
@@ -153,7 +133,7 @@ import javax.swing.table.TableColumnModel;
    * Returns the entity type we're looking at
    */
   /*package*/ String getType() {
-    return filter.tag;
+    return mode.tag;
   }
   
   /**
@@ -184,16 +164,15 @@ import javax.swing.table.TableColumnModel;
    * Prepares the data grid
    */
   private void prepareRows() {
+    System.out.println("prepare");
     // grab entities
-    Collection es = gedcom.getEntities(filter.tag);
+    Collection es = gedcom.getEntities(mode.tag);
     // build rows
     rows = new Row[es.size()];
     Iterator it=es.iterator();
     for (int r=0;it.hasNext();r++) {
-      rows[r] = new Row((Entity)it.next(), filter.paths);
+      rows[r] = new Row((Entity)it.next(), mode.paths);
     }
-    // sort
-    sortRows();
     // done
   }
 
@@ -201,25 +180,15 @@ import javax.swing.table.TableColumnModel;
    * Sorts the rows
    */
   private void sortRows() {
-    Arrays.sort(rows, filter);
-  }
-  
-  /**
-   * Helper to convert Strings to TagPaths
-   */
-  private TagPath[] calcPaths(String[] paths) {
-    TagPath[] result = new TagPath[paths.length];
-    for (int i=0; i<result.length; i++) {
-      result[i] = new TagPath(paths[i]);
-    }
-    return result;
+    System.out.println("sort");
+    Arrays.sort(rows, mode);
   }
   
   /**
    * @see javax.swing.table.TableModel#getColumnCount()
    */
   public int getColumnCount() {
-    return filter.paths.length;
+    return mode.paths.length;
   }
 
   /**
@@ -240,27 +209,22 @@ import javax.swing.table.TableColumnModel;
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#getSortedColumn()
    */
   public int getSortedColumn() {
-    return filter.sortColumn;
+    return mode.sortColumn;
   }
 
   /**
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#isAscending()
    */
   public boolean isAscending() {
-    return filter.sortOrder==1;
+    return mode.sortOrder==1;
   }
 
   /**
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#setSortedColumn(int)
    */
   public void setSortedColumn(int col, boolean ascending) {
-    // remember
-    filter.sortColumn = col;
-    filter.sortOrder  = ascending?1:-1;
-    // sort
-    sortRows();
-    // notify
-    fireTableDataChanged();
+    // propagate
+    mode.setSort(new Point(col, ascending?1:-1));
   }
 
   /**
@@ -271,6 +235,7 @@ import javax.swing.table.TableColumnModel;
     if (!(change.getChanges(Change.EADD).isEmpty()&&change.getChanges(Change.EDEL).isEmpty())) {
       // rebuild!
       prepareRows();
+      sortRows();
       fireTableDataChanged();
       // done
       return;
@@ -298,14 +263,14 @@ import javax.swing.table.TableColumnModel;
    * Helper that creates a new ColumnModel
    */
   /*package*/ TableColumnModel createTableColumnModel(int total) {
-    TagPath[] paths = getPaths(filter.tag);
-    int[] widths = getWidths(filter.tag);
+    TagPath[] paths = mode.paths;
+    int[] widths = mode.widths;
     // create and fill
     TableColumnModel columns = new DefaultTableColumnModel();
-    for (int c=0; c<filter.paths.length; c++) {
+    for (int c=0; c<mode.paths.length; c++) {
       TableColumn col = new TableColumn(c);
       col.setHeaderValue(paths[c]);
-      col.setPreferredWidth(widths.length>c&&widths[c]>0?widths[c]:total/filter.paths.length);
+      col.setPreferredWidth(widths.length>c&&widths[c]>0?widths[c]:total/mode.paths.length);
       columns.addColumn(col);
     }
     // done
@@ -313,22 +278,22 @@ import javax.swing.table.TableColumnModel;
   }
 
   /**
-   * A Filter filters the entities we have in the model
+   * A mode is a configuration for a set of entities
    */
-  private class Filter implements Comparator {
+  /*package*/ class Mode implements Comparator {
     /** attributes */
-    ImageIcon image;
-    String tag;
-    String[] defaults;
-    TagPath[] paths;
-    int[] widths;
-    int sortColumn, sortOrder;
+    private ImageIcon image;
+    private String tag;
+    private String[] defaults;
+    private TagPath[] paths;
+    private int[] widths;
+    private int sortColumn, sortOrder;
     /** constructor */
-    Filter(String t, String[] d) {
+    private Mode(String t, String[] d) {
       // remember
       tag      = t;
       defaults = d;
-      paths    = calcPaths(defaults);
+      paths    = TagPath.toArray(defaults);
       widths   = new int[paths.length];
     }
     /**
@@ -352,6 +317,56 @@ import javax.swing.table.TableColumnModel;
       // let property decide
       return row1[sortColumn].compareTo(row2[sortColumn]) * sortOrder;
     }
-  } //Filter
+    
+    /**
+     * Get paths 
+     */
+    /*package*/ TagPath[] getPaths() {
+      return paths;
+    }
+  
+    /**
+     * Sets paths 
+     */
+    /*package*/ void setPaths(TagPath[] set) {
+      paths = set;
+      if (mode==this) {
+        prepareRows();
+        sortColumn = -1;
+        fireTableStructureChanged();
+      }
+    }
+    
+    /**
+     * Sets withs
+     */
+    /*package*/ void setWidths(int[] set) {
+      widths = set;
+    }
+    
+    /**
+     * Gets withs 
+     */
+    /*package*/ int[] getWidths() {
+      return widths;
+    }
+    /**
+     * Set sort
+     */
+    /*package*/ void setSort(Point columnAndDir) {
+      sortColumn = columnAndDir.x;
+      sortOrder = columnAndDir.y;
+      if (mode==this) {
+        sortRows();
+        fireTableDataChanged();
+      }
+    }
+    /** 
+     * Get sort
+     */
+    /*package*/ Point getSort() {
+      return new Point(sortColumn, sortOrder);
+    }
+  } //Mode
   
 } //TableModel
