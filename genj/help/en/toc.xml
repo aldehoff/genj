@@ -6,14 +6,14 @@
   <tocitem target="gedcom"      text="Gedcom"        image="img.Gedcom"      />
   <tocitem target="cc"          text="Control Center"image="img.NewGedcom"   />
   <tocitem target="views"       text="Views">
-    <tocitem target="v.edit"      text="Edit View"     image="img.NewEdit"     />
-    <tocitem target="v.tree"      text="Tree View"     image="img.NewTree"     />
     <tocitem target="v.table"     text="Table View"    image="img.NewTable"    />
+    <tocitem target="v.tree"      text="Tree View"     image="img.NewTree"     />
     <tocitem target="v.timeline"  text="Timeline View" image="img.NewTimeline" />
+    <tocitem target="v.edit"      text="Edit View"     image="img.NewEdit"     />
     <tocitem target="v.report"    text="Report View"   image="img.NewReport"   />
     <tocitem target="v.settings"  text="Settings View" image="img.Settings"   >
-      <tocitem target="v.s.tree"     text="Tree View's Settings" image="img.NewTree" />
       <tocitem target="v.s.table"    text="Table View's Settings" image="img.NewTable" />
+      <tocitem target="v.s.tree"     text="Tree View's Settings" image="img.NewTree" />
       <tocitem target="v.s.timeline" text="Timeline View's Settings" image="img.NewTimeline" />
     </tocitem>
   </tocitem>
