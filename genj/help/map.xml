@@ -16,29 +16,15 @@
   <mapID target="v.timeline"   url="view/timeline.html" />
   <mapID target="v.report"     url="view/report.html" />
   <mapID target="v.navigator"  url="view/navigator.html" />
-  <mapID target="v.settings"   url="view/settings.html" />
-
-  <mapID target="v.s.tree"     url="view/settings/tree.html" />
-  <mapID target="v.s.table"    url="view/settings/table.html" />
-  <mapID target="v.s.timeline" url="view/settings/timeline.html" />
 
   <mapID target="e.indi"      url="entity/indi.html" />
   <mapID target="e.family"    url="entity/fam.html" />
   <mapID target="e.note"      url="entity/note.html" />
   <mapID target="e.media"     url="entity/media.html" />
 
-  <mapID target="x.tools"     url="special/tools.html" />
   <mapID target="x.report"    url="special/report.html" />
-  <mapID target="x.resedit"   url="special/resedit.html" />
-
-  <mapID target="documentation"     url="documentation/documentation.html" />
-  <mapID target="d.changes"     url="documentation/changes.html" />
-  <mapID target="d.todo"     url="documentation/todo.html" />
-  <mapID target="d.faq"    url="documentation/faq.html" />
-  <mapID target="d.s.faq1"    url="documentation/faq1.html" />
-  <mapID target="d.s.faq2"    url="documentation/faq2.html" />
-  <mapID target="d.developer"    url="documentation/developer.html" />
-  <mapID target="d.gpl"     url="documentation/gpl.html" />
+  <mapID target="x.faq1"      url="special/faq1.html" />
+  <mapID target="x.faq2"      url="special/faq2.html" />
 
   <mapID target="team"      url="team.html" />
 
@@ -49,8 +35,6 @@
   <mapID target="img.NewTimeline"   url="../images/NewTimeline.gif" />
   <mapID target="img.NewReport"     url="../images/NewReport.gif"   />
   <mapID target="img.NewNavigator"  url="../images/NewNavigator.gif"   />
-  <mapID target="img.ResEdit"       url="../images/ResEdit.gif"     />
-  <mapID target="img.Settings"      url="../images/Settings.gif"    />
 
   <mapID target="img.Indi"          url="../images/Indi.gif" />
   <mapID target="img.Fam"           url="../images/Fam.gif" />
@@ -61,7 +45,6 @@
 
   <mapID target="img.Welcome"       url="../images/Welcome.gif" />
   <mapID target="img.Intro"         url="../images/Cause.gif" />
-  <mapID target="img.Concept"       url="../images/Format.gif" />
   <mapID target="img.Gedcom"        url="../images/Blob.gif" />
 
 
