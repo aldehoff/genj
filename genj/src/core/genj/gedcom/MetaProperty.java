@@ -346,7 +346,7 @@ public class MetaProperty implements Comparable {
         return i;
     }
     //20040518 make the index of an unknown subtag as large as possible
-    return Integer.MAX_VALUE-1;
+    return Integer.MAX_VALUE;
   }
   
   /**

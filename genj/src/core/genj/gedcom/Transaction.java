@@ -36,20 +36,11 @@ public class Transaction {
     PMOD    = 5,
     NUM     = 6;
 
-  /** a  set that doesn't retain added content */  
-  private static final Set NULL_SET = new HashSet() {
-    // ignore any add's
-    public boolean add(Object o) { return false; }
-  };
-  
   /** gedcom */
   private Gedcom gedcom;
 
   /** current changes */
   private Set[] changes;
-  
-  /** whether we track changes */
-  private boolean isTrackChanges = true;
   
   /** time started */
   private long time;
@@ -79,24 +70,10 @@ public class Transaction {
   }
   
   /**
-   * accessor - whether to track changes
-   */
-  public boolean isTrackChanges() {
-    return isTrackChanges;
-  }
-  
-  /**
-   * accessor - whether to track changes
-   */
-  public void setTrackChanges(boolean set) {
-    isTrackChanges = set;
-  }
-  
-  /**
    * Returns Set
    */
   public Set getChanges(int which) {
-    return isTrackChanges ? changes[which] : NULL_SET;
+    return changes[which];
   }
 
   /**

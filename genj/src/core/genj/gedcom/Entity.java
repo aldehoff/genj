@@ -48,7 +48,9 @@ public class Entity extends Property {
     this.tag  = tag;
     
     // note
-    gedcom.getTransaction().getChanges(Transaction.EADD).add(this);
+    Transaction tx = gedcom.getTransaction();
+    if (tx!=null)
+      tx.getChanges(Transaction.EADD).add(this);
 
     // done    
   }
@@ -59,7 +61,9 @@ public class Entity extends Property {
   /*package*/ void delNotify() {
     
     // note
-    gedcom.getTransaction().getChanges(Transaction.EDEL).add(this);
+    Transaction tx = gedcom.getTransaction();
+    if (tx!=null)
+      tx.getChanges(Transaction.EDEL).add(this);
 
     // continue
     super.delNotify();
@@ -82,11 +86,15 @@ public class Entity extends Property {
       
     // propagate change
     Transaction tx = gedcom.getTransaction();
+    if (tx==null)
+      return;
+      
+    // FIXME gedcom - remove of added property has to be checked  
     tx.getChanges(status).add(prop);
     tx.getChanges(Transaction.EMOD).add(this);
     
     // Reflect change of property (unless we don't track changes or CHAN was deleted)
-    if (tx.isTrackChanges()&&!(prop instanceof PropertyChange&&status==Transaction.PDEL))
+    if (!(prop instanceof PropertyChange&&status==Transaction.PDEL))
       PropertyChange.update(this, tx);
     
     // done

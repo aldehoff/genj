@@ -259,9 +259,7 @@ public class GedcomReader implements Trackable {
     
     // try it
     try {
-      gedcom.startTransaction().setTrackChanges(false);
       readGedcom();
-      gedcom.endTransaction();
       return gedcom;
     } catch (GedcomIOException gex) {
       throw gex;

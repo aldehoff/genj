@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.63 $ $Author: nmeier $ $Date: 2004-07-02 21:20:07 $
+ * $Revision: 1.64 $ $Author: nmeier $ $Date: 2004-07-03 20:42:38 $
  */
 package genj.gedcom;
 
@@ -152,7 +152,6 @@ public class Gedcom {
     this.origin = origin;
     // create Adam
     if (createAdam) {
-      startTransaction();
       try {
         Indi adam = (Indi) createEntity(Gedcom.INDI);
         adam.addDefaultProperties();
@@ -160,7 +159,6 @@ public class Gedcom {
         adam.setSex(PropertySex.MALE);
       } catch (GedcomException e) {
       }
-      endTransaction();
     }
     // Done
   }
@@ -186,8 +184,10 @@ public class Gedcom {
     if (!getEntityMap(SUBM).containsValue(set))
       throw new IllegalArgumentException("Submitter is not part of this gedcom");
     submitter = set;
-    if (getTransaction().isTrackChanges())
-      hasUnsavedChanges = true;
+    
+    // propagate modified on submitter
+    submitter.propagateModified();
+
   }
   
   /**
@@ -455,9 +455,11 @@ public class Gedcom {
   /**
    * Access current transaction
    */
-  public synchronized Transaction getTransaction() {
-    if (transaction==null)
-      throw new RuntimeException("Cannot find active transaction");
+  /*package*/ synchronized Transaction getTransaction() {
+    // check for no transaction while listeners present
+    if (transaction==null&&!listeners.isEmpty())
+      throw new IllegalStateException("No active transaction but listeners present");
+    // return it
     return transaction;
   }
 
