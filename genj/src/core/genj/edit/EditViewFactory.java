@@ -56,7 +56,7 @@ import javax.swing.JTextArea;
  * The factory for the TableView
  */
 public class EditViewFactory implements ViewFactory, ContextSupport {
-  
+    
   /** resources we use */
   private final static Resources resources = EditView.resources;
 
@@ -121,11 +121,11 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     }
     // everything but a note can get a note attached
     if (!(property instanceof PropertyNote))
-      result.add(new Add(property.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(property,Gedcom.NOTES)));
+      result.add(new Relate(property.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(property,Gedcom.NOTES)));
     // event can get can get an obje|SOUR attached
     if (property instanceof PropertyEvent) {
-      result.add(new Add(property.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(property,Gedcom.MULTIMEDIAS)));
-      result.add(new Add(property.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(property,Gedcom.SOURCES)));
+      result.add(new Relate(property.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(property,Gedcom.MULTIMEDIAS)));
+      result.add(new Relate(property.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(property,Gedcom.SOURCES)));
     }
 // FIXME
 //    // add link
@@ -150,12 +150,12 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     // add standards
     result.add(ActionDelegate.NOOP);
     if (!(entity instanceof Note)) 
-      result.add(new Add(entity.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(entity.getProperty(),Gedcom.NOTES)));
+      result.add(new Relate(entity.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(entity.getProperty(),Gedcom.NOTES)));
     if (entity instanceof Indi||entity instanceof Fam) {
-      result.add(new Add(entity.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(entity.getProperty(),Gedcom.MULTIMEDIAS)));
-      result.add(new Add(entity.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SOURCES)));
-      result.add(new Add(entity.getGedcom(), Gedcom.SUBMITTERS  , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SUBMITTERS)));
-      result.add(new Add(entity.getGedcom(), Gedcom.REPOSITORIES, new Relationship.LinkedBy(entity.getProperty(),Gedcom.REPOSITORIES)));
+      result.add(new Relate(entity.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(entity.getProperty(),Gedcom.MULTIMEDIAS)));
+      result.add(new Relate(entity.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SOURCES)));
+      result.add(new Relate(entity.getGedcom(), Gedcom.SUBMITTERS  , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SUBMITTERS)));
+      result.add(new Relate(entity.getGedcom(), Gedcom.REPOSITORIES, new Relationship.LinkedBy(entity.getProperty(),Gedcom.REPOSITORIES)));
     }
 // FIXME    
 //    // add link
@@ -187,33 +187,33 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    * Create actions for Gedcom
    */
   private void createActions(List result, Gedcom gedcom) {
-    result.add(new Add(gedcom, Gedcom.INDIVIDUALS , null));
-    result.add(new Add(gedcom, Gedcom.FAMILIES    , null));
-    result.add(new Add(gedcom, Gedcom.NOTES       , null));
-    result.add(new Add(gedcom, Gedcom.MULTIMEDIAS , null));
-    result.add(new Add(gedcom, Gedcom.REPOSITORIES, null));
-    result.add(new Add(gedcom, Gedcom.SOURCES     , null));
-    result.add(new Add(gedcom, Gedcom.SUBMITTERS  , null));
+    result.add(new Create(gedcom, Gedcom.INDIVIDUALS ));
+    result.add(new Create(gedcom, Gedcom.FAMILIES    ));
+    result.add(new Create(gedcom, Gedcom.NOTES       ));
+    result.add(new Create(gedcom, Gedcom.MULTIMEDIAS ));
+    result.add(new Create(gedcom, Gedcom.REPOSITORIES));
+    result.add(new Create(gedcom, Gedcom.SOURCES     ));
+    result.add(new Create(gedcom, Gedcom.SUBMITTERS  ));
   }
   
   /**
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi) {
-    result.add(new Add(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ChildOf(indi)));
+    result.add(new Relate(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ChildOf(indi)));
     if (indi.getNoOfParents()<2)
-      result.add(new Add(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentOf(indi)));
-    result.add(new Add(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.SpouseOf(indi)));
-    result.add(new Add(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.SiblingOf(indi)));
+      result.add(new Relate(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentOf(indi)));
+    result.add(new Relate(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.SpouseOf(indi)));
+    result.add(new Relate(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.SiblingOf(indi)));
   }
   
   /**
    * Create actions for Families
    */
   private void createActions(List result, Fam fam) {
-    result.add(new Add(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ChildIn(fam)));
+    result.add(new Relate(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ChildIn(fam)));
     if (fam.getNoOfSpouses()<2)
-      result.add(new Add(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentIn(fam)));
+      result.add(new Relate(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentIn(fam)));
   }
   
   /**
@@ -266,6 +266,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /*package*/ static abstract class Change extends ActionDelegate {
     /** the gedcom we're working on */
     protected Gedcom gedcom;
+    /** the focus */
+    protected Entity focus = null;
     /**
      * Constructor
      */
@@ -310,6 +312,16 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       }
       // unlock gedcom
       gedcom.endTransaction();
+      // set focus?
+      if (focus!=null) {
+        // no editor open?
+        if (ViewManager.getInstance().getOpenViews(EditView.class, gedcom).isEmpty()) {
+          EditView.preselectEntity = focus;
+          ViewManager.getInstance().openView(EditViewFactory.class, gedcom);
+        }
+        // set current        
+        ViewManager.getInstance().setCurrentEntity(focus);
+      }
       // done
     }
     /**
@@ -321,18 +333,16 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * Add an entity via relationship (new or existing) 
    */
-  /*package*/ class Add extends Change{
+  /*package*/ static class Relate extends Change{
     /** the type of the added entity*/
     private int type;
     /** the relationship */
     private Relationship relationship;
-    /** the entity that should receive the focus after the change */
-    protected Entity result;
     /**
      * Constructor
      */
-    /*package*/ Add(Gedcom ged, int typ, Relationship relatshp) {
-      super(ged, newImages[typ], resources.getString("new", relatshp==null ? Gedcom.getNameFor(typ, false) : relatshp.getName()));
+    /*package*/ Relate(Gedcom ged, int typ, Relationship relatshp) {
+      super(ged, newImages[typ], resources.getString("new", relatshp.getName()));
       type = typ;
       relationship = relatshp;
     }
@@ -343,7 +353,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       // You are about to create a {0} in {1}!
       String about = resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom});
       // This entity will not be connected ... / This entity will be {0}.
-      String detail = resources.getString(relationship==null?"confirm.new.unrelated":"confirm.new.related", relationship);
+      String detail = resources.getString("confirm.new.related", relationship);
       // done
       return about + '\n' + detail;
     }
@@ -352,27 +362,46 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
      */
     protected void change() throws GedcomException {
       // create the entity
-      result = gedcom.createEntity(type, null);
-      result.getProperty().addDefaultProperties();
+      focus = gedcom.createEntity(type, null);
+      focus.getProperty().addDefaultProperties();
       // perform the relationship
-      if (relationship!=null) relationship.apply(result);
+      relationship.apply(focus);
       // done
     }
+  } //Add
+  
+  /**
+   * Add a new entity  
+   */
+  /*package*/ static class Create extends Change{
+    /** the type of the added entity*/
+    private int type;
     /**
-     * @see genj.edit.EditViewFactory.Change#execute()
+     * Constructor
      */
-    protected void execute() {
-      super.execute();
-      // set focus?
-      if (result!=null) {
-        // no editor open?
-        if (ViewManager.getInstance().getOpenViews(EditView.class, gedcom).isEmpty()) {
-          EditView.preselectEntity = result;
-          ViewManager.getInstance().openView(EditViewFactory.this, gedcom);
-        }
-        // set current        
-        ViewManager.getInstance().setCurrentEntity(result);
-      }
+    /*package*/ Create(Gedcom ged, int typ) {
+      super(ged, newImages[typ], resources.getString("new", Gedcom.getNameFor(typ, false) ));
+      type = typ;
+    }
+    /**
+     * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
+     */
+    protected Object getConfirmMessage() {
+      // You are about to create a {0} in {1}!
+      String about = resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom});
+      // This entity will not be connected ... / This entity will be {0}.
+      String detail = resources.getString("confirm.new.unrelated");
+      // done
+      return about + '\n' + detail;
+    }
+    /**
+     * @see genj.edit.EditViewFactory.Change#change()
+     */
+    protected void change() throws GedcomException {
+      // create the entity
+      focus = gedcom.createEntity(type, null);
+      focus.getProperty().addDefaultProperties();
+      // done
     }
   } //Create
   

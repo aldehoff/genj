@@ -306,6 +306,18 @@ public class ViewManager {
    * Opens a view on a gedcom file
    * @return the view component
    */
+  public Component openView(Class factory, Gedcom gedcom) {
+    for (int f=0; f<factories.length; f++) {
+      if (factories[f].getClass().equals(factory)) 
+        return openView(factories[f], gedcom);   	
+    }
+    throw new IllegalArgumentException("Unknown factory "+factory.getName());
+  }
+
+  /**
+   * Opens a view on a gedcom file
+   * @return the view component
+   */
   public Component openView(ViewFactory factory, Gedcom gedcom) {
     
     // get a registry 
