@@ -6,9 +6,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyDate;
@@ -23,7 +22,7 @@ import java.util.Iterator;
  * @author Nils Meier nils@meiers.net
  * @author Carsten Müssig carsten.muessig@gmx.net
  */
-public class ReportBirthdays extends Report {
+public class ReportEvents extends Report {
     
     /** whether we sort by day-of-month or date */
     public boolean isSortDay = true;

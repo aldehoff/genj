@@ -9,10 +9,10 @@ import java.text.BreakIterator;
  * GenJ -  ReportPhonetics
  * @version 0.1
  */
-public class ReportSoundex extends Report {
+public class ReportPhonetics extends Report {
     
     public int outputFormat = 0;
-    public String[] outputFormats = { "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex" };
+    public static String[] outputFormats = { "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex" };
     
     /** this report's version */
     public static final String VERSION = "0.1";
