@@ -147,9 +147,8 @@ import javax.swing.JScrollPane;
     // but check permissions first
     try {
 
-      System.getSecurityManager().checkPermission(
-        new FilePermission(IMAGE_DIR, "read")
-      );      
+      SecurityManager sm = System.getSecurityManager();
+      if (sm!=null) sm.checkPermission( new FilePermission(IMAGE_DIR, "read"));      
       
       // a text-field and button for file
       p.add(tFile);
