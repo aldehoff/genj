@@ -197,6 +197,13 @@ public class MetaProperty {
     // done
     return type;
   }
+  
+  /**
+   * Accessor - Type Chec
+   */
+  public boolean isType(Class clazz) {
+    return clazz.isAssignableFrom(getType());
+  }
 
   /**
    * Accessor - some explanationary information about the meta

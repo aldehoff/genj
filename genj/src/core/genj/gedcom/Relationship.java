@@ -7,11 +7,28 @@ import javax.swing.ImageIcon;
  */
 public abstract class Relationship {
   
+  /** Gedcom this applies */
+  private Gedcom gedcom;
+  
+  /**
+   * Constructor
+   */
+  protected Relationship(Gedcom ged) {
+    gedcom = ged;
+  }
+  
   /**
    * Perform the relationship
    * @return the receiver of focus (preferrably)
    */
   public abstract Entity apply(Entity entity) throws GedcomException ;  
+  
+  /**
+   * Accessor - gedcom
+   */
+  public Gedcom getGedcom() {
+    return gedcom;
+  }
   
   /**
    * An image
@@ -41,9 +58,9 @@ public abstract class Relationship {
   }
   
   /**
-   * Relationship : Linked by
+   * Relationship : XRef'd by
    */
-  public static class LinkedBy extends Relationship {
+  public static class XRefBy extends Relationship {
     
     /** linked by owner */
     private Property owner;
@@ -55,27 +72,15 @@ public abstract class Relationship {
     private PropertyXRef xref;
     
     /** Constructor */
-    private LinkedBy(Property owner, MetaProperty sub) {
+    public XRefBy(Property owner, PropertyXRef xref) {
+
+      super(owner.getGedcom());
 
       // keep owner      
       this.owner = owner;
-      this.sub = sub;
-      
-      // create sub xref
-      Property p = sub.create("");
-
-      // keep      
-      xref = (PropertyXRef)p;
+      this.xref = xref;
       
       // done
-    }
-    
-    /** access */
-    public static LinkedBy getInstance(Property owner, MetaProperty sub) {
-      // applicable?
-      if (!PropertyXRef.class.isAssignableFrom(sub.getType()))
-        return null;
-      return new LinkedBy(owner, sub);
     }
     
     /**
@@ -109,6 +114,20 @@ public abstract class Relationship {
       return owner.getEntity();
     }
 
+    /**
+     * Wether this relationship is applicable for given owner
+     */
+    public static boolean isApplicable(Class ownerXref) {
+      if (!PropertyXRef.class.isAssignableFrom(ownerXref))
+        return false;
+      if (ownerXref==PropertyFamilySpouse.class) return false;
+      if (ownerXref==PropertyFamilyChild.class) return false;
+      if (ownerXref==PropertyHusband.class) return false;
+      if (ownerXref==PropertyWife.class) return false;
+      if (ownerXref==PropertyChild.class) return false;
+      return true;
+    }
+
   } // LinkedBy
 
   /**
@@ -121,6 +140,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public ChildIn(Fam famly) {
+      super(famly.getGedcom());
       family = famly;
     }
     
@@ -167,6 +187,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public ChildOf(Indi parnt) {
+      super(parnt.getGedcom());
       parent = parnt;
     }
     
@@ -215,6 +236,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public ParentIn(Fam famly) {
+      super(famly.getGedcom());
       family = famly;
     }
     
@@ -262,6 +284,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public ParentOf(Indi chil) {
+      super(chil.getGedcom());
       child = chil;
     }
     
@@ -310,6 +333,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public SpouseOf(Indi spose) {
+      super(spose.getGedcom());
       spouse = spose;
     }
     
@@ -360,6 +384,7 @@ public abstract class Relationship {
     
     /** Constructor */
     public SiblingOf(Indi siblng) {
+      super(siblng.getGedcom());
       sibling = siblng;
     }
     

@@ -33,6 +33,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
+import genj.gedcom.PropertyXRef;
 import genj.gedcom.Relationship;
 import genj.gedcom.Submitter;
 import genj.io.FileAssociation;
@@ -109,9 +110,13 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     // Check what xrefs can be added
     MetaProperty[] subs = property.getVisibleMetaProperties();
     for (int s=0;s<subs.length;s++) {
-      Relationship rel = Relationship.LinkedBy.getInstance(property,subs[s]);
-      if (rel!=null)
-        result.add(new CreateRelationship(property.getGedcom(), rel));
+      // create Relationship.XRef where applicable
+      MetaProperty sub = subs[s]; 
+      if (Relationship.XRefBy.isApplicable(sub.getType())) {
+        Relationship rel = new Relationship.XRefBy(property,(PropertyXRef)subs[s].create(""));
+        result.add(new CreateRelationship(rel));
+      }
+      // .. next
     }
 
 //    // association
@@ -145,9 +150,13 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     // Check what xrefs can be added
     MetaProperty[] subs = entity.getAllMetaProperties();
     for (int s=0;s<subs.length;s++) {
-      Relationship rel = Relationship.LinkedBy.getInstance(entity,subs[s]);
-      if (rel!=null)
-        result.add(new CreateRelationship(entity.getGedcom(), rel));
+      // create Relationship.XRef where applicable
+      MetaProperty sub = subs[s]; 
+      if (Relationship.XRefBy.isApplicable(sub.getType())) {
+        Relationship rel = new Relationship.XRefBy(entity,(PropertyXRef)subs[s].create(""));
+        result.add(new CreateRelationship(rel));
+      }
+      // .. next
     }
 
 //  // FIXME ASSO
@@ -187,20 +196,20 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi) {
-    result.add(new CreateRelationship(indi.getGedcom(), new Relationship.ChildOf(indi)));
+    result.add(new CreateRelationship(new Relationship.ChildOf(indi)));
     if (indi.getNoOfParents()<2)
-      result.add(new CreateRelationship(indi.getGedcom(), new Relationship.ParentOf(indi)));
-    result.add(new CreateRelationship(indi.getGedcom(), new Relationship.SpouseOf(indi)));
-    result.add(new CreateRelationship(indi.getGedcom(), new Relationship.SiblingOf(indi)));
+      result.add(new CreateRelationship(new Relationship.ParentOf(indi)));
+    result.add(new CreateRelationship(new Relationship.SpouseOf(indi)));
+    result.add(new CreateRelationship(new Relationship.SiblingOf(indi)));
   }
   
   /**
    * Create actions for Families
    */
   private void createActions(List result, Fam fam) {
-    result.add(new CreateRelationship(fam.getGedcom(), new Relationship.ChildIn(fam)));
+    result.add(new CreateRelationship(new Relationship.ChildIn(fam)));
     if (fam.getNoOfSpouses()<2)
-      result.add(new CreateRelationship(fam.getGedcom(), new Relationship.ParentIn(fam)));
+      result.add(new CreateRelationship(new Relationship.ParentIn(fam)));
   }
   
   /**
