@@ -560,10 +560,39 @@ public class GedcomReader implements Trackable {
    */
   private void readProperties(Property prop, MetaProperty meta, int currentlevel) throws GedcomIOException, GedcomFormatException {
 
-    //FIXME need to finish collecting even when readLine fails (finally)
+    // read more for multiline property prop?
+    if (prop instanceof MultiLineProperty) {
+
+      MultiLineProperty.Collector collector = ((MultiLineProperty)prop).getLineCollector();
+      try { 
+        
+        while (true) {
+          
+          // check next line
+          readLine();
+          
+          // end of property ?
+          if (level<=currentlevel) 
+            break;
+            
+          // can we continue with current?
+          if (!collector.append(level-currentlevel, tag, value)) 
+            break;
+        } 
+      
+      } finally {
+        // commit collected value
+        prop.setValue(collector.getValue());
+      }
+
+      // redo last line
+      redoLine();
+      
+    }
+
+    // decrypt value now
+    decryptLazy(prop);
     
-    MultiLineProperty.Collector collector =  prop instanceof MultiLineProperty ? ((MultiLineProperty)prop).getLineCollector() : null;
-  
     // Get subs of property
     Property sub;
     do {
@@ -574,10 +603,6 @@ public class GedcomReader implements Trackable {
       // end of property ?
       if (level<=currentlevel) 
         break;
-        
-      // can we continue with current?
-      if (collector!=null&&collector.append(level-currentlevel, tag, value)) 
-          continue;
         
       // level>currentLevel would be wrong e.g.
       // 0 INDI
@@ -605,18 +630,6 @@ public class GedcomReader implements Trackable {
       // next property
     } while (true);
 
-    // commit collected value if available
-    String value;
-    if (collector!=null) {
-      value = collector.getValue();
-      prop.setValue(value);
-    } else {
-      value = prop.getValue();
-    }
-
-    // decrypt value
-    decryptLazy(prop, value);
-       
     // restore what we haven't consumed
     redoLine();
   }
@@ -624,7 +637,9 @@ public class GedcomReader implements Trackable {
   /**
    * Decrypt a value if necessary
    */
-  private void decryptLazy(Property prop, String value) throws GedcomEncryptionException {
+  private void decryptLazy(Property prop) throws GedcomEncryptionException {
+
+    String value = prop.getValue();
     
     // no need to do anything if not encrypted value 
     if (!Enigma.isEncrypted(value))
