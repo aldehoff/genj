@@ -15,7 +15,7 @@
    <row><bean path="INDI:OCCU:PLAC" wx="0.1"/></row>
    <row><label path="INDI:RESI"/><bean path="INDI:RESI:NOTE" popup="true"/><bean path="INDI:RESI:PLAC" popup="true" ifexists="true"/></row>
    <row><bean path="INDI:RESI:DATE"/></row>
-   <row><bean path="INDI:RESI:ADDR" wx="0.1"/></row>
+   <row><bean path="INDI:RESI:ADDR" wx="0.1" wy="0.1"/></row>
    <row><label path="INDI:RESI:ADDR:CITY"/><bean path="INDI:RESI:ADDR:CITY" wx="0.1"/></row>
    <row><label path="INDI:RESI:ADDR:POST"/><bean path="INDI:RESI:ADDR:POST" wx="0.1"/></row>
   </col>
