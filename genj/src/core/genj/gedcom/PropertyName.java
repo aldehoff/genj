@@ -170,8 +170,15 @@ public class PropertyName extends Property {
     if ((lastName != null) && (! lastName.equals("")))
       out = firstName+" /"+lastName+"/";
     if ((suffix != null) && (! suffix.equals("")))
-      out = out+suffix;
+      out = out+" "+suffix;
     return out;
+  }
+
+  /**
+   * Sets name to a new value
+   */
+  public void setName(String first, String last) {
+    setName(first,last,"");
   }
 
   /**

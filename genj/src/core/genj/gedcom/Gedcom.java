@@ -343,7 +343,7 @@ public class Gedcom implements GedcomListener {
     // NAME
     if ((lastName!=null)&&(firstName!=null)) {
       PropertyName pn = new PropertyName();
-      pn.setName(firstName, lastName, null);
+      pn.setName(firstName, lastName);
       indi.addProperty(pn);
     }
 
