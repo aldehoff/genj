@@ -38,7 +38,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.EmptyBorder;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -100,20 +100,25 @@ abstract class Proxy  {
     /**
      * Constructor
      */
-    protected Preview(Entity ent) {
+    protected Preview(Entity ent, boolean clickable) {
+      // remember
       entity = ent;
-      setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-      setBorder(new TitledBorder(entity.getId()));
-      addMouseListener(new MouseAdapter() {
-        /**
-         * @see genj.edit.ProxyXRef.Preview#mouseClicked(java.awt.event.MouseEvent)
-         */
-        public void mouseClicked(MouseEvent e) {
-          boolean sticky = view.setSticky(false);
-          ViewManager.getInstance().setCurrentEntity(entity);
-          view.setSticky(sticky);
-         }
-      });
+      setBorder(new EmptyBorder(4,4,4,4));
+      // prepare click
+      if (clickable) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addMouseListener(new MouseAdapter() {
+          /**
+           * @see genj.edit.ProxyXRef.Preview#mouseClicked(java.awt.event.MouseEvent)
+           */
+          public void mouseClicked(MouseEvent e) {
+            boolean sticky = view.setSticky(false);
+            ViewManager.getInstance().setCurrentEntity(entity);
+            view.setSticky(sticky);
+           }
+        });
+      }
+      // done
     }
     /**
      * @see genj.edit.ProxyXRef.Content#paintComponent(java.awt.Graphics)

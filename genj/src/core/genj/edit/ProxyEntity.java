@@ -99,7 +99,7 @@ class ProxyEntity extends Proxy {
 
     // Layout
     in.add(box);
-    in.add(new Preview(e));
+    in.add(new Preview(e, false));
 
     // Done
     return tfield;

@@ -52,7 +52,7 @@ class ProxyXRef extends Proxy {
     Entity entity = ((PropertyXRef) property).getReferencedEntity();
 
     // setup content
-    if (entity!=null) in.add(new Preview(entity));
+    if (entity!=null) in.add(new Preview(entity, true));
     
     // done
     return null;
