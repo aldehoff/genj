@@ -19,21 +19,24 @@
  */
 package genj.print;
 
+import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.print.PageFormat;
 
 import javax.print.PrintService;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 
 /**
@@ -73,6 +76,11 @@ public class PrintWidget extends JTabbedPane {
     
     /** combobox with printservices */
     private JComboBox comboServices = new JComboBox();
+    
+    /** checkbox for orientation */
+    private JRadioButton 
+      radioPortrait   = new JRadioButton("Portrait"), 
+      radioLandscape = new JRadioButton("Landscape");
   
     /**
      * Constructor     */
@@ -80,29 +88,62 @@ public class PrintWidget extends JTabbedPane {
        
       // setup combo PrintServices
       comboServices.setModel(new DefaultComboBoxModel(task.getPrintServices()));
-      comboServices.addActionListener(new ActionListener() {
-        /** PrintService selection */
-        public void actionPerformed(ActionEvent e) {
-          task.setCurrentPrintService((PrintService)comboServices.getSelectedItem());
-        }
-      });
-      comboServices.setSelectedItem(task.getCurrentPrintService());
+      comboServices.addActionListener((ActionListener)new SelectService().as(ActionListener.class));
+      comboServices.setSelectedItem(task.getPrintService());
       comboServices.setRenderer(new DefaultListCellRenderer() {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
           return super.getListCellRendererComponent(list,((PrintService)value).getName(),index, isSelected, cellHasFocus);
         }
       });
+ 
+      // setup radios for orientation
+      ButtonGroup bg = new ButtonGroup();bg.add(radioPortrait);bg.add(radioLandscape);
+      ActionListener a = (ActionListener)new SelectOrientation().as(ActionListener.class);
+      radioPortrait .addActionListener(a);
+      radioLandscape.addActionListener(a);
+      PageFormat page = task.getPageFormat();
+      if (page.getOrientation()==page.PORTRAIT) radioPortrait.setSelected(true);
+      else radioLandscape.setSelected(true);
       
       // layout
       ButtonHelper bh = new ButtonHelper();
       
       GridBagHelper gh = new GridBagHelper(this);
-      gh.add(new JLabel("Printer"), 0, 0);
-      gh.add(comboServices        , 1, 0, 1, 1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-      gh.add(Box.createGlue()     , 0,99, 2, 1, gh.GROW_BOTH);
+      gh.add(new JLabel("Printer")    , 0, 0);
+      gh.add(comboServices            , 1, 0, 1, 1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+      gh.add(new JLabel("Orientation"), 0, 1);
+      gh.add(radioPortrait            , 1, 1, 1, 1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+      gh.add(radioLandscape           , 1, 2, 1, 1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+      gh.add(Box.createGlue()         , 0,99,99, 1, gh.GROW_BOTH);
       
       // done
     }
+
+    /**
+     * Select Print Service
+     */
+    private class SelectService extends ActionDelegate {
+      /**
+       * @see genj.util.ActionDelegate#execute()
+       */
+      protected void execute() {
+        task.setPrintService((PrintService)comboServices.getSelectedItem());
+      }
+    } //SelectService
+    
+    /**
+     * Select Orientation
+     */
+    private class SelectOrientation extends ActionDelegate {
+      /**
+       * @see genj.util.ActionDelegate#execute()
+       */
+      protected void execute() {
+        task.getPageFormat().setOrientation(
+          radioLandscape.isSelected() ? PageFormat.LANDSCAPE : PageFormat.PORTRAIT
+        );
+      }
+    } //SelectOrientation
     
   } //MainPanel
   
@@ -111,4 +152,5 @@ public class PrintWidget extends JTabbedPane {
    */
   private class PreviewPanel extends JPanel {
   } //PreviewPanel
+  
 } //PrintWidget

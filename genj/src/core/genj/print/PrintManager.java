@@ -21,19 +21,14 @@ package genj.print;
 
 import genj.app.App;
 import genj.util.Debug;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
-import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 
 import javax.print.PrintService;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
+import javax.swing.UIManager;
 
 /**
  * A manager for printing */
@@ -55,22 +50,6 @@ public class PrintManager {
     return instance;
   }
   
-//  /**
-//   * Set current server//   */
-//  /*package*/ void setService(PrintService service) {
-//    try {
-//      currentJob.setPrintService(service);
-//    } catch (PrinterException pe) {
-//      throw new RuntimeException("Changing Printer failed");
-//    }
-//  }
-//  
-//  /**
-//   * Gets the current page characteristics//   */
-//  /*package*/ PageFormat getPageFormat() {
-//    return currentJob.defaultPage();
-//  }
-  
   /**
    * Show a print dialog
    */
@@ -90,6 +69,9 @@ public class PrintManager {
     
     /** the print widget */
     private PrintWidget widget;
+    
+    /** the current page format */
+    private PageFormat pageFormat;
 
     /**
      * Constructor     */
@@ -101,51 +83,58 @@ public class PrintManager {
       // create a widget
       widget = new PrintWidget(this);
       
-      // show    
-      JDialog dlg = App.getInstance().createDialog("Printing", "print", new Dimension(480,320), owner);
-      dlg.getContentPane().add(widget);
+      // show
+      App.Dialog dlg = App.getInstance().createDialog(
+        "Printing", 
+        "print", 
+        new Dimension(480,320), 
+        owner, 
+        widget,
+        new String[]{ "Print", UIManager.getString("OptionPane.cancelButtonText")}
+      );
       dlg.pack();
-      dlg.setModal(true);
       dlg.show();
       
+      Debug.log(Debug.INFO, this, "User selected choice "+dlg.getChoice());
+
       // print test
-      job.setPrintable(new Printable() {
-        /**
-         * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
-         */
-        public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-          
-          if (pageIndex>1) return NO_SUCH_PAGE;
-          
-          Graphics2D g = (Graphics2D)graphics;
-          g.setColor(Color.black);
-          
-          g.draw(new Rectangle2D.Double(
-            pageFormat.getImageableX(),
-            pageFormat.getImageableY(),
-            pageFormat.getImageableWidth(),
-            pageFormat.getImageableHeight()
-          ));
-          
-          // 1 cm = 0.393701*inches
-          double CM = 0.393701*72;
-          
-          g.draw(new Rectangle2D.Double(
-            0,//pageFormat.getImageableX(),
-            0,//pageFormat.getImageableY(),
-            21.5D/2*CM,
-            28.0D/2*CM
-          ));
-          
-          return PAGE_EXISTS;
-        }
-      });
+//      job.setPrintable(new Printable() {
+//        /**
+//         * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
+//         */
+//        public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+//          
+//          if (pageIndex>1) return NO_SUCH_PAGE;
+//          
+//          Graphics2D g = (Graphics2D)graphics;
+//          g.setColor(Color.black);
+//          
+//          g.draw(new Rectangle2D.Double(
+//            pageFormat.getImageableX(),
+//            pageFormat.getImageableY(),
+//            pageFormat.getImageableWidth(),
+//            pageFormat.getImageableHeight()
+//          ));
+//          
+//          // 1 cm = 0.393701*inches
+//          double CM = 0.393701*72;
+//          
+//          g.draw(new Rectangle2D.Double(
+//            0,//pageFormat.getImageableX(),
+//            0,//pageFormat.getImageableY(),
+//            21.5D/2*CM,
+//            28.0D/2*CM
+//          ));
+//          
+//          return PAGE_EXISTS;
+//        }
+//      });
       
-      try {
-        job.print();
-      } catch (Throwable t) {
-        t.printStackTrace();
-      }
+//      try {
+//        job.print();
+//      } catch (Throwable t) {
+//        t.printStackTrace();
+//      }
       
       // cancel job
       job.cancel();
@@ -161,18 +150,26 @@ public class PrintManager {
     
     /**
      * Current service     */
-    /*package*/ PrintService getCurrentPrintService() {
+    /*package*/ PrintService getPrintService() {
       return job.getPrintService();
     }
     
     /**
      * Current service     */
-    /*package*/ void setCurrentPrintService(PrintService service) {
+    /*package*/ void setPrintService(PrintService service) {
       try {
         job.setPrintService(service);
       } catch (PrinterException e) {
         Debug.log(Debug.WARNING, this, "Couldn't change printer", e);
       }
     }
+    
+    /**
+     * PageFormat     */
+    /*package*/ PageFormat getPageFormat() {
+      if (pageFormat==null) pageFormat = job.defaultPage();
+      return pageFormat;
+    }
+    
   } //WidgetListener  
 } //PrintManager
