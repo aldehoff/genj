@@ -26,6 +26,9 @@ import genj.util.swing.ImageIcon;
  */
 public class Note extends Entity implements MultiLineSupport {
 
+//FIXME if we don't go through MetaProperties here we won't 
+// be able to choose the sub-note in path selector!!
+
   /** a delegate for keep the text data crammed in here by Gedcom grammar */
   private Delegate delegate = new Delegate();
   
