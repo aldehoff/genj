@@ -37,7 +37,7 @@
   <target name="compile.core" depends="init,compile.awtx">
     <mkdir dir="${dir.build}/classes/core"/>
     <javac srcdir="src/core" destdir="${dir.build}/classes/core"
-           debug="on" optimize="off" deprecation="off" fork="yes">
+           debug="on" optimize="off" deprecation="off" fork="yes" target="1.1">
       <classpath refid="project.class.path"/>
     </javac>
   </target>
@@ -48,7 +48,7 @@
   <target name="compile.report" depends="init">
     <mkdir dir="${dir.build}/classes/report"/>
     <javac srcdir="src/report" destdir="${dir.build}/classes/report"
-           debug="on" optimize="off" deprecation="off" fork="yes">
+           debug="on" optimize="off" deprecation="off" fork="yes" target="1.1">
       <classpath refid="project.class.path"/>
     </javac>
   </target>
@@ -59,7 +59,7 @@
   <target name="compile.awtx" depends="init">
     <mkdir dir="${dir.build}/classes/awtx"/>
     <javac srcdir="src/awtx" destdir="${dir.build}/classes/awtx"
-           debug="on" optimize="off" deprecation="off" fork="yes">
+           debug="on" optimize="off" deprecation="off" fork="yes" target="1.1">
       <classpath refid="project.class.path"/>
     </javac>
   </target>
@@ -297,7 +297,7 @@
     </copy>
     <antcall target="dist.help.language.files">
         <param name="language" value="en"/>
-    	<param name="dir.help" value="${dir.run}/help"/>
+      <param name="dir.help" value="${dir.run}/help"/>
     </antcall>
     <java classname="genj.app.App" fork="true" dir="${dir.run}">
        <classpath refid="project.class.path"/>
