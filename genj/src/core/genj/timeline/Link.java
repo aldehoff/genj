@@ -160,8 +160,8 @@ import genj.util.ImgIcon;
    */
   static float getYearOf(PropertyDate pdate, int which) {
 
-    int y = pdate.getYear (which,0);
-    int m = pdate.getMonth(which,0);
+    int y = pdate.getStart().getYear (0);
+    int m = pdate.getStart().getMonth(0);
 
     return (float)y + ((float)m)/12;
   }          

@@ -32,13 +32,14 @@ Future
   O Table view for families should list all children, not just first child.
   O Merge and Verify should be reports
 
-1.9 - June xx 2002
+1.9 - Aug xx 2002
 
   O Improved windows placement (applet layouts views tree NW, table NE, overview S)
   O EditView should show button for 'Create New Individual' when no individual set
     (works nicely when the user has created an empty tree)
   O View-Menu in ControlCenter to open up views
 
+  N Dates are localized in TableView, TimelineView and TreeView now
   B GedcomWriter now writes correct version information
   N A new About window has been added, implementing Welcome, Authors, Feedback and Copyright tabbed panes
   B ReportGedcomStatistics doesn't track death-place anymore for people that haven't died yet

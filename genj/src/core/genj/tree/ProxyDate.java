@@ -37,32 +37,32 @@ class ProxyDate extends Proxy {
     // Prepare
     g.setColor(Color.black);
 
-    // Draw 1st line of date
-    String txt = date.toString(0,g.isAbbreviateDates);
-    if ((g.isAbbreviateDates)&&(date.isTwoDates())) {
-      txt += " - "+date.toString(1,g.isAbbreviateDates);
+    // Draw 1st line of date information
+    if (!p.isValid()) {
+      render(dit, pig, box, g, date.toString(false,true), false);
+      return;
     }
+    if (g.isAbbreviateDates) {
+      render(dit, pig, box, g, date.toString(true,true), false);
+      return;
+    }
+
+    render(dit, pig, box, g, date.getStart().toString(), false);
+    if (date.isRange()) render(dit, pig, box, g, date.getEnd().toString(), true);
+    
+    // Done
+  }
+  
+  /**
+   * Renders a data line
+   */
+  private void render(int dit, int pig, Rectangle box, TreeGraphics g, String txt, boolean newline) {
     g.drawString(
       txt,
       dit,
       pig,
       box.x,
-      box.y+g.charHeight-g.charDescent
+      box.y + (newline?2:1)*g.charHeight - g.charDescent
     );
-
-    // Draw 2nd line of date
-    if (!date.isTwoDates() || g.isAbbreviateDates) {
-      return;
-    }
-
-    g.drawString(
-      date.toString(1,g.isAbbreviateDates),
-      dit,
-      pig,
-      box.x,
-      box.y + 2*g.charHeight - g.charDescent
-    );
-
-    // Done
   }
 }

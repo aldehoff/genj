@@ -29,18 +29,17 @@ import genj.util.*;
 public class PropertyDate extends Property {
 
   /** time values */
-  private Integer
-    day  []= {null,null},
-    month[]= {null,null},
-    year []= {null,null};
+  private PointInTime 
+    start = new PointInTime(),
+    end = new PointInTime();
 
-  /** format flag */
-  private int format;
+  /** the format of the contained date */
+  private int format = DATE;
 
   /** as string */
   private String dateAsString;
 
-  /** format types */
+  /** formats */
   public static final int
     DATE    = 0,			// unable to parse - use dateAsString
     FROMTO  = 1,
@@ -53,28 +52,28 @@ public class PropertyDate extends Property {
     CAL     = 8,
     EST     = 9,
     LAST_ATTRIB = EST;
+    
+  /** format definitions */
+  private final static FormatDescriptor[] formats = {
+    new FormatDescriptor(false, ""    , ""   ), // DATE
+    new FormatDescriptor(true , "FROM", "TO" ), // FROM TO
+    new FormatDescriptor(false, "FROM", ""   ), // FROM
+    new FormatDescriptor(false, "TO"  , ""   ), // TO
+    new FormatDescriptor(true , "BET" , "AND"), // BETAND
+    new FormatDescriptor(false, "BEF" , ""   ), // BEF
+    new FormatDescriptor(false, "AFT" , ""   ), // AFT
+    new FormatDescriptor(false, "ABT" , ""   ), // ABT
+    new FormatDescriptor(false, "CAL" , ""   ), // CAL
+    new FormatDescriptor(false, "EST" , ""   )  // EST
+  };
 
   /** month names */
   private final static String months[] = {"JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
-
-  /** type attributes #1 */
-  private final static String attrib0[] = {null,"FROM","FROM","TO","BET","BEF","AFT","ABT","CAL","EST"};
-
-  /** type attributes #2 */
-  private final static String attrib1[] = {null,"TO"  ,null  ,null,"AND",null ,null ,null ,null ,null };
 
   /**
    * Constructor
    */
   public PropertyDate() {
-
-    format   = DATE;
-    day  [0] = null;
-    month[0] = null;
-    year [0] = null;
-    day  [1] = null;
-    month[1] = null;
-    year [1] = null;
   }
 
   /**
@@ -105,74 +104,25 @@ public class PropertyDate extends Property {
    * a value greater than 0 if this date is greater then the argument.
    */
   public int compareTo(PropertyDate p) {
-
-    int result ;
-
-    // Year ?
-    if (year[0]==null)
-      return (p.year[0]==null ? 0 : -1);
-    if (p.year[0]==null)
-      return 1;
-    if (year[0].intValue()<p.year[0].intValue())
-      return -1;
-    if (year[0].intValue()>p.year[0].intValue())
-      return 1;
-
-    // Month
-    if (month[0]==null)
-      return (p.month[0]==null ? 0 : -1);
-    if (p.month[0]==null)
-      return 1;
-    if (month[0].intValue()<p.month[0].intValue())
-      return -1;
-    if (month[0].intValue()>p.month[0].intValue())
-      return 1;
-
-    // Day
-    if (day[0]==null)
-      return (p.day[0]==null ? 0 : -1);
-    if (p.day[0]==null)
-      return 1;
-    if (day[0].intValue()<p.day[0].intValue())
-      return -1;
-    if (day[0].intValue()>p.day[0].intValue())
-      return 1;
-
-    // Equal
-    return 0;
+    return start.compareTo(p.start);
   }
 
   /**
-   * Returns a date part-attribute (see attrib0/1)
+   * Returns starting point
    */
-  public String getAttribute(int which) {
-    switch (which) {
-      case 0 :
-        return attrib0[format];
-      case 1 :
-        return attrib1[format];
-    }
-    throw new IllegalArgumentException("Illegal index for modifier (has to be 0 or 1)");
+  public PointInTime getStart() {
+    return start;
   }
 
   /**
-   * Returns day of date 0/1
+   * Returns ending point
    */
-  public Integer getDay(int which) {
-    return day[which];
+  public PointInTime getEnd() {
+    return end;
   }
 
   /**
-   * Returns day of date 0/1 as int
-   */
-  public int getDay(int which, int otherwise) {
-    if (day[which]==null)
-      return otherwise;
-    return day[which].intValue();
-  }
-
-  /**
-   * Returns format of date
+   * Returns the format of this date
    */
   public int getFormat() {
     return format;
@@ -181,53 +131,38 @@ public class PropertyDate extends Property {
   /**
    * Returns label for given format type
    */
-  public static String getLabelForFormat(int which) {
+  public static String getLabelForFormat(int type) {
 
     String res=null;
 
-    switch (which) {
-    case DATE:
-      res="prop.date.date"  ; break;
-    case FROMTO:
-      res="prop.date.fromto"; break;
-    case FROM:
-      res="prop.date.from"  ; break;
-    case TO:
-      res="prop.date.to"    ; break;
-    case BETAND:
-      res="prop.date.betand"; break;
-    case BEF:
-      res="prop.date.bef"   ; break;
-    case AFT:
-      res="prop.date.aft"   ; break;
-    case ABT:
-      res="prop.date.abt"   ; break;
-    case CAL:
-      res="prop.date.cal"   ; break;
-    case EST:
-      res="prop.date.est"   ; break;
+    switch (type) {
+      case DATE:
+        res="prop.date.date"  ; break;
+      case FROMTO:
+        res="prop.date.fromto"; break;
+      case FROM:
+        res="prop.date.from"  ; break;
+      case TO:
+        res="prop.date.to"    ; break;
+      case BETAND:
+        res="prop.date.betand"; break;
+      case BEF:
+        res="prop.date.bef"   ; break;
+      case AFT:
+        res="prop.date.aft"   ; break;
+      case ABT:
+        res="prop.date.abt"   ; break;
+      case CAL:
+        res="prop.date.cal"   ; break;
+      case EST:
+        res="prop.date.est"   ; break;
     }
 
     // Hmmmm
     if (res==null)
       return "";
+      
     return Gedcom.getResources().getString(res);
-  }
-
-  /**
-   * Returns month of date 0/1
-   */
-  public Integer getMonth(int which) {
-    return month[which];
-  }
-
-  /**
-   * Returns month of date 0/1 as int
-   */
-  public int getMonth(int which, int otherwise) {
-    if (month[which]==null)
-      return otherwise;
-    return month[which].intValue();
   }
 
   /**
@@ -269,75 +204,21 @@ public class PropertyDate extends Property {
    * Accessor Value
    */
   public String getValue() {
-    return toString();
-  }
-
-  /**
-   * Returns year of date 0/1
-   */
-  public Integer getYear(int which) {
-    return year[which];
-  }
-
-  /**
-   * Returns year of date 0/1 as int
-   */
-  public int getYear(int which, int otherwise) {
-    if (year[which]==null) {
-      return otherwise;
-    }
-    return year[which].intValue();
-  }
-
-  /**
-   * dkionka: Helper that verifies month value
-   */
-  private boolean goodMonth(Integer month) {
-    return ((month != null)
-	    && (month.intValue() >= 1)
-	    && (month.intValue() <= months.length));
-  }
-
-  /**
-   * Helper that transforms Integer/null to month MMM
-   *
-   * dkionka: Bad month used to throw NumberFormatException, but no point
-   * giving error here since bad value already set.
-   */
-  private String i2mmm(Integer i) throws NumberFormatException {
-    if (i==null)
-      return "";
-    return (goodMonth(i) ? months[i.intValue()-1] : i2s(i));
-  }
-
-  /**
-   * Helper that transforms Integer/null to String
-   */
-  private String i2s(Integer i) {
-    if (i==null)
-      return "";
-    return String.valueOf(i);
+    return toString(false,false);
   }
 
   /**
    * Returns wether this date is a range (fromto, betand)
    */
   public boolean isRange() {
-    return attrib1[format]!=null;
+    return isRange(format);
   }
 
   /**
    * Returns wether given format is a range (fromto, betand)
    */
-  public static boolean isRange(int which) {
-    return attrib1[which]!=null;
-  }
-
-  /**
-   * Returns wether this PropertyDate consists of two dates
-   */
-  public boolean isTwoDates() {
-    return attrib1[format]!=null;
+  public static boolean isRange(int format) {
+    return formats[format].isRange;
   }
 
   /**
@@ -350,44 +231,16 @@ public class PropertyDate extends Property {
     if (dateAsString!=null)
       return false;
 
-    // Date 2 complete (if required for type) ?
-    if ((getAttribute(1)!=null) && (!isValid(1)))
+    // end valid?
+    if (isRange()&&(!end.isValid()))
       return false;
 
-    // Date 1 complete ?
-    if (!isValid(0))
+    // start valid?
+    if (!start.isValid())
       return false;
 
     // O.K.
     return true;
-  }
-
-  /**
-   * Tells wether part 0/1 of this date is valid
-   */
-  private boolean isValid(int which) {
-
-    // Minimum is a year
-    if (getYear(which)==null)
-      return false;
-    // Month is enough ?
-    if (getMonth(which)!=null)
-      return true;
-    // Missing Month -> No Day !
-    if (getDay(which)!=null)
-      return false;
-    // O.K.
-    return true;
-  }
-
-  /**
-   * Helper that transforms month to Integer
-   */
-  private int mmm2i(String mmm) throws NumberFormatException {
-    for (int i=0;i<months.length;i++) {
-      if (months[i].equalsIgnoreCase(mmm)) return i+1;
-    }
-    throw new NumberFormatException();
   }
 
   /**
@@ -399,39 +252,27 @@ public class PropertyDate extends Property {
     if (tokens.countTokens()==0)
       return false;
 
-    // Look for starting type information
-    String f = tokens.nextToken();
+    // Look for format token 'FROM', 'AFT', ...
+    String token = tokens.nextToken();
+    for (format=0;format<formats.length;format++) {
 
-    // ... by going through type list
-    int t;
-    for (t=0;t<attrib0.length;t++) {
+      // .. found modifier (prefix is enough: e.g. ABT or ABT.)
+      if ( (formats[format].startModifier.length()>0) && token.startsWith(formats[format].startModifier) ) {
 
-      // .. found modifier
-      // dkionka: accept ABT or ABT.
-      if ( f.equals(attrib0[t]) || f.equals(attrib0[t]+".") ) {
+        // ... no range (TO,ABT,CAL,...) -> parse PointInTime from remaining tokens
+        if ( !formats[format].isRange ) 
+          return start.set(tokens);
 
-        // ... type is standalone (TO,ABT,CAL,...) ?
-        if ( attrib1[t] == null ) {
-          // .. remember DATE format
-          format = t;
-          // .. look for date from second to last word
-          return parseDate(tokens,0);
-        }
-
-        // ... type is combined (FROM-TO,BET-AND)
-        String first="";
+        // ... is range (FROM-TO,BET-AND)
+        String grab="";
         while (tokens.hasMoreTokens()) {
-          // .. TO or AND ?
-          String next = tokens.nextToken();
-          if ( next.equals(attrib1[t]) ) {
-            // .. remember DATE format
-            format = t;
-            // .. calculate both
-            return parseDate(new StringTokenizer(first),0) && parseDate(tokens,1);
+          // .. TO or AND ? -> parse 2 PointInTimes from grabbed and remaining tokens
+          token = tokens.nextToken();
+          if ( token.startsWith(formats[format].endModifier) ) {
+            return start.set(new StringTokenizer(grab)) && end.set(tokens);
           }
-          // text token !
-          first += " " + next + " ";
-          // next one
+          // .. grab more
+          grab += " " + grab + " ";
         }
         // ... wasn't so good after all
       }
@@ -440,94 +281,29 @@ public class PropertyDate extends Property {
 
     // ... no valid type found ?
     format = DATE;
+    
     // .. look for date from first to last word
-    return parseDate(new StringTokenizer(string),0);
-  }
-
-  /**
-   * Helper that parses date as string for validity
-   */
-  private boolean parseDate(StringTokenizer tokens,int which) {
-
-    // Number of tokens ?
-    switch (tokens.countTokens()) {
-      case 0 : // NONE
-        return false;
-      case 1 : // YYYY
-        try {
-          year[which] = new Integer( tokens.nextToken() );
-        } catch (NumberFormatException e) {
-          return false;
-        }
-        return true;
-      case 2 : // MMM YYYY
-        try {
-          month[which] = new Integer( mmm2i( tokens.nextToken() ));
-          year [which] = new Integer( tokens.nextToken() );
-        } catch (NumberFormatException e) {
-          return false;
-        }
-        return true;
-      case 3 : // DD MMM YYYY
-        try {
-          day  [which] = new Integer( tokens.nextToken() );
-          month[which] = new Integer( mmm2i( tokens.nextToken() ));
-          year [which] = new Integer( tokens.nextToken() );
-        } catch (NumberFormatException e) {
-          return false;
-        }
-        return true;
-    }
-
-    // Too much tokens
-    return false;
-  }
-
-  /**
-   * Accessor Day
-   */
-  public void setDay(int which,Integer set) {
-    noteModifiedProperty();
-    day[which] = set;
+    return start.set(new StringTokenizer(string));
   }
 
   /**
    * Accessor Format
    */
   public void setFormat(int newFormat) {
+    
     // Valid format ?
     if ((newFormat<DATE) || (newFormat>EST) )
-      return;
+      throw new IllegalArgumentException("Unknown format '"+newFormat+"'");
+
+    // remember as modified      
     noteModifiedProperty();
 
-    // new single date format ?
-    if (attrib1[newFormat] == null) {
-      setValue(1,null,null,null);
-    } else {
-      // .. double date format with
-      if ( (getYear(1) == null) && (getMonth(1) == null) && (getDay(1) == null) ) {
-        setValue(1,getDay(0),getMonth(0),getYear(0));
-      }
+    // remember
+    if (!isRange()&&isRange(newFormat)) {
+      end.set(start);
     }
-    // Remember format
     format=newFormat;
-    // Done
-  }
-
-  /**
-   * Sets this property's date (0 or 1)
-   */
-  public void setValue(int which, Integer setDay, Integer setMonth, Integer setYear) {
-
-    // Remember change
-    noteModifiedProperty();
-
-    // Set it
-    dateAsString=null;
-    day  [which] = setDay;
-    month[which] = setMonth;
-    year [which] = setYear;
-
+    
     // Done
   }
 
@@ -539,12 +315,8 @@ public class PropertyDate extends Property {
     noteModifiedProperty();
 
     // Reset value
-    day  [0] = null;
-    month[0] = null;
-    year [0] = null;
-    day  [1] = null;
-    month[1] = null;
-    year [1] = null;
+    start.set(null,null,null);
+    end.set(null,null,null);
     format = DATE;
     dateAsString=null;
 
@@ -556,14 +328,6 @@ public class PropertyDate extends Property {
 
     // Parsing wrong ?
     if ( parseDate(newValue,tokens) == false ){
-      day  [0] = null;
-      month[0] = null;
-      year [0] = null;
-      day  [1] = null;
-      month[1] = null;
-      year [1] = null;
-      format = DATE;
-
       dateAsString=newValue;
       return false;
     }
@@ -573,60 +337,254 @@ public class PropertyDate extends Property {
   }
 
   /**
-   * Accessor Year
-   */
-  public void setYear(int which,Integer set) {
-    noteModifiedProperty();
-    year[which] = set;
-  }
-
-  /**
    * Returns this date as a string
    */
   public String toString() {
-    return (toString(0) + ' ' + toString(1)).trim();
+    return toString(false,true);
+  }
+    
+  /**
+   * Returns this date as a string
+   */
+  public String toString(boolean abbreviate, boolean localize) {
+    if (dateAsString!=null) return dateAsString;
+    WordBuffer result = new WordBuffer(start.toString(abbreviate,localize));
+    if (isRange()) {
+      if (abbreviate) result.append("-");
+      result.append(end.toString(abbreviate,localize));
+    }
+    return result.toString();
   }
 
-  /**
-   * Returns part of date as a string
+  /** 
+   * A point in time 
    */
-  public String toString(int which) {
-    return toString(which, false);
-  }
-
-  /**
-   * Returns part of date as a string
-   */
-  public String toString(int which, boolean abbreviate) {
-
-    // Still invalid string information ?
-    if (dateAsString!=null) {
-      return (which==0) ? dateAsString : "";	// dkionka: do not give it twice
+  public class PointInTime {
+    
+    /** content */
+    protected Integer year,month,day;
+    
+    /**
+     * Returns the year
+     */
+    public int getYear(int fallback) {
+      if (year==null) return fallback;
+      return year.intValue();
     }
-
-    // Abbreviation?
-    if (abbreviate) {
-      return (i2s(getDay(which))+" "+i2mmm(getMonth(which))+" "+i2s(getYear(which))).trim();
+  
+    /**
+     * Returns the month
+     */
+    public int getMonth(int fallback) {
+      if (month==null) return fallback;
+      return month.intValue();
     }
+  
+    /**
+     * Returns the day
+     */
+    public int getDay(int fallback) {
+      if (day==null) return fallback;
+      return day.intValue();
+    }
+  
+    /**
+     * Returns the year
+     */
+    public Integer getYear() {
+      return year;
+    }
+  
+    /**
+     * Returns the month
+     */
+    public Integer getMonth() {
+      return month;
+    }
+  
+    /**
+     * Returns the day
+     */
+    public Integer getDay() {
+      return day;
+    }
+  
+    /**
+     * compare to other
+     */  
+    protected int compareTo(PointInTime other) {
+      
+      int result;
+      
+      // Year ?
+      if ((result=compare(year, other.year))!=0) return result;
+      
+      // Month
+      if ((result=compare(month, other.month))!=0) return result;
+      
+      // Day
+      if ((result=compare(day, other.day))!=0) return result;
+      
+      // Equal
+      return 0;
+    }    
+    
+    /**
+     * helper for comparison
+     */
+    private int compare(Integer one, Integer two) {
+      if ((one==null)&&(two==null)) return 0;
+      if (one==null) return -1;
+      if (two==null) return  1;
+      if (one.intValue()<two.intValue()) return -1;
+      if (one.intValue()>two.intValue()) return  1;
+      return 0;
+    }
+    
+    /**
+     * Checks for validity
+     */
+    private boolean isValid() {
+  
+      // YYYY or MMM YYYY or DD MMMM YYYY
+      if (year==null)
+        return false;
+      if ((month!=null)&&(month.intValue()>=1)&&(month.intValue()<=12))
+        return true;
+      if (day!=null)
+        return false;
+      return true;
+    }
+    
+    /**
+     * Setter
+     */
+    protected void set(PointInTime other) {
+      // Remember change
+      noteModifiedProperty();
+      // set
+      year  = other.year;
+      month = other.month;
+      day   = other.day;
+    }
+    
+    /**
+     * Setter
+     */
+    public void set(Integer d, Integer m, Integer y) {
 
-    // Attribute?
-    String attrib = getAttribute(which);
+      // Remember change
+      noteModifiedProperty();
 
-    if (attrib==null) {
-
-      // ... not allowed null for '1'
-      if (which==1) {
-        return "";
+      // Set it
+      dateAsString=null;
+      
+      day   = d;
+      if ((m!=null)&&(m.intValue()<1||m.intValue()>12)) {} else month = m;
+      year  = y;
+  
+      // Done
+    }
+    
+    /**
+     * Setter
+     */
+    protected boolean set(StringTokenizer tokens) {
+  
+      // Number of tokens ?
+      switch (tokens.countTokens()) {
+        default : // TOO MANY
+          return false;
+        case 0 : // NONE
+          return false;
+        case 1 : // YYYY
+          try {
+            year = new Integer( tokens.nextToken() );
+          } catch (NumberFormatException e) {
+            return false;
+          }
+          return true;
+        case 2 : // MMM YYYY
+          try {
+            month = parseMonth ( tokens.nextToken() );
+            year  = new Integer( tokens.nextToken() );
+          } catch (NumberFormatException e) {
+            return false;
+          }
+          break;
+        case 3 : // DD MMM YYYY
+          try {
+            day   = new Integer( tokens.nextToken() );
+            month = parseMonth ( tokens.nextToken() );
+            year  = new Integer( tokens.nextToken() );
+          } catch (NumberFormatException e) {
+            return false;
+          }
+          break;
       }
-
-      attrib = "";
-
-    } else {
-
-      attrib = attrib+' ';
+  
+      // Passed
+      return true;
+    }
+    
+    /**
+     * String representation
+     */
+    public String toString() {
+      return toString(false,true);
+    }
+    
+    /**
+     * String representation
+     */
+    public String toString(boolean abbreviate, boolean localize) {
+      WordBuffer result = new WordBuffer();
+      if (!abbreviate) {
+        result.append(getModifier(localize));
+      }
+      return result.append(getDay()).append(getMonth(localize)).append(getYear()).toString();
+    }
+    
+    /**
+     * Acessor - the modifier (e.g. 'FROM', 'BEF')
+     */
+    private String getModifier(boolean localize) {
+      String mod = (start == this ? formats[format].startModifier : formats[format].endModifier);
+      if ((mod.length()>0)&&localize) mod = Gedcom.getResources().getString("prop.date.mod."+mod);
+      return mod;
     }
 
-    // All !
-    return attrib + (i2s(getDay(which))+" "+i2mmm(getMonth(which))+" "+i2s(getYear(which))).trim();
+    /**
+     * Accessor - the month
+     */
+    private String getMonth(boolean localize) {
+      if (month==null)
+        return "";
+      String mmm = months[month.intValue()-1];
+      if (localize) mmm = Gedcom.getResources().getString("prop.date.mon."+mmm);
+      return mmm;
+    }
+    
+    /**
+     * Helper that transforms month to Integer
+     */
+    private Integer parseMonth(String mmm) throws NumberFormatException {
+      for (int i=0;i<months.length;i++) {
+        if (months[i].equalsIgnoreCase(mmm)) return new Integer(i+1);
+      }
+      throw new NumberFormatException();
+    }
+  
+  } // class PointInTime
+  
+  /**
+   * A format definition
+   */
+  private static class FormatDescriptor {
+    protected boolean isRange;
+    protected String startModifier, endModifier;
+    protected FormatDescriptor(boolean r, String s, String e) {
+      isRange=r; startModifier=s; endModifier=e;
+    }
   }
 }

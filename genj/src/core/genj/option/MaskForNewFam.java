@@ -107,7 +107,7 @@ class MaskForNewFam extends MaskForNewEntity implements ItemListener {
     }
 
     PropertyDate p = new PropertyDate();
-    p.setValue(1,dMarrDate.getDay(),dMarrDate.getMonth(),dMarrDate.getYear());
+    p.getStart().set(dMarrDate.getDay(),dMarrDate.getMonth(),dMarrDate.getYear());
 
     Fam fam;
     try {

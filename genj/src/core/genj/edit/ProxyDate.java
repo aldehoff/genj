@@ -69,11 +69,11 @@ class ProxyDate extends Proxy implements ItemListener {
     p.setFormat(combo.getSelectedIndex());
 
     // Remember One
-    p.setValue(0,deOne.getDay(),deOne.getMonth(),deOne.getYear());
+    p.getStart().set(deOne.getDay(),deOne.getMonth(),deOne.getYear());
 
     // Remember Two
     if ( p.isRange() )
-      p.setValue(1,deTwo.getDay(),deTwo.getMonth(),deTwo.getYear());
+      p.getEnd().set(deTwo.getDay(),deTwo.getMonth(),deTwo.getYear());
 
     // Done
   }
@@ -123,11 +123,11 @@ class ProxyDate extends Proxy implements ItemListener {
     in.add(combo);
     combo.addItemListener(this);
 
-    deOne = new DateEntry(p.getDay(0),p.getMonth(0),p.getYear(0));
+    deOne = new DateEntry(p.getStart().getDay(),p.getStart().getMonth(),p.getStart().getYear());
     deOne.setAlignmentX(0);
     in.add(deOne);
 
-    deTwo = new DateEntry(p.getDay(1),p.getMonth(1),p.getYear(1));
+    deTwo = new DateEntry(p.getEnd().getDay(),p.getEnd().getMonth(),p.getEnd().getYear());
     deTwo.setAlignmentX(0);
 
     combo.setSelectedIndex( p.getFormat() );

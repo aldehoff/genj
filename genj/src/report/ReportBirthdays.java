@@ -99,7 +99,7 @@ public class ReportBirthdays implements Report {
       if (birth==null) {
         continue;
       }
-      if (birth.getMonth(0,-1) == month) {
+      if (birth.getStart().getMonth(-1) == month) {
         candidates.addElement(indi);
       }
     }
@@ -117,12 +117,12 @@ public class ReportBirthdays implements Report {
         // So we check whether we can get a day
         int d1 = 0;
         if (b1!=null)
-                d1 = b1.getDay(0,0);
+                d1 = b1.getStart().getDay(0);
 
         // So we check whether we can get a day
         int d2 = 0;
         if (b2!=null)
-                d2 = b2.getDay(0,0);
+                d2 = b2.getStart().getDay(0);
 
         // Comparison at last
         return d1-d2;
