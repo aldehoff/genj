@@ -73,12 +73,14 @@ public class TableView extends JPanel implements ToolBarSupport {
     this.gedcom = gedcom;
     this.registry = registry;
     
+    // create the underlying model
+    tableModel = new EntityTableModel(gedcom);
+
     // read properties
-    //Filter f = loadProperties();
+    loadProperties();
     
     // create our table
-    tableModel = new EntityTableModel(gedcom);
-    table = new JTable(tableModel, tableModel.createTableColumnModel());
+    table = new JTable(tableModel, tableModel.createTableColumnModel(640));
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     table.setAutoCreateColumnsFromModel(false);
@@ -106,6 +108,8 @@ public class TableView extends JPanel implements ToolBarSupport {
         for (int e=0; e<es.getSize(); e++) {
           if (es.get(e)==entity) {
             table.getSelectionModel().setSelectionInterval(e,e);
+            if (table.getSelectionModel().getMinSelectionIndex()!=e)
+              table.scrollRectToVisible(table.getCellRect(e,0,true));
             return;
           }
         }
@@ -135,7 +139,7 @@ public class TableView extends JPanel implements ToolBarSupport {
    */
   public void setPaths(int type, TagPath[] set) {
     tableModel.setPaths(type,set);
-    table.setColumnModel(tableModel.createTableColumnModel());
+    table.setColumnModel(tableModel.createTableColumnModel(getWidth()));
   }
   
   /**
@@ -149,6 +153,18 @@ public class TableView extends JPanel implements ToolBarSupport {
    * Sets the type of entities to look at
    */
   public void setType(int type) {
+    // grab the column widths as they are right now
+    grabColumnWidths();
+    // set the new type
+    tableModel.setType(type);
+    table.setColumnModel(tableModel.createTableColumnModel(getWidth()));
+    // done
+  }
+  
+  /**
+   * Grab current column widths
+   */
+  private void grabColumnWidths() {
     // grab column widths
     TableColumnModel columns = table.getColumnModel();
     int[] widths = new int[columns.getColumnCount()];
@@ -156,9 +172,6 @@ public class TableView extends JPanel implements ToolBarSupport {
       widths[c] = columns.getColumn(c).getWidth();
     }
     tableModel.setWidths(tableModel.getType(),widths);
-    // set the new type
-    tableModel.setType(type);
-    table.setColumnModel(tableModel.createTableColumnModel());
     // done
   }
 
@@ -166,41 +179,35 @@ public class TableView extends JPanel implements ToolBarSupport {
    * Read properties from registry
    */
   private void loadProperties() {
-    /*
+
     // get current filter
-    Filter current = filters[registry.get("filter", Gedcom.INDIVIDUALS)];
+    tableModel.setType(registry.get("type", Gedcom.INDIVIDUALS));
+    
     // get paths&widths
-    for (int f=0; f<filters.length; f++) {
-      Filter filter = filters[f];
-      String tag = Gedcom.getTagFor(filter.type);
+    for (int t=0; t<Gedcom.LAST_ETYPE; t++) {
+      String tag = Gedcom.getTagFor(t);
       String[] ps = registry.get(tag+".paths" , (String[])null);
+      if (ps!=null) tableModel.setPaths(t, ps);
       int[]    ws = registry.get(tag+".widths", (int[]   )null);
-      if (ps!=null&&ws!=null) filter.setPaths(ps,ws);
+      if (ws!=null) tableModel.setWidths(t,ws);
     }
     // Done
-    return current;
-  */
   }
   
   /**
    * Write properties from registry
    */
   private void saveProperties() {
-/*    
-    // (re)set filter (which commits column widths)
-    setType(tableModel.getFilter().type);
-
-    // save current filter
-    registry.put("filter",tableModel.getFilter().type);
-    
+    // grab the column widths as they are right now
+    grabColumnWidths();
+    // save current type
+    registry.put("type",tableModel.getType());
     // save paths&widths
-    for (int f=0; f<filters.length; f++) {
-      Filter filter = filters[f];
-      String tag = Gedcom.getTagFor(filter.type);
-      registry.put(tag+".paths", filter.paths);
-      registry.put(tag+".widths", filter.widths);
+    for (int t=0; t<Gedcom.LAST_ETYPE; t++) {
+      String tag = Gedcom.getTagFor(t);
+      registry.put(tag+".paths", tableModel.getPaths(t));
+      registry.put(tag+".widths", tableModel.getWidths(t));
     }
-*/
     // Done
   }  
   

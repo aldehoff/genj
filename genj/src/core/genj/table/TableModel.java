@@ -54,6 +54,13 @@ import javax.swing.table.TableColumnModel;
   /**
    * Sets paths for given type
    */
+  /*package*/ void setPaths(int type, String[] paths) {
+    setPaths(type, calcPaths(paths));
+  }
+  
+  /**
+   * Sets paths for given type
+   */
   /*package*/ void setPaths(int type, TagPath[] paths) {
     filters[type].paths = paths;
     fireTableStructureChanged();
@@ -67,9 +74,18 @@ import javax.swing.table.TableColumnModel;
   }
   
   /**
+   * Gets withs for given type
+   */
+  /*package*/ int[] getWidths(int type) {
+    return filters[type].widths;
+  }
+  
+  /**
    * Sets the entity type we're looking at
    */
   /*package*/ void setType(int entity) {
+    // already?
+    if (filter.type==entity) return;
     // remember
     filter = filters[entity];
     // propagate
@@ -88,6 +104,17 @@ import javax.swing.table.TableColumnModel;
    */
   /*package*/ Entity getEntity(int row) {
     return gedcom.getEntities(filter.type).get(row);
+  }
+  
+  /**
+   * Helper to convert Strings to TagPaths
+   */
+  private TagPath[] calcPaths(String[] paths) {
+    TagPath[] result = new TagPath[paths.length];
+    for (int i=0; i<result.length; i++) {
+      result[i] = new TagPath(paths[i]);
+    }
+    return result;
   }
   
   /**
@@ -138,13 +165,15 @@ import javax.swing.table.TableColumnModel;
   /**
    * Helper that creates a new ColumnModel
    */
-  /*package*/ TableColumnModel createTableColumnModel() {
+  /*package*/ TableColumnModel createTableColumnModel(int total) {
+    TagPath[] paths = getPaths(filter.type);
+    int[] widths = getWidths(filter.type);
     // create and fill
     TableColumnModel columns = new DefaultTableColumnModel();
     for (int c=0; c<filter.paths.length; c++) {
       TableColumn col = new TableColumn(c);
-      col.setHeaderValue(filter.paths[c]);
-      col.setPreferredWidth(filter.widths[c]);
+      col.setHeaderValue(paths[c]);
+      col.setPreferredWidth(widths.length>c&&widths[c]>0?widths[c]:total/filter.paths.length);
       columns.addColumn(col);
     }
     // done
@@ -167,19 +196,8 @@ import javax.swing.table.TableColumnModel;
       // remember
       type     = t;
       defaults = d;
-      // init
-      setPaths(defaults, null);
-    }
-    /** set paths to use */
-    void setPaths(Object[] ps, int[] ws) {
-      // build paths
-      paths = new TagPath[ps.length];
-      widths= new int[ps.length];
-      for (int p=0;p<ps.length;p++) {
-        paths [p] = new TagPath(ps[p].toString());
-        widths[p] = ws != null ? ws[p] : 640/ps.length;
-      }
-      // done
+      paths    = calcPaths(defaults);
+      widths   = new int[paths.length];
     }
   } //Filter
 
