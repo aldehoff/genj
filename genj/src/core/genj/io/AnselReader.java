@@ -49,8 +49,11 @@ public class AnselReader extends Reader {
    * @see java.io.Reader#close()
    */
   public void close() throws IOException {
-    in.close();
-    in = null;
+    // do it once
+    if (in!=null) {
+      in.close();
+      in = null;
+    }
   }
 
   /**
