@@ -44,6 +44,7 @@ public abstract class ActionDelegate implements Cloneable {
   /** attributes */
   public ImgIcon img,roll;
   public String  txt;
+  public String  stxt;
   public String  tip;
   
   /** whether we're async or not */
@@ -172,6 +173,14 @@ public abstract class ActionDelegate implements Cloneable {
    */
   public ActionDelegate setText(String t) {
     txt=t;
+    return this;
+  }
+  
+  /**
+   * Text
+   */
+  public ActionDelegate setShortText(String t) {
+    stxt=t;
     return this;
   }
   

@@ -53,6 +53,7 @@ public class ButtonHelper {
   private boolean isImageAllowed  = true;
   private boolean isImageOverText = false;
   private int fontSize            = -1;
+  private boolean isShortTexts   = false;
   
   /** Setters */    
   public ButtonHelper setInsets(Insets set) { insets=set; return this; }
@@ -69,6 +70,7 @@ public class ButtonHelper {
   public ButtonHelper setTextAllowed(boolean set) { isTextAllowed=set; return this; }
   public ButtonHelper setImageOverText(boolean set) { isImageOverText=set; return this; }
   public ButtonHelper setFontSize(int set) { fontSize=set; return this; }
+  public ButtonHelper setShortTexts(boolean set) { isShortTexts=set; return this; }
   
   
   /**
@@ -78,8 +80,10 @@ public class ButtonHelper {
     
     JButton result = new JButton();
     
-    if (isTextAllowed&&action.txt!=null) 
-      result.setText(string(action.txt));
+    if (isTextAllowed) {
+      String s = (isShortTexts&&action.stxt!=null) ? action.stxt : action.txt;
+      if (s!=null) result.setText(string(s));
+    }
     if (isImageAllowed&&action.img!=null) 
       result.setIcon(ImgIconConverter.get(action.img));
     if (isImageAllowed&&action.roll!=null)
