@@ -54,9 +54,9 @@ import javax.swing.JTextField;
   private JCheckBox[] checkEntities = new JCheckBox[Gedcom.ENTITIES.length];
   private JCheckBox[] checkViews;
   private JTextField  textTags, textValues;
+  private TextFieldWidget textPassword;
   private JComboBox   comboEncodings;
   private Resources resources = Resources.get(this);
-  
   
   /** filters */
   private FilterSupport[] filterViews;
@@ -72,6 +72,11 @@ import javax.swing.JTextField;
     comboEncodings = new ChoiceWidget(Gedcom.ENCODINGS, Gedcom.ANSEL);
     comboEncodings.setEditable(false);
     options.add(comboEncodings);
+    options.add(new JLabel(resources.getString("save.options.password")));
+    textPassword = new TextFieldWidget(gedcom.hasPassword() ? gedcom.getPassword() : "", 10);
+    textPassword.setTemplate(true);
+    textPassword.setEditable(gedcom.getPassword()!=gedcom.PASSWORD_UNKNOWN);
+    options.add(textPassword);
     
     // entities filter    
     Box types = new Box(BoxLayout.Y_AXIS);
@@ -105,6 +110,13 @@ import javax.swing.JTextField;
     add(resources.getString("save.options.filter.views"     ), others);
     
     // done
+  }
+
+  /**
+   * The choosen password
+   */
+  public String getPassword() {
+    return textPassword.getText();
   }
 
   /**

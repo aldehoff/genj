@@ -856,6 +856,8 @@ public class ControlCenter extends JPanel {
       Origin origin = gedcom.getOrigin();
       File file;
       String encoding = null;
+      String password = null;
+      
       if ((ask) || (origin == null) || (!origin.isFile())) {
 
         // .. choose file
@@ -876,6 +878,8 @@ public class ControlCenter extends JPanel {
         // .. take choosen one & filters
         file = chooser.getSelectedFile();
         filters = options.getFilters();
+        if (gedcom.hasPassword())
+          password = options.getPassword();
         gedcom.setEncoding(options.getEncoding().toString());
 
         // .. create new origin
@@ -921,6 +925,7 @@ public class ControlCenter extends JPanel {
         gedWriter =
           new GedcomWriter(gedcom, file.getName(), new FileOutputStream(file));
         gedWriter.setFilters(filters);
+        gedWriter.setPassword(password);
       } catch (IOException ex) {
         windowManager.openDialog(
           null, 

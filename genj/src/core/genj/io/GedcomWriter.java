@@ -59,6 +59,7 @@ public class GedcomWriter implements Trackable {
   private boolean cancel = false;
   private Filter[] filters = new Filter[0];
   private Enigma enigma = null;
+  private String password;
 
   /**
    * Constructor
@@ -73,6 +74,7 @@ public class GedcomWriter implements Trackable {
 
     // init data
     gedcom = ged;
+    password = gedcom.getPassword();
     file = name;
     level = 0;
     line = 1;
@@ -141,6 +143,13 @@ public class GedcomWriter implements Trackable {
     if (fs == null)
       fs = new Filter[0];
     filters = fs;
+  }
+  
+  /**
+   * Sets password to use
+   */
+  public void setPassword(String pwd) {
+    password = pwd;
   }
 
   /**
@@ -354,16 +363,20 @@ public class GedcomWriter implements Trackable {
     // Make sure enigma is setup
     if (enigma==null) {
 
-      String pwd = gedcom.getPassword();
-      
       // no need if password is unknown (data is already/still encrypted)
-      if (pwd==Gedcom.PASSWORD_UNKNOWN)
+      if (password==Gedcom.PASSWORD_UNKNOWN)
         return value;
-    
-      if (pwd==Gedcom.PASSWORD_NOT_SET)
+        
+      // no need if password empty
+      if (password.length()==0)
+        return value;
+
+      // error if password isn't set    
+      if (password==Gedcom.PASSWORD_NOT_SET)
         throw new IOException("Password not set - needed for encryption");
         
-      enigma = Enigma.getInstance(gedcom.getPassword());
+      // error if can't encrypt
+      enigma = Enigma.getInstance(password);
       if (enigma==null) 
         throw new IOException("Encryption not available");
         
