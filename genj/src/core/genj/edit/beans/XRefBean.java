@@ -19,6 +19,8 @@
  */
 package genj.edit.beans;
 
+import java.awt.Dimension;
+
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -64,10 +66,11 @@ public class XRefBean extends PropertyBean {
   }
   
   /**
-   * @see genj.edit.Proxy#isClickAction()
+   * Preferred
    */
-  protected boolean isClickAction() {
-    return xref!=null&&xref.getReferencedEntity()!=null;
+  public Dimension getPreferredSize() {
+    return new Dimension(64,48);
   }
-  
+
+    
 } //ProxyXRef
