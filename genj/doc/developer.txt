@@ -3,12 +3,12 @@ GenJ - Developer HOWTO
 GETTING IT
 
  GenJ's source is hosted at http://genj.sourceforge.net. By using
- cvs/ssh you can get any desired snapshot. The main developem module
+ cvs/ssh you can get any desired snapshot. The main development module
  is ./dev.
 
  For now I assume that you have cvs/ssh correctly setup on your
  machine. Set the following environment parameters and cd into
- an empty directory of choice:
+ an empty directory of your choice:
 
   >cd d:\genj
   >set cvs_rsh=ssh

@@ -5,6 +5,7 @@ The people behind GenJ (sorted by last name) :
 
     Programming:
       . Nils Meier <nils@meiers.net>
+      . Ken Mraz <kenmraz@users.sourceforge.net>
       . Carsten Muessig <carsten.muessig@gmx.net>
       . Jerome Hettich <jerome@hettich.org.uk>
 
@@ -20,19 +21,23 @@ The people behind GenJ (sorted by last name) :
     Translators :
       . Osamu Ajiki <osam-a@astroarts.co.jp> (Japanese translation)
       . Nicola Fragale <nicolafragale@libero.it> (Italian translation)
+      . Nestor Garcia <hipernes@inicia.es> (Spanish translation)
+      . Mauricio Girardi <girardi@fisica.ufsc.br> (Brazilian portuguese)
+      . Theo Guelcher <gulcher@users.sourceforge.net> (Dutch translation) 
       . Pere Jover <pjover@jazzfree.com> (Spanish translation)
       . Francois Massonneau <francois@arvernes.com> (French translation)
+      . Carsten Muessig <carsten.muessig@gmx.net> (German translation) 
       . Marcus Sandberg <marcus.sandberg@gmx.net> (German translation)
-      . Mauricio Girardi <girardi@fisica.ufsc.br> (Brazilian portuguese)
-      . Nestor Garcia <hipernes@inicia.es> (Spanish)
 
     User Feedback and Food for Thought :
       . Paul Clarke <pjclarke@bigpond.com>
       . Jan Eri <jan.eri@protector-group.no>
       . Michael Gerdau <mgd@technosis.de>
-      . Francois Massonneau <francois@arvernes.com>
+      . Alan Jackson
+      . Daniel Moyne
       . Shmuel Metz <shmuel@acm.org>
       . Ernst Neubauer and Sohn <e.neubauer@t-online.de>
+      . John Valera
       . Roy O. Wellington III <roy.wellington@worldnet.att.net>
       . and many others!!!
 

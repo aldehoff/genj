@@ -1,200 +1,244 @@
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-xmlns:w="urn:schemas-microsoft-com:office:word"
-xmlns="http://www.w3.org/TR/REC-html40">
+<html><head></head>
 
-<head>
-<meta http-equiv=Content-Type content="text/html; charset=us-ascii">
-<meta name=ProgId content=Word.Document>
-<meta name=Generator content="Microsoft Word 9">
-<meta name=Originator content="Microsoft Word 9">
-<link rel=File-List href="./de%20f%20report-Dateien/filelist.xml">
-<title>Report Writing</title>
-<!--[if gte mso 9]><xml>
- <o:DocumentProperties>
-  <o:Author>Marcus Sandberg</o:Author>
-  <o:LastAuthor>Marcus Sandberg</o:LastAuthor>
-  <o:Revision>4</o:Revision>
-  <o:Created>2004-01-14T19:54:00Z</o:Created>
-  <o:LastSaved>2004-01-14T20:16:00Z</o:LastSaved>
-  <o:Pages>2</o:Pages>
-  <o:Words>358</o:Words>
-  <o:Characters>2044</o:Characters>
-  <o:Company>Marcus Sandberg</o:Company>
-  <o:Lines>17</o:Lines>
-  <o:Paragraphs>4</o:Paragraphs>
-  <o:CharactersWithSpaces>2510</o:CharactersWithSpaces>
-  <o:Version>9.6926</o:Version>
- </o:DocumentProperties>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:WordDocument>
-  <w:Zoom>150</w:Zoom>
-  <w:HyphenationZone>21</w:HyphenationZone>
- </w:WordDocument>
-</xml><![endif]-->
-<style>
-<!--
- /* Style Definitions */
-p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{mso-style-parent:"";
-	margin:0cm;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:"Times New Roman";}
-p
-	{font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:"Times New Roman";}
-pre
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:10.0pt;
-	font-family:"Courier New";
-	mso-fareast-font-family:"Courier New";}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:70.85pt 70.85pt 2.0cm 70.85pt;
-	mso-header-margin:35.4pt;
-	mso-footer-margin:35.4pt;
-	mso-paper-source:0;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-</head>
+<body>
+<h2>Schreiben von Reporten</h2>
 
-<body lang=DE link=blue vlink=blue style='tab-interval:35.4pt'>
+<p>
+Diese Seite erl&auml;utert Fragestellungen zum Schreiben eigener GenJ-Reporte:
+<ol>
+<li>Grundlagen</li>
+<li>Eigenschaften und Mehrsprachigkeit</li>
+<li>Optionen</li>
+<li>weiteren Java-Code laden</li>
+<li>Datenabfrage (Teil 1): Methoden von Objekten verwenden</li>
+<li>Datenabfrage (Teil 2): Kennzeichen und Eigenschaften verwenden</li>
+</ol>
+</p>
 
-<div class=Section1>
+<h2>Grundlagen</h2>
 
-<h2><span lang=EN-GB style='mso-ansi-language:EN-GB'>Report Erstellung<o:p></o:p></span></h2>
+<p>
+Ein GenJ-Report ist ein Java-Typ, der den abstrakten Typ <I>genj.report.Report</I> erweitert.
+Das Schreiben eigener Funktionalit&auml;t beginnt mit der Definition einer Klasse in einer Quelldatei und dem Ablegen dieser Datei im Report-Unterverzeichnis (der Name muss mit Report* beginnen).
+</p>
+<p>
+Angenommen wir wollen einen Test-Report namens "Test" schreiben. Erstellen Sie zun&auml;chst in ./reports eine Text-Datei mit dem Namen ReportTest.java. Dann &Uuml;bersetzen Sie die Datei durch Aufruf des compile-Skripts im selben Verzeichnis. Dieses Skript startet javac - den Java-Compiler. Als Ergebnis erhalten wir eine Datei namens ReportTest.class, die GenJ laden und ausf&uuml;hren kann nachdem sie in der <A href="../view/report.html">Report-Ansicht</A> ausgew&auml;hlt wurde.
+</p>
 
-<p>Ein GenJ Report ist eine Java Klasse welche die Schnittstelle <i>genj.report.Report
-</i>implementiert. Um eigene Funktionalit&auml;t zu erstellen, definieren Sie Ihre
-eigene Klasse in einer Quelldatei and kopieren Sie diese Datei in das Report-Unterverzeichnis
-.\report (der Dateiname muss mit &#8222;Report*&#8220; beginnen). </p>
+<P>
+Sehen wir uns das Muster ReportTest.java an. Es enth&auml;lt eine public class-Definition, die
+den Report-Vereinbarungen entspricht (<I>extends Report</I>). Teil dieser Vereinbarung ist die
+Implementierung von <i>public void start(Object context)</i> - dem Einstiegspunkt des Reports. Wir k&ouml;nnen alle von der Oberklasse Report bereitgestellten Methoden verwenden - hier benutzen wir
+deren println-Methode - <i>println()</i> f&uuml;llt ein Widget mit Text, den der Benutzer bei Ausf&uuml;hrung des Reports sieht.
 
-<p>Lassen Sie uns annehmen, dass wir einen Testreport mit dem Namen &quot;Test1&quot;
-erstellen wollen. Zuerst erstellen Sie eine Textdatei mit Namen
-ReportTest1.java im Verzeichnis ./report. Dann kompilieren Sie die Datei, in
-dem sie das Skript zum Kompilieren, welches sich im gleichen Verzeichnis
-befindet, starten. Dieses Skript startet javac &#8211; den JAVA Compiler. Das
-Ergebnis ist eine Datei mit Namen ReportTest1.class, welche GenJ laden und
-ausf&uuml;hren kann, nachdem sie Sie in der <a href="..\view\report.html">Report Ansicht</a>
-ausgew&auml;hlt haben. </p>
+ <PRE>
 
-<p>Lassen Sie uns einen Blick auf das Beispiel ReportTest1.java werfen. Es
-enth&auml;lt eine <i>public class</i>-Definition, welche dem Report Auftrag entspricht
-(<i>implements Report</i>). Ein Teil dieses Auftrages ist das Verhalten f&uuml;r
-alle folgenden Methoden zu definieren: <o:p></o:p></p>
+  import genj.gedcom.*;
+  import genj.report.*;
 
-<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
-mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
-mso-ascii-font-family:"Times New Roman"'><il>&middot;</span><span lang=EN-GB
-style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
-</span>getName <o:p></o:p></span></p>
+  import genj.report.Report;
 
-<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
-mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
-mso-ascii-font-family:"Times New Roman"'>&middot;</span><span lang=EN-GB
-style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
-</span>getInfo <o:p></o:p></span></p>
+  public class ReportTest extends Report {
 
-<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
-mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
-mso-ascii-font-family:"Times New Roman"'>&middot;</span><span lang=EN-GB
-style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
-</span>start <o:p></o:p></span></p>
+    /**
+     * die Haupt-Methode ("main")
+     */
+    public void start(Object context) {
+      println("Hallo Welt!");
+    }
 
-<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
-mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
-mso-ascii-font-family:"Times New Roman"'>&middot;</span><span lang=EN-GB
-style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
-</span>usesStandardOut <o:p></o:p></span></p>
+  }
+ </PRE>
+</p>
 
-<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
-mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
-mso-ascii-font-family:"Times New Roman"'>&middot;</span><span lang=EN-GB
-style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
-</span>getAuthor <o:p></o:p></span></p>
+<p>
+ Nun wollen wir den Report mit Namen, einigen grundlegenden Informationen und der Angabe des Autors in die <A href="../view/report.html">Report-Ansicht</A> integrieren. 
+ Um dies zu erreichen erstellen wir im selben Verzeichnis die Datei ReportTest.properties und f&uuml;llen sie mit den notwendigen Informationen wie beispielsweise:
+ <pre>
+  # Datei: ReportTest.properties
+  # Dies sind die Text-Bausteine f&uuml;r ReportTest
+  name   = Ein einfacher Test
+  info   = Dies ist ein Test-Report, um das Schreiben von GenJ-Reporten zu erlernen
+  author = Carsten M&uuml;ssig
+ </pre>
+</p>
 
-<p class=MsoNormal style='margin-right:36.0pt;mso-margin-top-alt:auto;
-mso-margin-bottom-alt:auto;margin-left:36.0pt'><span style='font-family:Symbol;
-mso-ascii-font-family:"Times New Roman"'>&middot;</span><span lang=EN-GB
-style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;
-</span>isReadOnly </il><o:p></o:p></span></p>
+<p>
+ Nun wird der Report vern&uuml;ftig angezeigt, jedoch sollte er etwas in start() tun, um f&uuml;r einige Benutzer interessant zu sein. Per Definition k&ouml;nnen Reporte nur auf einem Gedcom-Kontext ausgef&uuml;hrt werden - dies bedeutet, dass das Argument von start() eine Instanz des Java-Typs <i>Gedcom</i> sein muss. Also nehmen wir an, dass <i>context instanceof Gedcom</i>.
+ Ein einfacher Anwungsfall k&ouml;nnte die Ausgabe der Personenzahl im &uuml;bergebenen Gedcom-Objekt sein. Wir erreichen dies durch eine &Auml;nderung der oben angegebenen start-Methode:
+ <pre>
+    public void start(Object context) {
+      // wir wissen, dass context per Definition eine Instanz von Gedcom ist
+      Gedcom gedcom = (Gedcom)context;
+      // Anzahl der Personen berechnen
+      int count = gedcom.getEntities(Gedcom.INDI).size()
+      // ... Ausgabe
+      println("Gedcom "+gedcom.getName()+" umfasst "+count+" Personen");
+    }
+ </pre>
+</p> 
 
-<p class=MsoNormal>Sehen Sie sich das unten stehende Beispiel an oder die
-herunterladbare API an, um besser zu verstehen was diese Methoden tun. Die
-wichtigste Methode ist <i>start</i> &#8211; Sie ist der Haupteinstiegspunkt f&uuml;r die
-Logik des Report: </p>
 
-<pre><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></pre><pre><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></pre><pre><span style="mso-spacerun: yes">&nbsp; </span><span
-lang=EN-GB style='mso-ansi-language:EN-GB'>import genj.gedcom.*;<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>import genj.report.*;<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>import java.io.*;<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp; </span>* A report named Foo<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>public class ReportFoo implements Report {<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* The name of the report<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>public String getName() {<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return &quot;Foo&quot;;<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* Information about the report<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>public String getInfo() {<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return &quot;This report is oh so good\nPlease try it now!&quot;;<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* The main entry point for the report<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>public boolean start(ReportBridge bridge, Gedcom gedcom) throws InterruptedException {<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>bridge.println(&quot;Hello World&quot;);<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return true;<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* Whether this report uses StandardOut or its own windows/dialogs<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>public boolean usesStandardOut() {<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return true;<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* The author of this report<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'> <span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;</span>public String getAuthor() {<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return &quot;Nils Meier <nils@meiers.net>&quot;;<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>/**<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>* Whether this report will change the Gedcom data it is running on<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span>*/<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>public boolean isReadOnly() {<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>return false;<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>}<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>}<o:p></o:p></span></pre><pre><span
-lang=EN-GB style='mso-ansi-language:EN-GB'> <o:p></o:p></span></pre>
+<P>
+Die API f&uuml;r genj.report.Report und genj.gedcom.Gedcom enth&auml;lt eine Reihe von Methoden zum
+Zugriff und zur Anzeige der enhaltenen Informationen (siehe GenJ-Javadocs f&uuml;r mehr).
+</P>
 
-<p>Innerhalb der <i>start</i> Methode k&ouml;nnen auf alle Informationen des Gedcom Objektes
-zugegriffen werden. Sie m&uuml;ssen die GenJ API (eine HTML Klassenreferenz) herunterladen,
-um die M&ouml;glichkeiten der GenJ Kernklassen zu erforschen. Um sich vertraut zu
-machen, sollten Sie damit beginnen bestehende Reports zu ver&auml;ndern oder zu
-erweitern. </p>
+<h2>Eigenschaften und Mehrsprachigkeit</h2>
 
-</div>
+<p>
+Um Mehrsprachigkeit zu unterst&uuml;tzen sollte Ihr Report nicht direkt Zeichenketten ausgeben.
+Stattdessen sollte eine properties-Datei verwendet werden, um die auszugebenden Zeichenketten festzulegen und die Strings aus der Datei angezeigt werden. In dieser Variante kann der Inhalt der properties-Datei in andere Sprachen &uuml;bersetzt werden.
+Machen Sie z. B. <FONT COLOR=RED>nicht</FONT> folgendes: <tt>println("Geburtsdatum ist");</tt><br>
+Tun Sie <FONT COLOR=GREEN>dieses</FONT>:
+<pre>
+    println(i18n("BirthDateIs"));
+</pre>
+und erstellen Sie einen entsprechenden Eintrag in der properties-Datei:
+<pre>
+    BirthDateIs = Geburtsdatum ist
+</pre>
 
-</body>
+<h2>Optionen</h2>
 
-</html>
+<p>
+Jeder Report hat eine Options-Anzeige, die Sie auf einfache Art und Weise durch Anlegen von public-Variablen in der Report-Klasse und Eintr&auml;gen in der properties-Datei nutzen k&ouml;nnen. Nehmen wir an Ihr Report erzeugt standardm&auml;&szlig;ig Text, kann aber auch HTML erstellen und das Ausgabeformat soll durch den Benutzer festgelegt werden. Beginnen wir mit dem Anlegen einer neuen public-Variablen in der Report-Klasse:
+<pre>
+    public boolean generateHTML = true ;
+</pre>
+und f&uuml;gen jetzt den Text zur properties-Datei hinzu:
+<pre>
+    generateHTML = Soll die Ausgabe in HTML erstellt werden?
+</pre>
+Laden Sie den Report und werden Sie einen Blick auf die Optionen, um das Ergebnis zu sehen.
+</p>
+
+<p>
+Verwenden sie folgende public-Variablen, um ein PullDown-Men&uuml; mit einigen Auswahlm&ouml;glichkeiten zu erstellen:
+<pre>
+    public int outputFormat = 0;
+    public static String[] outputFormats = { "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex" };
+</pre>
+und erg&auml;zen Sie dies in der properties-Datei:
+<pre>
+    outputFormat=Output format
+    outputFormat.de=Ausgabe-Format
+</pre>
+Es gibt einige komplexere Optionen. Bitte sehen Sie sich dazu ReportEvent.java an.
+</p>
+<h2>weiteren Java-Code laden</h2>
+
+<p>
+Der Java-Code im report-Verzeichnis ist mit dem rcompile-Skript &uuml;bersetzt und wird in GenJ geladen. Wenn Sie also andere Klassen in Ihrem Report verwenden wollen kopieren Sie die Java-Dateien in Ihren Report, damit sie geladen werden.
+</p>
+
+<p>
+Wenn Sie beispielsweise die Klasse DMSoundex verwenden wollen legen Sie die DMSoundex.java-Datei in das Report-Verzeichnis und starten Sie rcompile. Nun ist die Datei zwar verf&uuml;gbar, erscheint aber nicht als ein Report, da sie nicht von genj.report.Report abgeleitet ist.
+
+<h2>Datenabfrage (Teil 1): Methoden von Objekten verwenden</h2>
+
+Die Java-Objekte, die Informationen aus einer GEDCOM-Datei speichern, besitzen Methoden, um auf Namen, Zeitangaben, Kinder und Eltern zuzugreifen (aber nicht so viele, wie Sie vielleicht erwarten).
+Nachfolgend einige Beispiele:
+<pre>
+    //Methoden der Klasse Indi (Personen)
+    //Diese Liste ist nicht vollst&auml;ndig!  F&uuml;r den Einstieg jedoch genug.
+    String getBirthAsString()   // Hinweis: dies ist ein Geburtsdatum (kein Objekt)
+    String getDeathAsString()   // Hinweis: dies ist ein Todesdatum (kein Objekt)
+    String getName()
+    String getFirstName()
+    String getLastName()
+    Fam getFamc()               // ermittelt die Familie, in der diese Person Kind ist
+    Indi getFather()
+    Indi getMother
+    Indi[] getChildren()
+    //Methoden der Klasse Fam (Familien)
+    //Diese Liste ist nicht vollst&auml;ndig!  F&uuml;r den Einstieg jedoch genug.
+    Indi getChild(int which)
+    Indi[] getChildren()
+    Indi getHusband()
+    Indi getWife()
+</pre>
+Sie sollten sich auch die Klasse PropertyDate und die Methoden, die solche Objekte aus anderen Klassen zur&uuml;ckliefern, ansehen.
+
+<h2>Datenabfrage (Teil 2): Kennzeichen und Eigenschaften verwenden</h2>
+
+<p>
+Die meisten Daten in einer GEDCOM-Datein sind &uuml;ber Kennzeichen verf&uuml;gbar. Um beispielsweise die Einb&uuml;rgerungs-Informationen einer Person zu erhalten ist <FONT COLOR=RED>
+nicht</FONT>&nbsp;<TT>indi.getNaturalization()</TT> aufzurufen, <FONT COLOR=GREEN>sondern:</FONT> this:
+<pre>
+PropertyEvent naturalization = (PropertyEvent)indi.getProperty(new TagPath("INDI:NATU")) ;
+</pre>
+Oder Sie k&ouml;nnen andere spezifische Daten mit Aufrufen wie:
+<pre>
+PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:NATU:DATE"));
+String dateOfNaturalization = prop.getValue() ;
+</pre>
+ermitteln. An Notizen zu kommen ist etwas aufwendiger. Sofern eine Notiz vorhanden ist gibt folgender Code die Notiz zu einem Ereignis als String zur&uuml;ck. Der Aufruf sieht wie folgt aus:
+<pre>
+
+   // Anwendungsbeispiel:
+   PropertyEvent immigration = (PropertyEvent)indi.getProperty(new TagPath("INDI:IMMI")) ;
+   String note = getNote(immigration) ;
+   if (note==null) note = i18n("noNote") ;
+   println(note) ;
+
+   // aufgerufener Code:
+
+   private String getNote(PropertyEvent e) {
+       if (e==null) return null ;
+       MultiLineProperty prop = checkNote(e.getProperty("NOTE")) ;
+       if (prop==null) return null ;
+       return prop.getLinesValue()  ;
+   }
+
+  /**
+   * Checks for a NOTE property and if applicable
+   * return the MultiLineProperty for accessing its value
+   */
+  MultiLineProperty checkNote(Property prop) {
+       if (prop==null) return null ;
+
+    // has to be 'NOTE'
+   if (!prop.getTag().equals("NOTE"))
+     return null;
+
+    // see if prop is a reference to a Note
+    if (prop instanceof PropertyNote) {
+      // .. jump to the referenced target
+      prop = ((PropertyNote)prop).getTarget();
+    }
+
+    // see if we have a multiline property containing
+    // the note text now
+    if (prop instanceof MultiLineProperty )
+      return (MultiLineProperty)prop;
+
+    // no candidate
+    return null;
+  }
+</pre>
+
+<p>
+Die Verwendung von Kennzeichnungspfaden setzt Kenntnisse &uuml;ber GEDCOM-konforme Abk&uuml;rzungen, die eine L&auml;nge von Buchstaben haben, voraus. Hier zwei Verweise mit weiteren Informationen:
+<BR>
+&nbsp;<A HREF="http://www.math.clemson.edu/~rsimms/genealogy/ll/gedcom55.pdf">http://www.math.clemson.edu/~rsimms/genealogy/ll/gedcom55.pdf</A><BR>
+&nbsp;<A HREF="http://www.gendex.com/gedcom55/55gcappa.htm">http://www.gendex.com/gedcom55/55gcappa.htm</A>
+</p>
+
+<P>
+Nachfolgend die am h&auml;figsten verwendeten Kennzeichnungen:<BR>
+&nbsp;oberste Ebene: INDI (Person), FAM (Familie)<BR>
+&nbsp;Ereignisse: BIRT (Geburt), DEAT (Tod), IMMI (Immigration),NATU (Einb&uuml;rgerung), BAPT (Taufe)<BR>
+&nbsp;weitere: CHIL (Kind), FAMC (Kind in Familie), HUSB (Ehemann), WIFE (Ehefrau)<BR>
+&nbsp;Bestandteile: ADDR (Addresse), DATE (Datum), NOTE (Notiz), PLAC (Ort)<BR>
+</p>
+
+<p>
+Die "Editier-Ansicht" zeigt genau welche Kennzeichnungen Daten zu welchen Instanzen haben und ist eine gute M&ouml;glichkeit, um die Daten und die Struktur von GEDCOM zu verstehen.
+</p>
+
+<p>
+Sehen Sie sich den Quellcode des Event-Reports an, um besser zu verstehen wie Kennzeichnungen verwendet werden. Weiterhin k&ouml;nnen Sie eine GEDCOM-Datei einsehen, um nachzuschauen welche Kennzeichnungen von anderen Kennzeichnungen umgeben sind.
+</p>
+
+</body></html>

@@ -1,151 +1,55 @@
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-xmlns:w="urn:schemas-microsoft-com:office:word"
-xmlns="http://www.w3.org/TR/REC-html40">
+<html>
+<body>
 
-<head>
-<meta http-equiv=Content-Type content="text/html; charset=us-ascii">
-<meta name=ProgId content=Word.Document>
-<meta name=Generator content="Microsoft Word 9">
-<meta name=Originator content="Microsoft Word 9">
-<link rel=File-List href="./de%20f%20gedcom-Dateien/filelist.xml">
-<title>Gedcom</title>
-<!--[if gte mso 9]><xml>
- <o:DocumentProperties>
-  <o:Author>Marcus Sandberg</o:Author>
-  <o:LastAuthor>Marcus Sandberg</o:LastAuthor>
-  <o:Revision>5</o:Revision>
-  <o:Created>2004-01-14T22:29:00Z</o:Created>
-  <o:LastSaved>2004-01-14T22:55:00Z</o:LastSaved>
-  <o:Pages>1</o:Pages>
-  <o:Words>328</o:Words>
-  <o:Characters>1874</o:Characters>
-  <o:Company>Marcus Sandberg</o:Company>
-  <o:Lines>15</o:Lines>
-  <o:Paragraphs>3</o:Paragraphs>
-  <o:CharactersWithSpaces>2301</o:CharactersWithSpaces>
-  <o:Version>9.6926</o:Version>
- </o:DocumentProperties>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:WordDocument>
-  <w:Zoom>150</w:Zoom>
-  <w:HyphenationZone>21</w:HyphenationZone>
- </w:WordDocument>
-</xml><![endif]-->
-<style>
-<!--
- /* Style Definitions */
-p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{mso-style-parent:"";
-	margin:0cm;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:"Times New Roman";}
-p
-	{font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:"Times New Roman";}
-pre
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:10.0pt;
-	font-family:"Courier New";
-	mso-fareast-font-family:"Courier New";}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:70.85pt 70.85pt 2.0cm 70.85pt;
-	mso-header-margin:35.4pt;
-	mso-footer-margin:35.4pt;
-	mso-paper-source:0;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-</head>
-
-<body lang=DE link=blue vlink=blue style='tab-interval:35.4pt'>
-
-<div class=Section1>
 
 <h2>Gedcom</h2>
 
-<p>Gedcom ist ein Standard f&uuml;r den Austausch von genealogischen Informationen
-in elektronischer Form. Dies ist wichtig, da der Kern von GenJ auf diesem
-Standard aufbaut. Dies ist nicht unbedingt sichtbar an der Oberfl&auml;che, aber dies
-zu wissen, hilft beim Verst&auml;ndnis wie GenJ arbeitet. </p>
+<p>
+Gedcom ist ein Standard f&uuml;r den Austausch von genealogischen Informationen in elektronischer Form. Dies ist wichtig, da der Kern von GenJ auf diesem Standard aufbaut. Diese Tatsache ist nicht unbedingt an der Oberfl&auml;che sichtbar, aber das Wissen hilft beim Verst&auml;ndnis der Arbeitsweise von GenJ.
+</p>
 
-<p>Generell sind alle Gedcom Informationen hierarchisch strukturiert. Eine
-Instanz (Individuum, Familie, Media, Notiz, Quelle, &Uuml;bermittler oder Bibliothek)
-besteht aus einem Baum von Eigenschaften ohne Limitierung hinsichtlich der
-Tiefe oder der Anzahl der Stufen. Es gibt eine gro&szlig;e Menge von wohldefinierten Eigenschaften
-(wie beispielsweise Datum, Name, Geschlecht, etc.) f&uuml;r jede Instanz, jeder
-gespeicherte Wert wird durch den Gedcom Standard unterst&uuml;tzende Applikation
-richtig interpretiert. </p>
+<p>
+Generell sind alle Gedcom-Informationen hierarchisch strukturiert. Eine
+Instanz (Individuum, Familie, Media, Notiz, Quelle, &Uuml;bermittler oder Bibliothek) besteht aus einem Baum von Eigenschaften ohne Limitierung hinsichtlich der Tiefe oder der Anzahl der Stufen. Es gibt f&uuml;r jede Instanz eine gro&szlig;e Menge von wohldefinierten Eigenschaften (wie beispielsweise Datum, Name, Geschlecht, etc.), wobei jede
+Eigenschaft Werte beinhaltet, die von Anwendungen mit Gedcom-Unterst&uuml;tzung verarbeitet werden k&ouml;nnen.
+</p>
 
-<p>Die Gedcom Datei ist eine einfache Textdatei mit einer Zeile pro Eigenschaft.
-Es gibt keine Notation f&uuml;r Abschluss oder Ende Kennzeichen (wie beispielsweise in
-XML) &#8211; daf&uuml;r besitzen Zeilen unterschiedliche Markierungsebenen. Die Ebene wird
-spezifiziert durch eine Zahl &#8211; dann folgt ein Kennzeichen, welche die
-Eigenschaft identifiziert. Hier ist ein Beispiel f&uuml;r einen Datensatz f&uuml;r ein
-Individuum (unterschiedliche Ebenen sind nur zur besseren Lesbarkeit im Text
-einger&uuml;ckt): </p>
+<p>Eine Gedcom-Datei ist prinzipiell eine einfache Textdatei mit einer Eigenschaft pro Zeile. Es gibt keine Notation f&uuml;r Abschluss oder Ende von Kennzeichnungselementen (wie beispielsweise in XML) &#8211; Zeilen besitzen stattdessen unterschiedliche Markierungsebenen. Eine Ebene wird durch eine Zahl spezifiziert, danach folgt ein Kennzeichnungselement zur Identifizierung der Eigenschaft. Hier ein Beispiel f&uuml;r einen Datensatz eines Individuums (unterschiedliche Ebenen sind nur zur besseren Lesbarkeit im Text einger&uuml;ckt):
+</p>
 
-<pre style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:
-36.0pt;margin-bottom:.0001pt'><![if !supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'>0 INDI @I001@</pre><pre style='margin-top:0cm;
-margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;margin-bottom:.0001pt'><span style="mso-spacerun: yes">&nbsp; </span>1 NAME Nils /Meier/</pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span style="mso-spacerun: yes">&nbsp; </span><span
-lang=EN-GB style='mso-ansi-language:EN-GB'>1 SEX M<o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>1 BIRT<o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>2 DATE 25 May 1970<o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>2 PLAC Rendsburg, Germany<o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp; </span>1 GRAD<o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>2 DATE 10 Dec 1996 <o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;</span></span>2 PLAC Friedrich Wilhelm University Bonn</pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>2 TYPE Diplom Informatiker</pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span style="mso-spacerun: yes">&nbsp; </span><span
-lang=EN-GB style='mso-ansi-language:EN-GB'>1 RESI<o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>2 DATE FROM Jul 1999 TO DEC 2000<o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span>2 ADDR 202-1241 Kilborn Place<o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>3 CONT Ontario, Canada<o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>3 CITY Ottawa<o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>3 POST K1H1A5<span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </span><o:p></o:p></span></pre><pre
-style='margin-top:0cm;margin-right:36.0pt;margin-bottom:0cm;margin-left:36.0pt;
-margin-bottom:.0001pt'><span lang=EN-GB style='mso-ansi-language:EN-GB'><span style="mso-spacerun: yes">&nbsp;&nbsp;</span>1 NOTE @N003@<o:p></o:p></span></pre>
+<blockquote>
+<pre>
+0 INDI @I001@
+  1 NAME Nils /Meier/
+  1 SEX M
+  1 BIRT
+    2 DATE 25 May 1970
+    2 PLAC Rendsburg, Germany
+  1 GRAD
+    2 DATE 10 Dec 1996 
+    2 PLAC Friedrich Wilhelm University Bonn
+    2 TYPE Diplom Informatiker
+  1 RESI
+    2 DATE FROM Jul 1999 TO DEC 2000
+    2 ADDR 202-1241 Kilborn Place
+      3 CONT Ontario, Canada
+      3 CITY Ottawa
+      3 POST K1H1A5    
+  1 NOTE @N003@
+</pre>
+</blockquote>
 
-<p>Die M&auml;chtigkeit von GenealogyJ besteht darin, dass das Programm erlaubt verschachtelte
-Information in hierarchischer Form zu editieren. Alle definierten Eigenschaften
-k&ouml;nnen nach ihrem Typ entsprechend spezifisch editiert werden &#8211; Sie m&uuml;ssen sich
-keine Gedanken um die Textdatei machen. Da GenJ die Eigenschaften, die andere
-Instanzen referenzieren k&ouml;nnen, implizit verwaltet, ist die referenzielle Integrit&auml;t
-sichergestellt und erlaubt eine einfache Bildung von Beziehungen (wie das
-Hinzuf&uuml;gen eines Kindes zu einem Elternteil oder das Hinzuf&uuml;gen eines Partners zu
-einem Individuum). GenJ wendet den Gedcom Standard an und schl&auml;gt, wenn
-gew&uuml;nscht, beim Hinzuf&uuml;gen Untereigenschaften vor. </p>
+<p>
+Die M&auml;chtigkeit von GenealogyJ besteht darin, dass es die Bearbeitung von verschachtelten Information in hierarchischer Form gestattet. Definierte Eigenschaften werden entsprechend ihrem Typ behandelt und k&ouml;nnen ebenso editiert werden &#8211; Sie m&uuml;ssen sich
+keine Gedanken um die Textdarstellung machen. GenJ verwaltet implizit die Eigenschaften, die andere
+Instanzen referenzieren k&ouml;nnen. Daher ist die referenzielle Integrit&auml;t und die einfache Bildung von Beziehungen (wie das Hinzuf&uuml;gen eines Kindes zu einem Elternteil oder das Hinzuf&uuml;gen eines Partners zu einem Individuum) sichergestellt. GenJ wendet den Gedcom-Standard an und schl&auml;gt beim Hinzuf&uuml;gen optional Untereigenschaften vor.
+</p>
 
-<p>Die derzeitige Gedcom Version, die durch GenJ unterst&uuml;tzt wird ist die
-Version <a href="http://www.gendex.com/gedcom55/55gctoc.htm">5.5</a>. Wenn Sie
+<p>
+Der momentan unterst&uuml;tzte Gedcom-Standard, ist die <a href="http://www.gendex.com/gedcom55/55gctoc.htm">Version 5.5</a>. Wenn Sie
 mehr &uuml;ber Gedcom erfahren wollen, dann sehen Sie sich die Spezifikation an &#8211; es
 ist eine andauerndes Bestreben GenJ so eng wie m&ouml;glich am Standard auszurichten.
 </p>
-
-</div>
 
 </body>
 

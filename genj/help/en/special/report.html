@@ -105,7 +105,7 @@ more).
 
 <p>
 In order to support internationalization, your report should NOT print out string constants directly.
-Instead, it should use a properties file to define the strings it prrints out, and then
+Instead, it should use a properties file to define the strings it prints out, and then
 get them from that file.  That way, the properties file can be translated to other languages.
 For example, do <FONT COLOR=RED>not</FONT> do this: <tt>println("Birth Date is");</tt>
 Instead <FONT COLOR=GREEN>do</FONT> this:
@@ -141,7 +141,7 @@ To create a pull down menu with some choises in it, use these public variables:
     public int outputFormat = 0;
     public static String[] outputFormats = { "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex" };
 </pre>
-and this to yoru properties file:
+and this to your properties file:
 <pre>
     outputFormat=Output format
     outputFormat.de=Ausgabe-Format
@@ -154,7 +154,7 @@ There are some more complex options available.  Take a look at ReportEvent.java 
 All the java code in the report directory is compiled by the rcompile script,
 and all of it is loaded into GenJ.  So, if you want to use some other classes in your
 report, you can just copy the java or class files into report, and they will be
-loaded an waiting for you to use.
+loaded and waiting for you to use.
 </p>
 
 <p>
