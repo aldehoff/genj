@@ -36,9 +36,13 @@ import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -81,8 +85,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
                             actionSticky;
 
   /** everything for the tree */
-  private PropertyTreeWidget      tree = null;
-  private JScrollPane       treePane = null;
+  private PropertyTreeWidget tree = null;
   
   /** everything for the proxy */
   private JPanel            proxyPane;
@@ -105,10 +108,13 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     this.registry = setRegistry;
 
     // TREE Component's 
+    TreeCallbackHandler callback = new TreeCallbackHandler();
     tree = new PropertyTreeWidget(setGedcom);
-    tree.addTreeSelectionListener(new SelectionHandler());
+    tree.addTreeSelectionListener(callback);
+    tree.addMouseMotionListener(callback);
+    tree.addMouseListener(callback);
     
-    treePane = new JScrollPane(tree);
+    JScrollPane treePane = new JScrollPane(tree);
     treePane.setMinimumSize  (new Dimension(160, 128));
     treePane.setPreferredSize(new Dimension(160, 128));
     
@@ -443,27 +449,6 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   }
   
   /**
-   * the selected properties
-   */
-  private Property[] getSelection() {
-    
-    // check selection
-    TreePath paths[] = tree.getSelectionPaths();
-    if ( (paths==null) || (paths.length==0) ) {
-      return new Property[0];
-    }
-
-    // .. remove every selected node
-    Property[] result = new Property[paths.length];
-    for (int i=0;i<paths.length;i++) {
-      result[i] = (Property)paths[i].getLastPathComponent();
-    }
-
-    // done
-    return result;    
-  }
-
-  /**
    * Fill the action-menu
    */
   private class ActionMenu extends ActionDelegate {
@@ -484,7 +469,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       MenuHelper mh = new MenuHelper().setTarget(EditView.this).pushMenu(menu);
       
       // check selection
-      Property[] selection = getSelection();
+      Property[] selection = tree.getSelection();
       ContextPopupSupport.Context context = new Context(
         selection.length==1 ? (Object)selection[0] : (Object)getCurrentEntity()
       );
@@ -627,7 +612,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       stopEdit(true);
       
       // go through selection
-      Property[] ps = getSelection();
+      Property[] ps = tree.getSelection();
       for (int i=0;i<ps.length;i++) {
         new DelProperty(ps[i]).setTarget(EditView.this).trigger();
       }
@@ -687,7 +672,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /**
    * Handling selection of properties
    */
-  private class SelectionHandler implements TreeSelectionListener {
+  private class TreeCallbackHandler extends MouseAdapter implements TreeSelectionListener, MouseMotionListener {
     
     /**
      * @see javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event.TreeSelectionEvent)
@@ -735,6 +720,51 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       actionButtonDown  .setEnabled(prop.getNextSibling()    !=null);
   
       // Done
+    }
+    
+    private boolean clickable = false;
+    
+    /**
+     * @see java.awt.event.MouseMotionAdapter#mouseMoved(java.awt.event.MouseEvent)
+     */
+    public void mouseMoved(MouseEvent e) {
+      
+      // check if we should indicated clickable
+      Property prop = tree.getProperty(e.getX(), e.getY());
+      Property[] selection = tree.getSelection();
+      setClickable( 
+        selection.length==1
+        && prop==selection[0]
+        && currentProxy!=null
+        && currentProxy.isClickAction()
+      );
+
+      // done
+    }
+    
+    /**
+     * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
+     */
+    public void mouseDragged(MouseEvent e) {
+      // ignored
+    }
+
+    /**
+     * @see java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
+     */
+    public void mouseClicked(MouseEvent e) {
+      if (clickable) {
+        setClickable(false);
+        currentProxy.click();
+      } else mouseMoved(e); 
+    }
+    
+    /** 
+     * make clickable or not
+     */
+    private void setClickable(boolean set) {
+      clickable = set;
+      tree.setCursor(clickable ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor());
     }
     
   } //PropertyTree  

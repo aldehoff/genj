@@ -85,19 +85,49 @@ public class PropertyTreeWidget extends TreeWidget {
   }
   
   /**
+   * Resolve property for location
+   */
+  public Property getProperty(int x, int y) {
+    // calc path to node under mouse
+    TreePath path = super.getPathForLocation(x, y);
+    if ((path==null) || (path.getPathCount()==0)) 
+      return null;
+    // done
+    return (Property)path.getLastPathComponent();
+  }
+  
+  /**
+   * the selected properties
+   */
+  public Property[] getSelection() {
+    
+    // check selection
+    TreePath paths[] = getSelectionPaths();
+    if ( (paths==null) || (paths.length==0) ) {
+      return new Property[0];
+    }
+
+    // .. remove every selected node
+    Property[] result = new Property[paths.length];
+    for (int i=0;i<paths.length;i++) {
+      result[i] = (Property)paths[i].getLastPathComponent();
+    }
+
+    // done
+    return result;    
+  }
+  
+  /**
    * @see javax.swing.JTree#getToolTipText(MouseEvent)
    */
   public String getToolTipText(MouseEvent event) {
-    // .. calc path to node under mouse
-    TreePath path = super.getPathForLocation(event.getX(),event.getY());
-    if ((path==null) || (path.getPathCount()==0)) return null;
-    // .. calc property
-    Object p = path.getLastPathComponent();
-    if (!(p instanceof Property)) return "";
+    // lookup property
+    Property prop = getProperty(event.getX(),event.getY());
+    if (prop==null) return null;
     // .. transient?
-    if (((Property)p).isTransient()) return null;
+    if (prop.isTransient()) return null;
     // .. calc information text
-    String info = MetaProperty.get((Property)p).getInfo();
+    String info = MetaProperty.get(prop).getInfo();
     if (info==null) return "?";
     // .. return max 60
     info = info.replace('\n',' ');

@@ -21,6 +21,7 @@ package genj.edit;
 
 import genj.gedcom.Entity;
 import genj.gedcom.PropertyXRef;
+import genj.view.ViewManager;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -29,6 +30,10 @@ import javax.swing.JPanel;
  * A proxy for a property that links entities
  */
 class ProxyXRef extends Proxy {
+
+  /** references entity */
+  private Entity entity;
+
 
   /**
    * Finish editing a property through proxy
@@ -49,13 +54,29 @@ class ProxyXRef extends Proxy {
   protected JComponent start(JPanel in) {
 
     // Calculate reference information
-    Entity entity = ((PropertyXRef) property).getReferencedEntity();
+    entity = ((PropertyXRef) property).getReferencedEntity();
 
     // setup content
-    if (entity!=null) in.add(new Preview(entity, true));
+    if (entity!=null) in.add(new Preview(entity));
     
     // done
     return null;
+  }
+  
+  /**
+   * @see genj.edit.Proxy#isClickAction()
+   */
+  protected boolean isClickAction() {
+    return entity!=null;
+  }
+  
+  /**
+   * @see genj.edit.Proxy#click()
+   */
+  protected void click() {
+    boolean sticky = view.setSticky(false);
+    ViewManager.getInstance().setCurrentEntity(entity);
+    view.setSticky(sticky);
   }
   
 } //ProxyXRef
