@@ -26,6 +26,9 @@
 
 package genj.app;
 
+
+import genj.Version;
+
 // Import for buttons, labels, and images
 import javax.swing.*;
 // Import for layout manager.
@@ -54,8 +57,18 @@ public class WelcomePanel extends JPanel
     ta.setWrapStyleWord(true);
     ta.setEditable(false);
     
+    // Initialize a text area object that contains the appli name and version
+    taversion = new JTextArea(App.resources.getString("app.title")+" "+Version.getInstance().toString());
+    // Sets the font face and size
+    taversion.setFont(new Font("Times-Roman", Font.BOLD, 13));
+    // Line wrap is set for the text area and it is not editable
+    taversion.setLineWrap(true);
+    taversion.setWrapStyleWord(true);
+    taversion.setEditable(false);
+    
     // Each object is added to the layout and positioned
-    add(ta, BorderLayout.CENTER);
+    add(ta, BorderLayout.NORTH);
+    add(taversion, BorderLayout.SOUTH);
     
   }  // Closes constructor
 
