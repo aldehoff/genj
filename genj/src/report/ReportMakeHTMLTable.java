@@ -264,11 +264,17 @@ public class ReportMakeHTMLTable implements Report {
     // Go through individuals
     EntityList indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
 
+		TreeMap indiMap = new TreeMap ();  // use to sort by name
     for (int i=0;i<indis.getSize();i++) {
-
+			Indi indi = indis.getIndi(i);
+			indiMap.put( indi.getLastName() + ", " + indi.getFirstName(),
+									 indis.getIndi(i) );
+		}
+		Iterator iter = indiMap.values().iterator();
+		while ( iter.hasNext() ) {
       bridge.println("<TR>");
 
-      export(indis.getIndi(i),bridge, detailsUrl);
+      export((Indi)iter.next(), bridge, detailsUrl);
 
       bridge.println("</TR>");
 
