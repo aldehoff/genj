@@ -301,7 +301,12 @@ public class Indi extends PropertyIndi implements Entity {
       tmp.set(birthCal.get(Calendar.YEAR), birthCal.get(Calendar.MONTH), 1);
       tmp.add(Calendar.YEAR,  ageYears);
       tmp.add(Calendar.MONTH, ageMonths);
-      ageDays += tmp.getActualMaximum(Calendar.DATE);
+      // worst case: born 30 Jan, died 1 Mar - 1m 1d
+      int prevMonth = tmp.getActualMaximum(Calendar.DATE);
+      if (birthCal.get(Calendar.DATE) > prevMonth)
+        ageDays = end.get(Calendar.DATE);
+      else
+        ageDays += prevMonth;
     }
 
     if (ageYears < 0)
