@@ -466,7 +466,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
       // no prop and we're done
       if (prop==null) return;
       // get the proxy
-      PropertyRenderer proxy = PropertyRenderer.get(prop.getProxy());
+      PropertyRenderer proxy = PropertyRenderer.get(prop);
       // let it render
       proxy.render(g, bounds, prop, proxy.PREFER_DEFAULT, manager.getDPI());
       // done

@@ -289,6 +289,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     Property prop = tree.getSelection();
     if (prop == null) 
       return;
+      
+    // private one?
+    if (prop.isSecret())
+      return;
 
     // Calculate editing for property
     String me    = getClass().getName(),

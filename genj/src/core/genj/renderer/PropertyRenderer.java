@@ -42,6 +42,8 @@ import java.util.Map;
  * 
  */
 public class PropertyRenderer {
+
+  private final static String STARS = "*****";
   
   /** our preferences when drawing properties */
   public final static int
@@ -54,7 +56,9 @@ public class PropertyRenderer {
   private final static Dimension EMPTY_DIM = new Dimension(0,0);
   
   /** a default PropertyProxy */
-  /*package*/ final static PropertyRenderer DEFAULT_PROPERTY_PROXY = new PropertyRenderer();
+  /*package*/ final static PropertyRenderer 
+    DEFAULT_PROPERTY_PROXY = new PropertyRenderer(),
+    SECRET_PROPERTY_PROXY  = new Secret();
 
   /** an replacement for a 'broken' image */  
   private final static ImageIcon broken = 
@@ -65,6 +69,19 @@ public class PropertyRenderer {
   
   static {
     cache.put("FILE", new PropertyRenderer.File());
+  }
+
+  /** 
+   * static accessor  
+   */
+  public static PropertyRenderer get(Property prop) {
+    
+    // check secret
+    if (prop.isPrivate()) 
+      return SECRET_PROPERTY_PROXY;
+    
+    // continue with tag
+    return get(prop.getProxy());
   }
 
   /** 
@@ -518,5 +535,26 @@ public class PropertyRenderer {
     }
   
   } //XRef
+      
+  /**
+   * name
+   */
+  /*package*/ static class Secret extends PropertyRenderer {
+  
+    /**
+     * size override
+     */
+    public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point dpi) {
+      return super.getSize(metrics, prop.getImage(false), STARS, preference, dpi);
+    }
+  
+    /**
+     * render override
+     */
+    public void render( Graphics g, Rectangle bounds, Property prop, int preference, Point dpi) {
+      super.render(g, bounds, prop.getImage(false), STARS, preference, dpi);
+    }
+    
+  } //Secret
       
 } //PropertyProxy

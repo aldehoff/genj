@@ -623,9 +623,6 @@ public class EntityRenderer {
     /** our preference when looking at the property */
     private int preference;
     
-    /** the proxy used */
-    private PropertyRenderer cachedRenderer = null;
-    
     /** the tag path used */
     private TagPath path = null;
     
@@ -705,20 +702,18 @@ public class EntityRenderer {
       // but another call here with a different prop-type
       // might resolve to a different proxy
       
-      // assume cached for now
-      PropertyRenderer result = cachedRenderer;
-      // no good yet?
-      if (result==null) {
-        // derive from property?
-        if (prop!=null) {
-          cachedRenderer = PropertyRenderer.get(prop.getProxy());
-          result = cachedRenderer;
-        } else {
-          result = PropertyRenderer.get(path!=null ? path.getLast() : "");
-        }
+      // derive from property?
+      PropertyRenderer result;
+      if (prop!=null) {
+        result = PropertyRenderer.get(prop);
+      } else {
+        result = PropertyRenderer.get(path!=null ? path.getLast() : "");
       }
+
       // check renderer/prop compatibility
-      if (prop==null&&!result.isNullRenderer()) return null;
+      if (prop==null&&!result.isNullRenderer()) 
+        return null;
+      
       // done
       return result;
     }

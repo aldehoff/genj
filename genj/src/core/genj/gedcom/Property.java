@@ -659,6 +659,13 @@ public abstract class Property implements Comparable {
   }
   
   /**
+   * Accessor - secret is private and unknown password
+   */
+  public boolean isSecret() {
+    return isPrivate && getGedcom().getPassword()==Gedcom.PASSWORD_UNKNOWN;
+  }
+  
+  /**
    * Accessor - private
    */
   public void setPrivate(boolean set, boolean recursively) {

@@ -535,40 +535,10 @@ public class PropertyTreeWidget extends TreeWidget {
       if (view==null) {
 
         // create html text
-        StringBuffer html = new StringBuffer();
-      
-        html.append("<html>");
-      
-        if (prop instanceof Entity) {
-          html.append("@").append(((Entity)prop).getId()).append("@ ");
-          html.append("<b>").append(prop.getTag()).append("</b>");
-        } else {
-          if (!prop.isTransient())
-            html.append(" <b>").append(prop.getTag()).append("</b> ");
-          
-          if (prop instanceof MultiLineProperty && !(prop instanceof IconValueAvailable)) {
-          
-            char[] chars = ((MultiLineProperty)prop).getLinesValue().toCharArray();
-            for (int i=0; i<chars.length; i++) {
-              char c = chars[i];
-              if (c=='\n') html.append("<br>");
-              else html.append(c);
-            }
-          
-          } else {
-
-            // 20030730 hack at this point - check for date to be localized
-            if (prop instanceof PropertyDate)
-              html.append(((PropertyDate)prop).toString(false, true));
-            else
-              html.append(prop.getValue());
-          }
-        }
-
-        html.append("</html>");
+        String html = calcHTML(prop);
 
         // convert
-        view = setHTML(html.toString());
+        view = setHTML(html);
         
         // remember
         model.setCachedValue(prop, view);
@@ -579,6 +549,67 @@ public class PropertyTreeWidget extends TreeWidget {
 
       // done
       return this;
+    }
+    
+    /**
+     * Calculate HTML for a property node
+     */
+    private String calcHTML(Property prop) {
+
+      StringBuffer html = new StringBuffer();
+      
+      html.append("<html>");
+      
+      if (prop instanceof Entity) 
+        calcEntity(html, (Entity)prop);
+      else
+        calcProperty(html, prop);
+
+      html.append("</html>");
+
+      return html.toString();        
+    }
+    
+    private void calcEntity(StringBuffer html, Entity entity) {        
+        
+      html.append("@").append(entity.getId()).append("@ ");
+      html.append("<b>").append(entity.getTag()).append("</b>");
+    } 
+      
+    private void calcProperty(StringBuffer html, Property prop) {
+
+      // TAG      
+      if (!prop.isTransient())
+        html.append(" <b>").append(prop.getTag()).append("</b> ");
+
+      // private?
+      if (prop.isSecret()) {
+        html.append("*****");
+        return;
+      }
+      
+      // multiline?          
+      if (prop instanceof MultiLineProperty && !(prop instanceof IconValueAvailable)) {
+        
+        char[] chars = ((MultiLineProperty)prop).getLinesValue().toCharArray();
+        for (int i=0; i<chars.length; i++) {
+          char c = chars[i];
+          if (c=='\n') html.append("<br>");
+          else html.append(c);
+        }
+        
+        return;
+        
+      } 
+      
+      // date?
+      if (prop instanceof PropertyDate) {
+        html.append(((PropertyDate)prop).toString(false, true));
+        return;
+      }
+      
+      // default!
+      html.append(prop.getValue());
     }
     
   } //Renderer
