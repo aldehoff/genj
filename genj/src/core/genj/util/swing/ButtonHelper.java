@@ -42,9 +42,9 @@ import javax.swing.SwingConstants;
 public class ButtonHelper {
   
   private Insets insets           = null;
-  private boolean isEnabled       = true;
-  private boolean isFocusable     = true;
-  private boolean isBorder        = true;
+  private Boolean isEnabled       = null;
+  private Boolean isFocusable     = null;
+  private Boolean isBorder        = null;
   private Resources resources     = null;
   private Container container     = null;
   private Dimension minSize       = null;
@@ -59,9 +59,9 @@ public class ButtonHelper {
   /** Setters */    
   public ButtonHelper setInsets(Insets set) { insets=set; return this; }
   public ButtonHelper setInsets(int val) { insets=new Insets(val,val,val,val); return this; }
-  public ButtonHelper setEnabled(boolean set) { isEnabled=set; return this; }
-  public ButtonHelper setFocusable(boolean set) { isFocusable=set; return this; }
-  public ButtonHelper setBorder(boolean set) { isBorder=set; return this; }
+  public ButtonHelper setEnabled(boolean set) { isEnabled=new Boolean(set); return this; }
+  public ButtonHelper setFocusable(boolean set) { isFocusable=new Boolean(set); return this; }
+  public ButtonHelper setBorder(boolean set) { isBorder=new Boolean(set); return this; }
   public ButtonHelper setResources(Resources set) { resources=set; return this; }
   public ButtonHelper setContainer(Container set) { container=set; return this; }
   public ButtonHelper setMinimumSize(Dimension set) { minSize=set; return this; }
@@ -108,10 +108,12 @@ public class ButtonHelper {
       Font f = result.getFont();
       result.setFont(new Font(f.getName(), f.getStyle(), fontSize));
     }
-    
-    result.setBorderPainted(isBorder);
-    result.setRequestFocusEnabled(isFocusable); // This should be setFocusable which comes with JDK1.4
-    result.setEnabled(isEnabled);
+    if (isBorder!=null)    
+      result.setBorderPainted(isBorder.booleanValue());
+    if (isFocusable!=null) // This should be setFocusable which comes with JDK1.4
+      result.setRequestFocusEnabled(isFocusable.booleanValue()); 
+    if (isEnabled!=null) 
+      result.setEnabled(isEnabled.booleanValue());
     result.addActionListener((ActionListener)action.as(ActionListener.class));
 
     if (container!=null) {
@@ -164,4 +166,4 @@ public class ButtonHelper {
     }
   }
   
-}
+} //ButtonHelper
