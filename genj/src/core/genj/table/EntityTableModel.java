@@ -118,8 +118,8 @@ import javax.swing.table.TableColumnModel;
     // look it up
     Mode set = getMode(tag);
     // already?
-    if (mode==set)
-      return;
+//    if (mode==set)
+//      return;
     mode = set;
     // build rows
     prepareRows();
@@ -260,7 +260,7 @@ import javax.swing.table.TableColumnModel;
   /**
    * Helper that creates a new ColumnModel
    */
-  /*package*/ TableColumnModel createTableColumnModel(int total) {
+  /*package*/ TableColumnModel createTableColumnModel() {
     TagPath[] paths = mode.paths;
     int[] widths = mode.widths;
     // create and fill
@@ -268,7 +268,7 @@ import javax.swing.table.TableColumnModel;
     for (int c=0; c<mode.paths.length; c++) {
       TableColumn col = new TableColumn(c);
       col.setHeaderValue(paths[c]);
-      col.setPreferredWidth(widths.length>c&&widths[c]>0?widths[c]:total/mode.paths.length);
+      col.setPreferredWidth(widths.length>c&&widths[c]>0?widths[c]:75);
       columns.addColumn(col);
     }
     // done

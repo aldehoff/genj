@@ -108,10 +108,10 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     loadProperties();
     
     // create our table
-    table = new JTable(tableModel, tableModel.createTableColumnModel(640)) {
+    table = new JTable(tableModel) {
       /** whenever new columns need to be created */
       public void createDefaultColumnsFromModel() {
-        setColumnModel(tableModel.createTableColumnModel(super.getWidth()));
+        setColumnModel(((EntityTableModel)getModel()).createTableColumnModel());
       }
     };
     table.setTableHeader(new SortableTableHeader());
@@ -289,7 +289,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
       int[]    ws = registry.get(tag+".widths", (int[]   )null);
       if (ws!=null) mode.setWidths(ws);
 
-      mode.setSort(registry.get(tag+".sort", new Point()));
+      mode.setSort(registry.get(tag+".sort", new Point(0, 1)));
 
     }
 
