@@ -50,7 +50,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -95,6 +94,9 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   
   /** our model */
   private Model model;
+  
+  /** the manager */
+  private ViewManager manager;
 
   /** our content */
   private Content content;
@@ -114,8 +116,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   /** our current zoom */  
   private SliderWidget sliderZoom;  
   
-  /** the frame we're in */
-  private Frame frame;
+  /** the title we have */
+  private String title;
   
   /** the registry we're working with */
   private Registry registry;
@@ -144,11 +146,12 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   /**
    * Constructor
    */
-  public TreeView(Gedcom gedcm, Registry regIstry, Frame fRame) {
+  public TreeView(String titl, Gedcom gedcm, Registry regIstry, ViewManager manAger) {
     
     // remember
-    frame = fRame;
     registry = regIstry;
+    title = titl;
+    manager = manAger;
     
     // grab colors
     colors = new ColorSet("content", Color.white, resources, registry);
@@ -194,7 +197,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     } catch (Exception e) {
     }
     if (root==null) {
-      Property context = ViewManager.getInstance().getContext(gedcm);
+      Property context = manager.getContext(gedcm);
       if (context!=null) root = context.getEntity();  
     } 
     model.setRoot(root);
@@ -518,7 +521,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   /**
    * @see genj.view.ContextSupport#createActions(genj.gedcom.Entity)
    */
-  public List createActions(Entity entity) {
+  public List createActions(Entity entity, ViewManager manager) {
     // fam or indi?
     if (!(entity instanceof Indi||entity instanceof Fam)) 
       return null;
@@ -533,14 +536,14 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   /**
    * @see genj.view.ContextSupport#createActions(genj.gedcom.Gedcom)
    */
-  public List createActions(Gedcom gedcom) {
+  public List createActions(Gedcom gedcom, ViewManager manager) {
     return null;
   }
 
   /**
    * @see genj.view.ContextSupport#createActions(genj.gedcom.Property)
    */
-  public List createActions(Property property) {
+  public List createActions(Property property, ViewManager manager) {
     return null;
   }
 
@@ -581,13 +584,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     return result;
   }
 
-  /**
-   * @see genj.view.FilterSupport#getFilterName()
-   */
-  public String getFilterName() {
-    return model.getEntities().size()+" shown in "+frame.getTitle();
-  }
-  
   /** 
    * @see genj.view.FilterSupport#getFilter()
    */
@@ -598,7 +594,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   /**
    * A filter that includes visible indis/families
    */
-  private static class VisibleFilter implements Filter {
+  private class VisibleFilter implements Filter {
     /** entities that are 'in' */
     private Set ents;
     /** whether we're showing families */
@@ -632,6 +628,12 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      */
     public boolean accept(Property property) {
       return true;
+    }
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+      return model.getEntities().size()+" nodes in "+title;
     }
   } //VisibleFilter
 
@@ -790,7 +792,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
         currentEntity = (Entity)content;
         repaint();
         // propagate it
-        ViewManager.getInstance().setContext(currentEntity);
+        manager.setContext(currentEntity);
       }
       // runnable?
       if (content instanceof Runnable) {
@@ -875,7 +877,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      */
     private ActionRoot(Entity entity) {
       root = entity;
-      setText(resources.getString("root",frame.getTitle()));
+      setText(resources.getString("root",title));
       setImage(Images.imgView);
     }
     
@@ -963,7 +965,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
         setText(resources.getString("bookmark.add"));
         setImage(BOOKMARK_ICON);
       } else {
-        setText(resources.getString("bookmark.in",frame.getTitle()));
+        setText(resources.getString("bookmark.in",title));
         setImage(Images.imgView);
       }
     } 
@@ -989,7 +991,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       Object input = JOptionPane.showInputDialog(
         target, 
         resources.getString("bookmark.name"),
-        frame.getTitle(),
+        title,
         JOptionPane.QUESTION_MESSAGE, 
         null, 
         null,

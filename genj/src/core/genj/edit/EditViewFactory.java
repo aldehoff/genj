@@ -44,7 +44,6 @@ import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -62,8 +61,8 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
   /**
    * @see genj.view.ViewFactory#createView(genj.gedcom.Gedcom, genj.util.Registry, java.awt.Frame)
    */
-  public JComponent createView(Gedcom gedcom, Registry registry, Frame frame) {
-    return new EditView(gedcom,registry,frame);
+  public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager) {
+    return new EditView(title, gedcom, registry, manager);
   }
 
   /**
@@ -90,7 +89,7 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
   /**
    * @see genj.view.ContextSupport#createActions(Property)
    */
-  public List createActions(Property property) {
+  public List createActions(Property property, ViewManager manager) {
     
     // create the actions
     List result = new ArrayList();
@@ -106,14 +105,14 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
       MetaProperty sub = subs[s]; 
       if (Relationship.XRefBy.isApplicable(sub)) {
         Relationship rel = new Relationship.XRefBy(property, sub);
-        result.add(new CreateRelationship(rel));
+        result.add(new CreateRelationship(rel, manager));
       }
       // .. next
     }
 
     // delete possible
     result.add(ActionDelegate.NOOP);
-    result.add(new DelProperty(property));
+    result.add(new DelProperty(property, manager));
     
     // done
     return result;
@@ -122,14 +121,14 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
   /**
    * @see genj.view.ViewFactory#createActions(Entity)
    */
-  public List createActions(Entity entity) {
+  public List createActions(Entity entity, ViewManager manager) {
     // create the actions
     List result = new ArrayList();
     
     // indi?
-    if (entity instanceof Indi) createActions(result, (Indi)entity);
+    if (entity instanceof Indi) createActions(result, (Indi)entity, manager);
     // fam?
-    if (entity instanceof Fam) createActions(result, (Fam)entity);
+    if (entity instanceof Fam) createActions(result, (Fam)entity, manager);
     // submitter?
     if (entity instanceof Submitter) createActions(result, (Submitter)entity);
     
@@ -143,19 +142,19 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
       MetaProperty sub = subs[s]; 
       if (Relationship.XRefBy.isApplicable(sub)) {
         Relationship rel = new Relationship.XRefBy(entity,sub);
-        result.add(new CreateRelationship(rel));
+        result.add(new CreateRelationship(rel, manager));
       }
       // .. next
     }
 
     // add delete
     result.add(ActionDelegate.NOOP);
-    result.add(new DelEntity(entity));
+    result.add(new DelEntity(entity, manager));
     
     // add an "edit in EditView"
-    if (ViewManager.getInstance().getInstances(EditView.class, entity.getGedcom()).length==0) {
+    if (manager.getInstances(EditView.class, entity.getGedcom()).length==0) {
       result.add(ActionDelegate.NOOP);
-      result.add(new OpenForEdit(entity));
+      result.add(new OpenForEdit(entity, manager));
     }
     // done
     return result;
@@ -164,16 +163,16 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
   /**
    * @see genj.view.ContextMenuSupport#createActions(Gedcom)
    */
-  public List createActions(Gedcom gedcom) {
+  public List createActions(Gedcom gedcom, ViewManager manager) {
     // create the actions
     List result = new ArrayList();
-    result.add(new CreateEntity(gedcom, Gedcom.INDIVIDUALS ));
-    result.add(new CreateEntity(gedcom, Gedcom.FAMILIES    ));
-    result.add(new CreateEntity(gedcom, Gedcom.NOTES       ));
-    result.add(new CreateEntity(gedcom, Gedcom.MULTIMEDIAS ));
-    result.add(new CreateEntity(gedcom, Gedcom.REPOSITORIES));
-    result.add(new CreateEntity(gedcom, Gedcom.SOURCES     ));
-    result.add(new CreateEntity(gedcom, Gedcom.SUBMITTERS  ));
+    result.add(new CreateEntity(gedcom, Gedcom.INDIVIDUALS , manager));
+    result.add(new CreateEntity(gedcom, Gedcom.FAMILIES    , manager));
+    result.add(new CreateEntity(gedcom, Gedcom.NOTES       , manager));
+    result.add(new CreateEntity(gedcom, Gedcom.MULTIMEDIAS , manager));
+    result.add(new CreateEntity(gedcom, Gedcom.REPOSITORIES, manager));
+    result.add(new CreateEntity(gedcom, Gedcom.SOURCES     , manager));
+    result.add(new CreateEntity(gedcom, Gedcom.SUBMITTERS  , manager));
     // done
     return result;
   }
@@ -181,21 +180,21 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
   /**
    * Create actions for Individual
    */
-  private void createActions(List result, Indi indi) {
-    result.add(new CreateRelationship(new Relationship.ChildOf(indi)));
+  private void createActions(List result, Indi indi, ViewManager manager) {
+    result.add(new CreateRelationship(new Relationship.ChildOf(indi), manager));
     if (indi.getNoOfParents()<2)
-      result.add(new CreateRelationship(new Relationship.ParentOf(indi)));
-    result.add(new CreateRelationship(new Relationship.SpouseOf(indi)));
-    result.add(new CreateRelationship(new Relationship.SiblingOf(indi)));
+      result.add(new CreateRelationship(new Relationship.ParentOf(indi), manager));
+    result.add(new CreateRelationship(new Relationship.SpouseOf(indi), manager));
+    result.add(new CreateRelationship(new Relationship.SiblingOf(indi), manager));
   }
   
   /**
    * Create actions for Families
    */
-  private void createActions(List result, Fam fam) {
-    result.add(new CreateRelationship(new Relationship.ChildIn(fam)));
+  private void createActions(List result, Fam fam, ViewManager manager) {
+    result.add(new CreateRelationship(new Relationship.ChildIn(fam), manager));
     if (fam.getNoOfSpouses()<2)
-      result.add(new CreateRelationship(new Relationship.ParentIn(fam)));
+      result.add(new CreateRelationship(new Relationship.ParentIn(fam), manager));
   }
   
   /**

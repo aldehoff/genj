@@ -35,7 +35,6 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Point;
 
 import javax.swing.AbstractButton;
@@ -59,12 +58,12 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /** the gedcom we're looking at */
   private Gedcom    gedcom;
   
-  /** the frame we're in */
-  private Frame     frame;
-
   /** the registry we use */
   /*package*/ Registry registry;
 
+  /** the view manager */
+  /*package*/ ViewManager manager;
+  
   /** the resources we use */
   static final Resources resources = Resources.get(EditView.class);
 
@@ -86,18 +85,15 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /** splitpane for tree/proxy */
   private JSplitPane        splitPane = null;
   
-  /** an entity to show in next open EditView */
-  private static Entity preselectEntity = null;
-  
   /**
    * Constructor
    */
-  public EditView(Gedcom setGedcom, Registry setRegistry, Frame setFrame) {
+  public EditView(String title, Gedcom setGedcom, Registry setRegistry, ViewManager setManager) {
     
     // remember
     this.gedcom   = setGedcom;
-    this.frame    = setFrame;
     this.registry = setRegistry;
+    this.manager  = setManager;
 
     // TREE Component's 
     TreeCallbackHandler callback = new TreeCallbackHandler();
@@ -120,30 +116,19 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     setLayout(new BorderLayout());
     add(splitPane, BorderLayout.CENTER);
     
-    // Done
-  }
-  
-  /**
-   * @see javax.swing.JComponent#addNotify()
-   */
-  public void addNotify() {
-    super.addNotify();
-
     // Check if we can preset something to edit
-    Entity entity = preselectEntity;
-    if (entity==null) {
-      try { 
-        entity = gedcom.getEntity(registry.get("last",(String)null)); 
-      } catch (Exception e) {
-      }
+    Entity entity = null;
+    try { 
+      entity = gedcom.getEntity(registry.get("last",(String)null)); 
+    } catch (Exception e) {
     }
     if (entity==null) {
-      Property context = ViewManager.getInstance().getContext(gedcom); 
+      Property context = manager.getContext(gedcom); 
       if (context!=null) entity = context.getEntity();
     }
     setEntity(entity);
-    preselectEntity=null;
     
+    // Done
   }
 
   /**
@@ -220,20 +205,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   }
   
   /**
-   * Open EditView on entity   */
-  public static void open(Entity entity) {
-    preselectEntity = entity;
-    ViewManager.getInstance().openView(EditViewFactory.class, entity.getGedcom());
-  }
-
-  /**
-   * returns the frame this control resides in
-   */
-  /*package*/ Frame getFrame() {
-    return frame;
-  }
-
-  /**
    * returns the currently viewed entity
    */
   /*package*/ Entity getCurrentEntity() {
@@ -260,7 +231,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /**
    * Change sticky status
    */
-  /*package*/ boolean setSticky(boolean set) {
+  public boolean setSticky(boolean set) {
     boolean result = actionSticky.isSelected();
     actionSticky.setSelected(set);
     return result;
@@ -269,7 +240,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /**
    * Check sticky status
    */
-  /*package*/ boolean isSticky() {
+  public boolean isSticky() {
     return actionSticky!=null && actionSticky.isSelected();
   }
 
@@ -480,7 +451,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       // go through selection
       Property[] ps = tree.getSelection();
       for (int i=0;i<ps.length;i++) {
-        new DelProperty(ps[i]).setTarget(EditView.this).trigger();
+        new DelProperty(ps[i], manager).setTarget(EditView.this).trigger();
       }
   
       // go to parent property

@@ -34,7 +34,6 @@ import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
 import java.awt.Color;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -80,7 +79,7 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
   /**
    * Constructor
    */
-  public EntityView(Gedcom ged, Registry reg, Frame frame) {
+  public EntityView(String title, Gedcom ged, Registry reg, ViewManager manager) {
     // save some stuff
     registry = reg;
     gedcom = ged;
@@ -90,17 +89,11 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
     blueprints = bpManager.readBlueprints(registry);
     isAntialiasing  = registry.get("antial"  , false);
     
-    // done    
-  }
-  
-  /**
-   * @see javax.swing.JComponent#addNotify()
-   */
-  public void addNotify() {
-    super.addNotify();
     // set first entity
-    Property context = ViewManager.getInstance().getContext(gedcom); 
+    Property context = manager.getContext(gedcom); 
     if (context!=null) setContext(context.getEntity());
+    
+    // done    
   }
   
   /**

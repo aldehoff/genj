@@ -78,6 +78,7 @@ public class ControlCenter extends JPanel {
   private Vector gedcomButtons = new Vector();
   private Vector tniButtons = new Vector();
   private Resources resources = Resources.get(this);
+  private ViewManager viewManager = new ViewManager();
     
   /**
    * Constructor
@@ -132,7 +133,7 @@ public class ControlCenter extends JPanel {
   public void removeGedcom(Gedcom gedcom) {
     
     // close views
-    ViewManager.getInstance().closeViews(gedcom);
+    viewManager.closeViews(gedcom);
 
     // forget about it
     tGedcoms.removeGedcom(gedcom);
@@ -165,7 +166,7 @@ public class ControlCenter extends JPanel {
     bh.setEnabled(true).create(new ActionOpen());
 
     bh.setEnabled(false).addCollection(gedcomButtons).setResources(null);
-    ViewFactory[] factories = ViewManager.getInstance().getFactories();
+    ViewFactory[] factories = viewManager.getFactories();
     for (int i = 0; i < factories.length; i++) {
       bh.create(new ActionView(factories[i]));
     }
@@ -205,7 +206,7 @@ public class ControlCenter extends JPanel {
     mh.popMenu().createMenu("cc.menu.view");
 
     mh.setEnabled(false).setCollection(gedcomButtons).setResources(null);
-    ViewFactory[] factories = ViewManager.getInstance().getFactories();
+    ViewFactory[] factories = viewManager.getFactories();
     for (int i = 0; i < factories.length; i++)
       mh.createItem(new ActionView(factories[i]));
     mh.setEnabled(true).setCollection(null).setResources(resources);
@@ -448,14 +449,12 @@ public class ControlCenter extends JPanel {
         if (reader!=null) {
           List warnings = reader.getWarnings();
           if (!warnings.isEmpty()) {
-            App.getInstance().createDialog(
-              "Warnings", 
-              "warnings",
-              new Dimension(480,300), 
-              ControlCenter.this,
+            JOptionPane.showMessageDialog(
+              target,
               new JScrollPane(new JList(warnings.toArray())),
-              null
-            ).packAndShow();
+              "Warnings",
+              JOptionPane.WARNING_MESSAGE
+            );
           }
         }
       }
@@ -765,7 +764,7 @@ public class ControlCenter extends JPanel {
             resources.getString("cc.save.action"));
 
         // .. with options        
-        SaveOptionsWidget options = new SaveOptionsWidget(gedcom);
+        SaveOptionsWidget options = new SaveOptionsWidget(gedcom, viewManager);
         chooser.setAccessory(options);
 
         // .. ask user
@@ -976,7 +975,7 @@ public class ControlCenter extends JPanel {
       if (gedcom == null)
         return;
       // Create new View
-      ViewManager.getInstance().openView(factory, gedcom);
+      viewManager.openView(factory, gedcom);
     }
   } //ActionView
 

@@ -35,7 +35,6 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.Point;
 import java.util.List;
@@ -65,13 +64,16 @@ public class NavigatorView extends JPanel implements ContextSupport {
   /** the gedcom */
   private Gedcom gedcom;
   
+  /** the view manager */
+  private ViewManager manager;
 
   /**
    * Constructor
    */
-  public NavigatorView(Gedcom useGedcom, Registry useRegistry, Frame useFrame) {
+  public NavigatorView(String title, Gedcom useGedcom, Registry useRegistry, ViewManager useManager) {
     
     // remember
+    manager = useManager;
     gedcom = useGedcom;
     
     // layout    
@@ -94,7 +96,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
     });
     
     // init
-    Property context = ViewManager.getInstance().getContext(gedcom);
+    Property context = manager.getContext(gedcom);
     if (context!=null)
       setCurrentEntity(context.getEntity());
 
@@ -167,7 +169,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
    */
   private void fireCurrentEntity(Entity e) {
     if (e==null) return;
-    ViewManager.getInstance().setContext(e);
+    manager.setContext(e);
   }
   
   /**

@@ -28,14 +28,14 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
+import genj.view.ToolBarSupport;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Graphics;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import javax.swing.AbstractButton;
-import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -53,7 +53,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
-import javax.swing.ListCellRenderer;
+import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
@@ -61,10 +61,10 @@ import javax.swing.event.ListSelectionListener;
 /**
  * Component for running reports on genealogic data
  */
-public class ReportView extends JPanel {
+public class ReportView extends JPanel implements ToolBarSupport {
 
-  private Gedcom   gedcom;
-  private Frame    frame;
+  /** members */
+  private Gedcom      gedcom;
   private JLabel      lAuthor,lVersion;
   private JTextPane   tpInfo;
   private JScrollPane spOutput;
@@ -78,59 +78,15 @@ public class ReportView extends JPanel {
   private Resources resources = Resources.get(this);
 
   /**
-   * Report Renderer
-   */
-  class ReportRenderer extends JLabel implements ListCellRenderer {
-
-    /**
-     * Return component for rendering list element
-     */
-    public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
-
-      Report report = (Report)value;
-      setText(report.getName());
-      if (report.usesStandardOut()) {
-        setIcon(imgShell);
-      } else {
-        setIcon(imgGui);
-      }
-
-      if (isSelected) {
-        setBackground(list.getSelectionBackground());
-      } else {
-        setBackground(list.getBackground());
-      }
-
-      return this;
-    }
-
-    /**
-      * paint is subclassed to draw the background correctly.  JLabel
-      * currently does not allow backgrounds other than white, and it
-      * will also fill behind the icon.  Something that isn't desirable.
-      */
-    public void paint(Graphics g) {
-      Color            bColor;
-
-      g.setColor(getBackground());
-      g.fillRect(0 , 0, getWidth()-1, getHeight()-1);
-
-      super.paint(g);
-    }
-    // EOC
-  }
-
-  /**
    * Constructor
    */
-  public ReportView(Gedcom theGedcom,Registry theRegistry,Frame theFrame) {
+  public ReportView(String theTitle, Gedcom theGedcom, Registry theRegistry, ViewManager theManager) {
 
     // Inherited
     super();
 
     // Data
     gedcom   = theGedcom;
-    frame    = theFrame ;
     registry = theRegistry;
 
     imgShell = new ImageIcon(this,"ReportShell.gif");
@@ -201,21 +157,6 @@ public class ReportView extends JPanel {
     };
     tabbedPane.add(resources.getString("report.output"),spOutput);
 
-    // Buttons at bottom
-    JPanel buttonPanel = new JPanel();
-    buttonPanel.setLayout(new BoxLayout(buttonPanel,BoxLayout.X_AXIS));
-    add(buttonPanel,"South");
-    
-    ButtonHelper bh = new ButtonHelper().setResources(resources).setContainer(buttonPanel);
-
-    ActionStart astart = new ActionStart();
-    bStart = bh.create(astart);
-    bStop  = bh.setEnabled(false).create(new ActionStop(astart));    
-    bSave  = bh.setEnabled(true).create(new ActionSave());
-    bReload= bh.create(new ActionReload());
-    if (frame!=null)
-      bClose = bh.create(new ActionDelegate.ActionDisposeFrame(frame).setText("report.close"));    
-    
     // Done
   }
 
@@ -294,6 +235,23 @@ public class ReportView extends JPanel {
 
     // Done
     return true;
+  }
+  
+  /**
+   * @see genj.view.ToolBarSupport#populate(javax.swing.JToolBar)
+   */
+  public void populate(JToolBar bar) {
+    
+    // Buttons at bottom
+    ButtonHelper bh = new ButtonHelper().setResources(resources).setContainer(bar);
+
+    ActionStart astart = new ActionStart();
+    bStart = bh.create(astart);
+    bStop  = bh.setEnabled(false).create(new ActionStop(astart));    
+    bSave  = bh.setEnabled(true).create(new ActionSave());
+    bReload= bh.create(new ActionReload());
+   
+    // done 
   }
 
   /**
@@ -458,7 +416,7 @@ public class ReportView extends JPanel {
       JFileChooser chooser = new JFileChooser(".");
       chooser.setDialogTitle("Save Output");
   
-      if (JFileChooser.APPROVE_OPTION != chooser.showDialog(frame,"Save")) {
+      if (JFileChooser.APPROVE_OPTION != chooser.showDialog(ReportView.this,"Save")) {
         return;
       }
       File file = chooser.getSelectedFile();
@@ -498,4 +456,25 @@ public class ReportView extends JPanel {
 
   } //ActionSave
   
-}
+  /**
+   * Report Renderer
+   */
+  class ReportRenderer extends DefaultListCellRenderer {
+
+    /**
+     * Return component for rendering list element
+     */
+    public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
+      super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+      Report report = (Report)value;
+      setText(report.getName());
+      if (report.usesStandardOut()) {
+        setIcon(imgShell);
+      } else {
+        setIcon(imgGui);
+      }
+      return this;
+    }
+  } //ReportRenderer
+  
+} //ReportView

@@ -27,11 +27,6 @@ import genj.io.Filter;
 public interface FilterSupport {
 
   /**
-   * Name of the filter
-   */
-  public String getFilterName();
-
-  /**
    * Return a filter
    */
   public Filter getFilter();

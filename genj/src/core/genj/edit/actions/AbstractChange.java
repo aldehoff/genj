@@ -62,14 +62,18 @@ import javax.swing.JTextArea;
   /** the gedcom we're working on */
   protected Gedcom gedcom;
   
+  /** the manager in the background */
+  protected ViewManager manager;
+  
   /** the focus */
   protected Entity focus = null;
   
   /**
    * Constructor
    */
-  /*package*/ AbstractChange(Gedcom ged, ImageIcon img, String text) {
+  /*package*/ AbstractChange(Gedcom ged, ImageIcon img, String text, ViewManager mgr) {
     gedcom = ged;
+    manager = mgr;
     super.setImage(img);
     super.setText(text);
   }
@@ -135,11 +139,12 @@ import javax.swing.JTextArea;
     // set focus?
     if (focus!=null) {
       // no editor open?
-      if (ViewManager.getInstance().getInstances(EditView.class, gedcom).length==0) {
-        EditView.open(focus);
+      if (manager.getInstances(EditView.class, gedcom).length==0) {
+        new OpenForEdit(focus, manager).trigger();
+      } else {
+        // set current        
+        manager.setContext(focus);
       }
-      // set current        
-      ViewManager.getInstance().setContext(focus);
     }
     // done
   }

@@ -24,7 +24,6 @@ import genj.util.Registry;
 import genj.util.swing.ImageIcon;
 
 import java.awt.Dimension;
-import java.awt.Frame;
 
 import javax.swing.JComponent;
 
@@ -36,7 +35,7 @@ public interface ViewFactory {
   /**
    * Callback for creating a view 
    */
-  public JComponent createView(Gedcom gedcom, Registry registry, Frame frame);
+  public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager);
   
   /**
    * Returns an image for this view

@@ -33,16 +33,16 @@ public interface ActionSupport {
   /**
    * Callback for actions on a property
    */
-  public List createActions(Property property);
+  public List createActions(Property property, ViewManager manager);
 
   /**
    * Callback for actions on an entity
    */
-  public List createActions(Entity entity);
+  public List createActions(Entity entity, ViewManager manager);
 
   /**
    * Callback for actions on a gedcom
    */
-  public List createActions(Gedcom gedcom);
+  public List createActions(Gedcom gedcom, ViewManager manager);
 
 } //ContextMenuSupport

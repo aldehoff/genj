@@ -41,7 +41,6 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -70,11 +69,14 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   /** the gedcom we're looking at */
   private Gedcom gedcom;
   
+  /** the manager around us */
+  private ViewManager manager;
+  
   /** the registry we keep */
   private Registry registry;
   
-  /** the frame we keep */
-  private Frame frame;
+  /** the title we keep */
+  private String title;
   
   /** the table we're using */
   private JTable table;
@@ -91,12 +93,13 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   /**
    * Constructor
    */
-  public TableView(Gedcom gedcom, Registry registry, Frame frame) {
+  public TableView(String titl, Gedcom gedcom, Registry registry, ViewManager mgr) {
     
     // keep some stuff
     this.gedcom = gedcom;
     this.registry = registry;
-    this.frame = frame;
+    this.title = titl;
+    this.manager = mgr;
     
     // create the underlying model
     tableModel = new EntityTableModel(gedcom);
@@ -285,13 +288,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   }  
   
   /**
-   * @see genj.view.FilterSupport#getFilterName()
-   */
-  public String getFilterName() {
-    return table.getSelectedRowCount()+" selected in "+frame.getTitle();
-  }
-
-  /**
    * @see genj.view.FilterSupport#getFilter()
    */
   public Filter getFilter() {
@@ -301,7 +297,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   /**
    * SelectionFilter
    */
-  private static class SelectionFilter implements Filter {
+  private class SelectionFilter implements Filter {
     /** selected entities */
     private Set ents = new HashSet();
     /** type we're looking at */
@@ -335,6 +331,12 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     /** @see genj.io.Filter#accept(genj.gedcom.Property) */
     public boolean accept(Property property) {
       return true;
+    }
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+      return table.getSelectedRowCount()+" selected rows in "+title;
     }
   } //SelectionFilter
   
@@ -387,7 +389,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
       if (context==null&&row>=0) context = tableModel.getEntity(row);
       if (context==null) return;
       // set
-      ViewManager.getInstance().setContext(context);
+      manager.setContext(context);
     }
   } //SelectionCallback
   

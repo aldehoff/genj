@@ -62,7 +62,7 @@ import javax.swing.JTextField;
   /**
    * Constructor
    */    
-  /*package*/ SaveOptionsWidget(Gedcom gedcom) {
+  /*package*/ SaveOptionsWidget(Gedcom gedcom, ViewManager manager) {
     
     // Options
     Box options = new Box(BoxLayout.Y_AXIS);
@@ -88,10 +88,10 @@ import javax.swing.JTextField;
     
     // others filter
     Box others = new Box(BoxLayout.Y_AXIS);
-    filterViews = (FilterSupport[])ViewManager.getInstance().getInstances(FilterSupport.class, gedcom);
+    filterViews = (FilterSupport[])manager.getInstances(FilterSupport.class, gedcom);
     checkViews = new JCheckBox[filterViews.length];
     for (int i=0; i<checkViews.length; i++) {
-      checkViews[i] = new JCheckBox(filterViews[i].getFilterName(), false);
+      checkViews[i] = new JCheckBox(filterViews[i].toString(), false);
       others.add(checkViews[i]);
     }
     

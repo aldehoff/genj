@@ -35,7 +35,6 @@ import genj.view.ViewManager;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.AdjustmentEvent;
@@ -126,11 +125,17 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
   
   /** listener we are to the model */
   private Model.Listener modelListener = new ModelListener();
+  
+  /** the view manager */
+  private ViewManager manager;
     
   /**
    * Constructor
    */
-  public TimelineView(Gedcom gedcom, Registry registry, Frame frame) {
+  public TimelineView(String title, Gedcom gedcom, Registry registry, ViewManager mgr) {
+    
+    // remember
+    manager = mgr;
 
     // read some stuff from registry
     regstry = registry;
@@ -430,7 +435,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
       contentRenderer.cTimespan   = csContent.getColor("timespan");
       contentRenderer.cGrid       = csContent.getColor("grid"    );
       contentRenderer.cSelected   = csContent.getColor("selected");
-      contentRenderer.selection   = ViewManager.getInstance().getContext(model.gedcom);
+      contentRenderer.selection   = manager.getContext(model.gedcom);
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;
       contentRenderer.paintTags = isPaintTags;
@@ -519,7 +524,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
       Model.Event event = getEventAt(e.getPoint());
       if (event==null) return;
       // tell about it
-      ViewManager.getInstance().setContext(event.pe);
+      manager.setContext(event.pe);
     }
   } //ContentClick  
     

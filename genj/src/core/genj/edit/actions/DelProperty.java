@@ -22,6 +22,7 @@ package genj.edit.actions;
 import genj.edit.Images;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
+import genj.view.ViewManager;
 
 /**
  * PDelete - delete a property
@@ -34,8 +35,8 @@ public class DelProperty extends AbstractChange {
   /**
    * Constructor
    */
-  public DelProperty(Property property) {
-    super(property.getGedcom(), Images.imgDelete, resources.getString("delete"));
+  public DelProperty(Property property, ViewManager manager) {
+    super(property.getGedcom(), Images.imgDelete, resources.getString("delete"), manager);
     candidate = property;
   }
   

@@ -24,8 +24,9 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
+import genj.view.ViewManager;
+
 import java.awt.Dimension;
-import java.awt.Frame;
 
 import javax.swing.JComponent;
 
@@ -35,10 +36,10 @@ import javax.swing.JComponent;
 public class TableViewFactory implements ViewFactory {
 
   /**
-   * @see genj.view.ViewFactory#createView(genj.gedcom.Gedcom, genj.util.Registry, java.awt.Frame)
+   * @see genj.view.ViewFactory#createView(String, Gedcom, Registry, ViewManager)
    */
-  public JComponent createView(Gedcom gedcom, Registry registry, Frame frame) {
-    return new TableView(gedcom,registry,frame);
+  public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager) {
+    return new TableView(title,gedcom,registry,manager);
   }
 
   /**

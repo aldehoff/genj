@@ -20,9 +20,11 @@
 package genj.edit.actions;
 
 import genj.edit.EditView;
+import genj.edit.EditViewFactory;
 import genj.edit.Images;
 import genj.gedcom.Entity;
 import genj.util.ActionDelegate;
+import genj.view.ViewManager;
 
 /**
  * ActionEdit - edit an entity
@@ -30,10 +32,13 @@ import genj.util.ActionDelegate;
 public class OpenForEdit extends ActionDelegate {
   /** the entity to edit */
   private Entity candidate;
+  /** the view manager */
+  private ViewManager manager;
   /**
    * Constructor
    */
-  public OpenForEdit(Entity entity) {
+  public OpenForEdit(Entity entity, ViewManager mgr) {
+    manager = mgr;
     candidate = entity;
     setImage(Images.imgView);
     setText(AbstractChange.resources.getString("edit"));
@@ -42,7 +47,10 @@ public class OpenForEdit extends ActionDelegate {
    * @see genj.util.ActionDelegate#execute()
    */
   protected void execute() {
-    EditView.open(candidate);
+    EditView edit = (EditView)manager.openView(EditViewFactory.class, candidate.getGedcom());
+    edit.setSticky(false);
+    manager.setContext(candidate);
   }
-}
+  
+} //OpenForEdit
 

@@ -19,10 +19,11 @@
  */
 package genj.edit.actions;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Relationship;
+import genj.view.ViewManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -48,8 +49,8 @@ public class CreateRelationship extends AbstractChange {
   /**
    * Constructor
    */
-  public CreateRelationship(Relationship relatshp) {
-    super(relatshp.getGedcom(), relatshp.getImage(), resources.getString("new", relatshp.getName()));
+  public CreateRelationship(Relationship relatshp, ViewManager manager) {
+    super(relatshp.getGedcom(), relatshp.getImage(), resources.getString("new", relatshp.getName()), manager);
     relationship = relatshp;
   }
   

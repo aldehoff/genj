@@ -22,7 +22,6 @@ package genj.edit;
 import genj.gedcom.Entity;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
-import genj.view.ViewManager;
 
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
@@ -100,7 +99,7 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    */
   private void jump() {
     boolean sticky = view.setSticky(false);
-    ViewManager.getInstance().setContext(entity);
+    view.manager.setContext(entity);
     view.setSticky(sticky);
   }
 

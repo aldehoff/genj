@@ -30,7 +30,6 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.MenuHelper;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.WindowAdapter;
@@ -52,9 +51,6 @@ import javax.swing.MenuSelectionManager;
  * A bridge to open/manage Views
  */
 public class ViewManager {
-
-  /** instance */
-  private static ViewManager instance;
 
   /** resources */
   public static Resources resources = Resources.get(ViewManager.class);
@@ -78,14 +74,6 @@ public class ViewManager {
   
   /** the currently selected entity */
   private Map gedcom2current = new HashMap();
-
-  /**
-   * Singleton access
-   */
-  public static ViewManager getInstance() {
-    if (instance==null) instance = new ViewManager();
-    return instance;
-  }
 
   /**
    * Returns all known view factories
@@ -153,8 +141,10 @@ public class ViewManager {
       ViewWidget vw = (ViewWidget)it.next();
       // only if view on same gedcom
       if (vw.getGedcom()!= gedcom) continue;
-      // tell it
-      vw.setContext(property);
+      // and context supported
+      if (vw.getView() instanceof ContextSupport)
+        ((ContextSupport)vw.getView()).setContext(property);
+      // next
     }
     // done
   }
@@ -260,11 +250,11 @@ public class ViewManager {
     // get result by calling appropriate support method
     List result;
     if (context instanceof Gedcom) 
-      result = cs.createActions((Gedcom  )context);
+      result = cs.createActions((Gedcom  )context, this);
     else if (context instanceof Entity) 
-      result = cs.createActions ((Entity  )context);
+      result = cs.createActions ((Entity  )context, this);
     else if (context instanceof Property) 
-      result = cs.createActions ((Property)context);
+      result = cs.createActions ((Property)context, this);
     else throw new IllegalArgumentException();
     // done
     return result;
@@ -274,7 +264,7 @@ public class ViewManager {
    * Opens a view on a gedcom file
    * @return the view component
    */
-  public Component openView(Class factory, Gedcom gedcom) {
+  public JComponent openView(Class factory, Gedcom gedcom) {
     for (int f=0; f<factories.length; f++) {
       if (factories[f].getClass().equals(factory)) 
         return openView(factories[f], gedcom);   	
@@ -295,21 +285,24 @@ public class ViewManager {
    * Opens a view on a gedcom file
    * @return the view component
    */
-  public Component openView(ViewFactory factory, Gedcom gedcom) {
+  public JComponent openView(ViewFactory factory, Gedcom gedcom) {
     
     // get a registry 
     Registry registry = getRegistry(gedcom, getKey(factory));
     
+    // title
+    String title = gedcom.getName()+" - "+factory.getTitle(false)+" ("+registry.getViewSuffix()+")";
+    
     // a frame
     JFrame frame = App.getInstance().createFrame(
-      gedcom.getName()+" - "+factory.getTitle(false)+" ("+registry.getViewSuffix()+")",
+      title,
       factory.getImage(),
       gedcom.getName() + "." + registry.getView(),
       factory.getDefaultDimension()
     );
     
     // the viewwidget
-    final ViewWidget viewWidget = new ViewWidget(frame,gedcom,registry,factory);
+    final ViewWidget viewWidget = new ViewWidget(frame,gedcom,registry,factory, this);
 
     // remember
     viewWidgets.add(viewWidget);

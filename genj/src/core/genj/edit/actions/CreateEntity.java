@@ -21,6 +21,7 @@ package genj.edit.actions;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.view.ViewManager;
 
 /**
  * Add a new entity  
@@ -33,8 +34,8 @@ public class CreateEntity extends AbstractChange {
   /**
    * Constructor
    */
-  public CreateEntity(Gedcom ged, int typ) {
-    super(ged, newImages[typ], resources.getString("new", Gedcom.getNameFor(typ, false) ));
+  public CreateEntity(Gedcom ged, int typ, ViewManager manager) {
+    super(ged, newImages[typ], resources.getString("new", Gedcom.getNameFor(typ, false) ), manager);
     type = typ;
   }
   

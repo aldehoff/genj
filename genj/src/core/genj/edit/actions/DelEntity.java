@@ -23,6 +23,7 @@ import genj.edit.Images;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.view.ViewManager;
 
 /**
  * EDelete - delete an entity
@@ -35,8 +36,8 @@ public class DelEntity extends AbstractChange {
   /**
    * Constructor
    */
-  public DelEntity(Entity entity) {
-    super(entity.getGedcom(), Images.imgDelete, resources.getString("delete"));
+  public DelEntity(Entity entity, ViewManager manager) {
+    super(entity.getGedcom(), Images.imgDelete, resources.getString("delete"), manager);
     candidate = entity;
   }
   

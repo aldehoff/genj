@@ -20,7 +20,6 @@
 package genj.view;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
 import genj.print.PrintManager;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
@@ -63,19 +62,23 @@ import javax.swing.SwingConstants;
   /** the frame its contained in */
   private JFrame frame;
   
+  /** the manager */
+  private ViewManager manager;
+  
   /** 
    * Constructor
    */
-  /*package*/ ViewWidget(JFrame fRame, Gedcom geDcom, Registry regIstry, ViewFactory facTory) {
+  /*package*/ ViewWidget(JFrame fRame, Gedcom geDcom, Registry regIstry, ViewFactory facTory, ViewManager manAger) {
     
     // remember
+    manager = manAger;
     frame = fRame;
     gedcom = geDcom;
     registry = regIstry;
     factory = facTory;
     
     // create the view component
-    view = factory.createView(gedcom, registry, frame);
+    view = factory.createView(frame.getTitle(), gedcom, registry, manager);
 
     // setup layout
     setLayout(new BorderLayout());
@@ -165,16 +168,6 @@ import javax.swing.SwingConstants;
   }
   
   /**
-   * Sets the view's current entity
-   */
-  /*package*/ void setContext(Property property) {
-    // delegate to view
-    if (view instanceof ContextSupport)
-      ((ContextSupport)view).setContext(property);
-    // done     
-  }
-  
-  /**
    * When adding components we fix a Toolbar's sub-component's
    * orientation
    * @see java.awt.Container#addImpl(Component, Object, int)
@@ -224,7 +217,7 @@ import javax.swing.SwingConstants;
     }
     /** run */
     protected void execute() {
-      ViewManager.getInstance().openSettings(ViewWidget.this);
+      manager.openSettings(ViewWidget.this);
     }
   } //ActionOpenSettings
   
@@ -246,7 +239,7 @@ import javax.swing.SwingConstants;
       // show a context menu
       ContextSupport esp = (ContextSupport)view;
       ContextSupport.Context context = esp.getContextAt(e.getPoint());
-      ViewManager.getInstance().showContextMenu(esp.getContextPopupContainer(), e.getPoint(), gedcom, context);
+      manager.showContextMenu(esp.getContextPopupContainer(), e.getPoint(), gedcom, context);
       // done
     }
   } //EntityPopupMouseListener
