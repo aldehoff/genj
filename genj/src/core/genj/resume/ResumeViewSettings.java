@@ -24,6 +24,7 @@ import genj.util.ActionDelegate;
 import genj.view.ApplyResetSupport;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.ActionListener;
 
 import javax.swing.ComboBoxModel;
@@ -56,6 +57,9 @@ public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
     
     // keep the view
     resumeView = view;
+    
+    // setup text area
+    textHtml.setFont(new Font("Monospaced", Font.PLAIN, 12));
     
     // get entities
     for (int i=Gedcom.FIRST_ETYPE;i<=Gedcom.LAST_ETYPE;i++) {

@@ -95,6 +95,8 @@ public class ResumeView extends JPanel implements ToolBarSupport {
           registry.put(key, resources.getString(key));
       }
     }
+    // set first entity
+    setEntity(gedcom.getLastEntity());
     // done    
   }
 
