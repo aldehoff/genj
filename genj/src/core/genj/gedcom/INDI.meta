@@ -16,6 +16,7 @@
 2   AGE  type=SimpleValue img=Time.gif
 2   AGNC type=SimpleValue img=Phone.gif
 2   CAUS type=SimpleValue img=Phone.gif
+2   NOTE type=Note img=Note.gif
 
 1  DEAT default img=Death.gif super=INDI:BIRT
 
