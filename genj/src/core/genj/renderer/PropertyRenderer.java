@@ -330,12 +330,12 @@ public class PropertyRenderer {
         LineMetrics lm = font.getLineMetrics(txt, context);
         y += lm.getHeight();
         
-        // draw line
-        graphics.drawString(txt, x, y - lm.getDescent());
-        
-        // .. break if not visible anymore
+        // .. break if line doesn't fit anymore
         if (y>bounds.getMaxY()) 
           break;
+        
+        // draw line
+        graphics.drawString(txt, x, y - lm.getDescent());
         
       } while (line.next());
       // done
