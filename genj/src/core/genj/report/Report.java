@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.59 $ $Author: nmeier $ $Date: 2004-12-19 19:38:05 $
+ * $Revision: 1.60 $ $Author: nmeier $ $Date: 2005-01-10 18:30:35 $
  */
 package genj.report;
 
@@ -47,7 +47,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.CharArrayWriter;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -354,9 +353,9 @@ public abstract class Report implements Cloneable {
     
     // run it
     try {
-      Runtime.getRuntime().exec(browser+" "+url);
-    } catch (IOException e) {
-      println("***Couldn't run "+browser+" on url "+url+"***");
+      Runtime.getRuntime().exec(new String[]{browser.getAbsolutePath(), url.toString()});
+    } catch (Throwable t) {
+      println("***Couldn't run "+browser+" on url "+url+"*** ("+t.getMessage()+")");
     }
 
     // done
