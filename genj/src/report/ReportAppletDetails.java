@@ -173,7 +173,7 @@ public class ReportAppletDetails implements Report {
     if (prop.isMultiLine() != Property.NO_MULTI) {
       Property.LineIterator li = prop.getLineIterator();
       while (li.hasMoreValues()) {
-        value += li.getNextValue() + ' ';
+        value += li.getNextValue() + '\n';
       }
     } else {
       value = prop.getValue();
@@ -207,36 +207,39 @@ public class ReportAppletDetails implements Report {
     }
 
     // This big string tokenization mess is so we breaks lines on word
-    // boundaries.
+    // boundaries and newline characters.
     boolean first = true;
-    StringTokenizer strtok = new StringTokenizer(value);
-    String line = strtok.nextToken() + " ";
-    final String padding = "     ";
-    while (strtok.hasMoreTokens()) {
-      String next = strtok.nextToken();
-      if (line.length() + next.length() > MAX_LINE_LENGTH) {
-        if (first) {
-          out.println(line);
-          first = false;
+    StringTokenizer linetok = new StringTokenizer(value, "\n");
+    while (linetok.hasMoreTokens()) {
+      StringTokenizer wordtok = new StringTokenizer(linetok.nextToken());
+      String line = wordtok.nextToken() + " ";
+      final String padding = "     ";
+      while (wordtok.hasMoreTokens()) {
+        String next = wordtok.nextToken();
+        if (line.length() + next.length() > MAX_LINE_LENGTH) {
+          if (first) {
+            out.println(line);
+            first = false;
+          }
+          else {
+            exportSpaces(out, level);
+            out.println(padding + line);
+          }
+          line = "";
         }
+
+        line += next + " ";
+      }
+    
+      if (line.length() > 0) {
+        if (first)
+          out.println(line);
         else {
           exportSpaces(out, level);
           out.println(padding + line);
         }
         line = "";
       }
-
-      line += next + " ";
-    }
-    
-    if (line.length() > 0) {
-      if (first)
-        out.println(line);
-      else {
-        exportSpaces(out, level);
-        out.println(padding + line);
-      }
-      line = "";
     }
 
     // Done
