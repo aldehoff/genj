@@ -261,17 +261,11 @@ public class Gedcom {
   }
 
   /**
-   * Returns all entities
-   */
-  public List[] getEntities() {
-    return entities;
-  }
-
-  /**
    * Returns entities of given type
    */
   public List getEntities(int type) {
-    return entities[type];
+    // 20030129 don't return original
+    return new ArrayList(entities[type]);
   }
 
   /**

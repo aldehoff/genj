@@ -152,12 +152,13 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void writeEntities(List[] entities) throws IOException, GedcomIOException {
+  private void writeEntities(Gedcom ged) throws IOException, GedcomIOException {
 
     // Loop through EntityLists
-    for (int i=0;i<entities.length;i++) {
-      for (int j=0;j<entities[i].size();j++) {
-        writeEntity((Entity)entities[i].get(j));
+    for (int i=0;i<ged.NUM_TYPES;i++) {
+      List ents = ged.getEntities(i);
+      for (int j=0;j<ents.size();j++) {
+        writeEntity((Entity)ents.get(j));
       }
     }
 
@@ -187,14 +188,13 @@ public class GedcomWriter implements Trackable {
 
     // Prepare
     total = gedcom.getNoOfEntities();
-    List[] entities = gedcom.getEntities();
 
     // Out operation
     try {
 
       // Data
       writeHeader();
-      writeEntities(entities);
+      writeEntities(gedcom);
       writeTail();
 
       // Close Output
