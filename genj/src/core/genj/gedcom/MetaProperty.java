@@ -32,13 +32,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
- * Wrapper for a Property (could be read from XML file later)
+ * Wrapper for a Property
  */
 public class MetaProperty {
 
@@ -47,17 +48,20 @@ public class MetaProperty {
     IMG_UNKNOWN = "Question.gif",
     IMG_ERROR   = "Error.gif";
     
+  /** static - paths to instantiated props */
+  private static Set propPaths = new HashSet();
+    
+  /** static - paths to instantiated events */
+  private static Set eventPaths = new HashSet();
+  
   /** static - loaded images */    
   private static Map name2images = new HashMap();
   
-  /** static - entity meta properties */
+  /** static - root for entities  */
   private static Map roots = new HashMap();
   
   /** static - one parser that is triggered */
   private static Parser parser = new Parser();
-  
-  /** static - event paths */
-  private static Set eventPaths = new HashSet();
   
   /** super */
   private MetaProperty supr;
@@ -91,6 +95,8 @@ public class MetaProperty {
     this.path = path;
     this.props = props;
     this.supr = supr;
+    // publish if one-element-path
+    if (path.length()==1) propPaths.add(path);
     // done
   }
   
@@ -172,29 +178,24 @@ public class MetaProperty {
   }
 
   /**
-   * Accessor - path
-   */
-  public TagPath getPath() {
-    return path;
-  }
-
-  /**
    * Accessor - type
    */
-  public Class getType() {
+  private Class getType() {
     // check cached type
     if (type==null) {
       String clazz = "genj.gedcom.Property"+getProperty("type", "SimpleValue");
       try {
         type = Class.forName(clazz);
-        
-        if (PropertyEvent.class.isAssignableFrom(type))
-          eventPaths.add(path);    
-          
+
       } catch (ClassNotFoundException e) {
         Debug.log(Debug.WARNING, this, "Property type "+clazz+" can't be loaded", e);    
         type = PropertySimpleValue.class;
       }
+      // some static tracking
+      propPaths.add(path);
+      if (PropertyEvent.class.isAssignableFrom(type))
+        eventPaths.add(path);    
+      // resolved
     }
     // done
     return type;
@@ -290,8 +291,23 @@ public class MetaProperty {
   /**
    * Static - event paths
    */
-  public static Set getEventPaths() {
-    return eventPaths;
+  public static TagPath[] getEventPaths() {
+    return TagPath.getPaths(eventPaths);
+  }
+
+  /**
+   * Static - paths
+   */
+  public static TagPath[] getPropertyPaths(TagPath prefix) {
+    // loop over stuff that was instantiated
+    List result = new ArrayList(propPaths.size());
+    Iterator it = propPaths.iterator();
+    while (it.hasNext()) {
+      TagPath path = (TagPath)it.next();
+      if (path.startsWith(prefix)) result.add(path);
+    }
+    // done
+    return TagPath.getPaths(result);
   }
 
   /**
@@ -310,7 +326,7 @@ public class MetaProperty {
       // loop over types and parse 'em
       try {
         for (int t=0;t<Gedcom.NUM_TYPES;t++) {
-          parse(MetaProperty.class.getResourceAsStream(Gedcom.getTagFor(t)+".meta"));
+          parse(MetaProperty.class.getResourceAsStream(Gedcom.getTagFor(t)+".meta"), t);
         }
       } catch (Throwable t) {
         Debug.log(Debug.ERROR, MetaProperty.class, "Error reading meta-definition", t);
@@ -322,7 +338,7 @@ public class MetaProperty {
     /**
      * parse input
      */
-    private void parse(InputStream in) throws IOException {
+    private void parse(InputStream in, int entity) throws IOException {
 
       BufferedReader reader = new BufferedReader(new InputStreamReader(in));      
     
@@ -338,7 +354,7 @@ public class MetaProperty {
         if (line.length()==0) continue;
         
         // work on line
-        push(line);
+        push(line, entity);
         
         // continue 
       }
@@ -349,7 +365,7 @@ public class MetaProperty {
     /**
      * push a line
      */
-    private void push(String line) {
+    private void push(String line, int entity) {
 
       // break into tokens
       StringTokenizer tokens = new StringTokenizer(line);
@@ -387,7 +403,7 @@ public class MetaProperty {
       MetaProperty meta;
       if (level==0) {
         meta = new MetaProperty(new TagPath(tag), props, supr);
-        roots.put(tag, meta);
+        roots.put(tag, meta); 
       } else {
         MetaProperty parent = peek();
         meta = new MetaProperty(new TagPath(parent.path, tag), props, supr);

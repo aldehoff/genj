@@ -223,9 +223,10 @@ public class BlueprintEditor extends JSplitPane {
       if (gedcom==null) return;
       // create a tree of available TagPaths
       TagPathTree tree = new TagPathTree(); 
-      tree.setPaths(TagPath.getUsedTagPaths(
-        gedcom, BlueprintManager.getInstance().getType(blueprint)
-      ));      
+      tree.setPaths(
+        MetaProperty.getPropertyPaths(new TagPath(Gedcom.getTagFor(BlueprintManager.getInstance().getType(blueprint)))),
+        new TagPath[0]
+      );
       // Recheck with the user
       int option = JOptionPane.showConfirmDialog(
         BlueprintEditor.this, tree, resources.getString("prop.insert.tip"), JOptionPane.OK_CANCEL_OPTION

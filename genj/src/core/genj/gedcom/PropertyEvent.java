@@ -19,7 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.Set;
 
 
 /**
@@ -138,9 +137,9 @@ public class PropertyEvent extends Property {
   }
 
   /**
-   * Returns the list of tags which identify PropertyEvents
+   * Returns the list of paths which identify PropertyEvents
    */
-  public static Set getTagPaths() {
+  public static TagPath[] getTagPaths() {
     return MetaProperty.getEventPaths();  
   }
 

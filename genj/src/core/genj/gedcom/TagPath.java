@@ -19,10 +19,7 @@
  */
 package genj.gedcom;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
 import java.util.StringTokenizer;
 
 /**
@@ -105,6 +102,21 @@ public class TagPath {
   }
 
   /**
+   * Wether this path starts with prefix
+   */
+  public boolean startsWith(TagPath prefix) {
+    // not if longer
+    if (prefix.tags.length>tags.length) 
+      return false;
+    // check
+    for (int i=0;i<prefix.tags.length;i++) {
+      if (!tags[i].equals(prefix.tags[i])) return false;
+    }
+    // yes
+    return true;
+  }
+
+  /**
    * Returns comparison between two TagPaths
    */
   public boolean equals(Object obj) {
@@ -136,29 +148,6 @@ public class TagPath {
     return true;
   }
 
-  /**
-   * Fill Hashtable with paths to properties
-   */
-  static private void fillHashtableWithPaths(Map hash, Property prop, String path) {
-
-    String p = path+prop.getTag();
-
-    if (prop.getNoOfProperties()==0) {
-      if (!hash.containsKey(p)) {
-        hash.put(p,new TagPath(p));
-      }
-      return;
-    }
-
-    p+=":";
-    for (int c=0;c<prop.getNoOfProperties();c++) {
-      Property child = prop.getProperty(c);
-      if (!child.isTransient())
-        fillHashtableWithPaths(hash,child,p);
-    }
-
-  }
-  
   /**
    * Returns the n-th tag of this path
    * @param which 1-based number
@@ -202,35 +191,6 @@ public class TagPath {
   }
 
   /**
-   * Calculate all appearing TagPaths in given gedcom
-   */
-  static public TagPath[] getUsedTagPaths(Gedcom gedcom,int type) {
-
-    Map hash = new HashMap(32);
-
-    // Add the minimum - type's 1-length path
-    String tag = gedcom.getTagFor(type);
-    hash.put(tag, new TagPath(tag));
-
-    // Loop through all entities of current type
-    List entities  = gedcom.getEntities(type);
-    for (int e=0;e<entities.size();e++) {
-      Entity entity = (Entity)entities.get(e);
-      fillHashtableWithPaths(hash,entity.getProperty(),"");
-    }
-
-    // convert
-    TagPath[] result = new TagPath[hash.size()];
-    Iterator e = hash.values().iterator();
-    for (int i=0;e.hasNext();i++) {
-      result[i] = (TagPath)e.next();
-    }
-
-    // done
-    return result;
-  }
-
-  /**
    * Resolve a path from given property
    */
   public static TagPath get(Property prop) {
@@ -252,5 +212,12 @@ public class TagPath {
     return path.indexOf(':')>0;
   }
 
+  /**
+   * Get an array out of collection
+   */
+  public static TagPath[] getPaths(Collection c) {
+    return (TagPath[])c.toArray(new TagPath[c.size()]);
+  }
+  
 
 } //TagPath
