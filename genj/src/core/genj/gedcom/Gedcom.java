@@ -231,7 +231,7 @@ public class Gedcom {
 
     // Delete it
     entities   [type].remove(which);
-    id2entities[type].remove(which);
+    id2entities[type].remove(which.getId());
     
     if (submitter==which) submitter = null;
 
