@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.PropertySex;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
@@ -236,6 +237,18 @@ public class NavigatorView extends JPanel implements ContextSupport {
       jumps.add(new Jump(is[i]));
     }
     popup.setActions(jumps);
+    
+    // update the partner popup images if there is a spouse
+    if(key == PARTNER && is != null && is.length > 0) {
+      if(is[0].getSex() == PropertySex.MALE) {
+      	popup.setIcon(Images.imgNavMalePartnerOff);
+        popup.setRolloverIcon(Images.imgNavMalePartnerOn);
+      } else if(is[0].getSex() == PropertySex.FEMALE) {
+      	popup.setIcon(Images.imgNavFemalePartnerOff);
+        popup.setRolloverIcon(Images.imgNavFemalePartnerOn);
+      }
+    }
+      
     // done
   }
     
@@ -306,7 +319,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
       ,4,2,1,1
     );
     gh.add(
-      createPopup(PARTNER, Images.imgNavPartnerOff, Images.imgNavPartnerOn)
+      createPopup(PARTNER, Images.imgNavMalePartnerOff, Images.imgNavMalePartnerOn)
       ,5,2,1,1
     );
     gh.add(

@@ -40,8 +40,10 @@ final public class Images {
     imgNavMotherOff,
     imgNavFatherOn,
     imgNavFatherOff,
-    imgNavPartnerOn,
-    imgNavPartnerOff;
+    imgNavMalePartnerOn,
+    imgNavMalePartnerOff,
+    imgNavFemalePartnerOn,
+    imgNavFemalePartnerOff;
 
   /**
    * Constructor which pre-loads all images
@@ -58,7 +60,9 @@ final public class Images {
     imgNavFatherOff       = new ImageIcon(this,"NavFatherOff.gif");
     imgNavMotherOn        = new ImageIcon(this,"NavMotherOn.gif");
     imgNavMotherOff       = new ImageIcon(this,"NavMotherOff.gif");
-    imgNavPartnerOn       = new ImageIcon(this,"NavPartnerOn.gif");
-    imgNavPartnerOff      = new ImageIcon(this,"NavPartnerOff.gif");
+    imgNavMalePartnerOn       = new ImageIcon(this,"NavMalePartnerOn.gif");
+    imgNavMalePartnerOff      = new ImageIcon(this,"NavMalePartnerOff.gif");
+    imgNavFemalePartnerOn       = new ImageIcon(this,"NavFemalePartnerOn.gif");
+    imgNavFemalePartnerOff      = new ImageIcon(this,"NavFemalePartnerOff.gif");
   }
 }
