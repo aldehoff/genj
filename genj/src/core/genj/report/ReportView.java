@@ -22,7 +22,6 @@ package genj.report;
 import genj.edit.EditViewFactory;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.option.Option;
 import genj.option.OptionsWidget;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -50,6 +49,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.Collections;
 
 import javax.swing.AbstractButton;
 import javax.swing.DefaultListCellRenderer;
@@ -224,7 +224,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
    * Create the tab content for report options
    */
   private JComponent createReportOptions() {
-    owOptions = new OptionsWidget();
+    owOptions = new OptionsWidget(manager.getWindowManager());
     return owOptions;
   }
 
@@ -540,7 +540,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         lAuthor  .setText("");
         lVersion .setText("");
         tpInfo   .setText("");
-        owOptions.setOptions(new Option[0]);
+        owOptions.setOptions(Collections.EMPTY_LIST);
       } else {
         Report report = (Report)listOfReports.getSelectedValue();
         lAuthor  .setText(report.getAuthor());

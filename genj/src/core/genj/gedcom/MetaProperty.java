@@ -332,14 +332,15 @@ public class MetaProperty implements Comparable {
   
   /**
    * Returns index of given subtag
-   * @return zero based index or -1 if unknown
+   * @return zero based index or Integer.MAX_VALUE if unknown
    */
   public int getIndex(String subtag) {
     for (int i=0;i<listOfSubs.size();i++) {
       if (((MetaProperty)listOfSubs.get(i)).getTag().equals(subtag))
         return i;
     }
-    return -1;
+    //20040518 make the index of an unknown subtag as large as possible
+    return Integer.MAX_VALUE;
   }
   
   /**

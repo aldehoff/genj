@@ -44,7 +44,7 @@ public class RunExternal extends ActionDelegate {
     association = fa;
     file = f.getFile();
     super.setImage(f.getImage(false));
-    super.setText(association.getAction()+" (*."+association.getSuffix()+" external)");
+    super.setText(association.getName()+" ("+association.getSuffixes()+")");
   }
   
   /**
@@ -53,7 +53,7 @@ public class RunExternal extends ActionDelegate {
   public RunExternal(Gedcom ged, String f, FileAssociation fa) {
     association = fa;
     file = ged.getOrigin().getFile(f);
-    super.setText(association.getAction()+" (*."+association.getSuffix()+" external)");
+    super.setText(association.getName()+" ("+association.getSuffixes()+")");
   }
   
   /**

@@ -20,16 +20,20 @@
 package genj.option;
 
 import genj.util.swing.ImageIcon;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.ItemSelectable;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.List;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
+import javax.swing.AbstractCellEditor;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
@@ -49,55 +53,20 @@ public class OptionsWidget extends JPanel {
   private JTable table;
   
   /** model we're using */
-  private Model model;
+  private Model model = new Model();
+  
+  /** reference to window manager */
+  private WindowManager manager;
   
   /**
    * Constructor
    */
-  public OptionsWidget() {
-    
+  public OptionsWidget(WindowManager manager) {
+
+    this.manager = manager;
+        
     // setup
-    DefaultTableColumnModel columns = new DefaultTableColumnModel();
-    columns.addColumn(new TableColumn(0));
-    columns.addColumn(new TableColumn(1));
-    
-    model = new Model();
-    
-    table = new JTable(model, columns) {
-      /** we know how to find the correct editor */
-      public TableCellEditor getCellEditor(int row, int col) {
-        // only editor for 2nd column 
-        if (col==0)   
-          return null;
-        Option option = model.getOption(row);
-        // multiple choice option?
-        if (option instanceof MultipleChoiceOption) {
-          MultipleChoiceOption moption = (MultipleChoiceOption)option;
-          return new DefaultCellEditor(new JComboBox(moption.getChoices()));
-        }
-        // boolean option?
-        if (option.getType()==Boolean.TYPE)
-          return new DefaultCellEditor(new JCheckBox());
-        // all else
-        return new DefaultCellEditor(new JTextField(12));
-      }
-      /** we know how to find the correct renderer */
-      public TableCellRenderer getCellRenderer(int row, int col) {
-        // easy for first column
-        if (col==0)
-          return new DefaultTableCellRenderer();
-        // check boolean
-        Option option = model.getOption(row);
-        if (option.getType()==Boolean.TYPE) {
-          TableCellRenderer result = getDefaultRenderer(Boolean.class);
-          if (result instanceof JCheckBox)
-            ((JCheckBox)result).setHorizontalAlignment(JCheckBox.LEFT);
-          return result;
-        }
-        // all else
-        return new DefaultTableCellRenderer();
-      }
-    };
+    table = new Table();
     
     // layout
     setLayout(new BorderLayout());
@@ -109,26 +78,33 @@ public class OptionsWidget extends JPanel {
   /**
    * Set options to display
    */
-  public void setOptions(Option[] options) {
-    
+  public void setOptions(List set) {
+
+    Option[] options = (Option[])set.toArray(new Option[set.size()]);
+        
     // let model know
     model.setOptions(options);
     
     // recalc column widths
     int w = 48;
-    for (int i=0;i<options.length;i++) {
-      w = Math.max(w,
-        table.getCellEditor(i,1).getTableCellEditorComponent(table, null, false,  i, 1)
-          .getPreferredSize().width
-        );
-    }
-    table.getColumnModel().getColumn(0).setPreferredWidth(getWidth());
-    table.getColumnModel().getColumn(1).setPreferredWidth(w);
+    
+    for (int i=0;i<options.length;i++)
+      w = Math.max(w, options[i].getUI(this).getComponentRepresentation().getPreferredSize().width);
+      
+    table.getColumnModel().getColumn(0).setPreferredWidth(Integer.MAX_VALUE);
+    table.getColumnModel().getColumn(1).setMinWidth(w);
 
     // layout
     doLayout();
   }
-  
+
+  /**
+   * Access to window manager
+   */  
+  public WindowManager getWindowManager() {
+    return manager;
+  } 
+    
   /** 
    * Model
    */
@@ -163,7 +139,6 @@ public class OptionsWidget extends JPanel {
      * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
      */
     public void setValueAt(Object value, int row, int col) {
-      getOption(row).setValue(value);
     }
   
     /**
@@ -184,10 +159,145 @@ public class OptionsWidget extends JPanel {
      * @see javax.swing.table.TableModel#getValueAt(int, int)
      */
     public Object getValueAt(int row, int col) {
-      Option option = options[row];
-      return col==0 ? option.getName() : option.getValue();
+      Option option = getOption(row);
+      
+      // first column?
+      if (col==0)
+        return option.getName();
+        
+        
+      // second column!
+      if (option instanceof PropertyOption)
+        return ((PropertyOption)option).getValue();
+        
+      // nothing
+      return null;
     }
     
   } //Model
+
+//  /**
+//   * Our own editor/renderer support for custom options
+//   */
+//  private class CustomSupport extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
+//
+//    private JButton button = new JButton("...");
+//    
+//    /** constructor */    
+//    public CustomSupport() {
+//      button.setRequestFocusEnabled(false);
+//    }
+//
+//    /** callback for an editor component */
+//    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+//      return button;
+//    }
+//
+//    /** callback for a renderer */
+//    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+//      return button;
+//    }
+//
+//    /** callback for edit value */
+//    public Object getCellEditorValue() {
+//      return null;
+//    }
+//
+//  } //CustomSupport
+
+  /**
+   * our table
+   */
+  private class Table extends JTable implements TableCellRenderer {
+
+    /** our editor */
+    private Editor editor = new Editor();
+    
+    /** constructor */
+    private Table() {
+      super(model);
+
+      DefaultTableColumnModel columns = new DefaultTableColumnModel();
+      columns.addColumn(new TableColumn(0));
+      columns.addColumn(new TableColumn(1));
+      super.setColumnModel(columns);
+    }
+
+    /** we know how to find the correct editor */
+    public TableCellEditor getCellEditor(int row, int col) {
+      // easy for first column
+      if (col==0)
+        return null;
+      // ourself for second column
+      return editor;
+    }
+   
+    /** we know how to find the correct renderer */
+    public TableCellRenderer getCellRenderer(int row, int col) {
+      // easy for first column
+      if (col==0)
+        return new DefaultTableCellRenderer();
+      // ourself for second column
+      return this;
+    }
+   
+    /** our renderer factory */
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+      // lookup option and ui
+      Option option = model.getOption(row);
+      OptionUI ui = option.getUI(OptionsWidget.this);
+      // text representation available
+      String text = ui.getTextRepresentation();
+      if (text!=null)
+        return new JLabel(text);
+      // use component representation
+      return ui.getComponentRepresentation();
+    }
+
+    /**
+     * Our Editor
+     */
+    private class Editor extends AbstractCellEditor implements TableCellEditor, ItemListener {  
+  
+      /** current ui */
+      private OptionUI ui;
+
+      /** a component for editing */     
+      public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        // lookup option and ui
+        Option option = model.getOption(row);
+        ui = option.getUI(OptionsWidget.this);
+        Component result = ui.getComponentRepresentation();
+        if (result instanceof ItemSelectable)
+          ((ItemSelectable)result).addItemListener(this);
+        return result;
+      }
+
+      /** callback - no value access through this one though */     
+      public Object getCellEditorValue() {
+        return null;
+      }
+    
+      /** callback - cancel editing */     
+      public void cancelCellEditing() {
+        ui = null;
+        super.cancelCellEditing();
+      }
+    
+      /** callback - stop editing = commit */     
+      public boolean stopCellEditing() {
+        if (ui!=null)
+          ui.endRepresentation();
+        return super.stopCellEditing();
+      }
+
+      /** callback - editor component item state changed */      
+      public void itemStateChanged(ItemEvent e) {
+        stopCellEditing();
+      }
+  
+    } //Editor
+
+  }
 
 } //OptionsWidget

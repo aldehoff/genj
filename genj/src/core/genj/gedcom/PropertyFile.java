@@ -31,6 +31,10 @@ import java.lang.ref.SoftReference;
  */
 public class PropertyFile extends Property implements IconValueAvailable {
 
+  /** standard image */
+  public final static ImageIcon DEFAULT_IMAGE = MetaProperty.get(new TagPath("INDI:OBJE:FILE")).getImage();
+
+
   /** static configuration */
   private static final Options options = new Options();
   
@@ -225,7 +229,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
   /**
    * Resolve the maximum load (whether to return kb)   */
   public static int getMaxValueAsIconSize(boolean kb) {
-    return (kb ? 1 : 1024) * options.maxImageFileSizeKB;
+    return (kb ? 1 : 1024) * options.getMaxImageFileSizeKB();
   }
 
   /**

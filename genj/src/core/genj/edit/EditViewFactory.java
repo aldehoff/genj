@@ -226,7 +226,7 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     String suffix = file.getSuffix();
       
     // lookup associations
-    Iterator it = FileAssociation.get(suffix).iterator();
+    Iterator it = FileAssociation.getAll(suffix).iterator();
     while (it.hasNext()) {
       FileAssociation fa = (FileAssociation)it.next(); 
       result.add(new RunExternal(file,fa));

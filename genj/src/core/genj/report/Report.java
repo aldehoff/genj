@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.39 $ $Author: nmeier $ $Date: 2004-05-17 10:04:43 $
+ * $Revision: 1.40 $ $Author: nmeier $ $Date: 2004-05-21 13:15:42 $
  */
 package genj.report;
 
@@ -27,6 +27,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.option.Option;
 import genj.option.OptionMetaInfo;
+import genj.option.PropertyOption;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
@@ -44,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
@@ -84,7 +87,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
     ALIGN_RIGHT  = 2;
 
   /** one report for all reports */
-  private final static Registry REGISTRY = new Registry("genj-reports");
+  private final static Registry registry = new Registry("genj-reports");
 
   /** language we're trying to use */
   private final static String lang = Locale.getDefault().getLanguage();
@@ -98,22 +101,16 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
   /** a view manager */
   private ViewManager viewManager;
 
-  /** local registry */
-  protected Registry registry;
-
   /** owning component */
   private JComponent owner;
   
   /** options */
-  private Option[] options;
+  private List options;
 
   /**
    * Constructor
    */
   protected Report() {
-    
-    registry = new Registry(REGISTRY, getClass().getName());
-    
   }
   
   /**
@@ -159,32 +156,28 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
     if (options==null)
       return;
     // save 'em
-    for (int i=0;i<options.length;i++) {
-      Option option = options[i];
-      registry.put(option.getKey(), option.getValue().toString());
-    }
+    Iterator it = options.iterator();
+    while (it.hasNext())
+      ((Option)it.next()).persist(registry);
     // done
   }
   
   /**
    * Get report's options
    */
-  /*package*/ Option[] getOptions() {
+  /*package*/ List getOptions() {
     
     // already calculated
     if (options!=null)
       return options;
       
     // calculate options - we use i18n() to resolve names for options
-    options = Option.getOptions(this);
+    options = PropertyOption.introspect(this);
     
     // restore options values
-    for (int i=0;i<options.length;i++) {
-      Option option = options[i];
-      String value = registry.get(option.getKey(), (String)null);
-      if (value!=null) 
-        option.setValue(value);
-    }
+    Iterator it = options.iterator();
+    while (it.hasNext())
+      ((Option)it.next()).restore(registry);
     
     // done
     return options;
@@ -194,7 +187,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
    * @see genj.option.OptionNameProvider#getOptionName(java.lang.String)
    */
   public String getLocalizedName(Option option) {
-    return i18n(option.getKey());
+    return i18n(((PropertyOption)option).getProperty());
   }
 
   /**
@@ -241,8 +234,10 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
    */
   public final File getDirectoryFromUser(String title, String button) {
 
+    String key = getClass().getName()+".dir";
+
     // show directory chooser
-    String dir = registry.get("dir", EnvironmentChecker.getProperty(this, "user.home", ".", "looking for report dir to let the user choose from"));
+    String dir = registry.get(key, EnvironmentChecker.getProperty(this, "user.home", ".", "looking for report dir to let the user choose from"));
     JFileChooser chooser = new JFileChooser(dir);
     chooser.setFileSelectionMode(chooser.DIRECTORIES_ONLY);
     chooser.setDialogTitle(title);
@@ -254,7 +249,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
       return null;
     
     // keep it
-    registry.put("dir", result.toString());    
+    registry.put(key, result.toString());    
     return result;
   }
 
@@ -270,7 +265,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
 
     // open a non-modal dialog
     viewManager.getWindowManager().openNonModalDialog(
-      registry.getView()+"#items",
+      getClass().getName()+"#items",
       getName(),
       ReportViewFactory.IMG,
       content,
@@ -285,9 +280,9 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
    * Helper method that shows (resulting) html to the user
    */
   public final void showBrowserToUser(URL url) {
-    
+
     // get browser command
-    File browser = new File(REGISTRY.get("browser", ""));
+    File browser = new File(registry.get("browser", ""));
     while (!browser.isFile()) {
       
       // show file chooser
@@ -299,7 +294,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
         return;
     
       // keep it
-      REGISTRY.put("browser", browser.toString());    
+      registry.put("browser", browser.toString());    
     }
     
     // run it
@@ -361,7 +356,9 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
   public final String getValueFromUser(String key, String msg, String[] choices) {
 
     // Choice to include already entered stuff?
-    if ((key!=null)&&(registry!=null)) {
+    if (key!=null) {
+
+      key = getClass().getName()+"."+key;
 
       // Do we know values for this already?
       String[] presets = registry.get(key, (String[])null);

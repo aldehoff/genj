@@ -32,7 +32,6 @@ import genj.util.swing.MenuHelper;
 import genj.window.WindowManager;
 
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -167,21 +166,7 @@ public class ViewManager {
    * Accessor - DPI
    */  
   public Point getDPI() {
-    Point dpi = registry.get("dpi",(Point)null); 
-    if (dpi==null) {
-      dpi = new Point( 
-        Toolkit.getDefaultToolkit().getScreenResolution(),
-        Toolkit.getDefaultToolkit().getScreenResolution()
-      );
-    }
-    return dpi;
-  }
-  
-  /** 
-   * Accessor - DPI
-   */  
-  public void setDPI(Point dpi) {
-    registry.put("dpi",dpi); 
+    return Options.getInstance().getDPI();
   }
   
   /**

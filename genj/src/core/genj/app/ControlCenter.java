@@ -1095,8 +1095,10 @@ public class ControlCenter extends JPanel {
     }
     /** run */
     protected void execute() {
+      // tell options about window manager - curtesy only
+      Options.getInstance().setWindowManager(windowManager);
       // create widget for options
-      OptionsWidget widget = new OptionsWidget();
+      OptionsWidget widget = new OptionsWidget(windowManager);
       widget.setOptions(OptionProvider.getAllOptions());
       // open dialog
       windowManager.openDialog("options", "Options", WindowManager.IMG_INFORMATION, widget, WindowManager.OPTIONS_OK, ControlCenter.this);

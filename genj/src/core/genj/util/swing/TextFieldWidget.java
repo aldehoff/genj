@@ -50,6 +50,13 @@ public class TextFieldWidget extends JTextField {
   /**
    * Constructor
    */
+  public TextFieldWidget(String text) {
+    this(null, text, 0);
+  }
+
+  /**
+   * Constructor
+   */
   public TextFieldWidget(String text, int cols) {
     this(null, text, cols);
   }
@@ -128,6 +135,13 @@ public class TextFieldWidget extends JTextField {
     if (isTemplate) 
       return "";
     return super.getText();
+  }
+  
+  /**
+   * Status check - getText().trim().length()==0
+   */
+  public boolean isEmpty() {
+    return getText().trim().length()==0;
   }
   
   /**

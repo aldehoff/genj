@@ -19,33 +19,74 @@
  */
 package genj.gedcom;
 
+import java.util.List;
+
 import genj.option.Option;
 import genj.option.OptionMetaInfo;
 import genj.option.OptionProvider;
+import genj.option.PropertyOption;
 
 /**
  * Application options
  */
 public class Options extends OptionProvider implements OptionMetaInfo {
-
+  
   /** singleton */
   private final static Options instance = new Options();
 
-  /** options */  
-  public int maxImageFileSizeKB = 128;
+  /** option - maximum image files size to be loaded */  
+  private int maxImageFileSizeKB = 128;
   
+  /** option - where lines of multi line values should be broken */
+  private int valueLineBreak = 255;
+
+  /**
+   * Singleton access
+   */
+  public static Options getInstance() {
+    return instance;
+  }
+
+  /**
+   * accessor - maxImageFileSizeKB
+   */
+  public void setMaxImageFileSizeKB(int max) {
+    maxImageFileSizeKB = Math.max(4,max);
+  }
+  
+  /**
+   * accessor - maxImageFileSizeKB
+   */
+  public int getMaxImageFileSizeKB() {
+    return maxImageFileSizeKB;
+  }
+  
+  /**
+   * accessor - valueLineBreak
+   */
+  public int getValueLineBreak() {
+    return valueLineBreak;
+  }
+
+  /**
+   * accessor - valueLineBreak
+   */
+  public void setValueLineBreak(int set) {
+    valueLineBreak = Math.max(40,set);
+  }
+
   /** 
    * Provider callback 
    */
-  public Option[] getOptions() {
-    return Option.getOptions(instance);
+  public List getOptions() {
+    return PropertyOption.introspect(instance);
   }
 
   /**
    * OptionMetaInfo callback - localize a name
    */  
   public String getLocalizedName(Option option) {
-    return Gedcom.resources.getString("option."+option.getKey());
+    return Gedcom.resources.getString("option."+((PropertyOption)option).getProperty());
   }
 
 } //Options

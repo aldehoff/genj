@@ -19,9 +19,6 @@
  */
 package genj.gedcom;
 
-
-
-
 /**
  * Gedcom Property with multiple lines
  */
@@ -82,8 +79,9 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
       return lines.substring(0,pos)+"...";
       
     // Longer than 255?
-    if (lines.length()>255)
-      return lines.substring(0,252)+"...";
+    int lb = Options.getInstance().getValueLineBreak();
+    if (lines.length()>lb)
+      return lines.substring(0,lb-3)+"...";
 
     // Value
     return lines;
@@ -125,10 +123,14 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
     /** the current segment */
     private int start,end;
     
+    /** value line break */
+    private int valueLineBreak;
+    
     /**
      * Constructor
      */
     /*package*/ ConcContIterator(String top, String initValue) {
+      valueLineBreak = Options.getInstance().getValueLineBreak();
       first = top;
       setValue(initValue);
     }
@@ -204,9 +206,9 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
         }
       }
       
-      // but max of 255
-      if (end-start>255) {
-        end = start+255;
+      // but max of valueLineBreak
+      if (end-start>valueLineBreak) {
+        end = start+valueLineBreak;
         next = "CONC";
         
         // make sure we don't end with white-space

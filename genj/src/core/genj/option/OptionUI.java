@@ -19,32 +19,27 @@
  */
 package genj.option;
 
-import genj.util.Registry;
+import javax.swing.JComponent;
 
 /**
- * An option is simply a wrapped public field of a type 
- * with meta-information (JavaBean 'light')
+ * A ui for an option
  */
-public abstract class Option {
+public interface OptionUI {
+
+  /**
+   * Access to component
+   */
+  public JComponent getComponentRepresentation();
   
   /**
-   * Accessor - name of this option
+   * Access to text representation
+   * @return text representation or null if none is available and edit component should be used
    */
-  public abstract String getName();
+  public String getTextRepresentation();
   
   /**
-   * Restore option values from registry
+   * Commit current component state
    */
-  public abstract void restore(Registry registry);
+  public void endRepresentation();
   
-  /**
-   * Persist option values to registry
-   */
-  public abstract void persist(Registry registry);
-  
-  /**
-   * Create an editor
-   */
-  public abstract OptionUI getUI(OptionsWidget widget);
-  
-} //Option
+} //OptionUI

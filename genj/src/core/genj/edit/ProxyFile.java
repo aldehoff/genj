@@ -360,7 +360,7 @@ import javax.swing.JScrollPane;
       }
       // lookup associations
       String suffix = PropertyFile.getSuffix(file);
-      Iterator it = FileAssociation.get(suffix).iterator();
+      Iterator it = FileAssociation.getAll(suffix).iterator();
       while (it.hasNext()) {
         FileAssociation fa = (FileAssociation)it.next(); 
         mh.createItem(new RunExternal(property.getGedcom(),file,fa));

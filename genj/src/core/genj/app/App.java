@@ -21,8 +21,7 @@ package genj.app;
 
 import genj.Version;
 import genj.gedcom.Gedcom;
-import genj.io.FileAssociation;
-import genj.lnf.LnFBridge;
+import genj.option.OptionProvider;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
@@ -33,9 +32,6 @@ import genj.window.WindowManager;
 import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Vector;
 
 import javax.swing.UIManager;
 
@@ -48,12 +44,6 @@ public class App {
   private final static String SWING_RESOURCES_KEY_PREFIX = "swing.";
   private final static String FRAME_KEY_PREFIX = "frame.";
 
-  /** members */
-  private Registry registry;
-  private static App instance;
-  private Resources resources;
-  private WindowManager winMgr;
-
   /**
    * Main of app
    */
@@ -61,7 +51,7 @@ public class App {
 
     // Startup and catch Swing missing
     try {
-      instance = new App();
+      init();
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, App.class, "Cannot instantiate App", t);
       Debug.flush();
@@ -70,61 +60,32 @@ public class App {
   }
   
   /**
-   * Application Constructor
+   * main
    */
-  private App() {
+  private static void init() {
 
     // Startup Information
     Debug.log(Debug.INFO, App.class, "GenJ App - Version "+Version.getInstance()+" - "+new Date());
-    String log = EnvironmentChecker.getProperty(this, new String[]{"genj.debug.file", "user.home/.genj/genj.log"}, "", "choose log-file");
+    String log = EnvironmentChecker.getProperty(App.class, new String[]{"genj.debug.file", "user.home/.genj/genj.log"}, "", "choose log-file");
     if (log.length()>0) 
       Debug.setFile(new File(log));
     EnvironmentChecker.log();
     
     // init our data
-    registry = new Registry("genj");
+    final Registry registry = new Registry("genj");
     
-    // Check language
-    String lang = getLanguage();
-    if (lang!=null) try {
-      Debug.log(Debug.INFO, this, "Switching language to "+lang);
-      
-      String country = "";
-      
-      int i = lang.indexOf('_');
-      if (i>0) {
-        country = lang.substring(i+1);
-        lang = lang.substring(0, i);
-      }
-      Locale.setDefault(new Locale(lang,country));
-    } catch (Throwable t) {}
+    // initialize options
+    OptionProvider.restoreAll(registry);
+
+    // get app resources now
+    Resources resources = Resources.get(App.class);
 
     // Make sure that Swing shows our localized texts
-    resources = Resources.get(this);
-    
-    Iterator keys = resources.getKeys();
-    while (keys.hasNext()) {
-      String key = (String)keys.next();
-      if (key.indexOf(SWING_RESOURCES_KEY_PREFIX)==0) {
-        UIManager.put(
-          key.substring(SWING_RESOURCES_KEY_PREFIX.length()),
-          resources.getString(key)
-        );
-      }
-    }
+    initSwing(resources);
 
     // create window manager
-    winMgr = new DefaultWindowManager(new Registry(registry, "window"));
+    final WindowManager winMgr = new DefaultWindowManager(new Registry(registry, "window"));
     
-    // Set the Look&Feel
-    LnFBridge.LnF lnf = LnFBridge.getInstance().getLnF(registry.get("lnf", (String)null));
-    if (lnf!=null) {
-      lnf.apply(lnf.getTheme(registry.get("lnf.theme", (String)null)), new Vector());
-    }
-    
-    // Load file associations
-    FileAssociation.read(registry);
-
     // Disclaimer - check version and registry value
     String version = Version.getInstance().toString();
     if (!version.equals(registry.get("disclaimer",""))) {
@@ -144,14 +105,14 @@ public class App {
     };
     Runnable onClose = new Runnable() {
       public void run() {
-        // remember file associations
-        FileAssociation.write(registry);
         // take a snapshot of view configuration
         center.snapshot();
         // close all frames we know
         winMgr.closeAll();
+        // persist options
+        OptionProvider.persistAll(registry);
         // Store registry 
-        Registry.saveToDisk();      
+        Registry.persist();      
         // Flush Debug
         Debug.flush();
         // exit - open for discussion: instead of exit() we could
@@ -162,46 +123,25 @@ public class App {
     };
     winMgr.openFrame("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), onClosing, onClose);
 
-
-  }
-  
-  /**
-   * Singleton access
-   */
-  /*package*/ static App getInstance() {
-    return instance;
-  }
-  
-  /**
-   * Sets the language
-   */
-  /*package*/ void setLanguage(String lang) {
-    if (lang!=null)
-      registry.put("language", lang);
+    // done with this thread
   }
 
   /**
-   * Gets the language
-   */
-  /*package*/ String getLanguage() {
-    return registry.get("language", (String)null);
-  }
-
-  /**
-   * Sets the LookAndFeel
-   */
-  /*package*/ void setLnF(LnFBridge.LnF lnf, LnFBridge.Theme theme) {
+   * Initialize Swing resources
+   */  
+  private static void initSwing(Resources resources) {
     
-    // collect root elements we know about
-    List roots = winMgr.getRootComponents();
-    
-    // set it!
-    if (lnf.apply(theme, roots)) {
-      registry.put("lnf", lnf.getName());
-      if (theme!=null) registry.put("lnf.theme", theme.getName());
+    Iterator keys = resources.getKeys();
+    while (keys.hasNext()) {
+      String key = (String)keys.next();
+      if (key.indexOf(SWING_RESOURCES_KEY_PREFIX)==0) {
+        UIManager.put(
+          key.substring(SWING_RESOURCES_KEY_PREFIX.length()),
+          resources.getString(key)
+        );
+      }
     }
     
-    // remember
   }
-  
+
 } //App

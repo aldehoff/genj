@@ -202,6 +202,11 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     labelCount = new JLabel();
     
     JPanel paneCriteria = new JPanel();
+    try {
+      paneCriteria.setFocusCycleRoot(true);
+    } catch (Throwable t) {
+    }
+    
     GridBagHelper gh = new GridBagHelper(paneCriteria);
     // .. line 0
     gh.add(labelValue    ,0,0,2,1,0, new Insets(0,0,0,8));
@@ -233,6 +238,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     gedcom.addGedcomListener(results);
     // continue
     super.addNotify();
+    // set focus
+    choiceValue.requestFocus();
   }
   
   /**

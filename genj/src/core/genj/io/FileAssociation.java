@@ -20,15 +20,15 @@
 package genj.io;
 
 import genj.util.Debug;
-import genj.util.Registry;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 
 /**
  * A file association
@@ -36,13 +36,13 @@ import java.util.TreeMap;
 public class FileAssociation {
   
   /** instances */
-  private static Map instances = new TreeMap();
+  private static List associations = new LinkedList();
   
   /** suffix */
-  private String suffix;
+  private Set suffixes = new HashSet();
   
-  /** action e.g. OPEN */
-  private String action;
+  /** action name e.g. OPEN */
+  private String name;
   
   /** external app */
   private String executable;
@@ -50,49 +50,52 @@ public class FileAssociation {
   /**
    * Constructor
    */
-  public FileAssociation(String s, String a, String e) {
-    suffix = s.toLowerCase();
-    action = a;
-    executable = e;
+  public FileAssociation() {
+    this("suffix*name*executable");
   }
   
   /**
    * Constructor
    */
-  public FileAssociation(String s) {
+  public FileAssociation(String s) throws IllegalArgumentException {
+    // break down into '*'
     StringTokenizer tokens = new StringTokenizer(s,"*");
-    suffix = tokens.hasMoreTokens() ? tokens.nextToken() : "";
-    action = tokens.hasMoreTokens() ? tokens.nextToken() : "";
-    executable = tokens.hasMoreTokens() ? tokens.nextToken() : "";
+    if (tokens.countTokens()!=3)
+      throw new IllegalArgumentException("need three *-separators");
+    // Set comma separated suffixes
+    setSuffixes(tokens.nextToken());
+    // get name and executable
+    name = tokens.nextToken();
+    executable = tokens.nextToken();
+    // done
   }
   
   /**
-   * setter
+   * String representation - usable for constructor
    */
-  public void setSuffix(String s) {
-    del(this);
-    suffix = s;
-    add(this);
-  }
-  
-  /**
-   * setter
-   */
-  public void setAction(String a) {
-    action = a;
-  }
-  
-  /**
-   * setter
-   */
-  public void setExecutable(String e) {
-    executable = e;
-  }
-  
-  /**
-   * String representation   */
   public String toString() {
-    return suffix+'*'+action+'*'+executable;
+    return getSuffixes()+"*"+name+"*"+executable;
+  }
+  
+  /**
+   * setter
+   */
+  public void setName(String set) {
+    name = set;
+  }
+  
+  /**
+   * Accessor - name
+   */
+  public String getName() {
+    return name;
+  }
+  
+  /**
+   * setter
+   */
+  public void setExecutable(String set) {
+    executable = set;
   }
   
   /**
@@ -103,17 +106,29 @@ public class FileAssociation {
   }
   
   /**
-   * Accessor - action
+   * Accessor - suffixes as comma separated list
    */
-  public String getAction() {
-    return action;
+  public void setSuffixes(String set) {
+    
+    StringTokenizer ss = new StringTokenizer(set,",");
+    if (ss.countTokens()==0)
+      throw new IllegalArgumentException("need at least one suffix");
+    suffixes.clear();
+    while (ss.hasMoreTokens())
+      suffixes.add(ss.nextToken().trim());
   }
   
   /**
-   * Accessor - suffix
+   * Accessor - suffixes as comma separated list
    */
-  public String getSuffix() {
-    return suffix;
+  public String getSuffixes() {
+    StringBuffer result = new StringBuffer();
+    Iterator it = suffixes.iterator();
+    while (it.hasNext()) {
+      result.append(it.next());
+      if (it.hasNext()) result.append(',');
+    }
+    return result.toString();
   }
   
   /**
@@ -144,84 +159,35 @@ public class FileAssociation {
    * Gets all
    */
   public static List getAll() {
-    List result = new ArrayList();
-    Iterator lists = instances.values().iterator();
-    while (lists.hasNext()) {
-      List list = (List)lists.next();
-      Iterator fas = list.iterator();
-      while (fas.hasNext()) {
-        result.add(fas.next());
-      }
-    }
-    return result;
+    return new ArrayList(associations);
   }
 
   /**
    * Gets associations   */
-  public static List get(String suffix) {
-    List result = (List)instances.get(suffix.toLowerCase());
-    if (result==null) result = new ArrayList(0);
+  public static List getAll(String suffix) {
+    List result = new ArrayList();
+    Iterator it = associations.iterator();
+    while (it.hasNext()) {
+      FileAssociation fa = (FileAssociation)it.next();
+      if (fa.suffixes.contains(suffix))
+        result.add(fa);
+    }
     return result;
   }
   
   /**
    * Deletes an association
    */
-  public static void del(FileAssociation fa) {
-    // do we know that suffix one alreay?
-    List list = (List)instances.get(fa.getSuffix());
-    if (list==null) return;
-    // remove it
-    list.remove(fa);
-    // done
+  public static boolean del(FileAssociation fa) {
+    return associations.remove(fa);
   }
 
   /**
    * Add an association   */
-  public static void add(FileAssociation fa) {
-    // do we know that suffix one alreay?
-    List list = (List)instances.get(fa.getSuffix());
-    if (list==null) {
-      list = new ArrayList();
-      if (fa.getSuffix().length()>0)
-        instances.put(fa.getSuffix(), list);
-    }
-    // keep it
-    list.add(fa);
-    // done
+  public static FileAssociation add(FileAssociation fa) {
+    if (!associations.contains(fa))
+      associations.add(fa);
+    return fa;
   }
   
-  /**
-   * Reads associations from registry   */
-  public static void read(Registry r) {
-    // read it and don't change what isn't there
-    String[] as = r.get("associations", (String[])null);
-    if (as==null) return;
-    // replace
-    instances.clear();
-    for (int i=0; i<as.length; i++) {
-      add(new FileAssociation(as[i]));
-    }
-    // done
-  }
-   
-  /**
-   * Writes associations to registry
-   */
-  public static void write(Registry r) {
-    List all = getAll();
-    String[] as = new String[all.size()];
-    for (int i=0; i<as.length; i++) {
-      as[i] = all.get(i).toString();
-    }
-    r.put("associations", as);
-  }
-  
-  /**
-   * Defaults   */
-  static {
-    add(new FileAssociation("jpg", "View", "C:/Program Files/Internet Explorer/IEXPLORE.EXE"));
-    add(new FileAssociation("jpg", "Edit", "C:/winnt/System32/mspaint.exe"));
-    add(new FileAssociation("txt", "Edit", "C:/winnt/notepad.exe"));
-  }
 } //FileAssociation

@@ -19,72 +19,102 @@
  */
 package genj.option;
 
-import java.lang.reflect.Field;
+import genj.util.Registry;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 
 /**
- * An option based on multiple choices
- * @author nmeier
+ * A multiple choice Option
  */
-public class MultipleChoiceOption extends Option {
+public abstract class MultipleChoiceOption extends Option {
   
-  /** available choices */
-  private Object[] choices;
+  /** wrapped option */
+  private PropertyOption option;
+  
+  /** constructor */
+  protected MultipleChoiceOption(PropertyOption option) {
+    this.option = option;
+  }
+  
+  /** restore */  
+  public void restore(Registry registry) {
+    option.restore(registry);
+  }
+
+  /** persist */  
+  public void persist(Registry registry) {
+    option.persist(registry);
+  }
+
+  /** name */
+  public String getName() {
+    return option.getName();
+  }
+
+  /** ui access */  
+  public OptionUI getUI(OptionsWidget widget) {
+    return new UI();
+  }
+
+  
+  /** getter for index */
+  protected int getIndex() {
+    return ((Integer)option.getValue()).intValue();
+  }
+  
+  /** setter for index */
+  protected void setIndex(int i) {
+    option.setValue(new Integer(i));
+  }
+  
+  /** getter for choice */
+  protected Object getChoice() {
+    Object[] choices = getChoices();
+    int i = getIndex();
+    return i<0||i>choices.length-1 ? null : choices[i];
+  }
+  
+  /** accessor choices */
+  protected final Object[] getChoices() {
+    try  {
+      return getChoicesImpl();
+    } catch (Throwable t) {
+      return new Object[0];
+    }
+  }
+
+  /** accessor impl */
+  protected abstract Object[] getChoicesImpl() throws Throwable;
 
   /**
-   * Constructor
+   * our UI
    */
-  public MultipleChoiceOption(Object instance, Field field, Object[] choices) {
+  private class UI extends JComboBox implements OptionUI {
 
-    super(instance, field);
-
-    // remember choices
-    this.choices = choices;
+    /** constructor */
+    private UI() {
+      setModel(new DefaultComboBoxModel(getChoices()));
+      setSelectedIndex(getIndex());
+    }
     
-    // done
-  }
-  
-  /**
-   * The choices
-   */
-  public Object[] getChoices() {
-    return choices;    
-  }
-  
-  /**
-   * @see genj.option.Option#setValue(java.lang.Object)
-   */
-  public void setValue(Object value) {
-    // null test?
-    if (value==null)
-      return;
-    // one of the known choices?
-    for (int i=0; i<choices.length; i++) {
-      if (value.equals(choices[i])) {
-        // .. translate to index
-        setValue(new Integer(i));
-        return;
-      }
+    /** component representation */
+    public JComponent getComponentRepresentation() {
+      return this;
     }
-    // continue unchanged
-    super.setValue(value);
-  }
 
-  /**
-   * @see genj.option.Option#getValue()
-   */
-  public Object getValue() {
-    // get current
-    Object value = super.getValue();
-    // one of the known choices?
-    if (value instanceof Integer) {
-      int i = ((Integer)value).intValue();
-      if (i>=0&&i<choices.length)
-        return choices[i];   
+    /** text representation */    
+    public String getTextRepresentation() {
+      Object result = getChoice();
+      return result!=null ? result.toString() : "";
     }
-    // continue unchanged
-    return value;
-  }
+    
+    /** commit */
+    public void endRepresentation() {
+      setIndex(getSelectedIndex());
+    }
 
+  } //UI
   
-
 } //MultipleChoiceOption

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.16 $ $Author: nmeier $ $Date: 2004-03-25 18:15:40 $
+ * $Revision: 1.17 $ $Author: nmeier $ $Date: 2004-05-21 13:15:33 $
  */
 package genj.util;
 
@@ -32,7 +32,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -152,6 +151,14 @@ public class Registry {
     this.parent     = registry;
 
     // Done
+  }
+  
+  /**
+   * Return the parent of this registry
+   * @return parent if this is a view
+   */
+  public Registry getParent() {
+    return parent;
   }
 
   /**
@@ -492,13 +499,6 @@ public class Registry {
   }
 
   /**
-   * Lists all properties
-   */
-  public void list(PrintStream out) {
-    properties.list(out);
-  }
-
-  /**
    * Remembers an array of ints
    */
   public void put(String key, int[] value) {
@@ -707,7 +707,7 @@ public class Registry {
   /**
    * Save registries
    */
-  public static void saveToDisk() {
+  public static void persist() {
 
     // Go through registries
     Enumeration keys = registries.keys();
