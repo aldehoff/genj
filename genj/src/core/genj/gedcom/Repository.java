@@ -28,13 +28,13 @@ public class Repository extends Entity {
    * @see genj.gedcom.Entity#toString()
    */
   public String toString() {
-    return super.toString(getName());
+    return super.toString(getRepositoryName());
   }
 
   /**
    * Returns the name of this repository
    */
-  private String getName() {
+  private String getRepositoryName() {
     Property name = getProperty("NAME");
     return name!=null ? name.getValue() : EMPTY_STRING; 
   }
