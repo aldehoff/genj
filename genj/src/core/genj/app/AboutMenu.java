@@ -20,7 +20,7 @@
  *
  * AboutMenu class
  * This class creates the content of AboutMenu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutMenu.java,v 1.2 2002-05-11 19:20:25 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutMenu.java,v 1.3 2002-05-16 21:03:03 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -77,7 +77,7 @@ public class AboutMenu {
     
     amframe.getContentPane().add(amMainpanel);
     amframe.pack();
-    amframe.setSize(500, 300);
+    amframe.setSize(570, 360);
     amframe.setBackground(Color.white);
     amframe.setVisible(true);
     
@@ -127,8 +127,9 @@ public class AboutMenu {
   private void populateTabbedPane()
   {
     amCenterpanel.addTab(App.resources.getString("cc.about.menu.tab1.title"), null, new WelcomePanel(), App.resources.getString("cc.about.menu.tab1.title.tip"));
-    amCenterpanel.addTab(App.resources.getString("cc.about.menu.tab2.title"), null, new AuthorsPanel(), App.resources.getString("cc.about.menu.tab2.title"));
-    amCenterpanel.addTab(App.resources.getString("cc.about.menu.tab3.title"), null, new CopyrightPanel(), App.resources.getString("cc.about.menu.tab3.title"));
+    amCenterpanel.addTab(App.resources.getString("cc.about.menu.tab2.title"), null, new AuthorsPanel(), App.resources.getString("cc.about.menu.tab2.title.tip"));
+    amCenterpanel.addTab(App.resources.getString("cc.about.menu.tab3.title"), null, new FeedbackPanel(), App.resources.getString("cc.about.menu.tab3.title.tip"));
+    amCenterpanel.addTab(App.resources.getString("cc.about.menu.tab4.title"), null, new CopyrightPanel(), App.resources.getString("cc.about.menu.tab4.title.tip"));
   }
   
   // main method

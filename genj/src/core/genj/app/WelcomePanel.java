@@ -20,7 +20,7 @@
  * About Menu class - Welcome
  * This class creates the content on the Welcome tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/WelcomePanel.java,v 1.3 2002-05-11 06:27:30 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/WelcomePanel.java,v 1.4 2002-05-16 21:03:03 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -33,6 +33,7 @@ import genj.Version;
 
 // Import for buttons, labels, and images
 import javax.swing.*;
+import javax.swing.border.*;
 // Import for layout manager.
 import java.awt.*;
 
@@ -54,6 +55,8 @@ public class WelcomePanel extends JPanel
     "\n\n");
     // Sets the font face and size
     ta.setFont(new Font("Times-Roman", Font.PLAIN, 12));
+    // We create an empty border around the text displayed
+    ta.setBorder(new EmptyBorder(8, 8, 8, 8));    
     // Line wrap is set for the text area and it is not editable
     ta.setLineWrap(true);
     ta.setWrapStyleWord(true);
