@@ -124,6 +124,7 @@
       <fileset dir="${dir.build}" includes="lib/genj_${language}.jar"/>
       <fileset dir="." includes="contrib/wikipedia/${language}.wikipedia.zip"/>
       <fileset dir="." includes="contrib/wikipedia/license.txt"/>
+      <fileset dir="." includes="contrib/almanac/${language}.almanac"/>
     </zip>
   </target>
 
@@ -219,9 +220,6 @@
        <zipfileset dir="." includes="gedcom/**"/>
        <zipfileset dir="." includes="doc/**"/>
        <zipfileset dir="./script" includes="run.*" filemode="755"/>
-       <zipfileset dir="." includes="contrib/almanac/**"/>
-       <zipfileset dir="." includes="contrib/wikipedia/en.wikipedia.zip"/>
-       <zipfileset dir="." includes="contrib/wikipedia/license.txt"/>
      </zip>
 
   </target>

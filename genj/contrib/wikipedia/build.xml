@@ -10,10 +10,12 @@
   <target name="wikipedia" depends="compile">
 
   	<!-- french - normal set of keywords is sufficient to cut the # of results to a reasonable historical set -->
+  	<!-- not done anymore since Francois reported the french almanac is complete
     <antcall target="wikipedia.language">
       <param name="language" value="fr"/>
       <param name="ignore"   value="Sciences|Arts|Sports|Musique|Physique|Technologie|Naissances|Décès|Mariage|Littérature|Cinéma|Techniques|Économie"/>
     </antcall>
+    -->
 
   	<!-- english - we're ignore quite a few keywords to limit # of results since en.wikipedia.org doesn't categorize as nicely as others -->
     <antcall target="wikipedia.language">
