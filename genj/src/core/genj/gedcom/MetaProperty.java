@@ -42,10 +42,9 @@ public class MetaProperty {
 
   /** static - flags */
   public final static int
-    FILTER_NOT_HIDDEN = 1,
-    FILTER_DEFAULT    = 2,
-    FILTER_LINKED     = 4,
-    FILTER_NOT_LINKED = 8; 
+    FILTER_NOT_HIDDEN = 1, // only those that are not marked as hidden
+    FILTER_DEFAULT    = 2, // only those that are marked default
+    FILTER_XREF       = 4; // xref && not !xref
   
   /** static - loaded images */    
   private static Map name2images = new HashMap();
@@ -163,16 +162,24 @@ public class MetaProperty {
       // .. next sub
       MetaProperty sub = (MetaProperty)listOfSubs.get(s);
 
-      // .. filter
+      // default only?
       if ((filter&FILTER_DEFAULT)!=0&&sub.getAttribute("default",null)==null)
         continue;
+        
+      // hidden at all?
       if ((filter&FILTER_NOT_HIDDEN)!=0&&sub.getAttribute("hide",null)!=null)
         continue;
-      if ((filter&FILTER_LINKED)!=0&&sub.getAttribute("linked",null)==null)
-        continue;
-      if ((filter&FILTER_NOT_LINKED)!=0&&sub.getAttribute("linked",null)!=null)
-        continue;
-      
+
+      //FILTER_XREF       = 4; 
+      // xref && not !xref
+      if ((filter&FILTER_XREF)!=0) {
+        if (sub.getAttribute("!xref",null)!=null)
+          continue;
+      } else {
+        if (sub.getAttribute("xref",null)!=null)
+          continue;
+      }
+        
       // .. keep
       result.add(sub);
     }
