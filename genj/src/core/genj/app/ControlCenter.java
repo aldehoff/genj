@@ -47,7 +47,7 @@ public class ControlCenter extends JPanel implements ActionListener {
   /** members */
   private GedcomTable tGedcoms;
   private JButton bNewIndi,bNewFam,bNewMedia,bNewNote,bNewSource,bNewSubmitter,bNewRepository,bDelEntity,bUndo;
-  private JButton bOpenGedcom,bNewTable,bNewTree,bNewTimeline,bNewEdit,bNewReport,bSettings;
+  private JButton bOpenGedcom,bNewTable,bNewTree,bNewTimeline,bNewEdit,bNewReport,bNewNavigator,bSettings;
   private JFrame frame;
   private Vector busyGedcoms;
   private ControlCenter me;
@@ -162,6 +162,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     bNewTimeline = createButton(Images.imgNewTimeline ,"NEWTIMELINE" ,"cc.tip.open_timeline",false);
     bNewEdit     = createButton(Images.imgNewEdit     ,"NEWEDIT"     ,"cc.tip.open_edit"    ,false);
     bNewReport   = createButton(Images.imgNewReport   ,"NEWREPORT"   ,"cc.tip.open_report"  ,false);
+    bNewNavigator= createButton(Images.imgNewNavigator,"NEWNAVIGATOR","cc.tip.open_navigator",true );
     bSettings    = createButton(Images.imgSettings    ,"VIEWEDIT"    ,"cc.tip.settings"     ,true );
 
     // .. Layout
@@ -171,6 +172,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     gedcomPane.add(bNewTimeline);
     gedcomPane.add(bNewEdit    );
     gedcomPane.add(bNewReport  );
+    gedcomPane.add(bNewNavigator);
     gedcomPane.add(bSettings   );
 
     // Actions Pane
@@ -590,9 +592,14 @@ public class ControlCenter extends JPanel implements ActionListener {
       openView(View.TIMELINE,gedcom);
       return;
     }
-    // Run report ?
+    // New report View?
     if (e.getActionCommand().equals("NEWREPORT")) {
       openView(View.REPORT,gedcom);
+      return;
+    }
+    // New navigator View?
+    if (e.getActionCommand().equals("NEWNAVIGATOR")) {
+      openView(View.NAVIGATOR,gedcom);
       return;
     }
     // Save As ?

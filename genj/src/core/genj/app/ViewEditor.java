@@ -29,6 +29,7 @@ import java.awt.event.*;
 
 import genj.gedcom.*;
 import genj.util.*;
+import genj.util.swing.ButtonHelper;
 
 /**
  * Class for editing the properties of a view
@@ -77,9 +78,11 @@ class ViewEditor extends JPanel implements ViewInfo {
       }
     };
 
-    bApply = ButtonHelper.createButton(resources.getString("view.apply"),null,"APPLY", alistener, true, true);
-    bReset = ButtonHelper.createButton(resources.getString("view.reset"),null,"RESET", alistener, true, true);
-    bClose = ButtonHelper.createButton(resources.getString("view.close"),null,"CLOSE", alistener, true, true);
+    ButtonHelper bh = new ButtonHelper().setResources(resources).setListener(alistener);
+
+    bApply = bh.setText("view.apply").setAction("APPLY").create();
+    bReset = bh.setText("view.reset").setAction("RESET").create();
+    bClose = bh.setText("view.close").setAction("CLOSE").create();
 
     pActions.add(bApply);
     pActions.add(bReset);

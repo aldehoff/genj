@@ -20,6 +20,7 @@
 package genj.gedcom;
 
 import java.util.Date;
+import java.util.Vector;
 
 /**
  * Class for encapsulating a person
@@ -146,6 +147,102 @@ public class Indi extends PropertyIndi implements Entity {
     // Return string value
     return p;
   }
+  
+  /**
+   * Calculate the 'previous' sibling
+   */
+  public Indi getLeftSibling() {
+    
+    // this is a child in a family?
+    Fam f = getFamc();
+    if (f==null) return null;
+    
+    // what are the children of that one
+    Indi[] cs = f.getChildren();
+    for (int c=0;c<cs.length;c++) {
+      if (cs[c]==this) return (c>0) ? cs[c-1] : null;
+    }
+    
+    // there's no previous one
+    return null;
+  }
+  
+  /**
+   * Calculate the 'next' sibling
+   */
+  public Indi getRightSibling() {
+    
+    // this is a child in a family?
+    Fam f = getFamc();
+    if (f==null) return null;
+    
+    // what are the children of that one
+    Indi[] cs = f.getChildren();
+    for (int c=cs.length-1;c>=0;c--) {
+      if (cs[c]==this) return (c<cs.length-1) ? cs[c+1] : null;
+    }
+    
+    // there's no previous one
+    return null;
+  }
+  
+  /** 
+   * Calculate indi's partners. The number of partners can be
+   * smaller than the number of families this individual is
+   * part of because spouses in families don't have to be defined.
+   */
+  public Indi[] getPartners() {
+    // Look at all families and remember spouses
+    Fam[] fs = getFamilies();
+    Vector v = new Vector(fs.length);
+    for (int f=0; f<fs.length; f++) {
+      Indi p = fs[f].getOtherSpouse(this);
+      if (p!=null) v.addElement(p);
+    }
+    // Return result
+    Indi[] result = new Indi[v.size()];
+    v.toArray(result);
+    return result;
+  }
+  
+  /**
+   * Calculate indi's children
+   */
+  public Indi[] getChildren() {
+    // Look at all families and remember children
+    Fam[] fs = getFamilies();
+    Vector v = new Vector(fs.length);
+    for (int f=0; f<fs.length; f++) {
+      Indi[]cs = fs[f].getChildren();
+      for (int c=0;c<cs.length;c++) v.addElement(cs[c]);
+    }
+    // Return result
+    Indi[] result = new Indi[v.size()];
+    v.toArray(result);
+    return result;
+  }
+  
+  /** 
+   * Calculate indi's father
+   */
+  public Indi getFather() {
+    // have we been child in family?
+    Fam f = getFamc();
+    if (f==null) return null;
+    // ask fam
+    return f.getHusband();
+  }
+
+  /** 
+   * Calculate indi's mother
+   */
+  public Indi getMother() {
+    // have we been child in family?
+    Fam f = getFamc();
+    if (f==null) return null;
+    // ask fam
+    return f.getWife();
+  }
 
   /**
    * Calculate indi's birth date
@@ -263,6 +360,18 @@ public class Indi extends PropertyIndi implements Entity {
   public int getNoOfFams( ) {
     Property[] props = getProperties(new TagPath("INDI:FAMS"),true);
     return props.length;
+  }
+  
+  /**
+   * Returns the families in which this individual is a partner
+   */
+  public Fam[] getFamilies() {
+    Property[] props = getProperties(new TagPath("INDI:FAMS"),true);
+    Fam[] result = new Fam[props.length];
+    for (int f=0; f<result.length; f++) {
+      result[f] = ((PropertyFamilySpouse)props[f]).getFamily();
+    }    
+    return result;
   }
 
   /**

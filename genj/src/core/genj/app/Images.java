@@ -44,6 +44,7 @@ final public class Images {
     imgNewTree,
     imgNewEdit,
     imgNewReport,
+    imgNewNavigator,
     imgSettings,
     imgPrint;
 
@@ -67,6 +68,7 @@ final public class Images {
     imgNewTree      = new ImgIcon(this,"images/NewTree.gif");
     imgNewEdit      = new ImgIcon(this,"images/NewEdit.gif");
     imgNewReport    = new ImgIcon(this,"images/NewReport.gif");
+    imgNewNavigator = new ImgIcon(this,"images/NewNavigator.gif");
     imgSettings     = new ImgIcon(this,"images/Settings.gif");
     imgPrint        = new ImgIcon(this,"images/Print.gif");
   }

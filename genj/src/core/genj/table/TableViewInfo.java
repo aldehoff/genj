@@ -26,6 +26,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 import genj.util.GridBagHelper;
+import genj.util.swing.ButtonHelper;
 import genj.gedcom.*;
 import genj.option.*;
 import genj.app.*;
@@ -51,7 +52,7 @@ public class TableViewInfo extends JPanel implements ViewInfo {
   public TableViewInfo() {
 
     // Create!
-    GridBagHelper helper = new GridBagHelper(this);
+    GridBagHelper gh = new GridBagHelper(this);
 
     // Prepare an action listener
     ActionListener alistener = new ActionListener() {
@@ -108,20 +109,21 @@ public class TableViewInfo extends JPanel implements ViewInfo {
     pathList = new TagPathList();
 
     // Up/Down of ordering
-    JButton bUp   = ButtonHelper.createButton(TableView.resources.getString("info.up"),null,"UP",alistener,true,false);
-    JButton bDown = ButtonHelper.createButton(TableView.resources.getString("info.down"),null,"DOWN",alistener,true,false);
+    ButtonHelper bh = new ButtonHelper().setResources(TableView.resources).setListener(alistener).setInsets(0);
+    JButton bUp   = bh.setText("info.up"  ).setAction("UP"  ).create();
+    JButton bDown = bh.setText("info.down").setAction("DOWN").create();
 
     // Layout
-    helper.add(new JLabel(TableView.resources.getString("info.entities"))  ,0,1,1,1);
-    helper.add(cTypes                  ,1,1,2,1);
+    gh.add(new JLabel(TableView.resources.getString("info.entities"))  ,0,1,1,1);
+    gh.add(cTypes                  ,1,1,2,1);
 
-    helper.add(new JLabel(TableView.resources.getString("info.columns"))  ,0,2,1,1);
-    helper.add(pathTree                ,1,2,2,1,helper.GROW_BOTH|helper.FILL_BOTH);
+    gh.add(new JLabel(TableView.resources.getString("info.columns"))  ,0,2,1,1);
+    gh.add(pathTree                ,1,2,2,1,gh.GROW_BOTH|gh.FILL_BOTH);
 
-    helper.add(new JLabel(TableView.resources.getString("info.order"))  ,0,3,1,1);
-    helper.add(bUp                     ,0,4,1,1);
-    helper.add(bDown                   ,0,5,1,1);
-    helper.add(pathList                ,1,3,2,4,helper.GROW_BOTH|helper.FILL_BOTH);
+    gh.add(new JLabel(TableView.resources.getString("info.order"))  ,0,3,1,1);
+    gh.add(bUp                     ,0,4,1,1);
+    gh.add(bDown                   ,0,5,1,1);
+    gh.add(pathList                ,1,3,2,4,gh.GROW_BOTH|gh.FILL_BOTH);
 
     // Done
   }

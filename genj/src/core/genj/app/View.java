@@ -41,11 +41,12 @@ class View extends JFrame {
 
   /** the views we have */
   static private final Object modes[][] = {
-    { "genj.edit.EditView"        ,"edit"    ,Images.imgNewEdit     },
-    { "genj.table.TableView"      ,"table"   ,Images.imgNewTable    },
-    { "genj.tree.TreeView"        ,"tree"    ,Images.imgNewTree     },
-    { "genj.timeline.TimelineView","timeline",Images.imgNewTimeline },
-    { "genj.report.ReportView"    ,"report"  ,Images.imgNewReport   }
+    { "genj.edit.EditView"        ,"edit"     ,Images.imgNewEdit     , new Dimension(256,480) },
+    { "genj.table.TableView"      ,"table"    ,Images.imgNewTable    , new Dimension(480,320) },
+    { "genj.tree.TreeView"        ,"tree"     ,Images.imgNewTree     , new Dimension(480,480) },
+    { "genj.timeline.TimelineView","timeline" ,Images.imgNewTimeline , new Dimension(480,256) },
+    { "genj.report.ReportView"    ,"report"   ,Images.imgNewReport   , new Dimension(480,320) },
+    { "genj.nav.NavigatorView"    ,"navigator",Images.imgNewNavigator, new Dimension(140,200) }
   };
 
   /** the known views' ids */
@@ -54,11 +55,13 @@ class View extends JFrame {
     TABLE    = 1,
     TREE     = 2,
     TIMELINE = 3,
-    REPORT   = 4;
+    REPORT   = 4,
+    NAVIGATOR= 5;
 
   /** members */
   private Registry registry;
   private Component component;
+  private Dimension defDimension;
 
   /**
    * Constructor for given args
@@ -68,7 +71,9 @@ class View extends JFrame {
    * @param image represented image
    * @param gedcom Gedcom to be viewed
    */
-  private View(String classname, String name, ImgIcon image, Gedcom gedcom) {
+  private View(String classname, String name, ImgIcon image, Dimension defaultDimension, Gedcom gedcom) {
+    
+    defDimension=defaultDimension;
 
     // Creat a view on registry and remember ControlCenter
     registry = getRegistryFor(gedcom,name);
@@ -231,9 +236,10 @@ class View extends JFrame {
     try {
       // Create the viewing component
       View view = new View(
-        (String) modes[mode][0],
-        (String) modes[mode][1],
-        (ImgIcon)modes[mode][2],
+        (String)   modes[mode][0],
+        (String)   modes[mode][1],
+        (ImgIcon)  modes[mode][2],
+        (Dimension)modes[mode][3],
         gedcom
       );
 
@@ -259,7 +265,7 @@ class View extends JFrame {
     if (box!=null) {
       setBounds(new AreaInScreen(box));
     } else {
-      setSize(new Dimension(480,320));
+      setSize(defDimension);
     }
   }
 

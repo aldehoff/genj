@@ -27,6 +27,7 @@ import javax.swing.event.*;
 
 import genj.gedcom.*;
 import genj.util.*;
+import genj.util.swing.ButtonHelper;
 import awtx.table.*;
 import genj.app.*;
 import awtx.Table;
@@ -224,8 +225,10 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
     }
     // EOC
   };
-  bDont    = ButtonHelper.createButton("Don't match",null,"DONT"   ,alistener,false,false);
-  bDontAll = ButtonHelper.createButton("Match none" ,null,"DONTALL",alistener,true ,false);
+  
+  ButtonHelper bh = new ButtonHelper().setListener(alistener).setInsets(new Insets(0,0,0,0));
+  bDont    = bh.setText("Don't match").setAction("DONT"   ).setEnabled(false).create();
+  bDontAll = bh.setText("Match none" ).setAction("DONTALL").setEnabled(true ).create();
 
   JPanel pActions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
   pActions.add(bDont);
