@@ -62,97 +62,6 @@ public class TagPathTree extends JScrollPane {
     cSelection = new Color(160,160,255);
 
   /**
-   * A Node in our TagPathSelector
-   */
-  static class Node implements TreeNode {
-    // LCD
-    /** members */
-    String  tag;
-    Vector  children;
-    Node    parent;
-
-    /** constructor */
-    private Node(String tag) {
-      this.tag = tag;
-      children = new Vector(4);
-    }
-    /** adds a child */
-    private void addChild(Node node) {
-      children.addElement(node);
-      node.parent = this;
-    }
-    /** returns a child for given tag */
-    private Node getChildFor(String tag) {
-      for (int i=0;i<children.size();i++) {
-        Node child = (Node)children.elementAt(i);
-        if (child.tag.equals(tag))
-          return child;
-        }
-      return null;
-    }
-    /** return the parent */
-    public TreeNode getParent() {
-      return parent;
-    }
-    /** returns whether children are allowed */
-    public boolean getAllowsChildren() {
-      return true;
-    }
-    /** returns child by position */
-    public TreeNode getChildAt(int index) {
-      return (Node)children.elementAt(index);
-    }
-    /** returns child count */
-    public int getChildCount() {
-      return children.size();
-    }
-    /** returns child index */
-    public int getIndex(TreeNode child) {
-      return children.indexOf(child);
-    }
-    /** returns whether this is a leaf */
-    public boolean isLeaf() {
-      return children.size()==0;
-    }
-    /** returns children */
-    public Enumeration children() {
-      return children.elements();
-    }
-    // EOC
-  }
-
-  /**
-   * Our Node Renderer
-   */
-  class NodeRenderer implements TreeCellRenderer {
-    // LCD
-    /** members */
-    private JPanel        panel = new JPanel();
-    private JCheckBox     checkbox = new JCheckBox();
-    private HeadlessLabel label = new HeadlessLabel();
-
-    /** constructor */
-    NodeRenderer() {
-      panel.setLayout(new BorderLayout());
-      panel.add(checkbox,"West");
-      panel.add(label   ,"Center");
-
-      checkbox.setOpaque(false);
-      label.setOpaque(false);
-      panel.setOpaque(false);
-    }
-    /** callback for component that's responsible for rendering */
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-      Node node = (Node)value;
-      label.setText( node.tag );
-      label.setIcon( Property.getDefaultImage(node.tag) );
-      checkbox.setSelected(selection.contains(node));
-      return panel;
-    }
-    // EOC
-  }
-
-  /**
    * Constructor
    */
   public TagPathTree() {
@@ -272,7 +181,7 @@ public class TagPathTree extends JScrollPane {
    * Create TagPath from given node   */
   private TagPath node2path(Node node) {
     String p = node.tag;
-    if (node.parent!=null) {
+    while (node.parent!=root) {
       node = node.parent;
       p = node.tag + ':' + p;
     }
@@ -337,4 +246,95 @@ public class TagPathTree extends JScrollPane {
     // Done
   }
 
-}
+  /**
+   * A Node in our TagPathSelector
+   */
+  static class Node implements TreeNode {
+    // LCD
+    /** members */
+    String  tag;
+    Vector  children;
+    Node    parent;
+
+    /** constructor */
+    private Node(String tag) {
+      this.tag = tag;
+      children = new Vector(4);
+    }
+    /** adds a child */
+    private void addChild(Node node) {
+      children.addElement(node);
+      node.parent = this;
+    }
+    /** returns a child for given tag */
+    private Node getChildFor(String tag) {
+      for (int i=0;i<children.size();i++) {
+        Node child = (Node)children.elementAt(i);
+        if (child.tag.equals(tag))
+          return child;
+        }
+      return null;
+    }
+    /** return the parent */
+    public TreeNode getParent() {
+      return parent;
+    }
+    /** returns whether children are allowed */
+    public boolean getAllowsChildren() {
+      return true;
+    }
+    /** returns child by position */
+    public TreeNode getChildAt(int index) {
+      return (Node)children.elementAt(index);
+    }
+    /** returns child count */
+    public int getChildCount() {
+      return children.size();
+    }
+    /** returns child index */
+    public int getIndex(TreeNode child) {
+      return children.indexOf(child);
+    }
+    /** returns whether this is a leaf */
+    public boolean isLeaf() {
+      return children.size()==0;
+    }
+    /** returns children */
+    public Enumeration children() {
+      return children.elements();
+    }
+    // EOC
+  }
+
+  /**
+   * Our Node Renderer
+   */
+  class NodeRenderer implements TreeCellRenderer {
+    // LCD
+    /** members */
+    private JPanel        panel = new JPanel();
+    private JCheckBox     checkbox = new JCheckBox();
+    private HeadlessLabel label = new HeadlessLabel();
+
+    /** constructor */
+    NodeRenderer() {
+      panel.setLayout(new BorderLayout());
+      panel.add(checkbox,"West");
+      panel.add(label   ,"Center");
+
+      checkbox.setOpaque(false);
+      label.setOpaque(false);
+      panel.setOpaque(false);
+    }
+    /** callback for component that's responsible for rendering */
+    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+      Node node = (Node)value;
+      label.setText( node.tag );
+      label.setIcon( Property.getDefaultImage(node.tag) );
+      checkbox.setSelected(selection.contains(node));
+      return panel;
+    }
+    // EOC
+  }
+
+} //TagPathTree

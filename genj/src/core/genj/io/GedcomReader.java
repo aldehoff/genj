@@ -455,7 +455,7 @@ public class GedcomReader implements Trackable {
       }
 
       // .. here's the property
-      prop = Property.createInstance(tag,value);
+      prop = Property.createInstance(tag,value,false);
       of.addProperty(prop);
 
       // .. a reference ? Remember !

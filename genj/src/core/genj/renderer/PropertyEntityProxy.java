@@ -45,5 +45,5 @@ public class PropertyEntityProxy extends PropertyProxy {
   public void render(Graphics g, Rectangle bounds, Property prop, int preference) {
     super.render(g, bounds, prop.getImage(false), ((Entity)prop).getId(), preference);
   }
-
+  
 } //PropertyNameProxy

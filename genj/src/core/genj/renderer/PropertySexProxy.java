@@ -20,6 +20,7 @@
 package genj.renderer;
 
 import genj.gedcom.Property;
+
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -47,5 +48,5 @@ public class PropertySexProxy extends PropertyProxy {
     if (preference==PREFER_DEFAULT) preference = PREFER_IMAGE;
     super.render(g, bounds, prop, preference);
   }
-
+  
 } //PropertyNameProxy

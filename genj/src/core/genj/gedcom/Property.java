@@ -315,7 +315,7 @@ public abstract class Property implements Comparable {
    * Create a property object from a TAG
    */
   public static Property createInstance(String tag, boolean subProps) {
-    Property result = createInstance(tag, "");
+    Property result = createInstance(tag, "", false);
     if (subProps) {
       result.addDefaultProperties();
     }
@@ -326,7 +326,7 @@ public abstract class Property implements Comparable {
    * Create a property object from a TAG, VALUE (can do preferred
    * sub-properties, too)
    */
-  public static Property createInstance(String tag,String value) {
+  public static Property createInstance(String tag,String value, boolean nullok) {
 
     // Find class for tag
     Class c = getMetaDefinition(tag).getPropertyClass();
@@ -348,7 +348,10 @@ public abstract class Property implements Comparable {
       return (Property)object;
 
     } catch (Throwable t) {
-      Debug.log(Debug.ERROR, Property.class, t);
+      
+      if (nullok) return null;
+      
+      Debug.log(Debug.WARNING, Property.class, t);
     }
 
     // Error means unknown

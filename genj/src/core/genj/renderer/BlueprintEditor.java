@@ -122,6 +122,12 @@ public class BlueprintEditor extends Box {
   }
   
   /**
+   * Commits changes   */
+  public void commit() {
+    if (blueprint!=null) blueprint.setHTML(html.getText());
+  }
+  
+  /**
    * The preview   */
   private class Preview extends JComponent implements DocumentListener {
     /**
@@ -178,13 +184,13 @@ public class BlueprintEditor extends Box {
       ));      
       // Recheck with the user
       int option = JOptionPane.showConfirmDialog(
-        BlueprintEditor.this, tree, resources.getString("insert.tip"), JOptionPane.OK_CANCEL_OPTION
+        BlueprintEditor.this, tree, resources.getString("prop.insert.tip"), JOptionPane.OK_CANCEL_OPTION
       );
       // .. OK?
       if (option != JOptionPane.OK_OPTION) return;
       // add those properties
       TagPath[] paths = tree.getSelection();
-      for (int p=0; p<paths.length; p++) {
+      for (int p=paths.length-1; p>=0; p--) {
         html.insert("<prop path="+paths[p].toString()+">", html.getCaretPosition());
       }
       // done
@@ -200,21 +206,41 @@ public class BlueprintEditor extends Box {
      * Constructor
      */
     private Example() {
-      setId("X999");
       tag2value.put("NAME", "John /Doe/");
       tag2value.put("SEX" , "M");
       tag2value.put("DATE", "01 JAN 1900");
       tag2value.put("PLAC", "Somewhere");
-    }    /**
+    }
+    /**
+     * @see genj.gedcom.Indi#getId()
+     */
+    public String getId() {
+      String prefix;
+      if (blueprint==null) prefix = "X";
+      else prefix = Gedcom.getPrefixFor(BlueprintManager.getInstance().getType(blueprint));
+      return prefix+"999";
+    }
+    /**
+     * @see genj.gedcom.PropertyIndi#getTag()
+     */
+    public String getTag() {
+      return blueprint==null ? 
+        super.getTag() : 
+        Gedcom.getTagFor(BlueprintManager.getInstance().getType(blueprint));
+    }
+    /**
      * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath, boolean)
      */
     public Property getProperty(TagPath path, boolean validOnly) {
-      // entity itself is meant?
-      if (path.length()==1) return this;
+      // single?
+      if (path.length()==1) return path.getLast().equals(getTag()) ? this : null;
       // grab a value and wrap it in the property
       Object value = tag2value.get(path.getLast());
       if (value==null) value = "some "+path.getLast().toLowerCase();
-      return Property.createInstance(path.getLast(), value.toString());
+      // .. create the property
+      Property result = Property.createInstance(path.getLast(), value.toString(), true);
+      // done
+      return result;
     }
   } //ExampleIndi  
 } //RenderingSchemeEditor

@@ -221,6 +221,9 @@ public class BlueprintList extends JSplitPane {
      */
     public void valueChanged(TreeSelectionEvent e) {
       
+      // commit editor's changes
+      editor.commit();
+      
       // disallow no selection
       if (e.getNewLeadSelectionPath()==null) {
         treeBlueprints.setSelectionPath(e.getOldLeadSelectionPath());

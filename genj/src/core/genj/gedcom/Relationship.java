@@ -62,29 +62,9 @@ public abstract class Relationship {
       if (!(entity.getProperty() instanceof PropertyXRef))
         throw new GedcomException("Can apply relationship to non-xref");
 
-      try {   
-        PropertyXRef xref = (PropertyXRef)Property.createInstance(entity.getProperty().getTag(), "");     
-        owner.addProperty(xref);
-        xref.setTarget((PropertyXRef)entity.getProperty());
-      } catch (Throwable t) {
-        t.printStackTrace();
-      }      
-/*
-    // Create submitter on owner's end
-    owner.addProperty(new PropertySubmitter(this));
-
-    // Create source on owner's end
-    owner.addProperty(new PropertySource(this));
-    
-    // Create repository on owner's end
-    owner.addProperty(new PropertyRepository(this));
-
-    // Create note on owner's end
-    owner.addProperty(new PropertyNote(this));
-
-    // Create media on owner's end
-    owner.addProperty(new PropertyMedia(this));
-*/    
+      PropertyXRef xref = (PropertyXRef)Property.createInstance(entity.getProperty().getTag(), "", true);     
+      owner.addProperty(xref);
+      xref.setTarget((PropertyXRef)entity.getProperty());
     }
 
   } // LinkedBy

@@ -172,6 +172,10 @@ public class TagPath {
 
     Map hash = new HashMap(32);
 
+    // Add the minimum - type's 1-length path
+    String tag = gedcom.getTagFor(type);
+    hash.put(tag, new TagPath(tag));
+
     // Loop through all entities of current type
     List entities  = gedcom.getEntities(type);
     for (int e=0;e<entities.size();e++) {

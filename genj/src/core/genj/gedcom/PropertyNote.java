@@ -147,8 +147,7 @@ public class PropertyNote extends PropertyXRef {
     // Note?
     if (note!=null) {
       int pos = note.indexOf('\n');
-      if (pos<0)
-      return note;
+      if (pos<0) return note;
       return note.substring(0,pos)+"...";
     }
 

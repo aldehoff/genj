@@ -44,7 +44,7 @@ public class PropertyDateProxy extends PropertyProxy {
   public void render(Graphics g, Rectangle bounds, Property prop, int preference) {
     super.render(g, bounds, prop.getImage(false), getDate(prop), preference);
   }
-  
+
   /**
    * 
    */

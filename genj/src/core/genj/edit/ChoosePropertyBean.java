@@ -210,7 +210,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
         result = null;
       } else {
         result = new Property[1];
-        result[0] = Property.createInstance(tfNew.getText(),"");
+        result[0] = Property.createInstance(tfNew.getText(),"",false);
       }
     }
 
