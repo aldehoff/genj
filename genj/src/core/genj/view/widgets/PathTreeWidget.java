@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -193,16 +194,12 @@ public class PathTreeWidget extends JScrollPane {
      * Sets the TagPaths to choose from
      */
     public void setPaths(TagPath[] ps, TagPath[] ss) {
-      
+
       // remember selection
       selection = new HashSet(Arrays.asList(ss));
       
       // keep paths
-      Set s = new HashSet(Arrays.asList(ps));
-      s.addAll(selection);
-      
-    // FIXME how about keeping the order here!!!
-      paths = TagPath.toArray(s);
+      paths = ps;
       
       // notify
       TreeModelEvent e = new TreeModelEvent(this, new Object[]{ this });
@@ -282,10 +279,15 @@ public class PathTreeWidget extends JScrollPane {
      */
     private TagPath[] getChildrenOfNode(TagPath path) {
       // all paths starting with path
-      HashSet children = new HashSet();
+      List children = new ArrayList(8);
       for (int p=0;p<paths.length;p++) {
-        if (paths[p].length()>path.length()&&paths[p].startsWith(path))
-          children.add(new TagPath(paths[p], path.length()+1));
+        if (paths[p].length()>path.length()&&paths[p].startsWith(path)) 
+          add(new TagPath(paths[p], path.length()+1), children);
+      }
+      for (Iterator ss=selection.iterator();ss.hasNext();) {
+        TagPath sel = (TagPath)ss.next();
+        if (sel.length()>path.length()&&sel.startsWith(path)) 
+          add(new TagPath(sel, path.length()+1), children);
       }
       // done
       return TagPath.toArray(children);
@@ -295,13 +297,19 @@ public class PathTreeWidget extends JScrollPane {
      * Return the children for root
      */
     private TagPath[] getChildrenOfRoot() {
-      // all path's first tag 
-      HashSet children = new HashSet();
-      for (int p=0;p<paths.length;p++) {
-        children.add(new TagPath(paths[p], 1));
-      }
+      // all paths' first tag 
+      List children = new ArrayList(8);
+      for (int p=0;p<paths.length;p++) 
+        add(new TagPath(paths[p], 1), children);
+      for (Iterator ss=selection.iterator();ss.hasNext();) 
+        add(new TagPath((TagPath)ss.next(), 1), children);
       // done
       return TagPath.toArray(children);
+    }
+    
+    private void add(TagPath path, List list) {
+      if (!list.contains(path))
+        list.add(path);
     }
     
     /**

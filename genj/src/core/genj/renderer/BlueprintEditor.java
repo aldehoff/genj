@@ -232,7 +232,7 @@ public class BlueprintEditor extends JSplitPane {
       if (gedcom==null) return;
       // create a tree of available TagPaths
       PathTreeWidget tree = new PathTreeWidget();
-      TagPath[] paths = TagPath.filter(MetaProperty.getPaths(Property.class), blueprintManager.getType(blueprint));
+      TagPath[] paths = MetaProperty.getPaths(blueprintManager.getType(blueprint), Property.class);
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
       int option =  windowManager.openDialog(

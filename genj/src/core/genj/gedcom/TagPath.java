@@ -19,9 +19,7 @@
  */
 package genj.gedcom;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -242,19 +240,6 @@ public class TagPath {
    */
   public static TagPath[] toArray(Collection c) {
     return (TagPath[])c.toArray(new TagPath[c.size()]);
-  }
-
-  /**
-   * Filter TagPath by entities
-   */
-  public static TagPath[] filter(TagPath[] paths, int entity) {
-    List result = new ArrayList(paths.length);
-    String tag = Gedcom.getTagFor(entity);
-    for (int i=0; i<paths.length; i++) {
-    	if (paths[i].get(0).equals(tag)) 
-        result.add(paths[i]);
-    }
-    return toArray(result);
   }
 
 } //TagPath

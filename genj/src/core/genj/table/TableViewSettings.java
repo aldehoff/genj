@@ -97,13 +97,13 @@ public class TableViewSettings extends JPanel implements Settings {
     gh.add(new JLabel(resources.getString("info.entities"))  ,0,1,1,1);
     gh.add(cTypes                  ,1,1,2,1,gh.GROWFILL_HORIZONTAL);
 
-    gh.add(new JLabel(resources.getString("info.columns"))  ,0,2,1,1);
-    gh.add(pathTree                ,1,2,2,1,gh.GROWFILL_BOTH);
+    gh.add(new JLabel(resources.getString("info.columns"))   ,0,2,1,1);
+    gh.add(pathTree                ,1,2,2,2,gh.GROWFILL_BOTH);
 
-    gh.add(new JLabel(resources.getString("info.order"))  ,0,3,1,1);
-    gh.add(bUp                     ,0,4,1,1);
-    gh.add(bDown                   ,0,5,1,1);
-    gh.add(pathList                ,1,3,2,4,gh.GROWFILL_BOTH);
+    gh.add(new JLabel(resources.getString("info.order"))  ,0,4,1,1);
+    gh.add(bUp                                            ,0,5,1,1,gh.FILL_HORIZONTAL);
+    gh.add(bDown                                          ,0,6,1,1,gh.FILL_HORIZONTAL);
+    gh.add(pathList                                       ,1,4,2,4,gh.GROWFILL_BOTH);
 
     // Done
   }
@@ -139,7 +139,7 @@ public class TableViewSettings extends JPanel implements Settings {
 
     // Reflect columns by TagPaths
     TagPath[] selectedPaths = table.getPaths(table.getType());
-    TagPath[] usedPaths     = TagPath.filter(MetaProperty.getPaths(Property.class), table.getType());
+    TagPath[] usedPaths     = MetaProperty.getPaths(table.getType(), Property.class);
 
     pathTree.setPaths(usedPaths, selectedPaths);
     pathList.setPaths(selectedPaths);
