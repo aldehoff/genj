@@ -9,17 +9,22 @@
    -->
   <target name="wikipedia" depends="compile">
 
-    <antcall target="wikipedia.language">
-      <param name="language" value="de"/>
-      <param name="ignore"   value="Katastrophen\\Sport\\Wissenschaft\\Kultur\\Geboren\\Gestorben\\Halbjahr\\sonstiges\\Bewegende\\Organisationen"/>
-    </antcall>
+  	<!-- english - we're ignore quite a few keywords to limit # of results since en.wikipedia.org doesn't categorize as nicely as others -->
     <antcall target="wikipedia.language">
       <param name="language" value="en"/>
-      <param name="ignore" value="Births\\Deaths\\Year"/>
+      <param name="ignore" value="births|deaths|year|first|opera|music|compose|university|panic|game|match|publish|scandal|strike|building|crime|visit|anniversary|quake|construction|discovery|invention|female|found|election|establish|patent|kill|trial|record|becomes"/>
+    </antcall>      	
+      	
+  	<!-- german - normal set of keywords is sufficient to cut the # of results to a reasonable historical set -->
+    <antcall target="wikipedia.language">
+      <param name="language" value="de"/>
+      <param name="ignore"   value="Katastrophen|Sport|Wissenschaft|Kultur|Geboren|Gestorben|Halbjahr|sonstiges|Bewegende|Organisationen"/>
     </antcall>
+  	
+  	<!-- french - normal set of keywords is sufficient to cut the # of results to a reasonable historical set -->
     <antcall target="wikipedia.language">
       <param name="language" value="fr"/>
-      <param name="ignore"   value="Sciences\\Arts\\Sports\\Musique\\Physique\\Technologie\\Naissances\\Décès\\Littérature\\Cinéma\\Techniques"/>
+      <param name="ignore"   value="Sciences|Arts|Sports|Musique|Physique|Technologie|Naissances|Décès|Littérature|Cinéma|Techniques"/>
     </antcall>
   	
   </target>
