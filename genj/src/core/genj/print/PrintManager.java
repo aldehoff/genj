@@ -22,7 +22,7 @@ package genj.print;
 import genj.app.App;
 import genj.util.Debug;
 import genj.util.Registry;
-import gj.ui.UnitGraphics;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -51,7 +51,11 @@ public class PrintManager {
   
   // 1 printunit = 1/72 inch = 1/72 * 2.54 cm
   // => cm / 2.54 * 72 = printunit
-  private final static double CM2PRINTUNIT = 1/2.54 * 72;
+  //private final static double CM2PRINTUNIT = 1/2.54 * 72;
+  
+  /** the default resolution in dots per cm */
+  private final static Point2D.Double resolution = 
+    new Point2D.Double(72/2.54, 72/2.54);
 
   /** singleton */
   private static PrintManager instance = null;
@@ -267,10 +271,10 @@ public class PrintManager {
       renderer = rendErer;
       
       // calculate pages
-      Point pages = renderer.getNumPages(new Point2D.Double(
-        pageFormat.getImageableWidth()  / CM2PRINTUNIT,
-        pageFormat.getImageableHeight() / CM2PRINTUNIT
-      ));   
+      Point pages = renderer.getNumPages(
+        new Point2D.Double(pageFormat.getImageableWidth(),pageFormat.getImageableHeight()),
+        resolution
+      );   
 
       // safety check
       if (pages.x==0||pages.y==0) 
@@ -310,15 +314,8 @@ public class PrintManager {
         pageFormat.getImageableHeight()
       ));
       
-      double factor = 1;//72.0D/300;
-      
-      g.scale(factor,factor);
-
-      // create our graphics set to cm's
-      UnitGraphics ug = new UnitGraphics(graphics, CM2PRINTUNIT/factor, CM2PRINTUNIT/factor);
-      
       // render it
-      renderer.renderPage(page, ug);
+      renderer.renderPage(page, g, resolution);
       
       // done
       return PAGE_EXISTS;

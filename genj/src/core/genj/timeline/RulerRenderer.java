@@ -19,10 +19,9 @@
  */
 package genj.timeline;
 
-import gj.ui.UnitGraphics;
+import genj.util.swing.UnitGraphics;
 import java.awt.Color;
 import java.awt.FontMetrics;
-import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
@@ -48,7 +47,7 @@ public class RulerRenderer extends ContentRenderer {
     double
       from  = Math.ceil(model.min),
       to    = Math.floor(model.max),
-      width = graphics.pixels2units(new Point(fm.stringWidth(" 0000 "),0)).getX();
+      width = fm.stringWidth(" 0000 ") / graphics.getUnit().getX();
 
     // render background
     renderBackground(graphics, model);
@@ -100,15 +99,15 @@ public class RulerRenderer extends ContentRenderer {
    * Renders one year
    */
   private void renderYear(UnitGraphics g, Model model,  FontMetrics fm, double year, double align) {
-    // draw a vertical line
-    g.setColor(cTick);
-    g.draw(TICK, year, 1, Double.NaN, Double.NaN, 0, true);
-    
-    // draw the label
-    g.setColor(cText);
-    g.draw(Integer.toString((int)year), year, 1, align, 0, -fm.getDescent());
-    
-    // done
+//    // draw a vertical line
+//    g.setColor(cTick);
+//    g.draw(TICK, year, 1, Double.NaN, Double.NaN, 0, true);
+//    
+//    // draw the label
+//    g.setColor(cText);
+//    g.draw(Integer.toString((int)year), year, 1, align, 0, -fm.getDescent());
+//    
+//    // done
   }
 
   /**

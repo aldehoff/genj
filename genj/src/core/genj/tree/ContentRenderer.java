@@ -23,10 +23,10 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.renderer.EntityRenderer;
+import genj.util.swing.UnitGraphics;
 import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Node;
-import gj.ui.UnitGraphics;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -67,16 +67,16 @@ public class ContentRenderer {
   /**
    * Render the content
    */
-  public void render(UnitGraphics ug, Model model) {  
+  public void render(UnitGraphics g, Model model) {  
     // translate to center
     Rectangle2D bounds = model.getBounds();
-    ug.translate(-bounds.getX(), -bounds.getY());
+    g.translate(-bounds.getX(), -bounds.getY());
     // render background
-    renderBackground(ug, bounds);
+    renderBackground(g, bounds);
     // render the arcs
-    renderArcs(ug, model.getArcs());
+    renderArcs(g, model.getArcs());
     // render the nodes
-    renderNodes(ug, model);
+    renderNodes(g, model);
     // done
   }  
   
@@ -121,7 +121,7 @@ public class ContentRenderer {
     Color color = getColor(content);
     if (color!=cBackground) {
       g.setColor(color);
-      g.draw(shape, x, y, false);
+      g.draw(shape, x, y);
     }
     // draw its content
     renderContent(g, x, y, shape, content);
@@ -149,6 +149,7 @@ public class ContentRenderer {
    * Render the content of a node
    */
   private void renderContent(UnitGraphics g, double x, double y, Shape shape, Object content) {
+    
     // safety check
     EntityRenderer renderer = null;
     if (content instanceof Indi) renderer = indiRenderer;
@@ -160,7 +161,7 @@ public class ContentRenderer {
     g.pushTransformation();
     // draw it
     g.translate(x, y);
-    Rectangle r = g.units2pixels(r2d);
+    Rectangle r = g.getRectangle(r2d);
     r.x+=2;r.y+=2;r.width-=4;r.height-=4;
     renderer.render(g.getGraphics(), (Entity)content, r);
     // restore clip&transformation
@@ -183,7 +184,7 @@ public class ContentRenderer {
       Arc arc = (Arc)it.next();
       // its path
       Path path = arc.getPath();
-      if (path!=null) g.draw(path, 0, 0, false);
+      if (path!=null) g.draw(path, 0, 0);
       // next
     }
     // done

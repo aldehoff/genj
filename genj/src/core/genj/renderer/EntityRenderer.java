@@ -187,7 +187,7 @@ public class EntityRenderer {
     // clip it
     Rectangle oc = g.getClipBounds();
     g.clipRect(r.x,r.y,r.width,r.height);
-    
+
     // show it
     root.paint(g, r);
     
@@ -681,10 +681,10 @@ public class EntityRenderer {
         g.drawRect(r.x,r.y,r.width-1,r.height-1);
       }
       // clip and render
-      Rectangle old = g.getClipBounds();
+      Shape old = g.getClip();
       g.clipRect(r.x, r.y, r.width, r.height);
       proxy.render(g, r, p, preference);
-      g.setClip(old.x, old.y, old.width, old.height);
+      g.setClip(old);
       // done
     }
     /**

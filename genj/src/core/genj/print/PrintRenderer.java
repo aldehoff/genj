@@ -19,7 +19,7 @@
  */
 package genj.print;
 
-import gj.ui.UnitGraphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 
@@ -31,12 +31,13 @@ public interface PrintRenderer {
   /**
    * Calculates the number of pages (horizontally and vertically)
    * needed to render the content on pages with given imageable
-   * size (in centimeters)     */
-  public Point getNumPages(Point2D pageSize);
+   * size (dots) and resolution (in dots per centimeters)     */
+  public Point getNumPages(Point2D pageSize, Point2D resolution);
   
   /**
-   * Renders page content (x,y) on given context (units in centimeters)
+   * Renders page content (x,y) on given context (dots) and 
+   * resolution (in dots per centimeters)
    */  
-  public void renderPage(Point page, UnitGraphics g);
+  public void renderPage(Point page, Graphics2D g, Point2D resolution);
   
 } //PrintRenderer

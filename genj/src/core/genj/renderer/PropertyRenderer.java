@@ -317,7 +317,6 @@ public class PropertyRenderer {
         Math.min(1.0D, ((double)bounds.width )/w),
         Math.min(1.0D, ((double)bounds.height)/h)
       );
-    zoom = 1.0D;
       img.paintIcon(g, bounds.x, bounds.y, zoom);
       // done
     }

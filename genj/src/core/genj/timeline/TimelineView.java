@@ -26,13 +26,13 @@ import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.DoubleValueSlider;
+import genj.util.swing.UnitGraphics;
 import genj.util.swing.ScreenResolutionScale;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.ContextPopupSupport;
 import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
-import gj.ui.UnitGraphics;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -360,15 +360,6 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
   }
   
   /**
-   * Convert cmPyear into text
-   */
-//  protected final String cm2txt(double cm, String txt) {
-//    NumberFormat nf = NumberFormat.getInstance();
-//    nf.setMaximumFractionDigits(1);
-//    return resources.getString(txt, nf.format(cm));
-//  }
-  
-  /**
    * The ruler 'at the top'
    */
   private class Ruler extends JComponent {
@@ -382,7 +373,8 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
       rulerRenderer.cText = csRuler.getColor("text");
       rulerRenderer.cTick = csRuler.getColor("tick");
       // prepare UnitGraphics
-      UnitGraphics graphics = new UnitGraphics(g, 
+      UnitGraphics graphics = new UnitGraphics(
+        g,
         UNITS.getX()*cmPerYear, 
         getFontMetrics(getFont()).getHeight()+1
       );
@@ -414,8 +406,8 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
      */
     public Dimension getPreferredSize() {
       return new Dimension(
-        UnitGraphics.units2pixels(model.max-model.min, UNITS.getX()*cmPerYear),
-        UnitGraphics.units2pixels(model.layers.size(),getFontMetrics(getFont()).getHeight()+1)
+        (int)((model.max-model.min) * UNITS.getX()*cmPerYear),
+         model.layers.size()  * (getFontMetrics(getFont()).getHeight()+1)
       );
     }
   
@@ -437,7 +429,8 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
       contentRenderer.paintTags = isPaintTags;
       
       // prepare UnitGraphics
-      UnitGraphics graphics = new UnitGraphics(g, 
+      UnitGraphics graphics = new UnitGraphics(
+        g,
         UNITS.getX()*cmPerYear, 
         getFontMetrics(getFont()).getHeight()+1
       );

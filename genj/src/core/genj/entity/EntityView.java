@@ -32,12 +32,13 @@ import genj.util.Resources;
 import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
-import gj.ui.UnitGraphics;
 
 import java.awt.Color;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
@@ -120,7 +121,12 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     g.setColor(Color.white);
     g.fillRect(0,0,bounds.width,bounds.height);
     g.setColor(Color.black);
-    if (isAntialiasing) new UnitGraphics(g,1,1).setAntialiasing(true);
+
+      ((Graphics2D)g).setRenderingHint(
+        RenderingHints.KEY_ANTIALIASING,
+        isAntialiasing ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF
+      );
+
     renderer.render(g, entity, new Rectangle(0,0,bounds.width,bounds.height));
   }
 

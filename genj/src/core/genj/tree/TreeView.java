@@ -33,6 +33,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.DoubleValueSlider;
+import genj.util.swing.UnitGraphics;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ScreenResolutionScale;
 import genj.util.swing.ViewPortAdapter;
@@ -43,7 +44,6 @@ import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import gj.model.Node;
-import gj.ui.UnitGraphics;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -250,8 +250,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     Point2D     p = node.getPosition();
     Dimension   d = getSize();
     content.scrollRectToVisible(new Rectangle(
-      UnitGraphics.units2pixels( p.getX() - b.getMinX(), UNITS.getX()*zoom ) - d.width /2,
-      UnitGraphics.units2pixels( p.getY() - b.getMinY(), UNITS.getY()*zoom ) - d.height/2,
+      (int)( (p.getX()-b.getMinX()) / (UNITS.getX()*zoom) ) - d.width /2,
+      (int)( (p.getY()-b.getMinY()) / (UNITS.getY()*zoom) ) - d.height/2,
       d.width ,
       d.height
     ));
@@ -365,8 +365,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   public Entity getEntityAt(Point pos) {
     Rectangle2D bounds = model.getBounds();
     return model.getEntityAt(
-      UnitGraphics.pixels2units(pos.x,UNITS.getX()*zoom)+bounds.getMinX(), 
-      UnitGraphics.pixels2units(pos.y,UNITS.getY()*zoom)+bounds.getMinY()
+      pos.x / (UNITS.getX()*zoom) + bounds.getMinX(), 
+      pos.y / (UNITS.getY()*zoom) + bounds.getMinY()
     );
   }
   
@@ -407,7 +407,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     protected void renderContent(Graphics g, double zoomx, double zoomy) {
 
       // go 2d
-      UnitGraphics ug = new UnitGraphics(g, UNITS.getX()*zoomx*zoom, UNITS.getY()*zoomy*zoom);
+      UnitGraphics gw = new UnitGraphics(g,UNITS.getX()*zoomx*zoom, UNITS.getY()*zoomy*zoom);
+      
       // init renderer
       contentRenderer.cBackground    = Color.white;
       contentRenderer.cIndiShape     = Color.black;
@@ -418,10 +419,12 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.selection      = null;
       contentRenderer.indiRenderer   = null;
       contentRenderer.famRenderer    = null;
+      
       // let the renderer do its work
-      ug.pushTransformation();
-      contentRenderer.render(ug, model);
-      ug.popTransformation();
+      contentRenderer.render(gw, model);
+      
+      // restore
+      gw.popTransformation();
 
       // done  
     }
@@ -481,10 +484,10 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     public Dimension getPreferredSize() {
       Rectangle2D bounds = model.getBounds();
-      int 
-        w = UnitGraphics.units2pixels(bounds.getWidth (), UNITS.getX()*zoom),
-        h = UnitGraphics.units2pixels(bounds.getHeight(), UNITS.getY()*zoom);
-      return new Dimension(w,h);
+      double 
+        w = bounds.getWidth () * (UNITS.getX()*zoom),
+        h = bounds.getHeight() * (UNITS.getY()*zoom);
+      return new Dimension((int)w,(int)h);
     }
   
     /**
@@ -492,8 +495,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     public void paint(Graphics g) {
       // go 2d
-      UnitGraphics ug = new UnitGraphics(g, UNITS.getX()*zoom, UNITS.getY()*zoom);
-      ug.setAntialiasing(isAntialiasing);
+      UnitGraphics gw = new UnitGraphics(g,UNITS.getX()*zoom, UNITS.getY()*zoom);
+      gw.setAntialiasing(isAntialiasing);
       // init renderer
       contentRenderer.cBackground    = colors.getColor("content");
       contentRenderer.cIndiShape     = colors.getColor("indis");
@@ -505,7 +508,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.indiRenderer   = getEntityRenderer(g, Gedcom.INDIVIDUALS);
       contentRenderer.famRenderer    = getEntityRenderer(g, Gedcom.FAMILIES   );
       // let the renderer do its work
-      contentRenderer.render(ug, model);
+      contentRenderer.render(gw, model);
       // done
     }
     

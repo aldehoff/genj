@@ -21,11 +21,12 @@ package genj.timeline;
 
 import genj.gedcom.Entity;
 import genj.util.swing.ImageIcon;
-import gj.ui.UnitGraphics;
+import genj.util.swing.UnitGraphics;
 import java.awt.Color;
 import java.awt.FontMetrics;
-import java.awt.Polygon;
 import java.awt.Shape;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import java.util.List;
@@ -36,9 +37,7 @@ import java.util.List;
 public class ContentRenderer {
   
   /** a mark used for demarking time spans */
-  private final static Shape 
-    FROM_MARK = calcFromMark(),
-    TO_MARK = calcToMark();
+  private Shape FROM_MARK, TO_MARK; 
   
   /** whether we paint tags or not */
   /*package*/ boolean paintTags = false;
@@ -77,6 +76,9 @@ public class ContentRenderer {
    * Renders the model
    */
   public void render(UnitGraphics graphics, Model model) {
+    // calculate marks
+    FROM_MARK = calcFromMark(graphics.getUnit());
+    TO_MARK = calcToMark(graphics.getUnit());
     // render background
     renderBackground(graphics, model);
     // render grid
@@ -164,15 +166,21 @@ public class ContentRenderer {
     // calculate some parameters
     boolean em  = event.pe.getEntity() == selection;
     FontMetrics fm = g.getFontMetrics();
-    int dy = -fm.getDescent();
        
     // draw it's extend
     g.setColor(cTimespan);
     
-    g.draw(FROM_MARK, event.from, level+1, Double.NaN, Double.NaN, 0, true);
+    g.draw(FROM_MARK, event.from, level+1, true);
     if (event.from!=event.to) {
-      g.draw(event.from, level+1, event.to, level+1, 0, -1);
-      g.draw(TO_MARK, event.to, level+1, Double.NaN, Double.NaN, 0, true);
+      
+      // FIXME : calculate 1 pixel before starting to draw
+      g.draw(
+        event.from, 
+        level+1 -(float)(1F/g.getUnit().getY()), 
+        event.to, 
+        level+1 -(float)(1F/g.getUnit().getY())
+      );
+      g.draw(TO_MARK, event.to, level+1, true);
     }
 
     // clipping from here    
@@ -180,14 +188,14 @@ public class ContentRenderer {
         
     // draw its image
     ImageIcon img = event.pe.getImage(false);
-    g.draw(img.getImage(), event.from, level+0.5);
+    g.draw(img, event.from, level+0.5);
     int dx=img.getIconWidth();
 
     // draw its tag    
     if (paintTags) {
       String tag = event.pe.getTag();
       g.setColor(cTag);
-      g.draw(tag, event.from, level+1, 0, dx, dy);
+      g.draw(tag, event.from, level+1, 0, 1, dx, 0);
       dx+=fm.stringWidth(tag)+fm.charWidth(' ');
     }
 
@@ -195,14 +203,14 @@ public class ContentRenderer {
     if (cSelected!=null&&event.pe.getEntity()==selection) g.setColor(cSelected);
     else g.setColor(cText);
     String txt = event.content;
-    g.draw(txt, event.from, level+1, 0, dx, dy);
+    g.draw(txt, event.from, level+1, 0, 1, dx, 0);
     dx+=fm.stringWidth(txt)+fm.charWidth(' ');
     
     // draw its date
     if (paintDates) {
       String date = " (" + event.pd + ')';
       g.setColor(cDate);
-      g.draw(date, event.from, level+1, 0, dx, dy);
+      g.draw(date, event.from, level+1, 0, 1, dx, 0);
     }
 
     // done with clipping
@@ -212,42 +220,26 @@ public class ContentRenderer {
   }
   
   /**
-   * Class for specialized Clip region
-   */
-/*    
-  protected class Clip {
-    double minYear, maxYear;
-    int minLayer, maxLayer;
-    protected Clip(Graphics g, FontMetrics fm, Model model) {
-      Rectangle r = g.getClipBounds();
-      minYear = model.min+pixels2cm(r.x)/cmPyear;
-      maxYear = model.min+pixels2cm(r.x+r.width)/cmPyear;
-      int lh = calcLayerHeight(fm);
-      minLayer = r.y/lh;
-      maxLayer = minLayer + r.height/lh + 1;
-    }    
-  } //Clip
-*/  
-
-  /**
    * Generates a mark
    */
-  private static Shape calcFromMark() {
-    Polygon result = new Polygon();
-    result.addPoint(0,-1);
-    result.addPoint(-3,-4);
-    result.addPoint(-3,2);
+  private Shape calcFromMark(Point2D unit) {
+    GeneralPath result = new GeneralPath();
+    result.moveTo((float)( 0F/unit.getX()),(float)(-1F/unit.getY()));
+    result.lineTo((float)(-3F/unit.getX()),(float)(-5F/unit.getY()));
+    result.lineTo((float)(-3F/unit.getX()),(float)(+3F/unit.getY()));
+    result.closePath();
     return result;
   }
   
   /**
    * Generates a mark
    */
-  private static Shape calcToMark() {
-    Polygon result = new Polygon();
-    result.addPoint(0,-1);
-    result.addPoint(3,-4);
-    result.addPoint(3,2);
+  private Shape calcToMark(Point2D unit) {
+    GeneralPath result = new GeneralPath();
+    result.moveTo((float)( 0F/unit.getX()),(float)(-1F/unit.getY()));
+    result.lineTo((float)( 4F/unit.getX()),(float)(-6F/unit.getY()));
+    result.lineTo((float)( 4F/unit.getX()),(float)(+4F/unit.getY()));
+    result.closePath();
     return result;
   }
   

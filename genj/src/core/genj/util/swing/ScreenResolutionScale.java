@@ -1,8 +1,27 @@
+/**
+ * GenJ - GenealogyJ
+ *
+ * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ *
+ * This piece of code is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package genj.util.swing;
 
-import gj.ui.UnitGraphics;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -61,48 +80,73 @@ public class ScreenResolutionScale extends JComponent {
   /**
    * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
    */
-  protected void paintComponent(Graphics g) {
+  protected void paintComponent(Graphics graphcs) {
     
     // clear background
-    g.setColor(Color.white);
-    g.fillRect(0,0,getWidth(),getHeight());
-    g.setColor(Color.black);
-    g.drawRect(0,0,getWidth()-1,getHeight()-1);
+    graphcs.setColor(Color.white);
+    graphcs.fillRect(0,0,getWidth(),getHeight());
+    graphcs.setColor(Color.black);
+    graphcs.drawRect(0,0,getWidth()-1,getHeight()-1);
+
+    // draw label
+    paintLabel(graphcs);
+    
+    // draw scale
+    paintScale(graphcs);
+    
+    // done
+  }
+  
+  /**
+   * draw the scale   */
+  private void paintScale(Graphics graphcs) {
+
+    // wrap it
+    UnitGraphics gw = new UnitGraphics(graphcs, dpc.getX(), dpc.getY());
+    gw.setAntialiasing(true);
+    //gw.scale(dpc.getX(), dpc.getY());
+
+    // set font
+    gw.setFont(new Font("Arial", Font.PLAIN, 10));
     
     // draw ticks   
-    //g.setColor(Color.gray);
-    g.setPaintMode();
-    UnitGraphics ug = new UnitGraphics(g, dpc.getX(), dpc.getY());
-    Rectangle2D clip = ug.getClip();
-    FontMetrics fm = g.getFontMetrics(); 
-    int
-      fh = fm.getHeight(),
-      fd = fh - fm.getDescent();
+    Rectangle2D clip = gw.getClip();
 
     for (int X=1;X<clip.getMaxX(); X++) {
       // segment
-      ug.setColor(Color.gray);
+      gw.setColor(Color.gray);
       for (double x=0.1; x<0.9; x+=0.1)
-        ug.draw(X-x,0,X-x,0.1,0,1);
-      ug.setColor(Color.black);
-      ug.draw(X,0,X,0.4,0,1);
-      ug.draw(""+X, X, 1, 0, 2, 0);
+        gw.draw(X-x,0,X-x,0.1);
+      gw.setColor(Color.black);
+      gw.draw(X,0,X,0.4);
+      gw.draw(""+X, X, 1, 0.0D, 0.0D);
       // next
     }
 
     for (int Y=1;Y<clip.getMaxY(); Y++) {
       // segment
-      ug.setColor(Color.gray);
+      gw.setColor(Color.gray);
       for (double y=0.1; y<0.9; y+=0.1)
-        ug.draw(0,Y-y,0.1,Y-y,1,0);
-      ug.setColor(Color.black);
-      ug.draw(0,Y,0.4,Y,0,1);
-      ug.draw(""+Y, 1, Y, 1.0, 0, fd);
+        gw.draw(0,Y-y,0.1,Y-y);
+      gw.setColor(Color.black);
+      gw.draw(0,Y,0.4,Y);
+      gw.draw(""+Y, 1, Y, 0.0, 0.0);
       // next
     }
 
-    // draw label
-    g.setColor(Color.black);
+    // done
+  }
+  
+  /**
+   * draw the label in the middle
+   */
+  private void paintLabel(Graphics graphcs) {
+    graphcs.setColor(Color.black);
+    FontMetrics fm = graphcs.getFontMetrics(); 
+    int
+      fh = fm.getHeight(),
+      fd = fh - fm.getDescent();
+    
     NumberFormat nf = NumberFormat.getInstance();
     nf.setMaximumFractionDigits(2);
     String[] txt = new String[]{
@@ -112,14 +156,12 @@ public class ScreenResolutionScale extends JComponent {
       "pixels/cm"
     };
     for (int i = 0; i < txt.length; i++) {
-      g.drawString(
+      graphcs.drawString(
         txt[i], 
         getWidth()/2 - fm.stringWidth(txt[i])/2, 
         getHeight()/2 - txt.length*fh/2 + i*fh + fh
       );
     }
-
-    // done
   }
   
   /**
