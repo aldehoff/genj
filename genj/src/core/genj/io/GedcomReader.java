@@ -451,8 +451,9 @@ public class GedcomReader implements Trackable {
       throw new GedcomIOException("Error reading file "+ex.getMessage(),line);
     }
 
-    // Parse gedcom-line
-    StringTokenizer tokens = new StringTokenizer(gedcomLine," ");
+    // Parse gedcom-line 
+    // 20040322 use space and also \t for delim in case someone used tabs in file
+    StringTokenizer tokens = new StringTokenizer(gedcomLine," \t");
 
     try {
 
