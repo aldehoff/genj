@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.option.Option;
 import genj.util.Debug;
+import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
@@ -37,7 +38,11 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.CharArrayWriter;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
@@ -49,9 +54,13 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.html.HTMLDocument;
 
 
 /**
@@ -232,14 +241,21 @@ public abstract class Report implements Cloneable {
    */
   public final File getDirectoryFromUser(String title, String button) {
 
-    JFileChooser chooser = new JFileChooser(".");
+    // show directory chooser
+    String dir = registry.get("dir", EnvironmentChecker.getProperty(this, "user.home", ".", "looking for report dir to let the user choose from"));
+    JFileChooser chooser = new JFileChooser(dir);
     chooser.setFileSelectionMode(chooser.DIRECTORIES_ONLY);
     chooser.setDialogTitle(title);
-    if (chooser.APPROVE_OPTION != chooser.showDialog(owner,button)) {
+    int rc = chooser.showDialog(owner,button);
+    
+    // check result
+    File result = chooser.getSelectedFile(); 
+    if (rc!=chooser.APPROVE_OPTION||result==null)
       return null;
-    }
-    return chooser.getSelectedFile();
-
+    
+    // keep it
+    registry.put("dir", result.toString());    
+    return result;
   }
 
   /**
@@ -262,6 +278,24 @@ public abstract class Report implements Cloneable {
       owner
     );
 
+    // done
+  }
+  
+  /**
+   * Helper method that shows (resulting) html to the user
+   */
+  public final void showBrowserToUser(URL url) {
+
+    // open a non-modal dialog
+    viewManager.getWindowManager().openNonModalDialog(
+      registry.getView()+"#html",
+      getName(),
+      ReportViewFactory.IMG,
+      new JScrollPane(new HTMLOutput(url)),
+      WindowManager.OPTION_OK,
+      owner
+    );
+    
     // done
   }
 
@@ -694,4 +728,81 @@ public abstract class Report implements Cloneable {
     
   } //Item
 
+  /**
+   * HTML Output presented to user
+   */
+  private static class HTMLOutput extends JTextPane implements HyperlinkListener {
+    
+    /** current url */
+    private URL url;
+    
+    /**
+     * Constructor
+     */
+    private HTMLOutput(URL url) {
+      
+      // non-editable
+      setEditable(false);
+      
+      // html
+      setContentType("text/html");
+      
+      // events
+      addHyperlinkListener(this);
+      
+      // read url
+      set(url);
+
+    }
+    
+    /**
+     * @see javax.swing.text.JTextComponent#removeNotify()
+     */
+    public void removeNotify() {
+      // reset tooltip
+      setToolTipText(null);
+      // continue
+      super.removeNotify();
+    }
+
+    /** 
+     * Set current url to render
+     */
+    private void set(URL set) {
+      
+      try {
+        Reader in = new InputStreamReader(set.openStream());
+        HTMLDocument doc = (HTMLDocument)getEditorKit().createDefaultDocument();
+        doc.setBase(set);
+        getEditorKit().read(in, doc, 0);
+        in.close();
+        setDocument(doc);
+        url = set;
+        setToolTipText(url.toString());
+      } catch (Throwable t) {
+      }
+    }
+
+    /**
+     * Hyperlink callback  
+     */
+    public void hyperlinkUpdate(HyperlinkEvent e) {
+      // check even
+      HyperlinkEvent.EventType type = e.getEventType();
+      if (type!=type.ACTIVATED)
+        return;
+      // follow link
+      URL set = e.getURL();
+      if (set==null) try {
+        set = new URL(url, e.getDescription());
+      } catch (MalformedURLException m) {
+        Debug.log(Debug.WARNING, this, "Malformed URL "+e.getDescription()+" in "+url);
+        return;
+      }
+      // done
+      set(set);
+    }
+    
+  } //HTMLOutput
+  
 } //Report
