@@ -19,16 +19,11 @@
  */
 package genj.util.swing;
 
-import java.awt.KeyboardFocusManager;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.util.Collections;
-import java.util.Set;
-
 import genj.util.ChangeSupport;
 
+import java.awt.KeyboardFocusManager;
+
 import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 
 /**
