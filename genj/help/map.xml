@@ -32,13 +32,13 @@
 
   <mapID target="team"      url="team.html" />
 
-  <mapID target="img.Edit"       url="../images/views/Edit.gif"     />
-  <mapID target="img.Tree"       url="../images/views/Tree.gif"     />
-  <mapID target="img.Table"      url="../images/views/Table.gif"    />
-  <mapID target="img.Timeline"   url="../images/views/Timeline.gif" />
-  <mapID target="img.Report"     url="../images/views/Report.gif"   />
-  <mapID target="img.Navigator"  url="../images/views/Navigator.gif"   />
-  <mapID target="img.Entity"     url="../images/views/Entity.gif"   />
+  <mapID target="img.NewEdit"       url="../images/views/Edit.gif"     />
+  <mapID target="img.NewTree"       url="../images/views/Tree.gif"     />
+  <mapID target="img.NewTable"      url="../images/views/Table.gif"    />
+  <mapID target="img.NewTimeline"   url="../images/views/Timeline.gif" />
+  <mapID target="img.NewReport"     url="../images/views/Report.gif"   />
+  <mapID target="img.NewNavigator"  url="../images/views/Navigator.gif"   />
+  <mapID target="img.NewEntity"     url="../images/views/Entity.gif"   />
 
   <mapID target="img.Indi"          url="../images/Indi.gif" />
   <mapID target="img.Fam"           url="../images/Fam.gif" />
