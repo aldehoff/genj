@@ -104,17 +104,20 @@ public class PropertyNote extends PropertyXRef {
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
-
-    // Entity Note? Should be Entity but has to be Note to be editable :(
-    if (this instanceof Entity)
-      return "MLE";
-
-    // Property XRef linked to Entity Note?
-    if (super.getValue().startsWith("@") || note==null)
+    // 20021113 if linked then we stay XRef - otherwise always MLE!
+    if (super.getReferencedEntity()!=null)
       return "XRef";
-
-    // Seems to be Property Note
-    return "MLE";
+    return "MLE";    
+//    // Entity Note? Should be Entity but has to be Note to be editable :(
+//    if (this instanceof Entity)
+//      return "MLE";
+//
+//    // Property XRef linked to Entity Note?
+//    if (super.getValue().startsWith("@") || note==null)
+//      return "XRef";
+//
+//    // Seems to be Property Note
+//    return "MLE";
   }
 
   /**
