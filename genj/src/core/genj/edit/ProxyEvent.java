@@ -23,8 +23,9 @@ import genj.gedcom.Indi;
 import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
-
-import java.awt.FlowLayout;
+import genj.util.GridBagHelper;
+import genj.util.swing.ChoiceWidget;
+import genj.window.WindowManager;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -38,17 +39,23 @@ import javax.swing.JTextField;
  */
 class ProxyEvent extends Proxy {
 
+  /** known to have happened */
+  private ChoiceWidget known;
+
   /**
    * Finish proxying edit for property Birth
    */
   protected void finish() {
+    if (known!=null&&known.hasChanged()) {
+      ((PropertyEvent)property).setKnownToHaveHappened(known.getSelectedIndex()==0);
+    }
   }
 
   /**
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-    return false;
+    return known.hasChanged();
   }
 
   /**
@@ -76,13 +83,23 @@ class ProxyEvent extends Proxy {
     }
     
     // layout
-    JLabel label = new JLabel(ageat); 
+    JLabel 
+      label1 = new JLabel(ageat),
+      label2 = new JLabel(resources.getString("proxy.even.known")); 
     JTextField txt = new JTextField(age, 10); txt.setEditable(false);
+    String[] choices = WindowManager.OPTIONS_YES_NO;
+    known = new ChoiceWidget(choices, event.isKnownToHaveHappened() ? choices[0] : choices[1]);
+    known.setEditable(false);
     
-    JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    JPanel panel = new JPanel();
     panel.setAlignmentX(0);
-    panel.add(label);
-    panel.add(txt);
+    GridBagHelper gh = new GridBagHelper(panel);
+    gh.add(label1, 0, 0, 1, 1, gh.FILL_HORIZONTAL    );
+    gh.add(txt   , 1, 0, 1, 1, gh.GROWFILL_HORIZONTAL);
+    gh.add(label2, 0, 1, 1, 1, gh.FILL_HORIZONTAL    );
+    gh.add(known , 1, 1, 1, 1, gh.GROWFILL_HORIZONTAL);
+    gh.addFiller(0,2);
+
     in.add(panel);
 
     // done

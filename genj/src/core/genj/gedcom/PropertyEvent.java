@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-
-
 /**
  * Gedcom Property : EVENT
  */
@@ -28,6 +26,9 @@ public class PropertyEvent extends Property {
   
   /** our Tag */
   private String tag;
+  
+  /** whether the event is known to have happened */
+  private boolean knownToHaveHappened = false;
 
   /**
    * Returns the date of the event
@@ -44,9 +45,8 @@ public class PropertyEvent extends Property {
 
     // Try to get date-property which is valid
     Property prop = getProperty("DATE",valid);
-    if (prop==null) {
+    if (prop==null) 
       return null;
-    }
 
     // Return as Date
     return (PropertyDate)prop;
@@ -78,7 +78,12 @@ public class PropertyEvent extends Property {
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
   /*package*/ Property init(String set, String value) throws GedcomException {
+    // remember tag
     tag = set;
+    // remember Y
+    if (value.toLowerCase().equals("y"))
+      knownToHaveHappened = true;
+    // continue with super 
     return super.init(tag,value);
   }
 
@@ -86,7 +91,7 @@ public class PropertyEvent extends Property {
    * Returns the value of this property
    */
   public String getValue() {
-    return EMPTY_STRING;
+    return knownToHaveHappened ? "Y" : EMPTY_STRING;
   }
 
   /**
@@ -108,5 +113,37 @@ public class PropertyEvent extends Property {
   public static TagPath[] getTagPaths() {
     return MetaProperty.getPaths(null, PropertyEvent.class);  
   }
+  
+  /**
+   * Access - whether this event is known to have happened
+   */
+  public boolean isKnownToHaveHappened() {
+    return knownToHaveHappened;
+  }
+
+  /**
+   * Access - whether this event is known to have happened
+   */
+  public void setKnownToHaveHappened(boolean set) {
+    knownToHaveHappened = set;
+    modNotify();
+  }
+
+// Could do an automatic 'y' here but that would pollute
+// the gedcom data unnecessary, no?
+//  
+//  /**
+//   * @see genj.gedcom.Property#changeNotify(genj.gedcom.Property, int)
+//   */
+//  void changeNotify(Property prop, int status) {
+//    // continue upwards 
+//    super.changeNotify(prop, status);
+//    // update known state
+//    if (status!=Change.PDEL && prop instanceof PropertyDate) {
+//      if (((PropertyDate)prop).isValid()) setKnownToHaveHappened(true);
+//    }
+//    // done
+//  }
+
 
 } //PropertyEvent
