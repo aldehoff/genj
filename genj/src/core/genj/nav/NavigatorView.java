@@ -137,7 +137,12 @@ public class NavigatorView extends JPanel implements ContextSupport {
     
     // init
     Property context = manager.getContext(gedcom);
-    setCurrentEntity(context!=null?context.getEntity():null);
+    if (context!=null&&(context.getEntity() instanceof Indi))
+      setCurrentEntity(context.getEntity());
+    else {
+      List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
+      if (!indis.isEmpty()) setCurrentEntity((Indi)indis.get(0));
+    }
 
     // done    
 
@@ -222,12 +227,10 @@ public class NavigatorView extends JPanel implements ContextSupport {
         case PropertySex.FEMALE:
           labelSelf.setIcon(imgFPartner);
           partner.setIcon(imgMPartner);
-          // FIXME partner.setRolloverIcon(imgNavMalePartnerOn);
           break;
         case PropertySex.MALE:
           labelSelf.setIcon(imgMPartner);
           partner.setIcon(imgFPartner);
-          // FIXME partner.setRolloverIcon(imgNavFemalePartnerOn);
           break;
       }
 
