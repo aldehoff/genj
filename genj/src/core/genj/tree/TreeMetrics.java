@@ -24,31 +24,28 @@ package genj.tree;
  */  
 public class TreeMetrics {
     
-  /*package*/ double
+  /*package*/ float
     wIndis, hIndis,
     wFams, hFams,
-    wMarrs, hMarrs,
     pad;
     
   /**
    * Constructor
    */
-  public TreeMetrics(double windis, double hindis, double wfams, double hfams, double padng) {
+  public TreeMetrics(float windis, float hindis, float wfams, float hfams, float padng) {
     // remember
-    wIndis = Math.rint(windis  *100)/100;
-    hIndis = Math.rint(hindis  *100)/100;
-    wFams  = Math.rint(wfams   *100)/100;
-    hFams  = Math.rint(hfams   *100)/100;
-    wMarrs = Math.rint(wIndis/8*100)/100;
-    hMarrs = Math.rint(hIndis/8*100)/100;
-    pad    = Math.rint(padng   *100)/100;
+    wIndis = (float)Math.rint(windis  *100)/100;
+    hIndis = (float)Math.rint(hindis  *100)/100;
+    wFams  = (float)Math.rint(wfams   *100)/100;
+    hFams  = (float)Math.rint(hfams   *100)/100;
+    pad    = (float)Math.rint(padng   *100)/100;
     // done      
   }
   
   /**
    * Calculates the maximum value   */
-  /*package*/ double calcMax() {
-    double max = -Double.MAX_VALUE;
+  /*package*/ float calcMax() {
+    float max = -Float.MAX_VALUE;
     if (wIndis>max) max=wIndis;
     if (hIndis>max) max=hIndis;
     if (wFams >max) max=wFams ;
@@ -70,8 +67,6 @@ public class TreeMetrics {
       hIndis == other.hIndis&&
       wFams  == other.wFams &&
       hFams  == other.hFams &&
-      wMarrs == other.wMarrs&&
-      hMarrs == other.hMarrs&&
       pad    == other.pad   ;
   }
 

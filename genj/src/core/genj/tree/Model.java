@@ -74,6 +74,9 @@ public class Model implements Graph, GedcomListener {
   /** whether we bend arcs or not */
   private boolean isBendArcs = true;
   
+  /** whether we show marriage symbols */
+  private boolean isMarrSymbols = true;
+  
   /** the mode we're in */
   private int mode = ANCESTORS_AND_DESCENDANTS;
     
@@ -84,7 +87,7 @@ public class Model implements Graph, GedcomListener {
   private Entity root;
 
   /** metrics */
-  private TreeMetrics metrics = new TreeMetrics( 6.0, 3.0, 3.0, 1.5, 1.0 );
+  private TreeMetrics metrics = new TreeMetrics( 6.0F, 3.0F, 3.0F, 1.5F, 1.0F );
   
   /**
    * Constructor
@@ -168,6 +171,20 @@ public class Model implements Graph, GedcomListener {
     parse();
   } 
   
+  /**
+   * Access - isMarrSymbol
+   */
+  public boolean isMarrSymbols() {
+    return isMarrSymbols;
+  }
+
+  /**
+   * Access - isShowMarrSymbol
+   */
+  public void setMarrSymbols(boolean set) {
+    isMarrSymbols = set;
+  }
+
   /**
    * Accessor - the mode
    */

@@ -22,14 +22,15 @@ package genj.tree;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import gj.awt.geom.Path;
 import gj.layout.LayoutException;
 import gj.layout.tree.Orientation;
 import gj.layout.tree.TreeLayout;
 import gj.model.Arc;
 import gj.model.Node;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
@@ -76,21 +77,12 @@ import java.awt.geom.Rectangle2D;
     shapeFams  = calcFamShape();
     
     // .. marrs padding
-    if (model.isVertical()) {
-      padMarrs = new double[]{  
-        (metrics.hIndis+metrics.pad)/2 - metrics.hMarrs/2, 
-        -metrics.pad/2, 
-        (metrics.hIndis+metrics.pad)/2 - metrics.hMarrs/2,
-        -metrics.pad/2 
-      };
-    } else {
-      padMarrs = new double[]{  
-        (metrics.wIndis+metrics.pad)/2 - metrics.wMarrs/2,
-        -metrics.pad/2, 
-        (metrics.wIndis+metrics.pad)/2 - metrics.wMarrs/2,
-        -metrics.pad/2
-      };
-    }
+    padMarrs = new double[] {
+      metrics.pad/2,
+      -metrics.pad/2,
+      metrics.pad/2,
+      -metrics.pad/2
+    };    
     
     // .. indis
     padIndis  = new double[] { 
@@ -155,21 +147,32 @@ import java.awt.geom.Rectangle2D;
    * Calculates marriage rings
    */
   private Shape calcMarriageShape() {
-    Ellipse2D
-      a = new Ellipse2D.Double(
-        -metrics.wMarrs/2,
-        -metrics.hMarrs/2,
-        metrics.wMarrs*0.6,
-        metrics.hMarrs
-      ),
-      b = new Ellipse2D.Double(
-        metrics.wMarrs/2-metrics.wMarrs*0.6,
-        -metrics.hMarrs/2,
-        metrics.wMarrs*0.6,
-        metrics.hMarrs
-      );
-    GeneralPath result = new GeneralPath(a);      
-    result.append(b,false);
+
+    // calculate maximum extension    
+    float d = Math.min(metrics.wIndis/4, metrics.hIndis/4);
+    
+    // create result      
+    Ellipse2D e = new Ellipse2D.Float(-d*0.3F,-d*0.3F,d*0.6F,d*0.6F);
+
+    float 
+      dx = model.isVertical() ? 0.1F : 0.0F,
+      dy = model.isVertical() ? 0.0F : 0.1F;
+
+    AffineTransform 
+      at1 = AffineTransform.getTranslateInstance(-dx,-dy),
+      at2 = AffineTransform.getTranslateInstance( dx, dy);
+ 
+    Path result = new Path();
+    result.append(e.getPathIterator(at1));
+    result.append(e.getPathIterator(at2));
+    
+    // patch bounds
+    result.setBounds2D( model.isVertical() ?
+      new Rectangle2D.Float(-d/2,-metrics.hIndis/2,d,metrics.hIndis) :
+      new Rectangle2D.Float(-metrics.wIndis/2,-d/2,metrics.wIndis,d)
+    );
+    
+    // done
     return result;
   }
 
@@ -312,7 +315,7 @@ import java.awt.geom.Rectangle2D;
         husb = fam.getHusband(),
         wife = fam.getWife();
       model.add(new TreeArc(node, iterate(wife, hasParents(husb)?LEFT:CENTER), false));
-      model.add(new TreeArc(node, model.add(new TreeNode(null, shapeMarrs, padMarrs)), false));
+      model.add(new TreeArc(node, model.add(new TreeNode(null, model.isMarrSymbols()?shapeMarrs:null, padMarrs)), false));
       model.add(new TreeArc(node, iterate(husb, hasParents(wife)?RIGHT:CENTER), false));
       // done
       return node;
@@ -445,8 +448,8 @@ import java.awt.geom.Rectangle2D;
       
       // patched alignment for 1st family
       alignOffsetIndiAbove1stFam = new Point2D.Double(
-        padFams [TreeNode.WEST]-padIndis[TreeNode.WEST] +  metrics.wFams/2 - metrics.wIndis  - ( metrics.wMarrs)/2,
-        padIndis[TreeNode.WEST]-padFams [TreeNode.WEST] - metrics.hFams/2 + metrics.hIndis + (metrics.hMarrs)/2
+        padFams [TreeNode.WEST] + metrics.wFams/2 - padIndis[TreeNode.WEST] - metrics.wIndis - shapeMarrs.getBounds2D().getWidth ()/2,
+        padIndis[TreeNode.WEST] - metrics.hFams/2 - padFams [TreeNode.WEST] + metrics.hIndis + shapeMarrs.getBounds2D().getHeight()/2
       );
       
       // done
@@ -520,7 +523,7 @@ import java.awt.geom.Rectangle2D;
         if (fam1==null) fam1 = fami;
         model.add(new TreeArc(node, fami, false));
         // add arcs : pivot-marr, pivot-spouse
-        model.add(new TreeArc(pivot, model.add(new TreeNode(null, shapeMarrs, padMarrs)), false));
+        model.add(new TreeArc(pivot, model.add(new TreeNode(null, model.isMarrSymbols()?shapeMarrs:null, padMarrs)), false));
         model.add(new TreeArc(pivot, model.add(new TreeNode(fams[f].getOtherSpouse(indi), shapeIndis, padIndis)), false));
         // next family
       }

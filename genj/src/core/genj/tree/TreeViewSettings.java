@@ -140,11 +140,11 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     colors.apply(); //FIXME we shouldn't have to call repaint
     // metrics
     view.getModel().setMetrics(new TreeMetrics(
-      sliderCmIndiWidth .getValue(),
-      sliderCmIndiHeight.getValue(),
-      sliderCmFamWidth  .getValue(),
-      sliderCmFamHeight .getValue(),
-      sliderCmPadding   .getValue()
+      (float)sliderCmIndiWidth .getValue(),
+      (float)sliderCmIndiHeight.getValue(),
+      (float)sliderCmFamWidth  .getValue(),
+      (float)sliderCmFamHeight .getValue(),
+      (float)sliderCmPadding   .getValue()
     ));
     // blueprints
     view.setBlueprints(blueprintList.getSelection());
