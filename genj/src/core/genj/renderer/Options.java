@@ -51,16 +51,20 @@ public class Options implements OptionProvider {
 
     public void restore(Registry registry) {
       
-      // read old style blueprints
+      // read old style blueprints if available
+      //   views.blueprints.INDI=foo bar
+      //   views.blueprints.INDI.foo=...
+      //   views.blueprints.INDI.bar=...
+      // new is the current view (options)
+      //   options.blueprints.INDI=foo bar
+      //   options.blueprints.INDI.foo=...
+      //   options.blueprints.INDI.bar=...
       Registry root = registry.getRoot();
-      if (root.get("views.blueprints.INDI", (String)null)!=null) {
+      if (root.get("views.blueprints.INDI", (String)null)!=null) 
         registry = new Registry(root, "views");
-        BlueprintManager.getInstance().read(registry);
-        root.remove("views.blueprints.");
-        return;
-      }
+      root.remove("views.blueprints.");
       
-      // continue normally
+      // continue
       BlueprintManager.getInstance().read(registry);
     }
 
