@@ -26,7 +26,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.62 2004-07-05 18:29:38 gulcher Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.63 2004-08-26 23:19:50 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -472,37 +472,37 @@ public class ReportGedcomStatistics extends Report {
                 case EMIGRATION:
                     prop = e[i].getProperty("EMIG");
                     if (prop!=null)
-                        props = e[i].getProperties(new TagPath("INDI:EMIG:PLAC"), Property.QUERY_VALID_TRUE);
+                        props = e[i].getProperties(new TagPath("INDI:EMIG:PLAC"));
                     break;
                     
                 case IMMIGRATION:
                     prop = e[i].getProperty("IMMI");
                     if (prop!=null)
-                        props = e[i].getProperties(new TagPath("INDI:IMMI:PLAC"), Property.QUERY_VALID_TRUE);
+                        props = e[i].getProperties(new TagPath("INDI:IMMI:PLAC"));
                     break;
                     
                 case NATURALIZATION:
                     prop = e[i].getProperty("NATU");
                     if (prop!=null)
-                        props = e[i].getProperties(new TagPath("INDI:NATU:PLAC"), Property.QUERY_VALID_TRUE);
+                        props = e[i].getProperties(new TagPath("INDI:NATU:PLAC"));
                     break;
                     
                 case MARRIAGE:
                     prop = e[i].getProperty("MARR");
                     if (prop!=null)
-                        props = e[i].getProperties(new TagPath("FAM:MARR:PLAC"), Property.QUERY_VALID_TRUE);
+                        props = e[i].getProperties(new TagPath("FAM:MARR:PLAC"));
                     break;
                     
                 case DEATH:
                     props = new Property[1];
                     prop = e[i].getProperty("DEAT");
                     if (prop!=null)
-                        props[0] = e[i].getProperty(new TagPath("INDI:DEAT:PLAC"), Property.QUERY_VALID_TRUE);
+                        props[0] = e[i].getProperty(new TagPath("INDI:DEAT:PLAC"));
                     break;
                     
             }
             
-            if ((props!=null) && (props.length>0)) {
+            if (props!=null && props.length>0) {
                 for(int j=0;j<props.length;j++) {
                     if(props[j]!=null) {
                         place = props[j].getValue();
@@ -661,7 +661,7 @@ public class ReportGedcomStatistics extends Report {
         for(int i=0;i<e.length;i++) {
             occupations.numberIndis++;
             // an individual might have more than one occupation
-            Property[] props = e[i].getProperties("OCCU");
+            Property[] props = e[i].getProperties(new TagPath("OCCU"));
             if (props!=null) {
                 for(int j=0;j<props.length;j++) {
                     String occu = props[j].getValue();

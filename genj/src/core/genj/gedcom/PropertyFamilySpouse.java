@@ -25,6 +25,10 @@ package genj.gedcom;
  */
 public class PropertyFamilySpouse extends PropertyXRef {
 
+  private final static TagPath
+    PATH_FAMHUSB = new TagPath("FAM:HUSB"),
+    PATH_FAMWIFE = new TagPath("FAM:WIFE");
+
   /** applicable target types */
   public final static String[] 
     TARGET_TYPES = { Gedcom.FAM };
@@ -125,7 +129,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
       indi.setSex(husband==null ? PropertySex.MALE : PropertySex.FEMALE);
 
     // check for already existing back reference which takes precedence
-    Property[] husbands = fam.getProperties(new TagPath("FAM:HUSB"),QUERY_ALL);
+    Property[] husbands = fam.getProperties(PATH_FAMHUSB);
     for (int i=0;i<husbands.length;i++) {
       PropertyHusband ph = (PropertyHusband)husbands[i];
       if ( !ph.isValid() && ph.getReferencedId().equals(indi.getId()) ) {
@@ -134,7 +138,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
         return;
       }
     }
-    Property[] wifes = fam.getProperties(new TagPath("FAM:WIFE"),QUERY_ALL);
+    Property[] wifes = fam.getProperties(PATH_FAMWIFE);
     for (int i=0;i<wifes.length;i++) {
       PropertyWife pw = (PropertyWife)wifes[i];
       if ( !pw.isValid() && pw.getReferencedId().equals(indi.getId()) ) {

@@ -91,7 +91,7 @@ public class ReportAges extends Report {
         
         // check for date under tag
         PropertyDate prop = (PropertyDate) indi.getProperty(new TagPath("INDI:" + tag + ":DATE"));
-        if (prop == null)
+        if (prop == null || !prop.isValid())
             return false;
         
         // do the header

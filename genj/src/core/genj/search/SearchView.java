@@ -225,7 +225,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     setLayout(new BorderLayout());
     add(BorderLayout.NORTH , paneCriteria);
     add(BorderLayout.CENTER, new JScrollPane(listResults) );
-    choiceValue.requestFocus();
+    choiceValue.requestFocusInWindow();
 
     // register as context provider
     manager.registerContextProvider(new ContextProvider() {
@@ -258,7 +258,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     // continue
     super.addNotify();
     // set focus
-    choiceValue.requestFocus();
+    choiceValue.requestFocusInWindow();
   }
   
   /**
@@ -611,7 +611,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       boolean searchThis = true;
       if (tagPath!=null) {
         // break if we don't match path
-        if (pathIndex<tagPath.length()&&!tagPath.get(pathIndex).equals(prop.getTag())) 
+        if (pathIndex<tagPath.length()&&!tagPath.match(pathIndex,prop.getTag())) 
           return;
         // search this if path is consumed 
         searchThis = pathIndex>=tagPath.length()-1;

@@ -248,7 +248,7 @@ public class BlueprintEditor extends JSplitPane {
         );
       }
       // request focus
-      html.requestFocus();
+      html.requestFocusInWindow();
       // done
     }
   } //ActionInsert

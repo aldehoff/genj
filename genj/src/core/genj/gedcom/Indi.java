@@ -19,7 +19,8 @@
  */
 package genj.gedcom;
 
-import genj.gedcom.time.*;
+import genj.gedcom.time.Delta;
+import genj.gedcom.time.PointInTime;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
@@ -73,34 +74,11 @@ public class Indi extends Entity {
   }
 
   /**
-   * Deletes a family in which the person was a partner
-   */
-  /*package*/ Indi delFam(int which ) {
-    Property[] fams = getProperties(PATH_INDIFAMS,QUERY_VALID_TRUE);
-    if (which > fams.length)
-      throw new IllegalArgumentException("Individual isn't spouse in "+which+" families");
-    delProperty(fams[which-1]);
-    return this;
-  }
-
-  /**
-   * Deletes the family in which the Individual was child
-   */
-  /*package*/ Indi delFamc() {
-    Property prop = getProperty(PATH_INDIFAMC,QUERY_VALID_TRUE);
-    if (prop==null) {
-      return this;
-    }
-    delProperty(prop);
-    return this;
-  }
-
-  /**
    * Calculate indi's birth date
    */
   public PropertyDate getBirthDate() {
     // Calculate BIRT|DATE
-    return (PropertyDate)getProperty(PATH_INDIBIRTDATE,QUERY_VALID_TRUE);
+    return (PropertyDate)getProperty(PATH_INDIBIRTDATE);
   }
 
   /**
@@ -108,7 +86,7 @@ public class Indi extends Entity {
    */
   public PropertyDate getDeathDate() {
     // Calculate DEAT|DATE
-    return (PropertyDate)getProperty(PATH_INDIDEATDATE,QUERY_VALID_TRUE);
+    return (PropertyDate)getProperty(PATH_INDIDEATDATE);
   }
   
   /**
@@ -281,24 +259,18 @@ public class Indi extends Entity {
    * Returns the selected family in which the individual is a partner
    */
   public Fam getFam(int which) {
-    Property[] props = getProperties("FAMS", QUERY_VALID_TRUE);
-    if (which>=props.length) {
-      return null;
+    
+    for (int i=0,j=getNoOfProperties();i<j;i++) {
+      Property prop = getProperty(i);
+      if ("FAMS".equals(prop.getTag())&&prop.isValid()) {
+        if (which==0)
+          return ((PropertyFamilySpouse)prop).getFamily();
+        which--;
+      }
     }
-    return ((PropertyFamilySpouse)props[which]).getFamily();
+    
+    throw new IllegalArgumentException("no such family");
   }
-// TODO: K. Mraz - evaluate if this is necessary for adop tag change...  
-//  /**
-//   * Get Family with option to create
-//   */
-//  /*package*/ Fam getFam(boolean create) throws GedcomException {
-//    Fam fam = getFam(0);
-//    if (fam!=null||!create) return fam;
-//    fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
-//    if (getSex()==PropertySex.FEMALE) fam.setWife(this);
-//    else fam.setHusband(this);
-//    return fam;    
-//  }
   
   /**
    * Returns the family in which the person is child
@@ -326,12 +298,16 @@ public class Indi extends Entity {
    * Returns the families in which this individual is a child
    */
   public Fam[] getCFamilies() {
-    Property[] props = getProperties("FAMC",QUERY_VALID_TRUE);
-    Fam[] result = new Fam[props.length];
-    for (int f=0; f<result.length; f++) {
-      result[f] = ((PropertyFamilyChild)props[f]).getFamily();
-    }    
-    return result;
+
+    ArrayList result = new ArrayList(getNoOfProperties());
+    
+    for (int i=0,j=getNoOfProperties();i<j;i++) {
+      Property prop = getProperty(i);
+      if ("FAMC".equals(prop.getTag())&&prop.isValid()) 
+        result.add(((PropertyFamilyChild)prop).getFamily());
+    }
+
+    return Fam.toFamArray(result);
   }
 
   /**
@@ -388,19 +364,29 @@ public class Indi extends Entity {
    * Returns the number of families in which the individual is a partner
    */
   public int getNoOfFams() {
-    return getProperties("FAMS",QUERY_VALID_TRUE).length;
+    int result = 0;
+    for (int i=0,j=getNoOfProperties();i<j;i++) {
+      Property prop = getProperty(i);
+      if ("FAMS".equals(prop.getTag())&&prop.isValid())
+        result++;
+    }
+    return result;
   }
   
   /**
    * Returns the families in which this individual is a partner
    */
   public Fam[] getFamilies() {
-    Property[] props = getProperties("FAMS",QUERY_VALID_TRUE);
-    Fam[] result = new Fam[props.length];
-    for (int f=0; f<result.length; f++) {
-      result[f] = ((PropertyFamilySpouse)props[f]).getFamily();
-    }    
-    return result;
+    
+    ArrayList result = new ArrayList(getNoOfProperties());
+    
+    for (int i=0,j=getNoOfProperties();i<j;i++) {
+      Property prop = getProperty(i);
+      if ("FAMS".equals(prop.getTag())&&prop.isValid()) 
+        result.add(((PropertyFamilySpouse)prop).getFamily());
+    }
+
+    return Fam.toFamArray(result);
   }
 
   /**
@@ -495,7 +481,7 @@ public class Indi extends Entity {
   /**
    * list of indis to array
    */
-  private static Indi[] toIndiArray(Collection c) {
+  /*package*/ static Indi[] toIndiArray(Collection c) {
     return (Indi[])c.toArray(new Indi[c.size()]);    
   }
 

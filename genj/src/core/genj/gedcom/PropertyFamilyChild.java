@@ -101,14 +101,21 @@ public class PropertyFamilyChild extends PropertyXRef {
     Property ps[];
 
     // Enclosing individual has a childhood already ?
-    if (indi.getFamc()!=null)
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already child of a family");
+//    if (indi.getFamc()!=null)
+//      throw new GedcomException("Individual @"+indi.getId()+"@ is already child of a family");
 
     // Look for family (not-existing -> Gedcom throws Exception)
     String id = getReferencedId();
     Fam fam = (Fam)getGedcom().getEntity(Gedcom.FAM, id);
     if (fam==null)
       throw new GedcomException("Couldn't find family with ID "+id);
+
+    // Enclosing individual is child in family ?
+    Indi cindi[] = fam.getChildren();
+    for (int inx=0; inx < cindi.length; inx++) {
+        if (cindi[inx]==indi)
+            throw new GedcomException("Family @"+id+"@ already contains Individual @"+indi.getId()+"@ as a child");
+    }
 
     // Enclosing individual is Husband/Wife in family ?
     if ((fam.getHusband()==indi)||(fam.getWife()==indi))
@@ -119,11 +126,13 @@ public class PropertyFamilyChild extends PropertyXRef {
       throw new GedcomException("Individual @"+indi.getId()+"@ is already ancestor of family @"+fam.getId()+"@");
 
     // Connect back from family (maybe using invalid back reference)
-    ps = fam.getProperties("CHIL", QUERY_ALL);
     PropertyChild pc;
-    for (int i=0;i<ps.length;i++) {
-      pc = (PropertyChild)ps[i];
-      if ( (!pc.isValid()) && (pc.getReferencedId().equals(indi.getId())) ) {
+    for (int i=0,j=fam.getNoOfProperties();i<j;i++) {
+      Property prop = fam.getProperty(i);
+      if (!"CHIL".equals(prop.getTag()))
+        continue;
+      pc = (PropertyChild)prop;
+      if ( !pc.isValid() && pc.getReferencedId().equals(indi.getId()) ) {
         pc.setTarget(this);
         setTarget(pc);
         return;

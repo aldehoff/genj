@@ -301,7 +301,8 @@ public class MetaProperty implements Comparable {
    * Accessor - some explanationary information about the meta
    */
   public String getName() {
-    return Gedcom.getResources().getString(tag+".name");
+    String name = Gedcom.getResources().getString(tag+".name", false);
+    return name==null ? tag : name;
   }
   
   /**
@@ -310,9 +311,11 @@ public class MetaProperty implements Comparable {
   public String getInfo() {
     // check cached info
     if (info==null) {
-      String tag = getTag();
-      info = Gedcom.getResources().getString(tag+".name")
-        +":\n"+Gedcom.getResources().getString(tag+".info");
+      info = Gedcom.getResources().getString(tag+".info", false);
+      if (info==null)
+        info = "";
+      else
+        info = getName() + ":\n" + info;
     }
     // done
     return info;
@@ -409,9 +412,7 @@ public class MetaProperty implements Comparable {
     // recurse into
     for (Iterator it=meta.listOfSubs.iterator();it.hasNext();) {
       MetaProperty sub = (MetaProperty)it.next();
-      path.add(sub.tag);
-      getPathsRecursively(sub, property, path, result);
-      path.pop();
+      getPathsRecursively(sub, property, new TagPath(path, sub.tag), result);
     }
     
     // done

@@ -168,13 +168,13 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     if (e.getSource() == rbChoose) {
       lChoose.setEnabled(true);
       tfNew.setEnabled(false);
-      lChoose.requestFocus();
+      lChoose.requestFocusInWindow();
     }
     if (e.getSource() == rbNew) {
       lChoose.clearSelection();
       lChoose.setEnabled(false);
       tfNew.setEnabled(true);
-      tfNew.requestFocus();
+      tfNew.requestFocusInWindow();
     }
   }
 

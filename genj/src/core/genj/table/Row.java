@@ -58,7 +58,7 @@ import genj.gedcom.TagPath;
       // grab properties
       cols = new Property[paths.length];
       for (int c=0; c<cols.length; c++) {
-        cols[c] = entity.getProperty(paths[c], Property.QUERY_ALL);
+        cols[c] = entity.getProperty(paths[c]);
       }
     }
     // available

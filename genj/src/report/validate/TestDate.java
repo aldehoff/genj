@@ -90,7 +90,7 @@ import java.util.List;
     
     // did we get a path1 or assuming prop instanceof date?
     if (path1!=null) {
-      date1 = (PropertyDate)prop.getProperty(path1, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
+      date1 = (PropertyDate)prop.getProperty(path1, true);
     } else {
       date1 = (PropertyDate)prop;
     }
@@ -99,7 +99,7 @@ import java.util.List;
     
     // get date to check against - won't continue if
     // that's not a PropertyDate
-    Property date2 = entity.getProperty(path2, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
+    Property date2 = entity.getProperty(path2, true);
     if (!(date2 instanceof PropertyDate))
       return;
       

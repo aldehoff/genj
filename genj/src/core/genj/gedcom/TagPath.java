@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
  * individual.
  * @author  Nils Meier
  * @version 0.1 04/21/98
+ * @version 2004/08/25 made immutable
  */
 public class TagPath {
 
@@ -75,41 +76,6 @@ public class TagPath {
   /**
    * Constructor for TagPath
    */
-  public TagPath(Property[] props) {
-    
-    // decompose property path
-    len = props.length;
-    tags = new String[len];
-
-    // grab prop's tags and hash
-    for (int i=0; i<len; i++) {
-      tags[i] = props[i].getTag();
-      hash += tags[i].hashCode();
-    }
-    
-    // done
-  }
-    
-  /**
-   * Constructor for TagPath
-   */
-  public TagPath(TagPath other, String tag) {
-    
-    // setup len
-    len = other.len+1;
- 
-    // copy and append   
-    tags = new String[len];
-    System.arraycopy(other.tags, 0, tags, 0, other.len);
-    tags[len-1] = tag;
-    
-    // prepare our hash
-    hash = other.hash+tag.hashCode();
-  }
-
-  /**
-   * Constructor for TagPath
-   */
   public TagPath(TagPath other) {
     this(other, other.len);
   }
@@ -120,12 +86,27 @@ public class TagPath {
   public TagPath(TagPath other, int length) {
     // copyup to len and rehash
     len = length;
-    tags = new String[len];
-    for (int i=0; i<len; i++) {
-      tags[i] = other.tags[i];
+    tags = other.tags;
+    for (int i=0; i<len; i++)
       hash += tags[i].hashCode();
-    }
     // done
+  }
+
+  /**
+   * Constructor for TagPath
+   */
+  public TagPath(TagPath other, String tag) {
+    
+    // setup len
+    len = other.len+1;
+  
+    // copy and append   
+    tags = new String[len];
+    System.arraycopy(other.tags, 0, tags, 0, other.len);
+    tags[len-1] = tag;
+    
+    // prepare our hash
+    hash = other.hash+tag.hashCode();
   }
 
   /**
@@ -143,36 +124,6 @@ public class TagPath {
       hash += tags[i].hashCode();
     }
     // done
-  }
-  
-  /**
-   * Add another path element to the end of this path
-   */
-  public void add(String element) {
-    // ensure capacity
-    if (len==tags.length) {
-      String[] tmp = new String[len+1];
-      System.arraycopy(tags, 0, tmp, 0, len);
-      tags = tmp;
-    }
-    // add element
-    tags[len++] = element;
-    hash += element.hashCode();
-    // done
-  }
-  
-  /**
-   * Removes the last path element from the end of this path
-   */
-  public String pop() {
-    // won't allow illegal path
-    if (len==1)
-      throw new IllegalArgumentException("can't pop < 1");
-    // remove it
-    String result = tags[--len];  
-    hash -= result.hashCode();
-    // done
-    return result;
   }
   
   /**
@@ -217,14 +168,67 @@ public class TagPath {
     // Equal
     return true;
   }
+  
+  public final static int
+    MATCH_NONE = 0,
+    MATCH_TAG  = 1,
+    MATCH_ALL  = 2;
 
   /**
-   * Returns the n-th tag of this path
+   * Matches a path element with given tag
+   * @param which the path element to match
+   * @param tag the tag to match it with
+   * @return true if tag equals path[which]
+   */
+  public boolean match(int which, String tag) {
+    return match(which, tag, 0)!=MATCH_NONE;
+  }
+  
+  /**
+   * Matches a path element with given tag and selector
+   * @param which the path element to match
+   * @param tag the tag to match it with
+   * @param selector the selector (e.g. '2') to match it with
+   * @return MATCH_NONE if tag is not the same, 
+   *          MATCH_TAG if tag is the same but selector is different,
+   *          MATCH_ALL if tag and selector are the same
+   */
+  public int match(int which, String tag, int selector) {
+
+    // compare path element 'which' 
+    String element = tags[which];
+    
+    // gotta match for tag.length - e.g. 'BIRT#0' matches 'BIRT'
+    if (!element.regionMatches(0, tag, 0, tag.length()))
+      return MATCH_NONE;
+      
+    // simplest case of 'BIRT' matches 'BIRT' (implying 0 selector)
+    if (element.length()==tag.length())
+      return selector==0 ? MATCH_ALL : MATCH_TAG;
+    
+    // gotta be selector case case then 'BIRT#x' matching 'BIRT'
+    if (element.charAt(tag.length())!='#')
+      return MATCH_NONE;
+      
+    // selector wrong? e.g. in case of 'BIRT#1' match 1 with 'selector' #2?
+    if (!element.regionMatches(tag.length()+1, Integer.toString(selector), 0, element.length()-tag.length()-1))
+      return MATCH_TAG;
+      
+    // all well
+    return MATCH_ALL;
+  }
+
+  /**
+   * Returns the n-th tag of this path (this won't return the selector information e.g. BIRT#1 but only BIRT)
    * @param which 0-based number
    * @return tag as <code>String</code>
    */
   public String get(int which) {
-    return tags[which];
+    String result = tags[which];
+    int selector = result.indexOf('#');
+    if (selector>=0)
+      result = result.substring(0,selector);
+    return result;
   }
 
   /**
@@ -232,7 +236,7 @@ public class TagPath {
    * @return first tag as <code>String</code>
    */
   public String getFirst() {
-    return tags[0];
+    return get(0);
   }
 
   /**
@@ -240,7 +244,7 @@ public class TagPath {
    * @return last tag as <code>String</code>
    */
   public String getLast() {
-    return tags[len-1];
+    return get(len-1);
   }
 
   /**
@@ -281,13 +285,6 @@ public class TagPath {
     
     // done
     return new TagPath(p);
-  }
-
-  /**
-   * Simple test for path : contains ':'
-   */
-  public static boolean isPath(String path) {
-    return path.indexOf(':')>0;
   }
 
   /**

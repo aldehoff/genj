@@ -37,14 +37,6 @@ public abstract class Property implements Comparable {
     EMPTY_STRING = "",
     UNSUPPORTED_TAG = "Unsupported Tag";
     
-  /** query flags */
-  public static final int
-    QUERY_ALL          =  0,
-    QUERY_VALID_TRUE   =  1,
-    QUERY_FOLLOW_LINK  =  4,
-    QUERY_NO_LINK      =  8,
-    QUERY_NO_BACKTRACK = 16;
-    
   /** parent of this property */
   private Property parent=null;
   
@@ -383,54 +375,6 @@ public abstract class Property implements Comparable {
   }
   
   /**
-   * Returns this property's properties adhering criteria
-   */
-  public Property[] getProperties(int criteria) {
-    List result = new ArrayList(children.size());
-    for (int i=0;i<children.size();i++) {
-      Property child = (Property)children.get(i);
-      if (!child.is(criteria))
-        continue;
-      result.add(child);
-    }
-    return toArray(result);
-  }  
-
-  /**
-   * Returns this property's properties by tag
-   * (only valid children are considered)
-   */
-  public Property[] getProperties(String tag) {
-    return getProperties(tag, QUERY_VALID_TRUE);
-  }
-
-  /**
-   * Returns this property's properties by tag
-   */
-  public Property[] getProperties(String tag, int qfilter) {
-    
-    // safety check
-    if (tag.indexOf(':')>0) throw new IllegalArgumentException("Path not allowed");
-    
-    // loop children
-    ArrayList result = new ArrayList();
-    for (int c=0;c<getNoOfProperties();c++) {
-      Property child = getProperty(c);
-      // filter
-      if (!child.getTag().equals(tag))
-        continue;
-      // 20031027 changed from is() to child.is()
-      if (!child.is(qfilter))
-        continue;
-      // hit!        
-      result.add(child);  
-    }
-    
-    // not found
-    return toArray(result);
-  }
-
-  /**
    * Returns this property's properties which are of given type
    */
   public List getProperties(Class type) {
@@ -452,38 +396,33 @@ public abstract class Property implements Comparable {
   /**
    * Returns this property's properties by path
    */
-  public Property[] getProperties(TagPath path, int qfilter) {
+  public Property[] getProperties(TagPath path) {
 
     // Gather 'em
     List result = new ArrayList(children.size());
-    getPropertiesRecursively(path, 0, result, qfilter);
+    getPropertiesRecursively(path, 0, result);
 
     // done
     return toArray(result);
   }
 
-  private List getPropertiesRecursively(TagPath path, int pos, List fill, int qfilter) {
+  private void getPropertiesRecursively(TagPath path, int pos, List fill) {
 
     // Correct here ?
-    if (!path.get(pos).equals(getTag())) return fill;
+    if (!path.match(pos, getTag())) 
+      return;
 
     // Me the last one?
     if (pos==path.length()-1) {
-      
-      if (is(qfilter)) 
-        fill.add(this);
-        
-      // .. done
-      return fill;
+      fill.add(this);
+      return;
     }
 
     // Search in properties
-    for (int i=0;i<children.size();i++) {
-      getProperty(i).getPropertiesRecursively(path,pos+1,fill,qfilter);
-    }
+    for (int i=0;i<children.size();i++) 
+      getProperty(i).getPropertiesRecursively(path,pos+1,fill);
 
     // done
-    return fill;
   }
   
   /**
@@ -539,58 +478,55 @@ public abstract class Property implements Comparable {
    * Returns this property's property by path
    */
   public Property getProperty(TagPath path) {
-    return getProperty(path, QUERY_VALID_TRUE);
+    return getProperty(path, false);
   }
   
-  /**
-   * Returns this property's property by path
-   */
-  public Property getProperty(TagPath path, int qfilter) {
-    return getPropertyRecursively(path, 0, qfilter);
+  public Property getProperty(TagPath path, boolean followLink) {
+    return getPropertyRecursively(path, 0, followLink);
   }
   
-  private Property getPropertyRecursively(TagPath path, int pos, int qfilter) {
+  private Property getPropertyRecursively(TagPath path, int pos, boolean followLink) {
 
-    String tag = path.get(pos);
-    
     // a '..'?
-    if (tag.equals("..")) 
-      return parent==null ? null : parent.getPropertyRecursively(path, pos+1, qfilter);
+    if (path.get(pos).equals("..")) 
+      return parent==null ? null : parent.getPropertyRecursively(path, pos+1, followLink);
 
     // Correct here?
-    if (!tag.equals(getTag())) 
+    if (path.match(pos, getTag(), 0)==TagPath.MATCH_NONE)
       return null;
 
-    // test filter
-    if (!is(qfilter))
-      return null;
-    
     // path traversed? (it's me)
     if (pos==path.length()-1) 
       return this;
       
     // follow a link? (this probably should be into PropertyXref.class - override)
-    if ((qfilter&QUERY_FOLLOW_LINK)!=0&&this instanceof PropertyXRef) {
+    if (followLink&&this instanceof PropertyXRef) {
       Property p = ((PropertyXRef)this).getReferencedEntity();
       if (p!=null)
-        p = p.getPropertyRecursively(path, pos+1, qfilter);
+        p = p.getPropertyRecursively(path, pos+1, followLink);
       if (p!=null)
         return p;
     }
-    
-    // Search for next tag in properties
-    for (int i=0;i<getNoOfProperties();i++) {
+
+    // Search for appropriate tag in properties
+    for (int i=0,n=0;i<getNoOfProperties();i++) {
 
       Property ith = getProperty(i);
-      
-      // try recursively
-      Property p = ith.getPropertyRecursively(path, pos+1, qfilter);
-      if (p!=null)
-        return p;
 
-      // FIXME this doesn't allow for advanced selector like 'nth'
-      if (ith.getTag().equals(path.get(pos+1))&&(qfilter&QUERY_NO_BACKTRACK)!=0)
-        break;
+      // tag and selector have to match
+      switch (path.match(pos+1, ith.getTag(), n)) {
+        // this identifies clearly which child with appropriate tag to recurse into
+        case TagPath.MATCH_ALL:
+          return ith.getPropertyRecursively(path, pos+1, followLink);
+        // a matching tag means a different selector next time
+        case TagPath.MATCH_TAG:
+          n++;
+        // no match at all is simply skipped
+        case TagPath.MATCH_NONE:
+      }
+        
+        
+      // continue looking
     }
     
     // not found
@@ -753,20 +689,6 @@ public abstract class Property implements Comparable {
     return (Property[])ps.toArray(new Property[ps.size()]);
   }
   
-  /**
-   * test for given criteria
-   */
-  private final boolean is(int criteria) {
-    
-    if ((criteria&QUERY_VALID_TRUE)!=0&&!isValid())
-      return false;
-      
-    if ((criteria&QUERY_NO_LINK)!=0&&this instanceof PropertyXRef)
-      return false;
-    
-    return true;
-  }
-
   /**
    * Accessor - private
    */

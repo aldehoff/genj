@@ -19,10 +19,12 @@
  */
 package genj.gedcom;
 
+import genj.util.WordBuffer;
+
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import genj.util.WordBuffer;
 
 /**
  * Class for encapsulating a family with parents and children
@@ -30,8 +32,6 @@ import genj.util.WordBuffer;
 public class Fam extends Entity {
   
   private final static TagPath
-    PATH_FAMHUSB = new TagPath("FAM:HUSB"),
-    PATH_FAMWIFE = new TagPath("FAM:WIFE"),
     PATH_FAMMARRDATE = new TagPath("FAM:MARR:DATE"),
     PATH_FAMDIVDATE = new TagPath("FAM:DIV:DATE");
 
@@ -59,23 +59,33 @@ public class Fam extends Entity {
    * Returns child #i
    */
   public Indi getChild(int which) {
-    Property[] chils = getProperties("CHIL",QUERY_VALID_TRUE);
-    if (which > chils.length) {
-      throw new IllegalArgumentException("Family doesn't have "+which+" children");
+
+    for (int i=0,j=getNoOfProperties();i<j;i++) {
+      Property prop = getProperty(i);
+      if ("CHIL".equals(prop.getTag())&&prop.isValid()) {
+        if (which==0)
+          return ((PropertyChild)prop).getChild();
+        which--;
+      }
     }
-    return ((PropertyChild)chils[which]).getChild();
+    
+    throw new IllegalArgumentException("no such child");
   }
 
   /**
    * Returns children
    */
   public Indi[] getChildren() {
-    Property chils[] = getProperties("CHIL", QUERY_VALID_TRUE);
-    Indi result[] = new Indi[chils.length];
-    for (int i=0;i<result.length;i++) {
-      result[i] = ((PropertyChild)chils[i]).getChild();
+    
+    ArrayList result = new ArrayList(getNoOfProperties());
+    
+    for (int i=0,j=getNoOfProperties();i<j;i++) {
+      Property prop = getProperty(i);
+      if ("CHIL".equals(prop.getTag())&&prop.isValid()) 
+        result.add(((PropertyChild)prop).getChild());
     }
-    return result;
+
+    return Indi.toIndiArray(result);
   }
 
   /**
@@ -92,8 +102,13 @@ public class Fam extends Entity {
    * The number of children
    */
   public int getNoOfChildren() {
-    Property[] chils = getProperties("CHIL", QUERY_VALID_TRUE);
-    return chils.length;
+    int result = 0;
+    for (int i=0,j=getNoOfProperties();i<j;i++) {
+      Property prop = getProperty(i);
+      if ("CHIL".equals(prop.getTag())&&prop.isValid())
+        result++;
+    }
+    return result;
   }
   
   /**
@@ -182,17 +197,21 @@ public class Fam extends Entity {
    */
   private Indi setHusband(Indi husband) throws GedcomException {
     
-    // Remove old husband
-    PropertyHusband ph = (PropertyHusband)getProperty(PATH_FAMHUSB,QUERY_VALID_TRUE);
-    if (ph!=null) 
-      delProperty(ph);
-      
+    // Remove old husband (first valid one would be the one)
+    for (int i=0,j=getNoOfProperties();i<j;i++) {
+      Property prop = getProperty(i);
+      if ("HUSB".equals(prop.getTag())&&prop.isValid()) {
+        delProperty(prop);
+        break;
+      }
+    }
+    
     // done?
     if (husband==null)
       return null;
     
     // Add new husband
-    ph = new PropertyHusband(husband.getId());
+    PropertyHusband ph = new PropertyHusband(husband.getId());
     addProperty(ph);
 
     // Link !
@@ -216,17 +235,21 @@ public class Fam extends Entity {
    */
   private Indi setWife(Indi wife) throws GedcomException {
 
-    // Remove old wife
-    PropertyWife pw = (PropertyWife)getProperty(PATH_FAMWIFE,QUERY_VALID_TRUE);
-    if (pw!=null) 
-      delProperty(pw);
-
+    // Remove old wife (first valid one would be the one)
+    for (int i=0,j=getNoOfProperties();i<j;i++) {
+      Property prop = getProperty(i);
+      if ("WIFE".equals(prop.getTag())&&prop.isValid()) {
+        delProperty(prop);
+        break;
+      }
+    }
+    
     // done?
     if (wife==null)
       return null;
     
     // Add new wife
-    pw = new PropertyWife(wife.getId());
+    PropertyWife pw = new PropertyWife(wife.getId());
     addProperty(pw);
 
     // Link !
@@ -288,6 +311,13 @@ public class Fam extends Entity {
   }
   
   /**
+   * list of famas to array
+   */
+  /*package*/ static Fam[] toFamArray(Collection c) {
+    return (Fam[])c.toArray(new Fam[c.size()]);    
+  }
+
+  /**
    * Returns this entity as String description
    */
   public String toString() {
@@ -311,7 +341,7 @@ public class Fam extends Entity {
    */
   public PropertyDate getMarriageDate() {
     // Calculate MARR|DATE
-    return (PropertyDate)getProperty(PATH_FAMMARRDATE,QUERY_VALID_TRUE);
+    return (PropertyDate)getProperty(PATH_FAMMARRDATE);
   }
 
   /**
@@ -320,7 +350,7 @@ public class Fam extends Entity {
    */
   public PropertyDate getDivorceDate() {
     // Calculate DIV|DATE
-    return (PropertyDate)getProperty(PATH_FAMDIVDATE,QUERY_VALID_TRUE);
+    return (PropertyDate)getProperty(PATH_FAMDIVDATE);
   }
 
   /**

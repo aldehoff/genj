@@ -75,7 +75,8 @@ import javax.swing.table.AbstractTableModel;
       gedcom = null;
     }
     // init empty rows of mode INDI
-    mode = getMode(Gedcom.INDI);
+    if (mode==null)
+      mode = getMode(Gedcom.INDI);
     rows = new Row[0];
     // new?
     if (set!=null) {

@@ -117,14 +117,14 @@ public class PropertyHusband extends PropertyXRef {
       throw new GedcomException("Individual @"+id+"@ is already descendant of family @"+fam.getId()+"@");
 
     // Connect back from husband (maybe using invalid back reference)
-    ps = husband.getProperties(new TagPath("INDI:FAMS"),QUERY_ALL);
+    ps = husband.getProperties(new TagPath("INDI:FAMS"));
     PropertyFamilySpouse pfs;
     for (int i=0;i<ps.length;i++) {
       pfs = (PropertyFamilySpouse)ps[i];
-      if ( (!pfs.isValid()) && (pfs.getReferencedId().equals(fam.getId())) ) {
-      pfs.setTarget(this); // Changed Oct 23 from pfs.setTarget(pfs);
-      setTarget(pfs);      // Inserted Oct 23
-      return;
+      if ( !pfs.isValid() && pfs.getReferencedId().equals(fam.getId()) ) {
+        pfs.setTarget(this); // Changed Oct 23 from pfs.setTarget(pfs);
+        setTarget(pfs);      // Inserted Oct 23
+        return;
       }
     }
 

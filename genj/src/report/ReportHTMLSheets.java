@@ -402,10 +402,10 @@ public class ReportHTMLSheets extends Report {
     printCell(out,indi.getFirstName());
 
     printCell(out,indi.getProperty("SEX",true));
-    printCell(out,indi.getProperty(new TagPath("INDI:BIRT:DATE"), Property.QUERY_VALID_TRUE));
-    printCell(out,indi.getProperty(new TagPath("INDI:BIRT:PLAC"), Property.QUERY_VALID_TRUE));
-    printCell(out,indi.getProperty(new TagPath("INDI:DEAT:DATE"), Property.QUERY_VALID_TRUE));
-    printCell(out,indi.getProperty(new TagPath("INDI:DEAT:PLAC"), Property.QUERY_VALID_TRUE));
+    printCell(out,indi.getProperty(new TagPath("INDI:BIRT:DATE")));
+    printCell(out,indi.getProperty(new TagPath("INDI:BIRT:PLAC")));
+    printCell(out,indi.getProperty(new TagPath("INDI:DEAT:DATE")));
+    printCell(out,indi.getProperty(new TagPath("INDI:DEAT:PLAC")));
 
     // done
   }

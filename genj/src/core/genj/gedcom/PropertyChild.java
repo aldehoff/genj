@@ -146,22 +146,22 @@ public class PropertyChild extends PropertyXRef {
     }
 
     // Connect back from child (maybe using back reference)
-    ps = child.getProperties(PATH_INDIFAMC,QUERY_ALL);
+    ps = child.getProperties(PATH_INDIFAMC);
 
     PropertyFamilyChild pfc;
     for (int i=0;i<ps.length;i++) {
       pfc = (PropertyFamilyChild)ps[i];
       // 20030616 compare against fam.getId()!!!
-      if ( (!pfc.isValid()) && (pfc.getReferencedId().equals(fam.getId())) ) {
+      if ( !pfc.isValid() && pfc.getReferencedId().equals(fam.getId()) ) {
         pfc.setTarget(this);
         setTarget(pfc);
         return;
       } else {
-          ps = child.getProperties(PATH_INDIADOPFAMC,QUERY_ALL);
+          ps = child.getProperties(PATH_INDIADOPFAMC);
           for (int j=0;j<ps.length;j++) {
             pfc = (PropertyFamilyChild)ps[j];
             // 20030616 compare against fam.getId()!!!
-            if ( (!pfc.isValid()) && (pfc.getReferencedId().equals(fam.getId())) ) {
+            if ( !pfc.isValid() && pfc.getReferencedId().equals(fam.getId()) ) {
               pfc.setTarget(this);
               setTarget(pfc);
               return;

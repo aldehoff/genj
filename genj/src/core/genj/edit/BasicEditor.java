@@ -25,9 +25,11 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ColumnLayout;
@@ -157,13 +159,16 @@ import javax.swing.event.ChangeListener;
   /** bean container */
   private JPanel beanPanel;
   
+  /** link container */
+  private JPanel linkPanel;
+  
   /** actions */
   private ActionDelegate    
     ok   = new OK(), 
     cancel = new Cancel();
 
   /** beans */
-  private Map beans = new HashMap();
+  private Map path2beans = new HashMap();
 
   /**
    * Callback - init for edit
@@ -175,9 +180,10 @@ import javax.swing.event.ChangeListener;
     this.manager = manager;
     this.registry = registry;
 
-    // create panel for beans
+    // create panels for beans and links
     beanPanel = new JPanel(new ColumnLayout(6));
-
+    linkPanel = new JPanel(new ColumnLayout(100));
+    
     // create panel for actions
     JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons).setFocusable(false);
@@ -188,6 +194,7 @@ import javax.swing.event.ChangeListener;
     setLayout(new BorderLayout());
     add(header                    , BorderLayout.NORTH );
     add(new JScrollPane(beanPanel), BorderLayout.CENTER);
+//    add(new JScrollPane(linkPanel), BorderLayout.EAST  );
     add(buttons                   , BorderLayout.SOUTH );
 
     // done
@@ -235,13 +242,18 @@ import javax.swing.event.ChangeListener;
    */
   public void setContext(Context context) {
 
-    // applicable?
+    // set if new
     Entity set = context.getEntity();
-    if (entity == set)
-      return;
-
-    // continue
-    setEntity(set);
+    if (entity != set)
+      setEntity(set);
+      
+    // check specific property
+    Property prop = context.getProperty();
+    if (prop!=null) {
+      PropertyBean bean = (PropertyBean)path2beans.get(prop.getPath());
+      if (bean!=null) 
+        bean.requestFocusInWindow();
+    }
     
   }
 
@@ -259,13 +271,21 @@ import javax.swing.event.ChangeListener;
 
     // remove all current beans
     beanPanel.removeAll();
+    linkPanel.removeAll();
     path2panels.clear();
-    beans.clear();
+    path2beans.clear();
 
     // setup for new entity
     if (entity!=null) {
 
-      // loop over configured paths
+      ChangeListener change = new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+          ok.setEnabled(true);
+          cancel.setEnabled(true);
+        }
+      };
+              
+      // create beans for all configured paths
       for (int i=0; i<PATHS.length; i++) {
   
         // an applicable path?
@@ -274,40 +294,42 @@ import javax.swing.event.ChangeListener;
 
         TagPath path = new TagPath(PATHS[i]);
   
-// FIXME gotta do this different to make sure sub-props belong to each other  
-  
         // analyze & create if necessary
         MetaProperty meta = MetaProperty.get(path);
-        Property prop = entity.getProperty(path, Property.QUERY_NO_LINK|Property.QUERY_NO_BACKTRACK);
-        if (prop == null)
+        Property prop = entity.getProperty(path);
+        if (prop == null || prop instanceof PropertyXRef)
           prop = meta.create("");
   
         // prepare bean 
         PropertyBean bean = PropertyBean.get(prop);
-        bean.setAlignmentX(0);
         bean.init(entity.getGedcom(), prop, manager, registry);
 
         ColumnLayout.setWeight(bean, bean.getWeight());
   
         // listen to bean changes
-        bean.addChangeListener(new ChangeListener() {
-          public void stateChanged(ChangeEvent e) {
-            ok.setEnabled(true);
-            cancel.setEnabled(true);
-          }
-        });
+        bean.addChangeListener(change);
         
         // keep it
-        beans.put(path, bean);
+        path2beans.put(path, bean);
   
         // add to corect panel
         getPanel(path).add(bean);
   
       }
 
+// FIXME need links showing in basic mode
+//      // create links
+//      Iterator xrefs = entity.getProperties(PropertyXRef.class).iterator();
+//      while (xrefs.hasNext()) {
+//        PropertyXRef xref = (PropertyXRef)xrefs.next();
+//        if (xref.isValid()) {
+//          XRefBean bean = new XRefBean();
+//          bean.init(entity.getGedcom(), xref, manager, registry);
+//          linkPanel.add(bean);
+//        }
+//      }
+
     }
-    
-    // FIXME add references (children, spouses, ...) section to basiceditor
     
     // start without ok and cancel
     ok.setEnabled(false);
@@ -355,6 +377,7 @@ import javax.swing.event.ChangeListener;
     if (path.length()==1)
       return beanPanel;
 
+
     // create border & panel for it
     MetaProperty meta = MetaProperty.get(path);
     TabBorder border = new TabBorder(meta.getName(), meta.getImage());
@@ -378,8 +401,14 @@ import javax.swing.event.ChangeListener;
     }
     
     // add to parent panel
-    parent.add(result);
-    
+//    if (meta.getType()==PropertyEvent.class) {
+//      JTabbedPane tabs = new JTabbedPane();
+//      tabs.add("0", result);
+//      parent.add(tabs);
+//    } else {
+      parent.add(result);
+//    }
+  
     // remember
     path2panels.put(path, result);
 
@@ -411,14 +440,18 @@ import javax.swing.event.ChangeListener;
       gedcom.startTransaction();
       
       // commit bean changes      
-      Iterator paths = beans.keySet().iterator();
-      while (paths.hasNext()) {
-        TagPath path = (TagPath)paths.next();
-        PropertyBean bean = (PropertyBean)beans.get(path);
-        Property prop = bean.getProperty();
-        bean.commit();
-        if (prop.getValue().length()>0&&prop.getParent()==null)
-          add(prop, path, path.length());
+      try {
+        Iterator paths = path2beans.keySet().iterator();
+        while (paths.hasNext()) {
+          TagPath path = (TagPath)paths.next();
+          PropertyBean bean = (PropertyBean)path2beans.get(path);
+          Property prop = bean.getProperty();
+          bean.commit();
+          if (prop.getValue().length()>0&&prop.getParent()==null)
+            add(prop, path, path.length());
+        }
+      } catch (Throwable t) {
+        Debug.log(Debug.ERROR, this, t);
       }
 
       // end transaction - fake entity==null because we're doing the change here

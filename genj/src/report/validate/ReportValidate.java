@@ -173,9 +173,7 @@ public class ReportValidate extends Report {
         continue;
       }
       // dive into
-      path.add(ctag);
-      test(child, path, meta.get(child.getTag(), false), tests, issues);
-      path.pop();
+      test(child, new TagPath(path, ctag), meta.get(child.getTag(), false), tests, issues);
       // next child
     }
     // done
