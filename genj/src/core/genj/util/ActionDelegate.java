@@ -25,6 +25,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -237,85 +240,29 @@ public abstract class ActionDelegate implements Cloneable {
    * by that contract (with selector)
    */  
   public Object as(Class contract, String selector) {
-    // this will have to be done through java.lang.reflect.Proxy at some point
-    if (contract==WindowListener.class) {
-      return new AsWindowListener(selector);
-    }
-    if (contract==ActionListener.class) {
-      return new AsActionListener();
-    }
-    if (contract==Runnable.class) {
-      return new AsRunnable();
-    }
-    if (contract==ListSelectionListener.class) {
-      return new AsListSelectionListener();
-    }
-    if (contract==ChangeListener.class) {
-      return new AsChangeListener();
-    }
-    // don't know
-    throw new RuntimeException("Unsupported contract '"+contract+"' for ActionDelegate");
+    return Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{contract}, new InvocationHandlerTrigger(selector));
   }
 
   /**
-   * A converter - WindowListener
+   * InvocationHandler trigger
    */
-  private class AsWindowListener extends WindowAdapter {
-    /** selector */
+  private class InvocationHandlerTrigger implements InvocationHandler {
+    /** a selector */
     private String selector;
-    /** constructor */
-    protected AsWindowListener(String s) {
-      selector=s;
+    /**
+     * Constructor
+     */
+    private InvocationHandlerTrigger(String selector) {
+      this.selector = selector;
     }
-    /** the routed close */
-    public void windowClosed(WindowEvent e) {
-      if ("windowClosed".equals(selector)) trigger();
+    /**
+     * @see java.lang.reflect.InvocationHandler#invoke(Object, Method, Object[])
+     */
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      if (selector==null||selector.equals(method.getName())) trigger();
+      return null;
     }
-    /** the routed closing */
-    public void windowClosing(WindowEvent e) {
-      if ("windowClosing".equals(selector)) trigger();
-    }
-  }
-  
-  /**
-   * A converter - ListSelectionListener
-   */
-  private class AsListSelectionListener implements ListSelectionListener {
-    /** the routed selection */
-    public void valueChanged(ListSelectionEvent e) {
-      trigger();
-    }
-  }
-  
-  /**
-   * A converter - Runnable.run
-   */
-  private class AsRunnable implements Runnable {
-    /** the routed call */
-    public void run() {
-      trigger();
-    }
-  }
-
-  /**
-   * A converter - ActionListener
-   */
-  private class AsActionListener implements ActionListener {
-    /** the routed call */
-    public void actionPerformed(ActionEvent e) {
-      trigger();
-    }
-  }
-
-  /**
-   * A converter - ChangeListener
-   */
-  private class AsChangeListener implements ChangeListener {
-    /** the routed call */
-    public void stateChanged(ChangeEvent e) {
-      trigger();
-    }
-  }
+  } //InvocationHandlerTrigger
 
   /**
    * Async Execution
@@ -365,5 +312,5 @@ public abstract class ActionDelegate implements Cloneable {
   } //SyncHandleThrowable
 
   
-}
+} //ActionDelegate
 
