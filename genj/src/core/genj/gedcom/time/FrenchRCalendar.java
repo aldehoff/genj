@@ -67,7 +67,7 @@ public class FrenchRCalendar extends Calendar {
     if (month<12)
       return 30;
       
-    // 5/6 jours complémentaires
+    // 5/6 jours complementaires
     return isLeap(year) ? 6 : 5;
     
     // noop
@@ -88,7 +88,7 @@ public class FrenchRCalendar extends Calendar {
       throw new GedcomException("");
     // localized?
     String[] result = localize ? localizedWeekDays : localizedWeekDays;
-    // Jour Complémentaire?
+    // Jour Complementaire?
     if (pit.getMonth()==13-1)
       return result[10+pit.getDay()];
     // normal 30 days month
