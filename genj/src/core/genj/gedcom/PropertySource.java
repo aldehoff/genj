@@ -28,8 +28,8 @@ import genj.util.swing.ImageIcon;
 public class PropertySource extends PropertyXRef {
 
   /** applicable target types */
-  public final static int[] 
-    TARGET_TYPES = new int[]{ Gedcom.SOURCES };
+  public final static String[] 
+    TARGET_TYPES = { Gedcom.SOUR };
 
   /**
    * Empty Constructor
@@ -82,7 +82,7 @@ public class PropertySource extends PropertyXRef {
     String id = getReferencedId();
     if (id.length()==0) return;
 
-    Source source = (Source)getGedcom().getEntity(id, Gedcom.SOURCES);
+    Source source = (Source)getGedcom().getEntity(Gedcom.SOUR, id);
     if (source == null)
       return;
 
@@ -99,7 +99,7 @@ public class PropertySource extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int[] getTargetTypes() {
+  public String[] getTargetTypes() {
     return TARGET_TYPES;
   }
 

@@ -26,8 +26,8 @@ package genj.gedcom;
 public class PropertyFamilySpouse extends PropertyXRef {
 
   /** applicable target types */
-  public final static int[] 
-    TARGET_TYPES = new int[]{ Gedcom.FAMILIES };
+  public final static String[] 
+    TARGET_TYPES = { Gedcom.FAM };
 
   /**
    * Empty Constructor
@@ -99,7 +99,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
 
     // Look for family (not-existing -> Gedcom throws Exception)
     String id = getReferencedId();
-    Fam fam = (Fam)getGedcom().getEntity(id, Gedcom.FAMILIES);
+    Fam fam = (Fam)getGedcom().getEntity(Gedcom.FAM, id);
     if (fam==null)
       throw new GedcomException("Couldn't find family with ID "+id);
 
@@ -167,7 +167,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int[] getTargetTypes() {
+  public String[] getTargetTypes() {
     return TARGET_TYPES;
   }
   

@@ -99,7 +99,7 @@ public class Report4Generations extends Report {
 			indi = (Indi)getEntityFromUser (
 				 i18n("select"), // msg
 				 gedcom,                        // our gedcom instance
-				 Gedcom.INDIVIDUALS,            // type INDIVIDUALS
+				 Gedcom.INDI,                   // type INDIVIDUALS
 				 "INDI:NAME"                    // sort by name
 				 );
 		}

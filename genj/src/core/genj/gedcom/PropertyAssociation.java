@@ -27,8 +27,8 @@ package genj.gedcom;
 public class PropertyAssociation extends PropertyXRef {
 
   /** applicable target types */
-  public final static int[] 
-    TARGET_TYPES = new int[]{ Gedcom.INDIVIDUALS, Gedcom.FAMILIES, Gedcom.SUBMITTERS};
+  public final static String[] 
+    TARGET_TYPES = { Gedcom.INDI, Gedcom.FAM, Gedcom.SUBM };
 
   /**
    * Empty Constructor
@@ -89,7 +89,7 @@ public class PropertyAssociation extends PropertyXRef {
     // .. update type
     Property type = getProperty("TYPE");
     if (type==null) type = addProperty(new PropertySimpleValue("TYPE"));
-    type.setValue(getGedcom().getTagFor(ent.getType()));
+    type.setValue(ent.getTag());
 
     // Done
   }
@@ -97,7 +97,7 @@ public class PropertyAssociation extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int[] getTargetTypes() {
+  public String[] getTargetTypes() {
     return TARGET_TYPES;
   }
   

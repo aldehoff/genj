@@ -152,14 +152,14 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   /**
    * Accessor - the paths we're using for given type
    */
-  public TagPath[] getPaths(int type) {
+  public TagPath[] getPaths(String type) {
     return tableModel.getPaths(type);
   }
   
   /**
    * Accessor - the paths we're using for given type
    */
-  public void setPaths(int type, TagPath[] set) {
+  public void setPaths(String type, TagPath[] set) {
     tableModel.setPaths(type,set);
     table.setColumnModel(tableModel.createTableColumnModel(getWidth()));
   }
@@ -167,14 +167,14 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   /**
    * Returns the type of entities to look at
    */
-  public int getType() {
+  public String getType() {
     return tableModel.getType();
   }
 
   /**
    * Sets the type of entities to look at
    */
-  public void setType(int type) {
+  public void setType(String type) {
     // grab the column widths as they are right now
     grabColumnWidths();
     // set the new type
@@ -189,7 +189,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   public void setContext(Property property) {
     // a type that we're interested in?
     Entity entity = property.getEntity();
-    if (entity.getType()!=tableModel.getType()) return;
+    if (entity.getTag()!=tableModel.getType()) return;
     // already selected?
     int row = table.getSelectionModel().getLeadSelectionIndex();
     if (row>=0 && row<tableModel.getRowCount() && tableModel.getEntity(row)==entity) return;
@@ -208,8 +208,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     // create buttons for mode switch
     ButtonHelper bh = new ButtonHelper();
     bh.setFocusable(false);
-    for (int t=0;t<Gedcom.NUM_TYPES;t++) {
-      bar.add(bh.create(new ActionChangeType(t)));
+    for (int t=0;t<Gedcom.ETYPES.length;t++) {
+      bar.add(bh.create(new ActionChangeType(Gedcom.ETYPES[t])));
     }
     // done
   }
@@ -258,15 +258,15 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   private void loadProperties() {
 
     // get current filter
-    tableModel.setType(registry.get("type", Gedcom.INDIVIDUALS));
+    tableModel.setType(registry.get("type", Gedcom.INDI));
     
     // get paths&widths
-    for (int t=0; t<Gedcom.NUM_TYPES; t++) {
-      String tag = Gedcom.getTagFor(t);
+    for (int t=0; t<Gedcom.ETYPES.length; t++) {
+      String tag = Gedcom.ETYPES[t];
       String[] ps = registry.get(tag+".paths" , (String[])null);
-      if (ps!=null) tableModel.setPaths(t, ps);
+      if (ps!=null) tableModel.setPaths(tag, ps);
       int[]    ws = registry.get(tag+".widths", (int[]   )null);
-      if (ws!=null) tableModel.setWidths(t,ws);
+      if (ws!=null) tableModel.setWidths(tag,ws);
     }
     
     // get sorting
@@ -287,10 +287,10 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     // save current type
     registry.put("type",tableModel.getType());
     // save paths&widths
-    for (int t=0; t<Gedcom.NUM_TYPES; t++) {
-      String tag = Gedcom.getTagFor(t);
-      registry.put(tag+".paths", tableModel.getPaths(t));
-      registry.put(tag+".widths", tableModel.getWidths(t));
+    for (int t=0; t<Gedcom.ETYPES.length; t++) {
+      String tag = Gedcom.ETYPES[t];
+      registry.put(tag+".paths", tableModel.getPaths(tag));
+      registry.put(tag+".widths", tableModel.getWidths(tag));
     }
     // Done
   }  
@@ -317,7 +317,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     /** selected entities */
     private Set ents = new HashSet();
     /** type we're looking at */
-    private int type;
+    private String type;
     /**
      * Constructor
      */
@@ -333,7 +333,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
      */
     public boolean accept(Entity ent) {
       // fam/indi
-      if (ent.getType()==type)
+      if (ent.getTag()==type)
         return ents.contains(ent);
       // maybe a referenced other type?
       Entity[] refs = PropertyXRef.getReferences(ent);
@@ -355,12 +355,12 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
    */
   private class ActionChangeType extends ActionDelegate {
     /** the type this action triggers */
-    private int type;
+    private String type;
     /** constructor */
-    ActionChangeType(int t) {
+    ActionChangeType(String t) {
       type = t;
-      setTip(resources.getString("mode.tip", Gedcom.getNameFor(type,true)));
-      setImage(Gedcom.getImage(type));
+      setTip(resources.getString("mode.tip", Gedcom.getEntityName(type,true)));
+      setImage(Gedcom.getEntityImage(type));
     }
     /** run */
     public void execute() {

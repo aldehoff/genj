@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.renderer.Blueprint;
+import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -39,6 +40,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
@@ -68,7 +71,7 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
   private Entity entity = null;
   
   /** the blueprints we're using */
-  private Blueprint[] blueprints;
+  private Map type2blueprint = new HashMap();
   
   /** whether we do antialiasing */
   private boolean isAntialiasing = false;
@@ -84,10 +87,16 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
     viewManager = manager;
     registry = reg;
     gedcom = ged;
+
     // listen to gedcom
     gedcom.addListener(new GedcomConnector());
-    // resolve from registry
-    blueprints = viewManager.getBlueprintManager().recallBlueprints(registry);
+
+    // grab data from registry
+    BlueprintManager bpm = viewManager.getBlueprintManager();
+    for (int t=0;t<Gedcom.ETYPES.length;t++) {
+      String tag = Gedcom.ETYPES[t];
+      type2blueprint.put(tag, bpm.getBlueprint(tag, registry.get("blueprint."+tag, "")));
+    }
     isAntialiasing  = registry.get("antial"  , false);
     
     // set first entity
@@ -109,8 +118,11 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
    */
   public void removeNotify() {
     super.removeNotify();
-    // store blueprints
-    viewManager.getBlueprintManager().rememberBlueprints(blueprints, registry);
+    // store settings in registry
+    for (int t=0;t<Gedcom.ETYPES.length;t++) {
+      String tag = Gedcom.ETYPES[t];
+      registry.put("blueprint."+tag, getBlueprint(tag).getName()); 
+    }
     registry.put("antial"  , isAntialiasing );
     // done
   }
@@ -139,6 +151,34 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
   public void populate(JToolBar bar) {
   }
   
+  /** 
+   * Get blueprint used for given type
+   */
+  /*package*/ Blueprint getBlueprint(String tag) {
+    Blueprint result = (Blueprint)type2blueprint.get(tag);
+    if (result==null) {
+      result = viewManager.getBlueprintManager().getBlueprint(tag, "");
+      type2blueprint.put(tag, result);
+    }
+    return result;
+  }
+  
+  /**
+   * Set the blueprints used (map tag to blueprint)
+   */
+  /*package*/ void setBlueprints(Map setType2Blueprints) {
+    type2blueprint = setType2Blueprints;
+    // show
+    setEntity(entity);
+  }
+  
+  /**
+   * Gets the blueprints used (map tag to blueprint)
+   */
+  /*package*/ Map getBlueprints() {
+    return type2blueprint;
+  }
+  
   /**
    * Sets the entity to show
    */
@@ -146,7 +186,7 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
     // resolve blueprint & renderer
     Blueprint blueprint;
     if (e==null) blueprint = BLUEPRINT_SELECT;
-    else blueprint = blueprints[e.getType()];
+    else blueprint = getBlueprint(e.getTag()); 
     renderer=new EntityRenderer(blueprint);
     // remember    
     entity = e;
@@ -169,21 +209,7 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
     return isAntialiasing;
   }
   
-  /** 
-   * Sets blueprints
-   */
-  public void setBlueprints(Blueprint[] bluepRints) {
-    blueprints = (Blueprint[])bluepRints.clone();
-    setEntity(entity);
-  }
-  
-  /** 
-   * Returns blueprints
-   */
-  public Blueprint[] getBlueprints() {
-    return (Blueprint[])blueprints.clone();
-  }
-    /**
+  /**
    * @see genj.view.ContextPopupSupport#getContextAt(java.awt.Point)
    */
   public Context getContextAt(Point pos) {

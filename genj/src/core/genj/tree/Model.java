@@ -402,11 +402,8 @@ public class Model implements GedcomListener {
     Set deleted = change.getChanges(change.EDEL);
     if (deleted.size()>0) {
       // root has to change?
-      if (deleted.contains(root)) {
-        root = null;
-        List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
-        if (!indis.isEmpty()) root = (Indi)indis.get(0);
-      }  
+      if (deleted.contains(root)) 
+        root = gedcom.getAnyEntity(Gedcom.INDI);
       // bookmarks?
       ListIterator it = bookmarks.listIterator();
       while (it.hasNext()) {

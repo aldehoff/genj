@@ -8,6 +8,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
@@ -16,7 +17,6 @@ import genj.report.Report;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
-import java.util.List;
 
 
 /**
@@ -89,15 +89,16 @@ public class ReportTrees extends Report {
     Gedcom gedcom = (Gedcom)context;
 
     // Get a list of the individuals and create a stati
-    List indis = gedcom.getEntities(gedcom.INDIVIDUALS);
-    Statistics stats = new Statistics(indis.size());
+    Entity[] indis = gedcom.getEntities(gedcom.INDI, "INDI:NAME");
+    Statistics stats = new Statistics(indis.length);
 
     println(i18n("fileheader",gedcom.getName()));
 
     // Step through all the Individuals
-    println(i18n("indicount",indis.size())+"\n");
-    for (int i=0;i<indis.size();i++) {
-      Indi indi = (Indi)indis.get(i);
+    println(i18n("indicount",indis.length)+"\n");
+    
+    for (int e=0;e<indis.length;e++) {
+      Indi indi = (Indi)indis[e];
       // If we haven't seen them yet, it's the beginning of a new tree
       if ( !stats.seen.containsKey(indi.getId()) ) {
         int curTree = stats.numTrees++;
@@ -105,7 +106,7 @@ public class ReportTrees extends Report {
         stats.trees[curTree].name =
           indi.getName()+" ["+indi.getId()+"]";
         stats.trees[curTree].count =
-          analyzeIndividual((Indi)indis.get(i), stats);
+          analyzeIndividual(indi, stats);
         if( stats.trees[curTree].count > CUTOFF ) {
           Object[] msgargs = {new Integer(curTree),
                               stats.trees[curTree].name,

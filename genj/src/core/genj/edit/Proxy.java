@@ -115,7 +115,7 @@ import javax.swing.border.EmptyBorder;
       g.fillRect(box.x, box.y, box.width, box.height);
       // render entity
       if (renderer==null) 
-        renderer = new EntityRenderer(view.manager.getBlueprintManager().getBlueprint(entity.getType(), ""));
+        renderer = new EntityRenderer(view.manager.getBlueprintManager().getBlueprint(entity.getTag(), ""));
       renderer.render(g, entity, box);
       // done
     }

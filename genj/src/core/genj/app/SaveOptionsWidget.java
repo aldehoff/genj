@@ -51,7 +51,7 @@ import javax.swing.JTextField;
 /*package*/ class SaveOptionsWidget extends JTabbedPane {
   
   /** components */
-  private JCheckBox[] checkEntities = new JCheckBox[Gedcom.NUM_TYPES];
+  private JCheckBox[] checkEntities = new JCheckBox[Gedcom.ETYPES.length];
   private JCheckBox[] checkViews;
   private JTextField  textTags, textValues;
   private JComboBox   comboEncodings;
@@ -73,8 +73,8 @@ import javax.swing.JTextField;
     
     // entities filter    
     Box types = new Box(BoxLayout.Y_AXIS);
-    for (int t=0; t<Gedcom.NUM_TYPES; t++) {
-      checkEntities[t] = new JCheckBox(Gedcom.getNameFor(t, true), true);
+    for (int t=0; t<Gedcom.ETYPES.length; t++) {
+      checkEntities[t] = new JCheckBox(Gedcom.getEntityName(Gedcom.ETYPES[t], true), true);
       types.add(checkEntities[t]);
     }
     
@@ -237,33 +237,27 @@ import javax.swing.JTextField;
   private static class FilterByType implements Filter {
     
     /** the enabled types */
-    private boolean[] types;
-    
-    /**
-     * Constructor
-     */
-    private FilterByType(boolean[] types) {
-      this.types = types;
-    }
+    private Set types = new HashSet();
     
     /**
      * Create an instance
      */
     protected static FilterByType get(JCheckBox[] checks) {
-      boolean[] bs = new boolean[Gedcom.NUM_TYPES];
-      boolean filter = false;
+      
+      FilterByType result = new FilterByType();
+      
       for (int t=0; t<checks.length; t++) {
-      	bs[t] = checks[t].isSelected();
-        if (bs[t]==false) filter = true;
+      	if (checks[t].isSelected())
+          result.types.add(Gedcom.ETYPES[t]);
       }
-      return filter ? new FilterByType(bs) : null;
+      return result.types.size()<Gedcom.ETYPES.length ? result : null;
     }
     /**
      * accepting only specific entity types
      * @see genj.io.Filter#accept(genj.gedcom.Entity)
      */
     public boolean accept(Entity entity) {
-      return types[entity.getType()];
+      return types.contains(entity.getTag());
     }
     /**
      * accepting all properties

@@ -29,14 +29,14 @@ import genj.view.ViewManager;
 public class CreateEntity extends AbstractChange {
 
   /** the type of the added entity*/
-  private int type;
+  private String etag;
   
   /**
    * Constructor
    */
-  public CreateEntity(Gedcom ged, int typ, ViewManager manager) {
-    super(ged, ged.getImage(typ).getOverLayed(imgNew), resources.getString("new", Gedcom.getNameFor(typ, false) ), manager);
-    type = typ;
+  public CreateEntity(Gedcom ged, String tag, ViewManager manager) {
+    super(ged, ged.getEntityImage(tag).getOverLayed(imgNew), resources.getString("new", Gedcom.getEntityName(tag, false) ), manager);
+    etag = tag;
   }
   
   /**
@@ -44,11 +44,11 @@ public class CreateEntity extends AbstractChange {
    */
   protected String getConfirmMessage() {
     // You are about to create a {0} in {1}!
-    String about = resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom});
+    String about = resources.getString("confirm.new", new Object[]{ Gedcom.getEntityName(etag,false), gedcom});
     // This entity will not be connected ... 
     String detail = resources.getString("confirm.new.unrelated");
     // Entity comment?
-    String comment = resources.getString("confirm."+Gedcom.getTagFor(type));
+    String comment = resources.getString("confirm."+etag);
     // done
     return about + '\n' + detail + '\n' + comment ;
   }
@@ -58,7 +58,7 @@ public class CreateEntity extends AbstractChange {
    */
   protected void change() throws GedcomException {
     // create the entity
-    focus = gedcom.createEntity(type);
+    focus = gedcom.createEntity(etag);
     focus.addDefaultProperties();
     // done
   }

@@ -28,8 +28,8 @@ import genj.util.swing.ImageIcon;
 public class PropertyChild extends PropertyXRef {
 
   /** applicable target types */
-  public final static int[] 
-    TARGET_TYPES = new int[]{ Gedcom.INDIVIDUALS };
+  public final static String[] 
+    TARGET_TYPES = { Gedcom.INDI };
 
   public final static ImageIcon
     IMG_MALE   = MetaProperty.get(new TagPath("FAM:CHIL")).getImage("male"),
@@ -109,7 +109,7 @@ public class PropertyChild extends PropertyXRef {
 
     // Look for child (not-existing -> Gedcom throws Exception)
     String id = getReferencedId();
-    Indi child = (Indi)getGedcom().getEntity(id, Gedcom.INDIVIDUALS);
+    Indi child = (Indi)getGedcom().getEntity(Gedcom.INDI, id);
 
     if (child==null) {
       throw new GedcomException("Couldn't find child with ID "+id);
@@ -163,7 +163,7 @@ public class PropertyChild extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int[] getTargetTypes() {
+  public String[] getTargetTypes() {
     return TARGET_TYPES;
   }
   

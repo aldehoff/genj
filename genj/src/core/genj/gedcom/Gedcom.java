@@ -25,8 +25,14 @@ import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -42,29 +48,48 @@ public class Gedcom {
   static private Random seed = new Random();
   static /*package*/ Resources resources = Resources.get(Gedcom.class);
 
-  private final static String[]
-    ePrefixs  = { "I", "F", "M", "N", "S", "B", "R"},
-    eTags     = { "INDI", "FAM", "OBJE", "NOTE", "SOUR", "SUBM", "REPO" };
+  public final static String
+    INDI = "INDI", 
+    FAM  = "FAM" ,
+    OBJE = "OBJE", 
+    NOTE = "NOTE", 
+    SOUR = "SOUR", 
+    SUBM = "SUBM", 
+    REPO = "REPO";
     
-  private final static Class[]
-    eTypes    = { Indi.class, Fam.class, Media.class, Note.class, Source.class, Submitter.class, Repository.class };
+  public final static String[] 
+    ETYPES = { INDI, FAM, OBJE, NOTE, SOUR, SUBM, REPO };      
 
-  public final static int
-    INDIVIDUALS  = 0,
-    FAMILIES     = 1,
-    MULTIMEDIAS  = 2,
-    NOTES        = 3,
-    SOURCES      = 4,
-    SUBMITTERS   = 5,
-    REPOSITORIES = 6,
-    NUM_TYPES    = 7;
+  private final static Map 
+    E2PREFIX = new HashMap();
+    static {
+      E2PREFIX.put(INDI, "I");
+      E2PREFIX.put(FAM , "F");
+      E2PREFIX.put(OBJE, "M");
+      E2PREFIX.put(NOTE, "N");
+      E2PREFIX.put(SOUR, "S");
+      E2PREFIX.put(SUBM, "B");
+      E2PREFIX.put(REPO, "R");
+    }
+    
+  private final static Map 
+    E2TYPE = new HashMap();
+    static {
+      E2TYPE.put(INDI, Indi.class);
+      E2TYPE.put(FAM , Fam .class);
+      E2TYPE.put(OBJE, Media.class);
+      E2TYPE.put(NOTE, Note.class);
+      E2TYPE.put(SOUR, Source.class);
+      E2TYPE.put(SUBM, Submitter.class);
+      E2TYPE.put(REPO, Repository.class);
+    }
+    
+  private final static Map
+    E2IMAGE = new HashMap();
 
   /** image */
   private final static ImageIcon image = new ImageIcon(Gedcom.class, "images/Gedcom.gif");
   
-  /** images */
-  private static ImageIcon[] images = new ImageIcon[NUM_TYPES];
-
   /** submitter of this Gedcom */
   private Submitter submitter;
 
@@ -72,8 +97,8 @@ public class Gedcom {
   private Origin origin;
   
   /** entities */
-  private List[] entities    = new List   [NUM_TYPES];
-  private Map[]  id2entities = new HashMap[NUM_TYPES];
+  private LinkedList entities = new LinkedList();
+  private Map e2entities = new HashMap(); // values are maps id->entitiy
   
   /** change/transaction support */
   private boolean isTransaction = false;
@@ -102,11 +127,6 @@ public class Gedcom {
       throw new IllegalArgumentException("Origin has to specified");
     // remember
     this.origin = origin;
-    // init
-    for (int i=0;i<entities.length;i++) {
-      entities   [i] = new ArrayList(initialCapacity);
-      id2entities[i] = new HashMap  (initialCapacity);
-    }
     // Done
   }
 
@@ -128,7 +148,7 @@ public class Gedcom {
    * Sets the submitter of this gedcom
    */
   public void setSubmitter(Submitter set) {
-    if (!entities[SUBMITTERS].contains(set)) 
+    if (!getEntityMap(SUBM).containsValue(set))
       throw new IllegalArgumentException("Submitter is not part of this gedcom");
     submitter = set;
     if (isTransaction) hasUnsavedChanges = true;
@@ -158,8 +178,8 @@ public class Gedcom {
   /**
    * Creates a non-related entity with id
    */
-  public Entity createEntity(int type) throws GedcomException {
-    return createEntity(type, null);
+  public Entity createEntity(String tag) throws GedcomException {
+    return createEntity(tag, null);
   }    
     
   /**
@@ -167,42 +187,33 @@ public class Gedcom {
    * @exception GedcomException in case of unknown tag for entity
    */
   public Entity createEntity(String tag, String id) throws GedcomException {
-    // check tag
-    for (int type=0; type<NUM_TYPES; type++) {
-      if (eTags[type].equals(tag)) return createEntity(type, id);
-    }
-    // unknown tag
-    throw new GedcomException("No entity type for "+tag);
-  }
-  
-  /**
-   * Creates an entity
-   */
-  public Entity createEntity(int type, String id) throws GedcomException {
+    
+    // lookup a type
+    Class clazz = (Class)E2TYPE.get(tag);
+    if (clazz==null)
+      clazz = Entity.class;
     
     // Generate id if necessary
-    if (id==null) id = getRandomIdFor(type);
-
-    // The type of the entity
-    Class clazz = eTypes[type];
+    if (id==null) 
+      id = createEntityId(tag);
 
     // Create entity
     Entity result; 
     try {
       result = (Entity)clazz.newInstance();
     } catch (Throwable t) {
-      throw new GedcomException("Unexpected problem creating instance of "+eTags[type]);
+      throw new GedcomException("Unexpected problem creating instance of "+tag);
     }
-     
-    // Connect and initialize
-    result.setId(id);
-    entities[type].add(result);
+
+    // remember     
+    getEntityMap(tag).put(id, result);
+    entities.add(result);
     
-    // Store id
-    id2entities[type].put(id,result);
+    // initialize
+    result.setId(id);
     
     // notify
-    result.addNotify(this);
+    result.addNotify(this, tag);
 
     // Done
     return result;
@@ -214,42 +225,75 @@ public class Gedcom {
    */
   public void deleteEntity(Entity which) throws GedcomException {
 
-    // Type of entity
-    int type = which.getType();
+    // Lookup entity map
+    Map ents = getEntityMap(which.getTag());
 
     // Entity exists ?
-    if (!id2entities[type].containsKey(which.getId()))
+    String id = which.getId();
+    if (!ents.containsKey(id))
       throw new GedcomException("Unknown entity with id "+which.getId());
 
     // Tell it
     which.delNotify();
 
     // Delete it
-    entities   [type].remove(which);
-    id2entities[type].remove(which.getId());
-    
+    ents.remove(id);
+    entities.remove(which);
+
+    // was it the submitter?    
     if (submitter==which) submitter = null;
 
     // Done
   }
 
   /**
-   * Returns number of all entities
+   * Internal entity lookup
    */
-  public int getNoOfEntities() {
-    int total = 0;
-    for (int i=0;i<entities.length;i++) {
-      total+=entities[i].size();
+  private Map getEntityMap(String tag) {
+    // lookup map of entities for tag
+    Map ents = (Map)e2entities.get(tag);
+    if (ents==null) {
+      ents = new HashMap();
+      e2entities.put(tag, ents);
     }
-    return total;
+    // done
+    return ents;
+  }
+
+  /**
+   * Returns all entities
+   */
+  public Collection getEntities() {
+    return Collections.unmodifiableCollection(entities);
   }
 
   /**
    * Returns entities of given type
    */
-  public List getEntities(int type) {
-    // 20030129 don't return original
-    return new ArrayList(entities[type]);
+  public Collection getEntities(String tag) {
+    return Collections.unmodifiableCollection(getEntityMap(tag).values());
+  }
+
+  /**
+   * Returns entities of given type sorted by given path (can be empty or null)
+   */
+  public Entity[] getEntities(String tag, String sortPath) {
+    return getEntities(tag, sortPath!=null&&sortPath.length()>0 ? new PropertyComparator(sortPath) : null);
+  }
+
+  /**
+   * Returns entities of given type sorted by comparator (can be null)
+   */
+  public Entity[] getEntities(String tag, Comparator comparator) {
+    Collection ents = getEntityMap(tag).values();
+    Entity[] result = (Entity[])ents.toArray(new Entity[ents.size()]);
+    // sort by comparator or entity
+    if (comparator!=null) 
+      Arrays.sort(result, comparator);
+    else
+      Arrays.sort(result);
+    // done
+    return result;
   }
 
   /**
@@ -260,10 +304,13 @@ public class Gedcom {
     if (id==null) 
       throw new IllegalArgumentException("id cannot be null");
     // loop all types
-    for (int t=0;t<NUM_TYPES;t++) {
-      Entity e = getEntity(id, t);
-      if (e!=null) return e;
+    for (Iterator tags=e2entities.keySet().iterator();tags.hasNext();) {
+      String tag = (String)tags.next();
+      Entity result = getEntity(tag, id);
+      if (result!=null)
+        return result;
     }
+    
     // not found
     return null;
   }
@@ -271,24 +318,41 @@ public class Gedcom {
   /**
    * Returns the entity with given id of given type or null if not exists
    */
-  public Entity getEntity(String id, int type) {
-    return (Entity)id2entities[type].get(id);
+  public Entity getEntity(String tag, String id) {
+    // arg check
+    if (id==null) 
+      throw new IllegalArgumentException("id cannot be null");
+    return (Entity)getEntityMap(tag).get(id);
+    
+  }
+  
+  /**
+   * Returns any instance of entity with given type if exists
+   */
+  public Entity getAnyEntity(String tag) {
+    Map ents = getEntityMap(tag);
+    return ents.isEmpty() ? null : (Entity)ents.values().iterator().next();
   }
 
   /**
    * Creates a random ID for given type of entity which is free in this Gedcom
    */
-  private String getRandomIdFor(int type) {
+  private String createEntityId(String tag) {
+    
+    // Lookup current entities of type
+    Map ents = getEntityMap(tag);
+    
     // We might to do this several times
+    String prefix = getEntityPrefix(tag);
     String result;
-    int id = entities[type].size();
+    int id = ents.size();
     while (true) {
       // next one
       id ++;
       // trim to 000
-      result = ePrefixs[type] + (id<100?(id<10?"00":"0"):"") + id;
+      result = prefix + (id<100?(id<10?"00":"0"):"") + id;
       // try it
-      if (!id2entities[type].containsKey(result)) break;
+      if (!ents.containsKey(result)) break;
       // try again
     };
     // done
@@ -412,15 +476,18 @@ public class Gedcom {
   /**
    * Returns the readable name of the given entity type
    */
-  public static String getNameFor(int type, boolean plural) {
-    return resources.getString("type."+ePrefixs[type]+(plural?"s":""));
+  public static String getEntityName(String tag, boolean plural) {
+    return resources.getString("type."+getEntityPrefix(tag)+(plural?"s":""));
   }
 
   /**
-   * Returns the prefix of the given entity type
+   * Returns the prefix of the given entity
    */
-  public static String getPrefixFor(int type) {
-    return ePrefixs[type];
+  public static String getEntityPrefix(String tag) {
+    String result = (String)E2PREFIX.get(tag);
+    if (result==null)
+      result = "X";
+    return result;
   }
 
   /**
@@ -433,43 +500,15 @@ public class Gedcom {
   /**
    * Returns an image for given entity type
    */
-  public static ImageIcon getImage(int type) {
-    try {
-      if (images[type]==null) 
-        images[type] = MetaProperty.get(new TagPath(getTagFor(type))).getImage();
-      return images[type];
-    } catch (ArrayIndexOutOfBoundsException e) {
-      throw new IllegalArgumentException("Unknown type");
+  public static ImageIcon getEntityImage(String tag) {
+    ImageIcon result = (ImageIcon)E2IMAGE.get(tag);
+    if (result==null) {
+      result = MetaProperty.get(new TagPath(tag)).getImage();
+      E2IMAGE.put(tag, result);
     }
+    return result;
   }
   
-  /**
-   * Returns the tag for given entity type
-   */
-  public static String getTagFor(int type) {
-    return eTags[type];
-  }
-
-  /**
-   * Returns a type for given class
-   */
-  public static int getTypeFor(Class clazz) {
-    for (int i=0; i<eTypes.length; i++) {
-      if (eTypes[i]==clazz) return i;
-    }
-    throw new IllegalArgumentException("Unknown class "+clazz);
-  }
-
-  /**
-   * Returns a type for given tag
-   */
-  public static int getTypeFor(String tag) {
-    for (int i=0; i<eTags.length; i++) {
-      if (eTags[i].equals(tag)) return i;
-    }
-    throw new IllegalArgumentException("Unknown tag "+tag);
-  }
-
   /**
    * Returns the Resources (lazily)
    */

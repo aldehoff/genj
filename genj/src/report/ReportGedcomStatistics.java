@@ -6,6 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
@@ -15,12 +16,11 @@ import genj.report.Report;
 import genj.util.ReferenceSet;
 
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.26 2003-06-01 12:55:00 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.27 2003-06-11 23:44:25 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -85,9 +85,9 @@ public class ReportGedcomStatistics extends Report {
     Statistics stats = new Statistics();
 
     // So we loop over the Individuals
-    List indis = gedcom.getEntities(gedcom.INDIVIDUALS);
-    for (int i=0;i<indis.size();i++) {
-      analyzeIndividual((Indi)indis.get(i), stats);
+    Entity[] es = gedcom.getEntities(gedcom.INDI, "");
+    for (int e=0;e<es.length;e++) {
+      analyzeIndividual((Indi)es[e], stats);
     }
     
     // And report what we've found
@@ -176,11 +176,11 @@ public class ReportGedcomStatistics extends Report {
 		
     // One: We show the number of families :
     println("     - "+
-						i18n("families",gedcom.getEntities(Gedcom.FAMILIES).size()));
+						i18n("families",gedcom.getEntities(Gedcom.FAM).size()));
 
     // Two: We show the number of individuals :
     println("     - "+ i18n("individuals",
-														gedcom.getEntities(Gedcom.INDIVIDUALS).size()));
+														gedcom.getEntities(Gedcom.INDI).size()));
 
     // Three: We show the number of males :
     println("         . "+i18n("males",stats.numMales));

@@ -26,8 +26,8 @@ package genj.gedcom;
 public class PropertyRepository extends PropertyXRef {
 
   /** applicable target types */
-  public final static int[] 
-    TARGET_TYPES = new int[]{ Gedcom.REPOSITORIES };
+  public final static String[] 
+    TARGET_TYPES = { Gedcom.REPO };
 
   /** the repository's content */
   private String repository;
@@ -78,7 +78,7 @@ public class PropertyRepository extends PropertyXRef {
       return;
     }
 
-    Repository repository = (Repository)getGedcom().getEntity(id, Gedcom.REPOSITORIES);
+    Repository repository = (Repository)getGedcom().getEntity(Gedcom.REPO, id);
     if (repository == null) {
       throw new GedcomException("Couldn't find entity with ID "+id);
     }
@@ -96,7 +96,7 @@ public class PropertyRepository extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int[] getTargetTypes() {
+  public String[] getTargetTypes() {
     return TARGET_TYPES;
   }
   

@@ -122,17 +122,15 @@ public class ViewManager {
     if (result!=null) {
       // still in valid entity?
       Entity entity = result.getEntity();
-      if (gedcom.getEntities(entity.getType()).contains(entity.getEntity()))
+      if (gedcom.getEntities(entity.getTag()).contains(entity.getEntity()))
         return result;
       // remove from map 
       gedcom2current.remove(gedcom);
     }
     // try first indi 
-    List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
-    if (!indis.isEmpty()) {
-      result = (Entity)indis.get(0);
+    result = gedcom.getAnyEntity(Gedcom.INDI);
+    if (result!=null) 
       gedcom2current.put(gedcom, result);
-    }
     // done here
     return result;
   }
@@ -467,7 +465,7 @@ public class ViewManager {
       // items for entity
       List actions = getActions(entity);
       if (!actions.isEmpty()) {
-        String title = Gedcom.getNameFor(entity.getType(),false)+" '"+entity.getId()+'\'';
+        String title = Gedcom.getEntityName(entity.getTag(),false)+" '"+entity.getId()+'\'';
         mh.createMenu(title, entity.getImage(false));
         mh.createItems(actions);
         mh.popMenu();

@@ -8,19 +8,19 @@ import genj.util.swing.ImageIcon;
 public abstract class Relationship {
   
   /** target type individuals static */
-  private final static int[]
-    TARGET_INDIVIDUALS = new int[]{Gedcom.INDIVIDUALS};
+  private final static String[]
+    TARGET_INDIVIDUALS = { Gedcom.INDI };
   
   /** Gedcom this applies */
   protected Gedcom gedcom;
   
   /** the applicable target types */
-  protected int[] targetTypes;
+  protected String[] targetTypes;
   
   /**
    * Constructor
    */
-  protected Relationship(Gedcom ged, int[] types) {
+  protected Relationship(Gedcom ged, String[] types) {
     gedcom = ged;
     targetTypes = types;
   }
@@ -42,7 +42,7 @@ public abstract class Relationship {
    * An image
    */
   public ImageIcon getImage() {
-    return Gedcom.getImage(getTargetTypes()[0]);
+    return Gedcom.getEntityImage(getTargetTypes()[0]);
   }
   
   /**
@@ -53,7 +53,7 @@ public abstract class Relationship {
   /**
    * The target type(s)
    */
-  public int[] getTargetTypes() {
+  public String[] getTargetTypes() {
     return targetTypes;
   }
   
@@ -101,7 +101,7 @@ public abstract class Relationship {
       // is there only one target type?
       String name;
       if (targetTypes.length==1)
-        name = Gedcom.getNameFor(targetTypes[0], false);
+        name = Gedcom.getEntityName(targetTypes[0], false);
       else // there must be a more generic translation otherwise
         name = Gedcom.resources.getString("rel.xref."+xref.getTag());
       // verbose?

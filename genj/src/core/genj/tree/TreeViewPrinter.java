@@ -54,9 +54,9 @@ public class TreeViewPrinter implements Printer {
     renderer.selection      = null;
 
     if (!preview) {    
-      renderer.indiRenderer   = tree.getEntityRenderer(Gedcom.INDIVIDUALS)
+      renderer.indiRenderer   = tree.getEntityRenderer(Gedcom.INDI)
         .setResolution(resolution);
-      renderer.famRenderer    = tree.getEntityRenderer(Gedcom.FAMILIES   )
+      renderer.famRenderer    = tree.getEntityRenderer(Gedcom.FAM )
         .setResolution(resolution);
     }
     

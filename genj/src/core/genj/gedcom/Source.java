@@ -32,8 +32,16 @@ public class Source extends Entity {
    * Returns this property as a string
    */
   public String toString() {
-    Property titl = getProperty("TITL");
-    return titl!=null ? titl.getValue() : super.toString();
+    String title = getTitle();
+    return title.length()>0 ? title : super.toString();
+  }
+  
+  /** 
+   * the title
+   */
+  public String getTitle() {
+    Property title = getProperty("TITL");
+    return title!=null ? title.getValue() : EMPTY_STRING;
   }
   
   /**

@@ -44,7 +44,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -121,7 +120,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
     setLayout(new BorderLayout());
 
     labelCurrent = new JLabel();
-    labelCurrent.setBorder(BorderFactory.createTitledBorder(Gedcom.getNameFor(Gedcom.INDIVIDUALS,false)));
+    labelCurrent.setBorder(BorderFactory.createTitledBorder(Gedcom.getEntityName(Gedcom.INDI,false)));
     add(labelCurrent,BorderLayout.NORTH);
     
     JPanel panel = createPopupPanel();
@@ -140,8 +139,8 @@ public class NavigatorView extends JPanel implements ContextSupport {
     if (context!=null&&(context.getEntity() instanceof Indi))
       setCurrentEntity(context.getEntity());
     else {
-      List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
-      if (!indis.isEmpty()) setCurrentEntity((Indi)indis.get(0));
+      Indi first = (Indi)gedcom.getAnyEntity(Gedcom.INDI);
+      if (first!=null) setCurrentEntity(first);
     }
 
     // done    
@@ -182,10 +181,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
   public void setCurrentEntity(Entity e) {
     
     // try to get one if entity==null
-    if (e == null) {
-      List list = gedcom.getEntities(Gedcom.INDIVIDUALS);
-      if (!list.isEmpty()) e=(Entity)list.get(0);
-    }
+    if (e == null) e = gedcom.getAnyEntity(Gedcom.INDI);
 
     // only individual
     if (e!=null&&!(e instanceof Indi)) 
@@ -336,7 +332,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
       popYSibling = createPopup(YSIBLING, imgYSiblings),
       popChildren = createPopup(CHILD,    imgChildren); 
 
-    labelSelf = new JLabel(Gedcom.getImage(Gedcom.INDIVIDUALS),SwingConstants.CENTER);
+    labelSelf = new JLabel(Gedcom.getEntityImage(Gedcom.INDI),SwingConstants.CENTER);
 
     popPartner.setPreferredSize(popOSibling.getPreferredSize());
     popFather .setPreferredSize(popOSibling.getPreferredSize());

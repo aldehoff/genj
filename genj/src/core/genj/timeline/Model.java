@@ -321,8 +321,8 @@ import java.util.Set;
     // prepare some space
     layers = new ArrayList(10);
     // look for events in INDIs and FAMs
-    createEventsFrom(gedcom.getEntities(Gedcom.INDIVIDUALS));
-    createEventsFrom(gedcom.getEntities(Gedcom.FAMILIES   ));
+    createEventsFrom(gedcom.getEntities(Gedcom.INDI).iterator());
+    createEventsFrom(gedcom.getEntities(Gedcom.FAM ).iterator());
     // extend time by before/after
     max += timeAfterEvent;
     min -= timeBeforeEvent;
@@ -335,10 +335,10 @@ import java.util.Set;
    * Gather Events for given entities
    * @param es list of entities to find events in
    */
-  private final void createEventsFrom(List es) {
+  private final void createEventsFrom(Iterator es) {
     // loop through entities
-    for (int i=0; i<es.size(); i++) {
-      Entity e = (Entity)es.get(i);
+    while (es.hasNext()) {
+      Entity e = (Entity)es.next();
       List ps = e.getProperties(PropertyEvent.class);
       for (int j=0; j<ps.size(); j++) {
         PropertyEvent pe = (PropertyEvent)ps.get(j);

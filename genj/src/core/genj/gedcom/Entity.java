@@ -22,7 +22,7 @@ package genj.gedcom;
 /**
  * Abstract base type for all Entities
  */
-public abstract class Entity extends Property {
+public class Entity extends Property {
   
   /** the containing gedcom */
   private Gedcom gedcom;
@@ -33,20 +33,16 @@ public abstract class Entity extends Property {
   /** the tag */
   private String tag;
   
-  /** the type */
-  private int type;
-
   /**
    * Lifecycle - callback when being added to Gedcom
    */
-  /*package*/ void addNotify(Gedcom ged) {
+  /*package*/ void addNotify(Gedcom ged, String tag) {
     
     // remember
     gedcom = ged;
 
     // init status    
-    type = ged.getTypeFor(getClass());
-    tag = ged.getTagFor(type);
+    this.tag  = tag;
     
     // note
     if (gedcom.isTransaction())
@@ -130,14 +126,6 @@ public abstract class Entity extends Property {
     id = setId;
   }
   
-  /**
-   * Returns the type to which this entity belongs
-   * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
-   */
-  public int getType() {
-    return type;
-  }
-
   /**
    * @see genj.gedcom.Property#toString()
    */

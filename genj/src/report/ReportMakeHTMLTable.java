@@ -5,6 +5,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
@@ -14,16 +15,13 @@ import genj.gedcom.PropertySex;
 import genj.report.Report;
 
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeMap;
 
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.18 2003-06-10 21:52:25 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.19 2003-06-11 23:44:25 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class ReportMakeHTMLTable extends Report {
 
@@ -274,19 +272,11 @@ public class ReportMakeHTMLTable extends Report {
     println("</TR>");  //F. Massonneau 03/04/2002
 
     // Go through individuals
-    List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
-
-    TreeMap indiMap = new TreeMap ();  // use to sort by name
-    for (int i=0;i<indis.size();i++) {
-      Indi indi = (Indi)indis.get(i);
-      indiMap.put( indi.getLastName() + "\t" + indi.getFirstName() + "\t" + i,
-                   indi );
-    }
-    Iterator iter = indiMap.values().iterator();
-    while ( iter.hasNext() ) {
+    Entity[] indis = gedcom.getEntities(Gedcom.INDI, "INDI:NAME");
+    for (int i=0;i<indis.length;i++) {
       println("<TR>");
 
-      export((Indi)iter.next());
+      export((Indi)indis[i]);
 
       println("</TR>");
 

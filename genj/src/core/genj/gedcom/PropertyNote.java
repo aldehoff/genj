@@ -29,8 +29,8 @@ import genj.util.swing.ImageIcon;
 public class PropertyNote extends PropertyXRef {
 
   /** applicable target types */
-  public final static int[] 
-    TARGET_TYPES = new int[]{ Gedcom.NOTES };
+  public final static String[] 
+    TARGET_TYPES = { Gedcom.NOTE };
 
   /**
    * Empty Constructor
@@ -84,7 +84,7 @@ public class PropertyNote extends PropertyXRef {
     if (id.length()==0) return;
 
     // .. ignore when not found - play inline note
-    Note enote = (Note)getGedcom().getEntity(id, Gedcom.NOTES);
+    Note enote = (Note)getGedcom().getEntity(Gedcom.NOTE, id);
     if (enote==null) 
       return;
 
@@ -101,7 +101,7 @@ public class PropertyNote extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int[] getTargetTypes() {
+  public String[] getTargetTypes() {
     return TARGET_TYPES;
   }
   

@@ -153,13 +153,13 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
   public List createActions(Gedcom gedcom, ViewManager manager) {
     // create the actions
     List result = new ArrayList();
-    result.add(new CreateEntity(gedcom, Gedcom.INDIVIDUALS , manager));
-    result.add(new CreateEntity(gedcom, Gedcom.FAMILIES    , manager));
-    result.add(new CreateEntity(gedcom, Gedcom.NOTES       , manager));
-    result.add(new CreateEntity(gedcom, Gedcom.MULTIMEDIAS , manager));
-    result.add(new CreateEntity(gedcom, Gedcom.REPOSITORIES, manager));
-    result.add(new CreateEntity(gedcom, Gedcom.SOURCES     , manager));
-    result.add(new CreateEntity(gedcom, Gedcom.SUBMITTERS  , manager));
+    result.add(new CreateEntity(gedcom, Gedcom.INDI, manager));
+    result.add(new CreateEntity(gedcom, Gedcom.FAM , manager));
+    result.add(new CreateEntity(gedcom, Gedcom.NOTE, manager));
+    result.add(new CreateEntity(gedcom, Gedcom.OBJE, manager));
+    result.add(new CreateEntity(gedcom, Gedcom.REPO, manager));
+    result.add(new CreateEntity(gedcom, Gedcom.SOUR, manager));
+    result.add(new CreateEntity(gedcom, Gedcom.SUBM, manager));
     // done
     return result;
   }

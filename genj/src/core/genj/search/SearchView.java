@@ -56,6 +56,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -563,10 +564,9 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     
     /** search in gedcom (not on EDT) */
     private void search(Gedcom gedcom) {
-      for (int t=0; t<gedcom.NUM_TYPES; t++) {
-        List es = gedcom.getEntities(t);
-        for (int e=0; e<es.size(); e++) {
-          search((Entity)es.get(e));
+      for (int t=0; t<gedcom.ETYPES.length; t++) {
+        for (Iterator es=gedcom.getEntities(Gedcom.ETYPES[t]).iterator();es.hasNext();) {
+          search((Entity)es.next());
         }
       }
     }

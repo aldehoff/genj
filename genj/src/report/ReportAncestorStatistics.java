@@ -103,7 +103,7 @@ public class ReportAncestorStatistics extends Report {
       indi = (Indi) getEntityFromUser(
           i18n("select_individual"), // msg in resource file
           gedcom,
-          Gedcom.INDIVIDUALS,
+          Gedcom.INDI,
           "INDI:NAME"
           );
     }

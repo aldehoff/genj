@@ -584,7 +584,7 @@ public class EntityRenderer {
       // resolve and localize text .. type
       o = elem.getAttributes().getAttribute("entity");
       if (o!=null) try {
-        txt = Gedcom.getNameFor(Gedcom.getTypeFor(o.toString()), false);
+        txt = Gedcom.getEntityName(o.toString(), false);
       } catch (IllegalArgumentException e) {}
       // done
     }

@@ -29,8 +29,8 @@ public class PropertyWife extends PropertyXRef {
   public final static String TAG = "WIFE";
 
   /** applicable target types */
-  public final static int[] 
-    TARGET_TYPES = new int[]{ Gedcom.INDIVIDUALS };
+  public final static String[] 
+    TARGET_TYPES = { Gedcom.INDI };
 
   /**
    * Empty Constructor
@@ -106,7 +106,7 @@ public class PropertyWife extends PropertyXRef {
 
     // Look for wife (not-existing -> Gedcom throws Exception)
     String id = getReferencedId();
-    Indi wife = (Indi)getGedcom().getEntity(id, Gedcom.INDIVIDUALS);
+    Indi wife = (Indi)getGedcom().getEntity(Gedcom.INDI, id);
     if (wife==null)
       throw new GedcomException("Couldn't find wife with ID "+id);
 
@@ -140,7 +140,7 @@ public class PropertyWife extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int[] getTargetTypes() {
+  public String[] getTargetTypes() {
     return TARGET_TYPES;
   }
 

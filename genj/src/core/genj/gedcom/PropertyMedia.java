@@ -29,8 +29,8 @@ import java.util.List;
 public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
 
   /** applicable target types */
-  public final static int[] 
-    TARGET_TYPES = new int[]{ Gedcom.MULTIMEDIAS };
+  public final static String[] 
+    TARGET_TYPES = { Gedcom.OBJE };
 
   /**
    * Empty Constructor
@@ -91,7 +91,7 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
       return;
     }
 
-    Media media = (Media)getGedcom().getEntity(id, Gedcom.MULTIMEDIAS);
+    Media media = (Media)getGedcom().getEntity(Gedcom.OBJE, id);
     if (media==null) {
       throw new GedcomException("Couldn't find entity with ID "+id);
     }
@@ -119,7 +119,7 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
   /**
    * The expected referenced type
    */
-  public int[] getTargetTypes() {
+  public String[] getTargetTypes() {
     return TARGET_TYPES;
   }
 

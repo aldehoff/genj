@@ -57,7 +57,7 @@ public class MetaProperty {
     IMG_ERROR   = loadImage("Error.gif");
     
   /** static - root for entities  */
-  private static MetaProperty[] roots = new MetaProperty[Gedcom.NUM_TYPES];
+  private static Map tag2root = new HashMap();
   
   /** static - one parser that is triggered */
   private static GrammerParser parser = new GrammerParser();
@@ -299,7 +299,15 @@ public class MetaProperty {
    * Static - resolve instance
    */
   public static MetaProperty get(TagPath path, boolean persist) {
-    return getRecursively(roots[Gedcom.getTypeFor(path.get(0))], path, 1, persist);
+    String tag = path.get(0);
+    MetaProperty root = (MetaProperty)tag2root.get(tag);
+    // something we didn't know about yet?
+    if (root==null) {
+      root = new MetaProperty(tag, Collections.EMPTY_MAP);
+      tag2root.put(tag, root);
+    }
+    // recurse into      
+    return getRecursively(root, path, 1, persist);
   }
   
   public static MetaProperty get(TagPath path) {
@@ -332,15 +340,17 @@ public class MetaProperty {
   }
   
   /**
-   * Static - paths for given type
+   * Static - paths for given type (use etag==null for all)
    */
-  public static TagPath[] getPaths(int entity, Class property) {
+  public static TagPath[] getPaths(String etag, Class property) {
     // prepare result
     List result = new ArrayList();
     // loop through roots
-    for (int t=0;t<Gedcom.NUM_TYPES;t++) {
-      if (entity<0||entity==t)
-        getPathsRecursively(roots[t], property, new TagPath(Gedcom.getTagFor(entity)), result);
+    for (Iterator it=tag2root.values().iterator();it.hasNext();) {
+      MetaProperty root = (MetaProperty)it.next();
+      String tag = root.getTag();
+      if (etag==null||tag.equals(etag))
+        getPathsRecursively(root, property, new TagPath(tag), result);
     }
     // done
     return TagPath.toArray(result);
@@ -452,7 +462,7 @@ public class MetaProperty {
       // instantiate
       MetaProperty meta = new MetaProperty(tag, props);
       if (level==0) {
-        roots[Gedcom.getTypeFor(tag)] = meta;
+        tag2root.put(tag, meta);
         meta.instantiated = true; // fake instantiated
       } else {
         peek().addSub(meta);

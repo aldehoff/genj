@@ -6,6 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PointInTime;
@@ -13,7 +14,6 @@ import genj.gedcom.PropertyDate;
 import genj.report.Report;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -77,16 +77,6 @@ public class ReportBirthdays extends Report {
     // Look for candidates - folks with birthdays in given month
     List candidates = new ArrayList(100);
 
-    List indis = gedcom.getEntities(gedcom.INDIVIDUALS);
-    for (int i=0;i<indis.size();i++) {
-      Indi indi = (Indi)indis.get(i);
-      PropertyDate birth = indi.getBirthDate();
-      if (birth==null) 
-        continue;
-      if (birth.getStart().getMonth() == month)
-        candidates.add(indi);
-    }
-
     // Sort the individuals by day of month
     Comparator comparator = new Comparator() {
       public int compare(Object o1, Object o2) {
@@ -108,7 +98,16 @@ public class ReportBirthdays extends Report {
     //
     // Comparator comparator = new genj.gedcom.PropertyComparator("INDI:BIRT:DATE");
     //
-    Collections.sort(candidates, comparator);
+
+    Entity[] indis = gedcom.getEntities(gedcom.INDI, comparator);
+    for (int i=0;i<indis.length;i++) {
+      Indi indi = (Indi)indis[i];
+      PropertyDate birth = indi.getBirthDate();
+      if (birth==null) 
+        continue;
+      if (birth.getStart().getMonth() == month)
+        candidates.add(indi);
+    }
 
     // Show birthdays - a call to i18n localizes 'result' and inserts the given selection
     println(i18n("result", selection));

@@ -40,7 +40,7 @@ public class Indi extends Entity {
    * Adds a family in which the individual is a partner
    */
   /*package*/ Fam addFam() throws GedcomException {
-    return addFam((Fam)getGedcom().createEntity(Gedcom.FAMILIES));
+    return addFam((Fam)getGedcom().createEntity(Gedcom.FAM));
   }
 
   /**
@@ -249,7 +249,7 @@ public class Indi extends Entity {
   /*package*/ Fam getFam(boolean create) throws GedcomException {
     Fam fam = getFam(0);
     if (fam!=null||!create) return fam;
-    fam = (Fam)getGedcom().createEntity(Gedcom.FAMILIES);
+    fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
     if (getSex()==PropertySex.FEMALE) fam.setWife(this);
     else fam.setHusband(this);
     return fam;    
@@ -272,7 +272,7 @@ public class Indi extends Entity {
   public Fam getFamc(boolean create) throws GedcomException {
     Fam fam = getFamc();
     if (fam!=null||!create) return fam;
-    fam = (Fam)getGedcom().createEntity(Gedcom.FAMILIES);
+    fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
     fam.addChild(this);
     return fam;    
   }

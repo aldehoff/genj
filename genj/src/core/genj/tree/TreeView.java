@@ -27,6 +27,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.io.Filter;
 import genj.renderer.Blueprint;
+import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.ActionDelegate;
 import genj.util.ColorSet;
@@ -60,9 +61,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JComponent;
@@ -127,10 +130,10 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   /*package*/ ColorSet colors;
   
   /** our blueprints */
-  private Blueprint[] blueprints = new Blueprint[Gedcom.NUM_TYPES];
+  private Map tag2blueprint = new HashMap();
   
   /** our renderers */
-  private EntityRenderer[] renderers = new EntityRenderer[Gedcom.NUM_TYPES];
+  private Map tag2renderer = new HashMap();
   
   /** our content's font */
   private Font contentFont = new Font("SansSerif", 0, 12);
@@ -170,7 +173,11 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     isAdjustFonts = registry.get("adjust", isAdjustFonts);
     
     // grab blueprints
-    blueprints = manager.getBlueprintManager().recallBlueprints(registry);
+    BlueprintManager bpm = manager.getBlueprintManager();
+    for (int t=0;t<Gedcom.ETYPES.length;t++) {
+      String tag = Gedcom.ETYPES[t];
+      tag2blueprint.put(tag, bpm.getBlueprint(tag, registry.get("blueprint."+tag, "")));
+    }
     
     // setup model
     model = new Model(gedcm);
@@ -287,7 +294,10 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     registry.put("font"    , contentFont);
     registry.put("adjust"  , isAdjustFonts);
     // blueprints
-    manager.getBlueprintManager().rememberBlueprints(blueprints, registry);
+    for (int t=0;t<Gedcom.ETYPES.length;t++) {
+      String tag = Gedcom.ETYPES[t];
+      registry.put("blueprint."+tag, getBlueprint(tag).getName()); 
+    }
     // root    
     if (model.getRoot()!=null) registry.put("root", model.getRoot().getId());
     if (currentEntity!=null) registry.put("current", currentEntity.getId());
@@ -343,7 +353,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     if (isAdjustFonts==set) return;
     isAdjustFonts = set;
     // reset renderers
-    renderers = new EntityRenderer[Gedcom.NUM_TYPES];
+    tag2renderer.clear();
     // show
     repaint();
   }
@@ -364,7 +374,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     // remember
     contentFont = set;
     // reset renderers
-    renderers = new EntityRenderer[Gedcom.NUM_TYPES];
+    tag2renderer.clear();
     // show
     repaint();
   }
@@ -372,19 +382,17 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   /**
    * Access - blueprints
    */
-  public Blueprint[] getBlueprints() {
-    return (Blueprint[])blueprints.clone();
+  /*package*/ Map getBlueprints() {
+    return tag2blueprint;
   }
 
   /**
    * Access - blueprints
    */
-  public void setBlueprints(Blueprint[] set) {
-    // grab 'em
-    for (int i=0; i<set.length; i++) {
-      blueprints[i] = set[i];
-      renderers[i] = null;
-    }
+  /*package*/ void setBlueprints(Map set) {
+    // take
+    tag2blueprint = set;
+    tag2renderer.clear();
     // show
     repaint();
     // done
@@ -580,16 +588,28 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       (int)Math.rint(pos.y / (DPMM.getY()*zoom) + bounds.getMinY())
     );
   }
+
+  /**
+   * Resolve a blueprint
+   */
+  /*package*/ Blueprint getBlueprint(String tag) {
+    Blueprint result = (Blueprint)tag2blueprint.get(tag);
+    if (result==null) {
+      result = manager.getBlueprintManager().getBlueprint(tag,"");
+      tag2blueprint.put(tag, result);
+    }
+    return result;
+  }
   
   /**
    * Resolve a renderer   */
-  /*package*/ EntityRenderer getEntityRenderer(int type) {
-    EntityRenderer result = renderers[type];
+  /*package*/ EntityRenderer getEntityRenderer(String tag) {
+    EntityRenderer result = (EntityRenderer)tag2renderer.get(tag);
     if (result==null) { 
-      result = new EntityRenderer(blueprints[type], contentFont);
+      result = new EntityRenderer(getBlueprint(tag), contentFont);
       result.setResolution(DPI);
       result.setScaleFonts(isAdjustFonts);
-      renderers[type] = result;
+      tag2renderer.put(tag,result);
     }
     return result;
   }
@@ -630,7 +650,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      */
     public boolean accept(Entity ent) {
       // fam/indi
-      if (ent.getType()==Gedcom.INDIVIDUALS||(ent.getType()==Gedcom.FAMILIES&&fams))
+      if (Gedcom.INDI.equals(ent.getTag())||(Gedcom.FAM.equals(ent.getTag())&&fams))
         return ents.contains(ent);
       // maybe a referenced other type?
       Entity[] refs = PropertyXRef.getReferences(ent);
@@ -803,8 +823,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       contentRenderer.cArcs          = colors.getColor("arcs");
       contentRenderer.cSelectedShape = colors.getColor("selects");
       contentRenderer.selection      = currentEntity;
-      contentRenderer.indiRenderer   = getEntityRenderer(Gedcom.INDIVIDUALS);
-      contentRenderer.famRenderer    = getEntityRenderer(Gedcom.FAMILIES   );
+      contentRenderer.indiRenderer   = getEntityRenderer(Gedcom.INDI);
+      contentRenderer.famRenderer    = getEntityRenderer(Gedcom.FAM );
       // let the renderer do its work
       contentRenderer.render(gw, model);
       // done

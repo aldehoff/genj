@@ -28,8 +28,8 @@ package genj.gedcom;
 public class PropertySubmitter extends PropertyXRef {
 
   /** applicable target types */
-  public final static int[] 
-    TARGET_TYPES = new int[]{ Gedcom.SUBMITTERS };
+  public final static String[] 
+    TARGET_TYPES = { Gedcom.SUBM };
 
   /**
    * Empty Constructor
@@ -65,7 +65,7 @@ public class PropertySubmitter extends PropertyXRef {
     String id = getReferencedId();
     if (id.length()==0) return;
 
-    Submitter subm = (Submitter)getGedcom().getEntity(id, Gedcom.SUBMITTERS);
+    Submitter subm = (Submitter)getGedcom().getEntity(Gedcom.SUBM, id);
     if (subm == null) 
       return;
 
@@ -82,7 +82,7 @@ public class PropertySubmitter extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public int[] getTargetTypes() {
+  public String[] getTargetTypes() {
     return TARGET_TYPES;
   }
   

@@ -24,12 +24,14 @@ import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.HeadlessLabel;
+import genj.util.swing.TreeWidget;
 import genj.window.WindowManager;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.Box;
@@ -41,8 +43,6 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -52,7 +52,7 @@ import javax.swing.tree.TreeSelectionModel;
 public class BlueprintList extends JSplitPane {
   
   /** selection of blueprints */
-  private Blueprint[] selection = new Blueprint[Gedcom.NUM_TYPES];
+  private Map selection = new HashMap();
   
   /** we keep one editor */
   private BlueprintEditor editor;
@@ -75,6 +75,9 @@ public class BlueprintList extends JSplitPane {
   /** the window manager */
   private WindowManager windowManager;
   
+  /** model used for tree on left */
+  private Model model = new Model();
+  
   /**
    * Constructor   */
   public BlueprintList(BlueprintManager bpMgr, WindowManager winMgr) {
@@ -87,13 +90,12 @@ public class BlueprintList extends JSplitPane {
     editor = new BlueprintEditor(bpMgr, windowManager);
     
     // prepare tree
-    Callback glue = new Callback();
-    treeBlueprints = new JTree(new Node());
+    treeBlueprints = new TreeWidget(model);
     treeBlueprints.setRootVisible(false);
     treeBlueprints.setShowsRootHandles(true);
-    treeBlueprints.setCellRenderer(glue);
+    treeBlueprints.setCellRenderer(model);
     treeBlueprints.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-    treeBlueprints.getSelectionModel().addTreeSelectionListener(glue);
+    treeBlueprints.getSelectionModel().addTreeSelectionListener(model);
     
     // left section
     Box left = new Box(BoxLayout.Y_AXIS);
@@ -123,7 +125,7 @@ public class BlueprintList extends JSplitPane {
   
   /**
    * Acessor - selection   */
-  public Blueprint[] getSelection() {
+  public Map getSelection() {
     editor.commit();
     return selection;
   }
@@ -131,7 +133,7 @@ public class BlueprintList extends JSplitPane {
   /**
    * Acessor - selection
    */
-  public void setSelection(Blueprint[] selEction) {
+  public void setSelection(Map selEction) {
     selection = selEction;
     treeBlueprints.repaint();
   }
@@ -151,8 +153,9 @@ public class BlueprintList extends JSplitPane {
     protected void execute() {
       // check selection
       TreePath path = treeBlueprints.getSelectionPath();
-      if (path==null) return;
-      Node node = (Node)path.getLastPathComponent();
+      if (path==null) 
+        return;
+      Object node = path.getLastPathComponent();
       // get name
       String name = windowManager.openDialog(
         null,
@@ -162,17 +165,19 @@ public class BlueprintList extends JSplitPane {
         "",
         BlueprintList.this
       );
-      if (name==null||name.length()==0) return;
+      if (name==null||name.length()==0) 
+        return;
       // get html
-      String html = node.blueprint!=null?node.blueprint.getHTML():"";
+      String html = node instanceof Blueprint ? ((Blueprint)node).getHTML() : "";
       // add it
-      Blueprint blueprint = blueprintManager.addBlueprint(node.type, name, html);
+      Blueprint blueprint = blueprintManager.addBlueprint(
+        node instanceof Blueprint ? ((Blueprint)node).getTag() : (String)node, 
+        name, 
+        html
+      );
       // show it
-      if (node.blueprint!=null) node = (Node)node.getParent();
-      Node child = new Node(node.type, blueprint);
-      DefaultTreeModel model = (DefaultTreeModel)treeBlueprints.getModel(); 
-      model.insertNodeInto(child, node, node.getChildCount() );
-      treeBlueprints.setSelectionPath(new TreePath(model.getPathToRoot(child)));
+      model.changeNotify();
+      treeBlueprints.setSelectionPath(model.getPath(blueprint));
       // make sure the html editor shows
       editor.setHTMLVisible(true);
       // done
@@ -195,11 +200,13 @@ public class BlueprintList extends JSplitPane {
     protected void execute() {
       // check selection
       TreePath path = treeBlueprints.getSelectionPath();
-      if (path==null) return;
-      Node node = (Node)path.getLastPathComponent();
-      if (node.blueprint==null) return;
+      if (path==null) 
+        return;
+      Object node = path.getLastPathComponent();
+      if (!(node instanceof Blueprint)) 
+        return;
       // confirm
-      Blueprint blueprint = node.blueprint;
+      Blueprint blueprint = (Blueprint)node;
       int rc = windowManager.openDialog(
         null,
         null,
@@ -208,23 +215,22 @@ public class BlueprintList extends JSplitPane {
         WindowManager.OPTIONS_OK_CANCEL,
         BlueprintList.this        
       ); 
-      if (rc!=0) return;
-      // update selection with default
-      int type = blueprintManager.getType(blueprint);
-      selection[type] = blueprintManager.getBlueprint(type, "");
+      if (rc!=0) 
+        return;
+      // remove selection
+      selection.remove(blueprint.getTag());
       // delete it
       blueprintManager.delBlueprint(blueprint);
       // show it
-      DefaultTreeModel model = (DefaultTreeModel)treeBlueprints.getModel();
-      model.removeNodeFromParent(node);
+      model.changeNotify();
       // done
     }
   } //ActionAdd
 
   /**
-   * Glue for cell rendering and selection handling
+   * Our tree model
    */
-  private class Callback implements TreeCellRenderer, TreeSelectionListener {
+  private class Model extends TreeWidget.AbstractTreeModel implements TreeCellRenderer, TreeSelectionListener {
      
     /** a radiobutton */
     private JRadioButton button = new JRadioButton();
@@ -236,25 +242,46 @@ public class BlueprintList extends JSplitPane {
     private Color cSelection = new JTable().getSelectionBackground();
     
     /**
+     * change notification 
+     */
+    private void changeNotify() {
+      fireStructureChanged();
+    }
+    
+    /**
+     * compute a path for given node
+     */
+    private TreePath getPath(Object node) {
+      if (node==this)
+        return new TreePath(this);
+      if (node instanceof Blueprint)
+        return new TreePath(new Object[]{ this, ((Blueprint)node).getTag(), node});
+      return new TreePath(new Object[]{ this, node});
+    }
+    
+    /**
      * @see javax.swing.tree.TreeCellRenderer#getTreeCellRendererComponent(javax.swing.JTree, java.lang.Object, boolean, boolean, boolean, int, boolean)
      */
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-      // node!
-      Node node = (Node)value;
+      // root?
+      if (value==this)
+        return label;
       // blueprint?
-      if (node.blueprint!=null) {
+      if (value instanceof Blueprint) {
+        Blueprint bp = (Blueprint)value;
         button.setOpaque(selected);
         button.setBackground(cSelection);
-        button.setText(node.blueprint.getName());
-        button.setSelected(selection[node.type]==node.blueprint);
+        button.setText(bp.getName());
+        button.setSelected(selection.get(bp.getTag())==bp);
         // done
         return button; 
       }
       // no blueprint -> show type
+      String tag = (String)value;
       label.setOpaque(selected);
       label.setBackground(cSelection);
-      label.setText(Gedcom.getNameFor(node.type, true));
-      label.setIcon(Gedcom.getImage(node.type));
+      label.setText(Gedcom.getEntityName(tag, true));
+      label.setIcon(Gedcom.getEntityImage(tag));
       // done
       return label;
     }
@@ -271,19 +298,20 @@ public class BlueprintList extends JSplitPane {
       if (e.getNewLeadSelectionPath()!=null) {
 
         // analyse node
-        Node node = (Node)e.getNewLeadSelectionPath().getLastPathComponent();
+        Object node = e.getNewLeadSelectionPath().getLastPathComponent();
         
         // different Blueprint selected -> o.k.
-        if (node.blueprint!=null) {
+        if (node instanceof Blueprint) {
+          Blueprint bp = (Blueprint)node;
           // .. update selection
-          selection[node.type] = node.blueprint;
+          selection.put(bp.getTag(), bp);
           // .. gotta repaint for old
           treeBlueprints.repaint();
           // .. buttons
           bAdd.setEnabled(true);
-          bDel.setEnabled(!node.blueprint.isReadOnly());
+          bDel.setEnabled(!bp.isReadOnly());
           // .. editor
-          editor.set(gedcom, node.blueprint, !node.blueprint.isReadOnly());
+          editor.set(gedcom, bp, !bp.isReadOnly());
           return;
         }
       
@@ -304,47 +332,40 @@ public class BlueprintList extends JSplitPane {
       // done
     }
     
+    /**
+     * @see javax.swing.tree.TreeModel#getChild(java.lang.Object, int)
+     */
+    public Object getChild(Object parent, int index) {
+      // root this?
+      if (parent==this)
+        return Gedcom.ETYPES[index];
+      // has to be entity tag
+      String tag = (String)parent;
+      return blueprintManager.getBlueprints(tag).get(index);
+    }
+
+    /**
+     * @see javax.swing.tree.TreeModel#getChildCount(java.lang.Object)
+     */
+    public int getChildCount(Object parent) {
+      // root this?
+      if (parent==this)
+        return Gedcom.ETYPES.length;
+      // blueprint leaf?
+      if (parent instanceof Blueprint)
+        return 0;
+      // entity tag
+      String tag = (String)parent;
+      return blueprintManager.getBlueprints(tag).size();
+    }
+
+    /**
+     * @see javax.swing.tree.TreeModel#getRoot()
+     */
+    public Object getRoot() {
+      return this;
+    }
+
   } // Glue
-    
-  
-  /**
-   * A Node in our List(Tree)   */
-  private class Node extends DefaultMutableTreeNode {
-    
-    /** the type of entity this if for */
-    private int type;
-    
-    /** an optional blueprint */
-    private Blueprint blueprint;
-    
-    /**
-     * Constructor - Root
-     */
-    Node() {
-      // create a sub-note for every entity type
-      for (int t=0; t<Gedcom.NUM_TYPES; t++)
-        add(new Node(t));
-      // done
-    }
-    /**
-     * Constructor - List of blueprints
-     */
-    Node(int tYpe) {
-      // remember type
-      type = tYpe;
-      // create a sub-note for every blueprint
-      List bps = blueprintManager.getBlueprints(type);      
-      for (int b=0; b<bps.size(); b++)
-        add(new Node(type,(Blueprint)bps.get(b)));
-      // done
-    }
-    /**
-     * Constructor - Blueprint
-     */
-    Node(int tYpe, Blueprint bluEprint) {
-      type = tYpe;
-      blueprint = bluEprint;
-    }
-  } //Node   
 
 } //BluePrintList

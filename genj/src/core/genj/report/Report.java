@@ -37,8 +37,7 @@ import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -210,19 +209,19 @@ public abstract class Report implements Cloneable {
   /**
    * Helper method that queries the user for an entity
    * @param gedcom to use
-   * @param type the type of entities to show
+   * @param tag the tag of the entities to show
    * @param sortPath path to sort by or null
    */
-  protected final Entity getEntityFromUser(String msg, Gedcom gedcom, int type, String sortPath) {
+  protected final Entity getEntityFromUser(String msg, Gedcom gedcom, String tag, String sortPath) {
     // grab entities
-    List ents = gedcom.getEntities(type);
-    if (ents.isEmpty())
+    Object[] ents = gedcom.getEntities(tag).toArray();
+    if (ents.length==0)
       return null;
     // sort
     if (sortPath!=null)
-      Collections.sort(ents, new PropertyComparator(sortPath));
+      Arrays.sort(ents, new PropertyComparator(sortPath));
     // show
-    return (Entity)getValueFromUser(msg, ents.toArray(), ents.get(0));
+    return (Entity)getValueFromUser(msg, ents, ents[0]);
   }
 
   /**

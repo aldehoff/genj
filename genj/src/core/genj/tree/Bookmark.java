@@ -63,7 +63,7 @@ public class Bookmark extends ActionDelegate {
   
     // setup text
     setText(name);
-    setImage(Gedcom.getImage(entity.getType()));
+    setImage(Gedcom.getEntityImage(entity.getTag()));
   }
   
   /**
@@ -75,7 +75,7 @@ public class Bookmark extends ActionDelegate {
     entity = e;
   
     setText(name);
-    setImage(Gedcom.getImage(entity.getType()));
+    setImage(Gedcom.getEntityImage(entity.getTag()));
   }
   
   /**

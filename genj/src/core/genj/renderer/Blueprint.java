@@ -23,6 +23,9 @@ package genj.renderer;
  * Encapsulating name and html for rendering an entity */
 public class Blueprint {
   
+  /** the entity tag this bp is for */
+  private String tag;
+  
   /** the name of this scheme */
   private String name;
   
@@ -42,8 +45,9 @@ public class Blueprint {
   /**
    * Constructor - name, html and editable
    */
-  /*package*/ Blueprint(String nAme, String hTml, boolean readOnly) {
+  /*package*/ Blueprint(String etag, String nAme, String hTml, boolean readOnly) {
     // remember
+    tag = etag;
     name = nAme;
     html = hTml;
     isReadOnly = readOnly;
@@ -79,8 +83,15 @@ public class Blueprint {
   /**
    * Accessor - readonly
    */
-  public boolean isReadOnly() {
+  /*package*/ boolean isReadOnly() {
     return isReadOnly;
+  }
+  
+  /**
+   * Entity this blueprint is for
+   */
+  /*package*/ String getTag() {
+    return tag;
   }
   
 } //RenderingScheme

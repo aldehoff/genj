@@ -30,8 +30,7 @@ import genj.window.WindowManager;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.Collections;
-import java.util.List;
+import java.util.AbstractList;
 
 import javax.swing.JComponent;
 
@@ -41,7 +40,7 @@ import javax.swing.JComponent;
 public class CreateRelationship extends AbstractChange {
 
   /** the target type */
-  private int targetType;
+  private String targetType;
 
   /** the relationship */
   private Relationship relationship;
@@ -62,11 +61,12 @@ public class CreateRelationship extends AbstractChange {
    */
   protected void execute() {
     // check if we have to choose a target type
-    int[] types = relationship.getTargetTypes();
+    String[] types = relationship.getTargetTypes();
     if (types.length>1) {
       // collect names of types
       String[] names = new String[types.length];
-      for (int n=0;n<types.length;n++) names[n] = Gedcom.getNameFor(types[n], false);
+      for (int n=0;n<types.length;n++) 
+        names[n] = Gedcom.getEntityName(types[n], false);
       // show dialog
       int choice = manager.getWindowManager().openDialog(
         null,
@@ -95,7 +95,7 @@ public class CreateRelationship extends AbstractChange {
     // You are about to create a {0} in {1}! / You are about to reference {0} in {1}!
     // This {0} will be {1}.
     String about = existing==null ?
-      resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(targetType,false), gedcom})
+      resources.getString("confirm.new", new Object[]{ Gedcom.getEntityName(targetType,false), gedcom})
      :
       resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom});
 
@@ -103,7 +103,7 @@ public class CreateRelationship extends AbstractChange {
     String detail = resources.getString("confirm.new.related", relationship.getName(true) );
 
     // Entity comment?
-    String comment = resources.getString("confirm."+Gedcom.getTagFor(targetType));
+    String comment = resources.getString("confirm."+targetType);
 
     // combine
     return about + '\n' + detail + '\n' + comment ;
@@ -114,20 +114,24 @@ public class CreateRelationship extends AbstractChange {
    */
   protected JComponent getOptions() {
 
-    // selection of existing
-    List ents = gedcom.getEntities(targetType);
-
-    // sort list
-    if (targetType == gedcom.INDIVIDUALS) {
+    // grab existing (sorted) entities
+    final Entity[] ents;
+    if (targetType == gedcom.INDI) {
       // Individiauls are sorted by name
-      Collections.sort(ents, new PropertyComparator("INDI:NAME"));
+      ents = gedcom.getEntities(targetType, new PropertyComparator("INDI:NAME"));
+    } else {
+      ents = gedcom.getEntities(targetType, "");
     }
-    else {
-      Collections.sort(ents);
-    }
-    ents.add(0, "*New*" );
 
-    final ChoiceWidget result = new ChoiceWidget(ents);
+    final ChoiceWidget result = new ChoiceWidget(new AbstractList() {
+      public int size() {
+        return ents.length+1;
+      }
+      public Object get(int index) {
+        return index==0 ? "*New*" : (Object)ents[index-1];
+      }
+    });
+    
     result.setEditable(false);
     result.setSelectedIndex(0);
     result.addItemListener(new ItemListener() {

@@ -37,7 +37,7 @@ public class SetSubmitter extends ActionDelegate {
     public SetSubmitter(Submitter sub) {
       submitter = sub;
       Gedcom ged = submitter.getGedcom();
-      setImage(Gedcom.getImage(Gedcom.SUBMITTERS));
+      setImage(Gedcom.getEntityImage(Gedcom.SUBM));
       setText(AbstractChange.resources.getString("submitter", ged.getName()));
       if (ged.getSubmitter()==submitter) setEnabled(false);
     }

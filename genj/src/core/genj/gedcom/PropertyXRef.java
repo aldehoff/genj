@@ -218,7 +218,7 @@ public abstract class PropertyXRef extends Property {
   /**
    * The expected referenced type
    */
-  public abstract int[] getTargetTypes();
+  public abstract String[] getTargetTypes();
 
   /**
    * @see genj.gedcom.Property#getDeleteVeto()

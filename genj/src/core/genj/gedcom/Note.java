@@ -31,10 +31,10 @@ public class Note extends Entity implements MultiLineSupport {
   /**
    * Notification to entity that it has been added to a Gedcom
    */
-  public void addNotify(Gedcom gedcom) {
+  /*package*/ void addNotify(Gedcom ged, String tag) {
     
     // continue
-    super.addNotify(gedcom);
+    super.addNotify(ged, tag);
 
     // create a delegate we're using for storing the 
     // note's multiline value

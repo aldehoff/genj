@@ -317,7 +317,7 @@ public class GedcomReader implements Trackable {
     // Prepare submitter
     if (submitter!=null) {
       try {
-        Submitter sub = (Submitter)gedcom.getEntity(submitter.replace('@',' ').trim(), Gedcom.SUBMITTERS);
+        Submitter sub = (Submitter)gedcom.getEntity(Gedcom.SUBM, submitter.replace('@',' ').trim());
         gedcom.setSubmitter(sub);
       } catch (Throwable t) {
         warnings.add("Submitter "+submitter+" couldn't be resolved");

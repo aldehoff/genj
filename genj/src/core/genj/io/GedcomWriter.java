@@ -37,7 +37,8 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Type that knows how to write GEDCOM-data to InputStream
@@ -202,14 +203,11 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void writeEntities(Gedcom ged) throws IOException, GedcomIOException {
+  private void writeEntities(Collection ents) throws IOException, GedcomIOException {
 
-    // Loop through EntityLists
-    for (int i = 0; i < ged.NUM_TYPES; i++) {
-      List ents = ged.getEntities(i);
-      for (int j = 0; j < ents.size(); j++) {
-        writeEntity((Entity) ents.get(j));
-      }
+    // Loop through entities
+    for (Iterator it=ents.iterator();it.hasNext();) {
+      writeEntity((Entity)it.next());
     }
 
     // Done
@@ -241,14 +239,15 @@ public class GedcomWriter implements Trackable {
    */
   public boolean writeGedcom() throws GedcomIOException {
 
-    total = gedcom.getNoOfEntities();
+    Collection ents = gedcom.getEntities(); 
+    total = ents.size();
 
     // Out operation
     try {
 
       // Data
       writeHeader();
-      writeEntities(gedcom);
+      writeEntities(ents);
       writeTail();
 
       // Close Output

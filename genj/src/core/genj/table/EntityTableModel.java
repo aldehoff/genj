@@ -29,8 +29,11 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.SortableTableHeader;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.table.AbstractTableModel;
@@ -47,14 +50,15 @@ import javax.swing.table.TableColumnModel;
   private Gedcom gedcom;
   
   /** the modes we know about */  
-  private Filter[] filters = new Filter[]{
-      new Filter(Gedcom.INDIVIDUALS , new String[]{"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"}),
-      new Filter(Gedcom.FAMILIES    , new String[]{"FAM" ,"FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" }),
-      new Filter(Gedcom.MULTIMEDIAS , new String[]{"OBJE","OBJE:TITL"}),
-      new Filter(Gedcom.NOTES       , new String[]{"NOTE","NOTE:NOTE"}),
-      new Filter(Gedcom.SOURCES     , new String[]{"SOUR","SOUR:TITL", "SOUR:TEXT"}),
-      new Filter(Gedcom.SUBMITTERS  , new String[]{"SUBM","SUBM:NAME" }),
-      new Filter(Gedcom.REPOSITORIES, new String[]{"REPO","REPO:NAME", "REPO:NOTE"})
+  private Map filters = new HashMap();
+    {
+      filters.put(Gedcom.INDI, new Filter(Gedcom.INDI, new String[]{"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"}));
+      filters.put(Gedcom.FAM , new Filter(Gedcom.FAM , new String[]{"FAM" ,"FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" }));
+      filters.put(Gedcom.OBJE, new Filter(Gedcom.OBJE, new String[]{"OBJE","OBJE:TITL"}));
+      filters.put(Gedcom.NOTE, new Filter(Gedcom.NOTE, new String[]{"NOTE","NOTE:NOTE"}));
+      filters.put(Gedcom.SOUR, new Filter(Gedcom.SOUR, new String[]{"SOUR","SOUR:TITL", "SOUR:TEXT"}));
+      filters.put(Gedcom.SUBM, new Filter(Gedcom.SUBM, new String[]{"SUBM","SUBM:NAME" }));
+      filters.put(Gedcom.REPO, new Filter(Gedcom.REPO, new String[]{"REPO","REPO:NAME", "REPO:NOTE"}));
     };
   
   /** the current mode */
@@ -70,7 +74,7 @@ import javax.swing.table.TableColumnModel;
     // remember
     this.gedcom=gedcom;
     // set starting type
-    setType(Gedcom.INDIVIDUALS);
+    setType(Gedcom.INDI);
     // start listening
     gedcom.addListener(this);
     // done
@@ -88,22 +92,24 @@ import javax.swing.table.TableColumnModel;
   /**
    * Get paths for given type
    */
-  /*package*/ TagPath[] getPaths(int type) {
-    return filters[type].paths;
+  /*package*/ TagPath[] getPaths(String tag) {
+    Filter f = (Filter)filters.get(tag);
+    return f!=null ? f.paths : new TagPath[0];
   }
   
   /**
    * Sets paths for given type
    */
-  /*package*/ void setPaths(int type, String[] paths) {
-    setPaths(type, calcPaths(paths));
+  /*package*/ void setPaths(String tag, String[] paths) {
+    setPaths(tag, calcPaths(paths));
   }
   
   /**
    * Sets paths for given type
    */
-  /*package*/ void setPaths(int type, TagPath[] paths) {
-    filters[type].paths = paths;
+  /*package*/ void setPaths(String tag, TagPath[] paths) {
+    Filter f = (Filter)filters.get(tag);
+    if (f!=null) f.paths = paths;
     prepareRows();
     fireTableStructureChanged();
   }
@@ -111,25 +117,32 @@ import javax.swing.table.TableColumnModel;
   /**
    * Sets withs for given type
    */
-  /*package*/ void setWidths(int type, int[] widths) {
-    filters[type].widths = widths;
+  /*package*/ void setWidths(String tag, int[] widths) {
+    Filter f = (Filter)filters.get(tag);
+    if (f!=null) f.widths = widths;
   }
   
   /**
    * Gets withs for given type
    */
-  /*package*/ int[] getWidths(int type) {
-    return filters[type].widths;
+  /*package*/ int[] getWidths(String tag) {
+    Filter f = (Filter)filters.get(tag);
+    return f!=null ? f.widths : new int[0];
   }
   
   /**
    * Sets the entity type we're looking at
    */
-  /*package*/ void setType(int entity) {
+  /*package*/ void setType(String tag) {
+    // known filter?
+    Filter set = (Filter)filters.get(tag); 
+    if (set==null)
+      return;
     // already?
-    if (filters[entity]==filter) return;
+    if (set==filter) 
+      return;
     // remember
-    filter = filters[entity];
+    filter = set;
     // build data
     prepareRows();
     // propagate
@@ -139,8 +152,8 @@ import javax.swing.table.TableColumnModel;
   /**
    * Returns the entity type we're looking at
    */
-  /*package*/ int getType() {
-    return filter.type;
+  /*package*/ String getType() {
+    return filter.tag;
   }
   
   /**
@@ -172,11 +185,12 @@ import javax.swing.table.TableColumnModel;
    */
   private void prepareRows() {
     // grab entities
-    List es = gedcom.getEntities(filter.type);
+    Collection es = gedcom.getEntities(filter.tag);
     // build rows
     rows = new Row[es.size()];
-    for (int r=0; r<rows.length; r++) {
-      rows[r] = new Row((Entity)es.get(r), filter.paths);
+    Iterator it=es.iterator();
+    for (int r=0;it.hasNext();r++) {
+      rows[r] = new Row((Entity)it.next(), filter.paths);
     }
     // sort
     sortRows();
@@ -284,8 +298,8 @@ import javax.swing.table.TableColumnModel;
    * Helper that creates a new ColumnModel
    */
   /*package*/ TableColumnModel createTableColumnModel(int total) {
-    TagPath[] paths = getPaths(filter.type);
-    int[] widths = getWidths(filter.type);
+    TagPath[] paths = getPaths(filter.tag);
+    int[] widths = getWidths(filter.tag);
     // create and fill
     TableColumnModel columns = new DefaultTableColumnModel();
     for (int c=0; c<filter.paths.length; c++) {
@@ -304,15 +318,15 @@ import javax.swing.table.TableColumnModel;
   private class Filter implements Comparator {
     /** attributes */
     ImageIcon image;
-    int type;
+    String tag;
     String[] defaults;
     TagPath[] paths;
     int[] widths;
     int sortColumn, sortOrder;
     /** constructor */
-    Filter(int t, String[] d) {
+    Filter(String t, String[] d) {
       // remember
-      type     = t;
+      tag      = t;
       defaults = d;
       paths    = calcPaths(defaults);
       widths   = new int[paths.length];
