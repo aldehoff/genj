@@ -62,6 +62,7 @@ class ProxyBirth extends Proxy implements ItemListener {
    */
   protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
     JPanel ageLine = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    ageLine.setAlignmentX(0);
     JTextField ageText = new JTextField(10);
 
     ageLine.add(new JLabel("Age:"));
