@@ -36,7 +36,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -143,7 +142,8 @@ class ProxyFile extends Proxy {
     // Create Text and button for current value
     tFile = new TextFieldWidget("", 80);
     
-    Box p = new Box(BoxLayout.X_AXIS);
+    JPanel p = new JPanel();
+    p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
     p.add(tFile);
     p.add(new ButtonHelper().create(new ActionChoose()));
     p.setAlignmentX(0);

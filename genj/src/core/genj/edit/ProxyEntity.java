@@ -26,7 +26,6 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.TextFieldWidget;
 
 import javax.swing.AbstractButton;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -71,7 +70,8 @@ class ProxyEntity extends Proxy {
     Entity e = (Entity)property;
 
     // ID Panel
-    Box box = new Box(BoxLayout.X_AXIS);
+    JPanel box = new JPanel();
+    box.setLayout(new BoxLayout(box,BoxLayout.X_AXIS));
     box.setAlignmentX(0);
      
     // Label
