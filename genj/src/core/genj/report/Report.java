@@ -93,7 +93,7 @@ public abstract class Report implements Cloneable {
   private ViewManager viewManager;
 
   /** local registry */
-  private Registry registry;
+  protected Registry registry;
 
   /** owning component */
   private JComponent owner;
