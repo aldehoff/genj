@@ -1,111 +1,142 @@
 <HTML>
-
 <BODY>
-<H2>Edit View</H2>
+
+<H2>
+  Fen&ecirc;tre d'Edition
+</H2>
 
 <P>
-Gedcom suggests one file which consists of an unlimited
-number of <A href="../entities.html">entities</A>. Every
-entity has an unlimited number of properties which
-can be nested in an unlimited number of levels.
-To edit an entity therefore GenJ shows a tree of its
-properties.
+Le format Gedcom nous apporte un nombre illimit&eacute; 
+d'<A href="../entities.html">entit&eacute;s</A> au sein d'un 
+m&ecirc;me fichier. Chaque entit&eacute; a un nombre illimit&eacute; 
+de propri&eacute;t&eacute;s qui peuvent s'imbriquer dans un nombre 
+illimit&eacute; de niveaux. Pour pouvoir &eacute;diter une entit&eacute;, 
+il faut donc que GenJ pr&eacute;sente une arborescence de ces 
+propri&eacute;t&eacute;s.
 </P>
 
 <P>
-You can open as many Edit Views as you wish - they all
-listen to events on the file they were opened on. Once
-you select an entity in the Table or Tree view, it will
-be shown in this one. In case you want to have one
-Edit View stick to a particular entity, simply select
-it in one of the other views and click on the little
-symbol at the top/right. Now this view sticks to that
-entity.
+Vous pouvez ouvrir autant de vues d'Edition que vous le souhaitez - 
+elles seront toutes en interaction avec ce qui peut &ecirc;tre 
+modifi&eacute; dans le fichier &agrave; partir duquel elles ont 
+&eacute;t&eacute; ouvertes. Une fois que vous avez choisi une 
+entit&eacute; dans la fen&ecirc;tre du Tableau des Donn&eacute;es ou 
+de l'Arbre G&eacute;n&eacute;alogique, elle sera affich&eacute; dans 
+la fen&ecirc;tre d'Edition. Si jamais vous voulez que 
+l'&eacute;diteur reste sur une entit&eacute; particuli&egrave;re, 
+s&eacute;lectionnez l&agrave; dans l'une ou l'autre vue et cliquez 
+sur le petit symbole en haut &agrave; droite (il repr&eacute;sente 
+une petite aiguille). Maintenant l'&eacute;diteur restera centr&eacute; 
+sur cette entit&eacute;.
 </P>
 
 <P>
-You can browse the property-tree by opening and closing
-sub-trees and selecting individual properties. Once
-selected the property is also displayed in the bottom
-part - here you can edit it.
+Vous pouvez vous d&eacute;placer dans l'arborescence des 
+propri&eacute;t&eacute;s en ouvrant et fermant les sous-r&eacute;pertoires 
+et en choisissant chacune des propri&eacute;t&eacute;s. Une fois 
+s&eacute;lectionn&eacute;e, la propri&eacute;t&eacute; est 
+&eacute;galement affich&eacute;e dans la partie basse de la 
+fen&ecirc;tre - c'est &agrave; cet endroit qu'il vous est possible de 
+l'&eacute;diter, et donc de la modifier.
 </P>
 
 <P>
-Note that there is a number of predefined editors for
-specific properties. Most properties are single-line
-but sometimes they have a special format. For example
-NAME : its format is <B>NAME first /last/</B>.
-If you select a NAME property a special editor will
-appear at the bottom that allows you to edit that
-information in to individual fields. If GenJ doesn't
-know an editor for the selected property or the data
-kept in the property is not well formatted (e.g.
-a wrong date) you still can change that value with the
-default editor.
+Une remarque : Pour des propri&eacute;t&eacute;s particuli&egrave;res, 
+on trouve un certain nombre d'&eacute;diteurs pr&eacute;d&eacute;finies. 
+La plupart des propri&eacute;t&eacute;s tiennent en effet sur une seule 
+ligne, mais parfois elles utilisent un format particulier. Par exemple 
+le NOM (NAME)&nbsp;:&nbsp; son format est <B>NAME first /last/</B> 
+(pr&eacute;nom / nom de famille). Si vous s&eacute;lectionnez la 
+propri&eacute;t&eacute; NAME (NOM) un &eacute;diteur un peu sp&eacute;cial 
+appara&icirc;tra en bas de la fen&ecirc;tre pour vous permettre de 
+modifier les informations dans des champs appropri&eacute;s. Si GenJ 
+ne connait pas un &eacute;diteur qui peut correspondre &agrave; la 
+propri&eacute;t&eacute; s&eacute;lectionn&eacute;e ou aux donn&eacute;es 
+contenues dans cette propri&eacute;t&eacute; (ex. une mauvaise date) 
+vous pourrez quand m&ecirc;me changer cette valeur avec l'&eacute;diteur 
+par d&eacute;faut.
 </P>
 
 <P>
-A special case are also links between entities - for
-example if an individual is married he is a husband
-in a family. Gedcom keeps that information by adding
-one property to the family and one to the individual.
-The family knows the property HUSB - the husband or
-WIFE - the wife.
-The individual knows the property FAMS - the family
-in which he/she is a spouse.
+Un cas un peu particulier est celui des liens entre les 
+entit&eacute;s - par exemple si un individu est mari&eacute;, il est 
+aussi un mari dans une famille. Gedcom conserve cette information en 
+ajoutant une propri&eacute;t&eacute; dans la famille et une au niveau 
+de la personne elle-m&ecirc;me. La famille connait la propri&eacute;t&eacute; 
+HUSB - le mari ou WIFE - la femme. La personne quant &agrave; elle, 
+connait la propri&eacute;t&eacute; FAMS - la famille dans laquelle 
+il/ou elle est l'&eacute;pou(x)(se).
 </P>
 
 <P>
-If you select a property such as HUSB, WIFE, FAMS or
-FAMC an editor appears that looks different depending
-on the link's state:
+Si vous s&eacute;lectionnez une propri&eacute;t&eacute; comme HUSB, WIFE, 
+FAMS ou FAMC, un &eacute;diteur apparaitra mais qui sera diff&eacute;rent 
+selon l'&eacute;tat du lien&nbsp;:
 <OL>
-<LI> valid link - a button to jump to that linked entity
-<LI> broken link - a textfield to change the reference
- to a future linked entity, a button to find another
- entity to link to by text-search and a button to perform
- the link operation.
+<LI> lien actif - un bouton pour permettre d'acc&eacute;der &agrave; 
+ l'entit&eacute; qui est li&eacute;e
+<LI> lien rompu - un champ de saisie pour pouvoir modifier la 
+ r&eacute;f&eacute;rence vers une future entit&eacute; li&eacute;e, un bouton 
+ pour trouver une autre entit&eacute; &agrave; lier par une recherche 
+ textuelle et un bouton pour effectuer l'op&eacute;ration de liaison.
 </OL>
 </P>
 
 <P>
-The buttons at the top of this view allow you to
-add or remove properties. This applies to the currently
-selected property. You can also move properties up/down
-in the current level they reside in.
+Les boutons en haut de cette fen&ecirc;tre d'Edition, vous 
+permettent d'ajouter ou de supprimer des propri&eacute;t&eacute;s. Bien 
+entendu cela s'applique &agrave; la propri&eacute;t&eacute; qui vient 
+d'&ecirc;tre s&eacute;lectionn&eacute;e. Vous pouvez &eacute;galement 
+d&eacute;placer vers le haut ou vers le bas les propri&eacute;t&eacute;s 
+au niveau de l'arborescence &agrave; laquelle elles appartiennent (ex. pour 
+la propri&eacute;t&eacute; ADDR qui est compos&eacute;e de deux 
+sous-propri&eacute;t&eacute;s CITY et POST, vous pouvez mettre POST 
+avant CITY ou l'inverse. Vous pouvez aussi d&eacute;placer la 
+propri&eacute;t&eacute; ADDR (qui contient les deux 
+sous-propri&eacute;t&eacute;s ci-dessus) avant ou apr&eacute;s les 
+autres propri&eacute;t&eacute;s que poss&eacute;de une personne - si on 
+trouve BIRT - DEAT - OCCU - ADDR - NOTE, on peut d&eacute;placer ADDR 
+pour qu'il soit avant OCCU. En d&eacute;pla&ccedil;ant ADDR on 
+d&eacute;place en m&ecirc;me temps ses deux sous-propri&eacute;t&eacute;s 
+que sont CITY et POST)
 </P>
 
 <P>
-When adding a property a dialog appears that allows to
-choose from a number of known sub-properties (identified
-by tags). Select one of the properties and a description
-appears in the right window. If you need to add a property
-that is not in the list, select the 2. radio button and
-enter a user-defined tag. Please read about the discussion
-of <A href="../gedcom.html">Gedcom</A> compliancy to
-understand that this has to be done carefully.
+Quand vous ajoutez une propri&eacute;t&eacute;, une boite de dialogue 
+appara&icirc;t pour vous permettre de choisir parmi un certain nombre de 
+sous-propri&eacute;t&eacute;s connues (identifi&eacute;es par des 
+&eacute;tiquettes). S&eacute;lectionnez une des propri&eacute;t&eacute;s 
+et une description appara&icirc;tra dans la fen&ecirc;tre de droite. Si 
+vous avez besoin d'ajouter une propri&eacute;t&eacute; qui n'est pas dans 
+la liste, s&eacute;lectionnez le 2.bouton-radio et entrez une &eacute;tiquette 
+de d&eacute;finition de votre choix. N'oubliez pas de lire ce qui est mis 
+sur la conformit&eacute; avec le standard <A href="../gedcom.html">Gedcom</A> 
+et sur l'importance qu'il y a &agrave; &ecirc;tre tr&eacute;s prudent 
+&agrave; effectuer ce genre de choses.
 </P>
 
 <P>
-When you select one of the know properties by choosing
-the checkbox at the bottom you can tell GenJ to add the
-default sub-properties, too.
+Quand vous s&eacute;lectionnez une des propri&eacute;t&eacute;s connues, 
+vous pouvez &eacute;galement demander &agrave; GenJ d'ajouter les 
+sous-propri&eacute;t&eacute;s par d&eacute;faut en cochant l'onglet du 
+bas pr&eacute;vu &agrave; cet effet.
 </P>
 
 <P>
-The buttons at the bottom of this view can be used to
-quickly grow your GEDCOM information from the currently
-shown entity. There are buttons to:
+Les boutons situ&eacute;s en bas de cette fen&ecirc;tre peuvent &ecirc;tre 
+utilis&eacute;s pour ajouter de fa&ccedil;on plus rapide des informations 
+GEDCOM &agrave; partir de l'entit&eacute; s&eacute;lectionn&eacute;e. Il 
+y a des boutons pour&nbsp;:
 <ul>
-<li>Create and add a spouse
-<li>Create and add a child
-<li>Create and add a parent
-<li>Create and attach a note
-<li>Create and attach a multimedia object
+<li>Cr&eacute;er et ajouter un(e) conjoint(e)
+<li>Cr&eacute;er et ajouter un enfant
+<li>Cr&eacute;er et ajouter un parent
+<li>Cr&eacute;er et attacher une note
+<li>Cr&eacute;er et attacher un objet multim&eacute;dio
 </ul>
-The new entity will be selected automatically so you can
-enter information very quickly e.g. starting with an
-individual.
+La nouvelle entit&eacute; sera s&eacute;lectionn&eacute;e automatiquement, 
+vous pourrez donc ajouter des informations tr&eacute;s rapidement, ex. 
+en d&eacute;marrant avec une personne.
 </P>
 
 </BODY>
