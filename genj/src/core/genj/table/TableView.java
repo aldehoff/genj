@@ -420,7 +420,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
         col = table.getSelectedColumn();
       // find property
       Property context = null;
-      if (col>=0) context = tableModel.getProperty(row,col);
+      // 20040405 make sure we got a row when asking for property row,col
+      if (col>=0&&row>=0) context = tableModel.getProperty(row,col);
       if (context==null&&row>=0) context = tableModel.getEntity(row);
       if (context==null) return;
       // set

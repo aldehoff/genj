@@ -122,7 +122,8 @@ public class ViewManager {
     if (result!=null) {
       // still in valid entity?
       Entity entity = result.getEntity();
-      if (gedcom.getEntities(entity.getTag()).contains(entity.getEntity()))
+      // 20040305 make sure entity isn't null by now
+      if (entity!=null&&gedcom.getEntities(entity.getTag()).contains(entity))
         return result;
       // remove from map 
       gedcom2current.remove(gedcom);
