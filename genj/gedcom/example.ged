@@ -5,7 +5,7 @@
 1 DEST ANY
 1 CHAR IBMPC
 1 FILE example.ged
-1 DATE 14 NOV 2002
+1 DATE 22 NOV 2002
 0 @I001@ INDI 
 1 NAME Lars H. /Meier/
 1 SEX M
@@ -90,6 +90,7 @@
 1 EMIG 
 2 DATE FROM 1 SEP 2001
 2 PLAC San Francisco, California, USA
+1 OCCU SWEngineer
 0 @I009@ INDI 
 1 NAME Alisa /Meier/
 1 SEX F
