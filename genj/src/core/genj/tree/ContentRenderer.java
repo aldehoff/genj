@@ -111,10 +111,10 @@ public class ContentRenderer {
     ug.translate(-bounds.getX(), -bounds.getY());
     // render background
     renderBackground(ug, bounds);
-    // render the nodes
-    renderNodes(ug, model);
     // render the arcs
     renderArcs(ug, model.getArcs());
+    // render the nodes
+    renderNodes(ug, model);
     // done
   }  
   
