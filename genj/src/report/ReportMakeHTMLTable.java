@@ -14,9 +14,9 @@ import java.util.*;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.8 2002-03-24 13:17:37 timmsc Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.9 2002-03-25 19:18:55 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class ReportMakeHTMLTable implements Report {
 
@@ -92,6 +92,16 @@ public class ReportMakeHTMLTable implements Report {
   /** the mapping between unicode and html */
   private static Hashtable unicode2html = initializeUnicodeSupport();
 
+  /** this report's version */
+  public static final String VERSION = "1.8";
+
+  /**
+   * Returns the version of this script
+   */
+  public String getVersion() {
+    return VERSION;
+  }
+  
   /**
    * Returns the name of this report - should be localized.
    */

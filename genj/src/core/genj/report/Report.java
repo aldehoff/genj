@@ -34,6 +34,11 @@ public interface Report {
   public String getAuthor();
 
   /**
+   * Returns the version of this script
+   */
+  public String getVersion();
+
+  /**
    * Returns information about this report. A report
    * has to override this method to return a <code>String</code>
    * containing information about the author, version

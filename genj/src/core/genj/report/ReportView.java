@@ -40,7 +40,7 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
 
   private Gedcom   gedcom;
   private Frame    frame;
-  private JLabel      lAuthor;
+  private JLabel      lAuthor,lVersion;
   private JTextPane   tpInfo;
   private JScrollPane spOutput;
   private JTextArea   taOutput;
@@ -67,15 +67,17 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
 
       Report report = (Report)value;
       setText(report.getName());
-      if (report.usesStandardOut())
-      setIcon(imgShell);
-      else
-      setIcon(imgGui);
+      if (report.usesStandardOut()) {
+        setIcon(imgShell);
+      } else {
+        setIcon(imgGui);
+      }
 
-      if (isSelected)
-      setBackground(list.getSelectionBackground());
-      else
-      setBackground(list.getBackground());
+      if (isSelected) {
+        setBackground(list.getSelectionBackground());
+      } else {
+        setBackground(list.getBackground());
+      }
 
       return this;
     }
@@ -138,7 +140,7 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
     listOfReports.addListSelectionListener(this);
 
     JScrollPane spList = new JScrollPane(listOfReports);
-    reportGridBag.add(spList,1,1,1,4,GridBagHelper.GROW_BOTH);
+    reportGridBag.add(spList,1,1,1,6,GridBagHelper.GROW_BOTH);
 
     // ... Report's author
     lAuthor = new JLabel("");
@@ -147,6 +149,14 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
     reportGridBag.add(new JLabel(resources.getString("report.author")),2,1,2,1,0);
     reportGridBag.add(new JLabel(" "     ),2,2,1,1,0);
     reportGridBag.add(lAuthor             ,3,2,1,1,0);
+
+    // ... Report's version
+    lVersion = new JLabel("");
+    lVersion.setForeground(Color.black);
+
+    reportGridBag.add(new JLabel(resources.getString("report.version")),2,3,2,1,0);
+    reportGridBag.add(new JLabel(" "     ),2,4,1,1,0);
+    reportGridBag.add(lVersion            ,3,4,1,1,0);
 
     // ... Report's infos
     tpInfo = new JTextPane();
@@ -157,8 +167,8 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
       }
     };
 
-    reportGridBag.add(new JLabel(resources.getString("report.info")),2,3,2,1,0                      );
-    reportGridBag.add(spInfo                   ,3,4,1,1,GridBagHelper.GROW_BOTH);
+    reportGridBag.add(new JLabel(resources.getString("report.info")),2,5,2,1,0                      );
+    reportGridBag.add(spInfo                   ,3,6,1,1,GridBagHelper.GROW_BOTH);
 
     // Panel for Report Output
     taOutput = new JTextArea();
@@ -447,11 +457,13 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
   private void selectReport(Report report) {
 
     if (report==null) {
-      lAuthor.setText("");
-      tpInfo .setText("");
+      lAuthor .setText("");
+      lVersion.setText("");
+      tpInfo  .setText("");
     } else {
-      lAuthor.setText(report.getAuthor());
-      tpInfo .setText(report.getInfo());
+      lAuthor .setText(report.getAuthor());
+      lVersion.setText(report.getVersion());
+      tpInfo  .setText(report.getInfo());
     }
 
     // Done

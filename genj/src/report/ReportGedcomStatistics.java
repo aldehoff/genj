@@ -42,6 +42,16 @@ public class ReportGedcomStatistics implements Report {
   /** the place that is not known */
   private final static String UNKNOWN_PLACE = "[unknown places]";
   
+  /** this report's version */
+  public static final String VERSION = "0.04";
+
+  /**
+   * Returns the version of this script
+   */
+  public String getVersion() {
+    return VERSION;
+  }
+  
   /**
    * Returns the name of this report - should be localized.
    */

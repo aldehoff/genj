@@ -16,6 +16,16 @@ import java.io.*;
  */
 public class ReportEarliestAncestor implements Report {
 
+  /** this report's version */
+  public static final String VERSION = "0.1";
+
+  /**
+   * Returns the version of this script
+   */
+  public String getVersion() {
+    return VERSION;
+  }
+  
   /**
    * Returns the name of this report - should be localized.
    */
