@@ -5,7 +5,7 @@
   <path id="project.class.path">
     <pathelement path ="${dir.build}/version"/>
     <pathelement path ="${dir.build}/classes/core"/>
-    <fileset dir="lib">
+    <fileset dir=".">
         <include name="**/*.jar"/>
     </fileset>
     <pathelement path ="./language/de"/>
