@@ -1,0 +1,104 @@
+<HTML>
+
+<BODY>
+<H2>Report Writing</H2>
+
+<P>
+A GenJ report is a Java class that implements the interface <I>genj.report.Report</I>.
+Writing your own functionality starts by defining your own class in a source-file
+and placing that file into the reports-subdirectory (its name has to start with Report*).
+</P>
+<P>
+Let's assume we want to write a test-report named "Test1". First create a text-file
+named ReportTest1.java in ./reports. Then compile it by running the compile-script 
+in the same directory. This script runs javac - the java compiler. The end-result is
+a file named ReportTest1.class which GenJ can load and execute after it's selected
+in the <A href="../view/report.html">Report View</A>.
+</P>
+
+<P>
+Let's have a look at the sample ReportTest1.java. It contains one public class-definition
+that conforms to the Report contract (<I>implements Report</I>). Part of that contract
+is to supply behaviour for all of the following methods:
+<blockquote>
+<il>
+<li>getName
+<li>getInfo
+<li>start
+<li>usesStandardOut
+<li>getAuthor
+<li>isReadOnly
+</il>
+</blockquote>
+See the example below or the downloadable API to learn more about what those methods
+are there for. The most important one is <I>start</I> - it's the main entrypoint into
+the report's logic:
+
+ <PRE>
+
+  import genj.gedcom.*;
+  import genj.report.*;
+  import java.io.*;
+
+  /**
+   * A report named Foo
+   */
+  public class ReportFoo implements Report {
+
+    /**
+     * The name of the report
+     */
+    public String getName() {
+      return "Foo";
+    }
+
+    /**
+     * Information about the report
+     */
+    public String getInfo() {
+      return "This report is oh so good\nPlease try it now!";
+    }
+
+    /**
+     * The main entry point for the report
+     */
+    public boolean start(ReportBridge bridge, Gedcom gedcom) throws InterruptedException {
+
+      bridge.println("Hello World");
+
+      return true;
+    }
+
+    /**
+     * Whether this report uses StandardOut or its own windows/dialogs
+     */
+    public boolean usesStandardOut() {
+      return true;
+    }
+
+    /**
+     * The author of this report
+     */
+    public String getAuthor() {
+      return "Nils Meier <nils@meiers.net>";
+    }
+
+    /**
+     * Whether this report will change the Gedcom data it is running on
+     */
+    public boolean isReadOnly() {
+      return false;
+    }
+  }
+ </PRE>
+</P>
+
+<P>
+Inside the start-method all the information in the Gedcom-object can be accessed.
+You will have to download the GenJ API (a HTML class reference) to explore the 
+possibilities captured in the GenJ core-classes. For starters you should try to
+extend the already existing reports.
+</P>
+
+</BODY>
+</HTML>

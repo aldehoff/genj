@@ -1,0 +1,74 @@
+<HTML>
+
+<BODY>
+<H2>Family</H2>
+
+<P>
+The second important entity is the family. It links individuals and
+is handled as a separate entity to allow for cases, where one or
+even both spouses are unknown.
+</P>
+
+<P>
+When creating an entity by clicking on <IMG src="../../images/Fam.gif"></IMG>
+GenJ asks for some key information. Then you can specify a relationship
+to another entity in your file. Simply click on an individual
+in the <A href="../view/tree.html">Tree View</A> or 
+<A href="../view/table.html">Table View</A> and you can choose from the
+radiobuttons: that individual is either a parent or child (only if not
+already child in another family) in this family.
+Make your selection and click on Create.
+</P>
+
+<P>
+When editing a Family in the <A href="../view/edit.html">Edit View</A>
+you should stick to the Gedcom standard as close as possible. A typical
+family could consists of this kind of information:
+<PRE>
+@F001@ FAM
+ WIFE @I002@
+ HUSB @I001@
+ MARR
+  DATE 1964
+  PLAC Flagstaff, USA
+ CHIL @I004@
+ CHIL @I005@
+ CHIL @I008@
+</PRE>
+</P>
+
+<P>
+Just work through the properties of your families and change
+their properties. When adding new properties choose from the 
+predefined list or if necessary extend the schema by adding
+new property-tags for special user-properties.
+</P>
+
+<P>
+An important feature of Gedcom is the capability to link
+entities. Families are normally not separate - they have
+a husband, wife or children. Everytime you create a
+new Family connected to individuals, they are linked through
+properties. These properties for the families are
+HUSB (the husband), WIFE (the wife) or CHIL (the child).
+The properties refer to the individual by its id. You can 
+explore the relationship between families and individuals
+by following those links. Be careful when deleting or 
+creating new links - keeping the overview of the referential 
+integrity is not easy :). 
+</P>
+
+<P>
+Again the example from the section about the <A href="indi.html">Individual</A>:
+You have your family tree and found out that an ancestors wife's sister married
+his brother. All those individuals are in your tree already! You can now create 
+a new <A>family</A> for this newly discovered relationship. But then you don't
+want to create a new individual - you want to link existing entities!
+The solution: Select the new family for your ancestor's brother 
+and add a WIFE property to it. Then change it to point to the
+sister by entering her ID. Click on the link-button and a FAMS property will
+automatically be added to the sister pointing back. The circle is made.
+</P>
+
+</BODY>
+</HTML>

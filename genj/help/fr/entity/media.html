@@ -1,0 +1,46 @@
+<HTML>
+
+<BODY>
+<H2>Media</H2>
+
+<P>
+A Media (OBJE is the corresponding tag) is an entity wrapping any 
+multimeda data you can think of. 
+GenJ is aware about image files and will try to display the 
+information in any of the views.
+When creating a media by clicking on <IMG src="../../images/Media.gif"></IMG>
+you can specify a file by opening a file-chooser. The data of that file
+is included in your Gedcom-file (Base64 encoded). To keep the file
+small it is also possible not to choose a file at that point. Simply 
+add a FILE property to the entity later that points to a file on disk.
+This is an external file that has to be shipped separately.
+</P>
+
+<P>
+Medias are by default not linked to any other entity. After creation you 
+can add a OBJE property (yes, OBJE is the tag for a media entity and
+the tag for the media property) to any entity and link it to a media 
+by entering its id and pressing link. 
+</P>
+
+<P>
+A media according to Gedcom has default properties - here are two
+examples based on the inclusion of the data or a reference to an
+external file.
+<PRE>
+@M004@ OBJE
+ TITL Taken from myimage.gif
+ FORM gif
+ BLOB 585 Raw Bytes
+</PRE>
+<PRE>
+@M005@ OBJE
+ TITL Pointing to local file
+ FORM jpg
+ FILE myimage.jpg
+</PRE>
+</P>
+
+
+</BODY>
+</HTML>

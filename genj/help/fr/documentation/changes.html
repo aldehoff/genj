@@ -1,0 +1,491 @@
+<HTML>
+
+<BODY>
+
+<Br>
+
+<Center>				
+<Font size="+1">
+	<U>Changes - GenJ History</U>
+</Font>
+</Center>				
+
+<Br>
+
+<Center>				
+<Font color="red">N</Font> New - 
+<Font color="red">B</Font> Bug fixed - 
+<Font color="red">I</Font> Improved - 
+<Font color="red">C</Font> Changed - 
+<Font color="red">O</Font> Open
+</Center>
+
+<Br>
+
+<a name = "_changes_">
+
+<Font color="green">
+<U>1.9 - June xx 2002</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">O</Font> Improved windows placement (applet layouts views tree NW, table NE, overview S)<Br>
+  <Font color="red">O</Font> EditView should show button for 'Create New Individual' when no individual set<Br>
+    &nbsp;&nbsp;&nbsp;(works nicely when the user has created an empty tree)<Br>      
+  <Font color="red">B</Font> GedcomWriter now writes correct version information<Br>
+  <Font color="red">N</Font> A new About window has been added, implementing Welcome, Authors, Feedback and Copyright tabbed panes<Br>
+  <Font color="red">B</Font> ReportGedcomStatistics doesn't track death-place anymore for people that haven't died yet<Br>
+  <Font color="red">N</Font> View-Menu in ControlCenter to open up views<Br>
+  <Font color="red">B</Font> Windows (View, Overview) are never places outside of the visible screen<Br>
+  <Font color="red">I</Font> ReportAppletDetails changed output format of generated HTML files and now contains hyperlinks to families and individuals.  Hyperlinks for individuals are keyed by name rather than Gedcom ID.<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>1.8 - Apr 18 2002</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">C</Font> Abbreviated dates show month name (JAN), skip FROM/BET/AND/..., use '-' and are on one line<Br>
+  <Font color="red">I</Font> ant descriptor now builds distributions for languages EN,DE,FR and IT<Br>
+  <Font color="red">C</Font> Changed the way that IDs are created for new entities (incremental)<Br>
+  <Font color="red">C</Font> Help menu is now offset to the right<Br>
+  <Font color="red">B</Font> Bug in TreeView's content pane - now does repaint() after invalidate() after structureChanged<Br>
+  <Font color="red">N</Font> System parameters : genj.report.dir + genj.help.dir + genj.gedcom.dir<Br>
+  <Font color="red">C</Font> EditView's create-entity actions will result in confirmation-prompt when clicked<Br>
+  <Font color="red">C</Font> Applet opens detail browser window on (new "Browser Details") button click and not single click<Br>
+  <Font color="red">C</Font> Applet's default-size for windows is now 640/480<Br>
+  <Font color="red">B</Font> Link to image in help HTML is broken (resedit.html)<Br>
+  <Font color="red">I</Font> Updated resedit.html in help menu to match resedit v.1.02<Br>
+  <Font color="red">I</Font> ReportGedcomStatistics gives stats on birth and death places<Br>
+  <Font color="red">I</Font> ReportMakeHTMLTable orders alphabetically by name<Br>
+  <Font color="red">I</Font> Javadoc now has links to Sun's Java2 API<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>1.7 - Mar 08, 2002</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> Bits are cached for successive calls when reading zip (e.g. file://d:/gedcoms/example.zip#example.ged)<Br>
+  <Font color="red">C</Font> Applets refer to zipped ged via GEDCOM=example.zip#example.ged (ARCHIVE still works)<Br>
+  <Font color="red">B</Font> Return stack in EditView returns to an entity that has just been deleted<Br>
+  <Font color="red">C</Font> Renamed directory holding the reports to 'report'!<Br>
+  <Font color="red">B</Font> Tree Overview Window wouldn't reopen because of change introduced in 1.5<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>1.6 - Mar 05 2002</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> HTML Output knows Umlauts<Br>
+  <Font color="red">B</Font> Deleting an entity with only one individual left can cause exception in TreeModel (current selected idx >= size)<Br>
+  <Font color="red">I</Font> Dialog Texts Yes/No/OK/Cancel are localizable now, too<Br>
+  <Font color="red">B</Font> Re-enabling "Relative of" in create dialog for indi/fam allows selection below<Br>
+  <Font color="red">B</Font> TreeOverview now remembers open even when ControlCenter is closed<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>1.5 - Feb 27 2002</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">N</Font> Add entities from EditView in a 'grow-from-root-mode' (more intuitive than through ControlCenter)<Br>
+  <Font color="red">I</Font> New individuals have more default properties to fill out in EditView<Br>
+  <Font color="red">N</Font> Option in TreeView to use abbreviated dates (e.g. 12 1970 01 1971 instead of BETWEEN DEC 1970 AND JAN 1971)<Br>
+  <Font color="red">B</Font> Option "Show Property Images" for Tree View is not saved<Br>
+  <Font color="red">N</Font> Editing references now offer "Find"-action to easily find entities by text search<Br>
+  <Font color="red">I</Font> Table now displays entity ids + text for references to other entities and displays id and text for notes<Br>
+  <Font color="red">I</Font> Table view's columns for husb+wife (now default for FAM) and fams+famc show more than ID<Br>
+  <Font color="red">I</Font> Preview textbox for link to family (FAMS,FAMC) shows all members of family now<Br>
+  <Font color="red">I</Font> Reference-property's target information (HUSB,CHIL,NOTE,...) is now displayed (read-only) in the edit-window of the source<Br>
+  <Font color="red">I</Font> ReportMakeHTMLTable + ReportAppletDetails improved according to suggestions from TimmSCHome@aol.com<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>1.4 - Feb 17 2001</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">O</Font> You can now choose a Font&Size for Tree<Br>
+  <Font color="red">I</Font> More resources now available through .properties-files for localization<Br>
+  <Font color="red">I</Font> ReportBirthdays.java can now generate sorted output - you have to run Java2 though<Br>
+  <Font color="red">I</Font> The Tree-print-preview now shows a button - either ENTER or click this to apply a zoom<Br>
+  <Font color="red">N</Font> Report ImportDatabase can import your Gedcom information from a database<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>1.3 - Dec 18 2000</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">B</Font> Workaround for problem under Linux : another language than en_us doesn't work<Br>
+  <Font color="red">B</Font> Found a nasty bug using my tables in IE 5.00.2314.1003 <Br>
+    (a clip.x/y could be <0 leading to incorrect row-drawing-calculations in Table)<Br>
+  <Font color="red">B</Font> PropertyFile didn't handle the case of a null-value appropriately<Br>
+  <Font color="red">B</Font> Saving a known Gedcom file required choosing a file every time<Br>
+  <Font color="red">N</Font> The applet has a new parameter (DETAIL) that points to a folder containing 
+    entities details to show when entity is activated - use ReportAppletDetail to generate those<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>1.2 - Dec 10 2000</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> Sorting for entities' ids in table now computes I001 < I02 (it's a little bit slower though)<Br>
+  <Font color="red">N</Font> An image for NATI<Br>
+  <Font color="red">B</Font> TreeView throws ArrayIndexOutOfBoundsException because of assumed 1-based array access (=stupid)<Br>
+  <Font color="red">I</Font> Improved report help-section <Br>
+  <Font color="red">B</Font> ReportEarliestAncestor and Birthdays failed b/c of the assumption that every indi has a birthdate<Br>
+  <Font color="red">B</Font> Start and compile scripts had wrong CLASSPATH<Br>
+  <Font color="red">B</Font> Starting with a fresh file didn't allow for additional entities to be linked to initial root<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>1.1 - Nov 25 2000</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">B</Font> Fixed typos in help<Br>
+  <Font color="red">I</Font> Help window now remembers its position&size<Br>
+  <Font color="red">I</Font> FILE property now tries to store references relative to the Gedcom file<Br>
+  <Font color="red">I</Font> Tree Overview window automatically re-opens<Br>
+  <Font color="red">B</Font> Repackaged with reports again<Br>
+  <Font color="red">B</Font> Version number is reported again<Br>
+  <Font color="red">C</Font> Libraries now have to go into ./lib<Br>
+  <Font color="red">B</Font> Printing of Tree View works again<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>1.0 - Nov 19 2000</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">N</Font> Integrated HTML Help<Br>
+  <Font color="red">I</Font> MultiLineProperties (e.g. Address) now show up with several lines in the Tree View (by Fran&ccedil;ois' request)<Br>
+  <Font color="red">B</Font> When removing entities the edit view can be confused about the suddenly disappearing data<Br>
+  <Font color="red">B</Font> Debug code in table sorting made it basically useless<Br>
+  <Font color="red">B</Font> After moving properties up/down in edit window the result is now shown right away (again)<Br>
+  <Font color="red">C</Font> Yet another change in handling the combobox in the applet-tree-view ... hope it becomes visible under OS/2<Br>
+  <Font color="red">I</Font> Pictures in tree can be set to be zoomed (an option for people with lots of memory for scaled images being cached)<Br>
+  <Font color="red">I</Font> Selecting a bookmark scrolls tree view to show entity automatically<Br>
+  <Font color="red">I</Font> Edit View remembers the last viewed Entity and shows it when opened again<Br>
+  <Font color="red">I</Font> Reports show progressing information again with a change in design to avoid excessive load<Br>
+  <Font color="red">I</Font> Settings for Timeline View now consistently shows all properties subclassing PropertyEvent<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.23 - Jan 30 2000 (Applet only)</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> Simplified transaction locking mechanism<Br>
+  <Font color="red">I</Font> One-way PropertyXRefs are now updated in both directions (e.g Notes or Medias)<Br>
+  <Font color="red">I</Font> It's now possible to stop a running Report while it is just doing std out<Br>
+  <Font color="red">C</Font> Reports don't show output while being run but afterwards - that helps performance A LOT (Fran&ccedil;ois please test)<Br>
+  <Font color="red">N</Font> You can now move bookmarks Up/Down in Tree View settings<Br>
+  <Font color="red">B</Font> Opening a View makes sure that all buttons in the lower right corner are shown appropriately<Br>
+  <Font color="red">C</Font> Changed way of handling combo box in tree view - hopefully it will now show up on OS/2 systems<Br>
+  <Font color="red">B</Font> There seem to be browsers, which don't like GridLayout() ... using GridLayout(1,1) instead now<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.22 - Jan 17 2000 (Applet only)</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">B</Font> Auto-center after setting root of Tree didn't work appropriately when zoom != 100%<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.21 - Jan 15 2000 (Applet only)</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">N</Font> The application/applet can find out the current version number<Br>
+  <Font color="red">C</Font> The horizontal scrollbar of a Scrollpane won't disappear but maintain minimum size<Br>
+  <Font color="red">I</Font> Page Up/Down in Tree View scroll vertically in page jumps<Br>
+  <Font color="red">I</Font> Cursor keys in Table View can be used to scroll around<Br>
+  <Font color="red">B</Font> After changing the Tree View size the overview window wouldn't reflect the change in view<Br>
+  <Font color="red">I</Font> Loading progress report while linking reference is more accurate<Br>
+  <Font color="red">C</Font> Applet:After loading the gedcom information the progress bar disappears<Br>
+  <Font color="red">I</Font> After changing the root of the Tree View, it is automatically centered in the window<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.20 - Aug 15 1999</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">B</Font> Timeline View doesn't remember grid settings<Br>
+  <Font color="red">B</Font> Overview windows doesn't update visibility rectangle after zoom change<Br>
+  <Font color="red">B</Font> ZoomScala doesn't reflect actual value when rate is changed through props window<Br>
+  <Font color="red">I</Font> Views opened for the first time show up with a default size<Br>
+  <Font color="red">I</Font> Applet starts up faster after loading data and shows linking progress<Br>
+  <Font color="red">I</Font> After opening a EditViewProperties window from a View it shows the properties of that one<Br>
+  <Font color="red">I</Font> Table scrolls to entity when selected in other View<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.19 - July 22 1999</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">C</Font> Printing of Tree is IN again<Br>
+  <Font color="red">B</Font> New control for changing zoom value doesn't seem to wait for mouse click under OS/2 - don't know wether this change helps, though<Br>
+  <Font color="red">B</Font> Keybindings (Cursors,+/-) work again<Br>
+  <Font color="red">C</Font> Overview for Tree View doesn't use scrollers anymore (as it was before .18)<Br>
+  <Font color="red">B</Font> Reports didn't work after Gedcom class change<Br>
+  <Font color="red">B</Font> Tree Overview didn't show lines between families<Br>
+  <Font color="red">B</Font> Grid in Timeline View was lost<Br>
+  <Font color="red">C</Font> Table View shows multi-line Note in one line<Br>
+  <Font color="red">I</Font> Table View uses toString for all Unknown properties (used by PropertyXRef to return target's value)<Br>
+  <Font color="red">B</Font> Adding a child to an individual without existing (1st) family leads to exception<Br>
+  <Font color="red">B</Font> Loading a Gedcom file with unknown entitiy could lead to npe because of GedcomReader bug<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.18 - June 04 1999</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> Thread handling after write locks has changed - (un)locking now makes sure that 
+    it's synchronous to the event dispatcher thread<Br>
+  <Font color="red">B</Font> When editing of property in Edit View is stopped, one has to select another property
+    before the former active property can be selected (and edited) again (worst in case of
+    single property with no sub-properties - e.g. Note - a tip from Fran&ccedil;ois)<Br>
+  <Font color="red">C</Font> Edit View now sticks to one Gedcom and follows the behaviour of other views that way<Br>
+  <Font color="red">I</Font> Changed the way views are opened and handled internally<Br>
+  <Font color="red">I</Font> Opened Frames from ControlCenter remember bounds<Br>
+  <Font color="red">I</Font> JTable is substituted by other (faster) component which can be used in applets, too<Br>
+  <Font color="red">I</Font> Settings of Views (Tree,Table,Timeline,Edit) can be viewed and changed through ViewEditor and ViewInfo classes<Br>
+  <Font color="red">I</Font> New Applet with progress bar and one start-point browsing<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.17 - Apr 18 1999</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">B</Font> Having family as root of tree view crashed with ArrayIndexOutOfBounds (introduced in 0.0.16)<Br>
+  <Font color="red">C</Font> Rendering images besides properties in Tree View is off by default and can be switched on now<Br>
+  <Font color="red">N</Font> Gedcom files can be checked for compliancy and consistency via the menu Tools|Verify<Br>
+  <Font color="red">N</Font> Gedcom files can be merged via the menu Tools|Merge - matches are only identified via IDs right now<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.16 - Jan 24 1999</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> All frames show small image in upper-left-corner<Br>
+  <Font color="red">B</Font> Fixed possible error in loading of images<Br>
+  <Font color="red">N</Font> Loading of zipped Gedcom-files (.zip) is possible now.<Br>
+  <Font color="red">I</Font> Name drawing breaks to two lines only if there's enough space vertically<Br>
+  <Font color="red">N</Font> Properties rendered in tree show leading image identifying the type of information<Br>
+  <Font color="red">N</Font> First steps for "Merging Of Trees" - no data is actually put together!<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.15 - Dec 16 1998</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> Multiple progress dialogs are not piled on top of each other but tiled<Br>
+  <Font color="red">I</Font> Opening same Gedcom files several times isn't possible anymore<Br>
+  <Font color="red">I</Font> Edit View shows BOLD Gedcom-tags and PLAIN values for easier reading<Br>
+  <Font color="red">O</Font> Customizable properties in tree<Br>
+  <Font color="red">I</Font> Names in Tree View are broken in two rows in case there's not enough space horizontally<Br>
+  <Font color="red">C</Font> Reports from directory ./reports have to be named ReportXYZ to be candidates<Br>
+  <Font color="red">B</Font> (Helper-)Classes in directory ./reports can be loaded from classloader<Br>
+  <Font color="red">B</Font> Relative paths for PropertyFile didn't work under non-unix (e.g. \images\Dad.gif)<Br>
+  <Font color="red">I</Font> There's a new image for OCCUpation done by Fran&ccedil;ois Massonneau<Br>
+  <Font color="red">B</Font> Adding a person as child to family is possible even though it has parents<Br>
+  <Font color="red">N</Font> New Entity and property Note for storing notes about entities and events
+    Please handle with care since Gedcom's way of doing notes was hard to implement<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.14 - Dec 2 1998</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> User can change margins for printing<Br>
+  <Font color="red">B</Font> Tree background isn't painted correctly under Windows but should do it now<Br>
+  <Font color="red">B</Font> Choosing file for PropertyFile results in illegal URL for non-unix systems<Br>
+  <Font color="red">N</Font> Report MigrateToMedias : Migrates existing PHOT entries to Gedcom OBJE|FILE<Br>
+  <Font color="red">I</Font> Tree View scrolls when user uses cursor keys<Br>
+  <Font color="red">I</Font> Tree View's titlebar shows name of bookmarks after user selects one from menu<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.13 - Nov 29 1998</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">B</Font> Loading local files under non unix fails<Br>
+  <Font color="red">I</Font> Printing is done in separate thread<Br>
+  <Font color="red">I</Font> Printing of tree supports alignment<Br>
+  <Font color="red">I</Font> Progress dialog for loading/saving/printing shows more information<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.12 - Nov 28 1998</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> Table View remembers entities shown last time (individuals, families, ... )<Br>
+  <Font color="red">I</Font> Changing root of tree (by double click on tree or list) makes it the actual automatically<Br>
+  <Font color="red">B</Font> Nasty bug that broke inter-entity linkaged. Could show up when fams and indis are mixed in Gedcom-file.<Br>
+  <Font color="red">I</Font> Edit View offers action button to get back to last shown entity<Br>
+  <Font color="red">N</Font> New Entity : Multimedia<Br>
+  <Font color="red">N</Font> New Properties File&Blob for storing Pictures etc.<Br>
+  <Font color="red">N</Font> Printing of Tree View (first try)<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.11 - Sep 06 1998</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> TreeOverview indicates actual entity by red box<Br>
+  <Font color="red">I</Font> Timeline can draw grid<Br>
+  <Font color="red">C</Font> Changed OOD of Timeline (split to TimelinePanel and TimelineModel)<Br>
+  <Font color="red">C</Font> Changed OOD of Edit<Br>
+  <Font color="red">I</Font> Empty lines in files doesn't disturb reading anymore<Br>
+  <Font color="red">B</Font> Error messages specifying lines during read are correct now<Br>
+  <Font color="red">I</Font> Overview of Tree View reopens automatically when kept open last time<Br>
+  <Font color="red">I</Font> Selecting several props in add-property-dialog always shows info<Br>
+  <Font color="red">I</Font> After adding a property the edit window changes focus to the new prop<Br>
+  <Font color="red">I</Font> After changing the root of tree the view is centered above it<Br>
+  <Font color="red">B</Font> Sorting names in Table View sorts by last AND first name now<Br>
+  <Font color="red">C</Font> Rendering sex in Table or Tree View shows symbol only<Br>
+  <Font color="red">C</Font> Rendering entities' ids in Table or Tree View shows no @ anmore<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.10 - Aug 29 1998</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> Tree menu showed vectical instead of vertical<Br>
+  <Font color="red">N</Font> Tree View shows overview dialog (click on lens-button in lower-right corner)<Br>
+  <Font color="red">C</Font> GedcomReader doesn't stop when encounting unknown entities but ignores them<Br>
+  <Font color="red">I</Font> TreePane remembers point of interests (during re-open & zooming)<Br>
+  <Font color="red">C</Font> Changed OOD of TreePane (split to TreePanel and TreeModel)<Br>
+  <Font color="red">I</Font> Delete of bookmark<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.9 - Aug 20 1998</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">B</Font> Auto-Loading several Gedcom-files (>2Threads) could lead to race condition<Br>
+  <Font color="red">B</Font> Adding spouse to family with ex. spouse can lead to error GedcomException("Individual @x@ is already yyy in family @z@")<Br>
+  <Font color="red">B</Font> Tree doesn't remember family as root<Br>
+  <Font color="red">N</Font> Tree supports bookmarks of origins (Chooseable from applet, too)<Br>
+  <Font color="red">I</Font> Dialog "Create Entity" has button Cancel<Br>
+  <Font color="red">O</Font> Timeline View remembers year position<Br>
+  <Font color="red">B</Font> Writing Gedcom does no line-indent anymore and writes more header-information<Br>
+  <Font color="red">I</Font> Report window remembers size/position<Br>
+  <Font color="red">I</Font> Tree View zooms when keys + or - are pressed<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.8 - Aug 16 1998</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">B</Font> Edit Window doesn't mix up first and last name<Br>
+  <Font color="red">C</Font> Changed First to Given and Last to Family Name<Br>
+  <Font color="red">I</Font> Edit Window remembers split between property tree and bottom<Br>
+  <Font color="red">C</Font> Renamed Chronic View to Timeline View<Br>
+  <Font color="red">B</Font> Confirmation dialog before closing file with unsaved changes<Br>
+  <Font color="red">B</Font> Frames created by cc are released as soon as they're closed now<Br>
+  <Font color="red">I</Font> App.class is no JFrame anymore to catch "Missing Swing Error"<Br>
+  <Font color="red">B</Font> Made run.cmd and run.bat DOS-compatible (0d0a) again<Br>
+  <Font color="red">N</Font> Tree View can zoom now (a lot of tree's logic changed)<Br>
+  <Font color="red">C</Font> ControlCenter doesn't use tabbed pane anymore<Br>
+  <Font color="red">C</Font> After selection of entity it's first property is selected in edit window<Br>
+  <Font color="red">C</Font> Creating an entity adds property BIRT automatically (will be customizeable)<Br>
+  <Font color="red">I</Font> Edit window remembers split position<Br>
+  <Font color="red">B</Font> Deleting of PropertyXRefs (Wife,Husb,Chil,FamS,FamC) can lead to wrong result<Br>
+  <Font color="red">B</Font> Adding third spouse to family isn't allowed anymore<Br>
+  <Font color="red">I</Font> Introduced SaveAs so that Save automatically uses known filename<Br>
+  <Font color="red">N</Font> Applet shows Choice for selection of tree zoom-rate<Br>
+  <Font color="red">B</Font> GedcomReader should load faster and more reliably<Br>
+  <Font color="red">N</Font> CHANGES is included in distribution<Br>
+</Ul>
+</Font>
+
+<Font color="green">
+<U>0.0.7 - Aug 02 1998</U>
+</Font>
+
+<Font color="black">
+<Ul>
+  <Font color="red">I</Font> Tree remembers origin and stoppers<Br>
+  <Font color="red">I</Font> Applet loads .properties<Br>
+  <Font color="red">I</Font> Dialogs during io are not reaching out of screen anymore<Br>
+  <Font color="red">I</Font> Application's menu shows actions on Gedcoms<Br>
+  <Font color="red">N</Font> Implemented localization<Br>
+</Ul>
+</Font>
+
+<Br><Br>
+
+</BODY>
+</HTML>

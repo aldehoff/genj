@@ -1,0 +1,85 @@
+<HTML>
+
+<BODY>
+<H2>Gedcom</H2>
+
+<P>
+Gedcom is a standard for exchanging genealogic information in an electronic 
+format. It is similiar to XML in it's structure but it's not quite as well defined. 
+</P>
+
+<P>
+Generally all Gedcom information is hierarchically structured. An entity
+(like Person, Family or Note) has several properties which in turn can
+have several properties. There's no limit on the number of levels. Beside
+the standard properties (like Date, Name, Sex, etc.) it is o.k. to 
+come up with custom properties supporting personal needs.
+</P>
+
+<P>
+Since Gedcom doesn't know the notion of closing and ending Tags (like XML)
+it is based on lines of different indentation. Indentation is specified
+by a number - then follows the Tag identifying the property type.
+Here is an example (sub-properties are indented here for readability only):
+</P>
+
+<PRE>
+0 INDI @I001@
+  1 NAME Nils /Meier/
+  1 SEX M
+  1 BIRT
+    2 DATE 25 May 1970
+    2 PLAC Rendsburg, Germany
+  1 GRAD
+    2 DATE 10 Dec 1996 
+    2 PLAC Friedrich Wilhelm University Bonn
+    2 TYPE Diplom Informatiker
+  1 RESI
+    2 DATE FROM Jul 1999 TO DEC 2000
+    2 ADDR 202-1241 Kilborn Place
+      3 CONT Ontario, Canada
+      3 CITY Ottawa
+      3 POST K1H1A5    
+  1 NOTE @N003@
+</PRE>
+
+<P>
+Special properties have a certain format for the contained data (e.g. Name /Last Name/).
+Some properties reference other entities - here the NOTE-property links to
+a note in the same Gedcom file.
+</P>
+
+<P>
+The power of Family Tree for Java is that it allows this nested information to
+be edited in hierarchical-view way. Also all know properties are treated in a
+special way, allowing for specific editing forms. Since Family Tree knows about
+properties which reference other entities, it handles the referential integrity, too.
+</P>
+
+<P>
+The user can specify new properties required for individual needs. Carefull thought
+should be given to that though because deviation from the Gedcom standard makes
+it harder to give meaning to the entered data. As shown in the section about
+<A href="view/report.html">Reports</A> (agents runing on Gedcom data) they 
+can be written by anyone with a Java SDK using the infrastructure GenJ provides.
+But if every end-user makes up his own structure the information is harder to retrieve -
+for example: Is every ADDR-property an address where someone once lived
+or is it the current address? Gedcom suggest the event RESI for that purpose : it describes
+the event of dwelling at a certain place for a period of time (see above). 
+GenJ knows about the Gedcom standard and will suggest sub-properties to add to
+properties. We'll discuss this in more detail in the section about the 
+different supported <A href="entities.html">Entities</A>.
+</P>
+
+<P>
+In the future someone will come up with a new standard for keeping
+genealogic information (probably in XML). But setting a worldwide standard is
+not easy. Therefor we should try to stick as closely to Gedcom as
+possible. To say it differently : transformation into the new standard 
+will be very easy if we stick to a common base right now :).
+</P>
+
+
+</BODY>
+
+</HTML>
