@@ -168,7 +168,7 @@ import java.util.Stack;
       arcop
     );
 
-    // make everything children/arcs directly 'under' node relative
+    // place arcs/children relative to current node
     placeChildrenRelative2Parent(node, parent);
 
     // The result is a hull comprised of root's and children's hull
@@ -205,12 +205,8 @@ import java.util.Stack;
     ArcIterator it = new ArcIterator(node);
     int c=0;while (it.next()) {
 
-      // we don't go after seconds
-      if (!it.isFirst) continue;
-      // we don't go after loops
-      if (it.isLoop) continue;
-      // we don't follow 'back'
-      if (it.dest==parent) continue;
+      // we don't go after seconds, loops or backwards
+      if (!it.isFirst||it.isLoop||it.dest==parent) continue;
 
       // the current child
       nodes[c] = it.dest;
@@ -439,12 +435,11 @@ import java.util.Stack;
       // no path no interest
       if (it.arc.getPath()==null) continue;
       // handle loops separate from specialized
-      if (it.isLoop) {
-        layoutStraightArc(it.arc, orientation, arcop);
-      } else {
+      if (it.isLoop) ArcHelper.update(it.arc);
+      else {
         if (bendarcs) layoutBendedArc(it.arc, equator, orientation, arcop);
         else layoutStraightArc(it.arc, orientation, arcop);
-      } 
+      }
     }
     // done      
   }
@@ -493,7 +488,7 @@ import java.util.Stack;
     Node
       n1 = arc.getStart(),
       n2 = arc.getEnd();
-    
+      
     Point2D
       p1 = arcop.getPort(arc, n1, o),
       p2 = new Point2D.Double(),
