@@ -48,7 +48,6 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    */
   protected void finish() {
     setArmed(false);
-    System.out.println(System.currentTimeMillis());
     view.tree.removeMouseMotionListener(this);
     view.tree.removeMouseListener(this);
     preview.removeMouseMotionListener(this);
