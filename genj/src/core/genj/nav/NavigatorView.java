@@ -60,7 +60,7 @@ public class NavigatorView extends JPanel {
   private Indi indi;
   
   /** the buttons */
-  private JButton bFather,bMother, bPrev, bPartner, bNext, bChild;
+  private JButton bFather, bMother, bOlder, bPartner, bYounger, bChild;
   
 
   /**
@@ -112,9 +112,9 @@ public class NavigatorView extends JPanel {
       // buttons
       bFather.setEnabled(false);
       bMother.setEnabled(false);
-      bPrev.setEnabled(false);
+      bOlder.setEnabled(false);
       bPartner.setEnabled(false);
-      bNext.setEnabled(false);
+      bYounger.setEnabled(false);
       bChild.setEnabled(false);
       return;
     }
@@ -126,9 +126,9 @@ public class NavigatorView extends JPanel {
       // buttons
       bFather.setEnabled(indi.getFather()!=null);
       bMother.setEnabled(indi.getMother()!=null);
-      bPrev.setEnabled(indi.getYoungerSibling()!=null);
+      bOlder.setEnabled(indi.getOlderSibling()!=null);
       bPartner.setEnabled(indi.getPartners().length>0);
-      bNext.setEnabled(indi.getOlderSibling()!=null);
+      bYounger.setEnabled(indi.getYoungerSibling()!=null);
       bChild.setEnabled(indi.getChildren().length>0);
       
     }
@@ -164,16 +164,16 @@ public class NavigatorView extends JPanel {
     
       bFather = bh.setAction("FATHER"  ).setRollover(Images.imgNavFatherOn         ).setImage(Images.imgNavFatherOff        ).setTip("tip.nav_father"  ).create();
       bMother = bh.setAction("MOTHER"  ).setRollover(Images.imgNavMotherOn         ).setImage(Images.imgNavMotherOff        ).setTip("tip.nav_mother"  ).create();
-      bPrev   = bh.setAction("YSIBLING").setRollover(Images.imgNavYoungerSiblingOn ).setImage(Images.imgNavYoungerSiblingOff).setTip("tip.nav_ysibling").create();
+      bOlder  = bh.setAction("OSIBLING").setRollover(Images.imgNavOlderSiblingOn   ).setImage(Images.imgNavOlderSiblingOff  ).setTip("tip.nav_osibling").create();
       bPartner= bh.setAction("PARTNER" ).setRollover(Images.imgNavPartnerOn        ).setImage(Images.imgNavPartnerOff       ).setTip("tip.nav_partner" ).create();
-      bNext   = bh.setAction("OSIBLING").setRollover(Images.imgNavOlderSiblingOn   ).setImage(Images.imgNavOlderSiblingOff  ).setTip("tip.nav_osibling").create();
+      bYounger= bh.setAction("YSIBLING").setRollover(Images.imgNavYoungerSiblingOn ).setImage(Images.imgNavYoungerSiblingOff).setTip("tip.nav_ysibling").create();
       bChild  = bh.setAction("CHILD"   ).setRollover(Images.imgNavChildOn          ).setImage(Images.imgNavChildOff         ).setTip("tip.nav_child"   ).create();
 
     gh.add(bFather ,2,1,1,1,gh.FILL_NONE);
     gh.add(bMother ,3,1,1,1,gh.FILL_NONE);
-    gh.add(bPrev   ,0,2,2,1,gh.FILL_NONE);
+    gh.add(bOlder  ,0,2,2,1,gh.FILL_NONE);
     gh.add(bPartner,2,2,2,1,gh.FILL_NONE, new Insets(12,0,12,0));
-    gh.add(bNext   ,4,2,2,1,gh.FILL_NONE);
+    gh.add(bYounger,4,2,2,1,gh.FILL_NONE);
     gh.add(bChild  ,2,3,2,1,gh.FILL_NONE);
 
     // done

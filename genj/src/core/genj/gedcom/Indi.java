@@ -151,7 +151,7 @@ public class Indi extends PropertyIndi implements Entity {
   /**
    * Calculate the 'younger' sibling
    */
-  public Indi getYoungerSibling() {
+  public Indi getOlderSibling() {
     
     // this is a child in a family?
     Fam f = getFamc();
@@ -170,7 +170,7 @@ public class Indi extends PropertyIndi implements Entity {
   /**
    * Calculate the 'older' sibling
    */
-  public Indi getOlderSibling() {
+  public Indi getYoungerSibling() {
     
     // this is a child in a family?
     Fam f = getFamc();
