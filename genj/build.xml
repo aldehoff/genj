@@ -29,6 +29,10 @@
     <mkdir dir="${dir.build}"/>
     <mkdir dir="${dir.run}"/>
     <mkdir dir="${dir.dist}"/>
+    <!-- create ./lib -->
+    <property name="dir.lib" value="${dir.dist}/lib"/>
+    <delete dir="${dir.lib}"/>
+    <mkdir dir="${dir.lib}"/>
   </target>
 
   <!--
@@ -118,9 +122,10 @@
   <!--
    Distribution - Applet
    -->
-  <target name="dist.applet">
+  <target name="dist.applet" depends="init,compile,version">
 
      <!-- create genj_applet_xyz.jar -->
+     <delete file="${dir.lib}/genj.jar"/>
      <jar jarfile="${dir.lib}/genj.jar" update="True">
        <fileset dir="${dir.build}/classes/core"
            includes="genj/*
@@ -131,11 +136,27 @@
                     ,genj/timeline/**
                     ,genj/table/**
                     ,genj/util/*"/>
-       <fileset dir="${dir.build}/classes/awtx"/>
        <fileset dir="${dir.build}/version"/>
-       <fileset dir="./images"/>
-       <fileset dir="./language/en"/>
-       <fileset dir="./src/core" includes="**/*.properties"/>
+       <fileset dir="${dir.build}/classes/awtx"/>
+       <fileset dir="./images"
+           includes="genj/*
+                    ,genj/applet/**
+                    ,genj/gedcom/**
+                    ,genj/io/*
+                    ,genj/tree/**
+                    ,genj/timeline/**
+                    ,genj/table/**
+                    ,genj/util/*"/>
+       <fileset dir="./language/en"
+           includes="genj/*
+                    ,genj/applet/**
+                    ,genj/gedcom/**
+                    ,genj/io/*
+                    ,genj/tree/**
+                    ,genj/timeline/**
+                    ,genj/table/**
+                    ,genj/util/*"/>
+       <fileset dir="./src/core" includes="genj/gedcom/*.properties"/>
      </jar>
 
      <zip zipfile="${dir.dist}/genj_applet-${app.version}.zip" update="True">
@@ -166,6 +187,7 @@
   <target name="dist.app">
 
      <!-- create genj_app_xyz.jar -->
+     <delete file="${dir.lib}/genj.jar"/>
      <jar jarfile="${dir.lib}/genj.jar" update="True">
        <fileset dir="${dir.build}/classes/core"/>
        <fileset dir="${dir.build}/classes/awtx"/>
@@ -241,11 +263,6 @@
    -->
   <target name="dist" depends="init,compile,version">
 
-     <!-- create ./lib -->
-     <property name="dir.lib" value="${dir.dist}/lib"/>
-     <delete dir="${dir.lib}"/>
-     <mkdir dir="${dir.lib}"/>
-
      <!-- do the languages -->
      <antcall target="dist.languages"/>
 
@@ -257,9 +274,6 @@
 
      <!-- do the help -->
      <antcall target="dist.help"/>
-
-     <!-- cleanup lib -->
-     <delete dir="${dir.lib}"/>
 
   </target>
 
