@@ -511,7 +511,7 @@ public class GedcomReader implements Trackable {
         break;
   
       // .. get meta property for child
-      MetaProperty child = meta.get(tag);
+      MetaProperty child = meta.get(tag, true);
   
       // .. create property instance
       prop = child.create(value);
