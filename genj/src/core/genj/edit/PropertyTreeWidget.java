@@ -27,6 +27,7 @@ import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.TreeWidget;
 
@@ -551,7 +552,12 @@ public class PropertyTreeWidget extends TreeWidget {
             }
           
           } else {
-            html.append(prop.getValue());
+
+            // 20030730 hack at this point - check for date to be localized
+            if (prop instanceof PropertyDate)
+              html.append(((PropertyDate)prop).toString(false, true));
+            else
+              html.append(prop.getValue());
           }
         }
 
