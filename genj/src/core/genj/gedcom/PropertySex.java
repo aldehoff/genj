@@ -166,11 +166,18 @@ public class PropertySex extends Property {
 
     noteModifiedProperty();
 
-    // No information ?
-    if (newValue.length()!=1) {
+    // Cannot parse anything longer than 1
+    if (newValue.length()>1) {
       sexAsString=newValue;
       // Done
       return;
+    }
+    // zero length -> unknown
+    if (newValue.length()==0) {
+      sexAsString = null;
+      sex = UNKNOWN;
+      return;
+      
     }
     // Female or Male ?
     switch (newValue.charAt(0)) {
