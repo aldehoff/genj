@@ -86,13 +86,14 @@
    -->
   <target name="dist.language">
 
-    <!-- create genj_ll-xyz.zip -->
-    <zip zipfile="${dir.lib}/genj_${language}.zip" update="True">
+    <!-- create genj_ll.jar -->
+    <jar jarfile="${dir.lib}/genj_${language}.jar" update="True">
       <fileset dir="./language/${language}"/>
-    </zip>
+    </jar>
 
+    <!-- create genj_ll-xyz.zip -->
     <zip zipfile="${dir.dist}/genj_${language}-${app.version}.zip" update="True">
-      <fileset dir="${dir.dist}" includes="**/genj_${language}.zip"/>
+      <fileset dir="${dir.dist}" includes="**/genj_${language}.jar"/>
     </zip>
   </target>
 
@@ -189,7 +190,7 @@
      <jar jarfile="${dir.lib}/run.jar" update="True">
        <manifest>
          <attribute name="Main-Class" value="genj.app.App"/>
-         <attribute name="Class-Path" value="./lib/genj.jar ./lib/jhbasic.jar ./lib/graphj.jar ./lib/genj_de.zip ./lib/genj_en.zip ./lib/genj_es.zip ./lib/genj_fr.zip ./lib/genj_it.zip ./lib/genj_ja.zip"/>
+         <attribute name="Class-Path" value="./lib/genj.jar ./lib/jhbasic.jar ./lib/graphj.jar ./lib/genj_de.jar ./lib/genj_en.jar ./lib/genj_es.jar ./lib/genj_fr.jar ./lib/genj_it.jar ./lib/genj_ja.jar"/>
        </manifest>
      </jar>
      
