@@ -19,8 +19,10 @@
  */
 package genj.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 
 /**
@@ -28,8 +30,14 @@ import java.io.PrintStream;
  */
 public class Debug {
   
+  /** the intial buffering we do */
+  private final static int BUFFER_SIZE = 512;
+  
+  /** an initial buffered output */
+  private static ByteArrayOutputStream buffer = new ByteArrayOutputStream(BUFFER_SIZE);
+  
   /** the output */
-  private static PrintStream out = System.out;
+  private static PrintStream out = new PrintStream(buffer);
   
   /** a mutex */
   private final static Object mutex = new Object();
@@ -50,12 +58,33 @@ public class Debug {
    * Sets the PrintStream to use
    */
   public static void setFile(File file) {
-    
     // try to open a file for debugging
     try {
-      out = new PrintStream(new FileOutputStream(file.getAbsolutePath(), true));
+      setOutput(new PrintStream(new FileOutputStream(file.getAbsolutePath(), true)));
     } catch (Throwable t) {
       log(ERROR, Debug.class, "Failed to route debug log to "+file.getAbsoluteFile(), t);
+    }
+  }
+  
+  /**
+   * Sets the PrintStream to use
+   */
+  public static void setOutput(PrintStream p) {
+    
+    synchronized (mutex) {
+
+      // keep it    
+      out = p;
+      
+      // something from buffer?
+      if (buffer!=null) try {
+        buffer.flush();
+        out.write(buffer.toByteArray());
+        buffer.close();
+        buffer=null;
+      } catch (IOException e) {
+      }
+      
     }
     
     // done
@@ -82,8 +111,10 @@ public class Debug {
    *  ...
    */
   public static void log(int level, Object source, String msg, Throwable t) {
+    
     synchronized (mutex) {
       
+      // log what we need
       Class type = source instanceof Class ? (Class)source : source.getClass();
       
       StringBuffer buf = new StringBuffer(120);
@@ -108,8 +139,13 @@ public class Debug {
         log(ERROR, Debug.class, "Problems sending debugging to log - switching to System.out");
         log(level, source, msg, t);
       }
+      
+      // check buffer state
+      if ((buffer!=null)&&(buffer.size()>BUFFER_SIZE)) {
+        setOutput(System.out);
+      }
     }
-    
+  
   }
   
   /**
