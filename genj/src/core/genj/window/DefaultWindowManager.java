@@ -142,26 +142,30 @@ public class DefaultWindowManager extends AbstractWindowManager {
 
     // Create a dialog 
     Window parent = getWindowForComponent(owner);
-    final JDialog dlg = parent instanceof Frame ? 
-      (JDialog)new JDialog((Frame)parent) {
+    final JDialog dlg = parent instanceof Dialog ? 
+      (JDialog)new JDialog((Dialog)parent) {
         /** dispose is our onClose (WindowListener.windowClosed is too late after dispose() */
         public void dispose() {
-          // keep bounds
-          registry.put(key, getBounds());
-          // forget frame
-          key2dlg.remove(key);
+          if (key!=null) {
+            // keep bounds
+            registry.put(key, getBounds());
+            // forget frame
+            key2dlg.remove(key);
+          }
           // continue
           super.dispose();
         }
       }
-    : 
-      (JDialog)new JDialog((Dialog)parent) {
+    :
+      (JDialog)new JDialog((Frame)parent) {
         /** dispose is our onClose (WindowListener.windowClosed is too late after dispose() */
         public void dispose() {
-          // keep bounds
-          registry.put(key, getBounds());
-          // forget frame
-          key2dlg.remove(key);
+          if (key!=null) {
+            // keep bounds
+            registry.put(key, getBounds());
+            // forget frame
+            key2dlg.remove(key);
+          }
           // continue
           super.dispose();
         }
@@ -200,7 +204,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
 
     // place
     Rectangle box = registry.get(key,(Rectangle)null);
-    if (box==null) {
+    if (box==null||key==null) {
       dlg.pack();
       dlg.setLocationRelativeTo(owner);
       box = dlg.getBounds();
@@ -307,8 +311,8 @@ public class DefaultWindowManager extends AbstractWindowManager {
    * Get the window for given owner component
    */  
   private Window getWindowForComponent(Component c) {
-    if (c instanceof Frame || c instanceof Dialog)
-        return (Window)c;
+    if (c instanceof Frame || c instanceof Dialog || c==null)
+      return (Window)c;
     return getWindowForComponent(c.getParent());
   }
   

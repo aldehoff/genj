@@ -114,10 +114,12 @@ public class LightweightWindowManager extends DefaultWindowManager {
        * our dispose serves as onClose - WindowListener.onClose() is one frame too late
        */
       public void dispose() {
-        // remember bounds
-        registry.put(key, getBounds());
-        // forget frame
-        key2frame.remove(key);
+        if (key!=null) {
+          // remember bounds
+          registry.put(key, getBounds());
+          // forget frame
+          key2frame.remove(key);
+        }
         // callback?
         if (onClose!=null) onClose.run();
         // continue
@@ -147,14 +149,14 @@ public class LightweightWindowManager extends DefaultWindowManager {
     }
 
     // remember
-    key2frame.put(key, frame);
+    if (key!=null) key2frame.put(key, frame);
 
     // place
     JDesktopPane desktop = getDesktop(title, image);
     Dimension screen = desktop.getSize();
     
     Rectangle box = registry.get(key,(Rectangle)null);
-    if (box==null) { 
+    if (box==null||key==null) { 
       frame.pack();
       Dimension dim = frame.getSize();
       box = new Rectangle(screen.width/2-dim.width/2, screen.height/2-dim.height/2,dim.width,dim.height);
