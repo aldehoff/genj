@@ -316,7 +316,7 @@ public class ViewManager {
    * Opens a view on a gedcom file
    * @return the view component
    */
-  public JComponent openView(ViewFactory factory, Gedcom gedcom) {
+  public JComponent openView(ViewFactory factory, final Gedcom gedcom) {
     
     // get a registry 
     Registry registry = getNextRegistry(gedcom, getKey(factory));
@@ -363,7 +363,7 @@ public class ViewManager {
     ViewContainer[] vws = (ViewContainer[])key2viewwidget.values().toArray(new ViewContainer[key2viewwidget.size()]);
     for (int i=0;i<vws.length;i++) {
       if (vws[i].getGedcom()==gedcom) 
-        windowManager.close(vws[i].getKey());
+        closeView(vws[i].getKey());
     }
     
     // remove its key from gedcom2current
