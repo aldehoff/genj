@@ -4,6 +4,7 @@
 package genj.gedcom;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import genj.util.Origin;
@@ -53,24 +54,35 @@ public class PropertyTest extends TestCase {
   public void testShuffle() {     
     
     Indi indi = createIndi();
+    List original = Arrays.asList(indi.getProperties());
     
-    // reverse order
-    Property[] props = indi.getProperties();
-    for (int i=0;i<props.length;i++) {
-      Property p = props[i];
-      props[i] = props[props.length-1-i];
-      props[props.length-1-i] = p;
-    }
-    
-    List shuffled = Arrays.asList(props);
+    // shuffle properties of indi
+    List shuffled = Arrays.asList(indi.getProperties());
+    Collections.shuffle(shuffled);
+
+    // commit it
+    gedcom.startTransaction();
     try {
       indi.setProperties(shuffled);
     } catch (IllegalArgumentException e) {
       fail("couldn't shuffle properties of "+indi);
     }
-
-    assertEquals("shuffle didn't shuffle", shuffled, Arrays.asList(indi.getProperties()));
+    Transaction tx = gedcom.endTransaction();
     
+    // check resulting properties
+    Property[] after = indi.getProperties();
+    for (int i=0;i<shuffled.size();i++) {
+      assertSame("expected shuffled at "+i, shuffled.get(i), after[i]);
+    }
+    
+    // check changes
+    Change[] changes = tx.getChanges();
+    
+    assertEquals("expected 2 changes", 2, changes.length);
+    assertEquals("expected Change.shuffle", changes[0], new Change.PropertyShuffle(indi, original));
+    assertEquals("expected Change.add/CHAN", changes[1], new Change.PropertyAdd(indi, after.length-1, after[after.length-1]));
+    
+    // done
   }
   
   /**
