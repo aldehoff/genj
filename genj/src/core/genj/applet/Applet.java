@@ -64,7 +64,7 @@ public class Applet extends java.applet.Applet {
    * @see java.applet.Applet#getAppletInfo()
    */
   public String getAppletInfo() {
-    return "GenealogyJ "+Version.getInstance();
+    return "GenealogyJ "+Version.getInstance().getBuildString();
   }
 
   /**

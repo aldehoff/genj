@@ -160,7 +160,7 @@ public class AboutWidget extends JPanel{
       text.setEditable(false);
     
       // the version
-      JLabel version = new JLabel(resources.getString("app.title")+" "+Version.getInstance().toString());
+      JLabel version = new JLabel(resources.getString("app.title")+" "+Version.getInstance().getVersionString());
     
       // looks
       add(text, BorderLayout.CENTER);

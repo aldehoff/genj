@@ -66,7 +66,7 @@ public class App {
   private static void init() {
 
     // Startup Information
-    Debug.log(Debug.INFO, App.class, "GenJ App - Version "+Version.getInstance()+" - "+new Date());
+    Debug.log(Debug.INFO, App.class, "GenJ App - Build "+Version.getInstance().getBuildString()+" started at "+new Date());
     String log = EnvironmentChecker.getProperty(App.class, new String[]{"genj.debug.file", "user.home/.genj/genj.log"}, "", "choose log-file");
     if (log.length()>0) {
       File file = new File(log);
@@ -101,7 +101,7 @@ public class App {
     final WindowManager winMgr = new DefaultWindowManager(new Registry(registry, "window"));
     
     // Disclaimer - check version and registry value
-    String version = Version.getInstance().toString();
+    String version = Version.getInstance().getVersionString();
     if (!version.equals(registry.get("disclaimer",""))) {
       // keep it      
       registry.put("disclaimer", version);

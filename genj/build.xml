@@ -101,8 +101,13 @@
   <target name="version">
     <echo>Generating version number</echo>
     <mkdir dir="${dir.build}/version/genj"/>
+  	<tstamp>
+      <format property="now" pattern="yyyy/MM/dd HH:mm:ss"/>
+  	</tstamp>
+  	
     <echo file="${dir.build}/version/genj/resources.properties">
       version=${app.version}
+      build=${app.version} ${now} ${user.name}
     </echo>
   </target>
 

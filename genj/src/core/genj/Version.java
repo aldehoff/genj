@@ -26,8 +26,11 @@ import genj.util.Resources;
  */
 public class Version {
 
-  /** a cached version String */
+  /** a version String */
   private String version;
+
+  /** a build String */
+  private String build;
 
   /** Singleton reference */
   public static final Version singleton = new Version();
@@ -37,18 +40,37 @@ public class Version {
    */
   private Version() {
 
-    version = Resources.get(this).getString("version");
-
-    if (version.length()==0) {
+    Resources r = Resources.get(this);
+    
+    version = r.getString("version", false);
+    if (version==null) 
       version = "?";
-    }
+    
+    build = r.getString("build", false);
+    if (build==null)
+      build = "?";
+    
   }
 
   /**
    * Returns a text representation of the version
    */
   public String toString() {
+    return getVersionString();
+  }
+  
+  /**
+   * The version number
+   */
+  public String getVersionString() {
     return version;
+  }
+
+  /**
+   * The build text
+   */
+  public String getBuildString() {
+    return build;
   }
 
   /**
