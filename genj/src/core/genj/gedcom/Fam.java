@@ -24,10 +24,7 @@ import genj.util.WordBuffer;
 /**
  * Class for encapsulating a family with parents and children
  */
-public class Fam extends PropertyFam implements Entity {
-
-  private String id = "";
-  private Gedcom gedcom;
+public class Fam extends Entity {
 
   /**
    * Default constructor
@@ -56,13 +53,6 @@ public class Fam extends PropertyFam implements Entity {
   }
 
   /**
-   * Notification to entity that it has been added to a Gedcom
-   */
-  public void addNotify(Gedcom gedcom) {
-    this.gedcom = gedcom;
-  }
-
-  /**
    * Returns child #i
    */
   public Indi getChild(int which) {
@@ -86,14 +76,6 @@ public class Fam extends PropertyFam implements Entity {
   }
 
   /**
-   * Gedcom this entity's in
-   * @return containing Gedcom
-   */
-  public Gedcom getGedcom() {
-    return gedcom;
-  }
-
-  /**
    * Returns the husband of the family
    */
   public Indi getHusband() {
@@ -101,13 +83,6 @@ public class Fam extends PropertyFam implements Entity {
     if (husb instanceof PropertyHusband)
       return ((PropertyHusband)husb).getHusband();
     return null;    
-  }
-
-  /**
-   * This family's id
-   */
-  public String getId() {
-    return id;
   }
 
   /**
@@ -138,13 +113,6 @@ public class Fam extends PropertyFam implements Entity {
   }
 
   /**
-   * This family's root property
-   */
-  public Property getProperty() {
-    return this;
-  }
-
-  /**
    * Returns the type to which this entity belongs
    * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
    */
@@ -161,21 +129,6 @@ public class Fam extends PropertyFam implements Entity {
     return ((PropertyWife)wife).getWife();
   }
 
-  /**
-   * Set Gedcom this entity's in
-   */
-  public void setGedcom(Gedcom gedcom) {
-    this.gedcom=gedcom;
-  }
-
-  /**
-   * Sets entity's id.
-   * @param id new id
-   */
-  public void setId(String id) {
-    this.id=id;
-  }
-  
   /**
    * Checks wether this family is descendant of individual
    */
@@ -274,8 +227,7 @@ public class Fam extends PropertyFam implements Entity {
     WordBuffer wb = new WordBuffer();
 
     // Fxyz:...
-    wb.append(getId());
-    wb.append(":");
+    wb.append(super.toString());
 
     // ... Someone, Joe (Iabc) ...
     Indi husband = getHusband();
@@ -295,4 +247,11 @@ public class Fam extends PropertyFam implements Entity {
     return wb.toString();
   }
   
+  /**
+   * Accessor Tag
+   */
+  public String getTag() {
+    return "FAM";
+  }
+
 } //Fam

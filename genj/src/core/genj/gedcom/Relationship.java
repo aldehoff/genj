@@ -60,13 +60,18 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#apply(Entity)
      */
     public Entity apply(Entity entity) throws GedcomException {
-      // must be a PropertyXRef
-      if (!(entity.getProperty() instanceof PropertyXRef))
-        throw new GedcomException("Can apply relationship to non-xref");
-
-      PropertyXRef xref = (PropertyXRef)MetaProperty.get(entity.getProperty()).create("");     
+      // must be of correct type
+      if (entity.getType()!=target)
+        throw new GedcomException("Wrong type for apply()");
+      // try to create reference
+      Property xref = MetaProperty.get(owner).get(Gedcom.getTagFor(target)).create(entity.getId());
+      if (!(xref instanceof PropertyXRef))
+        throw new GedcomException("Got property of type "+xref.getClass()+" as xref - bailing out");
+        
       owner.addProperty(xref);
-      xref.setTarget((PropertyXRef)entity.getProperty());
+      
+      ((PropertyXRef)xref).link();
+      
       xref.addDefaultProperties();
       
       //  focus stays with owner
@@ -342,7 +347,7 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship.AssociatedWith#toString()
      */
     public String toString() {
-      TagPath path = new TagPath(property.getEntity().getProperty().getPathTo(property));
+      TagPath path = new TagPath(property.getEntity().getPathTo(property));
       return Gedcom.resources.getString("rel.association.with", new Object[]{ path, property.getEntity()});
     }
     
@@ -354,12 +359,7 @@ public abstract class Relationship {
       // add association
       PropertyAssociation pa = (PropertyAssociation)MetaProperty.get(property, "ASSO").create(entity.getId());
       property.addProperty(pa).addDefaultProperties();
-      try {
-        pa.link();
-      } catch (GedcomException ge) {
-        property.delProperty(pa);
-        throw ge;
-      }
+      pa.link();
       // focus stays with entity getting the ASSO
       return property.getEntity();
     }

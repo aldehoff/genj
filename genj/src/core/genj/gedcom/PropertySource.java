@@ -20,7 +20,7 @@
 package genj.gedcom;
 
 /**
- * Gedcom Property : SOURCE (entity/property)
+ * Gedcom Property : SOURCE 
  * A property that either consists of SOURCE information or
  * refers to a SOURCE entity
  */
@@ -60,31 +60,6 @@ public class PropertySource extends PropertyXRef {
   }
 
   /**
-   * Returns the logical name of the proxy-object which knows this object
-   */
-  public String getProxy() {
-    // Entity Media ?
-    if (this instanceof Entity) {
-      return "Entity";
-    }
-
-    return "XRef";
-  }
-
-  /**
-   * Returns the name of the proxy-object which knows properties looked
-   * up by TagPath
-   * @return proxy's logical name
-   */
-  public static String getProxy(TagPath path) {
-    if (path.length()>1) {
-      return "XRef";
-    }
-    return "Entity";
-  }
-
-
-  /**
    * Returns the tag of this property
    */
   public String getTag() {
@@ -106,11 +81,6 @@ public class PropertySource extends PropertyXRef {
     // Get enclosing entity ?
     Entity entity = getEntity();
 
-    // .. Me Source-Property or -Entity?
-    if (this==entity) {
-      return;  // outa here
-    }
-
     // Something to do ?
     if (getReferencedEntity()!=null) {
       return;
@@ -129,7 +99,7 @@ public class PropertySource extends PropertyXRef {
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    source.getProperty().addProperty(fxref);
+    source.addProperty(fxref);
 
     // ... and point
     setTarget(fxref);

@@ -19,51 +19,20 @@
  */
 package genj.gedcom;
 
+import genj.util.WordBuffer;
+
 
 /**
  * Class for encapsulating a source
  * Basic strategy was to copy parts of note and media and then strip
  * out as much as I could.
  */
-public class Source extends PropertySource implements Entity {
-
-  private String id = "";
-  private Gedcom gedcom;
+public class Source extends Entity {
 
   /**
    * Constructor for Source
    */
   /*package*/ Source() {
-    super(null);
-  }
-
-  /**
-   * Notification to entity that it has been added to a Gedcom
-   */
-  public void addNotify(Gedcom gedcom) {
-    this.gedcom = gedcom;
-  }
-
-  /**
-   * Gedcom this entity's in
-   * @return containing Gedcom
-   */
-  public Gedcom getGedcom() {
-    return gedcom;
-  }
-
-  /**
-   * Returns this entity's id.
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Returns this entity's first property
-   */
-  public Property getProperty() {
-    return this;
   }
 
   /**
@@ -75,34 +44,35 @@ public class Source extends PropertySource implements Entity {
   }
 
   /**
-   * Set Gedcom this entity's in
-   */
-  public void setGedcom(Gedcom gedcom) {
-    this.gedcom=gedcom;
-  }
-
-  /**
-   * Sets entity's id.
-   * @param id new id
-   */
-  public void setId(String id) {
-    this.id=id;
-  }
-
-  /**
    * Returns this property as a string
    */
   public String toString() {
-
-    // look for text
-    for (int i=0;i<getNoOfProperties();i++) {
-      Property child = getProperty(i);
-      if (child.getTag().equals("TEXT")) 
-        return getId()+":"+child.getValue();
-    }
-
-    // id only    
-    return getId();
+    // look for titl
+    WordBuffer buf = new WordBuffer();
+    buf.append(getProperty("TITL"));
+    // author 
+    buf.append("by").append(getProperty("AUTH"), "Unknown Author");
+    // text
+    buf.setFiller("\n").append(getText(), "text n/a");
+    return super.toString() + buf.toString();
+  }
+  
+  /**
+   * @see genj.gedcom.Property#getTag()
+   */
+  public String getTag() {
+    return "SOUR";
+  }
+  
+  /**
+   * The text
+   */
+  public String getText() {
+    Property text = getProperty("TEXT");
+    if (text instanceof PropertyMultilineValue) 
+      return ((PropertyMultilineValue)text).getLinesValue();
+    if (text!=null) return text.getValue();
+    return "";
   }
   
 } //Source

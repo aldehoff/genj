@@ -56,7 +56,7 @@ public class CreateEntity extends AbstractChange {
   protected void change() throws GedcomException {
     // create the entity
     focus = gedcom.createEntity(type, null);
-    focus.getProperty().addDefaultProperties();
+    focus.addDefaultProperties();
     // done
   }
   

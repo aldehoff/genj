@@ -20,53 +20,84 @@
 package genj.gedcom;
 
 /**
- * Interface for generic Entity in a genealogic file.
+ * Abstract base type for all Entities
  */
-public interface Entity {
+public abstract class Entity extends Property {
+  
+  /** the containing gedcom */
+  private Gedcom gedcom;
+  
+  /** the id */
+  private String id;
 
   /**
    * Notification to entity that it has been added to a Gedcom
    */
-  public void addNotify(Gedcom gedcom);
-
-  /**
-   * Notification to entity that it has been deleted from a Gedcom
-   */
-  public void delNotify();
+  public void addNotify(Gedcom ged) {
+    gedcom = ged;
+  }
 
   /**
    * Gedcom this entity's in
    * @return containing Gedcom
    */
-  public Gedcom getGedcom();
+  public Gedcom getGedcom() {
+    return gedcom;
+  }
 
   /**
    * Returns entity's id
    * @return id
    */
-  public String getId();
-
-  /**
-   * Entity's main property
-   * @return Property
-   */
-  public Property getProperty();
+  public String getId() {
+    return id;
+  }
 
   /**
    * Returns the type to which this entity belongs
    * INDIVIDUALS, FAMILIES, MULTIMEDIAS, NOTES, ...
    */
-  public int getType();
-
-  /**
-   * Set Gedcom this entity's in
-   */
-  public void setGedcom(Gedcom gedcom);
+  public abstract int getType();
 
   /**
    * Sets entity's id
    */
-  public void setId(String setId);
+  public void setId(String setId) {
+    id = setId;
+  }
   
+  /**
+   * @see genj.gedcom.Property#toString()
+   */
+  public String toString() {
+    return id+":";
+  }
+
+  /**
+   * @see genj.gedcom.PropertyNote#getProxy()
+   */
+  public String getProxy() {
+    return "Entity";
+  }
+  
+  /**
+   * @see genj.gedcom.Property#getTag()
+   */
+  public String getTag() {
+    return "NOTE";
+  }
+  
+  /**
+   * @see genj.gedcom.Property#getValue()
+   */
+  public String getValue() {
+    return "";
+  }
+
+  /**
+   * @see genj.gedcom.Property#setValue(java.lang.String)
+   */
+  public void setValue(String newValue) {
+  }
 
 } //Entity

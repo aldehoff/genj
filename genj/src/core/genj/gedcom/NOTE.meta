@@ -1,4 +1,6 @@
-0 NOTE type=Note img=Note.gif
+0 NOTE img=Note.gif
 1  NOTE hide type=MultilineValue img=Note.gif
 1  SOUR hide type=Source img=Source.gif
-
+1  CHAN type=NoValue img=Time.gif
+2   DATE default type=Date img=Date.gif
+3    TIME type=SimpleValue img=Time.gif

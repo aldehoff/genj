@@ -79,7 +79,7 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
       if (history.size()>16) history.removeElementAt(0);
     }
     // change
-    root = entity!=null?entity.getProperty():null;
+    root = entity;
     fireStructureChanged();
   }
   
@@ -235,7 +235,7 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
         // ... a removed entity has to be removed from stack
         while (history.removeElement(entity)) {};
         // ... and might affect the current edit view
-        affected |= (entity.getProperty()==root);
+        affected |= (entity==root);
       }
       // Is this a show stopper at this point?
       if (affected==true) {

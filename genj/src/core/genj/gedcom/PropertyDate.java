@@ -163,15 +163,6 @@ public class PropertyDate extends Property {
   }
 
   /**
-   * Returns the name of the proxy-object which knows properties looked
-   * up by TagPath
-   * @return proxy's logical name
-   */
-  public static String getProxy(TagPath path) {
-    return "Date";
-  }
-
-  /**
    * Helper which returns given date in gedcom string-format
    */
   public static String getDateString(Calendar c) {

@@ -1,4 +1,4 @@
-0 REPO type=Repository img=Repository.gif
+0 REPO img=Repository.gif
 1  NAME default type=SimpleValue img=Attribute.gif
 1  ADDR type=MultilineValue img=Addr.gif
 2   CITY default  type=SimpleValue img=Place.gif

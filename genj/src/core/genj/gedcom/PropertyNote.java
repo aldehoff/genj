@@ -60,24 +60,9 @@ public class PropertyNote extends PropertyXRef implements MultiLineSupport {
   public String getProxy() {
     // 20021113 if linked then we stay XRef
     if (super.getReferencedEntity()!=null)
-      return "XRef";
+      return super.getProxy();
     // multiline
     return "MLE";    
-  }
-
-  /**
-   * Returns the name of the proxy-object which knows properties looked
-   * up by TagPath
-   * @return proxy's logical name
-   */
-  public static String getProxy(TagPath path) {
-
-    // Entity Note? Should be Entity but has to be Note to be editable :(
-    if (path.length()==1)
-      return "Entity";
-
-    // Could be XRef or MLE
-    return "MLE";
   }
 
   /**
@@ -106,7 +91,7 @@ public class PropertyNote extends PropertyXRef implements MultiLineSupport {
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    note.getProperty().addProperty(fxref);
+    note.addProperty(fxref);
 
     // ... and point
     setTarget(fxref);

@@ -335,7 +335,7 @@ import java.util.Set;
     // loop through entities
     for (int i=0; i<es.size(); i++) {
       Entity e = (Entity)es.get(i);
-      List ps = e.getProperty().getProperties(PropertyEvent.class);
+      List ps = e.getProperties(PropertyEvent.class);
       for (int j=0; j<ps.size(); j++) {
         PropertyEvent pe = (PropertyEvent)ps.get(j);
         if (tags.contains(pe.getTag())) createEventFrom(pe);

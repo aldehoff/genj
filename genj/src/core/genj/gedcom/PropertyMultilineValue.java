@@ -40,15 +40,6 @@ public class PropertyMultilineValue extends PropertySimpleValue implements Multi
   }
 
   /**
-   * Returns the name of the proxy-object which knows properties looked
-   * up by TagPath
-   * @return proxy's logical name
-   */
-  public static String getProxy(TagPath path) {
-    return "MLE";
-  }
-
-  /**
    * Accessor Value
    */
   public String getValue() {

@@ -83,7 +83,7 @@ public class PropertyAssociation extends PropertyXRef {
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    ent.getProperty().addProperty(fxref);
+    ent.addProperty(fxref);
 
     // ... and point
     setTarget(fxref);

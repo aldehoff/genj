@@ -160,7 +160,7 @@ import javax.swing.table.TableColumnModel;
       Entity e = (Entity)es.get(r);
       Property[] ps = new Property[tps.length];
       for (int p=0; p<ps.length; p++) {
-        ps[p] = e.getProperty().getProperty(tps[p], false);
+        ps[p] = e.getProperty(tps[p], false);
       }
       rows[r] = new Row(e, ps);
     }

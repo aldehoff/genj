@@ -22,45 +22,12 @@ package genj.gedcom;
 /**
  * Class for encapsulating a repository
  */
-public class Repository extends PropertyRepository implements Entity {
-
-  private String id = "";
-  private Gedcom gedcom;
+public class Repository extends Entity {
 
   /**
    * Constructor for Repository
    */
   /*package*/ Repository() {
-    super(null);
-  }
-
-  /**
-   * Notification to entity that it has been added to a Gedcom
-   */
-  public void addNotify(Gedcom gedcom) {
-    this.gedcom = gedcom;
-  }
-
-  /**
-   * Gedcom this entity's in
-   * @return containing Gedcom
-   */
-  public Gedcom getGedcom() {
-    return gedcom;
-  }
-
-  /**
-   * Returns this entity's id.
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Returns this entity's first property
-   */
-  public Property getProperty() {
-    return this;
   }
 
   /**
@@ -72,25 +39,10 @@ public class Repository extends PropertyRepository implements Entity {
   }
 
   /**
-   * Set Gedcom this entity's in
-   */
-  public void setGedcom(Gedcom gedcom) {
-    this.gedcom=gedcom;
-  }
-
-  /**
-   * Sets entity's id.
-   * @param id new id
-   */
-  public void setId(String id) {
-    this.id=id;
-  }
-
-  /**
-   * Returns this property as a string
+   * @see genj.gedcom.Entity#toString()
    */
   public String toString() {
-    return getId()+":"+getName();
+    return super.toString()+getName();
   }
 
   /**
@@ -99,6 +51,13 @@ public class Repository extends PropertyRepository implements Entity {
   private String getName() {
     Property name = getProperty("NAME");
     return name!=null ? name.getValue() : ""; 
+  }
+  
+  /**
+   * @see genj.gedcom.Property#getTag()
+   */
+  public String getTag() {
+    return "REPO";
   }
   
 } //Repository

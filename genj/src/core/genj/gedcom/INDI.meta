@@ -1,4 +1,4 @@
-0 INDI type=Indi img=Indi.gif
+0 INDI img=Indi.gif
 
 1  NAME default type=Name img=Name.gif
 2   SOUR hide type=Source img=Source.gif
@@ -20,6 +20,7 @@
 2   CAUS type=SimpleValue img=Phone.gif
 2   NOTE type=Note img=Note.gif
 2   SOUR hide type=Source img=Source.gif
+2   OBJE type=Media img=Media.gif
 
 1  DEAT default img=Death.gif super=INDI:BIRT
 

@@ -99,7 +99,7 @@ public class CreateRelationship extends AbstractChange {
     if (existing==null) {
       // focus always changes to new that we create now
       focus = gedcom.createEntity(type, null);
-      focus.getProperty().addDefaultProperties();
+      focus.addDefaultProperties();
       // perform the relationship to new
       relationship.apply(focus);
     } else {

@@ -101,15 +101,6 @@ public class PropertyEvent extends Property {
   }
 
   /**
-   * Returns the name of the proxy-object which knows properties looked
-   * up by TagPath
-   * @return proxy's logical name
-   */
-  public static String getProxy(TagPath path) {
-    return "Event";
-  }
-
-  /**
    * Returns the tag of this property
    */
   public String getTag() {

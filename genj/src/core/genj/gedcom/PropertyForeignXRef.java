@@ -50,7 +50,7 @@ public class PropertyForeignXRef extends PropertyXRef {
     Property p = getTarget();
     Entity e = p.getEntity();
     // "linked through INDI:BIRT:ASSO in I001"
-    String result = "linked by "+new TagPath(e.getProperty().getPathTo(p))+" in "+e.getId();
+    String result = "linked by "+new TagPath(e.getPathTo(p))+" in "+e.getId();
     // relationship information?    
     Property rela = p.getProperty("RELA");
     if (rela!=null&&rela.getValue().length()>0) { 

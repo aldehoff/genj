@@ -21,7 +21,7 @@ package genj.gedcom;
 
 
 /**
- * Gedcom Property : SUBMITTER (entity/property)
+ * Gedcom Property : SUBMITTER 
  * A property that either consists of SUBMITTER information or
  * refers to a SUBMITTER entity
  */
@@ -54,28 +54,6 @@ public class PropertySubmitter extends PropertyXRef {
   }
   
   /**
-   * Returns the logical name of the proxy-object which knows this object
-   */
-  public String getProxy() {
-    return "XRef";
-  }
-
-  /**
-   * Returns the name of the proxy-object which knows properties looked
-   * up by TagPath
-   * @return proxy's logical name
-   */
-  public static String getProxy(TagPath path) {
-
-    // Entity Note? Should be Entity but has to be Note to be editable :(
-    if (path.length()==1)
-      return "Entity";
-
-    // Could be XRef or MLE
-    return "Empty";
-  }
-
-  /**
    * Returns the tag of this property
    */
   public String getTag() {
@@ -101,7 +79,7 @@ public class PropertySubmitter extends PropertyXRef {
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    subm.getProperty().addProperty(fxref);
+    subm.addProperty(fxref);
 
     // ... and point
     setTarget(fxref);

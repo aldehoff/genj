@@ -24,47 +24,23 @@ import genj.util.swing.ImageIcon;
 /**
  * Class for encapsulating a note
  */
-public class Note extends PropertyNote implements Entity {
+public class Note extends Entity implements MultiLineSupport{
 
-  private String id = "";
-  private Gedcom gedcom;
+  /** a delegate for keep the text data crammed in here by Gedcom grammar */
   private Delegate delegate = new Delegate();
 
   /**
    * Constructor for Note
    */
   /*package*/ Note() {
-    super(null);
   }
-
+  
   /**
    * Notification to entity that it has been added to a Gedcom
    */
   public void addNotify(Gedcom gedcom) {
-    this.gedcom = gedcom;
+    super.addNotify(gedcom);
     addProperty(delegate);
-  }
-
-  /**
-   * Gedcom this entity's in
-   * @return containing Gedcom
-   */
-  public Gedcom getGedcom() {
-    return gedcom;
-  }
-
-  /**
-   * Returns this entity's id.
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Returns this entity's first property
-   */
-  public Property getProperty() {
-    return this;
   }
 
   /**
@@ -76,46 +52,17 @@ public class Note extends PropertyNote implements Entity {
   }
 
   /**
-   * Set Gedcom this entity's in
-   */
-  public void setGedcom(Gedcom gedcom) {
-    this.gedcom=gedcom;
-  }
-
-  /**
-   * Sets entity's id.
-   * @param id new id
-   */
-  public void setId(String id) {
-    this.id=id;
-  }
-
-  /**
    * Returns this property as a string
    */
   public String toString() {
-    return getId()+":"+delegate.getLinesValue();
-  }
-  
-  /**
-   * @see genj.gedcom.PropertyNote#getProxy()
-   */
-  public String getProxy() {
-    return "Entity";
-  }
-  
-  /**
-   * @see genj.gedcom.PropertyNote#link()
-   */
-  public void link() throws GedcomException {
-    throw new IllegalArgumentException();
+    return super.toString()+delegate.getLinesValue();
   }
 
   /**
-   * @see genj.gedcom.PropertyNote#setValue(java.lang.String)
+   * @see genj.gedcom.Entity#setValue(java.lang.String)
    */
-  public void setValue(String v) {
-    delegate.setValue(v);
+  public void setValue(String newValue) {
+    delegate.setValue(newValue);
   }
   
   /**
@@ -126,6 +73,13 @@ public class Note extends PropertyNote implements Entity {
     if (which==delegate) return false;
     // o.k.
     return super.delProperty(which);
+  }
+  
+  /**
+   * @see genj.gedcom.MultiLineSupport#getLinesValue()
+   */
+  public String getLinesValue() {
+    return delegate.getLinesValue();
   }
   
   /**
@@ -151,7 +105,7 @@ public class Note extends PropertyNote implements Entity {
      * @see genj.gedcom.Property#getImage(boolean)
      */
     public ImageIcon getImage(boolean checkValid) {
-      return Note.this.getProperty().getImage(false);
+      return Note.this.getImage(false);
     }
 
     /**

@@ -107,7 +107,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
     if (pxref.getReferencedEntity()!=null) {
       
       // Create a link/jump button
-      Property p = pxref.getReferencedEntity().getProperty();
+      Property p = pxref.getReferencedEntity();
       JButton b = createButton(
         EditView.resources.getString("proxy.jump_to",pxref.getReferencedEntity().getId()),
         "JUMP",

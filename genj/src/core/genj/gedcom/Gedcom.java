@@ -208,7 +208,6 @@ public class Gedcom {
     }
      
     // Connect and initialize
-    result.setGedcom(this);
     result.setId(id);
     entities[type].add(result);
     
@@ -268,7 +267,7 @@ public class Gedcom {
       throw new GedcomException("Length of entity's ID has to be non-zero");
     }
     // Remember change
-    noteModifiedProperty(entity.getProperty());
+    noteModifiedProperty(entity);
     // Prepare change
     int type = entity.getType();
     // Change it by removing old id

@@ -134,15 +134,6 @@ public class PropertyName extends Property {
   }
 
   /**
-   * Returns the name of the proxy-object which knows properties looked
-   * up by TagPath
-   * @return proxy's logical name
-   */
-  public static String getProxy(TagPath path) {
-    return "Name";
-  }
-
-  /**
    * the tag
    */
   public String getTag() {

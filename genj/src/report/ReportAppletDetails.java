@@ -6,10 +6,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 import genj.gedcom.Entity;
+import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyFam;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyMedia;
 import genj.gedcom.PropertyMultilineValue;
@@ -29,7 +29,7 @@ import java.util.StringTokenizer;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.21 2003-03-13 18:50:26 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.22 2003-03-18 01:42:11 nmeier Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -125,7 +125,7 @@ public class ReportAppletDetails implements Report {
     // Property Column
     out.println("<TD width=\"50%\" valign=\"top\" align=\"left\">");
     out.println("<TABLE border=0>");
-    exportProperty(ent.getProperty(),out,0);
+    exportProperty(ent,out,0);
     out.println("</TABLE>");
     out.println("</TD>");
 
@@ -149,7 +149,7 @@ public class ReportAppletDetails implements Report {
 
     // Does that entity have a multimedia object associated with it?
     TagPath path = new TagPath("INDI:OBJE");
-    PropertyMedia media = (PropertyMedia)ent.getProperty().getProperty(path,true);
+    PropertyMedia media = (PropertyMedia)ent.getProperty(path,true);
     if (media!=null) {
       PropertyFile file = media.getFile();
       if (file!=null) { 
@@ -234,7 +234,7 @@ public class ReportAppletDetails implements Report {
 
     if ( propertiesToLink.contains(tag) ) {
       String idStr = value.replace('@',' ').trim();
-      if ( !(prop instanceof PropertyFam) ) {
+      if ( !(prop instanceof Fam) ) {
         try {
           Indi individual = (Indi)prop.getGedcom().getEntity(idStr, Gedcom.INDIVIDUALS);
           if ( individual != null ) {

@@ -22,45 +22,12 @@ package genj.gedcom;
 /**
  * Class for encapsulating multimedia entry in a gedcom file
  */
-public class Media extends PropertyMedia implements Entity {
-
-  private String id = "";
-  private Gedcom gedcom;
+public class Media extends Entity {
 
   /**
    * Constructor for Multimedia
    */
   /*package*/ Media() {
-    super(null);
-  }
-
-  /**
-   * Notification to entity that it has been added to a Gedcom
-   */
-  public void addNotify(Gedcom gedcom) {
-    this.gedcom = gedcom;
-  }
-
-  /**
-   * Gedcom this entity's in
-   * @return containing Gedcom
-   */
-  public Gedcom getGedcom() {
-    return gedcom;
-  }
-
-  /**
-   * Returns the id of this entity
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Returns the main property of this entity
-   */
-  public Property getProperty() {
-    return this;
   }
 
   /**
@@ -72,25 +39,26 @@ public class Media extends PropertyMedia implements Entity {
   }
 
   /**
-   * Set Gedcom this entity's in
+   * @see genj.gedcom.Property#getTag()
    */
-  public void setGedcom(Gedcom gedcom) {
-    this.gedcom=gedcom;
-  }
-
-  /**
-   * Sets entity's id.
-   * @param id new id
-   */
-  public void setId(String id) {
-    this.id=id;
+  public String getTag() {
+    return "OBJE";
   }
   
   /**
-   * Returns this property as a string
+   * @see genj.gedcom.Entity#toString()
    */
   public String toString() {
-    return getId()+':'+super.toString();
+    Property title = getProperty("TITL");
+    return super.toString() + (title!=null ? title.getValue() : ""); 
   }
 
+  /**
+   * Returns the property file for this OBJE
+   */
+  public PropertyFile getFile() {
+    Property file = getProperty("FILE", true);
+    return (file instanceof PropertyFile) ? (PropertyFile)file : null;    
+  }
+  
 } //Media

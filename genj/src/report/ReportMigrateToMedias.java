@@ -81,13 +81,13 @@ public class ReportMigrateToMedias implements Report {
   private void analyseEntity(Entity entity, ReportBridge bridge) {
 
     // Get properties of entity
-    if (entity.getProperty().getNoOfProperties()==0) {
+    if (entity.getNoOfProperties()==0) {
       return;
     }
 
     // Look for properties to migrate
-    for (int i=entity.getProperty().getNoOfProperties()-1;i>=0;i--) {
-      analyseProperty(entity.getProperty().getProperty(i),bridge);
+    for (int i=entity.getNoOfProperties()-1;i>=0;i--) {
+      analyseProperty(entity.getProperty(i),bridge);
     }
 
     // Done

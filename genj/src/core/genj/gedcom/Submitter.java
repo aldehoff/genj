@@ -19,51 +19,15 @@
  */
 package genj.gedcom;
 
-import java.util.List;
-
-
 /**
  * Class for encapsulating a submitter
  */
-public class Submitter extends PropertySubmitter implements Entity {
-
-  private String id = "";
-  private Gedcom gedcom;
+public class Submitter extends Entity {
 
   /**
    * Constructor for Submitter
    */
   /*package*/ Submitter() {
-    super(null);
-  }
-
-  /**
-   * Notification to entity that it has been added to a Gedcom
-   */
-  public void addNotify(Gedcom gedcom) {
-    this.gedcom = gedcom;
-  }
-
-  /**
-   * Gedcom this entity's in
-   * @return containing Gedcom
-   */
-  public Gedcom getGedcom() {
-    return gedcom;
-  }
-
-  /**
-   * Returns this entity's id.
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Returns this entity's first property
-   */
-  public Property getProperty() {
-    return this;
   }
 
   /**
@@ -75,43 +39,11 @@ public class Submitter extends PropertySubmitter implements Entity {
   }
 
   /**
-   * Set Gedcom this entity's in
-   */
-  public void setGedcom(Gedcom gedcom) {
-    this.gedcom=gedcom;
-  }
-
-  /**
-   * Sets entity's id.
-   * @param id new id
-   */
-  public void setId(String id) {
-    this.id=id;
-  }
-
-  /**
    * Returns this property as a string
    */
   public String toString() {
-    // try sub-property
-    List names = getProperties(PropertyName.class);
-    if (!names.isEmpty()) return getId()+':'+names.get(0).toString();
-    // fallback id only
-    return getId();
-  }
-  
-  /**
-   * @see genj.gedcom.PropertySubmitter#getProxy()
-   */
-  public String getProxy() {
-    return "Entity";
-  }
-  
-  /**
-   * @see genj.gedcom.PropertySubmitter#link()
-   */
-  public void link() throws GedcomException {
-    throw new IllegalArgumentException();
+    Property name = getProperty("NAME");
+    return super.toString() + (name!=null ? name.toString() : "");
   }
   
 } //Submitter

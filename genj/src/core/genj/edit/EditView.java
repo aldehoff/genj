@@ -626,7 +626,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
         Property pdate = ((PropertyEvent)select).getDate(false);
         if (pdate!=null) select = pdate;
       }
-      tree.setSelectionPath(new TreePath(entity.getProperty().getPathTo(select)));
+      tree.setSelectionPath(new TreePath(entity.getPathTo(select)));
       
       // done
     }
@@ -687,7 +687,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       if (!gedcom.startTransaction()) return;
   
       // .. Calculate property that is moved
-      getCurrentEntity().getProperty().moveProperty(
+      getCurrentEntity().moveProperty(
         prop,
         up? Property.UP : Property.DOWN
       );
@@ -699,7 +699,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       tree.expandRows();
   
       // Reselect the property
-      tree.setSelectionPath(new TreePath(prop.getEntity().getProperty().getPathTo(prop)));
+      tree.setSelectionPath(new TreePath(prop.getEntity().getPathTo(prop)));
       
       // Done  
     }

@@ -20,14 +20,13 @@
 package genj.gedcom;
 
 /**
- * Gedcom Property : REPO (entity)
+ * Gedcom Property : REPO 
  * Class for encapsulating a repository as property
  */
 public class PropertyRepository extends PropertyXRef {
 
   /** the repository's content */
   private String repository;
-
 
   /**
    * Constructor with reference
@@ -53,35 +52,9 @@ public class PropertyRepository extends PropertyXRef {
    */
   public PropertyRepository(String tag, String value) {
     super(null);
-
     // Setup value
     setValue(value);
   }
-
-  /**
-   * Returns the logical name of the proxy-object which knows this object
-   */
-  public String getProxy() {
-    // Entity Media ?
-    if (this instanceof Entity) {
-      return "Entity";
-    }
-
-    return "XRef";
-  }
-
-  /**
-   * Returns the name of the proxy-object which knows properties looked
-   * up by TagPath
-   * @return proxy's logical name
-   */
-  public static String getProxy(TagPath path) {
-    if (path.length()>1) {
-      return "XRef";
-    }
-    return "Entity";
-  }
-
 
   /**
    * Returns the tag of this property
@@ -104,11 +77,6 @@ public class PropertyRepository extends PropertyXRef {
     // Get enclosing entity ?
     Entity entity = getEntity();
 
-    // .. Me Repository-Property or -Entity?
-    if (this==entity) {
-      return;  // outa here
-    }
-
     // Something to do ?
     if (getReferencedEntity()!=null) {
       return;
@@ -127,7 +95,7 @@ public class PropertyRepository extends PropertyXRef {
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    repository.getProperty().addProperty(fxref);
+    repository.addProperty(fxref);
 
     // ... and point
     setTarget(fxref);

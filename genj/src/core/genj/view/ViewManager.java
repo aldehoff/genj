@@ -262,7 +262,6 @@ public class ViewManager {
    */
   private Gedcom getGedcom(Object context) {
     if (context instanceof Gedcom  ) return (Gedcom)context;
-    if (context instanceof Entity  ) return ((Entity)context).getProperty().getGedcom();
     if (context instanceof Property) return ((Property)context).getGedcom();
     throw new IllegalArgumentException("Unknown context "+context);
   }
@@ -421,7 +420,7 @@ public class ViewManager {
       List actions = getActions(entity);
       if (!actions.isEmpty()) {
         String title = Gedcom.getNameFor(entity.getType(),false)+" '"+entity.getId()+'\'';
-        mh.createMenu(title, entity.getProperty().getImage(false));
+        mh.createMenu(title, entity.getImage(false));
         mh.createItems(actions);
         mh.popMenu();
       }

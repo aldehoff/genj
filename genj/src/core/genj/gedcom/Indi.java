@@ -26,10 +26,7 @@ import java.util.List;
 /**
  * Class for encapsulating a person
  */
-public class Indi extends PropertyIndi implements Entity {
-
-  private String id = "";
-  private Gedcom gedcom;
+public class Indi extends Entity {
 
   /**
    * Constructor for Individual
@@ -61,13 +58,6 @@ public class Indi extends PropertyIndi implements Entity {
     }
 
     return fam;
-  }
-
-  /**
-   * Notification to entity that it has been added to a Gedcom
-   */
-  public void addNotify(Gedcom gedcom) {
-    this.gedcom = gedcom;
   }
 
   /**
@@ -375,21 +365,6 @@ public class Indi extends PropertyIndi implements Entity {
   }
 
   /**
-   * Gedcom this entity's in
-   * @return containing Gedcom
-   */
-  public Gedcom getGedcom() {
-    return gedcom;
-  }
-
-  /**
-   * This individual's id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
    * Calculate indi's last name
    */
   public String getLastName() {
@@ -441,13 +416,6 @@ public class Indi extends PropertyIndi implements Entity {
       result[f] = ((PropertyFamilySpouse)props[f]).getFamily();
     }    
     return result;
-  }
-
-  /**
-   * This individual's root property (self)
-   */
-  public Property getProperty() {
-    return this;
   }
 
   /**
@@ -532,31 +500,17 @@ public class Indi extends PropertyIndi implements Entity {
   }
 
   /**
-   * Set Gedcom this entity's in
-   */
-  public void setGedcom(Gedcom gedcom) {
-    this.gedcom=gedcom;
-  }
-
-  /**
-   * Sets entity's id.
-   * @param id new id
-   */
-  public void setId(String id) {
-
-    this.id=id;
-
-    // Done
-  }
-
-  /**
    * Returns this entity as String description
    */
   public String toString() {
-
-    String result = getId()+":"+getName();
-
-    return result;
+    return super.toString()+getName();
   }
-
+  
+  /**
+   * @see genj.gedcom.Property#getTag()
+   */
+  public String getTag() {
+    return "INDI"; 
+  }
+  
 } //Indi

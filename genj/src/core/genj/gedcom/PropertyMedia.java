@@ -56,25 +56,11 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
-    // Entity Media ?
-    if (this instanceof Entity) {
-      return "Entity";
-    }
-    // link or inline
-    if (getNoOfProperties()>0) return "Empty";
-    return "XRef";
-  }
-
-  /**
-   * Returns the name of the proxy-object which knows properties looked
-   * up by TagPath
-   * @return proxy's logical name
-   */
-  public static String getProxy(TagPath path) {
-    if (path.length()>1) {
-      return "XRef";
-    }
-    return "Entity";
+    // 20021113 if linked then we stay XRef
+    if (super.getReferencedEntity()!=null)
+      return super.getProxy();
+    // empty
+    return "Empty";    
   }
 
   /**
@@ -92,11 +78,6 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
 
     // Get enclosing entity ?
     Entity entity = getEntity();
-
-    // .. Me Media-Property or -Entity?
-    if (this==entity) {
-      return;  // outa here
-    }
 
     // Something to do ?
     if (getReferencedEntity()!=null) {
@@ -116,7 +97,7 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
 
     // Create a back-reference
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    media.getProperty().addProperty(fxref);
+    media.addProperty(fxref);
 
     // .. and point to it
     setTarget(fxref);
@@ -153,9 +134,12 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
    * Returns the property file for this OBJE
    */
   public PropertyFile getFile() {
-    PropertyMedia target = (PropertyMedia )super.getReferencedEntity();
+    // linked target?
+    Media target = (Media )super.getReferencedEntity();
     if (target!=null) return target.getFile();
-    return (PropertyFile)getProperty(new TagPath("OBJE:FILE"), true);    
+    // sub?
+    Property file = getProperty("FILE", true);
+    return (file instanceof PropertyFile) ? (PropertyFile)file : null;    
   }
   
   /**

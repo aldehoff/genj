@@ -234,8 +234,7 @@ public class GedcomWriter implements Trackable {
     }
 
     // Entity line
-    Property prop = ent.getProperty();
-    writeProperty("@" + ent.getId() + "@ ", prop);
+    writeProperty("@" + ent.getId() + "@ ", ent);
 
     // Done
     entity++;

@@ -350,7 +350,7 @@ public abstract class Property implements Comparable {
    * Returns the path to this property
    */
   public TagPath getPath() {
-    return new TagPath(getEntity().getProperty().getPathTo(this));
+    return new TagPath(getEntity().getPathTo(this));
   }
 
   /**

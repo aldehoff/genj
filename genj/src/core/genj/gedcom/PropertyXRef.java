@@ -78,15 +78,6 @@ public abstract class PropertyXRef extends Property {
   }
 
   /**
-   * Returns the name of the proxy-object which knows properties looked
-   * up by TagPath
-   * @return proxy's logical name
-   */
-  public static String getProxy(TagPath path) {
-    return "XRef";
-  }
-
-  /**
    * Returns the entity this reference points to
    * @return entity this property links to
    */
@@ -149,14 +140,6 @@ public abstract class PropertyXRef extends Property {
    */
   protected void setTarget(PropertyXRef target) {
 
-    // Did we get an entity that we want to link to?
-    if (target instanceof Entity) {
-      // .. create a 'substitute' foreign x-ref 
-      PropertyForeignXRef fx = new PropertyForeignXRef(this);
-      ((Entity)target).getProperty().addProperty(fx);
-      target = fx;
-    }
-
     // Remember change
     noteModifiedProperty();
 
@@ -208,7 +191,7 @@ public abstract class PropertyXRef extends Property {
     target = null;
 
     // ... delete back referencing property in referenced entity
-    t.getEntity().getProperty().delProperty(t);
+    t.getEntity().delProperty(t);
 
     // ... should be unlinked vice-versa now
   }
@@ -244,7 +227,7 @@ public abstract class PropertyXRef extends Property {
   public static Entity[] getReferences(Entity ent) {
     List result = new ArrayList(10);
     // loop through pxrefs
-    List ps = ent.getProperty().getProperties(PropertyXRef.class);
+    List ps = ent.getProperties(PropertyXRef.class);
     for (int p=0; p<ps.size(); p++) {
     	PropertyXRef px = (PropertyXRef)ps.get(p);
       Property target = px.getTarget(); 

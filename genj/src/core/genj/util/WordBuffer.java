@@ -77,11 +77,26 @@ public class WordBuffer {
   }
 
   /**
+   * Append a generic object (null->"")
+   */
+  public WordBuffer append(Object object, String nullSubst) {
+    if (object==null) return append(nullSubst);
+    return append(object.toString(), nullSubst);
+  }
+
+  /**
    * Append a word
    */  
   public WordBuffer append(String word) {
+    return (word==null) ? this :append(word, null);
+  }
+  
+  /**
+   * Append a word
+   */  
+  public WordBuffer append(String word, String nullSubst) {
     // nothing to do?
-    if ((word==null)||(word.length()==0)) return this;
+    if ((word==null)||(word.length()==0)) return append(nullSubst);
     // need a word-filler?
     if ((buffer.length()>0)&&(!isStartingWithPunctuation(word))) buffer.append(filler);
     // get the word

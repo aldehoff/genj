@@ -200,7 +200,6 @@ public class GedcomReader implements Trackable {
 
     // Create entity
     Entity ent=null;
-    Property prop=null;
     try {
       // Fix duplicates?
       if ((fixDuplicateIDs)&&(gedcom.getEntity(xref)!=null)) {
@@ -208,7 +207,6 @@ public class GedcomReader implements Trackable {
       } else {
         ent=gedcom.createEntity(tag, xref);
       }
-      prop=ent.getProperty();
     } catch (GedcomException ex) {
       //  throw new GedcomFormatException("Unknown entity with tag:"+tag,line);
       warnings.append("Line "+line+": Dropped entity "+tag+"\n");
@@ -219,10 +217,7 @@ public class GedcomReader implements Trackable {
     }
 
     // Read entity's properties till end of record
-    // NM 19990720 Have to make sure that prop is not null
-    if (prop!=null) {
-      readProperties(prop, MetaProperty.get(prop), 1);
-    }
+    readProperties(ent, MetaProperty.get(ent), 1);
 
     // Done
     entity++;
