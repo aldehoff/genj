@@ -23,11 +23,14 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.util.HashMap;
+import java.util.Map;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyName;
+import genj.util.Debug;
 import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
 
@@ -46,14 +49,34 @@ public class PropertyRenderer {
   /** a default PropertyProxy */
   private final static PropertyRenderer DEFAULT_PROPERTY_PROXY = new PropertyRenderer();
 
+  /** cached renderer instances */
+  private static Map cache = new HashMap();
+  
   /** 
    * static accessor  
    */
   public static PropertyRenderer get(String name) {
-    try {
-      return (PropertyRenderer)Class.forName(PropertyRenderer.class.getName()+"$"+name).newInstance();
-    } catch (Throwable t) {
-      return DEFAULT_PROPERTY_PROXY;
+    
+    synchronized (cache) {
+      
+      // have one?
+      PropertyRenderer result = (PropertyRenderer)cache.get(name);
+      if (result!=null) return result;
+      
+      // create one
+      try {
+        result = (PropertyRenderer)Class.forName(PropertyRenderer.class.getName()+"$"+name).newInstance();
+      } catch (Throwable t) {
+        Debug.log(Debug.INFO, PropertyRenderer.class, "Couldn't find renderer for "+name, t);
+        result = DEFAULT_PROPERTY_PROXY;
+      }
+      
+      // remember
+      cache.put(name, result);
+      
+      // done
+      return result;
+      
     }
   }  
   
