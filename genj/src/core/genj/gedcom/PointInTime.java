@@ -22,6 +22,8 @@ package genj.gedcom;
 import genj.util.WordBuffer;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
@@ -31,6 +33,39 @@ public abstract class PointInTime implements Comparable {
 
   /** month names */
   private final static String MONTHS[] = {"JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
+
+  /** localized months */
+  private static Map
+    localizedMonthNames = new HashMap(),
+    abbreviatedMonthNames = new HashMap(); 
+  
+  /**
+   * initialize months - loop through month names, remember localized value
+   * and calculate abbreviation (either first 3 characters or up to vertical
+   * bar marker e.g. juil|let)
+   */
+  {
+    for (int m=0;m<MONTHS.length;m++) {
+      String mmm = MONTHS[m];
+      String localized = Gedcom.getResources().getString("prop.date.mon."+mmm);
+      String abbreviated;
+      
+      // calculate abbreviation
+      int marker = localized.indexOf('|'); 
+      if (marker>0) {
+        abbreviated = localized.substring(0, marker);
+        localized = abbreviated + localized.substring(marker+1);
+      } else {
+        abbreviated = localized.length()>3 ? localized.substring(0,3) : localized;
+      }
+      
+      // remember
+      localizedMonthNames.put(mmm, localized);
+      abbreviatedMonthNames.put(mmm, abbreviated);
+      
+      // next
+    }
+  }
 
   /**
    * Returns the year
@@ -207,12 +242,15 @@ public abstract class PointInTime implements Comparable {
    * Returns the localized month as string (either MAY or Mai)
    */
   public String getMonth(boolean localize, boolean abbreviate) {
+    // what's the numeric value?
     int month = getMonth();
     if (month<0||month>=12)
       return "";
+    // calculate text
     String mmm = MONTHS[month];
-    if (localize) mmm = Gedcom.getResources().getString("prop.date.mon."+mmm);
-    if (abbreviate&&mmm.length()>3) mmm = mmm.substring(0,3);
+    if (localize) 
+      mmm = abbreviate ? abbreviatedMonthNames.get(mmm).toString() : localizedMonthNames.get(mmm).toString();
+    // done
     return mmm;
   }
   
@@ -223,8 +261,8 @@ public abstract class PointInTime implements Comparable {
     String[] result = new String[12];
     for (int m=0;m<result.length;m++) {
       String mmm = MONTHS[m];
-      if (localize) mmm = Gedcom.getResources().getString("prop.date.mon."+mmm);
-      if (abbreviate&&mmm.length()>3) mmm = mmm.substring(0,3);
+      if (localize) 
+        mmm = abbreviate ? abbreviatedMonthNames.get(mmm).toString() : localizedMonthNames.get(mmm).toString();
       result[m] = mmm;
     }
     return result;
