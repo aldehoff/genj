@@ -1,5 +1,6 @@
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyDate;
 import genj.report.Report;
 import genj.report.ReportBridge;
@@ -79,14 +80,6 @@ public class ReportBirthdays implements Report {
    */
   public boolean start(ReportBridge bridge, Gedcom gedcom) {
 
-    /*    
-    try {
-      Thread.currentThread().sleep(3000);
-    } catch (InterruptedException e) {
-      throw new ReportCancelledException();
-    }
-    */
-
     final String months[] = { "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
 
     // Calculate Month
@@ -117,16 +110,7 @@ public class ReportBirthdays implements Report {
       }
     }
 
-    Comparator comparator = new Comparator() {
-      // LCD
-      public int compare(Object o1, Object o2) {
-        // O.K. here are the birthdays (might be null!)
-        PropertyDate b1 = ((Indi)o1).getBirthDate();
-        PropertyDate b2 = ((Indi)o2).getBirthDate();
-        return b1.compareTo(b2);
-      }
-      // EOC
-    };
+    Comparator comparator = new PropertyComparator("INDI:BIRT:DATE");
     Collections.sort(candidates, comparator);
 
     // Show birthdays
