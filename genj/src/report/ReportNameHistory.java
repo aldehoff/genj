@@ -18,14 +18,18 @@ import genj.report.Report;
 
 import java.text.DecimalFormat;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
  * Chart names and their usage in a gedcom file
  */
 public class ReportNameHistory extends Report {
+  
+  private final static String OTHER = "ZZZZZZZZZZZZZZZZZ";
   
   /** whether to group non-considered names */
   public boolean makeGroupOther = true;
@@ -68,6 +72,7 @@ public class ReportNameHistory extends Report {
    */
   public void start(Object context) {
     
+    
     // assuming gedcom
     Gedcom gedcom = (Gedcom)context;
     Collection indis = gedcom.getEntities(Gedcom.INDI);
@@ -78,16 +83,22 @@ public class ReportNameHistory extends Report {
       yearEnd   = PointInTime.getNow().getYear();
     
     // loop over individuals
+    Set others = new HashSet();
     Map name2series = new TreeMap();
     Iterator iterator = indis.iterator();
     while (iterator.hasNext()) {
       Indi indi = (Indi)iterator.next();
-      analyze(gedcom, indis, indi, yearStart, yearEnd, name2series);
+      analyze(gedcom, indis, indi, yearStart, yearEnd, name2series, others);
     }
     
     // check if got something
     if (name2series.isEmpty()) 
       return;
+    
+    // name the group 'other' now
+    IndexedSeries other = (IndexedSeries)name2series.get(OTHER);
+    if (other!=null) 
+      other.setName(others.size()+" Other Names");
     
     // show it
     showChartToUser(new Chart(getName(), null, i18n("yaxis"), IndexedSeries.toArray(name2series.values()), yearStart, yearEnd, new DecimalFormat("#"), true));
@@ -122,7 +133,7 @@ public class ReportNameHistory extends Report {
   /**
    * Analyze one individual
    */
-  private void analyze(Gedcom gedcom, Collection indis, Indi indi, int yearStart, int yearEnd, Map name2series) {
+  private void analyze(Gedcom gedcom, Collection indis, Indi indi, int yearStart, int yearEnd, Map name2series, Set others) {
     
     // check name
 	  PropertyName name = (PropertyName)indi.getProperty("NAME");
@@ -135,24 +146,28 @@ public class ReportNameHistory extends Report {
 	  // check minimum percentage of name
 	  if (PropertyName.getPropertyNames(gedcom, last).size()<indis.size()*minUseOfName/100) {
 	    if (!makeGroupOther) return;
-	    last = "*";
+	    others.add(last);
+	    last = OTHER;
 	  }
 	  
 	  // calculate start
 	  int start;
 	  try {
 	    start = indi.getBirthDate().getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
+	    if (start==PointInTime.UNKNOWN)
+	      return;
 	  } catch (Throwable t) {
 	    return;
 	  }
 	  
 	  // calculate end
-	  int end;
+	  int end = PointInTime.UNKNOWN;
 	  try {
 		  end = indi.getDeathDate().getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
 	  } catch (Throwable t) {
-	    end = start+lifespanWithoutDEAT;
 	  }
+    if (end==PointInTime.UNKNOWN)
+	    end = start+lifespanWithoutDEAT;
 	  
 	  // check range
 	  if (end<start||end<yearStart||start>yearEnd)
