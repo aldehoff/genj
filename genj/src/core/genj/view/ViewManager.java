@@ -165,8 +165,9 @@ public class ViewManager {
     if (context.getEntity()!=null)
       getRegistry(gedcom).put("lastEntity", context.getEntity().getId());
     
-    // clear any menu selections
-    MenuSelectionManager.defaultManager().clearSelectedPath();
+    // clear any menu selections if different from last context
+    if (!context.equals(getContext(gedcom)))
+      MenuSelectionManager.defaultManager().clearSelectedPath();
 
     // initiate context propagation
     if (propagateContext==null)
