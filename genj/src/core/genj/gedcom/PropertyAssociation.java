@@ -41,16 +41,6 @@ public class PropertyAssociation extends PropertyXRef {
   }
   
   /**
-   * @see genj.gedcom.Property#addDefaultProperties()
-   */
-  public Property addDefaultProperties() {
-    Entity e = getReferencedEntity();
-    addProperty(MetaProperty.instantiate("TYPE",e==null?"":getGedcom().getTagFor(e.getType()),true));
-    addProperty(MetaProperty.instantiate("RELA","", true));
-    return this;
-  }
-
-  /**
    * Returns a warning string that describes what happens when this
    * property would be deleted
    * @return warning as <code>String</code>, <code>null</code> when no warning
@@ -97,6 +87,10 @@ public class PropertyAssociation extends PropertyXRef {
 
     // ... and point
     setTarget(fxref);
+
+    // .. update type
+    Property type = getProperty("TYPE");
+    if (type!=null) type.setValue(getGedcom().getTagFor(ent.getType()));
 
     // Done
   }

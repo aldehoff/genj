@@ -26,14 +26,6 @@ package genj.gedcom;
 public abstract class PropertyFam extends Property {
 
   /**
-   * Adds all default properties to this property
-   */
-  public Property addDefaultProperties() {
-    addProperty(new PropertyEvent("MARR").addDefaultProperties());
-    return this;
-  }
-
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {

@@ -53,24 +53,6 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
   }
 
   /**
-   * Adds all default properties to this property
-   */
-  public Property addDefaultProperties() {
-
-    noteModifiedProperty();
-
-    // Just add 'em
-    addProperty(new PropertyGenericAttribute("TITL"));
-    addProperty(new PropertyGenericAttribute("FORM"));
-
-    // 20021002 encourage PropertyFile
-    addProperty(new PropertyFile().addDefaultProperties());
-
-    // Done
-    return this;
-  }
-
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {

@@ -85,6 +85,17 @@ public abstract class Property implements Comparable {
    * Adds default properties to this property
    */
   public Property addDefaultProperties() {
+    
+    // ask for default sub-properties
+    MetaProperty meta = MetaProperty.get(this);
+    MetaProperty[] subs = meta.getSubs(true);
+    
+    // loop
+    for (int s=0; s<subs.length; s++) {
+      if (getProperty(subs[s].getTag())==null)
+      	addProperty(subs[s].instantiate("", true));
+    }
+    
     return this;
   }
 

@@ -56,17 +56,6 @@ public class PropertyAddress extends Property {
   }
 
   /**
-   * Adds all known properties to this property
-   */
-  public Property addDefaultProperties() {
-    noteModifiedProperty();
-    addProperty(new PropertyCity(""));
-    // 20030210 zip is a rather new thing - leave it out as default
-    //addProperty(new PropertyPostalCode(""));
-    return this;
-  }
-
-  /**
    * Returns a LineIterator which can be used to iterate through
    * several lines of this address
    */

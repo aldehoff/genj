@@ -350,11 +350,10 @@ public abstract class Relationship {
     public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       // add association
-      PropertyAssociation pa = new PropertyAssociation("ASSO", entity.getId());
+      PropertyAssociation pa = (PropertyAssociation)MetaProperty.instantiate("ASSO", entity.getId(), true);
       property.addProperty(pa);
       try {
         pa.link();
-        pa.addDefaultProperties();
       } catch (GedcomException ge) {
         property.delProperty(pa);
         throw ge;

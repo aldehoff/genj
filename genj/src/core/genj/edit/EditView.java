@@ -577,7 +577,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       Property prop = (Property)path.getLastPathComponent();
   
       // .. Confirm
-      ChoosePropertyBean choose = new ChoosePropertyBean(MetaProperty.get(prop).getSubs(), resources);
+      ChoosePropertyBean choose = new ChoosePropertyBean(MetaProperty.get(prop).getSubs(false), resources);
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
       Object[] message = new Object[3];

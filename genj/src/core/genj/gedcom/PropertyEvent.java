@@ -53,17 +53,6 @@ public class PropertyEvent extends Property {
   }
 
   /**
-   * Adds all default properties to this property
-   */
-  public Property addDefaultProperties() {
-    if ("EVEN".equals(tag))
-      addProperty(MetaProperty.instantiate("TYPE", "", true));
-    addProperty(MetaProperty.instantiate("DATE", "", true));
-    addProperty(MetaProperty.instantiate("PLAC", "", true));
-    return this;
-  }
-
-  /**
    * Returns the date of the event
    */
   public PropertyDate getDate() {

@@ -129,12 +129,19 @@ public class MetaProperty {
   /**
    * The subs defined for the meta-definition
    */
-  public MetaProperty[] getSubs() {
-    MetaProperty[] result = new MetaProperty[theSubs.size()];
-    for (int i=0; i<result.length; i++) {
-    	result[i] = get(theSubs.get(i).toString());
+  public MetaProperty[] getSubs(boolean defaultsOnly) {
+    
+    List result = new ArrayList(theSubs.size());
+    for (int i=0; i<theSubs.size(); i++) {
+      String sub = theSubs.get(i).toString();
+      if (sub.startsWith("!")) {
+        sub = sub.substring(1);
+      } else if (defaultsOnly) continue; 
+      result.add(get(sub));
     }
-    return result;
+
+        
+    return (MetaProperty[])result.toArray(new MetaProperty[result.size()]);
   }
 
   /**

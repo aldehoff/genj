@@ -26,19 +26,6 @@ package genj.gedcom;
 public abstract class PropertyIndi extends Property{
 
   /**
-   * Adds all default properties to this property
-   */
-  public Property addDefaultProperties() {
-    addProperty(MetaProperty.instantiate("NAME", "", true));
-    addProperty(MetaProperty.instantiate("SEX" , "", true));
-    addProperty(MetaProperty.instantiate("BIRT", "", true));
-    addProperty(MetaProperty.instantiate("DEAT", "", true));
-    addProperty(MetaProperty.instantiate("RESI", "", true));
-    addProperty(MetaProperty.instantiate("OCCU", "", true));
-    return this;
-  }
-
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {

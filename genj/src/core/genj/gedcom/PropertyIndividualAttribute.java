@@ -48,21 +48,6 @@ public class PropertyIndividualAttribute extends Property {
   }
 
   /**
-   * Adds all default properties to this property
-   */
-  public Property addDefaultProperties() {
-
-    // RESIdence ?
-    if (getTag().equals("RESI")) {
-      addProperty(MetaProperty.instantiate("ADDR", "", true));
-      addProperty(MetaProperty.instantiate("DATE", "", true));
-    }
-
-    // Done
-    return this;
-  }
-  
-  /**
    * @see genj.gedcom.Property#getProxy()
    */
   public String getProxy() {
