@@ -149,6 +149,15 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     // Done
 
   }
+  
+  /**
+   * @see genj.gedcom.PropertyXRef#isValid()
+   */
+  public boolean isValid() {
+    // always because might be inline instead of referenced target
+    return true;
+  }
+
 
   /**
    * The expected referenced type

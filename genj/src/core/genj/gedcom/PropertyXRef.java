@@ -130,15 +130,10 @@ public abstract class PropertyXRef extends Property {
     if (target!=null) {
       return true;
     }
-    // Empty value?
-    if ((value==null)||(value.length()==0)) {
-      // for example : a NOTE entity - no reference value -
-      // contains data -> valid!
-      return true;
-    }
+    // 20030106 No target - not valid unless overridden
     return false;
   }
-
+  
   /**
    * Links reference to entity (if not already done)
    * @exception GedcomException when processing link would result in inconsistent state
