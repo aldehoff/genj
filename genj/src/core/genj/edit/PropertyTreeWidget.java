@@ -54,8 +54,8 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import swingx.tree.AbstractTreeModel;
-import swingx.tree.DnDTree;
-import swingx.tree.DnDTreeModel;
+import swingx.dnd.tree.DnDTree;
+import swingx.dnd.tree.DnDTreeModel;
 
 /**
  * A Property Tree
@@ -267,6 +267,9 @@ public class PropertyTreeWidget extends DnDTree {
     defaultRenderer = new DefaultTreeCellRenderer();
   }
 
+  /** The current dragged model */
+  private static Model dragModel;
+  
   /**
    * Our model
    */
@@ -279,6 +282,8 @@ public class PropertyTreeWidget extends DnDTree {
 
     /** the gedcom we're looking at */
     private Gedcom gedcom;
+    
+    private boolean shuffle = false;
     
     /**
      * Gedcom to use
@@ -311,110 +316,115 @@ public class PropertyTreeWidget extends DnDTree {
     }
 
     /**
-     * DND support - drag test
+     * DND support - transferable
      */
-    public int canDrag(List children) {
+    public Transferable createTransferable(Object[] nodes) {
+      dragModel = this;
+      shuffle   = false;
+      
+      return new PropertyTransferable(Arrays.asList(nodes));
+    }
+
+    public int getDragActions(Transferable transferable) {
       return COPY | MOVE;
     }
 
+    public int getDropActions(Transferable transferable, Object parent, int index) {
+        if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR) 
+            || transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR)) {
+
+            return COPY | MOVE;
+        } else {
+            return 0;
+        }
+    }
+
     /**
-     * DND support - drag
+     * DND support - drop comes first.
      */
-    public void drag(int action, List children, Object parent, int index) {
-      
-      // do nothing on copy
-      if (action==COPY)
-        return;
-      
-      // check if this is an in-parent move - we'll leave the
-      // shuffle of the children in parent to drop() in that case
+    public void drop(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException {
+
       Property newParent = (Property)parent;
-      if (newParent!=null&&newParent.isProperties(children)) 
-        return;
-      
-      // start transaction for our gedcom
-      gedcom.startTransaction();
-      
-      for (int i=0;i<children.size();i++) {
-        
-        // remove one by one
-        Property child = (Property)children.get(i);
-        Property childsParent = child.getParent();
-        int pos = childsParent.getPropertyPosition(child);
-        childsParent.delProperty(pos);
-        
-        // tell tree about it since that might change insert target
-        fireTreeNodesRemoved(this, getPathToRoot(childsParent), new int[]{pos}, new Object[]{child});
-      }
-      
-      // end transaction if newParent is not in same gedcom
-      if (newParent==null||gedcom!=newParent.getGedcom())
-        gedcom.endTransaction();
-        
-      // done
-    }
-    
-    /**
-     * DND support - transferable
-     */
-    public Transferable getTransferable(List children) {
-      return new PropertyTransferable(children);
-    }
 
-    /**
-     * DND support - drop test
-     */
-    public boolean canDrop(int action, Transferable transferable, Object parent, int index) {
-      // copy or move
-      if (!(action==COPY||action==MOVE))
-        return false;
-      return transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR) 
-        || transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR);       
-    }
-    /**
-     * DND support - drop
-     */
-    public List drop(int action, Transferable transferable, Object parent, int index) throws IOException, UnsupportedFlavorException {
-
-      // start transaction for our gedcom?
-      if (!gedcom.isTransaction())
+      try {
+        // start transaction for our gedcom
         gedcom.startTransaction();
       
-      // is this an in-parent move?
-      Property newParent = (Property)parent;
-      if (action==MOVE&&transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
-        List dragged = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
-        if (newParent.isProperties(dragged)) {
+        // is this an in-parent properties shuffle? FIXME we'll have to
+        // revisit this in case we allow multiple nodes to be dragged
+        // at some point. We'll want to allow an in-parent shuffle where
+        // applicable (do as much as we can here).
+        if (action == MOVE && dragModel != null && dragModel.gedcom == gedcom) {
+          List dragged = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
+          if (newParent.isProperties(dragged)) {
+            // re-shuffle children
+            for (int i=0,j=dragged.size();i<j;i++) {
+              if (newParent.getPropertyPosition((Property)dragged.get(i))<index)
+                index--;
+            }
+            List shuffle = new ArrayList(Arrays.asList(newParent.getProperties()));
+            shuffle.removeAll(dragged);
+            shuffle.addAll(index, dragged);
           
-          // re-shuffle children
-          for (int i=0,j=dragged.size();i<j;i++) {
-            if (newParent.getPropertyPosition((Property)dragged.get(i))<index)
-              index--;
+            // commit
+            newParent.setProperties(shuffle);
+
+            dragModel.shuffle = true;
+          
+            // done
+            return;
           }
-          List shuffle = new ArrayList(Arrays.asList(newParent.getProperties()));
-          shuffle.removeAll(dragged);
-          shuffle.addAll(index, dragged);
-          
-          // commit
-          newParent.setProperties(shuffle);
-          gedcom.endTransaction();
-          
-          // done
-          return dragged;
         }
-      }
       
-      // paste text into new parent
-      try {
+        // paste text into new parent
         String s = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
-        return GedcomReader.read(new StringReader(s), newParent, index);
+        GedcomReader.read(new StringReader(s), newParent, index);
       } finally {
-        gedcom.endTransaction();      
+        if (dragModel == null || dragModel.gedcom != gedcom) {
+          gedcom.endTransaction();
+        }
       }
       
       // done      
     }
 
+    /**
+     * DND support - drag comes last.
+     */
+    public void drag(Transferable transferable, int action) throws UnsupportedFlavorException, IOException {
+        
+      try {            
+        // start transaction for our gedcom?
+        if (!gedcom.isTransaction()) {
+          gedcom.startTransaction();
+        }
+          
+        // do nothing on copy
+        if (shuffle || action == COPY) {
+          return;
+        }
+
+        List children = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
+        for (int i=0;i<children.size();i++) {
+              
+          // remove one by one
+          Property child = (Property)children.get(i);
+          Property childsParent = child.getParent();
+          int pos = childsParent.getPropertyPosition(child);
+          childsParent.delProperty(pos);
+        }
+      } finally {
+        gedcom.endTransaction();
+      }
+           
+      // done
+    }
+       
+    public void releaseTransferable(Transferable transferable) {
+        dragModel = null;
+        shuffle   = false;
+    }
+    
     /**
      * Returns parent of node
      */  

@@ -1,6 +1,6 @@
 /*
- * jOrgan - Java Virtual Organ
- * Copyright (C) 2003 Sven Meier
+ * swingx - Swing eXtensions
+ * Copyright (C) 2004 Sven Meier
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -122,26 +122,19 @@ public abstract class AbstractTreeModel implements TreeModel {
     }
 
     /**
+      * Invoke this method if you've exchanged the root.
+      */
+    public void rootExchanged() {
+        fireTreeStructureChanged(this, getPathToRoot(getRoot()), null, null);
+    }
+
+    /**
       * Invoke this method if you've totally changed the children of
       * node and its childrens children...  This will post a
       * treeStructureChanged event.
       */
     public void nodeStructureChanged(Object node) {
-        if(node != null) {
-           fireTreeStructureChanged(this, getPathToRoot(node), null, null);
-        }
-    }
-
-    /**
-     * Get the indices for the given child.
-     */
-    protected int[] getChildIndices(Object parent, Object object) {
-        int anIndex = getIndexOfChild(parent, object);
-
-        int[] cIndexs = new int[1];
-        cIndexs[0] = anIndex;
-
-        return cIndexs;
+        fireTreeStructureChanged(this, getPathToRoot(node), null, null);
     }
 
     /**
@@ -292,8 +285,8 @@ public abstract class AbstractTreeModel implements TreeModel {
      * Return an array of all the listeners of the given type that
      * were added to this model.
      *
-     * @returns all of the objects recieving <em>listenerType</em> notifications
-     *          from this model
+     * @return all of the objects recieving <em>listenerType</em> notifications
+     *         from this model
      *
      * @since 1.3
      */
