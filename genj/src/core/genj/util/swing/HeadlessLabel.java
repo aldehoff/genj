@@ -58,6 +58,9 @@ public class HeadlessLabel extends JComponent {
     
   /** whether we're opaque or not */
   private boolean isOpaque = false;
+  
+  /** a cached font */
+  private Font font;
 
   /**
    * Constructor
@@ -71,18 +74,17 @@ public class HeadlessLabel extends JComponent {
   public HeadlessLabel(Font font) {
     setFont(font);
   }
-
-  /**
-   * Patched font - Java 1.5 seems to use "Microsoft Sans Serif" instead 
-   * of "sansserif" which isn't rendered correctly
-   */
-  public Font getFont() {
-    Font result = super.getFont();
-    if (result!=null&&result.getFamily().equals("Microsoft Sans Serif")) 
-      return new Font("sansserif", Font.PLAIN, result.getSize());
-    return result;
+  
+  public void setFont(Font set) {
+    font = set;
   }
   
+  public Font getFont() {
+    if (font==null)
+      font = super.getFont();
+    return font;
+  }
+
   /**
    * Set HTML to render
    */
