@@ -306,16 +306,16 @@ import javax.swing.event.ChangeListener;
     if (entity != set)
       setEntity(set);
 
-    // check specific property
+    // select 1st/appropriate bean for property from context
+    TagPath path = null;
     Property prop = context.getProperty();
-    if (prop != null) {
-      TagPath path = prop.getPath();
-      for (int i=0,j=beanPanel.getComponentCount();i<j;i++) {
-        JComponent c = (JComponent)beanPanel.getComponent(i);
-        if (c instanceof PropertyBean && ((PropertyBean)c).getPath().equals(path)) {
-          c.requestFocusInWindow();
-          break;
-        }
+    if (prop!=null)
+      path = prop.getPath();
+    for (int i=0,j=beanPanel.getComponentCount();i<j;i++) {
+      JComponent c = (JComponent)beanPanel.getComponent(i);
+      if (c instanceof PropertyBean && (path==null || path.length()==1 || ((PropertyBean)c).getPath().equals(path))) {
+        c.requestFocusInWindow();
+        break;
       }
     }
     
