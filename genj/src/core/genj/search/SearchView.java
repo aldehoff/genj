@@ -41,6 +41,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.AbstractButton;
@@ -60,6 +61,9 @@ import javax.swing.event.ListSelectionListener;
  * View for searching
  */
 public class SearchView extends JPanel implements ToolBarSupport, ContextSupport {
+  
+  /** how many old values we remember */
+  private final static int MAX_OLD = 16;
   
   /** resources */
   /*package*/ static Resources resources = Resources.get(SearchView.class);
@@ -85,7 +89,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   private JCheckBox checkAggregate, checkRegExp;
 
   /** history */
-  private List oldPaths, oldValues;
+  private LinkedList oldPaths, oldValues;
   
   /** buttons */
   private AbstractButton bSearch, bStop;
@@ -106,8 +110,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     manager = maNager;
     
     // lookup old search values
-    oldPaths = (List)registry.get("old.paths", new ArrayList());
-    oldValues = (List)registry.get("old.values", new ArrayList());
+    oldPaths = (LinkedList)registry.get("old.paths", new LinkedList());
+    oldValues = (LinkedList)registry.get("old.values", new LinkedList());
     
     // prepare results
     listResults = new JList(results);
@@ -156,6 +160,17 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   }
   
   /**
+   * @see javax.swing.JComponent#removeNotify()
+   */
+  public void removeNotify() {
+    // keep old
+    registry.put("old.values", oldValues);
+    // continue
+    super.removeNotify();
+  }
+
+  
+  /**
    * @see genj.view.ToolBarSupport#populate(javax.swing.JToolBar)
    */
   public void populate(JToolBar bar) {
@@ -192,6 +207,21 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   public void setContext(Property property) {
     // ignored
   }
+  
+  /**
+   * Remembers a value
+   */
+  private void rememberValue(String value) {
+    // not if empty
+    if (value.trim().length()==0) return;
+    // keep (up to max)
+    oldValues.remove(value);
+    oldValues.addFirst(value);
+    if (oldValues.size()>MAX_OLD) oldValues.removeLast();
+    // update choice
+    choiceValue.setValues(oldValues);
+    // done
+  }
 
   /**
    * Returns a matcher for given pattern and regex flag
@@ -223,7 +253,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
    */
   private class ActionSearch extends ActionDelegate {
     /** hits */
-    private List hits = new ArrayList();
+    private List hits = new ArrayList(255);
     /** the current matcher*/
     private Matcher matcher;
     /** constructor */
@@ -242,12 +272,13 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       bSearch.setEnabled(false);
       bStop.setEnabled(true);
       // prepare matcher
+      String value = choiceValue.getText();
       try {
-        matcher = getMatcher(choiceValue.getText(), checkRegExp.isSelected());
+        matcher = getMatcher(value, checkRegExp.isSelected());
       } catch (IllegalArgumentException e) {
         manager.getWindowManager().openDialog(
           null,
-          choiceValue.getText(),
+          value,
           WindowManager.IMG_ERROR,
           e.getMessage(),
           WindowManager.OPTIONS_OK,
@@ -255,6 +286,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
         );
         return false;
       }
+      // remember
+      rememberValue(value);
       // continue
       return true;
     }
@@ -343,7 +376,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   private class Results extends AbstractListModel {
     
     /** the results */
-    private List properties = new ArrayList();
+    private List properties = new ArrayList(255);
     
     /**
      * clear the results
