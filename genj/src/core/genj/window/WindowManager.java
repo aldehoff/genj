@@ -32,6 +32,8 @@ import javax.swing.JMenuBar;
 public interface WindowManager {
   
   public void openFrame(String key, String title, ImageIcon image, Dimension dimension, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose);
+  
+  public boolean openDialog(String key, String title, ImageIcon image, Dimension dimension, JComponent content, JComponent owner);
 
   public void closeFrame(String key);
 

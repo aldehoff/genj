@@ -182,6 +182,12 @@ public class LightweightWindowManager implements WindowManager {
     JInternalFrame frame = (JInternalFrame)key2frame.get(key);
     return frame!=null ? (JComponent)frame.getContentPane().getComponent(0) : null;
   }
-
+  
+  /**
+   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent)
+   */
+  public boolean openDialog(String key, String title, ImageIcon image, Dimension dimension, JComponent content, JComponent owner) {
+    throw new IllegalArgumentException("n/a");
+  }
 
 } //DefaultWindowManager

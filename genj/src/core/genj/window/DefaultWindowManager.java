@@ -34,8 +34,10 @@ import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 
 /**
  * The default 'heavyweight' window manager
@@ -123,6 +125,44 @@ public class DefaultWindowManager implements WindowManager {
   }
   
   /**
+   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent)
+   */
+  public boolean openDialog(String key, String title, ImageIcon image, Dimension dimension, JComponent content, JComponent owner) {
+
+    // need pane
+    JOptionPane op = new JOptionPane(
+      content,
+      JOptionPane.QUESTION_MESSAGE,
+      JOptionPane.OK_CANCEL_OPTION
+    );
+    
+    // need dialog
+    JDialog dlg = op.createDialog(owner, title);
+    dlg.setResizable(true);
+    
+    // place
+    Rectangle box = registry.get(key,(Rectangle)null);
+    if ((box==null)&&(dimension!=null)) 
+      box = new Rectangle(0,0,dimension.width,dimension.height);
+    if (box==null) {
+      dlg.pack();
+    } else {
+      dlg.setBounds(new AreaInScreen(box));
+    }
+
+    // show    
+    dlg.show();
+    dlg.dispose();
+
+    // analyze
+    Object result = op.getValue();
+    
+    // done    
+    return false;
+    
+  }
+  
+  /**
    * @see genj.window.WindowManager#closeAllFrames()
    */
   public void closeAllFrames() {
@@ -162,6 +202,5 @@ public class DefaultWindowManager implements WindowManager {
     JFrame frame = (JFrame)key2frame.get(key);
     return frame!=null ? (JComponent)frame.getContentPane().getComponent(0) : null;
   }
-
 
 } //DefaultWindowManager

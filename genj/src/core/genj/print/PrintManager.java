@@ -19,12 +19,12 @@
  */
 package genj.print;
 
-import genj.app.App;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.Trackable;
+import genj.window.WindowManager;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -39,7 +39,6 @@ import java.awt.print.PrinterJob;
 
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
 /**
  * A manager for printing */
@@ -54,10 +53,14 @@ public class PrintManager {
   /** resources */
   private Resources resources = Resources.get(PrintManager.class);
   
+  /** window manager */
+  private WindowManager winMgr;
+  
   /**
    * Constructor   */
-  public PrintManager(Registry reGistry) {
+  public PrintManager(Registry reGistry, WindowManager winManager) {
     registry = reGistry;
+    winMgr = winManager;
   }
   
   /**
@@ -139,14 +142,24 @@ public class PrintManager {
       widget = new PrintWidget(this, resources);
       
       // show it in dialog
-      int ok = App.getInstance().createDialog(
-        resources.getString("dlg.title", title), 
-        "print", 
-        new Dimension(480,320), 
-        owner, 
+      winMgr.openDialog(
+        "print",
+        resources.getString("dlg.title", title),
+        null,
+        null,
         widget,
-        new String[]{ resources.getString("dlg.label.print"), UIManager.getString("OptionPane.cancelButtonText")}
-      ).packAndShow();
+        owner 
+      );
+      
+    int ok = -1;        
+//      int ok = App.getInstance().createDialog(
+//        resources.getString("dlg.title", title), 
+//        "print", 
+//        new Dimension(480,320), 
+//        owner, 
+//        widget,
+//        new String[]{ resources.getString("dlg.label.print"), UIManager.getString("OptionPane.cancelButtonText")}
+//      ).packAndShow();
       
       // check choice
       if (ok!=0||getPages().x==0||getPages().y==0) {

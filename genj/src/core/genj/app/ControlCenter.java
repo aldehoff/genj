@@ -87,7 +87,7 @@ public class ControlCenter extends JPanel {
     // Initialize data
     registry = new Registry(setRegistry, "cc");
     windowManager = winManager;
-    printManager = new PrintManager(new Registry(setRegistry, "print"));
+    printManager = new PrintManager(new Registry(setRegistry, "print"), windowManager);
     viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager);
     busyGedcoms = new Vector();
 
