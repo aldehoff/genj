@@ -145,12 +145,12 @@ public class App {
         // close all frames we know
         winMgr.closeAll();
         // Store registry 
-        //FIXME - this is called before the GedcomTableWidget is removed so column widths won't be saved
         Registry.saveToDisk();      
         // Flush Debug
         Debug.flush();
-        // exit
-        //FIXME - this probably isn't a good idea, but we sometimes hang otherwise
+        // exit - open for discussion: instead of exit() we could
+        // make sure that all threads terminate nicely and the vm
+        // shuts down by itself PENDING
         System.exit(0);
       }
     };

@@ -110,7 +110,6 @@ import javax.swing.table.TableColumnModel;
     for (int c=0; c<widths.length; c++) {
       widths[c] = getColumnModel().getColumn(c).getWidth();
     }
-    // FIXME - we get called after the registry is written, so this has no effect
     registry.put("columns", widths);
     // continue
     super.removeNotify();
