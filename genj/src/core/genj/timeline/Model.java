@@ -23,6 +23,7 @@ import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
 import genj.gedcom.PointInTime;
@@ -355,17 +356,39 @@ import java.util.Set;
   private final void createEventFrom(PropertyEvent pe) {
     // we need a valid date for that event
     PropertyDate pd = pe.getDate();
-    if (pd==null) 
+    if (pd==null||!pd.isValid()) 
       return;
     // get start and end
-    int 
-      start = pd.getStart().getJulianDay(false),
-      end   = pd.isRange() ? pd.getEnd().getJulianDay(true) : start;
+    int start,end;
+    try {
+      start = getJulianDay(pd.getStart(), false);
+      end   = pd.isRange() ? getJulianDay(pd.getEnd(), true) : start;
+    } catch (GedcomException e) {
+      return;
+    }
     if (start==PointInTime.UNKNOWN||end==PointInTime.UNKNOWN) 
       return;
     // create event 
     insertEvent(new Event(pe, pd, start, end));
     // done
+  }
+  
+  /**
+   * Calculate julian date for point of time
+   */
+  private int getJulianDay(PointInTime pit, boolean roundUp) throws GedcomException {
+    PointInTime.Calendar
+      cal = pit.getCalendar();
+    int
+      day = pit.getDay(),
+      month = pit.getMonth(),
+      year = pit.getYear();
+    if (month==PointInTime.UNKNOWN)
+      month = roundUp ? cal.getMonths()-1 : 0;
+    if (day==PointInTime.UNKNOWN)
+      day = roundUp ? cal.getDays(month, year) : 0;
+    
+    return PointInTime.getPointInTime(day,month,year,cal).getJulianDay();
   }
   
   /**

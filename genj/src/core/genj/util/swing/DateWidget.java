@@ -226,7 +226,6 @@ public class DateWidget extends JPanel {
   private class Events implements FocusListener {
     /** callback - focus gained */
     public void focusGained(FocusEvent e) {
-      updateStatus();
       // me?
       if (e.getSource()==DateWidget.this) {
         getComponent(1).requestFocus();
@@ -239,6 +238,9 @@ public class DateWidget extends JPanel {
     }
     /** callback - focus lost */
     public void focusLost(FocusEvent e) {
+      // one of the textfields!
+      if (e.getSource() instanceof JTextField)
+        updateStatus();
     }
   } //Events
   

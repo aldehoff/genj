@@ -17,7 +17,6 @@ import genj.report.Report;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -217,14 +216,7 @@ public class ReportEvents extends Report {
     // sort the hits either by
     //  year/month/day or
     //  month/day
-    Collections.sort(hits, new Comparator() {
-      public int compare(Object hit1, Object hit2) {
-        PointInTime 
-          pit1 = ((Hit)hit1).when,
-          pit2 = ((Hit)hit2).when;
-        return pit1.compareTo(pit2, isSortDay ? PointInTime.MASK_DD|PointInTime.MASK_MMM : PointInTime.MASK_DD_MMM_YYYY);
-      }
-    });
+    Collections.sort(hits);
     
     // print 'em
     for (Iterator it=hits.iterator();it.hasNext();) {
@@ -297,13 +289,22 @@ public class ReportEvents extends Report {
   /**
    * Wrapping an Event hit
    */
-  private static class Hit {
+  private class Hit implements Comparable {
     PointInTime when;
     Entity who;
+    PointInTime compare;
     // Constructor
     Hit(PropertyDate date, Entity ent) {
       when = date.getStart();
+      if (isSortDay)
+        compare = PointInTime.getPointInTime(when.getDay(), when.getMonth(), 1, when.getCalendar());
+      else
+        compare = when;
       who = ent;
+    }
+    // comparison
+    public int compareTo(Object object) {
+      return compare.compareTo(((Hit)object).compare);
     }
   } //Hit
 

@@ -35,13 +35,6 @@ public class PointInTime implements Comparable {
   public final static int 
     UNKNOWN = Integer.MAX_VALUE;
   
-  /** masking */
-  public final static int
-    MASK_DD   = 1,
-    MASK_MMM  = 2,
-    MASK_YYYY = 4,
-    MASK_DD_MMM_YYYY = MASK_DD|MASK_MMM|MASK_YYYY;
-
   /** calendars */
   public final static GregorianCalendar GREGORIAN = new GregorianCalendar();
   public final static    JulianCalendar JULIAN    = new    JulianCalendar();
@@ -57,7 +50,8 @@ public class PointInTime implements Comparable {
   private int 
     day   = UNKNOWN, 
     month = UNKNOWN, 
-    year  = UNKNOWN;
+    year  = UNKNOWN,
+    jd    = UNKNOWN;
 
   /**
    * Constructor
@@ -73,6 +67,7 @@ public class PointInTime implements Comparable {
     month = m;
     year = y;
     calendar = cal;
+    jd = UNKNOWN;
   }
     
   /**
@@ -158,12 +153,10 @@ public class PointInTime implements Comparable {
   /**
    * Calculate julian day
    */
-  public int getJulianDay(boolean roundUp) {
-    try {
-      return calendar.toJulianDay(this, MASK_DD_MMM_YYYY, roundUp);
-    } catch (GedcomException e) {
-      return UNKNOWN;
-    }
+  public int getJulianDay() throws GedcomException {
+    if (jd==UNKNOWN)
+      jd = calendar.toJulianDay(this);
+    return jd;
   }
   
   /**
@@ -177,7 +170,7 @@ public class PointInTime implements Comparable {
     if (!isComplete())
       throw new GedcomException("PointInTime not complete DD MMM YYYY - switching calendars n/a");
     // convert to julian date
-    int jd = calendar.toJulianDay(this, MASK_DD_MMM_YYYY, false);
+    int jd = getJulianDay();
     // convert to new instance
     set(cal.toPointInTime(jd));
   }  
@@ -189,6 +182,7 @@ public class PointInTime implements Comparable {
     day = d;
     month = m;
     year = y;
+    jd = UNKNOWN;
   }
   
   /**
@@ -286,14 +280,20 @@ public class PointInTime implements Comparable {
    * Checks for validity
    */
   public boolean isValid() {
-    return calendar.isValid(day,month,year);
+    if (jd!=UNKNOWN)
+      return true;
+    try {
+      jd = calendar.toJulianDay(this);
+    } catch (GedcomException e) {
+    }
+    return jd!=UNKNOWN;
   }
     
   /**
    * compare to other
    */  
   public int compareTo(Object o) {
-    return compareTo((PointInTime)o, MASK_DD_MMM_YYYY);
+    return compareTo((PointInTime)o);
   }    
 
   /**
@@ -301,7 +301,7 @@ public class PointInTime implements Comparable {
    * @param other the pit to compare to
    * @param mask
    */  
-  public int compareTo(PointInTime other, int mask) {
+  public int compareTo(PointInTime other) {
     
     // check valid
     boolean
@@ -315,7 +315,7 @@ public class PointInTime implements Comparable {
       return -1; 
     // compare
     try {
-      return calendar.toJulianDay(this, mask, false) - other.calendar.toJulianDay(other, mask, false);
+      return getJulianDay() - other.getJulianDay();
     } catch (GedcomException e) {
       return 0; // shouldn't really happen
     }
@@ -350,11 +350,6 @@ public class PointInTime implements Comparable {
    */
   public WordBuffer toString(WordBuffer buffer, boolean localize) {
     
-    int 
-      day = getDay(),
-      month = getMonth(),
-      year = getYear();
-      
     if (year!=UNKNOWN) {
       if (month!=UNKNOWN) {
         if (day!=UNKNOWN) {
@@ -494,74 +489,52 @@ public class PointInTime implements Comparable {
     }
 
     /**
-     * Validity check day,month,year>0
+     * Calculate number of months
      */
-    protected final boolean isValid(int day, int month, int year) {
-
-      // YYYY is always needed!
-      if (year==UNKNOWN)
-        return false;
-        
-      // MM needed if DD!
-      if (month==UNKNOWN&&day!=UNKNOWN)
-        return false;
-        
-      // months have to be within range
-      if (month==UNKNOWN)
-        month = 0;
-      else if (month<0||month>=months.length)
-        return false;
-
-      // day has to be withing range
-      if (day==UNKNOWN)
-        day = 0;
-      else if (day<0||day>=getDays(month,year))
-        return false;
-
-      // try to get juliant
-      try {
-        toJulianDay(day,month,year);
-      } catch (GedcomException e) {
-        return false;
-      }
-      
-      // is good
-      return true;
+    public int getMonths() {
+      return months.length;
     }
     
     /**
      * Calculate number of days in given month
      */
-    protected abstract int getDays(int month, int year);
+    public abstract int getDays(int month, int year);
         
     /**
      * PIT -> Julian Day
      */
-    protected final int toJulianDay(PointInTime pit, int mask, boolean roundUp) throws GedcomException {
-      
+    protected final int toJulianDay(PointInTime pit) throws GedcomException {
+
       // grab data 
       int 
         year  = pit.getYear () ,
         month = pit.getMonth(),
         day   = pit.getDay  ();
         
-      // mask out
-      if (mask!=MASK_DD_MMM_YYYY) {
-        if ((mask&MASK_DD  )==0)   day = 0;
-        if ((mask&MASK_MMM )==0) month = 0;
-        if ((mask&MASK_YYYY)==0)  year = 1;
-      }
+      // YYYY is always needed - no calendar includes a year 0!
+      if (year==UNKNOWN||year==0)
+        throw new GedcomException("Year is not valid");
+        
+      // MM needed if DD!
+      if (month==UNKNOWN&&day!=UNKNOWN)
+        throw new GedcomException("Month is not valid");
+        
+      // months have to be within range
+      if (month==UNKNOWN)
+        month = 0;
+      else if (month<0||month>=months.length)
+        throw new GedcomException("Month is not valid");
 
-      // check minimum validity
-      if (year ==UNKNOWN)
-        throw new GedcomException("Transformation to Julian Day requires year");
-      if (month==UNKNOWN) 
-        month = roundUp ? months.length-1 : 0;
-      if (day  ==UNKNOWN) 
-        day   = roundUp ? getDays(month, year) - 1 : 0;
-     
+      // day has to be withing range
+      if (day==UNKNOWN)
+        day = 0;
+      else if (day<0||day>=getDays(month,year))
+        throw new GedcomException("Day is not valid");
+
+      // try to get julian day
       return toJulianDay(day, month, year);
     }
+    
     /**
      * PIT -> Julian Day
      */
@@ -603,7 +576,7 @@ public class PointInTime implements Comparable {
     /**
      * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
      */
-    protected int getDays(int month, int year) {
+    public int getDays(int month, int year) {
       int[] length = isLeap(year) ? LEAP_MONTH_LENGTH : MONTH_LENGTH;
       return length[month];
     }
@@ -750,7 +723,7 @@ public class PointInTime implements Comparable {
     /**
      * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
      */
-    protected int getDays(int month, int year) {
+    public int getDays(int month, int year) {
       // standard month has 30 days
       if (month<12)
         return 30;
@@ -955,7 +928,7 @@ public class PointInTime implements Comparable {
     /**
      * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
      */
-    protected int getDays(int month, int year) {
+    public int getDays(int month, int year) {
       
       //  easy for the months fixed to 29
       switch (month) {
