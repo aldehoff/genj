@@ -58,7 +58,10 @@ public class ReportValidate extends Report {
  o  16) families containing a man who has fathered a child before the age of 
     MIN_FATHER_AGE
  o  17) families containing a man who has fathered a child (more than 9 months) after they have died
-
+ o  18) check the age difference between husband and wife is not greater than SOME_VALUE.
+ o  18) find women who have given birth more than once within 9 months (discounting twins)
+ o  19) children that are born before MARR or after DIV/wife has died 
+ 
     // check all files exist and can be opened
  x  new CheckFiles(gedcom));
     
