@@ -47,6 +47,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -63,27 +65,13 @@ import javax.swing.JToolBar;
  * selected entity
  */
 public class ResumeView extends JPanel implements ToolBarSupport {
+
+  /** language resources we use */  
+  private final static Resources resources = new Resources("genj.resume");
   
-  /** html defaults for entities */
-  private final static Properties tag2html = readDefaultHTMLs();
+  /** htmls for entities */
+  private Map htmls = prepareDefaults();
   
-  /*
-  private String html = 
-      "<p>Individual <font color=blue><b><prop path=INDI></b></font></p>\n"+
-      "<table>\n"+
-       "<tr valign=top><td>\n"+
-       "<table>\n"+
-        "<tr><td>Name &nbsp;&nbsp;&nbsp;</td><td><i><prop path=INDI:NAME></i></td></tr>\n"+
-        "<tr><td>Sex  </td><td><prop path=INDI:SEX img=yes txt=no w=16 h=16></td></tr>\n"+
-        "<tr><td>Birth</td><td><prop path=INDI:BIRT:DATE img=yes>, <u><prop path=INDI:BIRT:PLAC></u></td></tr>\n"+
-        "<tr><td>Addr </td><td><prop path=INDI:RESI:ADDR><br><prop path=INDI:RESI:ADDR:CITY><br><prop path=INDI:RESI:POST></u></td></tr>\n"+
-       "</table>\n"+
-       "</td><td>\n"+
-        "<prop path=INDI:OBJE:FILE>\n"+
-       "</td></tr>\n"+
-      "</table>";
-      */
-      
   /** the renderer we're using */      
   private EntityRenderer renderer = NORENDERER;
   
@@ -100,18 +88,19 @@ public class ResumeView extends JPanel implements ToolBarSupport {
   }
 
   /**
-   * Read default HTMLs for know entity types
+   * Prepare default HTMLs for entities
    */
-  private static Properties readDefaultHTMLs() {
-    // loading now
-    try {
-      Properties result = new Properties();
-      result.load(ResumeView.class.getResourceAsStream("defaults.properties"));
-      return result;
-    } catch(IOException e) {
-      throw new Error("Couldn't initialize gedcom.Images because of "+e.getClass().getName()+"#"+e.getMessage());
+  private static Map prepareDefaults() {
+    // loop for htmls
+    HashMap result = new HashMap();
+    Enumeration keys = resources.getKeys();
+    while (keys.hasMoreElements()) {
+      String key = keys.nextElement().toString();
+      if (key.startsWith("default.")) 
+        result.put(key.substring("default.".length()), resources.getString(key));
     }
     // done
+    return result;
   }
     
   
@@ -136,14 +125,16 @@ public class ResumeView extends JPanel implements ToolBarSupport {
    * Accessor - HTML for given entity type
    */
   public String getHtml(int type) {
-    return tag2html.getProperty(Gedcom.getTagFor(type));
+    Object result = htmls.get(Gedcom.getTagFor(type));
+    if (result==null) result="?";
+    return result.toString();
   }
   
   /**
    * Accessor - HTML for given entity type
    */
   public void setHtml(int type, String set) {
-    tag2html.put(Gedcom.getTagFor(type), set);
+    htmls.put(Gedcom.getTagFor(type), set);
     Entity e = renderer.getEntity(); 
     renderer = NORENDERER;
     setEntity(e);
@@ -156,7 +147,7 @@ public class ResumeView extends JPanel implements ToolBarSupport {
     if (e==null) renderer=NORENDERER;
     else {
       if (renderer==NORENDERER||renderer.getEntity().getType()!=e.getType()) {
-        renderer = new EntityRenderer(tag2html.getProperty(Gedcom.getTagFor(e.getType())));
+        renderer = new EntityRenderer(getHtml(e.getType()));
       }
       renderer.setEntity(e);
     }

@@ -25,6 +25,7 @@ import genj.print.PrintProperties;
 import genj.print.PrintRenderer;
 import genj.print.Printer;
 import genj.util.ActionDelegate;
+import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 
@@ -33,10 +34,12 @@ import java.awt.Component;
 import java.awt.Frame;
 
 import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 /**
@@ -88,7 +91,11 @@ import javax.swing.border.TitledBorder;
     // setup layout
     setLayout(new BorderLayout());
     if (showBar) {
+      // add some glue
       bar.add(Box.createHorizontalGlue());
+      // and a close
+      bar.add(bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(genj.gedcom.Images.get("X"))));
+      // and the bar itself
       add(bar, BorderLayout.SOUTH);
     }
     add(view, BorderLayout.CENTER);

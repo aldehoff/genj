@@ -20,12 +20,19 @@
 package genj.resume;
 
 import genj.gedcom.Gedcom;
+import genj.util.ActionDelegate;
 import genj.view.ApplyResetSupport;
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.ActionListener;
+
+import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 
 /**
@@ -42,9 +49,6 @@ public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
   /** the resume */
   private ResumeView resumeView; 
   
-  /** the current entity type */
-  private int entityType = Gedcom.INDIVIDUALS;
-  
   /**
    * Constructor
    */
@@ -55,8 +59,15 @@ public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
     
     // get entities
     for (int i=Gedcom.FIRST_ETYPE;i<=Gedcom.LAST_ETYPE;i++) {
-      dropEntities.addItem(Gedcom.getNameFor(i,true));
+      dropEntities.addItem(wrap(i));
     }
+    dropEntities.setRenderer(new BasicComboBoxRenderer() {
+      public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        value = Gedcom.getNameFor(unwrap(value),true);
+        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+      }
+    });
+    dropEntities.addActionListener((ActionListener)new ActionSelect().as(ActionListener.class));
     
     // do the layout
     setLayout(new BorderLayout());
@@ -65,19 +76,43 @@ public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
     
     // done
   }
+  
+  /**
+   * Helper that wraps an entity type
+   */
+  private Integer wrap(int type) {
+    return new Integer(type);
+  }
+  
+  /**
+   * Helper that unwraps an entity type
+   */
+  private int unwrap(Object type) {
+    return ((Integer)type).intValue();
+  }
 
   /**
    * @see genj.app.ViewSettingsWidget#apply()
    */
   public void apply() {
-    resumeView.setHtml(entityType, textHtml.getText());
+    resumeView.setHtml(unwrap(dropEntities.getSelectedItem()), textHtml.getText());
   }
 
   /**
    * @see genj.app.ViewSettingsWidget#reset()
    */
   public void reset() {
-    textHtml.setText(resumeView.getHtml(entityType));
+    textHtml.setText(resumeView.getHtml(unwrap(dropEntities.getSelectedItem())));
   }
 
-}
+  /**
+   * Action - selection of an entity type
+   */
+  private class ActionSelect extends ActionDelegate {
+    /** @see genj.util.ActionDelegate#execute() */
+    protected void execute() {
+      reset();
+    }
+  } //ActionSelect
+
+} //ResumeViewSettings
