@@ -32,11 +32,10 @@ final class Images {
     imgMinus,
     imgPlus,
     imgMore,
-    imgStickOn,
-    imgStickOff,
     imgIndisFields,
     imgFamsFields,
-    imgOverview;
+    imgOverview,
+    imgRoot;
 
   /**
    * Constructor which pre-loads all images
@@ -46,10 +45,9 @@ final class Images {
     imgMinus       = new ImgIcon(this,"images/Minus.gif"      );
     imgPlus        = new ImgIcon(this,"images/Plus.gif"       );
     imgMore        = new ImgIcon(this,"images/More.gif"       );
-    imgStickOn     = new ImgIcon(this,"images/StickOn.gif"    );
-    imgStickOff    = new ImgIcon(this,"images/StickOff.gif"   );
     imgIndisFields = new ImgIcon(this,"images/IndisFields.gif");
     imgFamsFields  = new ImgIcon(this,"images/FamsFields.gif" );
     imgOverview    = new ImgIcon(this,"images/Overview.gif"   );
+    imgRoot        = new ImgIcon(this,"images/Root.gif"       );
   }
 }

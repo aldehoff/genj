@@ -19,29 +19,48 @@
  */
 package genj.tree;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.net.URL;
-import java.awt.image.*;
-import java.beans.*;
+import genj.gedcom.DuplicateIDException;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.TagPath;
+import genj.util.ActionDelegate;
+import genj.util.AreaInScreen;
+import genj.util.Registry;
+import genj.util.Resources;
+import genj.util.swing.ButtonHelper;
+import genj.view.ContextMenuSupport;
+import genj.view.ToolBarSupport;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Window;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JToolBar;
 
-import genj.*;
-import genj.gedcom.*;
-import genj.util.*;
-import genj.util.swing.ButtonHelper;
-import genj.view.ToolBarSupport;
-
-import awtx.*;
+import awtx.ComponentProvider;
+import awtx.Rootpane;
+import awtx.Scala;
+import awtx.Scrollpane;
 
 /**
  * This class shows persons and families from a mankind object in a tree-view way
  */
-public class TreeView extends Scrollpane implements ToolBarSupport {
+public class TreeView extends Scrollpane implements ToolBarSupport, ContextMenuSupport {
 
   private Content                content;
   private Gedcom                 gedcom;
@@ -622,5 +641,33 @@ public class TreeView extends Scrollpane implements ToolBarSupport {
       toggleOverview();
     }
   } //ActionOverview
+
+  /**
+   * @see genj.view.ViewFactory#createActions(Entity)
+   */
+  public List createActions(Entity entity) {
+    List result = new ArrayList(1);
+    result.add(new ActionRoot());
+    return result;
+  }
+  
+  /**
+   * ActionRoot - makes the selected entity a root of the tree
+   */
+  private class ActionRoot extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionRoot() {
+      super.setText("Make root in "+frame.getTitle());
+      super.setImage(Images.imgRoot);
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+    }
+  } //ActionRoot
+  
   
 } //TreeView
