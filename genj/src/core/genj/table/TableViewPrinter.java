@@ -30,7 +30,6 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Dimension2D;
 
@@ -40,13 +39,19 @@ import javax.swing.JComponent;
  * A print renderer for table */
 public class TableViewPrinter implements Printer {
   
+  private int pad = 2;
+  
   /** print state */
   private int[] 
     rowHeights,
-    colWidths;
-  private int headerHeight;
+    colWidths,
+    colsOnPage,
+    rowsOnPage;
+  private int 
+  	headerHeight,
+    pageWidth,
+    pageHeight;
 
-  
   /** the table view */
   private TableView table;
   
@@ -71,9 +76,8 @@ public class TableViewPrinter implements Printer {
     EntityTableModel model = table.getModel();
 
     // prepare data
-    int pageWidth = (int)Math.ceil(pageSizeInInches.getWidth()*dpi.x);
-    int pageHeight = (int)Math.ceil(pageSizeInInches.getHeight()*dpi.y);
-    
+    pageWidth = (int)Math.ceil(pageSizeInInches.getWidth()*dpi.x);
+    pageHeight = (int)Math.ceil(pageSizeInInches.getHeight()*dpi.y);
     headerHeight = 0;
     rowHeights = new int[model.getRowCount()];
     colWidths = new int[model.getColumnCount()];
@@ -84,9 +88,9 @@ public class TableViewPrinter implements Printer {
       calcSize(-1, col, header, dpi);
     }
     
-    // loop rows
+    // analyze all rows
     for (int row=0, height=0;row<rowHeights.length;row++) {
-      // loop columns
+      // analyze all columns
       for (int col=0;col<colWidths.length;col++) {
         // add cell
         calcSize(row, col, model.getProperty(row, col), dpi);
@@ -95,26 +99,39 @@ public class TableViewPrinter implements Printer {
     }
 
     // Prepare result
-    Dimension pages = new Dimension(1,1);
+    int pagesx = 1;
+    int pagesy = 1;
+    colsOnPage = new int[colWidths.length];
+    rowsOnPage = new int[rowHeights.length];
     
-    // check page fit horizontally
+    // calculate pages horizontally
     for (int col=0, width=0;col<colWidths.length;col++) {
-      // too much for current page?
+      // too much for current page? 
       if (width+colWidths[col]>pageWidth) {
-        // expand previous column if possible
-        if (width>0) {
-          colWidths[col-1] += pageWidth-width;
-          width = 0;
-          pages.width++;
-        }
+        width = 0;
+        pagesx++;
       }
+      // increase columns on current page
+      colsOnPage[pagesx-1]++;
       // increase width
-      width += colWidths[col];
+      width += colWidths[col] + pad;
     }
     
+    // calculate pages vertically
+    for (int row=0, height=headerHeight+pad;row<rowHeights.length;row++) {
+      // too much for current page?
+      if (height+rowHeights[row]>pageHeight) {
+        height = headerHeight+pad;
+        pagesy ++;
+      }
+      // increase rows on current page
+      rowsOnPage[pagesy-1]++;
+      // increase height
+      height += rowHeights[row] + pad;
+    }
     
     // done
-    return pages;
+    return new Dimension(pagesx,pagesy);
   }
 
   /**
@@ -126,13 +143,21 @@ public class TableViewPrinter implements Printer {
       return;
     // grab size
     Dimension2D dim = PropertyRenderer.get(prop).getSize(font, context, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
-    // keep height/width
+    // keep height
     if (row<0)
-      headerHeight    = (int)Math.max(headerHeight   , Math.ceil(dim.getHeight()));
+      headerHeight    = max(dim.getHeight(), headerHeight, pageHeight - headerHeight - pad);
     else
-      rowHeights[row] = (int)Math.max(rowHeights[row], Math.ceil(dim.getHeight()));
-    colWidths[col] = (int)Math.max(colWidths[col], Math.ceil(dim.getWidth()));
+      rowHeights[row] = max(dim.getHeight(), rowHeights[row], pageHeight - headerHeight - pad);
+    // keep width
+    colWidths[col] = max(dim.getWidth(), colWidths[col], pageWidth);
     // done
+  }
+  
+  /**
+   * Helper - maximum of two values smaller than limit
+   */
+  private int max(double one, int two, int limit) {
+    return Math.min(limit, (int)Math.max(Math.ceil(one), two));
   }
   
   /**
@@ -143,11 +168,6 @@ public class TableViewPrinter implements Printer {
     // scale to 1/72 inch space
     g.scale(dpi.x/72F, dpi.y/72F);
 
-    // testing
-    g.setColor(Color.LIGHT_GRAY);
-    g.setFont(font.deriveFont(40F));
-    g.drawString("TESTING ONLY", 100, 300);
-    
     // prepare rendering characteristics
     g.setColor(Color.BLACK);
     g.setFont(font);
@@ -156,61 +176,48 @@ public class TableViewPrinter implements Printer {
     EntityTableModel model = table.getModel();
     
     // identify column/row for this page
-    // FIXME have to identify correct col/row/page selection
-    int 
-      scol = page.x == 0 ? 0 : 6,
-      srow = 0; 
+    int scol=0, cols=0;
+    for (int c=0;c<page.x;c++)
+      scol += colsOnPage[c];
+    cols = colsOnPage[page.x];
+    
+    int srow=0, rows=0;
+    for (int r=0;r<page.y;r++)
+      srow += rowsOnPage[r];
+    rows = rowsOnPage[page.y];
     
     // draw header
-    Shape clip;
-
-    int y = 0;
-    int x = 0;
-    for (int col=scol,cols=model.getColumnCount();col<cols;col++) {
-      Rectangle r = new Rectangle(x, 0, colWidths[col], headerHeight); 
-      header.setValue(model.getColumnName(col));
+    for (int col=0,x=0;col<cols;col++) {
+      // render in given space
+      Rectangle r = new Rectangle(x, 0, colWidths[scol+col], headerHeight); 
+      header.setValue(model.getColumnName(scol+col));
       render(g, r, header, dpi);
-      x += colWidths[col];
+      // increase current horizontal position
+      x += r.getWidth() + pad;
+      // draw line between cols
+      if (col<cols-1)
+        g.drawLine(x - pad/2, 0, x - pad/2, pageHeight);
     }
-    y += headerHeight;
-    
-    // draw line demarcation
-    g.drawLine(0, y, x, y++);
+    g.drawLine(0, headerHeight + pad/2, pageWidth, headerHeight + pad/2);
     
     // draw rows
-    for (int row=0,rows=model.getRowCount();row<rows;row++) {
-
-      // start on the left
-      x = 0;
-      
+    for (int row=0,y=headerHeight+pad;row<rows;row++) {
       // draw cols
-      for (int col=scol,cols=model.getColumnCount();col<cols;col++) {
-
-        // calculate space to render in
-        Rectangle r = new Rectangle(x, y, colWidths[col], rowHeights[row]);
-        render(g, r, model.getProperty(row, col), dpi);
-        
+      for (int col=0,x=0;col<cols;col++) {
+        // render in given space
+        Rectangle r = new Rectangle(x, y, colWidths[scol+col], rowHeights[srow+row]);
+        render(g, r, model.getProperty(srow+row, scol+col), dpi);
         // increase current horizontal position
-        x += colWidths[col];
-        
+        x += colWidths[scol+col] + pad;
       }
-      
       // increase current vertical position
-      y += rowHeights[row];
-      
-      // draw line demarcation
-      g.drawLine(0, y, x, y++);
-
+      y += rowHeights[srow+row] + pad;
+      // draw line between rows
+      if (row<rows-1)
+        g.drawLine(0, y - pad/2, pageWidth, y - pad/2);
       // next row
     }
     
-    // draw vertical lines
-    x = 0;
-    for (int col=scol,cols=model.getColumnCount();col<cols;col++) {
-      x += colWidths[col];
-      g.drawLine(x, 0, x, y);
-    }
-
     // done
   }
 
@@ -225,14 +232,5 @@ public class TableViewPrinter implements Printer {
     PropertyRenderer.get(prop).render(g, r, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
     // done
   }
-  
-  /**
-   * Page content
-   */
-  private class Page {
-    
-    int row, col, rows, cols;
-    
-  } //Page
   
 } //TreePrintRenderer

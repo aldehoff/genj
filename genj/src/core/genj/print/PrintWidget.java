@@ -114,7 +114,7 @@ public class PrintWidget extends JPanel {
     
     private float 
       padd = 0.1F, // inch
-      zoom = 1F; // 10% FIXME
+      zoom = 0.25F; // 25%
 
     private Point dpiScreen = Options.getInstance().getDPI();
     
