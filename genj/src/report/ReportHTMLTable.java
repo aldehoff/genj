@@ -140,7 +140,7 @@ public class ReportHTMLTable extends Report {
 	  private static Hashtable unicode2html = initializeUnicodeSupport();
 	  
 	  /** this report's version */
-	  public static final String VERSION = "1.01";
+	  public static final String VERSION = "1.02";
 	  
 	  /* possible parameters for printEmiImmiNatu() in order
 	     to implement this methode generic */
@@ -179,7 +179,12 @@ public class ReportHTMLTable extends Report {
 	     */
 	    public boolean usesStandardOut() {
 	      return false;
-	    }	    
+            }
+            
+            private File createFile(File dir, String name) {
+                println(i18n("creating")+" "+name);
+                return new File(dir, name);
+            }
 	  
 	  /**
 	   * Initializes a Hashtable of Unicode 2 HTML code mappings
@@ -236,7 +241,7 @@ public class ReportHTMLTable extends Report {
 			String lastName;
 			try {
 				// initialize print writer
-				htmlOut = new PrintWriter(new FileOutputStream(new File(dir, "lastNames.html")));
+				htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "lastNames.html")));
 			} catch(Exception e) {
 		  		println("Can't create file lastName.html: "+e.getMessage());
 		  	}
@@ -273,7 +278,7 @@ public class ReportHTMLTable extends Report {
 		     examination of the birth place property */
 		  if(birthPlaceTable) {
 		  	try {
-			  	htmlOut = new PrintWriter(new FileOutputStream(new File(dir, "birthPlaces.html")));
+			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "birthPlaces.html")));
 		  	} catch(Exception e) {
 		  		println("Can't create file birthPlaces.html: "+e.getMessage());
 		  	}
@@ -304,7 +309,7 @@ public class ReportHTMLTable extends Report {
 		     examination of all properties which can contain baptism data*/		  
 		  if(baptismPlaceTable) {
 		  	try {
-			  	htmlOut = new PrintWriter(new FileOutputStream(new File(dir, "baptismPlaces.html")));
+			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "baptismPlaces.html")));
 		  	} catch(Exception e) {
 		  		println("Can't create file baptismPlaces.html: "+e.getMessage());
 		  	}
@@ -360,7 +365,7 @@ public class ReportHTMLTable extends Report {
 		     examination of the marriage place property */
 		  if(marriagePlaceTable) {
 		  	try {
-			  	htmlOut = new PrintWriter(new FileOutputStream(new File(dir, "marriagePlaces.html")));
+			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "marriagePlaces.html")));
 			  	} catch(Exception e) {
 			  		println("Can't create file marriagePlaces.html: "+e.getMessage());
 			  	}
@@ -393,7 +398,7 @@ public class ReportHTMLTable extends Report {
 		     just writes header and footers */
 		  if(emigrationPlaceTable) {
 		  	try {
-			  	htmlOut = new PrintWriter(new FileOutputStream(new File(dir, "emigrationPlaces.html")));
+			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "emigrationPlaces.html")));
 			  	} catch(Exception e) {
 			  		println("Can't create file emigrationPlaces.html: "+e.getMessage());
 			  	}
@@ -406,7 +411,7 @@ public class ReportHTMLTable extends Report {
 		     just writes header and footers */		  
 		  if(immigrationPlaceTable) {
 		  	try {
-			  	htmlOut = new PrintWriter(new FileOutputStream(new File(dir, "immigrationPlaces.html")));
+			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "immigrationPlaces.html")));
 			  	} catch(Exception e) {
 			  		println("Can't create file immigrationPlaces.html: "+e.getMessage());
 			  	}
@@ -419,7 +424,7 @@ public class ReportHTMLTable extends Report {
 		     just writes header and footers */
 		  if(naturalizationPlaceTable) {
 		  	try {
-			  	htmlOut = new PrintWriter(new FileOutputStream(new File(dir, "naturalizationPlaces.html")));
+			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "naturalizationPlaces.html")));
 			  	} catch(Exception e) {
 			  		println("Can't create file naturalizationPlaces.html: "+e.getMessage());
 			  	}
@@ -432,7 +437,7 @@ public class ReportHTMLTable extends Report {
 		     examination of the death place property */
 		  if(deathPlaceTable) {
 		  	try {
-			  	htmlOut = new PrintWriter(new FileOutputStream(new File(dir, "deathPlaces.html")));
+			  	htmlOut = new PrintWriter(new FileOutputStream(createFile(dir, "deathPlaces.html")));
 			  	} catch(Exception e) {
 			  		println("Can't create file deathPlaces.html: "+e.getMessage());
 			  	}
