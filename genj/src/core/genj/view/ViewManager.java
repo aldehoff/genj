@@ -401,11 +401,10 @@ public class ViewManager {
   public void closeViews(Gedcom gedcom) {
     
     // look for views looking at gedcom    
-    Iterator it = key2viewwidget.values().iterator();
-    while (it.hasNext()) {
-      ViewWidget vw = (ViewWidget)it.next();
-      if (vw.getGedcom()==gedcom) 
-        windowManager.close(vw.getKey());
+    ViewWidget[] vws = (ViewWidget[])key2viewwidget.values().toArray(new ViewWidget[key2viewwidget.size()]);
+    for (int i=0;i<vws.length;i++) {
+      if (vws[i].getGedcom()==gedcom) 
+        windowManager.close(vws[i].getKey());
     }
     
     // remove its key from gedcom2current

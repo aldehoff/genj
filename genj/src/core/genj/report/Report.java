@@ -21,6 +21,7 @@ package genj.report;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.util.Debug;
@@ -49,6 +50,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 
 /**
@@ -166,12 +169,12 @@ public abstract class Report implements Cloneable {
   /**
    * Helper method that shows (resulting) properties to the user
    */
-  protected final void showToUser(String msg, Property[] props) {
+  protected final void showToUser(String msg, Gedcom gedcom, Property[] props) {
 
     // prepare content
     JPanel content = new JPanel(new BorderLayout());
     content.add(BorderLayout.NORTH, new JLabel(msg));
-    content.add(BorderLayout.CENTER, new JScrollPane(new PropertyList(props)));
+    content.add(BorderLayout.CENTER, new JScrollPane(new PropertyList(gedcom, props, viewManager)));
 
     // open a non-modal dialog
     viewManager.getWindowManager().openNonModalDialog(
@@ -419,20 +422,43 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * A list of properties
+   * A list of properties - I'm currently simply checking if getParent()!=null
+   * to figure out whether the property is still o.k. (a.k.a. not deleted)
+   * Listening for updates as a GedcomListener was just too much work  ;) 
    */
-  protected static class PropertyList extends JList implements ListCellRenderer {
+  private static class PropertyList extends JList implements ListCellRenderer, ListSelectionListener {
+    
+    /** the view manager */
+    private ViewManager manager;
     
     /** a headless label for rendering */
-    private HeadlessLabel label = new HeadlessLabel(); 
+    private HeadlessLabel label = new HeadlessLabel();
+    
+    /** gedcom */
+    private Gedcom gedcom; 
     
     /**
      * Constructor
      */
-    public PropertyList(Property[] props) {
+    private PropertyList(Gedcom geDcom, Property[] props, ViewManager maNager) {
       super(props);
+      // remember
+      manager = maNager;
+      gedcom = geDcom;
+      // setup looks
       setCellRenderer(this);
       label.setOpaque(true);
+      addListSelectionListener(this);
+      // done
+    }
+
+    /**
+     * Selection changed
+     * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
+     */
+    public void valueChanged(ListSelectionEvent e) {
+      Property prop = (Property)getSelectedValue();
+      if (prop!=null&&prop.getParent()!=null) manager.setContext(prop);
     }
     
     /**
@@ -443,12 +469,19 @@ public abstract class Report implements Cloneable {
       // colors
       label.setBackground(cellHasFocus ? getSelectionBackground() : getBackground());
       label.setForeground(cellHasFocus ? getSelectionForeground() : getForeground());
-      // content
+      // check prop
       Property prop = (Property)value;
-      String txt = prop instanceof Entity ? 
-        prop.toString() : prop.getTag()+' '+prop.getValue();
-      label.setText(txt);
-      label.setIcon(prop.getImage(false));
+      if (prop.getParent()==null) {
+        // show placeholder
+        label.setIcon(MetaProperty.IMG_ERROR);
+        label.setText("*deleted*");
+      } else {
+        // show it
+        Entity ent = prop.getEntity();
+        String txt = ent.getId() + ' ' + ent.toString() + ' ' + prop.getPath();
+        label.setText(txt);
+        label.setIcon(prop.getImage(false));
+      }      
       // done
       return label;
     }

@@ -5,6 +5,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.gedcom.PropertyName;
@@ -85,31 +86,34 @@ public class ReportSameValues extends Report {
   public void start(Object context) {
     
     // get properties that have the same choice
-    String val = null;
+    Gedcom gedcom = null;
     Property[] sameProps = null;
+    String val = null;
     
     if (context instanceof PropertyChoiceValue) {
       PropertyChoiceValue prop = (PropertyChoiceValue)context;
       val = prop.getValue();
       sameProps = prop.getSameChoices();
+      gedcom = prop.getGedcom();
     }
     if (context instanceof PropertyName) {
       PropertyName name = (PropertyName)context;
       val = name.getLastName();
       sameProps = name.getSameLastNames();
+      gedcom = name.getGedcom();
     }
 
     if (val==null||val.length()==0)
       return;
     
     // collect parents of sameProps
-    for (int i=0;i<sameProps.length;i++) {
-      Property parent = sameProps[i].getParent(); 
-      if (parent!=null) sameProps[i] = parent;  
-    }
+//    for (int i=0;i<sameProps.length;i++) {
+//      Property parent = sameProps[i].getParent(); 
+//      if (parent!=null) sameProps[i] = parent;  
+//    }
     
     // show 'em
-    showToUser( i18n("xname",val), sameProps);
+    showToUser( i18n("xname",val), gedcom, sameProps);
     
     // done
   }
