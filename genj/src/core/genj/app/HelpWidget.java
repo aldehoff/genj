@@ -34,35 +34,12 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 
 /**
  * A bridge to javax Help System
  */
 class HelpWidget extends JPanel {
-
-  /**
-   * Calculate help-directory location 'help'
-   */
-  private String calcHelpBase() {
-    
-    // First we look in "genj.help.dir"
-    String dir = EnvironmentChecker.getProperty(
-      this,
-      new String[]{ "genj.help.dir", "user.dir/help"},
-      ".",
-      "read help"
-    );
-    
-    // Then we check for local language
-    String local = dir+"/"+System.getProperty("user.language");
-    if (new File(local).exists()) {
-      return local;
-    }
-    
-    // ... otherwise fallback to 'en' language
-    return dir+"/en";
-    
-  }
 
   /**
    * Constructor
@@ -80,6 +57,7 @@ class HelpWidget extends JPanel {
         WindowManager.IMG_ERROR,
         SwingConstants.CENTER
       );
+      pCenter.setBorder(new EmptyBorder(16,16,16,16));
     }
     
     // layout
@@ -112,6 +90,30 @@ class HelpWidget extends JPanel {
     }
     
     // done    
+  }
+
+  /**
+   * Calculate help-directory location 'help'
+   */
+  private String calcHelpBase() {
+    
+    // First we look in "genj.help.dir"
+    String dir = EnvironmentChecker.getProperty(
+      this,
+      new String[]{ "genj.help.dir", "user.dir/help"},
+      ".",
+      "read help"
+    );
+    
+    // Then we check for local language
+    String local = dir+"/"+System.getProperty("user.language");
+    if (new File(local).exists()) {
+      return local;
+    }
+    
+    // ... otherwise fallback to 'en' language
+    return dir+"/en";
+    
   }
 
   /**
