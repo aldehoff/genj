@@ -102,8 +102,9 @@ import javax.swing.SwingConstants;
    */
   private void installToolBar(JComponent view, ViewFactory factory) {
     
-    // only if ToolBarSupport
-    if (!(view instanceof ToolBarSupport)) return;
+    // only if ToolBarSupport and no bar installed
+    if (!(view instanceof ToolBarSupport)||bar!=null) 
+      return;
 
     // Create one
     bar = new JToolBar();
@@ -181,9 +182,7 @@ import javax.swing.SwingConstants;
    * @see java.awt.Container#addImpl(Component, Object, int)
    */
   protected void addImpl(Component comp, Object constraints, int index) {
-    // go ahead with super
-    super.addImpl(comp, constraints, index);
-    // toolbar?
+    // restore toolbar orientation?
     if (comp==bar) {
       // remember
       registry.put("toolbar", constraints.toString());
@@ -195,6 +194,8 @@ import javax.swing.SwingConstants;
       bar.setOrientation(orientation);
       // toolbar o.k.
     }
+    // go ahead with super
+    super.addImpl(comp, constraints, index);
     // done
   }
 
