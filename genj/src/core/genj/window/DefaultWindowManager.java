@@ -139,7 +139,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
     frame.setBounds(clip(bounds,screen));
 
     // show
-    frame.show();
+    frame.setVisible(true);
     
     // done
   }
@@ -233,7 +233,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
     }
       
     // show
-    dlg.show();
+    dlg.setVisible(true);
 
     // did we wait for something?
     if (isModal) {

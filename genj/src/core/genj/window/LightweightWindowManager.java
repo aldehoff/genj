@@ -76,7 +76,7 @@ public class LightweightWindowManager extends DefaultWindowManager {
     frame.getContentPane().add(new JScrollPane(desktop));
     frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     frame.pack();
-    frame.show();
+    frame.setVisible(true);
     // done
     return desktop; 
   }
