@@ -102,7 +102,7 @@ public class ReportGedcomStatistics implements Report {
       
       // And here comes the check for birth place
       Object place = indi.getProperty("INDI:BIRT:PLAC");
-      if (place==null) {
+      if ((place==null) || (place.toString().trim().length()==0)){
         place = UNKNOWN_PLACE;
       }
        
