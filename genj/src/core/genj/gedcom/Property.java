@@ -797,27 +797,23 @@ public abstract class Property implements Comparable {
    */
   public Property getProperty(TagPath path, boolean validOnly) {
 
-    String next;
-
-    while (true) {
-      // Empty TagPath means us
-      if (!path.hasMore()) {
-        // .. validity?
-        if ( (validOnly) && (!isValid()) ) {
-          return null;
-        }
-        // .. we're o.k.
-        return this;
-      }
-
-      // This is what we are looking for
-      next = path.getNext();
-
-      // Ignore 1st in case of entity
-      if (!((this instanceof Entity)&&(getTag().equals(next)))) {
-        break;
-      }
+    // if we're an entity then we check the tag and skip
+    if (this instanceof Entity) {
+      if (!getTag().equals(path.getNext())) return null;
     }
+
+    // Empty TagPath means us
+    if (!path.hasMore()) {
+      // .. validity?
+      if ( (validOnly) && (!isValid()) ) {
+        return null;
+      }
+      // .. we're o.k.
+      return this;
+    }
+
+    // This is what we are looking for
+    String next = path.getNext();
 
     // Loop through the children
     if (children!=null) {
