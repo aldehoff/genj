@@ -19,76 +19,78 @@
  */
 package genj.app;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.io.Filter;
+import genj.util.swing.SwingFactory;
 import genj.view.FilterSupport;
 import genj.view.ViewManager;
+
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JTabbedPane;
-
-import sun.security.x509.OtherName;
+import javax.swing.JTextField;
 
 /**
  * A widget for setting save options (export)
  */
 /*package*/ class SaveOptionsWidget extends JTabbedPane {
   
-  /** checkboxes */
-  private List checkTypes = new ArrayList();
-  private List checkOthers = new ArrayList();
+  /** components */
+  private JCheckBox[] checkEntities = new JCheckBox[Gedcom.NUM_TYPES];
+  private JCheckBox[] checkViews;
+  private JTextField textTags, textValues;
   
   /** filters */
-  private FilterSupport[] filterSupport;
+  private FilterSupport[] filterViews;
 
   /**
    * Constructor
    */    
   /*package*/ SaveOptionsWidget(Gedcom gedcom) {
     
+    SwingFactory create = new SwingFactory();
+    
     // entities filter    
-    Box types = new Box(BoxLayout.Y_AXIS);
+    Box types = create.Box(BoxLayout.Y_AXIS);
     for (int t=0; t<Gedcom.NUM_TYPES; t++) {
-      types.add(createCheck(Gedcom.getNameFor(t, true), true, checkTypes));
+      checkEntities[t] = create.JCheckBox(Gedcom.getNameFor(t, true), true);
     }
+    create.pop();
+    
+    // property filter
+    Box props = create.Box(BoxLayout.Y_AXIS);
+    create.JLabel("Exclude Tag (Paths):");
+    textTags = create.JTextField("e.g. \"INDI:BIRT:NOTE, ADDR\"", true, 10);
+    create.JLabel("Exclude Values containing:");
+    textValues = create.JTextField("e.g. \"secret, private\"", true, 10);
+    create.pop();
     
     // others filter
-    Box others = new Box(BoxLayout.Y_AXIS);
-    filterSupport = (FilterSupport[])ViewManager.getInstance().getSupportFor(FilterSupport.class, gedcom);
-    for (int i=0; i<filterSupport.length; i++) {
-      others.add(createCheck(filterSupport[i].getFilterName(), false, checkOthers));
+    Box others = create.Box(BoxLayout.Y_AXIS);
+    filterViews = (FilterSupport[])ViewManager.getInstance().getSupportFor(FilterSupport.class, gedcom);
+    checkViews = new JCheckBox[filterViews.length];
+    for (int i=0; i<checkViews.length; i++) {
+      checkViews[i] = create.JCheckBox(filterViews[i].getFilterName(), false);
     }
     
     // layout
-    add("Types ...", types);
-    if (filterSupport.length>0) add("... part of", others);
+    add("Filter by Entities", types);
+    add("by Properties"   , props);
+    if (filterViews.length>0) add("by View", others);
     
     // done
   }
-  
-  /**
-   * Create a checkbox 
-   */
-  private JCheckBox createCheck(String title, boolean enabled, List collection) {
-    JCheckBox result = new JCheckBox(title, enabled);
-    collection.add(result);
-    return result;
-  }
-  
-  /**
-   * Resolve a checkbox
-   */
-  private boolean isChecked(List collection, int index) {
-    return ((JCheckBox)collection.get(index)).isSelected();
-  }
-  
+
   /**
    * The choosen filters
    */
@@ -98,13 +100,17 @@ import sun.security.x509.OtherName;
     List result = new ArrayList(10);
     
     // create one for the types
-    FilterByType fbt = new FilterByType();
-    if (fbt.isActive()) result.add(fbt);
+    FilterByType fbt = FilterByType.get(checkEntities);
+    if (fbt!=null) result.add(fbt);
+    
+    // create one for the properties
+    FilterProperties fp = FilterProperties.get(textTags.getText(), textValues.getText());
+    if (fp!=null) result.add(fp);
     
     // create one for every other
-    for (int f=0; f<filterSupport.length; f++) {
-      if (isChecked(checkOthers, f))
-    	 result.add(filterSupport[f].getFilter());
+    for (int f=0; f<filterViews.length; f++) {
+      if (checkViews[f].isSelected())
+    	 result.add(filterViews[f].getFilter());
     }
     
     // done
@@ -112,27 +118,113 @@ import sun.security.x509.OtherName;
   }
   
   /**
-   * Filter by type
+   * Filter property by tag/value
    */
-  private class FilterByType implements Filter {
-    /** the enabled types */
-    private boolean[] types = new boolean[Gedcom.NUM_TYPES];
+  private static class FilterProperties implements Filter {
+    
+    /** filter tags */
+    private Set tags;
+    
+    /** filter paths */
+    private Set paths;
+    
+    /** filter values */
+    private String[] values;
+    
     /**
      * Constructor
      */
-    private FilterByType() {
-      for (int t=0; t<types.length; t++) {
-      	types[t] = isChecked(checkTypes, t);
-      }
+    private FilterProperties(Set tags, List values) {
+      this.tags = tags;
+      this.values = (String[])values.toArray(new String[0]);
+      // done
     }
+    
     /**
-     * whether we actually filter something
+     * Get instance
      */
-    private boolean isActive() {
-      for (int t=0; t<types.length; t++) {
-        if (types[t]==false) return true;
+    protected static FilterProperties get(String sTags, String sValues) {
+      
+      // calculate tags
+      Set tags = new HashSet();
+      StringTokenizer tokens = new StringTokenizer(sTags, ",");
+      while (tokens.hasMoreTokens()) {
+        tags.add(tokens.nextToken().trim());
       }
-      return false;
+      // calculate values
+      List values = new ArrayList();
+      tokens = new StringTokenizer(sValues, ",");
+      while (tokens.hasMoreTokens()) {
+        values.add(tokens.nextToken().trim());
+      }
+     
+      // done
+      return (tags.isEmpty() && values.isEmpty()) ? null : new FilterProperties(tags, values);
+    }
+    
+    /**
+     * @see genj.io.Filter#accept(genj.gedcom.Entity)
+     */
+    public boolean accept(Entity entity) {
+      return true;
+    }
+
+    /**
+     * @see genj.io.Filter#accept(genj.gedcom.Property)
+     */
+    public boolean accept(Property property) {
+      // check if tag is applying
+      if (tags.contains(property.getTag())) return false;
+      // check if value is applying
+      if (property.isMultiLine()!=Property.NO_MULTI) {
+        Enumeration lines = property.getLineIterator();
+        while (lines.hasMoreElements()) {
+          if (!accept(lines.nextElement().toString())) return false;
+        }
+      }
+      // simple
+      return accept(property.getValue());
+    }
+    
+    /**
+     * Whether we accept a value
+     */
+    private boolean accept(String value) {
+      if (value==null) return true;
+      for (int i=0; i<values.length; i++) {
+        if (value.indexOf(values[i])>=0) return false;
+      }
+      return true;
+    }
+
+  } //FilterProperty
+  
+  /**
+   * Filter by type
+   */
+  private static class FilterByType implements Filter {
+    
+    /** the enabled types */
+    private boolean[] types;
+    
+    /**
+     * Constructor
+     */
+    private FilterByType(boolean[] types) {
+      this.types = types;
+    }
+    
+    /**
+     * Create an instance
+     */
+    protected static FilterByType get(JCheckBox[] checks) {
+      boolean[] bs = new boolean[Gedcom.NUM_TYPES];
+      boolean filter = false;
+      for (int t=0; t<checks.length; t++) {
+      	bs[t] = checks[t].isSelected();
+        if (bs[t]==false) filter = true;
+      }
+      return filter ? new FilterByType(bs) : null;
     }
     /**
      * accepting only specific entity types
