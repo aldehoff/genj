@@ -83,9 +83,10 @@ public class MenuHelper  {
    * Creates a menu
    */
   public JMenu createMenu(String text, Icon img) {
-    JMenu result = new JMenu(string(text));
-    if (img!=null) result.setIcon(img);
-
+    JMenu result = new JMenu();
+    set(text, result);
+    if (img!=null) 
+      result.setIcon(img);
     Object menu = peekMenu();
     if (menu instanceof JMenu)
       ((JMenu)menu).add(result);
@@ -101,9 +102,9 @@ public class MenuHelper  {
   /**
    * Creates a PopupMenu
    */
-  public JPopupMenu createPopup(String label) {
+  public JPopupMenu createPopup() {
     // create one
-    JPopupMenu result = new JPopupMenu(string(label));
+    JPopupMenu result = new JPopupMenu();
     // that's the menu now
     pushMenu(result);
     // done
@@ -113,10 +114,10 @@ public class MenuHelper  {
   /**
    * Creates a PopupMenu
    */
-  public JPopupMenu createPopup(String label, Component component) {
+  public JPopupMenu createPopup(Component component) {
     
     // create one
-    final JPopupMenu result = createPopup(label);
+    final JPopupMenu result = createPopup();
     
     // start listening for it
     component.addMouseListener(new MouseAdapter() {
@@ -194,8 +195,10 @@ public class MenuHelper  {
     // create a menu item
     JMenuItem result = new JMenuItem();
     result.addActionListener(action);
-    if (action.getText()!=null) result.setText(string(action.getText()));
-    if (action.getImage()!=null) result.setIcon(action.getImage());
+    if (action.getText()!=null) 
+      set(action.getText(), result);
+    if (action.getImage()!=null) 
+      result.setIcon(action.getImage());
     result.setEnabled(enabled&&action.isEnabled());
   
     // add it to current menu on stack  
@@ -247,19 +250,39 @@ public class MenuHelper  {
   }
 
   /**
-   * Helper resolving a text
-   */
-  private String string(String txt) {
-    if (txt==null) return "";
-    if (resources==null) return txt;
-    return resources.getString(txt);
-  }
-
-  /**
    * Helper getting the top Menu from the stack
    */  
   private Object peekMenu() {
     if (menus.size()==0) return null;
     return menus.lastElement();
   }
-}
+  
+  /**
+   * Set text taking mnemonic into account
+   */
+  private void set(String txt, JMenuItem item) {
+
+    // no text?
+    if (txt==null) 
+      return;
+    // localize?
+    if (resources!=null) {
+      txt = resources.getString(txt);  
+    }
+    // safety check on ""
+    if (txt.length()==0)
+      return;
+    // calc mnemonic - 1st by default
+    int mnemonic = txt.indexOf('~');    
+    if (mnemonic<0)
+      item.setMnemonic(txt.charAt(0));
+    else {
+      item.setMnemonic(txt.charAt(mnemonic+1));
+      txt = txt.substring(0,mnemonic)+txt.substring(mnemonic+1);
+    }
+    // set it 
+    item.setText(txt);
+  }
+
+} //MenuHelper
+

@@ -112,13 +112,21 @@ public class ButtonHelper {
     // its text
     String s = string((isShortTexts&&action.getShortText()!=null) ? action.getShortText() : action.getText());
     result.putClientProperty("save.text", s);
-    if (isTextAllowed) result.setText(s);
+
+    if (isTextAllowed&&s.length()>0) {
+      int mnemonic = s.indexOf('~');    
+      if (mnemonic<0)
+        result.setMnemonic(s.charAt(0));
+      else {
+        result.setMnemonic(s.charAt(mnemonic+1));
+        s = s.substring(0,mnemonic)+s.substring(mnemonic+1);
+      }
+      result.setText(s);
+    }
     
     // its image
     if (isImageAllowed&&action.getImage()!=null) 
       result.setIcon(action.getImage());
-//    if (isImageAllowed&&action.roll!=null)
-//      result.setRolloverIcon(action.roll);
     if (isImageAllowed&&action.getToggle()!=null)
       result.setSelectedIcon(action.getToggle());
     if (action.getTip()!=null) 
