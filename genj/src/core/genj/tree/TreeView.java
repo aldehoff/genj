@@ -359,18 +359,13 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
    * Access - blueprints
    */
   public void setBlueprints(Blueprint[] set) {
-    // check 
-    boolean b = false;
-    
+    // grab 'em
     for (int i=0; i<set.length; i++) {
-      if (!blueprints[i].equals(set[i])) {
-        blueprints[i] = set[i];
-        renderers[i] = null;
-        b = true;
-      }
+      blueprints[i] = set[i];
+      renderers[i] = null;
     }
-    // show?
-    if (b) repaint();
+    // show
+    repaint();
     // done
   }
 
