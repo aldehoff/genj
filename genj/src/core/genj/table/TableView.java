@@ -29,6 +29,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
@@ -98,6 +99,9 @@ public class TableView extends JPanel implements ToolBarSupport {
     table.getTableHeader().setReorderingAllowed(false);
     setLayout(new BorderLayout());
     add(new JScrollPane(table), BorderLayout.CENTER);
+    
+    // listen to selections
+    table.getSelectionModel().addListSelectionListener((ListSelectionListener)new ActionSelect().as(ListSelectionListener.class));
     
     // done
   }
@@ -271,6 +275,19 @@ public class TableView extends JPanel implements ToolBarSupport {
   } //ActionMode
 
   /**
+   * Action - selection occured
+   */
+  private class ActionSelect extends ActionDelegate {
+    /** run */
+    public void execute() {
+      int i = table.getSelectedRow();
+      if (i<0) return;
+      Entity e = gedcom.getEntities(tableModel.getFilter().type).get(i);
+      gedcom.fireEntitySelected(null, e, false);
+    }
+  } //ActionMode
+
+  /**
    * Our model
    */
   private class Model extends AbstractTableModel implements GedcomListener {
@@ -283,6 +300,7 @@ public class TableView extends JPanel implements ToolBarSupport {
      */
     Model(Filter start) {
       filter = start;
+      gedcom.addListener(this);
     }
     
     /**
@@ -344,10 +362,18 @@ public class TableView extends JPanel implements ToolBarSupport {
      * @see genj.gedcom.GedcomListener#handleSelection(Selection)
      */
     public void handleSelection(Selection selection) {
-      Entity e = selection.getEntity();
+      Entity entity = selection.getEntity();
       // a type that we're interested in?
-      if (e.getType()!=filter.type) return;
+      if (entity.getType()!=filter.type) return;
       // change selection
+      EntityList es = gedcom.getEntities(filter.type);
+      for (int e=0; e<es.getSize(); e++) {
+        if (es.get(e)==entity) {
+          table.getSelectionModel().setSelectionInterval(e,e);
+          return;
+        }
+      }
+      // done
     }
     
   } //Model
