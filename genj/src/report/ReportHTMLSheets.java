@@ -430,7 +430,7 @@ public class ReportHTMLSheets extends Report {
     printCell(out, "ID");
     printCell(out, PropertyName.getLabelForLastName());
     printCell(out, PropertyName.getLabelForFirstName());
-    printCell(out, PropertySex.getLabelForSex());
+    printCell(out, PropertySex.TXT_SEX);
     printCell(out, Gedcom.getName("BIRT"));
     printCell(out, Gedcom.getName("PLAC"));
     printCell(out, Gedcom.getName("DEAT"));

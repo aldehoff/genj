@@ -13,6 +13,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
+import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
@@ -60,7 +61,7 @@ public class ReportEvents extends Report {
     public boolean reportDeath = true;
     
     public int sex = 3;
-    public String[] sexs = {i18n("sex.male"), i18n("sex.female"), i18n("sex.unknown"), i18n("sex.ignore")};
+    public String[] sexs = {PropertySex.TXT_MALE, PropertySex.TXT_FEMALE, PropertySex.TXT_UNKNOWN, i18n("criteria.ignore")};
     
     /** day of the date limit */
     public int day = new GregorianCalendar().get(Calendar.DAY_OF_MONTH);
@@ -75,7 +76,7 @@ public class ReportEvents extends Report {
     
     /** how the day should be handled */
     public int handleDay = 3;
-    public String[] handleDays = { i18n("date.min"), i18n("date.max"), i18n("date.fix"), i18n("date.ignore")};
+    public String[] handleDays = { i18n("criteria.min"), i18n("criteria.max"), i18n("criteria.fix"), i18n("criteria.ignore")};
     
     /** how the day should be handled */
     public int handleMonth = 3;
@@ -153,49 +154,49 @@ public class ReportEvents extends Report {
         }
         
         // output results
-        println(i18n("sex") + ": " + sexs[sex]);
-        println(i18n("day") + ": " + (day + 1) + " (" + handleDays[handleDay] + ")");
-        println(i18n("month") + ": " + (month + 1) + " (" + handleMonths[handleMonth] + ")");
-        println(i18n("year") + ": " + year + " (" + handleYears[handleYear] + ")");
+        println(PropertySex.TXT_SEX + ": " + sexs[sex]);
+        println(Delta.TXT_DAY + ": " + (day + 1) + " (" + handleDays[handleDay] + ")");
+        println(Delta.TXT_MONTH + ": " + (month + 1) + " (" + handleMonths[handleMonth] + ")");
+        println(Delta.TXT_YEAR  + ": " + year + " (" + handleYears[handleYear] + ")");
         println();
         
         if (reportBirth) {
-            println("   " + i18n("birth"));
+            println("   " + Gedcom.getName("BIRT"));
             report(births);
             println();
         }
         if (reportBaptism) {
-            println("   " + i18n("baptism"));
+            println("   " + Gedcom.getName("BAPM"));
             report(baptisms);
             println();
         }
         if (reportMarriage) {
-            println("   " + i18n("marriage"));
+            println("   " + Gedcom.getName("MARR"));
             report(marriages);
             println();
         }
         if (reportDivorce) {
-            println("   " + i18n("divorce"));
+            println("   " + Gedcom.getName("DIV"));
             report(divorces);
             println();
         }
         if (reportEmigration) {
-            println("   " + i18n("emigration"));
+            println("   " + Gedcom.getName("EMIG"));
             report(emigrations);
             println();
         }
         if (reportImmigration) {
-            println("   " + i18n("immigration"));
+            println("   " + Gedcom.getName("IMMI"));
             report(immigrations);
             println();
         }
         if (reportNaturalization) {
-            println("   " + i18n("naturalization"));
+            println("   " + Gedcom.getName("NATU"));
             report(naturalizations);
             println();
         }
         if (reportDeath) {
-            println("   " + i18n("death"));
+            println("   " + Gedcom.getName("DEAT"));
             report(deaths);
         }
         
