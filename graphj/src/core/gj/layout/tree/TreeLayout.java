@@ -60,8 +60,8 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
   /** the alignment of generations (if isAlignGeneration) */
   private double latAlignment = 0.5;
   
-  /** whether we layout unreached nodes, too */
-  private boolean isLayoutUnreachedNodes = true;
+  /** whether we ignore unreached nodes */
+  private boolean isIgnoreUnreachables = false;
   
   /** whether latAlignment is enabled */
   /*package*/ boolean isLatAlignmentEnabled = false;
@@ -167,17 +167,17 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
   }
 
   /**
-   * Getter - whether we layout unreached nodes, too 
+   * Getter - whether we ignore unreached nodes
    */
-  public boolean isLayoutUnreachedNodes() {
-    return isLayoutUnreachedNodes;
+  public boolean isIgnoreUnreachables() {
+    return isIgnoreUnreachables;
   }
 
   /**
-   * setter - whether we layout unreached nodes, too 
+   * setter - whether we ignore unreached nodes
    */
-  public void setLayoutUnreachedNodes(boolean set) {
-    isLayoutUnreachedNodes = set;
+  public void setIgnoreUnreachables(boolean set) {
+    isIgnoreUnreachables = set;
   }
 
   /**
@@ -339,7 +339,7 @@ public class TreeLayout extends AbstractLayout implements Layout, Cloneable {
       if (isDebug()) debug(contour);
 
       // choose a new root (for a new sub-graph)
-      if (!isLayoutUnreachedNodes||unvisited.isEmpty()) break;
+      if (isIgnoreUnreachables||unvisited.isEmpty()) break;
 
       // next
       root = (Node)unvisited.iterator().next();
