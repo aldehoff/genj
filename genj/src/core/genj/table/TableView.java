@@ -420,9 +420,9 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
       return this;
     }
     /**
-     * @see javax.swing.JComponent#paintComponent(Graphics)
+     * @see genj.util.swing.HeadlessLabel#paint(java.awt.Graphics)
      */
-    protected void paintComponent(Graphics g) {
+    public void paint(Graphics g) {
       // our bounds
       Rectangle bounds = getBounds();
       bounds.x=0; bounds.y=0;

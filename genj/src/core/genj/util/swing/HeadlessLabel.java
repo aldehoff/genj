@@ -19,55 +19,182 @@
  */
 package genj.util.swing;
 
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Rectangle;
-import javax.swing.JLabel;
+
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.plaf.basic.BasicHTML;
+import javax.swing.text.View;
 
 /**
- * A performance improved label used by renderers. The performance
- * gain is reached by overriding default label behaviour that is
- * intended to make it perform in a component environment. For
- * renderers this is not necessary so this label is disconnected
- * from a context (headless) and therefor better suited to render
- * with high performance.
+ * A fast-drawing label containing Icon+HTML/txt
+ * 
+ * The following methods are overridden as a performance measure to 
+ * to prune code-paths are often called in the case of renders
+ * but which we know are unnecessary.  Great care should be taken
+ * when writing your own renderer to weigh the benefits and 
+ * drawbacks of overriding methods like these.
  */
-public class HeadlessLabel extends JLabel {
- 
-    /** whether we're opaque or not */
-    private boolean isOpaque = false;
-
-    /*
-     * The following methods are overridden as a performance measure to 
-     * to prune code-paths are often called in the case of renders
-     * but which we know are unnecessary.  Great care should be taken
-     * when writing your own renderer to weigh the benefits and 
-     * drawbacks of overriding methods like these.
-     */
-
-    public boolean isOpaque() { 
-      return isOpaque;
-    }
+public class HeadlessLabel extends JComponent {
     
-    public void setOpaque(boolean set) {
-      isOpaque = set;
+  /** GAP */
+  private int ICON_TEXT_GAP = 4;
+
+  /** simple text */
+  private String txt = "";
+        
+  /** the view */
+  private View view;
+    
+  /** the icon */
+  private Icon icon;
+  
+  /** the icon location */
+  private float iconLocation = 0.0F;
+    
+  /** whether we're opaque or not */
+  private boolean isOpaque = false;
+
+  /**
+   * Set HTML to render
+   */
+  public View setHTML(String set) {
+    return setView(BasicHTML.createHTMLView(this, set));
+  }
+  
+  /**
+   * Set View to render
+   */
+  public View setView(View set) {
+    view = set;
+    txt = "";
+    return set;
+  }
+    
+  /**
+   * Set txt to render
+   */
+  public void setText(String set) {
+    view = null;
+    txt = set!=null ? set : "";
+  }
+    
+  /**
+   * Set Image to render
+   */
+  public void setIcon(Icon icOn) {
+    icon = icOn;
+  }
+    
+  /**
+   * @see java.awt.Component#isOpaque()
+   */
+  public boolean isOpaque() { 
+    return isOpaque;
+  }
+    
+  /**
+   * @see javax.swing.JComponent#setOpaque(boolean)
+   */
+  public void setOpaque(boolean set) {
+    isOpaque = set;
+  }
+  
+  /**
+   * Set relative icon location
+   */
+  public void setIconLocation(float set) {
+    iconLocation = set;
+  }
+
+  /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    float width, height;
+    // ask rootView or text
+    if (view!=null) {
+      width = view.getPreferredSpan(View.X_AXIS);
+      height= view.getPreferredSpan(View.Y_AXIS);
+    } else {
+      FontMetrics fm = getToolkit().getFontMetrics(getFont());
+      width = fm.stringWidth(txt);
+      height = fm.getHeight();
     }
-
-    public void validate() {
+    // check image
+    if (icon!=null) {
+      width += icon.getIconWidth();
+      height = Math.max(height,icon.getIconHeight());
     }
-
-    public void revalidate() {
+    // gap?
+    if ((view!=null||txt.length()>0)&&icon!=null) 
+      width += ICON_TEXT_GAP;
+    // done
+    return new Dimension((int)width,(int)height);
+  }
+    
+  /**
+   * @see javax.swing.JComponent#paint(java.awt.Graphics)
+   */
+  public void paint(Graphics g) {
+    Rectangle bounds = getBounds();
+    bounds.x=0;
+    bounds.y=0;
+    // fill background
+    if (isOpaque) {
+      g.setColor(getBackground());
+      g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
     }
-
-    public void repaint(long tm, int x, int y, int width, int height) {
+    // render icon
+    if (icon!=null) {
+      int
+        w = icon.getIconWidth(),
+        h = icon.getIconHeight();
+      icon.paintIcon(null, g, 0, (int)(iconLocation*(bounds.height - h)));
+      bounds.x += w+ICON_TEXT_GAP;
+      bounds.width -= w+ICON_TEXT_GAP;
     }
-
-    public void repaint(Rectangle r) { 
+    // render html or txt
+    g.setColor(getForeground());
+    if (view!=null) {
+      view.setSize(bounds.width, bounds.height);
+      view.paint(g, bounds);
+    } else {
+      Font font = getFont();
+      g.setFont(font);
+      g.drawString(txt, bounds.x, getFontMetrics(font).getMaxAscent());       
     }
+    // done
+  }
+  
+  /**
+   * @see javax.swing.JComponent#getAlignmentY()
+   */
+  public float getAlignmentY() {
+    return 0;
+  }
 
-    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-    }
 
-    public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
-    }
+  public void validate() {
+  }
 
-} //RendererLabel
+  public void revalidate() {
+  }
 
+  public void repaint(long tm, int x, int y, int width, int height) {
+  }
+
+  public void repaint(Rectangle r) { 
+  }
+
+  protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+  }
+
+  public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+  }
+    
+} //HeadlessLabel
