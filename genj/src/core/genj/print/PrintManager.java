@@ -108,7 +108,7 @@ public class PrintManager {
 
   /**
    * Our own task for printing   */  
-  /*package*/ class PrintTask implements Printable {
+  /*package*/ class PrintTask {
     
     /** our print job */
     private PrinterJob job;
@@ -123,7 +123,7 @@ public class PrintManager {
     private Printer renderer;
     
     /** pages */
-    private Point[] pageSequence;
+    private Point pages;
     
     /**
      * Constructor     */
@@ -141,33 +141,13 @@ public class PrintManager {
       
       // show dialog
       boolean cont = showDialog(owner);
-      if (!cont) {
+      if (!cont||getPages().x==0||getPages().y==0) {
         job.cancel();
         return;
       }
 
-      // calculate pages
-      // FIXME fix resolution if required (e.g. 300)
-      Point2D.Double resolution = new Point2D.Double(72/2.54, 72/2.54);
-      Point2D.Double size = new Point2D.Double(pageFormat.getImageableWidth(),pageFormat.getImageableHeight());
-      
-      Point pages = renderer.calcPages(size, resolution);   
-
-      // safety check
-      if (pages.x==0||pages.y==0) 
-        throw new IllegalArgumentException("Renderer returned zero pages");
-      
-      // setup pages
-      pageSequence = new Point[pages.x*pages.y];
-      int i = 0;
-      for (int x=0; x<pages.x; x++) {
-        for (int y=0; y<pages.y; y++) {
-          pageSequence[i++] = new Point(x,y);         
-        }
-      }
-
       // glue to us as the printable     
-      job.setPrintable(this, pageFormat);
+      job.setPrintable(new PrintableImpl(getPages(), getResolution(), renderer), pageFormat);
       
       // call
       try {
@@ -205,32 +185,98 @@ public class PrintManager {
     }
     
     /**
-     * PageFormat     */
-    /*package*/ PageFormat getPageFormat() {
-      return pageFormat;
-    }
-
-    /**
      * Show page dialog     */
     /*package*/ void showPageDialog() {
       // let the user change things
       pageFormat = job.pageDialog(getPageFormat());
       // preserve page format
       registry.put("printer.orientation", pageFormat.getOrientation());
+      // reset pages
+      pages = null;
       // done            
     }
     
     /**
-     * Callback for actual printing  - we know that the
-     * Graphics object is scaled to 1/72 of an inch.
+     * PageFormat
+     */
+    /*package*/ PageFormat getPageFormat() {
+      return pageFormat;
+    }
+
+    /**
+     * Resolve resolution     */
+    /*package*/ Point2D getResolution() {
+      return new Point2D.Double(72/2.54, 72/2.54);
+    }
+    
+    /**
+     * Resolve pages     */
+    /*package*/ Point getPages() {
+
+      // already calculated?
+      if (pages!=null) return pages;
+      
+      // FIXME fix resolution if required (e.g. 300)
+      Point2D.Double size = new Point2D.Double(pageFormat.getImageableWidth(),pageFormat.getImageableHeight());
+      pages = renderer.calcPages(size, getResolution());
+      
+      // done
+      return pages;
+    }
+    
+    /** 
+     * Resolves renderer     */
+    /*package*/ Printer getRenderer() {
+      return renderer;
+    }
+    
+  } //PrintTask
+
+  /**
+   * PrintManager
+   */
+  private static class PrintableImpl implements Printable {
+    
+    /** renderer we use */
+    private Printer renderer;
+    
+    /** the resolution */
+    private Point2D resolution;
+    
+    /** pages */
+    private Point[] pageSequence;
+    
+    /**
+     * Constructor
+     */
+    /*package*/ PrintableImpl(Point pages, Point2D resolUtion, Printer rendErer) {
+  
+      // remember renderer
+      renderer = rendErer;
+      resolution = resolUtion;
+      
+      // setup pages
+      pageSequence = new Point[pages.x*pages.y];
+      int i = 0;
+      for (int x=0; x<pages.x; x++) {
+        for (int y=0; y<pages.y; y++) {
+          pageSequence[i++] = new Point(x,y);         
+        }
+      }
+  
+      // ready      
+    }
+    
+    /**
+     * Callback for actual printing  
      * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
      */
     public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-
+  
       // what's the current page
       if (pageIndex==pageSequence.length) return NO_SUCH_PAGE;
       Point page = pageSequence[pageIndex]; 
-
+  
       // draw border
       Graphics2D g = (Graphics2D)graphics;
       g.setColor(Color.black);
@@ -242,23 +288,15 @@ public class PrintManager {
         pageFormat.getImageableHeight()
       ));
       
-      // FIXME fix resolution if required (e.g. 300)
-      double factor = 300D/72; 
-      g.scale(1/factor, 1/factor);
-      Point2D.Double resolution = new Point2D.Double(300/2.54, 300/2.54);
-      Point2D.Double size = new Point2D.Double(
-        pageFormat.getImageableWidth() * factor,
-        pageFormat.getImageableHeight()* factor
-      );
-
       // render it
       renderer.renderPage(g, page, resolution);
       
       // done
       return PAGE_EXISTS;
-
+  
     }
+  
+  } //PrintableImpl  
 
-  } //PrintTask
 
 } //PrintManager

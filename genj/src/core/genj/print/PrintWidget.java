@@ -22,18 +22,20 @@ package genj.print;
 import genj.util.ActionDelegate;
 import genj.util.swing.ButtonHelper;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
 /**
  * A PrintDialog */
 public class PrintWidget extends JTabbedPane {
-  
-  /** panels */
-  private 
-    MainPanel panelMain;
-    PreviewPanel panelPreview;
   
   /** task */
   private PrintManager.PrintTask task;
@@ -46,8 +48,8 @@ public class PrintWidget extends JTabbedPane {
     task = tAsk;
     
     // create panels
-    panelMain = new MainPanel();
-    panelPreview = new PreviewPanel();
+    MainPanel panelMain = new MainPanel();
+    JComponent panelPreview = new JScrollPane(new Preview());
     
     // layout
     add("Main", panelMain);
@@ -64,38 +66,53 @@ public class PrintWidget extends JTabbedPane {
     /**
      * Constructor     */
     private MainPanel() {
-       
-       add(new JLabel("Printing is under development - This won't work!"));
       // layout
+      add(new JLabel("Printing is under development - This won't work!"));
       ButtonHelper bh = new ButtonHelper().setContainer(this);
-      bh.create(new PageDlg());
+      bh.create(new PageSetup());
       // done
     }
 
-    /**
-     * Open Page Dialog
-     */
-    private class PageDlg extends ActionDelegate {
-      /**
-       * Constructor
-       */
-      private PageDlg() {
-        super.setText("Page Properties");
-      }
-      /**
-       * @see genj.util.ActionDelegate#execute()
-       */
-      protected void execute() {
-        task.showPageDialog();
-      }
-    } //PrintDlg
-    
   } //MainPanel
   
   /**
-   * A panel for preview
+   * The preview   */
+  private class Preview extends JComponent {
+
+    /**
+     * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
+     */
+    protected void paintComponent(Graphics g) {
+      g.setColor(Color.gray);
+      g.fillRect(0,0,getWidth(),getHeight());
+      g.setColor(Color.white);
+      Point pages = task.getPages(); 
+      g.drawString(pages.x+" x "+pages.y,32,32);
+      
+      Graphics2D g2d = (Graphics2D)g;
+      
+      //task.getRenderer().renderPage(g2d, new Point(0,0), task.getResolution());
+    }
+
+  } //Preview
+
+  /**
+   * Show Page Setup
    */
-  private class PreviewPanel extends JPanel {
-  } //PreviewPanel
+  private class PageSetup extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private PageSetup() {
+      super.setText("Page Setup");
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      task.showPageDialog();
+    }
+  } //PrintDlg
+  
   
 } //PrintWidget
