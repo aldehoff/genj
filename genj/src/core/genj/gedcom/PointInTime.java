@@ -33,13 +33,13 @@ public class PointInTime implements Comparable {
 
   /** calendars */
   public final static Calendar
-    GREGORIAN = new Calendar("@#DGREGORIAN@", "gregorian", "images/Gregorian.gif", new String[]{ "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC" }),
-    JULIAN    = new Calendar("@#DJULIAN@"   , "julian"   , "images/Julian.gif"   , new String[]{ "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC" }),
+    GREGORIAN = new GregorianCalendar(),
+    JULIAN    = new JulianCalendar(),
     HEBREW    = new Calendar("@#DHEBREW@"   , "hebrew"   , "images/Hebrew.gif"   , new String[]{ "TSH","CSH","KSL","TVT","SHV","ADR","ADS","NSN","IYR","SVN","TMZ","AAV","ELL" }),
     FRENCHR   = new Calendar("@#DFRENCH R@" , "french"   , "images/FrenchR.gif"  , new String[]{ "VEND","BRUM","FRIM","NIVO","PLUV","VENT","GERM","FLOR","PRAI","MESS","THER","FRUC","COMP" });
   
   public final static Calendar[] CALENDARS = { GREGORIAN, JULIAN, HEBREW, FRENCHR };
-    
+  
   /** calendar */
   protected Calendar calendar = GREGORIAN;
   
@@ -232,7 +232,19 @@ public class PointInTime implements Comparable {
    * Checks for validity
    */
   public boolean isValid() {
-    return calendar.isValid(day,month,year);
+
+    // YYYY is always needed!
+    if (year<0)
+      return false;
+    // MM needed if DD!
+    if (month<0&&day>=0)
+      return false;
+    // DD at least not <-1
+    if (day<-1)
+      return false;
+
+    // rely on calendar specific
+    return calendar.isValid(day<0?0:day,month<0?0:month,year);
   }
     
   /**
@@ -241,6 +253,23 @@ public class PointInTime implements Comparable {
   public int compareTo(Object o) {
     return compareTo((PointInTime)o, 0);
   }    
+
+  /**
+   * compare two dates (assuming same calendar)
+   * @return <0 if date1<date2, 0 if date1==date2, >0 if data1>date2
+   */
+  public static int compare(int day1, int month1, int year1, int day2, int month2, int year2) {
+    int rc = year1-year2;
+    if (rc!=0) 
+      return rc;
+    rc = month1-month2;
+    if (rc!=0)
+      return rc;
+    rc = day1-day2;
+    if (rc!=0) 
+      return rc;
+    return 0;
+  }
   
   /**
    * compare to other
@@ -388,16 +417,18 @@ public class PointInTime implements Comparable {
   public static class Calendar {
     
     /** fields */
-    private String escape;
-    private String name;
-    private ImageIcon image;
-    private String[] months;
-    private Map
+    protected String escape;
+    protected String name;
+    protected ImageIcon image;
+    protected String[] months;
+    protected Map
       localizedMonthNames = new HashMap(),
       abbreviatedMonthNames = new HashMap(); 
      
-    /** Constructor */
-    private Calendar(String esc, String key, String img, String[] mOnths) {
+    /** 
+     * Constructor 
+     */
+    protected Calendar(String esc, String key, String img, String[] mOnths) {
       
       // initialize members
       months = mOnths;
@@ -479,26 +510,97 @@ public class PointInTime implements Comparable {
       // done
       return mmm;
     }
-  
+
     /**
-     * Validity check
+     * Validity check day,month,year>0
      */
-    public boolean isValid(int day, int month, int year) {
-      // YYYY is needed!
-      if (year<0)
+    protected boolean isValid(int day, int month, int year) {
+
+      // months have to be within range
+      if (month>=months.length)
         return false;
-      // MMM YYYY with month within range?
-      if (month<-1||month>=months.length)
+
+      // day has to be withing range
+      if (day>=getDays(month,year))
         return false;
-      // DD MMMM YYYY involves month
-      if (month<0&&day>=0)
-        return false;
-      // FIXME day in range dependent on calendar?
-      if (day<-1||day>31)
-        return false;
+
+      // is good
       return true;
+    }
+    
+    /**
+     * Calculate number of days in given month
+     */
+    protected int getDays(int month, int year) {
+      return 31;
     }
     
   } //Calendar
 
+  // FIXME need calendar for julian, hebrew and french r, too!
+
+  /**
+   * Our own gregorian - dunno if java.util.GregorianCalendar would be of much help
+   */
+  private static class GregorianCalendar extends Calendar {
+
+    protected static final String MONTHS[]
+      = { "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC" };
+    private static final int MONTH_LENGTH[]
+      = {31,28,31,30,31,30,31,31,30,31,30,31}; // 0-based
+    private static final int LEAP_MONTH_LENGTH[]
+      = {31,29,31,30,31,30,31,31,30,31,30,31}; // 0-based
+  
+    /**
+     * Constructor
+     */
+    protected GregorianCalendar() {
+      this("@#DGREGORIAN@", "gregorian", "images/Gregorian.gif");
+    }
+    
+    /**
+     * Constructor
+     */
+    protected GregorianCalendar(String esc, String key, String img) {
+      super(esc, key, img, MONTHS);
+    }
+
+    /**
+     * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
+     */
+    protected int getDays(int month, int year) {
+      int[] length = isLeap(year) ? LEAP_MONTH_LENGTH : MONTH_LENGTH;
+      return length[month];
+    }
+    
+    /**
+     * Definition of Gregorian leap year
+     */
+    protected boolean isLeap(int year) {
+      return ((year%4 == 0) && ((year%100 != 0) || (year%400 == 0)));
+    }
+    
+  } //GregorianCalendar
+
+  /**
+   * Our own julian
+   */
+  private static class JulianCalendar extends GregorianCalendar {
+
+    /**
+     * Constructor
+     */
+    protected JulianCalendar() {
+      super("@#DJULIAN@"   , "julian"   , "images/Julian.gif");
+    }
+    
+    /**
+     * @see genj.gedcom.PointInTime.GregorianCalendar#isLeap(int)
+     */
+    protected boolean isLeap(int year) {
+      return (year%4 == 0);
+    }
+
+  } //JulianCalendar  
+  
 } //PointInTime
