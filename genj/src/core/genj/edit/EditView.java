@@ -29,7 +29,6 @@ import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.MenuHelper;
 import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -43,8 +42,6 @@ import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -122,9 +119,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     // layout
     setLayout(new BorderLayout());
     add(splitPane, BorderLayout.CENTER);
-    
-    // menubar
-    installMenuBar((JFrame)setFrame);
     
     // Done
   }
@@ -280,21 +274,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   }
 
   /**
-   * Creates the top menu bar
-   */
-  private void installMenuBar(JFrame frame) {
-    
-    // prepare bar
-    MenuHelper mh = new MenuHelper();
-    mh.setTarget(this);
-    frame.setJMenuBar(mh.createBar());
-    
-    // create action menu
-    mh.createMenu(new ActionMenu());
-    
-  }
-  
-  /**
    * Prepare a proxy for editing a property
    */
   private void startEdit(boolean keepSimple) {
@@ -363,38 +342,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
 
     // Done
   }
-  
-  /**
-   * Fill the action-menu
-   */
-  private class ActionMenu extends ActionDelegate {
-    /**
-     * Constructor
-     */
-    private ActionMenu() {
-      setText(resources.getString("action"));
-    }
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-      
-      // prepare menu for actions
-      JMenu menu = (JMenu)target;
-      menu.removeAll();
-      MenuHelper mh = new MenuHelper().setTarget(EditView.this).pushMenu(menu);
-      
-      // check selection
-      Property[] selection = tree.getSelection();
-      ContextSupport.Context context = new Context(
-        selection.length==1 ? selection[0] : getCurrentEntity()
-      );
-      ViewManager.getInstance().fillContextMenu(mh, gedcom, context);
-      
-      // done
-    }
-
-  } //ActionMenu
   
   /**
    * Action - toggle

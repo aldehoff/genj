@@ -367,7 +367,7 @@ public class ViewManager {
   /**
    * Fills a menu with context actions 
    */
-  public void fillContextMenu(MenuHelper mh, Gedcom gedcom, ContextSupport.Context context) {
+  private void fillContextMenu(MenuHelper mh, Gedcom gedcom, ContextSupport.Context context) {
 
     // the context might have some actions we're going to add
     mh.createItems(context.getActions());
