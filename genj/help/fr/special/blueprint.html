@@ -5,80 +5,114 @@
 <h2>Les Calques</h2>
 
 <p>
- Looking at Gedcom information in a structured hierarchical manner like
- <a href="../view/edit.html">Edit View</a> or <a href="../view/table.html">Table View</a>
- is one thing. Rendering the information about an entity in a static 2d way 
- is another. Both <a href="../view/tree.html">Tree View</a> and
- <a href="../view/entity.html">Entity View</a> do just that. They render
- individuals and entities in a constrained rectangular space on your screen
- or paper.
+ Examiner une information Gedcom dans une structure hi&eacute;rarchis&eacute;e 
+ comme dans la <a href="../view/edit.html">Fen&ecirc;tre d'Edition</a> ou le 
+ <a href="../view/table.html">Tableau des Donn&eacute;es</a> est une chose. 
+ Fournir l'information d'une identit&eacute; dans une vue statique en 
+ 2D en est une autre. La visualisation de l'<a href="../view/tree.html">Arbre 
+ G&eacute;n&eacute;alogique</a> et la <a href="../view/entity.html">Visualisation 
+ d'Entit&eacute;</a> le font toutes deux. Elles pr&eacute;sentent les individus et 
+ les entit&eacute;s dans un espace rectangulaire fixe, sur votre &eacute;cran ou 
+ votre papier.
 </p>
 
 <p>
- The underlying technology used for this by GenJ is HTML. The instructions
- of how to render an entity is called a Blueprint. It consists of standard
- HTML with the addition of a new HTML element "prop".
+ La technologie sous jacente utilis&eacute;e pour cela par GenJ est le 
+ langage HTML. Les instructions indiquant comment d&eacute;ployer une 
+ entit&eacute; sont appel&eacute;es un Calque. Il est form&eacute; de 
+ langage HTML standard avec l'ajout d'un nouvel &eacute;l&eacute;ment HTML 
+ "prop" (signifiant "propri&eacute;t&eacute;").
 </p>
 
 <p>
- Here's an example: 
+ Voici un exemple :
  <pre>
       &lt;b&gt;<b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI</font><b>&gt;</b>&lt;/b&gt;
       <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:NAME</font><b>&gt;</b>
-      born <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:BIRT:DATE</font><b>&gt;</b>
-      in <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:BIRT:PLAC</font><b>&gt;</b>,
-      lived in <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:RESI:ADDR:CITY</font><b>&gt;</b>
-      and worked as a <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:OCCU</font><b>&gt;</b>. </pre>
- which looks like this once rendered:
+      n&eacute; le <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:BIRT:DATE</font><b>&gt;</b>
+      &agrave; <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:BIRT:PLAC</font><b>&gt;</b>,
+      vivant &agrave; <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:RESI:ADDR:CITY</font><b>&gt;</b>
+      et travaillant en tant que <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:OCCU</font><b>&gt;</b>. </pre>
+ce qui donnera ceci :
+      <blockquote>
+        <b>I008</b> Meier, Nils n&eacute; le 25 Mai 1970 &agrave; Rendsburg, 
+        vivant &agrave; San Francisco et travaillant en tant que Programmeur. 
+      </blockquote>
+
+<p>
+ Comme vous pouvez le voir l'argument "path" vers "prop" contient 
+ une identification <a href="../concepts/paths.html">Tag Path</a>
+ (Chemin d'Etiquette) indiquant comment redonner le texte r&eacute;dig&eacute;. 
+ Voici comment les valeurs suivantes des propri&eacute;t&eacute;s sont 
+ solutionn&eacute;es ; 
+
  <blockquote>
-   <b>I008</b> Meier, Nils born 25 May 1970 in Rendsburg, lived
-   in San Francisco and worked as a Software Engineer.
- </blockquote>
-<p>
+  <table>
+    <tbody>
+      <tr>
+        <td><font color="blue">path=...</font></td>
+        <td>r&eacute;sultat</td>
+        <td>Crit&egrave;re d'un Individu ...</td>
+      </tr>
+      <tr>
+        <td>INDI </td>
+        <td>I008 </td>
+        <td>ID (num&eacute;ro d'identification)</td>
+      </tr>
+      <tr>
+        <td>INDI:NAME </td>
+        <td>Meier, Nils</td>
+        <td>Nom</td>
+      </tr>
+      <tr>
+        <td>INDI:BIRT:DATE </td>
+        <td>25 Mai 1970</td>
+        <td>Date de naissance</td>
+      </tr>
+      <tr>
+        <td>INDI:BIRT:PLACE </td>
+        <td>Rendsburg </td>
+        <td>Lieu de naissance</td>
+      </tr>
+      <tr>
+        <td>INDI:RESI:ADDR:CITY </td>
+        <td>San Francisco</td>
+        <td>Ville de r&eacute;sidence</td>
+      </tr>
+      <tr>
+        <td>INDI:OCCU </td>
+        <td>Programmeur</td>
+        <td>Profession</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
 
-<p>
- As you can see the "path" argument to "prop" contains a 
-  <a href="../concepts/paths.html">Tag Path</a>
- identifying what to render into the text-flow. Here the following
- values of properties are resolved;
- 
- <blockquote><table>
-  <tr>
-   <td><font color=blue>path=...</font></td><td>result</td><td>individual's ...</td>
-  </tr><tr>
-   <td>INDI                         </td><td>I008        </td><td>ID</td>
-  </tr><tr>
-   <td>INDI:NAME                    </td><td>Meier, Nils</td><td>name</td>
-  </tr><tr>
-   <td>INDI:BIRT:DATE               </td><td>25 May 1970</td><td>birth date</td>
-  </tr><tr>
-   <td>INDI:BIRT:PLACE              </td><td>Rendsburg  </td><td>birth place</td>
-  </tr><tr>
-   <td>INDI:RESI:ADDR:CITY          </td><td>San Francisco</td><td>city of residence</td>
-  </tr><tr>
-   <td>INDI:OCCU                    </td><td>Software Engineer</td><td>occupation</td>
-  </tr>
- </table></blockquote>
- 
- By using different blueprints the same data can be rendered in various ways, because
- differnent sets of information, different layouts and colors can be choosen:
- 
-  <blockquote><img src="../../images/screenshots/blueprint1.png"></blockquote>
+
+En utilisant diff&eacute;rents calques les m&ecirc;mes
+donn&eacute;es peuvent &ecirc;tre affich&eacute;es de
+diff&eacute;rentes mani&egrave;res, car diff&eacute;rents 
+ensembles d'informations, diff&eacute;rentes mises en page et 
+diff&eacute;rentes couleurs peuvent &ecirc;tre choisies :
+
+<blockquote><img src="../../images/screenshots/blueprint1.png"></blockquote>
 </p>
 
 <p>
- Views utilizing blueprints will offer to select and edit them through their settings.
- Predefined blueprints cannot be changed but user-defined blueprints can be changed
- once created (blueprints are managed globally and not per view).
+ Les vues utilisant des calques offriront de les s&eacute;lectionner et de 
+ les &eacute;diter &agrave; travers leurs options. Les calques 
+ pr&eacute;d&eacute;finis ne peuvent &ecirc;tre chang&eacute;s mais les 
+ calques faits par l'utilisateur peuvent &ecirc;tre chang&eacute;s une 
+ fois cr&eacute;&eacute;s (les calques sont g&eacute;r&eacute;s globalement 
+ et non par vue). 
 </p>
 
-<p>
- <b><font color=red>Note</font></b>: This is a very advanced feature that won't be necessary
- to be understood by all users. The default blueprints should be sufficient for
- 80% of the users.
+<p> 
+ <b><font color="red">Note</font></b>: C'est une fonctionnalit&eacute; 
+ tr&egrave;s avanc&eacute;e qui n'a pas besoin d'&ecirc;tre assimil&eacute;e 
+ par tous les utilisateurs. Les calques par d&eacute;faut seront suffisants 
+ pour 80% des utilisateurs. 
 </p>
 
 </body>
 </html>
-
-
