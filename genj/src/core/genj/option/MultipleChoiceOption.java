@@ -54,9 +54,12 @@ public class MultipleChoiceOption extends Option {
    * @see genj.option.Option#setValue(java.lang.Object)
    */
   public void setValue(Object value) {
+    // null test?
+    if (value==null)
+      return;
     // one of the known choices?
     for (int i=0; i<choices.length; i++) {
-      if (choices[i]==value) {
+      if (value.equals(choices[i])) {
         // .. translate to index
         setValue(new Integer(i));
         return;
