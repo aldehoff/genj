@@ -104,7 +104,7 @@ class ProxyAge extends Proxy {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      String txt = age.getAgeString(age.getEarlier(), age.getLater(), true);
+      String txt = age.getAgeString(age.getEarlier(), age.getLater(), true,false);
       tfield.setText(txt);
       tfield.setChanged(true);
     }

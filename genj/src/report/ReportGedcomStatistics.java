@@ -26,7 +26,7 @@ import java.text.NumberFormat;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.40 2003-11-09 21:27:58 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.41 2003-12-12 13:08:01 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -700,7 +700,7 @@ public class ReportGedcomStatistics extends Report {
                     printMinMaxAge(printIndis, indent, "minAge", stats.minAge, new ArrayList(stats.age.getReferences(new Integer(stats.minAge))));
                     // average age
                     age = calculateAverageAge(stats.sumAge,stats.age.getSize());
-                    println(getIndent(indent)+i18n("avgAge")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true));
+                    println(getIndent(indent)+i18n("avgAge")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
                     // max. age
                     printMinMaxAge(printIndis, indent, "maxAge", stats.maxAge, new ArrayList(stats.age.getReferences(new Integer(stats.maxAge))));
                 }
@@ -713,7 +713,7 @@ public class ReportGedcomStatistics extends Report {
                     printMinMaxAge(printIndis, indent, "minAge", stats.minChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.minChildBirthAge))));
                     // avg age
                     age = calculateAverageAge(stats.sumChildBirthAge,stats.childBirthNumber);
-                    println(getIndent(indent)+i18n("avgAge")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true));
+                    println(getIndent(indent)+i18n("avgAge")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
                     // max. age
                     printMinMaxAge(printIndis, indent, "maxAge", stats.maxChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.maxChildBirthAge))));
                 }
@@ -733,7 +733,7 @@ public class ReportGedcomStatistics extends Report {
     private void printMinMaxAge(int reportIndis, int indent, String prefix, int age, ArrayList ages) {
         
         int[] avg = calculateAverageAge(age,1);
-        println(getIndent(indent)+i18n(prefix)+" "+PropertyAge.getAgeString(avg[0], avg[1], avg[2], true));
+        println(getIndent(indent)+i18n(prefix)+" "+PropertyAge.getAgeString(avg[0], avg[1], avg[2], true, false));
         if(reportIndis<3) {
             for(int i=0;i<ages.size();i++) {
                 Indi indi = (Indi)ages.get(i);

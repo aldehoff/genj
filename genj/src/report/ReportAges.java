@@ -209,7 +209,7 @@ public class ReportAges extends Report {
                         if(age == null)
                             println(getIndent(4)+i18n("marriageBeforeBirth", fam.getMarriageDate()));
                         else
-                            println(getIndent(4)+i18n("age")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true));
+                            println(getIndent(4)+i18n("age")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
                     }
                 }
             }
@@ -232,7 +232,7 @@ public class ReportAges extends Report {
                     if(age == null)
                         println(getIndent(4)+i18n("childBirthBeforeBirth"));
                     else
-                        println(getIndent(4)+i18n("age")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true));
+                        println(getIndent(4)+i18n("age")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
                 }
             }
             println();
@@ -247,14 +247,14 @@ public class ReportAges extends Report {
             if(age == null)
                 println(getIndent(3)+i18n("deathBeforeBirth", indi.getDeathDate()));
             else
-                println(getIndent(3)+i18n("age")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true));
+                println(getIndent(3)+i18n("age")+" "+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
         }
         
         if(reportAgeSinceBirth) {
             println();
             println(getIndent(1)+i18n("ageSinceBirth"));
             age = calculateAge(indi, null, PointInTime.getNow());
-            println(getIndent(2)+PropertyAge.getAgeString(age[0], age[1], age[2], true));
+            println(getIndent(2)+PropertyAge.getAgeString(age[0], age[1], age[2], true, false));
         }
     }
     
