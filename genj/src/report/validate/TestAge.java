@@ -80,7 +80,7 @@ public class TestAge extends Test {
     // get to the date
     PropertyDate date ;
     if (path2date!=null) {
-      date = (PropertyDate)prop.getProperty(path2date, true);
+      date = (PropertyDate)prop.getProperty(path2date);
     } else {
       date = (PropertyDate)prop;
     }
@@ -89,7 +89,7 @@ public class TestAge extends Test {
       return;
 
     // find indi we compute age for 
-    Property pindi = prop.getProperty(path2indi, true);
+    Property pindi = prop.getProperty(path2indi);
     if (!(pindi instanceof Indi))
       return;
     Indi indi = (Indi)pindi;      

@@ -410,7 +410,7 @@ public abstract class Property implements Comparable {
   private void getPropertiesRecursively(TagPath path, int pos, List fill) {
 
     // Correct here ?
-    if (!path.match(pos, getTag())) 
+    if (!path.equals(pos, getTag())) 
       return;
 
     // Me the last one?
@@ -479,59 +479,83 @@ public abstract class Property implements Comparable {
    * Returns this property's property by path
    */
   public Property getProperty(TagPath path) {
-    return getProperty(path, false);
+    return getPropertyRecursively(this, path, 0, true);
   }
   
-  public Property getProperty(TagPath path, boolean followLink) {
-    return getPropertyRecursively(path, 0, followLink);
-  }
-  
-  private Property getPropertyRecursively(TagPath path, int pos, boolean followLink) {
+  private static Property getPropertyRecursively(Property prop, TagPath path, int pos,  boolean checkPropsTagFirst) {
+    
+    while (true) {
 
-    // a '..'?
-    if (path.get(pos).equals("..")) 
-      return parent==null ? null : parent.getPropertyRecursively(path, pos+1, followLink);
-
-    // Correct here?
-    if (path.match(pos, getTag(), 0)==TagPath.MATCH_NONE)
-      return null;
-
-    // path traversed? (it's me)
-    if (pos==path.length()-1) 
-      return this;
-      
-    // follow a link? (this probably should be into PropertyXref.class - override)
-    if (followLink&&this instanceof PropertyXRef) {
-      Property p = ((PropertyXRef)this).getReferencedEntity();
-      if (p!=null)
-        p = p.getPropertyRecursively(path, pos+1, followLink);
-      if (p!=null)
-        return p;
-    }
-
-    // Search for appropriate tag in properties
-    for (int i=0,n=0;i<getNoOfProperties();i++) {
-
-      Property ith = getProperty(i);
-
-      // tag and selector have to match
-      switch (path.match(pos+1, ith.getTag(), n)) {
-        // this identifies clearly which child with appropriate tag to recurse into
-        case TagPath.MATCH_ALL:
-          return ith.getPropertyRecursively(path, pos+1, followLink);
-        // a matching tag means a different selector next time
-        case TagPath.MATCH_TAG:
-          n++;
-        // no match at all is simply skipped
-        case TagPath.MATCH_NONE:
+      // still tags available in path?
+      if (pos==path.length())
+        return prop;
+      String tag = path.get(pos);
+    
+      // a '..'?
+      if (tag.equals("..")) {
+        Property parent = prop.getParent();
+        // no parent?
+        if (parent==null)
+          return null;
+        // continue with parent
+        prop = parent;
+        pos++;
+        checkPropsTagFirst = false;
+        continue;
       }
-        
-        
-      // continue looking
+      
+      // a '.'?
+      if (tag.equals(".")) {
+        // continue with self
+        pos++;
+        checkPropsTagFirst = false;
+        continue;
+      }
+
+      // a '*'?
+      if (tag.equals("*")) {
+        // check out target
+        if (!(prop instanceof PropertyXRef))
+          return null;
+        prop = ((PropertyXRef)prop).getTarget();
+        if (prop==null)
+          return null;
+        // continue with prop
+        pos++;
+        checkPropsTagFirst = false;
+        continue;
+      }
+
+      // still have to match prop's tag?
+      if (checkPropsTagFirst) {
+        if (!tag.equals(prop.getTag()))
+          return null;
+        // go with prop then
+        pos++;
+        checkPropsTagFirst = false;
+        continue;
+      }
+      
+      // Search for appropriate tag in children
+      for (int i=0,n=0;i<prop.getNoOfProperties();i++) {
+
+        Property ith = prop.getProperty(i);
+
+        // tag is good?
+        if (path.equals(pos, ith.getTag())) {
+          // selector good?
+          if (path.equals(pos, n))
+            return getPropertyRecursively(ith, path, pos+1, false);
+          // inc selector
+          n++;
+        }
+      }
+      
+      // no recursion left
+      return null;
+          
     }
     
-    // not found
-    return null;
   }
 
   /**

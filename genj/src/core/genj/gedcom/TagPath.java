@@ -175,48 +175,93 @@ public class TagPath {
     MATCH_ALL  = 2;
 
   /**
-   * Matches a path element with given tag
-   * @param which the path element to match
-   * @param tag the tag to match it with
-   * @return true if tag equals path[which]
+   * Compares the tag at given position with argument
    */
-  public boolean match(int which, String tag) {
-    return match(which, tag, 0)!=MATCH_NONE;
+  public boolean equals(int at, String tag) {
+    
+    // what's the element 'at'
+    String element = tags[at];
+    
+    // gotta match for at least tag.length
+    if (!element.regionMatches(0, tag, 0, tag.length()))
+      return false;
+    
+    // simplest case of 'BIRT' matches 'BIRT' (implying 0 selector)
+    if (element.length()==tag.length())
+      return true;
+  
+    // no good if followed by other than selector
+    if (element.charAt(tag.length())!='#')
+      return false;
+    
+    // is good
+    return true;
   }
   
   /**
-   * Matches a path element with given tag and selector
-   * @param which the path element to match
-   * @param tag the tag to match it with
-   * @param selector the selector (e.g. '2') to match it with
-   * @return MATCH_NONE if tag is not the same, 
-   *          MATCH_TAG if tag is the same but selector is different,
-   *          MATCH_ALL if tag and selector are the same
+   * Compares the selector at given position with argument
    */
-  public int match(int which, String tag, int selector) {
+  public boolean equals(int at, int selector) {
+    
+    // what's the element 'at'
+    String element = tags[at];
 
-    // compare path element 'which' 
-    String element = tags[which];
+    // no selector - gotta be 0 
+    int i = element.indexOf('#');
+    if (i<0)
+      return selector==0;
     
-    // gotta match for tag.length - e.g. 'BIRT#0' matches 'BIRT'
-    if (!element.regionMatches(0, tag, 0, tag.length()))
-      return MATCH_NONE;
-      
-    // simplest case of 'BIRT' matches 'BIRT' (implying 0 selector)
-    if (element.length()==tag.length())
-      return selector==0 ? MATCH_ALL : MATCH_TAG;
+    // selector has to fit after '#'?
+    String s = Integer.toString(selector);
+    if (element.length()-i-1!=s.length())
+      return false;
     
-    // gotta be selector case case then 'BIRT#x' matching 'BIRT'
-    if (element.charAt(tag.length())!='#')
-      return MATCH_NONE;
-      
-    // selector wrong? e.g. in case of 'BIRT#1' match 1 with 'selector' #2?
-    if (!element.regionMatches(tag.length()+1, Integer.toString(selector), 0, element.length()-tag.length()-1))
-      return MATCH_TAG;
-      
-    // all well
-    return MATCH_ALL;
+    return element.regionMatches(i+1, s, 0, s.length());
   }
+  
+//  /**
+//   * Matches a path element with given tag
+//   * @param which the path element to match
+//   * @param tag the tag to match it with
+//   * @return true if tag equals path[which]
+//   */
+//  public boolean match(int which, String tag) {
+//    return match(which, tag, 0)!=MATCH_NONE;
+//  }
+//  
+//  /**
+//   * Matches a path element with given tag and selector
+//   * @param which the path element to match
+//   * @param tag the tag to match it with
+//   * @param selector the selector (e.g. '2') to match it with
+//   * @return MATCH_NONE if tag is not the same, 
+//   *          MATCH_TAG if tag is the same but selector is different,
+//   *          MATCH_ALL if tag and selector are the same
+//   */
+//  public int match(int which, String tag, int selector) {
+//
+//    // compare path element 'which' 
+//    String element = tags[which];
+//    
+//    // gotta match for tag.length - e.g. 'BIRT#0' matches 'BIRT'
+//    if (!element.regionMatches(0, tag, 0, tag.length()))
+//      return MATCH_NONE;
+//      
+//    // simplest case of 'BIRT' matches 'BIRT' (implying 0 selector)
+//    if (element.length()==tag.length())
+//      return selector==0 ? MATCH_ALL : MATCH_TAG;
+//    
+//    // gotta be selector case case then 'BIRT#x' matching 'BIRT'
+//    if (element.charAt(tag.length())!='#')
+//      return MATCH_NONE;
+//      
+//    // selector wrong? e.g. in case of 'BIRT#1' match 1 with 'selector' #2?
+//    if (!element.regionMatches(tag.length()+1, Integer.toString(selector), 0, element.length()-tag.length()-1))
+//      return MATCH_TAG;
+//      
+//    // all well
+//    return MATCH_ALL;
+//  }
 
   /**
    * Returns the n-th tag of this path (this won't return the selector information e.g. BIRT#1 but only BIRT)

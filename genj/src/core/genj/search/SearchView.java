@@ -611,7 +611,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       boolean searchThis = true;
       if (tagPath!=null) {
         // break if we don't match path
-        if (pathIndex<tagPath.length()&&!tagPath.match(pathIndex,prop.getTag())) 
+        if (pathIndex<tagPath.length()&&!tagPath.equals(pathIndex,prop.getTag())) 
           return;
         // search this if path is consumed 
         searchThis = pathIndex>=tagPath.length()-1;

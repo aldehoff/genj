@@ -295,7 +295,7 @@ public class BlueprintEditor extends JSplitPane {
      */
     public Property getProperty(TagPath path) {
       // safety check for root-tag
-      if (!path.match(0, getTag())) 
+      if (!path.equals(0, getTag())) 
         return null;
       // fake it
       return fakeProperty(this, path, 0);
