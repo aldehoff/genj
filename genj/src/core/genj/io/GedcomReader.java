@@ -79,7 +79,6 @@ public class GedcomReader implements Trackable {
   private boolean cancel=false;
   private Thread worker;
   private Object lock = new Object();
-  private boolean fixDuplicateIDs = false;
   private Enigma enigma;
 
   /**
@@ -132,13 +131,6 @@ public class GedcomReader implements Trackable {
     gedcom.setPassword(password); 
     
     // done
-  }
-
-  /**
-   * Backdoor switch that triggers automatic fixing of duplicate IDs
-   */
-  public void setFixDuplicatedIDs(boolean value) {
-    fixDuplicateIDs = value;
   }
 
   /**
@@ -204,18 +196,8 @@ public class GedcomReader implements Trackable {
    */
   private void readEntity() throws GedcomIOException, GedcomFormatException {
 
-    // FIXME 20040308 support records without XREF
-    // Apparently some Gedcom tools write something like this:
-    //  0 _EVENT_DEF
-    //  1 FOO foo
-    //  ...
-    // we should support this but currently ALL records/entities
-    // have to have a unique XREF ID - we should figure something
-    // out so this can be loaded without skipping and preserved
-    // on save
-
-    // "L XXXX" expected
-    if (!readLine()||(level!=0)||(xref.length()==0)) {
+    // "0 [@xref@] value" expected - xref can be missing for custom records
+    if (!readLine()||level!=0) {
       String msg = "Expected 0 @XREF@ INDI|FAM|OBJE|NOTE|REPO|SOUR|SUBM";
       // at least still level identifyable?
       if (level==0) {
@@ -226,16 +208,14 @@ public class GedcomReader implements Trackable {
       }
       throw new GedcomFormatException(msg,line);
     }
+    
+    if (xref.length()==0)
+      addWarning(line, "Entity/record "+tag+" without valid @xref@");
 
-    // Create entity
-    Entity ent=null;
+    // Create entity and read its properties
     try {
-      // Fix duplicates?
-      if (fixDuplicateIDs&&gedcom.getEntity(xref)!=null) {
-        ent=gedcom.createEntity(tag, null);
-      } else {
-        ent=gedcom.createEntity(tag, xref);
-      }
+      
+      Entity ent = gedcom.createEntity(tag, xref);
       
       // preserve value for those who care
       ent.setValue(value);
@@ -490,13 +470,12 @@ public class GedcomReader implements Trackable {
       if (tag.startsWith("@")) {
 
         // .. valid ?
-        if (!tag.endsWith("@")) {
+        if (!tag.endsWith("@")||tag.length()<=2)
           throw new GedcomFormatException("Expected X @XREF@ TAG [VALUE]",line);
-        }
-
-        // .. indeed, valid xref !
+ 
+        // .. indeed, xref !
         xref = tag.substring(1,tag.length()-1);
-
+        
         // .. tag is the next token
         tag = tokens.nextToken();
 

@@ -227,8 +227,13 @@ public class GedcomWriter implements Trackable {
         return;
     }
 
-    // Entity line
-    writeProperty("@" + ent.getId() + "@ ", ent);
+    // Entity line (might be missing xref in case of custom records)
+    String xref = ent.getId();
+    if (xref.length()>0) 
+      xref = "@" + xref + "@ ";
+    
+    // .. writing it and its subs
+    writeProperty(xref, ent);
 
     // Done
     entity++;

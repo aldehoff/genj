@@ -221,15 +221,19 @@ public class Gedcom {
    */
   public Entity createEntity(String tag, String id) throws GedcomException {
     
-    // lookup a type
-    Class clazz = (Class)E2TYPE.get(tag);
-    if (clazz==null)
-      clazz = Entity.class;
-    
     // Generate id if necessary
-    if (id==null) 
+    if (id==null)
       id = createEntityId(tag);
 
+    // lookup a type - all well known types need id
+    Class clazz = (Class)E2TYPE.get(tag);
+    if (clazz!=null) {
+      if (id.length()==0)
+        throw new GedcomException("Entity "+tag+" requires id");
+    } else {
+      clazz = Entity.class;
+    }
+    
     // Create entity
     Entity result; 
     try {
@@ -238,8 +242,11 @@ public class Gedcom {
       throw new GedcomException("Unexpected problem creating instance of "+tag);
     }
 
-    // remember     
-    getEntityMap(tag).put(id, result);
+    // remember id2entity
+    if (id.length()>0)
+      getEntityMap(tag).put(id, result);
+     
+    // remember entity
     entities.add(result);
     
     // initialize
