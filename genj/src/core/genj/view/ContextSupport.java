@@ -19,30 +19,74 @@
  */
 package genj.view;
 
-import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 
+import java.awt.Point;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComponent;
+
 /**
- * Support for a context if property/entity/gedcom
+ * Support for a popup menu on entities
  */
 public interface ContextSupport {
+
+  /**
+   * The component where the popup support is installed on
+   */
+  public JComponent getContextPopupContainer();
+  
+  /** 
+   * Context (entity/property) by position
+   */
+  public Context getContextAt(Point pos);
   
   /**
-   * Callback for actions on a property
+   * Set context
    */
-  public List createActions(Property property);
-
+  public void setContext(Property property);
+  
   /**
-   * Callback for actions on an entity
+   * A context
    */
-  public List createActions(Entity entity);
+  public class Context {
+    
+    /** actions */
+    private List actions;
+    
+    /** the content of the context */
+    private Property content;
+    
+    /**
+     * Constructor
+     */
+    public Context(Property content) {
+      this(content, new ArrayList());
+    }
+    
+    /**
+     * Constructor
+     */
+    public Context(Property content, List actions) {
+      this.content = content;
+      this.actions = actions;
+    }
+    
+    /**
+     * Accessor - property
+     */
+    public Property getProperty() {
+      return content;
+    }
+    
+    /**
+     * Accessor - actions
+     */
+    public List getActions() {
+      return actions;
+    }
+    
+  }//Context
 
-  /**
-   * Callback for actions on a gedcom
-   */
-  public List createActions(Gedcom gedcom);
-
-} //ContextMenuSupport
+} //EntityPopupSupport

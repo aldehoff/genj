@@ -139,7 +139,7 @@ import javax.swing.JTextArea;
         EditView.open(focus);
       }
       // set current        
-      ViewManager.getInstance().setCurrentEntity(focus);
+      ViewManager.getInstance().setContext(focus);
     }
     // done
   }

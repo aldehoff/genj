@@ -30,8 +30,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.MenuHelper;
-import genj.view.ContextPopupSupport;
-import genj.view.CurrentSupport;
+import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -58,7 +57,7 @@ import javax.swing.tree.TreePath;
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, ContextPopupSupport {
+public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
 
   /** the gedcom we're looking at */
   private Gedcom    gedcom;
@@ -145,7 +144,8 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       }
     }
     if (entity==null) {
-      entity = ViewManager.getInstance().getCurrentEntity(gedcom);
+      Property context = ViewManager.getInstance().getContext(gedcom); 
+      if (context!=null) entity = context.getEntity();
     }
     setEntity(entity);
     preselectEntity=null;
@@ -172,94 +172,12 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   }
 
   /**
-  public void handleChange(Change change) {
-
-    // Do I show an entity's properties now ?
-    if (currentEntity==null) {
-      return;
-    }
-
-    // Entity deleted ?
-    if ( change.isChanged(Change.EDEL) ) {
-
-      // Loop through known entity ?
-      boolean affected = false;
-
-      Iterator ents = change.getEntities(Change.EDEL).iterator();
-      while (ents.hasNext()) {
-
-        Object ent = ents.next();
-
-        // ... a removed entity has to be removed from stack
-        while (returnStack.removeElement(ent)) {};
-
-        // ... and might affect the current edit view
-        affected |= (ent==currentEntity);
-      }
-
-      // Is this a show stopper at this point?
-      if (affected==true) {
-        setEntity(null);
-        return;
-      }
-
-      // continue
-    }
-
-    // Property added/removed ?
-    if ( change.isChanged(Change.PADD)
-       ||change.isChanged(Change.PDEL)) {
-
-      tree.setRoot(currentEntity.getProperty());
-
-      // .. select added
-      List padd = change.getProperties(Change.PADD);
-      if (padd.size()>0) {
-        PropertyTreeModel model = (PropertyTreeModel)tree.getModel();
-        Property root = (Property)model.getRoot();
-        Property first = (Property)padd.get(0);
-        if (first instanceof PropertyEvent) {
-          Property pdate = ((PropertyEvent)first).getDate(false);
-          if (padd.contains(pdate))
-            first = pdate!=null ? pdate : first;
-        }
-        Property[] path = root.getPathTo(first);
-        if (path!=null) {
-          tree.setSelectionPath(new TreePath(path));
-        }
-      }
-      return;
-    }
-
-    // Property modified ?
-    if ( change.isChanged(change.PMOD) ) {
-      if ( change.getEntities(Change.EMOD).contains(currentEntity)) {
-        PropertyTreeModel treeModel = (PropertyTreeModel)tree.getModel();
-        treeModel.firePropertiesChanged(change.getProperties(Change.PMOD));
-        //if (change.getProperties(change.PMOD).contains(currentProperty))
-        //  stopEdit(false);
-        return;
-      }
-    }
-
-    // Done
-  }
-*/
-
-  /**
-   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
+   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
    */
-  public void setCurrentEntity(Entity entity) {
-    if (!isSticky()) setEntity(entity);
+  public void setContext(Property property) {
+    if (!isSticky()) setEntity(property.getEntity());
   }
 
-  /**
-   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
-   */
-  public void setCurrentProperty(Property property) {
-    // ignored
-  }
-  
   /**
    * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
    */
@@ -466,8 +384,8 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       
       // check selection
       Property[] selection = tree.getSelection();
-      ContextPopupSupport.Context context = new Context(
-        selection.length==1 ? (Object)selection[0] : (Object)getCurrentEntity()
+      ContextSupport.Context context = new Context(
+        selection.length==1 ? selection[0] : getCurrentEntity()
       );
       ViewManager.getInstance().fillContextMenu(mh, gedcom, context);
       

@@ -20,21 +20,29 @@
 package genj.view;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 
+import java.util.List;
+
 /**
- * Support for currently selected entity/property
+ * Support for a actions of property/entity/gedcom
  */
-public interface CurrentSupport {
+public interface ActionSupport {
+  
+  /**
+   * Callback for actions on a property
+   */
+  public List createActions(Property property);
 
   /**
-   * Change the current entity
+   * Callback for actions on an entity
    */
-  public void setCurrentEntity(Entity entity);
-  
+  public List createActions(Entity entity);
+
   /**
-   * Change the current property
+   * Callback for actions on a gedcom
    */
-  public void setCurrentProperty(Property property);
-  
-} //CurrentSupport
+  public List createActions(Gedcom gedcom);
+
+} //ContextMenuSupport

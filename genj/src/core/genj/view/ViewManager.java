@@ -107,15 +107,16 @@ public class ViewManager {
   }
   
   /**
-   * Returns the currently selected entity
-   * @return the entity (might be null)
+   * Returns the last set context for given gedcom
+   * @return the property (might be null)
    */
-  public Entity getCurrentEntity(Gedcom gedcom) {
+  public Property getContext(Gedcom gedcom) {
     // grab one from map
-    Entity result = (Entity)gedcom2current.get(gedcom);
+    Property result = (Property)gedcom2current.get(gedcom);
     if (result!=null) {
-      // still valid?
-      if (gedcom.getEntities(result.getType()).contains(result))
+      // still in valid entity?
+      Entity entity = result.getEntity();
+      if (gedcom.getEntities(entity.getType()).contains(entity.getEntity()))
         return result;
       // remove from map 
       gedcom2current.remove(gedcom);
@@ -131,14 +132,14 @@ public class ViewManager {
   }
 
   /**
-   * Sets the current entity
+   * Sets the current context
    */
-  public void setCurrentEntity(Entity entity) {
+  public void setContext(Property property) {
     // already?
-    Gedcom gedcom = entity.getGedcom();
-    //if (gedcom2current.get(gedcom)==entity) return;
+    Gedcom gedcom = property.getGedcom();
     // remember
-    gedcom2current.put(gedcom, entity);
+    if (gedcom2current.get(gedcom)==property) return;
+    gedcom2current.put(gedcom, property);
     // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();
     // loop and tell to views
@@ -148,33 +149,8 @@ public class ViewManager {
       // only if view on same gedcom
       if (vw.getGedcom()!= gedcom) continue;
       // tell it
-      vw.setCurrentEntity(entity);
+      vw.setContext(property);
     }
-    // done
-  }
-
-  /**
-   * Sets the current property
-   */
-  public void setCurrentProperty(Property property) {
-    setCurrentEntity(property.getEntity());
-      
-   /**
-    // already?
-    if (currentProperty==property) return;
-    // remember
-    currentProperty = property;
-    Gedcom gedcom = property.getGedcom();
-    // loop and tell to views
-    Iterator it = viewWidgets.iterator();
-    while (it.hasNext()) {
-      ViewWidget vw = (ViewWidget)it.next();
-      // only if view on same gedcom
-      if (vw.getGedcom()!= gedcom) continue;
-      // tell it
-      vw.setCurrentProperty(currentProperty);
-    }
-    */
     // done
   }
 
@@ -273,8 +249,8 @@ public class ViewManager {
     // loop through descriptors
     List result = new ArrayList(16);
     for (int f=0; f<factories.length; f++) {
-      if (factories[f] instanceof ContextSupport) {
-        List as = getActions((ContextSupport)factories[f], context);
+      if (factories[f] instanceof ActionSupport) {
+        List as = getActions((ActionSupport)factories[f], context);
         if (as!=null&&!as.isEmpty()) result.add(as);
       }
     }
@@ -283,8 +259,8 @@ public class ViewManager {
     Iterator views = viewWidgets.iterator();
     while (views.hasNext()) {
       ViewWidget view = (ViewWidget)views.next();
-      if (view.getGedcom()==gedcom&&view.getView() instanceof ContextSupport) {
-        List as = getActions((ContextSupport)view.getView(), context);
+      if (view.getGedcom()==gedcom&&view.getView() instanceof ActionSupport) {
+        List as = getActions((ActionSupport)view.getView(), context);
         if (as!=null&&!as.isEmpty()) result.add(as);
       }
     }
@@ -295,7 +271,7 @@ public class ViewManager {
   /**
    * Resolves the context information from support/context
    */
-  private List getActions(ContextSupport cs, Object context) {
+  private List getActions(ActionSupport cs, Object context) {
     // get result by calling appropriate support method
     List result;
     if (context instanceof Gedcom) 
@@ -389,23 +365,17 @@ public class ViewManager {
   /**
    * Fills a menu with context actions 
    */
-  public void fillContextMenu(MenuHelper mh, Gedcom gedcom, ContextPopupSupport.Context context) {
+  public void fillContextMenu(MenuHelper mh, Gedcom gedcom, ContextSupport.Context context) {
 
     // the context might have some actions we're going to add
     mh.createItems(context.getActions());
 
     // we need Entity, property and Gedcom (above) from context
-    Entity entity = null;
-    Property property = null;
-    if (context.getContent() instanceof Entity) {
-      entity = (Entity)context.getContent();
-    } else if (context.getContent() instanceof Property) {
-      property = (Property)context.getContent();
-      entity = property.getEntity();
-    }
+    Property property = context.getProperty();
+    Entity entity = property.getEntity();
 
     // items for property
-    if (property!=null) {
+    if (property!=entity) {
       List actions = getActions(property);
       if (!actions.isEmpty()) {
         String title = "Property '"+TagPath.get(property)+'\'';
@@ -416,18 +386,16 @@ public class ViewManager {
     }
     
     // items for entity
-    if (entity!=null) {
-      List actions = getActions(entity);
-      if (!actions.isEmpty()) {
-        String title = Gedcom.getNameFor(entity.getType(),false)+" '"+entity.getId()+'\'';
-        mh.createMenu(title, entity.getImage(false));
-        mh.createItems(actions);
-        mh.popMenu();
-      }
+    List actions = getActions(entity);
+    if (!actions.isEmpty()) {
+      String title = Gedcom.getNameFor(entity.getType(),false)+" '"+entity.getId()+'\'';
+      mh.createMenu(title, entity.getImage(false));
+      mh.createItems(actions);
+      mh.popMenu();
     }
     
     // items for gedcom
-    List actions = getActions(gedcom);
+    actions = getActions(gedcom);
     if (!actions.isEmpty()) {
       String title = "Gedcom '"+gedcom.getName()+'\'';
       mh.createMenu(title, Gedcom.getImage());
@@ -442,7 +410,7 @@ public class ViewManager {
    * Show a context menu for given point - at this
    * point we assume that view instanceof EntityPopupSupport
    */
-  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, ContextPopupSupport.Context context) {
+  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, ContextSupport.Context context) {
     
     // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();

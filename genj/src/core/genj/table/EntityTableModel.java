@@ -138,6 +138,13 @@ import javax.swing.table.TableColumnModel;
   }
   
   /**
+   * Returns the property at given row/col
+   */
+  /*package*/ Property getProperty(int row, int col) {
+    return rows[row].ps[col];
+  }
+  
+  /**
    * Returns the row for given entity
    */
   /*package*/ int getRow(Entity e) {          

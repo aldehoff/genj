@@ -39,7 +39,7 @@ import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.swing.ImageIcon;
-import genj.view.ContextSupport;
+import genj.view.ActionSupport;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
@@ -54,7 +54,7 @@ import javax.swing.JComponent;
 /**
  * The factory for the TableView
  */
-public class EditViewFactory implements ViewFactory, ContextSupport {
+public class EditViewFactory implements ViewFactory, ActionSupport {
     
   /** a noop is used for separators in returning actions */  
   private final static ActionDelegate aNOOP = ActionDelegate.NOOP;

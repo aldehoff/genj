@@ -30,23 +30,26 @@ import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.view.CurrentSupport;
+import genj.view.ContextSupport;
 import genj.view.ViewManager;
+
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Insets;
+import java.awt.Point;
 import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
  * A navigator with buttons to easily navigate through Gedcom data
  */
-public class NavigatorView extends JPanel implements CurrentSupport {
+public class NavigatorView extends JPanel implements ContextSupport {
   
   /*package*/ static Resources resources = new Resources(NavigatorView.class);
   
@@ -91,17 +94,39 @@ public class NavigatorView extends JPanel implements CurrentSupport {
     });
     
     // init
-    setCurrentEntity(ViewManager.getInstance().getCurrentEntity(gedcom));
+    Property context = ViewManager.getInstance().getContext(gedcom);
+    if (context!=null)
+      setCurrentEntity(context.getEntity());
 
     // done    
 
   }
+
+  /**
+   * @see genj.view.ContextPopupSupport#getContextPopupContainer()
+   */
+  public JComponent getContextPopupContainer() {
+    return null;
+  }
   
   /**
-   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
+   * @see genj.view.ContextPopupSupport#getContextAt(java.awt.Point)
+   */
+  public Context getContextAt(Point pos) {
+    return null;
+  }
+
+  /**
+   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
+   */
+  public void setContext(Property property) {
+    setCurrentEntity(property.getEntity());
+  }
+  
+  /**
+   * Set the current entity
    */
   public void setCurrentEntity(Entity e) {
-    
     // no entity
     if (e == null) {
       List list = gedcom.getEntities(Gedcom.INDIVIDUALS);
@@ -138,18 +163,11 @@ public class NavigatorView extends JPanel implements CurrentSupport {
   }
   
   /**
-   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
-   */
-  public void setCurrentProperty(Property property) {
-    // ignored
-  }
-  
-  /**
    * propagate the selection of an entity
    */
   private void fireCurrentEntity(Entity e) {
     if (e==null) return;
-    ViewManager.getInstance().setCurrentEntity(e);
+    ViewManager.getInstance().setContext(e);
   }
   
   /**

@@ -33,8 +33,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.SortableTableHeader;
-import genj.view.ContextPopupSupport;
-import genj.view.CurrentSupport;
+import genj.view.ContextSupport;
 import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -54,6 +53,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -61,7 +61,7 @@ import javax.swing.table.TableColumnModel;
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport, CurrentSupport, ContextPopupSupport, FilterSupport {
+public class TableView extends JPanel implements ToolBarSupport, ContextSupport, FilterSupport {
   
   /** a static set of resources */
   /*package*/ final static Resources resources = new Resources("genj.table");
@@ -83,6 +83,9 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
   
   /** the gedcom listener we're using */
   private GedcomListener listener;
+  
+  /** a callback for selections */
+  private SelectionCallback selectionCallback = new SelectionCallback();
   
   /**
    * Constructor
@@ -108,7 +111,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     table.setAutoCreateColumnsFromModel(false);
     table.getTableHeader().setReorderingAllowed(false);
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
-    table.getSelectionModel().addListSelectionListener((ListSelectionListener)new ActionRowSelected().as(ListSelectionListener.class));
+    table.getSelectionModel().addListSelectionListener(selectionCallback);
     
     setLayout(new BorderLayout());
     add(new JScrollPane(table), BorderLayout.CENTER);
@@ -168,12 +171,13 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     table.setColumnModel(tableModel.createTableColumnModel(getWidth()));
     // done
   }
-  
+
   /**
-   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
+   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
    */
-  public void setCurrentEntity(Entity entity) {
+  public void setContext(Property property) {
     // a type that we're interested in?
+    Entity entity = property.getEntity();
     if (entity.getType()!=tableModel.getType()) return;
     // already selected?
     int row = table.getSelectionModel().getLeadSelectionIndex();
@@ -181,15 +185,9 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     // change selection
     row = tableModel.getRow(entity);
     table.scrollRectToVisible(table.getCellRect(row,0,true));
+    selectionCallback.skipNext();
     table.getSelectionModel().setSelectionInterval(row,row);
     // done
-  }
-
-  /**
-   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
-   */
-  public void setCurrentProperty(Property property) {
-    // ignored
   }
 
   /**
@@ -351,17 +349,39 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
   } //ActionMode
 
   /**
-   * Action - selection occured
+   * Callback for list selections
    */
-  private class ActionRowSelected extends ActionDelegate {
-    /** run */
-    public void execute() {
-      int i = table.getSelectedRow();
-      if (i<0) return;
-      Entity e = tableModel.getEntity(i);
-      ViewManager.getInstance().setCurrentEntity(e);
+  private class SelectionCallback implements ListSelectionListener {
+    /** skip next callback */
+    private boolean skip = false;
+    /**
+     * set to skip
+     */
+    private void skipNext() {
+      skip = true;
     }
-  } //ActionMode
+    /**
+     * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
+     */
+    public void valueChanged(ListSelectionEvent e) {
+      // skip this callback?
+      if (skip) {
+        skip = false;
+        return;
+      } 
+      // grab row & col
+      int 
+        row = table.getSelectedRow(),
+        col = table.getSelectedColumn();
+      // find property
+      Property context = null;
+      if (col>=0) context = tableModel.getProperty(row,col);
+      if (context==null&&row>=0) context = tableModel.getEntity(row);
+      if (context==null) return;
+      // set
+      ViewManager.getInstance().setContext(context);
+    }
+  } //SelectionCallback
   
   /**
    * Renderer for properties in cells

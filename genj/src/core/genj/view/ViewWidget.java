@@ -19,7 +19,6 @@
  */
 package genj.view;
 
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.print.PrintManager;
@@ -135,10 +134,12 @@ import javax.swing.SwingConstants;
    */
   private void installPopupSupport() {
     // check for support
-    if (!(view instanceof ContextPopupSupport)) return;
+    if (!(view instanceof ContextSupport)) return;
     // install it
-    ContextPopupSupport eps = (ContextPopupSupport)view;
-    eps.getContextPopupContainer().addMouseListener(new EntityPopupMouseListener());
+    ContextSupport eps = (ContextSupport)view;
+    JComponent container = eps.getContextPopupContainer();
+    if (container!=null)
+      container.addMouseListener(new EntityPopupMouseListener());
     // done
   }
   
@@ -166,19 +167,11 @@ import javax.swing.SwingConstants;
   /**
    * Sets the view's current entity
    */
-  /*package*/ void setCurrentEntity(Entity entity) {
+  /*package*/ void setContext(Property property) {
     // delegate to view
-    if (view instanceof CurrentSupport)
-      ((CurrentSupport)view).setCurrentEntity(entity);
+    if (view instanceof ContextSupport)
+      ((ContextSupport)view).setContext(property);
     // done     
-  }
-  
-  /**
-   * Sets the view's current property
-   */
-  /*package*/ void setCurrentProperty(Property property) {
-    if (view instanceof CurrentSupport)
-      ((CurrentSupport)view).setCurrentProperty(property);
   }
   
   /**
@@ -262,8 +255,8 @@ import javax.swing.SwingConstants;
       // no popup trigger no action
       if (!e.isPopupTrigger()) return;
       // show a context menu
-      ContextPopupSupport esp = (ContextPopupSupport)view;
-      ContextPopupSupport.Context context = esp.getContextAt(e.getPoint());
+      ContextSupport esp = (ContextSupport)view;
+      ContextSupport.Context context = esp.getContextAt(e.getPoint());
       if (context==null) return;
       ViewManager.getInstance().showContextMenu(esp.getContextPopupContainer(), e.getPoint(), gedcom, context);
       // done

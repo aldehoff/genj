@@ -29,7 +29,7 @@ import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.view.CurrentSupport;
+import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -37,6 +37,7 @@ import java.awt.Color;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 
@@ -47,7 +48,7 @@ import javax.swing.JToolBar;
  * A rendering component showing the currently selected entity
  * via html
  */
-public class EntityView extends JComponent implements ToolBarSupport, CurrentSupport {
+public class EntityView extends JComponent implements ToolBarSupport, ContextSupport {
 
   /** language resources we use */  
   /*package*/ final static Resources resources = new Resources("genj.entity");
@@ -98,7 +99,8 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
   public void addNotify() {
     super.addNotify();
     // set first entity
-    setEntity(ViewManager.getInstance().getCurrentEntity(gedcom));
+    Property context = ViewManager.getInstance().getContext(gedcom); 
+    if (context!=null) setContext(context.getEntity());
   }
   
   /**
@@ -181,17 +183,24 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     return (Blueprint[])blueprints.clone();
   }
     /**
-   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
+   * @see genj.view.ContextPopupSupport#getContextAt(java.awt.Point)
    */
-  public void setCurrentEntity(Entity e) {
-    if (entity!=e) setEntity(e);
+  public Context getContextAt(Point pos) {
+    return new Context(entity); 
+  }
+  
+  /**
+   * @see genj.view.ContextPopupSupport#getContextPopupContainer()
+   */
+  public JComponent getContextPopupContainer() {
+    return this;
   }
 
   /**
-   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
+   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
    */
-  public void setCurrentProperty(Property property) {
-    // ignored
+  public void setContext(Property property) {
+    setEntity(property.getEntity());
   }
 
   /** 

@@ -40,9 +40,8 @@ import genj.util.swing.PopupButton;
 import genj.util.swing.ScreenResolutionScale;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortOverview;
-import genj.view.ContextPopupSupport;
+import genj.view.ActionSupport;
 import genj.view.ContextSupport;
-import genj.view.CurrentSupport;
 import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -80,7 +79,7 @@ import javax.swing.event.ChangeListener;
 /**
  * TreeView
  */
-public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupport, ToolBarSupport, ContextSupport, FilterSupport {
+public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, ActionSupport, FilterSupport {
   
   /** an icon for bookmarking */
   private final static ImageIcon BOOKMARK_ICON = new ImageIcon(TreeView.class, "images/Bookmark.gif");      
@@ -186,7 +185,10 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       root = gedcm.getEntity(registry.get("root",(String)null));
     } catch (Exception e) {
     }
-    if (root==null) root = ViewManager.getInstance().getCurrentEntity(gedcm); 
+    if (root==null) {
+      Property context = ViewManager.getInstance().getContext(gedcm);
+      if (context!=null) root = context.getEntity();  
+    } 
     model.setRoot(root);
     
     try { 
@@ -376,10 +378,11 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   }
 
   /**
-   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
+   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
    */
-  public void setCurrentEntity(Entity entity) {
+  public void setContext(Property property) {
     // anything new?
+    Entity entity = property.getEntity();
     if (entity==currentEntity) return;
     // allowed?
     if (!(entity instanceof Indi||entity instanceof Fam)) return;
@@ -427,12 +430,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   }
   
   
-  /**
-   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
-   */
-  public void setCurrentProperty(Property property) {
-  }
-
   /**
    * @see genj.view.ContextPopupSupport#getContextAt(Point)
    */
@@ -543,7 +540,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     model.setRoot(root);
     // make it current
     currentEntity = null;
-    setCurrentEntity(root);
+    setContext(root);
     // done
   }
 
@@ -783,7 +780,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       currentEntity = entity;
       repaint();
       // propagate it
-      ViewManager.getInstance().setCurrentEntity(entity);
+      ViewManager.getInstance().setContext(entity);
       // done
     }
     

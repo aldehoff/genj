@@ -19,9 +19,11 @@
  */
 package genj.timeline;
 
-import genj.gedcom.Entity;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyEvent;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.UnitGraphics;
+
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.geom.GeneralPath;
@@ -50,8 +52,8 @@ public class ContentRenderer {
   /** whether we paint a grid or not */
   /*package*/ boolean paintGrid = false;
   
-  /** an entity that we consider selected */
-  /*package*/ Entity selection = null;
+  /** a property that we consider selected */
+  /*package*/ Property selection = null;
   
   /** background color */
   /*package*/ Color cBackground = null;
@@ -78,6 +80,9 @@ public class ContentRenderer {
    * Renders the model
    */
   public void render(UnitGraphics graphics, Model model) {
+    // check selection once more
+    if (selection!=null&&!(selection instanceof PropertyEvent))
+      selection = selection.getEntity();
     // calculate parameters
     init(graphics);
     // render background
@@ -165,7 +170,7 @@ public class ContentRenderer {
   private final void renderEvent(UnitGraphics g, Model model, Model.Event event, Model.Event next, int level) {
 
     // calculate some parameters
-    boolean em  = event.pe.getEntity() == selection;
+    boolean em  = event.pe == selection || event.pe.getEntity() == selection; 
     FontMetrics fm = g.getFontMetrics();
        
     // draw it's extend
@@ -194,8 +199,7 @@ public class ContentRenderer {
     }
 
     // draw its text 
-    if (cSelected!=null&&event.pe.getEntity()==selection) g.setColor(cSelected);
-    else g.setColor(cText);
+    g.setColor(em ? cSelected : cText);
     String txt = event.content;
     g.draw(txt, event.from, level+1, 0, 1, dx, 0);
     dx+=fm.stringWidth(txt)+fm.charWidth(' ');

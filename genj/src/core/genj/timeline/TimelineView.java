@@ -19,7 +19,6 @@
  */
 package genj.timeline;
 
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.ColorSet;
@@ -29,8 +28,7 @@ import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.ScreenResolutionScale;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
-import genj.view.ContextPopupSupport;
-import genj.view.CurrentSupport;
+import genj.view.ContextSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -59,7 +57,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Component for showing entities' events in a timeline view
  */
-public class TimelineView extends JPanel implements ToolBarSupport, CurrentSupport, ContextPopupSupport {
+public class TimelineView extends JPanel implements ToolBarSupport, ContextSupport {
 
   /** the units we use */
   private final Point2D UNITS = ScreenResolutionScale.getDotsPerCm();
@@ -90,9 +88,6 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
   
   /** the renderer we use for the content */
   private ContentRenderer contentRenderer = new ContentRenderer();
-  
-  /** whether we ignore setCurrentProperty */
-  private boolean ignoreSetCurrent = false;
   
   /** min/max's */
   /*package*/ final static double 
@@ -289,29 +284,15 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
     
     // done
   }
-  
-  /**
-   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
-   */
-  public void setCurrentEntity(Entity entity) {
-    // try to scroll to first event
-    if (!ignoreSetCurrent) {
-      Model.Event event = model.getEvent(entity);
-      if (event!=null) scroll2year(event.from);
-    }
-    // do a repaint, too
-    content.repaint();
-  }
 
   /**
-   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
+   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
    */
-  public void setCurrentProperty(Property property) {
+  public void setContext(Property property) {
     // try to scroll to first event
-    if (!ignoreSetCurrent) {
-      Model.Event event = model.getEvent(property);
-      if (event!=null) scroll2year(event.from);
-    }
+    Model.Event event = model.getEvent(property);
+    if (event==null) event = model.getEvent(property.getEntity());
+    if (event!=null) scroll2year(event.from);
     // do a repaint, too
     content.repaint();
   }
@@ -423,7 +404,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
       contentRenderer.cTimespan   = csContent.getColor("timespan");
       contentRenderer.cGrid       = csContent.getColor("grid"    );
       contentRenderer.cSelected   = csContent.getColor("selected");
-      contentRenderer.selection   = ViewManager.getInstance().getCurrentEntity(model.gedcom);
+      contentRenderer.selection   = ViewManager.getInstance().getContext(model.gedcom);
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;
       contentRenderer.paintTags = isPaintTags;
@@ -511,9 +492,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
       Model.Event event = getEventAt(e.getPoint());
       if (event==null) return;
       // tell about it
-      ignoreSetCurrent=true;
-      ViewManager.getInstance().setCurrentProperty(event.pe);
-      ignoreSetCurrent=false;
+      ViewManager.getInstance().setContext(event.pe);
     }
   } //ContentClick  
     

@@ -97,7 +97,7 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    */
   private void jump() {
     boolean sticky = view.setSticky(false);
-    ViewManager.getInstance().setCurrentEntity(entity);
+    ViewManager.getInstance().setContext(entity);
     view.setSticky(sticky);
   }
 
