@@ -287,7 +287,7 @@ public abstract class PointInTime implements Comparable {
   private static class Impl extends PointInTime {
     
     /** values */
-    private int day=-1, month=-1, year=-1;
+    private int day, month, year;
     
     /**
      * Constructor
@@ -302,6 +302,7 @@ public abstract class PointInTime implements Comparable {
      * Constructor for delta
      */
     private Impl(String delta) {
+      this(0,0,0);
       
       // try to parse delta string tokens
       StringTokenizer tokens = new StringTokenizer(delta);
