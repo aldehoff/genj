@@ -66,15 +66,26 @@ public class ChoiceBean extends PropertyBean {
 	    prop.setValue(choice.getText(), global.isSelected());
     }
     
-    // refresh choices & value
-    choice.setValues(prop.getChoices(gedcom).toArray());
-    choice.setText(prop.getDisplayValue());
-
-    // hide global
-    global.setSelected(false);
-    global.setVisible(false);
-    
     // Done
+  }
+
+  /**
+   * Listen to gedcom changes
+   */
+  public void handleChange(Transaction tx) {
+    // let super do its thing
+    super.handleChange(tx);
+    // check if property was changed
+    if (tx.get(Transaction.PROPERTIES_MODIFIED).contains(property)) {
+      PropertyChoiceValue prop = (PropertyChoiceValue)property;
+      // refresh choices & value
+      choice.setValues(prop.getChoices(gedcom).toArray());
+      choice.setText(prop.getDisplayValue());
+      // hide global change - we're starting fresh
+      global.setSelected(false);
+      global.setVisible(false);
+    }
+    // done
   }
 
   /**

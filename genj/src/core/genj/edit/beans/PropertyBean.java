@@ -21,6 +21,7 @@ package genj.edit.beans;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
@@ -49,7 +50,7 @@ import javax.swing.event.ChangeListener;
  * A Proxy is a ui representation of a property with interactiv components that the user
  * will use to change values
  */
-public abstract class PropertyBean extends JPanel {
+public abstract class PropertyBean extends JPanel implements GedcomListener {
   
   /** the resources */
   protected final static Resources resources = Resources.get(PropertyBean.class); 
@@ -128,6 +129,29 @@ public abstract class PropertyBean extends JPanel {
     path = setPath;
     
     // done
+  }
+  
+  /**
+   * add hook
+   */
+  public void addNotify() {
+    super.addNotify();
+    gedcom.addGedcomListener(this);
+  }
+  
+  /**
+   * remove hook
+   */
+  public void removeNotify() {
+    gedcom.removeGedcomListener(this);
+    super.removeNotify();
+  }
+  
+  /**
+   * Callback for gedcom changes
+   */
+  public void handleChange(Transaction tx) {
+    // ignored
   }
   
   /**
