@@ -393,15 +393,21 @@ public class AboutWidget extends JPanel{
     /** table */
     private JTable table;
     
+    /** model */
+    private Model model;
+    
     /**
      * Constructor
      */
     private AssociationPanel() {
       
+      // model
+      model = new Model(); 
+      
       // table with associations
       table = new JTable();
       table.getTableHeader().setReorderingAllowed(false);
-      table.setModel(new Model());
+      table.setModel(model);
       ListSelectionModel lsm = table.getSelectionModel(); 
       lsm.setSelectionMode(lsm.SINGLE_SELECTION);
       lsm.addListSelectionListener(this);
@@ -446,6 +452,10 @@ public class AboutWidget extends JPanel{
        * @see genj.util.ActionDelegate#execute()
        */
       protected void execute() {
+        int row = model.addRow("", "", "");
+        table.getColumnModel().getSelectionModel().setSelectionInterval(0,0);
+        table.getSelectionModel().setSelectionInterval(row,row);
+        bEdit.doClick();
       }
     } //Add
     
@@ -463,6 +473,8 @@ public class AboutWidget extends JPanel{
        * @see genj.util.ActionDelegate#execute()
        */
       protected void execute() {
+        int row = table.getSelectedRow();
+        if (row>=0) model.delRow(row);
       }
     } //Del
     
@@ -480,6 +492,12 @@ public class AboutWidget extends JPanel{
        * @see genj.util.ActionDelegate#execute()
        */
       protected void execute() {
+        int row = table.getSelectedRow();
+        int col = table.getSelectedColumn();
+        if (row>=0&&col>=0) table.editCellAt(row, col);
+        try {
+          ButtonHelper.requestFocusFor((JComponent)table.getEditorComponent());
+        } catch (Throwable t) {}
       }
     } //Edit
     
@@ -490,6 +508,34 @@ public class AboutWidget extends JPanel{
       
       /** instances we know about */
       List instances = new ArrayList(FileAssociation.getAll());
+      
+      /**
+       * Removes a row
+       */
+      public void delRow(int row) {
+        FileAssociation.del(getRow(row));
+        instances = new ArrayList(FileAssociation.getAll());
+        fireTableRowsDeleted(row,row);
+      }
+      
+      /**
+       * Adds a row
+       */
+      public int addRow(String s, String a, String e) {
+        int num = instances.size();
+        FileAssociation fa = new FileAssociation(s,a,e);
+        FileAssociation.add(fa);
+        instances.add(fa);
+        fireTableRowsInserted(num,num);
+        return num;
+      }
+
+      /**
+       * The association at given position
+       */
+      public FileAssociation getRow(int row) {
+        return (FileAssociation)instances.get(row);
+      }
       
       /**
        * @see javax.swing.table.TableModel#getRowCount()
@@ -508,11 +554,11 @@ public class AboutWidget extends JPanel{
        * @see javax.swing.table.TableModel#getValueAt(int, int)
        */
       public Object getValueAt(int row, int col) {
-        FileAssociation association = (FileAssociation)instances.get(row);  
+        FileAssociation fa = getRow(row); 
         switch (col) { default:
-          case 0: return association.getSuffix();
-          case 1: return association.getAction();
-          case 2: return association.getExecutable();
+          case 0: return fa.getSuffix();
+          case 1: return fa.getAction();
+          case 2: return fa.getExecutable();
         }
       }
       /**
@@ -525,6 +571,26 @@ public class AboutWidget extends JPanel{
           case 2: return "Executable";
         }
       }
+      /**
+       * @see javax.swing.table.AbstractTableModel#isCellEditable(int, int)
+       */
+      public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return true;
+      }
+      /**
+       * @see javax.swing.table.AbstractTableModel#setValueAt(java.lang.Object, int, int)
+       */
+      public void setValueAt(Object val, int row, int col) {
+        FileAssociation fa = getRow(row);
+        String s = val.toString();
+        switch (col) { 
+          case 0: fa.setSuffix(s);    break;
+          case 1: fa.setAction(s);    break;
+          case 2: fa.setExecutable(s);break;
+        }
+        fireTableRowsUpdated(row,row);
+      }
+
     } //Associations
     
   } //AssociationPanel

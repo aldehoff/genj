@@ -67,6 +67,29 @@ public class FileAssociation {
   }
   
   /**
+   * setter
+   */
+  public void setSuffix(String s) {
+    del(this);
+    suffix = s;
+    add(this);
+  }
+  
+  /**
+   * setter
+   */
+  public void setAction(String a) {
+    action = a;
+  }
+  
+  /**
+   * setter
+   */
+  public void setExecutable(String e) {
+    executable = e;
+  }
+  
+  /**
    * String representation   */
   public String toString() {
     return suffix+'*'+action+'*'+executable;
@@ -140,6 +163,18 @@ public class FileAssociation {
     if (result==null) result = new ArrayList(0);
     return result;
   }
+  
+  /**
+   * Deletes an association
+   */
+  public static void del(FileAssociation fa) {
+    // do we know that suffix one alreay?
+    List list = (List)instances.get(fa.getSuffix());
+    if (list==null) return;
+    // remove it
+    list.remove(fa);
+    // done
+  }
 
   /**
    * Add an association   */
@@ -158,8 +193,11 @@ public class FileAssociation {
   /**
    * Reads associations from registry   */
   public static void read(Registry r) {
-    String[] as = r.get("associations", new String[0]);
-    if (as.length>0) instances.clear();
+    // read it and don't change what isn't there
+    String[] as = r.get("associations", (String[])null);
+    if (as==null) return;
+    // replace
+    instances.clear();
     for (int i=0; i<as.length; i++) {
       add(new FileAssociation(as[i]));
     }
