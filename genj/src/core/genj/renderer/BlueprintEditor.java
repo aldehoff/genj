@@ -223,8 +223,7 @@ public class BlueprintEditor extends JSplitPane {
       if (gedcom==null) return;
       // create a tree of available TagPaths
       TagPathTree tree = new TagPathTree();
-      TagPath[] paths = MetaProperty.getPaths(Property.class); 
-      TagPath.filter(paths, BlueprintManager.getInstance().getType(blueprint));
+      TagPath[] paths = TagPath.filter(MetaProperty.getPaths(Property.class), BlueprintManager.getInstance().getType(blueprint));
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
       int option = JOptionPane.showConfirmDialog(
@@ -308,7 +307,7 @@ public class BlueprintEditor extends JSplitPane {
         // otherwise create it
         Object value = tag2value.get(tag);
         if (value==null) value = "Something";
-        result = prop.addProperty(MetaProperty.get(prop).get(tag).create(value.toString()));
+        result = prop.addProperty(MetaProperty.get(prop).get(tag, false).create(value.toString()));
       }      
       // done
       return fakeProperty(result, path, pos);
