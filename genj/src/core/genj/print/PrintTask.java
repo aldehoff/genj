@@ -178,11 +178,17 @@ import javax.swing.JComponent;
   }
   
   /**
+   * Invalidate current state (in case parameters/options/service has changed)
+   */
+  /*package*/ void invalidate() {
+    // forget cached information
+    cachedPages = null;
+  }
+  
+  /**
    * Set current service
    */
   /*package*/ void setService(PrintService set) {
-    // forget cached information
-    cachedPages = null;
     // known?
     if (service==set)
       return;
@@ -190,6 +196,8 @@ import javax.swing.JComponent;
     service = set;
     // remember
     registry.put(service);
+    // reset state
+    invalidate();
   }
 
   /**

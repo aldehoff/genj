@@ -19,6 +19,10 @@
  */
 package genj.print;
 
+import genj.option.Option;
+import genj.option.OptionListener;
+import genj.option.OptionsWidget;
+import genj.option.PropertyOption;
 import genj.util.ActionDelegate;
 import genj.util.Dimension2d;
 import genj.util.Resources;
@@ -36,6 +40,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 import javax.print.PrintService;
 import javax.print.ServiceUI;
@@ -43,10 +48,11 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 
 /**
  * A PrintDialog */
-public class PrintWidget extends JPanel {
+public class PrintWidget extends JTabbedPane implements OptionListener {
   
   /** task */
   private PrintTask task;
@@ -68,12 +74,21 @@ public class PrintWidget extends JPanel {
     task = tAsk;
     resources = reSources;
 
+    add(resources.getString("printer" ), createFirstPage());
+    add(resources.getString("settings"), createSecondPage());
+    
+    // done    
+  }
+  
+  private JPanel createFirstPage() {
+    
     // setup layout
+    JPanel page = new JPanel();
     NestedBlockLayout layout = new NestedBlockLayout(false, 2);
-    setLayout(layout);
+    page.setLayout(layout);
     
     // 'printer'
-    add(new JLabel(resources.getString("printer")));
+    page.add(new JLabel(resources.getString("printer")));
     
     // choose service
     services = new ChoiceWidget(task.getServices(), task.getService());
@@ -86,25 +101,36 @@ public class PrintWidget extends JPanel {
           task.setService((PrintService)services.getSelectedItem());
       }
     });
-    add(services, new Point2D.Double(1,0));
+    page.add(services, new Point2D.Double(1,0));
 
     // settings
-    add(new ButtonHelper().create(new Settings()));
-    
-    // next line
-    layout.createBlock(0);
+    page.add(new ButtonHelper().create(new Settings()));
     
     // 'preview'
-    add(new JLabel(resources.getString("preview")));
-    
-    // next line
     layout.createBlock(0);
+    page.add(new JLabel(resources.getString("preview")));
     
     // the actual preview
+    layout.createBlock(0);
     preview = new Preview();
-    add(new JScrollPane(preview), new Point2D.Double(1,1));
+    page.add(new JScrollPane(preview), new Point2D.Double(1,1));
     
-    // done    
+    // done
+    return page;    
+  }
+  
+  private JComponent createSecondPage() {
+    List options = PropertyOption.introspect(task.getRenderer());
+    for (int i = 0; i < options.size(); i++) 
+      ((Option)options.get(i)).addOptionListener(this);
+    return new OptionsWidget(task.getPrintManager().getWindowManager(), options);
+  }
+  
+  /**
+   * option change callback
+   */
+  public void optionChanged(Option option) {
+    task.invalidate();
   }
   
   /**
@@ -193,7 +219,7 @@ public class PrintWidget extends JPanel {
       PrintService choice = ServiceUI.printDialog(null, pos.x, pos.y, task.getServices(), task.getService(), null, task.getAttributes());
       if (choice!=null) {
         services.setSelectedItem(choice);
-        task.setService(choice);
+        task.invalidate();
       }
 
       // update preview

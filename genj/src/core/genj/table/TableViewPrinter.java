@@ -62,6 +62,22 @@ public class TableViewPrinter implements Printer {
 
   private Property header = new PropertySimpleValue();
   
+  private int maxColumnWidth = 25;
+  
+  /**
+   * property - max column size
+   */
+  public int getMaxColumnWidth() {
+    return maxColumnWidth;
+  }
+  
+  /**
+   * property - max column size
+   */
+  public void setMaxColumnWidth(int set) {
+    maxColumnWidth = Math.max(1, Math.min(100, set));
+  }
+  
   /**
    * Sets the view to print   */
   public void setView(JComponent view) {
@@ -150,7 +166,7 @@ public class TableViewPrinter implements Printer {
     else
       rowHeights[row] = max(dim.getHeight(), rowHeights[row], pageHeight - headerHeight - pad);
     // keep width
-    colWidths[col] = max(dim.getWidth(), colWidths[col], pageWidth/4);
+    colWidths[col] = max(dim.getWidth(), colWidths[col], pageWidth*maxColumnWidth/100);
     // done
   }
   
