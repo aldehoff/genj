@@ -32,15 +32,16 @@ import genj.util.swing.TextFieldWidget;
 import genj.util.swing.UnitGraphics;
 import genj.window.WindowManager;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.ByteArrayInputStream;
 import java.io.FilePermission;
-import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -68,6 +69,9 @@ import javax.swing.JScrollPane;
   
   /** enter text */
   private TextFieldWidget tFile;
+
+  /** one loader per view */
+  private static Map view2loader = new HashMap();
 
   /**
    * Finish editing a property through proxy
@@ -115,13 +119,17 @@ import javax.swing.JScrollPane;
     tFile.setTemplate(false);
     tFile.setText(file);
 
-    // try to open
-    try {
-      preview.setImage(file, property.getGedcom().getOrigin().open(file));
-    } catch (Throwable t) {
-      preview.setImage(null, null);
+    // load it
+    synchronized (view2loader) {
+      Loader loader = (Loader)view2loader.get(view);
+      if (loader!=null) {
+        loader.cancel(true);
+      }
+      loader = new Loader(file);
+      view2loader.put(view, loader);
+      loader.trigger();
     }
-
+    
     // done
   }
 
@@ -134,13 +142,8 @@ import javax.swing.JScrollPane;
     tFile.setText(blob.getValue());
     tFile.setTemplate(true);
 
-    // try to open
-    byte[] data = blob.getBlobData();
-    if (data!=null) {
-      preview.setImage(blob.getTitle(),new ByteArrayInputStream(data));
-    } else {
-      preview.setImage(null, null);
-    }
+    // .. preview
+    preview.setImage(new ImageIcon(blob.getTitle(), blob.getBlobData()));
 
     // done
   }
@@ -275,12 +278,12 @@ import javax.swing.JScrollPane;
     /**
      * Sets the image to preview
      */
-    protected void setImage(String name, InputStream in) {
-      if (in==null) {
-        img = null;
-      } else {
-        img = new ImageIcon(name, in);
-      }
+    protected void setImage(ImageIcon set) {
+      
+      // remember
+      img = set;
+
+      // show
       revalidate();
       repaint();
     }
@@ -382,5 +385,56 @@ import javax.swing.JScrollPane;
     }
 
   } //Preview
+
+  /**
+   * Async Image Loader
+   */
+  private class Loader extends ActionDelegate {
+    /** file to load */
+    private String file;
+    /** the result */
+    private ImageIcon result;
+    /**
+     * constructor
+     */
+    private Loader(String setFile) {
+      file = setFile;
+      setAsync(super.ASYNC_SAME_INSTANCE);
+    }
+    /**
+     * @see genj.util.ActionDelegate#preExecute()
+     */
+    protected boolean preExecute() {
+      // kill current
+      preview.setImage(null);
+      // show wait
+      preview.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+      // continue
+      return true;
+    }
+
+    /** 
+     * async load
+     */
+    protected void execute() {
+      // load it
+      try {
+        result = new ImageIcon(file, property.getGedcom().getOrigin().open(file));
+      } catch (Throwable t) {
+      }
+      // continue
+    }
+    /**
+     * sync show result
+     */
+    protected void postExecute() {
+      preview.setCursor(null);
+      if (result!=null) {
+        preview.setImage(result);
+        result = null;
+      }
+    }
+
+  } //Loader
   
 } //ProxyFile
