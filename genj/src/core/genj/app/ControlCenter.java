@@ -515,7 +515,7 @@ public class ControlCenter extends JPanel {
     private Origin chooseURL() {
 
       // pop a chooser    
-      Vector    vUrls  = registry.get("urls", new Vector());
+      Vector    vUrls  = (Vector)registry.get("urls", new Vector());
       JLabel    lEnter = new JLabel(App.resources.getString("cc.open.enter_url"));
       JComboBox cEnter = new JComboBox(vUrls);
       cEnter.setEditable(true);

@@ -19,17 +19,28 @@
  */
 package genj.app;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.lang.reflect.Method;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import genj.gedcom.*;
-import genj.util.ImgIcon;
+import genj.gedcom.Property;
+import genj.util.ActionDelegate;
 import genj.util.swing.ImgIconConverter;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
 
 /**
  * A component allowing to select a Tag
@@ -37,93 +48,23 @@ import genj.util.swing.ImgIconConverter;
 public class TagSelector extends JComponent {
 
   /** members */
-  private JList  lChoose;
-  private Vector vTags;
+  private JList   lChoose;
+  private List    entries = new ArrayList(64);
   private boolean isChanged = false;
-
-  /**
-   * Tag List Cell Renderer
-   */
-  class TagSelectorRenderer implements ListCellRenderer {
-
-    // LCD
-    /** members */
-    private JPanel    panel = new JPanel();
-    private JCheckBox check = new JCheckBox();
-    private JLabel    label = new JLabel();
-
-    /** Constructor */
-    TagSelectorRenderer() {
-      panel.setLayout(new BorderLayout());
-      panel.add(check,"West");
-      panel.add(label,"Center");
-
-      check.setOpaque(false);
-      label.setOpaque(false);
-      panel.setOpaque(false);
-    }
-
-    /** callback for component that renders element */
-    public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
-
-      Tag tag = (Tag)value;
-
-      label.setText( tag.tag );
-      label.setIcon( ImgIconConverter.get(Property.getDefaultImage(tag.tag)) );
-      check.setSelected( tag.selected );
-
-      return panel;
-    }
-
-    // EOC
-  }
-
-  /**
-   * A tag to choose
-   */
-  private class Tag {
-    // LCD
-    /** members */
-    String tag;
-    boolean selected;
-    /** constructor */
-    Tag(String pTag) {
-      tag = pTag;
-    }
-    // EOC
-  }
 
   /**
    * Constructor
    */
   public TagSelector() {
 
-    // Layout
+    // create a list
     lChoose = new JList();
-    lChoose.setCellRenderer(new TagSelectorRenderer());
+    lChoose.setCellRenderer(new EntryRenderer());
+    lChoose.addMouseListener(new SelectionListener());
 
-    // Listening
-    MouseAdapter madapter = new MouseAdapter() {
-      // LCD
-      /** callback for mouse click */
-      public void mouseClicked(MouseEvent me) {
-        // Check wether some valid position has been clicked on
-        int pos = lChoose.locationToIndex(me.getPoint());
-        if (pos==-1)
-          return;
-        // Get Node and invert selection
-        Tag tag = (Tag)lChoose.getModel().getElementAt(pos);
-        tag.selected = ! tag.selected;
-        isChanged = true;
-        // Show it ... simple repaint ... but could be done better ... probably
-        lChoose.repaint();
-      }
-      // EOC
-    };
-    lChoose.addMouseListener(madapter);
-
+    // Layout
     setLayout(new BorderLayout());
-    add(new JScrollPane(lChoose),"Center");
+    add(new JScrollPane(lChoose),BorderLayout.CENTER);
 
     // Done
   }
@@ -138,20 +79,12 @@ public class TagSelector extends JComponent {
   /**
    * Returns selected tags
    */
-  public String[] getSelectedTags() {
-
-    // Loop through available tags
-    Vector tags = new Vector(vTags.size());
-
-    for (int i=0;i<vTags.size();i++) {
-      Tag tag = (Tag)vTags.elementAt(i);
-      if (tag.selected==true)
-      tags.addElement(tag.tag);
+  public Set getSelection() {
+    Set result = new HashSet(entries.size());
+    for (int e=0; e<entries.size(); e++) {
+      Entry entry = (Entry)entries.get(e);
+      if (entry.selected) result.add(entry.tag);
     }
-
-    String result[] = new String[tags.size()];
-    tags.copyInto(result);
-
     return result;
   }
 
@@ -165,44 +98,100 @@ public class TagSelector extends JComponent {
   /**
    * Specifies tags to be selected
    */
-  public void selectTags(String[] tags) {
-
+  public void setSelection(Set tags) {
+    
+    // change is reset
     isChanged = false;
 
     // Loop through available tags
-    outer:
-    for (int i=0;i<vTags.size();i++) {
-
-      // .. calculate Tag
-      Tag tag = (Tag)vTags.elementAt(i);
-
-      // .. check for selection
-      for (int j=0;j<tags.length;j++) {
-        if (tags[j].equals(tag.tag)) {
-          tag.selected=true;
-          continue outer;
-        }
-      }
-      tag.selected=false;
-
-      // .. next
+    for (int e=0; e<entries.size(); e++) {
+      Entry entry = (Entry)entries.get(e);
+      entry.selected = tags.contains(entry.tag);
     }
 
-    // Done
+    // show it
     repaint();
+    
+    // Done
   }
 
   /**
    * Sets the tags used by this list
    */
-  public void setTags(String[] tags) {
-
-    vTags = new Vector(tags.length);
-    for (int t=0;t<tags.length;t++) {
-      vTags.addElement(new Tag(tags[t]));
+  public void setTags(List tags) {
+    // gather the entries
+    entries.clear();
+    for (int e=0;e<tags.size();e++) {
+      entries.add(new Entry(tags.get(e).toString()));
     }
-
-    lChoose.setListData(vTags);
+    // set it
+    lChoose.setListData(entries.toArray());
+    // done
   }
 
-}
+  /**
+   * An entry in our list
+   */
+  private class Entry {
+    /** members */
+    String tag;
+    boolean selected;
+    /** constructor */
+    Entry(String pTag) { tag = pTag; }
+  } //Entry
+
+  /**
+   * Tag List Cell Renderer
+   */
+  private class EntryRenderer implements ListCellRenderer {
+
+    // LCD
+    /** members */
+    private JPanel    panel = new JPanel();
+    private JCheckBox check = new JCheckBox();
+    private JLabel    label = new JLabel();
+
+    /** Constructor */
+    private EntryRenderer() {
+      panel.setLayout(new BorderLayout());
+      panel.add(check,"West");
+      panel.add(label,"Center");
+
+      check.setOpaque(false);
+      label.setOpaque(false);
+      panel.setOpaque(false);
+    }
+
+    /** callback for component that renders element */
+    public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
+      // here's the entry
+      Entry entry = (Entry)value;
+      // prepare its data
+      label.setText( entry.tag );
+      label.setIcon( ImgIconConverter.get(Property.getDefaultImage(entry.tag)) );
+      check.setSelected( entry.selected );
+      // done
+      return panel;
+    }
+
+  } //EntryRenderer
+
+  /**
+   * Listening to mouse input    
+   */
+  private class SelectionListener extends MouseAdapter {
+    /** press */
+    public void mousePressed(MouseEvent me) {
+      // Check wether some valid position has been clicked on
+      int pos = lChoose.locationToIndex(me.getPoint());
+      if (pos==-1) return;
+      // Get entry and invert selection
+      Entry entry = (Entry)lChoose.getModel().getElementAt(pos);
+      entry.selected = !entry.selected;
+      isChanged = true;
+      // Show it 
+      lChoose.repaint(lChoose.getCellBounds(pos,pos));
+    }
+  } //SelectionListener
+  
+} //TagSelector
