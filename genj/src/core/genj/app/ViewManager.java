@@ -330,12 +330,12 @@ public class ViewManager {
       ButtonHelper bh = new ButtonHelper()
         .setResources(resources)
         .setContainer(pActions)
-        .setCollection(vButtons)
+        .addCollection(vButtons)
         .setEnabled(false);
         
       bh.create(new ActionApply());
       bh.create(new ActionReset());
-      bh.setCollection(null)
+      bh.removeCollection(vButtons)
         .setEnabled(true)
         .create(new ActionDelegate.ActionDisposeFrame(frame).setText("view.close"));
 
