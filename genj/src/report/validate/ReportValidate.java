@@ -95,8 +95,6 @@ public class ReportValidate extends Report {
    */
   public void start(Object context) {
 
-try {Thread.currentThread().sleep(5000); } catch (Throwable t) {}
-
     // prepare tests
     List tests = createTests();
     
