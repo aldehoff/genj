@@ -128,11 +128,13 @@ public class HeadlessLabel extends JComponent {
    * @see javax.swing.JComponent#getPreferredSize()
    */
   public Dimension getPreferredSize() {
-    float width, height;
+    int 
+      width, 
+      height;
     // ask rootView or text
     if (view!=null) {
-      width = view.getPreferredSpan(View.X_AXIS);
-      height= view.getPreferredSpan(View.Y_AXIS);
+      width = (int)view.getPreferredSpan(View.X_AXIS);
+      height= (int)view.getPreferredSpan(View.Y_AXIS);
     } else {
       FontMetrics fm = getFontMetrics(getFont());
       width = fm.stringWidth(txt);
@@ -146,8 +148,12 @@ public class HeadlessLabel extends JComponent {
     // gap?
     if ((view!=null||txt.length()>0)&&icon!=null) 
       width += ICON_TEXT_GAP;
+    // max
+//    Dimension max = getMaximumSize();
+//    width = Math.min(max.width, width);
+//    height = Math.min(max.height, height);
     // done
-    return new Dimension((int)width,(int)height);
+    return new Dimension(width, height);
   }
     
   /**
