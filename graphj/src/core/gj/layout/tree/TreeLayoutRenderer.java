@@ -16,13 +16,13 @@
 package gj.layout.tree;
 
 import gj.layout.Layout;
-import gj.model.Arc;
+import gj.layout.LayoutRenderer;
 import gj.model.Graph;
 import gj.model.Node;
-import gj.ui.LayoutRenderer;
-import gj.ui.UnitGraphics;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.util.Iterator;
 
 /**
@@ -33,7 +33,7 @@ public class TreeLayoutRenderer implements LayoutRenderer {
   /**
    * @see gj.ui.LayoutRenderer#render(Graph, GraphGraphics)
    */
-  public void render(Graph graph, Layout layout, UnitGraphics graphics) {
+  public void render(Graph graph, Layout layout, Graphics2D graphics) {
 
     // the layout has to ours
     if (!(layout instanceof TreeLayout)) return;
@@ -57,7 +57,7 @@ public class TreeLayoutRenderer implements LayoutRenderer {
       Iterator it = tlayout.debugShapes.iterator();
       while (it.hasNext()) {
         Shape shape = (Shape)it.next();
-        graphics.draw(shape,0,0,false);
+        graphics.draw(shape);
       }
       
       // end debug
@@ -67,33 +67,24 @@ public class TreeLayoutRenderer implements LayoutRenderer {
   }
 
   /**
-   * @see gj.ui.GraphRenderer#renderArc(Arc, UnitGraphics)
-   */
-  public void renderArc(Arc arc, UnitGraphics graphics) {
-    // noop
-  }
-
-  /**
-   * @see gj.ui.GraphRenderer#renderNode(Node, UnitGraphics)
-   */
-  public void renderNode(Node node, UnitGraphics graphics) {
-    // noop
-  }
-
-  /**
    * Helper that 'emphasizes' a node by drawing a coloured
    * frame around its shape
    */
-  private void emphasize(Node node, Color color, UnitGraphics graphics) {
+  private void emphasize(Node node, Color color, Graphics2D graphics) {
     Shape shape = node.getShape();
     if (shape==null) return;
     graphics.setColor(color);
-    graphics.draw(
-      node.getShape(), 
+
+    AffineTransform old = graphics.getTransform();
+    graphics.translate(
       node.getPosition().getX(), 
-      node.getPosition().getY(),
-      1.1D,1.1D,0,false
+      node.getPosition().getY()
     );
+    graphics.scale(1.1D, 1.1D);
+    
+    graphics.draw(shape);
+    
+    graphics.setTransform(old);
   }
   
 }

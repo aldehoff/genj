@@ -20,20 +20,20 @@ import gj.awt.geom.Path;
 import gj.awt.geom.ShapeHelper;
 import gj.layout.ArcLayout;
 import gj.layout.Layout;
+import gj.layout.LayoutRenderer;
 import gj.model.Arc;
 import gj.model.MutableGraph;
 import gj.model.Node;
 import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.ReflectHelper;
-import gj.ui.DefaultGraphRenderer;
-import gj.ui.LayoutRenderer;
-import gj.ui.UnitGraphics;
 import gj.util.ArcIterator;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -84,7 +84,7 @@ public class GraphWidget extends JPanel {
   private Content content = new Content();
   
   /** the renderer we're using */
-  private DefaultGraphRenderer graphRenderer = new DefaultGraphRenderer();
+  private GraphRenderer graphRenderer = new GraphRenderer();
   
   /** more renderers */
   private LayoutRenderer layoutRenderer = null;
@@ -311,7 +311,7 @@ public class GraphWidget extends JPanel {
     /** callback */
     public void mouseMoved(MouseEvent e) {}
     /** paint */
-    public void paint(UnitGraphics gg) {}
+    public void paint(Graphics2D g) {}
     /**
      * Tries to find an element by coordinate
      */
@@ -440,8 +440,8 @@ public class GraphWidget extends JPanel {
       repaint();
     }
     /** paint */
-    public void paint(UnitGraphics gg) {
-      graphRenderer.renderArc(this, gg);
+    public void paint(Graphics2D g) {
+      graphRenderer.renderArc(this, g);
     }
     /** @see gj.model.Arc#getStart() */
     public Node getStart() {
@@ -489,8 +489,8 @@ public class GraphWidget extends JPanel {
       repaint();
     }
     /** paint */
-    public void paint(UnitGraphics gg) {
-      graphRenderer.renderNode(this,gg);
+    public void paint(Graphics2D g) {
+      graphRenderer.renderNode(this,g);
     }
     /** @see gj.model.Node#getArcs() */
     public List getArcs() {
@@ -669,12 +669,17 @@ public class GraphWidget extends JPanel {
       // clear background
       g.setColor(Color.white);
       g.fillRect(0,0,getWidth(),getHeight());
+      // cast to 2d
+      Graphics2D graphics = (Graphics2D)g;
+      // switch on antialiasing?
+      graphics.setRenderingHint(
+        RenderingHints.KEY_ANTIALIASING,
+        isAntialiasing ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF
+      );
       // synchronize on graph and go?
       if (graph==null) return;
       synchronized (graph) {
         // create our working graphics
-        UnitGraphics graphics = new UnitGraphics(g, 1.0D, 1.0D);
-        graphics.setAntialiasing(isAntialiasing);
         // paint at 0,0
         graphics.translate(getXOffset(),getYOffset());
         // LayoutRenderer?
@@ -686,11 +691,10 @@ public class GraphWidget extends JPanel {
         // Is the a current to render?
         if (lastSelection!=null) {
           graphics.setColor(Color.blue);
-          graphics.draw(
+          graphRenderer.draw(
             lastSelection.getShape(), 
-            lastSelection.getPosition().getX(), 
-            lastSelection.getPosition().getY(),
-            1,1,0,false
+            lastSelection.getPosition(), 
+            graphics
           );
         }
         // And let the MouseAnalyzer do what it needs to do

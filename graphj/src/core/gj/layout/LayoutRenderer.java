@@ -13,9 +13,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  */
-package gj.ui;
+package gj.layout;
 
-import gj.layout.Layout;
+import java.awt.Graphics2D;
+
 import gj.model.Graph;
 
 /**
@@ -29,6 +30,6 @@ public interface LayoutRenderer {
    * @param layout the layout that has been applied to the graph (might be null)
    * @param graphics the GraphGraphics to use
    */
-  public void render(Graph graph, Layout layout, UnitGraphics graphics);
+  public void render(Graph graph, Layout layout, Graphics2D graphics);
     
 } //LayoutRenderer
