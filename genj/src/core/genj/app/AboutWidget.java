@@ -294,6 +294,7 @@ public class AboutWidget extends JPanel{
       // Prepare the panel      
       JPanel pResult = new JPanel();
       GridBagHelper gh = new GridBagHelper(pResult);
+      gh.setParameter(gh.GROWFILL_HORIZONTAL);
 
       // what are the languages
       String[] languages = {"en", "de", "es", "fr", "it", "ja"};
@@ -320,10 +321,10 @@ public class AboutWidget extends JPanel{
         comboLnfs.setSelectedItem(LnFBridge.getInstance().getLastLnF());
         comboLnfs.addActionListener(this);
 
-        gh.add(new JLabel(resources.getString("cc.about.tab4.look&feel") ), 0,1,1,1);
-        gh.add(comboLnfs               , 1,1,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+        gh.add(new JLabel(resources.getString("cc.about.tab4.look&feel") ), 0,1);
+        gh.add(comboLnfs               , 1,1);
         gh.add(new JLabel(resources.getString("cc.about.tab4.theme")     ), 0,2,1,1);
-        gh.add(comboThemes             , 1,2,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+        gh.add(comboThemes             , 1,2);
         
         actionPerformed(null);
       }
@@ -331,8 +332,8 @@ public class AboutWidget extends JPanel{
       // create ruler for adjusting resolution
       screenResRuler = new ScreenResolutionScale(viewManager.getDPI());
       
-      gh.add(new JLabel(resources.getString("cc.about.tab4.resolution")), 0,3,1,1);
-      gh.add(screenResRuler               , 1,3,1,1, gh.GROW_BOTH      |gh.FILL_BOTH      );
+      gh.add(new JLabel(resources.getString("cc.about.tab4.resolution")), 0,3);
+      gh.add(screenResRuler               , 1,3);
       
       // done
       return pResult;
