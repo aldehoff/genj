@@ -212,7 +212,7 @@ public class BlueprintEditor extends JSplitPane {
       g.setColor(Color.white);
       g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
       // render content
-      EntityRenderer renderer = new EntityRenderer(new Blueprint(html.getText()));
+      EntityRenderer renderer = new EntityRenderer(new Blueprint(html.getText()), getFont());
       renderer.setDebug(isChanged);
       renderer.render(g, example, bounds);
       // done
@@ -322,6 +322,21 @@ public class BlueprintEditor extends JSplitPane {
       return fakeProperty(result, path, pos);
     }
     
+    /**
+     * no gedcom - override and ignore
+     */
+    protected void propagateAdded(Property owner, int pos, Property added) {
+    }
+    /**
+     * no gedcom - override and ignore
+     */
+    protected void propagateChanged(Property changed) {
+    }
+    /**
+     * no gedcom - override and ignore
+     */
+    protected void propagateRemoved(Property owner, int pos, Property removed) {
+    }
   } //ExampleIndi
   
 } //RenderingSchemeEditor
