@@ -11,6 +11,7 @@ The people behind GenJ (sorted by last name) :
 
     Contributors :
       . Jan C.Hardenbergh <jch@world.std.com>
+      . Stuart Grimshaw <sgrimshaw@ebuyer.com>
       . Jerome Hettich <jerome@hettich.org.uk>
       . Pere Jover <pjover@jazzfree.com>
       . Bill Kelly <bllklly@acm.org>
