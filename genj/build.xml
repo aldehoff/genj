@@ -313,6 +313,8 @@
    -->
   <target name="run" depends="compile">
 
+	
+
     <mkdir dir="${dir.run}"/>
     <copy todir="${dir.run}/report">
       <fileset dir="${dir.build}/classes/report"/>
@@ -332,6 +334,41 @@
        <classpath refid="project.class.path"/>
        <sysproperty key="genj.lnf.dir" value="${dir.lnf}"/>
     </java>
+  </target>
+  
+  <!--
+   Run Applet
+   -->
+  <target name="applet" depends="compile">
+
+    <mkdir dir="${dir.run}"/>
+
+    <echo file="${dir.run}/applet.policy"> 
+      grant {
+       permission java.util.PropertyPermission "user.home", "read";
+       permission java.io.FilePermission ".\\.build\\-", "read";
+       permission java.io.FilePermission ".\\src\\core\\-", "read";
+       permission java.io.FilePermission ".\\images\\-", "read";
+       permission java.io.FilePermission ".\\language\\en\\-", "read";
+       permission java.io.FilePermission ".\\gedcom\\-", "read";
+       permission java.lang.RuntimePermission "modifyThread";
+       permission java.lang.RuntimePermission "modifyThreadGroup";
+      };
+    </echo>
+    
+    <echo file="${dir.run}/applet.html"><![CDATA[
+      <html><body>
+       <applet code="genj.applet.Applet.class" width="200" height="200">
+       </applet>
+      </body></html>
+    ]]></echo>
+
+    <java classname="sun.applet.AppletViewer" fork="true">
+       <arg value="file:/${dir.run}/applet.html"/>
+       <jvmarg value="-Djava.security.policy=${dir.run}/applet.policy"/>
+       <classpath refid="project.class.path"/>
+    </java>
+
   </target>
 
   <!--
