@@ -118,16 +118,6 @@ public class PropertyRenderer {
   }  
   
   /**
-   * Calculates the vertical alignment offset - by default the baseline of the current font
-   */
-  public float getVerticalAlignment(Font font, FontRenderContext context) {  
-    LineMetrics lm = font.getLineMetrics("", context);
-    float h = lm.getHeight();
-    float d = lm.getDescent();
-    return (h-d)/h;
-  }
-
-  /**
    * Calculates the preferred size with given metrics, prop and image/text preferrence
    * @param metrics current font metrics
    * @param prop property 
@@ -226,7 +216,9 @@ public class PropertyRenderer {
    * Implementation for rendering txt
    */
   protected void renderImpl(Graphics2D g, Rectangle bounds, String txt) {
-    g.drawString(txt, bounds.x, bounds.y+bounds.height-g.getFontMetrics().getDescent());
+    Font font = g.getFont();
+    LineMetrics lm = font.getLineMetrics("", g.getFontRenderContext());
+    g.drawString(txt, (float)bounds.getX(), (float)bounds.getY()+lm.getHeight()-lm.getDescent());
   }
 
   /**
@@ -335,12 +327,12 @@ public class PropertyRenderer {
         LineMetrics lm = font.getLineMetrics(txt, context);
         y += lm.getHeight();
         
+        // draw line
+        graphics.drawString(txt, x, y - lm.getDescent());
+        
         // .. break if line doesn't fit anymore
         if (y>bounds.getMaxY()) 
           break;
-        
-        // draw line
-        graphics.drawString(txt, x, y - lm.getDescent());
         
       } while (line.next());
       // done
@@ -418,13 +410,6 @@ public class PropertyRenderer {
       // done
     }
 
-    /**
-     * place pictures on baseline of current font
-     */
-    public float getVerticalAlignment(Font font, FontRenderContext context) {
-      return 1F;
-    }
-    
     /**
      * Helper to get the image of PropertyFile
      */

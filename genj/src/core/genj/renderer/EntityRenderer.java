@@ -35,6 +35,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
 import java.awt.geom.Dimension2D;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -100,7 +101,7 @@ public class EntityRenderer {
   private List tableViews = new ArrayList(4);
   
   /** whether we have a debug mode */
-  private boolean isDebug = false; 
+  private boolean isDebug = false;
   
   /** a resolution */
   private Point dpi = new Point(96,96);
@@ -414,12 +415,7 @@ public class EntityRenderer {
       if (preferredSpan==null) {
         preferredSpan = getPreferredSpan();
       }
-      // Apparently containing views like BoxView will cast this
-      // to a simple int possibly leading to short preferred spans
-      // when doing their major axis
-      //        spans[i] = (int) v.getPreferredSpan(axis);
-      // so I'm using the ceiling here :/
-      return (float)Math.ceil(axis==X_AXIS ? preferredSpan.getWidth() : (float)preferredSpan.getHeight());
+      return (float)(axis==X_AXIS ? preferredSpan.getWidth() : preferredSpan.getHeight());
     }
     
     /**
@@ -433,7 +429,16 @@ public class EntityRenderer {
      * @see javax.swing.text.View#getAlignment(int)
      */
     public float getAlignment(int axis) {
-      return 0F;
+      // horizontal unchanged
+      if (X_AXIS==axis) 
+        return super.getAlignment(axis);
+      // height we prefer
+      float height = (float)getPreferredSpan().getHeight();
+      // where's first line's baseline
+      LineMetrics lm = getFont().getLineMetrics("", context);
+      float h = lm.getHeight();
+      float d = lm.getDescent();
+      return (h-d)/height;
     }
     
     /**
@@ -606,20 +611,14 @@ public class EntityRenderer {
     protected Dimension2D getPreferredSpan() {
       return PropertyRenderer.DEFAULT_RENDERER.getSizeImpl(getFont(), context, null, txt, PropertyRenderer.PREFER_DEFAULT, dpi);
     }
-    /**
-     * alignment patched
-     */
-    public float getAlignment(int axis) {
-      if (X_AXIS==axis)
-        return super.getAlignment(axis);
-      return PropertyRenderer.DEFAULT_RENDERER.getVerticalAlignment(getFont(), context);
-    }
   } //LocalizeView
 
   /**
    * A view that wraps a property and its value
    */
   private class PropertyView extends MyView {
+    
+    // FIXME got to do some caching of size&alignment
     
     /** our preference when looking at the property */
     private int preference;
@@ -775,20 +774,6 @@ public class EntityRenderer {
       // on the current entity's properties
       isValid = false;
       super.invalidate();
-    }
-    
-    /**
-     * patched alignment
-     */
-    public float getAlignment(int axis) {
-      // horizontal unchanged
-      if (X_AXIS==axis) 
-        return super.getAlignment(axis);
-      PropertyRenderer renderer = getRenderer(getProperty());
-      if (renderer==null) 
-        return super.getAlignment(axis);
-      // ask renderer
-      return renderer.getVerticalAlignment(getFont(), context);
     }
     
   } //PropertyView
