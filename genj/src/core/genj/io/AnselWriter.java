@@ -46,6 +46,7 @@ public class AnselWriter extends Writer {
    * @see java.io.Writer#close()
    */
   public void close() throws IOException {
+    flush();
     out.close();
   }
 
@@ -60,7 +61,7 @@ public class AnselWriter extends Writer {
    * @see java.io.Writer#write(char[], int, int)
    */
   public void write(char[] cbuf, int off, int len) throws IOException {
-    for (int c=0;c<cbuf.length;c++) {
+    for (int c=off;c<off+len;c++) {
       write(cbuf[c]);
     }
   }

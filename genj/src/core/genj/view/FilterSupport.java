@@ -19,8 +19,6 @@
  */
 package genj.view;
 
-import genj.gedcom.Entity;
-import genj.gedcom.Property;
 import genj.io.Filter;
 
 /**

@@ -24,12 +24,17 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
+import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Trackable;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -39,9 +44,8 @@ import java.util.Vector;
  */
 public class GedcomReader implements Trackable {
 
-  private Gedcom         gedcom;
-  private BufferedReader in;
-  private InputStream    oin;
+  private Gedcom              gedcom;
+  private BufferedReader      in;
 
   private int progress;
   private int level;
@@ -70,22 +74,45 @@ public class GedcomReader implements Trackable {
    * @param in BufferedReader to read from
    */
   public GedcomReader(InputStream stream, Origin org, long len) {
-
-    // Remember some data
-    oin    = stream;
-    in     = new BufferedReader(new InputStreamReader(stream));
-    line   = 0;
-    origin = org;
-    length = len;
-
-    // Init some data
-    level=0;
-    read=0;
-    warnings=new StringBuffer(512);
-
+    
+    // init some data
+    in       = new BufferedReader(createReader(stream));
+    line     = 0;
+    origin   = org;
+    length   = len;
+    level    = 0;
+    read     = 0;
+    warnings = new StringBuffer(512);
+    
     // Done
   }
 
+  /**
+   * Initialize the reader we're using
+   */
+  private Reader createReader(InputStream stream) {
+    // prepare sniffer
+    InputStreamSniffer sniffer = new InputStreamSniffer(stream);
+    String encoding = sniffer.getEncoding();
+    Debug.log(Debug.INFO, this, "Trying encoding "+encoding);
+    
+    // attempt it
+    try {
+      // Unicode
+      if (GedcomWriter.UNICODE.equals(encoding)) return new InputStreamReader(sniffer, "UTF-8");
+      // ASCII
+      if (GedcomWriter.ASCII.equals(encoding)) return new InputStreamReader(sniffer, "ASCII");
+      // ISO-8859-1
+      if (GedcomWriter.IBMPC.equals(encoding)) return new InputStreamReader(sniffer, "ISO-8859-1");
+      // ANSEL
+      if (GedcomWriter.ANSEL.equals(encoding)) return new AnselReader(sniffer);
+    } catch (UnsupportedEncodingException e) {
+    }
+    // default
+    Debug.log(Debug.WARNING, this, "Failed to create reader for encoding "+encoding);
+    return new InputStreamReader(sniffer);
+  }
+  
   /**
    * Backdoor switch that triggers automatic fixing of duplicate IDs
    */
@@ -207,7 +234,7 @@ public class GedcomReader implements Trackable {
     synchronized (lock) {
       worker=Thread.currentThread();
     }
-
+    
     // Create Gedcom
     int expected = Math.max((int)length/ENTITY_AVG_SIZE,100);
     gedcom = new Gedcom(origin,expected);
@@ -294,11 +321,6 @@ public class GedcomReader implements Trackable {
       }
       if (level==0) {
         break;
-      }
-      // check for encoding
-      if (level==1&&"CHAR".equals(tag)) {
-        System.out.println(value);
-        in = new BufferedReader(new AnselReader(in));
       }
       // done
     } while (true);
@@ -507,5 +529,44 @@ public class GedcomReader implements Trackable {
       prop = p;
     }
   } //XRef
+  
+  /**
+   * EncodingInputStream
+   */
+  public static class InputStreamSniffer extends BufferedInputStream {
+    
+    /**
+     * Constructor
+     */
+    private InputStreamSniffer(InputStream in) {
+      super(in, 256);
+      
+      // done
+    }
+    
+    /**
+     * Sniff encoding
+     */
+    public String getEncoding() {
+      // fill buffer
+      mark(1); 
+      try {
+        read();
+        reset();
+      } catch (IOException e) {
+        return null;
+      }
+      // sniff
+      String s = new String(buf, pos, count);
+      // tests
+      if (s.indexOf("1 CHAR UNICODE")>0) return GedcomWriter.UNICODE;
+      if (s.indexOf("1 CHAR ASCII")>0) return GedcomWriter.ASCII;
+      if (s.indexOf("1 CHAR ANSEL")>0) return GedcomWriter.ANSEL;
+      if (s.indexOf("1 CHAR IBMPC")>0) return GedcomWriter.IBMPC;
+      // no clue
+      return null;
+    }
+          
+  } //InputStreamSniffer
   
 } //GedcomReader

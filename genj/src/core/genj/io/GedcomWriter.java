@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyXRef;
+import genj.util.Debug;
 import genj.util.Trackable;
 
 import java.io.BufferedWriter;
@@ -42,21 +43,15 @@ import java.util.List;
  */
 public class GedcomWriter implements Trackable {
 
-  public static final String
-    UNICODE = "UNICODE",
-    ASCII   = "ASCII",
-    IBMPC   = "IBMPC",
-    ANSEL   = "ANSEL";
-    
-  public static final String[] ENCODINGS = {
-    IBMPC, ANSEL, ASCII, UNICODE
-  };
+  public static final String UNICODE = "UNICODE", ASCII = "ASCII", IBMPC = "IBMPC", ANSEL = "ANSEL";
+
+  public static final String[] ENCODINGS = { IBMPC, ANSEL, ASCII, UNICODE };
 
   private Gedcom gedcom;
   private BufferedWriter out;
   private String file;
   private String date;
-  private String encoding;
+  private String encoding = null;
   private int level;
   private int total, progress;
   private int line;
@@ -71,7 +66,9 @@ public class GedcomWriter implements Trackable {
    * @param stream the stream to write to
    * @param encoding either IBMPC, ASCII, UNICODE or ANSEL
    */
-  public GedcomWriter(Gedcom ged, String name, OutputStream stream, String enc) throws UnsupportedEncodingException {
+  public GedcomWriter(Gedcom ged, String name, OutputStream stream, String encoding) {
+    
+    if (encoding==null) encoding = ANSEL;
 
     // init data
     gedcom = ged;
@@ -79,8 +76,7 @@ public class GedcomWriter implements Trackable {
     level = 0;
     line = 1;
     date = PropertyDate.getString(Calendar.getInstance());
-    encoding = enc;
-    out = new BufferedWriter(initOut(stream));
+    out = new BufferedWriter(createWriter(stream, encoding));
 
     // Done
   }
@@ -88,25 +84,28 @@ public class GedcomWriter implements Trackable {
   /**
    * Initialize the writer we're using
    */
-  private Writer initOut(OutputStream stream) throws UnsupportedEncodingException {
-    // Unicode
-    if (UNICODE.equals(encoding)) {
-      return new OutputStreamWriter(stream, "Unicode");
-    }
-    // ASCII
-    if (ASCII.equals(encoding)) {
-      return new OutputStreamWriter(stream, "ASCII");
-    }
-    // ISO-8859-1
-    if (IBMPC.equals(encoding)) {
-      return new OutputStreamWriter(stream, "ISO-8859-1");
-    }
-    // ANSEL
-    if (ANSEL.equals(encoding)) {
-      return new AnselWriter(stream);
+  private Writer createWriter(OutputStream stream, String enc) {
+    // Attempt encoding
+    encoding = enc;
+    try {
+      // Unicode
+      if (UNICODE.equals(encoding))
+        return new OutputStreamWriter(stream, "UTF-8");
+      // ASCII
+      if (ASCII.equals(encoding))
+        return new OutputStreamWriter(stream, "ASCII");
+      // ISO-8859-1
+      if (IBMPC.equals(encoding))
+        return new OutputStreamWriter(stream, "ISO-8859-1");
+      // ANSEL
+      if (ANSEL.equals(encoding))
+        return new AnselWriter(stream);
+    } catch (UnsupportedEncodingException e) {
     }
     // not supported
-    throw new UnsupportedEncodingException(encoding+" is not a supported encoding");
+    encoding = null;
+    Debug.log(Debug.WARNING, this, "Couldn't create writer for encoding " + encoding);
+    return new OutputStreamWriter(stream);
   }
 
   /**
@@ -161,8 +160,7 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void line(int ldelta, String tag, String value)
-    throws IOException, GedcomIOException {
+  private void line(int ldelta, String tag, String value) throws IOException, GedcomIOException {
     level += ldelta;
     line(tag, value);
   }
@@ -172,8 +170,7 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void line(String tag, String value)
-    throws IOException, GedcomIOException {
+  private void line(String tag, String value) throws IOException, GedcomIOException {
 
     // Still Operation ?
     if (cancel) {
@@ -206,8 +203,7 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void writeEntities(Gedcom ged)
-    throws IOException, GedcomIOException {
+  private void writeEntities(Gedcom ged) throws IOException, GedcomIOException {
 
     // Loop through EntityLists
     for (int i = 0; i < ged.NUM_TYPES; i++) {
@@ -247,7 +243,6 @@ public class GedcomWriter implements Trackable {
    */
   public boolean writeGedcom() throws GedcomIOException {
 
-    // Prepare
     total = gedcom.getNoOfEntities();
 
     // Out operation
@@ -294,8 +289,7 @@ public class GedcomWriter implements Trackable {
    * @exception IOException
    * @exception GedcomIOException
    */
-  private void writeProperty(String prefix, Property prop)
-    throws IOException, GedcomIOException {
+  private void writeProperty(String prefix, Property prop) throws IOException, GedcomIOException {
 
     // Filters
     Entity target = null;

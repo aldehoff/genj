@@ -67,7 +67,7 @@ import javax.swing.JTextField;
     // Options
     Box options = create.Box(BoxLayout.Y_AXIS);
     create.JLabel("Encoding");
-    comboEncodings = create.JComboBox(GedcomWriter.ENCODINGS, GedcomWriter.IBMPC);
+    comboEncodings = create.JComboBox(GedcomWriter.ENCODINGS, GedcomWriter.ANSEL);
     create.pop();
     
     // entities filter    

@@ -20,7 +20,6 @@
 package genj.app;
 
 import genj.gedcom.Gedcom;
-import genj.io.AnselWriter;
 import genj.io.Filter;
 import genj.io.GedcomFormatException;
 import genj.io.GedcomIOException;
@@ -44,7 +43,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -491,7 +489,7 @@ public class ControlCenter extends JPanel {
         int rc =
           JOptionPane.showConfirmDialog(
             frame,
-            App.resources.getString("cc.open.file_exists"),
+            App.resources.getString("cc.open.file_exists", file.getName()),
             App.resources.getString("cc.create.title"),
             JOptionPane.YES_NO_OPTION);
         if (rc == JOptionPane.NO_OPTION)
@@ -717,6 +715,7 @@ public class ControlCenter extends JPanel {
       // Dialog ?
       Origin origin = gedcom.getOrigin();
       File file;
+      String encoding = null;
       if ((ask) || (origin == null) || (!origin.isFile())) {
 
         // .. choose file
@@ -738,6 +737,7 @@ public class ControlCenter extends JPanel {
         // .. take choosen one & filters
         file = chooser.getSelectedFile();
         filters = options.getFilters();
+        encoding = options.getEncoding().toString();
 
         // .. create new origin
         try {
@@ -773,7 +773,7 @@ public class ControlCenter extends JPanel {
       // .. open writer on file
       try {
         gedWriter =
-          new GedcomWriter(gedcom, file.getName(), new FileOutputStream(file), GedcomWriter.ANSEL);
+          new GedcomWriter(gedcom, file.getName(), new FileOutputStream(file), encoding);
         gedWriter.setFilters(filters);
       } catch (IOException ex) {
         ex.printStackTrace();
