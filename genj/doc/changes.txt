@@ -27,8 +27,14 @@ Future
   O Report to re-layout all entity IDs (logical numbering, format, etc.)
   O Descendants view a la http://worldconnect.rootsweb.com/cgi-bin/igm.cgi?op=DESC&db=timmsc&id=I008
   O Default properties that are added to new entities should be user-defined
-  O Windows should never been opened outside of the visible screen ("lost overview")
-    (see Toolkit.getDefaultToolkit().getScreenSize() : Dimension)
+
+1.9 - May xx 2002
+
+  O Improved windows placement 
+    + should never be places outside of the visible screen ("lost overview")
+      (see Toolkit.getDefaultToolkit().getScreenSize() : Dimension)
+    + applet should layout views 
+      (tree left/top, table right/top, overview left/bottom)
 
 1.8 - Apr 18 2002
 
