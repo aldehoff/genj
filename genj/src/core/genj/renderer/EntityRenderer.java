@@ -33,7 +33,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.io.DataInputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -52,11 +51,18 @@ import javax.swing.text.html.HTML.Tag;
 import javax.swing.text.html.HTMLEditorKit.HTMLFactory;
 import javax.swing.text.html.parser.DTD;
 import javax.swing.text.html.parser.DocumentParser;
+import javax.swing.text.html.parser.ParserDelegator;
 
 /**
  * A renderer for entities - blueprint necessary
  */
 public class EntityRenderer {
+  
+  // this will initialize and load the html32 dtd
+  // "/javax/swing/text/html/parser/html32.bdtd"
+  static {
+    new ParserDelegator();
+  }
   
   /** the property image width */
   private static final int 
@@ -113,7 +119,7 @@ public class EntityRenderer {
 
     // we wrap the html in html/body
     StringBuffer html = new StringBuffer();
-    html.append("<head><style type=\"text/css\">");
+    html.append("<html><head><style type=\"text/css\">");
     if (font!=null) {
       html.append(" body { font-family: \""+font.getFamily()+"\"; font-size: "+font.getSize()+"pt; } "    );
     }
@@ -139,15 +145,8 @@ public class EntityRenderer {
       // .. we need out own html reader (javax.swing.text.html.HTMLDocument.HTMLReader)
       MyHTMLReader reader = new MyHTMLReader(doc);
       
-      // .. because we want to use our own Parser we need to access the underlying
-      // dtd ourselves :(
-      if (dtd==null) {
-        dtd = DTD.getDTD("html32");
-        dtd.read(new DataInputStream(getClass().getResourceAsStream("/javax/swing/text/html/parser/html32.bdtd")));
-      }
-            
-      // .. trigger parsing
-      new MyDocumentParser(dtd).parse(new StringReader(html.toString()), reader, false);
+      // .. trigger parsing (we want our own parser here so there's a little bit more magic at this point)
+      new MyDocumentParser(DTD.getDTD("html32")).parse(new StringReader(html.toString()), reader, false);
       
       // .. flush reader
       reader.flush();      

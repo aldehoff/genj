@@ -156,6 +156,7 @@ public class ContentRenderer {
     g.translate(x, y);
     Rectangle r = g.getRectangle(r2d);
     r.x+=2;r.y+=2;r.width-=4;r.height-=4;
+    g.setColor(Color.black);
     renderer.render(g.getGraphics(), (Entity)content, r);
     // restore clip&transformation
     g.popTransformation();    
