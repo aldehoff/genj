@@ -11,6 +11,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Fam;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyAge;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
@@ -25,7 +26,7 @@ import java.text.NumberFormat;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.32 2003-10-06 12:36:07 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.33 2003-10-06 19:31:25 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.1
@@ -554,13 +555,15 @@ public class ReportGedcomStatistics extends Report {
             Indi wife=fam.getWife();
             
             // birth date of husband and wife as well as marriage date must be known and fixed (no ranges)
-            if((husband.getBirthDate()!=null)&&(wife.getBirthDate()!=null)&&(fam.getMarriageDate()!=null)) {
-                
-                int[] marriageAgeHusband = getAge(husband, fam.getMarriageDate());
-                int[] marriageAgeWife = getAge(wife, fam.getMarriageDate());
-                
-                analyzeAge(husband, marriageAgeHusband, families.husbands, null);
-                analyzeAge(wife, marriageAgeWife, families.wifes, null);
+            if (husband!=null&&wife!=null) {
+              if((husband.getBirthDate()!=null)&&(wife.getBirthDate()!=null)&&(fam.getMarriageDate()!=null)) {
+                  
+                  int[] marriageAgeHusband = getAge(husband, fam.getMarriageDate());
+                  int[] marriageAgeWife = getAge(wife, fam.getMarriageDate());
+                  
+                  analyzeAge(husband, marriageAgeHusband, families.husbands, null);
+                  analyzeAge(wife, marriageAgeWife, families.wifes, null);
+              }
             }
             
             // analyze children
@@ -612,8 +615,7 @@ public class ReportGedcomStatistics extends Report {
         
         // average age
         double[] age = calculateAverageAge(stats.sumAge,stats.age.getSize());
-        String[] str = {Integer.toString((int)age[0]), Integer.toString((int)age[1]), Double.toString(age[2])};
-        println(getIndent(4)+i18n(preAvg)+" "+i18n("ageDisplay",str));
+        println(getIndent(4)+i18n(preAvg)+" "+PropertyAge.getAgeString((int)age[0], (int)age[1], (int)age[2], true));
         
         // max. age
         printMinMaxAge(printIndis, preMax, stats.maxAge, new ArrayList(stats.age.getReferences(new Integer(stats.maxAge))));
@@ -627,9 +629,8 @@ public class ReportGedcomStatistics extends Report {
      */
     private void printMinMaxAge(boolean reportIndis, String prefix, int age, ArrayList ages) {
         
-        double[] a = calculateAverageAge(age,1);
-        String[] str = {Integer.toString((int)a[0]), Integer.toString((int)a[1]), Integer.toString((int)a[2])};
-        println(getIndent(4)+i18n(prefix)+" "+i18n("ageDisplay",str));
+        double[] avg = calculateAverageAge(age,1);
+        println(getIndent(4)+i18n(prefix)+" "+PropertyAge.getAgeString((int)avg[0], (int)avg[1], (int)avg[2], true));
         if(reportIndis) {
             for(int i=0;i<ages.size();i++) {
                 Indi indi = (Indi)ages.get(i);

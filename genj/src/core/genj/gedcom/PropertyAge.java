@@ -254,12 +254,25 @@ public class PropertyAge extends Property {
    * Calculate Age String
    */
   public static String getAgeString(int y, int m, int d) {
+    return getAgeString(y,m,d,false);
+  }
+      
+  /**
+   * Calculate Age String
+   */
+  public static String getAgeString(int y, int m, int d, boolean localize) {
     
     // calculate output
     WordBuffer buffer = new WordBuffer();
-    if (y>0) buffer.append(y+"y");
-    if (m>0) buffer.append(m+"m");
-    if (d>0) buffer.append(d+"d");
+    if (!localize) {
+      if (y>0) buffer.append(y+"y");
+      if (m>0) buffer.append(m+"m");
+      if (d>0) buffer.append(d+"d");
+    } else {
+      if (y>0) buffer.append(""+y).append(y==1?Gedcom.resources.getString("time.year" ):Gedcom.resources.getString("time.years" ));
+      if (m>0) buffer.append(""+m).append(y==1?Gedcom.resources.getString("time.month"):Gedcom.resources.getString("time.months"));
+      if (d>0) buffer.append(""+d).append(y==1?Gedcom.resources.getString("time.day"  ):Gedcom.resources.getString("time.days"  ));
+    }
       
     // done
     return buffer.toString();    
