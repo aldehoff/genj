@@ -75,6 +75,7 @@ public class NavigatorView extends JPanel {
     label = new JLabel();
     label.setFont(new Font("Arial", Font.PLAIN, 10));
     label.setBorder(BorderFactory.createTitledBorder(resources.getString("nav.current_entity.title")));
+    label.setForeground(Color.red);
     add(label,BorderLayout.NORTH);
     
     JPanel panel = createPanel();
