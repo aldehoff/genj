@@ -22,6 +22,7 @@ package genj.gedcom;
 import genj.util.WordBuffer;
 
 import java.util.Calendar;
+import java.util.StringTokenizer;
 
 /**
  * A point in time
@@ -48,22 +49,33 @@ public abstract class PointInTime implements Comparable {
 
   /**
    * Accessor to an immutable point in time
+   * @param d day (zero based)
+   * @param m month (zero based)
+   * @param y year
    */
-  public static PointInTime get(int d, int m, int y) {
-    return new Immutable(d, m, y);
+  public static PointInTime getPointInTime(int d, int m, int y) {
+    return new Impl(d, m, y);
   }
   
   /**
-   * Accessor to an immutable point in time
+   * Accessor to an immutable point in time - now
    */
   public static PointInTime getNow() {
     Calendar now = Calendar.getInstance(); // default to current time
-    return get(
+    return getPointInTime(
       now.get(Calendar.DATE)-1,      
       now.get(Calendar.MONTH),      
       now.get(Calendar.YEAR)
     );      
   }  
+  
+  /**
+   * Accessor to an immutable point in time
+   * @param delta a delta string @see getDelta()
+   */
+  public static PointInTime getDelta(String delta) {
+    return new Impl(delta);
+  }
 
   /**
    * Setter (implementation dependant)
@@ -125,6 +137,9 @@ public abstract class PointInTime implements Comparable {
    * String representation
    */
   public WordBuffer toString(WordBuffer buffer, boolean localize) {
+    
+    if (!isValid()) return buffer;
+    
     int 
       day = getDay(),
       month = getMonth(),
@@ -269,17 +284,60 @@ public abstract class PointInTime implements Comparable {
   /**
    * a default impl
    */
-  private static class Immutable extends PointInTime {
+  private static class Impl extends PointInTime {
+    
     /** values */
-    private int day,month,year;
+    private int day=-1, month=-1, year=-1;
+    
     /**
      * Constructor
      */
-    private Immutable(int d, int m, int y) {
+    private Impl(int d, int m, int y) {
       day = d;
       month = m;
       year = y;
     }
+    
+    /**
+     * Constructor for delta
+     */
+    private Impl(String delta) {
+      
+      // try to parse delta string tokens
+      StringTokenizer tokens = new StringTokenizer(delta);
+      fail: while (tokens.hasMoreTokens()) { 
+        
+        String token = tokens.nextToken();
+        int len = token.length();
+        
+        // check 1234x
+        if (len<2) return;
+        for (int i=0;i<len-1;i++) {
+          if (!Character.isDigit(token.charAt(i))) return;
+        }
+        // check last
+        switch (token.charAt(len-1)) {
+          case 'y' : year = s2i(token, 0, token.length()-1)  ; break;
+          case 'm' : month= s2i(token, 0, token.length()-1)-1; break;
+          case 'd' : day  = s2i(token, 0, token.length()-1)-1; break;
+          default  : return;
+        }
+      }
+      
+      // did everything we could do
+    }
+    
+    /**
+     * Calculate int from string 
+     */
+    private int s2i(String str, int start, int end) {
+      try {
+        return Integer.parseInt(str.substring(start, end));
+      } catch (NumberFormatException e) {
+        return -1;
+      }
+    }
+    
     /**
      * @see genj.gedcom.PointInTime#getDay()
      */
@@ -299,6 +357,15 @@ public abstract class PointInTime implements Comparable {
      */
     public int getYear() {
       return year;
+    }
+    
+    /**
+     * @see genj.gedcom.PointInTime#set(int, int, int)
+     */
+    public void set(int d, int m, int y) {
+      day = d;
+      month = m;
+      year = y;
     }
 
   } //PIT

@@ -25,7 +25,7 @@ package genj.gedcom;
 public class PropertyAge extends Property {
 
   /** the age */
-  private int age;
+  private PointInTime age = null;
 
   /** as string */
   private String ageAsString;
@@ -34,7 +34,7 @@ public class PropertyAge extends Property {
    * Returns <b>true</b> if this property is valid
    */
   public boolean isValid() {
-    return ageAsString!=null;
+    return getAge().isValid();
   }
 
 
@@ -56,45 +56,39 @@ public class PropertyAge extends Property {
    * Accessor Value
    */
   public String getValue() {
-    if (ageAsString!=null)
-      return ageAsString;
-    return String.valueOf(age);
+    return ageAsString;
   }
 
   /**
    * Accessor Value
    */
   public void setValue(String newValue) {
-    // Transformation to int
-    Integer i;
-    try {
-      i = Integer.valueOf(newValue);
-    } catch (NumberFormatException e) {
-      noteModifiedProperty();
-      ageAsString=newValue;
-      age=0;
-      return;
-    }
-    // OK
+    ageAsString = newValue;
+    age = null;
     noteModifiedProperty();
-    ageAsString=null;
-    age = i.intValue();
     // Done
+  }
+
+  /**
+   * Accessor age
+   */
+  public PointInTime getAge() {
+    // calc if need be
+    if (age==null)
+      age = PointInTime.getDelta(ageAsString);
+    // done
+    return age;
   }
   
   /**
    * @see genj.gedcom.Property#compareTo(java.lang.Object)
    */
-  public int compareTo(Object o) {
-    // other an age, too?
-    if (o instanceof PropertyAge) {
-      PropertyAge other = (PropertyAge)o;
-      if (ageAsString==null&&other.ageAsString==null) {
-        return age-other.age;
-      }
-    }
-    // delegate
-    return super.compareTo(o);
+  public int compareTo(Object other) {
+    // no age?
+    if (!(other instanceof PropertyAge))
+      return super.compareTo(other);
+    // compare ages
+    return getAge().compareTo(((PropertyAge)other).getAge());
   }
 
   
