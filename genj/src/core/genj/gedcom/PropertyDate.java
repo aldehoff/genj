@@ -272,7 +272,7 @@ public class PropertyDate extends Property {
             return start.set(new StringTokenizer(grab)) && end.set(tokens);
           }
           // .. grab more
-          grab += " " + grab + " ";
+          grab += " " + token + " ";
         }
         // ... wasn't so good after all
       }
