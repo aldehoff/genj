@@ -102,26 +102,17 @@ public class GedcomReader implements Trackable {
     
     // prepare sniffer
     InputStreamSniffer sniffer = new InputStreamSniffer(stream);
-    String encoding = sniffer.getEncoding();
-    Debug.log(Debug.INFO, this, "Trying encoding "+encoding);
     
     // attempt it
+    Reader result;
     try {
-      // Unicode
-      if (GedcomWriter.UNICODE.equals(encoding)) return new InputStreamReader(sniffer, "UTF-8");
-      // ASCII
-      if (GedcomWriter.ASCII.equals(encoding)) return new InputStreamReader(sniffer, "ASCII");
-      // ISO-8859-1
-      if (GedcomWriter.IBMPC.equals(encoding)) return new InputStreamReader(sniffer, "ISO-8859-1");
-      // ANSEL
-      if (GedcomWriter.ANSEL.equals(encoding)) return new AnselReader(sniffer);
-    } catch (UnsupportedEncodingException e) {
+      result = sniffer.getReader();
+    } catch (Throwable t) {
+      Debug.log(Debug.WARNING, this, "Failed to create reader: "+t.getMessage());
+      result = new InputStreamReader(sniffer);
     }
-    
-    // default
-    Debug.log(Debug.WARNING, this, "Failed to create reader for encoding "+encoding);
-    
-    return new InputStreamReader(sniffer);
+
+    return result;
   }
   
   /**
@@ -591,32 +582,105 @@ public class GedcomReader implements Trackable {
    */
   private static class InputStreamSniffer extends BufferedInputStream {
     
+    private final byte[]
+      BOM_UTF8    = { (byte)0xEF, (byte)0xBB, (byte)0xBF },
+      BOM_UTF16BE = { (byte)0xFE, (byte)0xFF },
+      BOM_UTF16LE = { (byte)0xFF, (byte)0xFE };
+
     /**
      * Constructor
      */
-    private InputStreamSniffer(InputStream in) {
+    private InputStreamSniffer(InputStream in) throws IOException {
       super(in, 4096);
+
+      // fill buffer
+      super.mark(4096); 
+      super.read();
+      super.reset();
       
-      // done
     }
     
     /**
-     * Sniff encoding
+     * Resolve fit reader
      */
-    public String getEncoding() throws IOException {
-      // fill buffer
-      super.mark(1); 
-      super.read();
-      super.reset();
-      // sniff
-      String s = new String(super.buf, super.pos, super.count);
+    private Reader getReader() throws IOException {
+      
+      // BOM present?
+      if (matchPrefix(BOM_UTF8)) {
+        log("BOM_UTF8", "UTF-8");
+        return new InputStreamReader(this, "UTF-8");
+      }
+      if (matchPrefix(BOM_UTF16BE)) {
+        log("BOM_UTF16BE", "UTF-16BE");
+        return new InputStreamReader(this, "UTF-16BE");
+      }
+      if (matchPrefix(BOM_UTF16LE)) {
+        log("BOM_UTF16LE", "UTF-16LE");
+        return new InputStreamReader(this, "UTF-16LE");
+      }
+      
+      // sniff gedcom header
+      String header = new String(super.buf, super.pos, super.count);
+      
       // tests
-      if (s.indexOf("1 CHAR UNICODE")>0) return GedcomWriter.UNICODE;
-      if (s.indexOf("1 CHAR ASCII")>0) return GedcomWriter.ASCII;
-      if (s.indexOf("1 CHAR ANSEL")>0) return GedcomWriter.ANSEL;
-      if (s.indexOf("1 CHAR IBMPC")>0) return GedcomWriter.IBMPC;
+      if (matchHeader(header,GedcomWriter.UNICODE)) {
+        log(GedcomWriter.UNICODE, "UTF-8");
+        return new InputStreamReader(this, "UTF-8");
+      } 
+      if (matchHeader(header,GedcomWriter.ASCII)) {
+        log(GedcomWriter.ASCII);
+        return new InputStreamReader(this, "ASCII");
+      } 
+      if (matchHeader(header,GedcomWriter.ANSEL)) {
+        log(GedcomWriter.ANSEL);
+        return new AnselReader(this);
+      } 
+      if (matchHeader(header,GedcomWriter.IBMPC)) {
+        log(GedcomWriter.IBMPC, "ISO-8859-1");
+        return new InputStreamReader(this, "ISO-8859-1"); 
+      } 
+
       // no clue
-      return null;
+      throw new UnsupportedEncodingException("can't sniff encoding");
+    }
+    
+    /**
+     * Log an encoding mesage
+     */
+    private void log(String encoding) {
+      log(encoding, encoding);
+    }
+    
+    /**
+     * Log an encoding mesage
+     */
+    private void log(String found, String encoding) {
+      Debug.log(Debug.INFO, this, "Found "+found+" - trying encoding "+encoding);
+    }
+
+    /**
+     * Match a header encoding
+     */
+    private boolean matchHeader(String header, String encoding) {
+      return header.indexOf("1 CHAR "+encoding)>0;
+    }
+    
+    /**
+     * Match a prefix byte sequence
+     */
+    private boolean matchPrefix(byte[] prefix) throws IOException {
+      // too match to match?
+      if (super.count<prefix.length)
+        return false;
+      // try it
+      for (int i=0;i<prefix.length;i++) {
+        if (super.buf[pos+i]!=prefix[i])
+          return false;
+      }
+      // skip match
+      super.skip(prefix.length);
+      // matched!
+      return true;
     }
           
   } //InputStreamSniffer

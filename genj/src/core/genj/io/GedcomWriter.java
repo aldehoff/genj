@@ -44,9 +44,15 @@ import java.util.List;
  */
 public class GedcomWriter implements Trackable {
 
-  public static final String UNICODE = "UNICODE", ASCII = "ASCII", IBMPC = "IBMPC", ANSEL = "ANSEL";
+  public static final String 
+    UNICODE = "UNICODE", 
+    ASCII = "ASCII", 
+    IBMPC = "IBMPC", 
+    ANSEL = "ANSEL";
 
-  public static final String[] ENCODINGS = { ANSEL, UNICODE, ASCII, IBMPC };
+  public static final String[] ENCODINGS = { 
+    ANSEL, UNICODE, ASCII, IBMPC 
+  };
 
   private Gedcom gedcom;
   private BufferedWriter out;
