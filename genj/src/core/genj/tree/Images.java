@@ -37,10 +37,8 @@ final class Images {
     imgHori,
     imgVert,
     imgDoFams,
-    imgDontFams,
-    imgDoBend,
-    imgDontBend;
-
+    imgDontFams;
+    
   /**
    * Constructor which pre-loads all images
    */
@@ -60,8 +58,6 @@ final class Images {
     imgDoFams      = new ImgIcon(this,"images/DoFams.gif"     ); 
     imgDontFams    = new ImgIcon(this,"images/DontFams.gif"   ); 
 
-    imgDoBend      = new ImgIcon(this,"images/DoBend.gif"     ); 
-    imgDontBend    = new ImgIcon(this,"images/DontBend.gif"   ); 
   }
   
 } //Images
