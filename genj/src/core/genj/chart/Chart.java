@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.3 $ $Author: nmeier $ $Date: 2004-12-14 00:39:49 $
+ * $Revision: 1.4 $ $Author: nmeier $ $Date: 2004-12-14 18:27:33 $
  */
 package genj.chart;
 
@@ -83,7 +83,7 @@ public class Chart extends JPanel {
   /**
    * Constructor
    */
-  public Chart(String title, String labelAxisX, String labelAxisY, XYSeries[] series, NumberFormat format) {
+  public Chart(String title, String labelAxisX, String labelAxisY, XYSeries[] series, NumberFormat format, boolean shapes) {
     
     // prepare chart setup
     NumberAxis xAxis = new NumberAxis(labelAxisX);
@@ -92,7 +92,7 @@ public class Chart extends JPanel {
     NumberAxis yAxis = new NumberAxis(labelAxisY);
     yAxis.setNumberFormatOverride(format);
     
-    XYItemRenderer renderer = new StandardXYItemRenderer();
+    XYItemRenderer renderer = new StandardXYItemRenderer(shapes ? StandardXYItemRenderer.SHAPES_AND_LINES : StandardXYItemRenderer.LINES);
     
     XYPlot plot = new XYPlot(XYSeries.toXYDataset(series), xAxis, yAxis, renderer);
 
