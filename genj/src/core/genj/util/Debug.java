@@ -96,7 +96,18 @@ public class Debug {
    * Flush
    */
   public static void flush() {
-    out.flush();
+    
+    synchronized (mutex) {
+      
+      // a flush cancels our buffering
+      if (buffer!=null)
+        setOutput(System.out);
+      
+      // flush now
+      out.flush();
+      
+    }
+    
   }
   
   /**
@@ -114,37 +125,41 @@ public class Debug {
    */
   public static void log(int level, Object source, String msg, Throwable t) {
     
+    // creata a log line
+    Class type = source instanceof Class ? (Class)source : source.getClass();
+    
+    StringBuffer buf = new StringBuffer(120);
+    
+    buf.append(LEVELS[level]);
+    buf.append(':');
+    buf.append(type.getName());
+    buf.append(':');
+    if (msg!=null) buf.append(msg);
+    buf.append(':');
+    if (t!=null) buf.append(t.getClass().getName());
+    buf.append(':');
+    if (t!=null) buf.append(t.getMessage()!=null?t.getMessage():"");
+
+    String line = buf.toString(); 
+      
+    // log it 
     synchronized (mutex) {
       
-      // log what we need
-      Class type = source instanceof Class ? (Class)source : source.getClass();
-      
-      StringBuffer buf = new StringBuffer(120);
-      
-      buf.append(LEVELS[level]);
-      buf.append(':');
-      buf.append(type.getName());
-      buf.append(':');
-      if (msg!=null) buf.append(msg);
-      buf.append(':');
-      if (t!=null) buf.append(t.getClass().getName());
-      buf.append(':');
-      if (t!=null) buf.append(t.getMessage()!=null?t.getMessage():"");
-      
-      out.println(buf.toString());
+      out.println(line);
       if (level==ERROR&&t!=null) {
         t.printStackTrace(out);
       }
       
-      if ((out!=System.out)&&out.checkError()) {
-        out = System.out;
-        log(ERROR, Debug.class, "Problems sending debugging to log - switching to System.out");
+      // check error
+      if (out!=System.out&&out.checkError()) {
+        flush();
+        log(ERROR, Debug.class, "Retrying log()");
         log(level, source, msg, t);
       }
       
       // check buffer state
-      if ((buffer!=null)&&(buffer.size()>BUFFER_SIZE)) {
-        setOutput(System.out);
+      if (buffer!=null&&buffer.size()>=BUFFER_SIZE) {
+        flush();
       }
     }
   
@@ -158,4 +173,4 @@ public class Debug {
     log(level, source, "Unexpected Throwable or Exception", t);
   }
   
-}
+} //Debug

@@ -153,6 +153,10 @@ public class Applet extends java.applet.Applet {
       try {
         reader = new GedcomReader(Origin.create(new URL(url)));
         gedcom = reader.read();
+        
+        // give progress a change to update completely
+        Thread.currentThread().sleep(100);
+        
       } catch (Throwable t) {
         throwable = t;
       }
