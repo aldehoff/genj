@@ -23,7 +23,7 @@ import java.util.TreeMap;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.11 2002-04-22 12:16:00 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.12 2002-04-24 03:28:03 timmsc Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -89,7 +89,7 @@ public class ReportGedcomStatistics implements Report {
   }
 
   /**
-   * Tells wether this report doesn't change information in the Gedcom-file
+   * Tells whether this report doesn't change information in the Gedcom-file
    */
   public boolean isReadOnly() {
     return true;

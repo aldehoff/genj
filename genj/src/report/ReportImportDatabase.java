@@ -122,7 +122,7 @@ public class ReportImportDatabase implements Report {
   }
 
   /**
-   * Tells wether this report doesn't change information in the Gedcom-file
+   * Tells whether this report doesn't change information in the Gedcom-file
    */
   public boolean isReadOnly() {
     return false;

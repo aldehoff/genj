@@ -62,7 +62,7 @@ public class ReportBirthdays implements Report {
   }
 
   /**
-   * Tells wether this report doesn't change information in the Gedcom-file
+   * Tells whether this report doesn't change information in the Gedcom-file
    */
   public boolean isReadOnly() {
     return true;
@@ -114,12 +114,12 @@ public class ReportBirthdays implements Report {
         PropertyDate b1 = ((Indi)o1).getBirthDate();
         PropertyDate b2 = ((Indi)o2).getBirthDate();
 
-        // So we check wether we can get a day
+        // So we check whether we can get a day
         int d1 = 0;
         if (b1!=null)
                 d1 = b1.getDay(0,0);
 
-        // So we check wether we can get a day
+        // So we check whether we can get a day
         int d2 = 0;
         if (b2!=null)
                 d2 = b2.getDay(0,0);

@@ -14,9 +14,9 @@ import java.util.*;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.9 2002-03-25 19:18:55 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.10 2002-04-24 03:28:03 timmsc Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class ReportMakeHTMLTable implements Report {
 
@@ -133,7 +133,7 @@ public class ReportMakeHTMLTable implements Report {
   }
 
   /**
-   * Tells wether this report doesn't change information in the Gedcom-file
+   * Tells whether this report doesn't change information in the Gedcom-file
    */
   public boolean isReadOnly() {
     return true;
