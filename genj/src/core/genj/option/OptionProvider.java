@@ -19,84 +19,16 @@
  */
 package genj.option;
 
-import genj.util.Registry;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-
-import sun.misc.Service;
 
 /**
  * A service that can provide options
  */
-public abstract class OptionProvider {
-
-  /** all known options */
-  private static List options;
+public interface OptionProvider {
 
   /**
    * Accessor - options
    */
-  public abstract List getOptions();
+  public List getOptions();
 
-  /**
-   * Restore options values from registry
-   */
-  public static void restoreAll(Registry registry) {
-
-    registry = new Registry(registry, "options");
-
-    // loop over all options
-    Iterator it = getAllOptions().iterator();
-    while (it.hasNext()) try {
-      ((Option)it.next()).restore(registry);
-    } catch (Throwable t) {}
-    
-    // done
-  }
-  
-  /**
-   * Persist option values to registry
-   */
-  public static void persistAll(Registry registry) {
-    
-    registry = new Registry(registry, "options");
-
-    // loop over all options
-    Iterator it = getAllOptions().iterator();
-    while (it.hasNext()) try {
-      ((Option)it.next()).persist(registry);
-    } catch (Throwable t) {
-    }
-    
-    // done
-    
-  }
-  
-  /**
-   * Static Accessor - all options available from OptionProviders
-   */
-  public static List getAllOptions() {  
-    
-    // known?
-    if (options!=null)
-      return options;    
-
-    // collect    
-    options = new ArrayList(32);
-
-    // prepare options
-    Iterator it = Service.providers(OptionProvider.class);
-    while (it.hasNext()) {
-      // one provider at a time
-      OptionProvider provider = (OptionProvider)it.next();
-      // one option at a time
-      options.addAll(provider.getOptions());
-    }
-
-    // done
-    return options;
-  }
-  
 } //OptionProvider

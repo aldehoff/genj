@@ -17,16 +17,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.41 $ $Author: nmeier $ $Date: 2004-05-22 11:05:41 $
+ * $Revision: 1.42 $ $Author: nmeier $ $Date: 2004-05-25 08:24:30 $
  */
 package genj.report;
 
-import genj.edit.EditViewFactory;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.option.Option;
-import genj.option.OptionMetaInfo;
 import genj.option.PropertyOption;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
@@ -68,7 +66,7 @@ import javax.swing.event.ListSelectionListener;
 /**
  * Interface of a user definable GenjJ Report
  */
-public abstract class Report implements OptionMetaInfo, Cloneable {
+public abstract class Report implements Cloneable {
 
   /** options */
   protected final static int
@@ -95,7 +93,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
   private final static String lang = Locale.getDefault().getLanguage();
 
   /** i18n texts */
-  private Properties i18n;
+  private Properties properties;
 
   /** out */
   private PrintWriter out;
@@ -173,23 +171,21 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
     if (options!=null)
       return options;
       
-    // calculate options - we use i18n() to resolve names for options
+    // calculate options 
     options = PropertyOption.introspect(this);
-    
+
     // restore options values
     Iterator it = options.iterator();
-    while (it.hasNext())
-      ((Option)it.next()).restore(registry);
+    while (it.hasNext()) {
+      PropertyOption option = (PropertyOption)it.next();
+      // restore old value
+      option.restore(registry);
+      // we use i18n() to resolve names for options
+      option.setName(i18n(option.getProperty()));    
+    }
     
     // done
     return options;
-  }
-  
-  /**
-   * @see genj.option.OptionNameProvider#getOptionName(java.lang.String)
-   */
-  public String getLocalizedName(Option option) {
-    return i18n(((PropertyOption)option).getProperty());
   }
 
   /**
@@ -435,17 +431,7 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
   public final String i18n(String key, Object[] subs) {
 
     // get i18n properties
-    if (i18n==null) {
-      i18n = new Properties();
-      try {
-        String rtype = getClass().getName();
-        while (rtype.indexOf('.') >= 0)
-          rtype = rtype.substring(rtype.indexOf('.')+1);
-        i18n.load(getClass().getResourceAsStream(rtype+".properties"));
-      } catch (Throwable t) {
-        Debug.log(Debug.INFO, this, "Couldn't read i18n for "+this);
-      }
-    }
+    Properties i18n = getProperties();
 
     // look it up in language
     String result = null;
@@ -469,6 +455,24 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
 
     // done
     return result;
+  }
+  
+  /**
+   * Access to report properties
+   */
+  private Properties getProperties() {
+    if (properties==null) {
+      properties = new Properties();
+      try {
+        String rtype = getClass().getName();
+        while (rtype.indexOf('.') >= 0)
+          rtype = rtype.substring(rtype.indexOf('.')+1);
+        properties.load(getClass().getResourceAsStream(rtype+".properties"));
+      } catch (Throwable t) {
+        Debug.log(Debug.INFO, this, "Couldn't read properties for "+this);
+      }
+    }
+    return properties;
   }
 
   /**
@@ -657,9 +661,6 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
       Property target = item.getTarget();
       if (target==null)
         return;
-      // make sure an EditView is opened
-      if (!EditViewFactory.isEditViewAvailable(manager, target.getGedcom()))
-        EditViewFactory.openForEdit(manager, target.getEntity());
       // propagate
       manager.setContext(target);
     }

@@ -86,33 +86,8 @@ public class ReportEvents extends Report {
     public int handleYear = 3;
     public String[] handleYears = handleDays;
     
-    /** this report's version */
-    public static final String VERSION = "1.1";
-    
-    /**
-     * Returns the version of this script
-     */
-    public String getVersion() {
-        return VERSION;
-    }
-    
-    /**
-     * Returns the name of this report
-     */
-    public String getName() {
-        return i18n("name");
-    }
-    
-    /**
-     * Some information about this report
-     */
-    public String getInfo() {
-        return i18n("info");
-    }
-    
-    public String getAuthor() {
-        return "Nils Meier <nils@meiers.net>, Carsten M\u00FCssig <carsten.muessig@gmx.net>";
-    }
+    /** the marriage symbol */
+    private final static String txtMarrSymbol = genj.gedcom.Options.getInstance().getTxtMarriageSymbol();
     
     /**
      * @see genj.report.Report#accepts(java.lang.Object)
@@ -160,42 +135,42 @@ public class ReportEvents extends Report {
         println(Delta.TXT_YEAR  + ": " + year + " (" + handleYears[handleYear] + ")");
         println();
         
-        if (reportBirth) {
+        if (reportBirth&&!births.isEmpty()) {
             println("   " + Gedcom.getName("BIRT"));
             report(births);
             println();
         }
-        if (reportBaptism) {
+        if (reportBaptism&&!baptisms.isEmpty()) {
             println("   " + Gedcom.getName("BAPM"));
             report(baptisms);
             println();
         }
-        if (reportMarriage) {
+        if (reportMarriage&&!marriages.isEmpty()) {
             println("   " + Gedcom.getName("MARR"));
             report(marriages);
             println();
         }
-        if (reportDivorce) {
+        if (reportDivorce&&!divorces.isEmpty()) {
             println("   " + Gedcom.getName("DIV"));
             report(divorces);
             println();
         }
-        if (reportEmigration) {
+        if (reportEmigration&&!emigrations.isEmpty()) {
             println("   " + Gedcom.getName("EMIG"));
             report(emigrations);
             println();
         }
-        if (reportImmigration) {
+        if (reportImmigration&&!immigrations.isEmpty()) {
             println("   " + Gedcom.getName("IMMI"));
             report(immigrations);
             println();
         }
-        if (reportNaturalization) {
+        if (reportNaturalization&&!naturalizations.isEmpty()) {
             println("   " + Gedcom.getName("NATU"));
             report(naturalizations);
             println();
         }
-        if (reportDeath) {
+        if (reportDeath&&!deaths.isEmpty()) {
             println("   " + Gedcom.getName("DEAT"));
             report(deaths);
         }
@@ -233,8 +208,10 @@ public class ReportEvents extends Report {
             Fam[] fams = indi.getFamilies();
             for (int j = 0; j < fams.length; j++) {
                 Fam fam = fams[j];
-                if (checkDate(fam.getMarriageDate()))
-                    marriages.add(new Hit(fam.getMarriageDate(), fam, ""));
+                if (checkDate(fam.getMarriageDate())) {
+                  Hit hit = new Hit(fam.getMarriageDate(), fam, "");
+                  if (!marriages.contains(hit)) marriages.add(hit);
+                }
             }
         }
         
@@ -243,8 +220,10 @@ public class ReportEvents extends Report {
             Fam[] fams = indi.getFamilies();
             for (int j = 0; j < fams.length; j++) {
                 Fam fam = fams[j];
-                if (checkDate(fam.getDivorceDate()))
-                    divorces.add(new Hit(fam.getDivorceDate(), fam, ""));
+                if (checkDate(fam.getDivorceDate())) {
+                  Hit hit = new Hit(fam.getDivorceDate(), fam, "");
+                  if (!divorces.contains(hit)) divorces.add(hit);
+                }
             }
         }
         
@@ -308,7 +287,7 @@ public class ReportEvents extends Report {
         }
         if (hit.who instanceof Fam) {
             Fam fam = (Fam) hit.who;
-            println("      " + hit.when + " @" + fam.getId() + "@ " + fam.toString() + " (@" + fam.getHusband().getId() + "@ + @" + fam.getWife().getId() + "@)");
+            println("      " + hit.when + " @" + fam.getId() + "@ " + fam.toString() + " (@" + fam.getHusband().getId() + "@" + txtMarrSymbol + "@" + fam.getWife().getId() + "@)");
         }
     }
     
@@ -397,23 +376,29 @@ public class ReportEvents extends Report {
      */
     private class Hit implements Comparable {
         String tag;
+        PropertyDate date;
         PointInTime when;
         Entity who;
         PointInTime compare;
         // Constructor
-        Hit(PropertyDate date, Entity ent, String path) {
-            tag = path;
-            when = date.getStart();
-            if (isSortDay)
-                // blocking out year (to a Gregorian LEAP 4 - don't want to make it invalid) so that month and day count
-                compare = new PointInTime(when.getDay(), when.getMonth(), 4, when.getCalendar());
-            else
-                compare = when;
-            who = ent;
+        Hit(PropertyDate d, Entity e, String p) {
+          date = d;          
+          tag = p;
+          when = date.getStart();
+          if (isSortDay)
+            // blocking out year (to a Gregorian LEAP 4 - don't want to make it invalid) so that month and day count
+            compare = new PointInTime(when.getDay(), when.getMonth(), 4, when.getCalendar());
+          else
+            compare = when;
+          who = e;
         }
         // comparison
         public int compareTo(Object object) {
             return compare.compareTo(((Hit)object).compare);
+        }
+        // equals
+        public boolean equals(Object that) {
+          return date==((Hit)that).date;
         }
     } //Hit
     

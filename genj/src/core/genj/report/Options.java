@@ -17,23 +17,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.1 $ $Author: nmeier $ $Date: 2004-05-22 11:05:41 $
+ * $Revision: 1.2 $ $Author: nmeier $ $Date: 2004-05-25 08:24:30 $
  */
 package genj.report;
 
-import genj.option.Option;
-import genj.option.OptionMetaInfo;
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
-import genj.util.Resources;
 
 import java.util.List;
 
 /**
  * Options for report package
  */
-public class Options extends OptionProvider implements OptionMetaInfo {
-
+public class Options implements OptionProvider {
+  
   /** 'singleton' instance */
   private static Options instance = new Options();
   
@@ -47,15 +44,6 @@ public class Options extends OptionProvider implements OptionMetaInfo {
     return PropertyOption.introspect(getInstance());
   }
 
-  /**
-   * callback - provide localized option names
-   *
-   */
-  public String getLocalizedName(Option option) {
-    PropertyOption poption = (PropertyOption)option;
-    return Resources.get(this).getString("option."+poption.getProperty());
-  }
-  
   /**
    * accessor - singleton instance
    */

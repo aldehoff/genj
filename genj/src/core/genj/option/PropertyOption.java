@@ -20,6 +20,7 @@
 package genj.option;
 
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.TextFieldWidget;
 
 import java.beans.BeanInfo;
@@ -42,14 +43,8 @@ import javax.swing.JComponent;
  */
 public abstract class PropertyOption extends Option {
 
-  /** option is for instance */
-  protected Object instance;
-  
   /** property */
   protected String property;
-
-  /** type */
-  protected Class type;
 
   /**
    * Get options for given instance - supported are
@@ -75,14 +70,14 @@ public abstract class PropertyOption extends Option {
             continue;
             
           // int, boolean, String?
-          if (!PropertyOption.isSupportedArgument(property.getPropertyType()))
+          if (!Impl.isSupportedArgument(property.getPropertyType()))
             continue;
             
           // try a read
           property.getReadMethod().invoke(instance, null);
             
           // create and keep the option
-          result.add(BeanPropertyOption.create(instance, property));
+          result.add(BeanPropertyImpl.create(instance, property));
           
           // remember name
           beanattrs.add(property.getName());
@@ -114,11 +109,11 @@ public abstract class PropertyOption extends Option {
       }
 
       // int, boolean, String?
-      if (!PropertyOption.isSupportedArgument(type))
+      if (!Impl.isSupportedArgument(type))
         continue;
 
       // create and keep the option
-      result.add(FieldOption.create(instance, field));
+      result.add(FieldImpl.create(instance, field));
 
       // next
     }
@@ -130,11 +125,24 @@ public abstract class PropertyOption extends Option {
   /**
    * Constructor
    */
-  protected PropertyOption(Object instance, String property, Class type) {
-    this.instance = instance;
+  protected PropertyOption(String property) {
     this.property = property;
-    this.type     = type;
   }
+
+  /**
+   * Accessor - option value
+   */
+  public abstract Object getValue();
+
+  /**
+   * Accessor - option value
+   */
+  public abstract void setValue(Object set);
+
+  /** 
+   * Setter - name 
+   */
+  public abstract void setName(String set);
 
   /**
    * Accessor - a unique key for this option 
@@ -143,111 +151,6 @@ public abstract class PropertyOption extends Option {
     return property;
   }
   
-  /**
-   * Accessor - name of this option
-   */
-  public String getName() {
-    // can localize?
-    if (instance instanceof OptionMetaInfo)
-      return ((OptionMetaInfo)instance).getLocalizedName(this);
-    // key
-    return getProperty();
-  }
-
-  /**
-   * Restore option values from registry
-   */
-  public void restore(Registry registry) {
-    String value = registry.get(instance.getClass().getName() + '.' + getProperty(), (String)null);
-    if (value!=null) 
-      setValue(value);
-  }
-  
-  /**
-   * Persist option values to registry
-   */
-  public void persist(Registry registry) {
-    Object value = getValue();
-    if (value!=null) 
-      registry.put(instance.getClass().getName() + '.' + getProperty(), value.toString());
-  }
-
-  /**
-   * Provider a UI for this option
-   */  
-  public OptionUI getUI(OptionsWidget widget) {
-    // a boolean?
-    if (type==Boolean.TYPE)
-      return new BooleanUI();
-    // all else
-    return new SimpleUI();
-  }
-  
-  /**
-   * Accessor - current value of this option
-   */
-  protected final Object getValue() {
-    try {
-      // get it
-      return getValueImpl();
-    } catch (Throwable t) {
-      return null;
-    }
-  }
-
-  /**
-   * Accessor - implementation
-   */
-  protected abstract Object getValueImpl() throws Throwable;
-  
-  /**
-   * Accessor - current value of this option
-   */
-  protected final void setValue(Object value) {
-    try {
-      // type clash?
-      Class boxed = box(type);
-      if (value!=null&&value.getClass()!=boxed) { 
-        value = boxed.getConstructor(new Class[]{value.getClass()})
-          .newInstance(new Object[]{ value });
-      }
-      // set it
-      setValueImpl(value);
-    } catch (Throwable t) {
-      // not much we can do about that - ignored
-    }
-  }
-
-  /**
-   * Accessor - implementation
-   */
-  protected abstract void setValueImpl(Object value) throws Throwable;
-  
-  /**
-   * Accessor - (boxed) type of this option
-   */ 
-  private static Class box(Class type) {
-    if (type == boolean.class) return Boolean.class;         
-    if (type == byte.class) return Byte.class;         
-    if (type == char.class) return Character.class;         
-    if (type == short.class) return Short.class;         
-    if (type == int.class) return Integer.class;         
-    if (type == long.class) return Long.class;         
-    if (type == float.class) return Float.class;         
-    if (type == double.class) return Double.class;                     
-    return type;
-  }
-  
-  /**
-   * Test for supported option types
-   */
-  private static boolean isSupportedArgument(Class type) {
-    return
-      String.class.isAssignableFrom(type) ||
-      Integer.TYPE.isAssignableFrom(type) ||
-      Boolean.TYPE.isAssignableFrom(type);
-  }
-
   /**
    * A UI for a boolean 
    */
@@ -298,11 +201,155 @@ public abstract class PropertyOption extends Option {
       setValue(getText());
     }
   } //BooleanUI
+  
+  /**
+   * Impl base type
+   */
+  private static abstract class Impl extends PropertyOption {
+
+    /** option is for instance */
+    protected Object instance;
+  
+    /** type */
+    protected Class type;
+  
+    /** a user readable name */
+    private String name;
+  
+    /**
+     * Constructor
+     */
+    protected Impl(Object instance, String property, Class type) {
+      super(property);
+      this.instance = instance;
+      this.type     = type;
+    }
+
+    /**
+     * Accessor - name of this option
+     */
+    public String getName() {
+      if (name==null) {
+        // can localize?
+        Resources resources = Resources.get(instance);
+        name = resources.getString("option."+property, false);
+        if (name==null) {
+          name = resources.getString(property, false);
+          if (name==null)
+            name = property;
+        }
+      }
+      // done
+      return name;
+    }
+  
+    /**
+     * Accessor - name of this option
+     */
+    public void setName(String set) {
+      name = set;
+    }
+    
+    /**
+     * Restore option values from registry
+     */
+    public void restore(Registry registry) {
+      String value = registry.get(instance.getClass().getName() + '.' + getProperty(), (String)null);
+      if (value!=null) 
+        setValue(value);
+    }
+  
+    /**
+     * Persist option values to registry
+     */
+    public void persist(Registry registry) {
+      Object value = getValue();
+      if (value!=null) 
+        registry.put(instance.getClass().getName() + '.' + getProperty(), value.toString());
+    }
+
+    /**
+     * Provider a UI for this option
+     */  
+    public OptionUI getUI(OptionsWidget widget) {
+      // a boolean?
+      if (type==Boolean.TYPE)
+        return new BooleanUI();
+      // all else
+      return new SimpleUI();
+    }
+  
+    /**
+     * Accessor - current value of this option
+     */
+    public final Object getValue() {
+      try {
+        // get it
+        return getValueImpl();
+      } catch (Throwable t) {
+        return null;
+      }
+    }
+
+    /**
+     * Accessor - implementation
+     */
+    protected abstract Object getValueImpl() throws Throwable;
+  
+    /**
+     * Accessor - current value of this option
+     */
+    public final void setValue(Object value) {
+      try {
+        // type clash?
+        Class boxed = box(type);
+        if (value!=null&&value.getClass()!=boxed) { 
+          value = boxed.getConstructor(new Class[]{value.getClass()})
+            .newInstance(new Object[]{ value });
+        }
+        // set it
+        setValueImpl(value);
+      } catch (Throwable t) {
+        // not much we can do about that - ignored
+      }
+    }
+
+    /**
+     * Accessor - implementation
+     */
+    protected abstract void setValueImpl(Object value) throws Throwable;
+  
+    /**
+     * Accessor - (boxed) type of this option
+     */ 
+    private static Class box(Class type) {
+      if (type == boolean.class) return Boolean.class;         
+      if (type == byte.class) return Byte.class;         
+      if (type == char.class) return Character.class;         
+      if (type == short.class) return Short.class;         
+      if (type == int.class) return Integer.class;         
+      if (type == long.class) return Long.class;         
+      if (type == float.class) return Float.class;         
+      if (type == double.class) return Double.class;                     
+      return type;
+    }
+  
+    /**
+     * Test for supported option types
+     */
+    private static boolean isSupportedArgument(Class type) {
+      return
+        String.class.isAssignableFrom(type) ||
+        Integer.TYPE.isAssignableFrom(type) ||
+        Boolean.TYPE.isAssignableFrom(type);
+    }
+
+  } //Impl
 
   /**
    * A field Option
    */
-  private static class FieldOption extends PropertyOption {
+  private static class FieldImpl extends Impl {
 
     /** field */
     protected Field field;
@@ -310,7 +357,7 @@ public abstract class PropertyOption extends Option {
     /** factory */
     protected static Option create(final Object instance, Field field) {
       // create one
-      PropertyOption result = new FieldOption(instance, field);
+      PropertyOption result = new FieldImpl(instance, field);
       // is it an Integer field with matching multiple choice field?
       if (field.getType()==Integer.TYPE) try {
         final Field choices = instance.getClass().getField(field.getName()+"s");
@@ -328,7 +375,7 @@ public abstract class PropertyOption extends Option {
     }
 
     /** Constructor */
-    private FieldOption(Object instance, Field field) {  
+    private FieldImpl(Object instance, Field field) {  
       super(instance, field.getName(), field.getType());
       this.field = field;
     }
@@ -348,7 +395,7 @@ public abstract class PropertyOption extends Option {
   /**
    * A bean property Option
    */
-  private static class BeanPropertyOption extends PropertyOption {
+  private static class BeanPropertyImpl extends Impl {
 
     /** descriptor */
     PropertyDescriptor descriptor;
@@ -356,7 +403,7 @@ public abstract class PropertyOption extends Option {
     /** factory */
     protected static Option create(final Object instance, PropertyDescriptor descriptor) {
       // create one
-      PropertyOption result = new BeanPropertyOption(instance, descriptor);
+      PropertyOption result = new BeanPropertyImpl(instance, descriptor);
       // is it an Integer field with matching multiple choice field?
       if (descriptor.getPropertyType()==Integer.TYPE) try {
         final Method choices = instance.getClass().getMethod(descriptor.getReadMethod().getName()+"s", null);
@@ -374,7 +421,7 @@ public abstract class PropertyOption extends Option {
     }
 
     /** Constructor */
-    private BeanPropertyOption(Object instance, PropertyDescriptor property) {
+    private BeanPropertyImpl(Object instance, PropertyDescriptor property) {
       super(instance, property.getName(), property.getPropertyType()); 
       this.descriptor = property;
     }

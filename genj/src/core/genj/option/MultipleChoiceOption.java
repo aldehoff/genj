@@ -28,13 +28,14 @@ import javax.swing.JComponent;
 /**
  * A multiple choice Option
  */
-public abstract class MultipleChoiceOption extends Option {
+public abstract class MultipleChoiceOption extends PropertyOption {
   
   /** wrapped option */
   private PropertyOption option;
   
   /** constructor */
   protected MultipleChoiceOption(PropertyOption option) {
+    super(option.getProperty());
     this.option = option;
   }
   
@@ -51,6 +52,21 @@ public abstract class MultipleChoiceOption extends Option {
   /** name */
   public String getName() {
     return option.getName();
+  }
+
+  /** name */
+  public void setName(String set) {
+    option.setName(set);
+  }
+  
+  /** value */
+  public Object getValue() {
+    return option.getValue();
+  }
+
+  /** value */
+  public void setValue(Object set) {
+    option.setValue(set);
   }
 
   /** ui access */  

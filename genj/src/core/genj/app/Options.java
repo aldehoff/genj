@@ -23,7 +23,6 @@ import genj.gedcom.PropertyFile;
 import genj.io.FileAssociation;
 import genj.lnf.LnF;
 import genj.option.Option;
-import genj.option.OptionMetaInfo;
 import genj.option.OptionProvider;
 import genj.option.OptionUI;
 import genj.option.OptionsWidget;
@@ -54,7 +53,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Application options
  */
-public class Options extends OptionProvider implements OptionMetaInfo {
+public class Options implements OptionProvider {
 
   /** singleton */
   private final static Options instance = new Options();
@@ -240,14 +239,6 @@ public class Options extends OptionProvider implements OptionMetaInfo {
     return result;
   }
   
-  /**
-   * OptionMetaInfo callback - provide a name for an option
-   */
-  public String getLocalizedName(Option option) {
-    // will only be called for our 'standard' propertyoptions
-    return getResources().getString("option."+((PropertyOption)option).getProperty());
-  }
-
   /** 
    * Option for File Associations
    */

@@ -64,6 +64,12 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
   }
 
   /**
+   * callback - broadcast from manager that context changed
+   */
+  public void contextChanged(ViewManager manager, Gedcom gedcom) {
+  }
+  
+  /**
    * Reports ew offer to run on an entity
    * @see genj.view.ActionSupport#createActions(genj.gedcom.Entity, genj.view.ViewManager)
    */

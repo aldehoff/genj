@@ -160,13 +160,11 @@ public class GedcomReader implements Trackable {
   public String getState() {
     switch (state) {
       case READHEADER :
-      return "Reading header";
-      default:
-      case READENTITIES :
-      //return "Loading data";//line+" Lines & "+entity+" Entities";
-      return "L:"+line+" & E:"+entity;
+        return resources.getString("progress.read.header");
+      case READENTITIES :default:
+        return resources.getString("progress.read.entities", new String[]{ ""+line, ""+entity} );
       case LINKING      :
-      return "Linking entities";
+        return resources.getString("progress.read.linking");
     }
   }
 

@@ -57,4 +57,10 @@ public class TableViewFactory implements ViewFactory {
     return Resources.get(this).getString("title" + (abbreviate?".short":""));
   }
 
+  /**
+   * callback - broadcast from manager that context changed
+   */
+  public void contextChanged(ViewManager manager, Gedcom gedcom) {
+  }
+  
 } //TableViewFactory

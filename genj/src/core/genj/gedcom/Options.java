@@ -19,17 +19,15 @@
  */
 package genj.gedcom;
 
-import java.util.List;
-
-import genj.option.Option;
-import genj.option.OptionMetaInfo;
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
+
+import java.util.List;
 
 /**
  * Application options
  */
-public class Options extends OptionProvider implements OptionMetaInfo {
+public class Options implements OptionProvider {
   
   /** singleton */
   private final static Options instance = new Options();
@@ -100,13 +98,6 @@ public class Options extends OptionProvider implements OptionMetaInfo {
    */
   public List getOptions() {
     return PropertyOption.introspect(instance);
-  }
-
-  /**
-   * OptionMetaInfo callback - localize a name
-   */  
-  public String getLocalizedName(Option option) {
-    return Gedcom.resources.getString("option."+((PropertyOption)option).getProperty());
   }
 
 } //Options

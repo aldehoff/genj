@@ -42,6 +42,7 @@ import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.swing.ImageIcon;
 import genj.view.ActionSupport;
+import genj.view.Options;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
@@ -80,6 +81,28 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     return EditView.resources.getString("title" + (abbreviate?".short":""));
   }
   
+  /**
+   * Callback - context change information
+   */
+  public void contextChanged(ViewManager manager, Gedcom gedcom) {
+    // editor needed?
+    if (!Options.getInstance().isOpenEditor)
+      return;
+    // what's the context
+    Property context = manager.getContext(gedcom);
+    if (context==null)
+      return;
+    Entity entity = context.getEntity();
+    // noop if EditView non-sticky or current is open
+    EditView[] edits = (EditView[])manager.getInstances(EditView.class, gedcom);
+    for (int i=0;i<edits.length;i++) {
+      if (!edits[i].isSticky()||edits[i].getCurrentEntity()==entity) 
+        return;
+    }
+    // open
+    new OpenForEdit(entity, manager).trigger();
+  }
+
   /**
    * @see genj.view.ContextSupport#createActions(Property)
    */
@@ -146,7 +169,7 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     result.add(new DelEntity(entity, manager));
     
     // add an "edit in EditView"
-    if (!isEditViewAvailable(manager, entity.getGedcom())) {
+    if (manager.getInstances(EditView.class, entity.getGedcom()).length==0) {
       result.add(ActionDelegate.NOOP);
       result.add(new OpenForEdit(entity, manager));
     }
@@ -154,23 +177,6 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     return result;
   }
 
-  /**
-   * Tests if there's a visible EditView that is not sticky
-   */
-  public static boolean isEditViewAvailable(ViewManager manager, Gedcom gedcom) {
-    EditView[] edits = (EditView[])manager.getInstances(EditView.class, gedcom);
-    for (int i=0;i<edits.length;i++)
-      if (!edits[i].isSticky()) return true;
-    return false;
-  }
-  
-  /**
-   * Open a new EditView
-   */
-  public static void openForEdit(ViewManager manager, Entity entity) {
-    new OpenForEdit(entity, manager).trigger();
-  }
-  
   /**
    * @see genj.view.ContextMenuSupport#createActions(Gedcom)
    */

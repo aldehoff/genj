@@ -67,7 +67,7 @@ public class OptionsWidget extends JPanel {
         
     // setup
     table = new Table();
-    
+     
     // layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(table));    
@@ -176,35 +176,6 @@ public class OptionsWidget extends JPanel {
     
   } //Model
 
-//  /**
-//   * Our own editor/renderer support for custom options
-//   */
-//  private class CustomSupport extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
-//
-//    private JButton button = new JButton("...");
-//    
-//    /** constructor */    
-//    public CustomSupport() {
-//      button.setRequestFocusEnabled(false);
-//    }
-//
-//    /** callback for an editor component */
-//    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-//      return button;
-//    }
-//
-//    /** callback for a renderer */
-//    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-//      return button;
-//    }
-//
-//    /** callback for edit value */
-//    public Object getCellEditorValue() {
-//      return null;
-//    }
-//
-//  } //CustomSupport
-
   /**
    * our table
    */
@@ -221,6 +192,9 @@ public class OptionsWidget extends JPanel {
       columns.addColumn(new TableColumn(0));
       columns.addColumn(new TableColumn(1));
       super.setColumnModel(columns);
+      
+      //table.getTableHeader().setReorderingAllowed(false);
+      
     }
 
     /** we know how to find the correct editor */

@@ -159,6 +159,11 @@ public class ViewManager {
         ((ContextSupport)vw.getView()).setContext(property);
       // next
     }
+    // loop and tell to factories
+    ViewFactory[] fs = getFactories();
+    for (int f=0; f<fs.length; f++) {
+      fs[f].contextChanged(this, gedcom);      
+    }
     // done
   }
 

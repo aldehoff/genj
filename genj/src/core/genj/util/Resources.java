@@ -85,7 +85,8 @@ public class Resources {
   private static String calcPackage(Object object) {
     Class clazz = object instanceof Class ? (Class)object : object.getClass();
     String name = clazz.getName();
-    return name.substring(0, name.lastIndexOf('.'));
+    int last = name.lastIndexOf('.');
+    return last<0 ? name : name.substring(0, last);
   }
   
   /**
@@ -139,6 +140,24 @@ public class Resources {
 
     // Done
   }
+  
+//  /**
+//   * Constructor
+//   */
+//  public Resources(Properties properties) {
+//    
+//    // no package
+//    pkg = "";
+//    
+//    // grab from properties
+//    Iterator it = properties.keySet().iterator();
+//    while (it.hasNext()) {
+//      Object key = it.next();
+//      key2resource.put(key, properties.get(key));
+//    }
+//    
+//    // done
+//  }
   
   /**
    * Loads key/value pairs from inputstream with unicode content

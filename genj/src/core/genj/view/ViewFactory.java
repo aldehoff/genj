@@ -44,5 +44,11 @@ public interface ViewFactory {
    * Returns a localized title for this view
    */
   public String getTitle(boolean abbreviate);
+  
+  /**
+   * Callback for context change
+   */
+  public void contextChanged(ViewManager manager, Gedcom gedcom);
+  
 
 } //ViewFactory

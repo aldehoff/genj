@@ -21,13 +21,13 @@ package genj.app;
 
 import genj.Version;
 import genj.gedcom.Gedcom;
-import genj.option.OptionProvider;
+import genj.option.Option;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.window.DefaultWindowManager;
 import genj.window.CloseWindow;
+import genj.window.DefaultWindowManager;
 import genj.window.WindowManager;
 
 import java.io.File;
@@ -76,7 +76,7 @@ public class App {
     final Registry registry = new Registry("genj");
     
     // initialize options
-    OptionProvider.restoreAll(registry);
+    Option.restoreAll(registry);
 
     // get app resources now
     Resources resources = Resources.get(App.class);
@@ -111,7 +111,7 @@ public class App {
         // close all frames we know
         winMgr.closeAll();
         // persist options
-        OptionProvider.persistAll(registry);
+        Option.persistAll(registry);
         // Store registry 
         Registry.persist();      
         // Flush Debug

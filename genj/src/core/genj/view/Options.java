@@ -21,6 +21,7 @@ package genj.view;
 
 import genj.option.CustomOption;
 import genj.option.OptionProvider;
+import genj.option.PropertyOption;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ScreenResolutionScale;
@@ -29,19 +30,21 @@ import genj.window.WindowManager;
 
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * View options
  */
-public class Options extends OptionProvider {
+public class Options implements OptionProvider {
 
   /** singleton */
   private final static Options instance = new Options();
   
   /** resources */
-  private Resources resources;
+  private static Resources resources;
+  
+  /** option - whether an editor should */
+  public boolean isOpenEditor = true;
  
   /** the current screen resolution */
   private Point dpi = new Point( 
@@ -71,12 +74,14 @@ public class Options extends OptionProvider {
   public Point getDPI() {
     return dpi;
   }
-  
+
   /** 
    * Provider callback 
    */
   public List getOptions() {
-    return Collections.singletonList(new ScreenResolutionOption());
+    List result = PropertyOption.introspect(getInstance());
+    result.add(new ScreenResolutionOption());
+    return result;
   }
   
   /** 
