@@ -38,10 +38,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.CharArrayWriter;
 import java.io.File;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Properties;
@@ -54,13 +52,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.html.HTMLDocument;
 
 
 /**
@@ -285,17 +279,30 @@ public abstract class Report implements Cloneable {
    * Helper method that shows (resulting) html to the user
    */
   public final void showBrowserToUser(URL url) {
-
-    // open a non-modal dialog
-    viewManager.getWindowManager().openNonModalDialog(
-      registry.getView()+"#html",
-      getName(),
-      ReportViewFactory.IMG,
-      new JScrollPane(new HTMLOutput(url)),
-      WindowManager.OPTION_OK,
-      owner
-    );
     
+    // get browser command
+    File browser = new File(REGISTRY.get("browser", ""));
+    while (!browser.isFile()) {
+      
+      // show file chooser
+      JFileChooser chooser = new JFileChooser();
+      chooser.setDialogTitle("Choose HTML Browser Executable");
+      int rc = chooser.showOpenDialog(owner);
+      browser = chooser.getSelectedFile(); 
+      if (rc!=chooser.APPROVE_OPTION||browser==null)
+        return;
+    
+      // keep it
+      REGISTRY.put("browser", browser.toString());    
+    }
+    
+    // run it
+    try {
+      Runtime.getRuntime().exec(browser+" "+url);
+    } catch (IOException e) {
+      println("***Couldn't run "+browser+" on url "+url+"***");
+    }
+
     // done
   }
 
@@ -729,81 +736,4 @@ public abstract class Report implements Cloneable {
     
   } //Item
 
-  /**
-   * HTML Output presented to user
-   */
-  private static class HTMLOutput extends JTextPane implements HyperlinkListener {
-    
-    /** current url */
-    private URL url;
-    
-    /**
-     * Constructor
-     */
-    private HTMLOutput(URL startUrl) {
-      
-      // non-editable
-      setEditable(false);
-      
-      // html
-      setContentType("text/html");
-      
-      // events
-      addHyperlinkListener(this);
-      
-      // remember url
-      url = startUrl;
-      
-    }
-    
-    /**
-     * @see javax.swing.JComponent#addNotify()
-     */
-    public void addNotify() {
-      // read url (this will also make sure that document parsing happens on EDT
-      set(url);
-      // continue
-      super.addNotify();
-    }
-    
-    /** 
-     * Set current url to render
-     */
-    private void set(URL set) {
-      
-      try {
-        Reader in = new InputStreamReader(set.openStream());
-        HTMLDocument doc = (HTMLDocument)getEditorKit().createDefaultDocument();
-        doc.setBase(set);
-        getEditorKit().read(in, doc, 0);
-        in.close();
-        setDocument(doc);
-        url = set;
-        setToolTipText(url.toString());
-      } catch (Throwable t) {
-      }
-    }
-
-    /**
-     * Hyperlink callback  
-     */
-    public void hyperlinkUpdate(HyperlinkEvent e) {
-      // check even
-      HyperlinkEvent.EventType type = e.getEventType();
-      if (type!=type.ACTIVATED)
-        return;
-      // follow link
-      URL set = e.getURL();
-      if (set==null) try {
-        set = new URL(url, e.getDescription());
-      } catch (MalformedURLException m) {
-        Debug.log(Debug.WARNING, this, "Malformed URL "+e.getDescription()+" in "+url);
-        return;
-      }
-      // done
-      set(set);
-    }
-    
-  } //HTMLOutput
-  
 } //Report
