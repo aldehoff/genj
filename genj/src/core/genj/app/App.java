@@ -55,6 +55,14 @@ public class App {
       
       // Startup Information
       Debug.log(Debug.INFO, App.class, "GenJ App - Build "+Version.getInstance().getBuildString()+" started at "+new Date());
+      
+      // init our data
+      Registry registry = new Registry("genj");
+      
+      // initialize options
+      OptionProvider.restoreAll(registry);
+
+      // Setup Log
       String log = EnvironmentChecker.getProperty(App.class, new String[]{"genj.debug.file", "user.home/.genj/genj.log"}, "", "choose log-file");
       if (log.length()>0) {
         File file = new File(log);
@@ -72,9 +80,6 @@ public class App {
           return;
         }
       }
-      
-      // init our data
-      Registry registry = new Registry("genj");
       
       // Startup the UI
       SwingUtilities.invokeLater(new Startup(registry));
@@ -112,9 +117,6 @@ public class App {
       
       Debug.log(Debug.INFO, this, "Startup");
       
-      // initialize options
-      OptionProvider.restoreAll(registry);
-
       // get app resources now
       Resources resources = Resources.get(App.class);
 
