@@ -274,6 +274,8 @@ public class PropertyTreeWidget extends DnDTree {
   /**
    * Our model
    */
+  private static Gedcom lastGedcomRemovedFrom = null;
+  
   private class Model extends AbstractTreeModel implements DnDTreeModel, GedcomListener {
 
     private Object NULL = new Object();
@@ -320,14 +322,31 @@ public class PropertyTreeWidget extends DnDTree {
      * DND support
      */
     public boolean removeBeforeInsert() {
-      return false;
+      return true;
     }
     
     /**
      * DND support - remove nodes 
      */
     public void removeFrom(List children) {
-      // ignored
+      
+      // start transaction
+      lastGedcomRemovedFrom = ((Property)children.get(0)).getGedcom();
+      lastGedcomRemovedFrom.startTransaction();
+      
+      for (int i=0;i<children.size();i++) {
+        
+        // remove one by one
+        Property child = (Property)children.get(i);
+        Property childsParent = child.getParent();
+        int pos = childsParent.getPropertyPosition(child);
+        childsParent.delProperty(pos);
+        
+        // tell tree about it since that might change insert target
+        fireTreeNodesRemoved(this, getPathToRoot(childsParent), new int[]{pos}, new Object[]{child});
+      }
+        
+      // continued
     }
 
     /**
@@ -335,36 +354,9 @@ public class PropertyTreeWidget extends DnDTree {
      */
     public void insertInto(List children, Object parentAsObject, int index, int action) {
 
-      // anything to do?
-      if (children.isEmpty())
-        return;
-
-      Gedcom gedcom = null;
       Property parent = (Property)parentAsObject;
 
-      // remove if move
-      if (action==DnDTreeModel.MOVE) {
-        
-        // start transaction
-        gedcom = ((Property)children.get(0)).getGedcom();
-        gedcom.startTransaction();
-      
-        for (int i=0;i<children.size();i++) {
-          Property child = (Property)children.get(i);
-          Property childsParent = child.getParent();
-          int pos = childsParent.getPropertyPosition(child);
-          childsParent.delProperty(pos);
-          if (parent==childsParent&&pos<index)
-            index--;
-        }
-        
-        // end transaction?
-        if (parent.getGedcom()!=gedcom) 
-          gedcom.endTransaction();
-      }
-
-      // start transaction?
-      gedcom = parent.getGedcom();
+      // start transaction for our gedcom?
       if (!gedcom.isTransaction())
         gedcom.startTransaction();
         
@@ -378,8 +370,14 @@ public class PropertyTreeWidget extends DnDTree {
         
       }
       
-      // end insert transaction
+      // end transaction(s)
       gedcom.endTransaction();      
+
+      if (lastGedcomRemovedFrom!=null) {
+        if (lastGedcomRemovedFrom.isTransaction())
+          lastGedcomRemovedFrom.endTransaction();
+        lastGedcomRemovedFrom = null;
+      }
       
       // done      
     }

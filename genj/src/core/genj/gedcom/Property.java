@@ -489,6 +489,12 @@ public abstract class Property implements Comparable {
 
   /**
    * Returns this property's nth property
+   * kenmraz: added checks since I was able
+   * to get an indexOutOfBounds error when DnDing
+   * to the end of list of children.  
+   * nmeier: remove check again to force valid
+   * index argument - fixed DnD code to provide
+   * correct parameter
    */
   public Property getProperty(int n) {
     return (Property)children.get(n);
