@@ -104,11 +104,11 @@ public class Repository {
   }
   
   /**
-   * Accessor - event by year
+   * Accessor - events by point in time
    */
-  public Event getEvent(PointInTime when) {
+  public List getEvents(PointInTime when, int days) {
     
-    Event result = null;
+    ArrayList result = new ArrayList(10);
     
     try {	synchronized (events) {
 
@@ -119,7 +119,6 @@ public class Repository {
 	    int i = getStartIndex(when.getYear(), 0, events.size()-1);
 	    
 	    // loop over events
-	    long delta = -1;
       for (int j=events.size(); i<j; i++) {
         Event event = (Event)events.get(i);
         PointInTime pit = event.getTime();
@@ -129,18 +128,16 @@ public class Repository {
         if (pit.getYear()>when.getYear())
           break;
         // calculate delta
-        long d = pit.getJulianDay()-julian;
-        if (d<0) d=-d;
-        if (delta<0||d<delta) {
-          delta = d;
-          result = event;
-        }
+        long delta = pit.getJulianDay()-julian;
+        if (delta<0) delta=-delta;
+        if (delta<days) 
+          result.add(event);
       }
 	    
     } } catch (GedcomException e) {
     }
     
-    // none found
+    // done
     return result;
   }
   

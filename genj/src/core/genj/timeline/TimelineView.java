@@ -25,6 +25,7 @@ import genj.gedcom.Property;
 import genj.gedcom.time.PointInTime;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.WordBuffer;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
@@ -45,6 +46,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.swing.JComponent;
@@ -426,10 +428,24 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
      * update tip
      */
     public void mouseMoved(MouseEvent e) {
+      // calculate year FIXME this isn't accurate yet
       double year = pixel2year(e.getPoint().x);
+      // calculate time and days around it
       PointInTime when = model.getPointInTime(year);
-      Object event = Repository.getInstance().getEvent(when);
-      setToolTipText(event==null ? "" : event.toString());
+      int days = (int)Math.ceil(5F/DPC.getX()/cmPerYear*365);
+      // collect events and their text
+      WordBuffer text = new WordBuffer();
+      text.append("<html><body>");
+      Iterator it = Repository.getInstance().getEvents(when, days).iterator();
+      for (int i=0;i<10&&it.hasNext();i++) {
+        text.append("<div>");
+        text.append(it.next());
+        text.append("</div>");
+      }
+      text.append("</body></html>");
+      // set tooltip
+      setToolTipText(text.toString());
+      // done
     }
     
   } //Ruler
