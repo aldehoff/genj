@@ -77,6 +77,9 @@ public class MetaProperty {
   /** cached - info */
   private String info;
   
+  /** whether this has been instantiated */
+  private boolean instantiated = false;
+  
   /** properties */
   private Map props;
   
@@ -187,6 +190,9 @@ public class MetaProperty {
     
     // initialize value
     result.setValue(value);
+    
+    // increate count
+    instantiated = true;
 
     // done 
     return result;
@@ -326,11 +332,11 @@ public class MetaProperty {
     while (it.hasNext()) {
       MetaProperty sub = (MetaProperty)it.next();
       // something worthwhile to dive into?
-      if (sub.type==null) continue;
+      if (!sub.instantiated) continue;
       // trace it
       stack.push(sub.tag);
       // type match?
-      if (sub.type!=null&&property.isAssignableFrom(sub.type)) 
+      if (property.isAssignableFrom(sub.getType())) 
         result.add(new TagPath(stack));
       // recurse into
       getPathsRecursively(sub.mapOfSubs, property, stack, result);
@@ -427,7 +433,7 @@ public class MetaProperty {
       MetaProperty meta = new MetaProperty(tag, props);
       if (level==0) {
         roots.put(tag, meta);
-        meta.getType(); // resolve type otherwise getPaths won't find anything
+        meta.instantiated = true; // fake instantiated
       } else {
         peek().addSub(meta);
       }
