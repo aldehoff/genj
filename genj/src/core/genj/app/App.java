@@ -28,8 +28,11 @@ import genj.util.EnvironmentChecker;
 import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
+import gj.ui.UnitGraphics;
+
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.Date;
 import java.util.Enumeration;
@@ -90,6 +93,10 @@ public class App {
     if (lnf!=null) {
       lnf.apply(lnf.getTheme(registry.get("lnf.theme", (String)null)), new Vector());
     }
+    
+    // Preset resolution (dots per centimeters)
+    Point2D dpc = registry.get("resolution",(Point2D)null); 
+    if (dpc!=null) UnitGraphics.setDPC(dpc);
 
     // Disclaimer
     if (registry.get("disclaimer",0)==0) {
@@ -123,19 +130,13 @@ public class App {
   }
   
   /**
-   * Singleton access
-   */
-  public static App getInstance() {
-    return instance;
-  }
-  
-  /**
    * Shutdown
    */
   public void shutdown() {
-    
+    // remember resolution 
+    registry.put("resolution", UnitGraphics.getDPC());
     // close all frames we know
-    Enumeration e = App.getInstance().getFrames().elements();
+    Enumeration e = openFrames.elements();
     while (e.hasMoreElements()) ((JFrame)e.nextElement()).dispose();
     // Store registry 
     Registry.saveToDisk();      
@@ -145,6 +146,13 @@ public class App {
     System.exit(0);
   }
 
+  /**
+   * Singleton access
+   */
+  public static App getInstance() {
+    return instance;
+  }
+  
   /**
    * Main of app
    */
@@ -167,13 +175,6 @@ public class App {
     return (JFrame)openFrames.get(FRAME_KEY_PREFIX+key);
   }
   
-  /**
-   * Returns all know JFrames that have been opened
-   */
-  public Hashtable getFrames() {
-    return openFrames;
-  }
-
   /**
    * Creates a Frame which remembers it's position from last time
    */
@@ -245,7 +246,7 @@ public class App {
     
     // collect frames we know about
     Vector uis = new Vector();
-    Enumeration frames = getFrames().elements();
+    Enumeration frames = openFrames.elements();
     while (frames.hasMoreElements()) uis.add(frames.nextElement());
     
     // set it!
@@ -257,4 +258,4 @@ public class App {
     // remember
   }
   
-}
+} //App

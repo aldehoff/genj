@@ -743,7 +743,10 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       TreePath path = tree.getSelectionPath();
       if (path==null) return null;
       // got it
-      return (Property)path.getLastPathComponent();
+      if (path.getLastPathComponent() instanceof Property)
+        return (Property)path.getLastPathComponent();
+      // none found
+      return null;
     }
     
     /**
@@ -752,7 +755,8 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     public Component getTreeCellRendererComponent(JTree tree, Object object, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
       if (!(object instanceof Property)) {
-        label.setText(object.toString());
+        label.setText(null);
+        label.setIcon(null);
         return label;
       }
 
@@ -792,9 +796,10 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       TreePath path = super.getPathForLocation(event.getX(),event.getY());
       if ((path==null) || (path.getPathCount()==0)) return null;
       // .. calc property
-      Property p = (Property)path.getLastPathComponent();
+      Object p = path.getLastPathComponent();
+      if (!(p instanceof Property)) return "";
       // .. calc information text
-      String info = p.getInfo();
+      String info = ((Property)p).getInfo();
       if (info==null) return "?";
       // .. return max 60
       info = info.replace('\n',' ');
@@ -812,7 +817,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       stopEdit(true);
   
       // Look if exactly one node has been selected
-      if (tree.getSelectionCount()==0) {
+      if (tree.getSelectionCount()==0||getCurrentProperty()==null) {
         // Disable action buttons
         actionButtonAdd   .setEnabled(false);
         actionButtonRemove.setEnabled(false);

@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -282,6 +283,23 @@ public class Registry {
 
     // Done
     return new Point(x,y);
+  }
+
+  /**
+   * Returns point parameter by key
+   */
+  public Point2D get(String key, Point2D def) {
+
+    // Get box dimension
+    float x = get(key+".x", Float.NaN);
+    float y = get(key+".y", Float.NaN);
+
+    // Missing ?
+    if ( Float.isNaN(x) || Float.isNaN(y) )
+      return def;
+
+    // Done
+    return new Point2D.Double(x,y);
   }
 
   /**
@@ -553,6 +571,19 @@ public class Registry {
     // Remember box dimension
     put(key+".x",value.x);
     put(key+".y",value.y);
+
+    // Done
+  }
+
+
+  /**
+   * Remembers a point value
+   */
+  public void put(String key, Point2D value) {
+
+    // Remember box dimension
+    put(key+".x",(float)value.getX());
+    put(key+".y",(float)value.getY());
 
     // Done
   }

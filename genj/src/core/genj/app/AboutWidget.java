@@ -34,9 +34,13 @@ import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.ScreenResolutionScale;
 import genj.view.ViewManager;
+import gj.ui.UnitGraphics;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
@@ -254,10 +258,13 @@ public class AboutWidget extends JPanel{
   /**
    * Panel - Look&Feel
    */
-  public class LookNFeelPanel extends JPanel {
+  private class LookNFeelPanel extends JPanel implements ActionListener {
 
     /** the combobox with lnfs & themes*/
     private JComboBox comboLnfs,comboThemes;
+    
+    /** the ruler for setting screen resolution */
+    private ScreenResolutionScale screenResRuler;
     
     /**
      * Constructor
@@ -269,72 +276,47 @@ public class AboutWidget extends JPanel{
     }
     
     /**
-     * Apply the LnF
-     */
-    private class ActionApply extends ActionDelegate {
-      /** constructor */
-      protected ActionApply() {
-        setText("cc.about.tab4.button.apply");
-      }
-      /** run */
-      public void execute() {
-        LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
-        if (lnf==null) return;
-        App.getInstance().setLnF(lnf,(LnFBridge.Theme)comboThemes.getSelectedItem());
-      }
-    }
-    
-    /**
-     * Update the LnF selection
-     */
-    private class ActionUpdate extends ActionDelegate {
-      public void execute() {
-        LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
-        if (lnf==null) return; // shouldn't be but old Swing might
-        LnFBridge.Theme[] themes = lnf.getThemes();
-        if (themes.length==0) {
-          comboThemes.setModel(new DefaultComboBoxModel());
-          comboThemes.disable();
-        } else {
-          comboThemes.setModel(new DefaultComboBoxModel(themes));
-          comboThemes.setSelectedItem(lnf.getLastTheme());
-          comboThemes.enable();
-        }
-      }
-    }
-    
-    /**
      * Center Panel
      */
     private JComponent getCenter() {
-      
+
+      // Prepare the panel      
+      JPanel pResult = new JPanel();
+      GridBagHelper gh = new GridBagHelper(pResult);
+
       // what are the LnFs
       Object[] lnfs = LnFBridge.getInstance().getLnFs();
       if (lnfs.length==0) {
-        return new JLabel(
+        JLabel label = new JLabel(
           App.resources.getString("cc.about.tab4.l&f_file_missing"),
           (Icon)UIManager.get( "OptionPane.errorIcon"),
           SwingConstants.CENTER
         );
+        gh.add(label, 0,0,2,1);
+        
+      } else {
+      
+        // create a combo with LnFs      
+        comboThemes = new JComboBox();
+        
+        comboLnfs = new JComboBox(new DefaultComboBoxModel(lnfs));
+        comboLnfs.setSelectedItem(LnFBridge.getInstance().getLastLnF());
+        comboLnfs.addActionListener(this);
+
+        gh.add(new JLabel("Look&Feel" ), 0,0,1,1);
+        gh.add(comboLnfs               , 1,0,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+        gh.add(new JLabel("Theme"     ), 0,1,1,1);
+        gh.add(comboThemes             , 1,1,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+        
+        actionPerformed(null);
       }
       
-      // create a combo with LnFs      
-      comboThemes = new JComboBox();
+      // create ruler for adjusting resolution
+      screenResRuler = new ScreenResolutionScale();
+      screenResRuler.setDotsPerCm(UnitGraphics.getDPC());
       
-      comboLnfs = new JComboBox(new DefaultComboBoxModel(lnfs));
-      comboLnfs.setSelectedItem(LnFBridge.getInstance().getLastLnF());
-      comboLnfs.addActionListener((ActionListener)new ActionUpdate().as(ActionListener.class));
-      
-      // layout
-      JPanel pResult = new JPanel();
-      GridBagHelper gh = new GridBagHelper(pResult);
-      gh.add(new JLabel("Look&Feel"), 0,0,1,1);
-      gh.add(comboLnfs              , 1,0,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-      gh.add(new JLabel("Theme"    ), 0,1,1,1);
-      gh.add(comboThemes            , 1,1,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-      
-      // show status
-      new ActionUpdate().execute();
+      gh.add(new JLabel("Resolution (cm)"), 0,2,1,1);
+      gh.add(screenResRuler          , 1,2,1,1, gh.GROW_BOTH      |gh.FILL_BOTH      );
       
       // done
       return pResult;
@@ -349,6 +331,46 @@ public class AboutWidget extends JPanel{
       pResult.add(new ButtonHelper().setResources(App.resources).create(new ActionApply()));
       // done
       return pResult;
+    }
+    
+    /**
+     * Apply the LnF
+     */
+    private class ActionApply extends ActionDelegate {
+      /** constructor */
+      protected ActionApply() {
+        setText("cc.about.tab4.button.apply");
+      }
+      /** run */
+      public void execute() {
+        // update screen resolution
+        UnitGraphics.setDPC(screenResRuler.getDotsPerCm());
+        // update lnf
+        if (comboLnfs!=null) {
+          LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
+          if (lnf!=null) {
+            App.getInstance().setLnF(lnf,(LnFBridge.Theme)comboThemes.getSelectedItem());
+          }
+        }
+        // done
+      }
+    }
+    
+    /**
+     * Update the LnF selection
+     */
+    public void actionPerformed(ActionEvent e) {
+      LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
+      if (lnf==null) return; // shouldn't be but old Swing might
+      LnFBridge.Theme[] themes = lnf.getThemes();
+      if (themes.length==0) {
+        comboThemes.setModel(new DefaultComboBoxModel());
+        comboThemes.disable();
+      } else {
+        comboThemes.setModel(new DefaultComboBoxModel(themes));
+        comboThemes.setSelectedItem(lnf.getLastTheme());
+        comboThemes.enable();
+      }
     }
     
   } // LookNFeelPanel

@@ -91,7 +91,7 @@ class ProxyUnknown extends Proxy implements DocumentListener {
     // Setup controls
     tfield = createTextField(prop.getValue(), "!VALUE", this, null);
     in.add(tfield);
-    tfield.requestFocusInWindow();
+    super.requestFocusFor(tfield);
     // Done
   }
 

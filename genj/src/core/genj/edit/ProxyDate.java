@@ -136,7 +136,7 @@ class ProxyDate extends Proxy implements ItemListener {
     formatChanged = false;
 
     // Done
-    deOne.requestFocusInWindow();
+    super.requestFocusFor(deOne);
 
   }
 

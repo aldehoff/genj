@@ -21,9 +21,8 @@ package genj.timeline;
 
 import gj.ui.UnitGraphics;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
@@ -39,34 +38,17 @@ public class RulerRenderer extends ContentRenderer {
   /** a tick */
   private final static Shape TICK = calcTick();
   
-  /** 
-   * Calculates the model size in pixels
-   */
-  public Dimension getDimension(Model model, FontMetrics metrics) {
-    return new Dimension(
-      super.getDimension(model, metrics).width,
-      metrics.getHeight()+1
-    );
-  }
-  
   /**
    * Renders the model
    */
-  public void render(Graphics g, Model model) {
-    
-    // prepare UnitGraphics
-    UnitGraphics graphics = new UnitGraphics(g, 
-      UnitGraphics.CENTIMETERS*cmPyear, 
-      g.getFontMetrics().getHeight()+1
-    );
-    graphics.translate(-model.min,0);
+  public void render(UnitGraphics graphics, Model model) {
     
     // prepare some stuff
-    FontMetrics fm = g.getFontMetrics();
+    FontMetrics fm = graphics.getFontMetrics();
     double
       from  = Math.ceil(model.min),
       to    = Math.floor(model.max),
-      width = graphics.pixels2units(fm.stringWidth(" 0000 "), UnitGraphics.CENTIMETERS*cmPyear);
+      width = graphics.pixels2units(new Point(fm.stringWidth(" 0000 "),0)).getX();
 
     // render background
     renderBackground(graphics, model);

@@ -24,6 +24,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -39,11 +40,13 @@ import javax.swing.tree.TreePath;
  */
 public class PropertyTreeModel implements TreeModel, GedcomListener {
 
+  private final static Object DUMMY = new Object();
+
   /** listeners */
   private List listeners = new ArrayList();
   
   /** root of tree */
-  private Property root;
+  private Property root = null;
 
   /** history stack */
   private Stack history = new Stack();
@@ -184,7 +187,7 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
    * Returns root of tree
    */
   public Object getRoot() {
-    return root;
+    return root!=null?root:DUMMY;
   }          
   
   /** 
@@ -199,6 +202,10 @@ public class PropertyTreeModel implements TreeModel, GedcomListener {
    * Tells wether object is a leaf
    */
   public boolean isLeaf(Object node) {
+    // since the root might be Object to 
+    // keep pre jdk 1.4 running we check type here
+    if (node==DUMMY) return true;
+    // check property
     Property prop = (Property)node;
     return prop.getNoOfProperties()==0;
   }          

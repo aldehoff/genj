@@ -42,6 +42,7 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.util.Set;
 
 import javax.swing.JComponent;
@@ -59,6 +60,9 @@ import javax.swing.event.ChangeListener;
  */
 public class TimelineView extends JPanel implements ToolBarSupport, CurrentSupport, ContextPopupSupport {
 
+  /** the units we use */
+  private final Point2D UNITS = UnitGraphics.getDPC();
+  
   /** resources */
   /*package*/ final static Resources resources = new Resources("genj.timeline");
   
@@ -342,7 +346,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
    * Calculates a year from given pixel position
    */
   protected double pixel2year(int x) {
-    return model.min + x/(UnitGraphics.CENTIMETERS*cmPerYear);
+    return model.min + x/(UNITS.getX()*cmPerYear);
   }
 
   /** 
@@ -350,7 +354,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
    */
   protected void scroll2year(double year) {
     centeredYear = year;
-    int x = (int)((year-model.min)*UnitGraphics.CENTIMETERS*cmPerYear) - scrollContent.getViewport().getWidth()/2;
+    int x = (int)((year-model.min)*UNITS.getX()*cmPerYear) - scrollContent.getViewport().getWidth()/2;
     scrollContent.getHorizontalScrollBar().setValue(x);
   }
   
@@ -376,8 +380,14 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
       rulerRenderer.cBackground = csRuler.getColor("ruler");
       rulerRenderer.cText = csRuler.getColor("text");
       rulerRenderer.cTick = csRuler.getColor("tick");
-      rulerRenderer.cmPyear = cmPerYear;
-      rulerRenderer.render(g, model);
+      // prepare UnitGraphics
+      UnitGraphics graphics = new UnitGraphics(g, 
+        UnitGraphics.getDPC().getX()*cmPerYear, 
+        getFontMetrics(getFont()).getHeight()+1
+      );
+      graphics.translate(-model.min,0);
+      // go for it      
+      rulerRenderer.render(graphics, model);
       // done
     }
   
@@ -385,8 +395,10 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
      * @see java.awt.Component#getPreferredSize()
      */
     public Dimension getPreferredSize() {
-      rulerRenderer.cmPyear = cmPerYear;
-      return rulerRenderer.getDimension(model, getFontMetrics(getFont()));
+      return new Dimension(
+        content.getPreferredSize().width,
+        getFontMetrics(getFont()).getHeight()+1
+      );
     }
     
   } //Ruler
@@ -400,8 +412,10 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
      * @see java.awt.Component#getPreferredSize()
      */
     public Dimension getPreferredSize() {
-      contentRenderer.cmPyear = cmPerYear;
-      return contentRenderer.getDimension(model, getFontMetrics(getFont()));
+      return new Dimension(
+        UnitGraphics.units2pixels(model.max-model.min, UNITS.getX()*cmPerYear),
+        UnitGraphics.units2pixels(model.layers.size(),getFontMetrics(getFont()).getHeight()+1)
+      );
     }
   
     /**
@@ -417,11 +431,20 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
       contentRenderer.cGrid       = csContent.getColor("grid"    );
       contentRenderer.cSelected   = csContent.getColor("selected");
       contentRenderer.selection   = ViewManager.getInstance().getCurrentEntity(model.gedcom);
-      contentRenderer.cmPyear = cmPerYear;
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;
       contentRenderer.paintTags = isPaintTags;
-      contentRenderer.render(g, model);
+      
+      // prepare UnitGraphics
+      UnitGraphics graphics = new UnitGraphics(g, 
+        UNITS.getX()*cmPerYear, 
+        getFontMetrics(getFont()).getHeight()+1
+      );
+      graphics.translate(-model.min,0);
+
+      // go for it      
+      contentRenderer.render(graphics, model);
+      
       // done
     }
     

@@ -23,9 +23,7 @@ import genj.gedcom.Entity;
 import genj.util.ImgIcon;
 import gj.ui.UnitGraphics;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
@@ -41,9 +39,6 @@ public class ContentRenderer {
   private final static Shape 
     FROM_MARK = calcFromMark(),
     TO_MARK = calcToMark();
-  
-  /** centimeters per year */
-  /*package*/ double cmPyear = 1.0D;
   
   /** whether we paint tags or not */
   /*package*/ boolean paintTags = false;
@@ -78,26 +73,10 @@ public class ContentRenderer {
   /** selected color */
   /*package*/ Color cSelected = null;
   
-  /** 
-   * Calculates the model size in pixels
-   */
-  public Dimension getDimension(Model model, FontMetrics fm) {
-    return new Dimension(
-      UnitGraphics.units2pixels(model.max-model.min, UnitGraphics.CENTIMETERS*cmPyear),
-      UnitGraphics.units2pixels(model.layers.size(),fm.getHeight()+1)
-    );
-  }
-  
   /**
    * Renders the model
    */
-  public void render(Graphics g, Model model) {
-    // prepare UnitGraphics
-    UnitGraphics graphics = new UnitGraphics(g, 
-      UnitGraphics.CENTIMETERS*cmPyear, 
-      g.getFontMetrics().getHeight()+1
-    );
-    graphics.translate(-model.min,0);
+  public void render(UnitGraphics graphics, Model model) {
     // render background
     renderBackground(graphics, model);
     // render grid

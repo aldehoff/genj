@@ -111,6 +111,6 @@ class ProxyMLE extends Proxy implements DocumentListener {
     in.add(spane);
 
     // Done
-    tarea.requestFocusInWindow();
+    requestFocusFor(tarea);
   }
 }

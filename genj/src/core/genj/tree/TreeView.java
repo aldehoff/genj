@@ -71,7 +71,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /*package*/ static final Resources resources = new Resources(TreeView.class);
   
   /** the units we use */
-  private final static double UNITS = UnitGraphics.CENTIMETERS;
+  private final Point2D UNITS = UnitGraphics.getDPC();
   
   /** our model */
   /*package*/ Model model;
@@ -207,8 +207,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     Point2D     p = node.getPosition();
     Dimension   d = getSize();
     content.scrollRectToVisible(new Rectangle(
-      UnitGraphics.units2pixels( p.getX() - b.getMinX(), UNITS*zoom ) - d.width /2,
-      UnitGraphics.units2pixels( p.getY() - b.getMinY(), UNITS*zoom ) - d.height/2,
+      UnitGraphics.units2pixels( p.getX() - b.getMinX(), UNITS.getX()*zoom ) - d.width /2,
+      UnitGraphics.units2pixels( p.getY() - b.getMinY(), UNITS.getY()*zoom ) - d.height/2,
       d.width ,
       d.height
     ));
@@ -325,8 +325,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   public Entity getEntityAt(Point pos) {
     Rectangle2D bounds = model.getBounds();
     return model.getEntityAt(
-      UnitGraphics.pixels2units(pos.x,UNITS*zoom)+bounds.getMinX(), 
-      UnitGraphics.pixels2units(pos.y,UNITS*zoom)+bounds.getMinY()
+      UnitGraphics.pixels2units(pos.x,UNITS.getX()*zoom)+bounds.getMinX(), 
+      UnitGraphics.pixels2units(pos.y,UNITS.getY()*zoom)+bounds.getMinY()
     );
   }
 
@@ -367,7 +367,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     protected void renderContent(Graphics g, double zoomx, double zoomy) {
 
       // go 2d
-      UnitGraphics ug = new UnitGraphics(g, UNITS*zoomx*zoom, UNITS*zoomy*zoom);
+      UnitGraphics ug = new UnitGraphics(g, UNITS.getX()*zoomx*zoom, UNITS.getY()*zoomy*zoom);
       // init renderer
       contentRenderer.cBackground    = Color.white;
       contentRenderer.cIndiShape     = Color.black;
@@ -441,8 +441,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     public Dimension getPreferredSize() {
       Rectangle2D bounds = model.getBounds();
       int 
-        w = UnitGraphics.units2pixels(bounds.getWidth (), UNITS*zoom),
-        h = UnitGraphics.units2pixels(bounds.getHeight(), UNITS*zoom);
+        w = UnitGraphics.units2pixels(bounds.getWidth (), UNITS.getX()*zoom),
+        h = UnitGraphics.units2pixels(bounds.getHeight(), UNITS.getY()*zoom);
       return new Dimension(w,h);
     }
   
@@ -451,7 +451,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     public void paint(Graphics g) {
       // go 2d
-      UnitGraphics ug = new UnitGraphics(g, UNITS*zoom, UNITS*zoom);
+      UnitGraphics ug = new UnitGraphics(g, UNITS.getX()*zoom, UNITS.getY()*zoom);
       // init renderer
       contentRenderer.cBackground    = colors.getColor("content");
       contentRenderer.cIndiShape     = colors.getColor("indis");

@@ -57,11 +57,11 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     TreeMetrics m = view.model.getMetrics();
     Box options = new Box(BoxLayout.Y_AXIS);
     
-    sliderCmIndiWidth = createSlider(options, 1.0, 10.0, m.wIndis, "indiwidth" );
-    sliderCmIndiHeight= createSlider(options, 1.0, 10.0, m.hIndis, "indiheight");
-    sliderCmFamWidth  = createSlider(options, 1.0, 10.0, m.wFams , "famwidth"  );
-    sliderCmFamHeight = createSlider(options, 1.0, 10.0, m.hFams , "famheight" );
-    sliderCmPadding   = createSlider(options, 0.1,  3.0, m.pad   , "padding"   );
+    sliderCmIndiWidth = createSlider(options, 1.0, 16.0, m.wIndis, "indiwidth" );
+    sliderCmIndiHeight= createSlider(options, 1.0, 16.0, m.hIndis, "indiheight");
+    sliderCmFamWidth  = createSlider(options, 1.0, 16.0, m.wFams , "famwidth"  );
+    sliderCmFamHeight = createSlider(options, 1.0, 16.0, m.hFams , "famheight" );
+    sliderCmPadding   = createSlider(options, 0.1,  4.0, m.pad   , "padding"   );
     
     // color chooser
     colors = new ColorChooser();
