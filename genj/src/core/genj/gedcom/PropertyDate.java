@@ -84,27 +84,11 @@ public class PropertyDate extends Property {
   }
 
   /**
-   * Compares this property to another property
-   * @return -1 this < property <BR>
-   *          0 this = property <BR>
-   *          1 this > property
+   * @see java.lang.Comparable#compareTo(Object)
    */
-  public int compareTo(Property p) {
-
-    if (!(p instanceof PropertyDate))
-      return 0;
-
-    return compareTo((PropertyDate)p);
-  }
-
-  /**
-   * Compare two dates
-   * @return the value 0 if this date is equal to the argument;
-   * a value less than 0 if this date is less then the argument;
-   * a value greater than 0 if this date is greater then the argument.
-   */
-  public int compareTo(PropertyDate p) {
-    return start.compareTo(p.start);
+  public int compareTo(Object o) {
+    if (!(o instanceof PropertyDate)) return super.compareTo(o);
+    return start.compareTo(((PropertyDate)o).start);
   }
 
   /**
@@ -587,4 +571,5 @@ public class PropertyDate extends Property {
       isRange=r; startModifier=s; endModifier=e;
     }
   }
-}
+
+} //PropertyDate

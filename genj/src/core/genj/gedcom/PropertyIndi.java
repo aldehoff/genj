@@ -45,15 +45,16 @@ public abstract class PropertyIndi extends Property{
    *          0 this = property <BR>
    *          1 this > property
    */
-  public int compareTo(Property p) {
+  public int compareTo(Object o) {
+    if (!(o instanceof PropertyIndi)) return super.compareTo(o);
     try {
       return
         Integer.parseInt(getEntity().getId().substring(1))
         -
-        Integer.parseInt(p.getEntity().getId().substring(1));
+        Integer.parseInt(((Property)o).getEntity().getId().substring(1));
     } catch (Exception e) {
     }
-    return getEntity().getId().compareTo(p.getEntity().getId());
+    return super.compareTo(o);
   }
 
   /**

@@ -55,20 +55,12 @@ public class PropertyName extends Property {
   }
 
   /**
-   * Compares this property to another property
-   * @return -1 this < property <BR>
-   *          0 this = property <BR>
-   *          1 this > property
+   * @see java.lang.Comparable#compareTo(Object)
    */
-  public int compareTo(Property p) {
-
-    if (!(p instanceof PropertyName)) {
-      return 0;
-    }
-
-    PropertyName pn = (PropertyName)p;
-
-    return getName().compareTo(pn.getName());
+  public int compareTo(Object o) {
+    if (!(o instanceof PropertyName)) return super.compareTo(o);
+    PropertyName p = (PropertyName)o;
+    return getName().compareTo(p.getName());
   }
 
   /**
@@ -248,4 +240,5 @@ public class PropertyName extends Property {
     // Done
     return true;
   }
+
 }

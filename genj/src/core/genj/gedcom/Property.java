@@ -28,7 +28,7 @@ import genj.util.*;
 /**
  * Abstract base type for all GEDCOM properties
  */
-public abstract class Property {
+public abstract class Property implements Comparable {
 
   private static final Property NO_KNOWN_PROPERTIES[] = {};
   private static final String   NO_KNOWN_SUB_TAGS  [] = {};
@@ -288,12 +288,13 @@ public abstract class Property {
 
   /**
    * Compares this property to another property
-   * @return -1 this < property <BR>
+   * @return -1 this &lt; property <BR>
    *          0 this = property <BR>
-   *          1 this > property
+   *          1 this &gt; property
    */
-  public int compareTo(Property p) {
-    return getValue().compareTo(p.getValue());
+  public int compareTo(Object o) {
+    if (!(o instanceof Property)) throw new ClassCastException("compareTo("+o+")");
+    return getValue().compareTo(((Property)o).getValue());
   }
 
   /**
