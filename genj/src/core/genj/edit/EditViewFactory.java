@@ -19,7 +19,6 @@
  */
 package genj.edit;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.ArrayList;
@@ -76,21 +75,21 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * @see genj.app.ViewFactory#createSettingsComponent(Component)
    */
-  public JComponent createSettingsComponent(Component view) {
+  public JComponent createSettingsComponent(JComponent view) {
     return null;
   }
 
   /**
    * @see genj.app.ViewFactory#createPrintRenderer(Component)
    */
-  public PrintRenderer createPrintRenderer(Component view) {
+  public PrintRenderer createPrintRenderer(JComponent view) {
     return null;
   }
 
   /**
    * @see genj.app.ViewFactory#createViewComponent(Gedcom, Registry, Frame)
    */
-  public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
+  public JComponent createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
     return new EditView(gedcom,registry,frame);
   }
   

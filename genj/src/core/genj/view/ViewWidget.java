@@ -76,7 +76,7 @@ import javax.swing.border.TitledBorder;
   private JToolBar bar;
   
   /** the view we're wrapping */
-  private Component view;
+  private JComponent view;
   
   /** the settings for this view */
   private JComponent settings;
@@ -116,7 +116,7 @@ import javax.swing.border.TitledBorder;
   /**
    * Helper that creates the toolbar for the view
    */
-  private void installToolBar(Component view, Frame frame, ViewFactory factory) {
+  private void installToolBar(JComponent view, Frame frame, ViewFactory factory) {
     
     // only if ToolBarSupport
     if (!(view instanceof ToolBarSupport)) return;

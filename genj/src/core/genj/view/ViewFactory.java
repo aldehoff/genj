@@ -19,7 +19,6 @@
  */
 package genj.view;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.List;
@@ -40,17 +39,17 @@ public interface ViewFactory {
   /**
    * Callback for creating a view 
    */
-  public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame);
+  public JComponent createViewComponent(Gedcom gedcom, Registry registry, Frame frame);
   
   /**
    * Callback for creating settings for a view
    */
-  public JComponent createSettingsComponent(Component view);
+  public JComponent createSettingsComponent(JComponent view);
   
   /**
    * Callback for creating a printer for a view
    */
-  public PrintRenderer createPrintRenderer(Component view);
+  public PrintRenderer createPrintRenderer(JComponent view);
   
   /**
    * Returns an image for this view
