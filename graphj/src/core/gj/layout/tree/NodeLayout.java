@@ -240,7 +240,7 @@ import java.util.Stack;
     }
 
     // balance children
-    if (c>2&&balance) balanceChilden(nodes, contours, c);
+    if (c>2&&balance) balanceChilden(nodes, contours, c, orientn);
     
     // done
     Object[] result=new Contour[c];
@@ -310,10 +310,10 @@ import java.util.Stack;
   }
 
   /**
-   * Calculates the minimum distance of contours in cs and c 
-   * @param cs contours to check against c
-   * @param css number of contours in cs
-   * @param c contour to compare contours in cs
+   * Calculates the minimum distance of n contours in cs with c 
+   * @param cs contours
+   * @param n number of contours in cs
+   * @param c contour
    */
   private double calcMinDist(Contour[] cs, int css, Contour c) {
 
@@ -327,7 +327,6 @@ import java.util.Stack;
     // done
     return result;
   }
-
 
   /**
    * Calculates the deltas of each contour in cs with c
@@ -434,22 +433,39 @@ import java.util.Stack;
 
   /**
    * Balance children - we assume that at this point sub-tree i
-   * described by its root children[i] and contours[i] for i>0
-   * is placed as close as possible to all sub-trees with j<i
+   * described by its root ns[i] and cs[i] for i>0 is placed as
+   * close as possible to all sub-trees with j<i
+   * (#ns==#cs > 2)
    */
-  private void balanceChilden(Node[] ns, Contour[] cs, int n) {
-    // FIXME balancing
+  private void balanceChilden(Node[] ns, Contour[] cs, int n, Orientation orientn) {
     
-    // we loop from right to left
+    // calculate min dists of 0<=i<n-1 to n-1    
     double[] ds = calcMinDists(cs, n-1, cs[n-1]);
+
+    // space between cs[n-1] and cs[n]
+    double space = ds[ds.length-1]; 
+    if (space<=0) return;
     
-    for (int i=ds.length-1; i>=0; i--) {
-      if (ds[i]<=0) break;
-      System.out.println(ns[i]);
-      break;
+    // distribute space 
+    double[] shares = new double[n-1];
+    double share = space/(n-1);
+    for (int i=shares.length;i>0;i--) {
+      // default share 
+      shares[i-1] = i*share;
+      // check all but the last
+      if (i==ds.length) continue;
+      // too much?
+      if (shares[i-1]>ds[i]) shares[i-1]=ds[i];
     }
-    
-    
+      
+    // move sub-trees
+    for (int i=0; i<shares.length-1; i++) {
+      share = shares[i];
+      cs[i+1].translate(0, share);
+      ModelHelper.translate(ns[i+1],orientn.getPoint2D(0, share));
+         	
+    }
+    	
     // done
   }
   
