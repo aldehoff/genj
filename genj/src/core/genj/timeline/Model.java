@@ -79,11 +79,34 @@ import java.util.Set;
    * Constructor
    */
   /*package*/ Model(Gedcom ged, String[] paths) {
-    // remember
-    gedcom = ged;
+    
     // set paths to go for
-    if (paths==null) paths = DEFAULT_PATHS;
-    setPaths(Arrays.asList(paths));
+    if (paths==null) 
+      paths = DEFAULT_PATHS;
+    setPathsInternally(Arrays.asList(paths));
+    
+    // keep gedcom
+    setGedcom(ged);
+    
+    // done
+  }
+  
+  /**
+   * Gedcom to work on 
+   */
+  /*package*/ void setGedcom(Gedcom ged) {
+    // old?
+    if (gedcom!=null) {
+      gedcom.removeGedcomListener(this);
+      gedcom = null;
+    }
+    // new ?
+    if (ged!=null) {
+      gedcom = ged;
+      gedcom.addGedcomListener(this);
+    }
+    // new events
+    createEvents();
     // done
   }
   
@@ -91,30 +114,14 @@ import java.util.Set;
    * Add a listener
    */
   /*package*/ void addListener(Listener listener) {
-    // keep it
     listeners.add(listener);
-    // 1st listener?
-    if (listeners.size()==1) {
-      // start listening ourselves
-      gedcom.addListener(this);
-      // gather events
-      createEvents();
-    }
-    // done
   }
   
   /**
    * Removes a listener
    */
   /*package*/ void removeListener(Listener listener) {
-    // get rif of it
     listeners.remove(listener);
-    // last listener?
-    if (listeners.size()==0) {
-      // stop listening ourselves
-      gedcom.removeListener(this);
-    }
-    // done
   }
   
   /**
@@ -192,26 +199,42 @@ import java.util.Set;
   /**
    * Sets the filter - set of Tags we consider
    */
-  public void setPaths(Collection c) {
+  public void setPaths(Collection set) {
+    
+    // defaults?
+    if (set.isEmpty()) 
+      set = Arrays.asList(DEFAULT_PATHS);
+      
+    // do it internally
+    setPaths(set);
+    
+    // re-generate events
+    createEvents();
+    
+    // done
+    
+  }
+  
+  private void setPathsInternally(Collection set) {
+    
     // clear 
     paths.clear();
     tags.clear();
-    // defaults?
-    if (c.isEmpty()) c = Arrays.asList(DEFAULT_PATHS);
+    
     // add
-    Iterator it = c.iterator();
-    while (it.hasNext()) {
+    for (Iterator it = set.iterator();it.hasNext();) {
       Object next = it.next();
       try {
-        if (!(next instanceof TagPath)) next = new TagPath(next.toString());
+        if (!(next instanceof TagPath)) 
+          next = new TagPath(next.toString());
       } catch (IllegalArgumentException e) {
         continue; 
       }
       paths.add(next);
       tags.add(((TagPath)next).getLast());
     }
-    // re-generate
-    createEvents();
+    
+    // done
   }
   
   /**
@@ -321,8 +344,10 @@ import java.util.Set;
     // prepare some space
     layers = new ArrayList(10);
     // look for events in INDIs and FAMs
-    createEventsFrom(gedcom.getEntities(Gedcom.INDI).iterator());
-    createEventsFrom(gedcom.getEntities(Gedcom.FAM ).iterator());
+    if (gedcom!=null) {
+      createEventsFrom(gedcom.getEntities(Gedcom.INDI).iterator());
+      createEventsFrom(gedcom.getEntities(Gedcom.FAM ).iterator());
+    }
     // extend time by before/after
     max += timeAfterEvent;
     min -= timeBeforeEvent;

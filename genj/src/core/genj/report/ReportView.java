@@ -396,7 +396,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
           WindowManager.OPTIONS_OK,
           ReportView.this
         );
-        instance = null;
         return false;
       }
 

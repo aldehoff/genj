@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * Model of our tree
  */
-public class Model implements GedcomListener {
+/*package*/ class Model implements GedcomListener {
   
   /** listeners */
   private List listeners = new ArrayList(3);
@@ -105,7 +105,23 @@ public class Model implements GedcomListener {
    * Constructor
    */
   public Model(Gedcom ged) {
-    gedcom = ged;
+    setGedcom(ged);
+  }
+  
+  /**
+   * Set the gedcom to work on
+   */
+  public void setGedcom(Gedcom set) {
+    // old?
+    if (gedcom!=null) {
+      gedcom.removeGedcomListener(this);
+      gedcom = null;
+    }
+    // new?
+    if (set!=null) {
+      gedcom = set;
+      gedcom.addGedcomListener(this);
+    }
   }
   
   /**
@@ -237,7 +253,6 @@ public class Model implements GedcomListener {
    */
   public void addListener(ModelListener l) {
     listeners.add(l);
-    if (listeners.size()==1) gedcom.addListener(this);
   }
   
   /**
@@ -245,7 +260,6 @@ public class Model implements GedcomListener {
    */
   public void removeListener(ModelListener l) {
     listeners.remove(l);
-    if (listeners.size()==0) gedcom.removeListener(this);
   }
   
   /**

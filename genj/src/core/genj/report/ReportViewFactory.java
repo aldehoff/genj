@@ -126,25 +126,42 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
       // show
       setImage(IMG);
       setText(txt);
+      // we're async
+      setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
+    }
+    /** callback (edt sync) */
+    protected boolean preExecute() {
+      // a report with standard out?
+      if (report.usesStandardOut()) {
+        // get handle of a ReportView 
+        Object[] views = manager.getInstances(ReportView.class, gedcom);
+        ReportView view;
+        if (views.length==0)
+          view = (ReportView)manager.openView(ReportViewFactory.class, gedcom);
+        else 
+          view = (ReportView)views[0];
+        // run it in view
+        view.run(report, context);
+        // we're done ourselves
+        return false;
+      }
+      // start transaction
+      if (!report.isReadOnly()&&!gedcom.startTransaction())
+        return false; 
+      // we're doing this ourselves now
+      return true;
     }
     /** callback */
     protected void execute() {
-      // a report without standard out?
-      if (!report.usesStandardOut()) {
-        // run right there
-        report.getInstance(manager, getTarget(), null).start(context);
-        return;
-      }
-      // get handle of a ReportView 
-      Object[] views = manager.getInstances(ReportView.class, gedcom);
-      ReportView view;
-      if (views.length==0)
-        view = (ReportView)manager.openView(ReportViewFactory.class, gedcom);
-      else 
-        view = (ReportView)views[0];
-      // run it in view
-      view.run(report, context);
+      // run right here (should only be for non-uses-stdout
+      report.getInstance(manager, getTarget(), null).start(context);
       // done
+    }
+    /** callback (edt sync) **/
+    protected void postExecute() {
+      // tx to end?
+      if (!report.isReadOnly())
+        gedcom.endTransaction();
     }
   } //ActionRun
 

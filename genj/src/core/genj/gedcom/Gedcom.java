@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.55 $ $Author: nmeier $ $Date: 2004-03-30 07:30:09 $
+ * $Revision: 1.56 $ $Author: nmeier $ $Date: 2004-05-11 10:01:41 $
  */
 package genj.gedcom;
 
@@ -200,14 +200,14 @@ public class Gedcom {
   /**
    * Adds a Listener which will be notified when data changes
    */
-  public synchronized void addListener(GedcomListener which) {
+  public synchronized void addGedcomListener(GedcomListener which) {
     listeners.add(which);
   }
 
   /**
    * Removes a Listener from receiving notifications
-    */
-  public synchronized void removeListener(GedcomListener which) {
+   */
+  public synchronized void removeGedcomListener(GedcomListener which) {
     listeners.remove(which);
   }
 

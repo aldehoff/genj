@@ -71,24 +71,28 @@ import javax.swing.table.TableColumnModel;
   /**
    * Constructor
    */
-  /*pacakge*/ EntityTableModel(Gedcom gedcom) {
-    // remember
-    this.gedcom=gedcom;
+  /*pacakge*/ EntityTableModel(Gedcom set) {
+    setGedcom(set);
+  }
+  
+  /**
+   * Set the current gedcom
+   */
+  public void setGedcom(Gedcom set) {
+    // old?
+    if (gedcom!=null) {
+      gedcom.removeGedcomListener(this);
+      gedcom = null;
+    }
     // init empty rows of mode INDI
     mode = getMode(Gedcom.INDI);
     rows = new Row[0];
-    // start listening
-    gedcom.addListener(this);
+    // new?
+    if (set!=null) {
+      gedcom = set;
+      gedcom.addGedcomListener(this);
+    }
     // done
-  }
-
-  /**
-   * Destructor
-   */
-  /*package*/ void destructor() {
-    // stop listening
-    gedcom.removeListener(this);
-    // done    
   }
 
   /**

@@ -90,6 +90,16 @@ public class PropertyTreeWidget extends TreeWidget {
   }
   
   /**
+   * @see javax.swing.JComponent#removeNotify()
+   */
+  public void removeNotify() {
+    // make sure model isn't connected to gedcom model anymoew
+    model.setGedcom(null);
+    // continue
+    super.removeNotify();
+  }
+
+  /**
    * @see javax.swing.JTree#getPreferredScrollableViewportSize()
    */
   public Dimension getPreferredScrollableViewportSize() {
@@ -219,7 +229,23 @@ public class PropertyTreeWidget extends TreeWidget {
      * Constructor
      */
     public Model(Gedcom gedcom) {
-      this.gedcom=gedcom;
+      setGedcom(gedcom);
+    }
+    
+    /**
+     * Gedcom to use
+     */
+    public void setGedcom(Gedcom set) {
+      // old?
+      if (gedcom!=null) {
+        gedcom.removeGedcomListener(this);
+        gedcom = null;
+      }
+      // new?
+      if (set!=null) {
+        gedcom = set;
+        gedcom.addGedcomListener(this);
+      }
     }          
   
     /**
@@ -257,9 +283,6 @@ public class PropertyTreeWidget extends TreeWidget {
      * Adds a listener to this model
      */
     public void addTreeModelListener(TreeModelListener l) {
-      // first?
-      if (listeners.isEmpty()&&gedcom!=null) gedcom.addListener(this);
-      // add
       listeners.add(l);
     }          
   
@@ -267,10 +290,7 @@ public class PropertyTreeWidget extends TreeWidget {
      * Removes a Listener from this model
      */
     public void removeTreeModelListener(TreeModelListener l) {
-      // remove
       listeners.remove(l);
-      // last?
-      if (listeners.isEmpty()&&gedcom!=null) gedcom.removeListener(this);
     }          
   
     /**

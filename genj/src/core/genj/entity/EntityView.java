@@ -50,7 +50,7 @@ import javax.swing.JToolBar;
  * A rendering component showing the currently selected entity
  * via html
  */
-public class EntityView extends JComponent implements ToolBarSupport, ContextSupport {
+public class EntityView extends JComponent implements ToolBarSupport, ContextSupport, GedcomListener {
 
   /** language resources we use */  
   /*package*/ final static Resources resources = Resources.get(EntityView.class);
@@ -89,7 +89,7 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
     gedcom = ged;
 
     // listen to gedcom
-    gedcom.addListener(new GedcomConnector());
+    gedcom.addGedcomListener(this);
 
     // grab data from registry
     BlueprintManager bpm = viewManager.getBlueprintManager();
@@ -117,13 +117,19 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
    * @see javax.swing.JComponent#removeNotify()
    */
   public void removeNotify() {
+    
     super.removeNotify();
+
+    // stop listening to Gedcom    
+    gedcom.removeGedcomListener(this);
+    
     // store settings in registry
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
       String tag = Gedcom.ENTITIES[t];
       registry.put("blueprint."+tag, getBlueprint(tag).getName()); 
     }
     registry.put("antial"  , isAntialiasing );
+    
     // done
   }
 
@@ -230,19 +236,14 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
     setEntity(property.getEntity());
   }
 
-  /** 
-   * Our connection to the Gedcom
+  /**
+   * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
-  private class GedcomConnector implements GedcomListener {
-    /**
-     * @see genj.gedcom.GedcomListener#handleChange(Change)
-     */
-    public void handleChange(Change change) {
-      if (change.getChanges(change.EDEL).contains(entity)) {
-        setEntity(null);
-      }
-      repaint();
+  public void handleChange(Change change) {
+    if (change.getChanges(change.EDEL).contains(entity)) {
+      setEntity(null);
     }
-  } //GedcomConnector
+    repaint();
+  }
 
 } //EntityView

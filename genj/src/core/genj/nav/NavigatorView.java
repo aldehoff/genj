@@ -57,7 +57,7 @@ import javax.swing.border.TitledBorder;
 /**
  * A navigator with buttons to easily navigate through Gedcom data
  */
-public class NavigatorView extends JPanel implements ContextSupport {
+public class NavigatorView extends JPanel implements ContextSupport, GedcomListener {
   
   private static Resources resources = Resources.get(NavigatorView.class);
 
@@ -124,14 +124,9 @@ public class NavigatorView extends JPanel implements ContextSupport {
     add(labelCurrent,BorderLayout.NORTH);
     add(new JScrollPane(createPopupPanel()),BorderLayout.CENTER);
     
-    // date
-    useGedcom.addListener(new GedcomListener() {
-      public void handleChange(Change change) {
-        if (change.getChanges(change.EDEL).contains(current)) setCurrentEntity(null);
-        else setCurrentEntity(current);
-      }
-    });
-    
+    // listen
+    gedcom.addGedcomListener(this);
+
     // init
     Property context = manager.getContext(gedcom);
     if (context!=null&&(context.getEntity() instanceof Indi))
@@ -143,6 +138,26 @@ public class NavigatorView extends JPanel implements ContextSupport {
 
     // done    
 
+  }
+  
+  /**
+   * @see javax.swing.JComponent#removeNotify()
+   */
+  public void removeNotify() {
+    // stop listening
+    gedcom.removeGedcomListener(this);
+    // continue
+    super.removeNotify();
+  }
+
+
+  /**
+   * update from Gedcom
+   * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
+   */
+  public void handleChange(Change change) {
+    if (change.getChanges(change.EDEL).contains(current)) setCurrentEntity(null);
+    else setCurrentEntity(current);
   }
   
   /**

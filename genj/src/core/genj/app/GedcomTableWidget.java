@@ -200,7 +200,7 @@ import javax.swing.table.TableColumnModel;
      */
     public void addGedcom(Gedcom gedcom) {
       gedcoms.add(gedcom);
-      gedcom.addListener(this);
+      gedcom.addGedcomListener(this);
       fireTableDataChanged();
     }
 
@@ -209,7 +209,7 @@ import javax.swing.table.TableColumnModel;
      */
     public void removeGedcom(Gedcom gedcom) {
       gedcoms.remove(gedcom);
-      gedcom.removeListener(this);
+      gedcom.removeGedcomListener(this);
       fireTableDataChanged();
     }
     

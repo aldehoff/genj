@@ -33,9 +33,6 @@ import javax.swing.tree.TreePath;
  */
 public class TreeWidget extends JTree {
   
-  /** old model */
-  private TreeModel old;
-  
   /**
    * Constructor
    */
@@ -49,31 +46,6 @@ public class TreeWidget extends JTree {
     super(model);
   }
 
-  /**
-   * @see java.awt.Component#removeNotify()
-   */
-  public void addNotify() {
-    // restore an old model?
-    if (old!=null) setModel(old);
-    // continue
-    super.addNotify();
-  }
-
-  /**
-   * @see genj.util.swing.TreeWidget#removeNotify()
-   */
-  public void removeNotify() {
-    // keep old model around in case we're added
-    // somewhere again
-    old = getModel();
-    // remove from model (otherwise listeners of that
-    // model might not disconnect)
-    setModel(null);
-    // continue    
-    super.removeNotify();
-    
-  }
-  
   /** 
    * Expands all rows
    */

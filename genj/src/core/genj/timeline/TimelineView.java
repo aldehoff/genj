@@ -119,9 +119,6 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
   /** registry we keep */
   private Registry regstry;
   
-  /** listener we are to the model */
-  private Model.Listener modelListener = new ModelListener();
-  
   /** the view manager */
   private ViewManager manager;
     
@@ -162,6 +159,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     // create/keep our sub-parts
     model = new Model(gedcom, regstry.get("filter", (String[])null));
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
+    model.addListener(new ModelListener());
     content = new Content();
     content.addMouseListener(new ContentClick());
     ruler = new Ruler();
@@ -188,21 +186,11 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
 
 
   /**
-   * @see javax.swing.JComponent#addNotify()
-   */
-  public void addNotify() {
-    // start listeing
-    model.addListener(modelListener);
-    // continue
-    super.addNotify();
-  }
-  
-  /**
    * @see javax.swing.JComponent#removeNotify()
    */
   public void removeNotify() {
-    // stop listeing
-    model.removeListener(modelListener);
+    // make sure model disconnects from gedcom
+    model.setGedcom(null);
     // store stuff in registry
     regstry.put("cmperyear"  , (float)Math.rint(cmPerYear*10)/10);
     regstry.put("cmbefevent" , (float)cmBefEvent);

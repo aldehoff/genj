@@ -143,8 +143,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     saveProperties();
     // delegate
     super.removeNotify();
-    // destruct model
-    tableModel.destructor();
+    // make sure the swing model is disconnected from gedcom model
+    tableModel.setGedcom(null);
   }
  
   /**

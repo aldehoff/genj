@@ -230,7 +230,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
    */
   public void addNotify() {
     // start listening
-    gedcom.addListener(results);
+    gedcom.addGedcomListener(results);
     // continue
     super.addNotify();
   }
@@ -240,7 +240,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
    */
   public void removeNotify() {
     // stop listening
-    gedcom.removeListener(results);
+    gedcom.removeGedcomListener(results);
     // keep old
     registry.put("old.values", oldValues);
     registry.put("old.paths" , oldPaths );

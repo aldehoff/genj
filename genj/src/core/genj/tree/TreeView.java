@@ -250,32 +250,11 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   }
   
   /**
-   * @see javax.swing.JComponent#getPreferredSize()
-   */
-  public Dimension getPreferredSize() {
-    return new Dimension(480,480);
-  }
-
-  /**
-   * @see java.awt.Container#doLayout()
-   */
-  public void doLayout() {
-    // layout components
-    int 
-      w = getWidth(),
-      h = getHeight();
-    Component[] cs = getComponents();
-    for (int c=0; c<cs.length; c++) {
-      if (cs[c]==overview) continue;
-      cs[c].setBounds(0,0,w,h);
-    }
-    // done
-  }
-
-  /**
    * @see javax.swing.JComponent#removeNotify()
    */
   public void removeNotify() {
+    // make sure our model is not connecting to gedcom model anymore
+    model.setGedcom(null);
     // settings
     registry.put("overview", overview.isVisible());
     registry.put("overview", overview.getSize());
@@ -316,6 +295,29 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     super.removeNotify();
   }
   
+  /**
+   * @see java.awt.Container#doLayout()
+   */
+  public void doLayout() {
+    // layout components
+    int 
+      w = getWidth(),
+      h = getHeight();
+    Component[] cs = getComponents();
+    for (int c=0; c<cs.length; c++) {
+      if (cs[c]==overview) continue;
+      cs[c].setBounds(0,0,w,h);
+    }
+    // done
+  }
+
+  /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(480,480);
+  }
+
   /**
    * @see javax.swing.JComponent#isOptimizedDrawingEnabled()
    */
@@ -685,6 +687,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     private Overview(JScrollPane scroll) {
       super(scroll.getViewport());
       super.setSize(new Dimension(TreeView.this.getWidth()/4,TreeView.this.getHeight()/4));
+      model.addListener(this);
     }
     /**
      * @see java.awt.Component#setSize(int, int)
@@ -693,25 +696,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       width = Math.max(32,width);
       height = Math.max(32,height);
       super.setSize(width, height);
-    }
-    /**
-     * @see java.awt.Panel#addNotify()
-     */
-    public void addNotify() {
-      // listen
-      model.addListener(this);
-      // continue
-      super.addNotify();
-    }
-
-    /**
-     * @see java.awt.Container#removeNotify()
-     */
-    public void removeNotify() {
-      // no listen
-      model.removeListener(this);
-      // continue
-      super.removeNotify();
     }
     /**
      * @see genj.util.swing.ViewPortOverview#paintContent(java.awt.Graphics, double, double)
@@ -763,26 +747,10 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      */
     private Content() {
       addMouseListener(this);
-    }
-    
-    /**
-     * @see javax.swing.JComponent#addNotify()
-     */
-    public void addNotify() {
+      // listen
       model.addListener(this);
-      // continue
-      super.addNotify();
     }
     
-    /**
-     * @see javax.swing.JComponent#removeNotify()
-     */
-    public void removeNotify() {
-      model.removeListener(this);
-      // continue
-      super.removeNotify();
-    }
-
     /**
      * @see genj.tree.ModelListener#structureChanged(Model)
      */
