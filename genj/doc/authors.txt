@@ -24,6 +24,7 @@ The people behind GenJ (sorted by last name) :
       . Francois Massonneau <francois@arvernes.com> (French translation)
       . Marcus Sandberg <marcus.sandberg@gmx.net> (German translation)
       . Mauricio Girardi <girardi@fisica.ufsc.br> (Brazilian portuguese)
+      . Nestor Garcia <hipernes@inicia.es> (Spanish)
 
     User Feedback and Food for Thought :
       . Paul Clarke <pjclarke@bigpond.com>
