@@ -351,7 +351,7 @@ public class LnFBridge {
      */
     protected void apply(LookAndFeel lnf) throws Exception {
       
-      // This is a hack for www.lfprod.com's SkinLookAndFeel ONLY right now
+      // HACK: for www.lfprod.com's SkinLookAndFeel ONLY right now
       UIManager.put(
         "SkinLookAndFeel.Skin", 
         lnf.getClass().getMethod("loadThemePack", new Class[]{String.class}).invoke(lnf,new Object[]{getArchive()})
