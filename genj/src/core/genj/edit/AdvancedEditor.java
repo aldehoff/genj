@@ -172,15 +172,6 @@ import javax.swing.event.TreeSelectionListener;
   }
 
   /**
-   * Callback - context test
-   */
-  public boolean isShowing(Context context) {
-    return context.getGedcom()==gedcom 
-      && context.getEntity() == tree.getRoot()
-			&& context.getProperty() == tree.getSelection();
-  }
-  
-  /**
    * Accessor - current context 
    * @return Gedcom tree's root and selection 
    */
@@ -196,16 +187,22 @@ import javax.swing.event.TreeSelectionListener;
    */
   public void setContext(Context context) {
     
+    // already there?
+    if (context.getGedcom()==gedcom 
+      && context.getEntity()==tree.getRoot()
+		  && context.getProperty()==tree.getSelection())
+      return;
+
     // clear current selection
     tree.clearSelection();
 
-    // need entity
+    // change root if necessary
     Entity entity = context.getEntity();
-    if (entity==null)
-      return;
-    Property property = context.getProperty();
+    if (entity!=tree.getRoot())
+      tree.setRoot(entity);
 
-    tree.setRoot(entity);
+    // set selection
+    Property property = context.getProperty();
     if (property!=null)
       tree.setSelection(property);  
   

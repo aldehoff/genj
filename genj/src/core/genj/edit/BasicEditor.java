@@ -177,13 +177,6 @@ import javax.swing.event.ChangeListener;
   }
 
   /**
-   * Callback - context test
-   */
-  public boolean isShowing(Context context) {
-    return context.getGedcom()==gedcom && context.getEntity() == entity;
-  }
-  
-  /**
    * Callback - our current context
    */
   public Context getContext() {
@@ -194,7 +187,7 @@ import javax.swing.event.ChangeListener;
    * Callback - set current context
    */
   public void setContext(Context context) {
-    
+
     // something to be committed?
     if (!gedcom.isTransaction()&&entity!=null&&ok.isEnabled()&&view.isCommitChanges()) 
       ok.trigger();
@@ -205,18 +198,25 @@ import javax.swing.event.ChangeListener;
       setEntity(set);
 
     // select 1st/appropriate bean for property from context
-    TagPath path = null;
-    Property prop = context.getProperty();
-    if (prop!=null)
-      path = prop.getPath();
+    Property p = context.getProperty();
+    select(p!=null?p:set);
+    
+    // done
+  }
+  
+  /**
+   * Select a property's bean
+   */
+  private void select(Property prop) {
+    // look for appropriate bean
+    TagPath path = prop.getPath();
     for (int i=0,j=beanPanel.getComponentCount();i<j;i++) {
       JComponent c = (JComponent)beanPanel.getComponent(i);
-      if (c instanceof PropertyBean && (path==null || path.length()==1 || ((PropertyBean)c).getPath().equals(path))) {
+      if (c instanceof PropertyBean && (path.length()==1||((PropertyBean)c).getPath().equals(path))) {
         c.requestFocusInWindow();
         break;
       }
     }
-    
     // done
   }
 

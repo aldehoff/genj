@@ -41,11 +41,6 @@ import javax.swing.JPanel;
   public abstract Context getContext();
   
   /** 
-   * test for current context
-   */
-  public abstract boolean isShowing(Context context);
-  
-  /** 
    * Accessor - current 
    */
   public abstract void setContext(Context context);

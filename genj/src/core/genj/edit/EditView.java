@@ -273,13 +273,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
         return;
     }
     
-    // change if applicable
-    if (!editor.isShowing(context)) {
-	    // remember current 
-	    back.push(editor.getContext());
-	    // tell editor
-	    editor.setContext(context);
-    }
+    // check current editor's context
+    Context current = editor.getContext();
+    if (current.getEntity()!=context.getEntity())
+      back.push(current);
+    
+    // tell to editors - they're lazy and won't change if not needed
+    editor.setContext(context);
     
     // update context menu button
     contextMenu.update();
@@ -414,12 +414,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       // ignore it?
       if (ignorePush)
         return;
-      // won't put the same entity twice though
-      if (!stack.isEmpty()) {
-        Context current = (Context)stack.peek();
-        if (current.getEntity()==context.getEntity())
-          return;
-      }
       // keep it
       stack.push(context);
       // trim stack - arbitrarily chosen size :)
