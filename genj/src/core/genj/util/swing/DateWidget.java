@@ -19,7 +19,6 @@
  */
 package genj.util.swing;
 
-import genj.gedcom.MetaProperty;
 import genj.gedcom.PointInTime;
 import genj.util.ActionDelegate;
 
@@ -65,7 +64,7 @@ public class DateWidget extends JPanel {
       switches.add(new SwitchCalendar(PointInTime.CALENDARS[s]));
     
     // initialize Sub-components
-    widgetCalendar = new PopupWidget(); 
+    widgetCalendar = new PopupWidget(pit.getCalendar().getImage()); 
     widgetCalendar.setMargin(new Insets(1,1,1,1));
     widgetCalendar.setActions(switches);
     
@@ -106,7 +105,7 @@ public class DateWidget extends JPanel {
     addFocusListener(e);
     
     // Status
-    updateIcon();
+    checkValidDate();
     
     // Done
   }
@@ -126,11 +125,8 @@ public class DateWidget extends JPanel {
   /**
    * Update the status icon
    */
-  private void updateIcon() {
-    ImageIcon img = calendar.getImage();
-    if (!getValue().isValid())
-      img = img.getOverLayed(MetaProperty.IMG_ERROR);
-    widgetCalendar.setIcon(img);
+  private void checkValidDate() {
+    widgetCalendar.setEnabled(getValue().isValid());
   }
 
   /**
@@ -175,8 +171,7 @@ public class DateWidget extends JPanel {
   public void requestFocus() {
     // try JDK 1.4's requestFocusInWindow instead
     try {
-      getClass().getMethod("requestFocusInWindow", new Class[]{})
-        .invoke(this, new Object[]{});
+      super.requestFocusInWindow();
     } catch (Throwable t) {
       super.requestFocus();
     }
@@ -188,7 +183,7 @@ public class DateWidget extends JPanel {
   private class Events implements FocusListener {
     /** callback - focus gained */
     public void focusGained(FocusEvent e) {
-      updateIcon();
+      checkValidDate();
       // me?
       if (e.getSource()==DateWidget.this) {
         getComponent(1).requestFocus();

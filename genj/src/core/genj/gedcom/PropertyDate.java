@@ -254,7 +254,7 @@ public class PropertyDate extends Property {
 
         // ... no range (TO,ABT,CAL,...) -> parse PointInTime from remaining tokens
         if ( !formats[format].isRange ) 
-          return start.parseDate(tokens);
+          return start.set(tokens);
 
         // ... is range (FROM-TO,BET-AND)
         String grab=EMPTY_STRING;
@@ -262,7 +262,7 @@ public class PropertyDate extends Property {
           // .. TO or AND ? -> parse 2 PointInTimes from grabbed and remaining tokens
           token = tokens.nextToken();
           if ( token.startsWith(formats[format].end) ) {
-            return start.parseDate(new StringTokenizer(grab)) && end.parseDate(tokens);
+            return start.set(new StringTokenizer(grab)) && end.set(tokens);
           }
           // .. grab more
           grab += " " + token + " ";
@@ -281,7 +281,7 @@ public class PropertyDate extends Property {
     format = DATE;
     
     // .. look for date from first to last word
-    return start.parseDate(new StringTokenizer(text));
+    return start.set(new StringTokenizer(text));
   }
 
   /**

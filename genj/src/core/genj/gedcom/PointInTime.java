@@ -32,12 +32,13 @@ import java.util.StringTokenizer;
 public abstract class PointInTime implements Comparable {
 
   /** calendars */
-  public final static Calendar[] CALENDARS = {
-    new Calendar("@#DGREGORIAN@", "gregorian", "images/Gregorian.gif"),  
-    new Calendar("@#DJULIAN@"   , "julian"   , "images/Julian.gif"),
-    new Calendar("@#DHEBREW@"   , "hebrew"   , "images/Hebrew.gif"),
-    new Calendar("@#DFRENCH R@" , "french"   , "images/FrenchR.gif")
-  };
+  public final static Calendar
+    GREGORIAN = new Calendar("@#DGREGORIAN@", "gregorian", "images/Gregorian.gif"),
+    JULIAN    = new Calendar("@#DJULIAN@"   , "julian"   , "images/Julian.gif"),
+    HEBREW    = new Calendar("@#DHEBREW@"   , "hebrew"   , "images/Hebrew.gif"),
+    FRENCHR   = new Calendar("@#DFRENCH R@" , "french"   , "images/FrenchR.gif");
+  
+  public final static Calendar[] CALENDARS = { GREGORIAN, JULIAN, HEBREW, FRENCHR };
     
   /** month names */
   private final static String 
@@ -49,7 +50,7 @@ public abstract class PointInTime implements Comparable {
   private static Map
     localizedMonthNames = new HashMap(),
     abbreviatedMonthNames = new HashMap(); 
-    
+
   /**
    * initialize months - loop through month names, remember localized value
    * and calculate abbreviation (either first 3 characters or up to vertical
@@ -76,6 +77,16 @@ public abstract class PointInTime implements Comparable {
       
       // next
     }
+  }
+  
+  /** calendar */
+  private Calendar calendar = GREGORIAN;
+  
+  /**
+   * Returns the calendar
+   */
+  public Calendar getCalendar() {
+    return calendar;
   }
 
   /**
@@ -121,7 +132,7 @@ public abstract class PointInTime implements Comparable {
    */
   public static PointInTime getPointInTime(String string) {
     Impl result = new Impl(-1,-1,-1);
-    result.parseDate(new StringTokenizer(string));
+    result.set(new StringTokenizer(string));
     return result;
   }
   
@@ -152,7 +163,7 @@ public abstract class PointInTime implements Comparable {
   /**
    * Parse tokens into this PIT
    */
-  protected boolean parseDate(StringTokenizer tokens) {
+  protected boolean set(StringTokenizer tokens) {
 
     // no tokens no joy
     if (!tokens.hasMoreTokens())
@@ -165,10 +176,9 @@ public abstract class PointInTime implements Comparable {
       
       // .. has to be one of our calendar escapes
       for (int c=0;c<CALENDARS.length;c++) {
-        Calendar calendar = CALENDARS[c]; 
-        if (calendar.escape.startsWith(first)) {
-          // .. identified calendar
-          System.out.println("Found PointInTime with Calendar "+calendar.getName());
+        Calendar cal = CALENDARS[c]; 
+        if (cal.escape.startsWith(first)) {
+          calendar = cal;
           break;
         }
       }
