@@ -146,7 +146,7 @@ public class ReportValidate extends Report {
       // get child tag
       String ctag = child.getTag();
       // check if Gedcom grammar allows it
-      if (!meta.allows(ctag)) {
+      if (!ctag.startsWith("_")&&!meta.allows(ctag)) {
         String msg = i18n("err.notgedcom", new String[]{ctag,path.toString()});
         issues.add(new Issue(msg, MetaProperty.IMG_ERROR, child));
         continue;
