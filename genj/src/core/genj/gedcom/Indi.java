@@ -281,42 +281,32 @@ public class Indi extends Entity {
    * Returns indi's first name
    */
   public String getFirstName() {
-
-    // Calculate NAME
-    PropertyName p = (PropertyName)getProperty("NAME",true);
-    if (p==null) {
-      return "";
-    }
-
-    // Return string value
-    return p.getFirstName();
+    PropertyName p = (PropertyName)getProperty(PropertyName.TAG,true);
+    return p!=null ? p.getFirstName() : EMPTY_STRING;  
   }
 
   /**
    * Calculate indi's last name
    */
   public String getLastName() {
-
-    // Calculate NAME
-    PropertyName p = (PropertyName)getProperty("NAME",true);
-    if (p==null) {
-      return "";
-    }
-
-    // Return string value
-    return p.getLastName();
+    PropertyName p = (PropertyName)getProperty(PropertyName.TAG,true);
+    return p!=null ? p.getLastName() : EMPTY_STRING; 
   }
 
   /**
-   * Returns indi's name
+   * Calculate indi's name suffix
+   */
+  public String getNameSuffix() {
+    PropertyName p = (PropertyName)getProperty(PropertyName.TAG,true);
+    return p!=null ? p.getSuffix() : EMPTY_STRING; 
+  }
+  
+  /**
+   * Returns indi's name (e.g. "Meier, Nils")
    */
   public String getName() {
-
-    // Calculate NAME
-    Property name = getProperty("NAME",true);
-    if (name instanceof PropertyName)
-      return ((PropertyName)name).getName();  
-    return "";
+    PropertyName p = (PropertyName)getProperty(PropertyName.TAG,true);
+    return p!=null ? p.getName() : EMPTY_STRING; 
   }
   
   /** 

@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class PropertyName extends Property {
   
-  private final static String TAG =  "NAME";
+  public final static String TAG =  "NAME";
   
   /** the first + last name */
   private String
@@ -120,15 +120,13 @@ public class PropertyName extends Property {
   }
 
   /**
-   * the name
+   * the name (e.g. "Meier, Nils")
    */
   public String getName() {
-    if (nameAsString!=null) {
+    if (nameAsString!=null) 
       return nameAsString;
-    }
-    if (firstName.length()==0) {
+    if (firstName.length()==0) 
       return lastName;
-    }
     return lastName + ", " + firstName;
   }
 
