@@ -85,17 +85,21 @@ public abstract class PropertyBean extends JPanel implements GedcomListener {
    * Accessor
    */
   public static PropertyBean get(Property prop) {
+    return get(prop.getProxy());
+  }
+  
+  public static PropertyBean get(String proxy) {
     // unknown type?
-    Class type = (Class)proxy2type.get(prop.getProxy());
+    Class type = (Class)proxy2type.get(proxy);
     PropertyBean result = null;
     if (type==null) {
       try {
-        type = Class.forName( "genj.edit.beans." + prop.getProxy() + "Bean");
+        type = Class.forName( "genj.edit.beans." + proxy + "Bean");
         result = (PropertyBean)type.newInstance();
       } catch (Throwable t) {
         type = SimpleValueBean.class;
       }
-      proxy2type.put(prop.getProxy(), type);
+      proxy2type.put(proxy, type);
     }
     // instantiate if still necessary
     if (result==null)

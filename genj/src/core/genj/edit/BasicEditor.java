@@ -25,7 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyNote;
+import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
@@ -283,7 +283,7 @@ import javax.swing.event.ChangeListener;
           return;
       }
       // create bean
-      PropertyBean bean = createBean(entity, path);
+      PropertyBean bean = createBean(entity, path, cell.getAttribute("type"));
       if (bean==null)
         return;
       
@@ -303,18 +303,21 @@ import javax.swing.event.ChangeListener;
   
   /**
    * create a bean
+   * @param entity we need the bean for
+   * @param path path to property we need bean for
+   * @param explicit bean type
    */
-  private PropertyBean createBean(Entity entity, TagPath path) {
+  private PropertyBean createBean(Entity entity, TagPath path, String type) {
     
-    MetaProperty meta = MetaProperty.get(path);
+    MetaProperty meta = MetaProperty.get(path, false);
 
-    // try to resolve existing prop
+    // try to resolve existing prop - we might have to skip PropertyXRefs along the way
     Property prop=null;
     Property[] props = entity.getProperties(path);
     for (int i=0;prop==null&&i<props.length;i++) {
       prop = props[i];
-      if (prop instanceof PropertyNote) 
-        prop = prop.getProperty(new TagPath("*:..:NOTE"));
+      if (prop instanceof PropertyXRef) 
+        prop = ((PropertyXRef)prop).getTargetValueProperty();
     }
     
     // created a new one?
@@ -322,7 +325,7 @@ import javax.swing.event.ChangeListener;
       prop = meta.create("");
     
     // init bean
-    PropertyBean bean = PropertyBean.get(prop);
+    PropertyBean bean = type!=null ? PropertyBean.get(type) : PropertyBean.get(prop);
     bean.init(entity.getGedcom(), prop, path, view.getViewManager(), registry);
     bean.addChangeListener(changeCallback);
     

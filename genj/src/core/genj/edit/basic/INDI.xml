@@ -1,4 +1,4 @@
-
+<col>
  <row>
   <col>
    <row><label path="INDI"/></row>
@@ -27,3 +27,7 @@
    <row><bean path="INDI:NOTE" wx="1" wy="1"/></row>
   </col>
  </row>
+ <row>
+  <bean path="INDI" type="Families" wx="1"/>
+ </row>
+</col>
