@@ -152,11 +152,17 @@ Mode d'Emploi du D&eacute;veloppeur pour GenJ
   -Dgenj.report.dir=[report_folder]           indique &agrave; partir d'o&ugrave; les rapports doivent &ecirc;tre charg&eacute;s<Br>
   -Dgenj.help.dir=[help_folder]               indique o&ugrave; le logiciel peut trouver l'aide<Br>
   -Dgenj.gedcom.dir=[gedcom_folder]           indique o&ugrave; le programme va pouvoir trouver les fichiers gedcom<Br>
+  -Dgenj.debug.file=[log-file]                indique o&ugrave; les informations de d&eacute;buggage sont envoy&eacute;es<Br>
 </Ul>
  
- Voici un exemple:<Br>
+ Voici un exemple&nbsp;:<Br>
  
   java -Duser.home=d:\nils -Dgenj.gedcom.dir=d:\nils\gedcoms genj.App<Br>
+
+  ou si vous utilisez Linux&nbsp;:<Br>
+
+  java -Dgenj.debug.file=./genj.log -Duser.language=fr -Duser.home=/home/fm/genj -Dgenj.gedcom.dir=/home/fm/genj/gedcom genj.app.App
+
 
 <Br><Br>
 

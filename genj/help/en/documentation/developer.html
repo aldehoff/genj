@@ -123,11 +123,17 @@ GenJ - Developer HOWTO
   -Dgenj.report.dir=[report_folder]           where the reports are loaded from<Br>
   -Dgenj.help.dir=[help_folder]               where the help is loaded from<Br>
   -Dgenj.gedcom.dir=[gedcom_folder]           where the file-dialog for opening files starts<Br>
-</Ul>
+  -Dgenj.debug.file=[log-file]                where debugging statements are routed to<Br>
+  </Ul>
  
- Here's an example:<Br>
+ Here's an example&nbsp;:<Br>
  
   java -Duser.home=d:\nils -Dgenj.gedcom.dir=d:\nils\gedcoms genj.App<Br>
+
+  or if you use Linux&nbsp;:<Br>
+  
+  java -Dgenj.debug.file=./genj.log -Duser.language=fr -Duser.home=/home/fm/genj -Dgenj.gedcom.dir=/home/fm/genj/gedcom genj.app.App
+
 
 <Br><Br>
 
