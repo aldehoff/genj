@@ -357,7 +357,7 @@ import java.util.Set;
       start = pd.getStart(),
       end   = pd.getEnd();
     if (!start.isValid()) return;
-    if (!end  .isValid()) end = start;
+    if (!pd.isRange()||!end.isValid()) end = start;
     // create the Event
     Event e = new Event(pe, pd, wrap(start), wrap(end));
     // keep the event
