@@ -154,7 +154,7 @@ class ProxyEntity extends Proxy implements ActionListener, DocumentListener {
     );
     in.add(bchange);
 
-    tfield.requestFocus();
+    tfield.requestFocusInWindow();
 
     // Done
   }

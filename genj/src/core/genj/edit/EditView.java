@@ -69,20 +69,21 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends JSplitPane implements TreeSelectionListener, GedcomListener, CurrentSupport, ToolBarSupport {
+public class EditView extends JSplitPane implements GedcomListener, CurrentSupport, ToolBarSupport {
 
   /** the gedcom we're looking at */
   private Gedcom    gedcom;
   
   /** the current entity&property */
   private Entity    currentEntity;
-  private Property  currentProperty = null;
   
   /** the frame we're in */
   private Frame     frame;
@@ -99,9 +100,10 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
                             actionButtonUp,
                             actionButtonDown,
                             actionButtonReturn;
+  private JCheckBox         checkSticky;
 
   /** everything for the tree */
-  private JTree             tree = null;
+  private PropertyTree      tree = null;
   private JScrollPane       treePane = null;
   
   /** everything for the proxy */
@@ -111,7 +113,7 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
   /** stack of entities we've been looking at */
   private final static int  MAX_RETURN  = 10;
   private Stack             returnStack = new Stack();
-  private boolean           isSticky = false;
+  
   
   /**
    * Constructor
@@ -123,8 +125,9 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
     this.frame    = setFrame;
     this.registry = setRegistry;
 
-    // TREE Component's ScrollPane
-    treePane = new JScrollPane();
+    // TREE Component's 
+    tree = new PropertyTree();
+    treePane = new JScrollPane(tree);
     treePane.setMinimumSize  (new Dimension(160, 128));
     treePane.setPreferredSize(new Dimension(160, 128));
 
@@ -149,79 +152,31 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
       try { 
         entity = gedcom.getEntityFromId(last); 
       } catch (Exception e) {
-        entity = ViewManager.getInstance().getCurrentEntity();
+        entity = ViewManager.getInstance().getCurrentEntity(gedcom);
       }
     }
     setCurrentEntity(entity);
     
-    // sticky?
-    isSticky = registry.get("sticky",false);
-
     // Done
   }
 
   /**
-   * Starts a Gedcom transaction
+   * Notification when component is not used any more
    */
-  private boolean startTransaction(String message) {
+  public void removeNotify() {
 
-    // .. LockWrite
-    if (gedcom.startTransaction()) {
-      return true;
-    }
+    // Remember registry
+    registry.put("divider",getDividerLocation());
+    registry.put("last", currentEntity!=null?currentEntity.getId():"");
+    registry.put("sticky", checkSticky.isSelected());
 
-    JOptionPane.showMessageDialog(
-      this,
-      message,
-      resources.getString("error"),
-      JOptionPane.ERROR_MESSAGE
-    );
+    // Stop Listening
+    gedcom.removeListener(this);
 
-    return false;
-
-  }
-
-  /**
-   * Ends the current Gedcom transaction
-   */
-  private void endTransaction() {
-    gedcom.endTransaction();
-  }
-
-  /**
-   * Let proxy flush editing property
-   * @return status for successfull flushing of edit
-   */
-  boolean flushEditing(boolean alreadyLocked) {
-
-    // Finish old editing
-    if (currentProxy == null) {
-      return true;
-    }
-
-    // Prepare for finishing changed and finish
-    if (currentProxy.hasChanged()) {
-      if (alreadyLocked) {
-        currentProxy.finish();
-      } else {
-        Gedcom gedcom = currentEntity.getGedcom();
-        if (gedcom.startTransaction()) {
-          currentProxy.finish();
-          gedcom.endTransaction();
-        } else {
-          int result = JOptionPane.showConfirmDialog(
-            this,
-            "Couldn't save",
-            resources.getString("error"),
-            JOptionPane.OK_CANCEL_OPTION
-          );
-          return (result==JOptionPane.CANCEL_OPTION);
-        }
-      }
-    }
+    // Continue
+    super.removeNotify();
 
     // Done
-    return true;
   }
 
   /**
@@ -254,8 +209,7 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
 
       // Is this a show stopper at this point?
       if (affected==true) {
-        cancelEditing();
-        setEntity(null,true);
+        setEntity(null);
         return;
       }
 
@@ -266,7 +220,7 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
     if ( change.isChanged(Change.PADD)
        ||change.isChanged(Change.PDEL)) {
 
-      prepareTreeModel();
+      tree.setRoot(currentEntity.getProperty());
 
       // .. select added
       List padd = change.getProperties(Change.PADD);
@@ -276,7 +230,8 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
         Property first = (Property)padd.get(0);
         if (first instanceof PropertyEvent) {
           Property pdate = ((PropertyEvent)first).getDate(false);
-          first = (pdate!=null) ? pdate : first;
+          if (padd.contains(pdate))
+            first = pdate!=null ? pdate : first;
         }
         Property[] path = root.getPathTo(first);
         if (path!=null) {
@@ -291,6 +246,11 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
       if ( change.getEntities(Change.EMOD).contains(currentEntity)) {
         PropertyTreeModel treeModel = (PropertyTreeModel)tree.getModel();
         treeModel.firePropertiesChanged(change.getProperties(Change.PMOD));
+        /*
+        if (change.getProperties(change.PMOD).contains(currentProperty)) {
+          stopEdit(false);
+        }
+        */
         return;
       }
     }
@@ -302,9 +262,7 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
    * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
    */
   public void setCurrentEntity(Entity entity) {
-    if (!isSticky) {
-      setEntity(entity, false);
-    }
+    if (checkSticky==null||!checkSticky.isSelected()) setEntity(entity);
   }
 
   /**
@@ -334,62 +292,15 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
     actionButtonReturn = bh.create(new ActionBack());
 
     // sticky checkbox
-    JCheckBox actionCheckStick  = new JCheckBox(ImgIconConverter.get(Images.imgStickOff));
-    actionCheckStick.setSelectedIcon (ImgIconConverter.get(Images.imgStickOn ));
-    actionCheckStick.setFocusPainted(false);
-    actionCheckStick.setSelected(isSticky);
-    actionCheckStick.setToolTipText(resources.getString("tip.stick"));
-    actionCheckStick.setOpaque(false);
-    bar.add(actionCheckStick);
+    checkSticky  = new JCheckBox(ImgIconConverter.get(Images.imgStickOff));
+    checkSticky.setSelectedIcon (ImgIconConverter.get(Images.imgStickOn ));
+    checkSticky.setFocusPainted(false);
+    checkSticky.setSelected(registry.get("sticky",false));
+    checkSticky.setToolTipText(resources.getString("tip.stick"));
+    checkSticky.setOpaque(false);
+    bar.add(checkSticky);
     
     // done
-  }
-
-  /**
-   * Prepare the tree-model that lies behind the tree.
-   */
-  private void prepareTreeModel() {
-
-    // NM 16 Dec 1998 This is some kind of hack :(
-    // When a new model is set for a JTree, it signals a
-    // valueChanged to its SelectionListeners, which in this
-    // case means (de-)activation of buttons. That leads to
-    // a focus change which leads to a redraw of the JTree.
-    // When the current model has changed just a little bit
-    // (which happens during GedcomWriteLock), a null-Rectangle
-    // is generated somewhere in Swing which crashes the repaint 8)
-    // We'll detach from JTree for the time the new model is setup
-    // and attach later on
-
-    tree.removeTreeSelectionListener(this);
-    tree.setModel(new PropertyTreeModel(currentEntity.getProperty()));
-    tree.addTreeSelectionListener(this);
-
-    // Expand all nodes
-    for (int i=0;i<tree.getRowCount();i++) {
-      tree.expandRow(i);
-    }
-
-    // Done
-  }
-
-  /**
-   * Notification when component is not used any more
-   */
-  public void removeNotify() {
-
-    // Remember registry
-    registry.put("divider",getDividerLocation());
-    registry.put("last", currentEntity.getId());
-    registry.put("sticky", isSticky);
-
-    // Stop Listening
-    gedcom.removeListener(this);
-
-    // Continue
-    super.removeNotify();
-
-    // Done
   }
 
   /**
@@ -402,80 +313,30 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
   /**
    * returns the currently viewed entity
    */
-  public Entity getCurrentEntity() {
+  /*package*/ Entity getCurrentEntity() {
     return currentEntity;
   }
-
+  
   /**
-   * An entity in the gedcom data has been selected.
-   * This method prepares editing of the selected entity.
+   * Set the entity to display
    */
-  /*package*/ void setEntity(Entity pEntity, boolean returned) {
+  private void setEntity(Entity entity) {
 
-    // Finish old editing
-    if (!stopEditing(false)) {
-      return;
-    }
+    // Try to stop old editing first
+    stopEdit(true);
 
     // Put last entity on return-stack
-    if ((!returned)&&(currentEntity!=null)) {
-      returnStack.addElement(currentEntity);
-      if (returnStack.size()>MAX_RETURN) {
-        returnStack.removeElementAt(0);
-      }
-      actionButtonReturn.setEnabled(returnStack.size()>0);
+    if (entity!=null) {
+      returnStack.push(entity);
+      if (returnStack.size()>MAX_RETURN) returnStack.removeElementAt(0);
+      if (actionButtonReturn!=null) actionButtonReturn.setEnabled(!returnStack.isEmpty());
     }
 
     // Remember entity
-    currentEntity=pEntity;
+    currentEntity=entity;
 
-    // Create tree
-    if (currentEntity==null) {
-      if (tree!=null) {
-        tree.removeTreeSelectionListener(this);
-        tree = null;
-      }
-    } else {
-      // .. create the tree
-      tree = new JTree() {
-        // LCD
-        /** Calculate ToopTipText depending on property under mouse */
-        public String getToolTipText(MouseEvent event) {
-          // .. calc path to node under mouse
-          TreePath path = getPathForLocation(event.getX(),event.getY());
-          if ((path==null) || (path.getPathCount()==0))
-          return null;
-          // .. calc property
-          Property p = (Property)path.getLastPathComponent();
-          // .. calc information text
-          String info = p.getInfo();
-          if (info==null) {
-            return "Unknown";
-          }
-          // .. return max 60
-          info = info.replace('\n',' ');
-          if (info.length()<=60)
-            return info;
-          return info.substring(0,60)+"...";
-        }
-        // EOC
-      };
-      ToolTipManager.sharedInstance().registerComponent(tree);
-
-      // .. prepare data
-      prepareTreeModel();
-
-      // .. prepare rendering
-      tree.setCellRenderer(new PropertyCellRenderer());
-
-      // .. done
-    }
-
-
-    // Update view
-    treePane.getViewport().setView(tree);
-    treePane.validate();
-    treePane.repaint();
+    // Reset tree model
+    tree.setRoot(currentEntity.getProperty());
 
     // Pre-selected editing node ?
     if ((currentEntity!=null)&&(tree.isShowing())) {
@@ -488,12 +349,11 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
   /**
    * Prepare a proxy for editing a property
    */
-  private void startEditingOf(Property prop, boolean keepSimple) {
+  private void startEdit(boolean keepSimple) {
 
-    // New prop ?
-    if (prop == null) {
-      return;
-    }
+    // Property?
+    Property prop = tree.getCurrentProperty();
+    if (prop == null) return;
 
     // Calculate editing for property
     String me    = getClass().getName(),
@@ -536,97 +396,31 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
   }
 
   /**
-   * Cancels proxy from editing
+   * Stop editing
    */
-  void cancelEditing() {
+  private void stopEdit(boolean commit) {
+
+    // Prepare for finishing changed and finish
+    if (commit&&currentProxy!=null&&currentProxy.hasChanged()) {
+      Gedcom gedcom = currentEntity.getGedcom();
+      if (gedcom.startTransaction()) {
+        currentProxy.finish();
+        gedcom.endTransaction();
+      }
+    }
 
     // Clear up
     currentProxy = null;
+
     proxyPane.removeAll();
 
     // Layout change !
-    proxyPane.invalidate();
-    proxyPane.validate();
+    proxyPane.revalidate();
     proxyPane.repaint();
 
-  }
-
-  /**
-   * Stop proxy from editing property
-   * @return status for successfull stop of edit
-   */
-  boolean stopEditing(boolean alreadyLocked) {
-
-    // Finish old editing
-    if (currentProxy == null) {
-      return true;
-    }
-
-    if (!flushEditing(alreadyLocked)) {
-      return false;
-    }
-
-    cancelEditing();
-
-    // Done
-    return true;
-  }
-
-  /**
-   * Called when the user changes a selection.
-   * Changes the current proxy.
-   */
-  public void valueChanged(TreeSelectionEvent e) {
-
-    // Look if exactly one node has been selected
-    if (tree.getSelectionCount()==0) {
-      // Disable action buttons
-      actionButtonAdd   .setEnabled(false);
-      actionButtonRemove.setEnabled(false);
-      actionButtonUp    .setEnabled(false);
-      actionButtonDown  .setEnabled(false);
-      // Done
-      return;
-    }
-
-    if (tree.getSelectionCount()>1) {
-      // En/Disable action buttons
-      actionButtonAdd   .setEnabled(false);
-      actionButtonRemove.setEnabled(true );
-      actionButtonUp    .setEnabled(false);
-      actionButtonDown  .setEnabled(false);
-      // Done
-      return;
-    }
-
-    // Calculate selection path
-    TreePath path = tree.getSelectionPath();
-
-    // Prepare proxy for editing propery behind that single node
-    Property prop = (Property)path.getLastPathComponent();
-    currentProperty = prop;
-
-    // Stop editing via old proxy before starting with new one
-    if (!stopEditing(false)) {
-      // .. stop here
-      return;
-    }
-    startEditingOf(prop,false);
-
-    // Enable action buttons
-    actionButtonAdd.setEnabled(true);
-    if (path.getPathCount() > 1) {
-      actionButtonRemove.setEnabled(true);
-    } else {
-      actionButtonRemove.setEnabled(false);
-    }
-
-    actionButtonUp    .setEnabled(currentProperty.getPreviousSibling()!=null);
-    actionButtonDown  .setEnabled(currentProperty.getNextSibling()    !=null);
-
     // Done
   }
-  
+
   /**
    * Action - back
    */
@@ -637,17 +431,14 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
     }
     /** run */
     protected void execute() {
-  
+      // won't do if there's none
+      if (returnStack.isEmpty()) return;
+      
       // Return to last entity from return-stack
-      int last = returnStack.size()-1;
-      if (last==-1) {
-        return;
-      }
-
-      Entity old = (Entity)returnStack.elementAt(last);
-      returnStack.removeElementAt(last);
-      setEntity(old,true);
-      actionButtonReturn.setEnabled(returnStack.size()>0);
+      Entity old = (Entity)returnStack.pop();
+      setEntity(old);
+      returnStack.pop();
+      actionButtonReturn.setEnabled(!returnStack.isEmpty());
 
       // .. done
     }
@@ -671,20 +462,12 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
   
       Gedcom gedcom = currentEntity.getGedcom();
   
-      // .. LockWrite
-      if (!startTransaction("Couldn't save")) {
-        return;
-      }
-  
       // .. Stop Editing
-      flushEditing(true);
+      stopEdit(true);
   
       // .. only in case of single selection
       TreePath paths[] = tree.getSelectionPaths();
-      if ( (paths==null) || (paths.length!=1) ) {
-        endTransaction();
-        return;
-      }
+      if ( (paths==null) || (paths.length!=1) ) return;
       TreePath path = tree.getSelectionPath();
   
       // .. calculate new props
@@ -709,10 +492,7 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
       );
   
       // .. OK or Cancel ?
-      if (option != JOptionPane.OK_OPTION) {
-        gedcom.endTransaction();
-        return;
-      }
+      if (option != JOptionPane.OK_OPTION) return;
   
       // .. Calculate chosen properties
       Property[] props = choose.getResultingProperties();
@@ -724,11 +504,11 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
           resources.getString("error"),
           JOptionPane.ERROR_MESSAGE
         );
-        gedcom.endTransaction();
         return;
       }
   
       // .. add properties
+      if (!gedcom.startTransaction()) return;
       boolean doSub = check.isSelected();
       for (int i=0;i<props.length;i++) {
         if (doSub) {
@@ -736,9 +516,9 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
         }
         prop.addProperty(props[i]);
       }
-  
-      // .. UnlockWrite
-      endTransaction();
+      gedcom.endTransaction();
+      
+      // done
     }
 
   } //ActionPropertyAdd
@@ -762,19 +542,11 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
         return;
       }
   
-      // .. LockWrite
-      if (!gedcom.startTransaction()) {
-        JOptionPane.showMessageDialog(
-          EditView.this,
-          "Couldn't save",
-          resources.getString("error"),
-          JOptionPane.ERROR_MESSAGE
-        );
-        return;
-      }
-  
       // .. Stop Editing
-      stopEditing(true);
+      stopEdit(true);
+  
+      // .. LockWrite
+      if (!gedcom.startTransaction()) return;
   
       // .. remove every selected node
       for (int i=0;i<paths.length;i++) {
@@ -820,6 +592,9 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
   
       // .. UnlockWrite
       gedcom.endTransaction();
+
+      // go to parent property
+      tree.setSelectionRow(0);
   
       // .. done
     }
@@ -839,24 +614,20 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
     }
     /** run */
     protected void execute() {
-  
-      // .. LockWrite
-      if (!gedcom.startTransaction()) {
-        JOptionPane.showMessageDialog(
-          EditView.this,
-          "Couldn't save",
-          resources.getString("error"),
-          JOptionPane.ERROR_MESSAGE
-        );
-        return;
-      }
+      
+      // get current property
+      Property prop = tree.getCurrentProperty();
+      if (prop==null) return;
   
       // .. Stop Editing
-      flushEditing(true);
+      stopEdit(true);
+  
+      // .. LockWrite
+      if (!gedcom.startTransaction()) return;
   
       // .. Calculate property that is moved
       currentEntity.getProperty().moveProperty(
-        currentProperty,
+        prop,
         up? Property.UP : Property.DOWN
       );
   
@@ -865,9 +636,9 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
   
       // 03.02.2000 Since the movement of properties is not
       // signalled by any event, we have to reselect the node again
-      prepareTreeModel();
-      TreePath path = new TreePath(currentEntity.getProperty().getPathTo(currentProperty));
-      tree.setSelectionPath(path);
+      //tree.setRoot(currentEntity.getProperty());
+      //TreePath path = new TreePath(currentEntity.getProperty().getPathTo(prop));
+      //tree.setSelectionPath(path);
   
     }
     
@@ -876,22 +647,53 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
   /**
    * Class for rendering tree cell nodes
    */
-  private class PropertyCellRenderer extends JLabel implements TreeCellRenderer {
+  private class PropertyTree extends JTree implements TreeCellRenderer, TreeSelectionListener {
+    
+    /** a label for rendering */
+    private JLabel label = new JLabel();
     
     /**
      * Constructor
      */
-    private PropertyCellRenderer() {
-      setOpaque(true);
-      setFont(tree.getFont());
+    private PropertyTree() {
+      super(new PropertyTreeModel());
+      label.setOpaque(true);
+      label.setFont(getFont());
+      ToolTipManager.sharedInstance().registerComponent(this);
+      setCellRenderer(this);
+      getSelectionModel().addTreeSelectionListener(this);
     }
 
+    /**
+     * Prepare the tree-model that lies behind the tree.
+     */
+    private void setRoot(Property root) {
+      ((PropertyTreeModel)getModel()).setRoot(root);
+       for (int i=0;i<getRowCount();i++) expandRow(i);
+    }
+    
+    /**
+     * returns the currently selected property
+     */
+    private Property getCurrentProperty() {
+      // Calculate selection path
+      TreePath path = tree.getSelectionPath();
+      if (path==null) return null;
+      // got it
+      return (Property)path.getLastPathComponent();
+    }
+    
     /**
      * @see javax.swing.tree.TreeCellRenderer#getTreeCellRendererComponent(JTree, Object, boolean, boolean, boolean, int, boolean)
      */
     public Component getTreeCellRendererComponent(JTree tree, Object object, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
-      // we know there's a property here
+      if (!(object instanceof Property)) {
+        label.setText(object.toString());
+        return label;
+      }
+
+      // only accepting properties here
       Property prop = (Property)object;
 
       // Set the text
@@ -900,24 +702,90 @@ public class EditView extends JSplitPane implements TreeSelectionListener, Gedco
         tag = "@"+((Entity)prop).getId()+"@ "+tag;
 
       String value = prop.getValue();
-      if (value==null) setText(tag);
-      else setText(tag + ' ' + value);
+      if (value==null) label.setText(tag);
+      else label.setText(tag + ' ' + value);
       
       // Set the image
-      setIcon(ImgIconConverter.get(prop.getImage(true)));
+      label.setIcon(ImgIconConverter.get(prop.getImage(true)));
       
       // background
       if (selected) {
-        setBackground(UIManager.getColor("Tree.selectionBackground"));
-        setForeground(UIManager.getColor("Tree.selectionForeground"));
+        label.setBackground(UIManager.getColor("Tree.selectionBackground"));
+        label.setForeground(UIManager.getColor("Tree.selectionForeground"));
       } else {
-        setBackground(UIManager.getColor("Tree.textBackground"));
-        setForeground(UIManager.getColor("Tree.textForeground"));
+        label.setBackground(UIManager.getColor("Tree.textBackground"));
+        label.setForeground(UIManager.getColor("Tree.textForeground"));
       }
 
       // Done
-      return this;
+      return label;
     }
-  } //PropertyCellRenderer
+
+    /**
+     * @see javax.swing.JTree#getToolTipText(MouseEvent)
+     */
+    public String getToolTipText(MouseEvent event) {
+      // .. calc path to node under mouse
+      TreePath path = super.getPathForLocation(event.getX(),event.getY());
+      if ((path==null) || (path.getPathCount()==0)) return null;
+      // .. calc property
+      Property p = (Property)path.getLastPathComponent();
+      // .. calc information text
+      String info = p.getInfo();
+      if (info==null) return "?";
+      // .. return max 60
+      info = info.replace('\n',' ');
+      if (info.length()<=60)
+        return info;
+      return info.substring(0,60)+"...";
+    }
+    
+    /**
+     * @see javax.swing.event.TreeSelectionListener#valueChanged(TreeSelectionEvent)
+     */
+    public void valueChanged(TreeSelectionEvent e) {
   
-}
+      // Look if exactly one node has been selected
+      if (tree.getSelectionCount()==0) {
+        // Disable action buttons
+        actionButtonAdd   .setEnabled(false);
+        actionButtonRemove.setEnabled(false);
+        actionButtonUp    .setEnabled(false);
+        actionButtonDown  .setEnabled(false);
+        // Done
+        return;
+      }
+  
+      if (tree.getSelectionCount()>1) {
+        // En/Disable action buttons
+        actionButtonAdd   .setEnabled(false);
+        actionButtonRemove.setEnabled(true );
+        actionButtonUp    .setEnabled(false);
+        actionButtonDown  .setEnabled(false);
+        // Done
+        return;
+      }
+  
+      // Stop editing via old proxy before starting with new one
+      stopEdit(true);
+      startEdit(false);
+  
+      // Enable action buttons
+      Property prop = getCurrentProperty();
+      
+      actionButtonAdd.setEnabled(true);
+      if (prop.getParent()!=null) {
+        actionButtonRemove.setEnabled(true);
+      } else {
+        actionButtonRemove.setEnabled(false);
+      }
+  
+      actionButtonUp    .setEnabled(prop.getPreviousSibling()!=null);
+      actionButtonDown  .setEnabled(prop.getNextSibling()    !=null);
+  
+      // Done
+    }
+    
+  } //PropertyTree  
+
+} //EditView

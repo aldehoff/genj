@@ -82,11 +82,8 @@ public class ViewManager {
   private List viewWidgets = new LinkedList();
   
   /** the currently selected entity */
-  private Entity currentEntity = null;
+  private Map gedcom2current = new HashMap();
   
-  /** the currently selected property */
-  private Property currentProperty = null;
-
   /**
    * Singleton access
    */
@@ -106,30 +103,26 @@ public class ViewManager {
    * Returns the currently selected entity
    * @return the entity (might be null)
    */
-  public Entity getCurrentEntity() {
-    return currentEntity;
+  public Entity getCurrentEntity(Gedcom gedcom) {
+    Entity result = (Entity)gedcom2current.get(gedcom);
+    if (result!=null) {
+      if (!gedcom.getEntities(result.getType()).contains(result)) {
+        gedcom2current.remove(gedcom);
+        result = null;
+      }
+    }
+    return result;
   }
 
-  /**
-   * Returns the currently selected property
-   * @return the property (might be null)
-   */
-  public Property getCurrentProperty() {
-    // try to get one if unset
-    if (currentProperty==null&&currentEntity!=null) 
-      currentProperty = currentEntity.getProperty();
-    return currentProperty;
-  }
-  
   /**
    * Sets the current entity
    */
   public void setCurrentEntity(Entity entity) {
     // already?
-    if (currentEntity==entity) return;
-    // remember
-    currentEntity = entity;
     Gedcom gedcom = entity.getGedcom();
+    if (gedcom2current.get(gedcom)==entity) return;
+    // remember
+    gedcom2current.put(gedcom, entity);
     // loop and tell to views
     Iterator it = viewWidgets.iterator();
     while (it.hasNext()) {
@@ -137,7 +130,7 @@ public class ViewManager {
       // only if view on same gedcom
       if (vw.getGedcom()!= gedcom) continue;
       // tell it
-      vw.setCurrentEntity(currentEntity);
+      vw.setCurrentEntity(entity);
     }
     // done
   }
@@ -146,9 +139,9 @@ public class ViewManager {
    * Sets the current property
    */
   public void setCurrentProperty(Property property) {
-    // entity o.k.
-    if (currentEntity!=property.getEntity())
-      setCurrentEntity(property.getEntity());
+    setCurrentEntity(property.getEntity());
+      
+   /**
     // already?
     if (currentProperty==property) return;
     // remember
@@ -163,6 +156,7 @@ public class ViewManager {
       // tell it
       vw.setCurrentProperty(currentProperty);
     }
+    */
     // done
   }
 
@@ -302,6 +296,8 @@ public class ViewManager {
         vw.getFrame().dispose();
       }
     }
+    // remove its key from gedcom2current
+    gedcom2current.remove(gedcom);
 
     // done
     

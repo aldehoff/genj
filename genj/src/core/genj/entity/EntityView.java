@@ -35,6 +35,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -98,7 +99,7 @@ public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport
       }
     }
     // set first entity
-    setEntity(gedcom.getLastEntity());
+    setEntity(ViewManager.getInstance().getCurrentEntity(gedcom));
     // done    
   }
 

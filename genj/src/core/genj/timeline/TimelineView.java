@@ -418,7 +418,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
       contentRenderer.cTimespan   = csContent.getColor("timespan");
       contentRenderer.cGrid       = csContent.getColor("grid"    );
       contentRenderer.cSelected   = csContent.getColor("selected");
-      contentRenderer.selection   = ViewManager.getInstance().getCurrentEntity();
+      contentRenderer.selection   = ViewManager.getInstance().getCurrentEntity(model.gedcom);
       contentRenderer.cmPyear = cmPerYear;
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;

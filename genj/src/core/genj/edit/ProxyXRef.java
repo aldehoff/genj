@@ -322,7 +322,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
     );
     in.add(find);
 
-    tfield.requestFocus();
+    tfield.requestFocusInWindow();
 
     // Done
   }

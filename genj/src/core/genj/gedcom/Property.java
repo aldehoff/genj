@@ -910,19 +910,25 @@ public abstract class Property implements Comparable {
       // ... move it
       if (p==which) {
 
-      int j = i+(how==UP?-1:1);
-      try {
-        children.swap(i,j);
-
-        getGedcom().setUnsavedChanges(true);
-      } catch (Exception e) {
-        return false;
-      }
-      return true;
+        int j = i+(how==UP?-1:1);
+        try {
+          children.swap(i,j);
+          
+          Property 
+            pi = children.get(i),
+            pj = children.get(j);
+          getGedcom().noteDeletedProperty(pj);
+          getGedcom().noteDeletedProperty(pi);
+          getGedcom().noteAddedProperty(pj);
+          getGedcom().noteAddedProperty(pi);
+        } catch (Exception e) {
+          return false;
+        }
+        return true;
       }
       // ... maybe in property ?
       if (p.moveProperty(which,how))
-      return true;
+        return true;
       // ... try next
     }
 

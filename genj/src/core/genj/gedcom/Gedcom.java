@@ -36,7 +36,6 @@ public class Gedcom {
   private boolean          hasUnsavedChanges;
   private Origin           origin;
   private List             listeners = new ArrayList(10);
-  private Entity           lastEntity = null;
   private List             addedEntities     ,
                            deletedEntities   ;
   private List             addedProperties   ,
@@ -905,13 +904,6 @@ public class Gedcom {
   }
 
   /**
-  Returns the last selected entity
-  */
-  public Entity getLastEntity()  {
-    return lastEntity;
-  }
-
-  /**
    * Returns the multimedia at the given position
    */
   public Media getMedia(int index) {
@@ -1130,11 +1122,6 @@ public class Gedcom {
 
     // Remember
     deletedEntities.add(entity);
-
-    // Last one ?
-    if (lastEntity==entity) {
-      lastEntity=null;
-    }
 
     // Done
   }

@@ -97,7 +97,7 @@ public class NavigatorView extends JPanel implements CurrentSupport {
     });
     
     // init
-    setCurrentEntity(useGedcom.getLastEntity());
+    setCurrentEntity(ViewManager.getInstance().getCurrentEntity(gedcom));
 
     // done    
 

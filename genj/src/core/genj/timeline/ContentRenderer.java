@@ -176,7 +176,7 @@ public class ContentRenderer extends Renderer {
       w   = next == null ? Integer.MAX_VALUE : cm2pixels((next.from-model.timeBeforeEvent-event.from)*cmPyear),
       y   = level*calcLayerHeight(fm);
 
-    boolean em  = event.pe.getEntity().equals(model.gedcom.getLastEntity());
+    boolean em  = event.pe.getEntity() == selection;
     
     // draw it's extend
     setColor(g, cTimespan);

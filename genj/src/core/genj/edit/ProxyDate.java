@@ -131,11 +131,10 @@ class ProxyDate extends Proxy implements ItemListener {
     deTwo.setAlignmentX(0);
 
     combo.setSelectedIndex( p.getFormat() );
-
-//    in.add(Box.createVerticalGlue());
+    formatChanged = false;
 
     // Done
-    deOne.requestFocus();
+    deOne.requestFocusInWindow();
 
   }
 

@@ -29,7 +29,7 @@ import javax.swing.tree.*;
 import genj.gedcom.*;
 
 /**
- *
+ * A wrapper for properties as a TreeModel
  */
 public class PropertyTreeModel implements TreeModel {
 
@@ -39,9 +39,16 @@ public class PropertyTreeModel implements TreeModel {
   /**
    * Constructor
    */
-  public PropertyTreeModel(Property root) {
-    this.root = root;
+  public PropertyTreeModel() {
   }          
+  
+  /**
+   * Set the root
+   */
+  public void setRoot(Property setRoot) {
+    root = setRoot;
+    fireStructureChanged();
+  }
   
   /**
    * Adds a listener to this model
@@ -149,5 +156,6 @@ public class PropertyTreeModel implements TreeModel {
    * Changes a object at given path (not used here)
    */
   public void valueForPathChanged(TreePath path, Object newValue) {
-  }          
-}
+  } 
+  
+} //PropertyTreeModel

@@ -116,7 +116,7 @@ class ProxyName extends Proxy implements DocumentListener {
 
     in.add(Box.createVerticalGlue());
 
-    tfirst.requestFocus();
+    tfirst.requestFocusInWindow();
 
     // Done
   }
