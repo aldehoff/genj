@@ -20,6 +20,7 @@
 package genj.timeline;
 
 import genj.gedcom.Entity;
+import genj.renderer.*;
 import genj.util.ImgIcon;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -103,6 +104,7 @@ public class ContentRenderer extends Renderer {
    * Renders the background
    */
   private void renderBackground(Graphics g, Dimension d) {
+    if (cBackground==null) return;
     setColor(g,cBackground);
     g.fillRect(0,0,d.width,d.height);
   }
