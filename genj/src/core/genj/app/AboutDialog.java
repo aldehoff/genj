@@ -20,7 +20,7 @@
  *
  * AboutDialog class
  * This class creates the content of AboutDialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.6 2002-08-09 22:08:01 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.7 2002-08-10 00:47:49 nmeier Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -30,6 +30,8 @@ package genj.app;
 
 import genj.Version;
 import genj.lnf.LnFBridge;
+import genj.util.ActionDelegate;
+import genj.util.GridBagHelper;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -249,8 +251,8 @@ public class AboutDialog extends JPanel{
    */
   private class LookNFeelPanel extends JPanel implements ActionListener {
 
-    /** the combobox with lnfs */
-    private JComboBox comboLnfs;
+    /** the combobox with lnfs & themes*/
+    private JComboBox comboLnfs,comboThemes;
     
     /**
      * Constructor
@@ -268,28 +270,46 @@ public class AboutDialog extends JPanel{
      * actionPerformed
      */
     public void actionPerformed(ActionEvent e) {
+      if (comboLnfs==null) return;
       LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
       if (lnf==null) return;
-      App.getInstance().setLnF(lnf,null);
+      App.getInstance().setLnF(lnf,(LnFBridge.LnF.Theme)comboThemes.getSelectedItem());
     }
     
     /**
      * Center Panel
      */
-    private JPanel getCenter() {
+    private JComponent getCenter() {
       
       // what are the LnFs
       Object[] lnfs = LnFBridge.getInstance().getLnFs();
+      if (lnfs.length==0) return new JLabel("Please download genj_lnf-x.y.zip for chooseable Look&Feels", SwingConstants.CENTER);
       
       // create a combo with LnFs      
       comboLnfs = new JComboBox(new DefaultComboBoxModel(lnfs));
+      comboThemes = new JComboBox();
       
-      //String key = bridge.getLnFRegistry(lnf).get("themes.key", (String)null);
-      //String[] themes = bridge.getLnFRegistry(lnf).get("themes", new String[0]);
+      comboLnfs.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
+          LnFBridge.LnF.Theme[] themes = lnf.getThemes();
+          if (themes.length==0) {
+            comboThemes.setModel(new DefaultComboBoxModel());
+            comboThemes.disable();
+          } else {
+            comboThemes.setModel(new DefaultComboBoxModel(themes));
+            comboThemes.enable();
+          }
+        }
+      });
       
       // layout
       JPanel pResult = new JPanel();
-      pResult.add(comboLnfs);      
+      GridBagHelper gh = new GridBagHelper(pResult);
+      gh.add(new JLabel("Look&Feel"), 0,0,1,1);
+      gh.add(comboLnfs              , 1,0,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+      gh.add(new JLabel("Theme"    ), 0,1,1,1);
+      gh.add(comboThemes            , 1,1,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
       
       // done
       return pResult;

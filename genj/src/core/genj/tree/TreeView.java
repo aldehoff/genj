@@ -548,11 +548,14 @@ public class TreeView extends Scrollpane {
 
         // Look for overview frame position
         Rectangle r = overview.getBounds();
+        /* see below 
         if (frame!=null) {
           Point p = frame.getLocation();
           r.x = r.x-p.x;
           r.y = r.y-p.y;
         }
+        */
+        
         // Remember settings
         registry.put("over.bounds",r);
 
@@ -577,11 +580,13 @@ public class TreeView extends Scrollpane {
     if (r!=null) {
       
       // .. relative to a frame?
+      /* 2002 08 09 remove it because the frame is not be positioned yet
       if (frame!=null) {
         Point p = frame.getLocation();
         r.x = p.x+r.x;
         r.y = p.y+r.y;
       }
+      */
       
       // .. set
       overview.setBounds(new AreaInScreen(r));

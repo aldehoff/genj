@@ -105,7 +105,6 @@ public class LnFBridge {
     
     // try to load LnF
     String type = lnf.getType();
-    String archive = lnf.getArchive();
     String prefix = "[Debug]Look and feel #"+lnf+" of type "+type;
     
     // Apply theme(?)
@@ -120,14 +119,11 @@ public class LnFBridge {
     // Load and apply L&F
     try {
       
-      ClassLoader cl = getClass().getClassLoader();
-      if (archive!=null) {
-        URL urlArchive = new URL("file", "", new File(getLnFDir(), archive).getAbsolutePath());
-        cl = new URLClassLoader(new URL[]{urlArchive},cl);
-        UIManager.getLookAndFeelDefaults().put("ClassLoader",cl);
-        UIManager.getDefaults().put("ClassLoader",cl);
-      } 
+      ClassLoader cl = lnf.getCL();
+      UIManager.getLookAndFeelDefaults().put("ClassLoader",cl);
+      UIManager.getDefaults().put("ClassLoader",cl);
       UIManager.setLookAndFeel((LookAndFeel)cl.loadClass(type).newInstance());
+      
     } catch (ClassNotFoundException cnfe) {
       System.out.println(prefix+" is not accessible (ClassNotFoundException)");
       return false;
@@ -206,6 +202,7 @@ public class LnFBridge {
     /** members */
     private String name,type,archive,themekey;
     private Theme[] themes;
+    private ClassLoader cl;
     
     /**
      * Constructor
@@ -225,6 +222,20 @@ public class LnFBridge {
       }
       
       // done
+    }
+    
+    /**
+     * Classloader
+     */
+    public ClassLoader getCL() throws MalformedURLException {
+      if (cl!=null) return cl;
+      if (archive==null) {
+        cl = getClass().getClassLoader();
+      } else {
+        URL urlArchive = new URL("file", "", new File(getLnFDir(), archive).getAbsolutePath());
+        cl = new URLClassLoader(new URL[]{urlArchive});
+      }
+      return cl;
     }
     
     /**
@@ -289,7 +300,7 @@ public class LnFBridge {
        * String
        */
       public String toString() {
-        return archive;
+        return pack;
       }
       
       /**

@@ -99,7 +99,7 @@ public class App {
     }
 
     // Create frame
-    frame = createFrame(resources.getString("app.title"),Images.imgGedcom,"main");
+    frame = createFrame(resources.getString("app.title"),Images.imgGedcom,"main", null);
     frame.addWindowListener(new WindowAdapter() {
       public void windowClosed(WindowEvent we) {
         // tell everyone we're shutting down
@@ -166,7 +166,7 @@ public class App {
   /**
    * Creates a Frame which remembers it's position from last time
    */
-  public JFrame createFrame(String title, ImgIcon image, final String key) {
+  public JFrame createFrame(String title, ImgIcon image, final String key, final Dimension dimension) {
 
     final String resource = "frame."+key;
 
@@ -182,16 +182,11 @@ public class App {
       /** Packs this frame to optimal/remembered size */
       public void pack() {
         Rectangle box = registry.get(resource,(Rectangle)null);
+        if ((box==null)&&(dimension!=null)) box = new Rectangle(0,0,dimension.width,dimension.height);
         if (box==null) {
           super.pack();
         } else {
-          Dimension s = this.getPreferredSize();
-          setBounds(
-          box.x,
-          box.y,
-          Math.max(box.width,s.width),
-          Math.max(box.height,s.height)
-          );
+          setBounds(new AreaInScreen(box));
         }
         invalidate();
         validate();
@@ -218,9 +213,6 @@ public class App {
     
     // collect frames we know about
     Vector uis = new Vector();
-    uis.add(frame);
-    Enumeration views = View.getAll();
-    while (views.hasMoreElements()) uis.add(views.nextElement());
     Enumeration frames = getFrames().elements();
     while (frames.hasMoreElements()) uis.add(frames.nextElement());
     

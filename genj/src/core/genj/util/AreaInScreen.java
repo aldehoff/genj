@@ -25,8 +25,10 @@ public class AreaInScreen extends Rectangle {
     Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
     if (width>screen.width) width=screen.width;
     if (height>screen.height) height=screen.height;        
-    if (x+width>screen.width) x = screen.width-width;
-    if (y+height>screen.height) y = screen.height-height;
+    if (x<0) x=0;
+    if (y<0) y=0;
+    if (x+width>screen.width) x=screen.width-width;
+    if (y+height>screen.height) y=screen.height-height;
     
     // done
   }

@@ -217,7 +217,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     JFrame frame = App.getInstance().getFrame("about");
     if (frame==null) {
       // create it
-      frame = App.getInstance().createFrame(App.resources.getString("cc.title.about"),null,"about");
+      frame = App.getInstance().createFrame(App.resources.getString("cc.title.about"),null,"about",null);
       frame.getContentPane().add(new AboutDialog(frame,this));
     }
     frame.pack();
@@ -244,7 +244,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     }
 
     // Close all views for that gedcom
-    View.closeAll(gedcom);
+    ViewBridge.getInstance().closeAll(gedcom);
 
     // Close instance
     gedcom.close();
@@ -261,7 +261,8 @@ public class ControlCenter extends JPanel implements ActionListener {
     JFrame frame = App.getInstance().createFrame(
       App.resources.getString("cc.title.delete_entity"),
       Images.imgDelEntity,
-      "delentity"
+      "delentity",
+      null
     );
 
     OptionDelEntity option = new OptionDelEntity(frame,tGedcoms.getGedcoms(),tGedcoms.getSelectedGedcom());
@@ -302,7 +303,8 @@ public class ControlCenter extends JPanel implements ActionListener {
     JFrame frame = App.getInstance().createFrame(
       App.resources.getString("cc.title.merge_gedcoms"),
       Images.imgGedcom,
-      "merge"
+      "merge",
+      null
     );
 
     Transaction transaction = new MergeTransaction(gedcom, tGedcoms.getGedcoms(),this);
@@ -352,7 +354,8 @@ public class ControlCenter extends JPanel implements ActionListener {
     JFrame frame = App.getInstance().createFrame(
       App.resources.getString("cc.title.create_entity"),
       img,
-      "newentity"
+      which.toLowerCase(),
+      null
     );
 
     OptionNewEntity option = new OptionNewEntity(frame,type,tGedcoms.getGedcoms(),tGedcoms.getSelectedGedcom());
@@ -366,7 +369,7 @@ public class ControlCenter extends JPanel implements ActionListener {
   /**
    * Action started for OPEN
    */
-  private void actionOpen() {
+  private void actionOpenGedcom() {
 
     // ... ask for way to open
 
@@ -543,7 +546,7 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     // New Gedcom ?
     if (e.getActionCommand().equals("OPEN")) {
-      actionOpen();
+      actionOpenGedcom();
       return;
     }
 
@@ -590,32 +593,32 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     // New Properties View ?
     if (e.getActionCommand().equals("NEWEDIT")) {
-      openView(View.EDIT,gedcom);
+      actionOpenView(ViewBridge.EDIT,gedcom);
       return;
     }
     // New Table View ?
     if (e.getActionCommand().equals("NEWTABLE")) {
-      openView(View.TABLE,gedcom);
+      actionOpenView(ViewBridge.TABLE,gedcom);
       return;
     }
     // New Tree View ?
     if (e.getActionCommand().equals("NEWTREE")) {
-      openView(View.TREE,gedcom);
+      actionOpenView(ViewBridge.TREE,gedcom);
       return;
     }
     // New timeline View ?
     if (e.getActionCommand().equals("NEWTIMELINE")) {
-      openView(View.TIMELINE,gedcom);
+      actionOpenView(ViewBridge.TIMELINE,gedcom);
       return;
     }
     // New report View?
     if (e.getActionCommand().equals("NEWREPORT")) {
-      openView(View.REPORT,gedcom);
+      actionOpenView(ViewBridge.REPORT,gedcom);
       return;
     }
     // New navigator View?
     if (e.getActionCommand().equals("NEWNAVIGATOR")) {
-      openView(View.NAVIGATOR,gedcom);
+      actionOpenView(ViewBridge.NAVIGATOR,gedcom);
       return;
     }
     // Save As ?
@@ -763,7 +766,8 @@ public class ControlCenter extends JPanel implements ActionListener {
     JFrame frame = App.getInstance().createFrame(
       App.resources.getString("cc.title.verify_gedcom"),
       Images.imgGedcom,
-      "verify"
+      "verify",
+      null
     );
 
     Transaction transaction = new VerifyTransaction(gedcom, tGedcoms.getGedcoms());
@@ -792,7 +796,8 @@ public class ControlCenter extends JPanel implements ActionListener {
     frame = App.getInstance().createFrame(
       App.resources.getString("cc.title.settings_edit"),
       Images.imgGedcom,
-      "settings"
+      "settings",
+      null
     );
 
     ViewEditor editor = new ViewEditor(frame);
@@ -800,11 +805,6 @@ public class ControlCenter extends JPanel implements ActionListener {
     frame.getContentPane().add(editor);
     frame.pack();
     frame.show();
-
-    View last = View.getLastActive();
-    if (last!=null) {
-      ViewEditor.edit(last.getContent(),last.getTitle());
-    }
 
     // Done
   }
@@ -866,9 +866,6 @@ public class ControlCenter extends JPanel implements ActionListener {
         break;
       }
     }
-
-    // Close all views
-    View.closeAll();
 
     // Save settings from GedcomTable
     registry.put("columns",tGedcoms.getColumnWidths());
@@ -959,66 +956,15 @@ public class ControlCenter extends JPanel implements ActionListener {
   /**
    * Open a specific view
    */
-  private void openView(int which, Gedcom gedcom) {
+  private void actionOpenView(int which, Gedcom gedcom) {
 
     // Create new View
-    final View view = View.open(which,gedcom);
-    if (view==null) {
-      return;
-    }
-
-    // Add special view components to content
-    Component content = view.getContent();
-    if (content instanceof awtx.Scrollpane) {
-
-      awtx.Scrollpane scroll = (awtx.Scrollpane)content;
-      JButton b;
-
-      // A button for editing the View's settings
-      b = createButton(Images.imgSettings,"VIEWEDIT","cc.tip.settings",true);
-      b.setMargin(new Insets(0,0,0,0));
-      scroll.add2Edge(b);
-
-      // And a print button in case a PrintRenderer is existing
-      try {
-        Class c = Class.forName(content.getClass().getName()+"PrintRenderer");
-
-        b = createButton(Images.imgPrint,"PRINT","cc.tip.print",true);
-        b.setMargin(new Insets(0,0,0,0));
-        scroll.add2Edge(b);
-
-        ActionListener alistener = new ActionListener() {
-          public void actionPerformed(ActionEvent ae) {
-            printView(view);
-          }
-        };
-        b.addActionListener(alistener);
-
-      } catch (Exception e) {
-      }
-    }
-
-    // Now we can show it
+    JFrame view = ViewBridge.getInstance().open(which,gedcom);
+    if (view==null) return;
     view.pack();
     view.show();
 
     // Done
-  }
-
-  /**
-   * Prints a view
-   */
-  private void printView(View view) {
-
-    // Setup Printing
-    PrintProperties properties = new PrintProperties(view.getTitle());
-
-    // TODO : This is just a hack  .... it will crash as soon as the first Non Tree View will be printable by implementing its own XXXPrintRenderer
-    PrintRenderer renderer = new genj.tree.TreeViewPrintRenderer( ((genj.tree.TreeView)view.getContent()).getModel() );
-    Printer.print(frame,renderer,properties);
-
-    // Done
-
   }
 
   /**
