@@ -43,6 +43,7 @@ public class GridBagHelper {
 
   public final static int
     GROWFILL_HORIZONTAL = FILL_HORIZONTAL|GROW_HORIZONTAL,
+    GROWFILL_VERTICAL   = FILL_VERTICAL  |GROW_VERTICAL  ,
     GROWFILL_BOTH       = FILL_BOTH      |GROW_BOTH      ;
     
   /** wrapped layout */
