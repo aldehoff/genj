@@ -41,10 +41,13 @@ import javax.swing.table.TableColumnModel;
  */
 /*package*/ class GedcomTableWidget extends JTable {
   
-  /** default column widths */
+  /** default column widths (computed with char width of 8)*/
   private static final int defaultWidths[] = {
-    96, 24, 24, 24, 24, 24, 24, 24
+    96, 16, 40, 40, 24, 40, 32, 16, 16, 24 
   };
+
+  /** number of overhead columns */
+  private static final int EXTRA = 2;
 
   /** a registry */
   private Registry registry;
@@ -66,12 +69,15 @@ import javax.swing.table.TableColumnModel;
     
     // Prepare a column model
     TableColumnModel cm = new DefaultTableColumnModel();
-    for (int h=0; h<Gedcom.NUM_TYPES+1; h++) {
+    for (int h=0; h<Gedcom.NUM_TYPES+EXTRA; h++) {
       TableColumn col = new TableColumn(h);
       if (h==0) 
         col.setHeaderValue(Resources.get(this).getString("cc.column_header.name"));
+      else if (h==1)
+        col.setHeaderValue("*");
+      //col.setHeaderValue(Resources.get(this).getString("cc.column_header.modified"));
       else
-        col.setHeaderValue(Gedcom.getImage(h-1));
+        col.setHeaderValue(Gedcom.getImage(h-EXTRA));
       
       col.setPreferredWidth(defaultWidths[h]);
       cm.addColumn(col);
@@ -87,9 +93,10 @@ import javax.swing.table.TableColumnModel;
     // grab the preferred columns
     int[] widths = registry.get("columns",new int[0]);
     for (int c=0; c<widths.length; c++) {
-      getColumnModel().getColumn(c).setPreferredWidth(widths[c]);
-    }    
-    
+      if (widths[c]!=0)
+        getColumnModel().getColumn(c).setPreferredWidth(widths[c]);
+    }
+
     // done
   }
   
@@ -103,6 +110,7 @@ import javax.swing.table.TableColumnModel;
     for (int c=0; c<widths.length; c++) {
       widths[c] = getColumnModel().getColumn(c).getWidth();
     }
+    // FIXME - we get called after the registry is written, so this has no effect
     registry.put("columns", widths);
     // continue
     super.removeNotify();
@@ -223,9 +231,17 @@ import javax.swing.table.TableColumnModel;
      * @see javax.swing.table.TableModel#getColumnCount()
      */
     public int getColumnCount() {
-      return Gedcom.NUM_TYPES+1;
+      return Gedcom.NUM_TYPES+EXTRA;
     }
   
+    /**
+     * @see javax.swing.table.TableModel#getColumnClass()
+     */
+    public Class getColumnClass(int c) {
+      // data type of column implicitly follows contents
+      return getValueAt(0, c).getClass();
+    }
+
     /**
      * @see javax.swing.table.TableModel#getRowCount()
      */
@@ -238,8 +254,12 @@ import javax.swing.table.TableColumnModel;
      */
     public Object getValueAt(int row, int col) {
       Gedcom gedcom = getGedcom(row);
-      if (col==0) return gedcom.getName() + (gedcom.hasUnsavedChanges() ? "*" : "" );
-      return ""+gedcom.getEntities(col-1).size();
+      if (col==0) 
+        return gedcom.getName();
+      else if (col==1)
+        return new Boolean(gedcom.hasUnsavedChanges());
+      else
+        return new Integer(gedcom.getEntities(col-EXTRA).size());
     }
   
     /**
