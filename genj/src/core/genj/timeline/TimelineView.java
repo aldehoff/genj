@@ -82,8 +82,8 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   public void populate(JToolBar bar) {
     JSlider slider = new JSlider(JSlider.VERTICAL,0,100,50);
     //slider.setPreferredSize(new Dimension(0,0));
-    slider.setPaintTicks(true);
-    slider.setPaintLabels(false);
+    slider.setPaintTicks(false);
+    slider.setPaintLabels(true);
     slider.setPaintTrack(true);
     slider.setMajorTickSpacing(10);
     slider.setMinorTickSpacing(1);
