@@ -1,15 +1,18 @@
-<HTML>
+<html>
 
-<BODY>
+<body>
 
-<h2>Les Questions les Plus Fr&eacute;quemment Pos&eacute;es</h2>
+<h2>Questions fr&eacute;quemment pos&eacute;es</h2>
 
 <p>
 <ol>
- <li> <a Href="#1">What is GenJ ?</a>
+ <li> <a Href="#1">What is GenJ all about?</a>
  <li> <a Href="#2">Is there a mailing list and/or a newsgroup devoted  to GenJ ?</a>
  <li> <a Href="#3">What does Gedcom mean ?</a>
  <li> <a Href="#4">How do I get pictures to show up in Tree View?</a>
+ <li> <a Href="#5">Can I change the language that GenJ speaks?</a>
+ <li> <a Href="#6">Can I make a centimeter look like one on my screen?</a>
+ <li> <a Href="#7">Can I change the boring gray look?</a>
 </ol>
 <p>
 
@@ -19,19 +22,13 @@
 
 
 <a name = "1"><p>
-<font color="red"><b>Q</b></font> - 
-  <font color="green">What is GenJ ?</font>
-  <br><font color="green"><b>A</b></font> - 
-    A viewer and editor for genealogic data stored in Gedcom format.
-  </br>
+  <b>Q</b> What is GenJ all about?<br>
+  <b>A</b> GenealogyJ (in short GenJ) is a viewer and editor for genealogic data stored in Gedcom format.
 </p>
 
 <a name = "2"><p>
-<font color="red"><b>Q</b></font> - 
-  <font color="green">Is there a mailing list and/or a newsgroup devoted 
-  to GenJ ?</font><br>
-  <font color="green"><b>A</b></font> - 
-    There is no newsgroup, but two active mailing lists freely available 
+  <b>Q</b> Is there a mailing list and/or a newsgroup devoted to GenJ ?<br>
+  <b>A</b> There is no newsgroup, but two active mailing lists freely available 
     by subscription :
     <Ul>
     <li><a href="mailto:genj-user@lists.sourceforge.net">
@@ -39,7 +36,6 @@
     questions about GenJ.
     <li><a href="mailto:genj-developer@lists.sourceforge.net">
     genj-developer@lists.sourceforge.net</A> for development issues
-    by interested people.
     </Ul>
     If you want to subscribe to one or both of those mailing lists, 
     because you want to participate in discussion, ask questions regarding 
@@ -49,25 +45,59 @@
 <p>
 
 <a name = "3"><p>
-<font color="red"><b>Q</b></font> - 
-  <font color="green">What does Gedcom mean ?</font><br>
-  <font color="green"><b>A</b></font> - 
-    Please read on <a href="./../concepts/gedcom.html">here</A>.
+ <b>Q</b> What does Gedcom stand for?<br>
+ <b>A</b> Please read the explanation <a href="./../concepts/gedcom.html">here</A>.
 </p>
 
 <a name = "4"><p>
-<Font color="red"><b>Q</b></Font> - 
-  <Font color="green">How do I get pictures to show up in Tree View?</Font><br>
-  <Font color="green"><b>A</b></Font> - 
+ <b>Q</b> How do I get pictures to show up in Tree View?<br>
+ <b>A</b> 
  To show a picture for every person in the main Tree view add
  a multimedia property (OBJE) to your individuals. Simply bring
  up an indivdual in <a href="../view/edit.html">Edit View</a>, choose the topmost
  property INDI, click on '+' and choose OBJE to be added.
- Point the sub-property OBJE|FILE to a file in your computer's 
- file-system (click on the button 'choose file') and the images
- will be picked up by <a href="../view/tree.html">Tree View</a> (it's looking
+ Point the sub-property FILE to a file in your computer's 
+ file-system (button '>>') and the images will be picked up by 
+ <a href="../view/tree.html">Tree View</a> (it's looking
  for INDI:OBJE:FILE automatically).
 </p>
 
-</BODY>
-</HTML>
+<a name = "5"><p>
+ <b>Q</b> Can I change the language that GenJ speaks?<br>
+ <b>A</b> 
+  Please download the appropriate language pack (genj_ll-x.y.zip) for GenJ
+  (e.g. genj_fr-2.0.zip) from the 
+    <a target=project href="http://genj.sourceforge.net">project's homepage</a>
+  and follow the instructions described to install it. 
+  GenJ will try to use the language of your operating system automatically. 
+  To explicitly switch to a language (the language pack has to been installed 
+  manually) 
+  choose menu-item <em>Help|About</em> and flip to the <em>Look&Feel</em>-Tab.
+  Then select the language of choice.
+</p>
+
+<a name = "6"><p>
+ <b>Q</b> Can I make a centimeter look like one on my screen?<br>
+ <b>A</b> GenJ uses real-world metrics for various components (e.g. in
+  <a href="../view/tree.html">Tree View</a>). To make lengths of lines and
+  sizes of boxes appear correctly on your screen you'll have to tell GenJ
+  about your display's resolution (which is reported by the operating system
+  but normally doesn't match system's monitor). 
+  To explicitly adjust the resolution 
+  choose menu-item <em>Help|About</em> and flip to the <em>Look&Feel</em>-Tab. 
+  Then use a ruler to match the shown rulers on your screen.
+</p>
+
+<a name = "7"><p>
+ <b>Q</b> Can I change the boring gray look?<br>
+ <b>A</b> GenJ uses the Swing Toolkit for presenting information to the
+ user. This by default looks gray - it's called <em>Metal</em>. GenJ
+ allows to change the current Look&Feel. 
+ Please download the Look&Feel pack (genj_lnf-x.y.zip) from the
+    <a target=project href="http://genj.sourceforge.net">project's homepage</a>
+  and follow the instructions described to install it. 
+  After restarting GenJ
+  choose menu-item <em>Help|About</em> and flip to the <em>Look&Feel</em>-Tab. 
+  Now you can select a Look&Feel (and optionally a Theme).
+</body>
+</html>
