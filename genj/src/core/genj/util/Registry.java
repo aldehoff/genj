@@ -102,8 +102,7 @@ public class Registry {
     // read all relative to origin
     if (origin!=null) {
       try {
-        Origin.Connection c = origin.openFile(name+".properties");
-        InputStream in = c.getInputStream();
+        InputStream in = origin.open(name+".properties");
         properties.load(in);
         in.close();
       } catch (Throwable t) {

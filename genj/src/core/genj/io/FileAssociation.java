@@ -183,7 +183,8 @@ public class FileAssociation {
     List list = (List)instances.get(fa.getSuffix());
     if (list==null) {
       list = new ArrayList();
-      instances.put(fa.getSuffix(), list);
+      if (fa.getSuffix().length()>0)
+        instances.put(fa.getSuffix(), list);
     }
     // keep it
     list.add(fa);

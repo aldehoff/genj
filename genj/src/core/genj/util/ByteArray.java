@@ -48,18 +48,17 @@ public class ByteArray {
    */
   public ByteArray(InputStream in, int cluster) throws IOException {
 
-    // Read from stream
-    byte buffer[] = new byte[cluster];
+    // Read from stream - if the callee knows the size of the
+    // file it might be passed in as 'cluster'. So we increase
+    // that by 1 so maximal one cluster is created
+    
+    byte buffer[] = new byte[cluster+1];
     int len=0,total=0;
 
     while (true) {
 
       // Read !
-      try {
-        len = in.read(buffer,total,buffer.length-total);
-      } catch (IOException ex) {
-        throw ex;
-      }
+      len = in.read(buffer,total,buffer.length-total);
 
       // End of stream ?
       if (len<0) break;
@@ -68,9 +67,8 @@ public class ByteArray {
       total+=len;
       
       // Did it fit and end ?
-      if (total<buffer.length) {
+      if (total<buffer.length)
         continue;
-      }
 
       // More than fit !
       byte tmp[] = new byte[buffer.length*2];
@@ -81,7 +79,9 @@ public class ByteArray {
     }
 
     // Remember
-    bits = buffer;
+    bits = new byte[total];
+    System.arraycopy(buffer, 0, bits, 0, total);
+    buffer = null;
     
     // Done
   }

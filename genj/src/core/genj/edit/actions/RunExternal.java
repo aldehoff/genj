@@ -24,6 +24,8 @@ import genj.gedcom.PropertyFile;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 
+import java.io.File;
+
 /**
  * External action 
  */
@@ -33,14 +35,14 @@ public class RunExternal extends ActionDelegate {
   private FileAssociation association;
   
   /** the wrapped file */
-  private String file;
+  private File file;
   
   /**
    * Constructor
    */
   public RunExternal(PropertyFile f, FileAssociation fa) {
     association = fa;
-    file = f.getFile().toString();
+    file = f.getFile();
     super.setImage(f.getImage(false));
     super.setText(association.getAction()+" (*."+association.getSuffix()+" external)");
   }
@@ -50,7 +52,7 @@ public class RunExternal extends ActionDelegate {
    */
   public RunExternal(Gedcom ged, String f, FileAssociation fa) {
     association = fa;
-    file = ged.getOrigin().calcAbsoluteLocation(f).toString();
+    file = ged.getOrigin().getFile(f);
     super.setText(association.getAction()+" (*."+association.getSuffix()+" external)");
   }
   

@@ -208,7 +208,7 @@ public class PropertyTreeWidget extends TreeWidget {
     public void setEntity(Entity entity) {
       // remember history
       if (entity!=null) {
-        history.push(root);
+        history.push(entity);
         if (history.size()>16) history.removeElementAt(0);
       }
       // remember

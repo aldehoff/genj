@@ -442,7 +442,7 @@ public class ControlCenter extends JPanel {
      */
     protected void execute() {
       try {
-        gedcom = reader.readGedcom();
+        gedcom = reader.read();
       } catch (GedcomIOException ex) {
         error =
           resources.getString("cc.open.read_error", "" + ex.getLine())
@@ -668,14 +668,8 @@ public class ControlCenter extends JPanel {
       long size;
       try {
         
-        Origin.Connection connection = origin.open();
-        
-        // .. query for input stream & length
-        in = connection.getInputStream();
-        size = connection.getLength();
-        
         // .. prepare our reader
-        reader = new GedcomReader(in, origin, size);
+        reader = new GedcomReader(origin);
 
       } catch (IOException ex) {
         windowManager.openDialog(

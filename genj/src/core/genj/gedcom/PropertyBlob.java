@@ -187,8 +187,8 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     if (file.length()!=0) {
       // Try to open file
       try {
-        InputStream in = getGedcom().getOrigin().openFile(file).getInputStream();
-        raw = new ByteArray(in, (int)file.length()).getBytes();
+        InputStream in = getGedcom().getOrigin().open(file);
+        raw = new ByteArray(in, in.available()).getBytes();
         in.close();
       } catch (IOException ex) {
         throw new GedcomException("Error reading "+file);

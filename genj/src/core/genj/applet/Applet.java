@@ -57,9 +57,8 @@ public class Applet extends java.applet.Applet {
     try {
       URL url = new File("../gedcom/example.ged").toURL();
       Origin origin = Origin.create(url);
-      Origin.Connection con = origin.open();
-      GedcomReader reader = new GedcomReader(con.getInputStream(), origin, con.getLength());
-      gedcom = reader.readGedcom();
+      GedcomReader reader = new GedcomReader(origin);
+      gedcom = reader.read();
     } catch (Throwable t) {
       t.printStackTrace();
       return;

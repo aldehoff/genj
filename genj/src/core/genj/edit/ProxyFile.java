@@ -26,7 +26,6 @@ import genj.gedcom.PropertyFile;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
-import genj.util.Origin;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.MenuHelper;
@@ -104,8 +103,7 @@ import javax.swing.JScrollPane;
 
     // try to open
     try {
-      Origin.Connection c = property.getGedcom().getOrigin().openFile(file);
-      preview.setImage(file, c.getInputStream());
+      preview.setImage(file, property.getGedcom().getOrigin().open(file));
     } catch (Throwable t) {
       preview.setImage(null, null);
     }

@@ -20,7 +20,6 @@
 package genj.gedcom;
 
 import genj.util.EnvironmentChecker;
-import genj.util.Origin;
 import genj.util.swing.ImageIcon;
 
 import java.io.File;
@@ -138,18 +137,21 @@ public class PropertyFile extends Property implements IconValueAvailable {
     if (file!=null&&file.trim().length()>0) {
 
       // Open InputStream
+      InputStream in = null;
       try {
         // try to create an image if smaller than max load
-        Origin.Connection c = getGedcom().getOrigin().openFile(file);
-        if (c.getLength()<getMaxValueAsIconSize()) {
+        in = getGedcom().getOrigin().open(file);
+        if (in.available()<getMaxValueAsIconSize()) {
            
-          result = new ImageIcon(file, c.getInputStream());
+          result = new ImageIcon(file, in);
           
           // make sure the result makes sense
           if (result.getIconWidth()<=0||result.getIconHeight()<=0)
             result = null;
         }
       } catch (Throwable t) {
+      } finally {
+        if (in!=null) try { in.close(); } catch (IOException ioe) {};
       }
     }
 
@@ -182,14 +184,14 @@ public class PropertyFile extends Property implements IconValueAvailable {
    * Accessor File's InputStream
    */
   public InputStream getInputStream() throws IOException {
-    return getGedcom().getOrigin().openFile(file).getInputStream();
+    return getGedcom().getOrigin().open(file);
   }
   
   /**
    * The files location (if externally accessible)    */
   public File getFile() {
-    File result = getGedcom().getOrigin().calcAbsoluteLocation(file);
-    if (!result.exists()||!result.isFile()) return null;
+    File result = getGedcom().getOrigin().getFile(file);
+    if (result==null||!result.exists()||!result.isFile()) return null;
     return result;
   }
   

@@ -79,13 +79,16 @@ public class GedcomReader implements Trackable {
    * Constructor
    * @param in BufferedReader to read from
    */
-  public GedcomReader(InputStream stream, Origin org, long len) throws IOException {
+  public GedcomReader(Origin org) throws IOException {
+    
+    // open origin
+    InputStream oin = org.open();
     
     // init some data
-    in       = new BufferedReader(createReader(stream));
+    in       = new BufferedReader(createReader(oin));
     line     = 0;
     origin   = org;
-    length   = len;
+    length   = oin.available();
     level    = 0;
     read     = 0;
     warnings = new ArrayList(128);
@@ -137,13 +140,8 @@ public class GedcomReader implements Trackable {
     // Stop it as soon as possible
     cancel=true;
     synchronized (lock) {
-      if (worker!=null) {
-      try {
-        in.close();
-      } catch (IOException e) {
-      }
-      worker.interrupt();
-      }
+      if (worker!=null)
+        worker.interrupt();
     }
     // Done
   }
@@ -252,13 +250,37 @@ public class GedcomReader implements Trackable {
    * @exception GedcomIOException reading from <code>BufferedReader</code> failed
    * @exception GedcomFormatException reading Gedcom-data brought up wrong format
    */
-  public Gedcom readGedcom() throws GedcomIOException, GedcomFormatException {
+  public Gedcom read() throws GedcomIOException, GedcomFormatException {
 
     // Remember working thread
     synchronized (lock) {
       worker=Thread.currentThread();
     }
     
+    // try it
+    Gedcom result;
+    try {
+      result = readGedcom();
+    } finally  {
+      try { in.close(); } catch (Throwable t) {};
+    }
+    
+    // Forget working thread
+    synchronized (lock) {
+      worker=null;
+    }
+
+    // done
+    return result;
+  }
+  
+  /**
+   * Read Gedcom as a whole
+   *
+   */
+  private Gedcom readGedcom() throws GedcomIOException, GedcomFormatException {
+
+
     // Create Gedcom
     int expected = Math.max((int)length/ENTITY_AVG_SIZE,100);
     gedcom = new Gedcom(origin,expected);
@@ -318,11 +340,6 @@ public class GedcomReader implements Trackable {
         warnings.add("Line "+xref.line+": Property "+xref.prop.getTag()+" - "+
                  ex.getMessage());
       }
-    }
-
-    // Forget working thread
-    synchronized (lock) {
-      worker=null;
     }
 
     // Done
@@ -385,9 +402,8 @@ public class GedcomReader implements Trackable {
   private boolean readLine() throws GedcomIOException, GedcomFormatException {
 
     // Still running ?
-    if (cancel) {
+    if (cancel)
       throw new GedcomIOException("Operation cancelled",line);
-    }
 
     // Still undo ?
     if (undoLine!=null) {
@@ -428,9 +444,8 @@ public class GedcomReader implements Trackable {
     } catch (Exception ex) {
 
       // .. cancel
-      if (cancel) {
+      if (cancel) 
         throw new GedcomIOException("Operation cancelled",line);
-      }
 
       // .. file erro
       throw new GedcomIOException("Error reading file "+ex.getMessage(),line);
@@ -581,7 +596,7 @@ public class GedcomReader implements Trackable {
   /**
    * EncodingInputStream
    */
-  public static class InputStreamSniffer extends BufferedInputStream {
+  private static class InputStreamSniffer extends BufferedInputStream {
     
     /**
      * Constructor
@@ -597,11 +612,11 @@ public class GedcomReader implements Trackable {
      */
     public String getEncoding() throws IOException {
       // fill buffer
-      mark(1); 
-      read();
-      reset();
+      super.mark(1); 
+      super.read();
+      super.reset();
       // sniff
-      String s = new String(buf, pos, count);
+      String s = new String(super.buf, super.pos, super.count);
       // tests
       if (s.indexOf("1 CHAR UNICODE")>0) return GedcomWriter.UNICODE;
       if (s.indexOf("1 CHAR ASCII")>0) return GedcomWriter.ASCII;
