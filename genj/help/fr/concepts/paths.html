@@ -6,11 +6,12 @@
 <p>
  La section relative au format <a href="./gedcom.html">Gedcom</a> a 
  expliqu&eacute; le type d'information accept&eacute; par GenJ. Les 
- entit&eacute;s support&eacute;es (ex. les Individus) sont comme des 
- enregistrements d'informations diverses tournant autour de valeurs, 
- et agenc&eacute;s d'une fa&ccedil;on hi&eacute;rarchis&eacute;e. 
- Chaque entit&eacute; est identifi&eacute;e par une "id" et GenJ 
- restituera ces entit&eacute;s dans plusieurs endroits.
+ entit&eacute;s support&eacute;es (ex. les Individus, les Familles, 
+ etc...) sont comme des enregistrements d'informations diverses 
+ tournant autour de valeurs, et agenc&eacute;s d'une fa&ccedil;on 
+ hi&eacute;rarchis&eacute;e. Chaque entit&eacute; est 
+ identifi&eacute;e par une "Id" et GenJ restituera ces 
+ entit&eacute;s dans plusieurs endroits.
 </p>
 
 <p>
@@ -49,7 +50,8 @@
  num&eacute;ro 0 avec l'&eacute;tiquette ayant le num&eacute;ro 1 puis 
  avec l'&eacute;tiquette ayant le num&eacute;ro 2 se trouvant juste en 
  dessous de l'&eacute;tiquette 1), le r&eacute;sultat obtenu est ce 
- qu'on appelle le Chemin d'Etiquette INDI:NAME.
+ qu'on appelle le Chemin d'Etiquette 
+ (<font color=gray>ex : INDI:BIRT:DATE)</font>.
 </p>
 
 <p>
@@ -63,10 +65,10 @@
   <li>INDI:BIRT:DATE
   <li>INDI:BIRT:PLAC
   <li><font color=gray>INDI:RESI</font>
-  <li><font color=gray>INDI:RESI:DATE</font>
-  <li>INDI:RESI:ADDR
-  <li>INDI:RESI:CITY
-  <li>INDI:RESI:POST
+  <li>INDI:RESI:DATE
+  <li><font color=gray>INDI:RESI:ADDR</font>
+  <li>INDI:RESI:ADDR:CITY
+  <li>INDI:RESI:ADDR:POST
   <li>INDI:NOTE
  </ul>
  La plupart du temps, seuls certains de ces chemins seront 
