@@ -19,6 +19,13 @@ import java.util.Iterator;
  * A report showing age distribution for males/females
  */
 public class ReportDemography extends Report {
+  
+  /** the categories to use */ 
+  public int ageGrouping = 0;
+  public static String[] ageGroupings = { 
+      "0,10,20,30,40,...",
+      "0,5,10,15,20,25,...",
+  };
 
   /**
    * n/a
@@ -39,8 +46,14 @@ public class ReportDemography extends Report {
     // for females. The categories we're collecting is ages/lifespans
     // for people between 0-9 and 10-19 etc. years old
     String[] series = { PropertySex.TXT_MALE, PropertySex.TXT_FEMALE };
-    String[] categories = { "100+", "90-99", "80-89", "70-79", "60-69", "50-59", "40-49", "30-39", "20-29", "10-19", "0-9" };
+    int res = ageGrouping==0 ? 10 : 5;
+    String[] categories = new String[100/res + 1];
+    categories[0] = "100+"; 
+    for (int i=1;i<categories.length;i++) {
+      categories[i] = (100 - (i*res)) + "+";
+    }
 
+    // create a category sheet for that
     CategorySheet sheet = new CategorySheet(series, categories);
 
     // Looping over each individual in gedcom
@@ -59,11 +72,12 @@ public class ReportDemography extends Report {
       Delta delta = Delta.get(birth.getStart(), death.getStart());
       if (delta==null||delta.getYears()<0)
         continue;
+      int years = delta.getYears();
 
       // for the male series we decrease the number of individuals
       // and for females we increase. That's how we get the male
       // bars on the left and the females on the right of the axis.
-      int col = 10 - (delta.getYears()>=100 ? 10 : delta.getYears()/10);
+      int col = years>=100 ? 0 : categories.length - (years/res) - 1;
       if (indi.getSex() == PropertySex.MALE)
         sheet.dec(0,col);
       else
@@ -86,5 +100,5 @@ public class ReportDemography extends Report {
       
     // done
   }
-
+  
 } //ReportLifeExpectancy
