@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.util.WordBuffer;
+
 /**
  * Class for encapsulating a family with parents and children
  */
@@ -303,43 +305,32 @@ public class Fam extends PropertyFam implements Entity {
   /**
    * Returns this entity as String description
    */
-  public String toString(boolean abbreviate) {
+  public String toString() {
+    
+    WordBuffer wb = new WordBuffer();
 
     // Fxyz:...
-    String result = getId()+":";
+    wb.append(getId());
+    wb.append(":");
 
     // ... Someone, Joe (Iabc) ...
     Indi husband = getHusband();
-    if (husband!=null) {
-      result+=husband.getName()+" ("+husband.getId()+")";
-    }
-
+    if (husband!=null) wb.append(husband);
+    
     // ... + Another, Susan (Izyx) ...
-    Indi wife    = getWife   ();
-    if (wife   !=null) {
-      result+=(husband==null?"":"+");
-      result+=wife.getName   ()+" ("+wife   .getId()+")";
-    }
+    Indi wife = getWife();
+    if (wife!=null) wb.append(wife);
 
     // ... \n Little, One (Iefg) ...
-    if (!abbreviate) {
-      Indi[] children = getChildren();
-      for (int c=0;c<children.length;c++) {
-        result += "\n" + children[c].toString();
-      }
+    Indi[] children = getChildren();
+    for (int c=0;c<children.length;c++) {
+      wb.append(children[c].toString());
     }
 
     // Done
-    return result;
+    return wb.toString();
   }
   
-  /**
-   * @see genj.gedcom.Property#toString()
-   */
-  public String toString() {
-    return toString(false);
-  }
-
   /**
    * @see Entity#addForeignXRef(PropertyForeignXRef)
    */  
