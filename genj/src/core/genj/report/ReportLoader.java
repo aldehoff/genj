@@ -131,6 +131,10 @@ import java.util.List;
    */
   private void parseDir(File dir, String pkg) { 
 
+    // make sure dir is good
+    if (!dir.isDirectory())
+      return;
+
     // loop files and directories
     String[] files = dir.list();
     for (int i=0;i<files.length;i++) {
