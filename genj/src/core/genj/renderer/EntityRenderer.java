@@ -19,12 +19,12 @@
  */
 package genj.renderer;
 
+import genj.app.App;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.util.swing.ScreenResolutionScale;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -95,7 +95,7 @@ public class EntityRenderer {
   private boolean isDebug = false; 
   
   /** a resolution */
-  private Point dpi = ScreenResolutionScale.getSystemDPI();
+  private Point dpi = App.getInstance().getDPI();
   
   /** whether we scale fonts to resolution */
   private boolean isScaleFonts = false;
