@@ -325,8 +325,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     Point2D     p = node.getPosition();
     Dimension   d = getSize();
     content.scrollRectToVisible(new Rectangle(
-      (int)( (p.getX()-b.getMinX()) / (UNITS.getX()*zoom) ) - d.width /2,
-      (int)( (p.getY()-b.getMinY()) / (UNITS.getY()*zoom) ) - d.height/2,
+      (int)( (p.getX()-b.getMinX()) * (UNITS.getX()*zoom) ) - d.width /2,
+      (int)( (p.getY()-b.getMinY()) * (UNITS.getY()*zoom) ) - d.height/2,
       d.width ,
       d.height
     ));
