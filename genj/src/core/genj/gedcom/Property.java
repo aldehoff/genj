@@ -420,38 +420,6 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Returns this property's properties by path
-   */
-  public Property[] getProperties(TagPath path) {
-
-    // Gather 'em
-    List result = new ArrayList(children.size());
-    getPropertiesRecursively(path, 0, result);
-
-    // done
-    return toArray(result);
-  }
-
-  private void getPropertiesRecursively(TagPath path, int pos, List fill) {
-
-    // Correct here ?
-    if (!path.equals(pos, getTag())) 
-      return;
-
-    // Me the last one?
-    if (pos==path.length()-1) {
-      fill.add(this);
-      return;
-    }
-
-    // Search in properties
-    for (int i=0;i<children.size();i++) 
-      getProperty(i).getPropertiesRecursively(path,pos+1,fill);
-
-    // done
-  }
-  
-  /**
    * Returns a sub-property position
    */
   public int getPropertyPosition(Property prop) {
@@ -501,23 +469,38 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Returns this property's property by path
+   * Returns one of this property's properties by path
    */
   public Property getProperty(TagPath path) {
-    return getPropertyRecursively(this, path, 0, true);
+    return getPropertyRecursively(this, path, 0, null, true);
   }
   
-  private static Property getPropertyRecursively(Property prop, TagPath path, int pos,  boolean checkPropsTagFirst) {
+  /**
+   * Returns this property's properties by path
+   */
+  public Property[] getProperties(TagPath path) {
+
+    // Gather 'em
+    List result = new ArrayList(children.size());
+    getPropertyRecursively(this, path, 0, result, true);
+
+    // done
+    return toArray(result);
+  }
+
+  private static Property getPropertyRecursively(Property prop, TagPath path, int pos, List listAll, boolean checkPropsTagFirst) {
     
     while (true) {
 
-      // still tags available in path?
-      if (pos==path.length())
+      // traversed path?
+      if (pos==path.length()) {
+        if (listAll!=null)
+          listAll.add(prop);
         return prop;
-      String tag = path.get(pos);
-    
+      }
+      
       // a '..'?
-      if (tag.equals("..")) {
+      if (path.equals(pos, "..")) {
         Property parent = prop.getParent();
         // no parent?
         if (parent==null)
@@ -530,7 +513,7 @@ public abstract class Property implements Comparable {
       }
       
       // a '.'?
-      if (tag.equals(".")) {
+      if (path.equals(pos, ".")) {
         // continue with self
         pos++;
         checkPropsTagFirst = false;
@@ -538,7 +521,7 @@ public abstract class Property implements Comparable {
       }
 
       // a '*'?
-      if (tag.equals("*")) {
+      if (path.equals(pos, "*")) {
         // check out target
         if (!(prop instanceof PropertyXRef))
           return null;
@@ -553,7 +536,7 @@ public abstract class Property implements Comparable {
 
       // still have to match prop's tag?
       if (checkPropsTagFirst) {
-        if (!tag.equals(prop.getTag()))
+        if (!path.equals(pos, prop.getTag()))
           return null;
         // go with prop then
         pos++;
@@ -568,11 +551,16 @@ public abstract class Property implements Comparable {
 
         // tag is good?
         if (path.equals(pos, ith.getTag())) {
-          // selector good?
-          if (path.equals(pos, n))
-            return getPropertyRecursively(ith, path, pos+1, false);
-          // inc selector
-          n++;
+          // find all or select one specific based on (tag, selector)?
+          if (listAll!=null) {
+            getPropertyRecursively(ith, path, pos+1, listAll, false);
+          } else {
+            // selector good?
+            if (path.equals(pos, n))
+              return getPropertyRecursively(ith, path, pos+1, listAll, false);
+            // inc selector
+            n++;
+          }
         }
       }
       
