@@ -52,7 +52,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
   /*package*/ final static Resources resources = new Resources("genj.entity");
 
   /** a dummy blueprint */
-  private final static Blueprint BLUEPRINT_SELECT = new Blueprint("", resources.getString("html.select"));
+  private final static Blueprint BLUEPRINT_SELECT = new Blueprint(resources.getString("html.select"));
   
   /** a registry we keep */
   private Registry registry;

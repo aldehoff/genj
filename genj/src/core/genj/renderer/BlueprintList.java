@@ -147,12 +147,10 @@ public class BlueprintList extends JSplitPane {
         "",
         JOptionPane.OK_CANCEL_OPTION
       );
+      // get html
+      String html = node.blueprint!=null?node.blueprint.getHTML():"";
       // add it
-      Blueprint blueprint = new Blueprint(
-        name, 
-        node.blueprint!=null?node.blueprint.getHTML():""
-      ); 
-      bpManager.addBlueprint(node.type, blueprint);
+      Blueprint blueprint = bpManager.addBlueprint(node.type, name, html);
       // show it
       if (node.blueprint!=null) node = (Node)node.getParent();
       Node child = new Node(node.type, blueprint);

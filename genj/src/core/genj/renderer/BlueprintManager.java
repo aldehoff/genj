@@ -40,6 +40,9 @@ public class BlueprintManager {
   /** resources */
   private Resources resources = new Resources(BlueprintManager.class);
   
+  /** registry */
+  private Registry registry = Registry.lookup("genj");
+  
   /**
    * Singleton access   */
   public static BlueprintManager getInstance() {
@@ -54,14 +57,20 @@ public class BlueprintManager {
     // FIXME save/load
     
     // load blueprints
+    StringBuffer html = new StringBuffer(256);
     for (int t=0;t<Gedcom.NUM_TYPES;t++) {
       blueprints[t] = new ArrayList(10);
       String tag = Gedcom.getTagFor(t);
       StringTokenizer names = new StringTokenizer(resources.getString("blueprints."+tag));
       while (names.hasMoreTokens()) {
         String name = names.nextToken();
-        String html = resources.getString("blueprints."+tag+"."+name);
-        addBlueprint(t, new Blueprint(name,html));
+        StringTokenizer lines = new StringTokenizer(resources.getString("blueprints."+tag+"."+name), "|");
+        html.setLength(0);
+        while (lines.hasMoreTokens()) {
+          html.append(lines.nextToken());
+          html.append('\n');
+        }
+        addBlueprint(t, name, html.toString());
       }
     }
     
@@ -81,7 +90,7 @@ public class BlueprintManager {
     // not found! try first
     if (!bps.isEmpty()) return (Blueprint)bps.get(0);
     // create a dummy
-    return new Blueprint(name, Gedcom.getNameFor(type, false));
+    return new Blueprint(Gedcom.getNameFor(type, false));
   }
   
   /**
@@ -92,20 +101,21 @@ public class BlueprintManager {
   
   /**
    * Adds a blueprint   */
-  public void addBlueprint(int type, Blueprint blueprint) {
+  public Blueprint addBlueprint(int type, String name, String html) {
     // fix name for duplicates
-    String name = blueprint.getName();
     List others = getBlueprints(type);
     int num = 0;
     for (int i=0; i < others.size(); i++) {
       Blueprint other = (Blueprint)others.get(i);
       if (other.getName().startsWith(name)) num++;
     }
-    if (num>0) blueprint.setName(name+"-"+num);
+    if (num>0) name = name+"-"+num;
+    // create it
+    Blueprint result = new Blueprint(registry, name, html);
     // keep it
-    blueprints[type].add(blueprint);
-    
+    blueprints[type].add(result);
     // done 
+    return result;
   }
   
   /**

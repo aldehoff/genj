@@ -19,27 +19,43 @@
  */
 package genj.renderer;
 
+import genj.util.Registry;
+
 /**
  * Encapsulating name and html for rendering an entity */
 public class Blueprint {
+  
+  /** whether we've changed */
+  /*package*/ boolean hasChanged = false;
   
   /** the name of this scheme */
   private String name;
   
   /** the html of this scheme */
   private String html;
+
+  /**
+   * Constructor
+   */
+  public Blueprint(String hTml) {
+    html = hTml;
+  }
+    
   
   /**
    * Constructor
    */
-  public Blueprint(String name, String html) {
-    setName(name);
-    setHTML(html);  }
+  /*package*/ Blueprint(Registry registry, String nAme, String hTml) {
+    name = nAme;
+    html = hTml;
+  }
     
   /**
    * Accessor - html
    */
   public void setHTML(String hTml) {
+    // FIXME update registry
+    hasChanged = true;
     html = hTml;
   }
   
@@ -53,22 +69,8 @@ public class Blueprint {
   /**
    * Accessor - name
    */
-  public void setName(String nAme) {
-    name = nAme;
-  }
-  
-  /**
-   * Accessor - name
-   */
   public String getName() {
     return name;
   }
 
-  /**
-   * @see java.lang.Object#toString()
-   */
-  public String toString() {
-    return getName();
-  }
-  
 } //RenderingScheme

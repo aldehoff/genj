@@ -74,6 +74,9 @@ public class BlueprintEditor extends JSplitPane {
   
   /** an example entity we use */
   private Example example = new Example(); 
+  
+  /** whether we've changed */
+  private boolean isChanged = false;
     
   /**
    * Constructor   */
@@ -118,6 +121,7 @@ public class BlueprintEditor extends JSplitPane {
    * Set Gedcom, Blueprint
    */
   public void set(Gedcom geDcom, Blueprint scHeme) {
+    // resovle buttons and html
     boolean b;
     if (geDcom==null||scHeme==null) {
       gedcom = null;
@@ -134,13 +138,19 @@ public class BlueprintEditor extends JSplitPane {
     bInsert.setEnabled(b);
     html.setEditable(b);
     preview.repaint();
+    // mark unchanged
+    isChanged = false;
     // done    
   }
   
   /**
    * Commits changes   */
   public void commit() {
-    if (blueprint!=null) blueprint.setHTML(html.getText());
+    if (blueprint!=null&&isChanged) {
+      blueprint.setHTML(html.getText());
+      // mark unchanged
+      isChanged = false;
+    }
   }
   
   /**
@@ -157,18 +167,21 @@ public class BlueprintEditor extends JSplitPane {
      * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
      */
     public void changedUpdate(DocumentEvent e) {
+      isChanged = true;
       repaint();
     }
     /**
      * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
      */
     public void insertUpdate(DocumentEvent e) {
+      isChanged = true;
       repaint();
     }
     /**
      * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
      */
     public void removeUpdate(DocumentEvent e) {
+      isChanged = true;
       repaint();
     }
     /**
@@ -188,7 +201,7 @@ public class BlueprintEditor extends JSplitPane {
       g.setColor(Color.white);
       g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
       // render content
-      new EntityRenderer(g, new Blueprint("",html.getText())).render(g, example, bounds);
+      new EntityRenderer(g, new Blueprint(html.getText())).render(g, example, bounds);
       // done
     }
   } //Preview
