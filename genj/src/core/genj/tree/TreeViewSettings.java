@@ -29,23 +29,20 @@ import genj.util.swing.FontChooser;
 import genj.util.swing.SwingFactory;
 import genj.view.Settings;
 
-import java.awt.Component;
 import java.awt.Container;
-import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.ListCellRenderer;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
@@ -116,9 +113,14 @@ public class TreeViewSettings extends JTabbedPane implements Settings, ModelList
     bookmarks.add(new JScrollPane(bookmarkList));
     JPanel bookmarkActions = new JPanel();
     ButtonHelper bh = new ButtonHelper().setContainer(bookmarkActions);
-    bh.create(new ActionBDelete());
+    final AbstractButton b = bh.setEnabled(false).create(new ActionBDelete());
+    bookmarkList.addListSelectionListener(new ListSelectionListener() {
+      public void valueChanged(ListSelectionEvent e) {
+        b.setEnabled(!bookmarkList.isSelectionEmpty());
+      }
+    });
     bookmarks.add(bookmarkActions);
-
+    
     // add those tabs
     add(TreeView.resources.getString("page.main")  , options);
     add(TreeView.resources.getString("page.colors"), colors);
