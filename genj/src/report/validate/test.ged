@@ -1,0 +1,56 @@
+0 HEAD 
+1 SOUR GENJ
+2 VERS version
+2 NAME GenealogyJ
+2 CORP Nils Meier
+3 ADDR http://genj.sourceforge.net
+1 DEST ANY
+1 DATE 10 JUN 2003
+2 TIME 15:46:01
+1 GEDC 
+2 VERS 5.5
+2 FORM Lineage-Linked
+1 CHAR ANSEL
+1 FILE example.ged
+0 @I001@ INDI 
+1 NAME John /Doe/
+1 SEX F
+1 NOTE husband gender!=MALE
+1 BIRT 
+2 DATE 13
+1 BURI 
+2 DATE 10
+2 NOTE burial before death
+1 DEAT 
+2 DATE 11
+2 NOTE death before birth
+1 ADOP 
+2 DATE 12
+2 NOTE adop before birth after death
+1 RETI 
+2 DATE 14
+2 NOTE retirement with age 1 (younger than 45 yrs)
+1 BAPM 
+2 DATE 30
+2 NOTE baptism with age 17 (older than 10)
+1 FAMS @F001@
+1 CHAN 
+2 DATE 10 JUN 2003
+3 TIME 15:45:58
+0 @I002@ INDI 
+1 NAME Mary /Doe/
+1 SEX F
+1 FAMS @F001@
+1 CHAN 
+2 DATE 10 JUN 2003
+3 TIME 15:44:27
+0 @F001@ FAM 
+1 WIFE @I002@
+1 HUSB @I001@
+1 MARR 
+2 DATE 
+2 NOTE !valid()
+1 CHAN 
+2 DATE 10 JUN 2003
+3 TIME 15:44:55
+0 TRLR 
