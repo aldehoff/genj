@@ -574,7 +574,9 @@ public class ControlCenter extends JPanel {
   private class ActionLoadLastOpen extends ActionDelegate {
     /** run */
     public void execute() {
-      String[] gedcoms = registry.get("open",new String[0]);
+      String[] defaults = System.getProperty("genj.gedcom.dir")!=null ?
+        new String[0] : new String[]{"file:./gedcom/example.ged"};
+      String[] gedcoms = registry.get("open",defaults);
       for (int g=0;g<gedcoms.length;g++) {
         try {
           new ActionOpen().open(Origin.create(gedcoms[g]));

@@ -64,7 +64,7 @@ public class GedcomTableWidget extends JTable {
 
   /** default column widths */
   private static final int defaultWidths[] = {
-    48, 24, 24, 24, 24, 24, 24
+    96, 24, 24, 24, 24, 24, 24
   };
 
   /** a registry */
