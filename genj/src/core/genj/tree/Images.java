@@ -37,7 +37,8 @@ final class Images {
     imgHori,
     imgVert,
     imgDoFams,
-    imgDontFams;
+    imgDontFams,
+    imgFoldSymbols;
     
   /**
    * Constructor which pre-loads all images
@@ -58,6 +59,7 @@ final class Images {
     imgDoFams      = new ImageIcon(this,"images/DoFams.gif"     ); 
     imgDontFams    = new ImageIcon(this,"images/DontFams.gif"   ); 
 
+    imgFoldSymbols = new ImageIcon(this,"images/FoldUnfold.gif"    );
   }
   
 } //Images

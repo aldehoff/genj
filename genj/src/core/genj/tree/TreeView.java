@@ -157,11 +157,14 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     colors.add("fams"   , Color.darkGray);
     colors.add("arcs"   , Color.blue);
     colors.add("selects", Color.red);
+    
     // grab font
     contentFont = registry.get("font", contentFont);
     isAdjustFonts = registry.get("adjust", isAdjustFonts);
+    
     // grab blueprints
     blueprints = BlueprintManager.getInstance().readBlueprints(registry);
+    
     // setup model
     model = new Model(gedcm);
     model.setVertical(registry.get("vertical",true));
@@ -219,14 +222,13 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     add(overview);
     add(scroll);
     
-    // scroll 1st time
-    // scroll to last centered year
+    // scroll to current
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
       public void run() {
         scrollToCurrent();
       }
     });
-
+    
     // done
   }
   
@@ -473,6 +475,13 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     // families?
     bh.create(new ActionFamsAndSpouses())
       .setSelected(model.isFamilies());
+      
+    // toggless?
+    bh.create(new ActionFoldSymbols())
+      .setSelected(model.isFoldSymbols());
+      
+    // gap
+    bar.addSeparator();
     
     // modes
     bh.createGroup();
@@ -773,7 +782,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      * @see java.awt.event.MouseListener#mousePressed(MouseEvent)
      */
     public void mousePressed(MouseEvent e) {
-      // a new sleection?
+      // a new selection?
       Entity entity = getEntityAt(e.getPoint());
       if (entity==null||entity==currentEntity) return;
       // note it already
@@ -951,6 +960,27 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       scrollToCurrent();
     }
   } //ActionFamsAndSpouses
+
+  /**
+   * Action FoldSymbols on/off
+   */
+  private class ActionFoldSymbols extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionFoldSymbols() {
+      super.setImage(Images.imgFoldSymbols);
+      super.setToggle(Images.imgFoldSymbols);
+      super.setTip("foldsymbols.tip");
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      model.setFoldSymbols(!model.isFoldSymbols());
+      scrollToCurrent();
+    }
+  } //ActionFolding
 
   /**
    * Action - bookmark something

@@ -83,6 +83,15 @@ public class Model implements Graph, GedcomListener {
   /** whether we show marriage symbols */
   private boolean isMarrSymbols = true;
   
+  /** whether we show toggles for un/folding */
+  private boolean isFoldSymbols = true;
+  
+  /** entities whose ancestors we're not interested in */
+  private Set hideAncestors = new HashSet();
+
+  /** entities whose descendants we're not interested in */
+  private Set hideDescendants = new HashSet();
+
   /** the mode we're in */
   private int mode = ANCESTORS_AND_DESCENDANTS;
     
@@ -123,7 +132,7 @@ public class Model implements Graph, GedcomListener {
     // keep as root
     root = entity;
     // parse the current information
-    parse();
+    update();
     // done
   }
 
@@ -147,7 +156,7 @@ public class Model implements Graph, GedcomListener {
   public void setVertical(boolean set) {
     if (isVertical==set) return;
     isVertical = set;
-    parse();
+    update();
   }
   
   /**
@@ -163,7 +172,7 @@ public class Model implements Graph, GedcomListener {
   public void setBendArcs(boolean set) {
     if (isBendArcs==set) return;
     isBendArcs = set;
-    parse();
+    update();
   }
   
   /**
@@ -179,7 +188,7 @@ public class Model implements Graph, GedcomListener {
   public void setFamilies(boolean set) {
     if (isFamilies==set) return;
     isFamilies = set;
-    parse();
+    update();
   } 
   
   /**
@@ -195,7 +204,23 @@ public class Model implements Graph, GedcomListener {
   public void setMarrSymbols(boolean set) {
     if (isMarrSymbols==set) return;
     isMarrSymbols = set;
-    parse();
+    update();
+  }
+
+  /**
+   * Access - isFoldSymbols
+   */
+  public void setFoldSymbols(boolean set) {
+    if (isFoldSymbols==set) return;
+    isFoldSymbols = set;
+    update();
+  }
+
+  /**
+   * Access - isToggles
+   */
+  public boolean isFoldSymbols() {
+    return isFoldSymbols;
   }
 
   /**
@@ -215,7 +240,7 @@ public class Model implements Graph, GedcomListener {
       case ANCESTORS_AND_DESCENDANTS:
         mode = set;
     }
-    parse();
+    update();
   }
   
   /**
@@ -230,7 +255,7 @@ public class Model implements Graph, GedcomListener {
   public void setMetrics(TreeMetrics set) {
     if (metrics.equals(set)) return;
     metrics = set;
-    parse();
+    update();
   } 
   
   /**
@@ -256,10 +281,11 @@ public class Model implements Graph, GedcomListener {
     if (cache==null) return new HashSet();
     return cache.get(range);
   }
-     /**
-   * An entity by position
+
+  /**
+   * An node by position
    */
-  public Entity getEntityAt(double x, double y) {
+  /*pacakge*/ TreeNode getNodeAt(double x, double y) {
     // do we have a cache?
     if (cache==null) return null;
     // get nodes in possible range
@@ -273,13 +299,19 @@ public class Model implements Graph, GedcomListener {
       TreeNode node = (TreeNode)it.next();
       Point2D pos = node.getPosition();
       Shape shape = node.getShape();
-      if (shape!=null&&shape.getBounds2D().contains(x-pos.getX(),y-pos.getY())&&node.entity!=null) {
-        return node.entity;
-      }
+      if (shape!=null&&shape.getBounds2D().contains(x-pos.getX(),y-pos.getY()))
+        return node;
     }
     
     // nothing found
     return null;
+  }
+     /**
+   * An entity by position
+   */
+  public Entity getEntityAt(double x, double y) {
+    TreeNode node = getNodeAt(x,y);
+    return node!=null ? node.entity : null; 
   }
   
   /**
@@ -311,6 +343,20 @@ public class Model implements Graph, GedcomListener {
    */
   public List getBookmarks() {
     return Collections.unmodifiableList(bookmarks);
+  }
+  
+  /**
+   * Whether we're hiding descendants of given entity
+   */
+  public boolean isHideDescendants(Indi indi) {
+    return hideDescendants.contains(indi);
+  }
+  
+  /**
+   * Whether we're hiding ancestors of given entity
+   */
+  public boolean isHideAncestors(Indi indi) {
+    return hideAncestors.contains(indi);
   }
   
   /**
@@ -354,7 +400,7 @@ public class Model implements Graph, GedcomListener {
         if (deleted.contains(b.getEntity())) it.remove();
       }
       // parse now
-      parse();
+      update();
       // done
       return;
     }
@@ -362,7 +408,7 @@ public class Model implements Graph, GedcomListener {
     List props = change.getProperties(change.PMOD);
     for (int i=0; i<props.size(); i++) {
       if (props.get(i) instanceof PropertyXRef) {
-        parse();
+        update();
         return;
       }
     }
@@ -414,7 +460,7 @@ public class Model implements Graph, GedcomListener {
 
   /**
    * Parses the current model starting at root   */
-  private void parse() {
+  private void update() {
     // clear old
     arcs.clear();
     nodes.clear();

@@ -28,7 +28,6 @@ import gj.layout.tree.Orientation;
 import gj.layout.tree.TreeLayout;
 import gj.model.Node;
 
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
@@ -46,10 +45,10 @@ import java.awt.geom.Rectangle2D;
   protected TreeMetrics metrics;
   
   /** shapes */
-  protected Shape shapeMarrs, shapeIndis, shapeFams, shapePlus, shapeMinus; 
+  protected Path shapeMarrs, shapeIndis, shapeFams, shapePlus, shapeMinus; 
 
   /** padding (n, e, s, w) */
-  protected double[] padIndis; 
+  protected double[] padIndis, padMinusPlus; 
   
   /** 
    * gets an instance of a parser
@@ -74,20 +73,10 @@ import java.awt.geom.Rectangle2D;
     metrics = mEtrics;
     
     // init values
-    shapeMarrs = calcMarriageShape();
-    shapeIndis = calcIndiShape();
-    shapeFams  = calcFamShape();
-    shapePlus  = calcPlusShape();
-    shapeMinus = calcMinusShape();
+    initMarrShapes();
+    initEntityShapes();
+    initSignShapes();
     
-    // .. indis
-    padIndis  = new double[] { 
-      metrics.pad/2, 
-      metrics.pad/2, 
-      metrics.pad/2, 
-      metrics.pad/2
-    };
-
     // done    
   }
    
@@ -142,11 +131,15 @@ import java.awt.geom.Rectangle2D;
   /**
    * Calculates marriage rings
    */
-  protected Shape calcMarriageShape() {
+  private void initMarrShapes() {
+
+    shapeMarrs = new Path();
     
     // check model
-    if (!model.isMarrSymbols())
-      return new Rectangle2D.Double(); 
+    if (!model.isMarrSymbols()) { 
+      shapeMarrs.append(new Rectangle2D.Double());
+      return; 
+    }
 
     // calculate maximum extension    
     float d = Math.min(metrics.wIndis/4, metrics.hIndis/4);
@@ -162,71 +155,81 @@ import java.awt.geom.Rectangle2D;
       at1 = AffineTransform.getTranslateInstance(-dx,-dy),
       at2 = AffineTransform.getTranslateInstance( dx, dy);
  
-    Path result = new Path();
-    result.append(e.getPathIterator(at1));
-    result.append(e.getPathIterator(at2));
+    shapeMarrs.append(e.getPathIterator(at1));
+    shapeMarrs.append(e.getPathIterator(at2));
     
     // patch bounds
-    result.setBounds2D( model.isVertical() ?
+    shapeMarrs.setBounds2D( model.isVertical() ?
       new Rectangle2D.Float(-d/2,-(metrics.hIndis+metrics.pad)/2,d,metrics.hIndis+metrics.pad) :
       new Rectangle2D.Float(-metrics.wIndis/2,-d/2,metrics.wIndis,d)
     );
     
     // done
-    return result;
   }
 
   /**
-   * Calculates shape for indis 
+   * Init shapes/padding for entities
    */
-  protected Shape calcIndiShape() {
-    return new Rectangle2D.Double(
+  private void initEntityShapes() {
+    
+    // .. padding (n, e, s, w)
+    padIndis  = new double[] { 
+      metrics.pad/2, 
+      metrics.pad/2, 
+      metrics.pad/2, 
+      metrics.pad/2
+    };
+    
+    // indis
+    shapeIndis = new Path().append(new Rectangle2D.Double(
       -metrics.wIndis/2,
       -metrics.hIndis/2,
        metrics.wIndis,
        metrics.hIndis
-     );
-  }
-  
-  /**
-   * Calculates shape for fams 
-   */
-  protected Shape calcFamShape() {
-    return new Rectangle2D.Double(
+    ));
+     
+    // fams
+    shapeFams = new Path().append(new Rectangle2D.Double(
       -metrics.wFams/2,
       -metrics.hFams/2,
        metrics.wFams,
        metrics.hFams
-     );
+    ));
+     
+    // done
   }
+  
+  /**
+   * Init shapes/padding for signs
+   */
+  private void initSignShapes() {
+    
+    // how we pad signs (n, e, s, w)
+    padMinusPlus  = new double[]{  
+      -padIndis[0], 
+       padIndis[1], 
+       padIndis[2], 
+       padIndis[3]     
+    };
 
-  /**
-   * Calculates shape for plus sign
-   */
-  protected Shape calcPlusShape() {
-    double d = Math.min(metrics.wIndis,metrics.hIndis)/8;
-    Path result = new Path();
-    result.moveTo(new Point2D.Double( 0,-d));
-    result.lineTo(new Point2D.Double( 0, d));
-    result.moveTo(new Point2D.Double(-d, 0));
-    result.lineTo(new Point2D.Double( d, 0));
-    result.append(new Rectangle2D.Double(-d,-d,d*2,d*2));
-    return result;
-  }
-    
-  /**
-   * Calculates shape for minus sign
-   */
-  protected Shape calcMinusShape() {
-    
+    // size of signs
     double d = 0.3;
     
-    Path result = new Path();
-    result.moveTo(new Point2D.Double(-d*0.3, 0));
-    result.lineTo(new Point2D.Double( d*0.3, 0));
-    result.append(new Rectangle2D.Double(-d/2,-d/2,d,d));
+    // plus
+    shapePlus = new Path();
+    shapePlus.moveTo(new Point2D.Double( 0,-d*0.3));
+    shapePlus.lineTo(new Point2D.Double( 0, d*0.3));
+    shapePlus.moveTo(new Point2D.Double(-d*0.3, 0));
+    shapePlus.lineTo(new Point2D.Double( d*0.3, 0));
+    shapePlus.append(new Rectangle2D.Double(-d/2,-d/2,d,d));
+
+    // minus    
+    shapeMinus = new Path();
+    shapeMinus.moveTo(new Point2D.Double(-d*0.3, 0));
+    shapeMinus.lineTo(new Point2D.Double( d*0.3, 0));
+    shapeMinus.append(new Rectangle2D.Double(-d/2,-d/2,d,d));
     
-    return result;
+    // done
   }
     
   /**
@@ -268,10 +271,16 @@ import java.awt.geom.Rectangle2D;
       // node for indi      
       TreeNode node = model.add(new TreeNode(indi, shapeIndis, padIndis));
       // do we have a family we're child in?
-      if (indi!=null) {
-        Fam famc = indi.getFamc();
+      Fam famc = indi.getFamc();
+      if (famc!=null) {
+        // check minus as a substitute pivot
+        TreeNode pivot = node;
+        if (model.isFoldSymbols()) {
+          pivot = model.add(new TreeNode(null, shapePlus, padMinusPlus));
+          model.add(new TreeArc(node, pivot, false));
+        }
         // grab the family's husband/wife and their ancestors
-        if (famc!=null) iterate(famc, node);
+        iterate(famc, pivot);
       } 
       // done
       return node;
@@ -417,21 +426,11 @@ import java.awt.geom.Rectangle2D;
    * Parser - Descendants no Families
    */
   private static class DescendantsNoFams extends Parser {
-    /** how we signs */
-    private double[] padSigns;
     /**
      * Constructor
      */
     protected DescendantsNoFams(Model model, TreeMetrics metrics) {
       super(model, metrics);
-      
-      // how we pad signs (n, e, s, w)
-      padSigns  = new double[]{  
-        -padIndis[0], 
-         padIndis[1], 
-         padIndis[2], 
-         padIndis[3]     
-      };
     }
     /**
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
@@ -468,12 +467,22 @@ import java.awt.geom.Rectangle2D;
       // grab fams
       Fam[] fams = indi.getFamilies();
       if (fams.length>0) {
-        // and minus
-        TreeNode minus = model.add(new TreeNode(null, shapeMinus, padSigns));
-        model.add(new TreeArc(node, minus, true));
-        // loop through our fams
-        for (int f=0; f<fams.length; f++) {
-          iterate(fams[f], minus);
+        // check hiding of descendants
+        if (model.isHideDescendants(indi)) {
+          if (model.isFoldSymbols()) {
+            TreeNode plus = model.add(new TreeNode(null, shapePlus, padMinusPlus));
+            model.add(new TreeArc(node, plus, false));
+          }
+        } else {
+          TreeNode pivot = node;
+          if (model.isFoldSymbols()) {
+            pivot = model.add(new TreeNode(null, shapeMinus, padMinusPlus));
+            model.add(new TreeArc(node, pivot, false));
+          }
+          // loop through fams
+          for (int f=0; f<fams.length; f++) {
+            iterate(fams[f], pivot);
+          }
         }
       }
       // done
@@ -587,7 +596,7 @@ import java.awt.geom.Rectangle2D;
       // otherwise indi as husband first of family and arc pivot-indi
       TreeNode nIndi = new TreeNode(indi,shapeIndis,padHusband) {
         /**
-         * @see genj.tree.Parser.DescendantsWithFams#getLongitude(gj.model.Node, double, double, double, double, gj.layout.tree.Orientation)
+         * patch alignment above children so that marr is centered above
          */
         public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
           return (maxc+minc)/2 + offsetHusband;

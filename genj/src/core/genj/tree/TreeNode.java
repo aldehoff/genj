@@ -93,6 +93,7 @@ import java.util.List;
     // default is centered
     return min + (max-min) * 0.5;
   }
+  
   /**
    * @see gj.layout.tree.NodeOptions#getLongitude(Node, double, double, double, double)
    */
@@ -100,6 +101,7 @@ import java.util.List;
     // default is centered
     return minc + (maxc-minc) * 0.5;
   }
+  
   /**
    * @see gj.layout.tree.NodeOptions#getPadding(int)
    */
