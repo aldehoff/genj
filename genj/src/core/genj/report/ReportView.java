@@ -403,10 +403,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // create our own private instance  
       instance = report.getInstance(manager, ReportView.this, out);
       
-      // .. switch to output
-      if (report.usesStandardOut()) {
-        tabbedPane.getModel().setSelectedIndex(2);
-      }
+      // clear the current output
       taOutput.setText("");
       
       // start transaction
@@ -689,6 +686,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // something to flush?
       if (buffer.length()==0)
         return;
+      // make sure we see output pane
+      tabbedPane.getModel().setSelectedIndex(2);
       // output
       taOutput.append(buffer.toString());
       // clear buffer
