@@ -399,32 +399,44 @@ public class ControlCenter extends JPanel {
     /** run */
     protected void execute() {
       // Remember open gedcoms
-      boolean unsaved = false;
       Collection save = new ArrayList();
       for (Iterator gedcoms=tGedcoms.getAllGedcoms().iterator(); gedcoms.hasNext(); ) {
         // next gedcom
         Gedcom gedcom = (Gedcom) gedcoms.next();
-        unsaved |= gedcom.hasUnsavedChanges();
-        // skip those without origin - 20040217 is that even likely?
-        if (gedcom.getOrigin() == null)
-          continue;
-        // keep as opened
+        // changes need saving?
+        if (gedcom.hasUnsavedChanges()) {
+          // close file officially
+          int rc = windowManager.openDialog(
+              "confirm-exit", null, WindowManager.IMG_WARNING, 
+              resources.getString("cc.savechanges?", gedcom.getName()), 
+              CloseWindow.YESandNOandCancel(), ControlCenter.this
+            );
+          // cancel - we're done
+          if (rc==2) return;
+          // yes - close'n save it
+          if (rc==0) {
+            removeGedcom(gedcom);
+            new ActionSave(gedcom) {
+              protected void postExecute() {
+                // super first
+                super.postExecute();
+                // keep if still unsaved changes present
+                if (gedcom.hasUnsavedChanges()) {
+                  addGedcom(gedcom);
+                  return;
+                }
+                // continue with exit
+                getExitAction().trigger();
+              }
+            }.trigger();
+            return;
+          }
+          // no - skip it
+        }
+        // remember as being open
         save.add(gedcom.hasPassword() ? gedcom.getOrigin() + "," + gedcom.getPassword() : gedcom.getOrigin().toString());
       }
       registry.put("open", save);
-
-      // Unsaved changes ?
-      if (unsaved) {
-        int rc = windowManager.openDialog(
-          "confirm-exit", 
-          null, 
-          WindowManager.IMG_WARNING, 
-          resources.getString("cc.exit_changes?"), 
-          CloseWindow.YESandNO(), 
-          ControlCenter.this
-        );
-        if (rc!=0) return;
-      }
 
       // Close all Windows
       windowManager.closeAll();
@@ -796,7 +808,7 @@ public class ControlCenter extends JPanel {
     /** whether to ask user */
     private boolean ask;
     /** gedcom */
-    private Gedcom gedcom;
+    protected Gedcom gedcom;
     /** writer */
     private GedcomWriter gedWriter;
     /** origin to load after successfull save */
@@ -811,6 +823,13 @@ public class ControlCenter extends JPanel {
     private File temp, result;
     /** password used */
     private String password;
+    /** 
+     * Constructor for saving gedcom file 
+     */
+    protected ActionSave(Gedcom gedcom) {
+      this(false);
+      this.gedcom = gedcom;
+    }
     /** 
      * Constructor
      */
@@ -832,11 +851,13 @@ public class ControlCenter extends JPanel {
      */
     protected boolean preExecute() {
 
-      // Current Gedcom
-      gedcom = tGedcoms.getSelectedGedcom();
-      if (gedcom == null)
-        return false;
-
+      // Choose currently selected Gedcom if necessary
+      if (gedcom==null) {
+	      gedcom = tGedcoms.getSelectedGedcom();
+	      if (gedcom == null)
+	        return false;
+      }
+      
       // Do we need a file-dialog or not?
       Origin origin = gedcom.getOrigin();
       String encoding = gedcom.getEncoding();
@@ -1003,22 +1024,42 @@ public class ControlCenter extends JPanel {
     }
     /** run */
     protected void execute() {
-
+  
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
       if (gedcom == null)
         return;
-
+  
       // changes we should care about?      
       if (gedcom.hasUnsavedChanges()) {
-        int rc = windowManager.openDialog(null,null,WindowManager.IMG_WARNING,resources.getString("cc.close_changes?"),CloseWindow.YESandNO(),ControlCenter.this);
-        if (rc!=0) 
+        
+        int rc = windowManager.openDialog(null,null,WindowManager.IMG_WARNING,
+            resources.getString("cc.savechanges?", gedcom.getName()),
+            CloseWindow.YESandNOandCancel(),ControlCenter.this);
+        // cancel everything?
+        if (rc==2)
           return;
+        // save now?
+        if (rc==0) {
+          // Remove it so the user won't change it while being saved
+          removeGedcom(gedcom);
+          // and save
+          new ActionSave(gedcom) {
+            protected void postExecute() {
+              // super first
+              super.postExecute();
+              // add back if still changed
+              if (gedcom.hasUnsavedChanges())
+                addGedcom(gedcom);
+            }
+          }.trigger();
+          return;
+        }
       }
-
+  
       // Remove it
       removeGedcom(gedcom);
-
+  
       // Done
     }
   } //ActionClose
