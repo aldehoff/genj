@@ -14,6 +14,7 @@ import genj.gedcom.TagPath;
 import genj.report.Report;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -97,14 +98,15 @@ public class ReportValidate extends Report {
    */
   public void start(Object context) {
     
+    println("***This Report is not finished yet - work in progress***");
+    
     // assuming Gedcom
     Gedcom gedcom = (Gedcom)context;
     
     // Loop through entities and test 'em
-    for (int t=0; t<Gedcom.ETYPES.length; t++) {
-      Entity[] es = gedcom.getEntities(Gedcom.ETYPES[t], "");
-      for (int e=0;e<es.length;e++)
-        test(es[e], new TagPath(es[e].getTag()));
+    for (Iterator es=gedcom.getEntities().iterator();es.hasNext();) {
+      Entity e = (Entity)es.next();
+      test(e, new TagPath(e.getTag()));
     }
     
     // any fixes proposed at all?
