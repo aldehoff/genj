@@ -137,7 +137,7 @@ public class ReportPlaceHistory extends Report {
   private Map getSeriesForPlaces(Gedcom gedcom) {
     
     // find what values are in gedcom for PLAC (sorted by ranking)
-    String[] values = PropertyChoiceValue.getChoices(gedcom, PLAC, true);
+    String[] values = PropertyChoiceValue.getChoices(gedcom, PLAC, false);
     
     // create series for the top n
     Map result = new HashMap();

@@ -107,11 +107,11 @@ public class ReportPhonetics extends Report {
         } else {
             Gedcom gedcom = (Gedcom) context;
             Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");
-            printPhonetic(indis);
+            printPhonetic(gedcom, indis);
         }
     }
     
-    private void printPhonetic(Entity[] indis) {
+    private void printPhonetic(Gedcom gedcom, Entity[] indis) {
         Indi indi = null;
         String str = "";
         
@@ -124,7 +124,7 @@ public class ReportPhonetics extends Report {
                 indi = (Indi) indis[i];
                 names.add(indi.getLastName(), indi);
             }
-            Iterator last = names.getKeys(true).iterator();
+            Iterator last = names.getKeys(gedcom.getCollator()).iterator();
             while(last.hasNext()) {
                 str = (String)last.next();
                 println(str+": "+encode(str));

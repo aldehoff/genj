@@ -70,7 +70,7 @@ public class NameBean extends PropertyBean {
     // first, last, suff
     PropertyName pname = (PropertyName)property;
     
-    cLast  = new ChoiceWidget(PropertyName.getLastNames(setGedcom).toArray(), pname.getLastName());
+    cLast  = new ChoiceWidget(PropertyName.getLastNames(setGedcom, true).toArray(), pname.getLastName());
     cLast.addChangeListener(changeSupport);
     tFirst = new TextFieldWidget(pname.getFirstName(), 10); 
     tFirst.addChangeListener(changeSupport);

@@ -300,8 +300,8 @@ public class PropertyName extends Property {
   /**
    * Return all last names
    */
-  public static List getLastNames(Gedcom gedcom) {
-    return gedcom.getReferenceSet(TAG).getKeys();
+  public static List getLastNames(Gedcom gedcom, boolean sortByName) {
+    return gedcom.getReferenceSet(TAG).getKeys(sortByName ? gedcom.getCollator() : null);
   }
 
   /**

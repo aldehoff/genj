@@ -18,9 +18,9 @@ import genj.window.CloseWindow;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Hashtable;
 import java.net.MalformedURLException;
+import java.util.Hashtable;
+import java.util.List;
 
 /**
  * GenJ - Report
@@ -268,7 +268,7 @@ public class ReportHTMLTable extends Report {
 		  	// write table header
 		  	htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("lastNames")+"</td><td>"+i18n("frequency")+"</td></tr>");
 		  	// sort the table data
-		  	ArrayList sortedLastNames = new ArrayList(set.getKeys(sortLastNamesByName));
+		  	List sortedLastNames = set.getKeys(sortLastNamesByName ? gedcom.getCollator() : null);
 		  	// loop over table data and write to the file
 		  	for(int i=0;i<sortedLastNames.size();i++) {
 		  		lastName = (String)sortedLastNames.get(i);
@@ -304,7 +304,7 @@ public class ReportHTMLTable extends Report {
 			  		}
 			  	}
 			  	htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("birthPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
-			  	ArrayList sortedBirthPlaces = new ArrayList(set.getKeys(sortBirthPlacesByName));
+			  	List sortedBirthPlaces = set.getKeys(sortBirthPlacesByName ? gedcom.getCollator() : null);
 			  	for(int i=0;i<sortedBirthPlaces.size();i++) {
 			  		String birthPlace = (String)sortedBirthPlaces.get(i);
 			  		htmlOut.println("<tr><td>"+wrapText(birthPlace)+"</td><td>"+set.getReferences(birthPlace).size()+"</td></tr>");
@@ -361,7 +361,7 @@ public class ReportHTMLTable extends Report {
 				  		}
 			  	}
 			  	htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("baptismPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
-			  	ArrayList sortedBaptismPlaces = new ArrayList(set.getKeys(sortBaptismPlacesByName));
+			  	List sortedBaptismPlaces = set.getKeys(sortBaptismPlacesByName ? gedcom.getCollator() : null);
 			  	for(int i=0;i<sortedBaptismPlaces.size();i++) {
 			  		String baptismPlace = (String)sortedBaptismPlaces.get(i);
 			  		htmlOut.println("<tr><td>"+wrapText(baptismPlace)+"</td><td>"+set.getReferences(baptismPlace).size()+"</td></tr>");
@@ -395,7 +395,7 @@ public class ReportHTMLTable extends Report {
 			  		}
 			  	}
 			  	htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("marriagePlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
-			  	ArrayList sortedMarriagePlaces = new ArrayList(set.getKeys(true));
+			  	List sortedMarriagePlaces = set.getKeys(gedcom.getCollator());
 			  	for(int i=0;i<sortedMarriagePlaces.size();i++) {
 			  		String marriagePlace = (String)sortedMarriagePlaces.get(i);
 			  		htmlOut.println("<tr><td>"+wrapText(marriagePlace)+"</td><td>"+set.getReferences(marriagePlace).size()+"</td></tr>");
@@ -414,7 +414,7 @@ public class ReportHTMLTable extends Report {
 			  	} catch(Exception e) {
 			  		println("Can't create emigrationPlaces.html: "+e.getMessage());
 			  	}
-			  	printEmigImmiNatu(EMIG, indis, htmlOut);
+			  	printEmigImmiNatu(gedcom, EMIG, indis, htmlOut);
 			  	printHTMLEnd(htmlOut);
 			  	htmlOut.close();
                                 indexOut.println("<a href=\"emigrationPlaces.html\">"+i18n("emigration")+"</a><br>");
@@ -428,7 +428,7 @@ public class ReportHTMLTable extends Report {
 			  	} catch(Exception e) {
 			  		println("Can't create immigrationPlaces.html: "+e.getMessage());
 			  	}
-			  	printEmigImmiNatu(IMMI, indis, htmlOut);
+			  	printEmigImmiNatu(gedcom, IMMI, indis, htmlOut);
 			  	printHTMLEnd(htmlOut);
 			  	htmlOut.close();
                                 indexOut.println("<a href=\"immigrationPlaces.html\">"+i18n("immigration")+"</a><br>");
@@ -442,7 +442,7 @@ public class ReportHTMLTable extends Report {
 			  	} catch(Exception e) {
 			  		println("Can't create naturalizationPlaces.html: "+e.getMessage());
 			  	}
-			  	printEmigImmiNatu(NATU, indis, htmlOut);
+			  	printEmigImmiNatu(gedcom, NATU, indis, htmlOut);
 			  	printHTMLEnd(htmlOut);
 			  	htmlOut.close();
                                 indexOut.println("<a href=\"naturalizationPlaces.html\">"+i18n("naturalization")+"</a><br>");
@@ -469,7 +469,7 @@ public class ReportHTMLTable extends Report {
 			  		}
 			  	}
 			  	htmlOut.println("<tr bgcolor=\"yellow\"><td>"+i18n("deathPlaces")+"</td><td>"+i18n("frequency")+"</td></tr>");
-			  	ArrayList sortedDeathPlaces = new ArrayList(set.getKeys(sortDeathPlacesByName));
+			  	List sortedDeathPlaces = set.getKeys(sortDeathPlacesByName ? gedcom.getCollator() : null);
 			  	for(int i=0;i<sortedDeathPlaces.size();i++) {
 			  		String deathPlace = (String)sortedDeathPlaces.get(i);
 			  		htmlOut.println("<tr><td>"+wrapText(deathPlace)+"</td><td>"+set.getReferences(deathPlace).size()+"</td></tr>");
@@ -494,7 +494,7 @@ public class ReportHTMLTable extends Report {
 	   * @param indis to be examined
 	   * @param htmlOut file to write to
 	   */
-	  private void printEmigImmiNatu(int which, Entity[] indis, PrintWriter htmlOut){
+	  private void printEmigImmiNatu(Gedcom gedcom, int which, Entity[] indis, PrintWriter htmlOut){
 	  	
 	  	// variabes to allow the method to be generic
 	  	String tag="", title="";
@@ -541,7 +541,7 @@ public class ReportHTMLTable extends Report {
 		//write the table header
 		htmlOut.println("<tr bgcolor=\"yellow\"><td>"+title+"</td><td>"+i18n("frequency")+"</td></tr>");
 		// sort the table data
-		ArrayList sortedPlaces = new ArrayList(set.getKeys(sortByPlace));
+  	List sortedPlaces = set.getKeys(sortByPlace ? gedcom.getCollator() : null);
 		// print the table data
 		for(int i=0;i<sortedPlaces.size();i++) {
 		 	String place = (String)sortedPlaces.get(i);

@@ -94,7 +94,7 @@ public class ReportNameHistory extends Report {
       return;
     
     // name the group 'other' now: "14 Other Names"
-    int numOthers = (PropertyName.getLastNames(gedcom).size()-name2series.size());
+    int numOthers = (PropertyName.getLastNames(gedcom, false).size()-name2series.size());
     if (numOthers>0) {
 	    others.setName(i18n("others", numOthers));
 	    name2series.put(String.valueOf('\uffff'), others);

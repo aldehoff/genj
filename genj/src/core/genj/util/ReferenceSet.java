@@ -3,11 +3,11 @@ package genj.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * A hashmap that keeps track of keys and their references
@@ -15,7 +15,7 @@ import java.util.TreeMap;
 public class ReferenceSet {
 
   /** the map we use for key->reference */
-  private Map key2references;
+  private Map key2references = new HashMap();
   
   /** total number of references we know about */
   private int size = 0;
@@ -25,15 +25,6 @@ public class ReferenceSet {
    * keys sorted by their natural order
    */
   public ReferenceSet() {
-    this(new TreeMap());
-  }
-  
-  /**
-   * Constructor - uses given map for 
-   * tracking key->references Sets
-   */
-  public ReferenceSet(Map map) {
-    key2references = map;
   }
   
   /**
@@ -131,20 +122,20 @@ public class ReferenceSet {
   }
   
   /**
-   * Return all values
+   * Return all keys (in arbitrary order)
    */
   public List getKeys() {
-    return getKeys(true);
+    return getKeys(null);
   }
-
+  
   /**
-   * Return all values
-   * @param sortByKey sort the list by keys or by the number of references
+   * Return all keys
+   * @param comparator a comparator for sorting the keys or to sort by reference count
    */
-  public List getKeys(boolean sortByKey) {
+  public List getKeys(Comparator comparator) {
     ArrayList result = new ArrayList(key2references.keySet()); 
-    if (sortByKey) 
-      Collections.sort(result);
+    if (comparator!=null) 
+      Collections.sort(result, comparator);
     else 
       Collections.sort(result, new Comparator() {
         public int compare(Object o1, Object o2) {
