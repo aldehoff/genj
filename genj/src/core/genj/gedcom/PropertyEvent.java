@@ -59,8 +59,10 @@ public class PropertyEvent extends Property {
    * Adds all default properties to this property
    */
   public Property addDefaultProperties() {
-    addProperty(new PropertyDate().addDefaultProperties());
-    addProperty(new PropertyPlace(""));
+    if ("EVEN".equals(tag))
+      addProperty(Property.createInstance("TYPE", true));
+    addProperty(Property.createInstance("DATE", true));
+    addProperty(Property.createInstance("PLAC", true));
     return this;
   }
 
