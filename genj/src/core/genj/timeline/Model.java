@@ -359,7 +359,7 @@ import java.util.Set;
     if (!start.isValid()) return;
     if (!pd.isRange()||!end.isValid()) end = start;
     // create the Event
-    Event e = new Event(pe, pd, wrap(start), wrap(end));
+    Event e = new Event(pe, pd, start.toDouble(), end.toDouble());
     // keep the event
     insertEvent(e);
     // done
@@ -413,13 +413,6 @@ import java.util.Set;
     // after!
     events.add(candidate);
     return true;
-  }
-  
-  /**
-   * Helper transforming a point in time into a double value
-   */
-  private final double wrap(PropertyDate.PointInTime p) {
-    return (double)p.getYear(0) + ((double)p.getMonth(1)-1)/12 + ((double)p.getDay(0)/12/31);
   }
   
   /**

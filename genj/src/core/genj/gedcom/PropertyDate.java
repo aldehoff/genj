@@ -346,30 +346,6 @@ public class PropertyDate extends Property {
     /**
      * Returns the year
      */
-    public int getYear(int fallback) {
-      if (year==null) return fallback;
-      return year.intValue();
-    }
-  
-    /**
-     * Returns the month
-     */
-    public int getMonth(int fallback) {
-      if (month==null) return fallback;
-      return month.intValue();
-    }
-  
-    /**
-     * Returns the day
-     */
-    public int getDay(int fallback) {
-      if (day==null) return fallback;
-      return day.intValue();
-    }
-  
-    /**
-     * Returns the year
-     */
     public Integer getYear() {
       return year;
     }
@@ -391,7 +367,7 @@ public class PropertyDate extends Property {
     /**
      * Returns a Calendar object for year/month/day
      */
-    public Calendar getCalendar() {
+    public Calendar toCalendar() {
       Calendar cal = Calendar.getInstance();
       int iyear  = (year  == null) ? 0 : year.intValue();
       int imonth = (month == null) ? 0 : (month.intValue() - 1);
@@ -399,6 +375,26 @@ public class PropertyDate extends Property {
       cal.set(iyear, imonth, iday);
       return cal;
     }
+
+    /**
+     * Returns a double representation
+     */
+    public double toDouble() {
+      double result = 0;
+      
+      if (year!=null) {
+        result = year.intValue();
+        if (month!=null) {
+          result += ((double)month.intValue()-1)/12;
+          if (day!=null) {
+            result += ((double)day.intValue()/12/31);
+          } 
+        }
+      }
+       
+      return result;
+    }
+  
 
     /**
      * compare to other

@@ -113,33 +113,19 @@ public class ReportBirthdays implements Report {
       if (birth==null) {
         continue;
       }
-      if (birth.getStart().getMonth(-1) == month) {
+      Integer m =birth.getStart().getMonth();
+      if (m!=null && m.intValue() == month) {
         candidates.add(indi);
       }
     }
 
-    // Sort the birthdays - uncomment the following block if
-    // you're running JAVA2 and want the result to be sorted
-    // by date
     Comparator comparator = new Comparator() {
       // LCD
       public int compare(Object o1, Object o2) {
         // O.K. here are the birthdays (might be null!)
         PropertyDate b1 = ((Indi)o1).getBirthDate();
         PropertyDate b2 = ((Indi)o2).getBirthDate();
-
-        // So we check whether we can get a day
-        int d1 = 0;
-        if (b1!=null)
-                d1 = b1.getStart().getDay(0);
-
-        // So we check whether we can get a day
-        int d2 = 0;
-        if (b2!=null)
-                d2 = b2.getStart().getDay(0);
-
-        // Comparison at last
-        return d1-d2;
+        return b1.compareTo(b2);
       }
       // EOC
     };

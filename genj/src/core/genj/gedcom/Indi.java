@@ -256,14 +256,14 @@ public class Indi extends Entity {
     PropertyDate.PointInTime pit;
 
     pit = pBirth.getStart();
-    Calendar birthCal = pit.getCalendar();
+    Calendar birthCal = pit.toCalendar();
     showMonth = (pit.getMonth() != null);
     showDay   = (pit.getDay()   != null);
 
     Calendar end = Calendar.getInstance(); // default to current time
     if (pEnd!=null) {
       pit = pEnd.getStart();
-      end = pit.getCalendar();
+      end = pit.toCalendar();
       showMonth |= (pit.getMonth() != null);
       showDay   |= (pit.getDay()   != null);
     }
