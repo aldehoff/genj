@@ -41,8 +41,6 @@ public class Change {
 
   private int change;
 
-  private GedcomListener cause;
-
   /**
    * Constructor
    * @param gedcom Gedcom that has been changed
@@ -63,8 +61,6 @@ public class Change {
     this.pdel = pdel;
     this.pmod = pmod;
 
-    this.cause= cause;
-
     // What's the change like?
     change = 0;
     if ((eadd!=null)&&(eadd.size()>0)) {
@@ -82,27 +78,6 @@ public class Change {
     if ((pmod!=null)&&(pmod.size()>0)) {
       change |= PMOD;
     }
-  }
-
-  /**
-   * Property-Class in change?
-   */
-  public boolean containsProperty(int which, Class clazz) {
-
-    Enumeration e = getProperties(which).elements();
-    while (e.hasMoreElements()) {
-      if (e.nextElement().getClass()==clazz) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Changing Listener
-   */
-  public GedcomListener getCause() {
-    return cause;
   }
 
   /**
