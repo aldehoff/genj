@@ -55,7 +55,7 @@ public class PropertyAge extends Property {
   /**
    * @see genj.gedcom.Property#addNotify(genj.gedcom.Property)
    */
-  /*package*/ void addNotify(Property parent) {
+  void addNotify(Property parent) {
     // continue
     super.addNotify(parent);
     // try to update age
@@ -73,7 +73,7 @@ public class PropertyAge extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  /*package*/ Property init(String tag, String value) throws GedcomException {
+  Property init(String tag, String value) throws GedcomException {
     assume(TAG.equals(tag), UNSUPPORTED_TAG);
     return super.init(tag,value);
   }
@@ -84,7 +84,7 @@ public class PropertyAge extends Property {
   public String getValue() {
     if (ageAsString!=null)
       return ageAsString;
-    return getAgeString(years,months,days);
+    return getAgeString(years,months,days, true);
   }
   
   /**
@@ -248,7 +248,7 @@ public class PropertyAge extends Property {
   /**
    * Calculate an age string "99y 9m 9d"
    */
-  public static String getAgeString(PointInTime earlier, PointInTime later) {
+  public static String getAgeString(PointInTime earlier, PointInTime later, boolean localize) {
 
     // try to calc delta
     int[] delta = PointInTime.getDelta(earlier,later);
@@ -256,14 +256,7 @@ public class PropertyAge extends Property {
       return "";
       
     // convert into string
-    return getAgeString(delta[0], delta[1], delta[2]);
-  }
-
-  /**
-   * Calculate Age String
-   */
-  public static String getAgeString(int y, int m, int d) {
-    return getAgeString(y,m,d,false);
+    return getAgeString(delta[0], delta[1], delta[2], localize);
   }
       
   /**
