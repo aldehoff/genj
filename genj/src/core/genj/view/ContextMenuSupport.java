@@ -20,6 +20,8 @@
 package genj.view;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+
 import java.util.List;
 
 /**
@@ -32,5 +34,11 @@ public interface ContextMenuSupport {
    * @return a list of ActionDelegates
    */
   public List createActions(Entity entity);
+
+  /**
+   * Callback for actions on a gedcom
+   * @return a list of ActionDelegates
+   */
+  public List createActions(Gedcom gedcom);
 
 } //ContextMenuSupport

@@ -20,6 +20,7 @@
 package genj.app;
 
 import genj.Version;
+import genj.gedcom.Gedcom;
 import genj.lnf.LnFBridge;
 import genj.util.*;
 import genj.util.AreaInScreen;
@@ -111,7 +112,7 @@ public class App {
     }
 
     // Create frame
-    JFrame frame = createFrame(resources.getString("app.title"),Images.imgGedcom,"main", new Dimension(280,180));
+    JFrame frame = createFrame(resources.getString("app.title"),Gedcom.getImage(),"main", new Dimension(280,180));
 
     // Create the desktop
     ControlCenter center = new ControlCenter(frame,registry);

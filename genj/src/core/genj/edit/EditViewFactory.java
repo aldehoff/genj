@@ -32,6 +32,7 @@ import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.view.ContextMenuSupport;
 import genj.view.ViewFactory;
 
@@ -40,34 +41,46 @@ import genj.view.ViewFactory;
  */
 public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   
+  /** resources we use */
+  private Resources resources = EditView.resources;
+  
   /** actions for creating entities */
   private final ActionCreate
-    actionChild  = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, "new.child"),
-    actionParent = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, "new.parent"),
-    actionSpouse = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, "new.spouse"),
-    actionNote   = new ActionCreate(Images.imgNewNote  , Gedcom.NOTES, 0, "new.note"),
-    actionMedia  = new ActionCreate(Images.imgNewMedia , Gedcom.MULTIMEDIAS, 0, "new.media")
+    aChild  = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, resources.getString("new.child")),
+    aParent = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, resources.getString("new.parent")),
+    aSpouse = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, resources.getString("new.spouse")),
+    
+    aIndi   = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS),
+    aFam    = new ActionCreate(Images.imgNewFam   , Gedcom.FAMILIES   ),
+    aNote   = new ActionCreate(Images.imgNewNote  , Gedcom.NOTES      ),
+    aMedia  = new ActionCreate(Images.imgNewMedia , Gedcom.MULTIMEDIAS)
   ;
   
-  private final ActionDelete actionDelete = new ActionDelete();
+  private final ActionDelete aDelete = new ActionDelete();
+
+  /** actions on entities */
+  private ActionDelegate[] gedcom2create = new ActionDelegate[] {
+    aIndi, aFam, aNote, aMedia
+  };
   
   /** actions on entities */
   private ActionDelegate[][] entity2create = new ActionDelegate[][] {
     // INDIVIDUALS
-    { actionDelete,actionChild,actionParent,actionSpouse,actionNote,actionMedia }, 
+    { aDelete,aChild,aParent,aSpouse,aNote,aMedia }, 
     // FAMILIES
-    { actionDelete,actionChild,actionNote,actionSpouse,actionMedia }, 
+    { aDelete,aChild,aNote,aSpouse,aMedia }, 
     // MULTIMEDIAS
-    { actionDelete }, 
+    { aDelete }, 
     // NOTES
-    { actionDelete }, 
+    { aDelete }, 
     // SOURCES
-    { actionDelete }, 
+    { aDelete }, 
     // SUBMITTERS
-    { actionDelete }, 
+    { aDelete }, 
     // REPOSITORIES
-    { actionDelete }  
+    { aDelete }  
   };
+  
 
   /**
    * @see genj.app.ViewFactory#createSettingsComponent(Component)
@@ -97,9 +110,19 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
     // create the actions
     List result = new ArrayList();
     ActionDelegate[] actions = entity2create[entity.getType()];
-    for (int a=0; a<actions.length; a++) {
-      result.add(actions[a]);
-    }
+    for (int a=0; a<actions.length; a++) result.add(actions[a]);
+    // done
+    return result;
+  }
+  
+  /**
+   * @see genj.view.ContextMenuSupport#createActions(Gedcom)
+   */
+  public List createActions(Gedcom gedcom) {
+    // create the actions
+    List result = new ArrayList();
+    ActionDelegate[] actions = gedcom2create;
+    for (int a=0; a<actions.length; a++) result.add(actions[a]);
     // done
     return result;
   }
@@ -121,7 +144,6 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
     protected void execute() {
     }
   } //ActionDelete
-  
 
   /**
    * ActionCreate - create an entity
@@ -130,9 +152,15 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
     /**
      * Constructor
      */
+    private ActionCreate(ImgIcon img, int t) {
+      this(img, t, 0, Gedcom.getNameFor(t, false));
+    }
+    /**
+     * Constructor
+     */
     private ActionCreate(ImgIcon img, int t, int r, String txt) {
       super.setImage(img);
-      super.setText(EditView.resources.getString("new", EditView.resources.getString(txt)));
+      super.setText(EditView.resources.getString("new", txt));
     }
     /**
      * @see genj.util.ActionDelegate#execute()

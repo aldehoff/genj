@@ -239,26 +239,28 @@ public class ViewManager {
   }
   
   /**
-   * Get actions for given entity
+   * Get actions for given entity/gedcom
    */
-  /*package*/ List getActions(Entity entity) {
+  /*package*/ List getActions(Object object) {
     // loop through descriptors
     List result = new ArrayList(16);
     for (int d=0; d<descriptors.length; d++) {
       Descriptor descriptor = descriptors[d];
       if (descriptor.factory instanceof ContextMenuSupport) {
         ContextMenuSupport cms = (ContextMenuSupport)descriptor.factory;
-        result.add(cms.createActions(entity));
+        List as = object instanceof Gedcom ? cms.createActions((Gedcom)object) : cms.createActions((Entity)object);
+        if (as!=null) result.add(as);
       }
     }
     // loop through views
-    Gedcom gedcom = entity.getGedcom();
+    Gedcom gedcom = object instanceof Gedcom ? (Gedcom)object : ((Entity)object).getGedcom();
     Iterator views = viewWidgets.iterator();
     while (views.hasNext()) {
       ViewWidget view = (ViewWidget)views.next();
       if (view.getGedcom()==gedcom&&view.getView() instanceof ContextMenuSupport) {
         ContextMenuSupport cms = (ContextMenuSupport)view.getView();
-        result.add(cms.createActions(entity));
+        List as = object instanceof Gedcom ? cms.createActions((Gedcom)object) : cms.createActions((Entity)object);
+        if (as!=null) result.add(as);
       }
     }
     // done

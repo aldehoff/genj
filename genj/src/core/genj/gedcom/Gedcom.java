@@ -1262,7 +1262,13 @@ public class Gedcom {
       throw new IllegalArgumentException("Unknown type");
     }
   }
-
+  
+  /**
+   * Returns an image for Gedcom
+   */
+  public static ImgIcon getImage() {
+    return Images.get("ged");
+  }
 
   /**
    * Little helper that retuns type for given entity and know

@@ -34,6 +34,9 @@ public class ImgIconConverter {
    * Returns a (cached) Swing ImageIcon representation of given image
    */
   public static ImageIcon get(ImgIcon img) {
+    
+    // null?
+    if (img==null) return null;
 
     // Already present ?
     if (img.getSwingIcon()==null) {

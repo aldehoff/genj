@@ -321,7 +321,7 @@ public class ControlCenter extends JPanel {
     
     /** constructor */
     protected ActionOpen() {
-      super.setImage(Images.imgGedcom);
+      super.setImage(Gedcom.getImage());
       super.setTip("cc.tip.open_file");
       super.setText("cc.menu.open");
       super.setAsync(ASYNC_NEW_INSTANCE);
@@ -777,7 +777,7 @@ public class ControlCenter extends JPanel {
       // Setup merge dialog
       JFrame frame = App.getInstance().createFrame(
         App.resources.getString("cc.title.merge_gedcoms"),
-        Images.imgGedcom,
+        Gedcom.getImage(),
         "merge",
         null
       );
@@ -812,7 +812,7 @@ public class ControlCenter extends JPanel {
       // Setup verify dialog
       JFrame frame = App.getInstance().createFrame(
         App.resources.getString("cc.title.verify_gedcom"),
-        Images.imgGedcom,
+        Gedcom.getImage(),
         "verify",
         null
       );

@@ -307,9 +307,19 @@ import javax.swing.border.TitledBorder;
       EntityPopupSupport esp = (EntityPopupSupport)view;
       JComponent container = esp.getEntityPopupContainer();
       Entity entity = esp.getEntityAt(e.getPoint());
-      if (entity==null) return;
-      // get the actions for that entity
-      List actions = ViewManager.getInstance().getActions(entity);
+      // get the actions/label for the selection
+      String label;
+      List actions;
+      ImgIcon img;
+      if (entity!=null) {
+        actions = ViewManager.getInstance().getActions(entity);
+        label = entity.getId();
+        img = entity.getProperty().getImage(false);
+      } else {
+        actions = ViewManager.getInstance().getActions(gedcom);
+        label = gedcom.getName();
+        img = Gedcom.getImage();
+      }
       if (actions.isEmpty()) return;
       // 20021017 strangely Popups for JPopupMenu don't seem to
       // disappear even though of mouse-clicks in the view. The
@@ -318,12 +328,8 @@ import javax.swing.border.TitledBorder;
       MenuSelectionManager.defaultManager().clearSelectedPath();
       // create a popup
       MenuHelper mh = new MenuHelper();
-      JPopupMenu popup = mh.createPopup(entity.getId());
-      popup.add(new JLabel(
-        entity.getId(), 
-        ImgIconConverter.get(entity.getProperty().getImage(false)),
-        JLabel.CENTER
-      ));
+      JPopupMenu popup = mh.createPopup(label);
+      popup.add(new JLabel(label, ImgIconConverter.get(img), JLabel.CENTER));
       // take actions
       Iterator outer = actions.iterator();
       while (outer.hasNext()) {

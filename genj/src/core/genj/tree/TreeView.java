@@ -652,6 +652,13 @@ public class TreeView extends Scrollpane implements ToolBarSupport, ContextMenuS
   }
   
   /**
+   * @see genj.view.ContextMenuSupport#createActions(Gedcom)
+   */
+  public List createActions(Gedcom gedcom) {
+    return null;
+  }
+  
+  /**
    * ActionRoot - makes the selected entity a root of the tree
    */
   private class ActionRoot extends ActionDelegate {

@@ -29,14 +29,12 @@ final public class Images {
   private static Images instance = new Images();
 
   public static ImgIcon
-    imgGedcom,
     imgHelp;
 
   /**
    * Constructor which pre-loads all images
    */
   private Images() {
-    imgGedcom       = new ImgIcon(this,"images/Gedcom.gif");
     imgHelp         = new ImgIcon(this,"images/Help.gif");
   }
 }
