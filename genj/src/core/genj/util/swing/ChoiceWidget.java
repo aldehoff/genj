@@ -158,7 +158,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
       // not via this.addPopupMenuListener() in 1.4 only 
       String pre = getText();
       for (int i=0; i<getItemCount(); i++) {
-        String item = (String) getItemAt(i);
+        String item = getItemAt(i).toString();
         if (item.regionMatches(true, 0, pre, 0, pre.length())) {
           setSelectedIndex(i);
           break;
