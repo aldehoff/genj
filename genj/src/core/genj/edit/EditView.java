@@ -58,6 +58,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /** the gedcom we're looking at */
   private Gedcom    gedcom;
   
+  /** the title we have */
+  private String title;
+  
   /** the registry we use */
   /*package*/ Registry registry;
 
@@ -90,12 +93,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   /**
    * Constructor
    */
-  public EditView(String title, Gedcom setGedcom, Registry setRegistry, ViewManager setManager) {
+  public EditView(String setTitle, Gedcom setGedcom, Registry setRegistry, ViewManager setManager) {
     
     // remember
-    this.gedcom   = setGedcom;
-    this.registry = setRegistry;
-    this.manager  = setManager;
+    title    = setTitle;
+    gedcom   = setGedcom;
+    registry = setRegistry;
+    manager  = setManager;
 
     // TREE Component's 
     tree = new PropertyTreeWidget(setGedcom);
@@ -151,9 +155,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
    */
   public void removeNotify() {
     
-    // stop editing
-    tree.clearSelection();
-
     // Remember registry
     registry.put("divider",splitPane.getDividerLocation());
     registry.put("last", getCurrentEntity()!=null?getCurrentEntity().getId():"");
@@ -589,7 +590,18 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
      */
     public void valueChanged(TreeSelectionEvent e) {
 
-      // 20040512 removed auto-commit
+//      // on new selected path - currently proxy active?
+//      if (currentProxy!=null&&currentProxy.hasChanged()) {
+//        // FIXME auto commit?
+//        manager.getWindowManager().openDialog(
+//          null, 
+//          title,
+//          WindowManager.IMG_QUESTION,
+//          "Keep changes you've made?",
+//          WindowManager.OPTIONS_YES_NO,
+//          proxyPane
+//        );
+//      }
 
       // Check for 'no selection'
       Property prop = tree.getSelection(); 

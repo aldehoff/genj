@@ -47,6 +47,7 @@ class ProxyAge extends Proxy {
    */
   protected void commit() {
     property.setValue(tfield.getText());
+    tfield.setChanged(false);
   }
 
   /**

@@ -43,7 +43,8 @@ class ProxyChoice extends Proxy {
     // Store changed value
     Object result = choice.getText();
     property.setValue(result!=null?result.toString():"");
-
+    choice.setChanged(false);
+  
     // Done
   }
 

@@ -43,15 +43,6 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    * Finish editing a property through proxy
    */
   protected void commit() {
-    // not if no entity - noone was listening and preview==null 20030420
-    if (xref==null||xref.getReferencedEntity()==null) 
-      return;
-    // update looks
-    setArmed(false);
-    view.tree.removeMouseMotionListener(this);
-    view.tree.removeMouseListener(this);
-    preview.removeMouseMotionListener(this);
-    preview.removeMouseListener(this);
   }
   
   /**
@@ -73,7 +64,13 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    */
   protected Editor getEditor() {
 
-    Editor result = new Editor();
+    Editor result = new Editor() {
+      public void removeNotify() {
+        setArmed(false);
+        view.tree.removeMouseListener(ProxyXRef.this);
+        view.tree.removeMouseMotionListener(ProxyXRef.this);
+      }
+    };
     result.setLayout(new BorderLayout());
 
     // Calculate reference information

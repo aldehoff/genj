@@ -52,6 +52,8 @@ class ProxySex extends Proxy implements ItemListener {
       }
     }
     
+    changed = false;
+    
     // Done
   }
 

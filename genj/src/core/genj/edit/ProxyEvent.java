@@ -47,6 +47,7 @@ class ProxyEvent extends Proxy {
     // known might be null!
     if (known!=null&&known.hasChanged()) {
       ((PropertyEvent)property).setKnownToHaveHappened(known.getSelectedIndex()==0);
+      known.setChanged(false);
     }
   }
 
@@ -70,10 +71,12 @@ class ProxyEvent extends Proxy {
    * components to edit this property
    */
   protected Editor getEditor() {
+
+    Editor result = new Editor();
     
     // showing age@event only for individuals 
-    if (!(property.getEntity() instanceof Indi)) return null;
-    if (!(property instanceof PropertyEvent)) return null;
+    if (!(property.getEntity() instanceof Indi&&property instanceof PropertyEvent)) 
+      return result;
     
     PropertyEvent event = (PropertyEvent)property;
     PropertyDate date = event.getDate(true);
@@ -99,7 +102,6 @@ class ProxyEvent extends Proxy {
     known = new ChoiceWidget(choices, event.isKnownToHaveHappened() ? choices[0] : choices[1]);
     known.setEditable(false);
     
-    Editor result = new Editor();
     GridBagHelper gh = new GridBagHelper(result);
     gh.add(label1, 0, 0, 1, 1, gh.FILL_HORIZONTAL    );
     gh.add(txt   , 1, 0, 1, 1, gh.GROWFILL_HORIZONTAL);

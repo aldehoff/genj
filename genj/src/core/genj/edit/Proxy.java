@@ -35,6 +35,7 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 
+import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -62,6 +63,9 @@ import javax.swing.border.EmptyBorder;
   
   /** the label header */
   protected JLabel label;
+  
+  /** buttons */
+  private AbstractButton ok, cancel;
 
   /**
    * Setup an editor in given panel
@@ -90,8 +94,8 @@ import javax.swing.border.EmptyBorder;
     if (isEditable()) {
       JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
       ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons).setFocusable(false);
-      bh.create(new OK());
-      bh.create(new Cancel());
+      ok = bh.create(new OK());
+      cancel = bh.create(new Cancel());
       panel.add(BorderLayout.SOUTH, buttons);
     }
     
@@ -119,13 +123,6 @@ import javax.swing.border.EmptyBorder;
    * Commit any changes made by the user
    */
   protected abstract void commit();
-  
-  /**
-   * Access to window manager
-   */
-  protected WindowManager getWindowManager() {
-    return view.manager.getWindowManager();
-  }
   
   /**
    * Editable? default is yes
@@ -221,7 +218,6 @@ import javax.swing.border.EmptyBorder;
       try {
         gedcom.startTransaction();
         commit();
-      } catch (Throwable t) {
       } finally {
         gedcom.endTransaction();
       }

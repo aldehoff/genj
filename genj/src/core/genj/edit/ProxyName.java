@@ -52,6 +52,10 @@ class ProxyName extends Proxy {
     PropertyName p = (PropertyName) property;
     p.setName( first, last, suff );
 
+    tFirst.setChanged(false);
+    cLast .setChanged(false);
+    tSuff .setChanged(false);
+    
     // Done
   }
 

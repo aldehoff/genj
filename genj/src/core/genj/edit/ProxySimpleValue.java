@@ -38,8 +38,10 @@ class ProxySimpleValue extends Proxy {
    * Finish editing a property through proxy
    */
   protected void commit() {
-    if (tfield!=null)
+    if (tfield!=null) {
       property.setValue(tfield.getText());
+      tfield.setChanged(false);
+    }
   }
 
   /**

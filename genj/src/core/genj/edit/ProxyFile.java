@@ -91,6 +91,8 @@ import javax.swing.JScrollPane;
     if (property instanceof PropertyBlob) 
       ((PropertyBlob)property).load(file, updateFormatAndTitle);
 
+    tFile.setChanged(false);
+        
     // done
   }
 

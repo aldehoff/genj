@@ -22,6 +22,7 @@ package genj.edit;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.time.PointInTime;
 import genj.util.swing.DateWidget;
+import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -75,6 +76,11 @@ class ProxyDate extends Proxy implements ItemListener {
       if (end!=null)
         p.getEnd().set(deTwo.getValue());
     }
+    
+    // clear change flag
+    deOne.setChanged(false);
+    deTwo.setChanged(false);
+    formatChanged = false;
 
     // Done
   }
@@ -126,12 +132,14 @@ class ProxyDate extends Proxy implements ItemListener {
     result.add(combo);
     combo.addItemListener(this);
 
-    deOne = new DateWidget(p.getStart(), getWindowManager());
+    WindowManager mgr = view.manager.getWindowManager();
+
+    deOne = new DateWidget(p.getStart(), mgr);
     deOne.setAlignmentX(0);
     result.add(deOne);
     result.setFocus(deOne);
 
-    deTwo = new DateWidget(p.getEnd(), getWindowManager());
+    deTwo = new DateWidget(p.getEnd(), mgr);
     deTwo.setAlignmentX(0);
 
     combo.setSelectedIndex( p.getFormat() );

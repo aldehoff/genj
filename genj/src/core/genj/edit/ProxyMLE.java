@@ -38,6 +38,7 @@ class ProxyMLE extends Proxy {
    */
   protected void commit() {
     property.setValue(tarea.getText());
+    tarea.setChanged(false);
   }
 
   /**
