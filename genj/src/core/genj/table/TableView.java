@@ -48,7 +48,6 @@ public class TableView extends Table {
     {"FAM","FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" },
     {"OBJE","OBJE:BLOB"},
     {"NOTE"},
-    {"NOTE"},
     {"SOUR"},
     {"SUBM"},
     {"REPO"}
