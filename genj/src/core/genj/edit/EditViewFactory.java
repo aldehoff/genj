@@ -132,6 +132,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     // event can get can get an obje attached
     if (property instanceof PropertyEvent)
       result.add(new Create(property.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(property,Gedcom.MULTIMEDIAS)));
+    // delete possible
+    result.add(new PDelete(property));
     // done
     return result;
   }
@@ -158,7 +160,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     }
     // add delete
     result.add(ActionDelegate.NOOP);
-    result.add(new Delete(entity));
+    result.add(new EDelete(entity));
     // add an "edit in EditView"
     if (ViewManager.getInstance().getOpenViews(EditView.class).isEmpty()) {
       result.add(ActionDelegate.NOOP);
@@ -339,18 +341,18 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       if (relationship!=null) relationship.apply(result);
       // done
     }
-  } //CreateRelated
+  } //Create
   
   /**
-   * ActionDelete - delete an entity
+   * EDelete - delete an entity
    */  
-  private class Delete extends Change {
+  private class EDelete extends Change {
     /** the candidate to delete */
     private Entity candidate;
     /**
      * Constructor
      */
-    private Delete(Entity entity) {
+    private EDelete(Entity entity) {
       super(entity.getGedcom(), Images.imgDelete, EditView.resources.getString("delete"));
       candidate = entity;
     }
@@ -369,6 +371,40 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     protected void change() throws GedcomException {
       candidate.getGedcom().deleteEntity(candidate);
     }
-  } //ActionDelete
+  } //EDelete
+
+  /**
+   * PDelete - delete a property
+   */  
+  private class PDelete extends Change {
+    /** the candidate to delete */
+    private Property candidate;
+    /**
+     * Constructor
+     */
+    private PDelete(Property property) {
+      super(property.getGedcom(), Images.imgDelete, EditView.resources.getString("delete"));
+      candidate = property;
+    }
+    /**
+     * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
+     */
+    protected String getConfirmMessage() {
+      // a veto?
+      String veto = candidate.getDeleteVeto(); 
+      // You are about to delete {0} of type {1} from {2}! Deleting this ...
+      String msg = resources.getString("confirm.del.prop", new String[] { 
+        candidate.getTag(), candidate.getEntity().getId() 
+      });
+      // result
+      return veto==null ? msg : msg + '\n' + veto; 
+    }
+    /**
+     * @see genj.edit.EditViewFactory.Change#change()
+     */
+    protected void change() throws GedcomException {
+      candidate.getParent().delProperty(candidate);
+    }
+  } //PDelete
 
 } //EditViewFactory
