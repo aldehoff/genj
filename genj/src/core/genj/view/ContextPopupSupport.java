@@ -27,16 +27,16 @@ import javax.swing.JComponent;
 /**
  * Support for a popup menu on entities
  */
-public interface EntityPopupSupport {
+public interface ContextPopupSupport {
 
   /**
    * The component where the popup support is installed on
    */
-  public JComponent getEntityPopupContainer();
+  public JComponent getContextPopupContainer();
   
   /** 
-   * Entity by position
+   * Context (entity/property) by position
    */
-  public Entity getEntityAt(Point pos);
+  public Object getContextAt(Point pos);
 
 } //EntityPopupSupport

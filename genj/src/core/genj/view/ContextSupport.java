@@ -21,23 +21,27 @@ package genj.view;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
 
 import java.util.List;
 
 /**
- * Support for a context menu on an entity
+ * Support for a context if property/entity/gedcom
  */
-public interface ContextMenuSupport {
+public interface ContextSupport {
+  
+  /**
+   * Callback for actions on a property
+   */
+  public List createActions(Property property);
 
   /**
    * Callback for actions on an entity
-   * @return a list of ActionDelegates
    */
   public List createActions(Entity entity);
 
   /**
    * Callback for actions on a gedcom
-   * @return a list of ActionDelegates
    */
   public List createActions(Gedcom gedcom);
 

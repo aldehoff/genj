@@ -34,7 +34,7 @@ import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Registry;
-import genj.view.EntityPopupSupport;
+import genj.view.ContextPopupSupport;
 import genj.view.ViewFactory;
 
 /**
