@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.60 $ $Author: nmeier $ $Date: 2005-01-10 18:30:35 $
+ * $Revision: 1.61 $ $Author: nmeier $ $Date: 2005-03-30 22:44:37 $
  */
 package genj.report;
 
@@ -69,7 +69,9 @@ import javax.swing.event.ListSelectionListener;
 
 
 /**
- * Interface of a user definable GenjJ Report
+ * Base-class of all GenJ reports. Sub-classes that are compiled
+ * and available in ./report will be loaded by GenJ automatically
+ * and can be reloaded during runtime.
  */
 public abstract class Report implements Cloneable {
   
@@ -226,7 +228,9 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Flush any of the pending output
+   * When a report is executed all its text output is gathered and
+   * shown to the user (if run through ReportView). A sub-class can
+   * flush the current log with this method.
    */
   public final void flush() {
     if (out!=null)
@@ -234,16 +238,21 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Append a new line to the log
+   * When a report is executed all its text output is gathered and
+   * shown to the user (if run through ReportView). A sub-class can
+   * append a new line to the current log with this method.
    */
-  public final void println() throws ReportCancelledException {
+  public final void println() {
     println("");
   }
 
   /**
-   * Write an arbitrary Object to the log
+   * When a report is executed all its text output is gathered and
+   * shown to the user (if run through ReportView). A sub-class can
+   * append the text-representation of an object (toString) to the 
+   * current log with this method.
    */
-  public final void println(Object o) throws ReportCancelledException {
+  public final void println(Object o) {
     // nothing to do?
     if (o==null)
       return;
@@ -256,7 +265,11 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * log an exception
+   * When a report is executed all its text output is gathered and
+   * shown to the user (if run through ReportView). A sub-class can
+   * let the user know about an exception with this method. The
+   * information about the exception is appended in text-form to 
+   * the current log.
    */
   public final void println(Throwable t) {
     CharArrayWriter awriter = new CharArrayWriter(256);
@@ -265,7 +278,7 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Helper method that queries the user for a directory
+   * A sub-class can ask the user for a directory with this method.
    */
   public final File getDirectoryFromUser(String title, String button) {
 
@@ -289,14 +302,14 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Helper method that shows a chart to the user
+   * A sub-class can show a chart to the user with this method
    */
   public final void showChartToUser(Chart chart) {
     showComponentToUser(chart);
   }
   
   /**
-   * Helper method that shows a component to the user
+   * A sub-class can show a Java Swing component to the user with this method
    */
   public final void showComponentToUser(JComponent component) {
     
@@ -307,14 +320,16 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Helper method that shows (resulting) items to the user
+   * A sub-class can show items containing text and references to Gedcom
+   * objects to the user with this method
    */
   public final void showItemsToUser(String msg, Gedcom gedcom, List items) {
     showItemsToUser(msg, gedcom, (Item[])items.toArray(new Item[items.size()]));
   }
   
   /**
-   * Helper method that shows (resulting) items to the user
+   * A sub-class can show items containing text and references to Gedcom
+   * objects to the user with this method
    */
   public final void showItemsToUser(String msg, Gedcom gedcom, Item[] items) {
 
@@ -330,7 +345,7 @@ public abstract class Report implements Cloneable {
   }
   
   /**
-   * Helper method that shows (resulting) html to the user
+   * A sub-class can open a browser that will show the given URL with this method
    */
   public final void showBrowserToUser(URL url) {
 
@@ -362,10 +377,10 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Helper method that queries the user for an entity
+   * A sub-class can ask the user for an entity (e.g. Individual) with this method
    * @param msg a message for letting the user know what and why he's choosing
    * @param gedcom to use
-   * @param tag the tag of the entities to show (for example Gedcom.INDI)
+   * @param tag tag of entities to show for selection (e.g. Gedcom.INDI)
    */
   public final Entity getEntityFromUser(String msg, Gedcom gedcom, String tag) {
     
@@ -377,7 +392,7 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Helper method that queries the user for a choice of non-editable items
+   * A sub-class can query the user for a selection of given choices with this method
    */
   public final Object getValueFromUser(String msg, Object[] choices, Object selected) {
 
@@ -390,8 +405,8 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Helper method that queries the user for a text-value giving him a
-   * choice of remembered values
+   * A sub-class can query the user for a text value with this method. The value
+   * that was selected the last time is automatically suggested.
    */
   public final String getValueFromUser(String key, String msg, String[] choices) {
 
@@ -433,14 +448,20 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Helper method that queries the user for yes/no input
+   * A sub-class can query the user for a simple yes/no selection with
+   * this method.
+   * @param msg the message explaining to the user what he's choosing
+   * @param option one of OPTION_YESNO, OPTION_OKCANCEL, OPTION_OK
    */
   public final boolean getOptionFromUser(String msg, int option) {
     return 0==getOptionFromUser(msg, OPTION_TEXTS[option]);
   }
   
   /**
-   * Helper method that queries the user for yes/no input
+   * A sub-class can query the user for a multiple choice selection with
+   * this method.
+   * @param msg the message explaining to the user what he's choosing
+   * @param options text options to choose from
    */
   public final int getOptionFromUser(String msg, String[] options) {
     ActionDelegate[] actions = new ActionDelegate[options.length];
@@ -467,30 +488,45 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * i18n of a string
+   * Sub-classes that are accompanied by a [ReportName].properties file
+   * containing simple key=value pairs can lookup internationalized
+   * text-values with this method.
+   * @param key the key to lookup in [ReportName].properties
    */
   public final String i18n(String key) {
     return i18n(key, (Object[])null);
   }
 
   /**
-   * i18n of a string
+   * Sub-classes that are accompanied by a [ReportName].properties file
+   * containing simple key=value pairs can lookup internationalized
+   * text-values with this method.
+   * @param key the key to lookup in [ReportName].properties
+   * @param value an integer value to replace %1 in value with
    */
-  public final String i18n(String key, int sub) {
-    return i18n(key, new Integer(sub));
+  public final String i18n(String key, int value) {
+    return i18n(key, new Integer(value));
   }
 
   /**
-   * i18n of a string
+   * Sub-classes that are accompanied by a [ReportName].properties file
+   * containing simple key=value pairs can lookup internationalized
+   * text-values with this method.
+   * @param key the key to lookup in [ReportName].properties
+   * @param value an object value to replace %1 in value with
    */
-  public final String i18n(String key, Object sub) {
-    return i18n(key, new Object[]{sub});
+  public final String i18n(String key, Object value) {
+    return i18n(key, new Object[]{value});
   }
 
   /**
-   * i18n of a string
+   * Sub-classes that are accompanied by a [ReportName].properties file
+   * containing simple key=value pairs can lookup internationalized
+   * text-values with this method.
+   * @param key the key to lookup in [ReportName].properties
+   * @param values an array of values to replace %1, %2, ... in value with
    */
-  public final String i18n(String key, Object[] subs) {
+  public final String i18n(String key, Object[] values) {
 
     // get i18n properties
     Properties i18n = getProperties();
@@ -511,10 +547,10 @@ public abstract class Report implements Cloneable {
       Debug.log(Debug.WARNING, this, "Unknown i18 key : "+key);
       result = key;
     } else {
-      if (subs!=null&&subs.length>0) {
-        for (int i=0;i<subs.length;i++) 
-          if (subs[i]==null) subs[i]="";
-        result = Resources.getMessageFormat(result).format(subs);
+      if (values!=null&&values.length>0) {
+        for (int i=0;i<values.length;i++) 
+          if (values[i]==null) values[i]="";
+        result = Resources.getMessageFormat(result).format(values);
       }
     }
 
@@ -617,40 +653,40 @@ public abstract class Report implements Cloneable {
   }
   
   /**
-   * Returns the name of this report.
-   * This default version get the information from the .property file. A report
-   * has to override this method to use another method.
-   * @return  Name of the report.
+   * Returns the name of a report - this by default is the value of key "name"
+   * in the file [ReportName].properties. A report has to override this method 
+   * to provide a localized name if that file doesn't exist.
+   * @return name of the report
    */
   public String getName() {
     return i18n("name");
   }
 
   /**
-   * Returns the author of this script.
-   * This default version get the information from the .property file. A report
-   * has to override this method to use another method.
-   * @return  Name of the author.
+   * Returns the author of a report - this by default is the value of key "author"
+   * in the file [ReportName].properties. A report has to override this method 
+   * to provide the author if that file doesn't exist.
+   * @return name of the author
    */
   public String getAuthor() {
     return i18n("author");
   }
 
   /**
-   * Returns the version of this script
-   * This default version get the information from the .property file. A report
-   * has to override this method to use another method.
-   * @return  Version of the report.
+   * Returns the version of a report - this by default is the value of key "version"
+   * in the file [ReportName].properties. A report has to override this method 
+   * to provide the version if that file doesn't exist.
+   * @return version of report
    */
   public String getVersion() {
      return i18n("version");
   }
 
   /**
-   * Returns information about this report.
-   * This default version get the information from the .property file. A report
-   * has to override this method to use another method.
-   * @return  Description about the report.
+   * Returns information about a report - this by default is the value of key "info"
+   * in the file [ReportName].properties. A report has to override this method 
+   * to provide localized information if that file doesn't exist.
+   * @return information about report
    */
   public String getInfo() {
     return i18n("info");
@@ -659,9 +695,8 @@ public abstract class Report implements Cloneable {
   /**
    * Called by GenJ to start this report's execution - has to be
    * overriden by a user defined report.
-   * @param context normally the gedcom-file but depending on acceptsProperty,
-   * acceptsEntity, acceptsGedcom also either an Entity or Property
-   * @exception InterruptedException in case running Thread is interrupted
+   * @param context normally an instance of type Gedcom but depending on 
+   *    accepts() could also be of type Entity or Property
    */
   public abstract void start(Object context);
 
@@ -681,7 +716,8 @@ public abstract class Report implements Cloneable {
 
   /**
    * Whether the report allows to be run on a given context - default
-   * only accepts Gedcom
+   * only accepts Gedcom but sub-class can override to provide custom
+   * criteria.
    * @param context will an instance of either Gedcom, Entity or Property
    * @return null for no - string specific to context for yes
    */
@@ -785,7 +821,11 @@ public abstract class Report implements Cloneable {
   } //PropertyList
 
   /**
-   * A (result) item can be shown to the user
+   * A report item wraps some text, an image and a reference to 
+   * a Gedcom property instance. A report can create instances of
+   * this type to keep track of findings or pointers that later
+   * can be shown to the user with a simple call to
+   * @see Report#showItemsToUser(String, Gedcom, Item[])
    */
   public static class Item implements Comparable {
 
@@ -796,11 +836,14 @@ public abstract class Report implements Cloneable {
     
     /**
      * Constructor
+     * @param description text description of item
+     * @param image an image to show with item
+     * @param target reference to a gedcom property instance
      */
-    public Item(String naMe, ImageIcon imG, Property taRget) {
-      name = naMe;
-      img = imG;
-      target = taRget;
+    public Item(String description, ImageIcon image, Property target) {
+      this.name = description;
+      this.img = image;
+      this.target = target;
     }
     
     /**
@@ -825,7 +868,7 @@ public abstract class Report implements Cloneable {
     }
     
     /**
-     * Compare by text
+     * Text comparison provided by super-class
      */
     public int compareTo(Object o) {
       Item that = (Item)o;

@@ -135,6 +135,7 @@
           <include name="genj/gedcom/**.java" />
           <include name="genj/report/Report.java" />
           <include name="genj/io/**.java" />
+          <include name="genj/chart/**.java" />
         </fileset>
     </javadoc>
   </target>
