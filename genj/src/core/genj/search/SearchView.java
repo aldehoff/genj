@@ -594,7 +594,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
         // check prop's value
         String value;
         if (prop instanceof MultiLineSupport && !(prop instanceof IconValueAvailable))
-          value = ((MultiLineSupport)prop).getLinesValue();
+          value = ((MultiLineSupport)prop).getAllLines();
         else
           value = prop.getValue();
         search(entity, prop, value);

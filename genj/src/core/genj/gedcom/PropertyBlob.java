@@ -34,14 +34,8 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   
   private final static String TAG = "BLOB";
 
-  /** the raw bytes */
-  private byte[]  raw;
-
-  /** the base64 string */
-  private StringBuffer base64;
-
-  /** transformed to image */
-  private ImageIcon valueAsIcon;
+  /** the content (either base64, raw bytes or an ImageIcon */
+  private Object content = "";
 
   /** whether was checked for image */
   private boolean isIconChecked;
@@ -52,22 +46,21 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   public byte[] getBlobData() {
 
     // Already present ?
-    if (raw!=null) 
-      return raw;
+    if (content instanceof byte[])
+      return (byte[])content;
 
-    // No Base64 present ?
-    if (base64==null)
-      return null;
+    // A decoded image?
+    if (content instanceof ImageIcon)
+      return ((ImageIcon)content).getBytes();
 
     // Decode Base64
     try {
-      raw = Base64.decode(base64);
-      base64 = null; 
+      content = Base64.decode(content.toString());
     } catch (IllegalArgumentException e) {
-      return null;
+      content = "";
     }
 
-    return raw;
+    return (byte[])content;
   }
   
   /**
@@ -106,16 +99,15 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   public String getValue() {
 
     // Raw-Data existing ?
-    if (raw!=null)
-      return raw.length+" Raw Bytes";
+    if (content instanceof byte[])
+      return ((byte[])content).length+" Raw Bytes";
 
-    // Base64-Data existing ?
-    if (base64!=null)
-      return base64.length()+" Base64 Bytes";
-
-    // None
-    return "Empty";
-
+    // Decoded image?
+    if (content instanceof ImageIcon)
+      return ((ImageIcon)content).getByteSize()+" Image Bytes";
+      
+    // gotta be base64 string
+    return content.toString().length()+" Base64 Bytes";
   }
 
   /**
@@ -123,12 +115,14 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    */
   public synchronized ImageIcon getValueAsIcon() {
 
-    // Already calculated?
-    if (isIconChecked) {
-      return valueAsIcon;
-    }
+    // Already image?
+    if (content instanceof ImageIcon)
+      return (ImageIcon)content;
+
+    // Try to decode image only once
+    if (isIconChecked)
+      return null;
     isIconChecked = true;
-    valueAsIcon   = null;
 
     // Data for Image ?
     byte[] bs = getBlobData();
@@ -136,38 +130,47 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
       return null;
 
     // Try to create image
+    ImageIcon result = null;
     try {
-      valueAsIcon = new ImageIcon(getTitle(), bs);
+      result = new ImageIcon(getTitle(), bs);
+      content = result;
     } catch (Throwable t) {
     }
 
-    return valueAsIcon;
+    // done
+    return result;
+  }
+  
+  /**
+   * @see genj.gedcom.MultiLineSupport#getContinuation()
+   */
+  public Continuation getContinuation() {
+    return new MyContinuation();
   }
 
   /**
    * Returns an Iterator which can be used to iterate through
    * several lines of this blob's value
    */
-  public MultiLineSupport.Line getLines() {
+  public MultiLineSupport.Lines getLines() {
+    
+    // raw?
+    if (content instanceof byte[])
+      return new Base64Lines(Base64.encode((byte[])content));
+      
+    // image?
+    if (content instanceof ImageIcon)
+      return new Base64Lines(Base64.encode(((ImageIcon)content).getBytes()));
 
-    if (raw!=null) 
-      return new Base64Iterator(Base64.encode(raw));
-
-    if (base64!=null) 
-      return new Base64Iterator(base64);
-
-    return new Base64Iterator(new StringBuffer());
+    // string!
+    return new Base64Lines(new StringBuffer(content.toString()));
   }
   
   /**
    * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
-  public String getLinesValue() {
-    if (base64!=null) 
-      return base64.toString();
-    if (raw!=null)
-      return Base64.encode(raw).toString();
-    return EMPTY_STRING;
+  public String getAllLines() {
+    return getValue();
   }
 
   /**
@@ -175,16 +178,9 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    */
   public void setValue(String value) {
 
-    // reset current data
-    raw    = null;
-    
-    // collect value
-    base64 = new StringBuffer(4*4096);
-    base64.append(value.trim());
-    
     // Successfull new information
+    content = value;
     isIconChecked = false;
-    valueAsIcon   = null;
 
     // Remember changed property
     modNotify();
@@ -192,25 +188,6 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     // Done
   }
   
-  /**
-   * @see genj.gedcom.MultiLineSupport#append(int, java.lang.String, java.lang.String)
-   */
-  public boolean append(int level, String taG, String vaLue) {
-    // gotta be in base64 mode
-    if (base64==null)
-      return false;
-    // only level 1 (direct children)
-    if (level!=1)
-      return false;
-    // gotta be CONT 
-    if (!"CONT".equals(taG))
-      return false;
-    // grab it
-    base64.append(vaLue.trim());
-    // accepted
-    return true;
-  }
-
   /**
    * Sets this property's value
    */
@@ -221,16 +198,14 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
 
     // Reset state
     isIconChecked = false;
-    valueAsIcon   = null;
-    base64        = null;
-    raw           = null;
+    content ="";
     
     // file?
     if (file.length()!=0) {
       // Try to open file
       try {
         InputStream in = getGedcom().getOrigin().open(file);
-        raw = new ByteArray(in, in.available()).getBytes();
+        content = new ByteArray(in, in.available()).getBytes();
         in.close();
       } catch (IOException ex) {
         return;
@@ -258,9 +233,55 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   }
 
   /**
+   * A continuation for gathering blob data
+   *
+   */
+  private class MyContinuation implements MultiLineSupport.Continuation {
+    
+    /** current state */
+    private StringBuffer buffer;
+    
+    /**
+     * Constructor
+     */ 
+    private MyContinuation() {
+      buffer = new StringBuffer(1024);
+      if (content instanceof String) buffer.append(content);
+    }
+    
+    /**
+     * @see genj.gedcom.MultiLineSupport.Continuation#append(int, java.lang.String, java.lang.String)
+     */
+    public boolean append(int indent, String tag, String value) {
+      
+      // only level 1 (direct children)
+      if (indent!=1)
+        return false;
+        
+      // gotta be CONT 
+      if (!"CONT".equals(tag))
+        return false;
+        
+      // grab it
+      buffer.append(value.trim());
+      
+      // accepted
+      return true;
+    }
+    
+    /**
+     * @see genj.gedcom.MultiLineSupport.Continuation#commit()
+     */
+    public void commit() {
+      setValue(buffer.toString());
+    }
+
+  } //MyContinuation
+
+  /**
    * Member class for iterating through adress' lines of base64-encoded data
    */
-  private static class Base64Iterator implements MultiLineSupport.Line {
+  private static class Base64Lines implements MultiLineSupport.Lines {
 
     /** the base64 string */
     private StringBuffer base64;
@@ -272,9 +293,16 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     private final int LINE = 72;
 
     /** Constructor */
-    public Base64Iterator(StringBuffer base64) {
+    public Base64Lines(StringBuffer base64) {
       this.base64 = base64;
       this.offset = 0;
+    }
+    
+    /**
+     * @see genj.gedcom.MultiLineSupport.LineIterator#getIndent()
+     */
+    public int getIndent() {
+      return offset==0?0:1;
     }
     
     /** current tag */
@@ -288,11 +316,11 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     }
 
     /** set to next */
-    public int next() {
+    public boolean next() {
       if (offset+LINE>=base64.length()) 
-        return 0;
+        return false;
       offset += LINE;
-      return 1;
+      return true;
     }
 
   } //Base64Iterator

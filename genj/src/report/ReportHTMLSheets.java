@@ -245,11 +245,11 @@ public class ReportHTMLSheets extends Report {
     // multiline needs loop
     if (prop instanceof MultiLineSupport) {
       
-      MultiLineSupport.Line lines = ((MultiLineSupport)prop).getLines();
+      MultiLineSupport.Lines lines = ((MultiLineSupport)prop).getLines();
       do {
         out.print(lines.getValue());
         out.print("<br>");
-      } while (lines.next()>0);
+      } while (lines.next());
       
       // done
       return;

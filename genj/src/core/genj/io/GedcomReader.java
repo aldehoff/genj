@@ -19,6 +19,7 @@
  */
 package genj.io;
 
+import genj.crypto.PasswordProvider;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
@@ -48,6 +49,13 @@ import java.util.StringTokenizer;
  */
 public class GedcomReader implements Trackable {
 
+  /** estimated average byte size of one entity */
+  private final static int ENTITY_AVG_SIZE = 150;
+  
+  /** stati the reader goes through */
+  private final static int READHEADER = 0, READENTITIES = 1, LINKING = 2;
+
+  /** lots of state we keep during reading */
   private Gedcom              gedcom;
   private BufferedReader      in;
 
@@ -70,18 +78,16 @@ public class GedcomReader implements Trackable {
   private Thread worker;
   private Object lock = new Object();
   private boolean fixDuplicateIDs = false;
-
-  private final static int ENTITY_AVG_SIZE = 150;
-  private final static int READHEADER = 0, READENTITIES = 1, LINKING = 2;
+  private PasswordProvider password;
 
   /**
    * Constructor
    * @param in BufferedReader to read from
    */
-  public GedcomReader(Origin org) throws IOException {
+  public GedcomReader(Origin initOrg, PasswordProvider initPasswordProvider) throws IOException {
     
     // open origin
-    InputStream oin = org.open();
+    InputStream oin = initOrg.open();
 
     // prepare sniffer
     InputStreamSniffer sniffer = new InputStreamSniffer(oin);
@@ -98,10 +104,11 @@ public class GedcomReader implements Trackable {
     // init some data
     in       = new BufferedReader(reader);
     line     = 0;
-    origin   = org;
+    origin   = initOrg;
     length   = oin.available();
     level    = 0;
     read     = 0;
+    password = initPasswordProvider;
     warnings = new ArrayList(128);
     gedcom   = new Gedcom(origin);
     gedcom.setEncoding(sniffer.getEncoding());
@@ -117,7 +124,7 @@ public class GedcomReader implements Trackable {
   }
 
   /**
-   * Cancels operation
+   * Cancels operation (async ok)
    */
   public void cancel() {
 
@@ -487,7 +494,7 @@ public class GedcomReader implements Trackable {
       // .. not enough tokens
       throw new GedcomFormatException("Expected X [@XREF@] TAG [VALUE]",line);
     }
-
+    
     // Done
     return true;
   }
@@ -499,7 +506,7 @@ public class GedcomReader implements Trackable {
    */
   private void readProperties(Property of, MetaProperty meta, int currentlevel) throws GedcomIOException, GedcomFormatException {
 
-    MultiLineSupport multi = (of instanceof MultiLineSupport) ? (MultiLineSupport)of : null;
+    MultiLineSupport.Continuation continuation =  of instanceof MultiLineSupport ? ((MultiLineSupport)of).getContinuation() : null;
   
     // Get properties of property
     Property prop;
@@ -513,9 +520,9 @@ public class GedcomReader implements Trackable {
       if (level<currentlevel) 
         break;
         
-      // can 'of' consume it?
-      if (multi!=null&&multi.append(level-currentlevel+1, tag, value)) 
-        continue;
+      // can we continue with current?
+      if (continuation!=null&&continuation.append(level-currentlevel+1, tag, value)) 
+          continue;
         
       // skip if level>currentLevel?
       if (level>currentlevel) {
@@ -541,6 +548,9 @@ public class GedcomReader implements Trackable {
       
       // next property
     } while (true);
+
+    // commit continuation
+    if (continuation!=null) continuation.commit();
   
     // restore what we haven't consumed
     undoLine();

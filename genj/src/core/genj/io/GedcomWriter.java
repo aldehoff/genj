@@ -20,6 +20,7 @@
 package genj.io;
 
 import genj.Version;
+import genj.crypto.Enigma;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MultiLineSupport;
@@ -45,6 +46,7 @@ import java.util.Iterator;
  */
 public class GedcomWriter implements Trackable {
 
+  /** lots of state */
   private Gedcom gedcom;
   private BufferedWriter out;
   private String file;
@@ -56,6 +58,7 @@ public class GedcomWriter implements Trackable {
   private int entity;
   private boolean cancel = false;
   private Filter[] filters = new Filter[0];
+  private Enigma enigma = null;
 
   /**
    * Constructor
@@ -162,12 +165,7 @@ public class GedcomWriter implements Trackable {
     if (cancel) {
       throw new GedcomIOException("Operation cancelled", line);
     }
-
-    // Indent
-    /*
-    for (int i=0;i<level;i++)
-      out.write(' ');
-    */
+    
     // Level+Tag+Value
     String l = "" + level;
     out.write(l, 0, l.length());
@@ -300,13 +298,15 @@ public class GedcomWriter implements Trackable {
     }
 
     // This property's value
+    boolean encrypt = prop.isPrivate();
+    
     if (prop instanceof MultiLineSupport) {
 
       // .. more lines from iterator
-      MultiLineSupport.Line lines = ((MultiLineSupport)prop).getLines();
-      line(prefix + lines.getTag(), lines.getValue());
-      for (int delta=lines.next();delta>0;delta=lines.next())
-        line(delta, lines.getTag(), lines.getValue());
+      MultiLineSupport.Lines lines = ((MultiLineSupport)prop).getLines();
+      line(lines.getIndent(), prefix + lines.getTag(), lines.getValue());
+      while (lines.next())
+        line(lines.getIndent(), lines.getTag(), lines.getValue());
 
     } else {
       
@@ -329,6 +329,23 @@ public class GedcomWriter implements Trackable {
     level--;
     
     // done
+  }
+  
+  /**
+   * encrypt a value
+   */
+  private String encrypt(String value) throws IOException {
+    // Make sure enigma is setup
+    if (enigma==null) {
+      String pwd = gedcom.getPassword();
+      if (pwd==null)
+        throw new IOException("Unknown Password - needed for encryption");
+      enigma = Enigma.getInstance(gedcom.getPassword());
+      if (enigma==null)
+        throw new IOException("Encryption not possible");
+    }
+    // encrypt and done
+    return enigma.encrypt(value);
   }
 
   /**

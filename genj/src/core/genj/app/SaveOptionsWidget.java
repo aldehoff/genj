@@ -213,7 +213,7 @@ import javax.swing.JTextField;
       if (paths.contains(property.getPath())) return false;
       // check if value is applying
       if (property instanceof MultiLineSupport) {
-        if (!accept(((MultiLineSupport)property).getLinesValue()))
+        if (!accept(((MultiLineSupport)property).getAllLines()))
           return false;
       }
       // simple

@@ -42,6 +42,9 @@ import javax.crypto.spec.DESKeySpec;
 
   /** salt padding */
   private final static String SALT_PADDING = "GENEALOGYJ"; 
+  
+  /** algorithm used */
+  private final static String ALGORITHM = "DES";
 
   /**
    * Initializer
@@ -57,22 +60,23 @@ import javax.crypto.spec.DESKeySpec;
       KeySpec keyspec = new DESKeySpec(salt);
 
       // generate cipher      
-      cipher = Cipher.getInstance("DES");
+      cipher = Cipher.getInstance(ALGORITHM);
   
       // generate key
-      key = SecretKeyFactory.getInstance("DES").generateSecret(keyspec);
+      key = SecretKeyFactory.getInstance(ALGORITHM).generateSecret(keyspec);
       
     } catch (Throwable t) { 
+      t.printStackTrace();
+      return null;
     }
   
     return this;
   }
 
   /**
-   * @see genj.crypto.Enigma#encrypt(java.lang.String)
    * @return byte_2_base64(byte-encrypt(java_2_utf-8-bytes(value)))
    */
-  public String encrypt(String value) throws IOException {
+  protected String encryptImpl(String value) throws IOException {
     
     try {
     
@@ -91,16 +95,15 @@ import javax.crypto.spec.DESKeySpec;
       
     } catch (Throwable t) {
       // not really expecting any exceptions to be thrown
-      throw new IOException("Encrypt failed : "+t.getMessage());
+      throw new IOException("Encrypt failed : "+t+'/'+t.getMessage());
     }
     
   }
 
   /**
-   * @see genj.crypto.Enigma#decrypt(java.lang.String)
    * @return utf-8-bytes_2_java(byte-decrypt(base64_2_byte(value)))
    */
-  public String decrypt(String value) throws IOException {
+  protected String decryptImpl(String value) throws IOException {
   
     try {
     

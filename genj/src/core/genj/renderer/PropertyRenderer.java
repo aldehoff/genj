@@ -242,11 +242,11 @@ public class PropertyRenderer {
       // count 'em
       int lines = 0;
       int width = 0;
-      MultiLineSupport.Line line = ((MultiLineSupport)prop).getLines();
+      MultiLineSupport.Lines line = ((MultiLineSupport)prop).getLines();
       do {
         lines++;
         width = Math.max(width, metrics.stringWidth(line.getValue()));
-      } while (line.next()>0);
+      } while (line.next());
       // done
       return new Dimension(width, metrics.getHeight()*lines);
     }
@@ -261,7 +261,7 @@ public class PropertyRenderer {
         return;
       }
       // get lines
-      MultiLineSupport.Line line = ((MultiLineSupport)prop).getLines();
+      MultiLineSupport.Lines line = ((MultiLineSupport)prop).getLines();
       // paint
       Rectangle clip = g.getClipBounds();
       int 
@@ -283,7 +283,7 @@ public class PropertyRenderer {
         // .. break if not visible anymore
         if (r.y>m) break;
         
-      } while (line.next()>0);
+      } while (line.next());
       // done
     }
     

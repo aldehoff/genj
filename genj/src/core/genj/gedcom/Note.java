@@ -20,6 +20,8 @@
 package genj.gedcom;
 
 
+
+
 /**
  * Class for encapsulating a note
  */
@@ -75,23 +77,23 @@ public class Note extends Entity implements MultiLineSupport {
   /**
    * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
-  public String getLinesValue() {
-    return delegate.getLinesValue();
+  public String getAllLines() {
+    return delegate.getAllLines();
   }
   
   /**
    * @see genj.gedcom.PropertyNote#getLines()
    */
-  public Line getLines() {
+  public Lines getLines() {
     return delegate.getLines();
   }
-  
+
   /**
-   * @see genj.gedcom.MultiLineSupport#append(int, java.lang.String, java.lang.String)
+   * @see genj.gedcom.MultiLineSupport#getContinuation()
    */
-  public boolean append(int level, String tag, String value) {
-    // keep it in delegate
-    return delegate.append(level, tag, value);
+  public Continuation getContinuation() {
+    return delegate.getContinuation();
   }
+  
 
 } //Note

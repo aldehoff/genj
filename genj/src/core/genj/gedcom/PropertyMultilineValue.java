@@ -20,6 +20,8 @@
 package genj.gedcom;
 
 
+
+
 /**
  * Gedcom Property with multiple lines
  */
@@ -29,7 +31,7 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
   private String tag;
   
   /** our value */
-  private StringBuffer value = new StringBuffer(80);
+  private StringBuffer lines = new StringBuffer(80);
   
   /**
    * Which Proxy to use for this property
@@ -58,35 +60,15 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
    */
   public void setValue(String set) {
     modNotify();
-    value.setLength(0);
-    value.append(set);
+    lines.setLength(0);
+    lines.append(set);
   }
 
   /**
    * Accessor Value
    */
   public String getValue() {
-    return getFirstLine(value);
-  }
-  
-  /**
-   * @see genj.gedcom.MultiLineSupport#append(int, java.lang.String, java.lang.String)
-   */
-  public boolean append(int level, String taG, String vaLue) {
-    // only level 1 (direct children)
-    if (level!=1)
-      return false;
-    // gotta be CONT or CONC
-    boolean 
-      isCont = "CONT".equals(taG),
-      isConc = "CONC".equals(taG);
-    if (!(isConc||isCont))
-      return false;
-    // grab it
-    if (isCont) value.append('\n');
-    value.append(vaLue);
-    // accepted
-    return true;
+    return getFirstLine(lines);
   }
   
   /**
@@ -110,22 +92,29 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
   /**
    * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
-  public String getLinesValue() {
-    return value.toString();
+  public String getAllLines() {
+    return lines.toString();
   }
 
   
   /**
    * @see genj.gedcom.MultiLineSupport#getLines()
    */
-  public Line getLines() {
-    return new MLLine(getTag(), value);
+  public Lines getLines() {
+    return new MyLines(getTag(), lines);
+  }
+
+  /**
+   * @see genj.gedcom.MultiLineSupport#getContinuation()
+   */
+  public Continuation getContinuation() {
+    return new MyContinuation();
   }
   
   /**
    * An iterator for lines
    */
-  /*package*/ static class MLLine implements Line {
+  private static class MyLines implements Lines {
     
     /** the tag */
     private String tag, next;
@@ -139,7 +128,7 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
     /**
      * Constructor
      */
-    /*package*/ MLLine(String top, StringBuffer linesValue) {
+    /*package*/ MyLines(String top, StringBuffer linesValue) {
       
       tag = top;
       next = top;
@@ -148,6 +137,13 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
       start = 0;
       end = 0;
       next();
+    }
+    
+    /**
+     * @see genj.gedcom.MultiLineSupport.LineIterator#getIndent()
+     */
+    public int getIndent() {
+      return start==0 ? 0 : 1;
     }
     
     /**
@@ -167,13 +163,13 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
     /**
      * @see genj.gedcom.MultiLineSupport.Line#next()
      */
-    public int next() {
+    public boolean next() {
       
       tag = next;
       
       // nothing more there?
       if (end==value.length()) 
-        return 0;
+        return false;
       
       // continue from last end
       start = end;
@@ -186,7 +182,7 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
         if (!Character.isWhitespace(value.charAt(start))) break;
         start++;
         if (start==end) 
-          return 0;
+          return false;
       }
       
       // take all up to next CR
@@ -210,9 +206,52 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
       }
       
       // done
-      return end>start ? 1 : 0;
+      return end>start;
     }
     
-  } //MLLine
+  } //LineReader
+  
+  /**
+   * An iterator for lines
+   */
+  private class MyContinuation implements Continuation {
+    
+    /** running collection */
+    private StringBuffer buffer = new StringBuffer(lines.toString());
+    
+    /**
+     * append some
+     */
+    public boolean append(int indent, String tag, String value) {
+      
+      // only level 1 (direct children)
+      if (indent!=1)
+        return false;
+        
+      // gotta be CONT or CONC
+      boolean 
+        isCont = "CONT".equals(tag),
+        isConc = "CONC".equals(tag);
+      if (!(isConc||isCont))
+        return false;
+        
+      // grab it
+      if (isCont) 
+        buffer.append('\n');
+        
+      buffer.append(value);
+      
+      // accepted
+      return true;
+    }
+    
+    /**
+     * @see genj.gedcom.MultiLineSupport.Writer#commit()
+     */
+    public void commit() {
+      setValue(buffer.toString());
+    }
+
+  } //LineWriter
 
 } //PropertyMultilineValue

@@ -44,22 +44,36 @@ public abstract class Enigma {
   }
   
   /**
-   * Initialization call
-   */
-  protected abstract Enigma init(String password);
-  
-  /**
    * encrypt
    * @param value the plain data as Java string to encrypt
    * @return the encrypted value
    */  
-  public abstract String encrypt(String value) throws IOException;
+  public String encrypt(String value) throws IOException {
+    return encryptImpl(value);
+  }
 
   /**
    * decrypt
    * @param value the encrypted data as Java string to decrypt 
    * @return the decrypted value
    */  
-  public abstract String decrypt(String value) throws IOException;
+  public String decrypt(String value) throws IOException {
+    return decryptImpl(value);
+  }
+
+  /**
+   * implementation contract - initialization
+   */
+  protected abstract Enigma init(String password);
+  
+  /**
+   * implementation contract - encrypt
+   */
+  protected abstract String encryptImpl(String value) throws IOException;
+  
+  /**
+   * implementation contract - decrypt
+   */
+  protected abstract String decryptImpl(String value) throws IOException;
   
 } //Enigma

@@ -548,7 +548,7 @@ public class PropertyTreeWidget extends TreeWidget {
           
           if (prop instanceof MultiLineSupport && !(prop instanceof IconValueAvailable)) {
           
-            char[] chars = ((MultiLineSupport)prop).getLinesValue().toCharArray();
+            char[] chars = ((MultiLineSupport)prop).getAllLines().toCharArray();
             for (int i=0; i<chars.length; i++) {
               char c = chars[i];
               if (c=='\n') html.append("<br>");

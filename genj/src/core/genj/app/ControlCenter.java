@@ -19,6 +19,7 @@
  */
 package genj.app;
 
+import genj.crypto.PasswordProvider;
 import genj.gedcom.Gedcom;
 import genj.io.Filter;
 import genj.io.GedcomFormatException;
@@ -430,7 +431,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - open
    */
-  private class ActionOpen extends ActionDelegate {
+  private class ActionOpen extends ActionDelegate implements PasswordProvider {
 
     /** a preset origin we're reading from */
     private Origin origin;
@@ -712,7 +713,7 @@ public class ControlCenter extends JPanel {
       try {
         
         // .. prepare our reader
-        reader = new GedcomReader(origin);
+        reader = new GedcomReader(origin, this);
 
       } catch (IOException ex) {
         windowManager.openDialog(
@@ -741,6 +742,15 @@ public class ControlCenter extends JPanel {
 
       // .. continue into (async) execute
       return true;
+    }
+    
+    /**
+     * Callback - password needed for decryption of private data (async)
+     * @see genj.crypto.PasswordProvider#getPassword(boolean)
+     */
+    public String getPassword(boolean retry) {
+      // Fixme prompt user for password
+      return null;
     }
 
   } //ActionOpen

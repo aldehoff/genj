@@ -17,42 +17,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.gedcom;
-
-
+package genj.crypto;
 
 /**
- * Class for encapsulating a source
- * Basic strategy was to copy parts of note and media and then strip
- * out as much as I could.
+ * A password callback interface 
  */
-public class Source extends Entity {
+public interface PasswordProvider {
 
   /**
-   * Returns this property as a string
+   * Callback when password is necessary
+   * @param retry whether this call is a retry (2nd++)
+   * @return password if available or null
    */
-  public String toString() {
-    String title = getTitle();
-    return title.length()>0 ? title : super.toString();
-  }
-  
-  /** 
-   * the title
-   */
-  public String getTitle() {
-    Property title = getProperty("TITL");
-    return title!=null ? title.getValue() : EMPTY_STRING;
-  }
-  
-  /**
-   * The text
-   */
-  public String getText() {
-    Property text = getProperty("TEXT");
-    if (text instanceof PropertyMultilineValue) 
-      return ((PropertyMultilineValue)text).getAllLines();
-    if (text!=null) return text.getValue();
-    return EMPTY_STRING;
-  }
-  
-} //Source
+  public String getPassword(boolean retry);
+
+} //PasswordProvider

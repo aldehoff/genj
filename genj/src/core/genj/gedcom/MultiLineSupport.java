@@ -26,24 +26,45 @@ package genj.gedcom;
 public interface MultiLineSupport {
   
   /**
-   * Append another line
+   * Return an iterator for writing lines
    */
-  public boolean append(int level, String tag, String value);
+  public Continuation getContinuation();
 
   /**
-   * Return the multiline iterator
+   * Return an iterator for reading lines
    */
-  public Line getLines();
+  public Lines getLines();
   
   /** 
-   * Return the multiline value
+   * Return the multiline value as a continuous String
    */
-  public String getLinesValue();
+  public String getAllLines();
   
   /**
-   * An iterator over multiple lines
+   * An iterator for continuing with multiple lines 
    */
-  public interface Line {
+  public interface Continuation {
+    
+    /**
+     * append
+     * @return true for consumed, false otherwise
+     */
+    public boolean append(int indent, String tag, String value);
+    
+    /**
+     * commit the writer - no more data following
+     */
+    public void commit();
+    
+  }
+  
+  /**
+   * An iterator for reading multiple lines
+   */
+  public interface Lines {
+
+    /** relative level of indent (normaly 0) */
+    public int getIndent();
     
     /** tag for line */
     public String getTag();
@@ -51,9 +72,9 @@ public interface MultiLineSupport {
     /** value for line */
     public String getValue();
     
-    /** set to next line and return level delta (normally 1, no next 0) */ 
-    public int next();
+    /** set to next line */ 
+    public boolean next();
     
-  } //a line
+  } //LineIterator
 
 } //MultiLineSupport

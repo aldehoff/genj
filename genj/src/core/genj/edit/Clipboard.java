@@ -93,7 +93,7 @@ public class Clipboard {
       value = prop.getValue();
       
       if (isMultiline)
-        multiline = ((MultiLineSupport)prop).getLinesValue();
+        multiline = ((MultiLineSupport)prop).getAllLines();
         
       // subs?
       Property[] children = prop.getProperties();

@@ -60,7 +60,7 @@ class ProxyMLE extends Proxy {
     // Calculate value to show
     String value;
     if (property instanceof MultiLineSupport) {
-      value = ((MultiLineSupport)property).getLinesValue();
+      value = ((MultiLineSupport)property).getAllLines();
     } else {
       value = property.getValue(); 
     }

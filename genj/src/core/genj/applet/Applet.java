@@ -174,7 +174,7 @@ public class Applet extends java.applet.Applet {
         registry = new Registry(origin.open("genj.properties"));
         
         // the gedcom file
-        reader = new GedcomReader(origin);
+        reader = new GedcomReader(origin, null); //FIXME popup needed for password
         gedcom = reader.read();
         Thread.currentThread().sleep(100);
         

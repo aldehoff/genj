@@ -122,48 +122,23 @@ public class PropertyChange extends Property implements MultiLineSupport {
   }
   
   /**
-   * Callback for properties that we might be able to
-   * append - we do TIME and DATE
-   * @see genj.gedcom.MultiLineSupport#append(int, java.lang.String, java.lang.String)
+   * @see genj.gedcom.MultiLineSupport#getContinuation()
    */
-  public boolean append(int level, String tag, String value) {
-    
-    // DATE
-    if (level==1&&DATE.equals(tag)) { 
-      pit = PointInTime.getPointInTime(value);
-      return true;
-    }
-    
-    // TIME
-    if (level==2&&TIME.equals(tag)) {
-      time = -1;
-      
-      for (int f=0;f<FORMATS.length;f++) {
-        try {
-          time = FORMATS[f].parse(value).getTime();
-          break;
-        } catch (Throwable t) {
-        }
-      }
-      
-      return true;
-    }
-    
-    // don't know it
-    return false;
+  public Continuation getContinuation() {
+    return new MyContinuation();
   }
-
+    
   /**
    * @see genj.gedcom.MultiLineSupport#getLines()
    */
-  public Line getLines() {
-    return new Lines();
+  public Lines getLines() {
+    return new MyLines();
   }
   
   /**
    * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
-  public String getLinesValue() {
+  public String getAllLines() {
     return EMPTY_STRING;
   }
   
@@ -199,23 +174,76 @@ public class PropertyChange extends Property implements MultiLineSupport {
   }
 
   /**
-   * Iterator for lines
+   * Continuation for handling multiple lines concerning this change
    */
-  private class Lines implements MultiLineSupport.Line {
+  private class MyContinuation implements MultiLineSupport.Continuation {
+    
+    /**
+     * @see genj.gedcom.MultiLineSupport.Continuation#append(int, java.lang.String, java.lang.String)
+     */
+    public boolean append(int indent, String tag, String value) {
+      
+      // DATE
+      if (indent==1&&DATE.equals(tag)) { 
+        pit = PointInTime.getPointInTime(value);
+        return true;
+      }
+    
+      // TIME
+      if (indent==2&&TIME.equals(tag)) {
+        time = -1;
+      
+        for (int f=0;f<FORMATS.length;f++) {
+          try {
+            time = FORMATS[f].parse(value).getTime();
+            break;
+          } catch (Throwable t) {
+          }
+        }
+      
+        return true;
+      }
+      
+      // unknown
+      return false;
+    }
+    
+    /**
+     * @see genj.gedcom.MultiLineSupport.Continuation#commit()
+     */
+    public void commit() {
+      // nothing to commit
+    }
+    
+  } //MyContinuation
+
+  /**
+   * Iterator for lines wrapped in this change
+   */
+  private class MyLines implements MultiLineSupport.Lines {
+    
     /** tracking line index */
     int i = 0;
+    
     /** lines */
     private String[] 
       tags = { CHAN, DATE, TIME  },
       values = { EMPTY_STRING, pit.toGedcomString(), getTimeAsString() };
-    private int[]
-      indents = { 1, 2};
+      
+    /**
+     * @see genj.gedcom.MultiLineSupport.LineIterator#getIndent()
+     */
+    public int getIndent() {
+      return i;
+    }
+      
     /**
      * @see genj.gedcom.MultiLineSupport.Line#getTag()
      */
     public String getTag() {
       return tags[i];
     }
+    
     /**
      * @see genj.gedcom.MultiLineSupport.Line#getValue()
      */
@@ -225,9 +253,10 @@ public class PropertyChange extends Property implements MultiLineSupport {
     /**
      * @see genj.gedcom.MultiLineSupport.Line#next()
      */
-    public int next() {
-      return i==indents.length ? 0 : indents[i++];
+    public boolean next() {
+      return ++i!=tags.length;
     }
+    
   } //Lines
 
   
