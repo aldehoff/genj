@@ -69,6 +69,7 @@ public class App {
   private Registry registry;
   private Hashtable openFrames = new Hashtable();
   private static App instance;
+  private Resources resources = Resources.get(this);
 
   /**
    * Application Constructor
@@ -95,9 +96,6 @@ public class App {
       System.setProperty("user.language", lang);
     } catch (Throwable t) {}
 
-    // lookup resources
-    Resources resources = Resources.get(this);
-    
     // Make sure that Swing shows our localized texts
     Enumeration keys = resources.getKeys();
     while (keys.hasMoreElements()) {
@@ -120,22 +118,7 @@ public class App {
     FileAssociation.read(registry);
 
     // Disclaimer
-    String version = Version.getInstance().toString();
-    if (!version.equals(registry.get("disclaimer",""))) {
-
-      registry.put("disclaimer", version);
-
-      JTextPane tpane = new JTextPane();
-      tpane.setText(resources.getString("app.disclaimer"));
-      JScrollPane spane = new JScrollPane(tpane) {
-        public Dimension getPreferredSize() {
-          return new Dimension(256,128);
-        }
-      };
-
-      JOptionPane.showMessageDialog(null,spane,"Disclaimer",JOptionPane.INFORMATION_MESSAGE);
-
-    }
+    checkDisclaimer();
 
     // Create frame
     JFrame frame = createFrame(resources.getString("app.title"),Gedcom.getImage(),"main", new Dimension(280,180));
@@ -282,6 +265,33 @@ public class App {
     }
     // create it
     return new App.Dialog(title, key, dimension, frame, content, choices);
+  }
+  
+  /**
+   * Checks and shows Disclaimer Dialog if necessary
+   */
+  private void checkDisclaimer() {
+    
+    // check version and registry value
+    String version = Version.getInstance().toString();
+    if (version.equals(registry.get("disclaimer","")))
+      return;
+      
+    // keep it      
+    registry.put("disclaimer", version);
+
+    // show disclaimer
+    JTextPane tpane = new JTextPane();
+    tpane.setText(resources.getString("app.disclaimer"));
+    JScrollPane spane = new JScrollPane(tpane) {
+      public Dimension getPreferredSize() {
+        return new Dimension(300,200);
+      }
+    };
+
+    JOptionPane.showMessageDialog(null,spane,"Disclaimer",JOptionPane.INFORMATION_MESSAGE);
+
+    // done
   }
 
   /**
