@@ -133,9 +133,11 @@ public class Origin {
       try {
         uc = new URL(name).openConnection();
       } catch (MalformedURLException e1) {
-        // ... hmmm, with "file://"?
+        // ... hmmm, with "file:"?
         try {
-          uc = new URL("file://"+name).openConnection();
+          // 20021210 using file:// here seems to slow things down if no
+          // file exists
+          uc = new URL("file:"+name).openConnection();
         } catch (MalformedURLException e2) {
           return null;
         }

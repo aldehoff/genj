@@ -40,13 +40,6 @@ public class ByteArray {
    * Constructor
    */
   public ByteArray(InputStream in) throws IOException {
-    this(in, Integer.MAX_VALUE);
-  }
-
-  /**
-   * Constructor
-   */
-  public ByteArray(InputStream in, int max) throws IOException {
 
     // Read from stream
     byte buffer[] = new byte[CLUSTER];
@@ -56,18 +49,17 @@ public class ByteArray {
 
       // Read !
       try {
-        len = in.read(buffer,total,Math.min(buffer.length-total, max-total));
+        len = in.read(buffer,total,buffer.length-total);
       } catch (IOException ex) {
         throw ex;
       }
 
       // End of stream ?
-      if (len<0||total==max)
-        break;
+      if (len<0) break;
 
       // Increment amount read !
       total+=len;
-
+      
       // Did it fit and end ?
       if (total<buffer.length) {
         continue;
@@ -83,7 +75,7 @@ public class ByteArray {
 
     // Remember
     bits = buffer;
-
+    
     // Done
   }
 
