@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -37,11 +38,13 @@ import java.util.StringTokenizer;
  */
 public class ReportHTMLSheets extends Report {
 
+  private final static String INDEX = "index.html";
+
   /** an options - style sheet */
   public String styleSheet = "";
 
   /** A <pre>&nbsp</pre> looks better than an empty String in a HTML cell */
-  private final static String EMPTY_CELL_STRING = "&nbsp;";
+  private final static String SPACE = "&nbsp;";
 
   /** whether to translate between unicode and html or not (slow!) */
   public boolean isUnicode2HTML = true;
@@ -281,7 +284,7 @@ public class ReportHTMLSheets extends Report {
     out.print(markupBeg);
     StringTokenizer tag = new StringTokenizer(wrapText(Gedcom.getName(prop.getTag())), " ");
     while (tag.hasMoreElements())
-      out.print(tag.nextToken()+"&nbsp;");
+      out.print(tag.nextToken()+SPACE);
     out.print(markupEnd);
     out.println("</td>");
 
@@ -345,7 +348,7 @@ public class ReportHTMLSheets extends Report {
    */
   private void exportSpaces(PrintWriter out, int num) {
     for (int c=0;c<num;c++) {
-      out.print("&nbsp;");
+      out.print(SPACE);
     }
   }
 
@@ -354,6 +357,10 @@ public class ReportHTMLSheets extends Report {
    */
   private File getFileForEntity(File dir, Entity entity) {
     return new File(dir, entity.getId()+".html");
+  }
+  
+  private File getFileForIndex(File dir) {
+    return new File(dir, INDEX);
   }
 
   /**
@@ -408,7 +415,7 @@ public class ReportHTMLSheets extends Report {
    */
   private void exportIndex(Gedcom gedcom, File dir) throws IOException {
 
-    PrintWriter out = new PrintWriter(new FileOutputStream(new File(dir, "index.html")));
+    PrintWriter out = new PrintWriter(new FileOutputStream(getFileForIndex(dir)));
 
     println(i18n("exporting", new String[]{ "index.html", dir.toString() }));
 
@@ -453,6 +460,16 @@ public class ReportHTMLSheets extends Report {
   }
 
   /**
+   * While we generate information on stdout it's not really
+   * necessary because we're bringing up the result in a
+   * browser anyways
+   */
+  public boolean usesStandardOut() {
+    return false;
+  }
+
+
+  /**
    * The report's entry point
    */
   public void start(Object context) {
@@ -474,6 +491,13 @@ public class ReportHTMLSheets extends Report {
       exportIndex(gedcom, dir);
     } catch (IOException e) {
       println("IOError while exporting :(");
+    }
+    
+    // Bring up the result
+    try {
+      showBrowserToUser(getFileForIndex(dir).toURL());
+    } catch (MalformedURLException e) {
+      // shouldn't happen
     }
 
     // Done
@@ -543,7 +567,7 @@ public class ReportHTMLSheets extends Report {
       
     // We don't want to see 'null' but ''
     if (content == null)
-      content = EMPTY_CELL_STRING;
+      content = SPACE;
 
     // Here comes the HTML
     out.println("<TD>"+wrapText(content.toString())+"</TD>");
@@ -572,6 +596,7 @@ public class ReportHTMLSheets extends Report {
    * Writes HTML end header and end body information
    */
   private void printCloseHTML(PrintWriter out) {
+    out.println("<a href=\""+INDEX+"\">Index</a>");
     out.println("</BODY>");
     out.println("</HTML>");
   }
