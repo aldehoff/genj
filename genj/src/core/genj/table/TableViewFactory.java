@@ -32,6 +32,9 @@ import javax.swing.JComponent;
  * The factory for the TableView
  */
 public class TableViewFactory implements ViewFactory {
+  
+  /** our image */
+  private final static ImageIcon IMG = new ImageIcon(TableViewFactory.class, "images/View.gif");
 
   /**
    * @see genj.view.ViewFactory#createView(String, Gedcom, Registry, ViewManager)
@@ -44,7 +47,7 @@ public class TableViewFactory implements ViewFactory {
    * @see genj.view.ViewFactory#getImage()
    */
   public ImageIcon getImage() {
-    return new ImageIcon(this, "images/View.gif");
+    return IMG;
   }
   
   /**
