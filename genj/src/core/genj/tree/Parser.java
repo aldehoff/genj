@@ -458,7 +458,7 @@ import java.awt.geom.Rectangle2D;
     private double[] padFams;
     
     /** how we pad husband, wife */
-    private double[] padHusband, padWife;
+    private double[] padHusband, padWife, padNext;
     
     /** how we offset an indi above its marr */
     private double offsetHusband;
@@ -488,6 +488,13 @@ import java.awt.geom.Rectangle2D;
         padIndis[0],
         0,
         padIndis[2],
+        0
+      };
+      
+      padNext = new double[] {
+        padIndis[0],
+        -padIndis[1],
+        0,
         0
       };
       
@@ -581,8 +588,8 @@ import java.awt.geom.Rectangle2D;
       
       // add 'next' spouse and arc spouse-next
       if (fams.length>1&&model.isFoldSymbols()) {
-        TreeNode nNext = model.add(new TreeNode(model.new NextFamily(indi,fams), shapeNext, null));
-        model.add(new TreeArc(nSpouse, nNext, false));
+        TreeNode nNext = model.add(new TreeNode(model.new NextFamily(indi,fams), shapeNext, padNext));
+        model.add(new TreeArc(pivot, nNext, false));
       }
             
       // add fam and arc indi-fam
