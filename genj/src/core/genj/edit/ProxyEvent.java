@@ -46,6 +46,7 @@ class ProxyEvent extends Proxy {
    * Finish proxying edit for property Birth
    */
   protected void finish() {
+    // known might be null!
     if (known!=null&&known.hasChanged()) {
       ((PropertyEvent)property).setKnownToHaveHappened(known.getSelectedIndex()==0);
     }
@@ -55,7 +56,8 @@ class ProxyEvent extends Proxy {
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-    return known.hasChanged();
+    // known might be null!
+    return known!=null&&known.hasChanged();
   }
 
   /**
