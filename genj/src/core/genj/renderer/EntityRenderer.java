@@ -31,7 +31,6 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.io.DataInputStream;
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -111,7 +110,13 @@ public class EntityRenderer {
     graphics = g;
     
     // we wrap the html in html/body
-    String html = "<html><body>"+bp.getHTML()+"</body></html>";
+    String html =
+      "<head><style type=\"text/css\">"+
+      " table { border-style: solid;}"+
+      " td  { border-style: solid;  }"+
+      "</style></head><body>"+
+      bp.getHTML()+
+      "</body></html>";      
     
     // read and parse the html
     try {
@@ -142,10 +147,8 @@ public class EntityRenderer {
       // .. flush reader
       reader.flush();      
       
-    } catch (IOException ioe) {
-      // can't happen
-    } catch (BadLocationException ble) {
-      // can't happen
+    } catch (Throwable t) {
+      // ignored
     }
 
     // create the root view
@@ -172,7 +175,10 @@ public class EntityRenderer {
     Iterator tv = tableViews.iterator();
     while (tv.hasNext()) {
       // this will cause invalidateGrid on a javax.swing.text.html.TableView
-      ((View)tv.next()).replace(0,0,null);
+      try {
+        ((View)tv.next()).replace(0,0,null);
+      } catch (Throwable t) {
+      }
     }
     
     // set the size of root
@@ -242,10 +248,11 @@ public class EntityRenderer {
      * @see javax.swing.text.html.HTMLDocument.HTMLReader#blockClose(javax.swing.text.html.HTML.Tag)
      */
     protected void blockClose(Tag t) {
-      // skip anything that might be added to content from because
-      // of special considerations in superclasse - we don't want
-      // any trailing stuff (\n) added after a block. They tend to
-      // flow into the next line :(
+      // mark that we skip anything that might be added to content 
+      // in super.blockClose(). The super class' implementation
+      // adds trailing \n's before a block-close. They tend to
+      // flow into the next line resulting in empty full-height
+      // lines when horizontal space is restricted :(
       skipContent = true;
       // delegate to super
       super.blockClose(t);
@@ -397,7 +404,13 @@ public class EntityRenderer {
      * Returns the current font
      */
     protected Font getFont() {
-      if (font==null) font = doc.getFont(getAttributes());
+      // we cached the font so that it's retrieved only once
+      // instead of using this view's attributes we get the
+      // document's stylesheet and ask it for this view's
+      // attributes
+      if (font==null) 
+        //font = doc.getFont(getAttributes());
+        font = doc.getFont(doc.getStyleSheet().getViewAttributes(this));
       return font;
     }
     
@@ -405,7 +418,15 @@ public class EntityRenderer {
      * Returns the current fg color
      */
     protected Color getForeground() {
-      if (foreground==null) foreground = doc.getForeground(getAttributes());
+  
+      // we cached the color so that it's retrieved only once
+      // instead of using this view's attributes we get the
+      // document's stylesheet and ask it for this view's
+      // attributes
+      if (foreground==null) 
+        //foreground = doc.getForeground(getAttributes());
+        foreground = doc.getForeground(doc.getStyleSheet().getViewAttributes(this));
+      
       return foreground;
     }
     
@@ -449,7 +470,11 @@ public class EntityRenderer {
 
       // keep view
       this.view = view;
-      view.setParent(this);
+      
+      try {
+        view.setParent(this);
+      } catch (Throwable t) {
+      }
       
       // done
     }
@@ -465,7 +490,10 @@ public class EntityRenderer {
      * we let the wrapped view do the painting
      */
     public void paint(Graphics g, Shape allocation) {
-      view.paint(g, allocation);
+      try {
+        view.paint(g, allocation);
+      } catch (Throwable t) {
+      }
     }
 
     /** 
@@ -483,7 +511,11 @@ public class EntityRenderer {
       width = wIdth;
       height = heIght;
       // delegate
-      view.setSize(width, height);
+      try {
+        view.setSize(width, height);
+      } catch (Throwable t) {
+      }
+      // done
     }
 
     /**
@@ -646,8 +678,7 @@ public class EntityRenderer {
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       // debug?
       if (isDebug) {      
-        g.setColor(super.getForeground());
-        g.drawRect(r.x,r.y,r.width,r.height);
+        g.drawRect(r.x,r.y,r.width-1,r.height-1);
       }
       // clip and render
       Rectangle old = g.getClipBounds();
