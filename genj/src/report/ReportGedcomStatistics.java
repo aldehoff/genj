@@ -26,7 +26,7 @@ import java.text.NumberFormat;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.38 2003-10-23 23:50:37 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.39 2003-11-07 16:07:20 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -47,7 +47,6 @@ public class ReportGedcomStatistics extends Report {
     /** whether indis with min/max age at child birth should be reported */
     public int reportFamsToChildren = 1;
     public String[] reportFamsToChildrens = { i18n("choice.all"), i18n("choice.minmax"), i18n("choice.none")};
-    
     /** whether individuals with min. / max. age at child birth should be reported */
     public boolean reportIndisToChildBirth = true;
     /** whether the surnames should be analyzed */
@@ -58,6 +57,7 @@ public class ReportGedcomStatistics extends Report {
     public boolean reportLastNamesToMarriageAge = true;
     /** whether indis with min./max. children should be reported */
     public int reportLastNamesToChildren = 2;
+    public String[] reportLastNamesToChildrens = { i18n("choice.all"), i18n("choice.minmax"), i18n("choice.none")};
     /** whether indis with min./max. ages at child births should be reported */
     public boolean reportLastNamesToChildBirths = true;
     /** whether we sort last names by name or frequency */
@@ -224,7 +224,6 @@ public class ReportGedcomStatistics extends Report {
      * This method actually starts this report
      */
     public void start(Object context) {
-System.out.println(reportFamsToChildren);        
         // stop report when no output categories choosen
         if((analyzeIndividuals==false)&&(analyzeLastNames==false)&&(analyzeOccupations==false)&&(analyzeFamilies==false)&&(analyzeBirthPlaces==false)&&(analyzeMarriagePlaces==false)&&(analyzeDeathPlaces==false))
             return;
@@ -382,8 +381,7 @@ System.out.println(reportFamsToChildren);
                     message = i18n("warningChildBirth");
                     break;
             }
-            if(message!=null)
-                println(message+": @"+indi.getId()+"@ "+indi.getName()+" "+end+" <= "+birth);            
+            println(message+": @"+indi.getId()+"@ "+indi.getName()+" "+end+" <= "+birth);            
             return zero;
         }
         
@@ -992,6 +990,5 @@ System.out.println(reportFamsToChildren);
                 buffer.append("   "); break;
         }
         return buffer.toString();
-    }
-    
+    }    
 } //ReportGedcomStatistics
