@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * A hashmap that keeps track of values and their references
+ * A hashmap that keeps track of keys and their references
  */
 public class ReferenceSet {
 
@@ -31,7 +31,7 @@ public class ReferenceSet {
   
   /**
    * Constructor - uses given map for 
-   * tracking key->value Sets
+   * tracking key->references Sets
    */
   public ReferenceSet(Map map) {
     key2references = map;
@@ -140,11 +140,11 @@ public class ReferenceSet {
 
   /**
    * Return all values
-   * @param sortByKeyOrCount
+   * @param sortByKey sort the list by keys or by the number of references
    */
-  public List getKeys(boolean sortByKeyOrCount) {
+  public List getKeys(boolean sortByKey) {
     ArrayList result = new ArrayList(key2references.keySet()); 
-    if (sortByKeyOrCount) 
+    if (sortByKey) 
       Collections.sort(result);
     else 
       Collections.sort(result, new Comparator() {
