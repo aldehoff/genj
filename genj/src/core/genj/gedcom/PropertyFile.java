@@ -141,7 +141,8 @@ public class PropertyFile extends Property implements IconValueAvailable {
    * Sets this property's value
    */
   public boolean setValue(File f) {
-    return setValue("file:"+f);
+    //return setValue("file:"+f);
+    return setValue(f.toString());
   }
 
   /**

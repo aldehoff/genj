@@ -187,6 +187,8 @@ public class Origin {
    */
   public String calcRelativeLocation(String file) {
 
+    file = "file:"+file;
+
     String u = url.toString();
     int i = u.lastIndexOf('/');
     u = u.substring(0,i+1);
