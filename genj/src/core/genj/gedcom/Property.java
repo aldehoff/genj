@@ -218,9 +218,10 @@ public abstract class Property implements Comparable {
    */
   public Property addProperty(Property child, int pos) {
 
-    // check against meta of child
-    if (child.meta!=null && getMetaProperty().get(child.getTag(), false) != child.getMetaProperty())
-      throw new IllegalArgumentException("illegal use of property "+child.getTag()+" in "+getPath());
+// This will break the blueprint editor
+//    // check against meta of child
+//    if (child.meta!=null && getMetaProperty().get(child.getTag(), false) != child.getMetaProperty())
+//      throw new IllegalArgumentException("illegal use of property "+child.getTag()+" in "+getPath());
 
     // position valid?
     if (pos>=0&&pos<children.size())
