@@ -2,7 +2,7 @@
 <helpset version="1.0">
   <title>@title@</title>
   <maps>
-    <homeID>welcome</homeID>
+    <homeID>intro</homeID>
     <mapref location="./map.xml"/>
   </maps>
   <view>

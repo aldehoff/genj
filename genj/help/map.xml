@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <map version="1.0">
-  <mapID target="welcome"    url="welcome.html" />
 
   <mapID target="intro"    url="intro.html" />
   <mapID target="gedcom"   url="gedcom.html" />
@@ -33,13 +32,13 @@
   <mapID target="team"      url="team.html" />
 
   <mapID target="img.NewGedcom"     url="../images/Gedcom.gif"      />
-  <mapID target="img.NewEdit"       url="../images/NewEdit.gif"     />
-  <mapID target="img.NewTree"       url="../images/NewTree.gif"     />
-  <mapID target="img.NewTable"      url="../images/NewTable.gif"    />
-  <mapID target="img.NewTimeline"   url="../images/NewTimeline.gif" />
-  <mapID target="img.NewReport"     url="../images/NewReport.gif"   />
-  <mapID target="img.NewNavigator"  url="../images/NewNavigator.gif"   />
-  <mapID target="img.NewEntity"     url="../images/NewEntity.gif"   />
+  <mapID target="img.NewEdit"       url="../images/views/Edit.gif"     />
+  <mapID target="img.NewTree"       url="../images/views/Tree.gif"     />
+  <mapID target="img.NewTable"      url="../images/views/Table.gif"    />
+  <mapID target="img.NewTimeline"   url="../images/views/Timeline.gif" />
+  <mapID target="img.NewReport"     url="../images/views/Report.gif"   />
+  <mapID target="img.NewNavigator"  url="../images/views/Navigator.gif"   />
+  <mapID target="img.NewEntity"     url="../images/views/Entity.gif"   />
 
   <mapID target="img.Indi"          url="../images/Indi.gif" />
   <mapID target="img.Fam"           url="../images/Fam.gif" />

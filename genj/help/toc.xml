@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <toc version="1.0">
-  <tocitem target="welcome"       text="@welcome@">
-  </tocitem>
   <tocitem target="intro"       text="@intro@"    image="img.Intro"       />
   <tocitem target="gedcom"      text="@gedcom@"   image="img.Gedcom"      />
   <tocitem target="cc"          text="@cc@"       image="img.NewGedcom"   />
