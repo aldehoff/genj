@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Source: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/report/Report.java,v $ $Revision: 1.37 $ $Author: nmeier $ $Date: 2004-03-25 08:46:42 $
+ * $Revision: 1.38 $ $Author: nmeier $ $Date: 2004-03-25 08:47:59 $
  */
 package genj.report;
 
