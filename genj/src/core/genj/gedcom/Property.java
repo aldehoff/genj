@@ -246,7 +246,6 @@ public abstract class Property implements Comparable {
   
   /**
    * Removes a property by looking in the property's properties
-   * list and eventually calling delProperty recursively
    */
   public void delProperty(Property deletee) {
 
@@ -256,9 +255,26 @@ public abstract class Property implements Comparable {
       if (children.get(pos)==deletee)
         break;
     }
-    
+
     // tell about it
     propagateRemoved(this, pos, deletee);
+  
+    // remove   
+    children.remove(pos);
+    
+  }
+
+  /**
+   * Removes a property by position
+   */
+  public void delProperty(int pos) {
+
+    // range check
+    if (pos<0||pos>=children.size())
+      throw new IndexOutOfBoundsException();
+
+    // tell about it
+    propagateRemoved(this, pos, (Property)children.get(pos));
   
     // remove   
     children.remove(pos);
