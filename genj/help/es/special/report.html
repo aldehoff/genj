@@ -61,9 +61,9 @@
 </p>
 
 <p>
- Ahora quereos que el informe se integre adecuadamente en la
+ Ahora queremos que el informe se integre adecuadamente en la
  <A href="../view/report.html">Vista de Informes</A> con nombre, algo de información
- básica y una referncia al autor. Para llevar a cabo esto crearemos un fichero llamado
+ básica y una referencia al autor. Para llevar a cabo esto crearemos un fichero llamado
  ReportTest.properties en el mismo directorio que el informe y le pondremos la
  información adecuada:
  <pre>
@@ -78,11 +78,11 @@
 <p>
  El informe debería funcionar bien pero ahora hemos de hacer que haga algo útil
  para los usuarios. Por defecto los informes pueden ejecutarse sólo en un contexto
- Gedcom - esto significa que el argumento de start() será una instancia del tipo Java
+ Gedcom - esto significa que el argumento de start() será una instancia Java del tipo
  <i>Gedcom</i>. Así  que asumiremos  <i>context instanceof Gedcom</i>.
  Un caso simple de uso podría ser el numero de individuos en el objeto Gedcom que le
- hemos pasado. El metodo start() será ahora:
- above:
+ hemos pasado. El método start() será ahora:
+
  <pre>
     public void start(Object context) {
       // el contexto es una instancia de Gedcom por defecto
@@ -97,15 +97,15 @@
 
 
 <P>
- La API ( Interfaz Pública da la Aplicación ) de genj.report.REport y de genj.gedcom.Gedcom
+ La API ( Interfaz Pública da la Aplicación ) de genj.report.Report y de genj.gedcom.Gedcom
  contienen muchos métodos para acceder y presentar la información contenida ( vease los javadocs
  de GenJ para mas información )
 </P>
 
-<h2>Propiedadess e Internacionalización</h2>
+<h2>Propiedades e Internacionalización</h2>
 
 <p>
- Para dar soporte a la internacionalización el infrome NO debería  imprimir cadenas de texto
+ Para dar soporte a la internacionalización el informe NO debería  imprimir cadenas de texto
  directamente. En lugar de ello debería usar ficheros de propiedades para definir las cadenas
  a imprimir y entonces extraerlas del fichero. De esta forma el fichero de propiedades puede
  ser facilmente traducido. Por ejemplo <FONT COLOR=RED>NO</FONT> haga esto:
@@ -114,7 +114,7 @@
  <pre>
     println(i18n("BirthDateIs"));
  </pre>
- y ponga una linea comomesta en su fichero de propiedades:
+ y ponga una linea como ésta en su fichero de propiedades:
  <pre>
     BirthDateIs = Birth Date is
  </pre>
@@ -247,7 +247,7 @@ and y este fichero de propiedades:
     if (prop instanceof MultiLineProperty )
       return (MultiLineProperty)prop;
 
-    // no candidate
+    // no candidato
     return null;
   }
 </pre>
