@@ -25,6 +25,7 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.print.PrintManager;
 import genj.renderer.BlueprintManager;
+import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -33,8 +34,6 @@ import genj.util.swing.MenuHelper;
 import genj.window.WindowManager;
 
 import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,6 +45,7 @@ import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuSelectionManager;
+import javax.swing.Timer;
 
 /**
  * A bridge to open/manage Views
@@ -78,16 +78,21 @@ public class ViewManager {
   
   /** context listeners */
   private List contextListeners = new LinkedList();
+  
+  /** a timer for delayed context changes */
+  private Timer propagateContext;
 
   /**
    * Constructor
    */
   public ViewManager(Registry reGistry, PrintManager pManager, WindowManager wManager, String[] factoryTypes) {
+    
     // remember
     registry = reGistry;
     printManager = pManager;
     windowManager = wManager;
     blueprintManager = new BlueprintManager(registry);
+    
     // creat list of factories
     factories = new ViewFactory[factoryTypes.length];
     for (int f=0;f<factories.length;f++) {    
@@ -100,6 +105,7 @@ public class ViewManager {
         throw new IllegalArgumentException("Factory of type "+factories[f]+" cannot be instantiated ("+t.getMessage()+")");
       }
     }
+    
     // done
   }
 
@@ -148,70 +154,27 @@ public class ViewManager {
     return result;
   }
 
-  boolean isIgnoreSetContext = false;
-
   /**
    * Sets the current context
    */
   public void setContext(Context context) {
     
-    // ignored?
-    if (isIgnoreSetContext)
-      return;
-      
     // valid?
     if (!context.isValid())
       return;
-      
-    // connect to us
-    context.setManager(this);
-    
+
     // remember context
     Gedcom gedcom = context.getGedcom();
-    gedcom2context.put(gedcom, new Context(context));
+    gedcom2context.put(gedcom, context);
     
     // clear any menu selections
     MenuSelectionManager.defaultManager().clearSelectedPath();
-    
-    // ignore setContext from now on
-    isIgnoreSetContext = true;
-    
-    // see if source is a view which will get context message first
-    JComponent view = context.getView();
-    if (view!=null&&view instanceof ContextListener) {
-      try {
-        ((ContextListener)view).setContext(context);
-      } catch (Throwable t) {
-        Debug.log(Debug.WARNING, view, "threw "+t+" on setContext()");
-      }
-    }
-    
-    // loop and tell to views
-    Iterator it = key2viewwidget.values().iterator();
-    while (it.hasNext()) {
-      ViewContainer vw = (ViewContainer)it.next();
-      // only if view on same gedcom
-      if (vw.getGedcom()!= gedcom) continue;
-      // and context supported
-      if (vw.getView() instanceof ContextListener) try {
-        ((ContextListener)vw.getView()).setContext(context);
-      } catch (Throwable t) {
-        Debug.log(Debug.WARNING, vw.getView(), "ContextListener threw throwable", t);
-      }
-      // next
-    }
-    
-    // loop and tell to context listeners
-    ContextListener[] ls = (ContextListener[])contextListeners.toArray(new ContextListener[contextListeners.size()]);
-    for (int l=0;l<ls.length;l++)
-      try {      
-        ls[l].setContext(context);
-      } catch (Throwable t) {
-        Debug.log(Debug.WARNING, ls[l], "ContextListener threw throwable", t);
-      }
-    
-    // respect setContext from now on
-    isIgnoreSetContext = false;
+
+    // initiate context propagation
+    if (propagateContext==null)
+      propagateContext = new Timer(100, new PropagateContext());
+    propagateContext.stop();
+    propagateContext.start();
     
     // done
   }
@@ -442,42 +405,6 @@ public class ViewManager {
   }
   
   /**
-   * Register a provider for a context menu
-   */
-  public void registerContextProvider(final ContextProvider provider, final JComponent component) {
-
-    component.addMouseListener(new MouseAdapter() {
-
-      /** callback - mouse press */
-      public void mousePressed(MouseEvent e) {
-        mouseReleased(e);
-      }
-  
-      /** callback - mouse release */
-      public void mouseReleased(MouseEvent e) {
-
-        // no popup trigger no action
-        if (!e.isPopupTrigger()) 
-          return;
-  
-        // grab context
-        Context context = provider.getContextAt(e.getPoint());
-        if (context==null)
-          return;
-          
-        // set source
-        context.setSource(component);
-          
-        // show context menu
-        showContextMenu(context, component, e.getPoint());
-  
-        // done
-      }
-    });
-    
-  }
-  
-  /**
    * Register a listener
    */
   public void addContextListener(ContextListener listener) {
@@ -494,20 +421,22 @@ public class ViewManager {
   /**
    * Show a context menu
    */
-  public void showContextMenu(Context context, JComponent component, Point pos) {
+  public void showContextMenu(Context context, List actions, JComponent component, Point pos) {
     
-    // make sure context contains at least gedcom
+    // make sure context is valid
+    if (!context.isValid())
+      return;
     Property property = context.getProperty();
     Entity entity = context.getEntity();
     Gedcom gedcom = context.getGedcom();
-    
-    if (gedcom==null)
-      return;
 
     // make sure any existing popup is cleared
     MenuSelectionManager.defaultManager().clearSelectedPath();
+
+    // hook up context's source
+    context.setSource(component);
     
-    // propagate a selection change
+    // propagate a context change
     setContext(context);
 
     // create a popup
@@ -515,8 +444,7 @@ public class ViewManager {
     JPopupMenu popup = mh.createPopup();
 
     // popup local actions?
-    List actions = context.getActions();
-    if (!actions.isEmpty())
+    if (actions!=null&&!actions.isEmpty())
       mh.createItems(actions, false);
   
     // find ActionSupport implementors
@@ -556,5 +484,77 @@ public class ViewManager {
 
     // done      
   }
+  
+  /**
+   * Propagate context change(s)
+   */
+  private class PropagateContext extends ActionDelegate {
+    
+    /**
+     * propagate
+     */
+    protected void execute() {
+      
+      // check current contexts
+      Iterator contexts = gedcom2context.values().iterator();
+      while (contexts.hasNext()) {
+        Context context = (Context)contexts.next();
+        if (!context.isPropagated()) {
+          propagate(context);
+        }
+      }
+      
+      // done
+    }
+    
+    /**
+     * propagate
+     */
+    private void propagate(Context context) {
+      
+      Gedcom gedcom = context.getGedcom();
+      
+      // connect to us
+      context.setManager(ViewManager.this);
+      
+      // see if source is a view which will get context message first
+      JComponent view = context.getView();
+      if (view!=null&&view instanceof ContextListener) {
+        try {
+          ((ContextListener)view).setContext(context);
+        } catch (Throwable t) {
+          Debug.log(Debug.WARNING, view, "threw "+t+" on setContext()");
+        }
+      }
+      
+      // loop and tell to views
+      Iterator it = key2viewwidget.values().iterator();
+      while (it.hasNext()) {
+        ViewContainer vw = (ViewContainer)it.next();
+        // only if view on same gedcom
+        if (vw.getGedcom()!= gedcom) continue;
+        // and context supported
+        if (vw.getView() instanceof ContextListener) try {
+          ((ContextListener)vw.getView()).setContext(context);
+        } catch (Throwable t) {
+          Debug.log(Debug.WARNING, vw.getView(), "ContextListener threw throwable", t);
+        }
+        // next
+      }
+      
+      // loop and tell to context listeners
+      ContextListener[] ls = (ContextListener[])contextListeners.toArray(new ContextListener[contextListeners.size()]);
+      for (int l=0;l<ls.length;l++)
+        try {      
+          ls[l].setContext(context);
+        } catch (Throwable t) {
+          Debug.log(Debug.WARNING, ls[l], "ContextListener threw throwable", t);
+        }
+      
+      // done
+      context.setPropagated();
+    }
+    
+  } //ContextChange
   
 } //ViewManager

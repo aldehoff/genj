@@ -20,6 +20,7 @@
 package genj.timeline;
 
 import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
 import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -28,7 +29,6 @@ import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.Context;
 import genj.view.ContextListener;
-import genj.view.ContextProvider;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -39,8 +39,8 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 
 import javax.swing.JComponent;
@@ -55,7 +55,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Component for showing entities' events in a timeline view
  */
-public class TimelineView extends JPanel implements ToolBarSupport, ContextListener, ContextProvider {
+public class TimelineView extends JPanel implements ContextListener, ToolBarSupport {
 
   /** the units we use */
   private final Point DPI;
@@ -162,7 +162,6 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextListe
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
     model.addListener(new ModelListener());
     content = new Content();
-    content.addMouseListener(new ContentClick());
     ruler = new Ruler();
     
     // all that fits in a scrollpane
@@ -174,9 +173,6 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextListe
     setLayout(new BorderLayout());
     add(scrollContent, BorderLayout.CENTER);
     
-    // register as context provider
-    manager.registerContextProvider(this, content);
-    
     // scroll to last centered year
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
       public void run() {
@@ -184,7 +180,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextListe
         scroll2year(centeredYear);
       }
     });
-
+    
     // done
   }
 
@@ -311,25 +307,6 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextListe
   }
 
   /**
-   * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
-   */
-  public JComponent getContextPopupContainer() {
-    return content;
-  }
-
-  /**
-   * @see genj.view.EntityPopupSupport#getContextAt(Point)
-   */
-  public Context getContextAt(Point pos) {
-    // is there an event?
-    Model.Event event = getEventAt(pos);
-    if (event==null) 
-      return null;
-    // grab its entity
-    return new Context(event.getProperty());
-  }
-  
-  /**
    * callback - context event
    */
   public void setContext(Context context) {
@@ -418,7 +395,14 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextListe
   /**
    * The content for displaying the timeline model
    */
-  private class Content extends JComponent {
+  private class Content extends JComponent implements MouseListener {
+    
+    /**
+     * constructor
+     */
+    private Content() {
+      addMouseListener(this);
+    }
     
     /**
      * @see java.awt.Component#getPreferredSize()
@@ -434,6 +418,12 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextListe
      * @see javax.swing.JComponent#paintComponent(Graphics)
      */
     protected void paintComponent(Graphics g) {
+      
+      // find selection
+      Context ctx = manager.getContext(model.gedcom);
+      Property selection = ctx.getProperty();
+      if (selection==null)
+        selection = ctx.getEntity();
       // let the renderer do its work
       contentRenderer.cBackground = csContent.getColor("content" );
       contentRenderer.cText       = csContent.getColor("text"    );
@@ -442,7 +432,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextListe
       contentRenderer.cTimespan   = csContent.getColor("timespan");
       contentRenderer.cGrid       = csContent.getColor("grid"    );
       contentRenderer.cSelected   = csContent.getColor("selected");
-      contentRenderer.selection   = manager.getContext(model.gedcom).getProperty();
+      contentRenderer.selection   = selection;
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;
       contentRenderer.paintTags = isPaintTags;
@@ -461,6 +451,35 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextListe
       // done
     }
     
+    public void mouseClicked(MouseEvent e) {
+    }
+    public void mouseEntered(MouseEvent e) {
+    }
+    public void mouseExited(MouseEvent e) {
+    }
+    public void mousePressed(MouseEvent e) {
+      mouseReleased(e);
+    }
+    public void mouseReleased(MouseEvent e) {
+      
+      // find context click
+      Model.Event event = getEventAt(e.getPoint());
+
+      // tell about it
+      Context context = null;
+      if (event!=null) {
+        context = new Context(event.pd);
+        setContext(context);
+        manager.setContext(context);
+      }
+
+      // popup trigger ? show context
+      if (e.isPopupTrigger())  {
+        if (context==null)
+          context = new Context(model.gedcom);
+        manager.showContextMenu(context, null, this, e.getPoint());
+      }
+    }
   } //Content
   
   /**
@@ -519,20 +538,4 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextListe
     }
   } // ModelListener
   
-  /**
-   * ContentClick
-   */
-  private class ContentClick extends MouseAdapter {
-    /** @see java.awt.event.MouseAdapter#mousePressed(MouseEvent) */
-    public void mousePressed(MouseEvent e) {
-      // not the popup
-      if (e.isPopupTrigger()) return;
-      // find the event for that click
-      Model.Event event = getEventAt(e.getPoint());
-      if (event==null) return;
-      // tell about it
-      manager.setContext(new Context(event.pe));
-    }
-  } //ContentClick  
-    
 } //TimelineView

@@ -22,11 +22,8 @@ package genj.view;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.util.ActionDelegate;
 
 import java.awt.Component;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JComponent;
 
@@ -40,19 +37,9 @@ public class Context {
   private Gedcom gedcom;
   private Entity entity;
   private Property property;
-  private ArrayList actions = new ArrayList();
   private Component source;
+  private boolean isPropagated = false;
 
-  /**
-   * Copy Constructor
-   */
-  /*package*/ Context(Context that) {
-    gedcom   = that.gedcom;
-    entity   = that.entity;
-    property = that.property;
-    manager  = that.manager;
-  }
-  
   /**
    * Constructor
    */
@@ -80,7 +67,7 @@ public class Context {
   public Context(Gedcom ged, Entity ent, Property prop) {
     
     // property?
-    if (prop!=null&&prop.getParent()!=null) {
+    if (prop!=null && (prop instanceof Entity||prop.getParent()!=null) ) {
       property = prop;
       entity = property.getEntity();
       gedcom = entity.getGedcom();
@@ -96,6 +83,21 @@ public class Context {
     }
     
     // done
+  }
+  
+  /**
+   * Whether the context has been propagated
+   */
+  /*package*/ boolean isPropagated() {
+    return isPropagated;
+  }
+  
+  /**
+   * Whether the context has been propagated
+   */
+  /*package*/ void setPropagated() {
+    isPropagated = true;
+    source = null;
   }
   
   /**
@@ -160,27 +162,6 @@ public class Context {
     return property;
   }
 
-  /**
-   * Add actions
-   */
-  public void addActions(List add) {
-    actions.addAll(add);
-  }
-  
-  /**
-   * Add action
-   */
-  public void addAction(ActionDelegate add) {
-    actions.add(add);
-  }
-  
-  /**
-   * Accessor
-   */
-  public List getActions() {
-    return actions;
-  }
-  
   /**
    * Accessor
    */

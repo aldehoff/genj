@@ -38,7 +38,6 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
-import genj.view.ContextProvider;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
@@ -51,6 +50,8 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -226,16 +227,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     add(BorderLayout.NORTH , paneCriteria);
     add(BorderLayout.CENTER, new JScrollPane(listResults) );
     choiceValue.requestFocusInWindow();
-
-    // register as context provider
-    manager.registerContextProvider(new ContextProvider() {
-      public Context getContextAt(Point pos) {
-        int row = listResults.locationToIndex(pos);
-        if (row<0) 
-          return null;
-        return new Context(results.getHit(row).getProperty());
-      }
-    }, listResults);
 
     // done
   }
@@ -761,7 +752,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
   /**
    * our specialized list
    */  
-  private class ResultWidget extends JList implements ListSelectionListener, ListCellRenderer {
+  private class ResultWidget extends JList implements ListSelectionListener, ListCellRenderer, MouseListener  {
     
     /** our label used for rendering */
     private HeadlessLabel label = new HeadlessLabel();
@@ -786,6 +777,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       // rendering
       setCellRenderer(this);
       addListSelectionListener(this);
+      addMouseListener(this);
       label.setOpaque(true);
     }
     
@@ -819,7 +811,54 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       if (row>=0)
         manager.setContext(new Context(results.getHit(row).getProperty()));
     }
-  } //Renderer
-  
+
+    /**
+     * mouse event callback
+     */
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    /**
+     * mouse event callback
+     */
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    /**
+     * mouse event callback
+     */
+    public void mouseExited(MouseEvent e) {
+    }
+    
+    /**
+     * mouse event callback
+     */
+    public void mousePressed(MouseEvent e) {
+      mouseReleased(e);
+    }
+    
+    /**
+     * mouse event callback
+     */
+    public void mouseReleased(MouseEvent e) {
+
+      // no popup trigger no action
+      if (!e.isPopupTrigger()) 
+        return;
+
+      // try to find a context
+      Point pos = e.getPoint();
+      int row = locationToIndex(pos);
+      if (row<0) 
+        return;      
+      Hit hit = (Hit)getModel().getElementAt(row);
+      Context context = new Context(hit.getProperty());
+      // select it
+      setContext(context);
+      // propagate it
+      manager.showContextMenu(context, null, this, pos);
+    }
+    
+  } //ResultWidget
  
 } //SearchView

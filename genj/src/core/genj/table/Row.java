@@ -64,6 +64,13 @@ import genj.gedcom.TagPath;
     // available
     return cols;    
   }
+  
+  /**
+   * Accessor - property by index
+   */
+  /*package*/ Property getProperty(int col) {
+    return getColumns()[col];
+  }
 
   /**
    * Accessor - entity

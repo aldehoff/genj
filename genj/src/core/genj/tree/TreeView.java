@@ -42,7 +42,7 @@ import genj.util.swing.ViewPortAdapter;
 import genj.util.swing.ViewPortOverview;
 import genj.view.ActionProvider;
 import genj.view.Context;
-import genj.view.ContextProvider;
+import genj.view.ContextListener;
 import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -79,7 +79,7 @@ import javax.swing.event.ChangeListener;
 /**
  * TreeView
  */
-public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, FilterSupport {
+public class TreeView extends JPanel implements ContextListener, ToolBarSupport, ActionProvider, FilterSupport {
   
   /** an icon for bookmarking */
   private final static ImageIcon BOOKMARK_ICON = new ImageIcon(TreeView.class, "images/Bookmark.gif");      
@@ -410,12 +410,13 @@ public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, 
   }
 
   /**
-   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
+   * view callback
    */
-  public void setContext(Property property) {
+  public void setContext(Context context) {
     // anything new?
-    Entity entity = property.getEntity();
-    if (entity==currentEntity) return;
+    Entity entity = context.getEntity();
+    if (entity==null||entity==currentEntity) 
+      return;
     // do it
     setCurrent(entity);
   }
@@ -723,7 +724,7 @@ public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, 
   /**
    * The content we use for drawing
    */
-  private class Content extends JComponent implements ContextProvider, ModelListener, MouseListener {
+  private class Content extends JComponent implements ModelListener, MouseListener {
 
     /**
      * Constructor
@@ -733,30 +734,8 @@ public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, 
       addMouseListener(this);
       // listen to model events
       model.addListener(this);
-      // provider popups
-      manager.registerContextProvider(this, this);
     }
     
-    /**
-     * @see genj.view.ContextPopupSupport#getContextAt(Point)
-     */
-    public Context getContextAt(Point pos) {
-    
-      Point p = view2model(pos);
-      Entity e = model.getEntityAt(p.x, p.y);
-
-      Context result;
-    
-      if (e==null) 
-        result = new Context(model.getGedcom());
-      else {
-        result = new Context(e);
-        result.addAction(new ActionBookmark(e, true));
-      }
-
-      return result;
-    }
-
     /**
      * @see genj.tree.ModelListener#structureChanged(Model)
      */
@@ -835,6 +814,8 @@ public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, 
       if (content instanceof Runnable) {
         ((Runnable)content).run();
       }
+      // go through released as well for context menu
+      mouseReleased(e);
       // done
     }
     
@@ -864,7 +845,28 @@ public class TreeView extends JPanel implements ToolBarSupport, ActionProvider, 
     /**
      * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
      */
-    public void mouseReleased(MouseEvent e) {
+    public void mouseReleased(MouseEvent evt) {
+      
+      // no popup trigger no action
+      if (!evt.isPopupTrigger()) 
+        return;
+
+      // grab context
+      Point p = view2model(evt.getPoint());
+      Entity e = model.getEntityAt(p.x, p.y);
+
+      List actions = new ArrayList();
+      Context context;
+      if (e==null) {
+        context = new Context(model.getGedcom());
+      } else {
+        context = new Context(e);
+        actions.add(new ActionBookmark(e, true));
+      }
+        
+      // show context menu
+      manager.showContextMenu(context, actions, this, evt.getPoint());
+      
     }
   } //Content
 

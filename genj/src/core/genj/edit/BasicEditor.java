@@ -376,7 +376,6 @@ import javax.swing.event.ChangeListener;
       // done
       return;
     } 
-    
     // maybe a popup bean?
     if (path.startsWith("@")) {
       PopupBean popup = new PopupBean(createBean(entity, new TagPath(path.substring(1))));

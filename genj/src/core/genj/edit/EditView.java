@@ -206,14 +206,15 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     if (view instanceof EditView) {
       if (view!=this)
         return;
-
     } else {
-      // don't follow context if one EditView is looking at this already
-      EditView[] views = getInstances(context.getGedcom());
-      for (int i = 0; i < views.length; i++) {
-        if (views[i].editor.getContext().equals(context))
-          return;
-      }
+      
+//      // don't follow context if one EditView is looking at this already
+//      EditView[] views = getInstances(context.getGedcom());
+//      for (int i = 0; i < views.length; i++) {
+//        Editor other = views[i].editor;
+//        if (other.getClass()==editor.getClass() && other.getContext().equals(context))
+//          return;
+//      }
 
       // not if we're sticky
       if (isSticky) 

@@ -33,7 +33,6 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.Context;
-import genj.view.ContextProvider;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
@@ -47,7 +46,9 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -135,11 +136,18 @@ import javax.swing.event.TreeSelectionListener;
     setLayout(new BorderLayout());
     add(splitPane, BorderLayout.CENTER);
     
-    // register as context provider
-    manager.registerContextProvider(new ContextProvider() {
-
-      public Context getContextAt(Point pos) {
-
+    // context provider
+    tree.addMouseListener(new MouseAdapter() {   
+      /** callback - mouse press */
+      public void mousePressed(MouseEvent e) {
+        mouseReleased(e);
+      }
+      /** callback - mouse release */
+      public void mouseReleased(MouseEvent e) {
+        // no popup trigger no action
+        if (!e.isPopupTrigger()) 
+          return;
+        Point pos = e.getPoint();
         // property at that point?
         Property prop = tree.getPropertyAt(pos);
         Property root = tree.getRoot();
@@ -149,24 +157,24 @@ import javax.swing.event.TreeSelectionListener;
           prop = null;
         
         // create Context
-        Context result = new Context(gedcom, (Entity)root, prop);
+        Context context = new Context(gedcom, (Entity)root, prop);
 
         // cut/copy/paste
-        result.addAction(new Cut(prop));
-        result.addAction(new Copy(prop));
-        result.addAction(new Paste(prop));
-        result.addAction(ActionDelegate.NOOP);
+        List actions = Arrays.asList(new Object[]{
+          new Cut(prop),
+          new Copy(prop),
+          new Paste(prop),
+          ActionDelegate.NOOP,
+          new Add(prop)
+        });
         
-        // add actions (add&delete)
-        result.addAction(new Add(prop));
-        
-        // done
-        return result;
-      }
+        // show context menu
+        viewManager.showContextMenu(context, actions, tree, e.getPoint());
   
-      
-    }, tree);
-
+        // done
+      }
+    });
+    
     // done    
   }
   
@@ -474,7 +482,8 @@ import javax.swing.event.TreeSelectionListener;
         if (target!=null) {
           // create new context
           Context ctx = new Context(target);
-          ctx.setSource(AdvancedEditor.this);
+          // set it on us
+          setContext(ctx);
           // tell others
           viewManager.setContext(ctx);
         }

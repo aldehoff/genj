@@ -27,6 +27,7 @@ import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.SortableTableHeader;
+import genj.view.Context;
 
 import java.awt.Point;
 import java.util.Arrays;
@@ -145,14 +146,23 @@ import javax.swing.table.AbstractTableModel;
   /*package*/ Property getProperty(int row, int col) {
     return rows[row].getColumns()[col];
   }
+
+  /**
+   * Returns the context at given row/col
+   */
+  /*package*/ Context getContext(int row, int col) {
+    Row theRow = rows[row];
+    return new Context(
+      gedcom,
+      theRow.getEntity(),
+      theRow.getProperty(col)
+    );
+  }
   
   /**
    * Returns the row,col for given entity,prop
    */
   /*package*/ Point getRowCol(Entity e, Property p) {
-    
-    if (p==null)
-      p = e;
     
     int row=-1,col=-1;
     
@@ -162,11 +172,13 @@ import javax.swing.table.AbstractTableModel;
         row = r;
         
         // find col
-        Property[] cols = rows[r].getColumns();
-        for (int c=0; c<cols.length; c++) {
-          if (cols[c]==p) {
-            col = c;
-            break;
+        if (p!=null) {
+          Property[] cols = rows[r].getColumns();
+          for (int c=0; c<cols.length; c++) {
+            if (cols[c]==p) {
+              col = c;
+              break;
+            }
           }
         }
         

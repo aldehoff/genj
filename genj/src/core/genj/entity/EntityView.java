@@ -19,6 +19,7 @@
  */
 package genj.entity;
 
+import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
@@ -29,7 +30,7 @@ import genj.renderer.EntityRenderer;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.view.Context;
-import genj.view.ContextProvider;
+import genj.view.ContextListener;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -40,6 +41,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +53,7 @@ import javax.swing.JToolBar;
  * A rendering component showing the currently selected entity
  * via html
  */
-public class EntityView extends JPanel implements ToolBarSupport, ContextProvider, GedcomListener {
+public class EntityView extends JPanel implements ContextListener, ToolBarSupport, GedcomListener {
 
   /** language resources we use */  
   /*package*/ final static Resources resources = Resources.get(EntityView.class);
@@ -105,18 +108,28 @@ public class EntityView extends JPanel implements ToolBarSupport, ContextProvide
       setEntity(context.getEntity());
     
     // enable context popup
-    manager.registerContextProvider(this, this);
+    addMouseListener(new MouseAdapter() {
+      
+      /** callback - mouse press */
+      public void mousePressed(MouseEvent e) {
+        mouseReleased(e);
+      }
+  
+      /** callback - mouse release */
+      public void mouseReleased(MouseEvent e) {
+        // no popup trigger no action
+        if (!e.isPopupTrigger()) 
+          return;
+        Point pos = e.getPoint();
+        // context
+        Context context = entity==null ? new Context(gedcom) : new Context(entity);
+        viewManager.showContextMenu(context, null, EntityView.this, pos);
+      }
+    });
     
     // done    
   }
 
-  /**
-   * callback - context provider
-   */  
-  public Context getContextAt(Point pos) {
-    return entity==null ? null : new Context(entity);
-  }
-  
   /**
    * @see javax.swing.JComponent#getPreferredSize()
    */
@@ -194,6 +207,15 @@ public class EntityView extends JPanel implements ToolBarSupport, ContextProvide
    */
   /*package*/ Map getBlueprints() {
     return type2blueprint;
+  }
+  
+  /**
+   * view callback
+   */
+  public void setContext(Context context) {
+    Entity e = context.getEntity();
+    if (e!=null)
+      setEntity(e);
   }
   
   /**

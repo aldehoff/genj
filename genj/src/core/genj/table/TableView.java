@@ -35,7 +35,6 @@ import genj.util.swing.HeadlessLabel;
 import genj.util.swing.SortableTableHeader;
 import genj.view.Context;
 import genj.view.ContextListener;
-import genj.view.ContextProvider;
 import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -46,6 +45,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -66,7 +67,7 @@ import javax.swing.table.TableColumnModel;
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport, ContextProvider, ContextListener, FilterSupport {
+public class TableView extends JPanel implements ToolBarSupport, ContextListener, FilterSupport {
 
   /** a static set of resources */
   private Resources resources = Resources.get(this);
@@ -91,9 +92,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
   
   /** the gedcom listener we're using */
   private GedcomListener listener;
-  
-  /** a callback for selections */
-  private TableCallback callback = new TableCallback();
   
   /**
    * Constructor
@@ -123,15 +121,14 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
 
     // listen to row and column selections and model changes
+    TableCallback callback = new TableCallback();
     table.getModel().addTableModelListener(callback);
+    table.addMouseListener(callback);
     table.getSelectionModel().addListSelectionListener(callback);
     table.getColumnModel().getSelectionModel().addListSelectionListener(callback);
     
     setLayout(new BorderLayout());
     add(new JScrollPane(table), BorderLayout.CENTER);
-    
-    // register as context provider 
-    manager.registerContextProvider(this, table);
     
     // done
   }
@@ -198,9 +195,12 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
    * callback - context changed
    */
   public void setContext(Context context) {
+    
+    // msg from self?
+    if (context.getView()==this)
+      return;
 
     // a type that we're interested in?
-    // 20030730 Bug #780563 - used == instead of equals 
     Entity entity = context.getEntity();
     if (entity==null||!entity.getTag().equals(tableModel.getType())) 
       return;
@@ -230,21 +230,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
     // done
   }
   
-  /**
-   * @see genj.view.EntityPopupSupport#getContextAt(Point)
-   */
-  public Context getContextAt(Point pos) {
-    int row = table.rowAtPoint(pos);
-    if (row<0) return null;
-    int col = table.columnAtPoint(pos);
-    // context is either entity or property
-    if (col>=0) {
-      Property prop = (Property)tableModel.getValueAt(row, col);
-      if (prop!=null) return new Context(prop);
-    }
-    return new Context(tableModel.getEntity(row));
-  }
-
   /**
    * Grab current column widths
    */
@@ -381,27 +366,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
   /**
    * Callback for list selections
    */
-  private class TableCallback implements ListSelectionListener, TableModelListener {
-    /**
-     * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-     */
-    public void valueChanged(ListSelectionEvent e) {
-      // don't bother on adjusting
-      if (e.getValueIsAdjusting())
-        return;
-      // grab property in row & col
-      int 
-        row = table.getSelectedRow(),
-        col = table.getSelectedColumn();
-      if (row<0||row>=tableModel.getRowCount()||col<0||col>=tableModel.getColumnCount())
-        return;
-      Property context = tableModel.getProperty(row,col);
-      if (context==null)
-        return;
-      // propagate context change
-      manager.setContext(new Context(context));
-    }
-
+  private class TableCallback extends MouseAdapter implements ListSelectionListener, TableModelListener {
     /**
      * Table updates
      */    
@@ -427,6 +392,56 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
       // done
     }
 
+    /** callback - mouse press */
+    public void mousePressed(MouseEvent e) {
+      mouseReleased(e);
+    }
+    /** callback - mouse release */
+    public void mouseReleased(MouseEvent e) {
+      
+      // no context menu?
+      if (!e.isPopupTrigger())
+        return;
+      Point pos = e.getPoint();
+
+      // get context
+      int row = table.rowAtPoint(pos);
+      int col = table.columnAtPoint(pos);
+      if (row<0||col<0) 
+        return;
+      
+      // make sure selection is accurate - JTable does
+      // only react to 'first' mouse button not second
+      if (!table.isCellSelected(row, col))
+        table.changeSelection(row, col, false, false);
+      
+      // context is either entity or property
+      Context context = tableModel.getContext(row, col);
+      
+      // show context menu 
+      manager.showContextMenu(context, null, table, pos);
+      
+      // done
+    }
+
+    /** callback - selection changed */
+    public void valueChanged(ListSelectionEvent e) {
+
+      // check selection
+      int 
+        row = table.getSelectedRow(),
+        col = table.getSelectedColumn();
+      
+      if (row<0||col<0)
+        return;
+
+      // get context
+      Context context = tableModel.getContext(row, col);
+      context.setSource(TableView.this);
+      
+      // propagate
+      manager.setContext(context);
+    }
   } //SelectionCallback
   
   /**
