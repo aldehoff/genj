@@ -56,8 +56,6 @@ import javax.swing.JTree;
 import javax.swing.Timer;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.MutableTreeNode;
@@ -133,23 +131,6 @@ public class DnDTree extends JTree implements Autoscroll {
   public DnDTreeModel getDnDModel() {
     TreeModel result = getModel();
     return result instanceof DnDTreeModel ? (DnDTreeModel) result : null;
-  }
-
-  /**
-   * Overriden to register listener for dropTarget.
-   */
-  public void setModel(TreeModel model) {
-
-    TreeModel oldModel = getModel();
-    if (oldModel != null) {
-      oldModel.removeTreeModelListener(getDropTargetListener());
-    }
-
-    super.setModel(model);
-
-    if (model != null) {
-      model.addTreeModelListener(getDropTargetListener());
-    }
   }
 
   /**
@@ -348,13 +329,13 @@ public class DnDTree extends JTree implements Autoscroll {
     public void dragDropEnd(DragSourceDropEvent dsde) {
       sourceDragSourceHandler = null;
 
-      dragDropEnd(dsde.getDropAction(), dsde.getDropSuccess(), null, -1);
+      drag(dsde.getDropAction(), dsde.getDropSuccess(), null, -1);
     }
 
     /**
-     * On successful drop of a move action the nodes are removed.
+     * On successful drop the drag is executed
      */
-    protected void dragDropEnd(int action, boolean success, Object target, int index) {
+    protected void drag(int action, boolean success, Object target, int index) {
       if (nodes != null) {
         if (success)
           ((DnDTreeModel)getModel()).drag(action, nodes, target, index);
@@ -373,7 +354,7 @@ public class DnDTree extends JTree implements Autoscroll {
    * <li>optionally performs a drop.</li>
    * </ul>
    */
-  private class DropHandler extends DropTargetAdapter implements ActionListener, TreeModelListener {
+  private class DropHandler extends DropTargetAdapter implements ActionListener {
 
     private Timer timer;
 
@@ -403,7 +384,7 @@ public class DnDTree extends JTree implements Autoscroll {
         if (transferable == null) {
           accepted = true;
         } else {
-          accepted = canInsert(transferable, action);
+          accepted = canDrop(transferable, action);
         }
       }
 
@@ -428,8 +409,8 @@ public class DnDTree extends JTree implements Autoscroll {
         if (model != null && parentPath != null) {
           dtde.acceptDrop(action);
           Transferable transferable = dtde.getTransferable();
-          if (canInsert(transferable, action)) {
-            complete = insert(transferable, action);
+          if (canDrop(transferable, action)) {
+            complete = drop(transferable, action);
           }
         }
 
@@ -439,7 +420,7 @@ public class DnDTree extends JTree implements Autoscroll {
       }
     }
 
-    protected boolean canInsert(Transferable transferable, int action) {
+    protected boolean canDrop(Transferable transferable, int action) {
 
       // gotta have a model
       DnDTreeModel model = getDnDModel();
@@ -451,16 +432,29 @@ public class DnDTree extends JTree implements Autoscroll {
       return model.canDrop(action, transferable, parent, childIndex);
     }
 
-    protected boolean insert(Transferable transferable, int action) {
+    protected boolean drop(Transferable transferable, int action) {
 
       DnDTreeModel model = getDnDModel();
       Object parent = parentPath.getLastPathComponent();
+      
+      // remember queue of children before childIndex
+      List queue = new ArrayList();
+      for (int i=0,j=model.getChildCount(parent); i<j&&i<childIndex; i++) {
+        queue.add(model.getChild(parent, i));
+      }
 
-      // first tell source handler if known (same VM)
+      // first tell drag handler if known (same VM)
       if (sourceDragSourceHandler != null) 
-        sourceDragSourceHandler.dragDropEnd(action, true, parent, childIndex);
+        sourceDragSourceHandler.drag(action, true, parent, childIndex);
 
-      // let model insert transferable
+      // check if children in queue are still there - they might
+      // have moved by the drag (e.g. dragging from pos n to n+1)
+      for (int i=0,j=model.getChildCount(parent);i<queue.size()&&i<j;i++) {
+        if (model.getIndexOfChild(parent, queue.get(i))<0)
+          childIndex--;
+      }
+      
+      // let model drop transferable
       List children;
       try {
         children = model.drop(action, transferable, parent, childIndex);
@@ -566,37 +560,6 @@ public class DnDTree extends JTree implements Autoscroll {
     public void actionPerformed(ActionEvent e) {
       if (parentPath != null) {
         expandPath(parentPath);
-      }
-    }
-
-    public void treeStructureChanged(TreeModelEvent e) {
-      if (parentPath != null) {
-        TreePath path = e.getTreePath();
-    
-        if (path.equals(parentPath)) {
-          childIndex = 0;
-        }
-      }
-    }
-
-    public void treeNodesChanged(TreeModelEvent e) {
-    }
-
-    public void treeNodesInserted(TreeModelEvent e) {
-    }
-
-    public void treeNodesRemoved(TreeModelEvent e) {
-      if (parentPath != null) {
-        TreePath path = e.getTreePath();
-    
-        if (path.equals(parentPath)) {
-          int[] childIndices = e.getChildIndices();
-          for (int i = 0; i < childIndices.length; i++) {
-            if (childIndices[i] < childIndex) {
-              childIndex--;
-            }
-          }
-        }
       }
     }
   }
