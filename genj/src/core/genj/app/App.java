@@ -23,15 +23,19 @@ import genj.Version;
 import genj.gedcom.Gedcom;
 import genj.lnf.LnFBridge;
 import genj.renderer.BlueprintManager;
+import genj.util.ActionDelegate;
 import genj.util.AreaInScreen;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import gj.ui.UnitGraphics;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -41,9 +45,11 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
@@ -202,31 +208,31 @@ public class App {
   /**
    * Creates a Frame which remembers it's position from last time
    */
-  public JFrame createFrame(String title, ImageIcon image, String key, Dimension dimension) {
+  public Frame createFrame(String title, ImageIcon image, String key, Dimension dimension) {
     return new App.Frame(title, image, key, dimension);
   }
 
   /**
    * Creates a Dialog which remembers it's position from last time
+   * It's modal by default and contains OK and Cancel buttons
    */
-  public JDialog createDialog(String title, String key, Dimension dimension, Component owner) {
-    
-    // find a JFrame of the component
+  public Dialog createDialog(String title, String key, Dimension dimension, JComponent owner, JComponent content) {
+    // find owner
     JFrame frame = null;
+    Component cursor = owner;
     while (true) {
       // .. found it?
-      if (owner instanceof JFrame) {
-        frame = (JFrame) owner;
+      if (cursor instanceof JFrame) {
+        frame = (JFrame) cursor;
         break;
       }
       // .. look up!
-      owner = owner.getParent();
+      cursor = cursor.getParent();
       // .. depleted?
-      if (owner==null) break;
+      if (cursor==null) break;
     }
-    
     // create it
-    return new App.Dialog(title, key, dimension, frame);
+    return new App.Dialog(title, key, dimension, frame, content);
   }
 
   /**
@@ -291,13 +297,19 @@ public class App {
    */
   public class Dialog extends JDialog {
     
+    /** a key for remembering dialog characteristics */
     private String savedKey;
+    
+    /** dimensions used in pack() */
     private Dimension savedDimension;
+    
+    /** the choice made to finish the Dialog */
+    private int choice = -1;
     
     /**
      * Constructor
      */
-    protected Dialog(String title, String key, Dimension dimension, JFrame owner) {
+    protected Dialog(String title, String key, Dimension dimension, JFrame owner, JComponent content) {
       super(owner);
       
       // 1st remember
@@ -307,6 +319,15 @@ public class App {
       // 2nd modify the frame's behavior
       setTitle(title);
       setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+      
+      // 3rd add the content
+      Container c = getContentPane();
+      c.setLayout(new BorderLayout());
+      c.add(content, BorderLayout.CENTER);
+      c.add(createButtons(), BorderLayout.SOUTH); 
+      
+      // 4th defaults
+      setModal(true);
       
       // done
     }
@@ -336,6 +357,42 @@ public class App {
       validate();
       doLayout();
     }
+    
+    /**
+     * The index of the choice made by the user     */
+    public int getChoice() {
+      return choice;
+    }
+
+    /**
+     * Create Dialog buttons     */
+    private JPanel createButtons() {
+      JPanel result = new JPanel();
+      ButtonHelper bh = new ButtonHelper().setContainer(result).setResources(resources);
+      result.add(bh.create(new Choice("swing.OptionPane.okButtonText"    ,0)));
+      result.add(bh.create(new Choice("swing.OptionPane.cancelButtonText",1)));
+      return result;
+    }
+    
+    /**
+     * Action     */
+    private class Choice extends ActionDelegate {
+      /** the index of this choice */
+      private int index;
+      /**
+       * Constructor       */
+      private Choice(String txt, int inDex) {
+        super.setText(txt);
+        index = inDex;
+      }
+      /**
+       * @see genj.util.ActionDelegate#execute()
+       */
+      protected void execute() {
+        choice = index;
+        dispose();
+      }
+    } //Choice 
 
   } // Dialog
 
