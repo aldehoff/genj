@@ -41,6 +41,8 @@ import javax.swing.SwingConstants;
  */
 public class ButtonHelper {
   
+  /** Members */
+  private Class buttonType        = JButton.class;
   private Insets insets           = null;
   private Boolean isEnabled       = null;
   private Boolean isFocusable     = null;
@@ -59,6 +61,7 @@ public class ButtonHelper {
   private boolean isShortTexts   = false;
   
   /** Setters */    
+  public ButtonHelper setButtonType(Class set) { buttonType=set; return this; }
   public ButtonHelper setInsets(Insets set) { insets=set; return this; }
   public ButtonHelper setInsets(int val) { insets=new Insets(val,val,val,val); return this; }
   public ButtonHelper setEnabled(boolean set) { isEnabled=new Boolean(set); return this; }
@@ -99,7 +102,11 @@ public class ButtonHelper {
   public AbstractButton create(ActionDelegate action) {
     
     // create the button
-    AbstractButton result = action.toggle==null ? (AbstractButton)new JButton() : (AbstractButton)new ToggleWidget();
+    AbstractButton result;
+    if (action.toggle!=null)
+      result = new ToggleWidget();
+    else
+      result = createButton();
     
     // its text
     String s = string((isShortTexts&&action.stxt!=null) ? action.stxt : action.txt);
@@ -172,6 +179,17 @@ public class ButtonHelper {
     if (resources!=null) 
       string = resources.getString(string);
     return string;    
+  }
+  
+  /**
+   * Helper that instantiates the AbstractButton
+   */  
+  private AbstractButton createButton() {
+    try {
+      return (AbstractButton)buttonType.newInstance();
+    } catch (Throwable t) {
+      throw new IllegalStateException("Couldn't create AbstractButton for "+buttonType);
+    }
   }
   
   /**
