@@ -35,7 +35,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -337,12 +336,10 @@ public class PropertyRenderer {
       // try to resolve image
       ImageIcon img = getImage(prop, preference);
       if (img==null) return EMPTY_DIM;
-      
-      // check physical size
-      Point2D size = img.getPhysicalSize(dpi);
+
+      // ask it for size
+      return img.getSize(dpi);
         
-      // transform into dot-space
-      return new Dimension((int)(size.getX()*dpi.x), (int)(size.getY()*dpi.y));
     }
     
     /**
@@ -362,10 +359,14 @@ public class PropertyRenderer {
       
       // calculate factor - the image's dpi might be
       // different than that of the rendered surface
-      Point idpi = img.getResolution(dpi);
+      Point idpi = img.getResolution();
       double
-       scalex = (double)dpi.x/idpi.x, 
-       scaley = (double)dpi.y/idpi.y;
+       scalex = 1,
+       scaley = 1;
+      if (idpi!=null) {
+       scalex *= (double)dpi.x/idpi.x;
+       scaley *= (double)dpi.y/idpi.y;
+      }
        
       // check bounds - the image might still be too
       // big - in that case we simply scale down to

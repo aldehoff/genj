@@ -226,8 +226,8 @@ import javax.swing.JScrollPane;
   private class Preview extends JComponent implements MouseListener {
     /** our image */
     private ImageIcon img;
-    /** 'our' dpi */
-    private Point dpi;
+    /** our zoom */
+    private int zoom;
     /**
      * Constructor
      */
@@ -238,13 +238,10 @@ import javax.swing.JScrollPane;
     /**
      * Sets the zoom level
      */
-    protected void setZoom(int zoom) {
+    protected void setZoom(int zOOm) {
+      zoom = zOOm;
       view.registry.put("file.zoom", zoom);
       setToolTipText(zoom+"%");
-      float factor = (float)zoom/100;
-      dpi = App.getInstance().getDPI();
-      dpi.x = (int)(dpi.x*factor);
-      dpi.y = (int)(dpi.y*factor);
       revalidate();
       repaint();
     }
@@ -268,12 +265,22 @@ import javax.swing.JScrollPane;
       if (img==null) return;
       // Paint in physical size
       UnitGraphics ug = new UnitGraphics(g, 1, 1);
+      
       // calculate factor - the image's dpi might be
       // different than that of the rendered surface
-      Point idpi = img.getResolution(dpi);
-      double
-       scalex = (double)dpi.x/idpi.x, 
-       scaley = (double)dpi.y/idpi.y;
+      float factor = (float)zoom/100;
+      double 
+        scalex = factor,
+        scaley = factor;
+        
+      Point idpi = img.getResolution();
+      if (idpi!=null) {
+        Point dpi = App.getInstance().getDPI();
+        
+        scalex *= (double)dpi.x/idpi.x;
+        scaley *= (double)dpi.y/idpi.y;
+      }
+      
       ug.scale(scalex,scaley);
       // paint
       ug.draw(img, 0, 0, 0, 0);
@@ -286,7 +293,11 @@ import javax.swing.JScrollPane;
       // no image?
       if (img==null) return new Dimension(0,0);
       // check physical size
-      return img.getSize(dpi);
+      Dimension dim = img.getSize(App.getInstance().getDPI());
+      float factor = (float)zoom/100;
+      dim.width *= factor;
+      dim.height *= factor;
+      return dim;
     }
     /**
      * callback - mouse pressed

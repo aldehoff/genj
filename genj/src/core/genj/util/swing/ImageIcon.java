@@ -57,16 +57,9 @@ public class ImageIcon extends javax.swing.ImageIcon {
     String msg;
     
     ImageSniffer is = new ImageSniffer(new ByteArrayInputStream(data));
-    dpi = new Point(is.getDPIx(), is.getDPIy());
+    if (is.getDPIx()>0&&is.getDPIy()>0)
+      dpi = new Point(is.getDPIx(), is.getDPIy());
     
-//    if (is.getSuffix()!=null) {
-//      msg = getIconWidth()+"x"+getIconHeight()+'/'+is.getWidth()+'x'+is.getHeight()+'/'+is.getDPIx()+'x'+is.getDPIy();
-//    } else {
-//      msg = "sniff failed";
-//    }
-//    
-//    Debug.log(Debug.INFO, this, name+'['+msg+']');
-
     // done
   }
     /**
@@ -92,26 +85,28 @@ public class ImageIcon extends javax.swing.ImageIcon {
   
   /**
    * Returns resolution (dpi)
-   * @param target the target dpi which will be used if no dpi information is available
+   * @return resolution in dpi or null if not known
    */
-  public Point getResolution(Point target) {
-    if (dpi.x<0||dpi.y<0) return target;
+  public Point getResolution() {
     return dpi;
   }
 
   /**
    * Size in inches
+   * @return size in inches or null if not known
    */
-  public Point2D getPhysicalSize(Point target) {
-    Point dpi = getResolution(target);
-    return new Point2D.Double((double)getIconWidth()/dpi.x,(double)getIconHeight()/dpi.y);
+  public Point2D getPhysicalSize() {
+    // check whether we have a resolution
+    if (dpi==null) return null;
+    return new Point2D.Double((double)getIconWidth()/dpi.x, (double)getIconHeight()/dpi.y);
   }
   
   /**
    * Size in target space (dpi)
    */
   public Dimension getSize(Point dpiTarget) {
-    Point2D size = getPhysicalSize(dpiTarget);
+    Point2D size = getPhysicalSize();
+    if (size==null) return new Dimension(getIconWidth(), getIconHeight());
     return new Dimension((int)(size.getX()*dpiTarget.x), (int)(size.getY()*dpiTarget.y));
   }
   
