@@ -58,7 +58,7 @@ public class MetaProperty {
     IMG_ERROR   = loadImage("Error.gif");
     
   /** static - root for entities  */
-  private static Map roots = new HashMap();
+  private static MetaProperty[] roots = new MetaProperty[Gedcom.NUM_TYPES];
   
   /** static - one parser that is triggered */
   private static GrammerParser parser = new GrammerParser();
@@ -293,28 +293,22 @@ public class MetaProperty {
    * Static - resolve instance
    */
   public static MetaProperty get(TagPath path, boolean persist) {
-    return getRecursively(roots, path, 0, persist);
+    return getRecursively(roots[Gedcom.getTypeFor(path.get(0))], path, 1, persist);
   }
   
   public static MetaProperty get(TagPath path) {
     return get(path, true);
   }
   
-  private static MetaProperty getRecursively(Map map, TagPath path, int pos, boolean persist) {
-    
-    // current tag in map?
-    String tag = path.get(pos++);
-    MetaProperty result = (MetaProperty)map.get(tag);
-    if (result==null) {
-      result = new MetaProperty(tag, Collections.EMPTY_MAP);
-      if (persist) map.put(tag, result);
-    }
-    
-    // more to go?
-    if (pos<path.length()) return getRecursively(result.mapOfSubs, path, pos, persist);
-    
-    // done
-    return result;
+  private static MetaProperty getRecursively(MetaProperty meta, TagPath path, int pos, boolean persist) {
+
+    // is this it?
+    if (pos==path.length())
+      return meta;
+
+    // get meta for next tag
+    MetaProperty next = meta.get(path.get(pos++), persist);
+    return getRecursively(next, path, pos, persist);
   }
 
   /**
@@ -334,34 +328,40 @@ public class MetaProperty {
   /**
    * Static - paths for given type
    */
-  public static TagPath[] getPaths(Class property) {
+  public static TagPath[] getPaths(int entity, Class property) {
     // prepare result
     List result = new ArrayList();
     // loop through roots
-    getPathsRecursively(roots.values(), property, new Stack(), result);
+    for (int t=0;t<Gedcom.NUM_TYPES;t++) {
+      if (entity<0||entity==t)
+        getPathsRecursively(roots[t], property, new Stack(), result);
+    }
     // done
     return TagPath.toArray(result);
   }
   
-  private static void getPathsRecursively(Collection subs, Class property, Stack stack, Collection result) {
+  private static void getPathsRecursively(MetaProperty meta, Class property, Stack stack, Collection result) {
+
+    // something worthwhile to dive into?
+    if (!meta.instantiated) 
+      return;
     
-    // loop subs
-    for (Iterator it=subs.iterator();it.hasNext();) {
+    // trace it
+    stack.push(meta.tag);
+
+    // type match?
+    if (property.isAssignableFrom(meta.getType())) 
+      result.add(new TagPath(stack));
+      
+    // recurse into
+    for (Iterator it=meta.listOfSubs.iterator();it.hasNext();) {
       MetaProperty sub = (MetaProperty)it.next();
-      // something worthwhile to dive into?
-      if (!sub.instantiated) continue;
-      // trace it
-      stack.push(sub.tag);
-      // type match?
-      if (property.isAssignableFrom(sub.getType())) {
-        result.add(new TagPath(stack));
-      }
-      // recurse into
-      getPathsRecursively(sub.listOfSubs, property, stack, result);
-      // rewind
-      stack.pop();
+      getPathsRecursively(sub, property, stack, result);
     }
     
+    // rewind
+    stack.pop();
+      
     // done
   }
     
@@ -450,7 +450,7 @@ public class MetaProperty {
       // instantiate
       MetaProperty meta = new MetaProperty(tag, props);
       if (level==0) {
-        roots.put(tag, meta);
+        roots[Gedcom.getTypeFor(tag)] = meta;
         meta.instantiated = true; // fake instantiated
       } else {
         peek().addSub(meta);
