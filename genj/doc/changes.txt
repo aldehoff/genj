@@ -6,8 +6,10 @@ Future
     - Identify matching information when merging entities
     - Remove redundant information
     - Let user choose matching entities through point&click
-  O Generic printing for all views
-  O Printing with Title/Pagenumber/Filename/Author/GenerationPerPage
+  O Refactor printing
+    - print all views
+    - update PrintProperties and save them to registry
+    - print meta information title/pagenumber/filename/author
   O Global tree-file attributes (e.g. Notes)
   O A better method of assigning IDs to entities (a system that means a little bit more than randomness)
   O Searching capability (incl. regular expressions)
