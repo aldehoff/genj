@@ -20,7 +20,7 @@
  *
  * AboutDialog class
  * This class creates the content of AboutDialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.10 2002-08-15 01:15:57 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.11 2002-08-15 07:17:23 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -91,8 +91,8 @@ public class AboutDialog extends JPanel{
     JTabbedPane pCenter = new JTabbedPane(SwingConstants.LEFT);
     pCenter.addTab(App.resources.getString("cc.about.dialog.tab1.title"), null, new WelcomePanel(), App.resources.getString("cc.about.dialog.tab1.title.tip"));
     pCenter.addTab(App.resources.getString("cc.about.dialog.tab2.title"), null, new AuthorsPanel(), App.resources.getString("cc.about.dialog.tab2.title.tip"));
-    pCenter.addTab(App.resources.getString("cc.about.dialog.tab4.title"), null, new CopyrightPanel(), App.resources.getString("cc.about.dialog.tab4.title.tip"));
-    pCenter.addTab(App.resources.getString("cc.about.dialog.tab5.title"), null, new LookNFeelPanel(), App.resources.getString("cc.about.dialog.tab5.title.tip"));
+    pCenter.addTab(App.resources.getString("cc.about.dialog.tab3.title"), null, new CopyrightPanel(), App.resources.getString("cc.about.dialog.tab3.title.tip"));
+    pCenter.addTab(App.resources.getString("cc.about.dialog.tab4.title"), null, new LookNFeelPanel(), App.resources.getString("cc.about.dialog.tab4.title.tip"));
 
     // create the main panel    
     setLayout(new BorderLayout());
@@ -201,14 +201,14 @@ public class AboutDialog extends JPanel{
      */
     private JComponent getNorth() {
       
-      JTextArea text = new JTextArea(App.resources.getString("cc.about.tab4.text1"),3,DEFAULT_COLS);
+      JTextArea text = new JTextArea(App.resources.getString("cc.about.tab3.text1"),3,DEFAULT_COLS);
       text.setLineWrap(true);
       text.setWrapStyleWord(true);
       text.setEditable(false);
       
       JPanel panel = new JPanel(new BorderLayout());
       panel.setBorder(BorderFactory.createCompoundBorder(
-        BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab4.text1.title")),
+        BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab3.text1.title")),
         new EmptyBorder(3, 3, 3, 3)
       ));
       panel.add(text, BorderLayout.CENTER);
@@ -233,7 +233,7 @@ public class AboutDialog extends JPanel{
       JScrollPane scroll = new JScrollPane(text);
       scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
       scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      scroll.setBorder(BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab4.text2.title")));
+      scroll.setBorder(BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab3.text2.title")));
       
       // done
       return scroll;
@@ -291,7 +291,7 @@ public class AboutDialog extends JPanel{
       
       // what are the LnFs
       Object[] lnfs = LnFBridge.getInstance().getLnFs();
-      if (lnfs.length==0) return new JLabel("Please download genj_lnf-x.y.zip for chooseable Look&Feels", SwingConstants.CENTER);
+      if (lnfs.length==0) return new JLabel(App.resources.getString("cc.about.tab4.l&f_file_missing"), SwingConstants.CENTER);
       
       // create a combo with LnFs      
       comboThemes = new JComboBox();
@@ -322,7 +322,7 @@ public class AboutDialog extends JPanel{
     private JPanel getSouth() {
       
       // apply-button
-      JButton bOk = new JButton("Apply");
+      JButton bOk = new JButton(App.resources.getString("cc.about.tab4.button.apply"));
       bOk.setActionCommand("apply");
       bOk.addActionListener(new ActionDelegate(this));
       
