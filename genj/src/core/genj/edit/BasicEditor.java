@@ -40,15 +40,26 @@ import genj.window.CloseWindow;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.Font;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -65,85 +76,83 @@ import javax.swing.event.ChangeListener;
   static {
     
     TEMPLATES.put(Gedcom.INDI,
+     "'INDI\n"+
      " INDI:NAME INDI:SEX\n"+
-     "$BIRT\n"+
+     "'INDI:BIRT @INDI:BIRT:NOTE\n"+
      " INDI:BIRT:DATE\n"+
      " INDI:BIRT:PLAC\n"+
-     "$DEAT\n"+
+     "'INDI:DEAT @INDI:DEAT:NOTE\n"+
      " INDI:DEAT:DATE\n"+ 
      " INDI:DEAT:PLAC\n"+ 
-     "$OCCU\n"+
+     "'INDI:OCCU @INDI:OCCU:NOTE\n"+
      " INDI:OCCU\n"+
      " INDI:OCCU:DATE\n"+
      " INDI:OCCU:PLAC\n"+
-     "$RESI\n"+
+     "'INDI:RESI @INDI:RESI:NOTE\n"+
      " INDI:RESI:DATE\n"+
      " INDI:RESI:ADDR\n"+
-     "$CITY INDI:RESI:ADDR:CITY\n"+
-     "$POST INDI:RESI:ADDR:POST\t"+
-     "$OBJE\n"+
-     "$TITL INDI:OBJE:TITL\n"+
+     "'INDI:RESI:ADDR:CITY INDI:RESI:ADDR:CITY\n"+
+     "'INDI:RESI:ADDR:POST INDI:RESI:ADDR:POST\t"+
+     "'INDI:OBJE\n"+
+     "'INDI:OBJE:TITL INDI:OBJE:TITL\n"+
      " INDI:OBJE:FILE\n"+
-     "$NOTE\n"+
+     "'INDI:NOTE\n"+
      " INDI:NOTE");
     
     TEMPLATES.put(Gedcom.FAM,
-     "$MARR\n"+
+     "'FAM:MARR @FAM:MARR:NOTE\n"+
      " FAM:MARR:DATE\n"+
      " FAM:MARR:PLAC\n"+
-     "$DIV\n"+
+     "'FAM:DIV\n"+
      " FAM:DIV:DATE\n"+
      " FAM:DIV:PLAC\n"+
-     "$OBJE\n"+
-     " $TITL FAM:OBJE:TITL\n"+
+     "'FAM:OBJE\n"+
+     "'FAM:OBJE:TITL FAM:OBJE:TITL\n"+
      " FAM:OBJE:FILE\n"+
-     "$NOTE\n"+
+     "'FAM:NOTE\n"+
      " FAM:NOTE");
   
     TEMPLATES.put(Gedcom.OBJE,
-      "$TITL OBJE:TITL\n"+
-      "$FORM OBJE:FORM\n"+
+      "'OBJE:TITL OBJE:TITL\n"+
+      "'OBJE:FORM OBJE:FORM\n"+
       " OBJE:BLOB\n"+
-      "$NOTE\n"+
+      "'OBJE:NOTE\n"+
       " OBJE:NOTE");
     
     TEMPLATES.put(Gedcom.NOTE,
       " NOTE:NOTE");
       
     TEMPLATES.put(Gedcom.REPO,
-      "$NAME REPO:NAME\n"+
-      "$ADDR\n"+
+      "'REPO:NAME REPO:NAME\n"+
+      "'REPO:ADDR\n"+
       " REPO:ADDR\n"+
-      "$CITY REPO:ADDR:CITY\n"+
-      "$POST REPO:ADDR:POST\n"+
-      "$NOTE\n"+
+      "'REPO:ADDR:CITY REPO:ADDR:CITY\n"+
+      "'REPO:ADDR:POST REPO:ADDR:POST\n"+
+      "'REPO:NOTE\n"+
       " REPO:NOTE");
     
     TEMPLATES.put(Gedcom.SOUR,
-      "$AUTH\n"+
-      " SOUR:AUTH\n"+
-      "$TITL\n"+
-      " SOUR:TITL\n"+
-      "$TEXT\n"+
-      " SOUR:TEXT\n"+
-      "$OBJE\n"+
-      "$TITL SOUR:OBJE:TITL\n"+
+      "'SOUR:AUTH\nSOUR:AUTH\n"+
+      "'SOUR:TITL\nSOUR:TITL\n"+
+      "'SOUR:TEXT\nSOUR:TEXT\n"+
+      "'SOUR:OBJE\n"+
+      "'SOUR:OBJE:TITL SOUR:OBJE:TITL\n"+
       " SOUR:OBJE:FILE\n"+
-      "$NOTE\n"+
+      "'SOUR:NOTE\n"+
       " SOUR:NOTE");
     
     TEMPLATES.put(Gedcom.SUBM,
-      "$NAME SUBM:NAME\n"+
-      "$ADDR\n"+
+      "'SUBM:NAME SUBM:NAME\n"+
+      "'SUBM:ADDR\n"+
       " SUBM:ADDR\n"+
-      "$CITY SUBM:ADDR:CITY\n"+
-      "$POST SUBM:ADDR:POST\n"+
-      "$OBJE\n"+
-      "$TITL SUBM:OBJE:TITL\n"+
+      "'SUBM:ADDR:CITY SUBM:ADDR:CITY\n"+
+      "'SUBM:ADDR:POST SUBM:ADDR:POST\n"+
+      "'SUBM:OBJE\n"+
+      "'SUBM:OBJE:TITL SUBM:OBJE:TITL\n"+
       " SUBM:OBJE:FILE\n"+
-      "$LANG SUBM:LANG\n"+
-      "$RFN SUBM:RFN\n"+
-      "$RIN SUBM:RIN");
+      "'SUBM:LANG SUBM:LANG\n"+
+      "'SUBM:RFN SUBM:RFN\n"+
+      "'SUBM:RIN SUBM:RIN");
   }
   
 
@@ -164,6 +173,9 @@ import javax.swing.event.ChangeListener;
 
   /** bean container */
   private JPanel beanPanel;
+  
+  /** beans */
+  private List beans = new ArrayList(32);
 
   /** actions */
   private ActionDelegate ok = new OK(), cancel = new Cancel();
@@ -284,10 +296,11 @@ import javax.swing.event.ChangeListener;
 
     // remove all current beans
     beanPanel.removeAll();
+    beans.clear();
 
     // setup for new entity
     if (entity!=null) 
-      setupBeanPanel(entity);
+      createBeans(entity);
 
     // start without ok and cancel
     ok.setEnabled(false);
@@ -301,26 +314,68 @@ import javax.swing.event.ChangeListener;
   }
   
   /**
-   * create a text label
+   * create a bean
    */
-  private JLabel createLabel(String txt, ImageIcon img, boolean bold) {
-    JLabel result = new JLabel(txt, img, SwingConstants.LEFT);
-    if (bold)
-      result.setFont(result.getFont().deriveFont(Font.BOLD));
-    return result;
-  }
+  private PropertyBean createBean(Entity entity, TagPath path) {
+    
+    MetaProperty meta = MetaProperty.get(path);
 
+    // resolve prop & bean
+    // FIXME gotta think about this one - can we simply skip xrefs?
+    Property prop = entity.getProperty(path);
+    if (prop == null || prop instanceof PropertyXRef)
+      prop = meta.create("");
+    
+    PropertyBean bean = PropertyBean.get(prop);
+    bean.init(entity.getGedcom(), prop, path, manager, registry);
+    bean.addChangeListener(changeCallback);
+    
+    // remember
+    beans.add(bean);
+    
+    // done
+    return bean;
+  }
+  
+  /**
+   * parse entity and path
+   */
+  private void createBeans(Entity entity, String path) {
+    
+    // a label?
+    if (path.startsWith("'")) {
+      // add label
+      MetaProperty meta = MetaProperty.get(new TagPath(path.substring(1)));
+      if (Entity.class.isAssignableFrom(meta.getType()))
+        beanPanel.add(new JLabel(meta.getName() + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT));
+      else
+        beanPanel.add(new JLabel(meta.getName()));
+      // done
+      return;
+    } 
+    
+    // maybe a popup bean?
+    if (path.startsWith("@")) {
+      PropertyBean bean = new PopupBean(createBean(entity, new TagPath(path.substring(1))));
+      beanPanel.add(bean, bean.getWeight());
+      // done
+      return;
+    }
+    
+    // standard bean!
+    PropertyBean bean = createBean(entity, new TagPath(path));
+    beanPanel.add(bean, bean.getWeight());
+
+    // done
+  }
+  
   /**
    * setup bean panel
    */
-  private void setupBeanPanel(Entity entity) {
+  private void createBeans(Entity entity) {
 
     NestedBlockLayout layout = (NestedBlockLayout)beanPanel.getLayout();
-    
-    // add one special every time
-    beanPanel.add(createLabel(Gedcom.getName(entity.getTag()) + ' ' + entity.getId(), entity.getImage(false), true));
-    layout.createBlock(1);
-    
+
     // apply template
     String template = (String)TEMPLATES.get(entity.getTag());
     if (template==null)
@@ -328,62 +383,134 @@ import javax.swing.event.ChangeListener;
     
     StringTokenizer rows = new StringTokenizer(template, "\n\t", true);
     while (rows.hasMoreTokens()) {
-
       String row = rows.nextToken();
-      
-      // next row
+      // new row?
       if (row.equals("\n")) {
         layout.createBlock(1);
         continue;
       }
-      
-      // next column
+      // new column?
       if (row.equals("\t")) {
         layout.createBlock(0);
         continue;
       }
-      
       // parse elements
-      StringTokenizer comps = new StringTokenizer(row, " ");
-      while (comps.hasMoreTokens()) {
-        
-        String comp = comps.nextToken().trim();
-
-        // text or bean?
-        if (comp.startsWith("$")) {
-          beanPanel.add(createLabel(Gedcom.getName(comp.substring(1)), null, !comps.hasMoreTokens()));
-        } else {
-          TagPath path = new TagPath(comp);
-
-          // get meta information for path
-          MetaProperty meta = MetaProperty.get(path);
-
-          // resolve prop for bean
-          // FIXME gotta think about this one - can we simply skip xrefs?
-          Property prop = entity.getProperty(path);
-          if (prop == null || prop instanceof PropertyXRef)
-            prop = meta.create("");
-
-          // prepare bean
-          PropertyBean bean = PropertyBean.get(prop);
-          bean.init(entity.getGedcom(), prop, path, manager, registry);
-
-          // add bean
-          beanPanel.add(bean, bean.getWeight());
-
-          // listen to bean changes
-          bean.addChangeListener(changeCallback);
-
-        }
-
-      }
-
+      StringTokenizer paths = new StringTokenizer(row, " ");
+      while (paths.hasMoreTokens()) 
+        createBeans(entity, paths.nextToken().trim());
+      // next row
     }
 
     // done
     // FIXME need to add paths for INDI:FAMS, INDI:FAMC, FAM:HUSB, FAM:WIFE, FAM:CHIL
   }
 
+  /**
+   * A 'bean' we use for groups
+   */
+  private static class PopupBean extends PropertyBean implements ActionListener, PropertyChangeListener {
+    
+    private JButton button; 
+    
+    private PropertyBean wrapped;
+    
+    private Popup popup = null;
+    
+    /**
+     * constructor
+     */
+    private PopupBean(PropertyBean wrapped) {
+      
+      init(null, wrapped.getProperty(), wrapped.getPath(), null, null);
+      
+      this.wrapped = wrapped;
+
+      // prepare image
+      Property prop = wrapped.getProperty();
+      ImageIcon img = prop.getImage(false);
+      if (prop.getParent()==null)
+        img = img.getDisabled(50);
+
+      // create button
+      button = new JButton(img);
+      button.setFocusable(false);
+      button.setBorder(null);
+      button.addActionListener(this);
+      
+      add(button);
+
+      // connect change listening
+      wrapped.addChangeListener(changeSupport);
+      
+      // done
+    }
+    
+    /** lifecycle callback */
+    public void addNotify() {
+      // list to focus changes
+      KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("focusOwner", this);
+      // continue
+      super.addNotify();
+    }
+    
+    /** lifecycle callback */
+    public void removeNotify() {
+      // still a popup showing?
+      if (popup!=null) {
+        popup.hide();
+        popup = null;
+      }
+      // stop listening to focus changes
+      KeyboardFocusManager.getCurrentKeyboardFocusManager().removePropertyChangeListener("focusOwner", this);
+      // continue
+      super.removeNotify();
+    }
+    
+    /** commit */
+    public void commit() {
+    }
+    
+    /** button press callback */
+    public void actionPerformed(ActionEvent e) {
+      // popup not visible?
+      if (popup!=null)
+        return;
+      // screen pos
+      Point pos = getLocationOnScreen();
+      pos.x += getWidth()/2;
+      pos.y += getHeight()/2;
+      // show popup
+      popup = PopupFactory.getSharedInstance().getPopup(this, wrapped, pos.x, pos.y);
+      popup.show();
+      wrapped.requestFocusInWindow();
+      // update image
+      button.setIcon(wrapped.getProperty().getImage(false));
+    }
+    
+    /** focus property change notification */
+    public void propertyChange(PropertyChangeEvent evt) {
+      // popup visible?
+      if (popup==null)
+        return;
+      // a new focus owner?
+      if (evt.getNewValue()==null)
+        return;
+      // a sub-component of this?
+      Component focus = (Component)evt.getNewValue();
+      while (true) {
+        if (focus==wrapped) 
+          return;
+        if (focus==null)
+          break;
+        focus = focus.getParent();
+      }
+      // get rid of popup
+      popup.hide();
+      popup = null;
+    }
+        
+  } //Label
+  
   /**
    * A ok action
    */
@@ -402,16 +529,13 @@ import javax.swing.event.ChangeListener;
 
       // commit bean changes
       try {
-        for (int i=0,j=beanPanel.getComponentCount();i<j;i++) {
-          JComponent c = (JComponent)beanPanel.getComponent(i);
-          if (c instanceof PropertyBean) {
-            PropertyBean bean = (PropertyBean)c;
-            bean.commit();
-            Property prop = bean.getProperty();
-            TagPath path = bean.getPath();
-            if (prop.getValue().length() > 0 && prop.getParent() == null)
-              add(prop, path, path.length());
-          }          
+        for (int i=0,j=beans.size();i<j;i++) {
+          PropertyBean bean = (PropertyBean)beans.get(i);
+          bean.commit();
+          Property prop = bean.getProperty();
+          TagPath path = bean.getPath();
+          if (prop.getValue().length() > 0 && prop.getParent() == null)
+            add(prop, path, path.length());
         }
       } catch (Throwable t) {
         Debug.log(Debug.ERROR, this, t);
