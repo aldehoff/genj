@@ -101,11 +101,11 @@ public class Indi extends Entity {
     
     // sort siblings
     Indi[] siblings = fam.getChildren();
-    Arrays.sort(siblings, new PropertyComparator("INDI:BIRT:DATE", true));
+    Arrays.sort(siblings, new PropertyComparator("INDI:BIRT:DATE"));
     
     // grab everything up to me
     List result = new ArrayList(siblings.length-1);
-    for (int i=0,j=siblings.length;i<j;i++) {
+    for (int i=siblings.length-1;i>=0;i--) {
       if (siblings[i]==this)
         break;
       result.add(0, siblings[i]);
@@ -127,9 +127,9 @@ public class Indi extends Entity {
     
     // sort siblings
     Indi[] siblings = fam.getChildren();
-    Arrays.sort(siblings, new PropertyComparator("INDI:BIRT:DATE", false));
+    Arrays.sort(siblings, new PropertyComparator("INDI:BIRT:DATE"));
     
-    // grab everything up to me (reversed)
+    // grab everything up older than me
     List result = new ArrayList(siblings.length-1);
     for (int i=0,j=siblings.length;i<j;i++) {
       if (siblings[i]==this)
