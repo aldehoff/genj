@@ -293,6 +293,46 @@ public class App {
 
     // done
   }
+  
+//  /**
+//   * Registers the user if necessary
+//   */
+//  private void register() {
+//
+//    // check version and registry value
+//    String version = Version.getInstance().toString();
+//    if (version.equals(registry.get("register",""))) 
+//      return;
+//
+//    // prepare parameter      
+//    String[] args = new String[]{ 
+//      "uname", System.getProperty("user.name"),
+//      "gversion", genj.Version.getInstance().toString(),
+//      "jversion", System.getProperty("java.version"),
+//      "jvendor", System.getProperty("java.vendor"),
+//      "oversion", System.getProperty("os.version"),
+//      "oname", System.getProperty("os.name")
+//    };
+//
+//    String url = "http://genj.sourceforge.net/register.php?";
+//
+//    // send data
+//    try {
+//
+//      for (int i=0;i<args.length;) {
+//        url += args[i++] + '=' + URLEncoder.encode(args[i++]) + '&';
+//      }
+//      
+//      new BufferedReader(new InputStreamReader(new URL(url).openStream()));
+//      
+//      // mark registered
+//      registry.put("register", version);
+//      
+//    } catch (Throwable t) {
+//    }
+//
+//    // done
+//  }
 
   /**
    * Our own frame
