@@ -68,6 +68,7 @@ public class PropertyTreeWidget extends TreeWidget {
    */
   public void setPreviousEntity() {
     model.setPrevious();
+    expandRows();
   }
   
   /**

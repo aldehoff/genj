@@ -650,10 +650,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       if (!gedcom.startTransaction()) return;
   
       // .. Calculate property that is moved
-      getCurrentEntity().moveProperty(
-        prop,
-        up? Property.UP : Property.DOWN
-      );
+      prop.move(up ? -1 : 1);
   
       // .. UnlockWrite
       gedcom.endTransaction();
