@@ -56,7 +56,7 @@ class MaskForNewNote extends MaskForNewEntity{
       note = gedcom.createNote();
       note.setValue(tarea.getText());
     } catch (GedcomException e) {
-      System.out.println(e);
+      Debug.log(Debug.WARNING, this, e);
       return false;
     }
 

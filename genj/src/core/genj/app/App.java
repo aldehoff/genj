@@ -19,7 +19,9 @@
  */
 package genj.app;
 
+import genj.Version;
 import genj.lnf.LnFBridge;
+import genj.util.*;
 import genj.util.AreaInScreen;
 import genj.util.ImgIcon;
 import genj.util.Registry;
@@ -29,6 +31,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -62,7 +65,10 @@ public class App {
   private App() {
 
     // Startup Information
-    checkEnvironment();
+    String log = System.getProperty("genj.debug.file");
+    if (log!=null) Debug.setFile(new File(log));
+    Debug.log(Debug.INFO, App.class, "GenJ App - Version "+Version.getInstance()+" - "+new Date());
+    EnvironmentChecker.log();
     
     // Make sure that Swing shows our localized texts
     Enumeration keys = resources.getKeys();
@@ -130,6 +136,8 @@ public class App {
     while (e.hasMoreElements()) ((JFrame)e.nextElement()).dispose();
     // Store registry 
     Registry.saveToDisk();      
+    // Flush Debug
+    Debug.flush();
     // exit
     System.exit(0);
   }
@@ -143,8 +151,8 @@ public class App {
     try {
       instance = new App();
     } catch (NoClassDefFoundError err) {
-      System.out.println("Error: Swing is missing - please install v1.1 and put swing.jar in your CLASSPATH!");
-      err.printStackTrace();
+      Debug.log(Debug.ERROR, App.class, "Cannot instantiate App", err);
+      Debug.flush();
       System.exit(1);
     }
   }
@@ -244,27 +252,6 @@ public class App {
     }
     
     // remember
-  }
-
-  /**
-   * Check the environment
-   */
-  private static void checkEnvironment() {
-
-    // CLASSPATH    
-    String cpath = System.getProperty("java.class.path");
-    StringTokenizer tokens = new StringTokenizer(
-      cpath,
-      System.getProperty("path.separator"),
-      false
-    );
-    
-    while (tokens.hasMoreTokens()) {
-      String entry = tokens.nextToken();
-      String stat = " (does" + (new File(entry).exists() ? "" :"n't") + " exist)";
-      System.out.println("[Debug]Classpath contains "+entry+stat);
-    }
-
   }
 
 }

@@ -47,14 +47,10 @@ class ProxySex extends Proxy implements ItemListener {
     if (! hasChanged() )
       return;
     // Gather data change
-    try {
-      if ( rbMale.getModel().isSelected() == true)
-        ((PropertySex)prop).setSex(Gedcom.MALE);
-      if ( rbFemale.getModel().isSelected() == true)
-        ((PropertySex)prop).setSex(Gedcom.FEMALE);
-    } catch (IllegalArgumentException ex) {
-      System.out.println(ex);
-    }
+    if ( rbMale.getModel().isSelected() == true)
+      ((PropertySex)prop).setSex(Gedcom.MALE);
+    if ( rbFemale.getModel().isSelected() == true)
+      ((PropertySex)prop).setSex(Gedcom.FEMALE);
     // Done
   }
 

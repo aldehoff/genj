@@ -45,7 +45,7 @@ abstract class Proxy {
     try {
       proxy = (Proxy) Class.forName( "genj.tree.Proxy"+Property.calcDefaultProxy(path) ).newInstance();
     } catch (Exception e) {
-      System.out.println("Property "+path.getLast()+" returned unknown proxy");
+      Debug.log(Debug.WARNING, Proxy.class,"Property "+path.getLast()+" returned unknown proxy");
       proxy = new ProxyUnknown();
     }
 

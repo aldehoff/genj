@@ -20,6 +20,7 @@
 package genj.app;
 
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
@@ -106,35 +107,21 @@ class HelpWidget extends JPanel {
    */
   private JComponent getContent() {
     
-    // Creat a URL to help-set
-    URL url;
-    try {
-      // Open the Help Set        
-      String file = calcHelpBase() + "/helpset.xml";
-      System.out.println("[Debug]Using help in " + file );
-      // safety check
-      if (!new File(file).exists()) {
-        System.out.println("[Debug]... not found");
-        return null;
-      }
-      url = new URL("file","", file);
-    } catch (MalformedURLException mue) {
-      System.out.println("[Debug]... malformed");
+    // Open the Help Set        
+    String file = calcHelpBase() + "/helpset.xml";
+    Debug.log(Debug.INFO, this,"Trying to use help in " + file );
+    // safety check
+    if (!new File(file).exists()) {
+      Debug.log(Debug.WARNING, this,"No help found");
       return null;
     }
-    
-    // Load an init through bridge
+
+    // Load and init through bridge
     try {
       Bridge bridge = (Bridge)Class.forName(Bridge.class.getName()+"Impl").newInstance();
-      return bridge.init(url);
-    } catch (FileNotFoundException fnfe) {
-      System.out.println("[Debug]... not found ("+fnfe.getClass().getName()+")");
-      return null;
-    } catch (IOException ioe) {
-      System.out.println("[Debug]... can't read ("+ioe.getClass().getName()+")");
-      return null;
-    } catch (Throwable t) {
-      System.out.println("[Debug]... exception "+t.getMessage());
+      return bridge.init(new URL("file","", file));
+    } catch (Exception e) {
+      Debug.log(Debug.WARNING, this,"Problem reading help",e);
       return null;
     }
     

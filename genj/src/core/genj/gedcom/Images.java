@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import genj.util.Debug;
 import genj.util.ImgIcon;
 
 import java.io.IOException;
@@ -101,7 +102,7 @@ public class Images {
       try {
         result.put(key.toLowerCase(), new ImgIcon(getClass().getResourceAsStream("images/"+val)));
       } catch (Throwable t) {
-        System.out.println("[Debug]Warning: couldn't load image "+val);
+        Debug.log(Debug.ERROR, this,"Couldn't load image "+val);
       }
     }
     

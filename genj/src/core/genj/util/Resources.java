@@ -95,7 +95,7 @@ public class Resources {
     } catch (RuntimeException e) {
     }
 
-    System.out.println("[Debug]Resource '"+key+"' for pkg '"+pkg+"' is missing");
+    Debug.log(Debug.WARNING, this,"Resource '"+key+"' for pkg '"+pkg+"' is missing");
 
     return "";
   }
@@ -136,7 +136,7 @@ public class Resources {
     } catch (RuntimeException e) {
     }
 
-    System.out.println("[Debug]Resource '"+key+"' for pkg '"+pkg+"' is missing");
+    Debug.log(Debug.WARNING, this,"Resource '"+key+"' for pkg '"+pkg+"' is missing");
 
     return "";
 
@@ -175,7 +175,7 @@ public class Resources {
 
     } catch (RuntimeException e) {
 
-      System.out.println("[Debug]Error reading resources from '"+pkg+"': "+e.getMessage());
+      Debug.log(Debug.WARNING, this,"Couldn't read resources for package '"+pkg+"'");
 
     }
 

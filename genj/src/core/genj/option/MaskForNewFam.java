@@ -113,7 +113,7 @@ class MaskForNewFam extends MaskForNewEntity implements ItemListener {
     try {
       fam = gedcom.createFam(memberIs,entity);
     } catch (GedcomException e) {
-      System.out.println(e);
+      Debug.log(Debug.WARNING, this, e);
       return false;
     }
     fam.addMarriage(p.toString(),tMarrPlace.getText());

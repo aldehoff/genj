@@ -105,7 +105,7 @@ public class ReportBridge {
     if (view!=null) {
       view.addOutput(buffer.toString());
     } else {
-      System.out.print(buffer.toString());
+      Debug.log(Debug.INFO, this, buffer.toString());
     }
     buffer.setLength(0);
 

@@ -28,6 +28,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 import genj.gedcom.*;
+import genj.util.Debug;
 import genj.util.ImgIcon;
 import genj.util.Resources;
 import genj.util.swing.ImgIconConverter;
@@ -62,7 +63,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
         ImgIcon img   = prop.getImage(false);
         setIcon(ImgIconConverter.get(img));
       } catch (Exception e) {
-        System.out.println("Unexpected error while retrieving property's image!");
+        Debug.log(Debug.WARNING, this, "Unexpected error while retrieving image of "+prop, e);
         setIcon(ImgIconConverter.get( genj.gedcom.Images.get("?")));
       }
       this.isSelected = isSelected;

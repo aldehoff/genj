@@ -1205,7 +1205,7 @@ public class Gedcom implements GedcomListener {
         g1.getNoOfEntities()+g2.getNoOfEntities()
       );
     } catch (java.net.MalformedURLException muex) {
-      System.out.println("Fatal error creating origin from "+g1.getName()+" and "+g2.getName());
+      Debug.log(Debug.ERROR, Gedcom.class, "Fatal error creating new origin from "+g1.getName()+" and "+g2.getName(), muex);
       return null;
     }
 

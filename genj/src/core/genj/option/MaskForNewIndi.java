@@ -128,7 +128,7 @@ class MaskForNewIndi extends MaskForNewEntity implements ItemListener {
     try {
       gedcom.createIndi(tLast.getText(),tFirst.getText(),sex,relatedTo,entity);
     } catch (GedcomException e) {
-      System.out.println(e);
+      Debug.log(Debug.WARNING, this, e);
       return false;
     }
 

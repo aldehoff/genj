@@ -37,6 +37,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import genj.util.Debug;
 import genj.util.Registry;
 
 /**
@@ -256,7 +257,7 @@ public class LnFBridge {
     public boolean apply(Theme theme, final Vector rootComponents) {
       
       // try to load LnF
-      String prefix = "[Debug]Look and feel #"+this+" of type "+type;
+      String prefix = "Look and feel #"+this+" of type "+type;
       
       // Load and apply L&F
       try {
@@ -269,19 +270,19 @@ public class LnFBridge {
         UIManager.setLookAndFeel(lookAndFeel);
         
       } catch (ClassNotFoundException cnfe) {
-        System.out.println(prefix+" is not accessible (ClassNotFoundException)");
+        Debug.log(Debug.WARNING, this,prefix+" is not accessible (ClassNotFoundException)");
         return false;
       } catch (ClassCastException cce) {
-        System.out.println(prefix+" is not a valid LookAndFeel (ClassCastException)");
+        Debug.log(Debug.WARNING, this,prefix+" is not a valid LookAndFeel (ClassCastException)");
         return false;
       } catch (MalformedURLException mue) {
-        System.out.println(prefix+" doesn't point to a valid archive (MalformedURLException)");
+        Debug.log(Debug.WARNING, this,prefix+" doesn't point to a valid archive (MalformedURLException)");
         return false;
       } catch (UnsupportedLookAndFeelException e) {
-        System.out.println(prefix+" is not supported on this platform (UnsupportedLookAndFeelException)");
+        Debug.log(Debug.WARNING, this,prefix+" is not supported on this platform (UnsupportedLookAndFeelException)");
         return false;
       } catch (Throwable t) {
-        System.out.println(prefix+" couldn't be set ("+t.getClass()+")");
+        Debug.log(Debug.WARNING, this,prefix+" couldn't be set ("+t.getClass()+")");
         return false;
       }
       

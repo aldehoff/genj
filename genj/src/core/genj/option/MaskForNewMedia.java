@@ -102,7 +102,7 @@ class MaskForNewMedia extends MaskForNewEntity{
     try {
       media = gedcom.createMedia();
     } catch (GedcomException e) {
-      System.out.println(e);
+      Debug.log(Debug.WARNING, this, e);
       return false;
     }
 

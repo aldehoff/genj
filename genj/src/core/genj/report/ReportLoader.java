@@ -20,6 +20,7 @@
 package genj.report;
 
 import java.util.*;
+import genj.util.Debug;
 import java.io.*;
 import java.net.*;
 
@@ -73,7 +74,7 @@ public class ReportLoader extends ClassLoader {
       // .. and close
       in.close();
     } catch (IOException ex) {
-      System.out.println("[Debug]File "+file+" couldn't be loaded :(");
+      Debug.log(Debug.WARNING, this,"File "+file+" couldn't be loaded :(");
     }
 
     // Construct class
@@ -81,7 +82,7 @@ public class ReportLoader extends ClassLoader {
     try {
       c = defineClass(null,classdata,0,classdata.length);
     } catch (ClassFormatError err) {
-      System.out.println("[Debug]File "+file+" isn't a valid class-file :(");
+      Debug.log(Debug.WARNING, this,"File "+file+" isn't a valid class-file :(");
       return null;
     }
 
@@ -89,7 +90,7 @@ public class ReportLoader extends ClassLoader {
     try {
       resolveClass(c);
     } catch (IncompatibleClassChangeError err) {
-      System.out.println("Debug:File "+file+" is incompatible - don't ask me what that means :(");
+      Debug.log(Debug.WARNING, this,"File "+file+" is incompatible - don't ask me what that means :(");
       return null;
     }
 
@@ -170,7 +171,7 @@ public class ReportLoader extends ClassLoader {
 
       if (!warnedAboutClasspath) {
         warnedAboutClasspath = true;
-        System.out.println("[Debug]Warning: Reports are in the Classpath and can't be reloaded");
+        Debug.log(Debug.INFO, this, "Reports are in the Classpath and can't be reloaded");
       }
       
     } catch (Throwable t) {
@@ -186,12 +187,9 @@ public class ReportLoader extends ClassLoader {
     // Getting an instance
     Object instance;
     try {
-      
-	    // . here's what we've been looking for
-	    instance = type.newInstance();
-        
+      instance = type.newInstance();
     } catch (Throwable t) {
-      System.out.println("[Debug]Warning: Couldn't load report "+file+" because of "+t.getClass().getName()+"#"+t.getMessage());
+      Debug.log(Debug.WARNING, this,"Couldn't load report "+file, t);
       return;
     }
 
@@ -231,7 +229,7 @@ public class ReportLoader extends ClassLoader {
       }
 
     } catch (Exception ex) {
-      System.out.println(ex.getMessage());
+      Debug.log(Debug.WARNING, this,ex);
       return false;
     }
 

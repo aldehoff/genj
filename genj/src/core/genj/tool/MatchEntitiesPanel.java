@@ -256,8 +256,7 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
         matches = ms;
 
       } catch (Exception e) {
-        System.out.println(e);
-        e.printStackTrace();
+        Debug.log(Debug.WARNING, this, e);
       }
 
       // Done

@@ -137,7 +137,7 @@ public class Applet extends java.applet.Applet implements Runnable {
    * Information about this applet.
    */
   public String getAppletInfo() {
-    return resources.getString("applet.info")+"\nVersion: "+Version.getInstance();
+    return resources.getString("applet.info")+" - Version "+Version.getInstance();
   }
 
   /**
@@ -156,12 +156,8 @@ public class Applet extends java.applet.Applet implements Runnable {
     resources = new Resources("genj.applet");
     
     // Report some information
-    System.out.println(
-      resources.getString("applet.info")
-    );
-    System.out.println(
-      "Version: "+Version.getInstance()
-    );
+    Debug.log(Debug.INFO, this, resources.getString("applet.info"));
+    EnvironmentChecker.log();
 
     // Setup our container
     final Rootpane root = new Rootpane();

@@ -29,6 +29,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.Selection;
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -717,7 +718,7 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     try {
       currentProxy.start(panelForProxy,label,prop,this);
     } catch (ClassCastException ex) {
-      System.out.println("Wrong proxy for property "+prop);
+      Debug.log(Debug.WARNING, this, "Seems like we're getting bad proxy for property "+prop, ex);
     }
     
     // Layout change !

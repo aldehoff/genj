@@ -103,7 +103,7 @@ public class ImgIcon {
       try {
         tracker.waitForID(0,5000);
       } catch (InterruptedException ex) {
-        System.out.println("Interrupted while loading image");
+        Debug.log(Debug.WARNING, ImgIcon.class, "Interrupted while loading image");
         return new Dimension(0,0);
       } finally {
         tracker.removeImage(image,0);

@@ -66,7 +66,7 @@ public abstract class ActionDelegate implements Cloneable {
         return ad.trigger();
       } catch (Throwable t) {
         t.printStackTrace();
-        handleThrowable(new RuntimeException("Couldn't create new instance of "+getClass().getName()+" for ASYNC_NEW_INSTANCE"));
+        handleThrowable("trigger", new RuntimeException("Couldn't clone instance of "+getClass().getName()+" for ASYNC_NEW_INSTANCE"));
       }
       return this;
     }
@@ -76,7 +76,7 @@ public abstract class ActionDelegate implements Cloneable {
     try {
       preExecuteOk = preExecute();
     } catch (Throwable t) {
-      handleThrowable(t);
+      handleThrowable("preExecute",t);
       preExecuteOk = false;
     }
     
@@ -89,14 +89,14 @@ public abstract class ActionDelegate implements Cloneable {
       }
       else execute();
     } catch (Throwable t) {
-      handleThrowable(t);
+      handleThrowable("execute(sync)", t);
     }
     
     // post
     if ((async==ASYNC_NOT_APPLICABLE)||(!preExecuteOk)) try {
       postExecute();
     } catch (Throwable t) {
-      handleThrowable(t);
+      handleThrowable("postExecute", t);
     }
     
     // done
@@ -123,7 +123,7 @@ public abstract class ActionDelegate implements Cloneable {
   }
   
   /**
-   * Implementor's functionality
+   * Implementor's functionality (always sync to EDT)
    */
   protected boolean preExecute() {
     // Default 'yes, continue'
@@ -131,12 +131,13 @@ public abstract class ActionDelegate implements Cloneable {
   }
   
   /**
-   * Implementor's functionality
+   * Implementor's functionality 
+   * (called asynchronously to EDT if !ASYNC_NOT_APPLICABLE)
    */
   protected abstract void execute();
 
   /**
-   * Implementor's functionality
+   * Implementor's functionality (always sync to EDT)
    */
   protected void postExecute() {
     // Default NOOP
@@ -145,21 +146,9 @@ public abstract class ActionDelegate implements Cloneable {
   /** 
    * Handle an uncaught throwable
    */
-  protected void handleThrowable(Throwable t) {
-    t.printStackTrace();
+  protected void handleThrowable(String phase, Throwable t) {
+    Debug.log(Debug.ERROR, this, "Action failed in "+phase, t); 
   }
-  
-  /**
-   * Returns an instance to work on asynchronously. By
-   * default the same instance is returned which makes 
-   * it not thread-safe. Return another instance if you
-   * need that
-   */
-/*  
-  protected ActionDelegate getAsyncInstance() {
-    return this;
-  }
-*/
   
   /**
    * Image 
@@ -298,7 +287,7 @@ public abstract class ActionDelegate implements Cloneable {
       try {
         execute();
       } catch (Throwable t) {
-        handleThrowable(t);
+        handleThrowable("execute(async)", t);
       }
       synchronized (threadLock) {
         thread=null;
@@ -308,14 +297,14 @@ public abstract class ActionDelegate implements Cloneable {
   } //AsyncExecute
   
   /**
-   * Sync (EDT) Post
+   * Sync (EDT) Post Execute
    */
   private class CallSyncPostExecute implements Runnable {
     public void run() {
       try {
         postExecute();
       } catch (Throwable t) {
-        handleThrowable(t);
+        handleThrowable("postExecute", t);
       }
     }
   } //SyncPostExecute

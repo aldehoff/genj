@@ -226,7 +226,7 @@ public class ReportView extends JPanel {
       // .. or in "user.dir"/report
       base = new File(System.getProperty("user.dir"),"report");
     }
-    System.out.println("[Debug]Reading reports from "+base);
+    Debug.log(Debug.INFO, this,"Reading reports from "+base);
     
     // Create the loader
     loader = new ReportLoader(base);
@@ -319,7 +319,6 @@ public class ReportView extends JPanel {
     }
     protected void execute() {
       Thread thread = start.getThread();
-      System.out.println(thread);
       if (thread!=null) thread.interrupt();
     }
   } //ActionStop
@@ -334,14 +333,11 @@ public class ReportView extends JPanel {
     protected ActionStart() {
       setAsync(ASYNC_SAME_INSTANCE);
       setText("report.start" ).setTip("report.start.tip");
-      //System.out.println(this+"()");
     }
     /**
      * pre execute
      */
     protected boolean preExecute() {
-      
-      //System.out.println(this+".preExecute()");
       
       // Calc Report
       report = (Report)listOfReports.getSelectedValue();
@@ -375,8 +371,6 @@ public class ReportView extends JPanel {
      * execute
      */
     protected void execute() {
-
-      //System.out.println(this+".execute()");
 
       // Report actions are subject to interruption
       boolean rc=false;
@@ -414,8 +408,6 @@ public class ReportView extends JPanel {
      * post execute
      */
     protected void postExecute() {
-  
-      //System.out.println(this+".postExecute()");
   
       // .. end output
       bridge.log("");

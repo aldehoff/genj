@@ -22,6 +22,7 @@ package genj.tree;
 import java.awt.*;
 
 import genj.gedcom.*;
+import genj.util.Debug;
 
 /**
  * A Link represents a box in a tree either to individual or family
@@ -179,7 +180,7 @@ abstract class Link {
       try {
         proxies[i].render(p,dit,pig,s.width,s.height,g);
       } catch (ClassCastException e)  {
-        System.out.println("Proxy "+proxies[i]+" can't render "+p);
+        Debug.log(Debug.WARNING, this,"Proxy "+proxies[i]+" can't render "+p);
       }
 
       // Restore clip

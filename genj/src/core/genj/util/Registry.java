@@ -581,7 +581,7 @@ public class Registry {
         out.flush();
         out.close();
       } catch (IOException ex) {
-        System.out.println("[Debug]Couldn't save user settings for "+key);
+        Debug.log(Debug.ERROR, Registry.class,"Couldn't save registry "+key,ex);
       }
 
     }

@@ -265,28 +265,6 @@ public abstract class Property {
   }
 
   /**
-   * Calculates a property's standard image from given TAG
-   */
-/*  
-  public static ImgIcon calcDefaultImage(String tag) {
-
-    // Find class for tag
-    Class c = getMetaDefinition(tag).getPropertyClass();
-
-    // Calculate image
-    try {
-      Method method = c.getMethod("getDefaultImage",new Class[0]);
-      return (ImgIcon)method.invoke(null,new Object[0]);
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-    }
-
-    // Error means unknown
-    return PropertyUnknown.getDefaultImage();
-  }
-*/  
-
-  /**
    * Calculates a property's standard proxy from given TagPath
    */
   public static String calcDefaultProxy(TagPath path) {
@@ -301,7 +279,7 @@ public abstract class Property {
       Method method = c.getMethod("getProxy",argtypes);
       return (String)method.invoke(null,arg);
     } catch (Exception e) {
-      System.out.println(e.getMessage());
+      Debug.log(Debug.WARNING, Property.class, e);
     }
 
     // Error means unknown
@@ -355,9 +333,7 @@ public abstract class Property {
       return (Property)object;
 
     } catch (Exception e) {
-      e.printStackTrace();
-      System.out.println(e);
-      System.out.println(e.getMessage());
+      Debug.log(Debug.ERROR, Property.class,e);
     }
 
     // Error means unknown
