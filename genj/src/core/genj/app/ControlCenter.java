@@ -111,7 +111,7 @@ public class ControlCenter extends JPanel {
     // Initialize data
     registry = new Registry(setRegistry, "cc");
     windowManager = winManager;
-    printManager = new PrintManager(new Registry(setRegistry, "print"), windowManager);
+    printManager = new PrintManager(windowManager);
     viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager, FACTORIES);
     
     // Table of Gedcoms

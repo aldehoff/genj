@@ -17,32 +17,41 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.print;
+package genj.util;
 
-import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.geom.Dimension2D;
 
-import javax.swing.JComponent;
-
 /**
- * Interface between Printer and Renderer
+ * Impl for Dimension2D
  */
-public interface Printer {
+public class Dimension2d extends Dimension2D {
   
-  /**
-   * Sets the view to print   */
-  public void setView(JComponent view);
+  private float width  = 0;
+  private float height = 0;
+
+  public Dimension2d() {
+  }
   
-  /**
-   * Calculates the size of the content in inches
-   */
-  public void calcSize(Dimension2D sizeInInches, Point dpi);
+  public Dimension2d(double width, double height) {
+    setSize(width, height);
+  }
   
-  /**
-   * Renders page content (x,y) on given context (dots) and 
-   * resolution (dpi) - g is clipped and translated already
-   */  
-  public void renderPage(Graphics2D g, Point page, Point dpi, boolean preview);
+  public double getHeight() {
+    return height;
+  }
+
+  public double getWidth() {
+    return width;
+  }
+
+  public void setSize(double width, double height) {
+    this.width = (float)width;
+    this.height= (float)height;
+  }
   
-} //PrintRenderer
+  public String toString() {
+    return width + " x " + height;
+  }
+  
+} //Dimension2d
+

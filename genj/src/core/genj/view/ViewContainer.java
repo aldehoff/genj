@@ -218,7 +218,7 @@ import javax.swing.SwingConstants;
       try {
         Printer printer = (Printer)Class.forName(view.getClass().getName()+"Printer").newInstance();
         printer.setView(view);
-        manager.getPrintManager().print(printer, title, view); 
+        manager.getPrintManager().print(printer, title, view, registry); 
       } catch (Throwable t) {
       }
     }

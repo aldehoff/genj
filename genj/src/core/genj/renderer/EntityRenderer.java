@@ -24,15 +24,18 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.util.Dimension2d;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Dimension2D;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -84,6 +87,9 @@ public class EntityRenderer {
   /** a cached dtd for html */
   private static DTD dtd = null;
   
+  /** current font renderer context */
+  private FontRenderContext context;
+  
   /** the entity we're looking at */
   private Entity entity;
   
@@ -92,9 +98,6 @@ public class EntityRenderer {
   
   /** all TableViews we know */
   private List tableViews = new ArrayList(4);
-  
-  /** the graphics we're for */
-  private Graphics graphics;
   
   /** whether we have a debug mode */
   private boolean isDebug = false; 
@@ -170,6 +173,15 @@ public class EntityRenderer {
   }
   
   /**
+   * Setup specific resolution (dpi)
+   */
+  public EntityRenderer setResolution(Dimension set) {
+    dpi = new Point(set.width, set.height);
+    // done
+    return this;
+  }
+  
+  /**
    * Setup font scaling
    */
   public EntityRenderer setScaleFonts(boolean set) {
@@ -185,7 +197,7 @@ public class EntityRenderer {
     
     // keep the entity and graphics
     entity = e;
-    graphics = g;
+    context = ((Graphics2D)g).getFontRenderContext();
     
     // invalidate views 
     Iterator pv = propViews.iterator();
@@ -355,7 +367,7 @@ public class EntityRenderer {
     private Color foreground = null;
     
     /** the cached preferred span */
-    private Dimension preferredSpan = null;
+    private Dimension2D preferredSpan = null;
     
     /**
      * Constructor
@@ -402,7 +414,12 @@ public class EntityRenderer {
       if (preferredSpan==null) {
         preferredSpan = getPreferredSpan();
       }
-      return axis==X_AXIS ? preferredSpan.width : preferredSpan.height;
+      // Apparently containing views like BoxView will cast this
+      // to a simple int possibly leading to short preferred spans
+      // when doing their major axis
+      //        spans[i] = (int) v.getPreferredSpan(axis);
+      // so I'm using the ceiling here :/
+      return (float)Math.ceil(axis==X_AXIS ? preferredSpan.getWidth() : (float)preferredSpan.getHeight());
     }
     
     /**
@@ -416,27 +433,13 @@ public class EntityRenderer {
      * @see javax.swing.text.View#getAlignment(int)
      */
     public float getAlignment(int axis) {
-      if (X_AXIS==axis) return 0.5F;
-      return getVerticalAlignment();
-    }
-    
-    /**
-     * Get the preferred alignment     */
-    protected float getVerticalAlignment() {
-      return 0.5F;
+      return 0F;
     }
     
     /**
      * Get the preferred span     */
-    protected abstract Dimension getPreferredSpan();
+    protected abstract Dimension2D getPreferredSpan();
 
-    /** 
-     * Returns the current metrics
-     */
-    protected FontMetrics getFontMetrics() {
-      return graphics.getFontMetrics(getFont());
-    }
-    
     /** 
      * Returns the current font
      */
@@ -558,8 +561,8 @@ public class EntityRenderer {
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
-    protected Dimension getPreferredSpan() {
-      return new Dimension(
+    protected Dimension2D getPreferredSpan() {
+      return new Dimension2d(
         (int)view.getPreferredSpan(X_AXIS),
         (int)view.getPreferredSpan(Y_AXIS)
       );
@@ -592,26 +595,24 @@ public class EntityRenderer {
      * @see javax.swing.text.View#paint(java.awt.Graphics, java.awt.Shape)
      */
     public void paint(Graphics g, Shape allocation) {
-      Rectangle r = allocation.getBounds();
+      Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       g.setFont(getFont());
       g.setColor(getForeground());
-      PropertyRenderer.DEFAULT_PROPERTY_PROXY.render(g,r,txt);
+      PropertyRenderer.DEFAULT_PROPERTY_PROXY.render((Graphics2D)g,r,txt);
     }
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
-    protected Dimension getPreferredSpan() {
-      return new Dimension(      
-        getFontMetrics().stringWidth(txt),
-        getFontMetrics().getHeight()
-      );
+    protected Dimension2D getPreferredSpan() {
+      return PropertyRenderer.DEFAULT_PROPERTY_PROXY.getSize(getFont(), context, null, txt, PropertyRenderer.PREFER_DEFAULT, dpi);
     }
-    
     /**
-     * @see genj.renderer.EntityRenderer.MyView#getVerticalAlignment()
+     * alignment patched
      */
-    protected float getVerticalAlignment() {
-      return PropertyRenderer.DEFAULT_PROPERTY_PROXY.getVerticalAlignment(getFontMetrics());
+    public float getAlignment(int axis) {
+      if (X_AXIS==axis)
+        return super.getAlignment(axis);
+      return PropertyRenderer.DEFAULT_PROPERTY_PROXY.getVerticalAlignment(getFont(), context);
     }
   } //LocalizeView
 
@@ -722,6 +723,7 @@ public class EntityRenderer {
      * @see javax.swing.text.View#paint(Graphics, Shape)
      */
     public void paint(Graphics g, Shape allocation) {
+      Graphics2D graphics = (Graphics2D)g;
       // property and renderer
       Property property = getProperty();
       PropertyRenderer renderer = getRenderer(property);
@@ -732,30 +734,29 @@ public class EntityRenderer {
       g.setFont(super.getFont());
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       // debug?
-      if (isDebug) {      
-        g.drawRect(r.x,r.y,r.width-1,r.height-1);
-      }
+      if (isDebug) 
+        graphics.draw(r);
       // clip and render
-      Shape old = g.getClip();
-      g.clipRect(r.x, r.y, r.width, r.height);
-      renderer.render(g, r, property, preference, dpi);
+      Shape old = graphics.getClip();
+      graphics.clip(r);
+      renderer.render(graphics, r, property, preference, dpi);
       g.setClip(old);
       // done
     }
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
-    protected Dimension getPreferredSpan() {
+    protected Dimension2D getPreferredSpan() {
       // property and renderer
       Property property = getProperty();
       PropertyRenderer renderer = getRenderer(property);
       // no renderer - no spane
-      if (renderer==null) return new Dimension(0,0);
+      if (renderer==null)
+        return new Dimension(0,0);
       // calc span
-      Dimension d = renderer.getSize(getFontMetrics(), property, preference, dpi);
+      Dimension2D d = renderer.getSize(getFont(), context, property, preference, dpi);
       // check max
-      d.width = (int)Math.min(d.width, root.width*max/100);
-      //height = (int)Math.min(result.height, root.height*max/100);      // done
+      d = new Dimension2d(Math.min(d.getWidth(), root.width*max/100), d.getHeight());
       return d;
     }
     /**
@@ -767,14 +768,6 @@ public class EntityRenderer {
       return Math.min(pref, root.width*min/100);
     }
     /**
-     * @see genj.renderer.EntityRenderer.MyView#getVerticalAlignment()
-     */
-    protected float getVerticalAlignment() {
-      PropertyRenderer renderer = getRenderer(getProperty());
-      if (renderer==null) return 0;
-      return renderer.getVerticalAlignment(getFontMetrics());
-    }
-    /**
      * Invalidates this views current state
      */
     protected void invalidate() {
@@ -782,6 +775,20 @@ public class EntityRenderer {
       // on the current entity's properties
       isValid = false;
       super.invalidate();
+    }
+    
+    /**
+     * patched alignment
+     */
+    public float getAlignment(int axis) {
+      // horizontal unchanged
+      if (X_AXIS==axis) 
+        return super.getAlignment(axis);
+      PropertyRenderer renderer = getRenderer(getProperty());
+      if (renderer==null) 
+        return super.getAlignment(axis);
+      // ask renderer
+      return renderer.getVerticalAlignment(getFont(), context);
     }
     
   } //PropertyView

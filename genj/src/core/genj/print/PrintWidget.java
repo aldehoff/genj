@@ -20,138 +20,99 @@
 package genj.print;
 
 import genj.util.ActionDelegate;
-import genj.util.GridBagHelper;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.ChoiceWidget;
+import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.UnitGraphics;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+import javax.print.PrintService;
+import javax.print.ServiceUI;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 
 /**
  * A PrintDialog */
-public class PrintWidget extends JTabbedPane {
+public class PrintWidget extends JPanel {
   
   /** task */
-  private PrintManager.PrintTask task;
+  private PrintTask task;
   
   /** resources */
   private Resources resources;
-  
+
+  /** services to choose from */
+  private ChoiceWidget services;
+
+  /** a preview */
+  private Preview preview;
+
   /**
    * Constructor   */
-  public PrintWidget(PrintManager.PrintTask tAsk, Resources reSources) {
+  public PrintWidget(PrintTask tAsk, Resources reSources) {
     
     // remember 
     task = tAsk;
     resources = reSources;
 
-    // reset current stuff shown
-    reset();
-  }
-  
-  /**
-   * Resets the visual representation - brutal but
-   * easiest for everything that might have changed
-   * after a printer setup dialog ended
-   */    
-  private void reset() {
+    // setup layout
+    NestedBlockLayout layout = new NestedBlockLayout(false, 2);
+    setLayout(layout);
     
-    // start from scratch
-    removeAll();
+    // 'printer'
+    add(new JLabel(resources.getString("printer")));
     
-    // new stuff
-    add(resources.getString("dlg.tab.settings"), new SettingsPanel());
-    add(resources.getString("dlg.tab.preview" ), new JScrollPane(new Preview()));
+    // choose service
+    services = new ChoiceWidget(task.getServices(), task.getService());
+    services.setEditable(false);
+    services.addItemListener(new ItemListener() {
+      public void itemStateChanged(ItemEvent e) {
+        // only selection is interesting
+        if (e.getStateChange()!=ItemEvent.SELECTED) 
+        // change service
+        task.setService((PrintService)services.getSelectedItem());
+      }
+    });
+    add(services, new Point2D.Double(1,0));
+
+    // settings
+    add(new ButtonHelper().create(new Settings()));
+    
+    // next line
+    layout.createBlock(0);
+    
+    // 'preview'
+    add(new JLabel(resources.getString("preview")));
+    
+    // next line
+    layout.createBlock(0);
+    
+    // the actual preview
+    preview = new Preview();
+    add(new JScrollPane(preview), new Point2D.Double(1,1));
     
     // done    
   }
-  
-  /**
-   * Main Panel
-   */
-  private class SettingsPanel extends JPanel {
-
-    /**
-     * Constructor     */
-    private SettingsPanel() {
-
-      // get some helpers      
-      ButtonHelper bh = new ButtonHelper();
-      GridBagHelper gh = new GridBagHelper(this).setInsets(new Insets(4,4,4,4));
-
-      // Choose printer
-      gh.add(new JLabel(resources.getString("dlg.label.printer")), 0, 0);
-      gh.add(bh.create(new PrinterSetup())                       , 1, 0);
-      gh.add(new JLabel(task.getPrintService())                  , 2, 0);
-
-      gh.add(new JLabel(resources.getString("dlg.label.page"))   , 0, 1);
-      gh.add(bh.create(new PageSetup())                          , 1, 1);
-      
-      gh.addFiller(99,99);
-      
-      // done
-    }
-
-  } //MainPanel
-  
-  /**
-   * Action - Show Printer Setup
-   */
-  private class PrinterSetup extends ActionDelegate {
-    /**
-     * Constructor
-     */
-    private PrinterSetup() {
-      super.setText(resources.getString("dlg.label.setup"));
-    }
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-      task.showPrinterDialog();
-      reset();
-    }
-  } //PrinterSetup
-  
-  /**
-   * Action - Show Page Setup
-   */
-  private class PageSetup extends ActionDelegate {
-    /**
-     * Constructor
-     */
-    private PageSetup() {
-      super.setText(resources.getString("dlg.label.setup"));
-    }
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-      task.showPageDialog();
-      reset();
-    }
-  } //PrintDlg
   
   /**
    * The preview
    */
   private class Preview extends JComponent {
     
-    private double 
-      pad  = 1.0D,
-      zoom = 0.1D;
+    private float 
+      padd = 0.1F, // inch
+      zoom = 0.1F; // 10% FIXME
 
     private Point dpi = new Point(96,96);
     
@@ -161,52 +122,23 @@ public class PrintWidget extends JTabbedPane {
     public Dimension getPreferredSize() {
       // calculate
       Point pages = task.getPages(); 
-      Rectangle2D page = calcPage(pages.x-1,pages.y-1);
+      Rectangle2D page = task.getPage(pages.x-1,pages.y-1, padd);
       return new Dimension(
-        (int)((page.getMaxX()+1)*dpi.x*zoom),
-        (int)((page.getMaxY()+1)*dpi.y*zoom)
+        (int)((page.getMaxX())*dpi.x *zoom),
+        (int)((page.getMaxY())*dpi.y*zoom)
       );
     }
 
     /**
-     * Calculate page in inches
-     */
-    private Rectangle2D calcPage(int x, int y) {
-      Point dpi = task.getResolution();
-      Rectangle page = task.getPage();
-      double 
-       w = (double)page.width /dpi.x,
-       h = (double)page.height/dpi.y;
-      return new Rectangle2D.Double(
-        pad + x*(w+pad),
-        pad + y*(h+pad), 
-        w, 
-        h
-      );
-    }
-    
-    /**
-     * Calculate imageable in inches
-     */
-    private Rectangle2D calcImageable(Rectangle2D page) {
-      Point dpi = task.getResolution();
-      Rectangle imageable = task.getImageable();
-      return new Rectangle2D.Double(
-        page.getMinX() + (imageable.getX()/dpi.x), 
-        page.getMinY() + (imageable.getY()/dpi.y), 
-        imageable.getWidth ()/dpi.x, 
-        imageable.getHeight()/dpi.y
-      );
-    }
-    
-    /**
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
     protected void paintComponent(Graphics g) {
+      
       // fill background
       g.setColor(Color.gray);
       g.fillRect(0,0,getWidth(),getHeight());
       g.setColor(Color.white);
+      
       // render pages in app's dpi space
       Printer renderer = task.getRenderer();
       Point pages = task.getPages(); 
@@ -215,8 +147,8 @@ public class PrintWidget extends JTabbedPane {
         for (int x=0;x<pages.x;x++) {
           // calculate layout
           Rectangle2D 
-            page = calcPage(x,y), 
-            imageable = calcImageable(page); 
+            page = task.getPage(x,y, padd), 
+            imageable = task.getPrintable(page); 
           // draw page
           ug.setColor(Color.white);
           ug.draw(page, 0, 0, true);
@@ -242,5 +174,30 @@ public class PrintWidget extends JTabbedPane {
 
   } //Preview
 
+  /**
+   * Action : printer settings
+   */
+  private class Settings extends ActionDelegate {
+
+    /** constructor */
+    private Settings() {
+      super.setText(resources.getString("settings"));
+    }
+
+    /** run */
+    protected void execute() {
+      // show settings
+      Point pos = task.getOwner().getLocationOnScreen();
+      PrintService choice = ServiceUI.printDialog(null, pos.x, pos.y, task.getServices(), task.getService(), null, task.getAttributes());
+      if (choice!=null) 
+        services.setSelectedItem(choice);
+
+      // update preview
+      preview.revalidate();
+      preview.repaint();
+      
+    }
+    
+  } //Settings
   
 } //PrintWidget

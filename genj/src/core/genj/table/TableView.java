@@ -43,6 +43,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
@@ -160,6 +161,13 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     super.removeNotify();
     // make sure the swing model is disconnected from gedcom model
     tableModel.setGedcom(null);
+  }
+  
+  /**
+   * Accessor
+   */
+  /*package*/ EntityTableModel getModel() {
+    return tableModel;
   }
  
   /**
@@ -469,6 +477,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
      * @see genj.util.swing.HeadlessLabel#paint(java.awt.Graphics)
      */
     public void paint(Graphics g) {
+      Graphics2D graphics = (Graphics2D)g;
       // our bounds
       Rectangle bounds = getBounds();
       bounds.x=0; bounds.y=0;
@@ -486,7 +495,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       // get the proxy
       PropertyRenderer proxy = PropertyRenderer.get(prop);
       // let it render
-      proxy.render(g, bounds, prop, PropertyRenderer.PREFER_DEFAULT, manager.getDPI());
+      proxy.render(graphics, bounds, prop, PropertyRenderer.PREFER_DEFAULT, manager.getDPI());
       // done
     }
   } //PropertyTableCellRenderer

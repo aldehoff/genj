@@ -63,6 +63,9 @@ public class UnitGraphics {
     // remember wrapped
     graphics = (Graphics2D)g;
     
+    // setup rendering hints
+    graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+    
     // push one initial at
     pushTransformation();
     

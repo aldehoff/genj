@@ -354,13 +354,25 @@ public class NestedBlockLayout implements LayoutManager2 {
     /** layout */
     void layout(Rectangle in) {
       
+      // calculate what's available
       Rectangle avail = new Rectangle(in.x+padding, in.y+padding, in.width-padding*2, in.height-padding*2);
       
+      // make sure it's not more than maximum
       Dimension max = component.getMaximumSize();
-      if (max.width<avail.width)  
+
+      int extraX = avail.width-max.width;
+      if (extraX>0) {
+        avail.x += extraX/2;
         avail.width = max.width;
-      if (max.height<avail.height)  
+      }
+      
+      int extraY = avail.height-max.height;
+      if (extraY>0) {
+        avail.y += extraY/2;
         avail.height = max.height;
+      }
+
+      // set it
       component.setBounds(avail);
     }
     

@@ -595,15 +595,22 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
   
   /**
    * Resolve a renderer   */
-  /*package*/ EntityRenderer getEntityRenderer(String tag) {
+  private EntityRenderer getEntityRenderer(String tag) {
     EntityRenderer result = (EntityRenderer)tag2renderer.get(tag);
     if (result==null) { 
-      result = new EntityRenderer(getBlueprint(tag), contentFont);
+      result = createEntityRenderer(tag);
       result.setResolution(DPI);
       result.setScaleFonts(isAdjustFonts);
       tag2renderer.put(tag,result);
     }
     return result;
+  }
+  
+  /**
+   * Create a renderer
+   */
+  /*package*/ EntityRenderer createEntityRenderer(String tag) {
+    return new EntityRenderer(getBlueprint(tag), contentFont);
   }
 
   /** 

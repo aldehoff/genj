@@ -425,7 +425,6 @@ import javax.swing.event.ChangeListener;
     }
 
     // done
-    // FIXME need to add paths for INDI:FAMS, INDI:FAMC, FAM:HUSB, FAM:WIFE, FAM:CHIL
   }
 
   /**

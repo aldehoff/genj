@@ -274,7 +274,7 @@ public class ChoiceWidget extends JComboBox {
     public void insertUpdate(DocumentEvent e) {
       changeSupport.fireChangeEvent();
       // add a auto-complete callback
-      if (!ignoreInsertUpdate)
+      if (!ignoreInsertUpdate&&isEditable())
         timer.start();
     }
       
@@ -467,7 +467,11 @@ public class ChoiceWidget extends JComboBox {
       getEditor().setItem(seLection);
       // notify about item state change
       fireItemStateChanged(new ItemEvent(ChoiceWidget.this, ItemEvent.ITEM_STATE_CHANGED, seLection, ItemEvent.SELECTED));
-      // and notify of data change (combobox specialty)
+      // and notify of data change - apparently the JComboBox
+      // doesn't update visually on setSelectedItem() if this
+      // isn't called - might lead to double itemSelectionCHange
+      // notifications though :(
+      // (see DefaultComboBoxModel)
       fireContentsChanged(this, -1, -1);
       // done
     }
