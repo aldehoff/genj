@@ -286,11 +286,15 @@ public class Indi extends PropertyIndi implements Entity {
       showDay   |= (pit.getDay()   != null);
     }
 
-    end.add(Calendar.YEAR,  -birthCal.get(Calendar.YEAR));
+    if (end.get(Calendar.YEAR) < birthCal.get(Calendar.YEAR))
+      return "";                        // would be positive BC years
+
+    // there is no such thing as year 0, so add 1 and subtract it later
+    end.add(Calendar.YEAR,  -birthCal.get(Calendar.YEAR) + 1);
     end.add(Calendar.MONTH, -birthCal.get(Calendar.MONTH));
     end.add(Calendar.DATE,  -birthCal.get(Calendar.DATE));
 
-    StringBuffer buf = new StringBuffer(end.get(Calendar.YEAR) + "y");
+    StringBuffer buf = new StringBuffer((end.get(Calendar.YEAR) - 1) + "y");
     if (showMonth) {
       buf.append(" ").append(end.get(Calendar.MONTH)).append("m");
       if (showDay) {
