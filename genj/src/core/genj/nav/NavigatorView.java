@@ -27,7 +27,6 @@ import genj.gedcom.PropertySex;
 import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
-import genj.util.MnemonicAndText;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
@@ -240,7 +239,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
       setJumps(YSIBLING, current.getYoungerSiblings());
       setJumps(CHILD   , current.getChildren());
       // update label
-      labelCurrent.setText(getNameOrID(current));
+      labelCurrent.setText(current.toString());
       labelCurrent.setIcon(current.getImage(false));
 
       // update the self label/partner popup images
@@ -268,15 +267,6 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     return (PopupWidget)key2popup.get(key);  
   }
 
-  /**
-   * Resolve name or ID from indi
-   */
-  private String getNameOrID(Indi indi) {
-    String name = indi.getName();
-    if (name.length()>0) return name;
-    return indi.getId();
-  }
-  
   /**
    * remember a jump to individual
    */
@@ -323,7 +313,8 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     result.setFireOnClick(true);
     result.setFocusable(false);
     result.setEnabled(false);
-    result.setToolTipText(new MnemonicAndText(resources.getString(key)).getText("Ctrl-"));
+//    result.setToolTipText(new MnemonicAndText(resources.getString(key)).getText("Ctrl-"));
+    result.setToolTipText(resources.getString("tip."+key));
 
     // remember    
     key2popup.put(key, result);
@@ -423,7 +414,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
       // remember
       target = taRget;
       // our looks
-      setText(getNameOrID(target));
+      setText(target.toString());
       setImage(target.getImage(false));
     }
     /** do it */
