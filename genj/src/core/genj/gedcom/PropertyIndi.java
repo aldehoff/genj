@@ -57,13 +57,6 @@ public abstract class PropertyIndi extends Property{
   }
 
   /**
-   * Image
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    return getDefaultImage();
-  }
-
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {

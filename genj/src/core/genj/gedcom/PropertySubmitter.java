@@ -28,13 +28,6 @@ import genj.util.*;
 public abstract class PropertySubmitter extends Property {
 
   /**
-   * the image
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    return getDefaultImage();
-  }
-
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {

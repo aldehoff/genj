@@ -93,13 +93,6 @@ public class PropertyNote extends PropertyXRef {
   }
 
   /**
-   * Returns the image of this property
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    return getDefaultImage();
-  }
-
-  /**
    * Returns a LineIterator which can be used to iterate through
    * several lines of this address
    */

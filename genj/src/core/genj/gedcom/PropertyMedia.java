@@ -73,13 +73,6 @@ public class PropertyMedia extends PropertyXRef {
   }
 
   /**
-   * Returns the image of this property
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    return getDefaultImage();
-  }
-
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {

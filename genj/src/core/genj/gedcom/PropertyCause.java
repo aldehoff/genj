@@ -72,13 +72,6 @@ public class PropertyCause extends Property {
   }
 
   /**
-   * Image
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    return getDefaultImage();
-  }
-
-  /**
    * Returns a LineIterator which can be used to iterate through
    * several lines of this cause
    */

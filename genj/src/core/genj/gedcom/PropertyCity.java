@@ -46,13 +46,6 @@ public class PropertyCity extends Property {
   }
 
   /**
-   * Image
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    return getDefaultImage();
-  }
-
-  /**
    * Accessor Tag
    */
   public String getTag() {

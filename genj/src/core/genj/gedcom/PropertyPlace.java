@@ -52,13 +52,6 @@ public class PropertyPlace extends Property {
   }
 
   /**
-   * the image
-   */
-  public ImgIcon getImage(boolean checkValid) {
-    return getDefaultImage();
-  }
-
-  /**
    * the tag
    */
   public String getTag() {
