@@ -156,7 +156,7 @@ public class UnitGraphics {
       at.translate(x, y);
     }
     
-    // FIXME: Cache scaled shapes
+    // scale
     sx *= xunit;
     sy *= yunit;
     if (sx!=1.0D||sy!=1.0D) {
