@@ -200,6 +200,8 @@ public class PathTreeWidget extends JScrollPane {
       // keep paths
       Set s = new HashSet(Arrays.asList(ps));
       s.addAll(selection);
+      
+    // FIXME how about keeping the order here!!!
       paths = TagPath.toArray(s);
       
       // notify
