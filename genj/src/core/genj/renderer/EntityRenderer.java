@@ -138,9 +138,12 @@ public class EntityRenderer {
       // this will cause invalidateGrid on a javax.swing.text.html.TableView
       ((View)tv.next()).replace(0,0,null);
     }
-
+    
     // set the size of root
-    root.setSize(r.width,r.height);
+    root.setSize((float)r.getWidth(),(float)r.getHeight());
+    
+    // clip it
+    g.clipRect(r.x,r.y,r.width,r.height);
     
     // show it
     root.paint(g, r);
@@ -315,7 +318,7 @@ public class EntityRenderer {
     private int preference;
     
     /** the proxy used */
-    private PropertyProxy proxy = null;
+    private PropertyRenderer proxy = null;
     
     /** the tag path used */
     private TagPath path = null;
@@ -351,9 +354,9 @@ public class EntityRenderer {
         String name = Property.calcDefaultProxy(path);
 
         // know it already?
-        proxy = (PropertyProxy) proxies.get(name);
+        proxy = (PropertyRenderer) proxies.get(name);
         if (proxy==null) {
-          proxy = PropertyProxy.get(name);
+          proxy = PropertyRenderer.get(name);
           proxies.put(name, proxy);
         }
 
@@ -363,12 +366,12 @@ public class EntityRenderer {
       }       
       
       // check image&text
-      preference = PropertyProxy.PREFER_DEFAULT;
+      preference = PropertyRenderer.PREFER_DEFAULT;
       AttributeSet atts = elem.getAttributes();
       if ("yes".equals(atts.getAttribute("img"))) {
-        preference = PropertyProxy.PREFER_IMAGEANDTEXT;
+        preference = PropertyRenderer.PREFER_IMAGEANDTEXT;
         if ("no".equals(atts.getAttribute("txt"))) 
-          preference = PropertyProxy.PREFER_IMAGE;
+          preference = PropertyRenderer.PREFER_IMAGE;
       }
       
       // minimum?
