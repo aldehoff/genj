@@ -127,7 +127,7 @@ public class Gedcom {
     if (!entities[SUBMITTERS].contains(set)) 
       throw new IllegalArgumentException("Submitter is not part of this gedcom");
     submitter = set;
-    hasUnsavedChanges = true;
+    if (isTransaction) hasUnsavedChanges = true;
   }
   
   /**
