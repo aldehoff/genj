@@ -19,13 +19,18 @@
  */
 package genj.timeline;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
 import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.ViewPortAdapter;
+import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
+import genj.view.ViewManager;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -52,7 +57,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Component for showing entities' events in a timeline view
  */
-public class TimelineView extends JPanel implements ToolBarSupport {
+public class TimelineView extends JPanel implements ToolBarSupport, CurrentSupport {
 
   /** resources */
   /*package*/ final static Resources resources = new Resources("genj.timeline");
@@ -277,6 +282,20 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
   }
   
+  /**
+   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
+   */
+  public void setCurrentEntity(Entity entity) {
+    content.repaint();
+  }
+
+  /**
+   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
+   */
+  public void setCurrentProperty(Property property) {
+    // ignored
+  }
+  
   /** 
    * Calculates a year from given pixel position
    */
@@ -354,7 +373,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       contentRenderer.cTimespan   = csContent.getColor("timespan");
       contentRenderer.cGrid       = csContent.getColor("grid"    );
       contentRenderer.cSelected   = csContent.getColor("selected");
-      contentRenderer.selection   = model.gedcom.getLastEntity();
+      contentRenderer.selection   = ViewManager.getInstance().getCurrentEntity();
       contentRenderer.cmPyear = cmPerYear;
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;
@@ -429,10 +448,13 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   private class ContentClick extends MouseAdapter {
     /** @see java.awt.event.MouseAdapter#mousePressed(MouseEvent) */
     public void mousePressed(MouseEvent e) {
-      // find the year
+      // find the event for that click
       double year = pixel2year(e.getX());
       int layer = e.getY()/contentRenderer.calcLayerHeight(getFontMetrics(getFont()));
-      System.out.println(model.getEvent(year, layer));
+      Model.Event event = model.getEvent(year, layer);
+      if (event==null) return;
+      // tell about it
+      ViewManager.getInstance().setCurrentProperty(event.pe);
     }
   } //ContentClick  
     

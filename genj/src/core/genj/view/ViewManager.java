@@ -21,7 +21,9 @@ package genj.view;
 
 import genj.app.App;
 import genj.app.Images;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
 import genj.print.PrintProperties;
 import genj.print.PrintRenderer;
 import genj.print.Printer;
@@ -79,6 +81,12 @@ public class ViewManager {
   
   /** open views */
   private List viewWidgets = new LinkedList();
+  
+  /** the currently selected entity */
+  private Entity currentEntity = null;
+  
+  /** the currently selected property */
+  private Property currentProperty = null;
 
   /**
    * Singleton access
@@ -93,6 +101,70 @@ public class ViewManager {
    */
   public Descriptor[] getDescriptors() {
     return descriptors;
+  }
+  
+  /**
+   * Returns the currently selected entity
+   * @return the entity (might be null)
+   */
+  public Entity getCurrentEntity() {
+    return currentEntity;
+  }
+
+  /**
+   * Returns the currently selected property
+   * @return the property (might be null)
+   */
+  public Property getCurrentProperty() {
+    // try to get one if unset
+    if (currentProperty==null&&currentEntity!=null) 
+      currentProperty = currentEntity.getProperty();
+    return currentProperty;
+  }
+  
+  /**
+   * Sets the current entity
+   */
+  public void setCurrentEntity(Entity entity) {
+    // already?
+    if (currentEntity==entity) return;
+    // remember
+    currentEntity = entity;
+    Gedcom gedcom = entity.getGedcom();
+    // loop and tell to views
+    Iterator it = viewWidgets.iterator();
+    while (it.hasNext()) {
+      ViewWidget vw = (ViewWidget)it.next();
+      // only if view on same gedcom
+      if (vw.getGedcom()!= gedcom) continue;
+      // tell it
+      vw.setCurrentEntity(currentEntity);
+    }
+    // done
+  }
+
+  /**
+   * Sets the current property
+   */
+  public void setCurrentProperty(Property property) {
+    // entity o.k.
+    if (currentEntity!=property.getEntity())
+      setCurrentEntity(property.getEntity());
+    // already?
+    if (currentProperty==property) return;
+    // remember
+    currentProperty = property;
+    Gedcom gedcom = property.getGedcom();
+    // loop and tell to views
+    Iterator it = viewWidgets.iterator();
+    while (it.hasNext()) {
+      ViewWidget vw = (ViewWidget)it.next();
+      // only if view on same gedcom
+      if (vw.getGedcom()!= gedcom) continue;
+      // tell it
+      vw.setCurrentProperty(currentProperty);
+    }
+    // done
   }
 
   /**

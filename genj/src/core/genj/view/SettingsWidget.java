@@ -117,8 +117,8 @@ import javax.swing.JPanel;
   private class ActionApply extends ActionDelegate {
     protected ActionApply() { super.setText("view.apply"); }
     protected void execute() {
-      if (viewWidget.getView() instanceof ApplyResetSupport) 
-        ((ApplyResetSupport)viewWidget.getView()).apply();
+      if (viewWidget.getSettings() instanceof ApplyResetSupport) 
+        ((ApplyResetSupport)viewWidget.getSettings()).apply();
     }
   }
 
@@ -128,8 +128,8 @@ import javax.swing.JPanel;
   private class ActionReset extends ActionDelegate {
     protected ActionReset() { super.setText("view.reset"); }
     protected void execute() {
-      if (viewWidget.getView() instanceof ApplyResetSupport) 
-        ((ApplyResetSupport)viewWidget.getView()).reset();
+      if (viewWidget.getSettings() instanceof ApplyResetSupport) 
+        ((ApplyResetSupport)viewWidget.getSettings()).reset();
     }
   }
   

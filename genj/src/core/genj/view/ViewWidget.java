@@ -20,7 +20,9 @@
 package genj.view;
 
 import genj.app.Images;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
 import genj.print.PrintProperties;
 import genj.print.PrintRenderer;
 import genj.print.Printer;
@@ -151,6 +153,22 @@ import javax.swing.border.TitledBorder;
    */
   /*package*/ JFrame getFrame() {
     return frame;
+  }
+  
+  /**
+   * Sets the view's current entity
+   */
+  /*package*/ void setCurrentEntity(Entity entity) {
+    if (view instanceof CurrentSupport)
+      ((CurrentSupport)view).setCurrentEntity(entity);
+  }
+  
+  /**
+   * Sets the view's current property
+   */
+  /*package*/ void setCurrentProperty(Property property) {
+    if (view instanceof CurrentSupport)
+      ((CurrentSupport)view).setCurrentProperty(property);
   }
   
   /**

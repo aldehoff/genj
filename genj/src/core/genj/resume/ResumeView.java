@@ -25,6 +25,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.Property;
 import genj.renderer.EntityRenderer;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
@@ -32,6 +33,7 @@ import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 
 import java.awt.BorderLayout;
@@ -63,7 +65,7 @@ import javax.swing.JToolBar;
  * A rendering component showing a resume of the currently
  * selected entity
  */
-public class ResumeView extends JPanel implements ToolBarSupport {
+public class ResumeView extends JPanel implements ToolBarSupport, CurrentSupport {
 
   /** language resources we use */  
   private final static Resources resources = new Resources("genj.resume");
@@ -148,6 +150,23 @@ public class ResumeView extends JPanel implements ToolBarSupport {
     repaint();
   }
   
+  /**
+   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
+   */
+  public void setCurrentEntity(Entity entity) {
+    // already?
+    if (renderer.getEntity()==entity) return;
+    // set it
+    setEntity(entity);
+  }
+
+  /**
+   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
+   */
+  public void setCurrentProperty(Property property) {
+    // ignored
+  }
+
   /** 
    * Our connection to the Gedcom
    */

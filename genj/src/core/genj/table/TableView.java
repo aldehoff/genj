@@ -48,13 +48,15 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.SortableTableHeader;
+import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
+import genj.view.ViewManager;
 import genj.gedcom.*;
 
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport {
+public class TableView extends JPanel implements ToolBarSupport, CurrentSupport {
   
   /** a static set of resources */
   /*package*/ final static Resources resources = new Resources("genj.table");
@@ -167,6 +169,29 @@ public class TableView extends JPanel implements ToolBarSupport {
   }
   
   /**
+   * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
+   */
+  public void setCurrentEntity(Entity entity) {
+    // a type that we're interested in?
+    if (entity.getType()!=tableModel.getType()) return;
+    // already selected?
+    int row = table.getSelectionModel().getLeadSelectionIndex();
+    if (row>=0 && tableModel.getEntity(row)==entity) return;
+    // change selection
+    row = tableModel.getRow(entity);
+    table.scrollRectToVisible(table.getCellRect(row,0,true));
+    table.getSelectionModel().setSelectionInterval(row,row);
+    // done
+  }
+
+  /**
+   * @see genj.view.CurrentSupport#setCurrentProperty(Property)
+   */
+  public void setCurrentProperty(Property property) {
+    // ignored
+  }
+
+  /**
    * Grab current column widths
    */
   private void grabColumnWidths() {
@@ -256,6 +281,7 @@ public class TableView extends JPanel implements ToolBarSupport {
       if (i<0) return;
       Entity e = tableModel.getEntity(i);
       gedcom.fireEntitySelected(e, false);
+      ViewManager.getInstance().setCurrentEntity(e);
     }
   } //ActionMode
   
