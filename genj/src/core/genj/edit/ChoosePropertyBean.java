@@ -22,7 +22,6 @@ package genj.edit;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyUnknown;
-import genj.util.Debug;
 import genj.util.Resources;
 import java.awt.Color;
 import java.awt.Component;

@@ -342,7 +342,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     ActionChangeType(int t) {
       type = t;
       setTip(resources.getString("mode.tip", Gedcom.getNameFor(type,true)));
-      setImage(Property.getDefaultImage(Gedcom.getTagFor(type)));
+      setImage(Gedcom.getImage(type));
     }
     /** run */
     public void execute() {

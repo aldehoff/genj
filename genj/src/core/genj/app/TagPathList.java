@@ -19,7 +19,7 @@
  */
 package genj.app;
 
-import genj.gedcom.Property;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.TagPath;
 import genj.util.swing.HeadlessLabel;
 import java.awt.BorderLayout;
@@ -57,7 +57,7 @@ public class TagPathList extends JComponent {
       TagPath path = (TagPath)value;
 
       label.setText( path.toString() );
-      label.setIcon( Property.getDefaultImage(path.getLast()) );
+      label.setIcon( MetaProperty.get(path).getImage() );
 
       if (isSelected)
       label.setBackground(lChoose.getSelectionBackground());

@@ -19,7 +19,7 @@
  */
 package genj.app;
 
-import genj.gedcom.Property;
+import genj.gedcom.MetaProperty;
 import genj.util.swing.HeadlessLabel;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -164,7 +164,7 @@ public class TagSelector extends JComponent {
       Entry entry = (Entry)value;
       // prepare its data
       label.setText( entry.tag );
-      label.setIcon( Property.getDefaultImage(entry.tag) );
+      label.setIcon( MetaProperty.get(entry.tag).getImage() );
       check.setSelected( entry.selected );
       // done
       return panel;

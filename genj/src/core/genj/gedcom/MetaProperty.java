@@ -226,6 +226,20 @@ public class MetaProperty {
   }
   
   /**
+   * Resolve the MetaProperty for given property
+   */
+  public static MetaProperty get(Property p) {
+    return get(p.getTag());
+  }
+  
+  /**
+   * Resolve the MetaProperty for given tag-path
+   */
+  public static MetaProperty get(TagPath p) {
+    return get(p.getLast());
+  }
+  
+  /**
    * Resolve MetaDefinition instance
    */
   public static MetaProperty get(String tag) {

@@ -21,6 +21,7 @@ package genj.renderer;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import java.awt.Color;
@@ -60,8 +61,8 @@ public class EntityRenderer {
   
   /** the property image width */
   private static final int 
-    PROP_IMAGE_WIDTH  = Property.getDefaultImage("INDI").getIconWidth()+4,
-    PROP_IMAGE_HEIGHT = Property.getDefaultImage("INDI").getIconHeight();
+    PROP_IMAGE_WIDTH  = MetaProperty.get("INDI").getImage().getIconWidth()+4,
+    PROP_IMAGE_HEIGHT = MetaProperty.get("INDI").getImage().getIconHeight();
   
   /** replace value for no-property */
   private static final Object

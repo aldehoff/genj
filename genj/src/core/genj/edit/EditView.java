@@ -577,7 +577,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       Property prop = (Property)path.getLastPathComponent();
   
       // .. Confirm
-      ChoosePropertyBean choose = new ChoosePropertyBean(MetaProperty.get(prop.getTag()).getSubs(), resources);
+      ChoosePropertyBean choose = new ChoosePropertyBean(MetaProperty.get(prop).getSubs(), resources);
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
       Object[] message = new Object[3];
@@ -828,7 +828,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       // .. transient?
       if (((Property)p).isTransient()) return null;
       // .. calc information text
-      String info = MetaProperty.get(((Property)p).getTag()).getInfo();
+      String info = MetaProperty.get((Property)p).getInfo();
       if (info==null) return "?";
       // .. return max 60
       info = info.replace('\n',' ');

@@ -21,14 +21,10 @@ package genj.gedcom;
 
 import genj.util.Debug;
 import genj.util.swing.ImageIcon;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -115,7 +111,7 @@ public abstract class Property implements Comparable {
     children.add(prop);
 
     // We have to remember this as a new known (sub-)property
-    MetaProperty.get(getTag()).noteSub(prop);
+    MetaProperty.get(this).noteSub(prop);
 
     // Done
   }
@@ -126,7 +122,7 @@ public abstract class Property implements Comparable {
   public static String calcDefaultProxy(TagPath path) {
 
     // Find class for tag
-    Class c = MetaProperty.get(path.getLast()).getPropertyClass();
+    Class c = MetaProperty.get(path).getPropertyClass();
 
     // Get proxy value
     Class  argtypes[] = { path.getClass() };
@@ -240,20 +236,6 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Returns the default image which is associated with this property.
-   */
-  public ImageIcon getDefaultImage() {
-    return MetaProperty.get(getTag()).getImage();
-  }
-
-  /**
-   * Returns the default image which is associated with this property.
-   */
-  public static ImageIcon getDefaultImage(String tag) {
-    return MetaProperty.get(tag).getImage();
-  }
-
-  /**
    * Returns a warning string that describes what happens when this
    * property would be deleted
    * @return warning as <code>String</code>, <code>null</code> when no warning
@@ -320,8 +302,8 @@ public abstract class Property implements Comparable {
    */
   public ImageIcon getImage(boolean checkValid) {
     if (!checkValid||isValid())
-      return MetaProperty.get(getTag()).getImage();
-    return MetaProperty.get(getTag()).getImage("err");
+      return MetaProperty.get(this).getImage();
+    return MetaProperty.get(this).getImage("err");
   }
 
   /**

@@ -20,7 +20,7 @@
 package genj.app;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.TagPath;
 import genj.util.swing.HeadlessLabel;
 import java.awt.BorderLayout;
@@ -329,7 +329,7 @@ public class TagPathTree extends JScrollPane {
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       Node node = (Node)value;
       label.setText( node.tag );
-      label.setIcon( Property.getDefaultImage(node.tag) );
+      label.setIcon( MetaProperty.get(node.tag).getImage() );
       checkbox.setSelected(selection.contains(node));
       panel.invalidate(); // make sure no preferred side is cached
       return panel;
