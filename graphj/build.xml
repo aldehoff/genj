@@ -1,0 +1,68 @@
+<project name="GraphJ" default="run" basedir=".">
+
+  <property file="./build.properties"/>
+
+  <path id="classpath">
+    <pathelement path="${dir.build}/classes/core"/>
+    <pathelement path="${dir.build}/classes/shell"/>
+    <pathelement path="${java.class.path}"/>
+  </path>
+
+  <property name="classpath" refid="classpath"/>
+
+  <!--
+   Initialization
+   -->
+  <target name="init">
+    <mkdir dir="${dir.build}"/>
+    <echo>${classpath}</echo>
+  </target>
+
+  <!--
+   Core Compilation
+   -->
+  <target name="compile.core" depends="init">
+    <mkdir dir="${dir.build}/classes/core"/>
+    <javac srcdir="src/core" destdir="${dir.build}/classes/core"
+           debug="on" optimize="off" deprecation="off" fork="true">
+      <classpath refid="classpath"/>
+    </javac>
+  </target>
+
+  <!--
+   Shell Compilation
+   -->
+  <target name="compile.shell" depends="init">
+    <mkdir dir="${dir.build}/classes/shell"/>
+    <javac srcdir="src/shell" destdir="${dir.build}/classes/shell"
+           debug="on" optimize="off" deprecation="off" fork="true">
+      <classpath refid="classpath"/>
+    </javac>
+    <copy todir="${dir.build}/classes/shell">
+      <fileset dir="./src/shell" includes="**/*.properties"/>
+    </copy>
+  </target>
+
+  <!--
+   Compilation
+   -->
+  <target name="compile" depends="compile.core, compile.shell">
+  </target>
+
+  <!--
+   Cleaning
+   -->
+  <target name="clean">
+    <delete dir="${dir.build}"/>
+  </target>
+
+  <!--
+   Run
+   -->
+  <target name="run" depends="compile">
+    <java classname="gj.shell.Shell" fork="true">
+       <classpath refid="classpath"/>
+    </java>
+  </target>
+  
+</project>
