@@ -36,7 +36,7 @@ import javax.swing.table.TableColumnModel;
       new Filter(Gedcom.INDIVIDUALS , new String[]{"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"}),
       new Filter(Gedcom.FAMILIES    , new String[]{"FAM","FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" }),
       new Filter(Gedcom.MULTIMEDIAS , new String[]{"OBJE","OBJE:FILE"}),
-      new Filter(Gedcom.NOTES       , new String[]{"NOTE"}),
+      new Filter(Gedcom.NOTES       , new String[]{"NOTE","NOTE:NOTE"}),
       new Filter(Gedcom.SOURCES     , new String[]{"SOUR"}),
       new Filter(Gedcom.SUBMITTERS  , new String[]{"SUBM"}),
       new Filter(Gedcom.REPOSITORIES, new String[]{"REPO"})
