@@ -21,6 +21,8 @@ package genj.gedcom;
 
 import genj.util.ReferenceSet;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -42,6 +44,28 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     // remember new
     if (newValue.length()>0) refSet.add(newValue, this);
     // done
+  }
+  
+  /**
+   * Returns all choices for given property tag
+   */
+  public static String[] getChoices(final Gedcom gedcom, final String tag, boolean sort) {
+    
+    // lookup choices
+    List choices = gedcom.getReferenceSet(tag).getKeys();
+    String[] result = (String[])choices.toArray(new String[choices.size()]);
+    
+    // sort if applicable
+    if (sort) {
+      Arrays.sort(result, new Comparator() {
+        public int compare(Object choice1, Object choice2) {
+          return gedcom.getReferenceSet(tag).getSize(choice2) - gedcom.getReferenceSet(tag).getSize(choice1);
+        }
+      });
+    }
+    
+    // done
+    return result;
   }
   
   /**
