@@ -22,10 +22,14 @@ package genj.applet;
 import genj.Version;
 import genj.gedcom.Gedcom;
 import genj.io.GedcomReader;
+import genj.util.ActionDelegate;
 import genj.util.Origin;
 import genj.util.Registry;
+import genj.util.Trackable;
+import genj.util.swing.ProgressWidget;
 import genj.view.ViewManager;
 import genj.window.DefaultWindowManager;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.net.URL;
@@ -52,6 +56,13 @@ public class Applet extends java.applet.Applet {
   private boolean isInitialized = false;
 
   /**
+   * @see java.applet.Applet#getAppletInfo()
+   */
+  public String getAppletInfo() {
+    return "GenealogyJ v"+Version.getInstance();
+  }
+
+  /**
    * @see java.applet.Applet#init()
    */
   public void init() {
@@ -61,64 +72,144 @@ public class Applet extends java.applet.Applet {
       return;
     isInitialized = true;
 
-    // open registry
-    Registry registry = new Registry();
+    // set our layout
+    setLayout(new BorderLayout());
 
-    // load gedcom
-    Gedcom gedcom;
-    try {
+    // calculate gedcom url
+    String url = getParameter("gedcom");
+    if (url.indexOf(':')<0) {
+      String base = getDocumentBase().toString();
+      url = base.substring(0, base.lastIndexOf('/')+1)+url;
+    } 
+
+    System.out.println("Loading Gedcom "+url);
+
+    // try load gedcom
+    new Init(url).trigger();
+
+    // done 
+  }
+    
+  /**
+   * load
+   */
+  private class Init extends ActionDelegate implements Trackable {
+
+    /** url we're loading from */
+    private String url;
+
+    /** reader we're working with */
+    private GedcomReader reader;
+
+    /** gedcom we we load */
+    private Gedcom gedcom;
+    
+    /** throwable we might encounter */
+    private Throwable throwable;
+
+    /**
+     * Constructor
+     */
+    private Init(String url) {
+
+      // keep url
+      this.url = url;
       
-      // calculate gedcom url
-      String url = getParameter("gedcom");
-      if (url.indexOf(':')<0) {
-        String base = getDocumentBase().toString();
-        url = base.substring(0, base.lastIndexOf('/')+1)+url;
-      } 
-      System.out.println("Loading Gedcom "+url);
-      
-      // load
-      Origin origin = Origin.create(new URL(url));
-      GedcomReader reader = new GedcomReader(origin);
-      gedcom = reader.read();
-      
-    } catch (Throwable t) {
-      t.printStackTrace();
-      return;
+      // setup async
+      setAsync(ASYNC_SAME_INSTANCE);
+
+      // done for now
     }
     
-    // prepare window manager
-    ViewManager vmanager = new ViewManager(
-      registry, 
-      null, 
-      new DefaultWindowManager(registry), 
-      FACTORIES
-    );
+    /**
+     * @see genj.util.ActionDelegate#preExecute()
+     */
+    protected boolean preExecute() {
 
-    // add center
-    setLayout(new BorderLayout());
-    add(BorderLayout.CENTER, new ControlCenter(vmanager, gedcom));
+      // clear possible throwable
+      throwable = null;
+
+      // setup progress indicator
+      removeAll();
+      add(BorderLayout.CENTER, new ProgressWidget(this, getThread()));
+      
+      // continue
+      return true;
+    }
     
-    // done
-  }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+
+      // try to create gedcom reader
+      try {
+        reader = new GedcomReader(Origin.create(new URL(url)));
+        gedcom = reader.read();
+      } catch (Throwable t) {
+        throwable = t;
+      }
+
+      // back to sync   
+    }
+    
+    /**
+     * @see genj.util.ActionDelegate#postExecute()
+     */
+    protected void postExecute() {
+
+      // open registry
+      Registry registry = new Registry();
+
+      // prepare window manager
+      WindowManager winMgr = new DefaultWindowManager(registry);
+      
+      // check load status      
+      if (throwable!=null) {
+        
+        int rc = winMgr.openDialog(null, "Error", winMgr.IMG_ERROR, url+"\n"+throwable.getMessage(), new String[]{"Retry", winMgr.OPTION_CANCEL}, Applet.this);        
+        
+        if (rc==0) trigger();
+        
+      } else {
+        
+        // prepare view manager
+        ViewManager vmanager = new ViewManager(registry, null, winMgr, FACTORIES);
+
+        // change what we show
+        removeAll();
+        add(BorderLayout.CENTER, new ControlCenter(vmanager, gedcom));
+        invalidate();
+        validate();
+        repaint();
+    
+      }
+
+      // done
+    }
+
+    /**
+     * @see genj.util.Trackable#cancel()
+     */
+    public void cancel() {
+      if (reader!=null) reader.cancel();
+    }
+    
+    /**
+     * @see genj.util.Trackable#getProgress()
+     */
+    public int getProgress() {
+      return reader!=null ? reader.getProgress() : 0;
+    }
+
+    /**
+     * @see genj.util.Trackable#getState()
+     */
+    public String getState() {
+      return reader!=null ? reader.getState() : "Connecting";
+    }
+
+    
+  } //load
   
-  /**
-   * @see java.applet.Applet#start()
-   */
-  public void start() {
-  }
-
-  /**
-   * @see java.applet.Applet#stop()
-   */
-  public void stop() {
-  }
-  
-  /**
-   * @see java.applet.Applet#getAppletInfo()
-   */
-  public String getAppletInfo() {
-    return "GenealogyJ v"+Version.getInstance();
-  }
-
-
 } //Applet
