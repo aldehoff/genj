@@ -97,7 +97,8 @@ public class Resources {
     } catch (RuntimeException e) {
     }
 
-    Debug.log(Debug.WARNING, this,"Resource '"+key+"' for pkg '"+pkg+"' is missing");
+    // 20030321 removed - too verbose
+    //Debug.log(Debug.WARNING, this,"Resource '"+key+"' for pkg '"+pkg+"' is missing");
 
     return key;
   }
