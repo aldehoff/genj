@@ -64,11 +64,15 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -80,6 +84,9 @@ import javax.swing.event.ChangeListener;
  */
 public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupport, ToolBarSupport, ContextSupport, FilterSupport {
   
+  /** an icon for bookmarking */
+  private final static ImageIcon BOOKMARK_ICON = MetaProperty.get("EVEN").getImage();      
+
   /*package*/ static final Resources resources = new Resources(TreeView.class);
   
   /** the units we use */
@@ -129,7 +136,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   
   /** current centered position */
   private Point2D.Double center = new Point2D.Double(0,0);
-  
+
   /**
    * Constructor
    */
@@ -166,6 +173,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     ));
     isAntialiasing = registry.get("antial", false);
  
+    // root
     Entity root = null;
     try { 
       root = gedcm.getEntity(registry.get("root",(String)null));
@@ -178,6 +186,15 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       currentEntity = gedcm.getEntity(registry.get("current",(String)null));
     } catch (Exception e) {
       currentEntity = model.getRoot();
+    }
+    
+    // bookmarks
+    String[] bs = registry.get("bookmarks", new String[0]);
+    for (int i=0;i<bs.length;i++) {
+      try {
+        model.addBookmark(new Bookmark(this, gedcm, bs[i]));
+      } catch (Throwable t) {
+      }
     }
 
     // setup child components
@@ -246,6 +263,13 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // root    
     if (model.getRoot()!=null) registry.put("root", model.getRoot().getId());
     if (currentEntity!=null) registry.put("current", currentEntity.getId());
+    // bookmarks
+    String[] bs = new String[model.getBookmarks().size()];
+    Iterator it = model.getBookmarks().iterator();
+    for (int b=0;it.hasNext();b++) {
+      bs[b] = it.next().toString();
+    }
+    registry.put("bookmarks", bs);
     // done
     super.removeNotify();
   }
@@ -395,8 +419,10 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /**
    * @see genj.view.ContextPopupSupport#getContextAt(Point)
    */
-  public Object getContextAt(Point pos) {
-    return getEntityAt(pos);
+  public Context getContextAt(Point pos) {
+    Entity e = getEntityAt(pos);
+    if (e==null) return null;
+    return new Context(e, Collections.singletonList(new ActionBookmark(e, true)));
   }
 
   /**
@@ -423,6 +449,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     bh.create(new ActionOverview())
       .setSelected(overview.isVisible());
     
+    // gap
+    bar.addSeparator();
+    
     // vertical/horizontal
     bh.create(new ActionOrientation())
       .setSelected(model.isVertical());
@@ -440,48 +469,26 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     bh.create(new ActionAsDsAnDs(Model.DESCENDANTS))
       .setSelected(model.getMode()==Model.DESCENDANTS);
       
+    // gap
+    bar.addSeparator();
+    
     // bookmarks
-    PopupButton pb = new PopupButton("",MetaProperty.get("EVEN").getImage()) {
+    PopupButton pb = new PopupButton("",BOOKMARK_ICON) {
       /**
        * @see genj.util.swing.PopupButton#getActions()
        */
       public List getActions() {
-        List bookmarks = new ArrayList(3);
-        bookmarks.add(new ActionBookmark(null));
-        bookmarks.add(ActionDelegate.NOOP);
-        bookmarks.add(new ActionBookmark(new Bookmark("Nils Meier", null, null)));
-        bookmarks.add(new ActionBookmark(new Bookmark("Sven Meier", null, null)));
-        bookmarks.add(new ActionBookmark(new Bookmark("Lars Meier", null, null)));
-        return bookmarks;
+        List result = new ArrayList(TreeView.this.model.getBookmarks());
+        result.add(ActionDelegate.NOOP);
+        result.add(new ActionClearBookmarks());
+        return result; 
       }
     };
+    pb.setToolTipText(resources.getString("bookmark.tip"));
     bar.add(pb);
     
     // done
   }
-
-  /**
-   * Action choosing a bookmark
-   */
-  private class ActionBookmark extends ActionDelegate {
-    /** 
-     * Constructor 
-     */
-    private ActionBookmark(Bookmark bookmark) {
-      if (bookmark==null) setText("Create Bookmark");
-      else {
-        setText(bookmark.getName());
-        setImage(Gedcom.getImage(Gedcom.INDIVIDUALS));
-      }
-    } 
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-      System.out.println("Showing bookmark "+txt);
-    }
-
-  } //ActionBookmark
 
   /**
    * @see genj.view.ContextSupport#createActions(genj.gedcom.Entity)
@@ -491,8 +498,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     if (!(entity instanceof Indi||entity instanceof Fam)) 
       return null;
     // create an action for our tree
-    List result = new ArrayList(1);
+    List result = new ArrayList(2);
     result.add(new ActionRoot(entity));
+    result.add(new ActionBookmark(entity, false));
     // done
     return result;
   }
@@ -917,6 +925,73 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       model.setFamilies(!model.isFamilies());
       scrollToCurrent();
     }
-  } //ActionOrientation
+  } //ActionFamsAndSpouses
+
+  /**
+   * Action - clear bookmarks
+   */
+  private class ActionClearBookmarks extends ActionDelegate {
+    /** 
+     * Constructor 
+     */
+    private ActionClearBookmarks() {
+      setText(resources.getString("bookmark.clear"));
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      model.getBookmarks().clear();
+    }
+  }//ActionClearBookmarks
+
+  /**
+   * Action - bookmark something
+   */
+  private class ActionBookmark extends ActionDelegate {
+    /** the entity */
+    private Entity entity;
+    /** 
+     * Constructor 
+     */
+    private ActionBookmark(Entity e, boolean local) {
+      entity = e;
+      if (local) {
+        setText(resources.getString("bookmark.add"));
+        setImage(BOOKMARK_ICON);
+      } else {
+        setText(resources.getString("bookmark.in",frame.getTitle()));
+        setImage(Images.imgView);
+      }
+    } 
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      
+      // calculate a name
+      String name = "";
+      if (entity instanceof Indi) {
+        name = ((Indi)entity).getName();
+      }
+      if (entity instanceof Fam) {
+        Indi husb = ((Fam)entity).getHusband();
+        Indi wife = ((Fam)entity).getWife();
+        if (husb!=null&&wife!=null) name = husb.getName() + " & " + wife.getName();
+      }
+      
+      // Ask for name of bookmark
+      name = JOptionPane.showInputDialog(target, resources.getString("bookmark.name"), name);
+      if (name==null)  return;
+      name = name.trim();
+      if (name.length()==0)  return;
+      
+      // create it
+      model.addBookmark(new Bookmark(TreeView.this, name, entity));
+      
+      // done
+    }
+  
+  } //ActionBookmark
 
 } //TreeView

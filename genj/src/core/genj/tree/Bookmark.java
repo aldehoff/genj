@@ -19,34 +19,68 @@
  */
 package genj.tree;
 
+import genj.gedcom.DuplicateIDException;
 import genj.gedcom.Entity;
+import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.util.ActionDelegate;
 
 /**
  * A Bookmark in viewing a tree
  * <il>
- * <li>the tree's root
- * <li>the centered individual
+ * <li>the bookmark'd entity
+ * <li>the name
  * </il>
  */
-public class Bookmark {
+public class Bookmark extends ActionDelegate {
+  
+  /** the tree */
+  private TreeView tree;
   
   /** the name */
   private String name;
   
-  /** the root */
-  private Entity root;
+  /** the entity */
+  private Entity entity;
   
-  /** the focus */
-  private Indi focus;
+  /**
+   * Internal Constructor
+   */
+  /*package*/ Bookmark(TreeView t, Gedcom ged, String s) throws IllegalArgumentException {
+    
+    // grab name and id from s
+    int at = s.indexOf('#');
+    if (at<0) throw new IllegalArgumentException("id#expected name");
+    
+    tree = t;
+    name = s.substring(at+1);
+    String id = s.substring(0,at);
+    
+    // resolve entity
+    try {
+      entity = ged.getEntity(id);
+    } catch (DuplicateIDException e) {
+      throw new IllegalArgumentException("id "+id+" is not unique");
+    }
+    if (!(entity instanceof Indi||entity instanceof Fam))
+      throw new IllegalArgumentException("id "+id+" doesn't point to Indi or Fam");
+  
+    // setup text
+    setText(name);
+    setImage(Gedcom.getImage(entity.getType()));
+  }
   
   /**
    * Constructor
    */
-  public Bookmark(String n, Entity r, Indi f) {
-    name  = n;
-    root  = r;
-    focus = f;
+  public Bookmark(TreeView t, String n, Entity e) {
+    tree = t;
+    name = n;
+    entity = e;
+  
+    setText(name);
+    setImage(Gedcom.getImage(entity.getType()));
   }
   
   /**
@@ -55,5 +89,27 @@ public class Bookmark {
   public String getName() {
     return name;
   }
+  
+  /**
+   * Accessor - entity
+   */
+  public Entity getEntity() {
+    return entity;
+  }
+  
+  /**
+   * @see genj.util.ActionDelegate#execute()
+   */
+  protected void execute() {
+    tree.setRoot(entity);
+  }
+
+  /**
+   * @see java.lang.Object#toString()
+   */
+  public String toString() {
+    return entity.getId()+'#'+name;
+  }
+  
 
 } //Snapshot

@@ -263,7 +263,9 @@ import javax.swing.SwingConstants;
       if (!e.isPopupTrigger()) return;
       // show a context menu
       ContextPopupSupport esp = (ContextPopupSupport)view;
-      ViewManager.getInstance().showContextMenu(esp.getContextPopupContainer(), e.getPoint(), gedcom, esp.getContextAt(e.getPoint()));
+      ContextPopupSupport.Context context = esp.getContextAt(e.getPoint());
+      if (context==null) return;
+      ViewManager.getInstance().showContextMenu(esp.getContextPopupContainer(), e.getPoint(), gedcom, context);
       // done
     }
   } //EntityPopupMouseListener

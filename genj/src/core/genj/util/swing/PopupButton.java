@@ -20,6 +20,7 @@
 package genj.util.swing;
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,34 +86,54 @@ public class PopupButton extends JToggleButton {
   public void addNotify() {
     // delegate
     super.addNotify();
-    // check if we're in a toolbar
-    if (getParent() instanceof JToolBar) {
-      // patch max size (helps buttons look)
+    // patch max size in toolbar (helps buttons look uniformly in toolbar)
+    if (getToolBar()!=null) 
       setMaximumSize(new Dimension(128,128));
-      // check placement
-      int o = ((JToolBar)getParent()).getOrientation();
-    }
     // done
   }
-
   
+  /**
+   * Gets the toolbar we're in (might be null)
+   */
+  private JToolBar getToolBar() {
+    if (!(getParent() instanceof JToolBar)) return null;
+    return (JToolBar)getParent();
+  }
+
   /**
    * Change popup's visibility
    */
   public void showPopup(boolean b) {
-    
     // cancel popup?
     if (!b&&popup!=null) popup.setVisible(false);
     
     // show popup?
     if (b&&popup==null) {
+      
       List l = getActions();
       if (l!=null) {
+
+        // .. create an populate        
         popup = new Popup();
         MenuHelper mh = new MenuHelper();
         mh.pushMenu(popup);
         mh.createItems(getActions());
-        popup.show(PopupButton.this, getWidth(), 0);
+
+        // .. calc position
+        int x=0, y=0;
+        JToolBar bar = getToolBar();
+        if (bar==null) {
+          x += getWidth();
+        } else {
+          if (JToolBar.VERTICAL==bar.getOrientation()) {
+            x += bar.getLocation().x==0 ? getWidth() : -popup.getPreferredSize().width;
+          } else {
+            y += bar.getLocation().y==0 ? getHeight() : -popup.getPreferredSize().height;
+          }
+        }
+
+        // .. show        
+        popup.show(PopupButton.this, x, y);
       }
     }
     

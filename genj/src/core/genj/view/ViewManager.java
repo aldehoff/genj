@@ -390,15 +390,18 @@ public class ViewManager {
   /**
    * Fills a menu with context actions 
    */
-  public void fillContextMenu(MenuHelper mh, Gedcom gedcom, Object context) {
+  public void fillContextMenu(MenuHelper mh, Gedcom gedcom, ContextPopupSupport.Context context) {
+
+    // the context might have some actions we're going to add
+    mh.createItems(context.getActions());
 
     // we need Entity, property and Gedcom (above) from context
     Entity entity = null;
     Property property = null;
-    if (context instanceof Entity) {
-      entity = (Entity)context;
-    } else if (context instanceof Property) {
-      property = (Property)context;
+    if (context.getContent() instanceof Entity) {
+      entity = (Entity)context.getContent();
+    } else if (context.getContent() instanceof Property) {
+      property = (Property)context.getContent();
       entity = property.getEntity();
     }
 
@@ -440,7 +443,7 @@ public class ViewManager {
    * Show a context menu for given point - at this
    * point we assume that view instanceof EntityPopupSupport
    */
-  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, Object context) {
+  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, ContextPopupSupport.Context context) {
     
     // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();

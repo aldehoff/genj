@@ -326,12 +326,12 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
   /**
    * @see genj.view.EntityPopupSupport#getContextAt(Point)
    */
-  public Object getContextAt(Point pos) {
+  public Context getContextAt(Point pos) {
     // is there an event?
     Model.Event event = getEventAt(pos);
     if (event==null) return null;
     // grab its entity
-    return event.getProperty();
+    return new Context(event.getProperty());
   }
 
   /**

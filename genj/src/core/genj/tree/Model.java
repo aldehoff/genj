@@ -37,7 +37,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,6 +93,9 @@ public class Model implements Graph, GedcomListener {
 
   /** metrics */
   private TreeMetrics metrics = new TreeMetrics( 6.0F, 3.0F, 3.0F, 1.5F, 1.0F );
+  
+  /** bookmarks */
+  private LinkedList bookmarks = new LinkedList();
   
   /**
    * Constructor
@@ -278,7 +283,22 @@ public class Model implements Graph, GedcomListener {
   public Node getNode(Entity e) {
     return (Node)entities2nodes.get(e);
   }
-
+  
+  /**
+   * Add a bookmark
+   */
+  public void addBookmark(Bookmark b) {
+    bookmarks.addFirst(b);
+    if (bookmarks.size()>16) bookmarks.removeLast();
+  }
+  
+  /**
+   * Accessor - bookmarks
+   */
+  public List getBookmarks() {
+    return bookmarks;
+  }
+  
   /**
    * @see gj.model.Graph#getArcs()
    */
@@ -313,6 +333,12 @@ public class Model implements Graph, GedcomListener {
         List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
         if (!indis.isEmpty()) root = (Indi)indis.get(0);
       }  
+      // bookmarks?
+      ListIterator it = bookmarks.listIterator();
+      while (it.hasNext()) {
+        Bookmark b = (Bookmark)it.next();
+        if (deleted.contains(b.getEntity())) it.remove();
+      }
       // parse now
       parse();
       // done

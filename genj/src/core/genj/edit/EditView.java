@@ -279,14 +279,14 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /**
    * @see genj.view.EntityPopupSupport#getEntityAt(Point)
    */
-  public Object getContextAt(Point pos) {
+  public Context getContextAt(Point pos) {
     // selection o.k.?
     TreePath path = tree.getPathForLocation(pos.x, pos.y);
     if (path!=null) tree.setSelectionPath(path);
     // try to resolve a return value
     Property prop = tree.getCurrentProperty();
-    if (prop!=null) return prop;
-    return getCurrentEntity();
+    if (prop!=null) return new Context(prop);
+    return new Context(getCurrentEntity());
   }
   
   /**
@@ -504,11 +504,10 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       
       // check selection
       Property[] selection = getSelection();
-      if (selection.length==1) {
-        ViewManager.getInstance().fillContextMenu(mh, gedcom, selection[0]);
-      } else {
-        ViewManager.getInstance().fillContextMenu(mh, gedcom, getCurrentEntity());
-      }
+      ContextPopupSupport.Context context = new Context(
+        selection.length==1 ? (Object)selection[0] : (Object)getCurrentEntity()
+      );
+      ViewManager.getInstance().fillContextMenu(mh, gedcom, context);
       
       // done
     }

@@ -20,6 +20,8 @@
 package genj.view;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComponent;
 
@@ -36,6 +38,48 @@ public interface ContextPopupSupport {
   /** 
    * Context (entity/property) by position
    */
-  public Object getContextAt(Point pos);
+  public Context getContextAt(Point pos);
+  
+  /**
+   * A context
+   */
+  public class Context {
+    
+    /** actions */
+    private List actions;
+    
+    /** the content of the context */
+    private Object content;
+    
+    /**
+     * Constructor
+     */
+    public Context(Object content) {
+      this(content, new ArrayList());
+    }
+    
+    /**
+     * Constructor
+     */
+    public Context(Object content, List actions) {
+      this.content = content;
+      this.actions = actions;
+    }
+    
+    /**
+     * Accessor - content
+     */
+    public Object getContent() {
+      return content;
+    }
+    
+    /**
+     * Accessor - actions
+     */
+    public List getActions() {
+      return actions;
+    }
+    
+  }//Context
 
 } //EntityPopupSupport

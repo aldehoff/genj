@@ -214,7 +214,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
   /**
    * @see genj.view.EntityPopupSupport#getContextAt(Point)
    */
-  public Object getContextAt(Point pos) {
+  public Context getContextAt(Point pos) {
     int row = table.rowAtPoint(pos);
     if (row<0) return null;
     int col = table.columnAtPoint(pos);
@@ -223,9 +223,9 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     // context is either entity or property
     if (col>=0) {
       Property prop = (Property)tableModel.getValueAt(row, col);
-      if (prop!=null) return prop;
+      if (prop!=null) return new Context(prop);
     }
-    return tableModel.getEntity(row);
+    return new Context(tableModel.getEntity(row));
   }
 
   /**
