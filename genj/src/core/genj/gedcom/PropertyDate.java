@@ -73,7 +73,7 @@ public class PropertyDate extends Property {
   private final static String months[] = {"JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
 
   /** time format */
-  private final static SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
+  private final static SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 
   /**
    * Constructor
