@@ -200,11 +200,17 @@ public class PropertyChange extends Property implements MultiLineProperty {
   }
   
   /**
-   * Will only be used for display - data access will use getLines()
-   * @see genj.gedcom.Property#getValue()
+   * Gedcom value - this is an intermittend value only that won't be saved (it's not Gedcom compliant but contains a valid gedcom date)
    */
   public String getValue() {
-    return time<0 ? EMPTY_STRING : getDateAsString()+','+getTimeAsString();
+    return time<0 ? EMPTY_STRING : PointInTime.getPointInTime(time).getValue() +','+getTimeAsString();
+  }
+  
+  /**
+   * A display value - the date/time localized
+   */
+  public String getDisplayValue() {
+    return time<0 ? EMPTY_STRING : getDateAsString() +','+getTimeAsString();
   }
   
   /**
