@@ -60,15 +60,15 @@ public abstract class Entity extends Property {
    */
   void delNotify() {
     
+    // continue
+    super.delNotify();
+    
     // note
     if (gedcom.isTransaction())
       gedcom.getTransactionChanges(Change.EDEL).add(this);
 
-    // forget (and break notify endless loop)
+    // forget gedcom
     gedcom = null;
-    
-    // continue
-    super.delNotify();
     
     // done    
   }

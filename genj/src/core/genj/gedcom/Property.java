@@ -72,10 +72,13 @@ public abstract class Property implements Comparable {
     // propagate
     changeNotify(this, Change.PDEL);
 
-    // delete all properties
-    while (!children.isEmpty()) {
-      delProperty((Property)children.get(0));
-    }      
+    // delete all properties - to avoid an endless
+    // loop we first make up our mind which ones
+    // to delete - that's it - anything added beyond
+    // this point will be ignored
+    Property[] props = getProperties();
+    for (int i=0,j=props.length;i<j;i++)
+      delProperty((Property)props[i]);
     
     // forget parent
     parent = null;
