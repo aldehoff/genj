@@ -7,10 +7,6 @@
  */
 package validate;
 
-import java.util.List;
-
-import genj.gedcom.Entity;
-import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PointInTime;
@@ -18,15 +14,20 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 
+import java.util.List;
+
 /**
- * Test age
+ * Test age of individuals at specific dates
  */
 public class TestAge extends Test {
 
   /** comparisons */
   /*package*/ final static int 
-    GREATER = 0,
-    LESS = 1;
+    OVER = 0,
+    UNDER = 1;
+    
+  /** tag path to indi */
+  private TagPath path2indi;    
     
   /** the mode GREATER, LESS, ... */
   private int comparison;
@@ -36,17 +37,23 @@ public class TestAge extends Test {
 
   /**
    * Constructor
+   * @param path the path to a date being tested for indi's age
+   * @param path to get to indi
+   * @param comp either OVER or UNDER
+   * @param yrs age in years 
    */
-  /*package*/ TestAge(String path, int comp, int yrs) {
+  /*package*/ TestAge(String path, String p2indi, int comp, int yrs) {
     // delegate to super
     super(path, PropertyDate.class);
     // remember
+    path2indi = new TagPath(p2indi);
     comparison = comp;
     years = yrs;
   }
   
   /**
-   * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath, java.util.List)
+   * Test individual(s)'s age at given date property (PropertyDate.class) 
+   * 
    */
   /*package*/ void test(Property prop, TagPath path, List issues) {
     
@@ -55,26 +62,11 @@ public class TestAge extends Test {
     if (!date.isValid())
       return;
 
-    // check entity
-    Entity entity = prop.getEntity();
-    if (entity instanceof Indi)
-      test(path, date, (Indi)entity, issues);
-    if (entity instanceof Fam) {
-      test(path, date, ((Fam)entity).getHusband(), issues);
-      test(path, date, ((Fam)entity).getWife   (), issues);
-    }
-
-    // done      
-  }
-  
-  /**
-   * test an individual's birth against the date
-   */
-  private void test(TagPath path, PropertyDate date, Indi indi, List issues) {
-    
-    // no indi?
-    if (indi==null)
+    // find indi we compute age for (e.g. "INDI" or "MARR:HUSB")
+    Property pindi = prop.getEntity().getProperty(path2indi, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
+    if (!(pindi instanceof Indi))
       return;
+    Indi indi = (Indi)pindi;      
 
     // calc pit of date
     PointInTime pit2 = date.getStart();
@@ -102,9 +94,9 @@ public class TestAge extends Test {
    */
   private boolean isError(int age) {
     switch (comparison) {
-      case GREATER:
+      case OVER:
         return age > years;
-      case LESS:
+      case UNDER:
         return age < years;
     }
     return false;
@@ -119,7 +111,7 @@ public class TestAge extends Test {
     return 
         "Age of "+indi+" at "
       + Gedcom.getName(path.get(path.length()-2))
-      + (comparison==LESS ? " less " : " greater ") 
+      + (comparison==UNDER ? " less " : " greater ") 
       + years + " years";
   }
   

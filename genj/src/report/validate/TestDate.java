@@ -7,7 +7,9 @@
  */
 package validate;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
@@ -15,7 +17,7 @@ import genj.gedcom.TagPath;
 import java.util.List;
 
 /**
- * @author nmeier
+ * Test two dates
  */
 /*package*/ class TestDate extends Test {
   
@@ -23,8 +25,11 @@ import java.util.List;
   /*package*/ final static int 
     AFTER = 0,
     BEFORE = 1;
+
+  /** path1 pointing to date to compare */
+  private TagPath path1;    
     
-  /** the 'other' we test against */
+  /** path2 to compare to */
   private TagPath path2;
   
   /** the mode AFTER, BEFORE, ... */
@@ -32,45 +37,77 @@ import java.util.List;
 
   /**
    * Constructor
+   * @see TestDate#TestDate(String[], int, String) 
    */
-  /*package*/ TestDate(String paths, int comp, String path2) {
-    this(new String[]{paths}, comp, path2);
+  /*package*/ TestDate(String path, int comp, String path2) {
+    this(new String[]{path}, null, comp, path2);
+  }
+
+  /**
+   * Constructor
+   * @see TestDate#TestDate(String[], int, String) 
+   */
+  /*package*/ TestDate(String path, String path1, int comp, String path2) {
+    this(new String[]{path}, path1, comp, path2);
+  }
+
+  /**
+   * Constructor
+   * @param paths to trigger test
+   * @param comp either AFTER or BEFORE
+   * @param path2 path to check against (pointing to date)
+   */
+  /*package*/ TestDate(String[] paths, int comp, String path2) {
+    this(paths, null, comp, path2);
   }
   
   /**
    * Constructor
+   * @param paths to trigger test
+   * @param path1 check against path2 (can be null)
+   * @param comp either AFTER or BEFORE
+   * @param path2 path to check against (pointing to date)
    */
-  /*package*/ TestDate(String[] paths, int comp, String path2) {
+  /*package*/ TestDate(String[] paths, String path1, int comp, String path2) {
     // delegate to super
-    super(paths, PropertyDate.class);
+    super(paths, path1==null?PropertyDate.class:Property.class);
     // remember
     comparison = comp;
     // keep other tag path
+    this.path1 = path1!=null ? new TagPath(path1) : null;
     this.path2 = new TagPath(path2);
   }
 
   /**
-   * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath, java.util.List)
+   * test a prop (PropertyDate.class) at given path 
    */
-  /*package*/ void test(Property prop, TagPath path, List issues) {
+  /*package*/ void test(Property prop, TagPath propPath, List issues) {
     
-    // assuming date
-    PropertyDate date1 = (PropertyDate)prop;
-
-    // get other date
-    PropertyDate date2 = (PropertyDate)prop.getEntity().getProperty(path2);
-    if (date2==null)
+    Entity entity = prop.getEntity();
+    PropertyDate date1;
+    
+    // did we get a path1 or assuming prop instanceof date?
+    if (path1!=null) {
+      date1 = (PropertyDate)prop.getEntity().getProperty(path1, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
+    } else {
+      date1 = (PropertyDate)prop;
+    }
+    
+    // get date to check against - won't continue if
+    // that's not a PropertyDate
+    Property date2 = entity.getProperty(path2, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
+    if (!(date2 instanceof PropertyDate))
       return;
       
     // test it 
-    if (isError(date1, date2)) 
-      issues.add(new Issue(getError(path), date1.getParent().getImage(false), date1));
+    if (isError(date1, (PropertyDate)date2)) 
+      issues.add(new Issue(getError(date2.getEntity(), propPath), date1.getParent().getImage(false), prop));
     
     // done
   }
   
   /**
-   * test
+   * test for error in date1 vs. date2
    */
   private boolean isError(PropertyDate date1, PropertyDate date2) {
     switch (comparison) {
@@ -85,13 +122,14 @@ import java.util.List;
   /**
    * Calculate error messag from two paths
    */
-  private String getError(TagPath path1) {
+  private String getError(Entity entity, TagPath path1) {
     
     // prepare it
     return 
-        Gedcom.getName(path1.get(path1.length()-2))
+        Gedcom.getName(path1.get(path1.length()-(path1.getLast().equals("DATE")?2:1)))
       + (comparison==BEFORE ? " before " : " after ") 
-      + Gedcom.getName(path2.get(path2.length()-2));
+      + Gedcom.getName(path2.get(path2.length()-2))
+      + (entity instanceof Indi? " of "+entity : "");
     
   }
   

@@ -49,22 +49,22 @@ public class ReportValidate extends Report {
     after they die
  x  11) families containing an individual who marries before before the age 
     of MIN_MARRIAGE_AGE
- o  12) families containing an individual who marries after their death
+ x  12) families containing an individual who marries after their death
  o  13) families containing a woman who has given birth before the age of 
     MIN_CHILD_BIRTH
  O  14) families containing a woman who has given birth after the age of 
     MAX_CHILD_BIRTH
- o  15) families containing a woman who has given birth after they have died
+ x  15) families containing a woman who has given birth after they have died
  o  16) families containing a man who has fathered a child before the age of 
     MIN_FATHER_AGE
- o  17) families containing a man who has fathered a child after they have died
+ o  17) families containing a man who has fathered a child (more than 9 months) after they have died
 
     // check all files exist and can be opened
  x  new CheckFiles(gedcom));
     
     //family checks
-    new FamilyDateChecker(null, marrTag, husbTag, deathTag, MAX_LIVING_AGE, NONE, DateChecker.AFTER));
-    new FamilyDateChecker(null, marrTag, wifeTag, deathTag, MAX_LIVING_AGE, NONE, DateChecker.AFTER));
+ o  new FamilyDateChecker(null, marrTag, husbTag, deathTag, MAX_LIVING_AGE, NONE, DateChecker.AFTER));
+ o  new FamilyDateChecker(null, marrTag, wifeTag, deathTag, MAX_LIVING_AGE, NONE, DateChecker.AFTER));
  x  new FamilyDateChecker(null, marrTag, husbTag, birthTag, MIN_MARRIAGE_AGE, MAX_LIVING_AGE, DateChecker.BEFORE));
  x  new FamilyDateChecker(null, marrTag, wifeTag, birthTag, MIN_MARRIAGE_AGE, MAX_LIVING_AGE, DateChecker.BEFORE));
   
@@ -199,9 +199,6 @@ public class ReportValidate extends Report {
     // birth after death
     result.add(new TestDate("INDI:BIRT:DATE",TestDate.AFTER  ,"INDI:DEAT:DATE"));
     
-    // max lifespane
-    result.add(new TestAge ("INDI:DEAT:DATE",TestAge .GREATER,maxLife));
-    
     // burial before death
     result.add(new TestDate("INDI:BURI:DATE",TestDate.BEFORE ,"INDI:DEAT:DATE"));
     
@@ -211,21 +208,32 @@ public class ReportValidate extends Report {
     // events after death
     result.add(new TestDate(LIFETIME_DATES  ,TestDate.AFTER  ,"INDI:DEAT:DATE"));
 
-    // max BAPM age 
-    result.add(new TestAge ("INDI:BAPM:DATE",TestAge .GREATER,maxAgeBAPM));
-    
-    // max CHRI age 
-    result.add(new TestAge ("INDI:CHRI:DATE",TestAge .GREATER,maxAgeBAPM));
-    
-    // min RETI age
-    result.add(new TestAge ("INDI:RETI:DATE",TestAge .LESS   ,minAgeRETI));
-
-    // min MARR age
-    result.add(new TestAge ("FAM:MARR:DATE" ,TestAge .LESS   ,minAgeMARR));
-
     // marriage after divorce 
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:DIV:DATE"));
     
+    // marriage after death
+    result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:HUSB:INDI:BIRT:DATE"));
+    result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:WIFE:INDI:BIRT:DATE"));
+
+    // childbirth after death of mother
+    result.add(new TestDate("FAM:CHIL"      ,"FAM:CHIL:INDI:BIRT:DATE", TestDate.AFTER  ,"FAM:WIFE:INDI:DEAT:DATE"));
+
+    // max lifespane
+    result.add(new TestAge ("INDI:DEAT:DATE","INDI", TestAge.OVER, maxLife));
+    
+    // max BAPM age 
+    result.add(new TestAge ("INDI:BAPM:DATE","INDI", TestAge.OVER   ,maxAgeBAPM));
+    
+    // max CHRI age 
+    result.add(new TestAge ("INDI:CHRI:DATE","INDI", TestAge.OVER   ,maxAgeBAPM));
+    
+    // min RETI age
+    result.add(new TestAge ("INDI:RETI:DATE","INDI", TestAge.UNDER  ,minAgeRETI));
+
+    // min MARR age of husband, wife
+    result.add(new TestAge ("FAM:MARR:DATE" ,"FAM:HUSB:INDI", TestAge.UNDER  ,minAgeMARR));
+    result.add(new TestAge ("FAM:MARR:DATE" ,"FAM:WIFE:INDI", TestAge.UNDER  ,minAgeMARR));
+
     // non existing files
     result.add(new TestFile());
 
@@ -233,4 +241,4 @@ public class ReportValidate extends Report {
     return result;    
   }
 
-} //ReportValidate
+} //ReportValidate FAM:HUSB:BIRT:DATE

@@ -5,8 +5,8 @@
 2 CORP Nils Meier
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
-1 DATE 12 JUN 2003
-2 TIME 20:29:07
+1 DATE 16 JUN 2003
+2 TIME 12:43:46
 1 GEDC 
 2 VERS 5.5
 2 FORM Lineage-Linked
@@ -40,28 +40,42 @@
 0 @I002@ INDI 
 1 NAME Mary /Doe/
 1 SEX F
-1 FAMS @F001@
-1 CHAN 
-2 DATE 12 JUN 2003
-3 TIME 20:29:05
 1 BIRT 
 2 DATE 18
+1 DEAT 
+2 DATE 23
 1 OBJE 
 2 FILE foo
 2 NOTE file doesn't exist
+1 CHAN 
+2 DATE 16 JUN 2003
+3 TIME 12:43:32
+1 FAMS @F001@
 0 @F001@ FAM 
 1 WIFE @I002@
 1 HUSB @I001@
 1 MARR 
 2 DATE 20
 2 NOTE age of spouses &lt; minAgeMARR
+2 NOTE marr after death of husband
 1 CHAN 
-2 DATE 12 JUN 2003
-3 TIME 20:14:31
+2 DATE 16 JUN 2003
+3 TIME 12:38:25
 1 DIV 
 2 DATE 19
 2 NOTE divorce before marriage
 1 ENGA 
 2 DATE 
 2 NOTE !valid()
+1 CHIL @I003@
+0 @I003@ INDI 
+1 NAME Sue /Doe/
+1 CHAN 
+2 DATE 16 JUN 2003
+3 TIME 12:40:00
+1 SEX M
+1 BIRT 
+2 DATE 24
+2 NOTE birt after death of mother
+1 FAMC @F001@
 0 TRLR 
