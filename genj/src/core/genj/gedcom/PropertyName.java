@@ -231,8 +231,6 @@ public class PropertyName extends Property {
    */
   public void setValue(String newValue) {
 
-    propagateChanged(this);
-    
     // New empty Value ?
     if (newValue==null) {
       setName(null,null,null);
