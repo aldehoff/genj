@@ -35,7 +35,9 @@ import genj.report.Report;
  */
 public class ReportImplex extends Report {
   private static final String AUTHOR = "Thierry Hardy";
-  private static final String VERSION = "0.1";
+  private static final String VERSION = "0.2";
+  private static final String FIELD_SEPARATOR =  " - ";
+  private static final String LINE_SEPARATOR =  "---------------------------------------------------------------------------";
   private final int MAX_LEVEL = 100;
 
   private int[] iBasicCount = new int[MAX_LEVEL];
@@ -76,29 +78,29 @@ public class ReportImplex extends Report {
    * @see genj.report.Report#accepts(java.lang.Object)
    */
   public String accepts(Object context) {
-    // we accept GEDCOM or Individuals 
-    return context instanceof Indi || context instanceof Gedcom ? getName() : null;  
+    // we accept GEDCOM or Individuals
+    return context instanceof Indi || context instanceof Gedcom ? getName() : null;
   }
-  
+
   /**
    * This method actually starts this report
    */
   public void start(Object context) {
-		Indi indi;
+    Indi indi;
 
-		// The script is started with a right click on an individual with the contextual submenu
+    // The script is started with a right click on an individual with the contextual submenu
     if (context instanceof Indi) {
       indi = (Indi)context;
     } else {
     // No one has been given, we ask the user to select someone in the tree for analysis
-			Gedcom gedcom=(Gedcom)context;
-			indi = (Indi)getEntityFromUser (
-				 i18n("select_individual"),     // msg in resource file
-				 gedcom,
-				 Gedcom.INDIVIDUALS,
+      Gedcom gedcom=(Gedcom)context;
+      indi = (Indi)getEntityFromUser (
+         i18n("select_individual"),     // msg in resource file
+         gedcom,
+         Gedcom.INDIVIDUALS,
          "INDI:NAME"
-				 );
-		}
+         );
+    }
 
     if (indi == null)
       return;
@@ -109,8 +111,12 @@ public class ReportImplex extends Report {
     // Print header
     println(i18n("info"));
     println();
+    println(i18n("root_individual"));
+    println(LINE_SEPARATOR);
+    println(getIndiDescription(indi));
+    println();
     println(i18n("header_shared_ancestors"));
-    println("-------------------------------------------------------");
+    println(LINE_SEPARATOR);
 
     // Initialize the first generation with the selected individual
     List listIndi = new ArrayList();
@@ -190,15 +196,15 @@ public class ReportImplex extends Report {
    */
   private String getIndiDescription(Indi indi) {
     StringBuffer str = new StringBuffer();
-    str.append(indi.getId() + " - " + indi.getName());
+    str.append(indi.getId() + FIELD_SEPARATOR + indi.getName());
 
     String strBirth = indi.getBirthAsString();
     if (strBirth.length() != 0)
-      str.append(" - b:" + strBirth);
+      str.append(FIELD_SEPARATOR + i18n("prefix_born") + strBirth);
 
     String strDeath = indi.getDeathAsString();
     if (strDeath.length() != 0)
-      str.append(" - d:" + strDeath);
+      str.append(FIELD_SEPARATOR + i18n("prefix_death") + strDeath);
 
     return str.toString();
   }
@@ -250,7 +256,7 @@ public class ReportImplex extends Report {
     // Print header
     println();
     println(i18n("header_implex_stats"));
-    println("-------------------------------------------------------");
+    println(LINE_SEPARATOR);
 
     // Iteration on levels
     for (int i = 1; i < iLevel; i++) {
@@ -264,6 +270,7 @@ public class ReportImplex extends Report {
 
       // Compute coverage
       double dCoverage = Math.round(10000 * iBasicCount[i] / iPossibleCount) / 100;
+      double dAllCoverage = Math.round(10000 * iBasicCumul / iPossibleCumul) / 100;
 
       // Compute implex
       double dImplex = 0;
@@ -275,6 +282,8 @@ public class ReportImplex extends Report {
               justify(iPossibleCount, 11) +
               justify(iBasicCount[i], 11) +
               justify(dCoverage + "%", 11) +
+              justify(iBasicCumul, 11) +
+              justify(dAllCoverage + "%", 11) +
               justify(iDiffCount[i], 11) +
               justify(dImplex + "%", 11));
     }
