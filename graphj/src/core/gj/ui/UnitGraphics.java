@@ -55,9 +55,6 @@ public class UnitGraphics {
   /** stack of transformations */
   private Stack stackTransformations = new Stack();
 
-  /** resolution to use */
-  public double dpi = Toolkit.getDefaultToolkit().getScreenResolution();
-  
   /** a stack of push'd clips */
   private Stack clipStack = new Stack();
   
