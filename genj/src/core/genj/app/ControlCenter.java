@@ -26,6 +26,7 @@ import genj.io.GedcomIOException;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -786,21 +787,27 @@ public class ControlCenter extends JPanel {
 
       }
 
-      // .. exits ?
-      if (ask && file.exists()) {
+      // .. exists already?
+      if (file.exists()) {
 
-        int rc =
-          JOptionPane.showConfirmDialog(
-            frame,
-            resources.getString("cc.open.file_exists", file.getName()),
-            resources.getString("cc.save.title"),
-            JOptionPane.YES_NO_OPTION);
-
-        if (rc == JOptionPane.NO_OPTION) {
-          newOrigin = null;
-          //20030221 no need to go for newOrigin in postExecute()
-          return false;
+        // aks user
+        if (ask) {
+          int rc =
+            JOptionPane.showConfirmDialog(
+              frame,
+              resources.getString("cc.open.file_exists", file.getName()),
+              resources.getString("cc.save.title"),
+              JOptionPane.YES_NO_OPTION);
+  
+          if (rc == JOptionPane.NO_OPTION) {
+            newOrigin = null;
+            //20030221 no need to go for newOrigin in postExecute()
+            return false;
+          }
         }
+        
+        // create backup
+        backup(file);
       }
 
       // .. open writer on file
@@ -883,6 +890,24 @@ public class ControlCenter extends JPanel {
       }
 
       // .. done
+    }
+    
+    /**
+     * Backup a file
+     */
+    private void backup(File file) {
+      
+      // calc bak
+      File bak = new File(file.getAbsolutePath()+"~");
+      
+      // remove if there
+      if (bak.exists()) bak.delete();
+      
+      // rename file
+      if (!file.renameTo(bak))
+        Debug.log(Debug.WARNING, this, "Couldn't backup "+file);
+      
+      // done
     }
 
   } //ActionSave
