@@ -32,6 +32,9 @@ import genj.view.ViewManager;
  */
 public class SearchViewFactory implements ViewFactory {
   
+  /** image */
+  /*package*/ static final ImageIcon IMG = new ImageIcon(SearchViewFactory.class, "View.gif"); 
+  
   /**
    * @see genj.view.ViewFactory#createView(java.lang.String, genj.gedcom.Gedcom, genj.util.Registry, genj.view.ViewManager)
    */
@@ -43,7 +46,7 @@ public class SearchViewFactory implements ViewFactory {
    * @see genj.view.ViewFactory#getImage()
    */
   public ImageIcon getImage() {
-    return new ImageIcon(this, "./View.gif");
+    return IMG;
   }
 
   /**
