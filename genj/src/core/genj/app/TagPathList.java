@@ -224,6 +224,8 @@ public class TagPathList extends JComponent {
   private class SelectionListener extends MouseAdapter {
     /** press */
     public void mousePressed(MouseEvent me) {
+      // no selections?
+      if (selection==null) return;
       // Check wether some valid position has been clicked on
       int pos = lChoose.locationToIndex(me.getPoint());
       if (pos==-1) return;

@@ -20,19 +20,28 @@
 package genj.app;
 
 import genj.gedcom.Gedcom;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.TagPath;
 
-import java.awt.Color;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -42,20 +51,20 @@ import javax.swing.tree.TreeSelectionModel;
  */
 public class TagPathTree extends JScrollPane {
 
-  /** members */
-  private Vector  listeners = new Vector();
-  private Gedcom  gedcom;
-  private JTree   tree;
+  /** list listeners */
+  private List    listeners = new ArrayList();
   
-  /** the tag-paths to choose from */
-  private TagPath[] paths;
+  /** gedcom */
+  private Gedcom  gedcom;
+  
+  /** the tree we use for display */
+  private JTree   tree;
   
   /** the selection */
   private Set selection = new HashSet();
 
-  /** statics */
-  private static final Color
-    cSelection = new Color(160,160,255);
+  /** our tree's model */
+  private Model model = new Model();
 
   /**
    * Constructor
@@ -63,10 +72,10 @@ public class TagPathTree extends JScrollPane {
   public TagPathTree() {
 
     // Prepare tree
-    tree = new JTree(new Model());
-    tree.setShowsRootHandles(true);
-    //tree.setRootVisible(false);
-    //tree.setCellRenderer(new NodeRenderer());
+    tree = new JTree(model);
+    tree.setShowsRootHandles(false);
+    tree.setRootVisible(false);
+    tree.setCellRenderer(new Renderer());
     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
 //    // Listening
@@ -102,7 +111,7 @@ public class TagPathTree extends JScrollPane {
    * Adds another listener to this
    */
   public void addListener(Listener listener) {
-    listeners.addElement(listener);
+    listeners.add(listener);
   }
 
   /**
@@ -120,24 +129,25 @@ public class TagPathTree extends JScrollPane {
    */
   private void fireSelectionChanged(TagPath path, boolean on) {
     // Go through listeners
-    Enumeration enum = listeners.elements();
-    while (enum.hasMoreElements()) {
-      ((Listener)enum.nextElement()).handleSelection(path,on);
-    }
+    Listener[] ls = (Listener[])listeners.toArray(new Listener[listeners.size()]);
+    for (int l=0;l<ls.length;l++)
+      ls[l].handleSelection(path,on);
+    // done
   }
   
   /**
    * Removes one of ther listener to this
    */
   public void removeListener(Listener listener) {
-    listeners.removeElement(listener);
+    listeners.remove(listener);
   }
 
   /**
    * Sets the TagPaths to choose from
    */
   public void setPaths(TagPath[] set) {
-    paths = set;
+    model.setPaths(set);
+    expandRows();
   }
   
   /**
@@ -154,66 +164,139 @@ public class TagPathTree extends JScrollPane {
     selection.addAll(Arrays.asList(paths));
   }
 
-//  /**
-//   * Our Node Renderer
-//   */
-//  class NodeRenderer implements TreeCellRenderer {
-//
-//    /** members */
-//    private JPanel        panel = new JPanel();
-//    private JCheckBox     checkbox = new JCheckBox();
-//    private HeadlessLabel label = new HeadlessLabel();
-//
-//    /** constructor */
-//    NodeRenderer() {
-//      panel.setLayout(new BorderLayout());
-//      panel.add(checkbox,"West");
-//      panel.add(label   ,"Center");
-//      checkbox.setOpaque(false);
-//      label.setOpaque(false);
-//      panel.setOpaque(false);
-//    }
-//    /** callback for component that's responsible for rendering */
-//    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-//      Node node = (Node)value;
-//      label.setText( node.path.getLast() );
-//      label.setIcon( MetaProperty.get(node.path).getImage() );
-//      checkbox.setSelected(selection.contains(node));
-//      panel.invalidate(); // make sure no preferred side is cached
-//      return panel;
-//    }
-//
-//  } //NodeRenderer
+  /**
+   * Our Renderer
+   */
+  private class Renderer extends DefaultTreeCellRenderer {
+
+    /** members */
+    private JPanel        panel = new JPanel();
+    private JCheckBox     checkbox = new JCheckBox();
+
+    /** constructor */
+    private Renderer() {
+      panel.setLayout(new BorderLayout());
+      panel.add(checkbox,"West");
+      panel.add(this    ,"Center");
+      checkbox.setOpaque(false);
+      panel.setOpaque(false);
+    }
+    
+    /** callback for component that's responsible for rendering */
+    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+      // let super do its work
+      super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+      // change for tag path
+      if (value instanceof TagPath) {
+        TagPath path = (TagPath)value; 
+        setText( path.getLast() );
+        setIcon( MetaProperty.get(path).getImage() );
+        //checkbox.setSelected(selection.contains(node));
+        panel.invalidate(); // make sure no preferred side is cached
+      }      
+      // done
+      return panel;
+    }
+
+  } //Renderer
 
   /**
    * A model for the paths mapped to a tree
    */
   private class Model implements TreeModel {
     
+    /** the tag-paths to choose from */
+    private TagPath[] paths = new TagPath[0];
+    
+    /** map a path to its children */
+    private Map path2childen = new HashMap(); 
+    
+    /** listeners */
+    private List tmlisteners = new ArrayList();
+  
+    /**
+     * Sets the TagPaths to choose from
+     */
+    public void setPaths(TagPath[] set) {
+      
+      // keep
+      paths = set;
+      
+      // notify
+      TreeModelEvent e = new TreeModelEvent(this, new Object[]{ this });
+      TreeModelListener[] ls = (TreeModelListener[])tmlisteners.toArray(new TreeModelListener[listeners.size()]);
+      for (int l=0;l<ls.length;l++)
+        ls[l].treeStructureChanged(e);
+      
+      // done
+    }
+    
     /**
      * @see javax.swing.tree.TreeModel#addTreeModelListener(javax.swing.event.TreeModelListener)
      */
     public void addTreeModelListener(TreeModelListener l) {
+      tmlisteners.add(l);
     }
   
     /**
      * @see javax.swing.tree.TreeModel#removeTreeModelListener(javax.swing.event.TreeModelListener)
      */
     public void removeTreeModelListener(TreeModelListener l) {
+      tmlisteners.remove(l);
     }
 
     /**
      * @see javax.swing.tree.TreeModel#getChild(java.lang.Object, int)
      */
     public Object getChild(Object parent, int index) {
-      return null;
+      return getChildren(parent)[index];
     }
   
     /**
      * @see javax.swing.tree.TreeModel#getChildCount(java.lang.Object)
      */
     public int getChildCount(Object parent) {
-      return 0;
+      return getChildren(parent).length;
+    }
+    
+    /**
+     * Return the children of a node 
+     */
+    private TagPath[] getChildren(Object node) {
+      // lazy
+      TagPath[] result = (TagPath[])path2childen.get(node);
+      if (result==null) {
+        result = node==this ? getChildrenOfRoot() : getChildrenOfNode((TagPath)node);
+      }
+      // done
+      return result;
+    }
+    
+    /**
+     * Return the children of a path
+     */
+    private TagPath[] getChildrenOfNode(TagPath path) {
+      return new TagPath[0];
+    }
+    
+    /** 
+     * Return the children for root
+     */
+    private TagPath[] getChildrenOfRoot() {
+      // set of tag paths' firsts
+      HashSet children = new HashSet();
+      for (int p=0;p<paths.length;p++) {
+        children.add(new TagPath(paths[p], 1));
+      }
+      // done
+      return getTagPaths(children);
+    }
+    
+    /**
+     * map2array
+     */
+    private TagPath[] getTagPaths(Collection c) {
+      return (TagPath[])c.toArray(new TagPath[c.size()]);
     }
   
     /**
@@ -227,7 +310,7 @@ public class TagPathTree extends JScrollPane {
      * @see javax.swing.tree.TreeModel#getRoot()
      */
     public Object getRoot() {
-      return "Foo";
+      return this;
     }
   
     /**
