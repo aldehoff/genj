@@ -282,6 +282,16 @@ public class PropertyNote extends PropertyXRef {
   }
 
   /**
+   * Adds default properties to this property
+   */
+  public Property addDefaultProperties() {
+    // need a sub note for entities
+    if (this instanceof Entity) 
+      getSubNote(true);
+    return this;
+  }
+
+  /**
    * The expected referenced type
    */
   public int getExpectedReferencedType() {
