@@ -47,12 +47,13 @@ public class GedcomTableWidget extends JTable {
     Gedcom.getImage(Gedcom.MULTIMEDIAS),
     Gedcom.getImage(Gedcom.NOTES),
     Gedcom.getImage(Gedcom.SOURCES),
-    Gedcom.getImage(Gedcom.SUBMITTERS)
+    Gedcom.getImage(Gedcom.SUBMITTERS),
+    Gedcom.getImage(Gedcom.REPOSITORIES),
   };
 
   /** default column widths */
   private static final int defaultWidths[] = {
-    96, 24, 24, 24, 24, 24, 24
+    96, 24, 24, 24, 24, 24, 24, 24
   };
 
   /** a registry */
