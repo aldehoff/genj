@@ -55,22 +55,16 @@ public class BlueprintManager {
     registry = reGistry;
     
     // load readonly/predefined blueprints (from resources)
-    StringBuffer html = new StringBuffer(256);
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
       
       List blueprints = new ArrayList(10);
       
       String tag = Gedcom.ENTITIES[t];
       
-      StringTokenizer names = new StringTokenizer(resources.getString("blueprints."+tag));
+      StringTokenizer names = new StringTokenizer(resources.getString("blueprints."+tag,""));
       while (names.hasMoreTokens()) {
         String name = names.nextToken();
-        StringTokenizer lines = new StringTokenizer(resources.getString("blueprints."+tag+"."+name), "|");
-        html.setLength(0);
-        while (lines.hasMoreTokens()) {
-          html.append(lines.nextToken());
-          html.append('\n');
-        }
+        String html =  resources.getString("blueprints."+tag+"."+name);
         blueprints.add(new Blueprint(tag, name, html.toString(), true));
       }
       
