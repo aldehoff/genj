@@ -39,8 +39,8 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.ScreenResolutionScale;
 import genj.view.ViewManager;
+
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -56,7 +56,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -79,8 +78,8 @@ public class AboutWidget extends JPanel{
   
   private final static int DEFAULT_ROWS = 16, DEFAULT_COLS = 40;
   
-  /** the frame we're used it */
-  private JFrame frame;
+  /** the view manager */
+  private ViewManager viewManager;
   
   /** the resources we're using */
   private Resources resources = Resources.get(AboutWidget.class);
@@ -88,18 +87,14 @@ public class AboutWidget extends JPanel{
   /**
    * Constructor
    */
-  public AboutWidget(JFrame setFrame) {
+  public AboutWidget(ViewManager setManager) {
 
     // remember    
-    frame=setFrame;
+    viewManager = setManager;
     
     // create a north panel
     JLabel pNorth = new JLabel(resources.getString("cc.about.dialog.northpanel.label"), null, JLabel.CENTER);
     
-    // create a south panel
-    JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    pSouth.add(new ButtonHelper().setResources(ViewManager.resources).create(new ActionDelegate.ActionDisposeFrame(setFrame).setText("view.close")));
-
     // create a center panel
     JTabbedPane pCenter = new JTabbedPane(SwingConstants.LEFT);
     pCenter.addTab(resources.getString("cc.about.dialog.tab1.title"), null, new WelcomePanel(), resources.getString("cc.about.dialog.tab1.title.tip"));
@@ -112,7 +107,6 @@ public class AboutWidget extends JPanel{
     setLayout(new BorderLayout());
     add(pNorth , BorderLayout.NORTH );
     add(pCenter, BorderLayout.CENTER);
-    add(pSouth , BorderLayout.SOUTH );
     
     // done    
   }
@@ -335,8 +329,7 @@ public class AboutWidget extends JPanel{
       }
       
       // create ruler for adjusting resolution
-      screenResRuler = new ScreenResolutionScale();
-      screenResRuler.setDPI(App.getInstance().getDPI());
+      screenResRuler = new ScreenResolutionScale(viewManager.getDPI());
       
       gh.add(new JLabel(resources.getString("cc.about.tab4.resolution")), 0,3,1,1);
       gh.add(screenResRuler               , 1,3,1,1, gh.GROW_BOTH      |gh.FILL_BOTH      );
@@ -373,7 +366,7 @@ public class AboutWidget extends JPanel{
           app.setLanguage(choiceLanguages.getSelectedItem().toString());
         }
         // update screen resolution
-        app.setDPI(screenResRuler.getDPI());
+        viewManager.setDPI(screenResRuler.getDPI());
         // update lnf
         if (comboLnfs!=null) {
           LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();

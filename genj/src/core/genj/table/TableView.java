@@ -19,7 +19,6 @@
  */
 package genj.table;
 
-import genj.app.App;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
@@ -433,7 +432,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
       // get the proxy
       PropertyRenderer proxy = PropertyRenderer.get(prop.getProxy());
       // let it render
-      proxy.render(g, bounds, prop, proxy.PREFER_DEFAULT, App.getInstance().getDPI());
+      proxy.render(g, bounds, prop, proxy.PREFER_DEFAULT, manager.getDPI());
       // done
     }
   } //PropertyTableCellRenderer

@@ -26,7 +26,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -42,25 +41,16 @@ import javax.swing.JComponent;
 public class ScreenResolutionScale extends JComponent {
   
   /** current dpi */
-  private Point dpi = getSystemDPI();
+  private Point dpi;
   
   /** dpi2cm */
   private final static float DPI2CM = 1F/2.54F;
 
   /**
    * Constructor   */
-  public ScreenResolutionScale() {
+  public ScreenResolutionScale(Point useDpi) {
+    dpi = useDpi;
     addMouseMotionListener(new MouseGlue());
-  }
-  
-  /**
-   * Accessor - system dpi
-   */
-  public static Point getSystemDPI() {
-    return new Point( 
-      Toolkit.getDefaultToolkit().getScreenResolution(),
-      Toolkit.getDefaultToolkit().getScreenResolution()
-    );
   }
   
   /**

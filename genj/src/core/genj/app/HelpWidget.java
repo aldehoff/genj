@@ -19,14 +19,11 @@
  */
 package genj.app;
 
-import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
-import genj.util.swing.ButtonHelper;
-import genj.view.ViewManager;
+
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.io.File;
 import java.net.URL;
 
@@ -34,7 +31,6 @@ import javax.help.HelpSet;
 import javax.help.JHelp;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -72,7 +68,7 @@ class HelpWidget extends JPanel {
   /**
    * Constructor
    */
-  public HelpWidget(JFrame frame) {
+  public HelpWidget() {
     
     // simple layout
     super(new BorderLayout());
@@ -87,13 +83,8 @@ class HelpWidget extends JPanel {
       );
     }
     
-    // create south component
-    JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    pSouth.add(new ButtonHelper().setResources(ViewManager.resources).create(new ActionDelegate.ActionDisposeFrame(frame).setText("view.close")));
-    
     // layout
     add(pCenter, BorderLayout.CENTER);    
-    add(pSouth , BorderLayout.SOUTH );    
     
     // done
   }

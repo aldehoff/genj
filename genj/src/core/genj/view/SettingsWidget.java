@@ -29,7 +29,6 @@ import java.util.Vector;
 import java.util.WeakHashMap;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
@@ -48,10 +47,16 @@ import javax.swing.border.TitledBorder;
   /** settings */
   private Settings settings;
   
+  /** ViewManager */
+  private ViewManager viewManager;
+  
   /**
    * Constructor
    */
-  protected SettingsWidget(Resources resources, JFrame frame) {
+  protected SettingsWidget(Resources resources, ViewManager manager) {
+    
+    // remember
+    viewManager = manager;
     
     // Panel for ViewSettingsWidget
     pSettings = new JPanel(new BorderLayout());
@@ -69,7 +74,7 @@ import javax.swing.border.TitledBorder;
     bh.create(new ActionReset());
     bh.removeCollection(vButtons)
       .setEnabled(true)
-      .create(new ActionDelegate.ActionDisposeFrame(frame).setText("view.close"));
+      .create(new ActionClose());
 
     // Layout
     setLayout(new BorderLayout());
@@ -92,7 +97,7 @@ import javax.swing.border.TitledBorder;
     if (settings!=null) {
       settings.setView(vw.getView());
       JComponent editor = settings.getEditor();
-      editor.setBorder(new TitledBorder(vw.getFrame().getTitle()));
+      editor.setBorder(new TitledBorder(vw.getTitle()));
       pSettings.add(editor, BorderLayout.CENTER);
       settings.reset();
     }
@@ -107,6 +112,18 @@ import javax.swing.border.TitledBorder;
     // done
   }
 
+  /**
+   * closes the settings
+   */
+  private class ActionClose extends ActionDelegate {
+    private ActionClose() {
+      setText("view.close");
+    }
+    protected void execute() {
+      viewManager.getWindowManager().closeFrame("settings");
+    }
+  } //ActionClose
+  
   /**
    * Applies the changes currently being done
    */

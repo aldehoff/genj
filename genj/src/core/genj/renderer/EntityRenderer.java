@@ -19,7 +19,6 @@
  */
 package genj.renderer;
 
-import genj.app.App;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
@@ -95,7 +94,7 @@ public class EntityRenderer {
   private boolean isDebug = false; 
   
   /** a resolution */
-  private Point dpi = App.getInstance().getDPI();
+  private Point dpi = new Point(96,96);
   
   /** whether we scale fonts to resolution */
   private boolean isScaleFonts = false;

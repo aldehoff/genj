@@ -21,8 +21,8 @@ package genj.util.swing;
 
 import java.io.File;
 
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -35,7 +35,7 @@ public class FileChooser extends JFileChooser {
 
   private String command;
 
-  private JFrame frame;
+  private JComponent owner;
 
   /**
    * Filter Definition
@@ -81,10 +81,10 @@ public class FileChooser extends JFileChooser {
   /**
    * Constructor
    */
-  public FileChooser(JFrame frame, String title, String command, String[] fileExtensions, String fileDescription, String baseDir) {
+  public FileChooser(JComponent owner, String title, String command, String[] fileExtensions, String fileDescription, String baseDir) {
     super(baseDir!=null?baseDir:".");
-    this.frame  =frame;
-    this.command=command;
+    this.owner  = owner;
+    this.command= command;
     extensions  = fileExtensions;
     description = fileDescription;
 
@@ -98,6 +98,6 @@ public class FileChooser extends JFileChooser {
    * show it
    */
   public int showDialog() {
-    return showDialog(frame,command);
+    return showDialog(owner,command);
   }
 }

@@ -19,7 +19,6 @@
  */
 package genj.print;
 
-import genj.app.App;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Resources;
@@ -153,6 +152,8 @@ public class PrintWidget extends JTabbedPane {
     private double 
       pad  = 1.0D,
       zoom = 0.1D;
+
+    private Point dpi = new Point(96,96);
     
     /**
      * @see javax.swing.JComponent#getPreferredSize()
@@ -161,7 +162,6 @@ public class PrintWidget extends JTabbedPane {
       // calculate
       Point pages = task.getPages(); 
       Rectangle2D page = calcPage(pages.x-1,pages.y-1);
-      Point dpi = App.getInstance().getDPI();
       return new Dimension(
         (int)((page.getMaxX()+1)*dpi.x*zoom),
         (int)((page.getMaxY()+1)*dpi.y*zoom)
@@ -210,7 +210,6 @@ public class PrintWidget extends JTabbedPane {
       // render pages in app's dpi space
       Printer renderer = task.getRenderer();
       Point pages = task.getPages(); 
-      Point dpi = App.getInstance().getDPI();
       UnitGraphics ug = new UnitGraphics(g, dpi.x*zoom, dpi.y*zoom);
       for (int y=0;y<pages.y;y++) {
         for (int x=0;x<pages.x;x++) {

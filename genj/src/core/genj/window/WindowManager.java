@@ -17,49 +17,30 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.util.swing;
+package genj.window;
 
-import javax.swing.JTree;
-import javax.swing.tree.TreeModel;
+import java.awt.Dimension;
+import java.util.List;
+
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JMenuBar;
 
 /**
- * Our own version of a JTree 
+ * The manager for window creation/handling
  */
-public class TreeWidget extends JTree {
+public interface WindowManager {
   
-  /** old model */
-  private TreeModel old;
-  
-  /**
-   * @see java.awt.Component#removeNotify()
-   */
-  public void addNotify() {
-    // restore an old model?
-    if (old!=null) setModel(old);
-    // continue
-    super.addNotify();
-  }
+  public void openFrame(String key, String title, ImageIcon image, Dimension dimension, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose);
 
-  /**
-   * @see genj.util.swing.TreeWidget#removeNotify()
-   */
-  public void removeNotify() {
-    // remove from model (otherwise listeners of that
-    // model might not disconnect)
-    old = getModel();
-    setModel(null);
-    // continue    
-    super.removeNotify();
-    
-  }
+  public void closeFrame(String key);
+
+  public void closeAllFrames();
   
-  /** 
-   * Expands all rows
-   */
-  public void expandRows() {
-     for (int i=0;i<getRowCount();i++) {
-       expandRow(i); 
-     } 
-  }
+  public List getRootComponents();
   
-} //TreeWidget
+  public JComponent getRootComponent(String key);
+  
+  public boolean isFrame(String key);
+
+} //WindowManager

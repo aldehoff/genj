@@ -19,7 +19,6 @@
  */
 package genj.edit;
 
-import genj.app.App;
 import genj.edit.actions.RunExternal;
 import genj.gedcom.GedcomException;
 import genj.gedcom.PropertyBlob;
@@ -275,7 +274,7 @@ import javax.swing.JScrollPane;
         
       Point idpi = img.getResolution();
       if (idpi!=null) {
-        Point dpi = App.getInstance().getDPI();
+        Point dpi = view.manager.getDPI();
         
         scalex *= (double)dpi.x/idpi.x;
         scaley *= (double)dpi.y/idpi.y;
@@ -293,7 +292,7 @@ import javax.swing.JScrollPane;
       // no image?
       if (img==null) return new Dimension(0,0);
       // check physical size
-      Dimension dim = img.getSize(App.getInstance().getDPI());
+      Dimension dim = img.getSize(view.manager.getDPI());
       float factor = (float)zoom/100;
       dim.width *= factor;
       dim.height *= factor;

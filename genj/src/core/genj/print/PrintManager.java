@@ -25,7 +25,6 @@ import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.Trackable;
-import genj.util.swing.ProgressDialog;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -39,7 +38,6 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
@@ -51,65 +49,30 @@ public class PrintManager {
   private static PrintManager instance = null;
   
   /** registry */
-  private static Registry registry = Registry.lookup("genj");
+  private static Registry registry;
   
   /** resources */
   private Resources resources = Resources.get(PrintManager.class);
   
   /**
    * Constructor   */
-  private PrintManager() {
-  }
-  
-  /** 
-   * Singleton access 
-   */
-  public static PrintManager getInstance() {
-    if (instance==null) instance = new PrintManager();
-    return instance;
+  public PrintManager(Registry reGistry) {
+    registry = reGistry;
   }
   
   /**
    * Prints a view
    */
-  public void print(JFrame frame, JComponent view) {
-    // calculate Printer
-    Printer printer = getPrinter(view);
-    if (printer==null) return;
-    printer.setView(view);
+  public void print(Printer printer, String title, JComponent owner) {
     // our own task for printing
-    new PrintTask(frame, printer, view).trigger();    
+    new PrintTask(printer, title, owner).trigger();    
     // done
   }
   
-  /**
-   * Returns a view's printer
-   */
-  public static Printer getPrinter(JComponent view) {
-    try {
-      return (Printer)Class.forName(view.getClass().getName()+"Printer").newInstance();
-    } catch (Throwable t) {
-    }
-    return null;
-  }
-
-  /**
-   * Resolves whether a view can be printed   */
-  public static boolean hasPrinter(JComponent view) {
-    try {
-      if (Printer.class.isAssignableFrom(Class.forName(view.getClass().getName()+"Printer")))
-      return true;
-    } catch (Throwable t) {
-    }
-    return false;
-  }
 
   /**
    * Our own task for printing   */  
   /*package*/ class PrintTask extends ActionDelegate implements Printable, Trackable {
-    
-    /** the base frame */
-    private JFrame frame;
     
     /** the owning component */
     private JComponent owner;
@@ -135,14 +98,17 @@ public class PrintManager {
     /** any problem that might occur async */
     private Throwable throwable;
     
+    /** the title */
+    private String title;
+    
     /**
      * Constructor     */
-    private PrintTask(JFrame fRame, Printer reNderer, JComponent owNer) {
-      
+    private PrintTask(Printer reNderer, String tiTle, JComponent owNer) {
+       
       // remember renderer
-      frame = fRame;
       renderer = reNderer;
       owner = owNer;
+      title = tiTle;
       
       // setup async
       setAsync(super.ASYNC_SAME_INSTANCE);
@@ -173,9 +139,8 @@ public class PrintManager {
       widget = new PrintWidget(this, resources);
       
       // show it in dialog
-      String title = resources.getString("dlg.title", frame.getTitle()); 
       int ok = App.getInstance().createDialog(
-        title, 
+        resources.getString("dlg.title", title), 
         "print", 
         new Dimension(480,320), 
         owner, 
@@ -190,7 +155,8 @@ public class PrintManager {
       }
 
       // setup progress dlg
-      new ProgressDialog(frame, title, "", this, getThread());
+// FIXME missing      
+//      new ProgressDialog(frame, title, "", this, getThread());
       
       // continue
       return true;

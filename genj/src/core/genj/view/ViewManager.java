@@ -19,21 +19,21 @@
  */
 package genj.view;
 
-import genj.app.App;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.print.PrintManager;
 import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.MenuHelper;
+import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.Toolkit;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuSelectionManager;
 
@@ -54,6 +53,9 @@ public class ViewManager {
 
   /** resources */
   public static Resources resources = Resources.get(ViewManager.class);
+  
+  /** registry */
+  private Registry registry;
 
   /** factories of views */
   static final private String[] FACTORIES = new String[]{
@@ -74,6 +76,21 @@ public class ViewManager {
   
   /** the currently selected entity */
   private Map gedcom2current = new HashMap();
+  
+  /** a print manager */
+  private PrintManager printManager = null;
+
+  /** a window manager */
+  private WindowManager windowManager = null;
+
+  /**
+   * Constructor
+   */
+  public ViewManager(Registry reGistry, PrintManager pManager, WindowManager wManager) {
+    registry = reGistry;
+    printManager = pManager;
+    windowManager = wManager;
+  }
 
   /**
    * Returns all known view factories
@@ -149,6 +166,65 @@ public class ViewManager {
     // done
   }
 
+  /** 
+   * Accessor - DPI
+   */  
+  public Point getDPI() {
+    Point dpi = registry.get("dpi",(Point)null); 
+    if (dpi==null) {
+      dpi = new Point( 
+        Toolkit.getDefaultToolkit().getScreenResolution(),
+        Toolkit.getDefaultToolkit().getScreenResolution()
+      );
+    }
+    return dpi;
+  }
+  
+  /** 
+   * Accessor - DPI
+   */  
+  public void setDPI(Point dpi) {
+    registry.put("dpi",dpi); 
+  }
+  
+  /**
+   * The print manager
+   */
+  /*package*/ PrintManager getPrintManager() {
+    return printManager;
+  }
+  
+  /**
+   * The window manager
+   */
+  /*package*/ WindowManager getWindowManager() {
+    return windowManager;
+  }
+  
+  /**
+   * Opens settings for given view settings component
+   */
+  /*package*/ void openSettings(ViewWidget viewWidget) {
+    
+    // Frame already open?
+    SettingsWidget settings = (SettingsWidget)windowManager.getRootComponent("settings");
+    if (settings==null) {
+      settings = new SettingsWidget(resources, this);
+      settings.setViewWidget(viewWidget);
+      windowManager.openFrame(
+        "settings", 
+        resources.getString("view.edit.title"),
+        Images.imgSettings,
+        new Dimension(256,480),
+        settings, null, 
+        null, null
+      );
+    } else {
+      settings.setViewWidget(viewWidget);
+    }
+    // done
+  }
+
   /**
    * Helper that returns the next logical registry-view
    * for given gedcom and name of view
@@ -160,7 +236,7 @@ public class ViewManager {
     String name = origin.getFileName();
     int number;
     for (number=1;;number++) {
-      if (App.getInstance().getFrame(name+"."+nameOfView+"."+number)==null) {
+      if (!windowManager.isFrame(name+"."+nameOfView+"."+number)) {
         break;
       }
     }
@@ -176,38 +252,7 @@ public class ViewManager {
     // done
   }
   
-  /**
-   * Opens settings for given view settings component
-   */
-  /*package*/ void openSettings(ViewWidget viewWidget) {
-
-    // the frame for the settings
-    JFrame frame = App.getInstance().getFrame("settings");
-    if (frame==null) {
-      // create it
-      frame = App.getInstance().createFrame(
-        resources.getString("view.edit.title"),
-        Images.imgSettings,
-        "settings",
-        new Dimension(256,480)
-      );
-      // and the SettingsWidget
-      SettingsWidget sw = new SettingsWidget(resources, frame);
-      frame.getContentPane().add(sw);
-      // layout      
-      frame.pack();
-    }
-    
-    // get the SettingsWidget
-    SettingsWidget sw = (SettingsWidget)frame.getContentPane().getComponent(0);
-    sw.setViewWidget(viewWidget);
-    
-    // show it
-    frame.show();
-        
-    // done
-  }
-
+  
   /**
    * Resolves the Gedcom for given context
    */
@@ -261,18 +306,6 @@ public class ViewManager {
   }
 
   /**
-   * Opens a view on a gedcom file
-   * @return the view component
-   */
-  public JComponent openView(Class factory, Gedcom gedcom) {
-    for (int f=0; f<factories.length; f++) {
-      if (factories[f].getClass().equals(factory)) 
-        return openView(factories[f], gedcom);   	
-    }
-    throw new IllegalArgumentException("Unknown factory "+factory.getName());
-  }
-  
-  /**
    * Calculate a logical key for given factory
    */
   private String getKey(ViewFactory factory) {
@@ -285,56 +318,57 @@ public class ViewManager {
    * Opens a view on a gedcom file
    * @return the view component
    */
+  public JComponent openView(Class factory, Gedcom gedcom) {
+    for (int f=0; f<factories.length; f++) {
+      if (factories[f].getClass().equals(factory)) 
+        return openView(factories[f], gedcom);   	
+    }
+    throw new IllegalArgumentException("Unknown factory "+factory.getName());
+  }
+  
+  /**
+   * Opens a view on a gedcom file
+   * @return the view component
+   */
   public JComponent openView(ViewFactory factory, Gedcom gedcom) {
     
     // get a registry 
     Registry registry = getRegistry(gedcom, getKey(factory));
     
-    // title
-    String title = gedcom.getName()+" - "+factory.getTitle(false)+" ("+registry.getViewSuffix()+")";
-    
-    // a frame
-    JFrame frame = App.getInstance().createFrame(
-      title,
-      factory.getImage(),
-      gedcom.getName() + "." + registry.getView(),
-      factory.getDefaultDimension()
-    );
+    // title & key
+    String 
+      title = gedcom.getName()+" - "+factory.getTitle(false)+" ("+registry.getViewSuffix()+")",
+      key = gedcom.getName() + "." + registry.getView();
     
     // the viewwidget
-    final ViewWidget viewWidget = new ViewWidget(frame,gedcom,registry,factory, this);
+    final ViewWidget viewWidget = new ViewWidget(key,title,gedcom,registry,factory, this);
 
     // remember
     viewWidgets.add(viewWidget);
-    
-    // show it
-    frame.getContentPane().add(viewWidget);
-    frame.pack();
-    frame.show();
 
-    // listen to it
-    frame.addWindowListener(new WindowAdapter() {
-      /**
-       * we want to know when views are closed
-       */
-      public void windowClosed(WindowEvent e) {
-        
+    // prepare to forget
+    Runnable onClose = new Runnable() {
+      public void run() {
         // close property editor if open and showing settings
-        JFrame frame = App.getInstance().getFrame("settings");
-        if (frame!=null) { 
-          frame.dispose();
-        }
-    
+        windowManager.closeFrame("settings");
         // 20021017 @see note at the bottom of file
         MenuSelectionManager.defaultManager().clearSelectedPath();
-    
         // forget about it
         viewWidgets.remove(viewWidget);
-    
         // done
       }
-    });
+    };
     
+    // open frame
+    windowManager.openFrame(
+      key, 
+      title, 
+      factory.getImage(),
+      factory.getDefaultDimension(),
+      viewWidget, null,
+      null, onClose
+    );
+        
     // done
     return viewWidget.getView();
   }
@@ -348,7 +382,7 @@ public class ViewManager {
     while (it.hasNext()) {
       ViewWidget vw = (ViewWidget)it.next();
       if (vw.getGedcom()==gedcom) 
-        vw.getFrame().dispose();
+        windowManager.closeFrame(vw.getKey());
     }
     
     // remove its key from gedcom2current

@@ -116,6 +116,17 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     setLayout(new BorderLayout());
     add(splitPane, BorderLayout.CENTER);
     
+    // Done
+  }
+
+  /**
+   * @see javax.swing.JComponent#addNotify()
+   */
+  public void addNotify() {
+    
+    // 20030505 in a desktop pane removeNotify()
+    // and addNotify() can happen during z-reordering
+    
     // Check if we can preset something to edit
     Entity entity = null;
     try { 
@@ -127,8 +138,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       if (context!=null) entity = context.getEntity();
     }
     setEntity(entity);
-    
-    // Done
+
+    // continue
+    super.addNotify();    
   }
 
   /**

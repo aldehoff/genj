@@ -19,7 +19,6 @@
  */
 package genj.timeline;
 
-import genj.app.App;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.ColorSet;
@@ -58,11 +57,8 @@ import javax.swing.event.ChangeListener;
 public class TimelineView extends JPanel implements ToolBarSupport, ContextSupport {
 
   /** the units we use */
-  private final Point DPI = App.getInstance().getDPI();
-  private final Point2D DPC = new Point2D.Float(
-    DPI.x / 2.54F,
-    DPI.y / 2.54F
-  );
+  private final Point DPI;
+  private final Point2D DPC;
   
   /** resources */
   private Resources resources = Resources.get(this);
@@ -136,6 +132,11 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     
     // remember
     manager = mgr;
+    DPI = mgr.getDPI();
+    DPC = new Point2D.Float(
+      DPI.x / 2.54F,
+      DPI.y / 2.54F
+    );
 
     // read some stuff from registry
     regstry = registry;

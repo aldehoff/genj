@@ -19,7 +19,6 @@
  */
 package genj.tree;
 
-import genj.app.App;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -86,11 +85,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   private Resources resources = Resources.get(this);
   
   /** the units we use */
-  private final Point DPI = App.getInstance().getDPI();
-  private final Point2D DPMM = new Point2D.Float(
-    DPI.x / 2.54F / 10,
-    DPI.y / 2.54F / 10
-  );
+  private final Point DPI;
+  private final Point2D DPMM;
   
   /** our model */
   private Model model;
@@ -152,6 +148,11 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     registry = regIstry;
     title = titl;
     manager = manAger;
+    DPI = manager.getDPI();
+    DPMM = new Point2D.Float(
+      DPI.x / 2.54F / 10,
+      DPI.y / 2.54F / 10
+    );
     
     // grab colors
     colors = new ColorSet("content", Color.white, resources, registry);

@@ -22,6 +22,7 @@ package genj.lnf;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
+
 import java.awt.Component;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,8 +30,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
@@ -265,7 +266,7 @@ public class LnFBridge {
     /**
      * Applies the LnF (with given Theme)
      */
-    public boolean apply(Theme theme, final Vector rootComponents) {
+    public boolean apply(Theme theme, final List rootComponents) {
       
       // try to load LnF
       String prefix = "Look and feel #"+this+" of type "+type;
@@ -300,8 +301,8 @@ public class LnFBridge {
       // reflect it    
       SwingUtilities.invokeLater(new Runnable() {
         public void run() {
-          Enumeration e = rootComponents.elements();
-          while (e.hasMoreElements()) SwingUtilities.updateComponentTreeUI((Component)e.nextElement());
+          Iterator e = rootComponents.iterator();
+          while (e.hasNext()) SwingUtilities.updateComponentTreeUI((Component)e.next());
         }
       });
       

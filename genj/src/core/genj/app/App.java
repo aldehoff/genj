@@ -31,21 +31,19 @@ import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.ImageIcon;
-import genj.util.swing.ScreenResolutionScale;
+import genj.window.DefaultWindowManager;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JComponent;
@@ -68,9 +66,9 @@ public class App {
 
   /** members */
   private Registry registry;
-  private Hashtable openFrames = new Hashtable();
   private static App instance;
   private Resources resources;
+  private WindowManager winMgr;
 
   /**
    * Application Constructor
@@ -110,6 +108,11 @@ public class App {
         );
       }
     }
+
+    // create window manager
+    winMgr = new DefaultWindowManager(new Registry(registry, "window"));
+// testing plugability of other window managers (will use for applet, too)    
+//    winMgr = new LightweightWindowManager(new Registry(registry, "window"));
     
     // Set the Look&Feel
     LnFBridge.LnF lnf = LnFBridge.getInstance().getLnF(registry.get("lnf", (String)null));
@@ -122,40 +125,36 @@ public class App {
 
     // Disclaimer
     checkDisclaimer();
-
-    // Create frame
-    JFrame frame = createFrame(resources.getString("app.title"),Gedcom.getImage(),"main", new Dimension(280,180));
-
-    // Create the desktop
-    ControlCenter center = new ControlCenter(frame,registry);
-    frame.getContentPane().add(center);
-
-    // Show it
-    frame.pack();
-    frame.show();
+    
+    // setup control center
+    final ControlCenter center = new ControlCenter(registry, winMgr);
+    
+    Runnable onClosing = new Runnable() {
+      public void run() {
+        center.getExitAction().trigger();
+      }
+    };
+    Runnable onClose = new Runnable() {
+      public void run() {
+        // remember file associations
+        FileAssociation.write(registry);
+        // tell BlueprintManager
+        BlueprintManager.getInstance().shutdown();
+        // close all frames we know
+        winMgr.closeAllFrames();
+        // Store registry 
+        Registry.saveToDisk();      
+        // Flush Debug
+        Debug.flush();
+        // exit
+        System.exit(0);
+      }
+    };
+    winMgr.openFrame("cc", resources.getString("app.title"), Gedcom.getImage(), new Dimension(280,180), center, center.getMenuBar(), onClosing, onClose);
 
     // Done
   }
   
-  /**
-   * Shutdown
-   */
-  public void shutdown() {
-    // remember file associations
-    FileAssociation.write(registry);
-    // tell BlueprintManager
-    BlueprintManager.getInstance().shutdown();
-    // close all frames we know
-    Enumeration e = openFrames.elements();
-    while (e.hasMoreElements()) ((JFrame)e.nextElement()).dispose();
-    // Store registry 
-    Registry.saveToDisk();      
-    // Flush Debug
-    Debug.flush();
-    // exit
-    System.exit(0);
-  }
-
   /**
    * Singleton access
    */
@@ -178,30 +177,6 @@ public class App {
     }
   }
   
-  /** 
-   * Accessor - DPI
-   */  
-  public Point getDPI() {
-    Point dpi = registry.get("dpi",ScreenResolutionScale.getSystemDPI()); 
-    if (dpi==null)
-      dpi = ScreenResolutionScale.getSystemDPI();
-    return dpi;
-  }
-  
-  /** 
-   * Accessor - DPI
-   */  
-  public void setDPI(Point dpi) {
-    registry.put("dpi",dpi); 
-  }
-  
-  /**
-   * Gets the registry
-   */
-  public Registry getRegistry() {
-    return registry;
-  }
-  
   /**
    * Sets the language
    */
@@ -222,32 +197,16 @@ public class App {
    */
   public void setLnF(LnFBridge.LnF lnf, LnFBridge.Theme theme) {
     
-    // collect frames we know about
-    Vector uis = new Vector();
-    Enumeration frames = openFrames.elements();
-    while (frames.hasMoreElements()) uis.add(frames.nextElement());
+    // collect root elements we know about
+    List roots = winMgr.getRootComponents();
     
     // set it!
-    if (lnf.apply(theme, uis)) {
+    if (lnf.apply(theme, roots)) {
       registry.put("lnf", lnf.getName());
       if (theme!=null) registry.put("lnf.theme", theme.getName());
     }
     
     // remember
-  }
-
-  /**
-   * Returns a previously opened Frame by key
-   */
-  public JFrame getFrame(String key) {
-    return (JFrame)openFrames.get(FRAME_KEY_PREFIX+key);
-  }
-  
-  /**
-   * Creates a Frame which remembers it's position from last time
-   */
-  public Frame createFrame(String title, ImageIcon image, String key, Dimension dimension) {
-    return new App.Frame(title, image, key, dimension);
   }
 
   /**
@@ -300,103 +259,6 @@ public class App {
     // done
   }
   
-//  /**
-//   * Registers the user if necessary
-//   */
-//  private void register() {
-//
-//    // check version and registry value
-//    String version = Version.getInstance().toString();
-//    if (version.equals(registry.get("register",""))) 
-//      return;
-//
-//    // prepare parameter      
-//    String[] args = new String[]{ 
-//      "uname", System.getProperty("user.name"),
-//      "gversion", genj.Version.getInstance().toString(),
-//      "jversion", System.getProperty("java.version"),
-//      "jvendor", System.getProperty("java.vendor"),
-//      "oversion", System.getProperty("os.version"),
-//      "oname", System.getProperty("os.name")
-//    };
-//
-//    String url = "http://genj.sourceforge.net/register.php?";
-//
-//    // send data
-//    try {
-//
-//      for (int i=0;i<args.length;) {
-//        url += args[i++] + '=' + URLEncoder.encode(args[i++]) + '&';
-//      }
-//      
-//      new BufferedReader(new InputStreamReader(new URL(url).openStream()));
-//      
-//      // mark registered
-//      registry.put("register", version);
-//      
-//    } catch (Throwable t) {
-//    }
-//
-//    // done
-//  }
-
-  /**
-   * Our own frame
-   */
-  public class Frame extends JFrame {
-    
-    private String savedKey;
-    private Dimension savedDimension;
-    
-    /**
-     * Constructor
-     */
-    protected Frame(String title, ImageIcon image, String key, Dimension dimension) {
-
-      // 1st remember
-      savedKey = FRAME_KEY_PREFIX+key;
-      savedDimension = dimension;
-      
-      // 2nd modify the frame's behavior
-      setTitle(title);
-      if (image!=null) setIconImage(image.getImage());
-      setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-      
-      // 3rd remember
-      openFrames.put(savedKey,this);
-
-      // done
-    }
-    
-    /**
-     * @see java.awt.Window#dispose()
-     */
-    public void dispose() {
-      registry.put(savedKey,getBounds());
-      openFrames.remove(savedKey);
-      super.dispose();
-    }
-
-    /**
-     * @see java.awt.Window#pack()
-     */    
-    public void pack() {
-      
-      Rectangle box = registry.get(savedKey,(Rectangle)null);
-      if ((box==null)&&(savedDimension!=null)) 
-        box = new Rectangle(0,0,savedDimension.width,savedDimension.height);
-      if (box==null) {
-        super.pack();
-      } else {
-        setBounds(new AreaInScreen(box));
-      }
-      invalidate();
-      validate();
-      doLayout();
-    }
-
-  } // Frame
-
   /**
    * Our own dialog
    */

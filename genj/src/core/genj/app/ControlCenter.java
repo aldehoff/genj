@@ -25,6 +25,7 @@ import genj.io.GedcomFormatException;
 import genj.io.GedcomIOException;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
+import genj.print.PrintManager;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
@@ -34,13 +35,12 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.FileChooser;
 import genj.util.swing.MenuHelper;
-import genj.util.swing.ProgressDialog;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,7 +53,6 @@ import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
@@ -71,33 +70,26 @@ public class ControlCenter extends JPanel {
 
   /** members */
   private GedcomTableWidget tGedcoms;
-  private JFrame frame;
   private Vector busyGedcoms;
-  private ControlCenter me;
   private Registry registry;
   private Vector gedcomButtons = new Vector();
   private Vector tniButtons = new Vector();
   private Resources resources = Resources.get(this);
-  private ViewManager viewManager = new ViewManager();
+  private WindowManager windowManager;
+  private ViewManager viewManager;
+  private PrintManager printManager; 
     
   /**
    * Constructor
    */
-  public ControlCenter(JFrame setFrame, Registry setRegistry) {
+  public ControlCenter(Registry setRegistry, WindowManager winManager) {
 
     // Initialize data
-    me = this;
-    frame = setFrame;
     registry = new Registry(setRegistry, "cc");
+    windowManager = winManager;
+    printManager = new PrintManager(new Registry(setRegistry, "print"));
+    viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager);
     busyGedcoms = new Vector();
-
-    // Initialize the frame
-    frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    frame.addWindowListener(
-      (WindowListener) new ActionExit().as(
-        WindowListener.class,
-        "windowClosing"));
-    frame.setJMenuBar(getMenuBar());
 
     // Table of Gedcoms
     tGedcoms = new GedcomTableWidget();
@@ -110,7 +102,7 @@ public class ControlCenter extends JPanel {
 
     // Layout
     setLayout(new BorderLayout());
-    add(getToolBar(), "North");
+    add(createToolBar(), "North");
     add(new JScrollPane(tGedcoms), "Center");
 
     // Load known gedcoms
@@ -121,28 +113,9 @@ public class ControlCenter extends JPanel {
   }
 
   /**
-   * Adds another Gedcom to the list of Gedcoms
-   */
-  public void addGedcom(Gedcom gedcom) {
-    tGedcoms.addGedcom(gedcom);
-  }
-
-  /**
-   * Removes a Gedcom from the list of Gedcoms
-   */
-  public void removeGedcom(Gedcom gedcom) {
-    
-    // close views
-    viewManager.closeViews(gedcom);
-
-    // forget about it
-    tGedcoms.removeGedcom(gedcom);
-  }
-  
-  /**
    * Returns a button bar for the top
    */
-  private JToolBar getToolBar() {
+  private JToolBar createToolBar() {
 
     // create it
     JToolBar result = new JToolBar();
@@ -184,9 +157,35 @@ public class ControlCenter extends JPanel {
   }
 
   /**
+   * Adds another Gedcom to the list of Gedcoms
+   */
+  /*package*/ void addGedcom(Gedcom gedcom) {
+    tGedcoms.addGedcom(gedcom);
+  }
+
+  /**
+   * Removes a Gedcom from the list of Gedcoms
+   */
+  /*package*/ void removeGedcom(Gedcom gedcom) {
+    
+    // close views
+    viewManager.closeViews(gedcom);
+
+    // forget about it
+    tGedcoms.removeGedcom(gedcom);
+  }
+  
+  /**
+   * Exit action
+   */
+  /*package*/ ActionDelegate getExitAction() {
+    return new ActionExit();
+  }
+  
+  /**
    * Returns a menu for frame showing this controlcenter
    */
-  private JMenuBar getMenuBar() {
+  /*package*/ JMenuBar getMenuBar() {
 
     MenuHelper mh = new MenuHelper().setResources(resources);
 
@@ -231,9 +230,9 @@ public class ControlCenter extends JPanel {
     /**
      * Constructor
      */
-    protected GedcomFileChooser(JFrame frame, String title, String action) {
+    protected GedcomFileChooser(String title, String action) {
       super(
-        frame,
+        ControlCenter.this,
         title,
         action,
         new String[] { "ged" },
@@ -274,19 +273,14 @@ public class ControlCenter extends JPanel {
     }
     /** run */
     protected void execute() {
-      // know the frame already?
-      JFrame frame = App.getInstance().getFrame("about");
-      if (frame == null) {
-        frame =
-          App.getInstance().createFrame(
-            resources.getString("cc.menu.about"),
-            Gedcom.getImage(),
-            "about",
-            null);
-        frame.getContentPane().add(new AboutWidget(frame));
-        frame.pack();
-      }
-      frame.show();
+      windowManager.openFrame(
+        "about",
+        resources.getString("cc.menu.about"),
+        Gedcom.getImage(),
+        null,
+        new AboutWidget(viewManager), null,
+        null, null
+      );
       // done      
     }
   } //ActionAbout
@@ -302,19 +296,14 @@ public class ControlCenter extends JPanel {
     }
     /** run */
     protected void execute() {
-      // know the frame already?
-      JFrame frame = App.getInstance().getFrame("help");
-      if (frame == null) {
-        frame =
-          App.getInstance().createFrame(
-            resources.getString("cc.menu.help"),
-            Images.imgHelp,
-            "help",
-            new Dimension(640, 480));
-        frame.getContentPane().add(new HelpWidget(frame));
-        frame.pack();
-      }
-      frame.show();
+      windowManager.openFrame(
+        "help",
+        resources.getString("cc.menu.help"),
+        Images.imgHelp,
+        new Dimension(640, 480),
+        new HelpWidget(), null,
+        null, null
+      );
       // done
     }
   } //ActionHelp
@@ -347,7 +336,7 @@ public class ControlCenter extends JPanel {
       if (unsaved) {
         int rc =
           JOptionPane.showConfirmDialog(
-            frame,
+            ControlCenter.this,
             resources.getString("cc.exit_changes?"),
             resources.getString("app.warning"),
             JOptionPane.YES_NO_OPTION);
@@ -357,7 +346,7 @@ public class ControlCenter extends JPanel {
       }
 
       // Tell it to the app
-      App.getInstance().shutdown();
+      windowManager.closeAllFrames();
 
       // Done
     }
@@ -440,7 +429,7 @@ public class ControlCenter extends JPanel {
       // any error bubbling up?
       if (error != null) {
         JOptionPane.showMessageDialog(
-          frame,
+          ControlCenter.this,
           error,
           resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE);
@@ -481,7 +470,7 @@ public class ControlCenter extends JPanel {
 
       int rc =
         JOptionPane.showOptionDialog(
-          frame,
+          ControlCenter.this,
           resources.getString("cc.open.choice"),
           resources.getString("cc.open.title"),
           0,
@@ -512,11 +501,10 @@ public class ControlCenter extends JPanel {
     private void createNew() {
 
       // pop a chooser
-      FileChooser chooser =
-        new GedcomFileChooser(
-          frame,
-          resources.getString("cc.create.title"),
-          resources.getString("cc.create.action"));
+      FileChooser chooser = new GedcomFileChooser(
+        resources.getString("cc.create.title"),
+        resources.getString("cc.create.action")
+      );
       chooser.showDialog();
       // check the selection
       File file = chooser.getSelectedFile();
@@ -525,7 +513,7 @@ public class ControlCenter extends JPanel {
       if (file.exists()) {
         int rc =
           JOptionPane.showConfirmDialog(
-            frame,
+            ControlCenter.this,
             resources.getString("cc.open.file_exists", file.getName()),
             resources.getString("cc.create.title"),
             JOptionPane.YES_NO_OPTION);
@@ -548,11 +536,10 @@ public class ControlCenter extends JPanel {
     private Origin chooseFile() {
 
       // pop a chooser      
-      FileChooser chooser =
-        new GedcomFileChooser(
-          frame,
+      FileChooser chooser = new GedcomFileChooser(
           resources.getString("cc.open.title"),
-          resources.getString("cc.open.action"));
+          resources.getString("cc.open.action")
+      );
       chooser.showDialog();
       // check the selection
       File file = chooser.getSelectedFile();
@@ -585,7 +572,7 @@ public class ControlCenter extends JPanel {
 
       int rc =
         JOptionPane.showOptionDialog(
-          frame,
+          ControlCenter.this,
           message,
           resources.getString("cc.open.title"),
           JOptionPane.OK_CANCEL_OPTION,
@@ -606,7 +593,7 @@ public class ControlCenter extends JPanel {
         origin = Origin.create(item);
       } catch (MalformedURLException ex) {
         JOptionPane.showMessageDialog(
-          frame,
+          ControlCenter.this,
           resources.getString("cc.open.invalid_url"),
           resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE);
@@ -642,7 +629,7 @@ public class ControlCenter extends JPanel {
 
         if (origin.getName().equals(g.getName())) {
           JOptionPane.showMessageDialog(
-            frame,
+            ControlCenter.this,
             resources.getString("cc.open.already_open", g.getName()),
             resources.getString("app.error"),
             JOptionPane.ERROR_MESSAGE);
@@ -660,7 +647,7 @@ public class ControlCenter extends JPanel {
         size = connection.getLength();
       } catch (IOException ex) {
         JOptionPane.showMessageDialog(
-          frame,
+          ControlCenter.this,
           resources.getString("cc.open.no_connect_to", origin)
             + "\n["
             + ex.getMessage()
@@ -677,12 +664,13 @@ public class ControlCenter extends JPanel {
       getThread().setPriority(Thread.MIN_PRIORITY);
 
       // .. show progress dialog
-      new ProgressDialog(
-        frame,
-        resources.getString("cc.open.loading"),
-        origin.getName(),
-        reader,
-        getThread());
+// FIXME missing      
+//      new ProgressDialog(
+//        ControlCenter.this,
+//        resources.getString("cc.open.loading"),
+//        origin.getName(),
+//        reader,
+//        getThread());
 
       // .. continue into (async) execute
       return true;
@@ -757,11 +745,10 @@ public class ControlCenter extends JPanel {
       if ((ask) || (origin == null) || (!origin.isFile())) {
 
         // .. choose file
-        FileChooser chooser =
-          new GedcomFileChooser(
-            frame,
-            resources.getString("cc.save.title"),
-            resources.getString("cc.save.action"));
+        FileChooser chooser = new GedcomFileChooser(
+          resources.getString("cc.save.title"),
+          resources.getString("cc.save.action")
+        );
 
         // .. with options        
         SaveOptionsWidget options = new SaveOptionsWidget(gedcom, viewManager);
@@ -798,7 +785,7 @@ public class ControlCenter extends JPanel {
         if (ask) {
           int rc =
             JOptionPane.showConfirmDialog(
-              frame,
+              ControlCenter.this,
               resources.getString("cc.open.file_exists", file.getName()),
               resources.getString("cc.save.title"),
               JOptionPane.YES_NO_OPTION);
@@ -822,10 +809,11 @@ public class ControlCenter extends JPanel {
       } catch (IOException ex) {
         ex.printStackTrace();
         JOptionPane.showMessageDialog(
-          frame,
+          ControlCenter.this,
           resources.getString("cc.save.open_error", file.getAbsolutePath()),
           resources.getString("app.error"),
-          JOptionPane.ERROR_MESSAGE);
+          JOptionPane.ERROR_MESSAGE
+        );
         return false;
       }
 
@@ -833,12 +821,14 @@ public class ControlCenter extends JPanel {
       busyGedcoms.addElement(gedcom);
 
       // .. open progress dialog
-      new ProgressDialog(
-        frame,
-        resources.getString("cc.save.saving"),
-        file.getAbsolutePath(),
-        gedWriter,
-        super.getThread());
+// FIXME missing      
+//      new ProgressDialog(
+//        ControlCenter.this,
+//        resources.getString("cc.save.saving"),
+//        file.getAbsolutePath(),
+//        gedWriter,
+//        super.getThread()
+//      );
 
       // .. continue (async)
       return true;
@@ -859,12 +849,13 @@ public class ControlCenter extends JPanel {
         }
       } catch (GedcomIOException ex) {
         JOptionPane.showMessageDialog(
-          frame,
+          ControlCenter.this,
           resources.getString("cc.save.write_error", "" + ex.getLine())
             + ":\n"
             + ex.getMessage(),
           resources.getString("app.error"),
-          JOptionPane.ERROR_MESSAGE);
+          JOptionPane.ERROR_MESSAGE
+        );
         newOrigin = null;
       }
 
@@ -937,7 +928,7 @@ public class ControlCenter extends JPanel {
       if (gedcom.hasUnsavedChanges()) {
         int rc =
           JOptionPane.showConfirmDialog(
-            frame,
+            ControlCenter.this,
             resources.getString("cc.close_changes?"),
             resources.getString("app.warning"),
             JOptionPane.YES_NO_OPTION);

@@ -20,7 +20,7 @@
 package genj.view;
 
 import genj.gedcom.Gedcom;
-import genj.print.PrintManager;
+import genj.print.Printer;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
@@ -28,13 +28,11 @@ import genj.util.swing.ButtonHelper;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.Box;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
@@ -59,33 +57,38 @@ import javax.swing.SwingConstants;
   /** the gedcom this view looks at */
   private Gedcom gedcom;
   
-  /** the frame its contained in */
-  private JFrame frame;
-  
   /** the manager */
   private ViewManager manager;
+  
+  /** title */
+  private String title;
+  
+  /** key */
+  private String key;
+  
   
   /** 
    * Constructor
    */
-  /*package*/ ViewWidget(JFrame fRame, Gedcom geDcom, Registry regIstry, ViewFactory facTory, ViewManager manAger) {
+  /*package*/ ViewWidget(String kEy, String tiTle, Gedcom geDcom, Registry regIstry, ViewFactory facTory, ViewManager manAger) {
     
     // remember
     manager = manAger;
-    frame = fRame;
+    key = kEy;
+    title = tiTle;
     gedcom = geDcom;
     registry = regIstry;
     factory = facTory;
     
     // create the view component
-    view = factory.createView(frame.getTitle(), gedcom, registry, manager);
+    view = factory.createView(title, gedcom, registry, manager);
 
     // setup layout
     setLayout(new BorderLayout());
     add(view, BorderLayout.CENTER);
 
     // install a toolbar
-    installToolBar(view, frame, factory);
+    installToolBar(view, factory);
     
     // install popup support
     installPopupSupport();
@@ -96,7 +99,7 @@ import javax.swing.SwingConstants;
   /**
    * Helper that creates the toolbar for the view
    */
-  private void installToolBar(JComponent view, Frame frame, ViewFactory factory) {
+  private void installToolBar(JComponent view, ViewFactory factory) {
     
     // only if ToolBarSupport
     if (!(view instanceof ToolBarSupport)) return;
@@ -118,11 +121,11 @@ import javax.swing.SwingConstants;
       bh.create(new ActionOpenSettings());
     
     // .. a button for printing View
-    if (PrintManager.hasPrinter(view)) 
-      bh.create(new ActionPrint(frame));
+    if (manager.getPrintManager()!=null&&isPrintable()) 
+      bh.create(new ActionPrint());
 
     // .. a button for closing the View
-    bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(Images.imgClose));
+    bh.create(new ActionClose());
 
     // add it
     Dimension dim = factory.getDefaultDimension();
@@ -147,6 +150,18 @@ import javax.swing.SwingConstants;
   }
   
   /**
+   * Checks whether this view is printable
+   */
+  /*package*/ boolean isPrintable() {
+    try {
+      if (Printer.class.isAssignableFrom(Class.forName(view.getClass().getName()+"Printer")))
+        return true;
+    } catch (Throwable t) {
+    }
+    return false;
+  }
+  
+  /**
    * Accessor - the view
    */
   /*package*/ JComponent getView() {
@@ -161,10 +176,17 @@ import javax.swing.SwingConstants;
   }
   
   /**
-   * Accessor - the frame
+   * Accessor - the title
    */
-  /*package*/ JFrame getFrame() {
-    return frame;
+  /*package*/ String getTitle() {
+    return title;
+  }
+  
+  /**
+   * Accessor - the key
+   */
+  /*package*/ String getKey() {
+    return key;
   }
   
   /**
@@ -191,21 +213,37 @@ import javax.swing.SwingConstants;
   }
 
   /**
+   * Action - close view
+   */
+  private class ActionClose extends ActionDelegate {
+    /** constructor */
+    protected ActionClose() {
+      super.setImage(Images.imgClose);
+    }
+    /** run */
+    protected void execute() {
+      manager.getWindowManager().closeFrame(key); 
+    }
+  } //ActionClose
+  
+  /**
    * Action - print view
    */
   private class ActionPrint extends ActionDelegate {
-    /** the frame */
-    private Frame frame;
     /** constructor */
-    protected ActionPrint(Frame f) {
-      frame=f;
+    protected ActionPrint() {
       super.setImage(Images.imgPrint).setTip("view.print.tip");
     }
     /** run */
     protected void execute() {
-      PrintManager.getInstance().print(getFrame(), view); 
+      try {
+        Printer printer = (Printer)Class.forName(view.getClass().getName()+"Printer").newInstance();
+        printer.setView(view);
+        manager.getPrintManager().print(printer, title, view); 
+      } catch (Throwable t) {
+      }
     }
-  } //ActionOpenSettings
+  } //ActionPrint
   
   /**
    * Action - open the settings of a view
@@ -242,6 +280,6 @@ import javax.swing.SwingConstants;
       manager.showContextMenu(esp.getContextPopupContainer(), e.getPoint(), gedcom, context);
       // done
     }
-  } //EntityPopupMouseListener
+  }
 
 } //ViewWidget
