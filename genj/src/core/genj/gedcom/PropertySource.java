@@ -69,6 +69,7 @@ public class PropertySource extends PropertyXRef {
     // Just add 'em
     if (this instanceof Entity) {
       addProperty(new PropertyGenericAttribute("TITL"));
+      addProperty(new PropertyText());
     }
     
     // Done
@@ -159,5 +160,14 @@ public class PropertySource extends PropertyXRef {
   public int getExpectedReferencedType() {
     return Gedcom.SOURCES;
   }
-}
+
+  /**
+   * @see genj.gedcom.PropertyXRef#isValid()
+   */
+  public boolean isValid() {
+    // always
+    return true;
+  }
+  
+} //PropertySource
 

@@ -160,10 +160,11 @@ public abstract class Property implements Comparable {
     new MetaDefinition("FILE","File"            ),
 
     // Source
-    new MetaDefinition("SOUR","Source"    ,new String[]{"TITL","AUTH", "ABBR", "PUBL"}) ,
+    new MetaDefinition("SOUR","Source"    ,new String[]{"TITL","AUTH", "ABBR", "PUBL", "TEXT"}) ,
     new MetaDefinition("AUTH","GenericAttribute") ,
     new MetaDefinition("ABBR","GenericAttribute") ,
     new MetaDefinition("PUBL","GenericAttribute") ,
+    new MetaDefinition("TEXT" ,"Text") ,
 
     // Repository
     new MetaDefinition("REPO","Repository"    ,new String[]{"NAME","ADDR","PHONE"}) ,
