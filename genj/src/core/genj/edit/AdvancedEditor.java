@@ -150,13 +150,23 @@ import javax.swing.event.TreeSelectionListener;
     super.removeNotify();
   }
 
-
+  /**
+   * Callback - context test
+   */
+  public boolean isShowing(Context context) {
+    return context.getGedcom()==gedcom 
+      && context.getEntity() == tree.getRoot()
+			&& context.getProperty() == tree.getSelection();
+  }
+  
   /**
    * Accessor - current context 
    * @return Gedcom tree's root and selection 
    */
   public Context getContext() {
-    return new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
+    Context result = new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
+    result.setSource(this);
+    return result;
   }
   
   /**
@@ -172,7 +182,8 @@ import javax.swing.event.TreeSelectionListener;
     Property property = context.getProperty();
 
     tree.setRoot(entity);
-    tree.setSelection(property!=null?property:entity);  
+    if (property!=null)
+      tree.setSelection(property);  
   
     // Done
   }
@@ -443,8 +454,8 @@ import javax.swing.event.TreeSelectionListener;
         if (target!=null) {
           // create new context
           Context ctx = new Context(target);
-          // set it on us
-          setContext(ctx);
+          // we're the source
+          ctx.setSource(AdvancedEditor.this);
           // tell others
           viewManager.setContext(ctx);
         }

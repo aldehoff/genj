@@ -218,10 +218,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     }
     
     // change if applicable
-    Context current = editor.getContext();
-    if (!current.equals(context)) {
+    if (!editor.isShowing(context)) {
 	    // remember current 
-	    back.push(current);
+	    back.push(editor.getContext());
 	    // tell editor
 	    editor.setContext(context);
     }
@@ -329,6 +328,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
    * Action - back
    */
   private class Back extends ActionDelegate {
+    private boolean ignorePush = false;
     private Stack stack = new Stack();
     /** constructor */
     protected Back() {
@@ -342,15 +342,19 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       while (!stack.isEmpty()) {
         Context context = (Context)stack.pop();
         if (context.isValid()&&context.getEntity()!=null) {
+          ignorePush = true;
           context.setSource(EditView.this);
           setContext(context);
-          stack.pop();      
+          ignorePush = false;
           return;
         }
       }
     }
     /** push another on stack */
     protected void push(Context context) {
+      // ignore it?
+      if (ignorePush)
+        return;
       // won't put the same entity twice though
       if (!stack.isEmpty()) {
         Context current = (Context)stack.peek();
@@ -359,6 +363,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       }
       // keep it
       stack.push(context);
+      // trim stack - arbitrarily chosen size :)
+      while (stack.size()>32)
+        stack.remove(0);
     }
   } //Back
   

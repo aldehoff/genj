@@ -265,6 +265,13 @@ import javax.swing.event.ChangeListener;
   }
 
   /**
+   * Callback - context test
+   */
+  public boolean isShowing(Context context) {
+    return context.getGedcom()==gedcom && context.getEntity() == entity;
+  }
+  
+  /**
    * Callback - our current context
    */
   public Context getContext() {
