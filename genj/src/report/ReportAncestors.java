@@ -132,7 +132,7 @@ public class ReportAncestors implements Report {
     // here's the result 
     return n + b + d;
     
-    // FIXME
+    // Could be a hyperlink, too
     //return "<a href=\"\">" + indi.getName() + "</a>" + b + d;
   }
   
