@@ -13,6 +13,7 @@ import genj.gedcom.Property;
 import genj.report.Report;
 import genj.report.ReportBridge;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +28,17 @@ import java.util.TreeMap;
  */
 public class ReportGedcomStatistics implements Report {
 
+  /**
+   * A data object that contains the statistical data we gather
+   */
+  private static class Statistics {
+    /**package*/ int numMales = 0;
+    /**package*/ int numFemales = 0;
+    /**package*/ int numUnknown = 0;
+    /**package*/ TreeMap birthPlaces = new TreeMap();
+    /**package*/ TreeMap deathPlaces = new TreeMap();
+  }
+   
   /** the place that is not known */
   private final static String UNKNOWN_PLACE = "[unknown places]";
   
@@ -77,75 +89,119 @@ public class ReportGedcomStatistics implements Report {
    */
   public boolean start(ReportBridge bridge, Gedcom gedcom) {
 
-    int numMales = 0;
-    int numFemales = 0;
-    int numUnknown = 0;
+    // Here's the data object that we use while looking
+    // at the statistical characteristics
+    Statistics stats = new Statistics();
 
-    // We Look thru individuals to check their sex
-    // .. at the same time we check for birth places
-    TreeMap places = new TreeMap();
-    // .. at the same time we check for death places
-    TreeMap death_places = new TreeMap();
-    
+    // So we loop over the Individuals
     EntityList indis = gedcom.getEntities(gedcom.INDIVIDUALS);
     for (int i=0;i<indis.getSize();i++) {
+      analyzeIndividual(indis.getIndi(i), stats);
+    }
+    
+    // And report what we've found
+    reportResults(bridge, gedcom, stats);
+    
+    // Done
+    return true;
+  }
 
-			// This is the guy we're looking at     
-      Indi indi = indis.getIndi(i);
-      
+  /**
+   * Helper that looks up an Integer from a AbstractMap
+   * and increases it 
+   * <ul>
+   * <li> if it doesn't exist it will be created with initial value 1
+   * <li> if it does exist it will be incremented by one
+   * </ul>
+   */
+  private void incrementIntegerInMap(AbstractMap map, Object key) {
+    
+    // We make sure to use the text representation of the key
+    key = key.toString();
+    
+    // look it up
+    Integer integer = (Integer)map.get(key);
+    
+    // Increment it (or start at zero)
+    int value = 0;
+    if (integer!=null) {
+      value = integer.intValue();
+    }
+    integer = new Integer(value+1);      
+
+    // Remember it
+    map.put(key, integer);      
+  }
+
+  /**
+   * Analyzes an Individual for the Statistics
+   */
+  private void analyzeIndividual(Indi indi, Statistics stats) {
+    analyzeIndividualSex(indi, stats);
+    analyzeIndividualBirth(indi, stats);
+    analyzeIndividualDeath(indi, stats);
+  }
+  
+  /**
+   * Analyzes an Individual's SEX
+   */
+  private void analyzeIndividualSex(Indi indi, Statistics stats) {
+
       // Here comes the Sex check
       int sex = indi.getSex();
       switch (indi.getSex()) {
         case Gedcom.MALE:
-            numMales++;
+            stats.numMales++;
             break;
         case Gedcom.FEMALE:
-            numFemales++;
+            stats.numFemales++;
             break;
         default:
-            numUnknown++;
+            stats.numUnknown++;
             break;
       }
+  }
+  
+  /**
+   * Analyzes an Individual's BIRTH
+   */
+  private void analyzeIndividualBirth(Indi indi, Statistics stats) {
       
-      // And here comes the check for birth place
+      // And here comes the check for place
       Object place = indi.getProperty("INDI:BIRT:PLAC");
       if ((place==null) || (place.toString().trim().length()==0)){
         place = UNKNOWN_PLACE;
       }
        
-      // .. check if we know that already (or start at 0)
-      Integer count = (Integer)places.get(place.toString());
-      if (count==null) {
-        count = new Integer(1);
-      } else {
-        count = new Integer(count.intValue()+1);
-      }
-        
-      // .. remember
-      places.put(place.toString(), count);
-
-      // And here comes the check for death place
-      Object death_place = indi.getProperty("INDI:DEAT:PLAC");
-      if ((death_place==null) || (death_place.toString().trim().length()==0)){
-        death_place = UNKNOWN_PLACE;
+      // .. and a simple increment
+      incrementIntegerInMap(stats.birthPlaces, place);
+      
+      // Done
+  }
+  
+  /**
+   * Analyzes an Individual's DEATH
+   */
+  private void analyzeIndividualDeath(Indi indi, Statistics stats) {
+      
+      // And here comes the check for place
+      Object place = indi.getProperty("INDI:DEAT:PLAC");
+      if ((place==null) || (place.toString().trim().length()==0)){
+        place = UNKNOWN_PLACE;
       }
        
-      // .. check if we know that already (or start at 0)
-      Integer death_count = (Integer)death_places.get(death_place.toString());
-      if (death_count==null) {
-        death_count = new Integer(1);
-      } else {
-        death_count = new Integer(death_count.intValue()+1);
-      }
-        
-      // .. remember
-      death_places.put(death_place.toString(), death_count);
-
-      // Next one
-    }
+      // .. and a simple increment
+      incrementIntegerInMap(stats.deathPlaces, place);
+      
+      // Done
+  }
+  
+  /**
+   * Reports the result of our information-gathering
+   */
+  private void reportResults(ReportBridge bridge, Gedcom gedcom, Statistics stats) {
 
     // Header :
-
     bridge.println("In the Gedcom file named '"+gedcom.getName()+"', there are :");
     bridge.println("  * Stats about people :");
 		
@@ -158,36 +214,34 @@ public class ReportGedcomStatistics implements Report {
       +" Individuals (soit : "+gedcom.getEntities(Gedcom.INDIVIDUALS).getSize()+" personnes).");
 
     // Three: We show the number of males :
-    bridge.println("         . "+numMales+" males (soit : "+numMales+" hommes).");
+    bridge.println("         . "+stats.numMales+" males (soit : "+stats.numMales+" hommes).");
 
     // Four: We show the number of females :
-    bridge.println("         . "+numFemales+" females (soit : "+numFemales+" femmes).");
+    bridge.println("         . "+stats.numFemales+" females (soit : "+stats.numFemales+" femmes).");
 
     // Five: We show the number of people whose sex is undefined :
-    bridge.println("         . "+numUnknown+" with undefined sex (soit : "
-      +numUnknown+" personnes dont le sexe n'est pas connu).");
+    bridge.println("         . "+stats.numUnknown+" with undefined sex (soit : "
+      +stats.numUnknown+" personnes dont le sexe n'est pas connu).");
 
     // Six: We show the birth places
     bridge.println("  * Stats about birth places :");
-    Iterator it = places.keySet().iterator();
+    Iterator it = stats.birthPlaces.keySet().iterator();
     while (it.hasNext()) {
       String place = (String)it.next();
-      Integer count = (Integer)places.get(place);
-      bridge.println("     - "+count+" individuals born in "+place);
+      Integer count = (Integer)stats.birthPlaces.get(place);
+      bridge.println("     - "+count+" individuals were born in "+place);
     }
 
     // Seven: We show the death places
     bridge.println("  * Stats about death places :");
-    Iterator death_it = death_places.keySet().iterator();
+    Iterator death_it = stats.deathPlaces.keySet().iterator();
     while (death_it.hasNext()) {
       String death_place = (String)death_it.next();
-      Integer death_count = (Integer)death_places.get(death_place);
-      bridge.println("     - "+death_count+" individuals dead in "+death_place);
+      Integer death_count = (Integer)stats.deathPlaces.get(death_place);
+      bridge.println("     - "+death_count+" individuals died in "+death_place);
     }
 
     // Done
-    return true;
-
   }
-
+  
 }
