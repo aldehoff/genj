@@ -188,7 +188,7 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Returns the index of given property - or 0 when not found.
+   * Returns the index of given property or -1 when not found.
    * @param prop Property to look for
    */
   public int getIndexOf(Property prop) {
@@ -201,7 +201,7 @@ public abstract class Property implements Comparable {
     }
 
     // Not found
-    return 0;
+    return -1;
   }
 
   /**
