@@ -13,6 +13,7 @@ import genj.util.swing.SortableTableHeader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
@@ -25,10 +26,10 @@ import javax.swing.table.TableColumnModel;
 /*package*/ class EntityTableModel extends AbstractTableModel implements GedcomListener, SortableTableHeader.SortableTableModel {
   
   /** the sorted column */
-  private int sortedColumn = -1;
+  private int sortColumn = -1;
   
   /** whether sorting is ascending/descending */
-  private boolean sortedAscending = true;
+  private int sortOrder = 1;
   
   /** the gedcom we're looking at */
   private Gedcom gedcom;
@@ -47,8 +48,9 @@ import javax.swing.table.TableColumnModel;
   /** the current mode */
   private Filter filter;
   
-  /** the list of entities we're looking at right now */
-  private Entity[] entities;
+  /** the data grid */
+  private Entity[] rows;
+  private Property[][] grid;
   
   /**
    * Constructor
@@ -82,6 +84,7 @@ import javax.swing.table.TableColumnModel;
    */
   /*package*/ void setPaths(int type, TagPath[] paths) {
     filters[type].paths = paths;
+    prepareGrid();
     fireTableStructureChanged();
   }
   
@@ -107,10 +110,10 @@ import javax.swing.table.TableColumnModel;
     if (filters[entity]==filter) return;
     // remember
     filter = filters[entity];
-    // grab entities
-    entities = gedcom.getEntities(filter.type).toArray();
+    // build data
+    prepareGrid();
     // no sorting
-    sortedColumn = -1;
+    sortColumn = -1;
     // propagate
     fireTableStructureChanged();
   }
@@ -126,7 +129,29 @@ import javax.swing.table.TableColumnModel;
    * Returns the entity at given row index
    */
   /*package*/ Entity getEntity(int row) {
-    return entities[row];
+    return rows[row];
+  }
+  
+  /**
+   * Prepares the data grid
+   */
+  private void prepareGrid() {
+    // grab entities
+    rows = gedcom.getEntities(filter.type).toArray();
+    // build property grid
+    TagPath[] ps = filter.paths;
+    grid = new Property[rows.length][ps.length];
+    for (int r=0; r<rows.length; r++) {
+      for (int c=0; c<ps.length; c++) {
+        ps[c].setToFirst();
+        grid[r][c] = rows[r].getProperty().getProperty(ps[c], false);
+      }
+    }
+    // no sorting - done
+    if (sortColumn<0) return;
+    // sort
+    Arrays.sort(grid, new RowComparator());
+    // done
   }
   
   /**
@@ -151,39 +176,37 @@ import javax.swing.table.TableColumnModel;
    * @see javax.swing.table.TableModel#getRowCount()
    */
   public int getRowCount() {
-    return entities.length;
+    return rows.length;
   }
 
   /**
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
   public Object getValueAt(int rowIndex, int columnIndex) {
-    Entity e = entities[rowIndex];
-    filter.paths[columnIndex].setToFirst();
-    return e.getProperty().getProperty(filter.paths[columnIndex], false);
+    return grid[rowIndex][columnIndex];
   }
 
   /**
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#getSortedColumn()
    */
   public int getSortedColumn() {
-    return sortedColumn;
+    return sortColumn;
   }
 
   /**
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#isAscending()
    */
   public boolean isAscending() {
-    return sortedAscending;
+    return sortOrder==1;
   }
 
   /**
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#setSortedColumn(int)
    */
   public void setSortedColumn(int col) {
-    sortedColumn = col;
-    sortedAscending = !sortedAscending;
-    System.out.println(sortedAscending);
+    sortColumn = col;
+    sortOrder *= -1;
+    prepareGrid();
     fireTableDataChanged();
   }
 
@@ -191,7 +214,7 @@ import javax.swing.table.TableColumnModel;
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
   public void handleChange(Change change) {
-    //if (change.isChanged(change.EADD)||change.isChanged(change.EDEL))
+    prepareGrid();
     fireTableDataChanged();
   }
 
@@ -249,16 +272,27 @@ import javax.swing.table.TableColumnModel;
   } //Filter
   
   /** 
-   * A wrapper for an entity in this model and its cached properties
+   * A comparator for our rows in the grid
    */
-  private class Entry {
-    /** attributes */
-    Entity e;
-    Property ps[];
-    /** constructor */
-    Entry(Entity e) {
-      this.e = e;
+  private class RowComparator implements Comparator {
+    /**
+     * @see java.util.Comparator#compare(Object, Object)
+     */
+    public int compare(Object o1, Object o2) {
+      // here's the rows
+      Property[] 
+        row1 = (Property[])o1,
+        row2 = (Property[])o2;
+      // null?
+      if (row1[sortColumn]==row2[sortColumn]) 
+        return  0;
+      if (row1[sortColumn]==null) 
+        return -1 * sortOrder;
+      if (row2[sortColumn]==null) 
+        return  1 * sortOrder;
+      // let property decide
+      return row1[sortColumn].compareTo(row2[sortColumn]) * sortOrder;
     }
-  } //Entry
+  } //RowComparator
 
 } //TableModel
