@@ -188,7 +188,6 @@ public class Model implements Graph {
       layout.setTopDown(isTopDown);
       layout.setBendArcs(true);
       layout.setDebug(false);
-      layout.setNodeOptions(new MyOptions());
       layout.setIgnoreUnreachables(true);
       layout.setRoot(root);
       layout.applyTo(this);
@@ -240,10 +239,7 @@ public class Model implements Graph {
   /**
    * A node for an entity
    */
-  private abstract class MyNode implements Node {
-    
-    /** the lon alignment */
-    protected double lonAlign = 0.5D;
+  private abstract class MyNode implements Node, NodeOptions {
     
     /** the entity */
     protected Entity entity;
@@ -292,9 +288,21 @@ public class Model implements Graph {
     public abstract Shape getShape();
     
     /**
-     * Resolve Padding
+     * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double)
      */
-    protected abstract double getPadding(int side);
+    public double getLatitude(Node node, double min, double max) {
+      return min + (max-min) * 0.5;
+    }
+    /**
+     * @see gj.layout.tree.NodeOptions#getLongitude(Node, double, double, double, double)
+     */
+    public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
+      return minc + (maxc-minc) * 0.5;
+    }
+    /**
+     * @see gj.layout.tree.NodeOptions#getPadding(int)
+     */
+    public abstract double getPadding(Node node, int dir);
     
   } //MyNode
   
@@ -351,9 +359,9 @@ public class Model implements Graph {
       return shapeIndi;
     }
     /**
-     * @see genj.tree.Model.MyNode#getPadding(int)
+     * @see genj.tree.Model.MyNode#getPadding(Node, int)
      */
-    protected double getPadding(int side) {
+    public double getPadding(Node node, int dir) {
       return padIndis/2;
     }
   } //MyINode
@@ -363,7 +371,7 @@ public class Model implements Graph {
    */
   private class FamNode extends MyNode {
     /** side we're reducing padding */
-    private int sideWithReducedPadding = MyOptions.SOUTH;
+    private int sideWithReducedPadding = SOUTH;
     /**
      * Constructor
      */
@@ -390,7 +398,7 @@ public class Model implements Graph {
         // next child
       }
       // remembering side for reduced padding
-      sideWithReducedPadding = MyOptions.NORTH;
+      sideWithReducedPadding = NORTH;
       // done
     }
     /**
@@ -400,17 +408,25 @@ public class Model implements Graph {
       // Looking at the fam
       Fam fam = (Fam)entity;
       // husband
-      IndiNode hnode = new IndiNode(fam.getHusband());
-      hnode.lonAlign = -padIndis/2;
+      IndiNode hnode = new IndiNode(fam.getHusband()) {
+        public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
+          return mint-padIndis/2;
+        }
+      };
       hnode.addAncestors();
-      IndiNode wnode = new IndiNode(fam.getWife());
-      wnode.lonAlign = 1+padIndis/2;
-      wnode.addAncestors();      // connect
+      // wife
+      IndiNode wnode = new IndiNode(fam.getWife()) {
+        public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
+          return maxt+padIndis/2;
+        }
+      };
+      wnode.addAncestors();      
+      // connect
       new MyArc(this, wnode, false);
       new MyArc(this, new MarrNode(fam), false);
       new MyArc(this, hnode, false);
       // remembering side for reduced padding
-      sideWithReducedPadding = MyOptions.SOUTH;
+      sideWithReducedPadding = SOUTH;
       // done
     }
     /**
@@ -420,10 +436,10 @@ public class Model implements Graph {
       return shapeFam;
     }
     /**
-     * @see genj.tree.Model.MyNode#getPadding(int)
+     * @see genj.tree.Model.MyNode#getPadding(Node, int)
      */
-    protected double getPadding(int side) {
-      if (side==sideWithReducedPadding) 
+    public double getPadding(Node node, int dir) {
+      if (dir==sideWithReducedPadding) 
         return -padIndis/2 + padFams/10;
       return padFams/2;
     }
@@ -465,10 +481,10 @@ public class Model implements Graph {
       return shapeMarr;
     }
     /**
-     * @see genj.tree.Model.MyNode#getPadding(int)
+     * @see genj.tree.Model.MyNode#getPadding(Node, int)
      */
-    protected double getPadding(int side) {
-      if (side==MyOptions.NORTH||side==MyOptions.SOUTH) {
+    public double getPadding(Node node, int dir) {
+      if (dir==NORTH||dir==SOUTH) {
         return (shapeIndi.getHeight()+padIndis)/2 - shapeMarr.getBounds2D().getHeight()/2;
       }
       return -padIndis/2;
@@ -493,9 +509,9 @@ public class Model implements Graph {
       return null;
     }
     /**
-     * @see genj.tree.Model.MyNode#getPadding(int)
+     * @see genj.tree.Model.MyNode#getPadding(Node, int)
      */
-    protected double getPadding(int side) {
+    public double getPadding(Node node, int dir) {
       return 0;
     }
   } //DummyNode
@@ -543,24 +559,6 @@ public class Model implements Graph {
       return path;
     }
   } //Indi2Indi
-
-  /**
-   * Customs NodeOptions
-   */
-  private class MyOptions implements NodeOptions {
-    /**
-     * @see gj.layout.tree.NodeOptions#getAlignment(int)
-     */
-    public double getAlignment(Node node, int dir) {
-      return ((MyNode)node).lonAlign;
-    }
-    /**
-     * @see gj.layout.tree.NodeOptions#getPadding(int)
-     */
-    public double getPadding(Node node, int dir) {
-      return ((MyNode)node).getPadding(dir);
-    }
-  } //MyNodeOptions
 
   /**
    * Calculates marriage rings
