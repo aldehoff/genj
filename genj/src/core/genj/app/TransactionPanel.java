@@ -60,10 +60,10 @@ public class TransactionPanel extends JPanel implements ActionListener {
     // Panel for Actions
     JPanel paction = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-    bNext  = createAction("Next"  ,"NEXT"  );
-    bPrev  = createAction("Back"  ,"PREV"  );
-    bCancel= createAction("Cancel","CANCEL");
-    bOK    = createAction("OK"    ,"OK"  );
+    bNext  = createAction(App.resources.getString("transaction_panel.action.next")  ,"NEXT"  );
+    bPrev  = createAction(App.resources.getString("transaction_panel.action.back")  ,"PREV"  );
+    bCancel= createAction(App.resources.getString("transaction_panel.action.cancel"),"CANCEL");
+    bOK    = createAction(App.resources.getString("transaction_panel.action.ok")    ,"OK"  );
 
     paction.add(bPrev  );
     paction.add(bNext  );
@@ -205,11 +205,11 @@ public class TransactionPanel extends JPanel implements ActionListener {
     bOK    .setEnabled( is(actions,Transaction.OK    ) || is(actions,Transaction.DONE) );
 
     if (is(actions,Transaction.DONE)) {
-      bOK.setText("Done");
+      bOK.setText(App.resources.getString("transaction_panel.setText.done"));
       bOK.setActionCommand("DONE");
     }
     if (is(actions,Transaction.OK)) {
-      bOK.setText("OK");
+      bOK.setText(App.resources.getString("transaction_panel.setText.ok"));
       bOK.setActionCommand("OK");
     }
 
