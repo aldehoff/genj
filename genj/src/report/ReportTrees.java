@@ -21,18 +21,18 @@ import java.util.List;
 
 /**
  * GenJ - ReportTree
- * 
- * $Header: 
+ *
+ * $Header:
  * @author Tom Morris
  * @version 1.0
  */
 public class ReportTrees extends Report {
 
-	/**
-	 * FIXME The parameter below should be set by a configuration
-	 * interface when available
-	 */
-	static final int CUTOFF = 2;  // Don't print trees with count less than this
+  /**
+   * FIXME The parameter below should be set by a configuration
+   * interface when available
+   */
+  static final int CUTOFF = 2;  // Don't print trees with count less than this
 
   /** this report's version */
   static final String VERSION = "1.0";
@@ -43,7 +43,7 @@ public class ReportTrees extends Report {
   public String getVersion() {
     return VERSION;
   }
-  
+
   /**
    * Returns the name of this report - should be localized.
    */
@@ -68,27 +68,27 @@ public class ReportTrees extends Report {
 
   private static class Statistics{
     int numTrees = 0;
-		AncTree[] trees;
-		Hashtable seen;
+    AncTree[] trees;
+    Hashtable seen;
 
-		Statistics(int maxsize) {
-			trees = new AncTree[maxsize];
-			seen = new Hashtable(maxsize);
-		}
+    Statistics(int maxsize) {
+      trees = new AncTree[maxsize];
+      seen = new Hashtable(maxsize);
+    }
   }
 
-	private static class AncTree {
-		int count;    // total number of connected people
-		String name;  // name of first person encountered
-	}
+  private static class AncTree {
+    int count;    // total number of connected people
+    String name;  // name of first person encountered
+  }
 
   /**
    * This method actually starts this report
    */
   public void start(Object context) {
-		Gedcom gedcom = (Gedcom)context;
+    Gedcom gedcom = (Gedcom)context;
 
-		// Get a list of the individuals and create a stati
+    // Get a list of the individuals and create a stati
     List indis = gedcom.getEntities(gedcom.INDIVIDUALS);
     Statistics stats = new Statistics(indis.size());
 
@@ -97,90 +97,90 @@ public class ReportTrees extends Report {
     // Step through all the Individuals
     println(i18n("indicount",indis.size()+"")+"\n");
     for (int i=0;i<indis.size();i++) {
-			Indi indi = (Indi)indis.get(i);
-			// If we haven't seen them yet, it's the beginning of a new tree
-			if ( !stats.seen.containsKey(indi.getId()) ) {
-				int curTree = stats.numTrees++;
-				stats.trees[curTree] = new AncTree();
-				stats.trees[curTree].name = 
-					indi.getName()+" ["+indi.getId()+"]";
-				stats.trees[curTree].count = 
-					analyzeIndividual((Indi)indis.get(i), stats);
-				if( stats.trees[curTree].count > CUTOFF ) {
-					String[] msgargs = {curTree+"",
-															stats.trees[curTree].name,
-															stats.trees[curTree].count+""};
-					// println(i18n("treecount", msgargs));
-				}
-			}
+      Indi indi = (Indi)indis.get(i);
+      // If we haven't seen them yet, it's the beginning of a new tree
+      if ( !stats.seen.containsKey(indi.getId()) ) {
+        int curTree = stats.numTrees++;
+        stats.trees[curTree] = new AncTree();
+        stats.trees[curTree].name =
+          indi.getName()+" ["+indi.getId()+"]";
+        stats.trees[curTree].count =
+          analyzeIndividual((Indi)indis.get(i), stats);
+        if( stats.trees[curTree].count > CUTOFF ) {
+          String[] msgargs = {curTree+"",
+                              stats.trees[curTree].name,
+                              stats.trees[curTree].count+""};
+          // println(i18n("treecount", msgargs));
+        }
+      }
     }
 
-		// Sort in descending order by count
-		Arrays.sort(stats.trees, 0, stats.numTrees-1, new Comparator() {
-				public int compare(Object o1, Object o2) {
-					int c1 = ((AncTree)o1).count;
-					int c2 = ((AncTree)o2).count;
-					return c2-c1;
-				}
-			});
-		
-		// Print sorted list
-		println(align(i18n("count"),7)+"  "+i18n("name"));
+    // Sort in descending order by count
+    Arrays.sort(stats.trees, 0, stats.numTrees-1, new Comparator() {
+        public int compare(Object o1, Object o2) {
+          int c1 = ((AncTree)o1).count;
+          int c2 = ((AncTree)o2).count;
+          return c2-c1;
+        }
+      });
+
+    // Print sorted list
+    println(align(i18n("count"),6)+"  "+i18n("name"));
     println("------  ----------------------------------------------");
-		int grandtotal=0;
-		int loners=0;
-		for (int i=0; i<stats.numTrees; i++) {
-			int count=stats.trees[i].count;
-			if (count<CUTOFF) {
-				loners +=count;
-			} else {
-				grandtotal+=count;
-				println(align(count,7)+"  "+stats.trees[i].name);
-			}
-		}
+    int grandtotal=0;
+    int loners=0;
+    for (int i=0; i<stats.numTrees; i++) {
+      int count=stats.trees[i].count;
+      if (count<CUTOFF) {
+        loners +=count;
+      } else {
+        grandtotal+=count;
+        println(align(count,6)+"  "+stats.trees[i].name);
+      }
+    }
 
-		println("");
-		println(i18n("grandtotal",grandtotal+""));
+    println("");
+    println(i18n("grandtotal",grandtotal+""));
 
-		if (loners>0) {
-			String[] msgargs = {loners+"", CUTOFF+""};
-			println("\n"+i18n("loners",msgargs));
-		}
+    if (loners>0) {
+      String[] msgargs = {loners+"", CUTOFF+""};
+      println("\n"+i18n("loners",msgargs));
+    }
 
-		println("");
-		println(i18n("endreport"));
-    
+    println("");
+    println(i18n("endreport"));
+
     // Done
     return;
   }
 
   /**
    * Analyze an individuals ancestor & descendants
-	 * keeping track of who we've seen already
+   * keeping track of who we've seen already
    */
   private int analyzeIndividual(Indi indi, Statistics stats) {
-		if ( stats.seen.containsKey(indi.getId()) ) {
-			return 0;
-		}
-		else {
-			// insert in hash
-			stats.seen.put(indi.getId(),indi);
+    if ( stats.seen.containsKey(indi.getId()) ) {
+      return 0;
+    }
+    else {
+      // insert in hash
+      stats.seen.put(indi.getId(),indi);
 
-			// count relatives (including self)
-			return (1 + 
-							analyzeIndividualAncestors(indi, stats) + 
-							analyzeIndividualDescendants(indi, stats)
-							);
-		}
+      // count relatives (including self)
+      return (1 +
+              analyzeIndividualAncestors(indi, stats) +
+              analyzeIndividualDescendants(indi, stats)
+              );
+    }
   }
-  
+
   /**
    * Analyzes an Individual's Ancestors
    */
   private int analyzeIndividualAncestors(Indi indi, Statistics stats) {
-		int count = 0;
+    int count = 0;
 
-		// Get family that we are a child of
+    // Get family that we are a child of
     Fam famc = indi.getFamc();
     if (famc==null) {
       return 0;
@@ -193,35 +193,35 @@ public class ReportTrees extends Report {
         count += analyzeIndividual(famc.getHusband(), stats);
     }
 
-		return count;
+    return count;
 
   }
   /**
    * Analyzes an Individual's Descendants
    */
   private int analyzeIndividualDescendants(Indi indi, Statistics stats) {
-		int count = 0;
+    int count = 0;
 
     // loop through all families
     int fcount = indi.getNoOfFams();
     for (int f=0;f<fcount;f++) {
-      
+
       // Get the family & process the spouse
       Fam fam = indi.getFam(f);
-			if (fam.getOtherSpouse(indi)!=null) {
-				count += analyzeIndividual(fam.getOtherSpouse(indi), stats);
-			}
+      if (fam.getOtherSpouse(indi)!=null) {
+        count += analyzeIndividual(fam.getOtherSpouse(indi), stats);
+      }
 
       // .. and all the kids
       Indi[] children = fam.getChildren();
       for (int c = 0; c < children.length; c++) {
-				count += analyzeIndividual(children[c], stats);
-			}
+        count += analyzeIndividual(children[c], stats);
+      }
 
       // .. next family
     }
-  
-		return count;
+
+    return count;
   }
 
 }
