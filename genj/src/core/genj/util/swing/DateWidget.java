@@ -24,6 +24,7 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
 import genj.util.ActionDelegate;
+import genj.util.WordBuffer;
 import genj.window.WindowManager;
 
 import java.awt.Dimension;
@@ -32,7 +33,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -47,10 +47,6 @@ public class DateWidget extends JPanel {
   private PopupWidget widgetCalendar; 
   private TextFieldWidget widgetDay,widgetYear;
   private ChoiceWidget widgetMonth;
-  private JLabel widgetDayOfWeek;
-  
-  /** calendar switches */
-  private ArrayList switches;
   
   /** current calendar */
   private Calendar calendar; 
@@ -67,7 +63,7 @@ public class DateWidget extends JPanel {
     calendar = pit.getCalendar();
         
     // create calendar switches
-    switches = new ArrayList(PointInTime.CALENDARS.length);
+    ArrayList switches = new ArrayList(PointInTime.CALENDARS.length+1);
     for (int s=0;s<PointInTime.CALENDARS.length;s++)
       switches.add(new SwitchCalendar(PointInTime.CALENDARS[s]));
     
@@ -85,8 +81,6 @@ public class DateWidget extends JPanel {
     widgetDay   = new TextFieldWidget("",2+1);
     widgetDay.setSelectAllOnFocus(true);
     
-    widgetDayOfWeek = new JLabel();
-    
     // Layout
     setLayout(new FlowLayout(FlowLayout.LEFT));
     
@@ -100,7 +94,6 @@ public class DateWidget extends JPanel {
       default: 
         add(widgetYear); add(widgetMonth); add(widgetDay ); format = "yyyy-mmm-dd"; break;
     }
-    add(widgetDayOfWeek);
     
     widgetCalendar.setToolTipText(format);
     widgetDay.setToolTipText(format);
@@ -226,16 +219,10 @@ public class DateWidget extends JPanel {
       // show 'X' on disabled button
       widgetCalendar.setEnabled(false);
       widgetCalendar.setIcon(MetaProperty.IMG_ERROR);
-      widgetDayOfWeek.setText("");
     } else {
       // show current calendar on enabled button
       widgetCalendar.setEnabled(true);
       widgetCalendar.setIcon(calendar.getImage());
-      try {       
-        widgetDayOfWeek.setText(value.getDayOfWeek(true));
-      } catch (GedcomException e) {
-        widgetDayOfWeek.setText("");
-      }
     }
   }
 
@@ -281,7 +268,20 @@ public class DateWidget extends JPanel {
     private SwitchCalendar(Calendar cal) {
       newCalendar = cal;
       setImage(newCalendar.getImage());
-      setText(newCalendar.getName());
+    }
+    /**
+     * @see genj.util.ActionDelegate#getText()
+     */
+    public String getText() {
+      WordBuffer result = new WordBuffer(newCalendar.getName());
+      result.setFiller(" - ");
+      try {
+        PointInTime pit = getValue().getPointInTime(newCalendar); 
+        result.append(pit.getDayOfWeek(true));
+        result.append(pit);
+      } catch (Throwable t) {
+      }
+      return result.toString();
     }
     /**
      * @see genj.util.ActionDelegate#execute()
