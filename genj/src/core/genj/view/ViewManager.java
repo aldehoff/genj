@@ -333,13 +333,13 @@ public class ViewManager {
     // the viewwidget
     ViewWidget viewWidget = new ViewWidget(frame,gedcom,registry,factory);
 
+    // remember
+    viewWidgets.add(viewWidget);
+    
     // show it
     frame.getContentPane().add(viewWidget);
     frame.pack();
     frame.show();
-    
-    // remember
-    viewWidgets.add(viewWidget);
     
     // done
     return viewWidget.getView();
