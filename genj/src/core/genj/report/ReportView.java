@@ -112,7 +112,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     // Panel for Report
     JPanel reportPanel = new JPanel();
     reportPanel.setBorder(new EmptyBorder(3,3,3,3));
-    GridBagHelper reportGridBag = new GridBagHelper(reportPanel);
+    GridBagHelper gh = new GridBagHelper(reportPanel);
     tabbedPane.add(resources.getString("report.reports"),reportPanel);
 
     // ... List of reports
@@ -123,45 +123,38 @@ public class ReportView extends JPanel implements ToolBarSupport {
     listOfReports.addListSelectionListener((ListSelectionListener)new ActionSelect().as(ListSelectionListener.class));
 
     JScrollPane spList = new JScrollPane(listOfReports);
-    reportGridBag.add(spList,1,1,1,6,GridBagHelper.GROW_BOTH);
+    spList.setHorizontalScrollBarPolicy(spList.HORIZONTAL_SCROLLBAR_NEVER);
+    gh.add(spList,1,1,1,4,GridBagHelper.GROWFILL_VERTICAL);
 
     // ... Report's author
+    gh.setParameter(gh.FILL_HORIZONTAL);
+    
     lAuthor = new JLabel("");
     lAuthor.setForeground(Color.black);
 
-    reportGridBag.add(new JLabel(resources.getString("report.author")),2,1,2,1,0);
-    reportGridBag.add(new JLabel(" "     ),2,2,1,1,0);
-    reportGridBag.add(lAuthor             ,3,2,1,1,0);
+    gh.add(new JLabel(resources.getString("report.author")),2,1);
+    gh.add(lAuthor,3,1,1,1,GridBagHelper.GROWFILL_HORIZONTAL);
 
     // ... Report's version
     lVersion = new JLabel("");
     lVersion.setForeground(Color.black);
 
-    reportGridBag.add(new JLabel(resources.getString("report.version")),2,3,2,1,0);
-    reportGridBag.add(new JLabel(" "     ),2,4,1,1,0);
-    reportGridBag.add(lVersion            ,3,4,1,1,0);
+    gh.add(new JLabel(resources.getString("report.version")),2,2);
+    gh.add(lVersion,3,2);
 
     // ... Report's infos
     tpInfo = new JTextPane();
     tpInfo.setEnabled(false);
-    JScrollPane spInfo = new JScrollPane(tpInfo,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
-      public Dimension getPreferredSize() {
-      return new Dimension(256,128);
-      }
-    };
-
-    reportGridBag.add(new JLabel(resources.getString("report.info")),2,5,2,1,0                      );
-    reportGridBag.add(spInfo                   ,3,6,1,1,GridBagHelper.GROW_BOTH);
+    JScrollPane spInfo = new JScrollPane(tpInfo);
+    spInfo.setPreferredSize(new Dimension(0,0));
+    gh.add(new JLabel(resources.getString("report.info")),2,3);
+    gh.add(spInfo,2,4,2,1,gh.FILL_BOTH);
 
     // Panel for Report Output
     taOutput = new JTextArea();
     taOutput.setEditable(false);
 
-    spOutput = new JScrollPane(taOutput,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS) {
-      public Dimension getPreferredSize() {
-      return new Dimension(256,128);
-      }
-    };
+    spOutput = new JScrollPane(taOutput);
     tabbedPane.add(resources.getString("report.output"),spOutput);
 
     // Done
