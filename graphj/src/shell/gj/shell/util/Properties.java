@@ -15,7 +15,6 @@
  */
 package gj.shell.util;
 
-import gj.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
@@ -216,23 +215,6 @@ public class Properties {
     }
 
     return def;
-  }
-
-  /**
-   * Returns dimension parameter by key
-   */
-  public Dimension2D get(String key, Dimension2D def) {
-
-    // Get box dimension
-    int w = get(key+".w", -1);
-    int h = get(key+".h", -1);
-
-    // Missing ?
-    if ( (w==-1) || (h==-1) )
-      return def;
-
-    // Done
-    return new Dimension2D.Double(w,h);
   }
 
   /**
