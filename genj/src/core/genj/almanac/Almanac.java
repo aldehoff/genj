@@ -415,14 +415,14 @@ public class Almanac {
      */
     Range(PointInTime when, int days, Set cats) throws GedcomException {
 
-      endYear = when.getYear();
+      endYear = when.getYear()+1;
       
 	    // convert to julian day
 	    origin = when.getJulianDay();
 	    originDelta = days;
 	    
 	    // init
-	    init(endYear, cats);
+	    init(when.getYear()-1, cats);
   	    
       // done
     }
