@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.65 2005-01-27 22:24:06 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.66 2005-03-29 17:39:45 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Muessig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -662,7 +662,7 @@ public class ReportGedcomStatistics extends Report {
         for(int i=0;i<e.length;i++) {
             occupations.numberIndis++;
             // an individual might have more than one occupation
-            Property[] props = e[i].getProperties(new TagPath("OCCU"));
+            Property[] props = e[i].getProperties(new TagPath("INDI:OCCU"));
             if (props!=null) {
                 for(int j=0;j<props.length;j++) {
                     String occu = props[j].getValue();
