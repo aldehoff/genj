@@ -26,9 +26,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
 import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
@@ -45,48 +51,9 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   
   /** resources we use */
   private Resources resources = EditView.resources;
-  
-  /** actions for creating entities */
-  private final ActionCreate
-    aChild     = new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, "new.child"),
-    aParent    = new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, "new.parent"),
-    aSpouse    = new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, "new.spouse"),
-    
-    aIndi      = new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS ),
-    aFam       = new ActionCreate(Images.imgNewFam       , Gedcom.FAMILIES    ),
-    aNote      = new ActionCreate(Images.imgNewNote      , Gedcom.NOTES       ),
-    aMedia     = new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS ),
-    aRepository= new ActionCreate(Images.imgNewRepository, Gedcom.REPOSITORIES),
-    aSource    = new ActionCreate(Images.imgNewSource    , Gedcom.SOURCES     ),
-    aSubmitter = new ActionCreate(Images.imgNewSubmitter , Gedcom.SUBMITTERS  )
-  ;
-  
-  private final ActionDelete aDelete = new ActionDelete();
-  private final ActionDelegate aNOOP = ActionDelegate.NOOP;
 
-  /** actions on entities */
-  private ActionDelegate[] gedcom2create = new ActionDelegate[] {
-    aIndi, aFam, aNote, aMedia, aRepository, aSource, aSubmitter
-  };
-  
-  /** actions on entities */
-  private ActionDelegate[][] entity2create = new ActionDelegate[][] {
-    // INDIVIDUALS
-    { aChild,aParent,aSpouse,aNote,aMedia,aNOOP,aDelete }, 
-    // FAMILIES
-    { aChild,aNote,aSpouse,aMedia,aNOOP,aDelete }, 
-    // MULTIMEDIAS
-    { aDelete }, 
-    // NOTES
-    { aDelete }, 
-    // SOURCES
-    { aDelete }, 
-    // SUBMITTERS
-    { aDelete }, 
-    // REPOSITORIES
-    { aDelete }  
-  };
-  
+  /** a noop is used for separators in returning actions */  
+  private final static ActionDelegate aNOOP = ActionDelegate.NOOP;
 
   /**
    * @see genj.app.ViewFactory#createSettingsComponent(Component)
@@ -143,10 +110,15 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   public List createActions(Entity entity) {
     // create the actions
     List result = new ArrayList();
-    ActionDelegate[] actions = entity2create[entity.getType()];
-    for (int a=0; a<actions.length; a++) result.add(actions[a]);
+    // indi?
+    if (entity instanceof Indi) createActions(result, (Indi)entity);
+    // fam?
+    if (entity instanceof Fam) createActions(result, (Fam)entity);
+    // add delete
+    result.add(ActionDelegate.NOOP);
+    result.add(new ActionDelete(entity));
     // add an "edit in EditView"
-    if (!ViewManager.getInstance().isOpen(EditView.class)) {
+    if (!ViewManager.getInstance().isOpenView(EditView.class)) {
       result.add(ActionDelegate.NOOP);
       result.add(new ActionEdit(entity));
     }
@@ -160,10 +132,44 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   public List createActions(Gedcom gedcom) {
     // create the actions
     List result = new ArrayList();
-    ActionDelegate[] actions = gedcom2create;
-    for (int a=0; a<actions.length; a++) result.add(actions[a]);
+    createActions(result, gedcom);
     // done
     return result;
+  }
+
+  /**
+   * Create actions for Gedcom
+   */
+  private void createActions(List result, Gedcom gedcom) {
+    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS , gedcom));
+    result.add(new ActionCreate(Images.imgNewFam       , Gedcom.FAMILIES    , gedcom));
+    result.add(new ActionCreate(Images.imgNewNote      , Gedcom.NOTES       , gedcom));
+    result.add(new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS , gedcom));
+    result.add(new ActionCreate(Images.imgNewRepository, Gedcom.REPOSITORIES, gedcom));
+    result.add(new ActionCreate(Images.imgNewSource    , Gedcom.SOURCES     , gedcom));
+    result.add(new ActionCreate(Images.imgNewSubmitter , Gedcom.SUBMITTERS  , gedcom));
+  }
+  
+  /**
+   * Create actions for Individual
+   */
+  private void createActions(List result, Indi indi) {
+    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, "new.child"  , indi));
+    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, "new.parent", indi));
+    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, "new.spouse", indi));
+    result.add(new ActionCreate(Images.imgNewNote      , Gedcom.NOTES      , indi ));
+    result.add(new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS, indi ));
+  }
+  
+  /**
+   * Create actions for Families
+   */
+  private void createActions(List result, Fam fam) {
+    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_CHILD , "new.child"  , fam));
+    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, "new.husband", fam));
+    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, "new.wife"   , fam));
+    result.add(new ActionCreate(Images.imgNewNote      , Gedcom.NOTES      , fam));
+    result.add(new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS, fam));
   }
   
   /**
@@ -194,12 +200,18 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
    * ActionDelete - delete an entity
    */  
   private class ActionDelete extends ActionDelegate {
+    /** the candidate to delete */
+    private Entity candidate;
     /**
      * Constructor
      */
-    private ActionDelete() {
+    private ActionDelete(Entity entity) {
+      // preset
       super.setImage(Images.imgDelete);
       super.setText(EditView.resources.getString("delete"));
+      // remember
+      candidate = entity;
+      // done
     }
     /**
      * @see genj.util.ActionDelegate#execute()
@@ -212,51 +224,87 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
    * ActionCreate - create an entity
    */  
   private class ActionCreate extends ActionDelegate {
+    /** confirmation message */
+    private String message;
+    /** the confirmation type */
+    private boolean isWarning = false;
     /**
      * Constructor
      */
-    private ActionCreate(ImgIcon img, int t) {
+    private ActionCreate(ImgIcon img, int t, Gedcom gedcom) {
+      String type = Gedcom.getNameFor(t,false);
+      // preset
       super.setImage(img);
-      super.setText(EditView.resources.getString("new", Gedcom.getNameFor(t, false)));
+      super.setText(EditView.resources.getString("new", type));
+      // calculate message
+      message = 
+        resources.getString("new.confirm", new String[] { 
+          type, gedcom.getName(), type 
+        })
+        + '\n' +
+        resources.getString("new.warning");
+      isWarning = true;
+      // done
     }
     /**
      * Constructor
      */
-    private ActionCreate(ImgIcon img, int t, int r, String key) {
+    private ActionCreate(ImgIcon img, int t, Entity entity) {
+      String type = Gedcom.getNameFor(t,false);
+      // preset
       super.setImage(img);
-      super.setText(EditView.resources.getString("new", resources.getString(key)));
+      super.setText(EditView.resources.getString("new", type));
+      // calculate message
+      message = 
+        resources.getString("new.confirm", new String[] { 
+          type, entity.getId(), type
+        });
+      // done
+    }
+    /**
+     * Constructor
+     */
+    private ActionCreate(ImgIcon img, int t, int r, String key, Entity entity) {
+      String type = Gedcom.getNameFor(t,false);
+      String name = resources.getString(key);
+      // preset
+      super.setImage(img);
+      super.setText(EditView.resources.getString("new", name));
+      // calculate message
+      message = 
+        resources.getString("new.confirm", new String[] { 
+          name, entity.getId(), type
+        });
+      // done
     }
     /**
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-/*
-      // Recheck with the user
-      String message = resources.getString(
-        "new.confirm", new String[] {resources.getString(txt),Gedcom.getNameFor(type,false)}
-      );
 
+      // prepare text for user
+      JTextArea text = new JTextArea(message, 4, 40);
+      text.setWrapStyleWord(true);
+      text.setLineWrap(true); 
+
+      // Recheck with the user
       int option = JOptionPane.showOptionDialog(
-        EditView.this,
-        message,
-        resources.getString("new"),
+        null, new JScrollPane(text), getTitle(false),
         JOptionPane.OK_CANCEL_OPTION,
-        JOptionPane.QUESTION_MESSAGE,
+        isWarning ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
         null, null, null
       );
-
+      
       // .. OK or Cancel ?
       if (option != JOptionPane.OK_OPTION) {
         return;
       }
 
+  /*
       // Lock write
       if (!startTransaction("Couldn't lock Gedcom for write")) {
         return;
       }
-
-      // Stop editing old
-      flushEditing(true);
 
       // Try to create
       Entity old = entity;
@@ -284,7 +332,6 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
 
       // End transaction
       endTransaction();
-
  */
     }
   } //ActionCreate

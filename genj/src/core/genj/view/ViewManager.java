@@ -95,7 +95,7 @@ public class ViewManager {
     if (instance==null) instance = new ViewManager();
     return instance;
   }
-
+  
   /**
    * Returns all known view factories
    */
@@ -320,7 +320,7 @@ public class ViewManager {
   /**
    * Checks whether a view instance for given type is open
    */
-  public boolean isOpen(Class view) {
+  public boolean isOpenView(Class view) {
     // look through views
     Iterator it = viewWidgets.iterator();
     while (it.hasNext()) {
