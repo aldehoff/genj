@@ -431,8 +431,10 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       int 
         row = table.getSelectedRow(),
         col = table.getSelectedColumn();
-      
-      if (row<0||col<0)
+
+      // check validity
+      // 20041007 on model changes the row/col selection might not be valid
+      if (row<0||col<0||row>=tableModel.getRowCount()||col>=tableModel.getColumnCount())
         return;
 
       // get context
