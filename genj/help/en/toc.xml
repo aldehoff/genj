@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <toc version="1.0">
+  <tocitem target="welcome"       text="Welcome"  image="img.Welcome"       />
   <tocitem target="intro"       text="Introduction"  image="img.Intro"       />
   <tocitem target="gedcom"      text="Gedcom"        image="img.Gedcom"      />
   <tocitem target="cc"          text="Control Center"image="img.NewGedcom"   />

@@ -1,5 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <map version="1.0">
+  <mapID target="welcome"    url="welcome.html" />
+
   <mapID target="intro"    url="intro.html" />
   <mapID target="gedcom"   url="gedcom.html" />
   <mapID target="cc"       url="cc.html" />
@@ -52,6 +54,7 @@
   <mapID target="img.GNUgpl"      url="images/GNUgpl.gif" />
   <mapID target="img.Developer"   url="images/Developer.gif" />
 
+  <mapID target="img.Welcome"       url="images/Welcome.gif" />
   <mapID target="img.Intro"       url="images/Cause.gif" />
   <mapID target="img.Concept"     url="images/Format.gif" />
   <mapID target="img.Gedcom"      url="images/Blob.gif" />
