@@ -19,6 +19,7 @@
  */
 package genj.util.swing;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
@@ -27,7 +28,6 @@ import java.util.Stack;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
@@ -58,7 +58,7 @@ public class SwingFactory {
   /**
    * Wrap a result into its context
    */
-  private void wrap(JComponent result) {
+  private void wrap(Component result) {
     
     // setting container
     if (!containers.isEmpty()) {
