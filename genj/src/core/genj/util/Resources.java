@@ -163,7 +163,7 @@ public class Resources {
         // .. continuation or key=value
         if (last!=null&&(c=='+'||c=='&')) {
           key = last;
-          val = getString(key, "");
+          val = getString(key);
           if (c=='+') val += '\n';
           val += line.substring(1);
         } else {
