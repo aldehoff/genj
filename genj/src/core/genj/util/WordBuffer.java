@@ -116,5 +116,12 @@ public class WordBuffer {
       case ':': return true;
     }
   }
+  
+  /**
+   * Current length
+   */
+  public int length() {
+    return buffer.length();
+  }
 
-}
+} //WordBuffer
