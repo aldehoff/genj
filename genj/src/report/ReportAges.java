@@ -29,16 +29,16 @@ public class ReportAges extends Report {
     
     public boolean reportBaptismAge = true;
     public boolean reportMarriageAge = true;
-    public boolean reportDivorceAge = true;
+    public boolean reportAgeAtDivorce = true;
     public boolean reportAgeAtChildBirth = true;
     public boolean reportAgeAtEmigration = true;
     public boolean reportAgeAtImmigration = true;
     public boolean reportAgeAtNaturalization = true;
-    public boolean reportDeathAge = true;
+    public boolean reportAgeAtDeath = true;
     public boolean reportAgeSinceBirth = true;
     
     /** this report's version */
-    public static final String VERSION = "1.1";
+    public static final String VERSION = "1.2";
     
     /**
      * Returns the version of this script
@@ -186,7 +186,7 @@ public class ReportAges extends Report {
         if((indi.getProperty(new TagPath("INDI:"+tag))!=null) && (indi.getProperty(new TagPath("INDI:"+tag+":DATE"))!=null)) {
             String toPrint = "";
             if(printTag)
-                toPrint = "INDI:"+tag+" "+i18n("seeDocumentation")+": ";
+                toPrint = "INDI:"+tag+": ";
             PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:"+tag+":DATE"));
             println(getIndent(2)+toPrint+prop.toString(true));
             Delta age = calculateAge(indi, prop);
@@ -217,18 +217,18 @@ public class ReportAges extends Report {
         
         if(reportBaptismAge) {
             boolean baptism[] = new boolean[4];
-            println(getIndent(1)+i18n("baptismAge"));
-            baptism[0] = analyzeTag(indi, "BAPM", true, "baptismNotInLifeTime");
-            baptism[1] = analyzeTag(indi, "BAPL", true, "baptismNotInLifeTime");
-            baptism[2] = analyzeTag(indi, "CHR", true, "baptismNotInLifeTime");
-            baptism[3] = analyzeTag(indi, "CHRA", true, "baptismNotInLifeTime");
+            println(getIndent(1)+i18n("baptism")+" "+i18n("seeDocumentation")+":");
+            baptism[0] = analyzeTag(indi, "BAPM", true, "notInLifeTime");
+            baptism[1] = analyzeTag(indi, "BAPL", true, "notInLifeTime");
+            baptism[2] = analyzeTag(indi, "CHR", true, "notInLifeTime");
+            baptism[3] = analyzeTag(indi, "CHRA", true, "notInLifeTime");
             if((baptism[0]==false) && (baptism[1]==false) && (baptism[2]==false) && (baptism[3]==false))
                 println(getIndent(2)+i18n("noData"));
             println();
         }
         
         if(reportMarriageAge) {
-            println(getIndent(1)+i18n("marriageAge"));
+            println(getIndent(1)+i18n("marriage"));
             Fam[] fams = indi.getFamilies();
             if(fams.length==0)
                 println(getIndent(2)+i18n("noData"));
@@ -241,15 +241,15 @@ public class ReportAges extends Report {
                     else {
                         println(getIndent(2)+toPrint+fam.getMarriageDate());
                         age = calculateAge(indi, fam.getMarriageDate());
-                        printAge(age, 3, "marriageNotInLifeTime");
+                        printAge(age, 3, "notInLifeTime");
                     }
                 }
             }
             println();
         }
         
-        if(reportDivorceAge) {
-            println(getIndent(1)+i18n("divorceAge"));
+        if(reportAgeAtDivorce) {
+            println(getIndent(1)+i18n("divorce"));
             Fam[] fams = indi.getFamilies();
             if(fams.length==0)
                 println(getIndent(2)+i18n("noData"));
@@ -262,7 +262,7 @@ public class ReportAges extends Report {
                     else {
                         println(getIndent(2)+toPrint+fam.getDivorceDate());
                         age = calculateAge(indi, fam.getDivorceDate());
-                        printAge(age, 3, "divorceNotInLifeTime");
+                        printAge(age, 3, "notInLifeTime");
                     }
                 }
             }
@@ -270,7 +270,7 @@ public class ReportAges extends Report {
         }
         
         if(reportAgeAtChildBirth) {
-            println(getIndent(1)+i18n("ageAtChildBirths"));
+            println(getIndent(1)+i18n("childBirths"));
             Indi[] children = indi.getChildren();
             if(children.length==0)
                 println(getIndent(2)+i18n("noData"));
@@ -284,7 +284,7 @@ public class ReportAges extends Report {
                     else {
                         println(getIndent(2)+toPrint+cbirth);
                         age = calculateAge(indi, cbirth);
-                        printAge(age, 3, "childBirthNotInLifeTime");
+                        printAge(age, 3, "notInLifeTime");
                     }
                 }
             }
@@ -292,31 +292,31 @@ public class ReportAges extends Report {
         }
         
         if(reportAgeAtEmigration) {
-            println(getIndent(1)+i18n("emigrationAge"));
-            boolean b = analyzeTag(indi, "EMIG", false, "emigrationNotInLifeTime");
+            println(getIndent(1)+i18n("emigration"));
+            boolean b = analyzeTag(indi, "EMIG", false, "notInLifeTime");
             if(b==false)
                 println(getIndent(2)+i18n("noData"));
             println();
         }
         
         if(reportAgeAtImmigration) {
-            println(getIndent(1)+i18n("immigrationAge"));
-            boolean b = analyzeTag(indi, "IMMI", false, "immigrationNotInLifeTime");
+            println(getIndent(1)+i18n("immigration"));
+            boolean b = analyzeTag(indi, "IMMI", false, "notInLifeTime");
             if(b==false)
                 println(getIndent(2)+i18n("noData"));
             println();
         }
         
         if(reportAgeAtNaturalization) {
-            println(getIndent(1)+i18n("naturalizationAge"));
-            boolean b = analyzeTag(indi, "NATU", false, "naturalizationNotInLifeTime");
+            println(getIndent(1)+i18n("naturalization"));
+            boolean b = analyzeTag(indi, "NATU", false, "notInLifeTime");
             if(b==false)
                 println(getIndent(2)+i18n("noData"));
             println();
         }
         
-        if(reportDeathAge) {
-            println(getIndent(1)+i18n("deathAge"));
+        if(reportAgeAtDeath) {
+            println(getIndent(1)+i18n("death"));
             PropertyDate death = indi.getDeathDate();
             if(death == null)
                 println(getIndent(2)+i18n("noData"));
@@ -330,7 +330,7 @@ public class ReportAges extends Report {
         
         if(reportAgeSinceBirth) {
             PointInTime pit = PointInTime.getNow();
-            println(getIndent(1)+i18n("ageSinceBirth"));
+            println(getIndent(1)+i18n("sinceBirth"));
             println(getIndent(2)+pit);
             age = calculateAge(indi, pit);
             printAge(age, 3, "");
