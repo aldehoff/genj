@@ -20,6 +20,8 @@
 package genj.tree;
 
 import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import gj.awt.geom.Path;
+import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.layout.tree.NodeOptions;
 import gj.layout.tree.TreeLayout;
@@ -44,6 +47,10 @@ import gj.util.ModelHelper;
  * Model of our tree
  */
 public class Model implements Graph {
+  
+  /** shape of marriage rings */
+  private final static Shape 
+    SHAPE_MARRIAGE_RINGS = calcMarriageRings();
 
   /** listeners */
   private List listeners = new ArrayList(3);
@@ -55,7 +62,14 @@ public class Model implements Graph {
   private Collection nodes = new ArrayList(100);
 
   /** bounds */
-  private Rectangle2D bounds = ModelHelper.getBounds(nodes);
+  private Rectangle2D bounds = new Rectangle2D.Double();
+  
+  /** the layout we use */
+  private TreeLayout layout = new TreeLayout();
+  
+  /** parameters */
+  private double 
+    padIndis = 1.0D;
 
   /** shapes */
   private Rectangle2D.Double 
@@ -81,17 +95,24 @@ public class Model implements Graph {
     Node node = parse(root);
     // layout
     try {
-      TreeLayout tlayout = new TreeLayout();
-      tlayout.setRoot(node);
-      tlayout.setNodeOptions(new MyOptions());
-      tlayout.setBendArcs(true);
-      tlayout.applyTo(this);
+      layout.setDebug(true);
+      layout.setRoot(node);
+      layout.setNodeOptions(new MyOptions());
+      layout.setBendArcs(true);
+      layout.applyTo(this);
     } catch (LayoutException e) {
       e.printStackTrace();
     }
     // notify
     fireStructureChanged();
     // done
+  }
+  
+  /**
+   * Gets the layout used
+   */
+  /*package*/ Layout getLayout() {
+    return layout;
   }
   
   /**
@@ -130,7 +151,11 @@ public class Model implements Graph {
    * builds the tree for an individual
    */
   private Node parse(Indi indi) {
-    return new IndiNode(indi);
+    DummyNode dn = new DummyNode();
+    IndiNode in = new IndiNode(indi);
+    new MyArc(dn, in, false);
+    in.addDependants(dn);
+    return dn;
   }
   
   /**
@@ -143,7 +168,7 @@ public class Model implements Graph {
   /**
    * An entity by position
    */
-  public Entity getEntity(double x, double y) {
+  public Entity getEntityAt(double x, double y) {
     // loop nodes
     Iterator it = nodes.iterator();
     while (it.hasNext()) {
@@ -184,7 +209,7 @@ public class Model implements Graph {
   private abstract class MyNode implements Node {
     
     /** the entity */
-    private Entity entity;
+    protected Entity entity;
     
     /** arcs of this entity */
     private List arcs = new ArrayList(5);
@@ -240,39 +265,27 @@ public class Model implements Graph {
    * A node for an individual
    */
   private class IndiNode extends MyNode {
-    /** whether there are partners of the indi */
-    private boolean hasPartners = false;
     /**
      * Constructor
      */
     private IndiNode(Indi indi) {
-      // delegate
       super(indi);
-      // done
     }
     /**
-     * Constructor
+     * Add dependants - spouses and marriages
      */
-    private IndiNode(Indi indi, MyNode famc) {
-      // delegate
-      super(indi);
-      // arc from famc to me
-      new MyArc(famc, this, true);       
+    private void addDependants(MyNode node) {
+      // we wrap an indi
+      Indi indi = (Indi)entity;
       // loop through our fams
       Fam[] fams = indi.getFamilies();
       for (int f=0; f<fams.length; f++) {
-        // our family
+        // the family
         Fam fam = fams[f];
-        if (fam.getNoOfSpouses()==1) {
-          // below us
-          new MyArc(this, new FamNode(fam), true);
-        } else {
-          // mark partners
-          hasPartners = true;
-          // beside us
-          new MyArc(famc, new MarrNode(fam), false);
-          new MyArc(famc, new IndiNode(fam.getOtherSpouse(indi)), false);
-        }
+        // an arc to marr
+        new MyArc(node, new MarrNode(fam), false);
+        if (fam.getNoOfSpouses()>1) 
+          new MyArc(node, new IndiNode(fam.getOtherSpouse(indi)), false);
         // next family
       }
       // done
@@ -287,8 +300,7 @@ public class Model implements Graph {
      * @see genj.tree.Model.MyNode#getPadding(int)
      */
     protected double getPadding(int side) {
-      if (side==MyOptions.EAST) return hasPartners ? 0.0D : 0.3D;
-      return 0.1D;
+      return padIndis/2;
     }
   } //MyINode
   
@@ -307,8 +319,11 @@ public class Model implements Graph {
       for (int c=0; c<children.length; c++) {
         // here's the child
         Indi child = children[c];
-        // add an arc to that
-        new IndiNode(child, this);
+        // create a node&arc for it
+        IndiNode node = new IndiNode(child);
+        new MyArc(this, node, true);       
+        // and add dependants
+        node.addDependants(this);
         // next child
       }
       // done
@@ -323,13 +338,13 @@ public class Model implements Graph {
      * @see genj.tree.Model.MyNode#getPadding(int)
      */
     protected double getPadding(int side) {
-      if (side==MyOptions.NORTH) return 0;
-      return 0.1;
+      if (side==MyOptions.NORTH) return -padIndis/2 + SHAPE_MARRIAGE_RINGS.getBounds2D().getWidth();
+      return padIndis/2;
     }
   } //MyFNode
 
   /**
-   * A dummy node
+   * A node standing between two partners
    */
   private class MarrNode extends MyNode {
     /**
@@ -345,17 +360,42 @@ public class Model implements Graph {
      * @see genj.tree.Model.MyNode#getShape()
      */
     public Shape getShape() {
+      return SHAPE_MARRIAGE_RINGS;
+    }
+    /**
+     * @see genj.tree.Model.MyNode#getPadding(int)
+     */
+    protected double getPadding(int side) {
+      if (side==MyOptions.NORTH||side==MyOptions.SOUTH) {
+        return (shapeIndi.getHeight()+padIndis)/2 - SHAPE_MARRIAGE_RINGS.getBounds2D().getHeight()/2;
+      }
+      return -padIndis/2;
+    }
+
+  } //MarrNode
+  
+  /**
+   * A dummy node 
+   */
+  private class DummyNode extends MyNode {
+    /**
+     * Constructor
+     */
+    private DummyNode() {
+      super(null);
+    }    
+    /**
+     * @see genj.tree.Model.MyNode#getShape()
+     */
+    public Shape getShape() {
       return null;
     }
     /**
      * @see genj.tree.Model.MyNode#getPadding(int)
      */
     protected double getPadding(int side) {
-      if (side==MyOptions.NORTH||side==MyOptions.SOUTH)
-        return shapeIndi.getHeight()/2+0.1;
-      return 0.0;
+      return 0;
     }
-
   } //DummyNode
   
   /**
@@ -427,5 +467,17 @@ public class Model implements Graph {
       return mynode.getPadding(dir);
     }
   } //MyNodeOptions
+
+  /**
+   * Calculates marriage rings
+   */
+  private static Shape calcMarriageRings() {
+    Ellipse2D
+      a = new Ellipse2D.Double(-0.15,-0.1,0.2,0.2),
+      b = new Ellipse2D.Double(-0.05,-0.1,0.2,0.2);
+    GeneralPath result = new GeneralPath(a);      
+    result.append(b,false);
+    return result;
+  }
   
 } //Model

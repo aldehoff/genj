@@ -43,6 +43,7 @@ import genj.util.Resources;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.CurrentSupport;
 import genj.view.ViewManager;
+import gj.layout.tree.TreeLayoutRenderer;
 import gj.ui.UnitGraphics;
 
 /**
@@ -116,7 +117,7 @@ public class TreeView extends JScrollPane implements CurrentSupport {
    */
   public Entity getEntityAt(Point pos) {
     Rectangle2D bounds = model.getBounds();
-    return model.getEntity(
+    return model.getEntityAt(
       UnitGraphics.pixels2units(pos.x,UNITS)+bounds.getMinX(), 
       UnitGraphics.pixels2units(pos.y,UNITS)+bounds.getMinY()
     );
@@ -172,6 +173,9 @@ public class TreeView extends JScrollPane implements CurrentSupport {
       contentRenderer.selection      = currentEntity;
       // let the renderer do its work
       contentRenderer.render(ug, model);
+      // render the layout, too
+//      ug.setColor(Color.green);
+//      new TreeLayoutRenderer().render(model, model.getLayout(), ug);
       // done
     }
     
@@ -187,7 +191,7 @@ public class TreeView extends JScrollPane implements CurrentSupport {
     public void mousePressed(MouseEvent e) {
       // a new sleection?
       Entity entity = getEntityAt(e.getPoint());
-      if (entity==currentEntity) return;
+      if (entity==null||entity==currentEntity) return;
       // propagate it
       ViewManager.getInstance().setCurrentEntity(entity);
       // done

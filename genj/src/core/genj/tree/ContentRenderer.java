@@ -101,7 +101,7 @@ public class ContentRenderer {
     // draw its shape & content
     Shape shape = node.getShape();
     if (shape!=null) {
-      if (cSelectedShape!=null&&content==selection) g.setColor(cSelectedShape);
+      if (cSelectedShape!=null&&content!=null&&content==selection) g.setColor(cSelectedShape);
       else g.setColor(cIndiShape);
       g.draw(shape, x, y, false);
       g.pushClip(x, y, shape.getBounds2D());
