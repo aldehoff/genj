@@ -23,7 +23,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * An option is simply a wrapped public field of a type 
@@ -140,7 +139,7 @@ public class Option {
    * Get options for given instance - supported are
    * int, boolean and String
    */
-  public static Option[] getOptions(Object instance, Properties field2name) {
+  public static Option[] getOptions(Object instance) {
     
     // prepare result
     List result = new ArrayList();
@@ -165,11 +164,11 @@ public class Option {
           !Boolean.TYPE.isAssignableFrom(type) )
         continue;
         
-      // calc name
+      // calculate a name for the option
       String name = field.getName();
-      String s = field2name.getProperty(name);
-      if (s!=null) name = s;
-
+      if (instance instanceof OptionMetaInfo)
+        name = ((OptionMetaInfo)instance).getOptionName(name);
+        
       // keep      
       result.add(getOption(instance, name, field));
 

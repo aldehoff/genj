@@ -24,6 +24,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.option.Option;
+import genj.option.OptionMetaInfo;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
@@ -60,7 +61,7 @@ import javax.swing.event.ListSelectionListener;
 /**
  * Interface of a user definable GenjJ Report
  */
-public abstract class Report implements Cloneable {
+public abstract class Report implements OptionMetaInfo, Cloneable {
 
   /** options */
   protected final static int
@@ -172,12 +173,8 @@ public abstract class Report implements Cloneable {
     if (options!=null)
       return options;
       
-    // calculate options
-    options = Option.getOptions(this, new Properties() {
-      public String getProperty(String key) {
-        return i18n(key);
-      }
-    });
+    // calculate options - we use i18n() to resolve names for options
+    options = Option.getOptions(this);
     
     // restore options values
     for (int i=0;i<options.length;i++) {
@@ -189,6 +186,13 @@ public abstract class Report implements Cloneable {
     
     // done
     return options;
+  }
+  
+  /**
+   * @see genj.option.OptionNameProvider#getOptionName(java.lang.String)
+   */
+  public String getOptionName(String name) {
+    return i18n(name);
   }
 
   /**
