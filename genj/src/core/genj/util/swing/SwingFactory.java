@@ -19,6 +19,8 @@
  */
 package genj.util.swing;
 
+import genj.util.ActionDelegate;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -26,10 +28,14 @@ import java.awt.event.FocusEvent;
 import java.util.Stack;
 
 import javax.swing.Box;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 
 /**
  * A factory for creating UI components
@@ -167,6 +173,28 @@ public class SwingFactory {
     result.setAlignmentX(result.LEFT_ALIGNMENT);
     result.setSelectedItem(selection);
     wrap(result);
+    return result;
+  }
+  
+  /**
+   * creates a list
+   */
+  public JList JList(ListModel model) {
+    
+    JList result = model!=null ? new JList(model) : new JList();
+    
+    result.setCellRenderer(new DefaultListCellRenderer() {
+      public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        if (value instanceof ActionDelegate) {
+          ActionDelegate action = (ActionDelegate)value; 
+          setText(action.txt);
+          setIcon(action.img);
+        }
+        return this;
+      }
+    });
+    // done
     return result;
   }
   

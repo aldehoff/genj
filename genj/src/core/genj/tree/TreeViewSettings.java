@@ -20,22 +20,37 @@
 package genj.tree;
 
 import genj.renderer.BlueprintList;
+import genj.util.ActionDelegate;
 import genj.util.ColorSet;
+import genj.util.swing.ButtonHelper;
 import genj.util.swing.ColorChooser;
 import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.FontChooser;
+import genj.util.swing.SwingFactory;
 import genj.view.Settings;
 
+import java.awt.Component;
 import java.awt.Container;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.AbstractListModel;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * The settings component for the Tree View */
-public class TreeViewSettings extends JTabbedPane implements Settings {
+public class TreeViewSettings extends JTabbedPane implements Settings, ModelListener {
 
   /** keeping track of tree these settings are for */
   private TreeView view;
@@ -63,6 +78,9 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   
   /** font chooser */
   private FontChooser fontChooser = new FontChooser();
+  
+  /** bookmark list */
+  private JList bookmarkList;
 
   /**
    * Constructor   */
@@ -92,9 +110,19 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     // blueprint options
     blueprintList = new BlueprintList();
     
+    // bookmarks
+    Box bookmarks = new Box(BoxLayout.Y_AXIS);
+    bookmarkList = new SwingFactory().JList(null);
+    bookmarks.add(new JScrollPane(bookmarkList));
+    JPanel bookmarkActions = new JPanel();
+    ButtonHelper bh = new ButtonHelper().setContainer(bookmarkActions);
+    bh.create(new ActionBDelete());
+    bookmarks.add(bookmarkActions);
+
     // add those tabs
     add(TreeView.resources.getString("page.main")  , options);
     add(TreeView.resources.getString("page.colors"), colors);
+    add(TreeView.resources.getString("page.bookmarks"), bookmarks);
     add(TreeView.resources.getString("page.blueprints"), blueprintList);
     
     // done
@@ -119,12 +147,36 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
    * @see genj.view.Settings#setView(javax.swing.JComponent)
    */
   public void setView(JComponent viEw) {
+    // stop listening to old?
+    if (view!=null) view.getModel().removeListener(this);
     // remember
     view = (TreeView)viEw;
     // update characteristics
     colors.setColorSets(new ColorSet[]{view.colors});
     blueprintList.setGedcom(view.getModel().getGedcom());
+    bookmarkList.setModel(new BookmarkListModel());
+    // start listening to new?
+    view.getModel().addListener(this);
     // done
+  }
+  
+  /**
+   * @see genj.tree.ModelListener#bookmarksChanged(genj.tree.Model)
+   */
+  public void bookmarksChanged(Model model) {
+    bookmarkList.setModel(new BookmarkListModel());
+  }
+
+  /**
+   * @see genj.tree.ModelListener#nodesChanged(genj.tree.Model, java.util.List)
+   */
+  public void nodesChanged(Model model, List nodes) {
+  }
+
+  /**
+   * @see genj.tree.ModelListener#structureChanged(genj.tree.Model)
+   */
+  public void structureChanged(Model model) {
   }
 
   /**
@@ -182,5 +234,44 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   public JComponent getEditor() {
     return this;
   }
+  
+  /**
+   * Action - delete a bookmark
+   */
+  private class ActionBDelete extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionBDelete() {
+      setText(view.resources.getString("bookmark.del"));
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      Object[] bs = bookmarkList.getSelectedValues();
+      for (int b=0; b<bs.length; b++) {
+        view.getModel().delBookmark((Bookmark)bs[b]);
+      }
+    }
+  } //ActionBDelete
+  
+  /**
+   * BookmarkListModel
+   */
+  private class BookmarkListModel extends AbstractListModel {
+    /**
+     * @see javax.swing.ListModel#getElementAt(int)
+     */
+    public Object getElementAt(int index) {
+      return view.getModel().getBookmarks().get(index); 
+    }
+    /**
+     * @see javax.swing.ListModel#getSize()
+     */
+    public int getSize() {
+      return view.getModel().getBookmarks().size();
+    }
+  } //BookmarkListModel
 
 } //TreeViewSettings

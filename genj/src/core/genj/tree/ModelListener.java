@@ -35,5 +35,10 @@ public interface ModelListener {
    * Notification that the structure of the graph has changed
    */
   public void structureChanged(Model model);
+  
+  /**
+   * Notification that the bookmarks have changed
+   */
+  public void bookmarksChanged(Model model);
 
 } //ModelListener

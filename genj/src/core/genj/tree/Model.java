@@ -34,6 +34,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -290,13 +291,22 @@ public class Model implements Graph, GedcomListener {
   public void addBookmark(Bookmark b) {
     bookmarks.addFirst(b);
     if (bookmarks.size()>16) bookmarks.removeLast();
+    fireBookmarksChanged();
+  }
+  
+  /**
+   * Del a bookmark
+   */
+  public void delBookmark(Bookmark b) {
+    bookmarks.remove(b);
+    fireBookmarksChanged();
   }
   
   /**
    * Accessor - bookmarks
    */
   public List getBookmarks() {
-    return bookmarks;
+    return Collections.unmodifiableList(bookmarks);
   }
   
   /**
@@ -462,4 +472,12 @@ public class Model implements Graph, GedcomListener {
     }
   }
   
+  /**
+   * Fire bookmarks changed
+   */
+  private void fireBookmarksChanged() {
+    for (int l=listeners.size()-1; l>=0; l--) {
+      ((ModelListener)listeners.get(l)).bookmarksChanged(this);
+    }
+  }
 } //Model

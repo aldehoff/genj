@@ -48,6 +48,7 @@ import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import gj.model.Node;
+import gj.shell.swing.SwingHelper;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -69,6 +70,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -475,10 +477,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
        * @see genj.util.swing.PopupButton#getActions()
        */
       public List getActions() {
-        List result = new ArrayList(TreeView.this.model.getBookmarks());
-        result.add(ActionDelegate.NOOP);
-        result.add(new ActionClearBookmarks());
-        return result; 
+        return TreeView.this.model.getBookmarks();
       }
     };
     pb.setToolTipText(resources.getString("bookmark.tip"));
@@ -665,7 +664,11 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     public void structureChanged(Model arg0) {
       repaint();
     }
-  
+    /**
+     * @see genj.tree.ModelListener#bookmarksChanged(genj.tree.Model)
+     */
+    public void bookmarksChanged(Model model) {
+    }
   } //Overview
   
   /**
@@ -702,6 +705,12 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     public void nodesChanged(Model model, List nodes) {
       repaint();
+    }
+    
+    /**
+     * @see genj.tree.ModelListener#bookmarksChanged(genj.tree.Model)
+     */
+    public void bookmarksChanged(Model model) {
     }
     
     /**
@@ -923,24 +932,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       scrollToCurrent();
     }
   } //ActionFamsAndSpouses
-
-  /**
-   * Action - clear bookmarks
-   */
-  private class ActionClearBookmarks extends ActionDelegate {
-    /** 
-     * Constructor 
-     */
-    private ActionClearBookmarks() {
-      setText(resources.getString("bookmark.clear"));
-    }
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-      model.getBookmarks().clear();
-    }
-  }//ActionClearBookmarks
 
   /**
    * Action - bookmark something
