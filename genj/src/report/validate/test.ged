@@ -5,13 +5,13 @@
 2 CORP Nils Meier
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
-1 DATE 10 JUN 2003
-2 TIME 15:46:01
+1 DATE 12 JUN 2003
+2 TIME 20:29:07
 1 GEDC 
 2 VERS 5.5
 2 FORM Lineage-Linked
 1 CHAR ANSEL
-1 FILE example.ged
+1 FILE test.ged
 0 @I001@ INDI 
 1 NAME John /Doe/
 1 SEX F
@@ -42,15 +42,26 @@
 1 SEX F
 1 FAMS @F001@
 1 CHAN 
-2 DATE 10 JUN 2003
-3 TIME 15:44:27
+2 DATE 12 JUN 2003
+3 TIME 20:29:05
+1 BIRT 
+2 DATE 18
+1 OBJE 
+2 FILE foo
+2 NOTE file doesn't exist
 0 @F001@ FAM 
 1 WIFE @I002@
 1 HUSB @I001@
 1 MARR 
+2 DATE 20
+2 NOTE age of spouses &lt; minAgeMARR
+1 CHAN 
+2 DATE 12 JUN 2003
+3 TIME 20:14:31
+1 DIV 
+2 DATE 19
+2 NOTE divorce before marriage
+1 ENGA 
 2 DATE 
 2 NOTE !valid()
-1 CHAN 
-2 DATE 10 JUN 2003
-3 TIME 15:44:55
 0 TRLR 
