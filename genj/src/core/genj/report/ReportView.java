@@ -19,6 +19,7 @@
  */
 package genj.report;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -37,8 +38,9 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -175,6 +177,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     taOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
     taOutput.setEditable(false);
     taOutput.addMouseMotionListener(callback);
+    taOutput.addMouseListener(callback);
 
     tabbedPane.add(resources.getString("report.output"),new JScrollPane(taOutput));
 
@@ -464,10 +467,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * A private callback for various messages coming in 
    */
-  private class Callback extends MouseMotionAdapter implements ListCellRenderer, ListSelectionListener {
+  private class Callback extends MouseAdapter implements ListCellRenderer, ListSelectionListener, MouseMotionListener {
 
     /** a default renderer for list */
     private DefaultListCellRenderer defRenderer = new DefaultListCellRenderer();
+    
+    /** the currently found entity id */
+    private String id = null;
 
     /**
      * Return component for rendering list element
@@ -508,7 +514,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
     public void mouseMoved(MouseEvent e) {
       
       // try to find id at location
-      String id = findIdAt(e.getPoint());
+      id = markIDat(e.getPoint());
+      
+      // set cursor
       taOutput.setCursor(Cursor.getPredefinedCursor(id==null?Cursor.DEFAULT_CURSOR:Cursor.HAND_CURSOR));
       
       // done
@@ -517,38 +525,53 @@ public class ReportView extends JPanel implements ToolBarSupport {
     /**
      * Tries to find an entity id at given position in output
      */
-    private String findIdAt(Point loc) {
+    private String markIDat(Point loc) {
       
       try {
         // do we get a position in the model?
         int pos = taOutput.viewToModel(loc);
         if (pos<0) 
           return null;
+          
         // scan doc
         Document doc = taOutput.getDocument();
         Segment seg = new Segment();
+        
         // not on 'space' ?
         doc.getText(pos, 1, seg);
-        if (!Character.isLetterOrDigit(seg.array[seg.offset])) 
-          return null;
-        // find @ to the left
-        for (int i=0;i<10&&pos>=0;i++,pos--) {
-          doc.getText(pos, 1, seg);
-          if (seg.array[seg.offset]=='@') break;
-        }
-        // find @ to the right
-        int len = 2;
-        for (int max=Math.min(10,doc.getLength()-pos);len<=max;len++) {
-          doc.getText(pos, len, seg);
-          if (seg.array[seg.offset+seg.count-1]=='@') break;
-        }
-        // check for find @...@
-        if (len<2) 
+        if (!Character.isLetterOrDigit(seg.first())) 
           return null;
           
-        taOutput.setCaretPosition(seg.getBeginIndex());
-        taOutput.moveCaretPosition(seg.getEndIndex());
-        return seg.toString();
+        // find '@' to the left
+        for (int i=0;;i++) {
+          // stop looking after 10 or bot
+          if (pos==0||i==10)
+            return null;
+          // check for starting '@'
+          doc.getText(--pos, 1, seg);
+          if (seg.first()=='@') 
+            break;
+          // continue
+        }
+        
+        // find '@' to the right
+        for (int i=0;;i++) {
+          // stop looking after 10 or eot
+          if (seg.count==doc.getLength()-pos||i==10)
+            return null;
+          // get more text and check for ending '@'            
+          doc.getText(pos, seg.count+1, seg);
+          if (seg.last()=='@') 
+            break;
+          // continue
+        }
+        
+        // mark it
+        taOutput.setCaretPosition(pos);
+        taOutput.moveCaretPosition(pos+seg.count);
+  
+        // return in betwee
+        return new String(seg.array, seg.offset+1, seg.count-2);
           
         // done
       } catch (BadLocationException ble) {
@@ -556,6 +579,28 @@ public class ReportView extends JPanel implements ToolBarSupport {
       
       // not found
       return null;
+    }
+
+    /**
+     * have to implement MouseMotionListener.mouseDragger()
+     * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
+     */
+    public void mouseDragged(MouseEvent e) {
+      // ignored
+    }
+
+    /**
+     * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
+     */
+    public void mouseClicked(MouseEvent e) {
+      // no id no fun
+      if (id==null)
+        return;
+      // try to find entity with id
+      Entity entity = gedcom.getEntity(id);
+      if (entity!=null)
+        manager.setContext(entity);
+      // done
     }
 
   } //Callback
