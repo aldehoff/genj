@@ -39,7 +39,8 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
   /** Checkbox for options */
   private JCheckBox[] checkOptions = {
     new JCheckBox(TreeView.resources.getString("info.vertical" )),
-    new JCheckBox(TreeView.resources.getString("info.familiesnspouses"))
+    new JCheckBox(TreeView.resources.getString("info.familiesnspouses")),
+    new JCheckBox(TreeView.resources.getString("info.bendarcs"))
   };
 
   /** sliders for box size */
@@ -123,7 +124,11 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     // colors
     colorChooser.apply();
     // orientation
-    tree.model.setVertical(checkOptions[0].isSelected());
+    tree.model.setOptions(
+      checkOptions[0].isSelected(), //vertical
+      checkOptions[1].isSelected(), //showfams
+      checkOptions[2].isSelected() //bendarcs
+    );
     // make sure that shows
     tree.repaint();
     // done
@@ -137,6 +142,10 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     colorChooser.reset();
     // orientation
     checkOptions[0].setSelected(tree.model.isVertical());
+    // families
+    checkOptions[1].setSelected(tree.model.isFamilies());
+    // bendarcs
+    checkOptions[2].setSelected(tree.model.isBendArcs());
     // done
   }
 

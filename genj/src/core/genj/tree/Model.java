@@ -39,6 +39,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyFamilySpouse;
 import genj.gedcom.PropertyHusband;
 import genj.gedcom.PropertyWife;
+import genj.gedcom.PropertyXRef;
 import gj.awt.geom.Path;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
@@ -72,6 +73,12 @@ public class Model implements Graph, GedcomListener {
     
   /** whether we're vertical or not */
   private boolean isVertical = true;
+  
+  /** whether we model families or not */
+  private boolean isFamilies = true;
+  
+  /** whether we bend arcs or not */
+  private boolean isBendArcs = true;
     
   /** parameters */
   private double 
@@ -105,8 +112,9 @@ public class Model implements Graph, GedcomListener {
     },
     padMarrs = padMarrsV,
     padFamsD = new double[]{
-      -padding*0.40,
-      -padding/2*0.8,      
+      -padding*0.4,
+      //-padding/2*0.8,      
+      padding*0.2,      
       padding/2,
       0      
     },
@@ -132,37 +140,55 @@ public class Model implements Graph, GedcomListener {
   /**
    * Constructor
    */
-  public Model(Gedcom ged, boolean vertical) {
+  public Model(Gedcom ged) {
     gedcom = ged;
-    isVertical = vertical;
   }
   
   /**
-   * Sets the root
+   * Accessor - current root
    */
   public void setRoot(Entity entity) {
     // Indi or Fam plz
     if (!(entity instanceof Indi||entity instanceof Fam)) 
-      throw new IllegalArgumentException("Indi or Fam please");
+      return;
+    // no change?
+    if (root==entity) return;
+    // keep as root
+    root = entity;
+    // parse the current information
+    parse();
+    // done
+  }
+
+  /**
+   * Accessor - current root
+   */
+  public Entity getRoot() {
+    return root;
+  }
+    
+  /**
+   * Parses the current model starting at root   */
+  private void parse() {
     // clear old
     arcs.clear();
     nodes.clear();
     bounds.setFrame(0,0,0,0);
-    // keep as root
-    root = entity;
+    // something to do?
+    if (root==null) return;
     // prepare parsers
     Parser 
-      pd = new ParserDwFS(),
-      pa = new ParserAwFS();
+      pd = isFamilies ? (Parser)new DescendantsWithFams() : new DescendantsNoFams(),
+      pa = isFamilies ? (Parser)new AncestorsWithFams() : new AncestorsNoFams();
     // prepare marr padding
     padMarrs = isVertical ? padMarrsV : padMarrsH;
     // parse its descendants
-    MyNode node = pd.parse(entity, null);
+    MyNode node = pd.parse(root, null);
     // keep bounds
     Rectangle2D r = bounds.getFrame();
     Point2D p = node.getPosition();
     // parse its ancestors while preserving position
-    node = pa.parse(entity, p);    
+    node = pa.parse(root, p);    
     // update bounds
     bounds.add(r);
     // notify
@@ -171,19 +197,34 @@ public class Model implements Graph, GedcomListener {
   }
   
   /**
-   * returns the orientation   */
+   * Accessor - wether we're vertical   */
   public boolean isVertical() {
     return isVertical;
   }
   
   /**
-   * changes the orientation   */
-  public void setVertical(boolean set) {
-    // nothing new?
-    if (isVertical==set) return;
-    // change and update
-    isVertical = set;
-    setRoot(root);
+   * Accessor - wether we bend arcs or not
+   */
+  public boolean isBendArcs() {
+    return isBendArcs;
+  }
+  
+  /**
+   * Accessor - whether we model families   */
+  public boolean isFamilies() {
+    return isFamilies;
+  } 
+  
+  /**
+   * Accessor - options
+   */
+  public void setOptions(boolean vertical, boolean families, boolean bendarcs) {
+    // change 
+    isBendArcs = bendarcs;
+    isVertical = vertical;
+    isFamilies = families;
+    // update
+    parse();
     // done
   }
   
@@ -207,8 +248,29 @@ public class Model implements Graph, GedcomListener {
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
   public void handleChange(Change change) {
-    // FIXME: this should be more fine-grained and make sure root's still valid
-    setRoot(root);
+    // was any entity deleted?
+    List deleted = change.getEntities(change.EDEL);
+    if (deleted.size()>0) {
+      // root has to change?
+      if (deleted.contains(root)) {
+        root = null;
+        List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
+        if (!indis.isEmpty()) root = (Indi)indis.get(0);
+      }  
+      // parse now
+      parse();
+      // done
+      return;
+    }
+    // was a relationship property deleted, added or changed?
+    List props = change.getProperties(change.PMOD);
+    for (int i=0; i<props.size(); i++) {
+      if (props.get(i) instanceof PropertyXRef) {
+        parse();
+        return;
+      }
+    }
+    // done
   }
   
   /**
@@ -428,7 +490,7 @@ public class Model implements Graph, GedcomListener {
       // layout
       try {
         layout.setTopDown(isTopDown);
-        layout.setBendArcs(true);
+        layout.setBendArcs(isBendArcs);
         layout.setDebug(false);
         layout.setIgnoreUnreachables(true);
         layout.setBalanceChildren(false);
@@ -444,8 +506,59 @@ public class Model implements Graph, GedcomListener {
   } //Parser
 
   /**
+   * Parser - Ancestors without Families   */
+  private class AncestorsNoFams extends Parser {
+    /**
+     * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam, java.awt.geom.Point2D)
+     */
+    public MyNode parse(Fam fam, Point2D at) {
+      MyNode node = new MyNode(fam, shapeFams, padIndis);
+      Indi wife = fam.getWife();
+      Indi husb = fam.getHusband();
+      if (wife!=null) new MyArc(node, iterate(wife), true);
+      if (husb!=null) new MyArc(node, iterate(husb), true);
+      if (at!=null) node.getPosition().setLocation(at);
+      super.layout(node, false);
+      return node;
+    }
+    /**
+     * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi, java.awt.geom.Point2D)
+     */
+    public MyNode parse(Indi indi, Point2D at) {
+      MyNode node = iterate(indi);
+      if (at!=null) node.getPosition().setLocation(at);
+      super.layout(node, false);
+      return node;
+    }
+    /**
+     * parse an individual and its ancestors
+     */
+    private MyNode iterate(Indi indi) {
+      // node for indi      
+      MyNode node = new MyNode(indi, shapeIndis, padIndis);
+      // do we have a family we're child in?
+      if (indi!=null) {
+        Fam famc = indi.getFamc();
+        // grab the family's husband/wife and their ancestors
+        if (famc!=null) iterate(famc, node);
+      } 
+      // done
+      return node;
+    }
+    /**
+     * parses a family and its ancestors
+     */
+    private void iterate(Fam fam, MyNode child) {
+      Indi wife = fam.getWife();
+      Indi husb = fam.getHusband();
+      if (wife!=null) new MyArc(child, iterate(wife), true);
+      if (husb!=null) new MyArc(child, iterate(husb), true);
+    }
+  } //AncestorsNoFams 
+   
+  /**
    * Parser - Ancestors with Families   */
-  private class ParserAwFS extends Parser {
+  private class AncestorsWithFams extends Parser {
     
     private final int
       CENTER = 0,
@@ -461,7 +574,15 @@ public class Model implements Graph, GedcomListener {
       super.layout(node, false);
       return node;
     }
-    
+    /**
+     * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
+     */
+    public MyNode parse(Indi indi, Point2D at) {
+      MyNode node = iterate(indi, CENTER);
+      if (at!=null) node.getPosition().setLocation(at);
+      super.layout(node, false);
+      return node;
+    }
     /**
      * parse a family and its ancestors
      */
@@ -474,15 +595,6 @@ public class Model implements Graph, GedcomListener {
       new MyArc(node, new MyNode(fam, shapeMarrs, padMarrs), false);
       new MyArc(node, iterate(fam.getWife(), spouses==2?RIGHT:CENTER), false);
       // done
-      return node;
-    }
-    /**
-     * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
-     */
-    public MyNode parse(Indi indi, Point2D at) {
-      MyNode node = iterate(indi, CENTER);
-      if (at!=null) node.getPosition().setLocation(at);
-      super.layout(node, false);
       return node;
     }
     /**
@@ -511,12 +623,69 @@ public class Model implements Graph, GedcomListener {
       // done
       return node;
     }
-  } //ParserAwF
+  } //AncestorsWithFams
+
+  /**
+   * Parser - Descendants no Families   */
+  private class DescendantsNoFams extends Parser {
+    /**
+     * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
+     */
+    public MyNode parse(Indi indi, Point2D at) {
+      // parse
+      MyNode node = iterate(indi);
+      if (at!=null) node.getPosition().setLocation(at);
+      // do the layout
+      super.layout(node, true);
+      // done
+      return node;
+    }
+    /**
+     * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
+     */
+    public MyNode parse(Fam fam, Point2D at) {
+      // parse
+      MyNode node = new MyNode(fam, shapeFams, padIndis);
+      iterate(fam, node);
+      if (at!=null) node.getPosition().setLocation(at);
+      super.layout(node, true);
+      return node;
+    }
+    
+    /**
+     * parses an indi
+     * @param indi the indi to parse
+     * @return MyNode
+     */
+    private MyNode iterate(Indi indi) {
+      // create node for indi
+      MyNode node = new MyNode(indi, shapeIndis, padIndis); 
+      // loop through our fams
+      Fam[] fams = indi.getFamilies();
+      for (int f=0; f<fams.length; f++) {
+        iterate(fams[f], node);
+      }
+      // done
+      return node;
+    }
+    
+    /**
+     * parses a fam and its descendants
+     */
+    private void iterate(Fam fam, MyNode parent) {
+      // grab the children
+      Indi[] children = fam.getChildren();
+      for (int c=0; c<children.length; c++) {
+        new MyArc(parent, iterate(children[c]), true);       
+      }
+      // done
+    }
+  } //DescendantsNoFams
 
   /**
    * Parser - Descendants with Families 
    */
-  private class ParserDwFS extends Parser {
+  private class DescendantsWithFams extends Parser {
     
     /** the alignment offset for an individual above its 1st fam */
     private Point2D.Double alignOffsetIndiAbove1stFam = new Point2D.Double(
@@ -538,7 +707,16 @@ public class Model implements Graph, GedcomListener {
       // done
       return node;
     }
-    
+    /**
+     * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
+     */
+    public MyNode parse(Fam fam, Point2D at) {
+      MyNode node = iterate(fam, null);
+      if (at!=null) node.getPosition().setLocation(at);
+      super.layout(node, true);
+      return node;
+    }
+        
     /**
      * parses an indi     * @param indi the indi to parse     * @param pivot all nodes of descendant are added to pivot     * @return MyNode     */
     private MyNode iterate(Indi indi, MyNode pivot) {
@@ -566,17 +744,6 @@ public class Model implements Graph, GedcomListener {
       // done
       return node;
     }
-
-    /**
-     * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
-     */
-    public MyNode parse(Fam fam, Point2D at) {
-      MyNode node = iterate(fam, null);
-      if (at!=null) node.getPosition().setLocation(at);
-      super.layout(node, true);
-      return node;
-    }
-    
     /**
      * parses a fam and its descendants
      * @parm pivot all nodes of descendant are added to pivot     */
@@ -597,6 +764,6 @@ public class Model implements Graph, GedcomListener {
       return node;
     }
     
-  } //ParserDwF
+  } //DescendantsWithFams
   
 } //Model

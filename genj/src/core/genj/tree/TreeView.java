@@ -124,7 +124,12 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     colors.add("selects", Color.red);
     
     // setup sub-parts
-    model = new Model(gedcm, registry.get("vertical",true));
+    model = new Model(gedcm);
+    model.setOptions(
+      registry.get("vertical",true),
+      registry.get("families",true),
+      registry.get("bendarcs",true)
+    );
     contentRenderer = new ContentRenderer();
     content = new Content();
     JScrollPane scroll = new JScrollPane(new ViewPortAdapter(content));
@@ -136,8 +141,16 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     setLayout(new MyLayout()); 
     add(overview);
     add(scroll);
+
     // init model
-    model.setRoot((Fam)gedcm.getEntities(Gedcom.FAMILIES).get(0));
+    Entity root;
+    try { 
+      root = gedcm.getEntity(registry.get("root",(String)null));
+    } catch (Exception e) {
+      root = ViewManager.getInstance().getCurrentEntity(gedcm);
+    }
+    model.setRoot(root);
+    
     // done
   }
   
@@ -149,6 +162,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     registry.put("overview", overview.getSize());
     if (sliderZoom!=null) registry.put("zoom", (float)sliderZoom.getValue());
     registry.put("vertical", model.isVertical());
+    registry.put("families", model.isFamilies());
+    registry.put("bendarcs", model.isBendArcs());
+    if (model.getRoot()!=null) registry.put("root", model.getRoot().getId());
     super.removeNotify();
   }
   
