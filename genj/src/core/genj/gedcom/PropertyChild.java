@@ -116,9 +116,9 @@ public class PropertyChild extends PropertyXRef {
     }
 
     // Child already has parents ?
-    if (child.getFamc()!=null) {
-      throw new GedcomException("Individual @"+child.getId()+"@ is already child of a family");
-    }
+//    if (child.getFamc()!=null) {
+//      throw new GedcomException("Individual @"+child.getId()+"@ is already child of a family");
+//    }
 
     // Enclosing family has indi as child, husband or wife ?
     if (fam.getWife()==child) {
@@ -142,6 +142,7 @@ public class PropertyChild extends PropertyXRef {
 
     // Connect back from child (maybe using back reference)
     ps = child.getProperties(new TagPath("INDI:FAMC"),QUERY_ALL);
+
     PropertyFamilyChild pfc;
     for (int i=0;i<ps.length;i++) {
       pfc = (PropertyFamilyChild)ps[i];
@@ -150,6 +151,17 @@ public class PropertyChild extends PropertyXRef {
         pfc.setTarget(this);
         setTarget(pfc);
         return;
+      } else {
+          ps = child.getProperties(new TagPath("INDI:ADOP:FAMC"),QUERY_ALL);
+          for (int j=0;j<ps.length;j++) {
+            pfc = (PropertyFamilyChild)ps[j];
+            // 20030616 compare against fam.getId()!!!
+            if ( (!pfc.isValid()) && (pfc.getReferencedId().equals(fam.getId())) ) {
+              pfc.setTarget(this);
+              setTarget(pfc);
+              return;
+            }
+          }
       }
     }
 
