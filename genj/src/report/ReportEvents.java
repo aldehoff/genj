@@ -36,6 +36,8 @@ public class ReportEvents extends Report {
     public boolean reportDeath = true;
     /** whether marriages should be reported */
     public boolean reportMarriage = true;
+    /** whether divorces should be reported */
+    public boolean reportDivorce = true;    
     /** day of the date limit */
     public int day = new GregorianCalendar().get(Calendar.DAY_OF_MONTH);
     public String[] days = { "1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31" };
@@ -97,12 +99,12 @@ public class ReportEvents extends Report {
      * an instance of Gedcom, Entity or Property can be passed in though.
      */
     public void start(Object context) {
-        if((reportBirth)||(reportDeath)||(reportMarriage)) {
+        if((reportBirth)||(reportDeath)||(reportMarriage)||(reportDivorce)) {
             // assuming Gedcom
             Gedcom gedcom = (Gedcom)context;
             
             ArrayList indis = new ArrayList(gedcom.getEntities(gedcom.INDI));
-            ReferenceSet births = new ReferenceSet(), marriages = new ReferenceSet(), deaths = new ReferenceSet();
+            ReferenceSet births = new ReferenceSet(), marriages = new ReferenceSet(), divorces = new ReferenceSet(), deaths = new ReferenceSet();
             
             for(int i=0;i<indis.size();i++) {
                 
@@ -119,15 +121,22 @@ public class ReportEvents extends Report {
                             addToReferenceSet(fams[j].getMarriageDate().getStart(), fams[j], marriages);
                     }
                 }
+                if(reportDivorce) {
+                    Fam[] fams = indi.getFamilies();
+                    for(int j=0;j<fams.length;j++) {
+                        if((fams[j].getDivorceDate()!=null)&&(fams[j].getDivorceDate().getStart()!=null)&&(checkDate(fams[j].getDivorceDate().getStart())))
+                            addToReferenceSet(fams[j].getDivorceDate().getStart(), fams[j], divorces);
+                    }
+                }
                 if(reportDeath) {
                     if((indi.getDeathDate()!=null)&&(indi.getDeathDate().getStart()!=null)&&(checkDate(indi.getDeathDate().getStart())))
                         addToReferenceSet(indi.getDeathDate().getStart(), indi, deaths);
                 }
             }
             
-            println(i18n("day")+": "+(day+1)+" ("+getHandle(handleDay)+")");
-            println(i18n("month")+": "+(month+1)+" ("+getHandle(handleMonth)+")");
-            println(i18n("year")+": "+year+" ("+getHandle(handleYear)+")");
+            println(i18n("day")+": "+(day+1)+" ("+getHandleDate(handleDay)+")");
+            println(i18n("month")+": "+(month+1)+" ("+getHandleDate(handleMonth)+")");
+            println(i18n("year")+": "+year+" ("+getHandleDate(handleYear)+")");
             println();
             
             if(reportBirth) {
@@ -140,6 +149,11 @@ public class ReportEvents extends Report {
                 report(marriages);
                 println();
             }
+            if(reportDivorce) {
+                println("   "+i18n("divorce"));
+                report(divorces);
+                println();
+            }            
             if(reportDeath) {
                 println("   "+i18n("death"));
                 report(deaths);
@@ -147,7 +161,9 @@ public class ReportEvents extends Report {
         }
     }
     
-    private String getHandle(int what) {
+    /** get an i18n() string with info about date handling
+     * @param int value for string lookup */
+    private String getHandleDate(int what) {
         switch(what) {
             case 0: return i18n("date.min");
             case 1: return i18n("date.max");
@@ -157,6 +173,11 @@ public class ReportEvents extends Report {
         }
     }
     
+    /** adds an entry to a RefernceSet
+     * @param date of an event
+     * @param entity involved in the event
+     * @param set to store date and entity
+     */
     private void addToReferenceSet(PointInTime date, Entity entity, ReferenceSet set) {
         if(isSortDay) {
             int month = date.getMonth();
@@ -169,6 +190,8 @@ public class ReportEvents extends Report {
             set.add(date, entity);
     }
     
+    /** prepares the data for output / printing which is done via output() calls
+     * @param indis data for output */
     private void report(ReferenceSet indis) {
         Iterator i = indis.getKeys(true).iterator();
         while(i.hasNext()) {
@@ -195,6 +218,9 @@ public class ReportEvents extends Report {
         }
     }
     
+    /** prints the report output
+     * @param indis data to print
+     * @param date of an event */
     private void output(ReferenceSet indis, PointInTime date) {
         if(date.getDay()!=-1) {
             ArrayList list = new ArrayList(indis.getReferences(date));
@@ -212,6 +238,8 @@ public class ReportEvents extends Report {
         }
     }
     
+    /* checks if the date of an event matches the given values of the user (fix, max, min, ...)
+     * @return boolean to indicate the result */
     private boolean checkDate(PointInTime date) {
         boolean d = false, m = false, y = false;
         
