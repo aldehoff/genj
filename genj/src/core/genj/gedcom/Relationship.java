@@ -361,15 +361,20 @@ public abstract class Relationship {
         fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
         // make sure the new entity is first in family
         fam.setSpouse(parent);
-        // 20040619 adding missing spouse automatically now
-        fam.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
-        fam.addChild(child);
+        // add 'new' child
+	      fam.addChild(child);
+        // add defaults
         fam.addDefaultProperties();
       } else {
         // new entity becomes husb/wife
         fam.setSpouse(parent);
       }
-      
+
+      // 20040619 adding missing spouse automatically now
+      // 20050405 whether we created a new family or the family didn't have all parents
+      if (fam.getNoOfSpouses()<2) 
+	      fam.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
+
       // focus goes to new parent
       return parent;
     }
