@@ -52,7 +52,7 @@ public class FontChooser extends JPanel {
     //layout
     setAlignmentX(0F);
     GridBagHelper gh = new GridBagHelper(this);
-    gh.add(comboFonts      , 0, 0, 1, 1, gh.GROW_HORIZONTAL);
+    gh.add(comboFonts      , 0, 0, 1, 1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
     gh.add(textSize        , 1, 0);
     gh.add(Box.createGlue(), 2, 0, 1, 1, gh.GROW_BOTH);
     // done

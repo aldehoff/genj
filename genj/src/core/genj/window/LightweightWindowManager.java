@@ -24,9 +24,7 @@ import genj.util.Registry;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -46,9 +44,6 @@ public class LightweightWindowManager extends DefaultWindowManager {
   /** registry */
   private Registry registry;
 
-  /** open frames */
-  private Map key2frame = new HashMap();
-  
   /** one desktop */
   private JDesktopPane desktop;
   
@@ -91,20 +86,33 @@ public class LightweightWindowManager extends DefaultWindowManager {
    */
   public boolean show(String key) {
     // one of our internals?
-    JInternalFrame frame = (JInternalFrame)key2frame.get(key);
-    if (frame!=null) {
-      frame.toFront();
-      return true;
+    Object frame = recall(key);
+    if (frame instanceof JInternalFrame) {
+      ((JInternalFrame)frame).toFront();
     }
     // continue in default
     return super.show(key);
   }
   
   /**
-   * @see genj.window.WindowManager#createFrame
+   * @see genj.window.WindowManager#openFrame(String, String, ImageIcon, JComponent, JMenuBar, Runnable, Runnable)
    */
-  public void openFrame(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
+  public String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
+    // check key
+    if (key==null) key = getTemporaryKey();
+    
+    // continue
+    openFrameImpl(key, title, image, content, menu, onClosing, onClose);
+    
+    // done
+    return key;
+  }
 
+  /**
+   * Our implementation for opening a frame
+   */
+  private void openFrameImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
+    
     // close if already open
     close(key);
 
@@ -115,10 +123,8 @@ public class LightweightWindowManager extends DefaultWindowManager {
        */
       public void dispose() {
         if (key!=null) {
-          // remember bounds
-          registry.put(key, getBounds());
-          // forget frame
-          key2frame.remove(key);
+          // forget and keep bounds
+          forget(key, getBounds(), registry);
         }
         // callback?
         if (onClose!=null) onClose.run();
@@ -149,7 +155,7 @@ public class LightweightWindowManager extends DefaultWindowManager {
     }
 
     // remember
-    if (key!=null) key2frame.put(key, frame);
+    remember(key, frame, registry);
 
     // place
     JDesktopPane desktop = getDesktop(title, image);
@@ -175,27 +181,35 @@ public class LightweightWindowManager extends DefaultWindowManager {
    * @see genj.window.WindowManager#closeAllFrames()
    */
   public void closeAll() {
-    JInternalFrame[] frames = (JInternalFrame[])key2frame.values().toArray(new JInternalFrame[0]);
-    for (int i = 0; i < frames.length; i++) {
-    	frames[i].dispose();
+
+    // check all keys    
+    String[] keys = recallKeys();
+  
+    for (int k=0; k<keys.length; k++) {
+      Object frame = recall(keys[k]);
+      if (frame instanceof JInternalFrame)
+        ((JInternalFrame)frame).dispose();
     }
+    
+    // continue with super impl
+    super.closeAll();
+    
+    // done
   }
   
   /**
    * @see genj.window.WindowManager#closeFrame(java.lang.String)
    */
   public void close(String key) {
-    // only for key!=null
-    if (key==null)
-      return;
-    // check internal frames
-    JInternalFrame frame = (JInternalFrame)key2frame.get(key);
-    if (frame!=null) { 
-      frame.dispose();
-      return;
+    
+    Object frame = recall(key);
+    if (frame instanceof JInternalFrame) {
+      ((JInternalFrame)frame).dispose();
     }
-    // delegate
+    
+    // delegate to super
     super.close(key);
+    
     // done
   }
   
@@ -210,11 +224,17 @@ public class LightweightWindowManager extends DefaultWindowManager {
   }
   
   /**
-   * @see genj.window.WindowManager#getRootComponent(java.lang.String)
+   * @see genj.window.WindowManager#getContent(String)
    */
   public JComponent getContent(String key) {
-    JInternalFrame frame = (JInternalFrame)key2frame.get(key);
-    return frame!=null ? (JComponent)frame.getContentPane().getComponent(0) : null;
+
+    // lookup frame
+    Object frame = recall(key);
+    if (frame instanceof JInternalFrame)
+      return (JComponent)((JInternalFrame)frame).getContentPane().getComponent(0);
+    
+    // delegate to super
+    return super.getContent(key);
   }
   
 } //DefaultWindowManager

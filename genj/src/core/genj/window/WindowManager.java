@@ -50,7 +50,8 @@ public interface WindowManager {
   public final static String[]
     OPTIONS_YES_NO    = new String[]{ OPTION_YES, OPTION_NO },
     OPTIONS_OK_CANCEL = new String[]{ OPTION_OK, OPTION_CANCEL },
-    OPTIONS_OK        = new String[]{ OPTION_OK };
+    OPTIONS_OK        = new String[]{ OPTION_CANCEL },
+    OPTIONS_CANCEL    = new String[]{ OPTION_OK };
     
   /**
    * Opens a frame
@@ -61,8 +62,9 @@ public interface WindowManager {
    * @param menu menubar to be shown in frame
    * @param onClosing code to run on closing (frame won't close automatically if != null)
    * @param onClose code to run on close
+   * @return key 
    */
-  public void openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose);
+  public String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose);
 
   /**
    * Opens a frame with one close button
@@ -72,8 +74,9 @@ public interface WindowManager {
    * @param content component to be shown in frame
    * @param menu menubar to be shown in frame
    * @param option a single option to close the frame
+   * @return key 
    */
-  public void openFrame(String key, String title, ImageIcon image, JComponent content, String option);
+  public String openFrame(String key, String title, ImageIcon image, JComponent content, String option);
 
   /**
    * Opens a dialog containing a custom component
@@ -109,7 +112,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of options choosen or -1 
    */
-  public int openDialog(String key, String title, Icon img, String txt, String[] options, JComponent owner);
+  public int openDialog(String key, String title, Icon image, String txt, String[] options, JComponent owner);
   
   /**
    * Opens a dialog prompting the user for a simple text value
@@ -121,7 +124,18 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return entered text or null
    */
-  public String openDialog(String key, String title, Icon img, String txt, String value, JComponent owner);
+  public String openDialog(String key, String title, Icon image, String txt, String value, JComponent owner);
+  
+  /**
+   * Opens a non-modal dialog 
+   * @param key a unique key 
+   * @param title text for titlebar
+   * @param image image for titlebar
+   * @param content component to be shown in dialog
+   * @param owner the 'owning' component
+   * @return key 
+   */
+  public String openDialog(String key, String title, Icon image, JComponent content, JComponent owner);
   
   /**
    * Close dialog/frame 

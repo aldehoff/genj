@@ -204,12 +204,12 @@ public class NavigatorView extends JPanel implements ContextSupport {
       bYounger= bh.create(new ActionYoungerSibling());
       bChild  = bh.create(new ActionChild()         );
 
-    gh.add(bFather ,2,1,1,1,gh.FILL_NONE);
-    gh.add(bMother ,3,1,1,1,gh.FILL_NONE);
-    gh.add(bOlder  ,0,2,2,1,gh.FILL_NONE);
-    gh.add(bPartner,2,2,2,1,gh.FILL_NONE, new Insets(12,0,12,0));
-    gh.add(bYounger,4,2,2,1,gh.FILL_NONE);
-    gh.add(bChild  ,2,3,2,1,gh.FILL_NONE);
+    gh.add(bFather ,2,1,1,1);
+    gh.add(bMother ,3,1,1,1);
+    gh.add(bOlder  ,0,2,2,1);
+    gh.add(bPartner,2,2,2,1,0,new Insets(12,0,12,0));
+    gh.add(bYounger,4,2,2,1);
+    gh.add(bChild  ,2,3,2,1);
 
     // done
     return result;

@@ -36,6 +36,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
 import genj.util.swing.MenuHelper;
+import genj.util.swing.ProgressWidget;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
@@ -73,7 +74,6 @@ public class ControlCenter extends JPanel {
   /** members */
   private JMenuBar menuBar; 
   private GedcomTableWidget tGedcoms;
-  private Vector busyGedcoms;
   private Registry registry;
   private Vector gedcomButtons = new Vector();
   private Vector tniButtons = new Vector();
@@ -92,8 +92,6 @@ public class ControlCenter extends JPanel {
     windowManager = winManager;
     printManager = new PrintManager(new Registry(setRegistry, "print"), windowManager);
     viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager);
-    busyGedcoms = new Vector();
-
     // Table of Gedcoms
     tGedcoms = new GedcomTableWidget();
     tGedcoms.setRegistry(registry);
@@ -111,11 +109,18 @@ public class ControlCenter extends JPanel {
     // Init menu bar at this point (so it's ready when the first file is loaded)
     menuBar = createMenuBar();
 
+    // Done
+  }
+  
+  /**
+   * @see javax.swing.JComponent#addNotify()
+   */
+  public void addNotify() {
+    // continue
+    super.addNotify();
     // Load known gedcoms
     SwingUtilities.invokeLater(
       (Runnable) new ActionLoadLastOpen().as(Runnable.class));
-
-    // Done
   }
   
   /**
@@ -390,6 +395,9 @@ public class ControlCenter extends JPanel {
 
     /** a gedcom we're creating */
     private Gedcom gedcom;
+    
+    /** key of progress dialog */
+    private String progress;
 
     /** constructor */
     protected ActionOpen() {
@@ -445,6 +453,8 @@ public class ControlCenter extends JPanel {
      * (sync) post execute
      */
     protected void postExecute() {
+      // close progress
+      windowManager.close(progress);
       // any error bubbling up?
       if (error != null) {
         windowManager.openDialog(
@@ -465,7 +475,6 @@ public class ControlCenter extends JPanel {
               origin.getName(),
               WindowManager.IMG_WARNING,
               new JScrollPane(new JList(warnings.toArray())),
-              WindowManager.OPTIONS_OK,
               ControlCenter.this
             );
           }
@@ -679,17 +688,14 @@ public class ControlCenter extends JPanel {
       // .. prepare our reader
       reader = new GedcomReader(in, origin, size);
 
-      // .. prepare our thread
-      //getThread().setPriority(Thread.MIN_PRIORITY);
-
       // .. show progress dialog
-// FIXME missing      
-//      new ProgressDialog(
-//        ControlCenter.this,
-//        resources.getString("cc.open.loading"),
-//        origin.getName(),
-//        reader,
-//        getThread());
+      progress = windowManager.openDialog(
+        null,
+        resources.getString("cc.open.loading", origin.getName()),
+        WindowManager.IMG_INFORMATION,
+        new ProgressWidget(reader, getThread()),
+        ControlCenter.this
+      );
 
       // .. continue into (async) execute
       return true;
@@ -731,6 +737,8 @@ public class ControlCenter extends JPanel {
     private Origin newOrigin;
     /** filters we're using */
     private Filter[] filters;
+    /** progress key */
+    private String progress;
     /** 
      * Constructor
      */
@@ -838,18 +846,14 @@ public class ControlCenter extends JPanel {
         return false;
       }
 
-      // .. prepare save 
-      busyGedcoms.addElement(gedcom);
-
       // .. open progress dialog
-// FIXME missing      
-//      new ProgressDialog(
-//        ControlCenter.this,
-//        resources.getString("cc.save.saving"),
-//        file.getAbsolutePath(),
-//        gedWriter,
-//        super.getThread()
-//      );
+      progress = windowManager.openDialog(
+        null,
+        resources.getString("cc.save.saving", file.getName()),
+        WindowManager.IMG_INFORMATION,
+        new ProgressWidget(gedWriter, getThread()),
+        ControlCenter.this
+      );
 
       // .. continue (async)
       return true;
@@ -891,9 +895,9 @@ public class ControlCenter extends JPanel {
      */
     protected void postExecute() {
 
-      // .. finished
-      busyGedcoms.removeElement(gedcom);
-
+      // close progress
+      windowManager.close(progress);
+      
       // .. open new
       if (newOrigin != null) {
 

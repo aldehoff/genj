@@ -21,6 +21,7 @@ package genj.window;
 
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
+import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.TextFieldWidget;
 
@@ -30,6 +31,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -46,10 +49,16 @@ import javax.swing.SwingConstants;
  */
 public abstract class AbstractWindowManager implements WindowManager {
 
+  /** a counter for temporary keys */
+  private int temporaryKeyCounter = 0;  
+
+  /** a mapping between key to framedlg */
+  private Map key2framedlg = new HashMap();
+
   /**
    * @see genj.window.WindowManager#openFrame(java.lang.String, java.lang.String, javax.swing.ImageIcon, javax.swing.JComponent, java.lang.String)
    */
-  public void openFrame(final String key, String title, ImageIcon image, JComponent content, String option) {
+  public String openFrame(final String key, String title, ImageIcon image, JComponent content, String option) {
     // key is necessary
     if (key==null) throw new IllegalArgumentException("key==null");
     // create option
@@ -66,7 +75,7 @@ public abstract class AbstractWindowManager implements WindowManager {
     panel.add(BorderLayout.CENTER, content);
     panel.add(BorderLayout.SOUTH , south  );
     // delegate
-    openFrame(key, title, image, panel, null, null, null);
+    return openFrame(key, title, image, panel, null, null, null);
   }
 
   /**
@@ -146,7 +155,7 @@ public abstract class AbstractWindowManager implements WindowManager {
     Insets insets = new Insets(8,8,8,8);
     GridBagHelper gh = new GridBagHelper(container);
     gh.add(icon   , 0, 0, 1, 2, 0, insets);
-    gh.add(content, 1, 0, 1, 1, gh.GROW_BOTH|gh.FILL_BOTH, insets);
+    gh.add(content, 1, 0, 1, 1, gh.GROWFILL_BOTH, insets);
     gh.add(buttons, 1, 1, 1, 1, 0);
 
     // done  
@@ -174,5 +183,57 @@ public abstract class AbstractWindowManager implements WindowManager {
     // done
     return new Rectangle(x,y,width,height);
   }
+  
+  /**
+   * Create a temporary key
+   */
+  protected String getTemporaryKey() {
+    return "_"+temporaryKeyCounter++;
+  }
 
+  /**
+   * Recall Keys
+   */
+  protected String[] recallKeys() {
+    return (String[])key2framedlg.keySet().toArray(new String[0]);
+  }
+
+  /**
+   * Recall frame/dialog
+   */
+  protected Object recall(String key) {
+    // no key - no result
+    if (key==null) return null;
+    // look it up
+    return key2framedlg.get(key);
+  }
+
+  /**
+   * Remember frame/dialog, recall bounds from registry
+   */
+  protected Rectangle remember(String key, Object framedlg, Registry registry) {
+    // no key - no action
+    if (key==null) return null;
+    // remember frame/dialog
+    key2framedlg.put(key, framedlg);
+    // temporary key? nothing to recall
+    if (key.startsWith("_")) return null;
+    // recall!
+    return registry.get(key, (Rectangle)null);
+  }
+  
+  /**
+   * Forget about frame/dialog, stash away bounds
+   */
+  protected void forget(String key, Rectangle bounds, Registry registry) {
+    // no key - no action
+    if (key==null) return;
+    // forget frame/dialog
+    key2framedlg.remove(key);
+    // temporary key? nothing to stash away
+    if (key.startsWith("_")) return;
+    // keep bounds
+    registry.put(key, bounds);
+  }
+  
 } //AbstractWindowManager

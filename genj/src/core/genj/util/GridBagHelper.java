@@ -37,11 +37,14 @@ public class GridBagHelper {
     FILL_HORIZONTAL =  1,
     FILL_VERTICAL   =  2,
     FILL_BOTH       =  4,
-    FILL_NONE       =  8,
     GROW_HORIZONTAL = 16,
     GROW_VERTICAL   = 32,
     GROW_BOTH       = 64;
 
+  public final static int
+    GROWFILL_HORIZONTAL = FILL_HORIZONTAL|GROW_HORIZONTAL,
+    GROWFILL_BOTH       = FILL_BOTH      |GROW_BOTH      ;
+    
   /** wrapped layout */
   private GridBagLayout layout;
   
@@ -174,7 +177,7 @@ public class GridBagHelper {
     constraints.gridheight= h;
     constraints.weightx   = isSet(parm,GROW_BOTH) || isSet(parm,GROW_HORIZONTAL) ? 1 : 0;
     constraints.weighty   = isSet(parm,GROW_BOTH) || isSet(parm,GROW_VERTICAL  ) ? 1 : 0;
-    constraints.fill      = GridBagConstraints.BOTH;
+    constraints.fill      = GridBagConstraints.NONE;
     constraints.insets    = insets;
 
     if ( isSet(parm,FILL_BOTH) || (isSet(parm,FILL_HORIZONTAL)&&isSet(parm,FILL_VERTICAL)) )
@@ -183,8 +186,6 @@ public class GridBagHelper {
       constraints.fill = GridBagConstraints.HORIZONTAL;
     else if (isSet(parm,FILL_VERTICAL  ))
       constraints.fill = GridBagConstraints.VERTICAL  ;
-    else if (isSet(parm,FILL_NONE      ))
-      constraints.fill = GridBagConstraints.NONE      ;
 
     // Set constraints
     layout.setConstraints(component,constraints);
