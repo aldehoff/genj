@@ -21,8 +21,9 @@ package genj.edit;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.util.swing.ButtonHelper;
 import genj.util.swing.DateEntry;
+import genj.util.swing.SwingFactory;
+
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -137,7 +138,7 @@ class ProxyDate extends Proxy implements ItemListener {
     formatChanged = false;
 
     // Done
-    ButtonHelper.requestFocusFor(deOne);
+    SwingFactory.requestFocusFor(deOne);
 
   }
 

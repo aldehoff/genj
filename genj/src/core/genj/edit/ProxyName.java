@@ -21,7 +21,7 @@ package genj.edit;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
-import genj.util.swing.ButtonHelper;
+import genj.util.swing.SwingFactory;
 
 import javax.swing.Box;
 import javax.swing.JLabel;
@@ -119,7 +119,7 @@ class ProxyName extends Proxy implements DocumentListener {
 
     in.add(Box.createVerticalGlue());
 
-    ButtonHelper.requestFocusFor(tfirst);
+    SwingFactory.requestFocusFor(tfirst);
 
     // Done
   }

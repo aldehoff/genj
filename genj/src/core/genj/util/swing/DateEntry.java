@@ -25,6 +25,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -32,7 +33,7 @@ import javax.swing.event.DocumentListener;
 /**
  * Generic component for editing dates
  */
-public class DateEntry extends javax.swing.JPanel implements DocumentListener, FocusListener {
+public class DateEntry extends JPanel implements DocumentListener, FocusListener {
 
   /** field for displaying (static) validity status */
   private JLabel lStatus;
@@ -64,6 +65,7 @@ public class DateEntry extends javax.swing.JPanel implements DocumentListener, F
     tfDay  .addFocusListener(this);
     tfMonth.addFocusListener(this);
     tfYear .addFocusListener(this);
+    addFocusListener(this);
     // Layout
     setLayout(new FlowLayout(FlowLayout.LEFT));
     add(lStatus);
@@ -120,6 +122,12 @@ public class DateEntry extends javax.swing.JPanel implements DocumentListener, F
    * Day/Month/Year got focus
    */
   public void focusGained(FocusEvent e) {
+    // me?
+    if (e.getSource()==this) {
+      tfDay.requestFocus();
+      return;
+    }
+    // textfield!
     JTextField tf = (JTextField) e.getSource();
     tf.selectAll();
   }

@@ -19,12 +19,12 @@
  */
 package genj.edit;
 
-import java.awt.Component;
-import java.awt.Dimension;
-
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
-import genj.util.swing.ButtonHelper;
+import genj.util.swing.SwingFactory;
+
+import java.awt.Component;
+import java.awt.Dimension;
 
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComboBox;
@@ -97,7 +97,7 @@ class ProxyChoice extends Proxy{
     // layout
     in.add(combo);
     
-    ButtonHelper.requestFocusFor(editor);
+    SwingFactory.requestFocusFor(editor);
     
     // Done
   }

@@ -36,6 +36,7 @@ import genj.util.EnvironmentChecker;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ScreenResolutionScale;
+import genj.util.swing.SwingFactory;
 import genj.view.ViewManager;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -496,7 +497,7 @@ public class AboutWidget extends JPanel{
         int col = table.getSelectedColumn();
         if (row>=0&&col>=0) table.editCellAt(row, col);
         try {
-          ButtonHelper.requestFocusFor((JComponent)table.getEditorComponent());
+          SwingFactory.requestFocusFor((JComponent)table.getEditorComponent());
         } catch (Throwable t) {}
       }
     } //Edit

@@ -23,8 +23,8 @@ import genj.gedcom.Entity;
 import genj.gedcom.IconValueAvailable;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
-import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.SwingFactory;
 import genj.view.ViewManager;
 
 import java.awt.event.ActionEvent;
@@ -146,7 +146,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
       EditView.resources.getString("proxy.enter_id_here")
     );
     in.add(tfield);
-    ButtonHelper.requestFocusFor(tfield);
+    SwingFactory.requestFocusFor(tfield);
 
     // Done
   }

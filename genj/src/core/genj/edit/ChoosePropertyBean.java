@@ -22,6 +22,7 @@ package genj.edit;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.util.Resources;
+import genj.util.swing.SwingFactory;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -111,16 +112,17 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     tfNew.setAlignmentX(0);
     add(tfNew,1,4,2,1,false);
 
-    // Focus
-    if (defs.length==0) {
-      tfNew.requestFocus();
+    // Pre select and focus
+    if (defs.length>0) {
+      lChoose.setSelectedIndex(0);
+      SwingFactory.requestFocusFor(lChoose);
     } else {
-      lChoose.requestFocus();
+      SwingFactory.requestFocusFor(tfNew);
     }
-
+    
     // Done
   }
-
+  
   /**
    * Helper method that adds components to a container with gridbaglayout
    */

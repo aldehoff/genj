@@ -31,10 +31,12 @@ import javax.swing.Box;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 
 /**
  * A factory for creating UI components
@@ -195,6 +197,29 @@ public class SwingFactory {
     });
     // done
     return result;
+  }
+
+  /**
+   * requestFocus - since jdk 1.4 there's a method on 
+   * JComponent which requests the focus in the window
+   * the component is contained in. I'd like to use this
+   * but don't want to require jdk 1.4. So we're trying
+   * to use that method via introspection and use requestFocus()
+   * on pre 1.4 impls otherwise
+   */
+  public static void requestFocusFor(final JComponent c) {
+    
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        try {
+          c.getClass().getMethod("requestFocusInWindow", new Class[]{} )
+            .invoke(c, new Object[]{});
+        } catch (Throwable t) {
+          c.requestFocus();
+        }
+      }
+    });
+    
   }
   
 } //WidgetFactory
