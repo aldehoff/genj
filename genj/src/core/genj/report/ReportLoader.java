@@ -26,6 +26,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -73,17 +75,25 @@ public class ReportLoader {
     // Prepare classloader
     URLClassLoader cl = new URLClassLoader((URL[])classpath.toArray(new URL[classpath.size()]));
     
-    // Lad reports
+    // Load reports
     Iterator rs = reports.iterator();
     while (rs.hasNext()) {
       String rname = rs.next().toString(); 
       try {
-        instances.add(cl.loadClass(rname).newInstance());
+        Report r = (Report)cl.loadClass(rname).newInstance();
+        instances.add(r);
       } catch (Throwable t) {
         Debug.log(Debug.WARNING, this, "Failed to instantiate "+rname, t);
       }
     }
-
+    
+    // sort 'em
+    Collections.sort(instances, new Comparator() { 
+      public int compare(Object a, Object b) {
+        return ((Report)a).getName().compareTo(((Report)b).getName());
+      }
+    });
+    
     // done
   }
   
