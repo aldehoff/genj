@@ -37,7 +37,7 @@ public class Event implements Comparable {
   public Event(Category setCat, PointInTime setTime, String setText) throws GedcomException {
     pit = setTime;
     cat = setCat;
-    desc = cat.format(setText);
+    desc = setText;
     // make sure its julian day is good
     julianDay = pit.getJulianDay();
   }

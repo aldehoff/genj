@@ -19,8 +19,6 @@
  */
 package genj.almanac;
 
-import java.text.MessageFormat;
-
 import genj.util.Resources;
 
 /**
@@ -34,8 +32,6 @@ public class Category {
   
   private String name;
   
-  private MessageFormat pattern;
-  
   /**
    * Constructor
    */
@@ -46,18 +42,7 @@ public class Category {
     name = resources.getString("category."+key, false);
     if (name==null)
       name = resources.getString("category.*");
-    // init pattern
-    String p = resources.getString("category."+key+".pattern", false);
-    if (p==null) p = "{0}";
-    pattern = Resources.getMessageFormat(p);
     // done
-  }
-  
-  /**
-   * Format a text for this category
-   */
-  /*package*/ String format(String text) {
-    return pattern.format(new Object[]{text});
   }
   
   /**
