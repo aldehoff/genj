@@ -20,14 +20,16 @@
 package genj.util.swing;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
@@ -181,7 +183,10 @@ public class ScreenResolutionScale extends JComponent {
 
   /**
    * Glue for mouse events   */
-  private class MouseGlue extends MouseMotionAdapter {
+  private class MouseGlue extends MouseAdapter implements MouseMotionListener {
+    
+    /** the axis that is modified */
+    private boolean axis;
     
     /** the start position of a drag */
     private Point2D.Double startPos = new Point2D.Double();
@@ -193,22 +198,35 @@ public class ScreenResolutionScale extends JComponent {
      * @see java.awt.event.MouseMotionAdapter#mouseMoved(java.awt.event.MouseEvent)
      */
     public void mouseMoved(MouseEvent e) {
+      
+      // remember current position
       startPos.x = e.getPoint().x;
       startPos.y = e.getPoint().y;
       startDPC.x = dpc.x;
       startDPC.y = dpc.y;
+
+      // check mode n-s/w-e      
+      axis = startPos.x>startPos.y;
+      
+      // update cursor
+      setCursor(Cursor.getPredefinedCursor(axis?Cursor.E_RESIZE_CURSOR:Cursor.S_RESIZE_CURSOR));
+      
+      // done
     }
 
     /**
      * @see java.awt.event.MouseMotionAdapter#mouseDragged(java.awt.event.MouseEvent)
      */
     public void mouseDragged(MouseEvent e) {
+      // update axis resolution
       Point p = e.getPoint();
-      dpc.setLocation(
-        Math.max(10, startDPC.x * (p.x/startPos.x) ),     
-        Math.max(10, startDPC.y * (p.y/startPos.y) )
-      );     
+      if (axis) 
+        dpc.x = Math.max(10, startDPC.x * (p.x/startPos.x) );
+      else     
+        dpc.y = Math.max(10, startDPC.y * (p.y/startPos.y) );
+      // show it
       repaint();
     }
+    
   } //MouseGlue
 } //ResolutionRuler
