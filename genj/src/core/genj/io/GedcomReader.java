@@ -204,6 +204,16 @@ public class GedcomReader implements Trackable {
    */
   private void readEntity() throws GedcomIOException, GedcomFormatException {
 
+    // FIXME 20040308 support records without XREF
+    // Apparently some Gedcom tools write something like this:
+    //  0 _EVENT_DEF
+    //  1 FOO foo
+    //  ...
+    // we should support this but currently ALL records/entities
+    // have to have a unique XREF ID - we should figure something
+    // out so this can be loaded without skipping and preserved
+    // on save
+
     // "L XXXX" expected
     if (!readLine()||(level!=0)||(xref.length()==0)) {
       String msg = "Expected 0 @XREF@ INDI|FAM|OBJE|NOTE|REPO|SOUR|SUBM";
