@@ -144,7 +144,7 @@ public class Geometry {
     
     // intersect the projection start-end with the shape    
     if (s!=null) {
-      Point2D p = Geometry.getClosestIntersection(
+      Point2D p = getClosestIntersection(
         p1, 
         p1, p2,
         s.getPathIterator(AffineTransform.getTranslateInstance(p3.getX(), p3.getY()))
