@@ -89,7 +89,7 @@ public class UnitGraphics {
   /**
    * Translation   */
   public void translate(double dx, double dy) {
-    graphics.translate(dx * unitx, dy * unity);
+    graphics.translate((int)(dx * unitx), (int)(dy * unity));
   }
   
   /**
@@ -174,6 +174,7 @@ public class UnitGraphics {
    * Draw shape
    */
   public void draw(Shape shape, double x, double y, boolean fill) {
+    
     AffineTransform at = new AffineTransform();
     at.scale(unitx, unity);
     at.translate(x,y);
