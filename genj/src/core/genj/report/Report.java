@@ -358,7 +358,11 @@ public abstract class Report implements Cloneable {
 		if (width>spaces.length()) {
 			return null;
 		}
-		return spaces.substring(1,width-text.length())+text;
+
+		if (text.length()>=width)
+			return text.substring(0,width-1);
+
+		return spaces.substring(0,width-text.length()-1)+text;
   }
  
 
