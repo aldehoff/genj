@@ -14,7 +14,7 @@ INTRODUCTION
  or download genj_applet-x.y.zip and use it's contained 
  smaller libraries (reduced to necessary minimum).
 
-PREPARING IT (unzipped)
+PREPARING APPLET FILES (unzipped)
 
  Follow these steps to provide all necessary files for running GenJ
  as an applet:
@@ -27,8 +27,7 @@ PREPARING IT (unzipped)
 
    <applet 
      code="genj.applet.Applet.class" 
-     width="200" 
-     height="160" 
+     width="200" height="160" 
      archive="./genj.jar, ./graphj.jar"
      alt="GenealogyJ">
     <param name="gedcom" value="./[file.ged]">
@@ -45,7 +44,7 @@ PREPARING IT (unzipped)
     ./image1.jpg
     ./...
 
-PREPARING IT (zipped)
+PREPARING APPLET FILES (zipped)
 
   + zip [file].ged + [file].get.properties + genj.properties and any images into [file].zip
 
@@ -69,3 +68,13 @@ PREPARING IT (zipped)
     ./genj.jar
     ./file.zip
 
+MAKING THE APPLET SPEAK YOUR LANGUAGE
+
+  + place the language file of choice genj_xx.jar into [directory]
+
+  + add that jar to the Applet's HTML tag - archive attribute
+
+   <applet 
+     ...
+     archive="./genj.jar, ./graphj.jar, ./genj_xx.jar"
+     ... 

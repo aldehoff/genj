@@ -39,6 +39,7 @@ import java.awt.BorderLayout;
 import java.net.URL;
 
 import javax.swing.JLabel;
+import javax.swing.UIManager;
 
 /**
  * THE GenJ Applet
@@ -186,6 +187,12 @@ public class Applet extends java.applet.Applet {
           
         } catch (Throwable t) {
           registry = new Registry();
+        }
+        
+        // setup system look'n'feel
+        try {
+          UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Throwable t) {
         }
         
         // the gedcom file
