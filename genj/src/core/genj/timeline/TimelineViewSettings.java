@@ -106,8 +106,8 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     colorChooser = new ColorChooser();
     
     // add those tabs
-    add("Main"  , panelMain);
-    add("Colors", colorChooser);
+    add(resources.getString("page.main")  , panelMain);
+    add(resources.getString("page.colors"), colorChooser);
 
     // done
   }
