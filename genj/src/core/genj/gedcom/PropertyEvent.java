@@ -124,6 +124,7 @@ public class PropertyEvent extends Property {
    * Sets the value of this property
    */
   public void setValue(String value) {
+    setKnownToHaveHappened(value.toLowerCase().equals("y"));
   }
 
   /**
@@ -138,8 +139,8 @@ public class PropertyEvent extends Property {
    * @return null if this attribute is not supported, true or false otherwise
    */
   public Boolean isKnownToHaveHappened() {
-    // patch - no known for RESIdence
-    if (getTag().equals("RESI"))
+    // patch - no known for RESIdence and EVEN
+    if (getTag().equals("RESI")||getTag().equals("EVEN"))
       return null;
     return new Boolean(knownToHaveHappened);
   }
