@@ -167,7 +167,7 @@ public class ReportHTMLSheets extends Report {
 
     // Does that entity have a multimedia object associated with it?
     PropertyFile file = (PropertyFile)ent.getProperty(new TagPath("INDI:OBJE:FILE"));
-    if (file!=null) { 
+    if (file!=null&&file.getFile()!=null&&file.getFile().exists()) { 
       url = exportImage( file, dir , ent.getId());
       // Here comes the IMG-tag
       out.println("<IMG src=\""+url+"\"></IMG>");
