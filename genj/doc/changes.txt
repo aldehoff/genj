@@ -25,6 +25,7 @@ Future
   O Printing forgets about paper orientation between pages
   O Wizard that asks what to do after deletion of entities (remove empty family, remove lost branch, ...)
   O Report to re-layout all entity IDs (logical numbering, format, etc.)
+  O Descendants view a la http://worldconnect.rootsweb.com/cgi-bin/igm.cgi?op=DESC&db=timmsc&id=I008
 
 1.8 - Mar xx 2002 (not released)
 
