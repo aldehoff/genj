@@ -48,15 +48,13 @@ public class PropertyRelationship extends PropertyChoiceValue {
   public void setValue(String value) {
 
     // parse anchor if one is still needed
-    if (getTarget()==null) {
-      int i = value.lastIndexOf('@');
-      if (i>=0) {
-        try {
-          anchor = new TagPath(value.substring(i+1));
-          value = value.substring(0,i);
-        } catch (IllegalArgumentException e) {
-        }
+    int i = value.lastIndexOf('@');
+    if (i>=0) {
+      if (getTarget()==null) try {
+        anchor = new TagPath(value.substring(i+1));
+      } catch (IllegalArgumentException e) {
       }
+      value = value.substring(0,i);
     }
     // continue
     super.setValue(value);
