@@ -121,7 +121,7 @@ public class HeadlessLabel extends JComponent {
       width = view.getPreferredSpan(View.X_AXIS);
       height= view.getPreferredSpan(View.Y_AXIS);
     } else {
-      FontMetrics fm = getToolkit().getFontMetrics(getFont());
+      FontMetrics fm = getFontMetrics(getFont());
       width = fm.stringWidth(txt);
       height = fm.getHeight();
     }
