@@ -33,7 +33,6 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -73,8 +72,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
   private Map tip2indi = new HashMap();
   
   /** the label holding information about the current individual */
-  private JLabel labelName;
-  private TitledBorder borderName;
+  private JLabel labelCurrent;
   
   /** the current individual */
   private Indi current;
@@ -100,11 +98,9 @@ public class NavigatorView extends JPanel implements ContextSupport {
     // layout    
     setLayout(new BorderLayout());
 
-    borderName = BorderFactory.createTitledBorder("");
-    labelName = new JLabel();
-    labelName.setFont(new Font("Arial", Font.PLAIN, 10));
-    labelName.setBorder(borderName);
-    add(labelName,BorderLayout.NORTH);
+    labelCurrent = new JLabel();
+    labelCurrent.setBorder(BorderFactory.createTitledBorder(Gedcom.getNameFor(Gedcom.INDIVIDUALS,false)));
+    add(labelCurrent,BorderLayout.NORTH);
     
     JPanel panel = createPanel();
     add(panel,BorderLayout.CENTER);
@@ -156,25 +152,15 @@ public class NavigatorView extends JPanel implements ContextSupport {
   /**
    * Set jump 
    */
-  private void setJump(String tip, Entity e) {
+  private void setJump(String tip, Indi i) {
     JButton b = (JButton)tip2button.get(tip);
-    if (e==null) {
+    if (i==null) {
       tip2indi.remove(tip);
       b.setEnabled(false);
     } else {
-      tip2indi.put(tip, e);
+      tip2indi.put(tip, i);
       b.setEnabled(true);
     }
-  }
-  
-  /**
-   * Sets the label and title
-   */
-  private void setLabel(String title, Indi indi) {
-    if (title==null) title = Gedcom.getNameFor(Gedcom.INDIVIDUALS,false);
-    borderName.setTitle(title);
-    labelName.setText(indi!=null ? indi.getName() : "n/a");
-    repaint();
   }
   
   /**
@@ -198,9 +184,6 @@ public class NavigatorView extends JPanel implements ContextSupport {
     // and current
     current = (Indi)e;
 
-    // update label
-    setLabel(null, current);
-    
     // nothing?
     if (current == null) {
       // buttons
@@ -208,6 +191,8 @@ public class NavigatorView extends JPanel implements ContextSupport {
       while (buttons.hasNext()) {
         ((JButton)buttons.next()).setEnabled(false);
       }
+      // update label
+      labelCurrent.setText("n/a");
     } else {
       // buttons
       setJump(TIP_FATHER  , current.getFather());
@@ -216,6 +201,8 @@ public class NavigatorView extends JPanel implements ContextSupport {
       setJump(TIP_PARTNER , current.getPartners().length==0?null:current.getPartners()[0]);
       setJump(TIP_YSIBLING, current.getYoungerSibling());
       setJump(TIP_CHILD   , current.getChildren().length==0?null:current.getChildren()[0]);
+      // update label
+      labelCurrent.setText(current.getName());
     }
           
     // done
@@ -258,53 +245,66 @@ public class NavigatorView extends JPanel implements ContextSupport {
    */
   private JPanel createPanel() {    
     
-    JPanel result = new JPanel();    
-    result.setBorder(BorderFactory.createTitledBorder(resources.getString("nav.navigate.title")));
+    final String title = resources.getString("nav.navigate.title");
+    final TitledBorder border = BorderFactory.createTitledBorder(title);
+    final JPanel result = new JPanel();    
+    result.setBorder(border);
     GridBagHelper gh = new GridBagHelper(result);
     
     // create listener
+    MouseListener ml = new MouseAdapter() {
+      /** show preview */
+      public void mouseEntered(MouseEvent e) {
+        String tip = ((JButton)e.getSource()).getActionCommand();
+        set((Indi)tip2indi.get(tip));
+      }
+      /** restore current */
+      public void mouseExited(MouseEvent e) {
+        set(null);
+      }
+      /** set border text */
+      private void set(Indi indi) {
+        border.setTitle(indi!=null?"to "+indi.getName():title);
+        result.repaint();
+      }
+      /**
+       * @see java.awt.event.MouseAdapter#mouseReleased(java.awt.event.MouseEvent)
+       */
+      public void mouseReleased(MouseEvent e) {
+        mouseEntered(e);
+      }
+    };
+    
     ActionListener al = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         fireCurrentEntity((Entity)tip2indi.get(e.getActionCommand()));
       }
     };
     
-    MouseListener ml = new MouseAdapter() {
-      /** show preview */
-      public void mouseEntered(MouseEvent e) {
-        String tip = ((JButton)e.getSource()).getActionCommand();
-        setLabel(tip, (Indi)tip2indi.get(tip));
-      }
-      /** restore current */
-      public void mouseExited(MouseEvent e) {
-        setLabel(null, current);
-      }
-    };
-    
     // add the buttons
     gh.add(
       createButton(TIP_FATHER, Images.imgNavFatherOff, Images.imgNavFatherOn, al, ml) 
-      ,2,1,1,1
+      ,3,2,1,1
     );
     gh.add(
       createButton(TIP_MOTHER, Images.imgNavMotherOff, Images.imgNavMotherOn, al, ml) 
-      ,3,1,1,1
+      ,4,2,1,1
     );
     gh.add(
       createButton(TIP_OSIBLING, Images.imgNavOlderSiblingOff, Images.imgNavOlderSiblingOn, al, ml) 
-      ,0,2,2,1
+      ,1,3,2,1
     );
     gh.add(
       createButton(TIP_PARTNER, Images.imgNavPartnerOff, Images.imgNavPartnerOn, al, ml)
-      ,2,2,2,1,0,new Insets(12,0,12,0)
+      ,3,3,2,1,0,new Insets(12,0,12,0)
     );
     gh.add(
       createButton(TIP_YSIBLING, Images.imgNavYoungerSiblingOff, Images.imgNavYoungerSiblingOn, al, ml)
-      ,4,2,2,1
+      ,5,3,2,1
     );
     gh.add(
       createButton(TIP_CHILD, Images.imgNavChildOff, Images.imgNavChildOn, al, ml)  
-      ,2,3,2,1
+      ,3,4,2,1
     );
 
     // done
