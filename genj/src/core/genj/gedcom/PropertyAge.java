@@ -168,13 +168,13 @@ public class PropertyAge extends Property {
     if (ageAsString!=null||other.ageAsString!=null)
       return super.compareTo(other);
     // compare years
-    int delta = other.years - years;
+    int delta = years - other.years;
     if (delta!=0) return delta;
     // .. months
-    delta = other.months - months;
+    delta = months - other.months;
     if (delta!=0) return delta;
     // .. days
-    delta = other.days - days;
+    delta = days - other.days;
     return delta;
   }
 
