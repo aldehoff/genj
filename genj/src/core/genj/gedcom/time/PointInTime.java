@@ -157,6 +157,8 @@ public class PointInTime implements Comparable {
    * Accessor to a calendar transformed copy 
    */
   public PointInTime getPointInTime(Calendar cal) throws GedcomException {
+    if (calendar==cal)
+      return this;
     PointInTime result = new PointInTime();
     result.set(this);
     result.set(cal);
