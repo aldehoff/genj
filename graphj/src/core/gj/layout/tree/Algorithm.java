@@ -27,6 +27,7 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,9 +79,8 @@ import java.util.Stack;
   /**
    * Apply to a node - root will stay at present position
    * @param tree the tree to layout
-   * @param tlayout the tree-layout
    */
-  /*package*/ Contour applyTo(Tree tree) {
+  /*package*/ Rectangle2D layout(Tree tree, Collection debugShapes) {
 
     // Save root's original position
     Node root = tree.getRoot();
@@ -89,235 +89,276 @@ import java.util.Stack;
       rootLon = orientn.getLongitude(root.getPosition());
 
     // layout starting with the root of the tree
-    Contour result = layoutNode(root, null, tree, 0);
+    Branch branch = layout(root, null, tree, 0);
     
     // calculate delta to get everything back to original position
     double
       dlat = rootLat - orientn.getLatitude (root.getPosition()),
       dlon = rootLon - orientn.getLongitude(root.getPosition());
 
-    // translate the absolute contour
-    result.translate(dlat,dlon);
+    // finalize and return
+    Contour result = branch.finalize(dlat, dlon);
     
-    // transform relative node/arc positions into absolute ones
-    placeAllDescendants(tree.getRoot(), null, orientn.getPoint2D(dlat,dlon));
-
+    // debug?
+    if (debugShapes!=null) debugShapes.add(new DebugShape(result));
+    
     // done
-    return result;
+    return orientn.getBounds(result); 
   }
   
-  /**
-   * Apply to a node
-   * @param tree the tree to layout
-   * @param lat,lon where to place the tree's north/west
-   * @param tlayout the tree-layout
-   */
-  /*package*/ Contour applyTo(Tree tree, double lat, double lon) {
-
-    // layout starting with the root of the tree
-    Contour result = layoutNode(tree.getRoot(), null, tree, 0);
-    
-    // calculate delta to get everything to lat/lon
-    double 
-      dlat = lat - result.north,
-      dlon = lon - result.west ;
-    
-    // translate the absolute contour
-    result.translate(dlat,dlon);
-    
-    // transform relative node/arc positions into absolute ones
-    placeAllDescendants(tree.getRoot(), null, orientn.getPoint2D(dlat,dlon));
-
-    // done
-    return result;
-  }
-
   /**
    * Layout a node and all its descendants
    * <il>
    *  <li>all children of node (without backtracking to parent) are layouted
    *      recursively and placed beside each other (west to east)
-   *  <li>node is placed as the parent of children (north of)
+   *  <li>node is placed as atop of children (north of)
    *  <li>arcs are layouted between node and its children
-   *  <li>arcs/nodes to children of node are placed relative to its position  
+   *  <li>arcs/nodes to children are placed relative to root  
    *  <li>a merged contour for node and its children is calculated
    * </il>
    */
-  private Contour layoutNode(Node node, Node parent, Tree tree, int generation) {
+  private Branch layout(Node node, Node parent, Tree tree, int generation) {
     
     // are we looking at an inverted case?
     boolean toggleOrientation = orientntggls.contains(node);
     if (toggleOrientation) {
       // patch alignment of nodes, too
-      if (oldos.size()==0) nodeop = new ToggleAlignment(nodeop);
+      if (oldos.size()==0) nodeop = new AlignedNodeOptions(nodeop);
       // save old orientation
       oldos.push(orientn);
       // set new
       orientn = orientn.rotate((oldos.size()&1)==0);
     }
 
-    // we layout the children
-    Contour[] children = layoutChildren(node, parent, tree, generation);
+    // we calculate the children (now from west to east)
+    Branch[] children = calcChildren(node, parent, tree, generation);
+    
+    // create a contour for the root @ the right position
+    Contour contour = calcParentPosition(node, children, tree, generation);
+    
+    // calculate arcs to children
+    calcArcs( node, contour ); 
 
-    // we layout the root
-    Contour root = layoutParent(node, children, tree, generation);
-
-    // .. and the arcs to its children
-    layoutArcs2Children( 
-      node, 
-      toggleOrientation ? orientn.getLatitude(node.getPosition()) : root.south, 
-      orientn,
-      arcop
-    );
-
-    // place arcs/children relative to current node
-    placeChildrenRelative2Parent(node, parent);
-
-    // The result is a hull comprised of root's and children's hull
-    List l = new ArrayList(); 
-      l.add(root);
-      for (int i=0; i<children.length; i++) {
-      	l.add(children[i]);
-      } 
-      l.add(root);
-    Contour result = Contour.merge((Contour[])l.toArray(new Contour[0]));
+    // merge contours
+    contour = calcContour(contour, children);
      
     // If another layout was used to create the contour result
     if (toggleOrientation) {
       // transform result into 2d
-      Rectangle2D bounds = orientn.getBounds(result);
+      Rectangle2D bounds = orientn.getBounds(contour);
       // restore old orientation
       orientn = (Orientation)oldos.pop();
       // transform result into lat/lon
-      result = orientn.getContour(bounds);
+      contour = orientn.getContour(bounds);
       // restore alignment?
-      if (oldos.size()==0) nodeop = ((ToggleAlignment)nodeop).getOriginal();
+      if (oldos.size()==0) nodeop = ((AlignedNodeOptions)nodeop).getOriginal();
     }
 
     // done
-    return result;
+    return new Branch(node, parent, contour);
   }
 
 
   /**
-   * Layout children of root and create contours for them
+   * Calculate branches for children side-by-side
    */
-  private Contour[] layoutChildren(Node node, Node parent, Tree tree, int generation) {
+  private Branch[] calcChildren(Node root, Node parent, Tree tree, int generation) {
 
-    Node[] nodes = new Node[node.getArcs().size()];
-    Contour[] contours = new Contour[nodes.length];
+    // prepare some space
+    List children = new ArrayList(root.getArcs().size());
+    Branch
+      previous = null,
+      next = null;
     
-    // we loop through all arcs leaving this node
-    ArcIterator it = new ArcIterator(node);
-    int c=0;while (it.next()) {
-
+    // we loop through all arcs leaving root
+    ArcIterator it = new ArcIterator(root);
+    while (it.next()) {
+      
       // we don't go after seconds, loops or backwards
       if (!it.isFirst||it.isLoop||it.dest==parent) continue;
 
-      // the current child
-      nodes[c] = it.dest;
+      // recursive step for another child
+      next = layout(it.dest, root, tree, generation+1);
 
-      // recursive step into child
-      contours[c] = layoutNode(nodes[c], node, tree, generation+1);
-
-      // position 'new' child if not first
-      if (c>0) {
+      // place it beside previous
+      if (previous!=null) {
         
-        // place n-th child top-align
-        double dlat = contours[c-1].north - contours[c].north;
-        contours[c].translate(dlat, 0);
-    
-        // calculate the distnace to previous children
-        double dlon = calcMinDist(contours, c, contours[c]);
-
-        // place n-th child as close as possible
-        contours[c].translate(0, -dlon);
-        ModelHelper.move(nodes[c],orientn.getPoint2D(dlat, -dlon));
-                
-        // 'new' child is positioned
+        // place next top-align with previous
+        next.moveLatAligned(previous);
+        
+        // and then as close as possible to previous
+        next.moveBy(0, -calcMinimumDistance(children, next));
+        
       }
       
-      // one child handled
-      c++;
+      // keep it
+      children.add(next);
+      
+      // next
+      previous = next;
     }
 
     // done
-    Object[] result=new Contour[c];
-    System.arraycopy(contours,0,result,0,c);
-    return (Contour[])result;
+    return (Branch[])children.toArray(new Branch[children.size()]);
   }
-  
+
+
   /**
-   * Place root in parent-position to children create a contour for it
+   * Calculate a merged contour
    */
-  private Contour layoutParent(Node parent, Contour[] children, Tree tree, int generation) {
+  private Contour calcContour(Contour parent, Branch[] children) {
+    List contours = new ArrayList(1+children.length+1);
+    contours.add(parent);
+    for (int c=0; c<children.length; c++) contours.add(children[c].contour);        
+    contours.add(parent);
+    return Contour.merge((Contour[])contours.toArray(new Contour[0]));
+  }
 
+  /**
+   * Calculate parent's position and contour
+   */
+  private Contour calcParentPosition(Node root, Branch[] children, Tree tree, int generation) {
+  
     // the parent's contour
-    Shape shape = parent.getShape();
+    Shape shape = root.getShape();
     Contour result = orientn.getContour(shape!=null ? shape.getBounds2D() : new Rectangle2D.Double());
-    result.north -= nodeop.getPadding(parent, nodeop.NORTH, orientn);
-    result.south += nodeop.getPadding(parent, nodeop.SOUTH, orientn);
-    result.west  -= nodeop.getPadding(parent, nodeop.WEST , orientn);
-    result.east  += nodeop.getPadding(parent, nodeop.EAST , orientn);
-
+    result.north -= nodeop.getPadding(root, nodeop.NORTH, orientn);
+    result.south += nodeop.getPadding(root, nodeop.SOUTH, orientn);
+    result.west  -= nodeop.getPadding(root, nodeop.WEST , orientn);
+    result.east  += nodeop.getPadding(root, nodeop.EAST , orientn);
+    
     // the parent's position
-    double lat,lon;
-    if (children.length==0) {
-
-      // a leaf is simply placed
-      lon = nodeop.getLongitude(parent, 0, 0, 0, 0, orientn);
-      lat = 0;
-
-    } else {
-
+    double lat = 0, lon = 0;
+    if (children.length>0) {
+  
       // calculate min/maxs
       double
-        minc = children[0].getIterator(Contour.WEST).longitude - result.west,
-        maxc = children[children.length-1].getIterator(Contour.EAST).longitude - result.east,
+        minc = children[0].contour.getIterator(Contour.WEST).longitude - result.west,
+        maxc = children[children.length-1].contour.getIterator(Contour.EAST).longitude - result.east,
         mint =  Double.MAX_VALUE,
         maxt = -Double.MAX_VALUE;
-
+  
       for (int c=0; c<children.length; c++) {
-        mint = Math.min(mint, children[c].west - result.west);
-        maxt = Math.max(maxt, children[c].east - result.east);
+        mint = Math.min(mint, children[c].contour.west - result.west);
+        maxt = Math.max(maxt, children[c].contour.east - result.east);
       }
-
-      lon = nodeop.getLongitude(parent, minc, maxc, mint, maxt, orientn);
-      lat = children[0].north - result.south;
-
+  
+      lon = nodeop.getLongitude(root, minc, maxc, mint, maxt, orientn);
+      lat = children[0].contour.north - result.south;
+  
     }
-
+  
     // Override latitude for isAlignGeneration
     if (latalign) {
       lat = tree.getLatitude(generation);
       double
         min = lat - result.north,
         max = lat + tree.getHeight(generation) - result.south;
-
-      lat = nodeop.getLatitude(parent, min, max, orientn);
+  
+      lat = nodeop.getLatitude(root, min, max, orientn);
     }
-
+  
     // place it at (lat,lon)
-    parent.getPosition().setLocation(orientn.getPoint2D(lat,lon));
+    root.getPosition().setLocation(orientn.getPoint2D(lat,lon));
     result.translate(lat,lon);
+    
     if (latalign) {
       result.north = tree.getLatitude(generation);
     }
-
+  
     // done
     return result;
   }
-
+  
   /**
-   * Calculates the minimum distance of n contours in cs with c 
-   * @param cs contours
-   * @param n number of contours in cs
-   * @param c contour
+   * Calculate the arcs to children
    */
-  private double calcMinDist(Contour[] cs, int css, Contour c) {
+  private void calcArcs(Node node, Contour parent) {
+    
+    // Loop through arcs to children (without backtrack)
+    ArcIterator it = new ArcIterator(node);
+    while (it.next()) {
+      // no path no interest
+      if (it.arc.getPath()==null) continue;
+      // handle loops separate from specialized
+      if (it.isLoop) ArcHelper.update(it.arc);
+      else {
+        if (bendarcs) calcBendedArc(it.arc, parent);
+        else calcStraightArc(it.arc);
+      }
+    }
+    // done      
+  }
+  
+  /**
+   * make a straight arc
+   */
+  private void calcStraightArc(Arc arc) {
+    
+    // grab nodes and their position/shape
+    Node
+      n1 = arc.getStart(),
+      n2 = arc.getEnd  ();
+    Point2D 
+      p1 = arcop.getPort(arc, n1, orientn),
+      p2 = arcop.getPort(arc, n2, orientn);
+    Shape 
+      s1 = n1.getShape(),
+      s2 = n2.getShape();
+
+    // calculate south of p1 and north of p2
+    p1 = Geometry.getIntersection(
+      p1, orientn.getPoint2D(orientn.getLatitude(p2), orientn.getLongitude(p1)),
+      p1, s1
+    );
+    p2 = Geometry.getIntersection(
+      p2, orientn.getPoint2D(orientn.getLatitude(p1), orientn.getLongitude(p2)),
+      p2, s2
+    );
+
+    // strike a path
+    Path path = arc.getPath();
+    path.reset();
+    path.moveTo(p1);
+    path.lineTo(p2);
+    
+    // done  
+  }
+  
+  /**
+   * make a bended arc
+   */
+  private void calcBendedArc(Arc arc, Contour parent) {
+    
+    // grab arc's information
+    Node
+      n1 = arc.getStart(),
+      n2 = arc.getEnd();
+      
+    Point2D
+      p1 = arcop.getPort(arc, n1, orientn),
+      p2 = new Point2D.Double(),
+      p3 = new Point2D.Double(),
+      p4 = arcop.getPort(arc, n2, orientn);
+
+    p2.setLocation(orientn.getPoint2D(parent.south, orientn.getLongitude(p1)));
+    p3.setLocation(orientn.getPoint2D(parent.south, orientn.getLongitude(p4)));
+
+    // layout       
+    ArcHelper.update(arc.getPath(), new Point2D[]{p1,p2,p3,p4}, n1.getShape(), n2.getShape());
+    
+    // done
+  }
+    
+  /**
+   * Calculates the minimum distance of list of branches and other
+   * @param branches the list of branches
+   * @param other branch
+   */
+  private double calcMinimumDistance(List branches, Branch other) {
 
     // all min distances
-    double[] ds = calcMinDists(cs,css,c);
+    double[] ds = calcMinimumDistances(branches, other);
     
     // find minimum distance
     double result = Double.MAX_VALUE;
@@ -328,27 +369,24 @@ import java.util.Stack;
   }
 
   /**
-   * Calculates the deltas of each contour in cs with c
-   * @param cs contours to compare against
-   * @param css number of contours in cs
-   * @param c contour to compare against
+   * Calculates the distances of a list of branches and other
+   * @param branches the list of branches
+   * @param other branch
    */
-  private double[] calcMinDists(Contour[] cs, int css, Contour c) {
+  private double[] calcMinimumDistances(List branches, Branch other) {
     
     // create a result
-    double[] result = new double[css];
+    double[] result = new double[branches.size()];
+    for (int r=0;r<result.length;r++) result[r] = Double.MAX_VALUE;
 
-    // we'll iterate west of c - our east
-    Contour.Iterator east = c.getIterator(c.WEST);
-    
-    // assume unlimited delta
-    for (int i=0;i<css;i++) result[i] = Double.MAX_VALUE;
+    // we'll iterate west-side of other -> the east
+    Contour.Iterator east = other.contour.getIterator(Contour.WEST);
       
     // loop through from east to west
-    loop: for (int i=css-1;i>=0;i--) {
+    loop: for (int r=result.length-1;r>=0;r--) {
       
-      // here's the iterator west
-      Contour.Iterator west = cs[i].getIterator(c.EAST);
+      // the east-side of branch r -> west
+      Contour.Iterator west = ((Branch)branches.get(r)).contour.getIterator(Contour.EAST);
       
       // calculate distance
       while (true) {
@@ -359,7 +397,7 @@ import java.util.Stack;
         while (east.south<=west.north) if (!east.next()) break loop;
 
         // calc distance of segments
-        result[i] = Math.min( result[i], east.longitude-west.longitude);
+        result[r] = Math.min( result[r], east.longitude-west.longitude);
 
         // skip northern segment
         if (west.south<east.south) {
@@ -377,169 +415,17 @@ import java.util.Stack;
     // done
     return result;
   }
-  
-  /**
-   * Transforms absolute positions of direct descendants
-   * into relative ones
-   */
-  private void placeChildrenRelative2Parent(Node node, Node parent) {
-
-    // loop through arcs    
-    Point2D delta = Geometry.getNegative(node.getPosition());
-    ArcIterator it = new ArcIterator(node);
-    while (it.next()) {
-      // don't follow backtrack
-      if (it.dest==parent) continue;
-      // relativate arc
-      Path path = it.arc.getPath();
-      if (path!=null) path.translate(delta);
-      // relativate other
-      if (it.isFirst&&!it.isLoop) ModelHelper.move(ModelHelper.getOther(it.arc, node), delta);
-    }
-
-    // done    
-  }
-  
-  /**
-   * Transforms all relative positions of tree starting
-   * at node into absolute ones (recursively)
-   */
-  private void placeAllDescendants(Node node, Node parent, Point2D delta) {
-
-    // change the node's position
-    ModelHelper.move(node, delta);
-
-    // propagate via arcs
-    ArcIterator it = new ArcIterator(node);
-    while (it.next()) {
-      // .. only down the tree
-      if (it.dest==parent) continue;
-      // .. tell the arc's path
-      Path path = it.arc.getPath();
-      if (path!=null) path.translate(node.getPosition());
-      // .. never loop'd
-      if (it.isLoop) continue;
-      // .. 1st only
-      if (!it.isFirst) continue;
-      // .. child
-      Node child = ModelHelper.getOther(it.arc, node);
-      // .. recursion
-      placeAllDescendants(child, node, node.getPosition());
-    }
-
-    // done
-  }
-
-  /**
-   * make an arc
-   */
-  private void layoutArcs2Children(Node node, double equator, Orientation orientation, ArcOptions arcop) {
-    
-    // Loop through arcs to children (without backtrack)
-    ArcIterator it = new ArcIterator(node);
-    while (it.next()) {
-      // no path no interest
-      if (it.arc.getPath()==null) continue;
-      // handle loops separate from specialized
-      if (it.isLoop) ArcHelper.update(it.arc);
-      else {
-        if (bendarcs) layoutBendedArc(it.arc, equator, orientation, arcop);
-        else layoutStraightArc(it.arc, orientation, arcop);
-      }
-    }
-    // done      
-  }
-  
-  /**
-   * make a straight arc
-   */
-  private void layoutStraightArc(Arc arc, Orientation o, ArcOptions arcop) {
-    
-    // grab nodes and their position/shape
-    Node
-      n1 = arc.getStart(),
-      n2 = arc.getEnd  ();
-    Point2D 
-      p1 = arcop.getPort(arc, n1, o),
-      p2 = arcop.getPort(arc, n2, o);
-    Shape 
-      s1 = n1.getShape(),
-      s2 = n2.getShape();
-
-    // calculate south of p1 and north of p2
-    p1 = Geometry.getIntersection(
-      p1, o.getPoint2D(o.getLatitude(p2), o.getLongitude(p1)),
-      p1, s1
-    );
-    p2 = Geometry.getIntersection(
-      p2, o.getPoint2D(o.getLatitude(p1), o.getLongitude(p2)),
-      p2, s2
-    );
-
-    // strike a path
-    Path path = arc.getPath();
-    path.reset();
-    path.moveTo(p1);
-    path.lineTo(p2);
-    
-    // done  
-  }
-  
-  /**
-   * make a bended arc
-   */
-  protected void layoutBendedArc(Arc arc, double equator, Orientation o, ArcOptions arcop) {
-    
-    // grab arc's information
-    Node
-      n1 = arc.getStart(),
-      n2 = arc.getEnd();
-      
-    Point2D
-      p1 = arcop.getPort(arc, n1, o),
-      p2 = new Point2D.Double(),
-      p3 = new Point2D.Double(),
-      p4 = arcop.getPort(arc, n2, o);
-
-    // straight line up?
-    if (o.getLongitude(p1)==o.getLongitude(p4)) {
-      layoutStraightArc(arc, o, arcop);
-      return;
-    }        
-
-    // bending around equator
-    if (equator==o.getLatitude(p1)) {
-      p2.setLocation(o.getPoint2D(equator, o.getLongitude(p4)));
-      p3=p2;
-    } else if (equator==o.getLatitude(p4)) {
-      p2.setLocation(o.getPoint2D(equator, o.getLongitude(p1)));
-      p3=p2;
-    } else {
-      p2.setLocation(o.getPoint2D(equator, o.getLongitude(p1)));
-      p3.setLocation(o.getPoint2D(equator, o.getLongitude(p4)));
-    }
-
-    // layout       
-    ArcHelper.update(
-      arc.getPath(),
-      new Point2D[]{p1,p2,p3,p4},
-      n1.getShape(),
-      n2.getShape()
-    );
-    
-    // done
-  }
     
   /**
    * AlignNodeOptions
    */
-  private class ToggleAlignment implements NodeOptions {
+  private class AlignedNodeOptions implements NodeOptions {
     /** the orignal node options */
     private NodeOptions original;
     /**
      * Constructor
      */
-    private ToggleAlignment(NodeOptions originl) {
+    private AlignedNodeOptions(NodeOptions originl) {
       original = originl;
     }
     /**
@@ -570,4 +456,135 @@ import java.util.Stack;
   } //ToggleAlignment
 
 
+  /**
+   * The layouted branch of a tree 
+   */
+  private class Branch {
+    
+    /** the root */
+    private Node root;
+    
+    /** the contour */
+    private Contour contour;
+    
+    /**
+     * Constructor
+     */
+    private Branch(Node root, Node parent, Contour contour) {
+      
+      // remember
+      this.root = root;
+      this.contour = contour;
+      
+      // place arcs/children relative to current node
+      Point2D delta = Geometry.getNegative(root.getPosition());
+      ArcIterator it = new ArcIterator(root);
+      while (it.next()) {
+        // don't follow back
+        if (it.dest==parent) continue;
+        // update the arc
+        Path path = it.arc.getPath();
+        if (path!=null) path.translate(delta);
+        // don't go twice or loop
+        if (!it.isFirst&&it.isLoop) continue;
+        // update the node
+        ModelHelper.move(it.dest, delta);
+      }
+
+      // done      
+    }
+    
+    /**
+     * Places all nodes in the branch at absolute positions
+     */
+    private Contour finalize(double dlat, double dlon) {
+      finalize(root, null, orientn.getPoint2D(dlat,dlon));
+      contour.translate(dlat, dlon);
+      return contour;
+    }
+    
+    /**
+     * Places all nodes under node at absolute positions 
+     */
+    private void finalize(Node node, Node parent, Point2D delta) {
+
+      // change the node's position
+      ModelHelper.move(node, delta);
+
+      // propagate via arcs
+      ArcIterator it = new ArcIterator(node);
+      while (it.next()) {
+        // .. only down the tree
+        if (it.dest==parent) continue;
+        // .. tell the arc's path
+        Path path = it.arc.getPath();
+        if (path!=null) path.translate(node.getPosition());
+        // .. never loop'd
+        if (it.isLoop) continue;
+        // .. 1st only
+        if (!it.isFirst) continue;
+        // .. recursion
+        finalize(it.dest, node, node.getPosition());
+      }
+
+      // done
+    }
+     
+    /**
+     * Move this branch
+     */
+    private void moveBy(double dlat, double dlon) {
+      contour.translate(dlat, dlon);
+      ModelHelper.move(root, orientn.getPoint2D(dlat, dlon));
+    }
+
+    /**
+     * Move this branch
+     */
+    private void moveTo(double lat, double lon) {
+      Point2D pos = root.getPosition();
+      moveBy( lat - orientn.getLatitude(pos), lon - orientn.getLongitude(pos));
+    }
+  
+    /**
+     * Align this branch to another one laterally
+     * @param other the Branch to align to
+     */
+    private void moveLatAligned(Branch other) {
+      moveBy(other.contour.north - this.contour.north, 0);
+    }
+  
+  } //Branch
+
+  /**
+   * A shape that can be used for debugging a contour
+   */
+  private class DebugShape extends Path {
+    /**
+     * Constructor
+     */
+    private DebugShape(Contour contour) {
+
+      // add debugging information about contour's segments
+      Contour.Iterator it = contour.getIterator(Contour.WEST);
+      Point2D a = orientn.getPoint2D(it.north, it.longitude);
+      moveTo(a);
+      do {
+        lineTo(orientn.getPoint2D(it.north, it.longitude));
+        lineTo(orientn.getPoint2D(it.south, it.longitude));
+      } while (it.next());
+      Point2D b = getLastPoint();
+      moveTo(a);
+
+      it = contour.getIterator(Contour.EAST);
+      do {
+        lineTo(orientn.getPoint2D(it.north, it.longitude));
+        lineTo(orientn.getPoint2D(it.south, it.longitude));
+      } while (it.next());
+      lineTo(b);
+
+      // done
+    }
+  }
+  
 } //NodeLayout

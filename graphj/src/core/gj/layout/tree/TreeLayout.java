@@ -15,14 +15,15 @@
  */
 package gj.layout.tree;
 
-import gj.awt.geom.Path;
 import gj.layout.AbstractLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
+
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -312,34 +313,19 @@ public class TreeLayout extends AbstractLayout implements Layout {
     if (root==null||!graph.getNodes().contains(root)) root=(Node)unvisited.iterator().next();
 
     // loop as long as there are nodes that we haven't visited yet
-    double north=0, west=0, east=0, south=0;
-    Contour contour = null;
+    Rectangle2D bounds = new Rectangle2D.Double();
     while (true) {
 
-      // create a Tree for current root
+      // create a Tree for current root assuming that all nodes in it will be visited
       Tree tree = new Tree(graph,root,latPadding,orientn);
-
-      // all nodes in that will be visited
       unvisited.removeAll(tree.getNodes());
 
-      // layout through root
-      if (contour==null) {
-        // 1st time
-        contour = nlayout.applyTo(tree);
-        // move position for next tree & update bounds
-        north = contour.north;
-        west  = contour.west ;
-        east  = contour.east ;
-        south = contour.south;
-      } else {
-        contour = nlayout.applyTo(tree, south, west);
-        east  = Math.max(east , contour.east );
-        south = contour.south;
-      }
+      // place root and layout
+      root.getPosition().setLocation(bounds.getMaxX(), bounds.getMaxY());
       
-      // and keep the contour(s)
-      if (isDebug()) debug(contour, orientn);
-
+      // update bounds
+      bounds.add(nlayout.layout(tree, isDebug()?debugShapes:null));
+      
       // choose a new root (for a new sub-graph)
       if (isIgnoreUnreachables||unvisited.isEmpty()) break;
 
@@ -349,64 +335,9 @@ public class TreeLayout extends AbstractLayout implements Layout {
 
 
     // Lastly tell the graph its size
-    graph.getBounds().setRect(orientn.getBounds(new Contour(north,west,east,south)));
+    graph.getBounds().setRect(bounds);
 
     // Done
-  }
-
-  /**
-   * A complement is a layout that is rotated counter-clockwise
-   * (or clockwise for a complement of a complement)
-   */
-//  /*package*/ TreeLayout getComplement() {
-//    try {
-//      // a clone gives us what we need
-//      TreeLayout result = (TreeLayout)clone();
-//      // rotate it according to whether we're a complement or not
-//      getOrientation().rotate(result, isComplement);
-//      // it's a complement now ... or back to not a complement
-//      result.isComplement = !isComplement;
-//      // the padding flips 
-//      result.lonPadding = latPadding;
-//      result.latPadding = lonPadding;
-//      // the layout of parents is extreme
-//      result.lonAlignment = result.isComplement ? 1D : 0D;
-//      // done
-//      return result;
-//    } catch (CloneNotSupportedException e) {
-//      throw new RuntimeException("Couldn't clone TreeLayout");
-//    }
-//  }
-
-  /**
-   * Adds more debugging information
-   */
-  private void debug(Contour contour, Orientation orientn) {
-
-    // add debugging information about contour's segments
-   Path path = new Path();
-
-    Contour.Iterator it = contour.getIterator(Contour.WEST);
-    Point2D a = orientn.getPoint2D(it.north, it.longitude);
-    path.moveTo(a);
-    do {
-      path.lineTo(orientn.getPoint2D(it.north, it.longitude));
-      path.lineTo(orientn.getPoint2D(it.south, it.longitude));
-    } while (it.next());
-    Point2D b = path.getLastPoint();
-    path.moveTo(a);
-
-    it = contour.getIterator(Contour.EAST);
-    do {
-      path.lineTo(orientn.getPoint2D(it.north, it.longitude));
-      path.lineTo(orientn.getPoint2D(it.south, it.longitude));
-    } while (it.next());
-    path.lineTo(b);
-
-    debugShapes.add(path);
-    debugShapes.add(orientn.getBounds(contour));
-
-    // done
   }
 
   /**
