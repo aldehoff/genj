@@ -184,6 +184,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       registry.get("pad"   ,defm.pad   )
     ));
     isAntialiasing = registry.get("antial", false);
+    model.setHideAncestorsIDs(registry.get("hide.ancestors", new ArrayList()));
+    model.setHideDescendantsIDs(registry.get("hide.descendants", new ArrayList()));
  
     // root
     Entity root = null;
@@ -286,6 +288,10 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       bs[b] = it.next().toString();
     }
     registry.put("bookmarks", bs);
+    // stoppers
+    registry.put("hide.ancestors"  , model.getHideAncestorsIDs());
+    registry.put("hide.descendants", model.getHideDescendantsIDs());
+    
     // done
     super.removeNotify();
   }

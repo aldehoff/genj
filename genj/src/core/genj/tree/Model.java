@@ -20,6 +20,7 @@
 package genj.tree;
 
 import genj.gedcom.Change;
+import genj.gedcom.DuplicateIDException;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -338,6 +339,64 @@ public class Model implements GedcomListener {
   public void setBookmarks(List set) {
     bookmarks.clear();
     bookmarks.addAll(set);
+  }
+  
+  /**
+   * Accessor - id's of entities hiding ancestors
+   */
+  public Collection getHideAncestorsIDs() {
+    return getIds(hideAncestors);
+  }
+  
+  /**
+   * Accessor - id's of entities hiding ancestors
+   */
+  public void setHideAncestorsIDs(Collection ids) {
+    hideAncestors.clear();
+    hideAncestors.addAll(getEntities(ids));
+  }
+
+  /**
+   * Accessor - id's of entities hiding descendants
+   */
+  public Collection getHideDescendantsIDs() {
+    return getIds(hideDescendants);
+  }
+  
+  /**
+   * Accessor - id's of entities hiding descendants
+   */
+  public void setHideDescendantsIDs(Collection ids) {
+    hideDescendants.clear();
+    hideDescendants.addAll(getEntities(ids));
+  }
+
+  /**
+   * Helper - get ids from collection of entities
+   */  
+  private Collection getIds(Collection entities) {
+    List result = new ArrayList();
+    Iterator es = entities.iterator();
+    while (es.hasNext()) {
+      Entity e = (Entity)es.next();
+      result.add(e.getId());
+    }
+    return result;    
+  }
+  
+  /**
+   * Helper - get entities from collection of ids
+   */  
+  private Collection getEntities(Collection ids) {
+    List result = new ArrayList();
+    Iterator is = ids.iterator();
+    while (is.hasNext()) {
+      try {
+        result.add(gedcom.getEntity(is.next().toString()));
+      } catch (DuplicateIDException de) {
+      }
+    }
+    return result;
   }
   
   /**
