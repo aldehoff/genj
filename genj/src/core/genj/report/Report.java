@@ -188,7 +188,7 @@ public abstract class Report implements Cloneable {
   /**
    * Flush any of the pending output
    */
-  protected final void flush() {
+  public final void flush() {
     if (out!=null)
       out.flush();
   }
@@ -196,14 +196,14 @@ public abstract class Report implements Cloneable {
   /**
    * Append a new line to the log
    */
-  protected final void println() throws ReportCancelledException {
+  public final void println() throws ReportCancelledException {
     println("");
   }
 
   /**
    * Write an arbitrary Object to the log
    */
-  protected final void println(Object o) throws ReportCancelledException {
+  public final void println(Object o) throws ReportCancelledException {
     // nothing to do?
     if (o==null)
       return;
@@ -218,7 +218,7 @@ public abstract class Report implements Cloneable {
   /**
    * log an exception
    */
-  protected final void println(Throwable t) {
+  public final void println(Throwable t) {
     CharArrayWriter awriter = new CharArrayWriter(256);
     t.printStackTrace(new PrintWriter(awriter));
     log(awriter.toString());
@@ -227,7 +227,7 @@ public abstract class Report implements Cloneable {
   /**
    * Helper method that queries the user for a directory
    */
-  protected final File getDirectoryFromUser(String title, String button) {
+  public final File getDirectoryFromUser(String title, String button) {
 
     JFileChooser chooser = new JFileChooser(".");
     chooser.setFileSelectionMode(chooser.DIRECTORIES_ONLY);
@@ -242,7 +242,7 @@ public abstract class Report implements Cloneable {
   /**
    * Helper method that shows (resulting) items to the user
    */
-  protected final void showItemsToUser(String msg, Gedcom gedcom, Item[] items) {
+  public final void showItemsToUser(String msg, Gedcom gedcom, Item[] items) {
 
     // prepare content
     JPanel content = new JPanel(new BorderLayout());
@@ -268,7 +268,7 @@ public abstract class Report implements Cloneable {
    * @param tag the tag of the entities to show
    * @param sortPath path to sort by or null
    */
-  protected final Entity getEntityFromUser(String msg, Gedcom gedcom, String tag, String sortPath) {
+  public final Entity getEntityFromUser(String msg, Gedcom gedcom, String tag, String sortPath) {
     // grab entities
     Object[] ents = gedcom.getEntities(tag).toArray();
     if (ents.length==0)
@@ -283,7 +283,7 @@ public abstract class Report implements Cloneable {
   /**
    * Helper method that queries the user for a choice of non-editable items
    */
-  protected final Object getValueFromUser(String msg, Object[] choices, Object selected) {
+  public final Object getValueFromUser(String msg, Object[] choices, Object selected) {
 
     ChoiceWidget choice = new ChoiceWidget(choices, selected);
     choice.setEditable(false);
@@ -304,7 +304,7 @@ public abstract class Report implements Cloneable {
    * Helper method that queries the user for a text-value giving him a
    * choice of remembered values
    */
-  protected final String getValueFromUser(String key, String msg, String[] choices) {
+  public final String getValueFromUser(String key, String msg, String[] choices) {
 
     // Choice to include already entered stuff?
     if ((key!=null)&&(registry!=null)) {
@@ -351,14 +351,14 @@ public abstract class Report implements Cloneable {
   /**
    * Helper method that queries the user for yes/no input
    */
-  protected final boolean getOptionFromUser(String msg, int option) {
+  public final boolean getOptionFromUser(String msg, int option) {
     return 0==getOptionFromUser(msg, OPTIONS[option]);
   }
   
   /**
    * Helper method that queries the user for yes/no input
    */
-  protected final int getOptionFromUser(String msg, String[] options) {
+  public final int getOptionFromUser(String msg, String[] options) {
     
     return viewManager.getWindowManager().openDialog(
       null,
@@ -375,28 +375,28 @@ public abstract class Report implements Cloneable {
   /**
    * i18n of a string
    */
-  protected final String i18n(String key) {
+  public final String i18n(String key) {
     return i18n(key, (Object[])null);
   }
 
   /**
    * i18n of a string
    */
-  protected final String i18n(String key, int sub) {
+  public final String i18n(String key, int sub) {
     return i18n(key, new Integer(sub));
   }
 
   /**
    * i18n of a string
    */
-  protected final String i18n(String key, Object sub) {
+  public final String i18n(String key, Object sub) {
     return i18n(key, new Object[]{sub});
   }
 
   /**
    * i18n of a string
    */
-  protected final String i18n(String key, Object[] subs) {
+  public final String i18n(String key, Object[] subs) {
 
     // get i18n properties
     if (i18n==null) {
@@ -438,21 +438,21 @@ public abstract class Report implements Cloneable {
   /**
    * Right Align a number as simple text
    */
-  protected final String align(int num, int width) {
+  public final String align(int num, int width) {
     return align(num+"", width, ALIGN_RIGHT);
   }
 
   /**
    * Left Align a simple text
    */
-  protected final String align(String text, int width) {
+  public final String align(String text, int width) {
     return align(text, width, ALIGN_RIGHT);
   }
 
   /**
    * Align a number as simple text
    */
-  protected final String align(int num, int width, int alignment) {
+  public final String align(int num, int width, int alignment) {
     return align(num+"", width, alignment);
   }
 
@@ -462,7 +462,7 @@ public abstract class Report implements Cloneable {
    * @param length the length of the result
    * @param alignment one of LEFT,CENTER,RIGHT
    */
-  protected final String align(String txt, int length, int alignment) {
+  public final String align(String txt, int length, int alignment) {
 
     // check txt length
     int n = txt.length();
