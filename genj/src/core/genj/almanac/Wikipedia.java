@@ -68,6 +68,8 @@ public class Wikipedia {
       Pattern.compile("'''(.*?)'''"  ), "<b>$1</b>",
       // "''" 
       Pattern.compile("''(.*?)''"  ), "<em>$1</em>",
+      // "&amp;" 
+      Pattern.compile("(&amp;)"  ), "&",
   };
 
   /** wikipedia url */
