@@ -224,6 +224,7 @@ public class ScreenResolutionScale extends JComponent {
         dpc.x = Math.max(10, startDPC.x * (p.x/startPos.x) );
       else     
         dpc.y = Math.max(10, startDPC.y * (p.y/startPos.y) );
+        
       // show it
       repaint();
     }

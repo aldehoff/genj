@@ -771,9 +771,11 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       contentRenderer.indiRenderer   = getEntityRenderer(Gedcom.INDIVIDUALS);
       contentRenderer.famRenderer    = getEntityRenderer(Gedcom.FAMILIES   );
       // special handling for adjusting fonts?
+//   FIXME dpi      
       if (isAdjustFonts) {
-        contentRenderer.indiRenderer.setResolution(UNITS);
-        contentRenderer. famRenderer.setResolution(UNITS);
+        Point dpi = new Point((int)(UNITS.getX()*10*2.54), (int)(UNITS.getY()*10*2.54));
+        contentRenderer.indiRenderer.setResolution(dpi);
+        contentRenderer. famRenderer.setResolution(dpi);
       }
       // let the renderer do its work
       contentRenderer.render(gw, model);

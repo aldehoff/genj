@@ -19,6 +19,7 @@
  */
 package genj.print;
 
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 
@@ -34,10 +35,9 @@ public interface Printer {
   public void setView(JComponent view);
   
   /**
-   * Calculates the number of pages (horizontally and vertically)
-   * needed to render the content on pages with given imageable
-   * size (dots) and resolution (dpi)     */
-  public Point calcPages(Point pageSize, Point resolution);
+   * Calculates the size of the content to be renderer with
+   * given resolution (dpi)     */
+  public Dimension calcSize(Point resolution);
   
   /**
    * Renders page content (x,y) on given context (dots) and 

@@ -5,6 +5,7 @@ import genj.print.Printer;
 import genj.util.swing.UnitGraphics;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -24,16 +25,17 @@ public class TreeViewPrinter implements Printer {
     tree = (TreeView)view;
   }
 
+
   /**
-   * @see genj.print.PrintRenderer#getNumPages(java.awt.geom.Point2D)
+   * @see genj.print.Printer#calcSize(java.awt.Point)
    */
-  public Point calcPages(Point pageSize, Point resolution) {
+  public Dimension calcSize(Point resolution) {
     
     Rectangle mmbounds = tree.getModel().getBounds();
     
-    return new Point(
-      (int)Math.ceil(mmbounds.width *0.1D/2.54D * resolution.x / pageSize.x),
-      (int)Math.ceil(mmbounds.height*0.1D/2.54D * resolution.y / pageSize.y)
+    return new Dimension(
+      (int)Math.ceil(mmbounds.width *0.1D/2.54D * resolution.x),
+      (int)Math.ceil(mmbounds.height*0.1D/2.54D * resolution.y)
     );
     
   }

@@ -209,10 +209,13 @@ public class PrintManager {
     }
     
     /**
-     * PageSize
+     * PageSize in dpi
      */
-    /*package*/ Point getPageSize() {
-      return new Point((int)pageFormat.getImageableWidth(),(int)pageFormat.getImageableHeight());
+    /*package*/ Dimension getPageSize() {
+      return new Dimension(
+        (int)pageFormat.getImageableWidth(),
+        (int)pageFormat.getImageableHeight()
+      );
     }
     
     /**
@@ -223,7 +226,13 @@ public class PrintManager {
       if (pages!=null) return pages;
       
       // FIXME fix resolution if required (e.g. 300)
-      pages = renderer.calcPages(getPageSize(), getResolution());
+      Dimension size = renderer.calcSize(getResolution());
+      Dimension page = getPageSize();
+      
+      pages = new Point(
+        (int)Math.ceil( ((float)size.width ) / page.width),
+        (int)Math.ceil( ((float)size.height) / page.height)
+      );
       
       // done
       return pages;

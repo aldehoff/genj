@@ -30,9 +30,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Point2D;
 import java.io.DataInputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -94,7 +94,7 @@ public class EntityRenderer {
   private boolean isDebug = false; 
   
   /** a resolution */
-  private Point2D.Float resolution = null;
+  private Point dpi = null;
 
   /**
    * Constructor
@@ -160,14 +160,13 @@ public class EntityRenderer {
   }
   
   /**
-   * Setup specific resolution (in dots per centimeters)   */
-  public EntityRenderer setResolution(Point2D res) {
+   * Setup specific resolution (dpi)   */
+  public EntityRenderer setResolution(Point set) {
     // keep the resolution
-    if (res==null) {
-      resolution = null;
+    if (set==null) {
+      dpi = null;
     } else {
-      resolution = new Point2D.Float();
-      resolution.setLocation(res);
+      dpi = new Point(set);
     }
     // done
     return this;
@@ -228,8 +227,8 @@ public class EntityRenderer {
      */
     public Font getFont(AttributeSet attr) {
       Font font = super.getFont(attr);
-      if (resolution!=null) {
-        float factor = resolution.y*2.54F/72; 
+      if (dpi!=null) {
+        float factor = dpi.y/72F; 
         font = font.deriveFont(factor*font.getSize2D());
       }
       return font;
@@ -737,7 +736,7 @@ public class EntityRenderer {
       // clip and render
       Shape old = g.getClip();
       g.clipRect(r.x, r.y, r.width, r.height);
-      renderer.render(g, r, property, preference, resolution);
+      renderer.render(g, r, property, preference, dpi);
       g.setClip(old);
       // done
     }
@@ -751,7 +750,7 @@ public class EntityRenderer {
       // no renderer - no spane
       if (renderer==null) return new Dimension(0,0);
       // calc span
-      return renderer.getSize(getFontMetrics(), property, preference, resolution);
+      return renderer.getSize(getFontMetrics(), property, preference, dpi);
     }
     /**
      * @see javax.swing.text.View#getMinimumSpan(int)
