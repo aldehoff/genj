@@ -59,7 +59,7 @@ public abstract class Orientation {
   /**
    * Returns the 2D position for given latitude/longitude
    */
-  /*package*/ abstract Point2D.Double getPoint2D(double lat, double lon);
+  public abstract Point2D.Double getPoint2D(double lat, double lon);
   
   /**
    * Returns a rotated orientation
@@ -94,7 +94,7 @@ public abstract class Orientation {
     /*package*/ Contour getContour(Rectangle2D r) {
       return new Contour(r.getMinX(), -r.getMaxY(), -r.getMinY(), r.getMaxX());
     }
-    /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
+    public Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(lat,-lon);
     }
     /*package*/ Orientation rotate(boolean clockwise) {
@@ -126,7 +126,7 @@ public abstract class Orientation {
     /*package*/ Contour getContour(Rectangle2D r) {
       return new Contour(r.getMinY(), r.getMinX(), r.getMaxX(), r.getMaxY());
     }
-    /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
+    public Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(lon,lat);
     }
     /*package*/ Orientation rotate(boolean clockwise) {
@@ -162,7 +162,7 @@ public abstract class Orientation {
     /*package*/ Contour getContour(Rectangle2D r) {
       return new Contour(-r.getMaxX(), r.getMinY(), r.getMaxY(), -r.getMinX());
     }
-    /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
+    public Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(-lat,lon);
     }
     /*package*/ Orientation rotate(boolean clockwise) {
@@ -194,7 +194,7 @@ public abstract class Orientation {
     public double getLongitude(Point2D p) {
       return -p.getX();
     }
-    /*package*/ Point2D.Double getPoint2D(double lat, double lon) {
+    public Point2D.Double getPoint2D(double lat, double lon) {
       return new Point2D.Double(-lon,-lat);
     }
     /*package*/ Orientation rotate(boolean clockwise) {

@@ -43,6 +43,9 @@ import java.util.Stack;
   /** the node options in use */
   private NodeOptions nodeop;
   
+  /** the arc options in use */
+  private ArcOptions arcop;
+  
   /** the orientation toggles */
   private Set orientntggls;
   
@@ -55,9 +58,10 @@ import java.util.Stack;
   /**
    * Constructor
    */
-  /*package*/ NodeLayout(Orientation orientation, NodeOptions nodeOptions, boolean isLatAlignmentEnabled, Set orientationToggles, TreeArcLayout arcLayout) {
+  /*package*/ NodeLayout(Orientation orientation, NodeOptions nodeOptions, ArcOptions arcOptions, boolean isLatAlignmentEnabled, Set orientationToggles, TreeArcLayout arcLayout) {
     orientn = orientation;
     nodeop  = nodeOptions;
+    arcop = arcOptions;
     latalign = isLatAlignmentEnabled;
     if (latalign) orientntggls = new HashSet();
     else orientntggls = orientationToggles;
@@ -156,7 +160,8 @@ import java.util.Stack;
       node, 
       backtrack, 
       toggleOrientation ? orientn.getLatitude(node.getPosition()) : root.south, 
-      orientn
+      orientn,
+      arcop
     );
 
     // make everything children/arcs directly 'under' node relative

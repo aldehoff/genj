@@ -42,7 +42,7 @@ import java.awt.geom.Point2D;
   /**
    * apply the layout
    */
-  /*package*/ final void layout(Node root, Arc backtrack, double equator, Orientation orientation) {
+  /*package*/ final void layout(Node root, Arc backtrack, double equator, Orientation orientation, ArcOptions arcop) {
     // Loop through arcs to children (without backtrack)
     ArcIterator it = new ArcIterator(root);
     while (it.next()) {
@@ -52,7 +52,7 @@ import java.awt.geom.Point2D;
       if (it.isDup(backtrack)) continue;
       // handle loops separate from specialized
       if (it.isLoop) layout(it.arc);
-      else layout(it.arc, equator, orientation);
+      else layout(it.arc, equator, orientation, arcop);
     }
     // done      
   }
@@ -60,7 +60,7 @@ import java.awt.geom.Point2D;
   /**
    * layout one arc in the iterator we're working on
    */
-  protected abstract void layout(Arc arc, double equator, Orientation orientation);
+  protected abstract void layout(Arc arc, double equator, Orientation orientation, ArcOptions arcop);
 
 
   /**
@@ -71,26 +71,26 @@ import java.awt.geom.Point2D;
     /**
      * layout one arc in the iterator we're working on
      */
-    protected void layout(Arc arc, double equator, Orientation orientation) {
+    protected void layout(Arc arc, double equator, Orientation o, ArcOptions arcop) {
       
       // grab nodes and their position/shape
       Node
         n1 = arc.getStart(),
-        n2 = arc.getEnd();
+        n2 = arc.getEnd  ();
       Point2D 
-        p1 = n1.getPosition(),
-        p2 = n2.getPosition();
+        p1 = arcop.getPort(arc, n1, o),
+        p2 = arcop.getPort(arc, n2, o);
       Shape 
         s1 = n1.getShape(),
         s2 = n2.getShape();
 
       // calculate south of p1 and north of p2
       p1 = getIntersection(
-        p1, orientation.getPoint2D(orientation.getLatitude(p2), orientation.getLongitude(p1)),
+        p1, o.getPoint2D(o.getLatitude(p2), o.getLongitude(p1)),
         p1, s1
       );
       p2 = getIntersection(
-        p2, orientation.getPoint2D(orientation.getLatitude(p1), orientation.getLongitude(p2)),
+        p2, o.getPoint2D(o.getLatitude(p1), o.getLongitude(p2)),
         p2, s2
       );
 
@@ -113,7 +113,7 @@ import java.awt.geom.Point2D;
     /**
      * layout one arc in the iterator we're working on
      */
-    protected void layout(Arc arc, double equator, Orientation o) {
+    protected void layout(Arc arc, double equator, Orientation o, ArcOptions arcop) {
       
       // grab arc's information
       Node
@@ -121,10 +121,10 @@ import java.awt.geom.Point2D;
         n2 = arc.getEnd();
       
       Point2D
-        p1 = n1.getPosition(),
+        p1 = arcop.getPort(arc, n1, o),
         p2 = new Point2D.Double(),
         p3 = new Point2D.Double(),
-        p4 = n2.getPosition();
+        p4 = arcop.getPort(arc, n2, o);
 
       // straight line up?
       if (o.getLongitude(p1)==o.getLongitude(p4)) {

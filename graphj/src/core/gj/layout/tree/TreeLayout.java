@@ -19,6 +19,7 @@ import gj.awt.geom.Path;
 import gj.layout.AbstractLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
+import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
 import java.awt.geom.Point2D;
@@ -52,6 +53,9 @@ public class TreeLayout extends AbstractLayout implements Layout {
   
   /** current node options */
   private NodeOptions nodeOptions = new DefaultNodeOptions();
+  
+  /** current arc options */
+  private ArcOptions arcOptions = new DefaultArcOptions();
 
   /** whether children should be balanced or simply stacked */
   /*package*/ boolean isBalanceChildren = true;
@@ -266,6 +270,13 @@ public class TreeLayout extends AbstractLayout implements Layout {
   }
   
   /**
+   * Sets custom arc options to use during layout
+   */
+  public void setArcOptions(ArcOptions ao) {
+    arcOptions = ao;
+  }
+  
+  /**
    * @see gj.layout.Layout#applyTo(Graph)
    */
   public void layout(Graph graph) throws LayoutException {
@@ -286,6 +297,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
     NodeLayout nlayout = new NodeLayout(
       orientn, 
       nodeOptions, 
+      arcOptions,
       isLatAlignmentEnabled,
       orientationToggles,
       TreeArcLayout.get(isBendArcs)
@@ -427,5 +439,18 @@ public class TreeLayout extends AbstractLayout implements Layout {
     }
 
   } //DefaultNodeOptions
+  
+  /**
+   * Default ArcOptions   */
+  private class DefaultArcOptions implements ArcOptions {
+    /**
+     * @see gj.layout.tree.ArcOptions#getPort(gj.model.Arc, gj.model.Node)
+     */
+    public Point2D getPort(Arc arc, Node node, Orientation o) {
+      if (arc instanceof ArcOptions)
+        return ((ArcOptions)arc).getPort(arc, node, o);
+      return node.getPosition();
+    }
+  } //DefaultArcOptions
 
 } //TreeLayout
