@@ -210,11 +210,6 @@ public class Content extends Component implements TreeModelListener {
     // Signal
     invalidate();
     
-    // 20020814 - since invalidate() doesn't actually
-    // perform a doLayout and we removed that in
-    // Scrollpane we have to call validate here
-    validate();
-    
     // 20020311 - well apparently without a repaint
     // it can happen that the canvas doesn't refresh
     // because bounds stay the same (?)
@@ -444,7 +439,8 @@ public class Content extends Component implements TreeModelListener {
     treeZoom = zoom;
 
     // We changed
-    invalidate();
+    handleStructureChanged();
+    
     // Done
   }
 

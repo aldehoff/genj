@@ -514,8 +514,6 @@ public class TreeView extends Scrollpane {
     if (scala.getValue()!=value) {
       scala.setValue(value);
     }
-    //      doLayout();
-    //      repaint();
   }
 
   /**
