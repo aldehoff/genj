@@ -25,9 +25,11 @@ import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * The object-representation of a Gedom file
@@ -74,11 +76,11 @@ public class Gedcom {
   /** change/transaction support */
   private boolean isTransaction = false;
   private boolean hasUnsavedChanges;
-  private List addedEntities     ,
-                deletedEntities   ;
-  private List addedProperties   ,
-                deletedProperties ,
-                modifiedProperties;
+  private Set addedEntities     ,
+              deletedEntities   ;
+  private Set addedProperties   ,
+              deletedProperties ,
+              modifiedProperties;
 
   /** listeners */
   private List listeners = new ArrayList(10);
@@ -326,11 +328,11 @@ public class Gedcom {
     isTransaction = true;
 
     // ... prepare rememberance of changes
-    addedEntities      = new ArrayList(64);
-    deletedEntities    = new ArrayList(64);
-    addedProperties    = new ArrayList(64);
-    deletedProperties  = new ArrayList(64);
-    modifiedProperties = new ArrayList(64);
+    addedEntities      = new HashSet(64);
+    deletedEntities    = new HashSet(64);
+    addedProperties    = new HashSet(64);
+    deletedProperties  = new HashSet(64);
+    modifiedProperties = new HashSet(64);
 
     // .. done
     return true;

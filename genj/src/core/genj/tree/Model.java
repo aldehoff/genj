@@ -25,7 +25,6 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
-import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import gj.layout.LayoutException;
 import gj.layout.tree.TreeLayout;
@@ -400,7 +399,7 @@ public class Model implements GedcomListener {
    */
   public void handleChange(Change change) {
     // was any entity deleted?
-    List deleted = change.getEntities(change.EDEL);
+    Set deleted = change.getEntities(change.EDEL);
     if (deleted.size()>0) {
       // root has to change?
       if (deleted.contains(root)) {
@@ -422,18 +421,16 @@ public class Model implements GedcomListener {
       return;
     }
     // was a relationship property deleted, added or changed?
-    List props = change.getProperties(change.PMOD);
-    for (int i=0; i<props.size(); i++) {
-      if (props.get(i) instanceof PropertyXRef) {
+    for (Iterator pmods=change.getProperties(change.PMOD).iterator();pmods.hasNext();) {
+      if (pmods.next() instanceof PropertyXRef) {
         update();
         return;
       }
     }
     // was an individual or family created and we're without root
     if (root==null) {
-      Iterator es = change.getEntities(change.EADD).iterator();
-      while (es.hasNext()) {
-        Entity e = (Entity)es.next();
+      for (Iterator eadds=change.getProperties(change.EADD).iterator();eadds.hasNext();) {
+        Entity e = (Entity)eadds.next();
         if (e instanceof Fam || e instanceof Indi) {
           setRoot(e);
           return;
@@ -441,12 +438,15 @@ public class Model implements GedcomListener {
       }
     }
     // was a property changed that we should notify about?
-    HashSet nodes = new HashSet();
-    for (int i=0; i<props.size(); i++) {
-      Node node = getNode(((Property)props.get(i)).getEntity());
-      if (node!=null) nodes.add(node);
+    Set emods = change.getEntities(change.EMOD);
+    if (!emods.isEmpty()) {
+      ArrayList nodes = new ArrayList(emods.size());
+      for (Iterator es=emods.iterator();es.hasNext();) {
+        Node node = getNode((Entity)es.next());
+        if (node!=null) nodes.add(node);
+      } 
+      fireNodesChanged(new ArrayList(nodes));
     }
-    if (!nodes.isEmpty()) fireNodesChanged(new ArrayList(nodes));
     
     // done
   }

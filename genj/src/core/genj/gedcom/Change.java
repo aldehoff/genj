@@ -19,9 +19,9 @@
  */
 package genj.gedcom;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -39,8 +39,8 @@ public class Change {
 
   private Gedcom gedcom;
 
-  private List eadd , edel,  emod;
-  private List padd , pdel , pmod ;
+  private Set eadd , edel,  emod;
+  private Set padd , pdel , pmod ;
 
   private int change;
 
@@ -53,7 +53,7 @@ public class Change {
    * @param pdel Deleted properties
    * @param pmod Modified properties
    */
-  public Change(Gedcom gedcom, List eadd, List edel, List padd, List pdel, List pmod ) {
+  public Change(Gedcom gedcom, Set eadd, Set edel, Set padd, Set pdel, Set pmod ) {
 
     // Remember
     this.gedcom=gedcom;
@@ -95,7 +95,7 @@ public class Change {
    * Resolves all entities which has properties that haveve been changed,
    * added or deleted
    */
-  private List getEMOD() {
+  private Set getEMOD() {
 
     // Already  calculated?
     if (emod!=null) {
@@ -103,7 +103,7 @@ public class Change {
     }
 
     // Calculate
-    emod = new ArrayList(pmod.size()+padd.size()+pdel.size());
+    emod = new HashSet(pmod.size()+padd.size()+pdel.size());
 
     Iterator e = pmod.iterator();
     while (e.hasNext()) {
@@ -128,15 +128,15 @@ public class Change {
    *  EDEL deleted entities
    *  EMOD entities with modified/added/deleted properties
    */
-  public List getEntities(int which) {
+  public Set getEntities(int which) {
 
     switch (which) {
-    case EADD:
-      return eadd;
-    case EDEL:
-      return edel;
-    case EMOD:
-      return getEMOD();
+      case EADD:
+        return eadd;
+      case EDEL:
+        return edel;
+      case EMOD:
+        return getEMOD();
     }
 
     throw new IllegalArgumentException("Unknown type of entities");
@@ -152,14 +152,14 @@ public class Change {
   /**
    * Added/Deleted/Modified Properties
    */
-  public List getProperties(int which) {
+  public Set getProperties(int which) {
     switch (which) {
-    case PADD:
-      return padd;
-    case PDEL:
-      return pdel;
-    case PMOD:
-      return pmod;
+      case PADD:
+        return padd;
+      case PDEL:
+        return pdel;
+      case PMOD:
+        return pmod;
     }
     throw new IllegalArgumentException("Unknown type of properties");
   }
@@ -172,4 +172,5 @@ public class Change {
   public boolean isChanged(int change) {
     return (this.change&change) != 0;
   }
-}
+  
+} //Change

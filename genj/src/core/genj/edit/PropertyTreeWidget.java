@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.swing.JTree;
@@ -290,19 +291,16 @@ public class PropertyTreeWidget extends TreeWidget {
     /**
      * Signals to listeners that properties have changed
      */
-    public void firePropertiesChanged(List props) {
-
-      // update cache of htmls
-      for (int i=props.size()-1;i>=0;i--) {
-        property2cachedValue.remove(props.get(i));
-      }
+    public void firePropertiesChanged(Set props) {
 
       // Do it for all changed properties
-      Iterator e = props.iterator();
-      while (e.hasNext()) {
-  
+      for (Iterator it=props.iterator();it.hasNext();) {
+
         // .. use property
-        Property prop = (Property)e.next();
+        Property prop = (Property)it.next();
+  
+        // .. forget cached value for prop
+        property2cachedValue.remove(prop);
   
         // .. build event
         Object path[] = root.getPathTo(prop);
