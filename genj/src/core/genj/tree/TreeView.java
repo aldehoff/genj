@@ -171,7 +171,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     model.setFamilies(registry.get("families",true));
     model.setBendArcs(registry.get("bend"    ,true));
     model.setMarrSymbols(registry.get("marrs",true));
-    model.setMode(registry.get("mode", 0));
     TreeMetrics defm = model.getMetrics();
     model.setMetrics(new TreeMetrics(
       registry.get("windis",(float)defm.wIndis),
@@ -260,7 +259,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     registry.put("families", model.isFamilies());
     registry.put("bend"    , model.isBendArcs());
     registry.put("marrs"   , model.isMarrSymbols());
-    registry.put("mode"    , model.getMode());
     TreeMetrics m = model.getMetrics();
     registry.put("windis"  ,(float)m.wIndis);
     registry.put("hindis"  ,(float)m.hIndis);
@@ -482,19 +480,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       
     // gap
     bar.addSeparator();
-    
-    // modes
-    bh.createGroup();
-    bh.create(new ActionAsDsAnDs(Model.ANCESTORS_AND_DESCENDANTS))
-      .setSelected(model.getMode()==Model.ANCESTORS_AND_DESCENDANTS);
-    bh.create(new ActionAsDsAnDs(Model.ANCESTORS))
-      .setSelected(model.getMode()==Model.ANCESTORS);
-    bh.create(new ActionAsDsAnDs(Model.DESCENDANTS))
-      .setSelected(model.getMode()==Model.DESCENDANTS);
-      
-    // gap
-    bar.addSeparator();
-    
+        
     // bookmarks
     PopupButton pb = new PopupButton("",BOOKMARK_ICON) {
       /**
@@ -879,48 +865,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     }
   } //ActionTree
 
-  /**
-   * Actions As/Ds/AnDs
-   */
-  private class ActionAsDsAnDs extends ActionDelegate {
-    /** the mode this toggles */
-    private int mode;
-    /**
-     * Constructor     */
-    private ActionAsDsAnDs(int moDe) {
-      // remember
-      mode = moDe; 
-      // image
-      ImageIcon i = null;
-      String t = null;
-      switch (mode) {
-        case Model.ANCESTORS_AND_DESCENDANTS:
-          i = Images.imgAnDs;
-          t = "ancestorsdescendants.tip";
-          break;
-        case Model.DESCENDANTS:
-          i = Images.imgDs; 
-          t = "descendants.tip";
-          break;
-        case Model.ANCESTORS: 
-          i = Images.imgAs; 
-          t = "ancestors.tip";
-          break;
-      }
-      super.setImage(i);
-      super.setToggle(i);
-      super.setTip(t);
-      // done      
-    }
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-      model.setMode(mode);
-      scrollToCurrent();
-    }
-  } //ActionAsDsAnDs
-  
   /**
    * Action Orientation change   */
   private class ActionOrientation extends ActionDelegate {

@@ -31,9 +31,6 @@ final class Images {
   static ImageIcon
     imgView,
     imgOverview,
-    imgAs,
-    imgDs,
-    imgAnDs,
     imgHori,
     imgVert,
     imgDoFams,
@@ -48,10 +45,6 @@ final class Images {
     imgView        = new ImageIcon(this,"images/View.gif"       );
 
     imgOverview    = new ImageIcon(this,"images/Overview.gif"   );
-    
-    imgAs          = new ImageIcon(this,"images/As.gif"         );
-    imgDs          = new ImageIcon(this,"images/Ds.gif"         );
-    imgAnDs        = new ImageIcon(this,"images/AnDs.gif"       );
     
     imgHori        = new ImageIcon(this,"images/Hori.gif"       );
     imgVert        = new ImageIcon(this,"images/Vert.gif"       );

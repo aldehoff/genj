@@ -23,9 +23,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import gj.awt.geom.Path;
-import gj.layout.LayoutException;
 import gj.layout.tree.Orientation;
-import gj.layout.tree.TreeLayout;
 import gj.model.Node;
 
 import java.awt.geom.AffineTransform;
@@ -84,49 +82,26 @@ import java.awt.geom.Rectangle2D;
    * parses a tree starting from entity
    * @param entity either fam or indi
    */
-  public final TreeNode parse(Entity entity, Point2D at) {
-    
-    // delegate
-    TreeNode result;
-    if (entity instanceof Indi)
-      result = parse((Indi)entity, at);
-    else
-      result = parse((Fam )entity, at);
-      
-    // done
-    return result;
+  public final TreeNode parse(Entity root) {
+    return (root instanceof Indi) ? parse((Indi)root) : parse((Fam )root);
+  }
+  
+  /**
+   * Place another node at the origin
+   */
+  public TreeNode align(TreeNode other) {
+    return other;
   }
   
   /**
    * parses a tree starting from an indi
    */
-  protected abstract TreeNode parse(Indi indi, Point2D at);
+  protected abstract TreeNode parse(Indi indi);
   
   /**
    * parses a tree starting from a family
    */
-  protected abstract TreeNode parse(Fam fam, Point2D at);
-  
-  /**
-   * Helper that applies the layout
-   */
-  protected void layout(TreeNode root, boolean isTopDown) {
-    // layout
-    try {
-      TreeLayout layout = new TreeLayout();
-      layout.setTopDown(isTopDown);
-      layout.setBendArcs(model.isBendArcs());
-      layout.setDebug(false);
-      layout.setIgnoreUnreachables(true);
-      layout.setBalanceChildren(false);
-      layout.setRoot(root);
-      layout.setVertical(model.isVertical());
-      layout.layout(model);
-    } catch (LayoutException e) {
-      e.printStackTrace();
-    }
-    // done
-  }
+  protected abstract TreeNode parse(Fam fam);
   
   /**
    * Calculates marriage rings
@@ -245,29 +220,21 @@ import java.awt.geom.Rectangle2D;
     /**
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam, java.awt.geom.Point2D)
      */
-    protected TreeNode parse(Fam fam, Point2D at) {
+    protected TreeNode parse(Fam fam) {
       TreeNode node = model.add(new TreeNode(fam, shapeFams, padIndis));
-      Indi wife = fam.getWife();
-      Indi husb = fam.getHusband();
-      if (wife!=null) model.add(new TreeArc(node, iterate(wife), true));
-      if (husb!=null) model.add(new TreeArc(node, iterate(husb), true));
-      if (at!=null) node.getPosition().setLocation(at);
-      super.layout(node, false);
+      recurse(fam, node);
       return node;
     }
     /**
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi, java.awt.geom.Point2D)
      */
-    protected TreeNode parse(Indi indi, Point2D at) {
-      TreeNode node = iterate(indi);
-      if (at!=null) node.getPosition().setLocation(at);
-      super.layout(node, false);
-      return node;
+    protected TreeNode parse(Indi indi) {
+      return recurse(indi);
     }
     /**
      * parse an individual and its ancestors
      */
-    private TreeNode iterate(Indi indi) {
+    private TreeNode recurse(Indi indi) {
       // node for indi      
       TreeNode node = model.add(new TreeNode(indi, shapeIndis, padIndis));
       // do we have a family we're child in?
@@ -280,7 +247,7 @@ import java.awt.geom.Rectangle2D;
           model.add(new TreeArc(node, pivot, false));
         }
         // grab the family's husband/wife and their ancestors
-        iterate(famc, pivot);
+        recurse(famc, pivot);
       } 
       // done
       return node;
@@ -288,11 +255,11 @@ import java.awt.geom.Rectangle2D;
     /**
      * parses a family and its ancestors
      */
-    private void iterate(Fam fam, TreeNode child) {
+    private void recurse(Fam fam, TreeNode child) {
       Indi wife = fam.getWife();
       Indi husb = fam.getHusband();
-      if (wife!=null) model.add(new TreeArc(child, iterate(wife), true));
-      if (husb!=null) model.add(new TreeArc(child, iterate(husb), true));
+      if (wife!=null) model.add(new TreeArc(child, recurse(wife), true));
+      if (husb!=null) model.add(new TreeArc(child, recurse(husb), true));
     }
   } //AncestorsNoFams 
    
@@ -344,36 +311,24 @@ import java.awt.geom.Rectangle2D;
     /**
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
      */
-    public TreeNode parse(Fam fam, Point2D at) {
-      TreeNode node = iterate(fam);
-      if (at!=null) node.getPosition().setLocation(at);
-      super.layout(node, false);
-      return node;
-    }
-    /**
-     * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
-     */
-    public TreeNode parse(Indi indi, Point2D at) {
-      TreeNode node = iterate(indi, CENTER, padIndis);
-      if (at!=null) node.getPosition().setLocation(at);
-      super.layout(node, false);
-      return node;
-    }
-    /**
-     * parse a family and its ancestors
-     */
-    private TreeNode iterate(Fam fam) {
+    protected TreeNode parse(Fam fam) {
       // node for the fam
       TreeNode node = model.add(new TreeNode(fam, shapeFams, padFams));
       // husband & wife
       Indi
         husb = fam.getHusband(),
         wife = fam.getWife();
-      model.add(new TreeArc(node, iterate(wife, hasParents(husb)?LEFT:CENTER, padHusband), false));
+      model.add(new TreeArc(node, recurse(wife, hasParents(husb)?LEFT:CENTER, padHusband), false));
       model.add(new TreeArc(node, model.add(new TreeNode(null, shapeMarrs, null)), false));
-      model.add(new TreeArc(node, iterate(husb, hasParents(wife)?RIGHT:CENTER, padWife), false));
+      model.add(new TreeArc(node, recurse(husb, hasParents(wife)?RIGHT:CENTER, padWife), false));
       // done
       return node;
+    }
+    /**
+     * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
+     */
+    protected TreeNode parse(Indi indi) {
+      return recurse(indi, CENTER, padIndis);
     }
     /**
      * helper that checks if an individual is child in a family
@@ -385,7 +340,7 @@ import java.awt.geom.Rectangle2D;
     /**
      * parse an individual and its ancestors
      */
-    private TreeNode iterate(Indi indi, final int alignment, double[] pad) {
+    private TreeNode recurse(Indi indi, final int alignment, double[] pad) {
       // node for indi      
       TreeNode node;
       switch (alignment) {
@@ -415,7 +370,7 @@ import java.awt.geom.Rectangle2D;
         Fam famc = indi.getFamc();
         // grab the family
         if (famc!=null) 
-          model.add(new TreeArc(node, iterate(famc), true));
+          model.add(new TreeArc(node, parse(famc), true));
       } 
       // done
       return node;
@@ -435,33 +390,7 @@ import java.awt.geom.Rectangle2D;
     /**
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
      */
-    protected TreeNode parse(Indi indi, Point2D at) {
-      // parse
-      TreeNode node = iterate(indi);
-      if (at!=null) node.getPosition().setLocation(at);
-      // do the layout
-      super.layout(node, true);
-      // done
-      return node;
-    }
-    /**
-     * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
-     */
-    protected TreeNode parse(Fam fam, Point2D at) {
-      // parse
-      TreeNode node = model.add(new TreeNode(fam, shapeFams, padIndis));
-      iterate(fam, node);
-      if (at!=null) node.getPosition().setLocation(at);
-      super.layout(node, true);
-      return node;
-    }
-    
-    /**
-     * parses an indi
-     * @param indi the indi to parse
-     * @return MyNode
-     */
-    private TreeNode iterate(Indi indi) {
+    protected TreeNode parse(Indi indi) {
       // create node for indi
       TreeNode node = model.add(new TreeNode(indi, shapeIndis, padIndis)); 
       // grab fams
@@ -481,24 +410,32 @@ import java.awt.geom.Rectangle2D;
           }
           // loop through fams
           for (int f=0; f<fams.length; f++) {
-            iterate(fams[f], pivot);
+            recurse(fams[f], pivot);
           }
         }
       }
       // done
       return node;
     }
+    /**
+     * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
+     */
+    protected TreeNode parse(Fam fam) {
+      TreeNode node = model.add(new TreeNode(fam, shapeFams, padIndis));
+      return recurse(fam, node);
+    }
     
     /**
      * parses a fam and its descendants
      */
-    private void iterate(Fam fam, TreeNode parent) {
+    private TreeNode recurse(Fam fam, TreeNode parent) {
       // grab the children
       Indi[] children = fam.getChildren();
       for (int c=0; c<children.length; c++) {
-        model.add(new TreeArc(parent, iterate(children[c]), true));       
+        model.add(new TreeArc(parent, parse(children[c]), true));       
       }
       // done
+      return parent;
     }
   } //DescendantsNoFams
   
@@ -507,6 +444,9 @@ import java.awt.geom.Rectangle2D;
    */
   private static class DescendantsWithFams extends Parser {
     
+    /** real origin */
+    private TreeNode origin;
+  
     /** how we pad families */
     private double[] padFams;
     
@@ -551,37 +491,39 @@ import java.awt.geom.Rectangle2D;
     }
     
     /**
+     * Place another node at the origin
+     */
+    public TreeNode align(TreeNode other) {
+      other.getPosition().setLocation(origin.getPosition());    
+      return other;
+    }
+  
+    /**
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
      */
-    protected TreeNode parse(Indi indi, Point2D at) {
-      // won't support at
-      if (at!=null) throw new IllegalArgumentException("at is not supported");
-      // parse under pivot
+    protected TreeNode parse(Indi indi) {
+      // parse under artificial pivot
       TreeNode pivot = model.add(new TreeNode(null, null, null));
-      TreeNode node = iterate(indi, pivot);
-      // do the layout
-      super.layout(pivot, true);
+      origin = recurse(indi, pivot);
       // done
-      return node;
+      return pivot;
     }
     /**
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
      */
-    protected TreeNode parse(Fam fam, Point2D at) {
-      TreeNode node = iterate(fam);
+    protected TreeNode parse(Fam fam) {
+      TreeNode node = recurse(fam);
       node.padding = padIndis; // patch first fams padding
-      if (at!=null) node.getPosition().setLocation(at);
-      super.layout(node, true);
       return node;
     }
         
     /**
-     * parses an indi
+     * recurse into indi
      * @param indi the indi to parse
      * @param pivot all nodes of descendant are added to pivot
      * @return MyNode
      */
-    private TreeNode iterate(Indi indi, TreeNode pivot) {
+    private TreeNode recurse(Indi indi, TreeNode pivot) {
 
       // lookup its families      
       Fam[] fams = indi.getFamilies();
@@ -616,17 +558,17 @@ import java.awt.geom.Rectangle2D;
       model.add(new TreeArc(pivot, model.add(nSpouse), false));
       
       // add arc : marr-fam
-      TreeNode nFam = iterate(fam);
+      TreeNode nFam = recurse(fam);
       model.add(new TreeArc(nIndi, nFam, false));
       
       // done
       return nIndi;
     }
+    
     /**
-     * parses a fam and its descendants
-     * @parm pivot all nodes of descendant are added to pivot
+     * recurses into fam and its descendants
      */
-    private TreeNode iterate(Fam fam) {
+    private TreeNode recurse(Fam fam) {
       // node for fam
       TreeNode nFam = new TreeNode(fam, shapeFams, padFams);
       model.add(nFam);
@@ -634,7 +576,7 @@ import java.awt.geom.Rectangle2D;
       Indi[] children = fam.getChildren();
       for (int c=0; c<children.length; c++) {
         // create an arc from node to node for indi
-        iterate(children[c], nFam);       
+        recurse(children[c], nFam);       
          // next child
       }
       // done

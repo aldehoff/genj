@@ -27,8 +27,11 @@ import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
+import gj.layout.LayoutException;
+import gj.layout.tree.TreeLayout;
 import gj.model.Graph;
 import gj.model.Node;
+
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -48,12 +51,6 @@ import java.util.Set;
  * Model of our tree
  */
 public class Model implements Graph, GedcomListener {
-  
-  /** possible modes */
-  public final static int
-    ANCESTORS_AND_DESCENDANTS = 0,
-    DESCENDANTS               = 1,
-    ANCESTORS                 = 2; 
   
   /** listeners */
   private List listeners = new ArrayList(3);
@@ -92,9 +89,6 @@ public class Model implements Graph, GedcomListener {
   /** entities whose descendants we're not interested in */
   private Set hideDescendants = new HashSet();
 
-  /** the mode we're in */
-  private int mode = ANCESTORS_AND_DESCENDANTS;
-    
   /** gedcom we're looking at */
   private Gedcom gedcom;
   
@@ -223,26 +217,6 @@ public class Model implements Graph, GedcomListener {
     return isFoldSymbols;
   }
 
-  /**
-   * Accessor - the mode
-   */
-  public int getMode() {
-    return mode;
-  } 
-  
-  /**
-   * Accessor - the mode
-   */
-  public void setMode(int set) {
-    switch (set) {
-      case ANCESTORS:
-      case DESCENDANTS:
-      case ANCESTORS_AND_DESCENDANTS:
-        mode = set;
-    }
-    update();
-  }
-  
   /**
    * Accessor - the metrics   */
   public TreeMetrics getMetrics() {
@@ -461,34 +435,26 @@ public class Model implements Graph, GedcomListener {
   /**
    * Parses the current model starting at root   */
   private void update() {
+    
     // clear old
     arcs.clear();
     nodes.clear();
     entities2nodes.clear();
     bounds.setFrame(0,0,0,0);
-    // something to do?
+    
+    // nothing to do if no root set
     if (root==null) return;
-    // do it
-    switch (mode) {
-      case ANCESTORS_AND_DESCENDANTS: 
-        // parse its descendants
-        TreeNode node = Parser.getInstance(false, isFamilies, this, metrics).parse(root, null);
-        // keep bounds
-        Rectangle2D r = bounds.getFrame();
-        Point2D p = node.getPosition();
-        // parse its ancestors while preserving position
-        node = Parser.getInstance(true, isFamilies, this, metrics).parse(root, p);    
-        // update bounds
-        bounds.add(r);
-        // done
-        break;
-      case ANCESTORS:
-        Parser.getInstance(true, isFamilies, this, metrics).parse(root, null);
-        break;
-      case DESCENDANTS:
-        Parser.getInstance(false, isFamilies, this, metrics).parse(root, null);
-        break;
-    }
+    
+    // parse its descendants
+    Parser descendants = Parser.getInstance(false, isFamilies, this, metrics);
+    layout(descendants.parse(root), true);
+    // keep bounds
+    Rectangle2D r = bounds.getFrame();
+    // parse its ancestors 
+    layout(descendants.align(Parser.getInstance(true, isFamilies, this, metrics).parse(root)), false);
+    // update bounds
+    bounds.add(r);
+    
     // create gridcache
     cache = new GridCache(
       bounds, 3*metrics.calcMax()
@@ -503,6 +469,28 @@ public class Model implements Graph, GedcomListener {
     fireStructureChanged();
     // done
   }
+
+  /**
+   * Helper that runs a TreeLayout
+   */
+  protected void layout(TreeNode root, boolean isTopDown) {
+    // layout
+    try {
+      TreeLayout layout = new TreeLayout();
+      layout.setTopDown(isTopDown);
+      layout.setBendArcs(isBendArcs);
+      layout.setDebug(false);
+      layout.setIgnoreUnreachables(true);
+      layout.setBalanceChildren(false);
+      layout.setRoot(root);
+      layout.setVertical(isVertical);
+      layout.layout(this);
+    } catch (LayoutException e) {
+      e.printStackTrace();
+    }
+    // done
+  }
+  
   
   /**
    * Fire event
