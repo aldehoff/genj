@@ -27,10 +27,13 @@ import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.ImageIcon;
+import genj.util.swing.ListSelectionWidget;
 import genj.view.Settings;
 import genj.view.ViewManager;
-import genj.view.widgets.PathListWidget;
 import genj.view.widgets.PathTreeWidget;
+
+import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
@@ -44,11 +47,11 @@ import javax.swing.JPanel;
 public class TableViewSettings extends JPanel implements Settings {
 
   /** components */
-  private JComboBox       cTypes;
-  private PathTreeWidget     pathTree;
-  private PathListWidget     pathList;
-  private TableView       table;
-  private Resources       resources = Resources.get(this);
+  private JComboBox           cTypes;
+  private PathTreeWidget      pathTree;
+  private ListSelectionWidget pathList;
+  private TableView           table;
+  private Resources           resources = Resources.get(this);
 
   /**
    * @see genj.view.Settings#init(genj.view.ViewManager)
@@ -74,9 +77,9 @@ public class TableViewSettings extends JPanel implements Settings {
       /** selection notification */
       public void handleSelection(TagPath path, boolean on) {
         if (!on) {
-          pathList.removePath(path);
+          pathList.removeChoice(path);
         } else {
-          pathList.addPath(path);
+          pathList.addChoice(path);
         }
       }
       // EOC
@@ -84,7 +87,12 @@ public class TableViewSettings extends JPanel implements Settings {
     pathTree.addListener(plistener);
 
     // List of TagPaths
-    pathList = new PathListWidget();
+    pathList = new ListSelectionWidget() {
+      protected ImageIcon getIcon(Object choice) {
+	      TagPath path = (TagPath)choice;
+	      return MetaProperty.get(path).getImage();
+      }
+    };
 
     // Up/Down of ordering
     ButtonHelper bh = new ButtonHelper().setResources(resources).setInsets(0);
@@ -124,7 +132,8 @@ public class TableViewSettings extends JPanel implements Settings {
   public void apply() {
     // Write columns by TagPaths
     String tag = Gedcom.ENTITIES[cTypes.getSelectedIndex()];
-    TagPath[] paths = pathList.getPaths();
+    List choices = pathList.getChoices();
+    TagPath[] paths = (TagPath[])choices.toArray(new TagPath[choices.size()]);
     table.setPaths(tag, paths);
     // Done
   }
@@ -141,7 +150,7 @@ public class TableViewSettings extends JPanel implements Settings {
     TagPath[] usedPaths     = MetaProperty.getPaths(tag, Property.class);
 
     pathTree.setPaths(usedPaths, selectedPaths);
-    pathList.setPaths(selectedPaths);
+    pathList.setChoices(selectedPaths);
 
     // Done
   }

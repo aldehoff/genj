@@ -17,10 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.view.widgets;
-
-import genj.gedcom.MetaProperty;
-import genj.gedcom.TagPath;
+package genj.util.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -44,15 +41,15 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 /**
- * A component that shows a list of TagPaths
+ * A component that shows a list of elements the user can choose
  */
-public class PathListWidget extends JComponent {
+public class ListSelectionWidget extends JComponent {
 
   /** list showing tag paths */
   private JList lChoose;
   
   /** the tag paths */
-  private List paths = new ArrayList();
+  private List choices = new ArrayList();
   
   /** the selection */
   private Set selection = null;
@@ -60,7 +57,7 @@ public class PathListWidget extends JComponent {
   /**
    * Constructor
    */
-  public PathListWidget() {
+  public ListSelectionWidget() {
 
     // Layout
     lChoose = new JList();
@@ -85,46 +82,46 @@ public class PathListWidget extends JComponent {
    * propagates the current state of paths to the list
    */
   private void update() {
-    lChoose.setListData(paths.toArray(new Object[paths.size()]));
+    lChoose.setListData(choices.toArray(new Object[choices.size()]));
   }
   
   /**
-   * Adds a path to this list
+   * Adds a choice to this list
    */
-  public void addPath(TagPath path) {
-    paths.add(path);
+  public void addChoice(Object choice) {
+    choices.add(choice);
     update();
   }
 
   /**
-   * Removes a path from this list
+   * Removes a choice from this list
    */
-  public void removePath(TagPath path) {
-    paths.remove(path);
+  public void removeChoice(Object choice) {
+    choices.remove(choice);
     update();
   }
 
   /**
-   * Returns the paths used by this list
+   * Returns the choices
    */
-  public TagPath[] getPaths() {
-    return (TagPath[])paths.toArray(new TagPath[paths.size()]);
+  public List getChoices() {
+    return Collections.unmodifiableList(choices);
   }
 
   /**
-   * Sets the paths used by this list
+   * Sets the choices
    */
-  public void setPaths(TagPath[] set) {
-    paths.clear();
-    paths.addAll(Arrays.asList(set));
+  public void setChoices(Object[] set) {
+    choices.clear();
+    choices.addAll(Arrays.asList(set));
     update();
   }
 
   /**
-   * Sets the paths used by this list
+   * Sets the choices
    */
-  public void setPaths(Collection c) {
-    paths = new ArrayList(c);
+  public void setChoices(Collection c) {
+    choices = new ArrayList(c);
     update();
   }
   
@@ -155,9 +152,9 @@ public class PathListWidget extends JComponent {
     }
 
     // Move it down
-    Object o = paths.get(row);
-    paths.set(row, paths.get(row-1));
-    paths.set(row-1, o);
+    Object o = choices.get(row);
+    choices.set(row, choices.get(row-1));
+    choices.set(row-1, o);
 
     // Show it
     update();
@@ -171,17 +168,31 @@ public class PathListWidget extends JComponent {
 
     // Find out which row is selected now
     int row = lChoose.getSelectedIndex();
-    if ((row==-1)||(row==paths.size()-1))
+    if ((row==-1)||(row==choices.size()-1))
       return;
 
     // Move it down
-    Object o = paths.get(row);
-    paths.set(row, paths.get(row+1));
-    paths.set(row+1, o);
+    Object o = choices.get(row);
+    choices.set(row, choices.get(row+1));
+    choices.set(row+1, o);
 
     // Show it
     update();
     lChoose.setSelectedIndex(row+1);
+  }
+  
+  /**
+   * Override to provide custom text
+   */
+  protected String getText(Object choice) {
+    return choice.toString();
+  }
+
+  /**
+   * Override to provide custom text
+   */
+  protected ImageIcon getIcon(Object choice) {
+    return null;
   }
 
   /**
@@ -204,16 +215,15 @@ public class PathListWidget extends JComponent {
 
     /** callback for component that renders element */
     public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
-      // here's the path
-      TagPath path = (TagPath)value;
       // prepare its data
       super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-      setText( path.toString() );
-      setIcon( MetaProperty.get(path).getImage() );
+      setText( ListSelectionWidget.this.getText(value) );
+      setIcon( ListSelectionWidget.this.getIcon(value) );
       // with selection or not?
-      if (selection==null) return this;
+      if (selection==null) 
+        return this;
       // update 
-      check.setSelected( selection.contains(path) );
+      check.setSelected( selection.contains(value) );
       return panel;
     }
 
@@ -231,11 +241,12 @@ public class PathListWidget extends JComponent {
       int pos = lChoose.locationToIndex(me.getPoint());
       if (pos==-1) return;
       // Get entry and invert selection
-      TagPath path = (TagPath)paths.get(pos);
-      if (!selection.remove(path)) selection.add(path);
+      Object choice = choices.get(pos);
+      if (!selection.remove(choice)) 
+        selection.add(choice);
       // Show it 
       lChoose.repaint(lChoose.getCellBounds(pos,pos));
     }
   } //SelectionListener
   
-} //TagPathList
+} //ListSelectionWidget

@@ -19,17 +19,22 @@
  */
 package genj.timeline;
 
+import genj.cday.Repository;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.PropertyEvent;
+import genj.gedcom.TagPath;
 import genj.util.Resources;
 import genj.util.swing.ColorsWidget;
+import genj.util.swing.ImageIcon;
+import genj.util.swing.ListSelectionWidget;
 import genj.util.swing.SpinnerWidget;
 import genj.view.Settings;
 import genj.view.ViewManager;
-import genj.view.widgets.PathListWidget;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -55,14 +60,25 @@ import javax.swing.JTabbedPane;
  */
 public class TimelineViewSettings extends JTabbedPane implements Settings {
   
+  /** resources we use */
+  private Resources resources = Resources.get(this);
+  
   /** keeping track of timeline these settings are for */
   private TimelineView view;
   
   /** a widget for selecting paths to show */
-  private PathListWidget pathsList = new PathListWidget();
+  private ListSelectionWidget pathsList = new ListSelectionWidget() {
+    protected ImageIcon getIcon(Object choice) {
+      TagPath path = (TagPath)choice;
+      return MetaProperty.get(path).getImage();
+    }
+  };
   
-  /** resources we use */
-  private Resources resources = Resources.get(this);
+  /** a widget for selecting event libraries to use */
+  private ListSelectionWidget eventsList = new ListSelectionWidget();
+  
+  /** a checkbox for whether to consider birthdays in library */
+  private JCheckBox checkShowBirthdays = new JCheckBox(resources.getString("events.bdays" ));
   
   /** Checkbox for options */
   private JCheckBox[] checkOptions = {
@@ -107,12 +123,21 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     panelMain.add(pathsList   , BorderLayout.CENTER);
     panelMain.add(panelOptions, BorderLayout.SOUTH);
     
+    // panel for history options
+    Set libs = Repository.getInstance().getLibraries();
+    eventsList.setChoices(libs);
+    eventsList.setSelection(libs);
+    JPanel panelEvents = new JPanel(new BorderLayout());
+    panelEvents.add(checkShowBirthdays, BorderLayout.NORTH);
+    panelEvents.add(eventsList, BorderLayout.CENTER);
+    
     // color chooser
     colorWidget = new ColorsWidget();
     
     // add those tabs
     add(resources.getString("page.main")  , panelMain);
     add(resources.getString("page.colors"), colorWidget);
+    add(resources.getString("page.events"), panelEvents);
 
     // done
   }
@@ -158,7 +183,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   public void reset() {
     
     // EventTags to choose from
-    pathsList.setPaths(PropertyEvent.getTagPaths());
+    pathsList.setChoices(PropertyEvent.getTagPaths());
     pathsList.setSelection(view.getModel().getPaths());
     
     // Checks
