@@ -23,12 +23,12 @@ import java.util.TreeMap;
  * GenJ - Report
  * Note: this report requires Java2
  * @author Francois Massonneau <fmas@celtes.com>
- * @version 0.03
+ * @version 0.04
  */
 public class ReportGedcomStatistics implements Report {
 
   /** the place that is not known */
-  private final static String UNKNOWN_PLACE = "[unknown]";
+  private final static String UNKNOWN_PLACE = "[unknown places]";
   
   /**
    * Returns the name of this report - should be localized.
@@ -45,8 +45,9 @@ public class ReportGedcomStatistics implements Report {
     return "This report gives you some statistics about the current Gedcom File.\n"+
 		"   . How many families, persons.\n"+
 		"   . Number of males, females, and individuals with undefined sex.\n"+
-		"   . Stats about birth places.\n\n"+
-		"            Have Fun and Enjoy\n\n\n(version 0.03)";
+		"   . Stats about birth places.\n"+
+		"   . Stats about death places.\n\n"+
+		"            Have Fun and Enjoy\n\n\n(version 0.04)";
   }
 
   /**
@@ -83,6 +84,8 @@ public class ReportGedcomStatistics implements Report {
     // We Look thru individuals to check their sex
     // .. at the same time we check for birth places
     TreeMap places = new TreeMap();
+    // .. at the same time we check for death places
+    TreeMap death_places = new TreeMap();
     
     EntityList indis = gedcom.getEntities(gedcom.INDIVIDUALS);
     for (int i=0;i<indis.getSize();i++) {
@@ -120,7 +123,24 @@ public class ReportGedcomStatistics implements Report {
         
       // .. remember
       places.put(place.toString(), count);
-      
+
+      // And here comes the check for death place
+      Object death_place = indi.getProperty("INDI:DEAT:PLAC");
+      if ((death_place==null) || (death_place.toString().trim().length()==0)){
+        death_place = UNKNOWN_PLACE;
+      }
+       
+      // .. check if we know that already (or start at 0)
+      Integer death_count = (Integer)death_places.get(death_place.toString());
+      if (death_count==null) {
+        death_count = new Integer(1);
+      } else {
+        death_count = new Integer(death_count.intValue()+1);
+      }
+        
+      // .. remember
+      death_places.put(death_place.toString(), death_count);
+
       // Next one
     }
 
@@ -147,14 +167,22 @@ public class ReportGedcomStatistics implements Report {
     bridge.println("         . "+numUnknown+" with undefined sex (soit : "
       +numUnknown+" personnes dont le sexe n'est pas connu).");
 
-    bridge.println("  * Stats about birth places :");
-      
     // Six: We show the birth places
+    bridge.println("  * Stats about birth places :");
     Iterator it = places.keySet().iterator();
     while (it.hasNext()) {
       String place = (String)it.next();
       Integer count = (Integer)places.get(place);
       bridge.println("     - "+count+" individuals born in "+place);
+    }
+
+    // Seven: We show the death places
+    bridge.println("  * Stats about death places :");
+    Iterator death_it = death_places.keySet().iterator();
+    while (death_it.hasNext()) {
+      String death_place = (String)death_it.next();
+      Integer death_count = (Integer)death_places.get(death_place);
+      bridge.println("     - "+death_count+" individuals dead in "+death_place);
     }
 
     // Done
