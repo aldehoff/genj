@@ -37,9 +37,7 @@ LOOKING AT IT
 
 ADOPTING IT
 
- Download and install the ANT package - get it from http://jakarta.apache.org/ant
-
- Make sure to open ant.properties and adopt the following settings
+ Make sure to open build.properties and adopt the following settings
  to your environment:
 
   dir.dist              - Where to place files that are part of the distribution
@@ -51,7 +49,6 @@ ADOPTING IT
  Make sure that
 
   JAVA_HOME points to your JDK/JRE installation
-  ANT_HOME points to your ANT installation
 
 WORKING WITH IT
 
