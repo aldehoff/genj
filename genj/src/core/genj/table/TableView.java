@@ -155,7 +155,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     if (entity.getType()!=tableModel.getType()) return;
     // already selected?
     int row = table.getSelectionModel().getLeadSelectionIndex();
-    if (row>=0 && tableModel.getEntity(row)==entity) return;
+    if (row>=0 && row<tableModel.getRowCount() && tableModel.getEntity(row)==entity) return;
     // change selection
     row = tableModel.getRow(entity);
     table.scrollRectToVisible(table.getCellRect(row,0,true));
