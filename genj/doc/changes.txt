@@ -27,7 +27,7 @@ Future
   O Report to re-layout all entity IDs (logical numbering, format, etc.)
   O Descendants view a la http://worldconnect.rootsweb.com/cgi-bin/igm.cgi?op=DESC&db=timmsc&id=I008
 
-1.8 - Mar xx 2002 (not released)
+1.8 - Apr xx 2002 (not released)
 
   I ant descriptor now builds distributions for languages EN,DE,FR and IT
   C Changed the way that IDs are created for new entities (incremental)
@@ -39,6 +39,7 @@ Future
   C Applet's default-size for windows is now 640/480
   B Link to image in help HTML is broken (resedit.html)
   I Updated resedit.html in help menu to match resedit v.1.02
+  I Animated Gif files added to the help menu
   I ReportGedcomStatistics gives stats on birth and death places
   I ReportMakeHTMLTable orders alphabetically by name
   I Javadoc now has links to Sun's Java2 API
