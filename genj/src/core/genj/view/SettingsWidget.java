@@ -40,7 +40,7 @@ import javax.swing.JPanel;
   /** members */
   private JPanel pSettings,pActions;
   private Vector vButtons = new Vector();
-  private Component vsWidget = null;
+  private ViewWidget viewWidget = null;
   private JLabel lIdle;
   
   /**
@@ -76,32 +76,35 @@ import javax.swing.JPanel;
     add(pActions ,"South" );
     
     // init
-    setViewSettingsWidget(null);
+    setViewWidget(null);
   }
 
   /**
-   * Gets the ViewSettingsWidget to display
+   * Gets the View we're showing settings for
    */
-  protected Component getViewSettingsWidget() {
-    return vsWidget;
+  protected ViewWidget getViewWidget() {
+    return viewWidget;
   }
 
   /**
    * Sets the ViewSettingsWidget to display
    */
-  protected void setViewSettingsWidget(Component vsw) {
+  protected void setViewWidget(ViewWidget vw) {
     
-    vsWidget = vsw;
+    // remember
+    viewWidget = vw;
 
-    ButtonHelper.setEnabled(vButtons, vsw!=null);
+    // enable buttons
+    ButtonHelper.setEnabled(vButtons, viewWidget!=null);
     
+    // setup content
     pSettings.removeAll();
-    
-    if (vsw==null) {
+    if (viewWidget==null) {
       pSettings.add(lIdle, BorderLayout.CENTER);
     } else {
-      if (vsw instanceof ApplyResetSupport) ((ApplyResetSupport)vsw).reset();
-      pSettings.add(vsw, BorderLayout.CENTER);
+      Component view = viewWidget.getSettings();
+      if (view instanceof ApplyResetSupport) ((ApplyResetSupport)view).reset();
+      pSettings.add(view, BorderLayout.CENTER);
     }
     pSettings.invalidate();
     pSettings.validate();
@@ -114,7 +117,8 @@ import javax.swing.JPanel;
   private class ActionApply extends ActionDelegate {
     protected ActionApply() { super.setText("view.apply"); }
     protected void execute() {
-      if (vsWidget instanceof ApplyResetSupport) ((ApplyResetSupport)vsWidget).apply();
+      if (viewWidget.getView() instanceof ApplyResetSupport) 
+        ((ApplyResetSupport)viewWidget.getView()).apply();
     }
   }
 
@@ -124,7 +128,8 @@ import javax.swing.JPanel;
   private class ActionReset extends ActionDelegate {
     protected ActionReset() { super.setText("view.reset"); }
     protected void execute() {
-      if (vsWidget instanceof ApplyResetSupport) ((ApplyResetSupport)vsWidget).reset();
+      if (viewWidget.getView() instanceof ApplyResetSupport) 
+        ((ApplyResetSupport)viewWidget.getView()).reset();
     }
   }
   

@@ -37,8 +37,14 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -70,6 +76,9 @@ public class ViewManager {
     new Descriptor("genj.nav.NavigatorViewFactory"    ,"navigator",Images.imgNewNavigator, new Dimension(140,200)),
     new Descriptor("genj.resume.ResumeViewFactory"    ,"resume"   ,Images.imgNewResume   , new Dimension(320,320))
   };
+  
+  /** open views */
+  private List viewWidgets = new LinkedList();
 
   /**
    * Singleton access
@@ -114,28 +123,9 @@ public class ViewManager {
   }
   
   /**
-   * Closes settings for given view settings component
-   */
-  public void closeSettings(Component view) {
-    
-    // is there a frame for the setting?
-    JFrame frame = App.getInstance().getFrame("settings");
-    if (frame==null) return;
-    
-    // check the SettingsWidget
-    SettingsWidget sw = (SettingsWidget)frame.getContentPane().getComponent(0);
-    if (sw.getViewSettingsWidget()!=view) return;
-    
-    // close the settings frame
-    frame.dispose();
-    
-    // done
-  }
-
-  /**
    * Opens settings for given view settings component
    */
-  public void openSettings(Component vsw) {
+  /*package*/ void openSettings(ViewWidget viewWidget) {
 
     // the frame for the settings
     JFrame frame = App.getInstance().getFrame("settings");
@@ -156,11 +146,30 @@ public class ViewManager {
     
     // get the SettingsWidget
     SettingsWidget sw = (SettingsWidget)frame.getContentPane().getComponent(0);
-    sw.setViewSettingsWidget(vsw);
+    sw.setViewWidget(viewWidget);
     
     // show it
     frame.show();
         
+    // done
+  }
+
+  /**
+   * Callback that a view was closed
+   */
+  /*package*/ void closeNotify(ViewWidget viewWidget) {
+    
+    // close property editor if open and showing settings
+    JFrame frame = App.getInstance().getFrame("settings");
+    if (frame!=null) { 
+      // close the settings 
+     SettingsWidget sw = (SettingsWidget)frame.getContentPane().getComponent(0);
+     if (sw.getViewWidget()==viewWidget) frame.dispose();
+    }
+    
+    // get rid of traces
+    if (viewWidgets.contains(viewWidget)) viewWidgets.remove(viewWidget);
+    
     // done
   }
 
@@ -179,11 +188,17 @@ public class ViewManager {
       gedcom.getName() + "." + registry.getView(),
       descriptor.dim
     );
+    
+    // the viewwidget
+    ViewWidget viewWidget = new ViewWidget(frame,gedcom,registry,descriptor);
 
     // show it
-    frame.getContentPane().add(new ViewWidget(frame,gedcom,registry,descriptor));
+    frame.getContentPane().add(viewWidget);
     frame.pack();
     frame.show();
+    
+    // remember
+    viewWidgets.add(viewWidget);
     
     // done
   }
@@ -192,28 +207,15 @@ public class ViewManager {
    * Closes all views on given Gedcom
    */
   public void closeViews(Gedcom gedcom) {
-    
-    // the view looking on that gedcom
-    Vector targets = new Vector();
-
-    // search through frames
-    Hashtable frames = App.getInstance().getFrames();
-    Enumeration vs = frames.keys();
-    while (vs.hasMoreElements()) {
-      String key = (String)vs.nextElement();
-      if (key.indexOf('.'+gedcom.getName()+'.')>0) targets.add(frames.get(key));
+    // look for views looking at gedcom    
+    Iterator it = viewWidgets.iterator();
+    while (it.hasNext()) {
+      ViewWidget vw = (ViewWidget)it.next();
+      if (vw.getGedcom()==gedcom) {
+        it.remove();
+        vw.getFrame().dispose();
+      }
     }
-
-    // close those views
-    vs = targets.elements();
-    while (vs.hasMoreElements()) {
-      ((JFrame)vs.nextElement()).dispose();
-    }
-    
-    // and close the Settings, too
-    JFrame frame = App.getInstance().getFrame("settings");
-    if (frame!=null) frame.dispose();
-    
 
     // done
     

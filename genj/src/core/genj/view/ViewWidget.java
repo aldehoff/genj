@@ -57,22 +57,33 @@ import javax.swing.border.TitledBorder;
   /** the toolbar we're using */
   private JToolBar bar;
   
+  /** the view we're wrapping */
+  private Component view;
+  
   /** the settings for this view */
   private JComponent settings;
+  
+  /** the gedcom this view looks at */
+  private Gedcom gedcom;
+  
+  /** the frame its contained in */
+  private JFrame frame;
   
   /** 
    * Constructor
    */
-  public ViewWidget(JFrame frame, Gedcom gedcom, Registry registry, ViewManager.Descriptor descriptor) {
+  /*package*/ ViewWidget(JFrame frame, Gedcom gedcom, Registry registry, ViewManager.Descriptor descriptor) {
     
     // remember
     this.registry = registry;
+    this.gedcom = gedcom;
+    this.frame = frame;
     
     // create a factory
     ViewFactory factory = descriptor.instantiate();
   
     // create the view component
-    Component view = factory.createViewComponent(gedcom, registry, frame);
+    view = factory.createViewComponent(gedcom, registry, frame);
 
     // Fill Toolbar
     boolean isBar = false;
@@ -115,6 +126,34 @@ import javax.swing.border.TitledBorder;
   }
   
   /**
+   * Accessor - the view
+   */
+  /*package*/ Component getView() {
+    return view;
+  }
+  
+  /**
+   * Accessor - the settings
+   */
+  /*package*/ JComponent getSettings() {
+    return settings;
+  }
+  
+  /**
+   * Accessor - the gedcom
+   */
+  /*package*/ Gedcom getGedcom() {
+    return gedcom;
+  }
+  
+  /**
+   * Accessor - the frame
+   */
+  /*package*/ JFrame getFrame() {
+    return frame;
+  }
+  
+  /**
    * When adding components we fix a Toolbar's sub-component's
    * orientation
    * @see java.awt.Container#addImpl(Component, Object, int)
@@ -143,8 +182,8 @@ import javax.swing.border.TitledBorder;
   public void removeNotify() {
     // delegate
     super.removeNotify();
-    // close property editor if open
-    ViewManager.getInstance().closeSettings(settings);
+    // propagate to manager
+    ViewManager.getInstance().closeNotify(this);
     // done
   }
   
@@ -178,7 +217,7 @@ import javax.swing.border.TitledBorder;
     }
     /** run */
     protected void execute() {
-      ViewManager.getInstance().openSettings(settings);
+      ViewManager.getInstance().openSettings(ViewWidget.this);
     }
   } //ActionOpenSettings
   
