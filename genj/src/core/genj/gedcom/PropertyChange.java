@@ -103,7 +103,7 @@ public class PropertyChange extends Property implements MultiLineSupport {
     // get PropertyChange
     PropertyChange change = (PropertyChange)entity.getProperty(CHAN);
     if (change==null) {
-      change = new PropertyChange();
+      change = (PropertyChange)MetaProperty.get(entity, CHAN).create("");
       entity.addProperty(change);
     }
     change.update();
@@ -177,12 +177,29 @@ public class PropertyChange extends Property implements MultiLineSupport {
   }
   
   /**
+   * Will only be used for display - data access will use getLines()
    * @see genj.gedcom.Property#getValue()
    */
   public String getValue() {
-    return EMPTY_STRING;
+    return getDateAsString()+' '+getTimeAsString();
   }
   
+  /**
+   * @see genj.gedcom.Property#compareTo(java.lang.Object)
+   */
+  public int compareTo(Object o) {
+    // safety check
+    if (!(o instanceof PropertyChange))
+      return super.compareTo(o);
+    // compare pit
+    PropertyChange other = (PropertyChange)o;
+    int result = pit.compareTo(other.pit);
+    if (result!=0)
+      return result;
+    // compare time
+    return (int)(time-other.time);
+  }
+
   /**
    * Iterator for lines
    */
