@@ -38,54 +38,19 @@ import java.util.List;
     // check husband/wife
     Indi husband = fam.getHusband();
     if (!testSex(husband, PropertySex.MALE)) 
-      issues.add(new GenderChange(fam, husband, PropertySex.MALE, fam.getProperty("HUSB") ));
+      issues.add(new Issue(husband+" has wrong gender", husband.getImage(true), fam.getProperty("HUSB") ));
+      
     Indi wife = fam.getWife();
     if (!testSex(wife, PropertySex.FEMALE)) 
-      issues.add(new GenderChange(fam, wife, PropertySex.FEMALE, fam.getProperty("WIFE") ));
+      issues.add(new Issue(wife+" has wrong gender", husband.getImage(true), fam.getProperty("WIFE") ));
 
   }    
 
   /**
-   * A gender change issue
-   */      
-  private static class GenderChange extends SolvableIssue {
-    
-    /** sex to change to */
-    private int change;
-    
-    /**
-     * Constructor
-     */
-    private GenderChange(Fam fam, Indi indi, int sex, Property target) {
-      super(indi+" has wrong gender", indi.getImage(false), target);
-      change = sex;
-    }
-    
-    /**
-     * @see validate.SolvableIssue#solution()
-     */
-    /*package*/ String solution() {
-      return "Change to "+change;
-    }
-
-    /**
-     * @see validate.SolvableIssue#solve()
-     */
-    void solve() {
-      System.out.println(solution());
-    }
-    
-  } //GenderChange  
-  
-  /**
    * Test an individual's sex
    */
   private boolean testSex(Indi indi, int sex) {
-    // no indi -> assuming true
-    if (indi==null)
-      return true;
-    // check it
-    return indi.getSex()==sex;
+    return indi==null ? true : indi.getSex()==sex;
   }
 
 } //TestHusbandGender

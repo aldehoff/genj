@@ -88,7 +88,7 @@ import java.util.List;
     
     // did we get a path1 or assuming prop instanceof date?
     if (path1!=null) {
-      date1 = (PropertyDate)prop.getEntity().getProperty(path1, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
+      date1 = (PropertyDate)prop.getProperty(path1, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
     } else {
       date1 = (PropertyDate)prop;
     }

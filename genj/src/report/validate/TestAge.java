@@ -75,7 +75,7 @@ public class TestAge extends Test {
     // get to the date
     PropertyDate date ;
     if (path2date!=null) {
-      date = (PropertyDate)prop.getEntity().getProperty(path2date, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
+      date = (PropertyDate)prop.getProperty(path2date, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
     } else {
       date = (PropertyDate)prop;
     }
@@ -83,8 +83,8 @@ public class TestAge extends Test {
     if (date==null||!date.isValid())
       return;
 
-    // find indi we compute age for (e.g. "INDI" or "MARR:HUSB")
-    Property pindi = prop.getEntity().getProperty(path2indi, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
+    // find indi we compute age for 
+    Property pindi = prop.getProperty(path2indi, Property.QUERY_VALID_TRUE|Property.QUERY_FOLLOW_LINK);
     if (!(pindi instanceof Indi))
       return;
     Indi indi = (Indi)pindi;      

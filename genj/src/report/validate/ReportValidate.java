@@ -90,7 +90,6 @@ public class ReportValidate extends Report {
     println(" Still to do:");
     println(" + migrate more of Jerome's anomaly checks");
     println(" + internationalize all tests");
-    println(" + allow one-click-resolution of solvable issues");
     flush();
 
     // prepare tests
@@ -208,34 +207,44 @@ public class ReportValidate extends Report {
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:WIFE:INDI:DEAT:DATE"));
 
     // childbirth after death of mother
-    result.add(new TestDate("FAM:CHIL"      ,"FAM:CHIL:INDI:BIRT:DATE", TestDate.AFTER  ,"FAM:WIFE:INDI:DEAT:DATE"));
+    result.add(new TestDate("FAM:CHIL"      ,".:INDI:BIRT:DATE", TestDate.AFTER  ,"FAM:WIFE:INDI:DEAT:DATE"));
 
     // childbirth before marriage / after div
-    result.add(new TestDate("FAM:CHIL"      ,"FAM:CHIL:INDI:BIRT:DATE", TestDate.BEFORE ,"FAM:MARR:DATE"));
-    result.add(new TestDate("FAM:CHIL"      ,"FAM:CHIL:INDI:BIRT:DATE", TestDate.AFTER  ,"FAM:DIV:DATE"));
+    result.add(new TestDate("FAM:CHIL"      ,".:INDI:BIRT:DATE", TestDate.BEFORE ,"FAM:MARR:DATE"));
+    result.add(new TestDate("FAM:CHIL"      ,".:INDI:BIRT:DATE", TestDate.AFTER  ,"FAM:DIV:DATE"));
 
     // ************************* AGE TESTS **********************************
     
     // max lifespane
-    result.add(new TestAge ("INDI:DEAT:DATE","INDI", TestAge.OVER, maxLife));
+    if (maxLife>0)
+      result.add(new TestAge ("INDI:DEAT:DATE","..:..", TestAge.OVER, maxLife));
     
-    // max BAPM age 
-    result.add(new TestAge ("INDI:BAPM:DATE","INDI", TestAge.OVER   ,maxAgeBAPM));
+    // max BAPM age
+    if (maxAgeBAPM>0) 
+      result.add(new TestAge ("INDI:BAPM:DATE","..:..", TestAge.OVER   ,maxAgeBAPM));
     
-    // max CHRI age 
-    result.add(new TestAge ("INDI:CHRI:DATE","INDI", TestAge.OVER   ,maxAgeBAPM));
+    // max CHRI age
+    if (maxAgeBAPM>0) 
+      result.add(new TestAge ("INDI:CHRI:DATE","..:..", TestAge.OVER   ,maxAgeBAPM));
     
     // min RETI age
-    result.add(new TestAge ("INDI:RETI:DATE","INDI", TestAge.UNDER  ,minAgeRETI));
+    if (minAgeRETI>0)
+      result.add(new TestAge ("INDI:RETI:DATE","..:..", TestAge.UNDER  ,minAgeRETI));
 
     // min MARR age of husband, wife
-    result.add(new TestAge ("FAM:MARR:DATE" ,"FAM:HUSB:INDI", TestAge.UNDER  ,minAgeMARR));
-    result.add(new TestAge ("FAM:MARR:DATE" ,"FAM:WIFE:INDI", TestAge.UNDER  ,minAgeMARR));
+    if (minAgeMARR>0) 
+      result.add(new TestAge ("FAM:MARR:DATE" ,"..:..:HUSB:INDI", TestAge.UNDER  ,minAgeMARR));
+    if (minAgeMARR>0) 
+      result.add(new TestAge ("FAM:MARR:DATE" ,"..:..:WIFE:INDI", TestAge.UNDER  ,minAgeMARR));
     
-    // min age for father, mother
-    result.add(new TestAge ("FAM:CHIL", "FAM:CHIL:INDI:BIRT:DATE" ,"FAM:WIFE:INDI", TestAge.UNDER,minAgeMother));
-    result.add(new TestAge ("FAM:CHIL", "FAM:CHIL:INDI:BIRT:DATE" ,"FAM:WIFE:INDI", TestAge.OVER ,maxAgeMother));
-    result.add(new TestAge ("FAM:CHIL", "FAM:CHIL:INDI:BIRT:DATE" ,"FAM:HUSB:INDI", TestAge.UNDER,minAgeFather));
+    // min/max age for father, mother
+    if (minAgeMother>0) 
+      result.add(new TestAge ("FAM:CHIL", ".:INDI:BIRT:DATE" ,"..:WIFE:INDI", TestAge.UNDER,minAgeMother));
+    if (maxAgeMother>0) 
+      result.add(new TestAge ("FAM:CHIL", ".:INDI:BIRT:DATE" ,"..:WIFE:INDI", TestAge.OVER ,maxAgeMother));
+    if (minAgeFather>0) 
+      result.add(new TestAge ("FAM:CHIL", ".:INDI:BIRT:DATE" ,"..:HUSB:INDI", TestAge.UNDER,minAgeFather));
+    
 
     // **********************************************************************
     return result;    
