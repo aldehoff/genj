@@ -9,6 +9,7 @@ The people behind GenJ (sorted by last name) :
     Contributors :
       . Daniel P. Kionka <dan@kionka.org>
       . Francois Massonneau <frmas@free.fr>
+			.	Jan C.Hardenbergh <jch@world.std.com>
       . Sean Timm  <TimmSCHome@aol.com>
 
     Translators :
