@@ -684,6 +684,15 @@ public abstract class Property implements Comparable {
     
     // done
   }
+
+  /**
+   * Resolves end-user information about this property - by
+   * default whatever is in the language resource files
+   * @return info or null
+   */
+  public String getInfo() {
+    return MetaProperty.get(this).getInfo();
+  }
   
 } //Property
 

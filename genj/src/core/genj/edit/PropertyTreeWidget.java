@@ -205,8 +205,9 @@ public class PropertyTreeWidget extends TreeWidget {
     // .. won't work if property is not part of entity (e.g. Cliboard.Copy)
     if (prop.getEntity()==null) return null;
     // .. calc information text
-    String info = MetaProperty.get(prop).getInfo();
-    if (info==null) return null;
+    String info = prop.getInfo();
+    if (info==null) 
+      return null;
     // return text wrapped to 200 pixels
     return "<html><table width=200><tr><td>"+info+"</td></tr></table></html";    
   }
