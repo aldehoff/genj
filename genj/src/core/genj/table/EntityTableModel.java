@@ -151,11 +151,17 @@ import javax.swing.table.AbstractTableModel;
    */
   /*package*/ Point getRowCol(Entity e, Property p) {
     
+    if (p==null)
+      p = e;
+    
     int row=-1,col=-1;
     
-    outer: for (int r=0; r<rows.length; r++) {
+    // find row
+    for (int r=0; r<rows.length; r++) {
       if (rows[r].getEntity()==e) {
         row = r;
+        
+        // find col
         Property[] cols = rows[r].getColumns();
         for (int c=0; c<cols.length; c++) {
           if (cols[c]==p) {
@@ -163,8 +169,10 @@ import javax.swing.table.AbstractTableModel;
             break;
           }
         }
-        break outer;
-      } 
+        
+        // stop lookin
+        break;
+      }
     }
     
     return new Point(col, row);
