@@ -133,7 +133,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     choiceValue.addActionListener(new ActionListener() {
       /** button */
       public void actionPerformed(ActionEvent e) {
-        bStop.doClick();
+        //bStop.doClick();
         bSearch.doClick();
       }
     });
@@ -347,9 +347,16 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     private void search(Property prop) {
       // still going?
       if (getThread().isInterrupted()) return;
-      // check prop
-      String value = prop instanceof MultiLineSupport ? ((MultiLineSupport)prop).getLinesValue() : prop.getValue(); 
-      if (matcher.matches(value))      
+      // check prop for value
+      String value = prop instanceof MultiLineSupport ? ((MultiLineSupport)prop).getLinesValue() : prop.getValue();
+      Matcher.Match[] matches = matcher.match(value);
+
+// FIXME use matches      
+//      for (int i = 0; i < matches.length; i++) {
+//        System.out.println(value.substring(matches[i].start, matches[i].end));      	
+//      }
+        
+      if (matches.length>0)      
         add(prop);
       // check subs
       int n = prop.getNoOfProperties();

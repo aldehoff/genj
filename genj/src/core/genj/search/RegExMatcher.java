@@ -19,13 +19,14 @@
  */
 package genj.search;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
  * A matcher based on regular expressions
  */
-public class RegExMatcher implements Matcher {
+public class RegExMatcher extends Matcher {
   
   /** the compiled regular expression */
   private Pattern compiled; 
@@ -42,10 +43,16 @@ public class RegExMatcher implements Matcher {
   }
   
   /**
-   * @see genj.search.Matcher#matches(java.lang.String)
+   * @see genj.search.Matcher#match(java.lang.String, java.util.List)
    */
-  public boolean matches(String input) {
-    return compiled.matcher(input).find();
+  protected void match(String input, List result) {
+    // try to match anything
+    java.util.regex.Matcher m = compiled.matcher(input);
+    while (true) {
+      if (!m.find()) return;
+      result.add(new Match(m.start(), m.end()));
+    }
+    // done
   }
 
 } //RegExMatcher

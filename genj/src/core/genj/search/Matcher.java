@@ -19,19 +19,43 @@
  */
 package genj.search;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Matching 
  */
-public interface Matcher {
+public abstract class Matcher {
   
   /** 
    * init
    */
-  public void init(String pattern);
+  public abstract void init(String pattern);
   
   /**
-   * test for match
+   * match
    */
-  public boolean matches(String value);
+  public final Match[] match(String value) {
+    List result = new ArrayList(100);
+    match(value, result);
+    return (Match[])result.toArray(new Match[result.size()]);
+  }
+
+  /**
+   * match (impl)
+   */
+  protected abstract void match(String value, List result);
+  
+  /**
+   * A match
+   */
+  public static class Match {
+    /** positions */
+    public int start, end;
+    /** constructor */
+    protected Match(int s, int e) { start = s; end = e; }
+    /** string rep */
+    public String toString() { return start+"-"+end; }
+  } //Match
 
 } //Matcher

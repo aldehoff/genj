@@ -21,6 +21,7 @@ package genj.util.swing;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.List;
@@ -63,7 +64,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     setAlignmentX(LEFT_ALIGNMENT);
     
     // our editor
-    setEditor(editor);
+    super.setEditor(editor);
     
     // initially unchanged
     isChanged = false;
@@ -106,20 +107,6 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   }
   
   /**
-   * @see javax.swing.JComboBox#setEditable(boolean)
-   */
-  public void setEditable(boolean set) {
-    super.setEditable(set);
-    // install our special editor for now
-    if (set) {
-      Editor edit = new Editor();
-      setEditor(edit);
-      edit.setChanged(false);
-    }
-    // done 
-  }
-    
-  /**
    * Current text value
    */
   public String getText() {
@@ -159,6 +146,35 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     } catch (Throwable t) {
       super.requestFocus();
     }
+  }
+  
+  /**
+   * @see javax.swing.JComboBox#setEditor(javax.swing.ComboBoxEditor)
+   */
+  public void setEditor(ComboBoxEditor anEditor) {
+    // always our own because 
+    // (1) want to use our TextWidget here
+    // (2) want to avoid actionPerformed on focusLost (see Editor)
+    // (3) want to avoid double actionPerformed from JComboBox on 'enter'
+    //     with a changed editor value
+    // caveat: no action performed on select from choices
+    Editor edit = new Editor();
+    super.setEditor(edit);
+    edit.setChanged(false);
+  }
+
+  /**
+   * @see javax.swing.JComboBox#addActionListener(java.awt.event.ActionListener)
+   */
+  public void addActionListener(ActionListener l) {
+    editor.addActionListener(l);
+  }
+      
+  /**
+   * @see javax.swing.JComboBox#removeActionListener(java.awt.event.ActionListener)
+   */
+  public void removeActionListener(ActionListener l) {
+    editor.removeActionListener(l);
   }
       
   /**

@@ -19,11 +19,13 @@
  */
 package genj.search;
 
+import java.util.List;
+
 
 /**
  * A matcher based on regular expressions
  */
-public class SimpleMatcher implements Matcher {
+public class SimpleMatcher extends Matcher {
   
   /** the pattern we're looking for */
   private String pattern; 
@@ -36,10 +38,18 @@ public class SimpleMatcher implements Matcher {
   }
   
   /**
-   * @see genj.search.Matcher#matches(java.lang.String)
+   * @see genj.search.Matcher#match(java.lang.String, java.util.List)
    */
-  public boolean matches(String input) {
-    return input.toLowerCase().indexOf(pattern)>=0;
+  protected void match(String input, List result) {
+    // search for matches
+    int end, start = 0;  
+    while (true) {
+      start = input.toLowerCase().indexOf(pattern, start);
+      if (start<0) break;
+      end = start + pattern.length();
+      result.add(new Match(start, end-1));
+      start = end;
+    }
   }
 
 } //RegExMatcher
