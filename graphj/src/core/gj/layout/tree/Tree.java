@@ -42,11 +42,18 @@ public class Tree {
   
   /** the root */
   private Node root;
-  
+
   /**
    * Constructor
    */
   public Tree(Graph graph, Node root, double padGenerations, Orientation o) throws LayoutException {
+    this(root, padGenerations, o, graph.getNodes().size());
+  }
+  
+  /**
+   * Constructor
+   */
+  public Tree(Node root, double padGenerations, Orientation o, int estimatedSize) throws LayoutException {
 
     // remember
     this.root = root;
@@ -55,8 +62,8 @@ public class Tree {
     // - no cycles
     // - get generations' heights & position
     // - collect spanned nodes
-    height = new double[graph.getNodes().size()];
-    nodes = new HashSet(graph.getNodes().size());
+    height = new double[estimatedSize];
+    nodes = new HashSet(estimatedSize);
     analyze(root, null, 0, o);
 
     // Calculate generation's positions    

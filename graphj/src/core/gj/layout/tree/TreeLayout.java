@@ -278,6 +278,32 @@ public class TreeLayout extends AbstractLayout implements Layout {
   }
   
   /**
+   * Layout starting from a root node
+   */
+  public Rectangle2D layout(Node root, int estimatedSize) throws LayoutException {
+
+    // get an orientation
+    Orientation orientn = Orientation.get(isVertical,isTopDown);
+    
+    // and a node layout
+    Algorithm algorithm = new Algorithm(
+      orientn, 
+      nodeOptions, 
+      arcOptions,
+      isLatAlignmentEnabled,
+      isBalanceChildren,
+      orientationToggles,
+      isBendArcs
+    );
+
+    // create a Tree for current root assuming that all nodes in it will be visited
+    Tree tree = new Tree(root, latPadding, orientn, estimatedSize);
+
+    // layout and return bounds
+    return algorithm.layout(tree, null);
+  }
+  
+  /**
    * @see gj.layout.Layout#applyTo(Graph)
    */
   public void layout(Graph graph) throws LayoutException {
