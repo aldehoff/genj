@@ -37,6 +37,9 @@ public class Path implements Shape, PathIteratorKnowHow {
   /** the lastPoint we keep */
   private Point2D.Double lastPoint = new Point2D.Double();
   
+  /** a preset bounds */
+  private Rectangle2D overrideBounds = null;
+  
   /**
    * Accessor - lastPoint
    */
@@ -165,6 +168,21 @@ public class Path implements Shape, PathIteratorKnowHow {
     lastPoint.setLocation(p.getX(), p.getY());
     return this;
   }
+
+  /**
+   * Appends a shape   */
+  public synchronized Path append(Shape s) {
+    gp.append(s, false);
+    return this;
+  }
+  
+  /**
+   * Appends a shape
+   */
+  public synchronized Path append(PathIterator pi) {
+    gp.append(pi, false);
+    return this;
+  }
   
   /**
    * @see java.awt.Shape#contains(double, double, double, double)
@@ -198,6 +216,7 @@ public class Path implements Shape, PathIteratorKnowHow {
    * @see java.awt.Shape#getBounds()
    */
   public Rectangle getBounds() {
+    if (overrideBounds!=null) return overrideBounds.getBounds();
     return gp.getBounds();
   }
 
@@ -205,7 +224,14 @@ public class Path implements Shape, PathIteratorKnowHow {
    * @see java.awt.Shape#getBounds2D()
    */
   public Rectangle2D getBounds2D() {
+    if (overrideBounds!=null) return overrideBounds;
     return gp.getBounds2D();
+  }
+  
+  /**
+   * Override bounds   */
+  public void setBounds2D(Rectangle2D r) {
+    overrideBounds = r;
   }
 
   /**
