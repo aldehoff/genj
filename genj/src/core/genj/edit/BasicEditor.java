@@ -20,6 +20,7 @@
 package genj.edit;
 
 import genj.edit.beans.PropertyBean;
+import genj.edit.beans.XRefBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
@@ -48,6 +49,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -167,6 +169,15 @@ import javax.swing.event.ChangeListener;
     ok   = new OK(), 
     cancel = new Cancel();
 
+  /** change callback */
+  ChangeListener changeCallback = new ChangeListener() {
+    public void stateChanged(ChangeEvent e) {
+      ok.setEnabled(true);
+      cancel.setEnabled(true);
+    }
+  };
+          
+  
   /** beans */
   private Map path2beans = new HashMap();
 
@@ -194,7 +205,7 @@ import javax.swing.event.ChangeListener;
     setLayout(new BorderLayout());
     add(header                    , BorderLayout.NORTH );
     add(new JScrollPane(beanPanel), BorderLayout.CENTER);
-//    add(new JScrollPane(linkPanel), BorderLayout.EAST  );
+//    add(new JScrollPane(linkPanel), BorderLayout.EAST);
     add(buttons                   , BorderLayout.SOUTH );
 
     // done
@@ -278,13 +289,6 @@ import javax.swing.event.ChangeListener;
     // setup for new entity
     if (entity!=null) {
 
-      ChangeListener change = new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
-          ok.setEnabled(true);
-          cancel.setEnabled(true);
-        }
-      };
-              
       // create beans for all configured paths
       for (int i=0; i<PATHS.length; i++) {
   
@@ -307,7 +311,7 @@ import javax.swing.event.ChangeListener;
         ColumnLayout.setWeight(bean, bean.getWeight());
   
         // listen to bean changes
-        bean.addChangeListener(change);
+        bean.addChangeListener(changeCallback);
         
         // keep it
         path2beans.put(path, bean);
@@ -318,16 +322,18 @@ import javax.swing.event.ChangeListener;
       }
 
 // FIXME need links showing in basic mode
-//      // create links
-//      Iterator xrefs = entity.getProperties(PropertyXRef.class).iterator();
-//      while (xrefs.hasNext()) {
-//        PropertyXRef xref = (PropertyXRef)xrefs.next();
-//        if (xref.isValid()) {
-//          XRefBean bean = new XRefBean();
-//          bean.init(entity.getGedcom(), xref, manager, registry);
-//          linkPanel.add(bean);
-//        }
-//      }
+      // create links
+      Iterator xrefs = entity.getProperties(PropertyXRef.class).iterator();
+      while (xrefs.hasNext()) {
+        PropertyXRef xref = (PropertyXRef)xrefs.next();
+        if (xref.isValid()) {
+          linkPanel.add(new JLabel(Gedcom.getName(xref.getTag())));
+          XRefBean bean = new XRefBean();
+          bean.init(entity.getGedcom(), xref, manager, registry);
+          ColumnLayout.setWeight(bean, new Point2D.Double(1.0,0));
+          linkPanel.add(bean);
+        }
+      }
 
     }
     

@@ -158,7 +158,8 @@ import javax.swing.event.TreeSelectionListener;
   }
   
   /**
-   * callback - removed
+   * Component callback event in case removed from parent. Used
+   * for storing current state.
    */
   public void removeNotify() {
     // remember
@@ -169,14 +170,16 @@ import javax.swing.event.TreeSelectionListener;
 
 
   /**
-   * current 
+   * Accessor - current context 
+   * @return Gedcom tree's root and selection 
    */
   public Context getContext() {
     return new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
   }
   
   /**
-   * current 
+   * Accessor - current context 
+   * @param context context to switch to
    */
   public void setContext(Context context) {
 
