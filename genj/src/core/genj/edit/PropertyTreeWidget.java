@@ -353,8 +353,9 @@ public class PropertyTreeWidget extends DnDTree {
      * DND support - remove necessary before insert
      */
     public boolean removeBeforeInsert() {
-      // make sure copy/move worked before remove from source
-      return false;
+      // make sure remove happens first - otherwise checks (e.g. multiple
+      // childhood) can lead to error
+      return true;
     }
     
     /**
