@@ -45,6 +45,9 @@ import gj.util.ModelHelper;
  */
 public class Model implements Graph {
 
+  /** listeners */
+  private List listeners = new ArrayList(3);
+
   /** arcs */
   private Collection arcs = new ArrayList(100);
 
@@ -63,7 +66,17 @@ public class Model implements Graph {
   /**
    * Constructor
    */
-  public Model(Entity root) {
+  public Model() {
+  }
+  
+  /**
+   * Sets the root
+   */
+  public void setRoot(Entity root) {
+    // clear old
+    arcs.clear();
+    nodes.clear();
+    bounds.setFrame(0,0,0,0);
     // parse the tree
     Node node = parse(root);
     // layout
@@ -76,7 +89,32 @@ public class Model implements Graph {
     } catch (LayoutException e) {
       e.printStackTrace();
     }
+    // notify
+    fireStructureChanged();
     // done
+  }
+  
+  /**
+   * Add listener
+   */
+  public void addListener(ModelListener l) {
+    listeners.add(l);
+  }
+  
+  /**
+   * Remove listener
+   */
+  public void removeListener(ModelListener l) {
+    listeners.remove(l);
+  }
+  
+  /**
+   * Fire even
+   */
+  private void fireStructureChanged() {
+    for (int l=listeners.size()-1; l>=0; l--) {
+      ((ModelListener)listeners.get(l)).structureChanged(this);
+    }
   }
   
   /**

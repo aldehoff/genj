@@ -28,6 +28,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -55,7 +56,7 @@ public class TreeView extends JScrollPane implements CurrentSupport {
   private final static double UNITS = UnitGraphics.CENTIMETERS;
   
   /** our model */
-  private Model model;
+  private Model model = new Model();
 
   /** our content */
   private Content content = new Content();
@@ -73,7 +74,7 @@ public class TreeView extends JScrollPane implements CurrentSupport {
     // setup content
     setViewportView(new ViewPortAdapter(content));
     // init model
-    model = new Model((Fam)gedcm.getEntities(Gedcom.FAMILIES).get(0));
+    model.setRoot((Fam)gedcm.getEntities(Gedcom.FAMILIES).get(0));
     // click listening
     content.addMouseListener(new MouseGlue());
     // done
@@ -90,6 +91,17 @@ public class TreeView extends JScrollPane implements CurrentSupport {
     // get and show
     currentEntity = entity;
     repaint();
+    // done
+  }
+  
+  /**
+   * Sets the root of this view/
+   */
+  public void setRoot(Entity root) {
+    // allowed?
+    if (!(root instanceof Indi||root instanceof Fam)) return;
+    // keep it
+    model.setRoot(root);
     // done
   }
 
@@ -113,7 +125,27 @@ public class TreeView extends JScrollPane implements CurrentSupport {
   /**
    * The content we use for drawing
    */
-  private class Content extends JComponent {
+  private class Content extends JComponent implements ModelListener {
+
+    /**
+     * Constructor
+     */
+    private Content() {
+      model.addListener(this);
+    }
+
+    /**
+     * @see genj.tree.ModelListener#structureChanged(Model)
+     */
+    public void structureChanged(Model model) {
+      revalidate();
+    }
+    
+    /**
+     * @see genj.tree.ModelListener#nodesChanged(Model, List)
+     */
+    public void nodesChanged(Model model, List nodes) {
+    }
     
     /**
      * @see java.awt.Component#getPreferredSize()
@@ -160,6 +192,16 @@ public class TreeView extends JScrollPane implements CurrentSupport {
       ViewManager.getInstance().setCurrentEntity(entity);
       // done
     }
+    
+    /**
+     * @see java.awt.event.MouseAdapter#mouseClicked(MouseEvent)
+     */
+    public void mouseClicked(MouseEvent e) {
+      // double -> root
+      if (e.getClickCount()>1&&currentEntity!=null) model.setRoot(currentEntity);
+      // done
+    }
+
   } //MouseGlue
   
 } //TreeView
