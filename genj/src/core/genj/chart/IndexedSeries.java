@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.AbstractDataset;
+import org.jfree.data.general.PieDataset;
 import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.TableXYDataset;
 
@@ -132,6 +133,13 @@ public class IndexedSeries {
   /**
    * Wrap into something JFreeChart can use
    */
+  public static PieDataset asPieDataset(IndexedSeries series, String[] categories) {
+    return new PieDatasetImpl(series, categories);
+  }
+  
+  /**
+   * Wrap into something JFreeChart can use
+   */
   public static CategoryDataset asCategoryDataset(IndexedSeries[] series, String[] categories) {
     return new CategoryDatasetImpl(series, categories);
   }
@@ -142,6 +150,53 @@ public class IndexedSeries {
   public static TableXYDataset asTableXYDataset(IndexedSeries[] series) {
     return new TableXYDatasetImpl(series);
   }
+  
+  /** 
+   * Wrapper for jfreechart PieDataSet
+   */
+  private static class PieDatasetImpl extends AbstractDataset implements PieDataset {
+    
+    /** series */
+    private IndexedSeries series;
+    
+    private String[] categories;
+    
+    /** constructor */
+    private PieDatasetImpl(IndexedSeries series, String[] categories) {
+      this.series = series;
+      this.categories = categories;
+    }
+
+    /** key for position is category */
+    public Comparable getKey(int i) {
+      return categories[i];
+    }
+
+    public int getIndex(Comparable key) {
+      for (int i=0;i<categories.length;i++) {
+        if (categories[i].equals(key))
+          return i;
+      }
+      throw new IllegalArgumentException();
+    }
+
+    public List getKeys() {
+      return Arrays.asList(categories);
+    }
+
+    public Number getValue(Comparable cat) {
+      return getValue(getIndex(cat));
+    }
+
+    public int getItemCount() {
+      return categories.length;
+    }
+
+    public Number getValue(int i) {
+      return new Float(series.get(i));
+    }
+    
+  } //PieDatasetImpl
   
   /** 
    * Wrapper for jfreechart TableXYDataSet

@@ -17,12 +17,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.2 $ $Author: nmeier $ $Date: 2004-12-10 14:41:24 $
+ * $Revision: 1.3 $ $Author: nmeier $ $Date: 2004-12-14 00:39:49 $
  */
 package genj.chart;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Insets;
 import java.text.NumberFormat;
 
 import javax.swing.JPanel;
@@ -31,7 +32,9 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardPieItemLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -50,10 +53,10 @@ public class Chart extends JPanel {
   /**
    * Initializer
    */
-  private void init(String title, Plot plot) {
+  private void init(String title, Plot plot, boolean legend) {
     setLayout(new BorderLayout());
     
-    add(new ChartPanel(new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, plot, true)), BorderLayout.CENTER);
+    add(new ChartPanel(new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, plot, legend)), BorderLayout.CENTER);
   }
   
   /**
@@ -72,7 +75,7 @@ public class Chart extends JPanel {
     XYPlot plot = new XYPlot(IndexedSeries.asTableXYDataset(series), xAxis, yAxis, renderer);
 
     // init
-    init(title, plot);
+    init(title, plot, true);
     
     // done
   }
@@ -94,13 +97,26 @@ public class Chart extends JPanel {
     XYPlot plot = new XYPlot(XYSeries.toXYDataset(series), xAxis, yAxis, renderer);
 
     // init
-    init(title, plot);
+    init(title, plot, true);
     
     // done
   }
   
   /**
-   * Constructor
+   * Constructor - a pie chart
+   */
+  public Chart(String title, IndexedSeries series, String[] categories, boolean legend) {
+    
+    PiePlot plot = new PiePlot(IndexedSeries.asPieDataset(series, categories));
+    plot.setLabelGenerator(new StandardPieItemLabelGenerator());
+    plot.setInsets(new Insets(0, 5, 5, 5));
+    
+    init(title, plot, legend);
+    
+  }
+  
+  /**
+   * Constructor 
    */
   public Chart(String title, String labelCatAxis, IndexedSeries[] series, String[] categories, NumberFormat format, boolean isStacked, boolean isVertical) {
 
@@ -125,7 +141,7 @@ public class Chart extends JPanel {
     plot.setOrientation(!isVertical ? PlotOrientation.VERTICAL : PlotOrientation.HORIZONTAL);
 
     // init
-    init(title, plot);
+    init(title, plot, true);
     
     // done
   }
