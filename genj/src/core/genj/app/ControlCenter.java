@@ -667,7 +667,7 @@ public class ControlCenter extends JPanel {
       reader = new GedcomReader(in, origin, size);
 
       // .. prepare our thread
-      getThread().setPriority(Thread.MIN_PRIORITY);
+      //getThread().setPriority(Thread.MIN_PRIORITY);
 
       // .. show progress dialog
 // FIXME missing      
