@@ -127,6 +127,7 @@ public class ControlCenter extends JPanel {
     for (int i=0; i<ds.length; i++) {
       bh.create(new ActionView(ds[i]));
     }
+    
     bh.setEnabled(true).setCollection(null);
     bh.create(new ActionSettings());
 
@@ -921,6 +922,7 @@ public class ControlCenter extends JPanel {
     protected ActionView(ViewBridge.Descriptor which) {
       this.which = which;
       super.setText("cc.tip.open_"+which.key);
+      super.setTip("cc.tip.open_"+which.key);
       super.setImage(which.img);
     }
     /** run */

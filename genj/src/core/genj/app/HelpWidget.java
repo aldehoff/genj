@@ -25,6 +25,8 @@ import genj.util.swing.ButtonHelper;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -110,16 +112,27 @@ class HelpWidget extends JPanel {
       // Open the Help Set        
       String file = calcHelpBase() + "/helpset.xml";
       System.out.println("[Debug]Using help in " + file );
+      // safety check
+      if (!new File(file).exists()) {
+        System.out.println("[Debug]... not found");
+        return null;
+      }
       url = new URL("file","", file);
     } catch (MalformedURLException mue) {
       System.out.println("[Debug]... malformed");
       return null;
     }
-      
+    
     // Load an init through bridge
     try {
       Bridge bridge = (Bridge)Class.forName(Bridge.class.getName()+"Impl").newInstance();
       return bridge.init(url);
+    } catch (FileNotFoundException fnfe) {
+      System.out.println("[Debug]... not found ("+fnfe.getClass().getName()+")");
+      return null;
+    } catch (IOException ioe) {
+      System.out.println("[Debug]... can't read ("+ioe.getClass().getName()+")");
+      return null;
     } catch (Throwable t) {
       System.out.println("[Debug]... exception "+t.getMessage());
       return null;
