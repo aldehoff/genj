@@ -19,37 +19,32 @@
  */
 package genj.timeline;
 
+import genj.gedcom.Gedcom;
+import genj.util.ColorSet;
+import genj.util.Registry;
+import genj.util.Resources;
+import genj.util.swing.DoubleValueSlider;
+import genj.util.swing.ViewPortAdapter;
+import genj.view.ToolBarSupport;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
 import javax.swing.JToolBar;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import genj.gedcom.Gedcom;
-import genj.util.ActionDelegate;
-import genj.util.ColorSet;
-import genj.util.Registry;
-import genj.util.Resources;
-import genj.util.swing.*;
-import genj.view.ToolBarSupport;
+
 
 /**
  * Component for showing entities' events in a timeline view
@@ -102,6 +97,9 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     cmPerYear = DEF_CM_PER_YEAR,
     cmBefEvent = DEF_CM_BEF_EVENT,
     cmAftEvent = DEF_CM_AFT_EVENT;
+    
+  /** the centered year */
+  private double centeredYear = 0;
   
   /** settings */
   private boolean 
@@ -152,14 +150,25 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     // all that fits in a scrollpane
     scrollContent = new JScrollPane(new ViewPortAdapter(content));
     scrollContent.setColumnHeaderView(new ViewPortAdapter(ruler));
+    scrollContent.getHorizontalScrollBar().addAdjustmentListener(new ChangeCenteredYear());
    
     // layout
     setLayout(new BorderLayout());
     add(scrollContent, BorderLayout.CENTER);
     
+    // scroll to last centered year
+    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        centeredYear = regstry.get("centeryear", 0F);
+        scroll2year(centeredYear);
+      }
+    });
+
     // done
   }
 
+  
+  
   /**
    * @see javax.swing.JComponent#removeNotify()
    */
@@ -174,6 +183,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     regstry.put("paintgrid"  , isPaintGrid);
     regstry.put("painttags"  , isPaintTags);
     regstry.put("filter"     , model.getFilter());
+    regstry.put("centeryear" , (float)centeredYear);
     // done
     super.removeNotify();
   }
@@ -194,7 +204,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     sliderCmPerYear = new DoubleValueSlider(MIN_CM_PER_YEAR, MAX_CM_PER_YEAR, cmPerYear, true);
     sliderCmPerYear.setText(cm2txt(cmPerYear, "view.cm"));
     sliderCmPerYear.setToolTipText(resources.getString("view.peryear.tip"));
-    sliderCmPerYear.addChangeListener((ChangeListener)new ActionCmPerYear().as(ChangeListener.class));
+    sliderCmPerYear.addChangeListener(new ChangeCmPerYear());
     bar.add(sliderCmPerYear);
     
     // create '/year' label
@@ -263,13 +273,20 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   }
   
   /** 
-   * Calculates the currently centered year
+   * Calculates a year from given pixel position
    */
-  protected double getCenteredYear() {
-    int h = scrollContent.getHorizontalScrollBar().getValue();
-    return 0;
+  protected double pixel2year(int x) {
+    return model.min + contentRenderer.pixels2cm(x)/cmPerYear;
   }
 
+  /** 
+   * Scrolls so that given year is centered in view
+   */
+  protected void scroll2year(double year) {
+    int x = contentRenderer.cm2pixels( (year - model.min)*cmPerYear ) - scrollContent.getViewport().getWidth()/2;
+    scrollContent.getHorizontalScrollBar().setValue(x);
+  }
+  
   /**
    * Convert cmPyear into text
    */
@@ -342,11 +359,32 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   } //Content
   
   /**
-   * Action - cm per year
+   * Listening to changes on the scrollpane
    */
-  private class ActionCmPerYear extends ActionDelegate {
-    /** @see genj.util.ActionDelegate#execute() */
-    protected void execute() {
+  private class ChangeCenteredYear implements AdjustmentListener {
+    /** @see java.awt.event.AdjustmentListener#adjustmentValueChanged(AdjustmentEvent) */
+    public void adjustmentValueChanged(AdjustmentEvent e) {
+      // swing's scrollbar doesn't distinguish between user-input
+      // scrolling and propagated changes in its model (e.g. because of resize)\
+      // we only update the centeredYear if getValueIsAdjusting()==true
+      if (scrollContent.getHorizontalScrollBar().getValueIsAdjusting()) {
+        // easy : translation and remember
+        int x = scrollContent.getHorizontalScrollBar().getValue() + scrollContent.getViewport().getWidth()/2;
+        centeredYear = pixel2year(x);
+      } else {
+        // no adjusting means we scroll back to 'our' remembered center
+        // that means scrolling with the bar's buttons will not work!
+        scroll2year(centeredYear);
+      }
+    }
+  } //ChangeScroll 
+  
+  /**
+   * Listening to changes on cm per year (slider)
+   */
+  private class ChangeCmPerYear implements ChangeListener {
+    /** @see javax.swing.event.ChangeListener#stateChanged(ChangeEvent) */
+    public void stateChanged(ChangeEvent e) {
       // get the new value
       cmPerYear = sliderCmPerYear.getValue();
       // update label&tip
@@ -356,7 +394,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
       // done
     }
-  } //ActionScale
+  } //ChangeCmPerYear
     
   /**
    * We're also listening to the model
