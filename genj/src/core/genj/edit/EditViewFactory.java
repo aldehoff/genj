@@ -89,7 +89,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
   public void setContext(Context context) {
     ViewManager manager = context.getManager();
     // editor needed?
-    if (!Options.getInstance().getIsOpenEditor())
+    if (!Options.getInstance().isOpenEditor)
       return;
     // what's the entity
     Entity entity = context.getEntity();

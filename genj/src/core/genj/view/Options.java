@@ -44,7 +44,7 @@ public class Options implements OptionProvider {
   private static Resources resources;
   
   /** option - whether an editor should */
-  private boolean isOpenEditor = true;
+  public boolean isOpenEditor = true;
  
   /** the current screen resolution */
   private Point dpi = new Point( 
@@ -57,14 +57,6 @@ public class Options implements OptionProvider {
    */
   public static Options getInstance() {
     return instance;
-  }
-  
-  public boolean getIsOpenEditor() {
-      return isOpenEditor;
- }
-  
-  public void setIsOpenEditor(boolean set) {
-      isOpenEditor = set;
   }
   
   /**

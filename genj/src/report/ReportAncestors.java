@@ -8,16 +8,12 @@
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.report.Options;
 import genj.report.Report;
 
 /**
  * GenJ -  ReportAncestors
  */
 public class ReportAncestors extends Report {
-    
-    /** program options */
-    private static final Options OPTIONS = Options.getInstance();
     
     /**
      * Returns the version of this script

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.45 $ $Author: cmuessig $ $Date: 2004-06-24 21:42:45 $
+ * $Revision: 1.46 $ $Author: nmeier $ $Date: 2004-06-25 10:02:21 $
  */
 package genj.report;
 
@@ -71,13 +71,16 @@ import javax.swing.event.ListSelectionListener;
  */
 public abstract class Report implements Cloneable {
 
+  /** global report options */
+  protected Options OPTIONS = Options.getInstance();
+
   /** options */
   protected final static int
     OPTION_YESNO    = 0,
     OPTION_OKCANCEL = 1,
     OPTION_OK       = 2;
 
-  private final static String[][] OPTIONS = {
+  private final static String[][] OPTION_TEXTS = {
     new String[]{CloseWindow.TXT_YES, CloseWindow.TXT_NO     }, 
     new String[]{CloseWindow.TXT_OK , CloseWindow.TXT_CANCEL }, 
     new String[]{CloseWindow.TXT_OK                          }
@@ -277,7 +280,7 @@ public abstract class Report implements Cloneable {
 
     // get browser command
     Options options = Options.getInstance();
-    File browser = options.getBrowser();
+    File browser = options.browser;
     while (!browser.isFile()) {
       
       // show file chooser
@@ -289,7 +292,7 @@ public abstract class Report implements Cloneable {
         return;
     
       // keep it
-      options.setBrowser(browser);
+      options.browser = browser;    
     }
     
     // run it
@@ -377,7 +380,7 @@ public abstract class Report implements Cloneable {
    * Helper method that queries the user for yes/no input
    */
   public final boolean getOptionFromUser(String msg, int option) {
-    return 0==getOptionFromUser(msg, OPTIONS[option]);
+    return 0==getOptionFromUser(msg, OPTION_TEXTS[option]);
   }
   
   /**
@@ -546,7 +549,7 @@ public abstract class Report implements Cloneable {
     // done
     return buffer.toString();
   }
-
+  
   /**
    * Returns the name of this report.
    * This default version get the information from the .property file. A report

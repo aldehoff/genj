@@ -15,19 +15,18 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.gedcom.time.Delta;
-import genj.report.Options;
 import genj.report.Report;
 import genj.util.ReferenceSet;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.59 2004-06-24 18:17:51 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.60 2004-06-25 10:02:20 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -216,9 +215,6 @@ public class ReportGedcomStatistics extends Report {
     
     /** this report's version */
     public static final String VERSION = "2.31";
-    
-    /** program options */
-    private static final Options OPTIONS = Options.getInstance();
     
     /** Returns the version of the report
      */

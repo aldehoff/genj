@@ -1,13 +1,12 @@
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.Entity;
 import genj.report.Report;
-import genj.report.Options;
 import genj.util.ReferenceSet;
 
 import java.util.Iterator;
-import java.util.TreeSet;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 /**
  * GenJ -  ReportPhonetics
@@ -17,9 +16,6 @@ public class ReportPhonetics extends Report {
     
     public int outputFormat = 0;
     public boolean reportFirstNames = true;
-    
-    /** program options */
-    private static final Options OPTIONS = Options.getInstance();
     
     public static String[] outputFormats = {
         "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex"

@@ -12,7 +12,6 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
-import genj.report.Options;
 import genj.report.Report;
 
 /**
@@ -35,9 +34,6 @@ public class ReportAges extends Report {
     public boolean reportAgeAtNaturalization = true;
     public boolean reportAgeAtDeath = true;
     public boolean reportAgeSinceBirth = true;
-    
-    /** program options */
-    private static final Options OPTIONS = Options.getInstance();
     
     /** localized strings */
     private final static String AGE = Gedcom.getName("AGE");

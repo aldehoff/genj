@@ -35,7 +35,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.report.Options;
 import genj.report.Report;
 
 /**
@@ -47,8 +46,6 @@ public class Report4Generations extends Report {
     /** this report's version */
     public static final String VERSION = "0.22";
     public static final int BLOCK_WIDTH = 34;
-    /** program options */
-    private static final Options OPTIONS = Options.getInstance();
     
     /**
      * Returns the version of this script

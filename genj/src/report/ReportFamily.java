@@ -7,12 +7,11 @@
  */
 
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Entity;
-import genj.gedcom.Indi;
 import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
 import genj.gedcom.TagPath;
-import genj.report.Options;
 import genj.report.Report;
 
 /**
@@ -26,8 +25,6 @@ public class ReportFamily extends Report {
     public boolean reportOtherSpouses = true;
     public boolean reportDetailedChildrenData = true;
     
-    /** program options also con global report options */
-    private static final Options OPTIONS = Options.getInstance();
     /** this report's version */
     public static final String VERSION = "1.0";
     

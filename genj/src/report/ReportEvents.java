@@ -79,9 +79,7 @@ public class ReportEvents extends Report {
     
     /** the marriage symbol */
     private final static String TXT_MARR_SYMBOL = genj.gedcom.Options.getInstance().getTxtMarriageSymbol();
-    /** indent for output formatting */
-    private final static genj.report.Options OPTIONS = genj.report.Options.getInstance();
-    
+
     /**
      * @see genj.report.Report#accepts(java.lang.Object)
      */

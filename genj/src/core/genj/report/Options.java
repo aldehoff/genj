@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.6 $ $Author: cmuessig $ $Date: 2004-06-24 21:42:36 $
+ * $Revision: 1.7 $ $Author: nmeier $ $Date: 2004-06-25 10:02:21 $
  */
 package genj.report;
 
@@ -36,7 +36,7 @@ public class Options implements OptionProvider {
     private static Options instance = new Options();
     
     /** option - browser executable */
-    private File browser = new File("");
+    public File browser = new File("");
     
     /** Positions after decimal point */
     private int positions = 2;
@@ -67,14 +67,6 @@ public class Options implements OptionProvider {
     
     /** child of symbol in reports */
     private String childOfSymbol = "/";
-    
-    public File getBrowser() {
-        return browser;
-    }
-    
-    public void setBrowser(File set) {
-        browser = set;
-    }
     
     public int getIndentPerLevel() {
         return indentPerLevel;
