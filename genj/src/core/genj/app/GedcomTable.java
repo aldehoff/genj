@@ -85,7 +85,7 @@ public class GedcomTable extends JTable {
     // remember
     this.registry=registry;
     // grab the preferred columns
-    int[] widths = registry.get("columns",(int[])null);
+    int[] widths = registry.get("columns",new int[0]);
     for (int c=0; c<widths.length; c++) {
       getColumnModel().getColumn(c).setPreferredWidth(widths[c]);
     }    

@@ -78,6 +78,12 @@ class HelpBridgeImpl implements HelpBridge {
    * Opens the help
    */
   public void open(Registry registry) {
+    
+    JFrame frame = App.getInstance().getFrame("help");
+    if (frame!=null) {
+      frame.show();
+      return;
+    }
 
     try {
       
@@ -90,7 +96,7 @@ class HelpBridgeImpl implements HelpBridge {
       content.getModel().setCurrentID(hs.getHomeID());
       JHelpNavigator nav = (JHelpNavigator) hs.getNavigatorView("TOC").createNavigator(content.getModel());
 
-      JFrame frame = App.getInstance().createFrame("foo",null,"help",new Dimension(320,256));
+      frame = App.getInstance().createFrame("GenJ - Help",null,"help",new Dimension(480,320));
       Container c = frame.getContentPane();
       c.setLayout(new BorderLayout());
       c.add(content, BorderLayout.CENTER);
