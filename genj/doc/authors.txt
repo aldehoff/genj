@@ -1,0 +1,34 @@
+
+* * * THE TEAM * * *
+
+The people behind GenJ (sorted by last name) :
+
+    Programming and Maintainer :
+      . Nils Meier <nils@meiers.net>
+
+    Contributors :
+      . Sean ....  <TimmSCHome@aol.com>
+      . Francois Massonneau <frmas@free.fr>
+
+    Translators :
+      . Osamu Ajiki <osam-a@astroarts.co.jp> (Japanese translation)
+      . Nicola Fragale <nicolafragale@libero.it> (Italian translation)
+      . Francois Massonneau <frmas@free.fr> (French translation)
+      . Nils Meier <nils@meiers.net> (German translation)
+
+    User Feedback and Food for Thought :
+      . Paul Clarke <pjclarke@bigpond.com>
+      . Jan Eri <jan.eri@protector-group.no>
+      . Michael Gerdau <mgd@technosis.de>
+      . Stan Goodman <stan@hashkedim.com>
+      . Francois Massonneau <frmas@free.fr>
+      . Shmuel Metz <shmuel@acm.org>
+      . Ernst Neubauer and Sohn <e.neubauer@t-online.de>
+      . Roy O. Wellington III <roy.wellington@worldnet.att.net>
+      . and many others!!!
+
+* * * HISTORY * * *
+
+      to be continued . . . . . . . ;-)
+      
+      
