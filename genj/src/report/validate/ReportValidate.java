@@ -13,6 +13,7 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.report.Report;
+import genj.window.WindowManager;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -102,8 +103,13 @@ public class ReportValidate extends Report {
       TagPath path = new TagPath(e.getTag());
       test(e, path, MetaProperty.get(path), tests, issues);
     } else {
+      
       // assuming Gedcom
       gedcom = (Gedcom)context;
+      
+      // test if there's a submitter
+      if (gedcom.getSubmitter()==null)
+        issues.add(new Issue(i18n("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null));
   
       // Loop through entities and test 'em
       for (int t=0;t<Gedcom.ENTITIES.length;t++) {
@@ -117,7 +123,7 @@ public class ReportValidate extends Report {
     
     // any fixes proposed at all?
     if (issues.isEmpty()) {
-      getOptionFromUser(i18n("noissues"), new String[]{"OK"});
+      getOptionFromUser(i18n("noissues"), WindowManager.OPTIONS_OK);
       return;
     }
     
