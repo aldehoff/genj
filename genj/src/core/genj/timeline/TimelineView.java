@@ -283,7 +283,11 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
   public void populate(JToolBar bar) {
     
     // create a slider for cmPerYear
-    sliderCmPerYear = new SliderWidget(1, 100, 100); // FIXME 20030417
+    int value = (int)(
+      Math.log( (cmPerYear-MIN_CM_PER_YEAR) / (MAX_CM_PER_YEAR-MIN_CM_PER_YEAR) * Math.exp(10) ) * 10
+    );
+
+    sliderCmPerYear = new SliderWidget(1, 100, Math.min(100, Math.max(1,value)));
     sliderCmPerYear.setToolTipText(resources.getString("view.peryear.tip"));
     sliderCmPerYear.addChangeListener(new ChangeCmPerYear());
     bar.add(sliderCmPerYear);
@@ -459,9 +463,8 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     /** @see javax.swing.event.ChangeListener#stateChanged(ChangeEvent) */
     public void stateChanged(ChangeEvent e) {
       // get the new value
-      int i = sliderCmPerYear.getValue();
       cmPerYear = MIN_CM_PER_YEAR + 
-         Math.exp(i*0.1)/Math.exp(10) * (MAX_CM_PER_YEAR-MIN_CM_PER_YEAR);
+         Math.exp(sliderCmPerYear.getValue()*0.1)/Math.exp(10) * (MAX_CM_PER_YEAR-MIN_CM_PER_YEAR);
       // update model
       model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
       // done
