@@ -75,7 +75,7 @@ public class SimpleValueBean extends PropertyBean {
     if (property.isReadOnly()) {
       add(BorderLayout.NORTH, new JLabel(property.getDisplayValue()));
     } else {
-      tfield = new TextFieldWidget(property.getDisplayValue(), 0);
+      tfield = new TextFieldWidget(property.getDisplayValue(), 8);
       tfield.addChangeListener(changeSupport);
       add(BorderLayout.NORTH, tfield);
       super.defaultFocus = tfield;
