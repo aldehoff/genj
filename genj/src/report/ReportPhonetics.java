@@ -5,8 +5,10 @@ import genj.report.Report;
 import genj.util.ReferenceSet;
 
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.Vector;
 
 /**
  * GenJ -  ReportPhonetics
@@ -18,7 +20,7 @@ public class ReportPhonetics extends Report {
     public boolean reportFirstNames = true;
     
     public static String[] outputFormats = {
-        "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex"
+        "Soundex", "Metaphone", "Double Metaphone", "NYSIIS", "Phonex"
     };
     
     private static Phonetics[] phonetics = {
@@ -404,7 +406,7 @@ public class ReportPhonetics extends Report {
                         addCode('B', 'P');
                         break;
                         
-                    case 'Ç' :
+                    case '\u00c7' : // C with an accent at the bottom (C;)
                         add('S');
                         current++;
                         // Note: no doublecheck
@@ -750,8 +752,7 @@ public class ReportPhonetics extends Report {
                         addCode('N', 'N');
                         break;
                         
-                        //case 'Ñ':   using ASCII code to make it compile with french locale
-                    case 165 :
+                    case '\u00D1': // N with a wiggle (N~)
                         current++;
                         add('N');
                         break;
@@ -1701,32 +1702,34 @@ public class ReportPhonetics extends Report {
         
         static public final char[] US_ENGLISH_SOUNDEX_MAPPING = "01230120022455012623010202".toCharArray();
         
-        // 20040224 change the way accents are substituted - should be faster now through
-        // direct array lookup - costs a little bit of memory though (a 382 field array of strings = 2k or so)
-        static private final String ACCENTS_INIT =
-        "ŠS|ŽZ|šs|žz|ŸY|ÀA|ÁA|ÂA|ÃA|ÄA|ÅA|ÇC|ÈE|ÉE|ÊE|ËE|ÌI|ÍI|ÎI|ÏI|ÑN|ÒO|ÓO|ÔO|ÕO|ÖO|ØO|ÙU|ÚU|ÛU|ÜU|ÝY|àa|áa|âa|ãa|äa|åa|çc|èe|ée|êe|ëe|ìi|íi|îi|ïi|ñn|òo|óo|ôo|õo|öo|øo|ùu|úu|ûu|üu|ýy|µu|"+
-        "ÞTH|þth|ÐDH|ðdh|ßss|ŒOE|œoe|ÆAE|æae";
-        
-        static private final String[] ACCENTS;
-        
+        static private String[] ACCENTS;
+
         static {
+
+          Vector buffer = new Vector(512);
+          
+          // parse soundex accents
+          try {
+            Properties props = new Properties();
+            props.load(ReportPhonetics.class.getResourceAsStream("ReportPhonetics.properties"));
+
+            // loop over soundex accent tokens
+            StringTokenizer tokens = new StringTokenizer(props.getProperty("soundex.accents"));
+	          while (tokens.hasMoreTokens()) {
+	            String token = tokens.nextToken();
+	            int unicode = token.charAt(0);
+	            String substitute = token.substring(1);
+	            if (buffer.size()<unicode+1)
+	              buffer.setSize(unicode+1);
+	            buffer.set(unicode, substitute);
+	          }
+          } catch (Throwable t) {
             
-            // analyze init string for accents - find maximum char value
-            int max = 0;
-            for (StringTokenizer tokens=new StringTokenizer(ACCENTS_INIT, "|");tokens.hasMoreTokens();)
-                max = Math.max(max, (int)tokens.nextToken().charAt(0));
-            
-            // init ACCENTS array
-            ACCENTS = new String[max+1];
-            
-            // fill ACCENTS array
-            for (StringTokenizer tokens=new StringTokenizer(ACCENTS_INIT, "|");tokens.hasMoreTokens();) {
-                String token = tokens.nextToken();
-                ACCENTS[(int)token.charAt(0)] = token.substring(1);
-            }
-            
-            // done
+          }
+          // done
+          ACCENTS = (String[])buffer.toArray(new String[buffer.size()]);
         }
+        
         
         private char[] soundexMapping;
         
@@ -1741,7 +1744,7 @@ public class ReportPhonetics extends Report {
         /**
          * returns a string stripped of accented characters
          */
-        public static String substituteAccents(String str) {
+        public String substituteAccents(String str) {
             StringBuffer result = new StringBuffer(str.length() * 2);
             for (int i = 0; i < str.length(); i++) {
                 char c = str.charAt(i);
