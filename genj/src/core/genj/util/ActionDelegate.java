@@ -21,9 +21,9 @@ public abstract class ActionDelegate {
   public String  tip;
   
   /**
-   * the interal triggering callback
+   * trigger execution
    */
-  protected final void trigger() {
+  public final void trigger() {
     // run & catch
     try {
       execute();
@@ -31,6 +31,13 @@ public abstract class ActionDelegate {
       t.printStackTrace();
     }
     // done
+  }
+  
+  /**
+   * trigger execution (async)
+   */
+  public final void triggerAsync() {
+    new Thread((Runnable)as(Runnable.class)).start();
   }
   
   /**
@@ -42,7 +49,7 @@ public abstract class ActionDelegate {
    * Sync this action with the event-dispatcher-thread
    * (called back on syncd)
    */
-  protected void sync() {
+  protected void sync2EDT() {
     SwingUtilities.invokeLater((Runnable)as(Runnable.class));
   }
   
