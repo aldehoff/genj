@@ -1,4 +1,19 @@
-<project name="lnf" default="about" basedir=".">
+<project name="lnf" default="dist" basedir=".">
+
+  <property file="./build.properties"/>
+
+  <target name="dist">
+  
+    <!-- create ${dir.out} -->
+    <mkdir dir="${dir.out}"/>
+  
+    <!-- create ./genj_lnf-yy.zip -->
+    <zip zipfile="${dir.out}/genj_lnf-${version}.zip" update="True">
+      <fileset dir="." includes="lnf/**"/>
+    </zip>
+  
+  </target>
+  
 
 </project>
 
