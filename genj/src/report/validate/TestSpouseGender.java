@@ -30,7 +30,7 @@ import java.util.List;
   /**
    * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath, java.util.List)
    */
-  /*package*/ void test(Property prop, TagPath path, List issues) {
+  /*package*/ void test(Property prop, TagPath path, List issues, ReportValidate report) {
     
     // assuming family
     Fam fam = (Fam)prop;
@@ -38,10 +38,10 @@ import java.util.List;
     // check husband/wife
     Indi husband = fam.getHusband();
     if (!testSex(husband, PropertySex.MALE)) 
-      issues.add(new GenderChange(fam, "HUSB",husband, PropertySex.MALE  ));
+      issues.add(new GenderChange(fam, husband, PropertySex.MALE, fam.getProperty("HUSB") ));
     Indi wife = fam.getWife();
     if (!testSex(wife, PropertySex.FEMALE)) 
-      issues.add(new GenderChange(fam, "WIFE",wife, PropertySex.FEMALE));
+      issues.add(new GenderChange(fam, wife, PropertySex.FEMALE, fam.getProperty("WIFE") ));
 
   }    
 
@@ -56,8 +56,8 @@ import java.util.List;
     /**
      * Constructor
      */
-    private GenderChange(Fam fam, String who, Indi indi, int sex) {
-      super(who+' '+indi+" has wrong gender", indi.getImage(false), fam.getProperty(who));
+    private GenderChange(Fam fam, Indi indi, int sex, Property target) {
+      super(indi+" has wrong gender", indi.getImage(false), target);
       change = sex;
     }
     

@@ -5,8 +5,8 @@
 2 CORP Nils Meier
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
-1 DATE 16 JUN 2003
-2 TIME 18:04:16
+1 DATE 17 JUN 2003
+2 TIME 14:23:07
 1 GEDC 
 2 VERS 5.5
 2 FORM Lineage-Linked
@@ -71,12 +71,13 @@
 0 @I003@ INDI 
 1 NAME Sue /Smith/
 1 CHAN 
-2 DATE 16 JUN 2003
-3 TIME 18:04:14
+2 DATE 17 JUN 2003
+3 TIME 14:23:05
 1 SEX M
 1 BIRT 
 2 DATE 24
 2 NOTE birt after death of mother
+2 NOTE birt after divorce of parents
 1 TEST 
 2 NOTE Tag not defined in grammar
 1 FAMC @F001@

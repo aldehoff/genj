@@ -18,27 +18,27 @@ import genj.gedcom.TagPath;
  */
 /*package*/ abstract class Test {
   
-  private TagPath[] paths;
+  private TagPath[] pathTriggers;
   
-  private Class type;
+  private Class typeTrigger;
 
   /**
    * Constructor
    */
-  /*package*/ Test(String setPath, Class setType) {
-    this(new String[]{setPath}, setType);
+  /*package*/ Test(String pathTrigger, Class typeTrigger) {
+    this(new String[]{pathTrigger}, typeTrigger);
   }
 
   /**
    * Constructor
    */
-  /*package*/ Test(String[] setPaths, Class setType) {
-    if (setPaths!=null) {
-      paths = new TagPath[setPaths.length];
-      for (int i=0;i<paths.length;i++)
-        paths[i] = new TagPath(setPaths[i]);
+  /*package*/ Test(String[] pathTriggers, Class typeTrigger) {
+    if (pathTriggers!=null) {
+      this.pathTriggers = new TagPath[pathTriggers.length];
+      for (int i=0;i<pathTriggers.length;i++)
+        this.pathTriggers[i] = new TagPath(pathTriggers[i]);
     }
-    type = setType;
+    this.typeTrigger = typeTrigger;
   }
   
   /**
@@ -46,20 +46,20 @@ import genj.gedcom.TagPath;
    */
   /*package*/ boolean applies(Property prop, TagPath path) {
     // gotta match a path
-    outer: while (paths!=null) {
-      for (int j=0;j<paths.length;j++) {
-        if (paths[j].equals(path)) break outer;
+    outer: while (pathTriggers!=null) {
+      for (int j=0;j<pathTriggers.length;j++) {
+        if (pathTriggers[j].equals(path)) break outer;
       }
       return false;
     }
     // and type
-    return type.isAssignableFrom(prop.getClass());
+    return typeTrigger.isAssignableFrom(prop.getClass());
   }
   
   /**
    * Perform Test on prop&path - fill issues with instances of Issue 
    */
-  /*package*/ abstract void test(Property prop, TagPath path, List issues);
+  /*package*/ abstract void test(Property prop, TagPath path, List issues, ReportValidate report);
    
 
 } //Test

@@ -39,16 +39,16 @@ import java.util.List;
    * Constructor
    * @see TestDate#TestDate(String[], int, String) 
    */
-  /*package*/ TestDate(String path, int comp, String path2) {
-    this(new String[]{path}, null, comp, path2);
+  /*package*/ TestDate(String trigger, int comp, String path2) {
+    this(new String[]{trigger}, null, comp, path2);
   }
 
   /**
    * Constructor
    * @see TestDate#TestDate(String[], int, String) 
    */
-  /*package*/ TestDate(String path, String path1, int comp, String path2) {
-    this(new String[]{path}, path1, comp, path2);
+  /*package*/ TestDate(String trigger, String path1, int comp, String path2) {
+    this(new String[]{trigger}, path1, comp, path2);
   }
 
   /**
@@ -57,8 +57,8 @@ import java.util.List;
    * @param comp either AFTER or BEFORE
    * @param path2 path to check against (pointing to date)
    */
-  /*package*/ TestDate(String[] paths, int comp, String path2) {
-    this(paths, null, comp, path2);
+  /*package*/ TestDate(String[] triggers, int comp, String path2) {
+    this(triggers, null, comp, path2);
   }
   
   /**
@@ -68,9 +68,9 @@ import java.util.List;
    * @param comp either AFTER or BEFORE
    * @param path2 path to check against (pointing to date)
    */
-  /*package*/ TestDate(String[] paths, String path1, int comp, String path2) {
+  /*package*/ TestDate(String[] triggers, String path1, int comp, String path2) {
     // delegate to super
-    super(paths, path1==null?PropertyDate.class:Property.class);
+    super(triggers, path1==null?PropertyDate.class:Property.class);
     // remember
     comparison = comp;
     // keep other tag path
@@ -81,7 +81,7 @@ import java.util.List;
   /**
    * test a prop (PropertyDate.class) at given path 
    */
-  /*package*/ void test(Property prop, TagPath propPath, List issues) {
+  /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
     
     Entity entity = prop.getEntity();
     PropertyDate date1;
@@ -103,7 +103,7 @@ import java.util.List;
       
     // test it 
     if (isError(date1, (PropertyDate)date2)) 
-      issues.add(new Issue(getError(date2.getEntity(), propPath), date1.getParent().getImage(false), prop));
+      issues.add(new Issue(getError(date2.getEntity(), trigger), date1.getParent().getImage(false), prop));
     
     // done
   }
@@ -124,11 +124,11 @@ import java.util.List;
   /**
    * Calculate error messag from two paths
    */
-  private String getError(Entity entity, TagPath path1) {
+  private String getError(Entity entity, TagPath trigger) {
     
     // prepare it
     return 
-        Gedcom.getName(path1.get(path1.length()-(path1.getLast().equals("DATE")?2:1)))
+        Gedcom.getName(trigger.get(trigger.length()-(trigger.getLast().equals("DATE")?2:1)))
       + (comparison==BEFORE ? " before " : " after ") 
       + Gedcom.getName(path2.get(path2.length()-2))
       + (entity instanceof Indi? " of "+entity : "");

@@ -32,7 +32,7 @@ import genj.gedcom.TagPath;
   /**
    * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath, java.util.List)
    */
-  /*package*/ void test(Property prop, TagPath path, List issues) {
+  /*package*/ void test(Property prop, TagPath path, List issues, ReportValidate report) {
 
     // no issue if valid 
     if (prop.isValid())
@@ -43,7 +43,7 @@ import genj.gedcom.TagPath;
       return;
       
     // got an issue with that
-    issues.add(new Issue(path.toString()+" is not valid", prop.getImage(true), prop));
+    issues.add(new Issue(report.i18n("err.notvalid", path.toString()), prop.getImage(true), prop));
     
     // done
   }

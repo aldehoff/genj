@@ -29,14 +29,14 @@ public class TestFile extends Test {
    * Do the test 
    * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath, java.util.List)
    */
-  void test(Property prop, TagPath path, List issues) {
+  void test(Property prop, TagPath path, List issues, ReportValidate report) {
     
     // assuming PropertyFile
     PropertyFile file = (PropertyFile)prop;
     
     // check it
     if (file.getFile()==null) 
-      issues.add(new Issue("File doesn't exist", prop.getImage(false), prop));
+      issues.add(new Issue(report.i18n("err.nofile"), prop.getImage(false), prop));
 
   }
 
