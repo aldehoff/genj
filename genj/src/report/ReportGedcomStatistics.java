@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.21 2003-05-29 20:25:28 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.22 2003-05-29 23:00:49 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -66,8 +66,7 @@ public class ReportGedcomStatistics extends Report {
 		"   . How many families, persons.\n"+
 		"   . Number of males, females, and individuals with undefined sex.\n"+
 		"   . Stats about birth places.\n"+
-		"   . Stats about death places.\n\n"+
-		"(Note: this report requires Java2)";
+		"   . Stats about death places.";
   }
 
   /**
