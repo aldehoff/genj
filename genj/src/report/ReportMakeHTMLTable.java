@@ -240,7 +240,7 @@ public class ReportMakeHTMLTable implements Report {
     );
 
     // HEAD
-		bridge.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">"
+		bridge.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
     bridge.println("<HTML>");
     bridge.println("<HEAD>");
     bridge.println("<TITLE>"+gedcom.getName()+" - HTML Table</TITLE>");
