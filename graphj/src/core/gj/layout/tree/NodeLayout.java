@@ -200,7 +200,6 @@ import java.util.Stack;
 
     Node[] nodes = new Node[root.getArcs().size()];
     Contour[] contours = new Contour[nodes.length];
-    double[][] deltas = new double[nodes.length][0];
     
     // we loop through all arcs leaving this node
     ArcIterator it = new ArcIterator(root);
@@ -226,17 +225,12 @@ import java.util.Stack;
         double dlat = contours[c-1].north - contours[c].north;
         contours[c].translate(dlat, 0);
     
-        // calculate the deltas to previous children
-        deltas[c] = calculateDeltas(contours, c, contours[c]);
+        // calculate the distnace to previous children
+        double dlon = calcMinDist(contours, c, contours[c]);
 
-        // find minimum delta
-        double dlon = Double.MAX_VALUE;
-        for (int d=0; d<deltas[c].length; d++) dlon = Math.min(deltas[c][d], dlon); 
-        
         // place n-th child as close as possible
         contours[c].translate(0, -dlon);
         ModelHelper.translate(nodes[c],orientn.getPoint2D(dlat, -dlon));
-        for (int d=0; d<deltas[c].length; d++) deltas[c][d] -= dlon;
                 
         // 'new' child is positioned
       }
@@ -246,7 +240,7 @@ import java.util.Stack;
     }
 
     // balance children
-    if (c>2&&balance) balanceChilden(nodes, contours, deltas, c);
+    if (c>2&&balance) balanceChilden(nodes, contours, c);
     
     // done
     Object[] result=new Contour[c];
@@ -316,12 +310,32 @@ import java.util.Stack;
   }
 
   /**
+   * Calculates the minimum distance of contours in cs and c 
+   * @param cs contours to check against c
+   * @param css number of contours in cs
+   * @param c contour to compare contours in cs
+   */
+  private double calcMinDist(Contour[] cs, int css, Contour c) {
+
+    // all min distances
+    double[] ds = calcMinDists(cs,css,c);
+    
+    // find minimum distance
+    double result = Double.MAX_VALUE;
+    for (int d=0; d<ds.length; d++) result = Math.min(ds[d], result); 
+      
+    // done
+    return result;
+  }
+
+
+  /**
    * Calculates the deltas of each contour in cs with c
    * @param cs contours to compare against
    * @param css number of contours in cs
    * @param c contour to compare against
    */
-  private double[] calculateDeltas(Contour[] cs, int css, Contour c) {
+  private double[] calcMinDists(Contour[] cs, int css, Contour c) {
     
     // create a result
     double[] result = new double[css];
@@ -419,14 +433,24 @@ import java.util.Stack;
   }
 
   /**
-   * Balance children
+   * Balance children - we assume that at this point sub-tree i
+   * described by its root children[i] and contours[i] for i>0
+   * is placed as close as possible to all sub-trees with j<i
    */
-  private void balanceChilden(Node[] children, Contour[] contours, double[][] deltas, int count) {
+  private void balanceChilden(Node[] ns, Contour[] cs, int n) {
     // FIXME balancing
-    for (int i=0; i<count; i++) {
-      System.out.print(deltas[i].length+ " ");        
+    
+    // we loop from right to left
+    double[] ds = calcMinDists(cs, n-1, cs[n-1]);
+    
+    for (int i=ds.length-1; i>=0; i--) {
+      if (ds[i]<=0) break;
+      System.out.println(ns[i]);
+      break;
     }
-    System.out.println();
+    
+    
+    // done
   }
   
   /**
