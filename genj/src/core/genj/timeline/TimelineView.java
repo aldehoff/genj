@@ -59,6 +59,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -411,6 +412,9 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       // setup listening
       addMouseMotionListener(this);
       Almanac.getInstance().addChangeListener(this);
+      // ok this might not be fair but we'll increase
+      // the tooltip dismiss delay now for everyone
+      ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     }
     
     /**
