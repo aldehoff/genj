@@ -7,6 +7,7 @@ The people behind GenJ (sorted by last name) :
       . Nils Meier <nils@meiers.net>
 
     Contributors :
+      . Daniel P. Kionka <dan@kionka.org>
       . Francois Massonneau <frmas@free.fr>
       . Sean Timm  <TimmSCHome@aol.com>
 
