@@ -180,7 +180,7 @@ public class ReportAges extends Report {
         return Delta.get(newBirth, newEnd);
     }
     
-    private void analyzeIndiTag(Indi indi, String tag, boolean printTag, String errorMessage) {
+    private void analyzeTag(Indi indi, String tag, boolean printTag, String errorMessage) {
         
         int indent = 2;
         if(printTag) {
@@ -203,9 +203,6 @@ public class ReportAges extends Report {
         
     }
     
-    private void analyzeFamTag(Fam fam, String tag, String errorMessage) {
-    }
-    
     private void reportAges(Indi indi) {
         
         Delta age = null;
@@ -223,10 +220,10 @@ public class ReportAges extends Report {
         
         if(reportBaptismAge) {
             println(getIndent(1)+i18n("baptismAge"));
-            analyzeIndiTag(indi, "BAPM", true, "baptismBeforeBirth");
-            analyzeIndiTag(indi, "BAPL", true, "baptismBeforeBirth");
-            analyzeIndiTag(indi, "CHR", true, "baptismBeforeBirth");
-            analyzeIndiTag(indi, "CHRA", true, "baptismBeforeBirth");
+            analyzeTag(indi, "BAPM", true, "baptismBeforeBirth");
+            analyzeTag(indi, "BAPL", true, "baptismBeforeBirth");
+            analyzeTag(indi, "CHR", true, "baptismBeforeBirth");
+            analyzeTag(indi, "CHRA", true, "baptismBeforeBirth");
             println();
         }
         
@@ -296,19 +293,19 @@ public class ReportAges extends Report {
         
         if(reportAgeAtEmigration) {
             println(getIndent(1)+i18n("emigrationAge"));
-            analyzeIndiTag(indi, "EMIG", false, "emigrationBeforeBirth");
+            analyzeTag(indi, "EMIG", false, "emigrationBeforeBirth");
             println();
         }
         
         if(reportAgeAtImmigration) {
             println(getIndent(1)+i18n("immigrationAge"));
-            analyzeIndiTag(indi, "IMMI", false, "immigrationBeforeBirth");
+            analyzeTag(indi, "IMMI", false, "immigrationBeforeBirth");
             println();
         }
         
         if(reportAgeAtNaturalization) {
             println(getIndent(1)+i18n("naturalizationAge"));
-            analyzeIndiTag(indi, "NATU", false, "naturalizationBeforeBirth");
+            analyzeTag(indi, "NATU", false, "naturalizationBeforeBirth");
             println();
         }
         
