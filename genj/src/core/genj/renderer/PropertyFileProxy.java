@@ -28,8 +28,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-import javax.swing.text.html.ImageView;
-
 /**
  * last, first
  * first last
@@ -38,7 +36,9 @@ import javax.swing.text.html.ImageView;
 public class PropertyFileProxy extends PropertyProxy {
 
   /** an replacement for a 'broken' image */  
-  private final static ImageIcon broken = new ImageIcon(new ImageView(null).getNoImageIcon());
+  private final static ImageIcon broken = 
+    //new ImageIcon(new javax.swing.text.html.ImageView(null).getNoImageIcon());
+    new ImageIcon(Object.class.getResourceAsStream("javax/swing/text/html/icons/image-failed.gif"));
 
   /**
    * @see genj.renderer.PropertyProxy#getSize(FontMetrics, Property, boolean, boolean)
