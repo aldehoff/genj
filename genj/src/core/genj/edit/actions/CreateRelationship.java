@@ -24,7 +24,8 @@ import genj.gedcom.Entity;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Relationship;
 
-import java.util.Vector;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -75,10 +76,11 @@ public class CreateRelationship extends AbstractChange {
   protected JComponent getOptions() {
     
     // selection of existing
-    Vector ents = new Vector(gedcom.getEntities(type));
+    List ents = gedcom.getEntities(type);
+    Collections.sort(ents);
     ents.add(0, "*New*" );
     
-    JComboBox result = new JComboBox(ents) {
+    JComboBox result = new JComboBox(ents.toArray()) {
       protected void fireActionEvent() {
         super.fireActionEvent();
         existing = getSelectedIndex()>0 ? (Entity)getSelectedItem() : null;
