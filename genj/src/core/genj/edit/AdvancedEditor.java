@@ -194,6 +194,9 @@ import javax.swing.event.TreeSelectionListener;
    * @param context context to switch to
    */
   public void setContext(Context context) {
+    
+    // clear current selection
+    tree.clearSelection();
 
     // need entity
     Entity entity = context.getEntity();

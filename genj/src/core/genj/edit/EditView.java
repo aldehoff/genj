@@ -117,9 +117,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
    */
   private void setEditor(Editor set) {
 
-    // get old context
-    Context old = editor!=null ? editor.getContext() : null;
-      
+    // get old context and set it on editor to force commit changes
+    Context old = null;
+    if (editor!=null) {
+      old = editor.getContext();
+      editor.setContext(old);
+    }
+    
     // remove old editor 
     removeAll();
       
@@ -356,6 +360,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     
     /** override - popup creation */
     protected JPopupMenu createPopup() {
+      // force editor to commit
+      editor.setContext(editor.getContext());
+      // create popup
       return manager.getContextMenu(editor.getContext(), null, this);
     }
      
