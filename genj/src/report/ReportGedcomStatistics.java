@@ -26,7 +26,7 @@ import java.text.NumberFormat;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.39 2003-11-07 16:07:20 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.40 2003-11-09 21:27:58 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -363,8 +363,8 @@ public class ReportGedcomStatistics extends Report {
                 case Constants.CHILDBIRTH:
                     message = i18n("warningChildBirth");
                     break;
-                    case Constants.DEATH:
-                message = i18n("warningDeath");
+                case Constants.DEATH:
+                    message = i18n("warningDeath");
                     break;
             }
             println(message+": @"+indi.getId()+"@ "+indi.getName()+" "+end+" <= "+birth);
@@ -381,7 +381,8 @@ public class ReportGedcomStatistics extends Report {
                     message = i18n("warningChildBirth");
                     break;
             }
-            println(message+": @"+indi.getId()+"@ "+indi.getName()+" "+end+" <= "+birth);            
+            if(which!=Constants.DEATH)
+                println(message+": @"+indi.getId()+"@ "+indi.getName()+" "+end+" <= "+birth);
             return zero;
         }
         
@@ -990,5 +991,5 @@ public class ReportGedcomStatistics extends Report {
                 buffer.append("   "); break;
         }
         return buffer.toString();
-    }    
+    }
 } //ReportGedcomStatistics
