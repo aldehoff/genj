@@ -66,7 +66,7 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
    * @see genj.view.ActionSupport#createActions(genj.gedcom.Entity, genj.view.ViewManager)
    */
   public List createActions(Entity entity, ViewManager manager) {
-    return getActions(entity, manager);
+    return getActions(entity, entity.getGedcom(), manager);
   }
 
   /**
@@ -74,7 +74,7 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
    * @see genj.view.ActionSupport#createActions(genj.gedcom.Gedcom, genj.view.ViewManager)
    */
   public List createActions(Gedcom gedcom, ViewManager manager) {
-    return getActions(gedcom, manager);
+    return getActions(gedcom, gedcom, manager);
   }
 
   /**
@@ -82,20 +82,20 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
    * @see genj.view.ActionSupport#createActions(genj.gedcom.Property, genj.view.ViewManager)
    */
   public List createActions(Property property, ViewManager manager) {
-    return getActions(property, manager);
+    return getActions(property, property.getGedcom(), manager);
   }
 
   /**
    * collects actions for reports valid for given context
    */
-  private List getActions(Object context, ViewManager manager) {
+  private List getActions(Object context, Gedcom gedcom, ViewManager manager) {
     List result = new ArrayList(10);
     // Look through reports
     Report[] reports = ReportLoader.getInstance().getReports();
     for (int r=0;r<reports.length;r++) {
       Report report = reports[r];
       if (report.accepts(context))
-        result.add(new ActionRun(context, report));
+        result.add(new ActionRun(context, gedcom, report, manager));
     }
     // done
     return result;
@@ -105,13 +105,37 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
    * Run a report
    */
   private class ActionRun extends ActionDelegate {
+    /** context */
+    private Object context;
+    /** gedcom */
+    private Gedcom gedcom;
+    /** report */
+    private Report report;
+    /** view mgr */
+    private ViewManager manager;
     /** constructor */
-    private ActionRun(Object context, Report report) {
+    private ActionRun(Object coNtext, Gedcom geDcom, Report rePort, ViewManager maNager) {
+      // remember
+      context = coNtext;
+      gedcom = geDcom;
+      report = rePort;
+      manager = maNager;
+      // show
       setImage(getImage());
       setText(report.getName());
     }
     /** callback */
     protected void execute() {
+      // get hand of a view for gedcom
+      Object[] views = manager.getInstances(ReportView.class, gedcom);
+      ReportView view;
+      if (views.length==0)
+        view = (ReportView)manager.openView(ReportViewFactory.class, gedcom);
+      else 
+        view = (ReportView)views[0];
+      // run it
+      view.run(report, context);
+      // done
     }
   } //ActionRun
 

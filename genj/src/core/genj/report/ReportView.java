@@ -53,6 +53,7 @@ import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
@@ -119,11 +120,12 @@ public class ReportView extends JPanel implements ToolBarSupport {
     tabbedPane.add(resources.getString("report.reports"),reportPanel);
 
     // ... List of reports
+    ListGlue glue = new ListGlue();
     Report reports[] = ReportLoader.getInstance().getReports();
     listOfReports = new JList(reports);
-    listOfReports.setCellRenderer(new ReportRenderer());
+    listOfReports.setCellRenderer(glue);
     listOfReports.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    listOfReports.addListSelectionListener((ListSelectionListener)new ActionSelect().as(ListSelectionListener.class));
+    listOfReports.addListSelectionListener(glue);
 
     JScrollPane spList = new JScrollPane(listOfReports);
     spList.setHorizontalScrollBarPolicy(spList.HORIZONTAL_SCROLLBAR_NEVER);
@@ -173,7 +175,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * Adds a line of ouput
    */
-  public void addOutput(String line) {
+  /*package*/ void addOutput(String line) {
     taOutput.append(line);
 
     if (!spOutput.getVerticalScrollBar().getValueIsAdjusting()&&taOutput.getText().length()>0) {
@@ -184,33 +186,27 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * Returns the view manager
    */
-  public ViewManager getViewManager() {
+  /*package*/ ViewManager getViewManager() {
     return manager;
   }
-
+  
   /**
-   * Select given report
+   * Runs a specific report
    */
-  private void selectReport(Report report) {
-
-    if (report==null) {
-      lAuthor .setText("");
-      lVersion.setText("");
-      tpInfo  .setText("");
-    } else {
-      lAuthor .setText(report.getAuthor());
-      lVersion.setText(report.getVersion());
-      tpInfo  .setText(report.getInfo());
-      tpInfo.setCaretPosition(0);
-    }
-
-    // Done
+  /*package*/ void run(Report report, Object context) {
+    // not if running
+    if (!bStart.isEnabled()) return;
+    // to front
+    // FIXME
+    // start it
+    listOfReports.setSelectedValue(report, true);
+    new ActionStart(context).trigger();
   }
 
   /**
    * Helper that sets buttons states
    */
-  public boolean setRunning(boolean on) {
+  private boolean setRunning(boolean on) {
 
     // Show it on buttons
     bStart.setEnabled(!on);
@@ -239,26 +235,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
       .setContainer(bar)
       .setFocusable(false);
 
-    ActionStart astart = new ActionStart();
+    ActionStart astart = new ActionStart(gedcom);
     bStart = bh.create(astart);
     bStop  = bh.setEnabled(false).create(new ActionStop(astart));    
     bSave  = bh.setEnabled(true).create(new ActionSave());
     bReload= bh.setEnabled(!ReportLoader.getInstance().isReportsInClasspath()).create(new ActionReload());
    
     // done 
-  }
-
-  /**
-   * Action: Select(Report)
-   */
-  private class ActionSelect extends ActionDelegate {
-    protected void execute() {
-      if (listOfReports.getSelectedIndices().length!=1) {
-        selectReport(null);
-      } else {
-        selectReport((Report)listOfReports.getSelectedValue());
-      }
-    }
   }
 
   /**
@@ -272,7 +255,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     protected void execute() {
       // show first page and unselect report
       tabbedPane.getModel().setSelectedIndex(0);
-      selectReport(null);
+      listOfReports.setSelectedIndices(new int[0]);
       // .. do it (forced!);
       ReportLoader.clear();
       // .. get them
@@ -302,12 +285,23 @@ public class ReportView extends JPanel implements ToolBarSupport {
    * Action: START
    */
   private class ActionStart extends ActionDelegate {
+    /** context to run on */
+    private Object context;
+    
+    /** the running report */
     private Report report;
-    protected ActionStart() {
+    
+    /** constructor */
+    protected ActionStart(Object coNtext) {
+      // remember
+      context = coNtext;
+      // setup async
       setAsync(ASYNC_SAME_INSTANCE);
+      // show
       setImage(imgStart);
       setTip("report.start.tip");
     }
+    
     /**
      * pre execute
      */
@@ -347,7 +341,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
       // .. lock Gedcom for read and start report
       try {
-        report.start(gedcom);
+        report.start(context);
       } catch (ReportCancelledException ex) {
       } catch (Throwable t) {
         // Running report failed
@@ -435,7 +429,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * Report Renderer
    */
-  class ReportRenderer extends DefaultListCellRenderer {
+  private class ListGlue extends DefaultListCellRenderer implements ListSelectionListener {
 
     /**
      * Return component for rendering list element
@@ -451,6 +445,25 @@ public class ReportView extends JPanel implements ToolBarSupport {
       }
       return this;
     }
-  } //ReportRenderer
+    
+    /**
+     * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
+     */
+    public void valueChanged(ListSelectionEvent e) {
+      // update info
+      if (listOfReports.getSelectedIndices().length!=1) {
+        lAuthor .setText("");
+        lVersion.setText("");
+        tpInfo  .setText("");
+      } else {
+        Report report = (Report)listOfReports.getSelectedValue();
+        lAuthor .setText(report.getAuthor());
+        lVersion.setText(report.getVersion());
+        tpInfo  .setText(report.getInfo());
+        tpInfo.setCaretPosition(0);
+      }
+    }
+
+  } //ListGlue
   
 } //ReportView
