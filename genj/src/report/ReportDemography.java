@@ -5,6 +5,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.chart.CategorySheet;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertyAge;

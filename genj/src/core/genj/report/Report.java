@@ -17,10 +17,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.56 $ $Author: nmeier $ $Date: 2004-12-08 19:39:50 $
+ * $Revision: 1.57 $ $Author: nmeier $ $Date: 2004-12-08 22:54:49 $
  */
 package genj.report;
 
+import genj.chart.CategorySheet;
+import genj.chart.XYSheet;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
@@ -52,7 +54,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -76,10 +77,11 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.general.AbstractDataset;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 
 
 /**
@@ -305,6 +307,29 @@ public abstract class Report implements Cloneable {
   /**
    * Helper method that shows a chart to the user
    */
+  public final void showChartToUser(String title, XYSheet sheet) {
+    
+    // prepare chart setup
+    NumberAxis xAxis = new NumberAxis("years");
+    xAxis.setAutoRangeIncludesZero(false);
+    
+    NumberAxis yAxis = new NumberAxis("individuals");
+    
+    XYItemRenderer renderer = new StandardXYItemRenderer();
+    //XYItemRenderer renderer = new StackedXYAreaRenderer(XYAreaRenderer.AREA);
+    
+    XYPlot plot = new XYPlot(sheet.wrap(), xAxis, yAxis, renderer);
+
+    // create jfreechart
+    JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+    
+    // show it
+    showComponentToUser(new ChartPanel(chart));
+  }
+  
+  /**
+   * Helper method that shows a chart to the user
+   */
   public final void showChartToUser(String title, String labelCatAxis, CategorySheet sheet, NumberFormat format, boolean isStacked, boolean isVertical) {
 
     // wrap into JFreeChart
@@ -324,7 +349,7 @@ public abstract class Report implements Cloneable {
     renderer.setSeriesPaint(1, Color.RED);
     
     // prepare plot
-    CategoryPlot plot = new CategoryPlot(new DSWrapper(sheet), categoryAxis, valueAxis, renderer);
+    CategoryPlot plot = new CategoryPlot(sheet.wrap(), categoryAxis, valueAxis, renderer);
     plot.setOrientation(!isVertical ? PlotOrientation.VERTICAL : PlotOrientation.HORIZONTAL);
 
     // create jfreechart
@@ -865,126 +890,5 @@ public abstract class Report implements Cloneable {
     }
     
   } //Item
-
-  /**
-   * A datasheet that can be shown in a chart
-   */
-  public static class CategorySheet {
-
-    private String[] series, cats;
-    private float[][] data;
-    
-    /**
-     * Constructor
-     */
-    public CategorySheet(String[] series, String[] cats) {
-      this.series = series;
-      this.cats = cats;
-      data = new float[series.length][cats.length];
-    }
-    
-    /**
-     * Cell Access
-     */
-    public float get(int serie, int cat) {
-      if (serie>=series.length||cat>=cats.length)
-        throw new IllegalArgumentException("No such cell");
-      return data[serie][cat];
-    }
-    
-    /**
-     * Cell Access
-     */
-    public void set(int serie, int cat, float val) {
-      if (serie>=series.length||cat>=cats.length)
-        throw new IllegalArgumentException("No such cell");
-      data[serie][cat] = val;
-    }
-    
-    /**
-     * Cell Access
-     */
-    public void inc(int serie, int cat) {
-      set(serie, cat, get(serie, cat)+1);
-    }
-    
-    /**
-     * Cell Access
-     */
-    public void dec(int serie, int cat) {
-      set(serie, cat, get(serie, cat)-1);
-    }
-    
-  } //CategorySheet
-
-  /** 
-   * Wrapper for jfreechart DataSet
-   */
-  private static class DSWrapper extends AbstractDataset implements CategoryDataset {
-
-    /** wrapped */
-    private CategorySheet sheet;
-    
-    /** constructor */
-    private DSWrapper(CategorySheet sheet) {
-      this.sheet = sheet;
-    }
-    
-    /** row for index */
-    public Comparable getRowKey(int pos) {
-      return sheet.series[pos];
-    }
-
-    /** index for row */
-    public int getRowIndex(Comparable row) {
-      for (int i=0; i<sheet.series.length; i++) 
-        if (sheet.series[i].equals(row)) return i;
-      throw new IllegalArgumentException();
-    }
-
-    /** all row keys  */
-    public List getRowKeys() {
-      return Arrays.asList(sheet.series);
-    }
-
-    /** column for index */
-    public Comparable getColumnKey(int pos) {
-      return sheet.cats[pos];
-    }
-
-    /** index for column */
-    public int getColumnIndex(Comparable col) {
-      for (int i=0; i<sheet.cats.length; i++) 
-        if (sheet.cats[i].equals(col)) return i;
-      throw new IllegalArgumentException();
-    }
-
-    /** all columns */
-    public List getColumnKeys() {
-      return Arrays.asList(sheet.cats);
-    }
-
-    /** value for col, row */
-    public Number getValue(Comparable row, Comparable col) {
-      return getValue(getRowIndex(row), getColumnIndex(col));
-    }
-
-    /** value for col, row */
-    public Number getValue(int row, int col) {
-      return new Float(sheet.data[row][col]);
-    }
-    
-    /** #rows */
-    public int getRowCount() {
-      return sheet.series.length;
-    }
-
-    /** #cols */
-    public int getColumnCount() {
-      return sheet.cats.length;
-    }
-    
-  } //DataSheetWrapper
-
 
 } //Report
