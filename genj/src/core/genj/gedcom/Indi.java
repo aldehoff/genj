@@ -302,7 +302,7 @@ public class Indi extends Entity {
    * Returns the selected family in which the individual is a partner
    */
   public Fam getFam(int which) {
-    Property[] props = getProperties(new TagPath("INDI:FAMS"),true);
+    Property[] props = getProperties("FAMS", true);
     if (which>=props.length) {
       return null;
     }
@@ -325,7 +325,7 @@ public class Indi extends Entity {
    * Returns the family in which the person is child
    */
   public Fam getFamc( ) {
-    Property prop = getProperty(new TagPath("INDI:FAMC"),true);
+    Property prop = getProperty("FAMC",true);
     if (prop==null) {
       return null;
     }
@@ -349,7 +349,7 @@ public class Indi extends Entity {
   public String getFirstName() {
 
     // Calculate NAME
-    PropertyName p = (PropertyName)getProperty(new TagPath("INDI:NAME"),true);
+    PropertyName p = (PropertyName)getProperty("NAME",true);
     if (p==null) {
       return "";
     }
@@ -364,7 +364,7 @@ public class Indi extends Entity {
   public String getLastName() {
 
     // Calculate NAME
-    PropertyName p = (PropertyName)getProperty(new TagPath("INDI:NAME"),true);
+    PropertyName p = (PropertyName)getProperty("NAME",true);
     if (p==null) {
       return "";
     }
@@ -397,14 +397,14 @@ public class Indi extends Entity {
    * Returns the number of families in which the individual is a partner
    */
   public int getNoOfFams() {
-    return getProperties(new TagPath("INDI:FAMS"),true).length;
+    return getProperties("FAMS",true).length;
   }
   
   /**
    * Returns the families in which this individual is a partner
    */
   public Fam[] getFamilies() {
-    Property[] props = getProperties(new TagPath("INDI:FAMS"),true);
+    Property[] props = getProperties("FAMS",true);
     Fam[] result = new Fam[props.length];
     for (int f=0; f<result.length; f++) {
       result[f] = ((PropertyFamilySpouse)props[f]).getFamily();
@@ -416,15 +416,17 @@ public class Indi extends Entity {
    * Returns indi's sex
    */
   public int getSex() {
-
-    // Calculate SEX
-    PropertySex p = (PropertySex)getProperty(new TagPath("INDI:SEX"),true);
-    if (p==null) {
-      return 0;
-    }
-
-    // Return value
-    return p.getSex();
+    PropertySex p = (PropertySex)getProperty("SEX",true);
+    return p!=null ? p.getSex() : PropertySex.UNKNOWN;
+  }
+  
+  /**
+   * Set indi's sex
+   */
+  public void setSex(int sex) {
+    PropertySex p = (PropertySex)getProperty("SEX",true);
+    if (p==null) p = (PropertySex)addProperty(new PropertySex());
+    p.setSex(sex);
   }
 
   /**
@@ -466,7 +468,7 @@ public class Indi extends Entity {
   /*package*/ Indi setFamc(Fam fam) throws GedcomException {
 
     // Remove old
-    Property p = getProperty(new TagPath("INDI:FAMC"),true);
+    Property p = getProperty("FAMC",true);
     if (p!=null) {
       delProperty(p);
     }

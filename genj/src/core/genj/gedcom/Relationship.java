@@ -343,10 +343,13 @@ public abstract class Relationship {
      */
     public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
+      // look for fam already there
       Fam fam = spouse.getFam(true);
-      if (fam.getNoOfSpouses()>=2) { 
+      if (fam.getNoOfSpouses()>=2) {
+        // .. create new if necessary 
         fam = spouse.addFam();
       }
+      // set its spouse
       fam.setSpouse((Indi)entity);
       // focus stays with spouse
       return spouse;

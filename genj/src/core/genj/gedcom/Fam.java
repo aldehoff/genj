@@ -159,6 +159,10 @@ public class Fam extends Entity {
       delProperty(ph);
       throw ex;
     }
+    
+    // check sex of husband
+    if (husband.getSex()!=PropertySex.MALE)
+      husband.setSex(PropertySex.MALE);
 
     // done    
   }
@@ -183,6 +187,10 @@ public class Fam extends Entity {
       delProperty(pw);
       throw ex;
     }
+
+    // check sex of wife
+    if (wife.getSex()!=PropertySex.FEMALE)
+      wife.setSex(PropertySex.FEMALE);
 
     // Done
   }
