@@ -31,12 +31,14 @@ gj.layout.hierarchical
  [x] add dummy nodes
  [ ] crossing reduction
  [ ] horizontal spacing
+ [ ] disconnected
  
 gj.layout.circular
 
- [ ] optimal radius
+ [x] optimal radius
  [ ] placement
  [ ] isSingleCircle
+ [ ] disconnected
 
 gj.layout.orthogonal *new*
 
