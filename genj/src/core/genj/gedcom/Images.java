@@ -99,10 +99,8 @@ public class Images {
       String  key = (String)keys.nextElement();
       String  val = props.getProperty(key);
       try {
-        System.out.println(getClass().getResource("images/"+val));
         result.put(key.toLowerCase(), new ImgIcon(getClass().getResourceAsStream("images/"+val)));
       } catch (Throwable t) {
-        t.printStackTrace();
         System.out.println("[Debug]Warning: couldn't load image "+val);
       }
     }
