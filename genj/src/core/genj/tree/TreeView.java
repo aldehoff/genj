@@ -437,7 +437,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     
     Point2D p = view2model(pos);
     Entity e = model.getEntityAt(p.getX(), p.getY());
-    if (e==null) return null;
+    if (e==null) return new Context(null);
     return new Context(e, Collections.singletonList(new ActionBookmark(e, true)));
   }
 

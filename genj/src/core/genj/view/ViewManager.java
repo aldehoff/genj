@@ -371,33 +371,35 @@ public class ViewManager {
 
     // the context might have some actions we're going to add
     mh.createItems(context.getActions());
-
+  
     // we need Entity, property and Gedcom (above) from context
     Property property = context.getProperty();
-    Entity entity = property.getEntity();
-
-    // items for property
-    if (property!=entity) {
-      List actions = getActions(property);
+    if (property!=null) {
+      Entity entity = property.getEntity();
+  
+      // items for property
+      if (property!=entity) {
+        List actions = getActions(property);
+        if (!actions.isEmpty()) {
+          String title = "Property '"+TagPath.get(property)+'\'';
+          mh.createMenu(title, property.getImage(false));
+          mh.createItems(actions);
+          mh.popMenu();
+        }
+      }
+      
+      // items for entity
+      List actions = getActions(entity);
       if (!actions.isEmpty()) {
-        String title = "Property '"+TagPath.get(property)+'\'';
-        mh.createMenu(title, property.getImage(false));
+        String title = Gedcom.getNameFor(entity.getType(),false)+" '"+entity.getId()+'\'';
+        mh.createMenu(title, entity.getImage(false));
         mh.createItems(actions);
         mh.popMenu();
       }
     }
-    
-    // items for entity
-    List actions = getActions(entity);
-    if (!actions.isEmpty()) {
-      String title = Gedcom.getNameFor(entity.getType(),false)+" '"+entity.getId()+'\'';
-      mh.createMenu(title, entity.getImage(false));
-      mh.createItems(actions);
-      mh.popMenu();
-    }
-    
+        
     // items for gedcom
-    actions = getActions(gedcom);
+    List actions = getActions(gedcom);
     if (!actions.isEmpty()) {
       String title = "Gedcom '"+gedcom.getName()+'\'';
       mh.createMenu(title, Gedcom.getImage());

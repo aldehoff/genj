@@ -257,7 +257,6 @@ import javax.swing.SwingConstants;
       // show a context menu
       ContextSupport esp = (ContextSupport)view;
       ContextSupport.Context context = esp.getContextAt(e.getPoint());
-      if (context==null) return;
       ViewManager.getInstance().showContextMenu(esp.getContextPopupContainer(), e.getPoint(), gedcom, context);
       // done
     }
