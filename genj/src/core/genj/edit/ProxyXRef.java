@@ -25,6 +25,7 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.IconValueAvailable;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
+import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 
 import java.awt.event.ActionEvent;
@@ -337,7 +338,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
     );
     in.add(find);
 
-    super.requestFocusFor(tfield);
+    ButtonHelper.requestFocusFor(tfield);
 
     // Done
   }

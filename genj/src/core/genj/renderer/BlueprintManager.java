@@ -22,6 +22,7 @@ package genj.renderer;
 import genj.gedcom.Gedcom;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.WordBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,9 +55,7 @@ public class BlueprintManager {
    * Constructor   */
   private BlueprintManager() {
     
-    // FIXME save/load
-    
-    // load blueprints
+    // load readonly/predefined blueprints
     StringBuffer html = new StringBuffer(256);
     for (int t=0;t<Gedcom.NUM_TYPES;t++) {
       blueprints[t] = new ArrayList(10);
@@ -70,11 +69,47 @@ public class BlueprintManager {
           html.append(lines.nextToken());
           html.append('\n');
         }
-        addBlueprint(t, name, html.toString());
+        blueprints[t].add(new Blueprint(name, html.toString(), true));
+      }
+    }
+    
+    // load user-defined blueprints
+    for (int t=0;t<Gedcom.NUM_TYPES;t++) {
+      String tag = Gedcom.getTagFor(t);
+      StringTokenizer names = new StringTokenizer(registry.get("blueprints."+tag,""));
+      while (names.hasMoreTokens()) {
+        String name = names.nextToken();
+        addBlueprint(t, name, registry.get("blueprints."+tag+"."+name, ""));
       }
     }
     
     // done
+  }
+  
+  /**
+   * Shutdown and save changes   */
+  public void shutdown() {
+    // Store non read-only blueprints
+    for (int t=0;t<Gedcom.NUM_TYPES;t++) {
+      // tag for type
+      String tag = Gedcom.getTagFor(t);
+      WordBuffer names = new WordBuffer(); 
+      for (int b=0; b<blueprints[t].size(); b++) {
+        // .. blueprint
+      	Blueprint blueprint = (Blueprint)blueprints[t].get(b);
+        if (blueprint.isReadOnly()) continue;
+        // .. name and store
+        String name = blueprint.getName();
+        String html = blueprint.getHTML();
+        names.append(name);
+        registry.put("blueprints."+tag+"."+name, html);
+        // .. next
+      }
+      // store names
+      registry.put("blueprints."+tag, names.toString());
+      // next type     
+    }
+    // done   
   }
   
   /**
@@ -102,6 +137,7 @@ public class BlueprintManager {
   /**
    * Adds a blueprint   */
   public Blueprint addBlueprint(int type, String name, String html) {
+    
     // fix name for duplicates
     List others = getBlueprints(type);
     int num = 0;
@@ -110,10 +146,13 @@ public class BlueprintManager {
       if (other.getName().startsWith(name)) num++;
     }
     if (num>0) name = name+"-"+num;
+    
     // create it
-    Blueprint result = new Blueprint(registry, name, html);
+    Blueprint result = new Blueprint(name, html, false);
+    
     // keep it
     blueprints[type].add(result);
+    
     // done 
     return result;
   }
@@ -121,10 +160,11 @@ public class BlueprintManager {
   /**
    * Deletes a blueprint   */
   public void delBlueprint(Blueprint blueprint) {
-    // look for it
-    for (int i = 0; i < blueprints.length; i++) {
-      if (blueprints[i].remove(blueprint)) return;
-    }
+    // allowed?
+    if (blueprint.isReadOnly()) throw new IllegalArgumentException("Can't delete read-only Blueprint");
+    // what's its type?
+    int type = getType(blueprint);
+    blueprints[type].remove(blueprint);
     // done
   }
   

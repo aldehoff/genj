@@ -23,6 +23,8 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
+import genj.util.swing.ButtonHelper;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -161,7 +163,7 @@ class ProxyEntity extends Proxy implements ActionListener, DocumentListener {
     );
     in.add(bchange);
 
-    super.requestFocusFor(tfield);
+    ButtonHelper.requestFocusFor(tfield);
 
     // Done
   }

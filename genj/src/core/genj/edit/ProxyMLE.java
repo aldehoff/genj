@@ -20,6 +20,7 @@
 package genj.edit;
 
 import genj.gedcom.Property;
+import genj.util.swing.ButtonHelper;
 
 import java.util.Enumeration;
 import javax.swing.BorderFactory;
@@ -114,6 +115,6 @@ class ProxyMLE extends Proxy implements DocumentListener {
     in.add(spane);
 
     // Done
-    requestFocusFor(tarea);
+    ButtonHelper.requestFocusFor(tarea);
   }
 }

@@ -26,7 +26,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -113,22 +112,6 @@ abstract class Proxy  {
     }
 
     return result;
-  }
-
-  /**
-   * requestFocus - since jdk 1.4 there's a method on 
-   * JComponent which requests the focus in the window
-   * the component is contained in. I'd like to use this
-   * but don't want to require jdk 1.4. So we're trying
-   * to use that method via introspection and use requestFocus()
-   * on pre 1.4 impls otherwise   */
-  protected void requestFocusFor(JComponent c) {
-    try {
-      c.getClass().getMethod("requestFocusInWindow", new Class[]{} )
-        .invoke(c, new Object[]{});
-    } catch (Throwable t) {
-      c.requestFocus();
-    }
   }
 
 } //Proxy

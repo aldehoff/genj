@@ -190,6 +190,9 @@ public class BlueprintList extends JSplitPane {
         "",
         JOptionPane.YES_NO_OPTION
       );
+      // update selection with default
+      int type = bpManager.getType(blueprint);
+      selection[type] = bpManager.getBlueprint(type, "");
       // delete it
       bpManager.delBlueprint(blueprint);
       // show it
@@ -259,9 +262,9 @@ public class BlueprintList extends JSplitPane {
           treeBlueprints.repaint();
           // .. buttons
           bAdd.setEnabled(true);
-          bDel.setEnabled(true);
+          bDel.setEnabled(!node.blueprint.isReadOnly());
           // .. editor
-          editor.set(gedcom, node.blueprint);
+          editor.set(gedcom, node.blueprint, !node.blueprint.isReadOnly());
           return;
         }
       
@@ -277,7 +280,7 @@ public class BlueprintList extends JSplitPane {
       }
             
       // .. editor
-      editor.set(null, null);
+      editor.set(null, null, false);
 
       // done
     }

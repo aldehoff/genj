@@ -19,44 +19,47 @@
  */
 package genj.renderer;
 
-import genj.util.Registry;
-
 /**
  * Encapsulating name and html for rendering an entity */
 public class Blueprint {
-  
-  /** whether we've changed */
-  /*package*/ boolean hasChanged = false;
   
   /** the name of this scheme */
   private String name;
   
   /** the html of this scheme */
   private String html;
+  
+  /** read-only */
+  private boolean isReadOnly = false;
 
   /**
-   * Constructor
+   * Constructor - temporary blueprint w/o name
    */
   public Blueprint(String hTml) {
     html = hTml;
   }
     
-  
   /**
-   * Constructor
+   * Constructor - name, html and editable
    */
-  /*package*/ Blueprint(Registry registry, String nAme, String hTml) {
+  /*package*/ Blueprint(String nAme, String hTml, boolean readOnly) {
+    // remember
     name = nAme;
     html = hTml;
+    isReadOnly = readOnly;
+    // done
   }
-    
+
   /**
    * Accessor - html
    */
   public void setHTML(String hTml) {
-    // FIXME update registry
-    hasChanged = true;
+    // o.k.?
+    if (isReadOnly()) 
+      throw new IllegalArgumentException("Can't change read-only Blueprint");
+    // remember
     html = hTml;
+    // done
   }
   
   /**
@@ -72,5 +75,11 @@ public class Blueprint {
   public String getName() {
     return name;
   }
-
+  
+  /**
+   * Accessor - readonly
+   */
+  public boolean isReadOnly() {
+    return isReadOnly;
+  }
 } //RenderingScheme

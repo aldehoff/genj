@@ -32,6 +32,7 @@ import java.util.Vector;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
@@ -190,5 +191,23 @@ public class ButtonHelper {
       }
     }
   }
+
+  /**
+   * requestFocus - since jdk 1.4 there's a method on 
+   * JComponent which requests the focus in the window
+   * the component is contained in. I'd like to use this
+   * but don't want to require jdk 1.4. So we're trying
+   * to use that method via introspection and use requestFocus()
+   * on pre 1.4 impls otherwise
+   */
+  public static void requestFocusFor(JComponent c) {
+    try {
+      c.getClass().getMethod("requestFocusInWindow", new Class[]{} )
+        .invoke(c, new Object[]{});
+    } catch (Throwable t) {
+      c.requestFocus();
+    }
+  }
+
   
 } //ButtonHelper

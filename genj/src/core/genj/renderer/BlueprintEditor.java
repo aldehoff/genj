@@ -106,7 +106,7 @@ public class BlueprintEditor extends JSplitPane {
     // event listening
     html.getDocument().addDocumentListener(preview);
     // intial set
-    set(null,null);
+    set(null,null, false);
     // done
   }
   
@@ -120,26 +120,28 @@ public class BlueprintEditor extends JSplitPane {
   /**
    * Set Gedcom, Blueprint
    */
-  public void set(Gedcom geDcom, Blueprint scHeme) {
+  public void set(Gedcom geDcom, Blueprint scHeme, boolean editable) {
     // resovle buttons and html
-    boolean b;
     if (geDcom==null||scHeme==null) {
       gedcom = null;
       blueprint = null;
       html.setText("");
-      b = false;
+      editable = false;
     } else {
       gedcom = geDcom;
       blueprint = scHeme;
       html.setText(blueprint.getHTML());
       html.setCaretPosition(0);
-      b = true;
     }
-    bInsert.setEnabled(b);
-    html.setEditable(b);
-    preview.repaint();
+    bInsert.setEnabled(editable);
+    html.setEditable(editable);
+    html.setToolTipText(editable||blueprint==null?null:resources.getString("blueprint.readonly", blueprint.getName()));
     // mark unchanged
     isChanged = false;
+    // make sure that changes
+    preview.repaint();
+    // is it an editable one?
+    if (blueprint!=null&&!blueprint.isReadOnly()) setHTMLVisible(true);
     // done    
   }
   
@@ -230,8 +232,13 @@ public class BlueprintEditor extends JSplitPane {
       // add those properties
       TagPath[] paths = tree.getSelection();
       for (int p=0;p<paths.length; p++) {
-        html.insert("<prop path="+paths[p].toString()+">\n", html.getCaretPosition());
+        html.insert(
+          "<prop path="+paths[p].toString()+">"+(p==paths.length-1?"":"\n"), 
+          html.getCaretPosition()
+        );
       }
+      // request focus
+      ButtonHelper.requestFocusFor(html);
       // done
     }
   } //ActionInsert
@@ -282,5 +289,5 @@ public class BlueprintEditor extends JSplitPane {
       return result;
     }
   } //ExampleIndi
-
+  
 } //RenderingSchemeEditor

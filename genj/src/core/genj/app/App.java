@@ -22,6 +22,7 @@ package genj.app;
 import genj.Version;
 import genj.gedcom.Gedcom;
 import genj.lnf.LnFBridge;
+import genj.renderer.BlueprintManager;
 import genj.util.AreaInScreen;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
@@ -135,6 +136,8 @@ public class App {
   public void shutdown() {
     // remember resolution 
     registry.put("resolution", UnitGraphics.getDPC());
+    // tell BlueprintManager
+    BlueprintManager.getInstance().shutdown();
     // close all frames we know
     Enumeration e = openFrames.elements();
     while (e.hasMoreElements()) ((JFrame)e.nextElement()).dispose();

@@ -20,6 +20,7 @@
 package genj.edit;
 
 import genj.gedcom.Property;
+import genj.util.swing.ButtonHelper;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -91,7 +92,7 @@ class ProxyUnknown extends Proxy implements DocumentListener {
     // Setup controls
     tfield = createTextField(prop.getValue(), "!VALUE", this, null);
     in.add(tfield);
-    super.requestFocusFor(tfield);
+    ButtonHelper.requestFocusFor(tfield);
     // Done
   }
 
