@@ -62,23 +62,20 @@ public class PropertyAssociation extends PropertyXRef {
    */
   public void link() throws GedcomException {
 
-    // Something to do ?
-    if (getReferencedEntity()!=null) {
+    // linked already?
+    if (getReferencedEntity()!=null) 
       return;
-    }
 
-    // Look for entity
+    // Try to find entity
     String id = getReferencedId();
-    if (id.length()==0) {
+    if (id.length()==0)
       return;
-    } 
 
     Entity ent = (Entity)getGedcom().getEntity(id);
     if (ent==null) 
       throw new GedcomException("Couldnt't find individual with ID "+id);
-    if (!(ent instanceof Indi)) {
+    if (!(ent instanceof Indi))
       throw new GedcomException("Target of ASSO has to be Individual");
-    }
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
