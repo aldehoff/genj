@@ -5,6 +5,8 @@ The people behind GenJ (sorted by last name) :
 
     Programming and Maintainer :
       . Nils Meier <nils@meiers.net>
+      . Carsten Muessig <carsten.muessig@gmx.net>
+      . Jerome Hettich <jerome@hettich.org.uk>
 
     Contributors :
       . Jan C.Hardenbergh <jch@world.std.com>
