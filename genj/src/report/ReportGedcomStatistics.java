@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.25 2003-06-01 09:18:33 tfmorris Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.26 2003-06-01 12:55:00 island1 Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -38,7 +38,7 @@ public class ReportGedcomStatistics extends Report {
   }
    
   /** the place that is not known */
-  private final static String UNKNOWN_PLACE = "[unknown places]";
+//  private final static String UNKNOWN_PLACE = "[unknown places]";
   
   /** this report's version */
   public static final String VERSION = "1.1";
@@ -135,7 +135,7 @@ public class ReportGedcomStatistics extends Report {
     if (prop==null) return;
     
     String place = prop.getValue();
-    if (place.length()==0) place = UNKNOWN_PLACE;
+    if (place.length()==0) place = i18n("unknown_places");
     
     // keep track
     stats.birthPlaces.add(place, prop);
@@ -156,7 +156,7 @@ public class ReportGedcomStatistics extends Report {
       String place = "";
       Property prop = indi.getProperty(new TagPath("INDI:DEAT:PLAC"));
       if (prop!=null) place = prop.getValue();
-      if (place.length()==0) place = UNKNOWN_PLACE;
+      if (place.length()==0) place = i18n("unknown_places");
        
       // keep track of that
       stats.deathPlaces.add(place, prop);
