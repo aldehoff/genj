@@ -55,10 +55,10 @@ public abstract class PropertyXRef extends Property {
   /**
    * Method for notifying being removed from another parent
    */
-  /*package*/ void delNotify(Property old) {
+  /*package*/ void delNotify(Property oldParent) {
 
     // Let it through
-    super.delNotify(old);
+    super.delNotify(oldParent);
     
     // are we referencing something that points back?
     if (target==null)
@@ -68,8 +68,10 @@ public abstract class PropertyXRef extends Property {
     if (target.getParent()==null)
       return;
       
-    // ... delete back referencing property unless this is a rollback
-    Transaction tx = getTransaction();
+    // ... delete back referencing property unless this is a rollback.
+    // We have to use oldParent for transaction resolution since 
+    // parent is already set to null by super
+    Transaction tx = oldParent.getTransaction();
     if (tx!=null&&!tx.isRollback())
       target.getParent().delProperty(target);
 
