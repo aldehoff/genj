@@ -27,7 +27,11 @@ import java.awt.event.FocusListener;
 import java.util.List;
 
 import javax.swing.ComboBoxEditor;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.ComboBoxModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.text.Caret;
 
 /**
  * Our own JComboBox
@@ -39,14 +43,15 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   
   /** our own change flag */
   private boolean hasChanged = false;
+  
+  /** our own model */
+  private Model model = new Model();
 
   /**
    * Constructor
    */
   public ChoiceWidget(List values) {
     this(values.toArray(), "");
-
-    setEditable(true);
   }
   
   /**
@@ -54,8 +59,9 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    */     
   public ChoiceWidget(Object[] values, Object selection) {
 
-    super(new SortedComboBoxModel(values));
-       
+    // do our model
+    setModel(model);
+
     // always our own editor because 
     // (1) want to use our TextWidget here
     // (2) want to avoid actionPerformed on focusLost (see Editor)
@@ -64,18 +70,17 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     // caveat: no action performed on select from choices
     super.setEditor(editor);
     
-    // apparently the default model preselects a value
-    // which isn't overridden by selection if selection
-    // isn't in values
-    getModel().setSelectedItem(null);
+    // default is sorted
+    setEditable(true);
 
-    // create the AutoCompleteListner (which also registers itself)
-    ComboBoxAutoCompleteListener jmgr = new ComboBoxAutoCompleteListener(this);
-    
+    // set the values now
+    model.setValues(values);
+       
     // try to set selection - not in values is ignored
     setSelectedItem(selection);
     
     // we're not changed at this point
+    editor.setChanged(false);
     hasChanged = false;
     
     // alignment fix
@@ -87,7 +92,9 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * set values
    */
   public void setValues(List values) {
-    setModel(new SortedComboBoxModel(values.toArray()));  
+    // set
+    model.setValues(values.toArray());
+    // done  
   }
     
   /**
@@ -208,7 +215,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   /**
    * our own editor
    */
-  public class Editor extends TextFieldWidget implements ComboBoxEditor, FocusListener {
+  private class Editor extends TextFieldWidget implements ComboBoxEditor, FocusListener, Runnable {
     
     /**
      * Constructor
@@ -274,7 +281,128 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     public void focusLost(FocusEvent e) {
       // ignored
     }
+
+    /**
+     * When something is typed in the editor's document we 
+     * invoke a (delayed) auto complete on run()
+     * @see genj.util.swing.TextFieldWidget#insertUpdate(javax.swing.event.DocumentEvent)
+     */
+    public void insertUpdate(DocumentEvent e) {
+      // let super do its thing
+      super.insertUpdate(e);
+      // add a auto-complete callback
+      SwingUtilities.invokeLater(this);
+    }
+    
+    /**
+     * Our auto-complete callback
+     */
+    public void run() {
+      
+      // do the auto-complete for txt
+      String txt = super.getText();
+      
+      // try to select an item
+      String match = model.setSelectedPrefix(txt);
+      
+      // text exactly matches - done
+      if (match.length()<=txt.length())
+        return;
+
+      // and select the text that has been added
+      // ie from the current edit position to the end of the text
+      Caret c = getCaret();
+      c.setDot(match.length());
+      c.moveDot(txt.length());
+
+      // done      
+    }
     
   } //Editor
+
+  /**
+   * our own model
+   */
+  private class Model implements ComboBoxModel {
+    
+    /** list of values */
+    private Object[] values = new Object[0];
+    
+    /** selection */
+    private Object selection = null;
+
+    /**
+     * Setter - values
+     */
+    private void setValues(Object[] vaLues) {
+      values = vaLues;
+    }
+
+    /**
+     * @see javax.swing.ComboBoxModel#getSelectedItem()
+     */
+    public Object getSelectedItem() {
+      return selection;
+    }
+    
+    /**
+     * selects an item by prefix
+     * @return the matching item
+     */
+    private String setSelectedPrefix(String prefix) {
+      
+      // try to find a match
+      for (int i=0;i<values.length;i++) {
+        if (values[i].toString().startsWith(prefix)) {
+          setSelectedItem(values[i]);
+          return values[i].toString();        
+        }
+      }
+      
+      // no match
+      return "";
+    }
+
+    /**
+     * @see javax.swing.ComboBoxModel#setSelectedItem(java.lang.Object)
+     */
+    public void setSelectedItem(Object seLection) {
+      // remember
+      selection = seLection;
+      // propagate to editor
+      if (!editor.getText().equals(selection.toString()))
+        editor.setItem(seLection);
+      // done
+    }
+
+    /**
+     * @see javax.swing.ListModel#getElementAt(int)
+     */
+    public Object getElementAt(int index) {
+      return values[index];
+    }
+
+    /**
+     * @see javax.swing.ListModel#getSize()
+     */
+    public int getSize() {
+      return values.length;
+    }
+
+    /**
+     * @see javax.swing.ListModel#removeListDataListener(javax.swing.event.ListDataListener)
+     */
+    public void removeListDataListener(ListDataListener l) {
+      // ignore - we don't do events
+    }
+
+    /**
+     * @see javax.swing.ListModel#addListDataListener(javax.swing.event.ListDataListener)
+     */
+    public void addListDataListener(ListDataListener l) {
+      // ignore - we don't do events
+    }
+
+  } //Model
 
 } //JComboBox
