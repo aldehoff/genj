@@ -110,6 +110,8 @@
     <antcall target="dist.language"><param name="language" value="en"/></antcall>
     <antcall target="dist.language"><param name="language" value="fr"/></antcall>
     <antcall target="dist.language"><param name="language" value="hu"/></antcall>
+    <antcall target="dist.language"><param name="language" value="es"/></antcall>
+    <antcall target="dist.language"><param name="language" value="pt_BR"/></antcall>
   </target>
 
   <!--
