@@ -215,6 +215,16 @@ public class OptionsWidget extends JPanel {
       //table.getTableHeader().setReorderingAllowed(false);
       
     }
+    
+    /**
+     * catch remove to commit current editor
+     */
+    public void removeNotify() {
+      if (isEditing())
+        editCellAt(-1,-1);
+      // continue
+      super.removeNotify();
+    }
 
     /** we know how to find the correct editor */
     public TableCellEditor getCellEditor(int row, int col) {
