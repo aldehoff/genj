@@ -278,12 +278,12 @@ import java.awt.geom.Rectangle2D;
     protected AncestorsWithFams(Model model, TreeMetrics metrics) {
       super(model, metrics);
       
-      // .. fams ancestors
+      // .. fams ancestors (n, e, s, w)
       padFams  = new double[]{  
-         metrics.pad/2, 
-         metrics.pad*0.05, 
+         padIndis[0], 
+         padIndis[1], 
         -metrics.pad*0.40, 
-         metrics.pad*0.05 
+         padIndis[3] 
       };
 
       padHusband = new double[]{
@@ -458,7 +458,7 @@ import java.awt.geom.Rectangle2D;
     private double[] padHusband, padWife;
     
     /** how we offset an indi above its marr */
-    private Point2D offsetHusband;
+    private double offsetHusband;
       
     /**
      * Constructor
@@ -469,8 +469,8 @@ import java.awt.geom.Rectangle2D;
       // how we pad fams (n, e, s, w)
       padFams  = new double[]{  
         -metrics.pad*0.4, 
-         0, 
-         metrics.pad/2, 
+         padIndis[1], 
+         padIndis[2], 
          padIndis[3]     
       };
       
@@ -488,10 +488,9 @@ import java.awt.geom.Rectangle2D;
         0
       };
       
-      offsetHusband = new Point2D.Double(
-        (metrics.wIndis + shapeMarrs.getBounds2D().getWidth ())/2,
-        -(metrics.hIndis + shapeMarrs.getBounds2D().getHeight())/2
-      );
+      offsetHusband = model.isVertical() ? 
+        -(metrics.wIndis + shapeMarrs.getBounds2D().getWidth ())/2 :
+        -(metrics.hIndis + shapeMarrs.getBounds2D().getHeight())/2;
       // done
     }
     
@@ -526,36 +525,44 @@ import java.awt.geom.Rectangle2D;
      * @param pivot all nodes of descendant are added to pivot
      * @return MyNode
      */
-    private TreeNode iterate(final Indi indi, TreeNode pivot) {
+    private TreeNode iterate(Indi indi, TreeNode pivot) {
 
       // lookup its families      
       Fam[] fams = indi.getFamilies();
+      
+      // no families is simply
+      if (fams.length==0) {
+        TreeNode nIndi = new TreeNode(indi,shapeIndis,padIndis);
+        model.add(new TreeArc(pivot, model.add(nIndi), pivot.getShape()!=null));
+        return nIndi;        
+      }
 
-      // create indi and arc pivot-indi
-      TreeNode nIndi = new TreeNode(indi,shapeIndis,fams.length>0?padHusband:padIndis) {
+      // otherwise indi as husband first of family and arc pivot-indi
+      TreeNode nIndi = new TreeNode(indi,shapeIndis,padHusband) {
         /**
          * @see genj.tree.Parser.DescendantsWithFams#getLongitude(gj.model.Node, double, double, double, double, gj.layout.tree.Orientation)
          */
         public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
-          return super.getLongitude(node, minc, maxc, mint, maxt, o) - o.getLongitude(offsetHusband);
+          return (maxc+minc)/2 + offsetHusband;
         }
       };
       model.add(new TreeArc(pivot, model.add(nIndi), pivot.getShape()!=null));
       
-      // Get the fam (1st for now)
-      if (fams.length>0) {
-        Fam fam = fams[0];
-        // add marr and arc pivot-marr
-        TreeNode nMarr = new TreeNode(null, shapeMarrs, null);
-        model.add(new TreeArc(pivot, model.add(nMarr), false));
-        // add spouse and arc pivot-spouse
-        TreeNode nSpouse = new TreeNode(fam.getOtherSpouse(indi), shapeIndis, padWife);
-        model.add(new TreeArc(pivot, model.add(nSpouse), false));
-        // add arc : marr-fam
-        TreeNode nFam = iterate(fam);
-        model.add(new TreeArc(nIndi, nFam, false));
-        // next family
-      }
+      // with one selected fam
+      Fam fam = fams[0];
+      
+      // add marr and arc pivot-marr
+      TreeNode nMarr = new TreeNode(null, shapeMarrs, null);
+      model.add(new TreeArc(pivot, model.add(nMarr), false));
+      
+      // add spouse and arc pivot-spouse
+      TreeNode nSpouse = new TreeNode(fam.getOtherSpouse(indi), shapeIndis, padWife);
+      model.add(new TreeArc(pivot, model.add(nSpouse), false));
+      
+      // add arc : marr-fam
+      TreeNode nFam = iterate(fam);
+      model.add(new TreeArc(nIndi, nFam, false));
+      
       // done
       return nIndi;
     }
