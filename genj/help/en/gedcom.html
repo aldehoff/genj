@@ -1,27 +1,27 @@
-<HTML>
+<html>
+<body>
 
-<BODY>
-<H2>Gedcom</H2>
+<h2>Gedcom</h2>
 
-<P>
+<p>
 Gedcom is a standard for exchanging genealogic information in an electronic 
 format. It is similiar to XML in it's structure but it's not quite as well defined. 
-</P>
+</p>
 
-<P>
+<p>
 Generally all Gedcom information is hierarchically structured. An entity
 (like Person, Family or Note) is comprised of a tree of properties without
 a inherent limit on the number of levels. Beside the standard well-defined
 properties (like Date, Name, Sex, etc.) it is possible to handle custom 
 or special properties unknown to the application handling Gedcom correctly.
-</P>
+</p>
 
-<P>
+<p>
 Since Gedcom doesn't know the notion of closing and ending Tags (like XML)
 it is based on lines of different indentation. Indentation is specified
 by a number - then follows the Tag identifying the property type.
 Here is an example (sub-properties are indented here for readability only):
-</P>
+</p>
 
 <PRE>
 0 INDI @I001@
@@ -43,13 +43,13 @@ Here is an example (sub-properties are indented here for readability only):
   1 NOTE @N003@
 </PRE>
 
-<P>
+<p>
 Special properties have a certain format for the contained data (e.g. Name /Last Name/).
 Some properties reference other entities - here the property NOTE links to
 a note with id N003 in the same Gedcom file.
-</P>
+</p>
 
-<P>
+<p>
 The power of GenealogyJ is that it allows this nested information to
 be edited in its hierarchical form. All known properties are treated in a
 way that offers specific input for editing - no need to look at a text-file.
@@ -70,4 +70,4 @@ The current Gedcom version supported by GenJ is
 
 </BODY>
 
-</HTML>
+</html>
