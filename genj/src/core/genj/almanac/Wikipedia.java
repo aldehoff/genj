@@ -56,8 +56,9 @@ public class Wikipedia {
     // match "* [[6. August]] - Event description"
     REGEXP_EVENT = Pattern.compile("\\*+[ ]*\\[\\[(.+?)\\]\\] *[-:] *(.*)"),
     
-    // match "...[[link|text]]..."
-    REGEXP_LINK  = Pattern.compile("\\[\\[([^\\[]*\\|)?([^\\[]*?)\\]\\]"),
+    // match "...[[link|text]]..." and "...[external]..."
+    REGEXP_INTERNALLINK  = Pattern.compile("\\[\\[([^\\[]*\\|)?([^\\[]*?)\\]\\]"),
+    REGEXP_EXTERNALLINK  = Pattern.compile("\\[[^\\[]*?\\]"),
     
     // match "January 1", "13.Maerz", "3 fevrier"
     REGEXP_MONTH = Pattern.compile("[^\\d \\.]+"),
@@ -423,14 +424,16 @@ public class Wikipedia {
   
   /**
    * Replace links in text e.g.
-   * "[[Manitoba|Manitoba]]" 
+   * "[[Manitoba Canada|Manitoba]]" -> "Manitoba"
+   * "[External Link] -> "" 
    */
   private String unlinkify(String text) {
     
     if (text.length()>0) {
-      // match "...[[link|text]]..."
-      Matcher matcher = REGEXP_LINK.matcher(text);
-      text = matcher.replaceAll("$2");
+      // match "...[[link|text]]..." into "text"
+      text = REGEXP_INTERNALLINK.matcher(text).replaceAll("$2");
+      // match "...[external]..." into ""
+      text = REGEXP_EXTERNALLINK.matcher(text).replaceAll("");
     }
     
     // done
