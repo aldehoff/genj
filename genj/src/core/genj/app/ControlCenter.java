@@ -694,12 +694,13 @@ public class ControlCenter extends JPanel {
   
         int rc = JOptionPane.showConfirmDialog(
           frame,
-          App.resources.getString("cc.open.file_exists"),
+          App.resources.getString("cc.open.file_exists", file.getName()),
           App.resources.getString("cc.save.title"),
           JOptionPane.YES_NO_OPTION
         );
   
         if (rc==JOptionPane.NO_OPTION) {
+          newOrigin = null; //20030221 no need to go for newOrigin in postExecute()
           return false;
         }
       }
