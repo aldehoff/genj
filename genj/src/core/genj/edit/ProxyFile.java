@@ -318,6 +318,7 @@ import javax.swing.JScrollPane;
       JPopupMenu popup = mh.createPopup("");
       // zoom levels
       mh.createItem(new ActionZoom( 10));
+      mh.createItem(new ActionZoom( 25));
       mh.createItem(new ActionZoom( 50));
       mh.createItem(new ActionZoom(100));
       mh.createItem(new ActionZoom(150));
