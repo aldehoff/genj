@@ -135,9 +135,9 @@ public class Source extends PropertySource implements Entity {
   }
   
   /**
-   * @see genj.gedcom.Entity#addLink(Property, String)
+   * @see genj.gedcom.Entity#addLink(Property, Class)
    */
-  public void addLink(Property owner, String tag) {
+  public void addLink(Property owner, Class anchor) {
     // Create note on owner's end
     owner.addProperty(new PropertySource(this));
     // done

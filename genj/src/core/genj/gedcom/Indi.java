@@ -479,9 +479,42 @@ public class Indi extends PropertyIndi implements Entity {
   }
 
   /**
-   * @see genj.gedcom.Entity#addLink(Property, String)
+   * @see genj.gedcom.Entity#addLink(Property, Class)
    */
-  public void addLink(Property owner, String tag) {
+  public void addLink(Property owner, Class anchor) throws GedcomException {
+    
+    // we're going to be a child in a family
+    if (anchor==PropertyFamilyChild.class) {
+      Fam fam;
+      if (owner instanceof Indi) {
+        Indi indi = (Indi)owner;
+        fam = indi.getFam(0);
+        if (fam==null) {
+          fam = (Fam)getGedcom().createEntity(Gedcom.FAMILIES, null);
+          fam.setHusband(indi);
+        }
+      } else {
+        fam = (Fam)owner;
+      }
+      fam.addChild(this);
+    }
+    
+  /*    
+    Class anchor = null;
+    // Husband -> FamilySpouse
+    if (owner instanceof PropertyIndi&&anchor==PropertyHusband.class) {
+    }
+    
+    if (owner instanceof PropertyFam&&anchor==PropertyHusband.class) {
+    }
+    // Wife -> FamilySpouse
+    if (anchor==PropertyWife.class) {
+    }
+    // Child -> FamilyChild
+    if (anchor==PropertyChild.class) {
+    }
+  */
     // done
   }
-}
+  
+} //Indi

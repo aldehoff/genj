@@ -443,6 +443,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     /** run */
     protected void execute() {
       tree.getPropertyModel().setPrevious();
+      tree.expandRows();
     }
   } //ActionBack
   

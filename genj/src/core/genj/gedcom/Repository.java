@@ -133,9 +133,9 @@ public class Repository extends PropertyRepository implements Entity {
   }
 
   /**
-   * @see genj.gedcom.Entity#addLink(Property, String)
+   * @see genj.gedcom.Entity#addLink(Property, Class)
    */
-  public void addLink(Property owner, String tag) {
+  public void addLink(Property owner, Class anchor) {
     // Create repository on owner's end
     owner.addProperty(new PropertyRepository(this));
     // done

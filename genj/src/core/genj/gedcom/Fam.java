@@ -243,60 +243,48 @@ public class Fam extends PropertyFam implements Entity {
   public void setId(String id) {
     this.id=id;
   }
+  
+  /**
+   * Sets the husband of this family
+   */
+  /*package*/ void setHusband(Indi husband) {
+    
+    // Remove old husband
+    PropertyHusband ph = (PropertyHusband)getProperty(new TagPath("FAM:HUSB"),false);
+    if (ph!=null) delProperty(ph);
+    
+    // add property spouse to husband
+    PropertyFamilySpouse spouse = new PropertyFamilySpouse(null);
+    husband.addProperty(spouse);
+
+    // Add new husband
+    ph = new PropertyHusband(spouse);
+    spouse.setTarget(ph);
+    addProperty(ph);
+
+    // done    
+  }
 
   /**
-   * Sets the parents of the family
+   * Sets the family of the family
    */
-  /*package*/ Fam setParents(Indi husband, Indi wife) throws GedcomException {
-
-    // Check for sex
-    if (   ((husband!=null)&&(husband.getSex()!=PropertySex.MALE  ))
-      || ((wife   !=null)&&(wife.getSex()   !=PropertySex.FEMALE))  ) {
-      Indi t=husband;husband=wife;wife=t;
-    }
+  /*package*/ void setWife(Indi wife) {
 
     // Remove old wife
     PropertyWife pw = (PropertyWife)getProperty(new TagPath("FAM:WIFE"),true);
-    if (pw!=null) {
-      delProperty(pw);
-    }
+    if (pw!=null) delProperty(pw);
 
-    // Remove old husband
-    PropertyHusband ph = (PropertyHusband)getProperty(new TagPath("FAM:HUSB"),false);
-    if (ph!=null) {
-      delProperty(ph);
-    }
-
-    // Remember wife which is spouse in this
-    if (wife!=null) {
-      pw = new PropertyWife("",wife.getId());
-      addProperty(pw);
-
-      try {
-        pw.link();
-      } catch (GedcomException ex) {
-        delProperty(pw);
-        throw ex;
-      }
-    }
-
-    // Add (new) husband
-    if (husband!=null) {
-      ph = new PropertyHusband("",husband.getId());
-      addProperty(ph);
-
-      try {
-        ph.link();
-      } catch (GedcomException ex) {
-        delProperty(ph);
-        throw ex;
-      }
-    }
+    // add property spouse to wife
+    PropertyFamilySpouse spouse = new PropertyFamilySpouse(null);
+    
+    // Add new wife
+    pw = new PropertyWife(spouse);
+    spouse.setTarget(pw);
+    addProperty(pw);
 
     // Done
-    return this;
   }
-
+  
   /**
    * Returns this entity as String description
    */
@@ -336,9 +324,9 @@ public class Fam extends PropertyFam implements Entity {
   }
 
   /**
-   * @see genj.gedcom.Entity#addLink(Property, String)
+   * @see genj.gedcom.Entity#addLink(Property, Class)
    */
-  public void addLink(Property owner, String tag) {
+  public void addLink(Property owner, Class anchor) {
     // done
   }
   
