@@ -63,13 +63,13 @@ public abstract class Property implements Comparable {
   protected static final MetaDefinition metaDefs[] = {
 
     // FAM Record
-    new MetaDefinition("FAM","Fam",new String[]{"MARR","CHIL","HUSB","WIFE","NOTE","ANUL","CENS","DIV","DIVF","ENGA","MARB","MARC","MARL","MARS"}) ,
+    new MetaDefinition("FAM","Fam",new String[]{"MARR","CHIL","ANUL","CENS","DIV","DIVF","ENGA","MARB","MARC","MARL","MARS"}) ,
     new MetaDefinition("CHIL","Child") ,
     new MetaDefinition("HUSB","Husband") ,
     new MetaDefinition("WIFE","Wife") ,
 
     // INDI Record
-    new MetaDefinition("INDI","Indi",new String[]{"NAME","SEX","BIRT","DEAT","RESI","GRAD","OCCU","ASSO","FAMS","FAMC","OBJE","NOTE","CAST","DSCR","EDUC","IDNO","NATI","NCHI","PROP","RELI","SSN","TITL","CHR","BURI","CREM","ADOP","BAPM","BAPL","BARM","BASM","BLES","CHRA","CONF","FCOM","ORDN","NATU","EMIG","IMMI","CENS","PROB","WILL","RETI"}) ,
+    new MetaDefinition("INDI","Indi",new String[]{"NAME","SEX","BIRT","DEAT","RESI","GRAD","OCCU","CAST","DSCR","EDUC","IDNO","NATI","NCHI","PROP","RELI","SSN","TITL","CHR","BURI","CREM","ADOP","BAPM","BAPL","BARM","BASM","BLES","CHRA","CONF","FCOM","ORDN","NATU","EMIG","IMMI","CENS","PROB","WILL","RETI"}) ,
     new MetaDefinition("NAME","Name") ,
     new MetaDefinition("SEX" ,"Sex") ,
     new MetaDefinition("FAMC" ,"FamilyChild") ,
