@@ -233,6 +233,7 @@
    -->
   <target name="dist.help">
     <antcall target="dist.help.language"><param name="language" value="en"/></antcall>
+    <antcall target="dist.help.language"><param name="language" value="fr"/></antcall>
   </target>
 
   <!--
