@@ -23,8 +23,8 @@ import genj.Version;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MultiLineSupport;
+import genj.gedcom.PointInTime;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyXRef;
 import genj.util.Debug;
 import genj.util.Trackable;
@@ -35,6 +35,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
@@ -78,8 +79,9 @@ public class GedcomWriter implements Trackable {
     file = name;
     level = 0;
     line = 1;
-    date = PropertyDate.getDateString(now);
-    time = PropertyDate.getTimeString(now);
+    date = PointInTime.getDateString(now);
+    time = new SimpleDateFormat("HH:mm:ss").format(now);
+
     out = new BufferedWriter(createWriter(stream, encoding));
 
     // Done

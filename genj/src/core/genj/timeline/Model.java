@@ -25,6 +25,7 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
+import genj.gedcom.PointInTime;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
@@ -353,7 +354,7 @@ import java.util.Set;
     PropertyDate pd = pe.getDate();
     if (pd==null) return;
     // get start (has to be valid) and end
-    PropertyDate.PointInTime 
+    PointInTime
       start = pd.getStart(),
       end   = pd.getEnd();
     if (!start.isValid()) return;

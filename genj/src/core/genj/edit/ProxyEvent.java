@@ -20,6 +20,7 @@
 package genj.edit;
 
 import genj.gedcom.Indi;
+import genj.gedcom.PointInTime;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 
@@ -69,9 +70,9 @@ class ProxyEvent extends Proxy {
     String age;
     if ("BIRT".equals(event.getTag())) {
       ageat+=" (today)";
-      age = indi.toAgeString(null);
+      age = indi.getAge(PointInTime.getNow());
     } else {
-      age = date!=null ? indi.toAgeString(date) : "(unknown)";
+      age = date!=null ? indi.getAge(date.getStart()) : "(unknown)";
     }
     
     // layout

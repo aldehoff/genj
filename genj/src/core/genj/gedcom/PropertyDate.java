@@ -21,8 +21,6 @@ package genj.gedcom;
 
 import genj.util.WordBuffer;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.StringTokenizer;
 
 /**
@@ -31,9 +29,9 @@ import java.util.StringTokenizer;
 public class PropertyDate extends Property {
 
   /** time values */
-  private PointInTime 
-    start = new PointInTime(),
-    end = new PointInTime();
+  private PIT 
+    start = new PIT(),
+    end = new PIT();
 
   /** the format of the contained date */
   private int format = DATE;
@@ -68,12 +66,6 @@ public class PropertyDate extends Property {
     new FormatDescriptor(false, "CAL" , ""   , "~", "" ), // CAL
     new FormatDescriptor(false, "EST" , ""   , "~", "" )  // EST
   };
-
-  /** month names */
-  private final static String months[] = {"JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
-
-  /** time format */
-  private final static SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 
   /**
    * @see java.lang.Comparable#compareTo(Object)
@@ -149,24 +141,6 @@ public class PropertyDate extends Property {
     return "Date";
   }
 
-  /**
-   * Helper which returns given date in gedcom string-format
-   */
-  public static String getDateString(Calendar c) {
-
-    return c.get(Calendar.DAY_OF_MONTH)
-      + " " + months[c.get(Calendar.MONTH)]
-      + " " + c.get(Calendar.YEAR);
-
-  }
-
-  /**
-   * Helper which returns given time in gedcom string-format
-   */
-  public static String getTimeString(Calendar c) {
-    return timeFormat.format(c.getTime());
-  }
-  
   /**
    * Accessor Tag
    */
@@ -356,7 +330,6 @@ public class PropertyDate extends Property {
       
     // collect information
     WordBuffer result = new WordBuffer();
-    
     result.append(smod);  
     start.toString(result,localize);
     result.append(emod);
@@ -369,7 +342,7 @@ public class PropertyDate extends Property {
   /** 
    * A point in time 
    */
-  public class PointInTime {
+  private class PIT extends PointInTime {
     
     /** content */
     private int 
@@ -399,47 +372,6 @@ public class PropertyDate extends Property {
     }
 
     /**
-     * Checks for validity
-     */
-    public boolean isValid() {
-  
-      // YYYY or MMM YYYY or DD MMMM YYYY
-      if (year<0)
-        return false;
-      if (month>=12)
-        return false;
-      if (month<0&&day>=0)
-        return false;
-      return true;
-    }
-    
-    /**
-     * Returns a double representation
-     */
-    public double toDouble() {
-      double result = 0;
-      
-      if (year>=0) {
-        result = year;
-        if (month>=0&&month<12) {
-          result += ((double)month)/12;
-          if (day>=0&&day<31) {
-            result += ((double)day)/12/31;
-          } 
-        }
-      }
-       
-      return result;
-    }
-  
-    /**
-     * String representation
-     */
-    public String toString() {
-      return toString(new WordBuffer(),true).toString();
-    }
-    
-    /**
      * Setter
      */
     public void set(int d, int m, int y) {
@@ -458,26 +390,6 @@ public class PropertyDate extends Property {
     }
     
     /**
-     * compare to other
-     */  
-    private int compareTo(PointInTime other) {
-
-      int result;
-      
-      // Year ?
-      if ((result=year-other.year)!=0) return result;
-      
-      // Month
-      if ((result=month-other.month)!=0) return result;
-      
-      // Day
-      if ((result=day-other.day)!=0) return result;
-      
-      // Equal
-      return 0;
-    }    
-    
-    /**
      * Setter
      */
     private void reset() {
@@ -487,7 +399,7 @@ public class PropertyDate extends Property {
     /**
      * Setter
      */
-    private void set(PointInTime other) {
+    private void set(PIT other) {
       // Remember change
       noteModifiedProperty();
       // set
@@ -516,7 +428,7 @@ public class PropertyDate extends Property {
           return year>=0;
         case 2 : // MMM YYYY
           try {
-            month = parseMonth ( tokens.nextToken() );
+            month = getMonth ( tokens.nextToken() );
             year  = Integer.parseInt( tokens.nextToken() );
           } catch (NumberFormatException e) {
             return false;
@@ -525,7 +437,7 @@ public class PropertyDate extends Property {
         case 3 : // DD MMM YYYY
           try {
             day   = Integer.parseInt( tokens.nextToken() );
-            month = parseMonth ( tokens.nextToken() );
+            month = getMonth ( tokens.nextToken() );
             year  = Integer.parseInt( tokens.nextToken() );
           } catch (NumberFormatException e) {
             return false;
@@ -537,37 +449,6 @@ public class PropertyDate extends Property {
       return true;
     }
     
-    /**
-     * String representation
-     */
-    private WordBuffer toString(WordBuffer buffer, boolean localize) {
-      if (day>0) buffer.append(new Integer(day));
-      buffer.append(getMonth(localize));
-      if (year>0) buffer.append(new Integer(year));
-      return buffer;
-    }
-    
-    /**
-     * Accessor - the month
-     */
-    private String getMonth(boolean localize) {
-      if (month<0||month>=12)
-        return EMPTY_STRING;
-      String mmm = months[month];
-      if (localize) mmm = Gedcom.getResources().getString("prop.date.mon."+mmm);
-      return mmm;
-    }
-    
-    /**
-     * Helper that transforms month to Integer
-     */
-    private int parseMonth(String mmm) throws NumberFormatException {
-      for (int i=0;i<months.length;i++) {
-        if (months[i].equalsIgnoreCase(mmm)) return i;
-      }
-      throw new NumberFormatException();
-    }
-  
   } // class PointInTime
   
   /**

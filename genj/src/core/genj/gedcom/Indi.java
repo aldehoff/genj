@@ -19,12 +19,10 @@
  */
 package genj.gedcom;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class for encapsulating a person
@@ -437,78 +435,6 @@ public class Indi extends Entity {
   }
 
   /**
-   * Calculate indi's age at given date
-   * @param pEnd the date at which to calc age (or null for *now*)
-   * @return age as a string description or null
-   */
-  public String toAgeString(PropertyDate pEnd) {
-
-    // try to get birth    
-    PropertyDate birth = getBirthDate();
-    if (birth==null)
-      return null;
-    PropertyDate.PointInTime pit = birth.getStart();
-    if (!pit.isValid())
-      return null;
-      
-    int 
-      ythen = pit.getYear(),
-      mthen = Math.max(0,pit.getMonth()),
-      dthen = Math.max(0,pit.getDay  ());
-   
-    // age at what point in time?
-    int ynow, mnow, dnow;
-    if (pEnd==null) {
-      Calendar now = Calendar.getInstance(); // default to current time
-      ynow = now.get(Calendar.YEAR);      
-      mnow = now.get(Calendar.MONTH);      
-      dnow = now.get(Calendar.DATE)-1;      
-    } else {
-      PropertyDate.PointInTime at = pEnd.getStart();
-      if (!at.isValid()) return null;
-      ynow = at.getYear();
-      mnow = Math.max(0, at.getMonth());
-      dnow = Math.max(0, at.getDay  ());
-    }
-    
-    // calculate deltas
-    int ydelta = ynow - ythen;
-    int mdelta = mnow - mthen;
-    int ddelta = dnow - dthen;
-    
-    // check day
-    if (ddelta<0) {
-      // decrease months
-      mdelta -=1;
-      // increase days with days in previous month
-      //ddelta +=30;
-
-
-      Calendar c = Calendar.getInstance();
-      c.set(ythen, mthen, 1);
-      int days = c.getActualMaximum(Calendar.DATE);
-      ddelta = dnow + (days-dthen); 
-
-    }
-
-    // check month now<then
-    if (mdelta<0) {
-      // decrease years
-      ydelta -=1;
-      // increase months
-      mdelta +=12;
-    } 
-
-    // calculate output
-    WordBuffer buffer = new WordBuffer();
-    if (ydelta>0) buffer.append(ydelta+"y");
-    if (mdelta>0) buffer.append(mdelta+"m");
-    if (ddelta>0) buffer.append(ddelta+"d");
-    
-    return buffer.toString();    
-  }
-
-  /**
    * Image
    */
   public ImageIcon getImage(boolean checkValid) {
@@ -519,5 +445,20 @@ public class Indi extends Entity {
       default: return IMG_UNKNOWN;
     }
   }
+
+  /**
+   * Calculate indi's age at given point in time
+   */
+  public String getAge(PointInTime pit) {
   
+    // try to get birth    
+    PropertyDate pbirth = getBirthDate();
+    if (pbirth==null) return EMPTY_STRING;
+    PointInTime birth = pbirth.getStart();
+    if (!birth.isValid()) return EMPTY_STRING;
+      
+    // calculate
+    return birth.getDelta(pit);
+  }
+    
 } //Indi
