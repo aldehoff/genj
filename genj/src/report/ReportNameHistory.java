@@ -18,14 +18,17 @@ import genj.report.Report;
 
 import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Chart names and their usage in a gedcom file
  */
 public class ReportNameHistory extends Report {
+  
+  /** whether to group non-considered names */
+  public boolean makeGroupOther = true;
   
   /** lifespan we assume if there's no death */
   private int lifespanWithoutDEAT = 80;
@@ -75,7 +78,7 @@ public class ReportNameHistory extends Report {
       yearEnd   = PointInTime.getNow().getYear();
     
     // loop over individuals
-    Map name2series = new HashMap();
+    Map name2series = new TreeMap();
     Iterator iterator = indis.iterator();
     while (iterator.hasNext()) {
       Indi indi = (Indi)iterator.next();
@@ -130,8 +133,10 @@ public class ReportNameHistory extends Report {
 	    return;
     
 	  // check minimum percentage of name
-	  if (PropertyName.getPropertyNames(gedcom, last).size()<indis.size()*minUseOfName/100)
-	    return;
+	  if (PropertyName.getPropertyNames(gedcom, last).size()<indis.size()*minUseOfName/100) {
+	    if (!makeGroupOther) return;
+	    last = "*";
+	  }
 	  
 	  // calculate start
 	  int start;
