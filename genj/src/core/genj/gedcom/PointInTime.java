@@ -710,10 +710,14 @@ public class PointInTime implements Comparable {
     
     /* valid from 22 SEP 1792 to not including 1 JAN 1806 */
     private static final int
-      START  = GREGORIAN.toJulianDay(getPointInTime(22-1, 9-1, 1792));
+      AN_I  = GREGORIAN.toJulianDay(getPointInTime(22-1, 9-1, 1792)),
+      UNTIL = GREGORIAN.toJulianDay(getPointInTime( 1-1, 1-1, 1806));
 
     private static final String MONTHS[] 
      = { "VEND","BRUM","FRIM","NIVO","PLUV","VENT","GERM","FLOR","PRAI","MESS","THER","FRUC","COMP" };
+    
+    private static final int[] LEAP_YEARS
+     = { 3,7,11 };
     
     /**
      * Constructor
@@ -739,8 +743,10 @@ public class PointInTime implements Comparable {
     /**
      * Leap year test
      */
-    private boolean isLeap(int year) { 
-      return year == 3 || year == 7 || year == 11;
+    private boolean isLeap(int year) {
+      for (int l=0;l<LEAP_YEARS.length;l++)
+        if (LEAP_YEARS[l]==year) return true; 
+      return false;
     }
     
     /**
@@ -760,23 +766,47 @@ public class PointInTime implements Comparable {
      * @see genj.gedcom.PointInTime.Calendar#toJulianDay(genj.gedcom.PointInTime)
      */
     protected int toJulianDay(PointInTime pit) throws GedcomException {
-      return START + pit.getDay() + pit.getMonth()*30 + 365*(pit.getYear()-1);
+      // calc days
+      int 
+        y = 365*(pit.getYear()-1),
+        m = pit.getMonth()*30,
+        d = pit.getDay();
+      // check leap years (one less day on julian day)
+      for (int l=0;l<LEAP_YEARS.length;l++)
+        if (y>LEAP_YEARS[l]) d++; 
+      // sum
+      return AN_I + d + m + y;
     }
     
     /**
      * @see genj.gedcom.PointInTime.Calendar#toPointInTime(int)
      */
     protected PointInTime toPointInTime(int julianDay) throws GedcomException {
+
+      // check range
+      if (julianDay<AN_I)
+        throw new GedcomException("Day lies before French Republican Calendar");
+      if (julianDay>=UNTIL)
+        throw new GedcomException("Day lies after French Republican Calendar");
       
-      julianDay = julianDay - START;
+      julianDay = julianDay - AN_I;
       
+      // calculate years
       int 
         y  = julianDay/365 + 1,
-        yr = julianDay%365,
+        yr = julianDay%365;
+        
+      // check leap years (one less day on julian day)
+      for (int l=0;l<LEAP_YEARS.length;l++)
+        if (y>LEAP_YEARS[l]) yr--; 
+        
+      // calc month
+      int
         m  = yr/30,
         mr = yr%30,
         d  = mr;
         
+      // done
       return new PointInTime(d,m,y,this);
     }
 
