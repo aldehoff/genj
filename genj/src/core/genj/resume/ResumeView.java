@@ -76,7 +76,7 @@ public class ResumeView extends JPanel implements ToolBarSupport {
   private EntityRenderer renderer = NORENDERER;
   
   /** a unset renderer */      
-  private final static EntityRenderer NORENDERER = new EntityRenderer("<p align=center>Please select an entity</p>");
+  private final static EntityRenderer NORENDERER = new EntityRenderer(resources.getString("html.select"));
   
   /**
    * Constructor
