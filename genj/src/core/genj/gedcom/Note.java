@@ -134,14 +134,5 @@ public class Note extends PropertyNote implements Entity {
   public String toString() {
     return getId()+":"+super.toString();
   }
-  
-  /**
-   * @see genj.gedcom.Entity#addLink(Property, Class)
-   */
-  public void addLink(Property owner, Class anchor) {
-    // Create note on owner's end
-    owner.addProperty(new PropertyNote(this));
-    // done
-  }
-  
+
 } //Note

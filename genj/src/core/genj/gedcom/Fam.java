@@ -288,7 +288,7 @@ public class Fam extends PropertyFam implements Entity {
   /**
    * Returns this entity as String description
    */
-  public String toString() {
+  public String toString(boolean abbreviate) {
 
     // Fxyz:...
     String result = getId()+":";
@@ -307,13 +307,22 @@ public class Fam extends PropertyFam implements Entity {
     }
 
     // ... \n Little, One (Iefg) ...
-    Indi[] children = getChildren();
-    for (int c=0;c<children.length;c++) {
-      result += "\n" + children[c].toString();
+    if (!abbreviate) {
+      Indi[] children = getChildren();
+      for (int c=0;c<children.length;c++) {
+        result += "\n" + children[c].toString();
+      }
     }
 
     // Done
     return result;
+  }
+  
+  /**
+   * @see genj.gedcom.Property#toString()
+   */
+  public String toString() {
+    return toString(false);
   }
 
   /**
@@ -323,11 +332,4 @@ public class Fam extends PropertyFam implements Entity {
     throw new RuntimeException("Not supported yet");
   }
 
-  /**
-   * @see genj.gedcom.Entity#addLink(Property, Class)
-   */
-  public void addLink(Property owner, Class anchor) {
-    // done
-  }
-  
 } //Fam

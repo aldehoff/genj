@@ -81,10 +81,5 @@ public interface Entity {
    */
   public void addForeignXRef(PropertyForeignXRef fxref);
 
-  /**
-   * Adds a "link to this entity" to given 'new' owner
-   * with suggested anchor
-   */
-  public void addLink(Property owner, Class anchor) throws GedcomException ;
 
 } //Entity

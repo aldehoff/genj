@@ -245,7 +245,7 @@ class ProxyXRef extends Proxy implements ActionListener  {
     if (e==null) {
       return;
     }
-    edit.setCurrentEntity( e );
+    edit.setEntity( e );
   }
 
   /**

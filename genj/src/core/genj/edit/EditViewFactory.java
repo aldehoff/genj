@@ -38,6 +38,7 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFamilyChild;
+import genj.gedcom.Relationship;
 import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
@@ -138,11 +139,11 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     if (entity instanceof Fam) createActions(result, (Fam)entity);
     // add standards
     result.add(ActionDelegate.NOOP);
-    result.add(new CreateLinked(entity, Gedcom.NOTES       , Images.imgNewNote      ));
-    result.add(new CreateLinked(entity, Gedcom.MULTIMEDIAS , Images.imgNewMedia     ));
-    result.add(new CreateLinked(entity, Gedcom.SOURCES     , Images.imgNewSource    ));
-    result.add(new CreateLinked(entity, Gedcom.SUBMITTERS  , Images.imgNewSubmitter ));
-    result.add(new CreateLinked(entity, Gedcom.REPOSITORIES, Images.imgNewRepository));
+    result.add(new Create(entity.getGedcom(), Gedcom.NOTES       , Images.imgNewNote      , new Relationship.LinkedBy(entity.getProperty(),Gedcom.NOTES)));
+    result.add(new Create(entity.getGedcom(), Gedcom.MULTIMEDIAS , Images.imgNewMedia     , new Relationship.LinkedBy(entity.getProperty(),Gedcom.MULTIMEDIAS)));
+    result.add(new Create(entity.getGedcom(), Gedcom.SOURCES     , Images.imgNewSource    , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SOURCES)));
+    result.add(new Create(entity.getGedcom(), Gedcom.SUBMITTERS  , Images.imgNewSubmitter , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SUBMITTERS)));
+    result.add(new Create(entity.getGedcom(), Gedcom.REPOSITORIES, Images.imgNewRepository, new Relationship.LinkedBy(entity.getProperty(),Gedcom.REPOSITORIES)));
     // add delete
     result.add(ActionDelegate.NOOP);
     result.add(new Delete(entity));
@@ -170,38 +171,37 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    * Create actions for Gedcom
    */
   private void createActions(List result, Gedcom gedcom) {
-    result.add(new CreateFree(gedcom, Gedcom.INDIVIDUALS , Images.imgNewIndi      ));
-    result.add(new CreateFree(gedcom, Gedcom.FAMILIES    , Images.imgNewFam       ));
-    result.add(new CreateFree(gedcom, Gedcom.NOTES       , Images.imgNewNote      ));
-    result.add(new CreateFree(gedcom, Gedcom.MULTIMEDIAS , Images.imgNewMedia     ));
-    result.add(new CreateFree(gedcom, Gedcom.REPOSITORIES, Images.imgNewRepository));
-    result.add(new CreateFree(gedcom, Gedcom.SOURCES     , Images.imgNewSource    ));
-    result.add(new CreateFree(gedcom, Gedcom.SUBMITTERS  , Images.imgNewSubmitter ));
+    result.add(new Create(gedcom, Gedcom.INDIVIDUALS , Images.imgNewIndi      , null));
+    result.add(new Create(gedcom, Gedcom.FAMILIES    , Images.imgNewFam       , null));
+    result.add(new Create(gedcom, Gedcom.NOTES       , Images.imgNewNote      , null));
+    result.add(new Create(gedcom, Gedcom.MULTIMEDIAS , Images.imgNewMedia     , null));
+    result.add(new Create(gedcom, Gedcom.REPOSITORIES, Images.imgNewRepository, null));
+    result.add(new Create(gedcom, Gedcom.SOURCES     , Images.imgNewSource    , null));
+    result.add(new Create(gedcom, Gedcom.SUBMITTERS  , Images.imgNewSubmitter , null));
   }
   
   /**
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi) {
-    result.add(new CreateRelated(indi, PropertyFamilyChild.class, Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Child" ));
-    
-    /*
-    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.child"  , indi));
-    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.parent", indi));
-    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.spouse", indi));
-    */
+    result.add(new Create(indi.getGedcom(), Gedcom.INDIVIDUALS , Images.imgNewIndi, new Relationship.ChildOf(indi)));
+/*    
+    result.add(new Create(indi, Relationship.PARENT , Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Parent"  ));
+    result.add(new Create(indi, Relationship.SPOUSE , Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Partner" ));
+    result.add(new Create(indi, Relationship.SIBLING, Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Sibling" ));
+*/    
   }
   
   /**
    * Create actions for Families
    */
   private void createActions(List result, Fam fam) {
-    result.add(new CreateRelated(fam, PropertyFamilyChild.class, Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Child" ));
-    /*
-    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0 , "new.child"  , fam));
-    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.husband", fam));
-    result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.wife"   , fam));
-    */
+    result.add(new Create(fam.getGedcom(), Gedcom.INDIVIDUALS , Images.imgNewIndi, new Relationship.ChildIn(fam)));
+/*    
+    result.add(new Create(fam, Relationship.CHILD  , Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Child"   ));
+    result.add(new Create(fam, Relationship.PARENT , Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Parent"  ));
+    result.add(new Create(fam, Relationship.SPOUSE , Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Partner" ));
+*/    
   }
   
   /**
@@ -235,7 +235,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     /** the gedcom we're working on */
     protected Gedcom gedcom;
     /** the entity that should receive the focus after creation */
-    protected Entity focus;
+    protected Entity result;
     /**
      * Constructor
      */
@@ -277,7 +277,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       // unlock gedcom
       gedcom.endTransaction();
       // set focus?
-      if (focus!=null) ViewManager.getInstance().setCurrentEntity(focus);
+      if (result!=null) ViewManager.getInstance().setCurrentEntity(result);
       // done
     }
     /**
@@ -287,118 +287,41 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   } //Change
 
   /**
-   * ActionCreate - create an entity
+   * Create- creates an entity
    */
-  private static abstract class Create extends Change { 
-    /** the type that is created */
-    protected int type;
+  private static class Create extends Change{
+    /** the type we're creating */
+    private int type;
+    /** the relationship */
+    private Relationship relationship;
     /**
      * Constructor
      */
-    protected Create(Gedcom ged, int typ, ImgIcon img, String text) {
-      super(ged, img, text);
-      type   = typ;
+    private Create(Gedcom ged, int typ, ImgIcon img, Relationship relatshp) {
+      super(ged, img, resources.getString("new", relatshp==null ? Gedcom.getNameFor(typ, false) : relatshp.getName()));
+      type = typ;
+      relationship = relatshp;
     }
     /**
      * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
      */
     protected String getConfirmMessage() {
       // You are about to create a {0} in {1}!
-      return resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom} );
-    }
-  } //Create
-  
-  /**
-   * CreateStandalone - create a standalone entity
-   */
-  private static class CreateFree extends Create {
-    /**
-     * Constructor
-     */
-    private CreateFree(Gedcom gedcom, int type, ImgIcon img) {
-      super(gedcom, type, img, resources.getString("new", Gedcom.getNameFor(type,false)));
-    }
-    /**
-     * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
-     */
-    protected String getConfirmMessage() {
-      // This entity will not be co ...
-      return super.getConfirmMessage()+'\n'+resources.getString("confirm.new.free");
-    }
-    /**
-     * @see genj.edit.EditViewFactory.Change#change()
-     */
-    protected void change() throws GedcomException {
-      focus = gedcom.createEntity(type, null);
-      focus.getProperty().addDefaultProperties();
-    }
-  } //CreateStandalone 
-  
-  /**
-   * CreateConnected - creates a connected entity
-   */
-  private static class CreateLinked extends Create {
-    /** entity owning the created */
-    private Entity owner;
-    /**
-     * Constructor
-     */
-    private CreateLinked(Entity ownr, int typ, ImgIcon img) {
-      super(ownr.getGedcom(), typ, img, resources.getString("new", Gedcom.getNameFor(typ,false)));
-      owner = ownr;
-    }
-    /**
-     * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
-     */
-    protected String getConfirmMessage() {
-      // This entity will be referenced by a new property {0} in entity {1}.
-      return super.getConfirmMessage() + '\n' + 
-        resources.getString("confirm.new.linked", new String[] { owner.getId(), Gedcom.getTagFor(type) });
-    }
-    /**
-     * @see genj.edit.EditViewFactory.Change#change()
-     */
-    protected void change() throws GedcomException {
-      // create the entity
-      focus = gedcom.createEntity(type, null);
-      focus.getProperty().addDefaultProperties();
+      String about = resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom});
+      // This entity will not be connected ... / This entity will be {0}.
+      String detail = resources.getString(relationship==null?"confirm.new.unrelated":"confirm.new.related", relationship);
       // done
-    }
-  } //CreateLinked
-
-  /**
-   * CreateRelated - creates a connected entity
-   */
-  private static class CreateRelated extends Create {
-    /** the relative */
-    private Entity relative;
-    /** anchor in relative */
-    private Class anchor;
-    /**
-     * Constructor
-     */
-    private CreateRelated(Entity reltive, Class anchr, int typ, ImgIcon img, String text) {
-      super(reltive.getGedcom(), typ, img, text);
-      relative = reltive;
-      anchor = anchr;
-    }
-    /**
-     * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
-     */
-    protected String getConfirmMessage() {
-      // This entity will be {0} of {1}!
-      return super.getConfirmMessage() + '\n' + 
-        resources.getString("confirm.new.related", new String[] { Gedcom.getTagFor(type), relative.getId() });
+      return about + '\n' + detail;
     }
     /**
      * @see genj.edit.EditViewFactory.Change#change()
      */
     protected void change() throws GedcomException {
       // create the entity
-      focus = gedcom.createEntity(type, null);
-      focus.getProperty().addDefaultProperties();
-      // add it to the owner
-      focus.addLink(relative.getProperty(), anchor);
+      result = gedcom.createEntity(type, null);
+      result.getProperty().addDefaultProperties();
+      // perform the relationship
+      if (relationship!=null) relationship.apply(result);
       // done
     }
   } //CreateRelated

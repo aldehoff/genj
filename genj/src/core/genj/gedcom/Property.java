@@ -159,11 +159,8 @@ public abstract class Property implements Comparable {
     new MetaDefinition("ABBR","GenericAttribute") ,
     new MetaDefinition("PUBL","GenericAttribute") ,
 
-    // Adding this line seems like the right this to do, but, if I do it, then
-    // my test file does not load. It dies in PropertyRepository.link() in
-    // the new() or the adding of the foriegnXRef. -jch
-    //    new MetaDefinition("REPO","Repository"    ,new String[]{"NAME"}) ,
-    new MetaDefinition("REPO","GenericAttribute") ,
+    // Repository
+    new MetaDefinition("REPO","Repository"    ,new String[]{"NAME"}) ,
   };
 
   /**
