@@ -3,6 +3,7 @@ package genj.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +113,25 @@ public class ReferenceSet {
    * Return all values
    */
   public List getValues() {
-    return new ArrayList(key2references.keySet());
+    return getValues(true);
+  }
+
+  /**
+   * Return all values
+   * @param sortByKeyOrCount
+   */
+  public List getValues(boolean sortByKeyOrCount) {
+    ArrayList result = new ArrayList(key2references.keySet()); 
+    if (sortByKeyOrCount) 
+      Collections.sort(result);
+    else 
+      Collections.sort(result, new Comparator() {
+        public int compare(Object o1, Object o2) {
+          return getCount(o1) - getCount(o2);
+        }
+      });
+      
+    return result;
   }
 
 
