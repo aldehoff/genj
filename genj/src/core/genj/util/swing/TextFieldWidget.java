@@ -110,7 +110,7 @@ public class TextFieldWidget extends JTextField {
   protected void processFocusEvent(FocusEvent e) {
     if (e.getID()==FocusEvent.FOCUS_GAINED) {
       if (isTemplate) {
-        setText("");
+        selectAll();
         isTemplate = false;
       }
       if (isSelectAllOnFocus) {
