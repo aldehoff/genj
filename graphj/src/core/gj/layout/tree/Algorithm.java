@@ -26,7 +26,9 @@ import gj.util.ModelHelper;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
@@ -172,9 +174,13 @@ import java.util.Stack;
     placeChildrenRelative2Parent(node, parent);
 
     // The result is a hull comprised of root's and children's hull
-    Contour result = Contour.merge(
-      new Contour.List(children.length+2).add(root).add(children).add(root)
-    );
+    List l = new ArrayList(); 
+      l.add(root);
+      for (int i=0; i<children.length; i++) {
+      	l.add(children[i]);
+      } 
+      l.add(root);
+    Contour result = Contour.merge((Contour[])l.toArray(new Contour[0]));
      
     // If another layout was used to create the contour result
     if (toggleOrientation) {
@@ -562,5 +568,6 @@ import java.util.Stack;
       return original.getPadding(node, dir, o);
     }
   } //ToggleAlignment
+
 
 } //NodeLayout

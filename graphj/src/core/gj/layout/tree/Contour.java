@@ -75,34 +75,34 @@ package gj.layout.tree;
   /**
    * Merge
    */    
-  /*package*/ static Contour merge(List contours) {
+  /*package*/ static Contour merge(Contour[] contours) {
     
     // validity check?
-    if (contours.size==0)
+    if (contours.length==0)
       throw new IllegalArgumentException("zero-length list n/a");
       
     // performance improvement ? 
     // - one-size list is trivial
     // - two-size list with [0]==[1] is trivial
-    if (contours.size==1||(contours.size==2&&contours.items[0]==contours.items[1]))
-      return contours.items[0];
+    if (contours.length==1||(contours.length==2&&contours[0]==contours[1]))
+      return contours[0];
       
     // create a new result
     Contour result = new Contour(Double.NaN, Double.MAX_VALUE, -Double.MAX_VALUE, Double.NaN);
 
     // prepare some data
     int demand = 0;
-    for (int c=0;c<contours.size;c++) {
-      if (contours.items[c].size==null) demand+=2;
-      else demand+=Math.max(contours.items[c].size[EAST],contours.items[c].size[WEST]);
+    for (int c=0;c<contours.length;c++) {
+      if (contours[c].size==null) demand+=2;
+      else demand+=Math.max(contours[c].size[EAST],contours[c].size[WEST]);
     }
     result.data = new double[2][demand];
     result.size = new int[2];
     
     // take east
-    east: for (int c=contours.size-1;c>=0;c--) {
-      Iterator it = contours.items[c].getIterator(EAST);
-      if (c==contours.size-1) result.north = it.north;
+    east: for (int c=contours.length-1;c>=0;c--) {
+      Iterator it = contours[c].getIterator(EAST);
+      if (c==contours.length-1) result.north = it.north;
       else while (it.south<=result.south) if (!it.next()) continue east;
       do {
         result.east = Math.max(result.east,it.longitude);
@@ -114,8 +114,8 @@ package gj.layout.tree;
     result.size[EAST]--;
     
     // take west
-    west: for (int c=0;c<contours.size;c++) {
-      Iterator it = contours.items[c].getIterator(WEST);
+    west: for (int c=0;c<contours.length;c++) {
+      Iterator it = contours[c].getIterator(WEST);
       if (c==0) result.north = it.north;
       else while (it.south<=result.south) if (!it.next()) continue west;
       do {
@@ -211,44 +211,5 @@ package gj.layout.tree;
       
   } //ContourIterator
 
-  /** 
-   * List
-   */
-  /*package*/ static class List {
-    
-    /** the items */
-    /*package*/ Contour[] items;
-    
-    /** the size */
-    /*package*/ int size;
-    
-    /**
-     * Constructor
-     */
-    /*package*/ List(int maxSize) {
-      items = new Contour[maxSize];
-      size = 0;
-    }
-    
-    /**
-     * add
-     */
-    /*package*/ List add(Contour c) {
-      items[size++] = c;
-      return this;
-    }
-    
-    /**
-     * add
-     */
-    /*package*/ List add(Contour[] cs) {
-      System.arraycopy(cs,0,items,size,cs.length);
-      size+=cs.length;
-      return this;
-    }
-    
-  } //ChildList
-
-
-}
+} //Contour
 
