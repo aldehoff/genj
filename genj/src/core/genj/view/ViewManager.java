@@ -384,7 +384,6 @@ public class ViewManager {
     }
 
     // items for property
-  /*
     if (property!=null) {
       List actions = getActions(property);
       if (!actions.isEmpty()) {
@@ -393,7 +392,7 @@ public class ViewManager {
         mh.popMenu();
       }
     }
-  */    
+    
     // items for entity
     if (entity!=null) {
       List actions = getActions(entity);

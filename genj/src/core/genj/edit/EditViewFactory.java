@@ -125,12 +125,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     // create the actions
     List result = new ArrayList();
     // one dummy
-    ActionDelegate ad = new ActionDelegate() {
-      protected void execute() {
-      }
-    };
-    ad.setText("Foo");
-    result.add(ad);
+    result.add(new Create(property.getGedcom(), Gedcom.NOTES, new Relationship.LinkedBy(property,Gedcom.NOTES)));
     // done
     return result;
   }
@@ -230,14 +225,14 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
      */
     protected void execute() {
       EditView.preselectEntity = candidate;
-      EditView ev = (EditView)ViewManager.getInstance().openView(EditViewFactory.this, candidate.getGedcom());
+      ViewManager.getInstance().openView(EditViewFactory.this, candidate.getGedcom());
     }
   }
   
   /**
    * ActionChange - change the gedcom information
    */
-  private static abstract class Change extends ActionDelegate {
+  private abstract class Change extends ActionDelegate {
     /** the gedcom we're working on */
     protected Gedcom gedcom;
     /** the entity that should receive the focus after creation */
@@ -283,7 +278,15 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       // unlock gedcom
       gedcom.endTransaction();
       // set focus?
-      if (result!=null) ViewManager.getInstance().setCurrentEntity(result);
+      if (result!=null) {
+        // no editor open?
+        if (ViewManager.getInstance().getOpenViews(EditView.class).isEmpty()) {
+          EditView.preselectEntity = result;
+          ViewManager.getInstance().openView(EditViewFactory.this, gedcom);
+        }
+        // set current        
+        ViewManager.getInstance().setCurrentEntity(result);
+      }
       // done
     }
     /**
@@ -295,7 +298,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * Create- creates an entity
    */
-  private static class Create extends Change{
+  private class Create extends Change{
     /** the type we're creating */
     private int type;
     /** the relationship */
@@ -335,7 +338,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * ActionDelete - delete an entity
    */  
-  private static class Delete extends Change {
+  private class Delete extends Change {
     /** the candidate to delete */
     private Entity candidate;
     /**
