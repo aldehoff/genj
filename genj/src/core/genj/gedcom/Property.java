@@ -74,33 +74,9 @@ public abstract class Property implements Comparable {
   public int compareTo(Object o) {
     // safety check
     if (!(o instanceof Property)) throw new ClassCastException("compareTo("+o+")");
-    // entity?
-    if (this instanceof Entity) {
-      try {
-        return getComparableId(((Entity)this).getId()) - getComparableId(((Entity)o).getId()); 
-      } catch (NumberFormatException e) {
-      }
-    }
     return getValue().compareTo(((Property)o).getValue());
   }
   
-  /**
-   * Helper that creates an int (comparable) out of a entity ID
-   */
-  private int getComparableId(String id) throws NumberFormatException {
-    
-    int 
-      start = 0,
-      end   = id.length()-1;
-      
-    while (start<=end&&!Character.isDigit(id.charAt(start))) start++;
-    while (end>=start&&!Character.isDigit(id.charAt(end))) end--;
-
-    if (end<start) throw new NumberFormatException();
-         
-    return Integer.parseInt(id.substring(start, end+1));
-  }
-
   /**
    * Method for notifying being removed from parent property
    */

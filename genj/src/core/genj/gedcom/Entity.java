@@ -125,4 +125,34 @@ public abstract class Entity extends Property {
   public void setValue(String value) {
   }
 
+  /**
+   * @see genj.gedcom.Property#compareTo(java.lang.Object)
+   */
+  public int compareTo(Object o) {
+    try {
+      Entity other = (Entity)o;
+      return getID() - other.getID(); 
+    } catch (Throwable t) {
+    }
+    return super.compareTo(o);
+  }
+
+  /**
+   * Returns a comparable id
+   */
+  private int getID() throws NumberFormatException {
+    
+    int 
+      start = 0,
+      end   = id.length()-1;
+      
+    while (start<=end&&!Character.isDigit(id.charAt(start))) start++;
+    while (end>=start&&!Character.isDigit(id.charAt(end))) end--;
+
+    if (end<start) throw new NumberFormatException();
+         
+    return Integer.parseInt(id.substring(start, end+1));
+  }
+
+
 } //Entity
