@@ -74,7 +74,9 @@ public class BlueprintManager {
       // .. found! return
       if (bp.getName().equals(name)) return bp;   	
     }
-    // not found! create a dummy
+    // not found! try first
+    if (!bps.isEmpty()) return (Blueprint)bps.get(0);
+    // create a dummy
     return new Blueprint(name, Gedcom.getNameFor(type, false));
   }
   

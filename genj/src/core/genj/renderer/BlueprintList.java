@@ -52,6 +52,9 @@ import javax.swing.tree.TreeSelectionModel;
  * A list of editable BluePrints */
 public class BlueprintList extends JSplitPane {
   
+  /** selection of blueprints */
+  private Blueprint[] selection = new Blueprint[Gedcom.NUM_TYPES];
+  
   /** we keep one editor */
   private BlueprintEditor editor = new BlueprintEditor();
 
@@ -66,6 +69,9 @@ public class BlueprintList extends JSplitPane {
  
   /** the current Gedcom */
   private Gedcom gedcom; 
+  
+  /** a reference to the BlueprintManager */
+  private final static BlueprintManager bpManager = BlueprintManager.getInstance();
   
   /**
    * Constructor   */
@@ -102,6 +108,19 @@ public class BlueprintList extends JSplitPane {
     setLeftComponent(left);
     setRightComponent(editor);
     // done    
+  }
+  
+  /**
+   * Acessor - selection   */
+  public Blueprint[] getSelection() {
+    return selection;
+  }
+  
+  /**
+   * Acessor - selection
+   */
+  public void setSelection(Blueprint[] selEction) {
+    selection = selEction;
   }
   
   /**
@@ -193,9 +212,12 @@ public class BlueprintList extends JSplitPane {
         return label;
       }
       // a blueprint!
+      Blueprint blueprint = (Blueprint)value;
+      int type = bpManager.getType(blueprint);
       button.setOpaque(selected);
       button.setBackground(cSelection);
-      button.setText(((Blueprint)value).getName());
+      button.setText(blueprint.getName());
+      button.setSelected(selection[type]==blueprint);
       // done
       return button; 
     }
@@ -215,11 +237,17 @@ public class BlueprintList extends JSplitPane {
       
       // different Blueprint selected -> o.k.
       if (e.getPath().getLastPathComponent() instanceof Blueprint) {
+        Blueprint blueprint = (Blueprint)e.getPath().getLastPathComponent();
+        // .. selection
+        int type = bpManager.getType(blueprint);
+        selection[type] = blueprint;
+        // .. gotta repaint for old
+        treeBlueprints.repaint();
         // .. buttons
         bAdd.setEnabled(true);
         bDel.setEnabled(true);
         // .. editor
-        editor.set(gedcom, (Blueprint)e.getPath().getLastPathComponent());
+        editor.set(gedcom, blueprint);
         return;
       }
       
@@ -248,7 +276,7 @@ public class BlueprintList extends JSplitPane {
     public Object getChild(Object parent, int index) {
       // us as root?
       if (parent==this) {
-        return new TypeList(index, BlueprintManager.getInstance().getBlueprints(index));
+        return new TypeList(index, bpManager.getBlueprints(index));
       }
       // can only be list
       return ((List)parent).get(index); 
@@ -302,7 +330,6 @@ public class BlueprintList extends JSplitPane {
      * a list for a type     */
     private class TypeList extends ArrayList {
       int type;
-      int selection = 0;
       TypeList(int tYpe, List list) { super(list); type=tYpe; }
       public boolean equals(Object o) { return this==o; }
     } //TypeList

@@ -152,6 +152,8 @@ public class BlueprintEditor extends Box {
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
     protected void paintComponent(Graphics g) {
+      // no html doing nothing
+      if (html.getText().length()==0) return; 
       // fix bounds (border changes insets)
       Rectangle bounds = getBounds();
       Insets insets = getInsets();
@@ -160,10 +162,11 @@ public class BlueprintEditor extends Box {
       bounds.width -= insets.left+insets.right;
       bounds.height-= insets.top +insets.bottom;
       // clear background
-      g.setColor(html.getText().length()==0 ? getBackground() : Color.white);
+      g.setColor(Color.white);
       g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
       // render content
       new EntityRenderer(g, new Blueprint("",html.getText())).render(g, example, bounds);
+      // done
     }
   } //Preview
 

@@ -143,10 +143,16 @@ public class EntityRenderer {
     root.setSize((float)r.getWidth(),(float)r.getHeight());
     
     // clip it
+    Rectangle oc = g.getClipBounds();
     g.clipRect(r.x,r.y,r.width,r.height);
     
     // show it
     root.paint(g, r);
+    
+    // restore clip
+    g.setClip(oc.x,oc.y,oc.width,oc.height);
+    
+    // done
   }
   
   /**
