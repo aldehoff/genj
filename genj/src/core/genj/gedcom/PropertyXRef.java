@@ -250,7 +250,7 @@ public abstract class PropertyXRef extends Property {
    * @see genj.gedcom.Property#getMetaProperties(int)
    */
   public MetaProperty[] getMetaProperties(int filter) {
-    return super.getMetaProperties(MetaProperty.FILTER_XREF);
+    return super.getMetaProperties(MetaProperty.FILTER_XREF|filter);
   }
   
   /**
