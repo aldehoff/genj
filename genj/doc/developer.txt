@@ -86,7 +86,8 @@ USING AN IDE
   -Dgenj.report.dir=[report_folder]           where the reports are loaded from
   -Dgenj.help.dir=[help_folder]               where the help is loaded from
   -Dgenj.gedcom.dir=[gedcom_folder]           where the file-dialog for opening files starts
- 
+  -Dgenj.debug.file=[log-file]                where debugging statements are routed to
+  
  Here's an example:
  
   java -Duser.home=d:\nils -Dgenj.gedcom.dir=d:\nils\gedcoms genj.App
