@@ -104,6 +104,7 @@ class ProxyMLE extends Proxy implements DocumentListener {
     }
     tarea = new JTextArea(value,6,20);
     tarea.setLineWrap(true);
+    tarea.setWrapStyleWord(true);
     tarea.getDocument().addDocumentListener(this);
 
     JScrollPane spane = new JScrollPane(tarea);
