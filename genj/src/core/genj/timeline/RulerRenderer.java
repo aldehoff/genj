@@ -19,8 +19,8 @@
  */
 package genj.timeline;
 
-import genj.almanac.Event;
 import genj.almanac.Almanac;
+import genj.almanac.Event;
 import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
 import genj.util.swing.UnitGraphics;
@@ -31,7 +31,7 @@ import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * A renderer knowing how to render a ruler for the timeline
@@ -82,25 +82,18 @@ public class RulerRenderer extends ContentRenderer {
    * Renders CDay event markers
    */
   private void renderEvents(UnitGraphics g, double from, double to) {
-    
     g.setColor(cTimespan);
     Rectangle2D clip = g.getClip();
     int 
     	fromYear = (int)Math.floor(clip.getX()),
   		toYear   = (int)Math.ceil (clip.getMaxX());
     
-    Almanac cday = Almanac.getInstance();
-    List events = cday.getEvents();
-    for (int i=cday.getStartIndex(fromYear);i<events.size();i++) {
-      Event event = (Event)events.get(i);
+    Iterator almanac = Almanac.getInstance().getEvents(fromYear, toYear);
+    while (almanac.hasNext()) {
+      Event event = (Event)almanac.next();
       PointInTime time = event.getTime();
-      double year = time.getYear();
-      if (year<fromYear)
-        continue;
-      if (year>toYear)
-        break;
       try {
-        year = Model.toDouble(time, false);
+        double year = Model.toDouble(time, false);
         g.draw(eventMark, year, 0, false);
       } catch (GedcomException e) {
       }

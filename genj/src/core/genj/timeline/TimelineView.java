@@ -21,6 +21,7 @@ package genj.timeline;
 
 import genj.almanac.Almanac;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.time.PointInTime;
 import genj.util.Registry;
@@ -363,7 +364,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
   /**
    * The ruler 'at the top'
    */
-  private class Ruler extends JComponent implements MouseMotionListener {
+  private class Ruler extends JComponent implements MouseMotionListener, ChangeListener {
     
     /**
      * init on add
@@ -374,6 +375,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       // register for tooltips
       ToolTipManager.sharedInstance().registerComponent(this);
       addMouseMotionListener(this);
+      Almanac.getInstance().addChangeListener(this);
     }
     
     /**
@@ -383,8 +385,16 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       // un-register for tooltips
       ToolTipManager.sharedInstance().unregisterComponent(this);
       removeMouseMotionListener(this);
+      Almanac.getInstance().removeChangeListener(this);
       // continue with super
       super.removeNotify();
+    }
+    
+    /**
+     * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
+     */
+    public void stateChanged(ChangeEvent e) {
+      repaint();
     }
     
     /**
@@ -431,19 +441,22 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       // calculate year FIXME this isn't accurate yet
       double year = pixel2year(e.getPoint().x);
       // calculate time and days around it
-      PointInTime when = model.toPointInTime(year);
+      PointInTime when = Model.toPointInTime(year);
       int days = (int)Math.ceil(5F/DPC.getX()/cmPerYear*365);
       // collect events and their text
-      Iterator it = Almanac.getInstance().getEvents(when, days).iterator();
       WordBuffer text = new WordBuffer();
-      if (it.hasNext()) {
-	      text.append("<html><body>");
-	      for (int i=0;i<10&&it.hasNext();i++) {
-	        text.append("<div>");
-	        text.append(it.next());
-	        text.append("</div>");
+      try {
+	      Iterator almanac = Almanac.getInstance().getEvents(when, days);
+	      if (almanac.hasNext()) {
+		      text.append("<html><body>");
+		      for (int i=0;i<10&&almanac.hasNext();i++) {
+		        text.append("<div>");
+		        text.append(almanac.next());
+		        text.append("</div>");
+		      }
+		      text.append("</body></html>");
 	      }
-	      text.append("</body></html>");
+      } catch (GedcomException ex) {
       }
       // set tooltip
       setToolTipText(text.length()==0 ? null : text.toString());
