@@ -21,13 +21,12 @@ import genj.util.ReferenceSet;
 
 import java.util.Iterator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.text.NumberFormat;
 
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.35 2003-10-14 17:02:05 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.36 2003-10-15 22:53:06 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
