@@ -212,7 +212,7 @@ public class Delta implements Comparable {
     WordBuffer buffer = new WordBuffer();
     if (years >0) buffer.append(years+"y");
     if (months>0) buffer.append(months+"m");
-    if (days  >0) buffer.append(days +"d");
+    if (days  >=0) buffer.append(days +"d");
     return buffer.toString();
   }
   
