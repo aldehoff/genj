@@ -414,8 +414,8 @@ public class ReportHTMLSheets extends Report {
     while (it.hasNext()) {
       // create new name class (first char) if necessary
       String name = it.next().toString();
-      if (name.length()>0&&name.charAt(0)!=last) {
-        last = name.charAt(0);
+      if (name.length()>0&&Character.toUpperCase(name.charAt(0))!=last) {
+        last = Character.toUpperCase(name.charAt(0));
         out.println("</p>");
         out.println("<p class=firstchar>"+last+"</p>");
         out.println("<p class=names>");
