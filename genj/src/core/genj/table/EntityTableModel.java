@@ -43,12 +43,6 @@ import javax.swing.table.TableColumnModel;
  */
 /*package*/ class EntityTableModel extends AbstractTableModel implements GedcomListener, SortableTableHeader.SortableTableModel {
   
-  /** the sorted column */
-  private int sortColumn = -1;
-  
-  /** whether sorting is ascending/descending */
-  private int sortOrder = 1;
-  
   /** the gedcom we're looking at */
   private Gedcom gedcom;
   
@@ -138,8 +132,6 @@ import javax.swing.table.TableColumnModel;
     filter = filters[entity];
     // build data
     prepareRows();
-    // no sorting
-    sortColumn = -1;
     // propagate
     fireTableStructureChanged();
   }
@@ -195,11 +187,7 @@ import javax.swing.table.TableColumnModel;
    * Sorts the rows
    */
   private void sortRows() {
-    // only if column is fine
-    if (sortColumn<0||sortColumn>=getColumnCount()) 
-      return;
-    // do it
-    Arrays.sort(rows, new RowComparator());
+    Arrays.sort(rows, filter);
   }
   
   /**
@@ -238,14 +226,14 @@ import javax.swing.table.TableColumnModel;
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#getSortedColumn()
    */
   public int getSortedColumn() {
-    return sortColumn;
+    return filter.sortColumn;
   }
 
   /**
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#isAscending()
    */
   public boolean isAscending() {
-    return sortOrder==1;
+    return filter.sortOrder==1;
   }
 
   /**
@@ -253,8 +241,8 @@ import javax.swing.table.TableColumnModel;
    */
   public void setSortedColumn(int col, boolean ascending) {
     // remember
-    sortColumn = col;
-    sortOrder = ascending?1:-1;
+    filter.sortColumn = col;
+    filter.sortOrder  = ascending?1:-1;
     // sort
     sortRows();
     // notify
@@ -313,13 +301,14 @@ import javax.swing.table.TableColumnModel;
   /**
    * A Filter filters the entities we have in the model
    */
-  private class Filter {
+  private class Filter implements Comparator {
     /** attributes */
     ImageIcon image;
     int type;
     String[] defaults;
     TagPath[] paths;
     int[] widths;
+    int sortColumn, sortOrder;
     /** constructor */
     Filter(int t, String[] d) {
       // remember
@@ -328,16 +317,13 @@ import javax.swing.table.TableColumnModel;
       paths    = calcPaths(defaults);
       widths   = new int[paths.length];
     }
-  } //Filter
-  
-  /** 
-   * A comparator for our rows in the grid
-   */
-  private class RowComparator implements Comparator {
     /**
      * @see java.util.Comparator#compare(Object, Object)
      */
     public int compare(Object o1, Object o2) {
+      // only if column is fine
+      if (sortColumn<0||sortColumn>=paths.length) 
+        return 0;
       // here's the rows
       Property[] 
         row1 = ((Row)o1).getColumns(),
@@ -352,6 +338,6 @@ import javax.swing.table.TableColumnModel;
       // let property decide
       return row1[sortColumn].compareTo(row2[sortColumn]) * sortOrder;
     }
-  } //RowComparator
+  } //Filter
   
 } //TableModel
