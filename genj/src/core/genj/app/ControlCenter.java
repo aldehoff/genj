@@ -345,7 +345,7 @@ public class ControlCenter extends JPanel {
       } catch (GedcomFormatException ex) {
         error = App.resources.getString("cc.open.format_error",""+ex.getLine())+":\n"+ex.getMessage();
       }
-      sync();
+      sync2EDT();
     }
   } //ActionRead
 
