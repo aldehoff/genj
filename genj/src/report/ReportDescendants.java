@@ -118,21 +118,8 @@ public class ReportDescendants implements Report {
       return false;
     }
     
-    // Let's ask the user for a details-html directory
-    String detailsUrl = bridge.getValueFromUser(
-      "Enter the path to output directory of report 'Applet Details' if applicable.\n"+
-      "This information is used for hyperlinks in the output.\n"+
-      "Example: ./details",
-      new String[0],
-      "report.descendents.details"
-    );
-
-    if ((detailsUrl!=null)&&(!detailsUrl.endsWith("/"))) {
-      detailsUrl += '/';
-    }
-
     // Display the descendants
-    iterate(bridge, indi, 1, detailsUrl==null?null:new File(detailsUrl));
+    iterate(bridge, indi, 1);
     
     // Done
     return true;
@@ -141,10 +128,10 @@ public class ReportDescendants implements Report {
   /**
    * Iterates over descendants
    */
-  private void iterate(ReportBridge bridge, Indi indi, int level, File detailsFolder) {
+  private void iterate(ReportBridge bridge, Indi indi, int level) {
     
     // Here comes the individual
-    bridge.println(getIndent(level)+level+" "+format(indi, detailsFolder));
+    bridge.println(getIndent(level)+level+" "+format(indi));
     
     // And we loop through its families
     int fcount = indi.getNoOfFams();
@@ -155,14 +142,14 @@ public class ReportDescendants implements Report {
       Indi spouse= fam.getOtherSpouse(indi);
       
       // .. a line for the spouse
-      bridge.println(getIndent(level) +"  + "+ format(spouse, detailsFolder));
+      bridge.println(getIndent(level) +"  + "+ format(spouse));
       
       // .. and all the kids
       Indi[] children = fam.getChildren();
       for (int c = 0; c < children.length; c++) {
         
         // do the recursive step
-        iterate(bridge, children[c], level+1, detailsFolder);
+        iterate(bridge, children[c], level+1);
         
         // .. next child
 			}
@@ -174,7 +161,7 @@ public class ReportDescendants implements Report {
   /**
    * resolves the information of one Indi
    */
-  private String format(Indi indi, File detailsFolder) {
+  private String format(Indi indi) {
     
     // Might be null
     if (indi==null) {
@@ -185,10 +172,6 @@ public class ReportDescendants implements Report {
     String n = indi.getName();
     if (Property.isEmptyOrNull(n)) {
       n = "?";
-    } else {
-      if (detailsFolder!=null) {
-        n = "<a href=\""+ReportAppletDetails.getFileForEntity(detailsFolder,indi)+"\">"+n+"</a>";
-      }
     }
     
     // birth?
@@ -206,6 +189,8 @@ public class ReportDescendants implements Report {
     // here's the result 
     return n + b + d;
     
+    // FIXME
+    //return "<a href=\"\">" + indi.getName() + "</a>" + b + d;
   }
   
   /**
