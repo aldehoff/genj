@@ -20,6 +20,8 @@
 package genj.util;
 
 import java.awt.Color;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +31,9 @@ import java.util.Map;
  * A color set is a logical group of a color and named sub-colors
  */
 public class ColorSet {
+  
+  /** property change support */
+  private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
   /** main key */
   private String key;
@@ -119,9 +124,26 @@ public class ColorSet {
     // check-colors?
     for (int i=0; i<keys.size(); i++) {
       Color old = getColor(i);
-      if (old==c) setColor(i, s);
+      if (old==c) {
+        setColor(i, s);
+        changeSupport.firePropertyChange(getName(i), old, s);
+      } 
     }
     // done
+  }
+  
+  /**
+   * Add listener
+   */
+  public void addPropertyChangeListener(PropertyChangeListener l) {
+    changeSupport.addPropertyChangeListener(l);
+  }
+  
+  /**
+   * Remove listener
+   */
+  public void removePropertyChangeListener(PropertyChangeListener l) {
+    changeSupport.removePropertyChangeListener(l);
   }
   
   /**

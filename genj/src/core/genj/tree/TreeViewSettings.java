@@ -191,7 +191,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     view.setAdjustFonts(checkAdjustFonts.isSelected());
     view.setContentFont(fontChooser.getSelectedFont());
     // colors
-    colors.apply(); //FIXME we shouldn't have to call repaint
+    colors.apply();
     // metrics
     view.getModel().setMetrics(new TreeMetrics(
       (float)sliderCmIndiWidth .getValue(),
@@ -202,8 +202,6 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     ));
     // blueprints
     view.setBlueprints(blueprintList.getSelection());
-    // make sure that shows
-    view.repaint();
     // done
   }
 

@@ -60,6 +60,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -147,6 +149,11 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     
     // grab colors
     colors = new ColorSet("content", Color.white, resources, registry);
+    colors.addPropertyChangeListener(new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent evt) {
+        repaint();
+      }
+    });
     colors.add("indis"  , Color.black);
     colors.add("fams"   , Color.darkGray);
     colors.add("arcs"   , Color.blue);

@@ -129,13 +129,14 @@ public class PropertyRenderer {
     }
     // image?
     if (isImage(preference)) {
-      // FIXME resize to character size when resolution is set
       result.width += img.getIconWidth() + metrics.charWidth(' ');
       result.height = Math.max(result.height, img.getIconHeight());
     }
     // done
     return result;
   }
+
+  // FIXME resize IMAGE to character size when resolution is set
   
   /**
    * Implementation for rendering img/txt 
@@ -152,7 +153,6 @@ public class PropertyRenderer {
    * Implementation for rendering img
    */
   protected void render(Graphics g, Rectangle bounds, ImageIcon img, Point2D.Float resolution) {
-    // FIXME resize to character size when resolution is set
     img.paintIcon(g,bounds.x,bounds.y+(bounds.height-img.getIconHeight())/2);
     int skip = img.getIconWidth() + g.getFontMetrics().charWidth(' ');
     bounds.x += skip;
@@ -317,12 +317,13 @@ public class PropertyRenderer {
    * File
    */
   /*package*/ static class File extends PropertyRenderer {
+
+  // FIXME resize FILE according to resolution when set
   
     /**
      * size override 
      */
     public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point2D.Float resolution) {
-      // FIXME resize according to resolution when set
       ImageIcon img = getImage(prop, preference);
       if (img==null) return EMPTY_DIM; 
       return new Dimension(img.getIconWidth(), img.getIconHeight());
@@ -332,7 +333,6 @@ public class PropertyRenderer {
      * render override
      */
     public void render(Graphics g, Rectangle bounds, Property prop, int preference, Point2D.Float resolution) {
-      // FIXME resize according to resolution when set
       // grab the image
       ImageIcon img = getImage(prop, preference);
       if (img==null) return;
