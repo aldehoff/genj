@@ -133,15 +133,15 @@ public class TableViewSettings extends JPanel implements Settings {
    */
   public void reset() {
 
-    // Reflect shown type
-    cTypes.setSelectedIndex(table.getType());
+    // don't set something that's ok already - otherwise another reset() is triggered
+    if (cTypes.getSelectedIndex()!=table.getType()) 
+      cTypes.setSelectedIndex(table.getType());
 
     // Reflect columns by TagPaths
     TagPath[] selectedPaths = table.getPaths(table.getType());
     TagPath[] usedPaths     = TagPath.filter(MetaProperty.getPaths(Property.class), table.getType());
 
     pathTree.setPaths(usedPaths, selectedPaths);
-
     pathList.setPaths(selectedPaths);
 
     // Done
