@@ -63,9 +63,9 @@ class Quadrant extends Container {
 
     // Make sure we do not react to our own layout change
     // during updateView
-    if (suppressInvalidate)
+    if (suppressInvalidate) {
       return;
-
+    }
     super.invalidate();
 
   }

@@ -23,6 +23,8 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 
+import javax.swing.SwingUtilities;
+
 import awtx.scroll.*;
 
 /**
@@ -244,13 +246,15 @@ public class Scrollpane extends Container {
     layout operations which fails in ComboBox.getPreferredSize()
     which calls _dependant.getPreferredSize() which is in an
     instable state at that point
-    
+  */    
   public void invalidate() {
     super.invalidate();
-    doLayout();
-    validate();
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {validate(); }//doLayout();}
+    });
+    
+    
   }
-  */
 
   /**
    * Makes sure that a given point is visible
