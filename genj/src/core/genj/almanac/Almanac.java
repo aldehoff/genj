@@ -266,7 +266,7 @@ public class Almanac {
       int year  = Integer.parseInt(date.substring(0, 4));
       int month = date.length()>=6 ? Integer.parseInt(date.substring(4, 6)) : 0;
       int day   = date.length()>=8 ? Integer.parseInt(date.substring(6, 8)) : 0;
-      PointInTime time = new PointInTime(day, month, year);
+      PointInTime time = new PointInTime(day-1, month-1, year);
       if (!time.isValid())
         return null;
       // #2 date
