@@ -38,43 +38,45 @@ public class PropertyTreeModel implements TreeModel {
    * Constructor
    */
   public PropertyTreeModel(Property root) {
-
-  this.root = root;
+    this.root = root;
   }          
+  
   /**
    * Adds a listener to this model
    */
   public void addTreeModelListener(TreeModelListener l) {
-  listeners.addElement(l);
+    listeners.addElement(l);
   }          
+  
   /**
    * Signals to listeners that properties have changed
    */
   public void firePropertiesChanged(Vector props) {
 
-  // Do it for all changed properties
-  Enumeration e = props.elements();
-  while (e.hasMoreElements()) {
-
-    // .. use property
-    Property prop = (Property)e.nextElement();
-
-    // .. build event
-    Object path[] = root.getPathTo(prop);
-    if (path==null)
-    continue;
-
-    TreeModelEvent ev = new TreeModelEvent(this,path);
-
-    // .. tell it to all listeners
-    Enumeration elisteners = listeners.elements();
-    while (elisteners.hasMoreElements()) {
-    ((TreeModelListener)elisteners.nextElement()).treeNodesChanged(ev);
+    // Do it for all changed properties
+    Enumeration e = props.elements();
+    while (e.hasMoreElements()) {
+  
+      // .. use property
+      Property prop = (Property)e.nextElement();
+  
+      // .. build event
+      Object path[] = root.getPathTo(prop);
+      if (path==null)
+        continue;
+  
+      TreeModelEvent ev = new TreeModelEvent(this,path);
+  
+      // .. tell it to all listeners
+      Enumeration elisteners = listeners.elements();
+      while (elisteners.hasMoreElements()) {
+        ((TreeModelListener)elisteners.nextElement()).treeNodesChanged(ev);
+      }
+  
+      // .. next changed property
     }
-
-    // .. next changed property
-  }
   }          
+  
   /**
    * Signals to listeners that structure has changed
    */
@@ -86,63 +88,61 @@ public class PropertyTreeModel implements TreeModel {
     // .. tell it to all listeners
     Enumeration elisteners = listeners.elements();
     while (elisteners.hasMoreElements()) {
-    ((TreeModelListener)elisteners.nextElement()).treeStructureChanged(ev);
+      ((TreeModelListener)elisteners.nextElement()).treeStructureChanged(ev);
     }
-
   }          
+  
   /**
    * Returns child by index of parent
    */
   public Object getChild(Object parent, int index) {
-
-  Property prop = (Property)parent;
-  return prop.getProperty(index);
-  
+    Property prop = (Property)parent;
+    return prop.getProperty(index);
   }          
+  
   /**
    * Returns child count of parent
    */
   public int getChildCount(Object parent) {
-
-  Property prop = (Property)parent;
-  return prop.getNoOfProperties();
-  
+    Property prop = (Property)parent;
+    return prop.getNoOfProperties();
   }          
+  
   /**
    * Returns index of given child from parent
    */
   public int getIndexOfChild(Object parent, Object child) {
 
-  // Calculate index by fiven parent property
-  int index = ((Property)parent).getIndexOf((Property)child);
-
-  // This is zero-based
-  return index-1;
+    // Calculate index by fiven parent property
+    int index = ((Property)parent).getIndexOf((Property)child);
   
+    // This is zero-based
+    return index-1;
+    
   }          
+  
   /**
    * Returns root of tree
    */
   public Object getRoot() {
-
-  return root;
+    return root;
   }          
+  
   /**
    * Tells wether object is a leaf
    */
   public boolean isLeaf(Object node) {
-
-  Property prop = (Property)node;
-  return prop.getNoOfProperties()==0;
-  
+    Property prop = (Property)node;
+    return prop.getNoOfProperties()==0;
   }          
+  
   /**
    * Removes a Listener from this model
    */
   public void removeTreeModelListener(TreeModelListener l) {
-
-  listeners.removeElement(l);
+    listeners.removeElement(l);
   }          
+  
   /**
    * Changes a object at given path (not used here)
    */

@@ -90,7 +90,7 @@ public class Images {
       props.load(getClass().getResourceAsStream("meta.properties"));
     } catch(IOException e) {
       throw new Error("Couldn't initialize gedcom.Images because of "+e.getClass().getName()+"#"+e.getMessage());
-		}
+    }
     
     // loop
     Hashtable result = new Hashtable(props.size());
@@ -99,10 +99,12 @@ public class Images {
       String  key = (String)keys.nextElement();
       String  val = props.getProperty(key);
       try {
+        System.out.println(getClass().getResource("images/"+val));
         result.put(key.toLowerCase(), new ImgIcon(getClass().getResourceAsStream("images/"+val)));
       } catch (Throwable t) {
-				System.out.println("[Debug]Warning: couldn't load image "+val);
-			}
+        t.printStackTrace();
+        System.out.println("[Debug]Warning: couldn't load image "+val);
+      }
     }
     
     // test for minimum

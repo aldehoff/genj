@@ -30,8 +30,9 @@ import genj.util.*;
 public class PropertySex extends Property {
 
   /** sexes */
-  private static final int MALE   = Gedcom.MALE;
-  private static final int FEMALE = Gedcom.FEMALE;
+  private static final int UNKNOWN = -1;
+  public static final int MALE    = Gedcom.MALE;
+  public static final int FEMALE  = Gedcom.FEMALE;
 
   /** the sex code */
   private int sex;
@@ -44,7 +45,7 @@ public class PropertySex extends Property {
    */
   public PropertySex() {
     // Setup data
-    sex = MALE;
+    setSex(UNKNOWN);
     // Done
   }
 
@@ -63,7 +64,7 @@ public class PropertySex extends Property {
   public PropertySex(String tag, String value) {
     // Setup data
     if (value.length() == 0) {
-      setValue("M");
+      setSex(UNKNOWN);
     } else {
       setValue(value);
     }
@@ -89,16 +90,21 @@ public class PropertySex extends Property {
   public ImgIcon getImage(boolean checkValid) {
     if (checkValid&&(!isValid()))
       return super.getImage(true);
-    if (sex == MALE)
-      return Images.get("sex.m");
-    return Images.get("sex.f");
+    switch (sex) {
+      case FEMALE:
+        return Images.get("sex.f");
+      case MALE:
+        return Images.get("sex.m");
+      default:
+        return Images.get("sex");
+    }
   }
 
   /**
    * Returns <b>true</b> if this property is valid
    */
   public boolean isValid() {
-    return ((sexAsString==null)&&(isSex(sex)));
+    return (sexAsString==null);
   }
 
 
@@ -168,6 +174,7 @@ public class PropertySex extends Property {
    */
   public void setSex(int newSex) {
     noteModifiedProperty();
+    sexAsString = null;
     sex = newSex;
     // Done
   }

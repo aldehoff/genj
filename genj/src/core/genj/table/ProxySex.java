@@ -39,18 +39,7 @@ public class ProxySex implements CellRenderer {
       return;
     }
 
-    ImgIcon icon;
-
-    switch (((PropertySex)o).getSex()) {
-      default:
-        return;
-      case Gedcom.MALE:
-        icon = PropertySex.getDefaultImage(Gedcom.MALE);
-        break;
-      case Gedcom.FEMALE:
-        icon = PropertySex.getDefaultImage(Gedcom.FEMALE);
-        break;
-    }
+    ImgIcon icon = ((PropertySex)o).getImage(true);
 
     g.drawImage(
       icon.getImage(),

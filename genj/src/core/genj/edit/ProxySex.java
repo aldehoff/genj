@@ -50,7 +50,7 @@ class ProxySex extends Proxy implements ItemListener {
     try {
       if ( rbMale.getModel().isSelected() == true)
         ((PropertySex)prop).setSex(Gedcom.MALE);
-      else
+      if ( rbFemale.getModel().isSelected() == true)
         ((PropertySex)prop).setSex(Gedcom.FEMALE);
     } catch (IllegalArgumentException ex) {
       System.out.println(ex);
@@ -111,12 +111,15 @@ class ProxySex extends Proxy implements ItemListener {
     rbMale  .getModel().setGroup(bg);
     rbFemale.getModel().setGroup(bg);
 
-    if (p.getSex() == Gedcom.MALE) {
-      rbMale  .getModel().setSelected(true);
-      rbFemale.requestFocus();
-    } else {
-      rbFemale.getModel().setSelected(true);
-      rbMale  .requestFocus();
+    switch (p.getSex()) {
+      case PropertySex.MALE:
+        rbMale  .getModel().setSelected(true);
+        rbFemale.requestFocus();
+        break;
+      case PropertySex.FEMALE:
+        rbFemale.getModel().setSelected(true);
+        rbMale  .requestFocus();
+        break;
     }
 
     rbMale.getModel().addItemListener(this);
