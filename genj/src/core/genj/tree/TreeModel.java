@@ -87,10 +87,10 @@ public class TreeModel implements GedcomListener, Cloneable {
    * Default Rectangles for Indis proxies
    */
   private static final Rectangle[] defIndisBoxes = {
-    new Rectangle( 8, 8,120,14),
-    new Rectangle( 8,28,120,14),
-    new Rectangle( 8,48,120,14),
-    new Rectangle( 8,68,120,14),
+    new Rectangle( 8, 8,128,18),
+    new Rectangle( 8,28,128,18),
+    new Rectangle( 8,48,128,18),
+    new Rectangle( 8,68,128,18),
     new Rectangle(99, 8, 60,80)
   };
 
