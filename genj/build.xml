@@ -17,6 +17,7 @@
     <pathelement path ="./language/ja"/>
     <pathelement path ="./language/hu"/>
     <pathelement path ="./language/ru"/>
+    <pathelement path ="./language/nl"/>
     <pathelement path ="./src/contrib"/>
     <pathelement path ="./src/core"/>
     <pathelement path ="./src/report"/>
@@ -131,6 +132,7 @@
     <antcall target="dist.language"><param name="language" value="hu"/></antcall>
     <antcall target="dist.language"><param name="language" value="es"/></antcall>
     <antcall target="dist.language"><param name="language" value="pt_BR"/></antcall>
+    <antcall target="dist.language"><param name="language" value="nl"/></antcall>
   </target>
 
   <!--
