@@ -8,4 +8,3 @@ else
   echo "*** ERROR: Missing GenJ resource(s) in "`dirname $0`
 fi
 
-
