@@ -390,6 +390,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
         manager.getWindowManager().openDialog(null,report.getName(),WindowManager.IMG_ERROR,resources.getString("report.noaccept"),CloseWindow.OK(),ReportView.this);
         return false;
       }
+      
+      // commit options
+      owOptions.stopEditing();
 
       // create our own private instance  
       instance = report.getInstance(manager, ReportView.this, out);
