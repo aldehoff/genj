@@ -50,6 +50,9 @@ public abstract class Property implements Comparable {
   
   /** images */
   protected ImageIcon image, imageErr;
+  
+  /** whether we're transient or not */
+  protected boolean isTransient = false;
 
   /**
    * Lifecycle - callback when being added to parent
@@ -643,7 +646,7 @@ public abstract class Property implements Comparable {
    * - be saved
    */
   public boolean isTransient() {
-    return false;
+    return isTransient;
   }
 
   /**
