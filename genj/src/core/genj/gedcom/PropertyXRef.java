@@ -190,7 +190,7 @@ public abstract class PropertyXRef extends Property {
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
   /*package*/ void setTag(String tag) throws GedcomException {
-    assert(getTag().equals(tag), UNSUPPORTED_TAG);
+    assume(getTag().equals(tag), UNSUPPORTED_TAG);
   }
 
 

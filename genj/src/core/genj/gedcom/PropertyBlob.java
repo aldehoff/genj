@@ -97,7 +97,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
   /*package*/ void setTag(String tag) throws GedcomException {
-    assert(BLOB.equals(tag), UNSUPPORTED_TAG);
+    assume(BLOB.equals(tag), UNSUPPORTED_TAG);
   }
 
   /**

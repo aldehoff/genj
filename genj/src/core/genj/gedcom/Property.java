@@ -497,9 +497,9 @@ public abstract class Property implements Comparable {
   /*package*/ abstract void setTag(String tag) throws GedcomException ;
   
   /**
-   * Assertion
+   * Assertion (this was assert once but that's deprecated with 1.4)
    */
-  protected void assert(boolean condition, String explanation) throws GedcomException {
+  protected void assume(boolean condition, String explanation) throws GedcomException {
     if (!condition) throw new GedcomException(explanation);
   }
 
