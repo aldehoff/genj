@@ -46,7 +46,7 @@ public class ControlCenter extends JPanel implements ActionListener {
 
   /** members */
   private GedcomTable tGedcoms;
-  private JButton bNewIndi,bNewFam,bNewMedia,bNewNote,bNewSource,bNewSubmitter,bDelEntity,bUndo;
+  private JButton bNewIndi,bNewFam,bNewMedia,bNewNote,bNewSource,bNewSubmitter,bNewRepository,bDelEntity,bUndo;
   private JButton bOpenGedcom,bNewTable,bNewTree,bNewTimeline,bNewEdit,bNewReport,bSettings;
   private JFrame frame;
   private Vector busyGedcoms;
@@ -178,13 +178,14 @@ public class ControlCenter extends JPanel implements ActionListener {
     entityPane.setLayout(new BoxLayout(entityPane,BoxLayout.X_AXIS));
 
     // .. Buttons
-    bNewIndi     = createButton(Images.imgNewIndi     ,"NEWINDI"     ,"cc.tip.create_indi"      ,false);
-    bNewFam      = createButton(Images.imgNewFam      ,"NEWFAM"      ,"cc.tip.create_fam"       ,false);
-    bNewMedia    = createButton(Images.imgNewMedia    ,"NEWMEDIA"    ,"cc.tip.create_media"     ,false);
-    bNewNote     = createButton(Images.imgNewNote     ,"NEWNOTE"     ,"cc.tip.create_note"      ,false);
-    bNewSource   = createButton(Images.imgNewSource   ,"NEWSOURCE"   ,"cc.tip.create_source"    ,false);
-    bNewSubmitter= createButton(Images.imgNewSubmitter,"NEWSUBMITTER","cc.tip.create_submitter" ,false);
-    bDelEntity   = createButton(Images.imgDelEntity   ,"DEL"         ,"cc.tip.delete_entity"    ,false);
+    bNewIndi      = createButton(Images.imgNewIndi      ,"NEWINDI"      ,"cc.tip.create_indi"       ,false);
+    bNewFam       = createButton(Images.imgNewFam       ,"NEWFAM"       ,"cc.tip.create_fam"        ,false);
+    bNewMedia     = createButton(Images.imgNewMedia     ,"NEWMEDIA"     ,"cc.tip.create_media"      ,false);
+    bNewNote      = createButton(Images.imgNewNote      ,"NEWNOTE"      ,"cc.tip.create_note"       ,false);
+    bNewSource    = createButton(Images.imgNewSource    ,"NEWSOURCE"    ,"cc.tip.create_source"     ,false);
+    bNewSubmitter = createButton(Images.imgNewSubmitter ,"NEWSUBMITTER" ,"cc.tip.create_submitter"  ,false);
+    bNewRepository= createButton(Images.imgNewRepository,"NEWREPOSITORY","cc.tip.create_repository" ,false);
+    bDelEntity    = createButton(Images.imgDelEntity    ,"DEL"          ,"cc.tip.delete_entity"     ,false);
     //    bUndo        = createButton(Images.imgUndo        ,"UNDO"        ,"cc.tip.undo_change"      ,false);
 
     entityPane.add(bNewIndi     );
@@ -193,6 +194,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     entityPane.add(bNewNote     );
     entityPane.add(bNewSource   );
     entityPane.add(bNewSubmitter);
+    entityPane.add(bNewRepository);
     entityPane.add(bDelEntity   );
     //    entityPane.add(bUndo        );
 

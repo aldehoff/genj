@@ -35,6 +35,7 @@ final public class Images {
     imgGedcom,
     imgNewIndi,
     imgNewSubmitter,
+    imgNewRepository,
     imgUndo,
     imgNewMedia,
     imgNewTable,
@@ -57,6 +58,7 @@ final public class Images {
     imgGedcom       = new ImgIcon(this,"images/Gedcom.gif");
     imgNewIndi      = new ImgIcon(this,"images/NewIndi.gif");
     imgNewSubmitter = new ImgIcon(this,"images/NewSubmitter.gif");
+    imgNewRepository= new ImgIcon(this,"images/NewRepository.gif");
     imgUndo         = new ImgIcon(this,"images/Undo.gif");
     imgNewMedia     = new ImgIcon(this,"images/NewMedia.gif");
     imgNewTable     = new ImgIcon(this,"images/NewTable.gif");
