@@ -20,6 +20,7 @@
 package genj.util.swing;
 
 import genj.util.ActionDelegate;
+import genj.util.MnemonicAndText;
 import genj.util.Resources;
 
 import java.awt.Component;
@@ -278,14 +279,10 @@ public class MenuHelper  {
     // safety check on ""
     if (txt.length()==0)
       return;
-    // calc mnemonic - 1st by default
-    int mnemonic = txt.indexOf('~');    
-    if (mnemonic<0)
-      item.setMnemonic(txt.charAt(0));
-    else {
-      item.setMnemonic(txt.charAt(mnemonic+1));
-      txt = txt.substring(0,mnemonic)+txt.substring(mnemonic+1);
-    }
+    // calc mnemonic 
+    MnemonicAndText mat = new MnemonicAndText(txt);
+    item.setText(mat.getText());
+    item.setMnemonic(mat.getMnemonic());
     // set it 
     item.setText(txt);
   }

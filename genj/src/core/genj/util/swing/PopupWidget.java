@@ -118,6 +118,8 @@ public class PopupWidget extends JButton {
 
     // create it
     JPopupMenu popup = createPopup();
+    if (popup==null)
+      return;
   
     // calc position
     int x=0, y=0;
@@ -196,21 +198,27 @@ public class PopupWidget extends JButton {
    * Our special model
    */
   private class Model extends DefaultButtonModel implements Runnable {
+    boolean popupTriggered;
     /** our menu trigger */
     public void setPressed(boolean b) {
       // continue
       super.setPressed(b);
       // show menue (delayed)
-      if (b) SwingUtilities.invokeLater(this);
+      if (b) {
+        popupTriggered = true;
+        SwingUtilities.invokeLater(this);
+      }
     }
     /** EDT callback */
     public void run() { 
-      showPopup(); 
+      if (popupTriggered)
+        showPopup(); 
     }
     /**
      * action performed
      */
     protected void fireActionPerformed(ActionEvent e) {
+      popupTriggered = false;
       // fire action on popup button press?
       if (isFireOnClick) { 
         List as = getActions();

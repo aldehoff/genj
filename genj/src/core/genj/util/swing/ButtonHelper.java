@@ -20,6 +20,7 @@
 package genj.util.swing;
 
 import genj.util.ActionDelegate;
+import genj.util.MnemonicAndText;
 import genj.util.Resources;
 
 import java.awt.Container;
@@ -122,13 +123,9 @@ public class ButtonHelper {
     result.putClientProperty("save.text", s);
 
     if (s.length()>0) {
-      int mnemonic = s.indexOf('~');    
-      if (mnemonic<0)
-        result.setMnemonic(s.charAt(0));
-      else {
-        result.setMnemonic(s.charAt(mnemonic+1));
-        s = s.substring(0,mnemonic)+s.substring(mnemonic+1);
-      }
+      MnemonicAndText mat = new MnemonicAndText(s);
+      result.setMnemonic(mat.getMnemonic());
+      s = mat.getText();
       if (isTextAllowed)
         result.setText(s);
       else
