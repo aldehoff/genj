@@ -88,7 +88,15 @@ public class FontChooser extends JPanel {
   /**
    * Accessor - selected font   */
   public void setSelectedFont(Font font) {
-    fonts.setSelectedItem(font);
+    String family = font.getFamily();
+    Font[] fs = getAllFonts();
+    for (int i = 0; i < fs.length; i++) {
+      if (fs[i].getFamily().equals(family)) {
+        fonts.setSelectedIndex(i);
+        break;
+      }
+      
+    }
     size.setText(""+font.getSize());
   }
   
