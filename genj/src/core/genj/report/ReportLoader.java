@@ -78,8 +78,8 @@ public class ReportLoader {
     while (rs.hasNext()) {
       try {
         instances.add(cl.loadClass(rs.next().toString()).newInstance());
-      } catch (Exception ex) {
-        Debug.log(Debug.WARNING, this,ex);
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, this, t);
       }
     }
 
