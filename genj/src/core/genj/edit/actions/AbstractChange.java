@@ -30,9 +30,6 @@ import genj.util.swing.ImageIcon;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -78,27 +75,28 @@ import javax.swing.JTextArea;
     return null;
   }
   
+  /** 
+   * Callback to update confirm text
+   */
+  protected void refresh() {
+    confirm.setText(getConfirmMessage());
+  }
+  
+  private JTextArea confirm;
+
   /**
    * @see genj.util.ActionDelegate#execute()
    */
   protected void execute() {
     
     // prepare confirmation message for user
-    final JTextArea confirm = new JTextArea(getConfirmMessage(), 6, 40);
+    confirm = new JTextArea(getConfirmMessage(), 6, 40);
     confirm.setWrapStyleWord(true);
     confirm.setLineWrap(true);
     confirm.setEditable(false);
 
     // prepare options
     JComponent c = getOptions();
-    if (c!=null) {
-      c.addPropertyChangeListener(new PropertyChangeListener() {
-        /** update confirm message */
-        public void propertyChange(PropertyChangeEvent evt) {
-          confirm.setText(getConfirmMessage());
-        }
-      });
-    }
 
     // Recheck with the user
     int rc = manager.getWindowManager().openDialog(

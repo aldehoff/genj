@@ -23,14 +23,16 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Relationship;
+import genj.util.swing.ChoiceWidget;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * Add an entity via relationship (new or existing) 
@@ -69,7 +71,7 @@ public class CreateRelationship extends AbstractChange {
         null,
         relationship.getName(false),
         WindowManager.IMG_QUESTION,
-        relationship.toString(),
+        relationship.getName(true),
         names,
         target
       );
@@ -116,14 +118,21 @@ public class CreateRelationship extends AbstractChange {
     Collections.sort(ents);
     ents.add(0, "*New*" );
     
-    JComboBox result = new JComboBox(ents.toArray()) {
-      protected void fireActionEvent() {
-        super.fireActionEvent();
-        existing = getSelectedIndex()>0 ? (Entity)getSelectedItem() : null;
-        super.firePropertyChange( "message", 0, 1);
+    final ChoiceWidget result = new ChoiceWidget(ents);
+    result.setEditable(false);
+    result.setSelectedIndex(0);
+    result.addListSelectionListener(new ListSelectionListener() {
+      public void valueChanged(ListSelectionEvent e) {
+        // update existing
+        Object item = result.getSelectedItem();
+        existing = item instanceof Entity ? (Entity)item : null;
+        // refresh abstract change
+        refresh();
       }
-    };
+  
+    });
     
+    // done
     return result;
   }
   
