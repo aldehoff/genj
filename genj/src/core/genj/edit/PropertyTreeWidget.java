@@ -606,16 +606,13 @@ public class PropertyTreeWidget extends DnDTree {
       
       // multiline?          
       if (prop instanceof MultiLineProperty && !(prop instanceof IconValueAvailable)) {
-        
-        char[] chars = prop.getDisplayValue().toCharArray();
-        for (int i=0; i<chars.length; i++) {
-          char c = chars[i];
-          if (c=='\n') html.append("<br>");
-          else html.append(c);
+        MultiLineProperty.Iterator it = ((MultiLineProperty)prop).getLineIterator();
+        while (true) {
+          html.append(it.getValue());
+          if (!it.next()) break;
+          html.append("<br>");
         }
-        
         return;
-        
       } 
       
       // default!
