@@ -42,7 +42,7 @@ public class GedcomTable extends Table {
 
   /** default column headers */
   private static final Object defaultHeaders[] = {
-    "Name"                             ,
+    App.resources.getString("cc.column_header.name"),
     Gedcom.getImage(Gedcom.INDIVIDUALS),
     Gedcom.getImage(Gedcom.FAMILIES),
     Gedcom.getImage(Gedcom.MULTIMEDIAS),
