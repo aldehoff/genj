@@ -144,8 +144,9 @@ public class ControlCenter extends JPanel {
     for (int i=0; i<factories.length; i++) {
       bh.create(new ActionView(factories[i]));
     }
-    
     bh.setEnabled(true).removeCollection(gedcomButtons).setResources(App.resources);
+
+    result.add(Box.createGlue());
 
     // Menu
     MenuHelper mh = new MenuHelper()
