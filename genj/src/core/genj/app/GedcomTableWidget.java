@@ -83,8 +83,6 @@ public class GedcomTableWidget extends JTable {
     
     // Prepare a column model
     TableColumnModel cm = new DefaultTableColumnModel();
-    getTableHeader().setDefaultRenderer(new PatchedTableCellRenderer());
-    
     for (int h=0; h<headers.length; h++) {
       TableColumn col = new TableColumn(h);
       col.setHeaderValue(headers[h]);
@@ -95,6 +93,16 @@ public class GedcomTableWidget extends JTable {
     setColumnModel(cm);
 
     // change looks    
+      try { // alas in 1.4
+        getTableHeader().setDefaultRenderer(new PatchedTableCellRenderer(getTableHeader().getDefaultRenderer()));
+      } catch (Throwable t) {
+        TableCellRenderer p = new PatchedTableCellRenderer(null); 
+        TableColumnModel model = getTableHeader().getColumnModel();
+        for (int c=0; c<model.getColumnCount(); c++) {
+          model.getColumn(c).setHeaderRenderer(p);
+        }
+      }
+    
     setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     
@@ -302,15 +310,20 @@ public class GedcomTableWidget extends JTable {
    * Our own TableHeader intercepting anyones attempt to
    * change the default renderer
    */
-  private class PatchedTableCellRenderer implements TableCellRenderer  {
+  private class PatchedTableCellRenderer extends JTableHeader implements TableCellRenderer  {
 
-    private TableCellRenderer other, def = new DefaultTableCellRenderer();
+    private TableCellRenderer other, def;
       
     /**
      * Constructor
      */
-    protected PatchedTableCellRenderer() {
-      other = getTableHeader().getDefaultRenderer();
+    protected PatchedTableCellRenderer(TableCellRenderer other) {
+      this.other=other;
+      try {
+        this.def=createDefaultRenderer();
+      } catch (Throwable t) {
+        this.def=new DefaultTableCellRenderer();
+      }
     }
     
     /**
