@@ -25,6 +25,7 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import gj.model.Graph;
 import gj.model.Node;
@@ -34,6 +35,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -241,6 +243,7 @@ public class Model implements Graph, GedcomListener {
    * Entities by range
    */
   public Set getEntitiesIn(Rectangle2D range) {
+    if (cache==null) return new HashSet();
     return cache.get(range);
   }
      /**
@@ -334,6 +337,14 @@ public class Model implements Graph, GedcomListener {
         }
       }
     }
+    // was a property changed that we should notify about?
+    HashSet nodes = new HashSet();
+    for (int i=0; i<props.size(); i++) {
+      Node node = getNode(((Property)props.get(i)).getEntity());
+      if (node!=null) nodes.add(node);
+    }
+    if (!nodes.isEmpty()) fireNodesChanged(new ArrayList(nodes));
+    
     // done
   }
 
@@ -401,11 +412,20 @@ public class Model implements Graph, GedcomListener {
   }
   
   /**
-   * Fire even
+   * Fire event
    */
   private void fireStructureChanged() {
     for (int l=listeners.size()-1; l>=0; l--) {
       ((ModelListener)listeners.get(l)).structureChanged(this);
+    }
+  }
+  
+  /**
+   * Fire event
+   */
+  private void fireNodesChanged(List nodes) {
+    for (int l=listeners.size()-1; l>=0; l--) {
+      ((ModelListener)listeners.get(l)).nodesChanged(this, nodes);
     }
   }
   
