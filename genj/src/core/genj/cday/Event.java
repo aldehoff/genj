@@ -19,6 +19,7 @@
  */
 package genj.cday;
 
+import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
 
 /**
@@ -31,10 +32,12 @@ public class Event implements Comparable {
   private boolean isBirthday;
   
   /** constructor */
-  public Event(boolean setBirthday, PointInTime setTime, String setText) {
+  public Event(boolean setBirthday, PointInTime setTime, String setText) throws GedcomException {
     pit = setTime;
     isBirthday = setBirthday;
     text = setText;
+    // make sure its julian day is good
+    pit.getJulianDay();
   }
   
   /** to String */

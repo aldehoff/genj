@@ -19,6 +19,7 @@
  */
 package genj.cday;
 
+import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
 import genj.util.Debug;
 
@@ -81,6 +82,47 @@ public class Repository {
   }
   
   /**
+   * Accessor - event by year
+   */
+  public Event getEvent(PointInTime when) {
+    
+    Event result = null;
+    
+    try {
+      
+	    // convert to julian day
+	    long julian = when.getJulianDay();
+	    
+	    // loop over events
+	    long delta = -1;
+	    
+	    synchronized (events) {
+	      for (int i=0,j=events.size(); i<j; i++) {
+	        Event event = (Event)events.get(i);
+	        PointInTime pit = event.getTime();
+	        // check year
+	        if (pit.getYear()<when.getYear())
+	          continue;
+	        if (pit.getYear()>when.getYear())
+	          break;
+	        // calculate delta
+	        long d = pit.getJulianDay()-julian;
+	        if (d<0) d=-d;
+	        if (delta<0||d<delta) {
+	          delta = d;
+	          result = event;
+	        }
+	      }
+	    }
+	    
+    } catch (GedcomException e) {
+    }
+    
+    // none found
+    return result;
+  }
+  
+  /**
    * Accessor - the list of events
    */
   public List getEvents() {
@@ -91,8 +133,13 @@ public class Repository {
    * Accessor - the list of events
    */
   public void setEvents(List set) {
-    events.clear();
-    events.addAll(set);
+    synchronized (events) {
+      // replace
+      events.clear();
+      events.addAll(set);
+	    // sort them
+      Collections.sort(events);
+    }
   }
 
   /** debug */
@@ -143,9 +190,6 @@ public class Repository {
 		  
 	    Debug.log(Debug.INFO, Repository.this, "Loaded "+result.size()+" events");
 
-	    // sort them
-      Collections.sort(result);
-	    
 	    // tell about it
 	    setEvents(result);
 	    
@@ -216,7 +260,11 @@ public class Repository {
 		    return false;
 
 		  // instantiate
-		  result.add(new Event(birthday, new PointInTime(day-1, month-1, year), text)); 
+		  try {
+		    result.add(new Event(birthday, new PointInTime(day-1, month-1, year), text)); 
+		  } catch (GedcomException e) {
+		    return false;
+		  }
 		  
 		  // done
 		  return true;
