@@ -176,7 +176,6 @@
      <!-- copy rcompile scripts so that we'll pick 'em up -->
      <copy todir="${dir.build}/classes/report">
        <fileset dir="./script" includes="rcompile.*"/>
-       <fileset dir="./src/report" includes="**/*.properties"/>
      </copy>
      
      <!-- create genj_app-xyz.zip -->
