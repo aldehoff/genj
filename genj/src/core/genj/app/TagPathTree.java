@@ -32,6 +32,9 @@ import java.util.Vector;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
@@ -60,7 +63,7 @@ public class TagPathTree extends JScrollPane {
   public TagPathTree() {
 
     // Prepare tree
-    tree = new JTree(new Object[0]);
+    tree = new JTree(new Model());
     tree.setShowsRootHandles(true);
     //tree.setRootVisible(false);
     //tree.setCellRenderer(new NodeRenderer());
@@ -181,6 +184,67 @@ public class TagPathTree extends JScrollPane {
 //    }
 //
 //  } //NodeRenderer
+
+  /**
+   * A model for the paths mapped to a tree
+   */
+  private class Model implements TreeModel {
+    
+    /**
+     * @see javax.swing.tree.TreeModel#addTreeModelListener(javax.swing.event.TreeModelListener)
+     */
+    public void addTreeModelListener(TreeModelListener l) {
+    }
+  
+    /**
+     * @see javax.swing.tree.TreeModel#removeTreeModelListener(javax.swing.event.TreeModelListener)
+     */
+    public void removeTreeModelListener(TreeModelListener l) {
+    }
+
+    /**
+     * @see javax.swing.tree.TreeModel#getChild(java.lang.Object, int)
+     */
+    public Object getChild(Object parent, int index) {
+      return null;
+    }
+  
+    /**
+     * @see javax.swing.tree.TreeModel#getChildCount(java.lang.Object)
+     */
+    public int getChildCount(Object parent) {
+      return 0;
+    }
+  
+    /**
+     * @see javax.swing.tree.TreeModel#getIndexOfChild(java.lang.Object, java.lang.Object)
+     */
+    public int getIndexOfChild(Object parent, Object child) {
+      return 0;
+    }
+  
+    /**
+     * @see javax.swing.tree.TreeModel#getRoot()
+     */
+    public Object getRoot() {
+      return "Foo";
+    }
+  
+    /**
+     * @see javax.swing.tree.TreeModel#isLeaf(java.lang.Object)
+     */
+    public boolean isLeaf(Object node) {
+      return false;
+    }
+  
+    /**
+     * @see javax.swing.tree.TreeModel#valueForPathChanged(javax.swing.tree.TreePath, java.lang.Object)
+     */
+    public void valueForPathChanged(TreePath path, Object newValue) {
+      //ignored
+    }
+  
+  } //Model
 
   /**
    * Notification Interface for selections on the TagPathTree component
