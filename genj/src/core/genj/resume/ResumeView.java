@@ -46,6 +46,9 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -61,21 +64,25 @@ import javax.swing.JToolBar;
  */
 public class ResumeView extends JPanel implements ToolBarSupport {
   
-  /** the html we're using */
+  /** html defaults for entities */
+  private final static Properties tag2html = readDefaultHTMLs();
+  
+  /*
   private String html = 
-      "<p>Individual <font color=blue><b><prop path=INDI></b></font></p>"+
-      "<table>"+
-       "<tr valign=top><td>"+
-       "<table>"+
-        "<tr><td>Name &nbsp;&nbsp;&nbsp;</td><td><i><prop path=INDI:NAME></i></td></tr>"+
-        "<tr><td>Sex  </td><td><prop path=INDI:SEX img=yes txt=no w=16 h=16></td></tr>"+
-        "<tr><td>Birth</td><td><prop path=INDI:BIRT:DATE img=yes>, <u><prop path=INDI:BIRT:PLAC></u></td></tr>"+
-        "<tr><td>Addr </td><td><prop path=INDI:RESI:ADDR><br><prop path=INDI:RESI:ADDR:CITY><br><prop path=INDI:RESI:POST></u></td></tr>"+
-       "</table>"+
-       "</td><td>"+
-        "<prop path=INDI:OBJE:FILE>"+
-       "</td></tr>"+
+      "<p>Individual <font color=blue><b><prop path=INDI></b></font></p>\n"+
+      "<table>\n"+
+       "<tr valign=top><td>\n"+
+       "<table>\n"+
+        "<tr><td>Name &nbsp;&nbsp;&nbsp;</td><td><i><prop path=INDI:NAME></i></td></tr>\n"+
+        "<tr><td>Sex  </td><td><prop path=INDI:SEX img=yes txt=no w=16 h=16></td></tr>\n"+
+        "<tr><td>Birth</td><td><prop path=INDI:BIRT:DATE img=yes>, <u><prop path=INDI:BIRT:PLAC></u></td></tr>\n"+
+        "<tr><td>Addr </td><td><prop path=INDI:RESI:ADDR><br><prop path=INDI:RESI:ADDR:CITY><br><prop path=INDI:RESI:POST></u></td></tr>\n"+
+       "</table>\n"+
+       "</td><td>\n"+
+        "<prop path=INDI:OBJE:FILE>\n"+
+       "</td></tr>\n"+
       "</table>";
+      */
       
   /** the renderer we're using */      
   private EntityRenderer renderer = NORENDERER;
@@ -91,6 +98,22 @@ public class ResumeView extends JPanel implements ToolBarSupport {
     gedcom.addListener(new GedcomConnector());
     // done    
   }
+
+  /**
+   * Read default HTMLs for know entity types
+   */
+  private static Properties readDefaultHTMLs() {
+    // loading now
+    try {
+      Properties result = new Properties();
+      result.load(ResumeView.class.getResourceAsStream("defaults.properties"));
+      return result;
+    } catch(IOException e) {
+      throw new Error("Couldn't initialize gedcom.Images because of "+e.getClass().getName()+"#"+e.getMessage());
+    }
+    // done
+  }
+    
   
   /**
    * @see javax.swing.JComponent#paintComponent(Graphics)
@@ -110,12 +133,31 @@ public class ResumeView extends JPanel implements ToolBarSupport {
   }
   
   /**
+   * Accessor - HTML for given entity type
+   */
+  public String getHtml(int type) {
+    return tag2html.getProperty(Gedcom.getTagFor(type));
+  }
+  
+  /**
+   * Accessor - HTML for given entity type
+   */
+  public void setHtml(int type, String set) {
+    tag2html.put(Gedcom.getTagFor(type), set);
+    Entity e = renderer.getEntity(); 
+    renderer = NORENDERER;
+    setEntity(e);
+  }
+    
+  /**
    * Sets the entity to show the resume for
    */
   public void setEntity(Entity e) {
     if (e==null) renderer=NORENDERER;
     else {
-      if (renderer==NORENDERER) renderer = new EntityRenderer(html);
+      if (renderer==NORENDERER||renderer.getEntity().getType()!=e.getType()) {
+        renderer = new EntityRenderer(tag2html.getProperty(Gedcom.getTagFor(e.getType())));
+      }
       renderer.setEntity(e);
     }
     repaint();

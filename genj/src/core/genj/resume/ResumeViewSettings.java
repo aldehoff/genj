@@ -19,10 +19,12 @@
  */
 package genj.resume;
 
+import genj.gedcom.Gedcom;
 import genj.view.ApplyResetSupport;
 import java.awt.BorderLayout;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 
@@ -37,17 +39,29 @@ public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
   /** a text-area for html */
   private JTextArea textHtml = new JTextArea();
   
+  /** the resume */
+  private ResumeView resumeView; 
+  
+  /** the current entity type */
+  private int entityType = Gedcom.INDIVIDUALS;
+  
   /**
    * Constructor
    */
-  public ResumeViewSettings(ResumeView resumeView) {
-    super(new BorderLayout());
-
-    // prepare the drop-down with entity types    
+  public ResumeViewSettings(ResumeView view) {
+    
+    // keep the view
+    resumeView = view;
+    
+    // get entities
+    for (int i=Gedcom.FIRST_ETYPE;i<=Gedcom.LAST_ETYPE;i++) {
+      dropEntities.addItem(Gedcom.getNameFor(i,true));
+    }
+    
+    // do the layout
+    setLayout(new BorderLayout());
     add(dropEntities, BorderLayout.NORTH);
-
-    // and the html
-    add(textHtml, BorderLayout.CENTER);    
+    add(new JScrollPane(textHtml), BorderLayout.CENTER);    
     
     // done
   }
@@ -56,12 +70,14 @@ public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
    * @see genj.app.ViewSettingsWidget#apply()
    */
   public void apply() {
+    resumeView.setHtml(entityType, textHtml.getText());
   }
 
   /**
    * @see genj.app.ViewSettingsWidget#reset()
    */
   public void reset() {
+    textHtml.setText(resumeView.getHtml(entityType));
   }
 
 }
