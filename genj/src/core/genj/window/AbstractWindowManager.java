@@ -91,13 +91,14 @@ public abstract class AbstractWindowManager implements WindowManager {
     JTextPane text = new JTextPane();
     text.setText(txt);
     text.setEditable(false);
+    text.setCaretPosition(0);
     
     // make sure it doesn't grab focus 
     // since it's just static text  
     text.setFocusable(false);
       
     // wrap in reasonable sized scroll
-    JComponent content = new JScrollPane(text) {
+    JScrollPane content = new JScrollPane(text) {
       public Dimension getPreferredSize() {
         return new Dimension(240,80);
       }
