@@ -87,13 +87,13 @@ import javax.swing.event.ChangeListener;
     property = setProp;
     view = setView;
     
-    // add a header with a label
-    label = new JLabel(getLabel(), property.getImage(true), SwingConstants.LEFT);
-    panel.add(BorderLayout.NORTH, label);
-
     // add the specifics        
     Editor editor = getEditor();
     panel.add(BorderLayout.CENTER, editor);
+    
+    // add a header with a label
+    label = new JLabel(getLabel(), property.getImage(true), SwingConstants.LEFT);
+    panel.add(BorderLayout.NORTH, label);
     
     // add buttons
     if (isEditable()) {

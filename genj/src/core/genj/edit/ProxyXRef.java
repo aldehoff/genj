@@ -56,7 +56,7 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    * No label
    */
   protected String getLabel() {
-    return "";
+    return xref==null||xref.isTransient() ? "" : super.getLabel();
   }
 
   /**
