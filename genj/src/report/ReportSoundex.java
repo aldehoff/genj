@@ -738,7 +738,8 @@ class DoubleMetaphone {
                     addCode('N', 'N');
                     break;
                     
-                case 'Ñ':
+                //case 'Ñ':   using ASCII code to make it compile with french locale
+                case 165:
                     current++;
                     add('N');
                     break;
