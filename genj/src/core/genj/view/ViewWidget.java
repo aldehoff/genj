@@ -41,6 +41,7 @@ import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToolBar;
@@ -87,44 +88,55 @@ import javax.swing.border.TitledBorder;
     // create the view component
     view = factory.createViewComponent(gedcom, registry, frame);
 
+    // create a toolbar
+    bar = createToolBar(factory, view, frame);
+    
+    // setup layout
+    setLayout(new BorderLayout());
+    if (bar!=null) add(bar, registry.get("toolbar", BorderLayout.SOUTH));
+    add(view, BorderLayout.CENTER);
+    
+    // done
+  }
+  
+  /**
+   * Helper that creates the toolbar for the view
+   */
+  private JToolBar createToolBar(ViewFactory factory, Component view, Frame frame) {
+    
+    // only if ToolBarSupport
+    if (!(view instanceof ToolBarSupport)) return null;
+
+    // Create one
+    JToolBar result = new JToolBar();
+    
     // Fill Toolbar
-    boolean isBar = false;
-    bar = new JToolBar();
-    if (view instanceof ToolBarSupport) {
-      ((ToolBarSupport)view).populate(bar);
-      bar.add(Box.createGlue());
-      isBar = true;
-    }
+    ((ToolBarSupport)view).populate(result);
+    result.add(Box.createGlue());
 
     // add our buttons     
     ButtonHelper bh = new ButtonHelper()
       .setResources(ViewManager.resources)
-      .setContainer(bar);
+      .setContainer(result);
 
     // .. a button for editing the View's settings
     settings = factory.createSettingsComponent(view);
     if (settings!=null) {
       settings.setBorder(new TitledBorder(frame.getTitle()));
       bh.create(new ActionOpenSettings());
-      isBar = true;
     }
   
     // .. a button for printing View
     PrintRenderer renderer = factory.createPrintRenderer(view);
     if (renderer!=null) {
       bh.create(new ActionPrint(renderer, frame));
-      isBar = true;
     }
   
     // .. a button for closing the View
     bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(genj.gedcom.Images.get("X")));
     
-    // setup layout
-    setLayout(new BorderLayout());
-    if (isBar) add(bar, registry.get("toolbar", BorderLayout.SOUTH));
-    add(view, BorderLayout.CENTER);
-    
     // done
+    return result;
   }
   
   /**

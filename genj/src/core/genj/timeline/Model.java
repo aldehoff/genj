@@ -147,6 +147,20 @@ import genj.gedcom.PropertyName;
   }
   
   /**
+   * Returns the first event of given entity
+   */
+  protected Event getEvent(Entity entity) {
+    return null;
+  }
+  
+  /**
+   * Returns the first event for given property
+   */
+  protected Event getEvent(Property property) {
+    return null;
+  }
+  
+  /**
    * Returns the filter - set of Tags we consider
    */
   public Set getFilter() {

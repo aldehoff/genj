@@ -286,6 +286,9 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
    * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
    */
   public void setCurrentEntity(Entity entity) {
+    // try to scroll to first event
+    model.getEvent(entity);
+    // do a repaint, too
     content.repaint();
   }
 
@@ -293,7 +296,8 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
    * @see genj.view.CurrentSupport#setCurrentProperty(Property)
    */
   public void setCurrentProperty(Property property) {
-    // ignored
+    // try to scroll to first event
+    model.getEvent(property);
   }
   
   /** 
