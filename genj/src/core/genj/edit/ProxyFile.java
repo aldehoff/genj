@@ -38,12 +38,14 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.io.FilePermission;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -72,6 +74,9 @@ import javax.swing.JScrollPane;
 
   /** one loader per view */
   private static Map view2loader = new HashMap();
+  
+  /** whether we'll update title/format or not */
+  private boolean updateFormatAndTitle = true;
 
   /**
    * Finish editing a property through proxy
@@ -84,21 +89,11 @@ import javax.swing.JScrollPane;
     // propagate
     String file = tFile.getText();
     
-    // Ask for update 
-    boolean update = 0==view.manager.getWindowManager().openDialog(
-      null, 
-      null, 
-      WindowManager.IMG_QUESTION,
-      resources.getString("proxy.file.update", file),
-      WindowManager.OPTIONS_YES_NO,
-      view
-    );
-    
     if (property instanceof PropertyFile)
-      ((PropertyFile)property).setValue(file, update);
+      ((PropertyFile)property).setValue(file, updateFormatAndTitle);
     
     if (property instanceof PropertyBlob) 
-      ((PropertyBlob)property).load(file, update);
+      ((PropertyBlob)property).load(file, updateFormatAndTitle);
 
     // done
   }
@@ -143,7 +138,7 @@ import javax.swing.JScrollPane;
     tFile.setTemplate(true);
 
     // .. preview
-    preview.setImage(new ImageIcon(blob.getTitle(), blob.getBlobData()));
+    preview.setImage(new ImageIcon(blob.getTitle(), blob.getBlobData()), false);
 
     // done
   }
@@ -210,18 +205,29 @@ import javax.swing.JScrollPane;
      */
     protected void execute() {
       
+      
       // Let the user choose a file
       JFileChooser chooser = new JFileChooser(IMAGE_DIR);
-      chooser.setDialogTitle("Choose a file");
+      chooser.setControlButtonsAreShown(false);
+      chooser.setBorder(null);
+      JCheckBox check = new JCheckBox(view.resources.getString("proxy.file.update"), false);
 
-      int rc=chooser.showDialog(view, "Choose file");
-
-      // Cancel ?
-      if (JFileChooser.APPROVE_OPTION != rc)
+      int option = view.manager.getWindowManager().openDialog( 
+        null, view.resources.getString("proxy.file.title"), WindowManager.IMG_QUESTION, 
+        new JComponent[]{chooser,check}, 
+        WindowManager.OPTIONS_OK_CANCEL, 
+        view 
+      );
+      
+      File file = chooser.getSelectedFile();
+      if (option!=0||file==null) 
         return;
-        
+      
+      // remember
+      updateFormatAndTitle = check.isSelected();
+      
       // show it 
-      showFile(chooser.getSelectedFile().toString());
+      showFile(file.toString());
       
       // remember changed
       tFile.setChanged(true);
@@ -269,23 +275,47 @@ import javax.swing.JScrollPane;
      * Sets the zoom level
      */
     protected void setZoom(int zOOm) {
+      
+      // remember
       zoom = zOOm;
       view.registry.put("file.zoom", zoom);
+      
+      // calc tooltip
       setToolTipText(zoom==0 ? "1:1" : zoom+"%");
+      
+      // show
       revalidate();
       repaint();
     }
     /**
      * Sets the image to preview
      */
-    protected void setImage(ImageIcon set) {
+    protected void setImage(ImageIcon set, boolean warnAboutSize) {
       
       // remember
       img = set;
 
+      // warn
+      if (warnAboutSize&&img!=null&&img.getByteSize()>PropertyFile.getMaxValueAsIconSize(false)) {
+        
+        String txt = view.resources.getString("proxy.file.max", new String[]{
+          img.getDescription(),
+          String.valueOf(PropertyFile.toKB(img.getByteSize())),
+          String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
+          PropertyFile.MINUS_D_KEY
+        }); 
+        
+        view.manager.getWindowManager().openDialog(
+          null,null,
+          WindowManager.IMG_INFORMATION,
+          txt,
+          WindowManager.OPTIONS_OK,
+          view
+        );
+      }
+      
       // show
-      revalidate();
-      repaint();
+      setZoom(zoom);
     }
     /**
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
@@ -412,7 +442,7 @@ import javax.swing.JScrollPane;
      */
     protected boolean preExecute() {
       // kill current
-      preview.setImage(null);
+      preview.setImage(null, false);
       // show wait
       preview.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
       // continue
@@ -434,9 +464,10 @@ import javax.swing.JScrollPane;
      * sync show result
      */
     protected void postExecute() {
+      
       preview.setCursor(null);
       if (result!=null) {
-        preview.setImage(result);
+        preview.setImage(result, true);
         result = null;
       }
     }
