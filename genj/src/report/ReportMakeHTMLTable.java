@@ -268,7 +268,7 @@ public class ReportMakeHTMLTable implements Report {
     TreeMap indiMap = new TreeMap ();  // use to sort by name
     for (int i=0;i<indis.getSize();i++) {
       Indi indi = indis.getIndi(i);
-      indiMap.put( indi.getLastName() + "," + indi.getFirstName() + i,
+      indiMap.put( indi.getLastName() + "\t" + indi.getFirstName() + "\t" + i,
                    indis.getIndi(i) );
     }
     Iterator iter = indiMap.values().iterator();
