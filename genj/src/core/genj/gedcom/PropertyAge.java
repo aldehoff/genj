@@ -36,6 +36,15 @@ public class PropertyAge extends Property {
   /** as string */
   private String ageAsString;
 
+  /** localizations */
+  private final static String
+    YEAR  = Gedcom.resources.getString("time.year"  ),
+    YEARS = Gedcom.resources.getString("time.years" ),
+    MONTH = Gedcom.resources.getString("time.month" ),
+    MONTHS= Gedcom.resources.getString("time.months"),
+    DAY   = Gedcom.resources.getString("time.day"   ),
+    DAYS  = Gedcom.resources.getString("time.days"  );
+
   /**
    * Returns <b>true</b> if this property is valid
    */
@@ -269,9 +278,11 @@ public class PropertyAge extends Property {
       if (m>0) buffer.append(m+"m");
       if (d>0) buffer.append(d+"d");
     } else {
-      if (y>0) buffer.append(""+y).append(y==1?Gedcom.resources.getString("time.year" ):Gedcom.resources.getString("time.years" ));
-      if (m>0) buffer.append(""+m).append(m==1?Gedcom.resources.getString("time.month"):Gedcom.resources.getString("time.months"));
-      if (d>0) buffer.append(""+d).append(d==1?Gedcom.resources.getString("time.day"  ):Gedcom.resources.getString("time.days"  ));
+      if (y==0&&m==0&&d==0) 
+        return "<1 "+DAY;
+      if (y>0) buffer.append(""+y).append(y==1?YEAR :YEARS );
+      if (m>0) buffer.append(""+m).append(m==1?MONTH:MONTHS);
+      if (d>0) buffer.append(""+d).append(d==1?DAY  :DAYS  );
     }
       
     // done
