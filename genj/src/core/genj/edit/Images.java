@@ -35,8 +35,6 @@ final public class Images {
     imgStickOn,
     imgStickOff,
     imgReturn,
-    imgFind,
-    imgLink,
     imgUp,
     imgDown,
     imgAdd,
@@ -64,8 +62,6 @@ final public class Images {
 
     imgStickOn   = new ImageIcon(this,"images/StickOn.gif");
     imgStickOff  = new ImageIcon(this,"images/StickOff.gif");
-    imgFind      = new ImageIcon(this,"images/Find.gif");
-    imgLink      = new ImageIcon(this,"images/Link.gif");
     imgReturn    = new ImageIcon(this,"images/Return.gif");
     imgUp        = new ImageIcon(this,"images/Up.gif");
     imgDown      = new ImageIcon(this,"images/Down.gif");

@@ -73,21 +73,21 @@ public class NavigatorView extends JPanel implements ContextSupport {
   private final static int gp = 70;
 
   private final static ImageIcon
-//FIXME  
-    imgNavYoungerSiblingOn = new ImageIcon(NavigatorView.class,"NavYoungerSiblingOn.gif"),
-    imgNavYoungerSiblingOff= imgNavYoungerSiblingOn.getDisabled(gp),
-    imgNavOlderSiblingOn   = new ImageIcon(NavigatorView.class,"NavOlderSiblingOn.gif"),
-    imgNavOlderSiblingOff  = imgNavYoungerSiblingOn.getDisabled(gp),
-    imgNavChildOn          = new ImageIcon(NavigatorView.class,"NavChildOn.gif"),
-    imgNavChildOff         = imgNavChildOn.getDisabled(gp),
-    imgNavFatherOn         = Indi.IMG_MALE,//new ImageIcon(NavigatorView.class,"NavFatherOn.gif"),
-    imgNavFatherOff        = imgNavFatherOn.getDisabled(gp),
-    imgNavMotherOn         = Indi.IMG_FEMALE,//new ImageIcon(NavigatorView.class,"NavMotherOn.gif"),
-    imgNavMotherOff        = imgNavMotherOn.getDisabled(gp),
-    imgNavMalePartnerOn    = Indi.IMG_MALE,//new ImageIcon(NavigatorView.class,"NavMalePartnerOn.gif"),
-    imgNavMalePartnerOff   = imgNavMalePartnerOn.getDisabled(gp),
-    imgNavFemalePartnerOn  = Indi.IMG_FEMALE,//new ImageIcon(NavigatorView.class,"NavFemalePartnerOn.gif"),
-    imgNavFemalePartnerOff = imgNavFemalePartnerOn.getDisabled(gp);
+    imgYSiblings = new ImageIcon(NavigatorView.class,"YSiblings.gif"),
+    imgOSiblings = new ImageIcon(NavigatorView.class,"OSiblings.gif"),
+    imgChildren  = new ImageIcon(NavigatorView.class,"children.gif"),
+    imgFather    = Indi.IMG_MALE,
+    imgMother    = Indi.IMG_FEMALE,
+    imgMPartner  = Indi.IMG_MALE,
+    imgFPartner  = Indi.IMG_FEMALE;
+
+//    imgNavYoungerSiblingOff= imgNavYoungerSiblingOn.getDisabled(gp),
+//    imgNavOlderSiblingOff  = imgNavYoungerSiblingOn.getDisabled(gp),
+//    imgNavChildOff         = imgNavChildOn.getDisabled(gp),
+//    imgNavFatherOff        = imgNavFatherOn.getDisabled(gp),
+//    imgNavMotherOff        = imgNavMotherOn.getDisabled(gp),
+//    imgNavMalePartnerOff   = imgNavMalePartnerOn.getDisabled(gp),
+//    imgNavFemalePartnerOff = imgNavFemalePartnerOn.getDisabled(gp);
 
 
   /** the label holding information about the current individual */
@@ -220,13 +220,13 @@ public class NavigatorView extends JPanel implements ContextSupport {
       PopupWidget partner = getPopup(PARTNER);
       switch (current.getSex()) {
         case PropertySex.FEMALE:
-          labelSelf.setIcon(imgNavFemalePartnerOn);
-          partner.setIcon(imgNavMalePartnerOn);
+          labelSelf.setIcon(imgFPartner);
+          partner.setIcon(imgMPartner);
           // FIXME partner.setRolloverIcon(imgNavMalePartnerOn);
           break;
         case PropertySex.MALE:
-          labelSelf.setIcon(imgNavMalePartnerOn);
-          partner.setIcon(imgNavFemalePartnerOn);
+          labelSelf.setIcon(imgMPartner);
+          partner.setIcon(imgFPartner);
           // FIXME partner.setRolloverIcon(imgNavFemalePartnerOn);
           break;
       }
@@ -288,13 +288,11 @@ public class NavigatorView extends JPanel implements ContextSupport {
   /**
    * Creates a button
    */
-  private JComponent createPopup(String key, ImageIcon i, ImageIcon r) {
+  private JComponent createPopup(String key, ImageIcon i) {
     
     // create result
     PopupWidget result = new PopupWidget();
-    result.setIcon(r);
-    // FIXME
-    //result.setRolloverIcon(r);
+    result.setIcon(i);
     result.setFocusPainted(false);
 
     // no can do pre 1.4
@@ -328,12 +326,12 @@ public class NavigatorView extends JPanel implements ContextSupport {
     
     // add the buttons
     JComponent
-      popFather   = createPopup(FATHER, imgNavFatherOff, imgNavFatherOn),
-      popMother   = createPopup(MOTHER, imgNavMotherOff, imgNavMotherOn),
-      popOSibling = createPopup(OSIBLING, imgNavOlderSiblingOff, imgNavOlderSiblingOn),
-      popPartner  = createPopup(PARTNER, imgNavMalePartnerOff, imgNavMalePartnerOn),
-      popYSibling = createPopup(YSIBLING, imgNavYoungerSiblingOff, imgNavYoungerSiblingOn),
-      popChildren = createPopup(CHILD, imgNavChildOff, imgNavChildOn); 
+      popFather   = createPopup(FATHER,   imgFather),
+      popMother   = createPopup(MOTHER,   imgMother),
+      popOSibling = createPopup(OSIBLING, imgOSiblings),
+      popPartner  = createPopup(PARTNER,  imgMPartner),
+      popYSibling = createPopup(YSIBLING, imgYSiblings),
+      popChildren = createPopup(CHILD,    imgChildren); 
 
     labelSelf = new JLabel(Gedcom.getImage(Gedcom.INDIVIDUALS),SwingConstants.CENTER);
 
