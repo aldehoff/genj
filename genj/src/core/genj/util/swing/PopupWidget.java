@@ -82,6 +82,8 @@ public class PopupWidget extends JButton {
     setModel(new Model());
     // keep actions
     if (actions!=null) setActions(actions);
+    // make non-focusable
+    setFocusable(false);
     // done
   }
   
@@ -173,6 +175,16 @@ public class PopupWidget extends JButton {
    */
   public void setActions(List actions) {
     items = actions;
+  }
+
+  /**
+   * Part of 1.4 we override for usage under 1.3
+   */
+  public void setFocusable(boolean focusable) {
+    try {
+      super.setFocusable(focusable);
+    } catch (Throwable t) {
+    }
   }
 
 } //PopupButton
