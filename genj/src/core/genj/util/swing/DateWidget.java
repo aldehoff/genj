@@ -110,7 +110,6 @@ public class DateWidget extends JPanel {
         add(widgetYear); add(widgetMonth); add(widgetDay ); format = "yyyy-mmm-dd"; break;
     }
     
-    widgetCalendar.setToolTipText(format);
     widgetDay.setToolTipText(format);
     widgetMonth.setToolTipText(format);
     widgetYear.setToolTipText(format);
@@ -144,6 +143,9 @@ public class DateWidget extends JPanel {
     // keep calendar    
     calendar = pit.getCalendar();
 
+    // update tooltip
+    widgetCalendar.setToolTipText(calendar.getName());
+    
     // update year widget
     widgetYear.setText(calendar.getYear(pit.getYear (), true));
 
