@@ -134,7 +134,7 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
 
     // Reflect columns by TagPaths
     TagPath[] selectedPaths = t.getPaths(eType);
-    TagPath[] usedPaths     = TagPath.getUsedTagPaths(t.gedcom,eType);
+    TagPath[] usedPaths     = TagPath.getUsedTagPaths(t.getGedcom(),eType);
 
     pathTree.setPaths(usedPaths);
     pathTree.setSelection(selectedPaths);

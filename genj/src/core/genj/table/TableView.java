@@ -53,19 +53,16 @@ public class TableView extends JPanel implements ToolBarSupport {
   /*package*/ final static Resources resources = new Resources("genj.table");
   
   /** the gedcom we're looking at */
-  /*package*/ Gedcom gedcom;
+  private Gedcom gedcom;
   
   /** the registry we keep */
   private Registry registry;
-  
-  /** the modes we know about */  
-  private Filter[] filters;
   
   /** the table we're using */
   private JTable table;
   
   /** the table model we're using */
-  private Model tableModel;
+  private EntityTableModel tableModel;
   
   /**
    * Constructor
@@ -76,23 +73,12 @@ public class TableView extends JPanel implements ToolBarSupport {
     this.gedcom = gedcom;
     this.registry = registry;
     
-    // init our modes
-    filters = new Filter[]{
-      new Filter(Gedcom.INDIVIDUALS , new String[]{"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"}),
-      new Filter(Gedcom.FAMILIES    , new String[]{"FAM","FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" }),
-      new Filter(Gedcom.MULTIMEDIAS , new String[]{"OBJE","OBJE:FILE"}),
-      new Filter(Gedcom.NOTES       , new String[]{"NOTE"}),
-      new Filter(Gedcom.SOURCES     , new String[]{"SOUR"}),
-      new Filter(Gedcom.SUBMITTERS  , new String[]{"SUBM"}),
-      new Filter(Gedcom.REPOSITORIES, new String[]{"REPO"})
-    };
-    
     // read properties
-    Filter f = loadProperties();
+    //Filter f = loadProperties();
     
     // create our table
-    tableModel = new Model(f);
-    table = new JTable(tableModel, createTableColumnModel(f));
+    tableModel = new EntityTableModel(gedcom);
+    table = new JTable(tableModel, tableModel.createTableColumnModel());
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     table.setAutoCreateColumnsFromModel(false);
@@ -103,48 +89,84 @@ public class TableView extends JPanel implements ToolBarSupport {
     // listen to selections
     table.getSelectionModel().addListSelectionListener((ListSelectionListener)new ActionSelect().as(ListSelectionListener.class));
     
+    gedcom.addListener(new GedcomListener() {
+      /** @see genj.gedcom.GedcomListener#handleChange(Change) */
+      public void handleChange(Change change) {
+      }
+      /** @see genj.gedcom.GedcomListener#handleClose(Gedcom) */
+      public void handleClose(Gedcom which) {
+      }
+      /** @see genj.gedcom.GedcomListener#handleSelection(Selection) */
+      public void handleSelection(Selection selection) {
+        Entity entity = selection.getEntity();
+        // a type that we're interested in?
+        if (entity.getType()!=tableModel.getType()) return;
+        // change selection
+        EntityList es = TableView.this.gedcom.getEntities(entity.getType());
+        for (int e=0; e<es.getSize(); e++) {
+          if (es.get(e)==entity) {
+            table.getSelectionModel().setSelectionInterval(e,e);
+            return;
+          }
+        }
+        // done
+      }
+    });
+    
     // done
+  }
+  
+  /**
+   * Accessor - the gedcom we're focussed on
+   */
+  public Gedcom getGedcom() {
+    return gedcom;
   }
   
   /**
    * Accessor - the paths we're using for given type
    */
   public TagPath[] getPaths(int type) {
-    return filters[type].paths;
+    return tableModel.getPaths(type);
   }
   
   /**
    * Accessor - the paths we're using for given type
    */
   public void setPaths(int type, TagPath[] set) {
-    filters[type].setPaths(set,null);
-    tableModel.setFilter(tableModel.getFilter());
-    table.setColumnModel(createTableColumnModel(filters[type]));
+    tableModel.setPaths(type,set);
+    table.setColumnModel(tableModel.createTableColumnModel());
   }
   
+  /**
+   * Returns the type of entities to look at
+   */
+  public int getType() {
+    return tableModel.getType();
+  }
+
   /**
    * Sets the type of entities to look at
    */
   public void setType(int type) {
-    // grab current filter
-    Filter filter = tableModel.getFilter();
     // grab column widths
     TableColumnModel columns = table.getColumnModel();
     int[] widths = new int[columns.getColumnCount()];
     for (int c=0; c<columns.getColumnCount(); c++) {
       widths[c] = columns.getColumn(c).getWidth();
     }
-    filter.widths = widths;
-    // set the new filter and tell it to the model
-    tableModel.setFilter(filters[type]);
-    table.setColumnModel(createTableColumnModel(filters[type]));
+    tableModel.setWidths(tableModel.getType(),widths);
+    // set the new type
+    tableModel.setType(type);
+    table.setColumnModel(tableModel.createTableColumnModel());
     // done
   }
 
   /**
    * Read properties from registry
    */
-  private Filter loadProperties() {
+  private void loadProperties() {
+    /*
     // get current filter
     Filter current = filters[registry.get("filter", Gedcom.INDIVIDUALS)];
     // get paths&widths
@@ -155,16 +177,16 @@ public class TableView extends JPanel implements ToolBarSupport {
       int[]    ws = registry.get(tag+".widths", (int[]   )null);
       if (ps!=null&&ws!=null) filter.setPaths(ps,ws);
     }
-
     // Done
     return current;
+  */
   }
   
   /**
    * Write properties from registry
    */
   private void saveProperties() {
-    
+/*    
     // (re)set filter (which commits column widths)
     setType(tableModel.getFilter().type);
 
@@ -178,41 +200,18 @@ public class TableView extends JPanel implements ToolBarSupport {
       registry.put(tag+".paths", filter.paths);
       registry.put(tag+".widths", filter.widths);
     }
-
+*/
     // Done
   }  
   
-  /**
-   * Helper that creates a new ColumnModel
-   */
-  private TableColumnModel createTableColumnModel(Filter filter) {
-    // create and fill
-    TableColumnModel columns = new DefaultTableColumnModel();
-    for (int c=0; c<filter.paths.length; c++) {
-      TableColumn col = new TableColumn(c);
-      col.setHeaderValue(filter.paths[c]);
-      col.setPreferredWidth(filter.widths[c]);
-      columns.addColumn(col);
-    }
-    // done
-    return columns;
-  }
-
-  /**
-   * Sets the type of entities to look at
-   */
-  public int getType() {
-    return tableModel.getFilter().type;
-  }
-
   /**
    * @see genj.view.ToolBarSupport#populate(JToolBar)
    */
   public void populate(JToolBar bar) {
     // create buttons for mode switch
     ButtonHelper bh = new ButtonHelper();
-    for (int m=0;m<filters.length;m++) {
-      bar.add(bh.create(new ActionChangeFilter(filters[m])));
+    for (int t=0;t<Gedcom.LAST_ETYPE;t++) {
+      bar.add(bh.create(new ActionChangeType(t)));
     }
     // done
   }
@@ -226,51 +225,20 @@ public class TableView extends JPanel implements ToolBarSupport {
   }
 
   /**
-   *
-   */
-  private class Filter {
-    /** attributes */
-    ImgIcon image;
-    int type;
-    String[] defaults;
-    TagPath[] paths;
-    int[] widths;
-    /** constructor */
-    Filter(int t, String[] d) {
-      // remember
-      type     = t;
-      defaults = d;
-      // init
-      setPaths(defaults, null);
-    }
-    /** set paths to use */
-    void setPaths(Object[] ps, int[] ws) {
-      // build paths
-      paths = new TagPath[ps.length];
-      widths= new int[ps.length];
-      for (int p=0;p<ps.length;p++) {
-        paths [p] = new TagPath(ps[p].toString());
-        widths[p] = ws != null ? ws[p] : 640/ps.length;
-      }
-      // done
-    }
-  } //Mode
-
-  /**
    * Action - flip view to entity type
    */
-  private class ActionChangeFilter extends ActionDelegate {
-    /** the mode this action triggers */
-    private Filter filter;
+  private class ActionChangeType extends ActionDelegate {
+    /** the type this action triggers */
+    private int type;
     /** constructor */
-    ActionChangeFilter(Filter f) {
-      filter=f;
-      setTip(resources.getString("mode.tip", Gedcom.getNameFor(f.type,true)));
-      setImage(Property.getDefaultImage(Gedcom.getTagFor(f.type)));
+    ActionChangeType(int t) {
+      type = t;
+      setTip(resources.getString("mode.tip", Gedcom.getNameFor(type,true)));
+      setImage(Property.getDefaultImage(Gedcom.getTagFor(type)));
     }
     /** run */
     public void execute() {
-      setType(filter.type);
+      setType(type);
     }
   } //ActionMode
 
@@ -282,100 +250,9 @@ public class TableView extends JPanel implements ToolBarSupport {
     public void execute() {
       int i = table.getSelectedRow();
       if (i<0) return;
-      Entity e = gedcom.getEntities(tableModel.getFilter().type).get(i);
+      Entity e = tableModel.getEntity(i);
       gedcom.fireEntitySelected(null, e, false);
     }
   } //ActionMode
-
-  /**
-   * Our model
-   */
-  private class Model extends AbstractTableModel implements GedcomListener {
-    
-    /** the current mode */
-    private Filter filter;
-    
-    /**
-     * Constructor
-     */
-    Model(Filter start) {
-      filter = start;
-      gedcom.addListener(this);
-    }
-    
-    /**
-     * Sets the mode we're in
-     */
-    void setFilter(Filter set) {
-      // remember
-      filter = set;
-      // propagate
-      fireTableStructureChanged();
-    }
-  
-    /**
-     * Returns the mode we're in
-     */
-    Filter getFilter() {
-      return filter;
-    }
-    
-    /**
-     * @see javax.swing.table.TableModel#getColumnCount()
-     */
-    public int getColumnCount() {
-      return filter.paths.length;
-    }
-
-    /**
-     * @see javax.swing.table.TableModel#getRowCount()
-     */
-    public int getRowCount() {
-      return gedcom.getEntities(filter.type).getSize();
-    }
-
-    /**
-     * @see javax.swing.table.TableModel#getValueAt(int, int)
-     */
-    public Object getValueAt(int rowIndex, int columnIndex) {
-      Entity e = gedcom.getEntities(filter.type).get(rowIndex);
-      filter.paths[columnIndex].setToFirst();
-      return e.getProperty().getProperty(filter.paths[columnIndex], false);
-    }
-
-    /**
-     * @see genj.gedcom.GedcomListener#handleChange(Change)
-     */
-    public void handleChange(Change change) {
-      //if (change.isChanged(change.EADD)||change.isChanged(change.EDEL))
-      fireTableDataChanged();
-    }
-
-    /**
-     * @see genj.gedcom.GedcomListener#handleClose(Gedcom)
-     */
-    public void handleClose(Gedcom which) {
-      // ignored
-    }
-
-    /**
-     * @see genj.gedcom.GedcomListener#handleSelection(Selection)
-     */
-    public void handleSelection(Selection selection) {
-      Entity entity = selection.getEntity();
-      // a type that we're interested in?
-      if (entity.getType()!=filter.type) return;
-      // change selection
-      EntityList es = gedcom.getEntities(filter.type);
-      for (int e=0; e<es.getSize(); e++) {
-        if (es.get(e)==entity) {
-          table.getSelectionModel().setSelectionInterval(e,e);
-          return;
-        }
-      }
-      // done
-    }
-    
-  } //Model
   
 } //TableView
