@@ -21,6 +21,7 @@ package genj.util.swing;
 
 import genj.gedcom.PointInTime;
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -29,6 +30,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -67,17 +69,12 @@ public class DateWidget extends JPanel {
     widgetCalendar.setMargin(new Insets(1,1,1,1));
     widgetCalendar.setActions(switches);
     
-    widgetDay   = new TextFieldWidget( int2string(pit.getDay  (), true ),2+1);
+    widgetYear  = new TextFieldWidget("",4+1);
     
-    widgetMonth = new ChoiceWidget(calendar.getMonths(true, false), "");
+    widgetMonth = new ChoiceWidget();
     widgetMonth.setIgnoreCase(true);
-    try {
-      widgetMonth.setSelectedItem(calendar.getMonth(pit.getMonth(), true, false));
-      widgetMonth.setChanged(false);
-    } catch (ArrayIndexOutOfBoundsException e) {
-    }
 
-    widgetYear  = new TextFieldWidget( int2string(pit.getYear (), false),4+1);
+    widgetDay   = new TextFieldWidget("",2+1);
     
     // Layout
     setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -102,9 +99,36 @@ public class DateWidget extends JPanel {
     addFocusListener(e);
     
     // Status
+    setValue(pit);
     updateStatus();
+
+    // Reset changed
+    setChanged(false);
     
     // Done
+  }
+  
+  /**
+   * Set current value
+   */
+  public void setValue(PointInTime pit) {
+
+    // keep calendar    
+    calendar = pit.getCalendar();
+
+    // update widgets
+    widgetYear.setText(int2string(pit.getYear (), false));
+
+    widgetDay.setText(int2string(pit.getDay  (), true ));
+    
+    widgetMonth.setValues(Arrays.asList(calendar.getMonths(true, false)));
+    try {
+      widgetMonth.setSelectedItem(calendar.getMonth(pit.getMonth(), true, false));
+      widgetMonth.setChanged(false);
+    } catch (ArrayIndexOutOfBoundsException e) {
+    }
+
+    // done
   }
   
   /**
@@ -132,6 +156,15 @@ public class DateWidget extends JPanel {
    */
   public Dimension getMaximumSize() {
     return new Dimension(super.getMaximumSize().width, super.getPreferredSize().height);
+  }
+
+  /**
+   * Set change status
+   */
+  public void setChanged(boolean set) {
+    widgetDay.setChanged(set);
+    widgetYear.setChanged(set);
+    widgetMonth.setChanged(set);
   }
 
   /**
@@ -215,8 +248,22 @@ public class DateWidget extends JPanel {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      //calendar = newCalendar;
-      // FIXME calendar conversion necessary here (exception)
+      PointInTime pit;
+      try {
+        // get current value
+        pit = getValue();
+        if (!pit.isValid())
+          throw new IllegalArgumentException("Current date is not valid");
+        // transform to julian day
+        pit = pit.get(newCalendar);
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, t, "Switching Calendar failed");
+        return; 
+      }
+      // change
+      setValue(pit);
+      setChanged(true);
+      // update current status
       updateStatus();
     }
   } // SwitchCalendar

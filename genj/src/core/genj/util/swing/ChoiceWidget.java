@@ -54,6 +54,13 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   /**
    * Constructor
    */
+  public ChoiceWidget() {
+    this(new Object[0], "");
+  }
+  
+  /**
+   * Constructor
+   */
   public ChoiceWidget(List values) {
     this(values.toArray(), "");
   }

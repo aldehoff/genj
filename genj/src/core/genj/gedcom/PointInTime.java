@@ -136,6 +136,16 @@ public class PointInTime implements Comparable {
   }
   
   /**
+   * Get representation in different calendar
+   */
+  public PointInTime get(Calendar cal) throws GedcomException {
+    // convert to julian date
+    int jd = getCalendar().toJulianDay(this);
+    // convert to new instance
+    return cal.toPointInTime(jd);
+  }  
+  
+  /**
    * Setter (implementation dependant)
    */
   public void set(int d, int m, int y) {
@@ -278,7 +288,7 @@ public class PointInTime implements Comparable {
    */  
   public int compareTo(PointInTime other, int offset) {
 
-    // FIXME comparing PITs with different calendars must be handled
+    // FIXME need to use julian day comparison of for different calendars 
     
     int result;
       
@@ -535,9 +545,23 @@ public class PointInTime implements Comparable {
       return 31;
     }
     
+    /**
+     * PIT -> Julian Day
+     */
+    public int toJulianDay(PointInTime pit) throws GedcomException {
+      throw new GedcomException("Transformation to Julian Day not supported");
+    }
+    
+    /**
+     * Julian Day -> PIT
+     */
+    public PointInTime toPointInTime(int julianDay) throws GedcomException {
+      throw new GedcomException("Transformation to "+getName()+" not supported");
+    }
+    
   } //Calendar
 
-  // FIXME need calendar for julian, hebrew and french r, too!
+  // FIXME need calendar for hebrew and french r
 
   /**
    * Our own gregorian - dunno if java.util.GregorianCalendar would be of much help
@@ -580,6 +604,45 @@ public class PointInTime implements Comparable {
       return ((year%4 == 0) && ((year%100 != 0) || (year%400 == 0)));
     }
     
+    /**
+     * @see genj.gedcom.PointInTime.Calendar#getJulianDay(genj.gedcom.PointInTime)
+     */
+    public int toJulianDay(PointInTime pit) {
+
+      // Communications of the ACM by Henry F. Fliegel and Thomas C. Van Flandern entitled 
+      // ``A Machine Algorithm for Processing Calendar Dates''. 
+      // CACM, volume 11, number 10, October 1968, p. 657.  
+      int
+       d = pit.getDay  ()+1,
+       m = pit.getMonth()+1,
+       y = pit.getYear ();      
+      
+      return ( 1461 * ( y + 4800 + ( m - 14 ) / 12 ) ) / 4 +
+             ( 367 * ( m - 2 - 12 * ( ( m - 14 ) / 12 ) ) ) / 12 -
+             ( 3 * ( ( y + 4900 + ( m - 14 ) / 12 ) / 100 ) ) / 4 +
+             d - 32075;
+    }
+    
+    /**
+     * @see genj.gedcom.PointInTime.Calendar#getPointInTime(int)
+     */
+    public PointInTime toPointInTime(int julianDay) {
+     
+      // see toJulianDay 
+      int l = julianDay + 68569;
+      int n = ( 4 * l ) / 146097;
+          l = l - ( 146097 * n + 3 ) / 4;
+      int i = ( 4000 * ( l + 1 ) ) / 1461001;
+          l = l - ( 1461 * i ) / 4 + 31;
+      int j = ( 80 * l ) / 2447;
+      int d = l - ( 2447 * j ) / 80;
+          l = j / 11;
+      int m = j + 2 - ( 12 * l );
+      int y = 100 * ( n - 49 ) + i + l;
+      
+      return new PointInTime(d-1,m-1,y,this);
+    }
+    
   } //GregorianCalendar
 
   /**
@@ -600,7 +663,53 @@ public class PointInTime implements Comparable {
     protected boolean isLeap(int year) {
       return (year%4 == 0);
     }
+    
+    /**
+     * @see genj.gedcom.PointInTime.GregorianCalendar#getJulianDay(genj.gedcom.PointInTime)
+     */
+    public int toJulianDay(PointInTime pit) {
+      
+      // see http://quasar.as.utexas.edu/BillInfo/JulianDatesG.html
+      
+      int 
+        y = pit.getYear(),
+        m = pit.getMonth()+1,
+        d = pit.getDay()+1;
+      
+      if (m<2) {
+        y--;
+        m+=12;
+      }
+            
+      int
+        E = (int)(365.25*(y+4716)),
+        F = (int)(30.6001*(m+1)),
+        JD= d+E+F-1524;
+            
+      return JD;
+    }
+    
+    /**
+     * @see genj.gedcom.PointInTime.GregorianCalendar#getPointInTime(int)
+     */
+    public PointInTime toPointInTime(int julianDay) {
 
-  } //JulianCalendar  
-  
+      // see toJulianDay
+      
+      int
+        Z = julianDay,
+        B = Z+1524,
+        C = (int)((B-122.1)/365.25),
+        D = (int)(365.25*C),
+        E = (int)((B-D)/30.6001),
+        F = (int)(30.6001*E),
+        d = B-D-F,
+        m = E-1 <= 12 ? E-1 : E-13,
+        y = C-(m<3?4715:4716);  
+      
+      return new PointInTime((int)d-1,(int)m-1,(int)y,this);
+    }
+
+  } //JulianCalendar
+
 } //PointInTime
