@@ -17,10 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * About Menu class - Authors
- * This class creates the content on the Authors tabbed pane in the
+ * About Menu class - Feedback
+ * This class creates the content on the Feedback tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.1 2002-05-16 21:05:01 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.2 2002-05-16 21:30:34 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
