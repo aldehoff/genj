@@ -171,7 +171,11 @@ public class Applet extends java.applet.Applet {
         Origin origin = Origin.create(new URL(url));
         
         // the registry
-        registry = new Registry(origin.open("genj.properties"));
+        try {
+          registry = new Registry(origin.open("genj.properties"));
+        } catch (Throwable t) {
+          registry = new Registry();
+        }
         
         // the gedcom file
         reader = new GedcomReader(origin, null); //FIXME popup needed for password
