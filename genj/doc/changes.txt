@@ -26,9 +26,13 @@ Future
   O Wizard that asks what to do after deletion of entities (remove empty family, remove lost branch, ...)
   O Report to re-layout all entity IDs (logical numbering, format, etc.)
   O Descendants view a la http://worldconnect.rootsweb.com/cgi-bin/igm.cgi?op=DESC&db=timmsc&id=I008
+  O Default properties that are added to new entities should be user-defined
+  O Windows should never been opened outside of the visible screen ("lost overview")
+    (see Toolkit.getDefaultToolkit().getScreenSize() : Dimension)
 
-1.8 - Apr xx 2002 (not released)
+1.8 - Mar xx 2002 (not released)
 
+  C Abbreviated dates show month name (JAN), skip FROM/BET/AND/..., use '-' and are on one line
   I ant descriptor now builds distributions for languages EN,DE,FR and IT
   C Changed the way that IDs are created for new entities (incremental)
   C Help menu is now offset to the right
@@ -39,7 +43,6 @@ Future
   C Applet's default-size for windows is now 640/480
   B Link to image in help HTML is broken (resedit.html)
   I Updated resedit.html in help menu to match resedit v.1.02
-  I Animated Gif files added to the help menu
   I ReportGedcomStatistics gives stats on birth and death places
   I ReportMakeHTMLTable orders alphabetically by name
   I Javadoc now has links to Sun's Java2 API
@@ -313,5 +316,4 @@ Future
   I Dialogs during io are not reaching out of screen anymore
   I Application's menu shows actions on Gedcoms
   N Implemented localization
-
 

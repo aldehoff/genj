@@ -641,7 +641,7 @@ public class PropertyDate extends Property {
 
     // Abbreviation?
     if (abbreviate) {
-      return (i2s(getDay(which))+" "+i2s(getMonth(which))+" "+i2s(getYear(which))).trim();
+      return (i2s(getDay(which))+" "+i2mmm(getMonth(which))+" "+i2s(getYear(which))).trim();
     }
 
     // Attribute?

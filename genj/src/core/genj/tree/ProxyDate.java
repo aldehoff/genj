@@ -38,8 +38,12 @@ class ProxyDate extends Proxy {
     g.setColor(Color.black);
 
     // Draw 1st line of date
+    String txt = date.toString(0,g.isAbbreviateDates);
+    if ((g.isAbbreviateDates)&&(date.isTwoDates())) {
+      txt += " - "+date.toString(1,g.isAbbreviateDates);
+    }
     g.drawString(
-      date.toString(0,g.isAbbreviateDates),
+      txt,
       dit,
       pig,
       box.x,
@@ -47,7 +51,7 @@ class ProxyDate extends Proxy {
     );
 
     // Draw 2nd line of date
-    if (!date.isTwoDates()) {
+    if (!date.isTwoDates() || g.isAbbreviateDates) {
       return;
     }
 
