@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.24 2003-06-01 05:12:30 tfmorris Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.25 2003-06-01 09:18:33 tfmorris Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -176,20 +176,20 @@ public class ReportGedcomStatistics extends Report {
 		
     // One: We show the number of families :
     println("     - "+
-						i18n("families",gedcom.getEntities(Gedcom.FAMILIES).size()+""));
+						i18n("families",gedcom.getEntities(Gedcom.FAMILIES).size()));
 
     // Two: We show the number of individuals :
     println("     - "+ i18n("individuals",
-														gedcom.getEntities(Gedcom.INDIVIDUALS).size()+""));
+														gedcom.getEntities(Gedcom.INDIVIDUALS).size()));
 
     // Three: We show the number of males :
-    println("         . "+i18n("males",stats.numMales+""));
+    println("         . "+i18n("males",stats.numMales));
 
     // Four: We show the number of females :
-    println("         . "+i18n("females",stats.numFemales+""));
+    println("         . "+i18n("females",stats.numFemales));
 
     // Five: We show the number of people whose sex is undefined :
-    println("         . "+i18n("sex_unknown",stats.numUnknown+""));
+    println("         . "+i18n("sex_unknown",stats.numUnknown));
 
     println();
 
@@ -198,8 +198,8 @@ public class ReportGedcomStatistics extends Report {
     Iterator births = stats.birthPlaces.getValues().iterator();
     while (births.hasNext()) {
       String place = (String)births.next();
-      int count = stats.birthPlaces.getCount(place);
-			String[] msgargs = {count+"",place};
+      Integer count = new Integer(stats.birthPlaces.getCount(place));
+			Object[] msgargs = {count,place};
       println("     - "+i18n("indi_born",msgargs));
     }
 
@@ -210,8 +210,8 @@ public class ReportGedcomStatistics extends Report {
     Iterator deaths = stats.deathPlaces.getValues().iterator();
     while (deaths.hasNext()) {
       String place = (String)deaths.next();
-      int count = stats.deathPlaces.getCount(place);
-			String[] msgargs = {count+"",place};
+      Integer count = new Integer(stats.deathPlaces.getCount(place));
+			Object[] msgargs = {count,place};
       println("     - "+i18n("indi_died",msgargs));
     }
 
