@@ -42,7 +42,12 @@ import genj.window.CloseWindow;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,9 +56,11 @@ import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -424,9 +431,11 @@ import javax.swing.event.ChangeListener;
   /**
    * A 'bean' we use for groups
    */
-  private static class PopupBean extends PopupWidget {
+  private static class PopupBean extends PopupWidget implements PropertyChangeListener {
     
     private PropertyBean wrapped;
+    
+    private Popup popup = null;
     
     /**
      * constructor
@@ -434,42 +443,89 @@ import javax.swing.event.ChangeListener;
     private PopupBean(PropertyBean wrapped) {
       
       this.wrapped = wrapped;
-
+  
       // prepare image
       Property prop = wrapped.getProperty();
       ImageIcon img = prop.getImage(false);
       if (prop.getParent()==null)
         img = img.getDisabled(50);
       setIcon(img);
-
+  
       // fix looks
+      setFocusable(false);
       setBorder(null);
       
       // done
     }
     
-    /** popup callback */
-    protected JPopupMenu createPopup() {
-      
-      // create and fille
-      JPopupMenu popup = new JPopupMenu();
-      popup.add(wrapped);
-      
+    /** lifecycle callback */
+    public void addNotify() {
+      // list to focus changes
+      KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("focusOwner", this);
+      // continue
+      super.addNotify();
+    }
+    
+    /** lifecycle callback */
+    public void removeNotify() {
+      // still a popup showing?
+      if (popup!=null) {
+        popup.hide();
+        popup = null;
+      }
+      // stop listening to focus changes
+      KeyboardFocusManager.getCurrentKeyboardFocusManager().removePropertyChangeListener("focusOwner", this);
+      // continue
+      super.removeNotify();
+    }
+    /** button press callback */
+    public void showPopup() {
+
+      // clear current?
+      if (popup!=null) {
+        popup.hide();
+        popup=null;
+      }
+      // screen pos
+      Point pos = getLocationOnScreen();
+      pos.x += getWidth()/2;
+      pos.y += getHeight()/2;
+      // show popup
+      popup = PopupFactory.getSharedInstance().getPopup(this, wrapped, pos.x, pos.y);
+      popup.show();
+      // request focus
+      SwingUtilities.getWindowAncestor(wrapped).setFocusableWindowState(true);
+      wrapped.requestFocus();
       // update image
       setIcon(wrapped.getProperty().getImage(false));
-      
+    }
+    
+    /** 
+     * focus property change notification 
+     * (this doesn't seem to be invoke in Java 1.4.1 with a user clicking on a textfield)
+     */
+    public void propertyChange(PropertyChangeEvent evt) {
+      // popup visible?
+      if (popup==null)
+        return;
+      // a new focus owner?
+      if (evt.getNewValue()==null)
+        return;
+      // a sub-component of this?
+      Component focus = (Component)evt.getNewValue();
+      while (true) {
+        if (focus==wrapped) 
+          return;
+        if (focus==null)
+          break;
+        focus = focus.getParent();
+      }
+      // get rid of popup
+      popup.hide();
+      popup = null;
       // done
-      return popup;
     }
-    
-    /** popup callback */
-    public void showPopup() {
-      // super can do its thing
-      super.showPopup();
-      // set focus
-      wrapped.requestFocusInWindow();
-    }
-    
+        
   } //Label
   
   /**
