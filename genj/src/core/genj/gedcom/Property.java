@@ -351,12 +351,21 @@ public abstract class Property implements Comparable {
    */
   public TagPath getPath() {
 
-    // build
     Stack stack = new Stack();
-    stack.push(getTag());
+
+    // build path start with this
+    String tag = getTag();
+    if (tag==null)
+      throw new IllegalArgumentException("encountered getTag()==null");
+    stack.push(tag);
+    
+    // loop through parents
     Property parent = getParent();
     while (parent!=null) {
-      stack.push(parent.getTag());
+      tag = parent.getTag();
+      if (tag==null)
+        throw new IllegalArgumentException("encountered getTag()==null");
+      stack.push(tag);
       parent = parent.getParent();
     }
 
