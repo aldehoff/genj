@@ -19,6 +19,7 @@
  */
 package genj.report;
 
+import genj.edit.EditViewFactory;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.option.Option;
@@ -641,10 +642,20 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // no id no fun
       if (id==null)
         return;
+        
       // try to find entity with id
       Entity entity = gedcom.getEntity(id);
-      if (entity!=null)
-        manager.setContext(entity);
+      if (entity==null)
+        return;
+
+      // make sure an EditView is open
+      if (!EditViewFactory.isEditViewVisible(manager, gedcom)) {
+        EditViewFactory.openForEdit(manager, entity);
+      }
+        
+      // propagate to other views through manager
+      manager.setContext(entity);
+      
       // done
     }
 

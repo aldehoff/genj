@@ -139,12 +139,26 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     result.add(new DelEntity(entity, manager));
     
     // add an "edit in EditView"
-    if (manager.getInstances(EditView.class, entity.getGedcom()).length==0) {
+    if (!isEditViewVisible(manager, entity.getGedcom())) {
       result.add(ActionDelegate.NOOP);
       result.add(new OpenForEdit(entity, manager));
     }
     // done
     return result;
+  }
+  
+  /**
+   * Test for visible EditView
+   */
+  public static boolean isEditViewVisible(ViewManager manager, Gedcom gedcom) {
+    return manager.getInstances(EditView.class, gedcom).length>0;
+  }
+  
+  /**
+   * Open for edit
+   */
+  public static void openForEdit(ViewManager manager, Entity entity) {
+    new OpenForEdit(entity, manager).trigger();
   }
   
   /**
