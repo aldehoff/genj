@@ -321,7 +321,6 @@ public class TagPathTree extends JScrollPane {
       panel.setLayout(new BorderLayout());
       panel.add(checkbox,"West");
       panel.add(label   ,"Center");
-
       checkbox.setOpaque(false);
       label.setOpaque(false);
       panel.setOpaque(false);
@@ -332,6 +331,7 @@ public class TagPathTree extends JScrollPane {
       label.setText( node.tag );
       label.setIcon( Property.getDefaultImage(node.tag) );
       checkbox.setSelected(selection.contains(node));
+      panel.invalidate(); // make sure no preferred side is cached
       return panel;
     }
     // EOC
