@@ -132,18 +132,24 @@ public class Almanac {
   }
   
   /**
-   * Get a category by name
+   * Get a category by name - this effectivly reusee
+   * category strings if the first word in name is a
+   * valid prefix
    */
-  protected String getCategory(String add) {
+  protected String getCategory(String name) {
+    
+    String key = new StringTokenizer(name," ").nextToken().toLowerCase();
+    
     synchronized (categories) {
       for (int i = 0; i < categories.size(); i++) {
         String old = (String)categories.get(i);
-        if (old.equals(add))
+        if (old.toLowerCase().startsWith(key))
           return old;
       }
-      categories.add(add);
-      return add;
+      categories.add(name);
+      return name;
     }
+    
   }
   
   /**
