@@ -184,9 +184,9 @@ public class SortableTableHeader extends JTableHeader {
    */
   private class SortClickMouseListener extends MouseAdapter {
     /**
-     * @see java.awt.event.MouseListener#mouseClicked(MouseEvent)
+     * @see java.awt.event.MouseListener#mousePressed(MouseEvent)
      */
-    public void mouseClicked(MouseEvent e) {
+    public void mousePressed(MouseEvent e) {
       // find out which column
       int col = columnAtPoint(e.getPoint());
       if (col<0) return;
