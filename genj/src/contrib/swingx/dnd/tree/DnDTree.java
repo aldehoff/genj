@@ -354,7 +354,7 @@ public class DnDTree extends JTree implements Autoscroll {
                         accepted = true;
                     } else {
                         Object parent = parentPath.getLastPathComponent();
-                        accepted = getDnDModel().getDropActions(transferable, parent, childIndex) == action;
+                        accepted = (getDnDModel().getDropActions(transferable, parent, childIndex) & action) != 0;
                     }                        
                 }
             }
