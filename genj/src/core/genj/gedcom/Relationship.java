@@ -152,7 +152,7 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#getDescription()
      */
     public String getDescription() {
-      return Gedcom.resources.getString("rel.xref.desc", new String[]{ Gedcom.getName(getTargetType()), owner.toString()});
+      return Gedcom.resources.getString("rel.xref.desc", new String[]{ Gedcom.getName(getTargetType()), owner.getEntity().toString()});
     }
     
     /**

@@ -364,7 +364,6 @@ public class Indi extends Entity {
   /** 
    * Returns the number of parents this individual has
    */
-  // TODO: K. Mraz - make this understand individual can be member of multiple familes
   public int getNoOfParents() {
     Fam fam = getFamc();
     return fam==null?0:fam.getNoOfSpouses();
@@ -424,7 +423,6 @@ public class Indi extends Entity {
     return getAncestors(new HashSet());
   }
   
-  // TODO: K. Mraz - make this understand individual can be member of multiple familes
   /*package*/ Set getAncestors(Set collect) {
     
     // would be in parental family

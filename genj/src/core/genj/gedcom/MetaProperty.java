@@ -435,6 +435,14 @@ public class MetaProperty implements Comparable {
   }
   
   /**
+   * String representation
+   */
+  public String toString() {
+    return getTag() + "/" + getType().getName();
+  }
+  
+  
+  /**
    * The Gedcom Grammer read
    */
   private static class GrammerParser {

@@ -31,6 +31,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Parser
@@ -414,11 +416,15 @@ import java.awt.geom.Rectangle2D;
       Fam[] fams = indi.getFamilies();
       TreeNode pivot = node;
       // loop through fams
+
+      List l = new ArrayList(fams.length);
+
       for (int f=0; f<fams.length; f++) {
         // loop through children
         Indi[] children = fams[f].getChildren();
         for (int c=0; c<children.length; c++) {
-
+          if (!l.contains(children[c])) {
+              l.add(children[c]);
           // on first arc
           if (node.getArcs().isEmpty()) {
             // stop when hiding descendants
@@ -436,6 +442,7 @@ import java.awt.geom.Rectangle2D;
           model.add(new TreeArc(pivot, parse(children[c]), true));       
 
           // next child          
+          } 
         }
       }
       // done

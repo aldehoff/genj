@@ -36,6 +36,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyFamilyChild;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyNote;
 import genj.gedcom.PropertyRepository;
@@ -116,6 +117,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
    */
   public List createActions(Property property, ViewManager manager) {
     
+    // TODO would be great if this wasn't hardcoded
+    
     // create the actions
     List result = new ArrayList();
     
@@ -134,6 +137,14 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
           type==PropertySubmitter.class) {
         // .. make sure @@ forces a non-substitute!
         result.add(new CreateRelationship(new XRefBy(property, (PropertyXRef)subs[s].create("@@")), manager));
+        // continue
+        continue;
+      }
+      // TODO works with ADOP|FAMC only
+      if (type==PropertyFamilyChild.class) {
+        result.add(new CreateRelationship(new XRefBy(property, (PropertyXRef)subs[s].create("@@")), manager));
+        // continue
+        continue;
       }
     }
     
