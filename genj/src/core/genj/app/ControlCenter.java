@@ -856,7 +856,7 @@ public class ControlCenter extends JPanel {
       Origin origin = gedcom.getOrigin();
       File file;
       String encoding = null;
-      String password = null;
+      String password = gedcom.getPassword();
       
       if ((ask) || (origin == null) || (!origin.isFile())) {
 
