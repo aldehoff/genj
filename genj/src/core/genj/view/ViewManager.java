@@ -327,7 +327,7 @@ public class ViewManager {
       if (dot<0) break;
       key = key.substring(dot+1);
     }
-System.out.println(key);
+
     return key.toLowerCase();    
 // 20030521 interestingly getPackage() doesn't
 // always seem to return something (e.g. Konqueror applet)
