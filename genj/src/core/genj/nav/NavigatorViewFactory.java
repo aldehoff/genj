@@ -20,7 +20,6 @@
 package genj.nav;
 
 import genj.gedcom.Gedcom;
-import genj.print.PrintRenderer;
 import genj.util.Registry;
 import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
@@ -35,23 +34,9 @@ import javax.swing.JComponent;
 public class NavigatorViewFactory implements ViewFactory {
 
   /**
-   * @see genj.app.ViewFactory#createSettingsComponent(Component)
+   * @see genj.view.ViewFactory#createView(genj.gedcom.Gedcom, genj.util.Registry, java.awt.Frame)
    */
-  public JComponent createSettingsComponent(JComponent view) {
-    return null;
-  }
-
-  /**
-   * @see genj.app.ViewFactory#createPrintRenderer(Component)
-   */
-  public PrintRenderer createPrintRenderer(JComponent view) {
-    return null;
-  }
-
-  /**
-   * @see genj.app.ViewFactory#createViewComponent(Gedcom, Registry, Frame)
-   */
-  public JComponent createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
+  public JComponent createView(Gedcom gedcom, Registry registry, Frame frame) {
     return new NavigatorView(gedcom,registry,frame);
   }
   

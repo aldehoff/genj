@@ -71,12 +71,38 @@ public class PrintManager {
   }
   
   /**
-   * Show a print dialog
+   * Prints a view
    */
-  public boolean print(PrintRenderer renderer, JComponent owner) {
+  public boolean print(JComponent view) {
+    // calculate Printer
+    Printer printer = getPrinter(view);
+    if (printer==null) return false;
+    printer.setView(view);
     // our own task for printing
-    new PrintTask(renderer, owner);    
+    new PrintTask(printer, view);    
     // done
+    return false;
+  }
+  
+  /**
+   * Returns a view's printer
+   */
+  public static Printer getPrinter(JComponent view) {
+    try {
+      return (Printer)Class.forName(view.getClass().getName()+"Printer").newInstance();
+    } catch (Throwable t) {
+    }
+    return null;
+  }
+
+  /**
+   * Resolves whether a view can be printed   */
+  public static boolean hasPrinter(JComponent view) {
+    try {
+      if (Printer.class.isAssignableFrom(Class.forName(view.getClass().getName()+"Printer")))
+      return true;
+    } catch (Throwable t) {
+    }
     return false;
   }
 
@@ -94,11 +120,11 @@ public class PrintManager {
     private PageFormat pageFormat;
     
     /** the current renderer */
-    private PrintRenderer renderer;
+    private Printer renderer;
     
     /**
      * Constructor     */
-    private PrintTask(PrintRenderer reNderer, JComponent owner) {
+    private PrintTask(Printer reNderer, JComponent owner) {
       
       // remember renderer
       renderer = reNderer;
@@ -182,20 +208,20 @@ public class PrintManager {
   private static class PrintableImpl implements Printable {
     
     /** renderer we use */
-    private PrintRenderer renderer;
+    private Printer renderer;
     
     /** pages */
     private Point[] pageSequence;
     
     /**
      * Constructor     */
-    /*package*/ PrintableImpl(PageFormat pageFormat, PrintRenderer rendErer) {
+    /*package*/ PrintableImpl(PageFormat pageFormat, Printer rendErer) {
 
       // remember renderer
       renderer = rendErer;
       
       // calculate pages
-      Point pages = renderer.getNumPages(
+      Point pages = renderer.calcPages(
         new Point2D.Double(pageFormat.getImageableWidth(),pageFormat.getImageableHeight()),
         resolution
       );   
@@ -239,7 +265,7 @@ public class PrintManager {
       ));
       
       // render it
-      renderer.renderPage(page, g, resolution);
+      renderer.renderPage(g, page, resolution);
       
       // done
       return PAGE_EXISTS;

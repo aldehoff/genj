@@ -23,7 +23,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.print.PrintManager;
-import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
@@ -41,7 +40,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
 
 /**
  * A wrapper for our views enabling action buttons
@@ -57,8 +55,8 @@ import javax.swing.border.TitledBorder;
   /** the view we're wrapping */
   private JComponent view;
   
-  /** the settings for this view */
-  private JComponent settings;
+  /** the factory we've used */
+  private ViewFactory factory;
   
   /** the gedcom this view looks at */
   private Gedcom gedcom;
@@ -69,15 +67,16 @@ import javax.swing.border.TitledBorder;
   /** 
    * Constructor
    */
-  /*package*/ ViewWidget(JFrame frame, Gedcom gedcom, Registry registry, ViewFactory factory) {
+  /*package*/ ViewWidget(JFrame fRame, Gedcom geDcom, Registry regIstry, ViewFactory facTory) {
     
     // remember
-    this.registry = registry;
-    this.gedcom = gedcom;
-    this.frame = frame;
+    frame = fRame;
+    gedcom = geDcom;
+    registry = regIstry;
+    factory = facTory;
     
     // create the view component
-    view = factory.createViewComponent(gedcom, registry, frame);
+    view = factory.createView(gedcom, registry, frame);
 
     // setup layout
     setLayout(new BorderLayout());
@@ -113,18 +112,13 @@ import javax.swing.border.TitledBorder;
       .setContainer(bar);
 
     // .. a button for editing the View's settings
-    settings = factory.createSettingsComponent(view);
-    if (settings!=null) {
-      settings.setBorder(new TitledBorder(frame.getTitle()));
+    if (SettingsWidget.hasSettings(view))
       bh.create(new ActionOpenSettings());
-    }
-  
+    
     // .. a button for printing View
-    PrintRenderer renderer = factory.createPrintRenderer(view);
-    if (renderer!=null) {
-      bh.create(new ActionPrint(renderer, frame));
-    }
-  
+    if (PrintManager.hasPrinter(view)) 
+      bh.create(new ActionPrint(frame));
+
     // .. a button for closing the View
     bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(Images.imgClose));
 
@@ -153,13 +147,6 @@ import javax.swing.border.TitledBorder;
    */
   /*package*/ JComponent getView() {
     return view;
-  }
-  
-  /**
-   * Accessor - the settings
-   */
-  /*package*/ JComponent getSettings() {
-    return settings;
   }
   
   /**
@@ -232,19 +219,16 @@ import javax.swing.border.TitledBorder;
    * Action - print view
    */
   private class ActionPrint extends ActionDelegate {
-    /** the renderer */
-    private PrintRenderer renderer;
     /** the frame */
     private Frame frame;
     /** constructor */
-    protected ActionPrint(PrintRenderer r, Frame f) {
-      renderer=r;
+    protected ActionPrint(Frame f) {
       frame=f;
       super.setImage(Images.imgPrint).setTip("view.print.tip");
     }
     /** run */
     protected void execute() {
-      PrintManager.getInstance().print(renderer, ViewWidget.this); 
+      PrintManager.getInstance().print(view); 
     }
   } //ActionOpenSettings
   

@@ -20,7 +20,6 @@
 package genj.view;
 
 import genj.gedcom.Gedcom;
-import genj.print.PrintRenderer;
 import genj.util.Registry;
 import genj.util.swing.ImageIcon;
 
@@ -37,17 +36,7 @@ public interface ViewFactory {
   /**
    * Callback for creating a view 
    */
-  public JComponent createViewComponent(Gedcom gedcom, Registry registry, Frame frame);
-  
-  /**
-   * Callback for creating settings for a view
-   */
-  public JComponent createSettingsComponent(JComponent view);
-  
-  /**
-   * Callback for creating a printer for a view
-   */
-  public PrintRenderer createPrintRenderer(JComponent view);
+  public JComponent createView(Gedcom gedcom, Registry registry, Frame frame);
   
   /**
    * Returns an image for this view

@@ -20,18 +20,19 @@
 package genj.entity;
 
 import genj.renderer.BlueprintList;
-import genj.view.ApplyResetSupport;
+import genj.view.Settings;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 
 
 /**
  * The settings editor for the EntityView
  */
-public class EntityViewSettings extends JTabbedPane implements ApplyResetSupport {
+public class EntityViewSettings extends JTabbedPane implements Settings {
   
   /** the entity view */
   private EntityView entityView; 
@@ -46,10 +47,7 @@ public class EntityViewSettings extends JTabbedPane implements ApplyResetSupport
   /**
    * Constructor
    */
-  public EntityViewSettings(EntityView view) {
-    
-    // keep the view
-    entityView = view;
+  public EntityViewSettings() {
     
     // main options
     Box main = new Box(BoxLayout.Y_AXIS);
@@ -58,16 +56,26 @@ public class EntityViewSettings extends JTabbedPane implements ApplyResetSupport
     main.add(checkAntialiasing);
     
     // blueprint options
-    blueprintList = new BlueprintList(entityView.gedcom);
+    blueprintList = new BlueprintList();
     
     // add those tabs
     add(entityView.resources.getString("page.main")      , main);
     add(entityView.resources.getString("page.blueprints"), blueprintList);
     
-    // reset
-    reset();    
-    
     // done
+  }
+  
+  /**
+   * @see genj.view.Settings#setView(javax.swing.JComponent)
+   */
+  public void setView(JComponent view) {
+
+    // keep the view
+    entityView = (EntityView)view;
+    
+    // characteristics
+    blueprintList.setGedcom(entityView.gedcom);    
+    
   }
   
   /**
@@ -98,6 +106,13 @@ public class EntityViewSettings extends JTabbedPane implements ApplyResetSupport
   public void reset() {
     checkAntialiasing.setSelected(entityView.isAntialiasing());
     blueprintList.setSelection(entityView.getBlueprints());
+  }
+
+  /**
+   * @see genj.view.Settings#getEditor()
+   */
+  public JComponent getEditor() {
+    return this;
   }
 
 } //EntityViewSettings

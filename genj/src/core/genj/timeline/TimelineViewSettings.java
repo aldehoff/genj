@@ -21,14 +21,17 @@ package genj.timeline;
 
 import genj.app.TagSelector;
 import genj.gedcom.PropertyEvent;
+import genj.util.ColorSet;
 import genj.util.swing.ColorChooser;
 import genj.util.swing.DoubleValueSlider;
-import genj.view.ApplyResetSupport;
+import genj.view.Settings;
+
 import java.awt.BorderLayout;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -46,10 +49,10 @@ import javax.swing.JTabbedPane;
  *  date color
  *  line color
  */
-public class TimelineViewSettings extends JTabbedPane implements ApplyResetSupport {
+public class TimelineViewSettings extends JTabbedPane implements Settings {
   
   /** keeping track of timeline these settings are for */
-  private TimelineView timeline;
+  private TimelineView view;
   
   /** a widget for selecting tags to show */
   private TagSelector selectorEventTags = new TagSelector();
@@ -70,27 +73,24 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
   /**
    * Constructor
    */
-  public TimelineViewSettings(TimelineView timelineView) {
+  public TimelineViewSettings() {
     
-    // remember
-    timeline = timelineView;
-
     // panel for checkbox options    
     Box panelOptions = new Box(BoxLayout.Y_AXIS);
     for (int i=0; i<checkOptions.length; i++) {
       checkOptions[i].setAlignmentX(0F);
       panelOptions.add(checkOptions[i]);
     }
-    sliderCmBefEvent = new DoubleValueSlider(timeline.MIN_CM_BEF_EVENT, timeline.MAX_CM_BEF_EVENT, timeline.cmBefEvent, false);
+    sliderCmBefEvent = new DoubleValueSlider(TimelineView.MIN_CM_BEF_EVENT, TimelineView.MAX_CM_BEF_EVENT, 0, false);
     sliderCmBefEvent.setAlignmentX(0F);
-    sliderCmBefEvent.setToolTipText(timeline.resources.getString("info.befevent.tip"));
-    sliderCmBefEvent.setText(timeline.resources.getString("info.befevent"));
+    sliderCmBefEvent.setToolTipText(TimelineView.resources.getString("info.befevent.tip"));
+    sliderCmBefEvent.setText(TimelineView.resources.getString("info.befevent"));
     panelOptions.add(sliderCmBefEvent);
     
-    sliderCmAftEvent = new DoubleValueSlider(timeline.MIN_CM_AFT_EVENT, timeline.MAX_CM_AFT_EVENT, timeline.cmAftEvent, false);
+    sliderCmAftEvent = new DoubleValueSlider(TimelineView.MIN_CM_AFT_EVENT, TimelineView.MAX_CM_AFT_EVENT, 0, false);
     sliderCmAftEvent.setAlignmentX(0F);
-    sliderCmAftEvent.setToolTipText(timeline.resources.getString("info.aftevent.tip"));
-    sliderCmAftEvent.setText(timeline.resources.getString("info.aftevent"));
+    sliderCmAftEvent.setToolTipText(TimelineView.resources.getString("info.aftevent.tip"));
+    sliderCmAftEvent.setText(TimelineView.resources.getString("info.aftevent"));
     panelOptions.add(sliderCmAftEvent);
     
     // panel for main options
@@ -100,16 +100,11 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     
     // color chooser
     colorChooser = new ColorChooser();
-    colorChooser.addSet(timeline.csContent);
-    colorChooser.addSet(timeline.csRuler  );
     
     // add those tabs
     add("Main"  , panelMain);
     add("Colors", colorChooser);
 
-    // init
-    reset();
-    
     // done
   }
 
@@ -119,37 +114,60 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
   public void apply() {
     
     // choosen EventTags
-    timeline.getModel().setFilter(selectorEventTags.getSelection());
+    view.getModel().setFilter(selectorEventTags.getSelection());
     
     // checks
-    timeline.setPaintTags(checkOptions[0].isSelected());
-    timeline.setPaintDates(checkOptions[1].isSelected());
-    timeline.setPaintGrid(checkOptions[2].isSelected());
-    timeline.setCMPerEvents(sliderCmBefEvent.getValue(), sliderCmAftEvent.getValue());
+    view.setPaintTags(checkOptions[0].isSelected());
+    view.setPaintDates(checkOptions[1].isSelected());
+    view.setPaintGrid(checkOptions[2].isSelected());
+    view.setCMPerEvents(sliderCmBefEvent.getValue(), sliderCmAftEvent.getValue());
     
     // colors
     colorChooser.apply();
     
     // Done
   }
+  
+  /**
+   * @see genj.view.Settings#setView(javax.swing.JComponent)
+   */
+  public void setView(JComponent viEw) {
+    // remember
+    view = (TimelineView)viEw;
+    // characteristics
+    colorChooser.setColorSets( new ColorSet[]{
+      view.csContent,
+      view.csRuler  
+    });
+  }
+
 
   /**
    * Tells the ViewInfo to reset made changes
    */
   public void reset() {
+    
     // EventTags to choose from
     selectorEventTags.setTags(PropertyEvent.getTags());
-    selectorEventTags.setSelection(timeline.getModel().getFilter());
+    selectorEventTags.setSelection(view.getModel().getFilter());
 
     // Checks
-    checkOptions[0].setSelected(timeline.isPaintTags());
-    checkOptions[1].setSelected(timeline.isPaintDates());
-    checkOptions[2].setSelected(timeline.isPaintGrid());
+    checkOptions[0].setSelected(view.isPaintTags());
+    checkOptions[1].setSelected(view.isPaintDates());
+    checkOptions[2].setSelected(view.isPaintGrid());
     
     // colors
     colorChooser.reset();
     
     // Done
   }
+  
+  /**
+   * @see genj.view.Settings#getEditor()
+   */
+  public JComponent getEditor() {
+    return this;
+  }
+
 
 } //TimelineViewSettings

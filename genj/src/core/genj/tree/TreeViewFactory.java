@@ -20,7 +20,6 @@
 package genj.tree;
 
 import genj.gedcom.Gedcom;
-import genj.print.PrintRenderer;
 import genj.util.Registry;
 import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
@@ -35,26 +34,19 @@ import javax.swing.JComponent;
 public class TreeViewFactory implements ViewFactory {
 
   /**
-   * @see genj.app.ViewFactory#createPrintRenderer(Component)
+   * @see genj.view.ViewFactory#createView(genj.gedcom.Gedcom, genj.util.Registry, java.awt.Frame)
    */
-  public PrintRenderer createPrintRenderer(JComponent view) {
-    return new TreePrintRenderer((TreeView)view);
-  }
-
-  /**
-   * @see genj.app.ViewFactory#createSettingsComponent(Component)
-   */
-  public JComponent createSettingsComponent(JComponent view) {
-    return new TreeViewSettings((TreeView)view);
-  }
-
-  /**
-   * @see genj.app.ViewFactory#createViewComponent(Gedcom, Registry, Frame)
-   */
-  public JComponent createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
+  public JComponent createView(Gedcom gedcom, Registry registry, Frame frame) {
     return new TreeView(gedcom, registry, frame);
   }
-  
+
+//  /**
+//   * @see genj.app.ViewFactory#createPrintRenderer(Component)
+//   */
+//  public PrintRenderer createPrintRenderer(JComponent view) {
+//    return new TreePrintRenderer((TreeView)view);
+//  }
+
   /**
    * @see genj.view.ViewFactory#getDefaultDimension()
    */

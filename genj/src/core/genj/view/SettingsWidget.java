@@ -23,23 +23,31 @@ import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import java.awt.BorderLayout;
-import java.awt.Component;
+import java.util.Map;
 import java.util.Vector;
+import java.util.WeakHashMap;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
 /**
  * A settings component 
  */
 /*package*/ class SettingsWidget extends JPanel {
   
-  /** members */
+  /** cached settings */
+  private static Map cache = new WeakHashMap();
+  
+  /** components */
   private JPanel pSettings,pActions;
   private Vector vButtons = new Vector();
-  private ViewWidget viewWidget = null;
   private JLabel lIdle;
+  
+  /** settings */
+  private Settings settings;
   
   /**
    * Constructor
@@ -73,15 +81,7 @@ import javax.swing.JPanel;
     add(pSettings,"Center");
     add(pActions ,"South" );
     
-    // init
-    setViewWidget(null);
-  }
-
-  /**
-   * Gets the View we're showing settings for
-   */
-  protected ViewWidget getViewWidget() {
-    return viewWidget;
+    // done
   }
 
   /**
@@ -89,24 +89,29 @@ import javax.swing.JPanel;
    */
   protected void setViewWidget(ViewWidget vw) {
     
-    // remember
-    viewWidget = vw;
-
-    // enable buttons
-    ButtonHelper.setEnabled(vButtons, viewWidget!=null);
-    
-    // setup content
+    // clear content
     pSettings.removeAll();
-    if (viewWidget==null) {
-      pSettings.add(lIdle, BorderLayout.CENTER);
+    
+    // try to get settings
+    settings = getSettings(vw.getView());
+    if (settings!=null) {
+      settings.setView(vw.getView());
+      JComponent editor = settings.getEditor();
+      editor.setBorder(new TitledBorder(vw.getFrame().getTitle()));
+      pSettings.add(editor, BorderLayout.CENTER);
+      settings.reset();
     } else {
-      Component view = viewWidget.getSettings();
-      if (view instanceof ApplyResetSupport) ((ApplyResetSupport)view).reset();
-      pSettings.add(view, BorderLayout.CENTER);
+      pSettings.add(lIdle, BorderLayout.CENTER);
     }
-    pSettings.invalidate();
-    pSettings.validate();
+      
+    // enable buttons
+    ButtonHelper.setEnabled(vButtons, settings!=null);
+    
+    // show
+    pSettings.revalidate();
     pSettings.repaint();
+    
+    // done
   }
 
   /**
@@ -115,8 +120,7 @@ import javax.swing.JPanel;
   private class ActionApply extends ActionDelegate {
     protected ActionApply() { super.setText("view.apply"); }
     protected void execute() {
-      if (viewWidget.getSettings() instanceof ApplyResetSupport) 
-        ((ApplyResetSupport)viewWidget.getSettings()).apply();
+      settings.apply();
     }
   }
 
@@ -126,9 +130,40 @@ import javax.swing.JPanel;
   private class ActionReset extends ActionDelegate {
     protected ActionReset() { super.setText("view.reset"); }
     protected void execute() {
-      if (viewWidget.getSettings() instanceof ApplyResetSupport) 
-        ((ApplyResetSupport)viewWidget.getSettings()).reset();
+      settings.reset();
     }
+  }
+  
+  /**
+   * Finds out whether given view has settings   */
+  /*package*/ static boolean hasSettings(JComponent view) {
+    try {
+      if (Settings.class.isAssignableFrom(Class.forName(view.getClass().getName()+"Settings")))
+      return true;
+    } catch (Throwable t) {
+    }
+    return false;
+  }
+  
+  /**
+   * Gets settings for given view
+   */
+  /*package*/ static Settings getSettings(JComponent view) {
+    
+    // known?
+    Class viewType = view.getClass(); 
+    Settings result = (Settings)cache.get(viewType);
+    if (result!=null) return result;
+    
+    // create
+    try {
+      result = (Settings)Class.forName(viewType.getName()+"Settings").newInstance();
+      cache.put(viewType, result);
+    } catch (Throwable t) {
+    }
+    
+    // done
+    return result;
   }
   
 } //SettingsWidget

@@ -20,23 +20,25 @@
 package genj.tree;
 
 import genj.renderer.BlueprintList;
+import genj.util.ColorSet;
 import genj.util.swing.ColorChooser;
 import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.FontChooser;
-import genj.view.ApplyResetSupport;
+import genj.view.Settings;
 
 import java.awt.Container;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 
 /**
  * The settings component for the Tree View */
-public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
+public class TreeViewSettings extends JTabbedPane implements Settings {
 
   /** keeping track of tree these settings are for */
-  private TreeView tree;
+  private TreeView view;
 
   /** sliders for box size */
   private DoubleValueSlider 
@@ -64,19 +66,16 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
 
   /**
    * Constructor   */
-  public TreeViewSettings(TreeView view) {
-    
-    // remember
-    tree = view;
+  public TreeViewSettings() {
     
     // panel for checkbox options    
     Box options = new Box(BoxLayout.Y_AXIS);
 
-    checkBending.setToolTipText(tree.resources.getString("bend.tip"));
+    checkBending.setToolTipText(TreeView.resources.getString("bend.tip"));
     options.add(checkBending);
-    checkAntialiasing.setToolTipText(tree.resources.getString("antialiasing.tip"));
+    checkAntialiasing.setToolTipText(TreeView.resources.getString("antialiasing.tip"));
     options.add(checkAntialiasing);
-    checkAdjustFonts.setToolTipText(tree.resources.getString("adjustfonts.tip"));
+    checkAdjustFonts.setToolTipText(TreeView.resources.getString("adjustfonts.tip"));
     options.add(checkAdjustFonts);
     
     options.add(fontChooser);    
@@ -89,26 +88,16 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     
     // color chooser
     colors = new ColorChooser();
-    colors.addSet(tree.colors);
     
     // blueprint options
-    blueprintList = new BlueprintList(tree.getModel().getGedcom());
+    blueprintList = new BlueprintList();
     
     // add those tabs
-    add(tree.resources.getString("page.main")  , options);
-    add(tree.resources.getString("page.colors"), colors);
-    add(tree.resources.getString("page.blueprints"), blueprintList);
+    add(TreeView.resources.getString("page.main")  , options);
+    add(TreeView.resources.getString("page.colors"), colors);
+    add(TreeView.resources.getString("page.blueprints"), blueprintList);
     
     // done
-  }
-  
-  /**
-   * @see java.awt.Component#addNotify()
-   */
-  public void addNotify() {
-    super.addNotify();
-    // reset
-    reset();
   }
   
   /**
@@ -119,26 +108,38 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     DoubleValueSlider result = new DoubleValueSlider(min, max, (max+min)/2, false);
     result.setPreferredSliderWidth(128);
     result.setAlignmentX(0F);
-    result.setText(tree.resources.getString("info."+key));
-    result.setToolTipText(tree.resources.getString("info."+key+".tip"));
+    result.setText(TreeView.resources.getString("info."+key));
+    result.setToolTipText(TreeView.resources.getString("info."+key+".tip"));
     c.add(result);
   
     // done
     return result;   }
   
   /**
+   * @see genj.view.Settings#setView(javax.swing.JComponent)
+   */
+  public void setView(JComponent viEw) {
+    // remember
+    view = (TreeView)viEw;
+    // update characteristics
+    colors.setColorSets(new ColorSet[]{view.colors});
+    blueprintList.setGedcom(view.getModel().getGedcom());
+    // done
+  }
+
+  /**
    * @see genj.view.ApplyResetSupport#apply()
    */
   public void apply() {
     // options
-    tree.getModel().setBendArcs(checkBending.isSelected());
-    tree.setAntialiasing(checkAntialiasing.isSelected());
-    tree.setAdjustFonts(checkAdjustFonts.isSelected());
-    tree.setContentFont(fontChooser.getSelectedFont());
+    view.getModel().setBendArcs(checkBending.isSelected());
+    view.setAntialiasing(checkAntialiasing.isSelected());
+    view.setAdjustFonts(checkAdjustFonts.isSelected());
+    view.setContentFont(fontChooser.getSelectedFont());
     // colors
     colors.apply(); //FIXME we shouldn't have to call repaint
     // metrics
-    tree.getModel().setMetrics(new TreeMetrics(
+    view.getModel().setMetrics(new TreeMetrics(
       sliderCmIndiWidth .getValue(),
       sliderCmIndiHeight.getValue(),
       sliderCmFamWidth  .getValue(),
@@ -146,9 +147,9 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
       sliderCmPadding   .getValue()
     ));
     // blueprints
-    tree.setBlueprints(blueprintList.getSelection());
+    view.setBlueprints(blueprintList.getSelection());
     // make sure that shows
-    tree.repaint();
+    view.repaint();
     // done
   }
 
@@ -157,22 +158,29 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
    */
   public void reset() {
     // options
-    checkBending.setSelected(tree.getModel().isBendArcs());
-    checkAntialiasing.setSelected(tree.isAntialising());
-    checkAdjustFonts.setSelected(tree.isAdjustFonts());
-    fontChooser.setSelectedFont(tree.getContentFont());
+    checkBending.setSelected(view.getModel().isBendArcs());
+    checkAntialiasing.setSelected(view.isAntialising());
+    checkAdjustFonts.setSelected(view.isAdjustFonts());
+    fontChooser.setSelectedFont(view.getContentFont());
     // colors
     colors.reset();
     // metrics
-    TreeMetrics m = tree.getModel().getMetrics();
+    TreeMetrics m = view.getModel().getMetrics();
     sliderCmIndiWidth .setValue(m.wIndis);
     sliderCmIndiHeight.setValue(m.hIndis);
     sliderCmFamWidth  .setValue(m.wFams );
     sliderCmFamHeight .setValue(m.hFams );
     sliderCmPadding   .setValue(m.pad   );
     // blueprints
-    blueprintList.setSelection(tree.getBlueprints());
+    blueprintList.setSelection(view.getBlueprints());
     // done
+  }
+  
+  /**
+   * @see genj.view.Settings#getEditor()
+   */
+  public JComponent getEditor() {
+    return this;
   }
 
 } //TreeViewSettings

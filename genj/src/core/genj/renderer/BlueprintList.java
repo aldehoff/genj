@@ -74,11 +74,8 @@ public class BlueprintList extends JSplitPane {
   
   /**
    * Constructor   */
-  public BlueprintList(Gedcom geDcom) {
+  public BlueprintList() {
     
-    // remember
-    gedcom = geDcom;
-
     // prepare tree
     Callback glue = new Callback();
     treeBlueprints = new JTree(new Node());
@@ -106,6 +103,12 @@ public class BlueprintList extends JSplitPane {
     setLeftComponent(left);
     setRightComponent(editor);
     // done    
+  }
+  
+  /**
+   * Sets the Gedcom to use   */
+  public void setGedcom(Gedcom geDcom) {
+    gedcom = geDcom;
   }
   
   /**

@@ -17,27 +17,31 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.print;
+package genj.view;
 
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.geom.Point2D;
+import javax.swing.JComponent;
 
 /**
- * Interface between Printer and Renderer
- */
-public interface PrintRenderer {
+ * Interface to edit view settings  */
+public interface Settings {
   
   /**
-   * Calculates the number of pages (horizontally and vertically)
-   * needed to render the content on pages with given imageable
-   * size (dots) and resolution (in dots per centimeters)     */
-  public Point getNumPages(Point2D pageSize, Point2D resolution);
+   * sets the view to look at   */
+  public void setView(JComponent view);
   
   /**
-   * Renders page content (x,y) on given context (dots) and 
-   * resolution (in dots per centimeters)
-   */  
-  public void renderPage(Point page, Graphics2D g, Point2D resolution);
-  
-} //PrintRenderer
+   * get an editor   */
+  public JComponent getEditor();
+
+  /**
+   * apply made changes
+   */
+  public void apply();
+
+  /**
+   * reset made changes
+   */
+  public void reset();
+
+
+} //SettingsFactory

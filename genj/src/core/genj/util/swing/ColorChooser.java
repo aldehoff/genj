@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -90,10 +91,11 @@ public class ColorChooser extends JPanel {
   }
   
   /**
-   * Adds a color set
+   * Sets the color sets to look at
    */
-  public void addSet(ColorSet set) {
-    comboSets.addItem(set);
+  public void setColorSets(ColorSet[] sets) {
+    comboSets.setModel(new DefaultComboBoxModel(sets));
+    changes.clear();
   }
   
   /**

@@ -1,4 +1,4 @@
- /**
+/**
  * GenJ - GenealogyJ
  *
  * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
@@ -17,21 +17,33 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.view;
+package genj.print;
+
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.geom.Point2D;
+
+import javax.swing.JComponent;
 
 /**
- * An interface for something supporting appy/reset
+ * Interface between Printer and Renderer
  */
-public interface ApplyResetSupport {
-
+public interface Printer {
+  
   /**
-   * apply made changes
-   */
-  public void apply();
-
+   * Sets the view to print   */
+  public void setView(JComponent view);
+  
   /**
-   * reset made changes
-   */
-  public void reset();
-
-}
+   * Calculates the number of pages (horizontally and vertically)
+   * needed to render the content on pages with given imageable
+   * size (dots) and resolution (in dots per centimeters)     */
+  public Point calcPages(Point2D pageSize, Point2D resolution);
+  
+  /**
+   * Renders page content (x,y) on given context (dots) and 
+   * resolution (in dots per centimeters)
+   */  
+  public void renderPage(Graphics2D g, Point page, Point2D resolution);
+  
+} //PrintRenderer

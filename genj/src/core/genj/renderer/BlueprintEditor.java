@@ -121,19 +121,18 @@ public class BlueprintEditor extends JSplitPane {
    * Set Gedcom, Blueprint
    */
   public void set(Gedcom geDcom, Blueprint scHeme, boolean editable) {
-    // resovle buttons and html
-    if (geDcom==null||scHeme==null) {
-      gedcom = null;
+    // resolve buttons and html
+    gedcom = geDcom;
+    if (scHeme==null) {
       blueprint = null;
       html.setText("");
       editable = false;
     } else {
-      gedcom = geDcom;
       blueprint = scHeme;
       html.setText(blueprint.getHTML());
       html.setCaretPosition(0);
     }
-    bInsert.setEnabled(editable);
+    bInsert.setEnabled(editable&&gedcom!=null);
     html.setEditable(editable);
     html.setToolTipText(editable||blueprint==null?null:resources.getString("blueprint.readonly", blueprint.getName()));
     // mark unchanged
@@ -220,6 +219,8 @@ public class BlueprintEditor extends JSplitPane {
     }
     /** @see genj.util.ActionDelegate#execute() */
     protected void execute() {
+      // only if gedcom is valid
+      if (gedcom==null) return;
       // create a tree of available TagPaths
       TagPathTree tree = new TagPathTree(); 
       tree.setPaths(TagPath.getUsedTagPaths(

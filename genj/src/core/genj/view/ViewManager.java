@@ -57,13 +57,13 @@ public class ViewManager {
 
   /** factories of views */
   static final private String[] FACTORIES = new String[]{
-    "genj.table.TableViewFactory",
-    "genj.tree.TreeViewFactory",
-    "genj.timeline.TimelineViewFactory",
-    "genj.edit.EditViewFactory",
-    "genj.report.ReportViewFactory",
-    "genj.nav.NavigatorViewFactory",
-    "genj.entity.EntityViewFactory" 
+    "genj.table.Table",
+    "genj.tree.Tree",
+    "genj.timeline.Timeline",
+    "genj.edit.Edit",
+    "genj.report.Report",
+    "genj.nav.Navigator",
+    "genj.entity.Entity" 
   };
   
   /** factory instances of views */
@@ -93,7 +93,7 @@ public class ViewManager {
     List result = new ArrayList();
     for (int f=0; f<FACTORIES.length; f++) {
       try {
-        result.add((ViewFactory)Class.forName(FACTORIES[f]).newInstance());
+        result.add((ViewFactory)Class.forName(FACTORIES[f]+"ViewFactory").newInstance());
       } catch (Throwable t) {
         Debug.log(Debug.ERROR, this, "ViewFactory "+FACTORIES[f]+" couldn't be instantiated");
       }
@@ -244,9 +244,7 @@ public class ViewManager {
     // close property editor if open and showing settings
     JFrame frame = App.getInstance().getFrame("settings");
     if (frame!=null) { 
-      // close the settings 
-     SettingsWidget sw = (SettingsWidget)frame.getContentPane().getComponent(0);
-     if (sw.getViewWidget()==viewWidget) frame.dispose();
+      frame.dispose();
     }
     
     // 20021017 @see note at the bottom of file

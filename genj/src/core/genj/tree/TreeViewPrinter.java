@@ -1,7 +1,7 @@
 package genj.tree;
 
 import genj.gedcom.Gedcom;
-import genj.print.PrintRenderer;
+import genj.print.Printer;
 import genj.util.swing.UnitGraphics;
 
 import java.awt.Color;
@@ -10,30 +10,32 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+import javax.swing.JComponent;
+
 /**
  * A print renderer for tree */
-public class TreePrintRenderer implements PrintRenderer {
+public class TreeViewPrinter implements Printer {
   
   /** the tree view */
   private TreeView tree;
   
   /**
-   * Constructor   */
-  public TreePrintRenderer(TreeView trEe) {
-    tree = trEe;
+   * Sets the view to print   */
+  public void setView(JComponent view) {
+    tree = (TreeView)view;
   }
 
   /**
    * @see genj.print.PrintRenderer#getNumPages(java.awt.geom.Point2D)
    */
-  public Point getNumPages(Point2D pageSize, Point2D resolution) {
+  public Point calcPages(Point2D pageSize, Point2D resolution) {
     return new Point(1,1);
   }
 
   /**
    * @see genj.print.PrintRenderer#renderPage(java.awt.Point, gj.ui.UnitGraphics)
    */
-  public void renderPage(Point page, Graphics2D g, Point2D resolution) {
+  public void renderPage(Graphics2D g, Point page, Point2D resolution) {
 
     UnitGraphics graphics = new UnitGraphics(g, resolution.getX(), resolution.getY());
 

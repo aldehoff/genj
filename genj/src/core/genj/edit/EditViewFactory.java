@@ -29,7 +29,6 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyNote;
 import genj.gedcom.Relationship;
-import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
@@ -72,26 +71,12 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   };
 
   /**
-   * @see genj.app.ViewFactory#createSettingsComponent(Component)
+   * @see genj.view.ViewFactory#createView(genj.gedcom.Gedcom, genj.util.Registry, java.awt.Frame)
    */
-  public JComponent createSettingsComponent(JComponent view) {
-    return null;
-  }
-
-  /**
-   * @see genj.app.ViewFactory#createPrintRenderer(Component)
-   */
-  public PrintRenderer createPrintRenderer(JComponent view) {
-    return null;
-  }
-
-  /**
-   * @see genj.app.ViewFactory#createViewComponent(Gedcom, Registry, Frame)
-   */
-  public JComponent createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
+  public JComponent createView(Gedcom gedcom, Registry registry, Frame frame) {
     return new EditView(gedcom,registry,frame);
   }
-  
+
   /**
    * @see genj.view.ViewFactory#getDefaultDimension()
    */

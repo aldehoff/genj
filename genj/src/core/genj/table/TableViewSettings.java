@@ -27,18 +27,19 @@ import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
-import genj.view.ApplyResetSupport;
+import genj.view.Settings;
 import java.awt.event.ActionListener;
 
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
  * Class for providing ViewInfo information to a ViewEditor
  */
-public class TableViewSettings extends JPanel implements ApplyResetSupport {
+public class TableViewSettings extends JPanel implements Settings {
 
   /** components */
   private JComboBox       cTypes;
@@ -49,10 +50,7 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
   /**
    * Creates the visual parts of the editor
    */
-  public TableViewSettings(TableView tAble) {
-
-    // remember
-    table = tAble;
+  public TableViewSettings() {
 
     // Create!
     GridBagHelper gh = new GridBagHelper(this);
@@ -104,6 +102,18 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
 
     // Done
   }
+  
+  /**
+   * @see genj.view.Settings#setView(javax.swing.JComponent)
+   */
+  public void setView(JComponent view) {
+    // remember
+    table = (TableView)view;
+    // reset
+    reset();
+    // done
+  }
+
 
   /**
    * Tells the ViewInfo to apply made changes
@@ -133,6 +143,13 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
     pathList.setPaths(selectedPaths);
 
     // Done
+  }
+  
+  /**
+   * @see genj.view.Settings#getEditor()
+   */
+  public JComponent getEditor() {
+    return this;
   }
 
   /**
