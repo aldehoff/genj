@@ -75,6 +75,13 @@ public class IndexedSeries {
   }
   
   /**
+   * Accssor - name
+   */
+  public String getName() {
+    return name;
+  }
+  
+  /**
    * Access
    */
   public float get(int i) {
