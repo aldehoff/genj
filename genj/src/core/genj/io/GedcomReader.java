@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 /**
  * Type that knows how to read GEDCOM-data from InputStream
@@ -64,7 +63,7 @@ public class GedcomReader implements Trackable {
   private String value;
   private String undoLine,gedcomLine;
   private Origin origin;
-  private Vector xrefs;
+  private List xrefs;
   private String submitter;
   private List warnings;
   private boolean cancel=false;
@@ -212,7 +211,7 @@ public class GedcomReader implements Trackable {
     Entity ent=null;
     try {
       // Fix duplicates?
-      if ((fixDuplicateIDs)&&(gedcom.getEntity(xref)!=null)) {
+      if (fixDuplicateIDs&&gedcom.getEntity(xref)!=null) {
         ent=gedcom.createEntity(tag, null);
       } else {
         ent=gedcom.createEntity(tag, xref);
@@ -288,7 +287,7 @@ public class GedcomReader implements Trackable {
     // Create Gedcom
     int expected = Math.max((int)length/ENTITY_AVG_SIZE,100);
     gedcom = new Gedcom(origin,expected);
-    xrefs = new Vector(expected);
+    xrefs = new ArrayList(expected);
 
     // Read the Header
     readHeader();
@@ -332,13 +331,12 @@ public class GedcomReader implements Trackable {
     }
 
     // Link references
-    int xcount = xrefs.size();
-    for (int i=0;i<xcount;i++) {
-      XRef xref = (XRef)xrefs.elementAt(i);
+    for (int i=0,j=xrefs.size();i<j;i++) {
+      XRef xref = (XRef)xrefs.get(i);
       try {
         xref.prop.link();
 
-        progress = Math.min(100,(int)(i*(100*2)/xcount));  // 100*2 because Links are probably backref'd
+        progress = Math.min(100,(int)(i*(100*2)/j));  // 100*2 because Links are probably backref'd
 
       } catch (GedcomException ex) {
         warnings.add("Line "+xref.line+": Property "+xref.prop.getTag()+" - "+
@@ -435,7 +433,9 @@ public class GedcomReader implements Trackable {
           gedcomLine="";
           break;
         }
-        gedcomLine.trim();
+        
+        // 20030530 I think we can forget about this call
+        //gedcomLine.trim();
 
         // .. update statistics
         read+=gedcomLine.length()+2;
@@ -456,7 +456,9 @@ public class GedcomReader implements Trackable {
     }
 
     // Parse gecom-line
-    StringTokenizer tokens = new StringTokenizer(gedcomLine," ",false);
+    // 20030530 I think we can use the simple constructor tokenizing " \t\n\r\f"
+    //StringTokenizer tokens = new StringTokenizer(gedcomLine," ",false);
+    StringTokenizer tokens = new StringTokenizer(gedcomLine);
 
     try {
 
@@ -492,6 +494,9 @@ public class GedcomReader implements Trackable {
 
       // .. value
       if (tokens.hasMoreElements()) {
+        // 20030530 o.k. gotta switch to delim "\n" because we want everything 
+        // to end of line including contained spaces but without leading/trailing
+        // spaces
         value = tokens.nextToken("\n").trim();
       } else {
         value = "";
@@ -564,7 +569,7 @@ public class GedcomReader implements Trackable {
   
       // .. a reference ? Remember !
       if (prop instanceof PropertyXRef)
-        xrefs.addElement(new XRef(line,(PropertyXRef)prop));
+        xrefs.add(new XRef(line,(PropertyXRef)prop));
   
       // .. recurse into its properties
       readProperties(prop, child, currentlevel+1);
