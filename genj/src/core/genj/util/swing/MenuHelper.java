@@ -193,7 +193,7 @@ public class MenuHelper  {
     result.addActionListener((ActionListener)action.as(ActionListener.class));
     if (action.txt!=null) result.setText(string(action.txt));
     if (action.img!=null) result.setIcon(action.img);
-    result.setEnabled(enabled);
+    result.setEnabled(enabled&&action.enabled);
   
     // add it to current menu on stack  
     Object menu = peekMenu();

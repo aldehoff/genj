@@ -48,6 +48,7 @@ public abstract class ActionDelegate implements Cloneable {
   public String    stxt;
   public String    tip;
   public Component target;
+  public boolean  enabled = true;
   
   /** whether we're async or not */
   private int async = ASYNC_NOT_APPLICABLE;
@@ -220,6 +221,14 @@ public abstract class ActionDelegate implements Cloneable {
    */
   public ActionDelegate setTip(String t) {
     tip=t;
+    return this;
+  }
+  
+  /**
+   * Enabled
+   */
+  public ActionDelegate setEnabled(boolean e) {
+    enabled = e;
     return this;
   }
   

@@ -277,25 +277,28 @@ public class GedcomWriter implements Trackable {
   private void writeHeader() throws IOException, GedcomIOException {
 
     // Header
-    line("HEAD", "");
-    line(+1, "SOUR", "GENJ");
-    line(+1, "VERS", Version.getInstance().toString());
-    line(+0, "NAME", "GenealogyJ");
-    line(+0, "CORP", "Nils Meier");
-    line(+1, "ADDR", "http://genj.sourceforge.net");
-    line(-1);
-    line(-1);
-    line(+0, "DEST", "ANY");
-    line(+0, "DATE", date);
-    line(+1, "TIME", time);
-    line(-1);
-    line(+0, "GEDC", "");
-    line(+1, "VERS", "5.5");
-    line(+0, "FORM", "Lineage-Linked");
-    line(-1);
-    line(+0, "CHAR", encoding);
-    line(+0, "FILE", file);
-    line(-1);
+      line("HEAD", "");
+      line(+1, "SOUR", "GENJ");
+      line(+1, "VERS", Version.getInstance().toString());
+      line(+0, "NAME", "GenealogyJ");
+      line(+0, "CORP", "Nils Meier");
+      line(+1, "ADDR", "http://genj.sourceforge.net");
+      line(-1);
+      line(-1);
+      line(+0, "DEST", "ANY");
+      line(+0, "DATE", date);
+      line(+1, "TIME", time);
+      line(-1);
+    if (gedcom.getSubmitter()!=null)
+      line(+0, "SUBM", '@'+gedcom.getSubmitter().getId()+'@');
+      line(+0, "GEDC", "");
+      line(+1, "VERS", "5.5");
+      line(+0, "FORM", "Lineage-Linked");
+      line(-1);
+      line(+0, "CHAR", encoding);
+      line(+0, "FILE", file);
+      line(-1);
+    // done
   }
 
   /**

@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.Submitter;
 import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Trackable;
@@ -60,6 +61,7 @@ public class GedcomReader implements Trackable {
   private String undoLine,gedcomLine;
   private Origin origin;
   private Vector xrefs;
+  private String submitter;
   private StringBuffer warnings;
   private boolean cancel=false;
   private Thread worker;
@@ -254,9 +256,7 @@ public class GedcomReader implements Trackable {
       }
 
       // .. end ?
-      if (tag.equals("TRLR")) {
-        break;
-      }
+      if (tag.equals("TRLR")) break;
 
       // .. entity to parse
       readEntity();
@@ -272,6 +272,16 @@ public class GedcomReader implements Trackable {
 
     // Next state
     state++;
+
+    // Prepare submitter
+    if (submitter!=null) {
+      try {
+        Submitter sub = (Submitter)gedcom.getEntity(submitter.replace('@',' ').trim(), Gedcom.SUBMITTERS);
+        gedcom.setSubmitter(sub);
+      } catch (Throwable t) {
+        warnings.append("Submitter "+submitter+" couldn't be resolved\n");
+      }
+    }
 
     // Link references
     int xcount = xrefs.size();
@@ -304,12 +314,21 @@ public class GedcomReader implements Trackable {
    */
   private boolean readHeader() throws GedcomIOException, GedcomFormatException {
 
-    // 0 HEAD
-    // 1 SOUR
-    // 2 VERS
-    // 2 NAME
-    // 1 CHAR
-    // 1 DATE
+    //  0 "HEAD", ""
+    //  1 "SOUR", "GENJ"
+    //  2 "VERS", Version.getInstance().toString()
+    //  2 "NAME", "GenealogyJ"
+    //  2 "CORP", "Nils Meier"
+    //  3 "ADDR", "http://genj.sourceforge.net"
+    //  1 "DEST", "ANY"
+    //  1 "DATE", date
+    //  2 "TIME", time
+    //  1 "SUBM", '@'+gedcom.getSubmitter().getId()+'@'
+    //  1 "GEDC", ""
+    //  2 "VERS", "5.5"
+    //  2 "FORM", "Lineage-Linked"
+    //  1 "CHAR", encoding
+    //  1 "FILE", file
     if (!readLine()||(level!=0)||(!tag.equals("HEAD"))) {
       throw new GedcomFormatException("Expected 0 HEAD",line);
     }
@@ -321,6 +340,10 @@ public class GedcomReader implements Trackable {
       }
       if (level==0) {
         break;
+      }
+      // check for submitter
+      if (level==1&&"SUBM".equals(tag)) {
+        submitter = value; 
       }
       // done
     } while (true);

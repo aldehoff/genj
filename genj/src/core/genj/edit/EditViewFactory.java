@@ -30,6 +30,7 @@ import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyNote;
 import genj.gedcom.Relationship;
+import genj.gedcom.Submitter;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
@@ -125,6 +126,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     if (entity instanceof Indi) createActions(result, (Indi)entity);
     // fam?
     if (entity instanceof Fam) createActions(result, (Fam)entity);
+    // submitter?
+    if (entity instanceof Submitter) createActions(result, (Submitter)entity);
     // add standards
     result.add(ActionDelegate.NOOP);
     if (!(entity instanceof Note)) 
@@ -191,6 +194,13 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     result.add(new CreateRelationship(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ChildIn(fam)));
     if (fam.getNoOfSpouses()<2)
       result.add(new CreateRelationship(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentIn(fam)));
+  }
+  
+  /**
+   * Create actions for Submitters
+   */
+  private void createActions(List result, Submitter submitter) {
+    result.add(new SetSubmitter(submitter));
   }
   
   /**

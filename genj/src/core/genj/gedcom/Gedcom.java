@@ -31,28 +31,31 @@ import genj.util.swing.ImageIcon;
  * The object-representation of a Gedom file
  */
 public class Gedcom {
+  
+  /** submitter of this Gedcom */
+  private Submitter submitter;
 
   /** origin of this Gedcom */
-  private Origin           origin;
+  private Origin origin;
 
   /** entities */
-  private List[]           entities = new List[NUM_TYPES];
-  private IDMap[]          ids = new IDMap[NUM_TYPES];
+  private List[]  entities = new List[NUM_TYPES];
+  private IDMap[] ids = new IDMap[NUM_TYPES];
   
   /** change/transaction support */
-  private boolean          isTransaction = false;
-  private boolean          hasUnsavedChanges;
-  private List             addedEntities     ,
-                           deletedEntities   ;
-  private List             addedProperties   ,
-                           deletedProperties ,
-                           modifiedProperties;
+  private boolean isTransaction = false;
+  private boolean hasUnsavedChanges;
+  private List addedEntities     ,
+                deletedEntities   ;
+  private List addedProperties   ,
+                deletedProperties ,
+                modifiedProperties;
 
   /** listeners */
-  private List             listeners = new ArrayList(10);
+  private List listeners = new ArrayList(10);
 
   /** static resourcs */
-  static private Random    seed = new Random();
+  static private Random seed = new Random();
   static /*package*/ Resources resources = new Resources("genj.gedcom");
 
   private final static String[]
@@ -108,6 +111,23 @@ public class Gedcom {
    */
   public void setOrigin(Origin newOrigin) {
     origin = newOrigin;
+  }
+  
+  /**
+   * Returns the submitter of this gedcom (might be null)
+   */
+  public Submitter getSubmitter() {
+    return submitter;
+  }
+  
+  /** 
+   * Sets the submitter of this gedcom
+   */
+  public void setSubmitter(Submitter set) {
+    if (!entities[SUBMITTERS].contains(set)) 
+      throw new IllegalArgumentException("Submitter is not part of this gedcom");
+    submitter = set;
+    hasUnsavedChanges = true;
   }
   
   /**
@@ -218,6 +238,8 @@ public class Gedcom {
     // Delete it
     entities[type].remove(which);
     ids     [type].remove(which);
+    
+    if (submitter==which) submitter = null;
 
     // Done
   }
