@@ -20,8 +20,8 @@
 package genj.gedcom;
 
 import genj.util.WordBuffer;
+import genj.util.swing.ImageIcon;
 
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -32,15 +32,13 @@ import java.util.StringTokenizer;
 public abstract class PointInTime implements Comparable {
 
   /** calendars */
-  private final static String
-    CALENDARS[] = {  
-      "@#DHEBREW@",
-      "@#DROMAN@" ,
-      "@#DFRENCH R@",
-      "@#DGREGORIAN@", 
-      "@#DJULIAN@"
-    };
-
+  public final static Calendar[] CALENDARS = {
+    new Calendar("@#DGREGORIAN@", "gregorian", "images/Ordination.gif"),  
+    new Calendar("@#DJULIAN@"   , "julian"   , "images/Will.gif"),
+    new Calendar("@#DHEBREW@"   , "hebrew"   , "images/Bar.gif"),
+    new Calendar("@#DFRENCH R@" , "french"   , "images/Nationality.gif")
+  };
+    
   /** month names */
   private final static String 
     MONTHS[] = { "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC" },
@@ -109,11 +107,11 @@ public abstract class PointInTime implements Comparable {
    * Accessor to an immutable point in time - now
    */
   public static PointInTime getNow() {
-    Calendar now = Calendar.getInstance(); // default to current time
+    java.util.Calendar now = java.util.Calendar.getInstance(); // default to current time
     return getPointInTime(
-      now.get(Calendar.DATE) - 1,      
-      now.get(Calendar.MONTH),      
-      now.get(Calendar.YEAR)
+      now.get(now.DATE) - 1,      
+      now.get(now.MONTH),      
+      now.get(now.YEAR)
     );      
   }  
   
@@ -160,16 +158,32 @@ public abstract class PointInTime implements Comparable {
     if (!tokens.hasMoreTokens())
       return false;
 
-    // first token might be calendar indicator
+    // first token might be calendar indicator @#....@
     String first = tokens.nextToken();
-    for (int c=0;c<CALENDARS.length;c++) {
-      if (CALENDARS[c].equals(first)) {
-        if (!tokens.hasMoreTokens())
-          return false;
-        System.out.println("Found "+first);
-        first = tokens.nextToken();
-        break;
+    
+    if (first.startsWith("@#")) {
+      
+      // .. has to be one of our calendar escapes
+      for (int c=0;c<CALENDARS.length;c++) {
+        Calendar calendar = CALENDARS[c]; 
+        if (calendar.escape.startsWith(first)) {
+          // .. identified calendar
+          System.out.println("Found PointInTime with Calendar "+calendar.getName());
+          break;
+        }
       }
+
+      // since one of the calendar escape contains a space we
+      // might have to skip another token (until we find the
+      // token ending in "@"       
+      while (!first.endsWith("@")&&tokens.hasMoreTokens()) 
+        first = tokens.nextToken();
+      
+      // switch to next 'first'
+      if (!tokens.hasMoreTokens())
+        return false;
+      first = tokens.nextToken();
+
     }
     
     // first is YYYY
@@ -371,9 +385,9 @@ public abstract class PointInTime implements Comparable {
       // decrease months
       mdelta -=1;
       // increase days with days in previous month
-      Calendar c = Calendar.getInstance();
+      java.util.Calendar c = java.util.Calendar.getInstance();
       c.set(yearlier, mearlier, 1);
-      int days = c.getActualMaximum(Calendar.DATE);
+      int days = c.getActualMaximum(c.DATE);
       ddelta = dlater + (days-dearlier); 
     }
     
@@ -441,5 +455,35 @@ public abstract class PointInTime implements Comparable {
     }
 
   } //PIT
+
+  /**
+   * Calendars we support
+   */
+  public static class Calendar {
+    
+    /** fields */
+    private String escape;
+    private String name;
+    private ImageIcon image;
+     
+    /** Constructor */
+    private Calendar(String esc, String key, String img) {
+      escape = esc;
+      name = Gedcom.resources.getString("prop.date.cal."+key);
+      image = new ImageIcon(Gedcom.class, img);
+    }
+    
+    /** accessor - name */
+    public String getName() {
+      return name;
+    }
+    
+    /** accessor - image */
+    public ImageIcon getImage() {
+      return image;
+    }
+    
+    
+  } //Calendar
 
 } //PointInTime
