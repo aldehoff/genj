@@ -209,7 +209,7 @@ import javax.swing.SwingConstants;
     }
     /** run */
     protected void execute() {
-      manager.getWindowManager().close(key); 
+      manager.closeView(key);
     }
   } //ActionClose
   

@@ -284,6 +284,21 @@ public class ViewManager {
 //    int lastdot = pkg.lastIndexOf('.');
 //    return lastdot<0 ? pkg : pkg.substring(lastdot+1);
   }
+  
+  /**
+   * Closes a view
+   */
+  protected void closeView(String key) {
+    // close property editor if open and showing settings
+    windowManager.close("settings");
+    // now close view
+    windowManager.close(key);
+    // 20021017 @see note at the bottom of file
+    MenuSelectionManager.defaultManager().clearSelectedPath();
+    // forget about it
+    key2viewwidget.remove(key);
+    // done
+  }
 
   /**
    * Opens a view on a gedcom file
@@ -320,15 +335,8 @@ public class ViewManager {
     // prepare to forget
     Runnable close = new Runnable() {
       public void run() {
-        // close property editor if open and showing settings
-        windowManager.close("settings");
-        // now close view
-        windowManager.close(key);
-        // 20021017 @see note at the bottom of file
-        MenuSelectionManager.defaultManager().clearSelectedPath();
-        // forget about it
-        key2viewwidget.remove(key);
-        // done
+        // let us handle close
+        closeView(key);
       }
     };
     
