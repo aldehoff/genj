@@ -655,7 +655,8 @@ public class GraphWidget extends JComponent {
     }
     protected void execute() {
       graph.setShape(lastSelection,shape);
-      dndResizeNode.start(null);
+      //dndResizeNode.start(null);
+      dndResizeNode.nodeChanged(lastSelection);
     }
   }
 
