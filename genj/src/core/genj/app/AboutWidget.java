@@ -466,7 +466,7 @@ public class AboutWidget extends JPanel{
        * Constructor
        */
       private Add() {
-        super.setText("Add");
+        super.setText(resources.getString("cc.about.tab5.button.add"));
       }
       /**
        * @see genj.util.ActionDelegate#execute()
@@ -487,7 +487,7 @@ public class AboutWidget extends JPanel{
        * Constructor
        */
       private Del() {
-        super.setText("Delete");
+        super.setText(resources.getString("cc.about.tab5.button.delete"));
       }
       /**
        * @see genj.util.ActionDelegate#execute()
@@ -506,7 +506,7 @@ public class AboutWidget extends JPanel{
        * Constructor
        */
       private Edit() {
-        super.setText("Edit");
+        super.setText(resources.getString("cc.about.tab5.button.edit"));
       }
       /**
        * @see genj.util.ActionDelegate#execute()
