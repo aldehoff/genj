@@ -54,7 +54,6 @@ import javax.swing.table.TableColumnModel;
       new Filter(Gedcom.NOTES       , new String[]{"NOTE","NOTE:NOTE"}),
       new Filter(Gedcom.SOURCES     , new String[]{"SOUR","SOUR:TITL", "SOUR:TEXT"}),
       new Filter(Gedcom.SUBMITTERS  , new String[]{"SUBM","SUBM:NAME" }),
-      new Filter(Gedcom.SUBMISSIONS  , new String[]{"SUBN", "SUBN:ANCE", "SUBN:DESC", "SUBN:SUBM" }),
       new Filter(Gedcom.REPOSITORIES, new String[]{"REPO","REPO:NAME", "REPO:NOTE"})
     };
   

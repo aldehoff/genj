@@ -65,7 +65,6 @@ public class GedcomReader implements Trackable {
   private Origin origin;
   private List xrefs;
   private String submitter;
-  private String submission;
   private List warnings;
   private boolean cancel=false;
   private Thread worker;
@@ -197,7 +196,7 @@ public class GedcomReader implements Trackable {
 
     // "L XXXX" expected
     if (!readLine()||(level!=0)||(xref.length()==0)) {
-      String msg = "Expected 0 @XREF@ INDI|FAM|OBJE|NOTE|REPO|SOUR|SUBN|SUBM";
+      String msg = "Expected 0 @XREF@ INDI|FAM|OBJE|NOTE|REPO|SOUR|SUBM";
       // at least still level identifyable?
       if (level==0) {
         // skip record
@@ -334,18 +333,6 @@ public class GedcomReader implements Trackable {
       }
     }
 
-    /*
-    // Prepare submission record
-    if (submission!=null) {
-      try {
-        Submission sub = (Submission)gedcom.getEntity(submission.replace('@',' ').trim(), Gedcom.SUBMISSIONS);
-        gedcom.setSubmission(sub);
-      } catch (Throwable t) {
-        warnings.add("Submission record "+submission+" couldn't be resolved");
-      }
-    }
-    */
-
     // Link references
     for (int i=0,j=xrefs.size();i<j;i++) {
       XRef xref = (XRef)xrefs.get(i);
@@ -402,10 +389,6 @@ public class GedcomReader implements Trackable {
       // check for submitter
       if (level==1&&"SUBM".equals(tag)) {
         submitter = value; 
-      }
-      // check for submission record
-      if (level==1&&"SUBN".equals(tag)) {
-        submission = value; 
       }
       // done
     } while (true);

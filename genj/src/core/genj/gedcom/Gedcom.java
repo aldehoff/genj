@@ -43,11 +43,11 @@ public class Gedcom {
   static /*package*/ Resources resources = Resources.get(Gedcom.class);
 
   private final static String[]
-    ePrefixs  = { "I", "F", "M", "N", "S", "B", "X", "R"},
-    eTags     = { "INDI", "FAM", "OBJE", "NOTE", "SOUR", "SUBM", "SUBN", "REPO" };
+    ePrefixs  = { "I", "F", "M", "N", "S", "B", "R"},
+    eTags     = { "INDI", "FAM", "OBJE", "NOTE", "SOUR", "SUBM", "REPO" };
     
   private final static Class[]
-    eTypes    = { Indi.class, Fam.class, Media.class, Note.class, Source.class, Submitter.class, Submission.class, Repository.class };
+    eTypes    = { Indi.class, Fam.class, Media.class, Note.class, Source.class, Submitter.class, Repository.class };
 
   public final static int
     INDIVIDUALS  = 0,
@@ -56,9 +56,8 @@ public class Gedcom {
     NOTES        = 3,
     SOURCES      = 4,
     SUBMITTERS   = 5,
-    SUBMISSIONS  = 6,
-    REPOSITORIES = 7,
-    NUM_TYPES    = 8;
+    REPOSITORIES = 6,
+    NUM_TYPES    = 7;
 
   /** image */
   private final static ImageIcon image = new ImageIcon(Gedcom.class, "images/Gedcom.gif");
@@ -68,7 +67,6 @@ public class Gedcom {
 
   /** submitter of this Gedcom */
   private Submitter submitter;
-  private Submission submission;
 
   /** origin of this Gedcom */
   private Origin origin;
@@ -137,23 +135,6 @@ public class Gedcom {
   }
   
   /**
-   * Returns the submission record of this gedcom (might be null)
-   */
-  public Submission getSubmission() {
-    return submission;
-  }
-  
-  /** 
-   * Sets the submission record of this gedcom
-   */
-  public void setSubmission(Submission set) {
-    if (!entities[SUBMISSIONS].contains(set)) 
-      throw new IllegalArgumentException("Submission record is not part of this gedcom");
-    submission = set;
-    if (isTransaction) hasUnsavedChanges = true;
-  }
-  
-  /**
    * toString overridden
    */
   public String toString() {
@@ -191,7 +172,7 @@ public class Gedcom {
       if (eTags[type].equals(tag)) return createEntity(type, id);
     }
     // unknown tag
-    throw new IllegalArgumentException("unknown tag");
+    throw new GedcomException("No entity type for "+tag);
   }
   
   /**
@@ -248,7 +229,6 @@ public class Gedcom {
     id2entities[type].remove(which.getId());
     
     if (submitter==which) submitter = null;
-    if (submission==which) submission = null;
 
     // Done
   }

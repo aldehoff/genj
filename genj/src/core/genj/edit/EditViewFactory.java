@@ -25,7 +25,6 @@ import genj.edit.actions.DelEntity;
 import genj.edit.actions.OpenForEdit;
 import genj.edit.actions.RunExternal;
 import genj.edit.actions.SetSubmitter;
-import genj.edit.actions.SetSubmission;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -35,7 +34,6 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.Relationship;
 import genj.gedcom.Submitter;
-import genj.gedcom.Submission;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
@@ -120,9 +118,6 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     if (entity instanceof Fam) createActions(result, (Fam)entity, manager);
     // submitter?
     if (entity instanceof Submitter) createActions(result, (Submitter)entity);
-    // submission record?
-    if (entity instanceof Submission) 
-      createActions(result, (Submission)entity);
     
     // separator
     result.add(ActionDelegate.NOOP);
@@ -165,7 +160,6 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     result.add(new CreateEntity(gedcom, Gedcom.REPOSITORIES, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SOURCES     , manager));
     result.add(new CreateEntity(gedcom, Gedcom.SUBMITTERS  , manager));
-    result.add(new CreateEntity(gedcom, Gedcom.SUBMISSIONS , manager));
     // done
     return result;
   }
@@ -195,13 +189,6 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
    */
   private void createActions(List result, Submitter submitter) {
     result.add(new SetSubmitter(submitter));
-  }
-  
-  /**
-   * Create actions for Submission Records
-   */
-  private void createActions(List result, Submission submission) {
-    result.add(new SetSubmission(submission));
   }
   
   /**

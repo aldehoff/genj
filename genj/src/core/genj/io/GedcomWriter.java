@@ -273,11 +273,8 @@ public class GedcomWriter implements Trackable {
     line( 1, "DEST", "ANY");
     line( 1, "DATE", date);
     line( 2, "TIME", time);
-    // FIXME it isn't legal GEDCOM without a SUBM record
     if (gedcom.getSubmitter()!=null)
       line( 1, "SUBM", '@'+gedcom.getSubmitter().getId()+'@');
-    if (gedcom.getSubmission()!=null)
-      line( 1, "SUBN", '@'+gedcom.getSubmission().getId()+'@');
     line( 1, "GEDC", "");
     line( 2, "VERS", "5.5");
     line( 2, "FORM", "Lineage-Linked");
