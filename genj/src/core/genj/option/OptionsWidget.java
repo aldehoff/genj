@@ -132,7 +132,7 @@ public class OptionsWidget extends JPanel {
     widthOf1stColumn = 0;
     for (int i = 0; i < set.size(); i++) {
       Option option = (Option)set.get(i);
-      widthOf1stColumn = Math.max(widthOf1stColumn, (int)Math.ceil(font.getStringBounds(option.getName(), ctx).getWidth()));
+      widthOf1stColumn = Math.max(widthOf1stColumn, 4+(int)Math.ceil(font.getStringBounds(option.getName(), ctx).getWidth()));
     }
     
     // tell to model
