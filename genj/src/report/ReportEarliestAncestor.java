@@ -5,15 +5,12 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.DuplicateIDException;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.report.Report;
 import genj.report.ReportBridge;
-
-import java.util.List;
 
 /**
  * GenJ - Report
@@ -114,37 +111,20 @@ public class ReportEarliestAncestor implements Report {
    */
   public boolean start(ReportBridge bridge, Gedcom gedcom) {
 
-    // Calculate id
-    String id = bridge.getValueFromUser ( "Please enter id number (eg: 1)", new String[0], "id");
-    if ((id==null)||(id.length()==0)) {
-      bridge.println ("Expected parameter id - Aborting ...");
-      return false;
-    }
-    id = "I"+id;
-
-    // Search start individual
-    List indis = gedcom.getEntities(Gedcom.INDIVIDUALS);
-
-    // Search earliest
-    Indi indi;
-    try {
-      indi = (Indi)gedcom.getEntity(id, Gedcom.INDIVIDUALS);
-    } catch (DuplicateIDException e) {
-      bridge.println ("There are more than one individuals with that ID");
-      return false;
-    }
-
+    // Show the users in a combo to the user
+    Indi indi = (Indi)bridge.getValueFromUser(
+      "Please select an individual",
+      gedcom.getEntities(Gedcom.INDIVIDUALS).toArray(),
+      null
+    );
+    
     if (indi==null) {
-      bridge.println ("Cannot find this individual.");
-    } else {
-      // Found earliest
-      bridge.println ("You've asked for ID '" + id + "'.");
-      bridge.println ("The Individual '" + id + "' is : " + indi.getName ());
-      bridge.println ("                            ");
-      bridge.println ("     Earliest ancestor of " + indi.getName () + " is:");
-      bridge.println ("     =--->     " + findEarliest (indi).getName ());
-      bridge.println ("                            ");
+      return false;
     }
+    
+    // Found earliest
+    bridge.println ("     Earliest ancestor of " + indi.getName () + " is:");
+    bridge.println ("     =--->     " + findEarliest (indi).getName ());
 
     // Done
     return true;
