@@ -605,7 +605,7 @@ public class PropertyTreeWidget extends TreeWidget {
       
       // date?
       if (prop instanceof PropertyDate) {
-        html.append(((PropertyDate)prop).toString(false, true));
+        html.append(((PropertyDate)prop).toString(true));
         return;
       }
       

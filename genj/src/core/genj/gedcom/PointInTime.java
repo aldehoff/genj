@@ -135,6 +135,16 @@ public class PointInTime implements Comparable {
   }
   
   /**
+   * Accessor to a calendar transformed copy 
+   */
+  public PointInTime getPointInTime(Calendar cal) throws GedcomException {
+    PointInTime result = new PointInTime();
+    result.set(this);
+    result.set(cal);
+    return result;
+  }
+  
+  /**
    * Setter
    */
   public void set(Calendar cal) throws GedcomException {
@@ -854,8 +864,35 @@ public class PointInTime implements Comparable {
    * Our own hebrew republican
    */
   public static class HebrewCalendar extends Calendar {
-    
-    private static final String MONTHS[] 
+
+   /* 
+     Month    def reg perf  
+     Tishri   30  30  30  
+     Kheshvan 29  29  30  
+     Kislev   29  30  30  
+     Tevet    29  29  29   
+     Schevat  30  30  30   
+    (Adar r   30  30  30) only in leap year
+     Adar s   29  29  29  
+     Nisan    30  30  30  
+     Iyyar    29  29  29  
+     Sivan    30  30  30  
+     Tammuz   29  29  29  
+     Av       30  30  30  
+     Elul     29  29  29  
+   
+     total   353 354 355 (+30 in leap year)      
+   */
+   
+    /**
+     * the calendar begins at sunset the night before 
+     * Monday, October 7, 3761 B.C.E. in the Julian 
+     * calendar, or Julian day 347995.5.
+     */
+    private static final int 
+      ANNO_MUNDI = 347995;
+   
+    private static final String[] MONTHS 
      = { "TSH","CSH","KSL","TVT","SHV","ADR","ADS","NSN","IYR","SVN","TMZ","AAV","ELL" };
   
     /**
@@ -883,7 +920,49 @@ public class PointInTime implements Comparable {
      * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
      */
     protected int getDays(int month, int year) {
+      
+      //  easy for the months fixed to 29
+      switch (month) {
+        case  3: //TVT
+        case  6: //ADS
+        case  8: //IYR
+        case 10: //TMZ
+        case 12: //ELL
+          return 29;
+        case  1: //CSH - depends on length of year
+          if (getDays(year)%10!=5)
+            return 29;
+          break; 
+        case  2: //KSL - depends on length of year
+          if (getDays(year)%10==3)
+            return 29;
+          break;
+      }   
+
+      // standard is 30
       return 30;
+    }
+    
+    /**
+     * Days in a year
+     */
+    private int getDays(int year) { 
+      return 0;//toJulianDay()
+    }
+    
+    /**
+     * whether a given year is a leap year - these are the years
+     *  0, 3, 6, 8, 11, 14, 17 mod 19
+     */
+    private boolean isLeap(int year) {
+      return (14*7+1)%19<7;    
+    }
+    
+    /**
+     * number of months in given year
+     */
+    private int getMonths(int year) {
+      return isLeap(year) ? 13 : 12;
     }
     
   } //HebrewCalendar    

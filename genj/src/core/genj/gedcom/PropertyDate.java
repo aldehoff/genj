@@ -313,13 +313,20 @@ public class PropertyDate extends Property {
    * @see genj.gedcom.Property#toString()
    */
   public String toString() {
-    return toString(false, true);
+    return toString(true);
   }
 
   /**
    * Returns this date as a string
    */
-  public String toString(boolean abbreviate, boolean localize) {
+  public String toString(boolean localize) {
+    return toString(localize, null);
+  }
+  
+  /**
+   * Returns this date as a string
+   */
+  public String toString(boolean localize, PointInTime.Calendar calendar) {
     
     // as string?
     if (dateAsString!=null) 
@@ -330,26 +337,50 @@ public class PropertyDate extends Property {
       
     // prepare modifiers
     String
-      smod = abbreviate ? fd.astart : fd.start,
-      emod = abbreviate ? fd.aend   : fd.end  ;
+      smod = fd.start,
+      emod = fd.end  ;
       
-    if (!abbreviate&&localize) {
+    if (localize) {
       if (smod.length()>0)
         smod = Gedcom.getResources().getString("prop.date.mod."+smod);  
       if (emod.length()>0)
         emod = Gedcom.getResources().getString("prop.date.mod."+emod);  
     }
-      
-    // collect information
-    WordBuffer result = new WordBuffer();
-    result.append(smod);  
-    start.toString(result,localize);
-    result.append(emod);
-    if (isRange()) 
-      end.toString(result,localize);
 
-    // done    
-    return result.toString();
+    // collect information
+    try {
+      WordBuffer result = new WordBuffer();
+      
+      // start modifier & point in time
+      result.append(smod);
+      if (calendar==null||start.getCalendar()==calendar) 
+        start.toString(result, localize);
+      else 
+        start.getPointInTime(calendar).toString(result, localize);
+  
+      // end modifier & point in time
+      if (isRange()) {
+        result.append(emod);
+        if (calendar==null||end.getCalendar()==calendar) 
+          end.toString(result,localize);
+        else 
+          end.getPointInTime(calendar).toString(result, localize);
+      }
+  
+      // done    
+      return result.toString();
+      
+    } catch (GedcomException e) {
+      // done in case of error
+      return "";
+    }
+  }
+  
+  /**
+   * @see genj.gedcom.Property#getInfo()
+   */
+  public String getInfo() {
+    return super.getInfo() + ' ' + toString(true, PointInTime.GREGORIAN);
   }
 
   /** 
@@ -389,13 +420,13 @@ public class PropertyDate extends Property {
   private static class FormatDescriptor {
     protected boolean isRange;
     protected String start, end;
-    protected String astart, aend;
+    //protected String astart, aend;
     protected FormatDescriptor(boolean r, String s, String e, String as, String ae) {
       isRange= r; 
       start  = s; 
       end    = e;
-      astart = as;
-      aend   = ae;
+      //astart = as;
+      //aend   = ae;
     }
   } //FormatDescriptor
   

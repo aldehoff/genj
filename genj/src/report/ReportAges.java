@@ -206,7 +206,7 @@ public class ReportAges extends Report {
             else {
                 if(indi.getProperty(new TagPath("INDI:BAPM:DATE"))!=null) {
                     PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:BAPM:DATE"));
-                    println(getIndent(3)+prop.toString(false,true));
+                    println(getIndent(3)+prop.toString(true));
                     age = calculateAge(indi, prop, null);
                     printAge(age, 4, "baptismBeforeBirth", null);
                 }
@@ -220,7 +220,7 @@ public class ReportAges extends Report {
             else {
                 if(indi.getProperty(new TagPath("INDI:BAPL:DATE"))!=null) {
                     PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:BAPL:DATE"));
-                    println(getIndent(3)+prop.toString(false,true));
+                    println(getIndent(3)+prop.toString(true));
                     age = calculateAge(indi, prop, null);
                     printAge(age, 4, "baptismBeforeBirth", null);
                 }
@@ -278,7 +278,7 @@ public class ReportAges extends Report {
             else {
                 if(indi.getProperty(new TagPath("INDI:EMIG:DATE"))!=null) {
                     PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:EMIG:DATE"));
-                    println(getIndent(3)+prop.toString(false,true));
+                    println(getIndent(3)+prop.toString(true));
                     age = calculateAge(indi, prop, null);
                     printAge(age, 4, "emigrationBeforeBirth", null);
                 }
@@ -295,7 +295,7 @@ public class ReportAges extends Report {
             else {
                 if(indi.getProperty(new TagPath("INDI:IMMI:DATE"))!=null) {
                     PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:IMMI:DATE"));
-                    println(getIndent(3)+prop.toString(false,true));
+                    println(getIndent(3)+prop.toString(true));
                     age = calculateAge(indi, prop, null);
                     printAge(age, 4, "immigrationBeforeBirth", null);
                 }
@@ -312,7 +312,7 @@ public class ReportAges extends Report {
             else {
                 if(indi.getProperty(new TagPath("INDI:NATU:DATE"))!=null) {
                     PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:NATU:DATE"));
-                    println(getIndent(3)+prop.toString(false,true));
+                    println(getIndent(3)+prop.toString(true));
                     age = calculateAge(indi, prop, null);
                     printAge(age, 4, "naturalizationBeforeBirth", null);
                 }

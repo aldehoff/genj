@@ -498,7 +498,7 @@ public class PropertyRenderer {
       if (!(prop instanceof PropertyDate)||!prop.isValid()) 
         return prop.getValue();
       PropertyDate date = (PropertyDate)prop;
-      return date.toString(false, true);
+      return date.toString(true);
     }  
   
   } //Date
