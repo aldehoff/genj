@@ -43,10 +43,9 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -163,9 +162,6 @@ import javax.swing.event.ChangeListener;
   /** view manager */
   private ViewManager manager;
 
-  /** path2panels */
-  private HashMap path2panels = new HashMap();
-
   /** bean container */
   private JPanel beanPanel;
 
@@ -179,9 +175,6 @@ import javax.swing.event.ChangeListener;
       cancel.setEnabled(true);
     }
   };
-
-  /** beans */
-  private Map path2beans = new HashMap();
 
   /**
    * Callback - init for edit
@@ -268,11 +261,17 @@ import javax.swing.event.ChangeListener;
     // check specific property
     Property prop = context.getProperty();
     if (prop != null) {
-      PropertyBean bean = (PropertyBean) path2beans.get(prop.getPath());
-      if (bean != null)
-        bean.requestFocusInWindow();
+      TagPath path = prop.getPath();
+      for (int i=0,j=beanPanel.getComponentCount();i<j;i++) {
+        JComponent c = (JComponent)beanPanel.getComponent(i);
+        if (c instanceof PropertyBean && ((PropertyBean)c).getPath().equals(path)) {
+          c.requestFocusInWindow();
+          break;
+        }
+      }
     }
-
+    
+    // done
   }
 
   /**
@@ -285,8 +284,6 @@ import javax.swing.event.ChangeListener;
 
     // remove all current beans
     beanPanel.removeAll();
-    path2panels.clear();
-    path2beans.clear();
 
     // setup for new entity
     if (entity!=null) 
@@ -369,8 +366,7 @@ import javax.swing.event.ChangeListener;
 
           // prepare bean
           PropertyBean bean = PropertyBean.get(prop);
-          bean.init(entity.getGedcom(), prop, manager, registry);
-          path2beans.put(path, bean);
+          bean.init(entity.getGedcom(), prop, path, manager, registry);
 
           // add bean
           beanPanel.add(bean, bean.getWeight());
@@ -405,17 +401,17 @@ import javax.swing.event.ChangeListener;
       gedcom.startTransaction();
 
       // commit bean changes
-      
-      // FIXME creating missing parent props doesn't work all the time
       try {
-        Iterator paths = path2beans.keySet().iterator();
-        while (paths.hasNext()) {
-          TagPath path = (TagPath) paths.next();
-          PropertyBean bean = (PropertyBean) path2beans.get(path);
-          Property prop = bean.getProperty();
-          bean.commit();
-          if (prop.getValue().length() > 0 && prop.getParent() == null)
-            add(prop, path, path.length());
+        for (int i=0,j=beanPanel.getComponentCount();i<j;i++) {
+          JComponent c = (JComponent)beanPanel.getComponent(i);
+          if (c instanceof PropertyBean) {
+            PropertyBean bean = (PropertyBean)c;
+            bean.commit();
+            Property prop = bean.getProperty();
+            TagPath path = bean.getPath();
+            if (prop.getValue().length() > 0 && prop.getParent() == null)
+              add(prop, path, path.length());
+          }          
         }
       } catch (Throwable t) {
         Debug.log(Debug.ERROR, this, t);
