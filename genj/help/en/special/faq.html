@@ -14,7 +14,7 @@
  <li> <a Href="#6">Can I make a centimeter look like one on my screen?</a>
  <li> <a Href="#7">Can I change the boring gray look?</a>
  <li> <a Href="#8">Associating existing records?</a>
- <li> <a Href="#9">How do I add the ADOP(tion) tag in the right way?</a>
+ <li> <a Href="#9">How do I add the ADOP(tion) property in the right way?</a>
  <li> <a Href="#10">Why do size and resolution of images changed during program usage?</a>
 </ol>
 <p>
@@ -105,9 +105,8 @@
  the 'existing' one is built.
 </p>
 <a name = "9"><p>
- <b>Q</b> How do I enter the ADOP(tion) tag in the right way?<br>
- <b>A</b> The ADOP tag can have a FAMC tag in it. The nested FAMC tag can have an ADOP tag in it indicating who adopted the child (HUSB, WIFE, BOTH). <br>
-After creating an ADOP tag you can add a FAMC tag, but it won't work right. The proper way to create it is to add the person to the adoptive family, create the ADOP tag, and cut/paste or drag'n drop the FAMC tag into the ADOP tag. Then the second ADOP tag can be added to the nested FAMC tag.
+ <b>Q</b> How do I add the ADOP(tion) property in the right way?<br>
+ <b>A</b> For the person you want to add the relationship to, add the person as a child of the adopted family: go to the FAM(ily) entity, select "Family => Add Child", and select the person to add as an adopted child from the drop down menu. This will put the FAMC property on the person's INDI entity. Next, go to the INDI entity for the person and create the ADOP property on the INDI entity. Next drag and drop (or cut/paste in 2.2+MDI version) the FAMC property from being under the INDI to being under the ADOP property. To specify who adopted the child, select the nested FAMC property that was just moved in the Edit INDI view and add an ADOP property to it. Select the newly created ADOP property and a new option will appear in the edit window to select the person who adopted the child: (HUSB=husband, or male spouse of the FAMily; WIFE=wife, or female spouse of the FAMily; BOTH=both the spouses adopted the child).
 </p>
 <a name = "10"><p>
  <b>Q</b> Why do size and resolution of images changed during program usage?<br>
