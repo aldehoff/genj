@@ -39,6 +39,15 @@ Acknowledgements
   http://www.jfree.org/jfreechart/index.html
  for the latest version of the source to JFreeChart.
  
+ GenJ includes material from wikipedia.org which is licensed
+ under the GNU Free Documentation License with no Invariant 
+ Sections, with no Front-Cover Texts, and with no Back-Cover
+ Texts. Please check at
+  http://en.wikipedia.org
+  http://fr.wikipedia.org
+  http://de.wikipedia.org
+ for a transparent copy of any article used.
+ 
 License
 
  GenenalogyJ is free software; you can redistribute it and/or
@@ -49,8 +58,5 @@ License
  GenJ is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+ GNU General Public License (gpl.txt) for more details.
  
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
