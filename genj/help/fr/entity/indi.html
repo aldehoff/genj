@@ -1,30 +1,39 @@
-<HTML>
+<html>
+<body>
 
-<BODY>
-<H2>Individual</H2>
 
-<P>
-Gedcom information mostly revolves about individuals. That's you, your father,
-your children and any other ancestor or descendant. By clicking on the small
-symbol <img src="../../images/Indi.gif"></img> in the <A href="../cc.html">Control Center</A>
-you can very easily enter new information for individuals you know about.
-</P>
+<h2>
+  Les Personnes
+</h2>
 
-<P>
-The creation asks for given, family name and sex. Then you can specify its
-relationship to your existing data. First select any family or individual
-in the <A href="../view/tree.html">Tree View</A> or 
-<A href="../view/table.html">Table View</A>. The radiobuttons below the
-indication of the selected entity allows to specify the new relationship.
-When selecting an individual the new one can be its Sibling, Child, Parent
-(if not already exists) or Spouse. When selecting a family the new individual
-can be Child or Spouse. Make your selection and click on Create.
-</P>
+<p>
+L'information Gedcom tourne d'abord autour des personnes. C'est vous, 
+votre p&egrave;re, vos enfants et n'importe quel anc&ecirc;tre ou descendant. 
+En cliquant sur le petit symbole <img src="../../images/Indi.gif"> dans le 
+<a href="../cc.html">Centre de Contr&ocirc;le</a> vous pouvez tr&egrave;s 
+facilement entrer de nouvelles informations que vous pouvez avoir sur ces 
+personnes.
+</p>
 
-<P>
-When editing an Individual in the <A href="../view/edit.html">Edit View</A>
-you should stick to the Gedcom standard as close as possible. A typical
-individual could consists of this kind of information:
+<p>
+Lors de la cr&eacute;ation d'une personne, il est demand&eacute; le nom de 
+famille et le sexe. Ensuite vous pouvez sp&eacute;cifier son lien par 
+rapport &agrave; vos donn&eacute;es actuelles. Choisissez d'abord une famille 
+ou une personne dans <a href="../view/tree.html">l'Arbre G&eacute;n&eacute;alogique</a>
+ou le <a href="../view/table.html">Tableau des Donn&eacute;es</a>. Les 
+boutons radio au-dessous de l'indication de l'entit&eacute; choisie 
+permettent de d&eacute;finir le nouveau lien. En choisissant une personne, 
+le nouvel individu peut &ecirc;tre son fr&egrave;re ou sa soeur, son enfant, 
+son parent (si il n' existe pas d&eacute;j&agrave;) ou son conjoint. En 
+choisissant une famille le nouvel individu peut &ecirc;tre un enfant ou un 
+conjoint. Faites  votre choix et cliquez sur Cr&eacute;er.
+</p>
+
+<p>
+En &eacute;ditant un Individu dans la <a href="../view/edit.html">
+Fen&ecirc;tre d'&Eacute;dition</a>, vous devrez coller &agrave; 
+la norme Gedcom le plus fid&egrave;lement possible. Un individu typique 
+pr&eacute;senter les informations suivantes&nbsp;:
 <PRE>
 @I008@ INDI
  NAME Nils /Meier/
@@ -36,41 +45,48 @@ individual could consists of this kind of information:
   ADDR 202-1241 Kilborn Place
   DATE FROM 30 JUL 1999 TO 2000     
 </PRE>
-</P>
+</p>
 
-<P>
-Just work through the properties of your individuals and change
-their properties. When adding new properties choose from the 
-predefined list or if necessary extend the schema by adding
-new property-tags for special user-properties.
-</P>
+<p>
+Parcourez les propri&eacute;t&eacute;s des personnes composant votre arbre 
+et modifiez les. Quand vous ajoutez de nouvelles propri&eacute;t&eacute;s 
+choisissez les dans la liste pr&eacute;&eacute;tablie ou, si cela 
+s'av&egrave;re n&eacute;cessaire et que vous ayez des besoins particuliers, 
+ajoutez de nouvelles &eacute;tiquettes de propri&eacute;t&eacute;s.
+</p>
 
-<P>
-An important feature of Gedcom is the capability to link
-entities. Individuals are normally not separate - they are
-married, have parents and children. Everytime you create a
-new Individual related to others, they are linked through
-properties. These properties for the individuals are
-FAMC (being a child in a family)or FAMS (being a spouse in
-a family). The properties refer to the family by its
-id. You can explore the relationship between individuals
-and families by following those links. Be careful when
-deleting or creating new links - keeping the overview
-of the referential integrity is not easy :). 
-</P>
+<p>
+Une fonction importante de Gedcom est sa capacit&eacute; &agrave; 
+cr&eacute;er des liens entre les entit&eacute;s. Normalement, les 
+individus ne sont pas isol&eacute;s - ils sont mari&eacute;s, ont
+des parents, des enfants. A chaque fois que vous cr&eacute;ez un nouvel 
+Individu, il se trouve li&eacute; aux autres par le biais de 
+propri&eacute;t&eacute;s. Ces propri&eacute;t&eacute;s pour les individus
+sont FAMC (&ecirc;tre un enfant dans une famille) ou FAMS (&ecirc;tre un
+conjoint dans une famille). Ces propri&eacute;t&eacute;s se rattachent 
+&agrave; la famille par leur id. Vous pouvez explorer les liens entre les
+personnes et les familles en suivant ces liens. Soyez prudent quand vous 
+supprimez ou cr&eacute;ez de nouveaux liens - avoir une vue d'ensemble 
+de l'int&eacute;grit&eacute; r&eacute;f&eacute;rentielle n'est pas facile :).
+</p>
 
-<P>
-Assume a special case as an example: You have your family
-tree and found out that an ancestors wife's sister married
-his brother. All those individuals are in your tree already!
-You can now create a new <A>family</A> for this newly
-discovered relationship. But then you don't want to create a new
-individual - you want to link existing entities!
-The solution: Select your ancestor's brother and add a FAMS
-property to it. Then change it to point to the new family
-by entering its ID. Click on the link-button and a HUSB property 
-will automatically be added to that family. The circle is made.
-</P>
+<p>
+Prenons par exemple un cas particulier&nbsp;:&nbsp;Dans votre arbre 
+g&eacute;n&eacute;alogique vous d&eacute;couvrez qu'un anc&ecirc;tre de la 
+soeur d'une &eacute;pouse a &eacute;pous&eacute; le fr&egrave;re de celui-ci. 
+Tous ces individus sont d&eacute;j&agrave; dans votre arbre! Vous pouvez 
+cr&eacute;er une nouvelle <a>famille</a> pour ce lien nouvellement d&eacute;couvert. 
+Mais vous ne voulez pas cr&eacute;er un nouvel individu&nbsp;-&nbsp;vous 
+voulez lier des entit&eacute;s existantes! La solution&nbsp;:&nbsp;Choisissez le 
+fr&egrave;re de cet anc&ecirc;tre et ajoutez-y une propri&eacute;t&eacute; 
+FAMS. Changez-le alors pour pointer sur la nouvelle famille en entrant son ID. 
+En cliquant sur le bouton de liaison une propri&eacute;t&eacute; HUSB sera 
+automatiquement ajout&eacute; &agrave; cette famille. La boucle est 
+boucl&eacute;e.
+</p>
 
-</BODY>
-</HTML>
+<br>
+
+</body>
+</html>
+
