@@ -551,7 +551,6 @@ public class GedcomReader implements Trackable {
 
     // commit collected value for MultiLineProperties
     if (collector!=null) {
-      System.out.println(collector.getValue());
       of.setValue(collector.getValue());
     } 
   
