@@ -232,8 +232,8 @@ public class ReportValidate extends Report {
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:DIV:DATE"));
     
     // marriage after death of husband/wife
-    result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:HUSB:INDI:BIRT:DATE"));
-    result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:WIFE:INDI:BIRT:DATE"));
+    result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:HUSB:INDI:DEAT:DATE"));
+    result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:WIFE:INDI:DEAT:DATE"));
 
     // childbirth after death of mother
     result.add(new TestDate("FAM:CHIL"      ,"FAM:CHIL:INDI:BIRT:DATE", TestDate.AFTER  ,"FAM:WIFE:INDI:DEAT:DATE"));
