@@ -9,13 +9,9 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Fam;
 import genj.gedcom.PointInTime;
-import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyEvent;
 import genj.report.Report;
-
-import java.text.NumberFormat;
 
 /**
  * GenJ - ReportAges
