@@ -23,7 +23,6 @@ import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -33,7 +32,8 @@ import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.ColumnLayout;
+import genj.util.swing.ImageIcon;
+import genj.util.swing.NestedBlockLayout;
 import genj.view.Context;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
@@ -50,111 +50,107 @@ import java.util.StringTokenizer;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * The basic version of an editor for a entity. Tries to
- * hide Gedcom complexity from the user while being flexible
- * in what it offers to edit information pertaining to an
- * entity.
+ * The basic version of an editor for a entity. Tries to hide Gedcom complexity from the user while being flexible in what it offers to edit information pertaining to an entity.
  */
-/*package*/ class BasicEditor extends Editor implements GedcomListener {
+/* package */class BasicEditor extends Editor implements GedcomListener {
 
-  private final static String PAGE = 
-    "$INDI\n"+
-    " INDI:NAME INDI:SEX\n" + 
-    "$INDI:BIRT\n" + 
-    " INDI:BIRT:DATE\n" + 
-    " INDI:BIRT:PLAC\n" + 
-    "$INDI:DEAT\n" + 
-    " INDI:DEAT:DATE\n" +  
-    " INDI:DEAT:PLAC\n" +
-    "$INDI:OCCU\n" +
-    " INDI:OCCU\n" +
-    " INDI:OCCU:DATE\n" +
-    " INDI:OCCU:PLAC\n" +
-    "$INDI:RESI\n" +
-    " INDI:RESI:DATE\n" +
-    " INDI:RESI:ADDR\n" +
-    "$INDI:RESI:ADDR:CITY INDI:RESI:ADDR:CITY\n" +
-    "$INDI:RESI:ADDR:POST INDI:RESI:ADDR:POST\t" +
-    "$INDI:OBJE\n" +
-    "$INDI:OBJE:TITL INDI:OBJE:TITL\n" + 
-    " INDI:OBJE:FILE\n" + 
-    "$INDI:NOTE\n" +
-    " INDI:NOTE";
+  // templates for entities
+  private final static HashMap TEMPLATES = new HashMap();
   
-//  // beans for given entity
-//  private final static String[] PATHS = { 
-//    "INDI:NAME", 
-//    "INDI:SEX", 
-//    "INDI:BIRT:DATE", 
-//    "INDI:BIRT:PLAC", 
-//    "INDI:DEAT:DATE",  
-//    "INDI:DEAT:PLAC",
-//    "INDI:OCCU",
-//    "INDI:OCCU:DATE",
-//    "INDI:OCCU:PLAC",
-//    "INDI:RESI:DATE",
-//    "INDI:RESI:ADDR",
-//    "INDI:RESI:ADDR:CITY",
-//    "INDI:RESI:ADDR:POST",
-//    "INDI:OBJE:TITL",
-//    "INDI:OBJE:FILE", 
-//    "INDI:NOTE",
-//    
-//    "FAM:MARR:DATE",//    "FAM:MARR:PLAC",
-//    "FAM:DIV:DATE",
-//    "FAM:DIV:PLAC",
-//    "FAM:OBJE:TITL",
-//    "FAM:OBJE:FILE", 
-//    "FAM:NOTE",
-//    
-//    "OBJE:TITL",
-//    "OBJE:FORM",
-//    "OBJE:BLOB",
-//    "OBJE:NOTE",
-//    
-//    "NOTE:NOTE",
-//    
-//    "REPO:NAME",
-//    "REPO:ADDR",
-//    "REPO:ADDR:CITY",
-//    "REPO:ADDR:POST",
-//    "REPO:NOTE",
-//    
-//    "SOUR:AUTH",
-//    "SOUR:TITL",
-//    "SOUR:TEXT",
-//    "SOUR:OBJE:TITL",
-//    "SOUR:OBJE:FILE",
-//    "SOUR:NOTE",
-//    
-//    "SUBM:NAME",
-//    "SUBM:ADDR",
-//    "SUBM:ADDR:CITY",
-//    "SUBM:ADDR:POST",
-//    "SUBM:OBJE:TITL",
-//    "SUBM:OBJE:FILE",
-//    "SUBM:LANG",
-//    "SUBM:RFN",
-//    "SUBM:RIN"
-//  };
+  static {
+    
+    TEMPLATES.put(Gedcom.INDI,
+     " INDI:NAME INDI:SEX\n"+
+     "$BIRT\n"+
+     " INDI:BIRT:DATE\n"+
+     " INDI:BIRT:PLAC\n"+
+     "$DEAT\n"+
+     " INDI:DEAT:DATE\n"+ 
+     " INDI:DEAT:PLAC\n"+ 
+     "$OCCU\n"+
+     " INDI:OCCU\n"+
+     " INDI:OCCU:DATE\n"+
+     " INDI:OCCU:PLAC\n"+
+     "$RESI\n"+
+     " INDI:RESI:DATE\n"+
+     " INDI:RESI:ADDR\n"+
+     "$CITY INDI:RESI:ADDR:CITY\n"+
+     "$POST INDI:RESI:ADDR:POST\t"+
+     "$OBJE\n"+
+     "$TITL INDI:OBJE:TITL\n"+
+     " INDI:OBJE:FILE\n"+
+     "$NOTE\n"+
+     " INDI:NOTE");
+    
+    TEMPLATES.put(Gedcom.FAM,
+     "$MARR\n"+
+     " FAM:MARR:DATE\n"+
+     " FAM:MARR:PLAC\n"+
+     "$DIV\n"+
+     " FAM:DIV:DATE\n"+
+     " FAM:DIV:PLAC\n"+
+     "$OBJE\n"+
+     " $TITL FAM:OBJE:TITL\n"+
+     " FAM:OBJE:FILE\n"+
+     "$NOTE\n"+
+     " FAM:NOTE");
+  
+    TEMPLATES.put(Gedcom.OBJE,
+      "$TITL OBJE:TITL\n"+
+      "$FORM OBJE:FORM\n"+
+      " OBJE:BLOB\n"+
+      "$NOTE\n"+
+      " OBJE:NOTE");
+    
+    TEMPLATES.put(Gedcom.NOTE,
+      " NOTE:NOTE");
+      
+    TEMPLATES.put(Gedcom.REPO,
+      "$NAME REPO:NAME\n"+
+      "$ADDR\n"+
+      " REPO:ADDR\n"+
+      "$CITY REPO:ADDR:CITY\n"+
+      "$POST REPO:ADDR:POST\n"+
+      "$NOTE\n"+
+      " REPO:NOTE");
+    
+    TEMPLATES.put(Gedcom.SOUR,
+      "$AUTH\n"+
+      " SOUR:AUTH\n"+
+      "$TITL\n"+
+      " SOUR:TITL\n"+
+      "$TEXT\n"+
+      " SOUR:TEXT\n"+
+      "$OBJE\n"+
+      "$TITL SOUR:OBJE:TITL\n"+
+      " SOUR:OBJE:FILE\n"+
+      "$NOTE\n"+
+      " SOUR:NOTE");
+    
+    TEMPLATES.put(Gedcom.SUBM,
+      "$NAME SUBM:NAME\n"+
+      "$ADDR\n"+
+      " SUBM:ADDR\n"+
+      "$CITY SUBM:ADDR:CITY\n"+
+      "$POST SUBM:ADDR:POST\n"+
+      "$OBJE\n"+
+      "$TITL SUBM:OBJE:TITL\n"+
+      " SUBM:OBJE:FILE\n"+
+      "$LANG SUBM:LANG\n"+
+      "$RFN SUBM:RFN\n"+
+      "$RIN SUBM:RIN");
+  }
   
 
   /** colors for tabborders */
-  private final static Color[] COLORS = {
-    Color.GRAY,
-    new Color(192, 48, 48),
-    new Color( 48, 48,128),
-    new Color( 48,128, 48),
-    new Color( 48,128,128),
-    new Color(128, 48,128),
-    new Color( 96, 64, 32),
-    new Color( 32, 64, 96)
-  };
-    
+  private final static Color[] COLORS = { Color.GRAY, new Color(192, 48, 48), new Color(48, 48, 128), new Color(48, 128, 48), new Color(48, 128, 128), new Color(128, 48, 128), new Color(96, 64, 32), new Color(32, 64, 96) };
+
   /** our gedcom */
   private Gedcom gedcom = null;
 
@@ -166,20 +162,15 @@ import javax.swing.event.ChangeListener;
 
   /** view manager */
   private ViewManager manager;
-  
+
   /** path2panels */
   private HashMap path2panels = new HashMap();
-  
-  /** header */
-  private JLabel header = new JLabel();
-  
+
   /** bean container */
   private JPanel beanPanel;
-  
+
   /** actions */
-  private ActionDelegate    
-    ok   = new OK(), 
-    cancel = new Cancel();
+  private ActionDelegate ok = new OK(), cancel = new Cancel();
 
   /** change callback */
   ChangeListener changeCallback = new ChangeListener() {
@@ -188,8 +179,7 @@ import javax.swing.event.ChangeListener;
       cancel.setEnabled(true);
     }
   };
-          
-  
+
   /** beans */
   private Map path2beans = new HashMap();
 
@@ -204,8 +194,9 @@ import javax.swing.event.ChangeListener;
     this.registry = registry;
 
     // create panels for beans and links
-    beanPanel = new JPanel();
-    
+    beanPanel = new JPanel(new NestedBlockLayout(true, 2));
+    beanPanel.setBorder(new EmptyBorder(2,2,2,2));
+
     // create panel for actions
     JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons).setFocusable(false);
@@ -214,16 +205,15 @@ import javax.swing.event.ChangeListener;
 
     // layout
     setLayout(new BorderLayout());
-    add(header                    , BorderLayout.NORTH );
     add(new JScrollPane(beanPanel), BorderLayout.CENTER);
-    add(buttons                   , BorderLayout.SOUTH );
+    add(buttons, BorderLayout.SOUTH);
 
     // done
   }
 
   /**
    * Intercepted add notification
-   */  
+   */
   public void addNotify() {
     // let super continue
     super.addNotify();
@@ -240,13 +230,13 @@ import javax.swing.event.ChangeListener;
     // stop listening to gedcom events
     gedcom.removeGedcomListener(this);
   }
-  
+
   /**
    * Interpret gedcom changes
    */
   public void handleChange(Transaction tx) {
     // are we looking at something?
-    if (entity==null)
+    if (entity == null)
       return;
     // entity affected?
     if (tx.get(Transaction.ENTITIES_DELETED).contains(entity)) {
@@ -257,120 +247,6 @@ import javax.swing.event.ChangeListener;
       setEntity(entity);
     }
   }
-  
-  /**
-   * Callback - set current context
-   */
-  public void setContext(Context context) {
-
-    // set if new
-    Entity set = context.getEntity();
-    if (entity != set)
-      setEntity(set);
-      
-    // check specific property
-    Property prop = context.getProperty();
-    if (prop!=null) {
-      PropertyBean bean = (PropertyBean)path2beans.get(prop.getPath());
-      if (bean!=null) 
-        bean.requestFocusInWindow();
-    }
-    
-  }
-
-  /**
-   * Set current entity
-   */    
-  public void setEntity(Entity set) {
-
-    // remember
-    entity = set;
-    
-    // setup header
-    header.setIcon(entity==null?null:entity.getImage(false));
-    header.setText(entity==null?null:Gedcom.getName(entity.getTag())+' '+entity.getId());
-
-    // remove all current beans
-    beanPanel.removeAll();
-    path2panels.clear();
-    path2beans.clear();
-    
-    // setup new layout for bean panel
-    ColumnLayout layout = new ColumnLayout();
-    beanPanel.setLayout(layout);
-
-    // setup for new entity
-    if (entity instanceof Indi) {
-
-      // create beans for configured page
-      StringTokenizer page = new StringTokenizer(PAGE, "\t\n ", true);
-      while (page.hasMoreTokens()) {
-        
-        String token = page.nextToken();
-        if (token.equals(" "))
-          continue;
-        if (token.equals("\n")) {
-          layout.endRow(beanPanel);
-          continue;
-        }
-        if (token.equals("\t")) {
-          layout.endColumn(beanPanel);
-          continue;
-        }
-        
-        // text or bean?
-        boolean text = token.startsWith("$");
-        if (text)
-          token = token.substring(1);
-        TagPath path = new TagPath(token);
-        
-        // get meta information for path
-        MetaProperty meta = MetaProperty.get(path);
-  
-        // create text or bean
-        if (text) {
-          // add text
-          JLabel label = new JLabel(meta.getName());
-          if (path.length()<3)
-            label.setFont(label.getFont().deriveFont(Font.BOLD));
-          beanPanel.add(label);
-        } else {
-          // resolve prop for bean
-          Property prop = entity.getProperty(path);
-          if (prop == null || prop instanceof PropertyXRef)
-            prop = meta.create("");
-  
-          // prepare bean 
-          PropertyBean bean = PropertyBean.get(prop);
-          bean.init(entity.getGedcom(), prop, manager, registry);
-          path2beans.put(path, bean);
-          
-          // add bean
-          beanPanel.add(bean, bean.getWeight());
-  
-          // listen to bean changes
-          bean.addChangeListener(changeCallback);
-
-        }
-        
-        // contribute to layout
-        //ColumnLayout.setWeight(bean, bean.getWeight());
-        
-      }
-
-      // FIXME need to add paths for INDI:FAMS, INDI:FAMC, FAM:HUSB, FAM:WIFE, FAM:CHIL 
-    }
-    
-    // start without ok and cancel
-    ok.setEnabled(false);
-    cancel.setEnabled(false);
-    
-    // show
-    revalidate();
-    repaint();
-
-    // done    
-  }
 
   /**
    * Callback - our current context
@@ -380,30 +256,165 @@ import javax.swing.event.ChangeListener;
   }
 
   /**
+   * Callback - set current context
+   */
+  public void setContext(Context context) {
+
+    // set if new
+    Entity set = context.getEntity();
+    if (entity != set)
+      setEntity(set);
+
+    // check specific property
+    Property prop = context.getProperty();
+    if (prop != null) {
+      PropertyBean bean = (PropertyBean) path2beans.get(prop.getPath());
+      if (bean != null)
+        bean.requestFocusInWindow();
+    }
+
+  }
+
+  /**
+   * Set current entity
+   */
+  public void setEntity(Entity set) {
+
+    // remember
+    entity = set;
+
+    // remove all current beans
+    beanPanel.removeAll();
+    path2panels.clear();
+    path2beans.clear();
+
+    // setup for new entity
+    if (entity!=null) 
+      setupBeanPanel(entity);
+
+    // start without ok and cancel
+    ok.setEnabled(false);
+    cancel.setEnabled(false);
+
+    // show
+    revalidate();
+    repaint();
+
+    // done
+  }
+  
+  /**
+   * create a text label
+   */
+  private JLabel createLabel(String txt, ImageIcon img, boolean bold) {
+    JLabel result = new JLabel(txt, img, SwingConstants.LEFT);
+    if (bold)
+      result.setFont(result.getFont().deriveFont(Font.BOLD));
+    return result;
+  }
+
+  /**
+   * setup bean panel
+   */
+  private void setupBeanPanel(Entity entity) {
+
+    NestedBlockLayout layout = (NestedBlockLayout)beanPanel.getLayout();
+    
+    // add one special every time
+    beanPanel.add(createLabel(Gedcom.getName(entity.getTag()) + ' ' + entity.getId(), entity.getImage(false), true));
+    layout.createBlock(1);
+    
+    // apply template
+    String template = (String)TEMPLATES.get(entity.getTag());
+    if (template==null)
+      return;
+    
+    StringTokenizer rows = new StringTokenizer(template, "\n\t", true);
+    while (rows.hasMoreTokens()) {
+
+      String row = rows.nextToken();
+      
+      // next row
+      if (row.equals("\n")) {
+        layout.createBlock(1);
+        continue;
+      }
+      
+      // next column
+      if (row.equals("\t")) {
+        layout.createBlock(0);
+        continue;
+      }
+      
+      // parse elements
+      StringTokenizer comps = new StringTokenizer(row, " ");
+      while (comps.hasMoreTokens()) {
+        
+        String comp = comps.nextToken().trim();
+
+        // text or bean?
+        if (comp.startsWith("$")) {
+          beanPanel.add(createLabel(Gedcom.getName(comp.substring(1)), null, !comps.hasMoreTokens()));
+        } else {
+          TagPath path = new TagPath(comp);
+
+          // get meta information for path
+          MetaProperty meta = MetaProperty.get(path);
+
+          // resolve prop for bean
+          // FIXME gotta think about this one - can we simply skip xrefs?
+          Property prop = entity.getProperty(path);
+          if (prop == null || prop instanceof PropertyXRef)
+            prop = meta.create("");
+
+          // prepare bean
+          PropertyBean bean = PropertyBean.get(prop);
+          bean.init(entity.getGedcom(), prop, manager, registry);
+          path2beans.put(path, bean);
+
+          // add bean
+          beanPanel.add(bean, bean.getWeight());
+
+          // listen to bean changes
+          bean.addChangeListener(changeCallback);
+
+        }
+
+      }
+
+    }
+
+    // done
+    // FIXME need to add paths for INDI:FAMS, INDI:FAMC, FAM:HUSB, FAM:WIFE, FAM:CHIL
+  }
+
+  /**
    * A ok action
    */
   private class OK extends ActionDelegate {
-  
+
     /** constructor */
     private OK() {
       setText(CloseWindow.TXT_OK);
     }
-  
+
     /** cancel current proxy */
     protected void execute() {
-      
+
       // commit changes
       gedcom.startTransaction();
+
+      // commit bean changes
       
-      // commit bean changes      
+      // FIXME creating missing parent props doesn't work all the time
       try {
         Iterator paths = path2beans.keySet().iterator();
         while (paths.hasNext()) {
-          TagPath path = (TagPath)paths.next();
-          PropertyBean bean = (PropertyBean)path2beans.get(path);
+          TagPath path = (TagPath) paths.next();
+          PropertyBean bean = (PropertyBean) path2beans.get(path);
           Property prop = bean.getProperty();
           bean.commit();
-          if (prop.getValue().length()>0&&prop.getParent()==null)
+          if (prop.getValue().length() > 0 && prop.getParent() == null)
             add(prop, path, path.length());
         }
       } catch (Throwable t) {
@@ -415,40 +426,40 @@ import javax.swing.event.ChangeListener;
       entity = null;
       gedcom.endTransaction();
       entity = old;
-      
+
       // disable commit/cancel since all changes are committed
       ok.setEnabled(false);
       cancel.setEnabled(false);
-      
+
       // done
     }
-    
+
     private Property add(Property prop, TagPath path, int len) {
-      
-      TagPath ppath = new TagPath(path, len-1);
+
+      TagPath ppath = new TagPath(path, len - 1);
       Property parent = entity.getProperty(ppath);
-      if (parent==null) 
-        parent = add(MetaProperty.get(ppath).create(""), path, len-1);
+      if (parent == null)
+        parent = add(MetaProperty.get(ppath).create(""), path, len - 1);
 
       // add it
       parent.addProperty(prop);
-      
+
       // done
       return prop;
     }
-  
+
   } //OK
-  
+
   /**
    * A cancel action
    */
   private class Cancel extends ActionDelegate {
-  
+
     /** constructor */
     private Cancel() {
       setText(CloseWindow.TXT_CANCEL);
     }
-  
+
     /** cancel current proxy */
     protected void execute() {
       // disable ok&cancel
@@ -458,7 +469,7 @@ import javax.swing.event.ChangeListener;
       // re-set for cancel
       setEntity(entity);
     }
-  
+
   } //Cancel
-  
+
 } //BasicEditor
