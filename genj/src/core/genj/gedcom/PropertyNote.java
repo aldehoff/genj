@@ -231,13 +231,12 @@ public class PropertyNote extends PropertyXRef {
       }
       // keep value
       note = v;
-      return true;
+    } else { 
+      // 20021113 we're an entity -> add it as sub-property
+      if (v.length()>0)
+        getSubNote(true).setValue(v);
     }
-
-    // 20021113 we're an entity -> add it as sub-property
-    if (v.length()>0)
-      getSubNote(true).setValue(v);
-
+    
     // mark modified
     noteModifiedProperty();
 
