@@ -57,11 +57,11 @@ public class ReportLoader {
       
       String[] files = basedir.list();
       for (int i=0;i<files.length;i++) {
-        File file = new File(files[i]);
+        File file = new File(basedir, files[i]);
         String report = isReport(file);
         if (report!=null) reports.add(report);
         if (isLibrary(file)) {
-          Debug.log(Debug.INFO, this, "report library "+file.getName());
+          Debug.log(Debug.INFO, this, "report library "+file.toURL());
           classpath.add(file.toURL());
         } 
       }
@@ -73,7 +73,7 @@ public class ReportLoader {
     // Prepare classloader
     URLClassLoader cl = new URLClassLoader((URL[])classpath.toArray(new URL[classpath.size()]));
     
-    // Load reports
+    // Lad reports
     Iterator rs = reports.iterator();
     while (rs.hasNext()) {
       String rname = rs.next().toString(); 
