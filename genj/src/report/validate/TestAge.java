@@ -61,6 +61,8 @@ public class TestAge extends Test {
     
     // calculate delta
     int[] delta = PointInTime.getDelta(pit1, pit2);
+    if (delta==null)
+      return null;
       
     // test it 
     if (isError(delta[0])) 
