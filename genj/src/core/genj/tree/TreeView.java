@@ -533,11 +533,10 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   public void setRoot(Entity root) {
     // allowed?
     if (!(root instanceof Indi||root instanceof Fam)) return;
+    // make it current
+    currentEntity = root;
     // keep it
     model.setRoot(root);
-    // make it current
-    currentEntity = null;
-    setContext(root);
     // done
   }
 
@@ -714,6 +713,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     public void structureChanged(Model model) {
       revalidate();
       repaint();
+      scrollToCurrent();
     }
     
     /**
