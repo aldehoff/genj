@@ -122,6 +122,18 @@ public class ControlCenter extends JPanel {
   }
 
   /**
+   * Removes a Gedcom from the list of Gedcoms
+   */
+  public void removeGedcom(Gedcom gedcom) {
+    
+    // close views
+    ViewManager.getInstance().closeViews(gedcom);
+
+    // forget about it
+    tGedcoms.removeGedcom(gedcom);
+  }
+  
+  /**
    * Returns a button bar for the top
    */
   private JToolBar getToolBar() {
@@ -838,6 +850,14 @@ public class ControlCenter extends JPanel {
 
       // .. open new
       if (newOrigin != null) {
+
+        Enumeration gedcoms = tGedcoms.getAllGedcoms().elements();
+        while (gedcoms.hasMoreElements()) {
+          Gedcom gedcom = (Gedcom) gedcoms.nextElement();
+          if (gedcom.getOrigin().getName().equals(newOrigin.getName()))
+            removeGedcom(gedcom);
+        }
+
         new ActionOpen(newOrigin).trigger();
       }
 
@@ -875,11 +895,8 @@ public class ControlCenter extends JPanel {
         }
       }
 
-      // Close all views for that gedcom
-      ViewManager.getInstance().closeViews(gedcom);
-
-      // forget about it
-      tGedcoms.removeGedcom(gedcom);
+      // Remove it
+      removeGedcom(gedcom);
 
       // Done
     }
