@@ -107,6 +107,14 @@ public class PropertyTreeWidget extends TreeWidget {
   public void setPreviousEntity() {
     model.setPrevious();
     expandRows();
+
+    // select and show property
+    Entity entity = model.getEntity();
+    if (entity!=null) {
+      TreePath path = new TreePath(entity);
+      scrollPathToVisible(path);
+      setSelectionPath(path);
+    }
   }
   
   /**
@@ -207,8 +215,8 @@ public class PropertyTreeWidget extends TreeWidget {
      */
     public void setEntity(Entity entity) {
       // remember history
-      if (entity!=null) {
-        history.push(entity);
+      if (root!=null) {
+        history.push(root);
         if (history.size()>16) history.removeElementAt(0);
       }
       // remember
@@ -442,6 +450,10 @@ public class PropertyTreeWidget extends TreeWidget {
     private Renderer() {
       setOpaque(true);
       setFont(PropertyTreeWidget.this.getFont());
+      
+      // 20031518 will have to choose color here
+      setForeground(defaultRenderer.getTextNonSelectionColor());
+
     }
     
     /**
@@ -457,10 +469,8 @@ public class PropertyTreeWidget extends TreeWidget {
       // prepare color
       if (sel) {
         setBackground(defaultRenderer.getBackgroundSelectionColor());
-        setForeground(defaultRenderer.getTextSelectionColor());
       } else {
         setBackground(defaultRenderer.getBackgroundNonSelectionColor());
-        setForeground(defaultRenderer.getTextNonSelectionColor());
       }
 
       // calc image        

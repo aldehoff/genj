@@ -174,10 +174,38 @@ public class PropertyFile extends Property implements IconValueAvailable {
     // Reinit our icon calculation
     valueAsIcon = null;
 
-    // check if we can update the TITL/FORM in parent OBJE
-    Media.updateSubs(getParent(), value);
+    // 20030518 don't automatically update TITL/FORM
+    // will be prompted in ProxyFile
     
     // done    
+  }
+  
+  /**
+   * Sets this property's value
+   */
+  public void setValue(String value, boolean updateSubs) {
+    
+    // set value
+    setValue(value);
+    
+    // check
+    Property media = getParent();
+    if (!updateSubs||!(media instanceof PropertyMedia||media instanceof Media)) 
+      return;
+      
+    // title?
+    Property title = media.getProperty("TITL");
+    if (title==null) 
+      title = media.addProperty(new PropertySimpleValue());
+    title.setValue(new File(file).getName());
+      
+    // format?
+    Property format = media.getProperty("FORM");
+    if (format==null)
+      format = media.addProperty(new PropertySimpleValue()); 
+    format.setValue(PropertyFile.getSuffix(file));
+    
+    // done  
   }
 
   /**

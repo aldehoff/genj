@@ -20,7 +20,6 @@
 package genj.edit;
 
 import genj.edit.actions.RunExternal;
-import genj.gedcom.GedcomException;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
 import genj.io.FileAssociation;
@@ -31,6 +30,7 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.TextFieldWidget;
 import genj.util.swing.UnitGraphics;
+import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -73,14 +73,28 @@ import javax.swing.JScrollPane;
    * Finish editing a property through proxy
    */
   protected void finish() {
+    
     // changes?
     if (!hasChanged()) return;
+    
     // propagate
+    String file = tFile.getText();
+    
+    // Ask for update 
+    boolean update = 0==view.manager.getWindowManager().openDialog(
+      null, 
+      null, 
+      WindowManager.IMG_QUESTION,
+      resources.getString("proxy.file.update", file),
+      WindowManager.OPTIONS_YES_NO,
+      view
+    );
+    
     if (property instanceof PropertyFile)
-      property.setValue(tFile.getText());
-    if (property instanceof PropertyBlob) try {
-      ((PropertyBlob)property).load(tFile.getText());
-    } catch (GedcomException e) {}
+      ((PropertyFile)property).setValue(file, update);
+    
+    if (property instanceof PropertyBlob) 
+      ((PropertyBlob)property).load(file, update);
 
     // done
   }

@@ -23,6 +23,7 @@ import genj.util.Base64;
 import genj.util.ByteArray;
 import genj.util.swing.ImageIcon;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
@@ -194,8 +195,8 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
         throw new GedcomException("Error reading "+file);
       }
   
-      // check if we can update the TITL/FORM in parent OBJE
-      Media.updateSubs(getParent(), file);
+      // 20030518 don't automatically update TITL/FORM
+      // will be prompted in ProxyFile
     }
     
     // Remember changed property
@@ -232,6 +233,34 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
 
     // Done
   }          
+
+  /**
+   * Sets this property's value
+   */
+  public void load(String file, boolean updateSubs) {
+    
+    // set value
+    setValue(file);
+    
+    // check
+    Property media = getParent();
+    if (!updateSubs||!(media instanceof PropertyMedia||media instanceof Media)) 
+      return;
+      
+    // title?
+    Property title = media.getProperty("TITL");
+    if (title==null) 
+      title = media.addProperty(new PropertySimpleValue());
+    title.setValue(new File(file).getName());
+      
+    // format?
+    Property format = media.getProperty("FORM");
+    if (format==null)
+      format = media.addProperty(new PropertySimpleValue()); 
+    format.setValue(PropertyFile.getSuffix(file));
+    
+    // done  
+  }
 
   /**
    * Member class for iterating through adress' lines of base64-encoded data
