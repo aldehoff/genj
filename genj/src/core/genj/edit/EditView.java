@@ -70,6 +70,20 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
 
   static final Resources resources = new Resources("genj.edit");
 
+  private final static Object[][] entity2create = new Object[][] {
+    { "CSPOUSE", Images.imgNewSpouse , "new.spouse",
+      "CCHILD" , Images.imgNewChild  , "new.child",
+      "CPARENT", Images.imgNewParent , "new.parent",
+      "CNOTE"  , Images.imgNewNote   , "new.note",
+      "CMEDIA" , Images.imgNewMedia  , "new.media" },
+    { "CSPOUSE", Images.imgNewSpouse , "new.spouse",
+      "CCHILD" , Images.imgNewChild  , "new.child",
+      "CNOTE"  , Images.imgNewNote   , "new.note",
+      "CMEDIA" , Images.imgNewMedia  , "new.media" },
+    { },
+    { }
+  };
+
   /**
    * Class for rendering tree cell nodes
    */
@@ -341,7 +355,29 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
   /**
    * Helper: Creata an entity
    */
-  private void createEntity(int type, int relation) {
+  private void createEntity(int type, int relation, String msg) {
+
+    // Recheck with the user
+    String message = resources.getString(
+      "new.confirm", new String[] {
+        msg,
+        Gedcom.getNameFor(type,false)
+      }
+    );
+
+    int option = JOptionPane.showOptionDialog(
+      this,
+      message,
+      resources.getString("new"),
+      JOptionPane.OK_CANCEL_OPTION,
+      JOptionPane.QUESTION_MESSAGE,
+      null, null, null
+    );
+
+    // .. OK or Cancel ?
+    if (option != JOptionPane.OK_OPTION) {
+      return;
+    }
 
     // Lock write
     if (!startTransaction("Couldn't lock Gedcom for write")) {
@@ -392,35 +428,35 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
    * Action: Create Child
    */
   private void actionCreateChild() {
-    createEntity(Gedcom.INDIVIDUALS,Gedcom.REL_CHILD);
+    createEntity(Gedcom.INDIVIDUALS,Gedcom.REL_CHILD,resources.getString("new.child"));
   }
 
   /**
    * Action: Create Parent
    */
   private void actionCreateParent() {
-    createEntity(Gedcom.INDIVIDUALS,Gedcom.REL_PARENT);
+    createEntity(Gedcom.INDIVIDUALS,Gedcom.REL_PARENT,resources.getString("new.parent"));
   }
 
   /**
    * Action: Create Spouse
    */
   private void actionCreateSpouse() {
-    createEntity(Gedcom.INDIVIDUALS,Gedcom.REL_SPOUSE);
+    createEntity(Gedcom.INDIVIDUALS,Gedcom.REL_SPOUSE,resources.getString("new.spouse"));
   }
 
   /**
    * Action: Create Note
    */
   private void actionCreateNote() {
-    createEntity(Gedcom.NOTES, 0);
+    createEntity(Gedcom.NOTES, 0, resources.getString("new.note"));
   }
 
   /**
    * Action: Create Media
    */
   private void actionCreateMedia() {
-    createEntity(Gedcom.MULTIMEDIAS, 0);
+    createEntity(Gedcom.MULTIMEDIAS, 0, resources.getString("new.media"));
   }
 
   /**
@@ -965,21 +1001,7 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     // Done
   }
 
-  private final static Object[][] entity2create = new Object[][] {
-    { "CSPOUSE", Images.imgNewSpouse , "new.spouse",
-      "CCHILD" , Images.imgNewChild  , "new.child",
-      "CPARENT", Images.imgNewParent , "new.parent",
-      "CNOTE"  , Images.imgNewNote   , "new.note",
-      "CMEDIA" , Images.imgNewMedia  , "new.media" },
-    { "CSPOUSE", Images.imgNewSpouse , "new.spouse",
-      "CCHILD" , Images.imgNewChild  , "new.child",
-      "CNOTE"  , Images.imgNewNote   , "new.note",
-      "CMEDIA" , Images.imgNewMedia  , "new.media" },
-    { },
-    { }
-  };
-
-  /**
+ /**
    * Updates (optional) create Buttons at the bottom
    */
   private void updateCreateButtons() {
