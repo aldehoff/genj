@@ -60,6 +60,17 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
 
   /** a noop is used for separators in returning actions */  
   private final static ActionDelegate aNOOP = ActionDelegate.NOOP;
+  
+  /** images we use for new entities */
+  private final static ImgIcon[] newImages = new ImgIcon[] {
+    Images.imgNewIndi,
+    Images.imgNewFam,
+    Images.imgNewMedia,
+    Images.imgNewNote,
+    Images.imgNewSource,
+    Images.imgNewSubmitter,
+    Images.imgNewRepository,
+  };
 
   /**
    * @see genj.app.ViewFactory#createSettingsComponent(Component)
@@ -139,11 +150,13 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     if (entity instanceof Fam) createActions(result, (Fam)entity);
     // add standards
     result.add(ActionDelegate.NOOP);
-    result.add(new Create(entity.getGedcom(), Gedcom.NOTES       , Images.imgNewNote      , new Relationship.LinkedBy(entity.getProperty(),Gedcom.NOTES)));
-    result.add(new Create(entity.getGedcom(), Gedcom.MULTIMEDIAS , Images.imgNewMedia     , new Relationship.LinkedBy(entity.getProperty(),Gedcom.MULTIMEDIAS)));
-    result.add(new Create(entity.getGedcom(), Gedcom.SOURCES     , Images.imgNewSource    , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SOURCES)));
-    result.add(new Create(entity.getGedcom(), Gedcom.SUBMITTERS  , Images.imgNewSubmitter , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SUBMITTERS)));
-    result.add(new Create(entity.getGedcom(), Gedcom.REPOSITORIES, Images.imgNewRepository, new Relationship.LinkedBy(entity.getProperty(),Gedcom.REPOSITORIES)));
+    result.add(new Create(entity.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(entity.getProperty(),Gedcom.NOTES)));
+    if (entity instanceof Indi||entity instanceof Fam) {
+      result.add(new Create(entity.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(entity.getProperty(),Gedcom.MULTIMEDIAS)));
+      result.add(new Create(entity.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SOURCES)));
+      result.add(new Create(entity.getGedcom(), Gedcom.SUBMITTERS  , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SUBMITTERS)));
+      result.add(new Create(entity.getGedcom(), Gedcom.REPOSITORIES, new Relationship.LinkedBy(entity.getProperty(),Gedcom.REPOSITORIES)));
+    }
     // add delete
     result.add(ActionDelegate.NOOP);
     result.add(new Delete(entity));
@@ -171,37 +184,33 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    * Create actions for Gedcom
    */
   private void createActions(List result, Gedcom gedcom) {
-    result.add(new Create(gedcom, Gedcom.INDIVIDUALS , Images.imgNewIndi      , null));
-    result.add(new Create(gedcom, Gedcom.FAMILIES    , Images.imgNewFam       , null));
-    result.add(new Create(gedcom, Gedcom.NOTES       , Images.imgNewNote      , null));
-    result.add(new Create(gedcom, Gedcom.MULTIMEDIAS , Images.imgNewMedia     , null));
-    result.add(new Create(gedcom, Gedcom.REPOSITORIES, Images.imgNewRepository, null));
-    result.add(new Create(gedcom, Gedcom.SOURCES     , Images.imgNewSource    , null));
-    result.add(new Create(gedcom, Gedcom.SUBMITTERS  , Images.imgNewSubmitter , null));
+    result.add(new Create(gedcom, Gedcom.INDIVIDUALS , null));
+    result.add(new Create(gedcom, Gedcom.FAMILIES    , null));
+    result.add(new Create(gedcom, Gedcom.NOTES       , null));
+    result.add(new Create(gedcom, Gedcom.MULTIMEDIAS , null));
+    result.add(new Create(gedcom, Gedcom.REPOSITORIES, null));
+    result.add(new Create(gedcom, Gedcom.SOURCES     , null));
+    result.add(new Create(gedcom, Gedcom.SUBMITTERS  , null));
   }
   
   /**
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi) {
-    result.add(new Create(indi.getGedcom(), Gedcom.INDIVIDUALS , Images.imgNewIndi, new Relationship.ChildOf(indi)));
-/*    
-    result.add(new Create(indi, Relationship.PARENT , Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Parent"  ));
-    result.add(new Create(indi, Relationship.SPOUSE , Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Partner" ));
-    result.add(new Create(indi, Relationship.SIBLING, Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Sibling" ));
-*/    
+    result.add(new Create(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ChildOf(indi)));
+    if (indi.getNoOfParents()<2)
+      result.add(new Create(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentOf(indi)));
+    result.add(new Create(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.SpouseOf(indi)));
+    result.add(new Create(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.SiblingOf(indi)));
   }
   
   /**
    * Create actions for Families
    */
   private void createActions(List result, Fam fam) {
-    result.add(new Create(fam.getGedcom(), Gedcom.INDIVIDUALS , Images.imgNewIndi, new Relationship.ChildIn(fam)));
-/*    
-    result.add(new Create(fam, Relationship.CHILD  , Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Child"   ));
-    result.add(new Create(fam, Relationship.PARENT , Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Parent"  ));
-    result.add(new Create(fam, Relationship.SPOUSE , Gedcom.INDIVIDUALS , Images.imgNewIndi, "Add Partner" ));
-*/    
+    result.add(new Create(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ChildIn(fam)));
+    if (fam.getNoOfSpouses()<2)
+      result.add(new Create(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentIn(fam)));
   }
   
   /**
@@ -297,8 +306,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     /**
      * Constructor
      */
-    private Create(Gedcom ged, int typ, ImgIcon img, Relationship relatshp) {
-      super(ged, img, resources.getString("new", relatshp==null ? Gedcom.getNameFor(typ, false) : relatshp.getName()));
+    private Create(Gedcom ged, int typ, Relationship relatshp) {
+      super(ged, newImages[typ], resources.getString("new", relatshp==null ? Gedcom.getNameFor(typ, false) : relatshp.getName()));
       type = typ;
       relationship = relatshp;
     }

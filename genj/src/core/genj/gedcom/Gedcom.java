@@ -53,7 +53,7 @@ public class Gedcom {
 
   /** static resourcs */
   static private Random    seed = new Random();
-  static private Resources resources;
+  static /*package*/ Resources resources;
 
   private final static String[]
     ePrefixs  = { "I", "F", "M", "N", "S", "B", "R"},

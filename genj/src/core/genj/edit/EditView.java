@@ -58,6 +58,7 @@ import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -82,7 +83,7 @@ import javax.swing.tree.TreePath;
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends JSplitPane implements CurrentSupport, ToolBarSupport, ContextPopupSupport {
+public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, ContextPopupSupport {
 
   /** the gedcom we're looking at */
   private Gedcom    gedcom;
@@ -112,6 +113,12 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
   private JPanel            proxyPane;
   private Proxy             currentProxy = null;
 
+  /** splitpane for tree/proxy */
+  private JSplitPane        splitPane = null;
+  
+  /** combobox for actions */
+  private JComboBox         comboActions = null;
+
   /**
    * Constructor
    */
@@ -132,12 +139,17 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     proxyPane = new JPanel();
     proxyPane.setLayout(new BoxLayout(proxyPane,BoxLayout.Y_AXIS));
 
+    // SplitPane with tree/edit
+    splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, treePane, proxyPane);
+    splitPane.setDividerLocation(registry.get("divider",-1));
+
+    // Combo for actions
+    comboActions = new JComboBox();
+
     // layout
-    setOrientation(JSplitPane.VERTICAL_SPLIT);
-    setTopComponent(treePane);
-    setBottomComponent(proxyPane);
-    setContinuousLayout(true);
-    setDividerLocation(registry.get("divider",-1));
+    setLayout(new BorderLayout());
+    add(splitPane, BorderLayout.CENTER);
+    //add(comboActions, BorderLayout.SOUTH);
     
     // Check if we can preset something to edit
     Entity entity = null;
@@ -160,7 +172,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
   public void removeNotify() {
 
     // Remember registry
-    registry.put("divider",getDividerLocation());
+    registry.put("divider",splitPane.getDividerLocation());
     registry.put("last", getCurrentEntity()!=null?getCurrentEntity().getId():"");
     registry.put("sticky", actionSticky!=null&&actionSticky.isSelected());
 

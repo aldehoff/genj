@@ -276,6 +276,18 @@ public class Indi extends PropertyIndi implements Entity {
     }
     return ((PropertyFamilySpouse)props[which]).getFamily();
   }
+  
+  /**
+   * Get Family with option to create
+   */
+  public Fam getFam(boolean create) throws GedcomException {
+    Fam fam = getFam(0);
+    if (fam!=null||!create) return fam;
+    fam = (Fam)getGedcom().createEntity(Gedcom.FAMILIES, null);
+    if (getSex()==PropertySex.FEMALE) fam.setWife(this);
+    else fam.setHusband(this);
+    return fam;    
+  }
 
   /**
    * Returns the family in which the person is child
@@ -286,6 +298,17 @@ public class Indi extends PropertyIndi implements Entity {
       return null;
     }
     return ((PropertyFamilyChild)prop).getFamily();
+  }
+
+  /**
+   * Get Family with option to create
+   */
+  public Fam getFamc(boolean create) throws GedcomException {
+    Fam fam = getFamc();
+    if (fam!=null||!create) return fam;
+    fam = (Fam)getGedcom().createEntity(Gedcom.FAMILIES, null);
+    fam.addChild(this);
+    return fam;    
   }
 
   /**
@@ -347,11 +370,19 @@ public class Indi extends PropertyIndi implements Entity {
     // Return string value
     return p.getName();
   }
+  
+  /** 
+   * Returns the number of parents this individual has
+   */
+  public int getNoOfParents() {
+    Fam fam = getFamc();
+    return fam==null?0:fam.getNoOfSpouses();
+  }
 
   /**
    * Returns the number of families in which the individual is a partner
    */
-  public int getNoOfFams( ) {
+  public int getNoOfFams() {
     Property[] props = getProperties(new TagPath("INDI:FAMS"),true);
     return props.length;
   }
@@ -476,18 +507,6 @@ public class Indi extends PropertyIndi implements Entity {
    */  
   public void addForeignXRef(PropertyForeignXRef fxref) {
     throw new RuntimeException("Not supported yet");
-  }
-
-  /**
-   * Get Family with option to create
-   */
-  public Fam getFam(boolean create) throws GedcomException {
-    Fam fam = getFam(0);
-    if (fam!=null||!create) return fam;
-    fam = (Fam)getGedcom().createEntity(Gedcom.FAMILIES, null);
-    if (getSex()==PropertySex.FEMALE) fam.setWife(this);
-    else fam.setHusband(this);
-    return fam;    
   }
 
 } //Indi

@@ -153,6 +153,16 @@ public class Fam extends PropertyFam implements Entity {
     Property[] chils = getProperties(new TagPath("FAM:CHIL"),true);
     return chils.length;
   }
+  
+  /**
+   * The number of spouses
+   */
+  public int getNoOfSpouses() {
+    int result = 0;
+    if (getHusband()!=null) result++;
+    if (getWife   ()!=null) result++;
+    return result;
+  } 
 
   /**
    * Returns the other parent to the given one
@@ -189,20 +199,6 @@ public class Fam extends PropertyFam implements Entity {
       return null;
     }
     return ((PropertyWife)wife).getWife();
-  }
-
-  /**
-   * Whether there are children
-   */
-  public boolean hasChildren() {
-    return getNoOfChildren() > 0;
-  }
-
-  /**
-   * Wether a spouse is missing
-   */
-  public boolean hasMissingSpouse() {
-    return ((getWife()==null) || (getHusband()==null));
   }
 
   /**
@@ -276,6 +272,7 @@ public class Fam extends PropertyFam implements Entity {
 
     // add property spouse to wife
     PropertyFamilySpouse spouse = new PropertyFamilySpouse(null);
+    wife.addProperty(spouse);
     
     // Add new wife
     pw = new PropertyWife(spouse);
@@ -283,6 +280,24 @@ public class Fam extends PropertyFam implements Entity {
     addProperty(pw);
 
     // Done
+  }
+
+  /**
+   * Sets one of the spouses
+   */
+  /*package*/ void setSpouse(Indi spouse) {  
+    Indi husband = getHusband();
+    Indi wife = getWife();
+    if (husband==null&&wife!=null) {
+      setHusband(spouse);
+      return;
+    }
+    if (husband!=null&wife==null) {
+      setWife(spouse);
+      return;
+    }
+    if (spouse.getSex()==PropertySex.FEMALE) setWife(spouse);
+    else setHusband(spouse);
   }
   
   /**

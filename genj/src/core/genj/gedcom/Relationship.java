@@ -106,14 +106,14 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#getName()
      */
     public String getName() {
-      return "Child";
+      return Gedcom.resources.getString("rel.child");
     }
     
     /**
      * @see java.lang.Object#toString()
      */
     public String toString() {
-      return getName() + " in " + family.toString(true);
+      return Gedcom.resources.getString("rel.child.in", family);
     }
   
     /**
@@ -143,14 +143,14 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#getName()
      */
     public String getName() {
-      return "Child";
+      return Gedcom.resources.getString("rel.child");
     }
     
     /**
      * @see java.lang.Object#toString()
      */
     public String toString() {
-      return getName() + " of " + parent.toString();
+      return Gedcom.resources.getString("rel.child.of", parent);
     }
   
     /**
@@ -163,19 +163,158 @@ public abstract class Relationship {
     }
     
   } // ChildOf
-  
-/*  
-  public static class ParentOf extends Relationship {
-    private Indi child;
-  }
-  
-  public static class SpouseOf extends Relationship {
-    private Indi spouse;
-  }
-  
-  public static class SiblingOf extends Relationship {
-    private Indi sibling;
-  }
-*/
+
+  /**
+   * Relationship : Parent in
+   */
+  public static class ParentIn extends Relationship {
     
+    /** parent in ... */
+    private Fam family;
+    
+    /** Constructor */
+    public ParentIn(Fam famly) {
+      family = famly;
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getName()
+     */
+    public String getName() {
+      return Gedcom.resources.getString("rel.parent");
+    }
+    
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+      return Gedcom.resources.getString("rel.parent.in", family);
+    }
+  
+    /**
+     * @see genj.gedcom.Relationship#apply(Entity)
+     */
+    public void apply(Entity entity) throws GedcomException {
+      assume(entity, Indi.class);
+      Indi indi = (Indi)entity;
+      family.setSpouse(indi);
+    }
+    
+  } // ParentIn
+
+  /**
+   * Relationship : parent of
+   */
+  public static class ParentOf extends Relationship {
+    
+    /** parent of ... */
+    private Indi child;
+    
+    /** Constructor */
+    public ParentOf(Indi chil) {
+      child = chil;
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getName()
+     */
+    public String getName() {
+      return Gedcom.resources.getString("rel.parent");
+    }
+    
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+      return Gedcom.resources.getString("rel.parent.of", child);
+    }
+  
+    /**
+     * @see genj.gedcom.Relationship#apply(Entity)
+     */
+    public void apply(Entity entity) throws GedcomException {
+      assume(entity, Indi.class);
+      Fam fam = child.getFamc(true);
+      Indi indi = (Indi)entity;
+      fam.setSpouse(indi);
+    }
+    
+  } // ParentOf
+  
+  /**
+   * Relationship : Spouse of
+   */
+  public static class SpouseOf extends Relationship {
+    
+    /** child of ... */
+    private Indi spouse;
+    
+    /** Constructor */
+    public SpouseOf(Indi spose) {
+      spouse = spose;
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getName()
+     */
+    public String getName() {
+      return Gedcom.resources.getString("rel.spouse");
+    }
+    
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+      return Gedcom.resources.getString("rel.spouse.of", spouse);
+    }
+  
+    /**
+     * @see genj.gedcom.Relationship#apply(Entity)
+     */
+    public void apply(Entity entity) throws GedcomException {
+      assume(entity, Indi.class);
+      Fam fam = spouse.getFam(true);
+      fam.setSpouse((Indi)entity);
+    }
+    
+  } // SpouseOf
+
+  /**
+   * Relationship : Sibling Of
+   */
+  public static class SiblingOf extends Relationship {
+    
+    /** sibling of ... */
+    private Indi sibling;
+    
+    /** Constructor */
+    public SiblingOf(Indi siblng) {
+      sibling = siblng;
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getName()
+     */
+    public String getName() {
+      return Gedcom.resources.getString("rel.sibling");
+    }
+    
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+      return Gedcom.resources.getString("rel.sibling.of", sibling);
+    }
+  
+    /**
+     * @see genj.gedcom.Relationship#apply(Entity)
+     */
+    public void apply(Entity entity) throws GedcomException {
+      assume(entity, Indi.class);
+      Fam fam = sibling.getFamc(true);
+      fam.addChild((Indi)entity);
+    }
+    
+  } // SiblingOf
+  
 } //Relationship
