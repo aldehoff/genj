@@ -206,7 +206,7 @@ public class ContentRenderer {
     
     // draw its date
     if (paintDates) {
-      String date = " (" + event.pd + ')';
+      String date = " (" + event.pd.toString(true, true) + ')';
       g.setColor(cDate);
       g.draw(date, event.from, level+1, 0, 1, dx, 0);
     }
