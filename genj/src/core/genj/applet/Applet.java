@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.io.GedcomReader;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
+import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Trackable;
@@ -77,6 +78,8 @@ public class Applet extends java.applet.Applet {
 
     // disclaimer
     Debug.log(Debug.INFO, this, getAppletInfo());
+
+    EnvironmentChecker.log();
 
     // set our layout
     setLayout(new BorderLayout());
