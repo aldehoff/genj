@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.22 2003-05-29 23:00:49 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.23 2003-05-31 19:07:59 island1 Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -54,7 +54,7 @@ public class ReportGedcomStatistics extends Report {
    * Returns the name of this report - should be localized.
    */
   public String getName() {
-    return "Gedcom Statistics";
+    return i18n("script_name");
   }
 
   /**
@@ -62,11 +62,7 @@ public class ReportGedcomStatistics extends Report {
    * @return Information as String
    */
   public String getInfo() {
-    return "This report gives you some statistics about the current Gedcom File.\n"+
-		"   . How many families, persons.\n"+
-		"   . Number of males, females, and individuals with undefined sex.\n"+
-		"   . Stats about birth places.\n"+
-		"   . Stats about death places.";
+    return i18n("script_info");
   }
 
   /**
@@ -174,47 +170,46 @@ public class ReportGedcomStatistics extends Report {
   private void reportResults(Gedcom gedcom, Statistics stats) {
 
     // Header :
-    println("In the Gedcom file named '"+gedcom.getName()+"', there are :\n");
-    println("  * Stats about people :");
+    println(i18n("header_1")+gedcom.getName()+i18n("header_2")+" :\n");
+    println("  "+i18n("about_people"));
 		
     // One: We show the number of families :
     println("     - "+gedcom.getEntities(Gedcom.FAMILIES).size()
-      +" families (soit : "+gedcom.getEntities(Gedcom.FAMILIES).size()+" familles).");
+      +" "+i18n("families"));
 
     // Two: We show the number of individuals :
     println("     - "+gedcom.getEntities(Gedcom.INDIVIDUALS).size()
-      +" Individuals (soit : "+gedcom.getEntities(Gedcom.INDIVIDUALS).size()+" personnes).");
+      +" "+i18n("individuals"));
 
     // Three: We show the number of males :
-    println("         . "+stats.numMales+" males (soit : "+stats.numMales+" hommes).");
+    println("         . "+stats.numMales+" "+i18n("males"));
 
     // Four: We show the number of females :
-    println("         . "+stats.numFemales+" females (soit : "+stats.numFemales+" femmes).");
+    println("         . "+stats.numFemales+" "+i18n("females"));
 
     // Five: We show the number of people whose sex is undefined :
-    println("         . "+stats.numUnknown+" with undefined sex (soit : "
-      +stats.numUnknown+" personnes dont le sexe n'est pas connu).");
+    println("         . "+stats.numUnknown+" "+i18n("sex_unknown"));
 
     println("");
 
     // Six: We show the birth places
-    println("  * Stats about birth places :");
+    println("  "+i18n("about_birthplaces"));
     Iterator births = stats.birthPlaces.getValues().iterator();
     while (births.hasNext()) {
       String place = (String)births.next();
       int count = stats.birthPlaces.getCount(place);
-      println("     - "+count+" individuals were born in "+place);
+      println("     - "+count+" "+i18n("indi_born")+place);
     }
 
     println("");
 
     // Seven: We show the death places
-    println("  * Stats about death places :");
+    println("  "+i18n("about_deathplaces"));
     Iterator deaths = stats.deathPlaces.getValues().iterator();
     while (deaths.hasNext()) {
       String place = (String)deaths.next();
       int count = stats.deathPlaces.getCount(place);
-      println("     - "+count+" individuals died in "+place);
+      println("     - "+count+" "+i18n("indi_died")+place);
     }
 
     // Done
