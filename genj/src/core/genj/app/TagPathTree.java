@@ -26,6 +26,8 @@ import genj.gedcom.TagPath;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -60,9 +62,6 @@ public class TagPathTree extends JScrollPane {
   /** the tree we use for display */
   private JTree   tree;
   
-  /** the selection */
-  private Set selection = new HashSet();
-
   /** our tree's model */
   private Model model = new Model();
 
@@ -77,27 +76,7 @@ public class TagPathTree extends JScrollPane {
     tree.setRootVisible(false);
     tree.setCellRenderer(new Renderer());
     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-
-//    // Listening
-//    MouseAdapter madapter = new MouseAdapter() {
-//      // LCD
-//      /** callback for mouse click */
-//      public void mousePressed(MouseEvent me) {
-//        // Check wether some valid path has been clicked on
-//        TreePath path = tree.getPathForLocation(me.getX(),me.getY());
-//        if (path==null)
-//          return;
-//        // Get Node and invert selection
-//        Node node = (Node)path.getLastPathComponent();
-//        if (!selection.remove(node)) selection.add(node);
-//        // Signal to listeners
-//        fireSelectionChanged(path,selection.contains(node));
-//        // Show it ... simple repaint ... but could be done better ... probably
-//        tree.repaint();
-//      }
-//      // EOC
-//    };
-//    tree.addMouseListener(madapter);
+    tree.addMouseListener(new Selector());
 
     // Do a little bit of layouting
     setMinimumSize(new Dimension(160, 160));
@@ -145,23 +124,15 @@ public class TagPathTree extends JScrollPane {
   /**
    * Sets the TagPaths to choose from
    */
-  public void setPaths(TagPath[] set) {
-    model.setPaths(set);
+  public void setPaths(TagPath[] paths, TagPath[] selection) {
+    model.setPaths(paths, selection);
     expandRows();
   }
   
   /**
    * Returns the selected TagPaths   */
   public TagPath[] getSelection() {
-    return (TagPath[])selection.toArray(new TagPath[selection.size()]);
-  }
-
-  /**
-   * Sets the selection
-   */
-  public void setSelection(TagPath[] paths) {
-    selection.clear();
-    selection.addAll(Arrays.asList(paths));
+    return (TagPath[])model.getSelection().toArray(new TagPath[0]);
   }
 
   /**
@@ -191,7 +162,7 @@ public class TagPathTree extends JScrollPane {
         TagPath path = (TagPath)value; 
         setText( path.getLast() );
         setIcon( MetaProperty.get(path).getImage() );
-        //checkbox.setSelected(selection.contains(node));
+        checkbox.setSelected(model.getSelection().contains(value));
         panel.invalidate(); // make sure no preferred side is cached
       }      
       // done
@@ -207,6 +178,9 @@ public class TagPathTree extends JScrollPane {
     
     /** the tag-paths to choose from */
     private TagPath[] paths = new TagPath[0];
+
+    /** the selection */
+    private Set selection = new HashSet();
     
     /** map a path to its children */
     private Map path2childen = new HashMap(); 
@@ -217,18 +191,46 @@ public class TagPathTree extends JScrollPane {
     /**
      * Sets the TagPaths to choose from
      */
-    public void setPaths(TagPath[] set) {
+    public void setPaths(TagPath[] ps, TagPath[] ss) {
       
-      // keep
-      paths = set;
+      // remember selection
+      selection = new HashSet(Arrays.asList(ss));
+      
+      // keep paths
+      Set s = new HashSet(Arrays.asList(ps));
+      s.addAll(selection);
+      paths = TagPath.getPaths(s);
       
       // notify
       TreeModelEvent e = new TreeModelEvent(this, new Object[]{ this });
-      TreeModelListener[] ls = (TreeModelListener[])tmlisteners.toArray(new TreeModelListener[listeners.size()]);
-      for (int l=0;l<ls.length;l++)
-        ls[l].treeStructureChanged(e);
+      TreeModelListener[] ls = getListenerSnapshot();
+      for (int l=0;l<ls.length;l++) ls[l].treeStructureChanged(e);
       
       // done
+    }
+    
+    /**
+     * Toggle selection
+     */
+    private void toggleSelection(TagPath path) {
+      
+      // toggle
+      boolean removed = selection.remove(path);
+      if (!removed) selection.add(path);
+      
+      fireSelectionChanged(path, !removed);
+      
+      // notify
+      TreeModelEvent e = new TreeModelEvent(this, new Object[]{ this });
+      TreeModelListener[] ls = getListenerSnapshot();
+      for (int l=0;l<ls.length;l++) ls[l].treeNodesChanged(e);
+    }
+    
+    /**
+     * Get listeners
+     */
+    private TreeModelListener[] getListenerSnapshot() {
+      return (TreeModelListener[])tmlisteners.toArray(new TreeModelListener[listeners.size()]);
     }
     
     /**
@@ -276,29 +278,29 @@ public class TagPathTree extends JScrollPane {
      * Return the children of a path
      */
     private TagPath[] getChildrenOfNode(TagPath path) {
-      return new TagPath[0];
+      // all paths starting with path
+      HashSet children = new HashSet();
+      for (int p=0;p<paths.length;p++) {
+        if (paths[p].length()>path.length()&&paths[p].startsWith(path))
+          children.add(new TagPath(paths[p], path.length()+1));
+      }
+      // done
+      return TagPath.getPaths(children);
     }
     
     /** 
      * Return the children for root
      */
     private TagPath[] getChildrenOfRoot() {
-      // set of tag paths' firsts
+      // all path's first tag 
       HashSet children = new HashSet();
       for (int p=0;p<paths.length;p++) {
         children.add(new TagPath(paths[p], 1));
       }
       // done
-      return getTagPaths(children);
+      return TagPath.getPaths(children);
     }
     
-    /**
-     * map2array
-     */
-    private TagPath[] getTagPaths(Collection c) {
-      return (TagPath[])c.toArray(new TagPath[c.size()]);
-    }
-  
     /**
      * @see javax.swing.tree.TreeModel#getIndexOfChild(java.lang.Object, java.lang.Object)
      */
@@ -317,7 +319,7 @@ public class TagPathTree extends JScrollPane {
      * @see javax.swing.tree.TreeModel#isLeaf(java.lang.Object)
      */
     public boolean isLeaf(Object node) {
-      return false;
+      return getChildren(node).length==0;
     }
   
     /**
@@ -327,6 +329,13 @@ public class TagPathTree extends JScrollPane {
       //ignored
     }
   
+    /**
+     * Returns the selected TagPaths
+     */
+    public Collection getSelection() {
+      return selection;
+    }
+
   } //Model
 
   /**
@@ -341,4 +350,22 @@ public class TagPathTree extends JScrollPane {
 
   } //Listener
 
+  /**
+   * Selector - mouse click selects
+   */
+  private class Selector extends MouseAdapter {
+    /** 
+     * callback for mouse click 
+     */
+    public void mousePressed(MouseEvent me) {
+      // Check wether some valid path has been clicked on
+      TreePath path = tree.getPathForLocation(me.getX(),me.getY());
+      if (path==null)
+        return;
+      // last segment is the path we're interested in
+      model.toggleSelection((TagPath)path.getLastPathComponent());
+      // done
+    }
+  } //Selector
+  
 } //TagPathTree

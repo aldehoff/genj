@@ -115,7 +115,8 @@ public class TagPathList extends JComponent {
    * Sets the paths used by this list
    */
   public void setPaths(TagPath[] set) {
-    paths = Arrays.asList(set);
+    paths.clear();
+    paths.addAll(Arrays.asList(set));
     update();
   }
 
