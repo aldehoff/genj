@@ -135,14 +135,14 @@ public class ReferenceSet {
    * Return all values
    */
   public List getKeys() {
-    return getKeyes(true);
+    return getKeys(true);
   }
 
   /**
    * Return all values
    * @param sortByKeyOrCount
    */
-  public List getKeyes(boolean sortByKeyOrCount) {
+  public List getKeys(boolean sortByKeyOrCount) {
     ArrayList result = new ArrayList(key2references.keySet()); 
     if (sortByKeyOrCount) 
       Collections.sort(result);
