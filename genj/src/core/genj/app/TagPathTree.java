@@ -29,9 +29,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
@@ -178,17 +179,6 @@ public class TagPathTree extends JScrollPane {
   }
 
   /**
-   * Create TagPath from given node   */
-  private TagPath node2path(Node node) {
-    String p = node.tag;
-    while (node.parent!=root) {
-      node = node.parent;
-      p = node.tag + ':' + p;
-    }
-    return new TagPath(p);
-  }
-
-  /**
    * Removes one of ther listener to this
    */
   public void removeTagPathTreeListener(TagPathTreeListener listener) {
@@ -219,13 +209,23 @@ public class TagPathTree extends JScrollPane {
   /**
    * Returns the selected TagPaths   */
   public TagPath[] getSelection() {
-    TagPath[] result = new TagPath[selection.size()];
-    Iterator it = selection.iterator();
-    for (int i=0;it.hasNext();i++) {
-      Node node = (Node)it.next();
-      result[i] = node2path(node);
-    }
+    // get TagPaths for current selection
+    List list = new ArrayList(selection.size());
+    getSelection(root, "", list);
+    // create result
+    TagPath[] result = new TagPath[list.size()];
+    list.toArray(result);
     return result;
+  }
+  
+  /**
+   * Calculates Selection recursively   */
+  private void getSelection(Node node, String path, List list) {
+    if (selection.contains(node)) list.add(new TagPath(path));
+    for (int i=0; i<node.getChildCount(); i++) {
+      Node child = (Node)node.getChildAt(i);
+      getSelection(child, path+child.tag+":", list);
+    }
   }
 
   /**

@@ -114,7 +114,8 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
 //      dropEntities.getSelectedIndex(),
 //      bp
 //    );
-    // FIXME textHtml.setText(entityView.getHtml(unwrap(dropEntities.getSelectedItem())));
+    // FIXME : propagate Blueprint
+    //textHtml.setText(entityView.getHtml(unwrap(dropEntities.getSelectedItem())));
   }
 
   /**

@@ -499,7 +499,7 @@ public class EntityRenderer {
       if (axis==Y_AXIS) return BadBreakWeight;
       // horizontal might work after our content
       if (len > getPreferredSpan(X_AXIS)) {
-        return GoodBreakWeight;
+        return ExcellentBreakWeight;//GoodBreakWeight;
       }
       return BadBreakWeight;
     }  

@@ -190,8 +190,8 @@ public class BlueprintEditor extends Box {
       if (option != JOptionPane.OK_OPTION) return;
       // add those properties
       TagPath[] paths = tree.getSelection();
-      for (int p=paths.length-1; p>=0; p--) {
-        html.insert("<prop path="+paths[p].toString()+">", html.getCaretPosition());
+      for (int p=0;p<paths.length; p++) {
+        html.insert("<prop path="+paths[p].toString()+">\n", html.getCaretPosition());
       }
       // done
     }

@@ -194,7 +194,7 @@ public class ContentRenderer {
     Rectangle2D r = shape.getBounds2D();
     g.pushClip(x, y, r);
     g.pushTransformation();
-    // draw it - FIXME : pick from renderer for individual/family 
+    // draw it - FIXME : use a blueprint
     g.translate(x, y);
     contentRenderer.render(g.getGraphics(), (Entity)content, g.units2pixels(r));
     // restore clip&transformation
