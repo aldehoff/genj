@@ -42,18 +42,13 @@ public class BlueprintManager {
   private Resources resources = Resources.get(BlueprintManager.class);
   
   /** registry */
-  private Registry registry = Registry.lookup("genj");
-  
-  /**
-   * Singleton access   */
-  public static BlueprintManager getInstance() {
-    if (instance==null) instance = new BlueprintManager();
-    return instance;
-  }
+  private Registry registry;
   
   /**
    * Constructor   */
-  private BlueprintManager() {
+  public BlueprintManager(Registry reGistry) {
+    
+    registry = reGistry;
     
     // load readonly/predefined blueprints
     StringBuffer html = new StringBuffer(256);
@@ -87,8 +82,8 @@ public class BlueprintManager {
   }
   
   /**
-   * Shutdown and save changes   */
-  public void shutdown() {
+   * Takes a snapshot of current configuration   */
+  public void snapshot() {
     // Store non read-only blueprints
     for (int t=0;t<Gedcom.NUM_TYPES;t++) {
       // tag for type
@@ -123,9 +118,7 @@ public class BlueprintManager {
       if (bp.getName().equals(name)) return bp;   	
     }
     // not found! try first
-    if (!bps.isEmpty()) return (Blueprint)bps.get(0);
-    // create a dummy
-    return new Blueprint(Gedcom.getNameFor(type, false));
+    return (Blueprint)bps.get(0);
   }
   
   /**
@@ -180,14 +173,14 @@ public class BlueprintManager {
   }
 
   /**
-   * Helper that reads blueprings from a registry   */
-  public static Blueprint[] readBlueprints(Registry registry) {
+   * Helper that reads blueprints from a registry   */
+  public Blueprint[] recallBlueprints(Registry registry) {
     // resolve blueprints
     Blueprint[] bps = new Blueprint[Gedcom.NUM_TYPES];
     String[] names = registry.get("blueprints", (String[])null);
     for (int i=0; i<bps.length; i++) {
       String name = names!=null&&i<names.length ? names[i] : "";
-      bps[i] = getInstance().getBlueprint(i, name);
+      bps[i] = getBlueprint(i, name);
     }
     // done
     return bps;
@@ -196,7 +189,7 @@ public class BlueprintManager {
   /**
    * Helper that writes blueprings to a registry
    */
-  public static void writeBlueprints(Blueprint[] bps, Registry registry) {
+  public void rememberBlueprints(Blueprint[] bps, Registry registry) {
     String[] names = new String[bps.length];
     for (int i=0; i<names.length; i++) {
       names[i] = bps[i].getName();     

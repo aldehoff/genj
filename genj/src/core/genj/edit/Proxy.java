@@ -22,7 +22,6 @@ package genj.edit;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.Resources;
 
@@ -116,7 +115,7 @@ import javax.swing.border.EmptyBorder;
       g.fillRect(box.x, box.y, box.width, box.height);
       // render entity
       if (renderer==null) 
-        renderer = new EntityRenderer(BlueprintManager.getInstance().getBlueprint(entity.getType(), ""));
+        renderer = new EntityRenderer(view.manager.getBlueprintManager().getBlueprint(entity.getType(), ""));
       renderer.render(g, entity, box);
       // done
     }

@@ -25,7 +25,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.renderer.Blueprint;
-import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -71,9 +70,6 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
   /** the blueprints we're using */
   private Blueprint[] blueprints;
   
-  /** a manager we're using */
-  private BlueprintManager bpManager = BlueprintManager.getInstance();
-  
   /** whether we do antialiasing */
   private boolean isAntialiasing = false;
   
@@ -91,7 +87,7 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
     // listen to gedcom
     gedcom.addListener(new GedcomConnector());
     // resolve from registry
-    blueprints = bpManager.readBlueprints(registry);
+    blueprints = viewManager.getBlueprintManager().recallBlueprints(registry);
     isAntialiasing  = registry.get("antial"  , false);
     
     // set first entity
@@ -114,7 +110,7 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
   public void removeNotify() {
     super.removeNotify();
     // store blueprints
-    bpManager.writeBlueprints(blueprints, registry);
+    viewManager.getBlueprintManager().rememberBlueprints(blueprints, registry);
     registry.put("antial"  , isAntialiasing );
     // done
   }

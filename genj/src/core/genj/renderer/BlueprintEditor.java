@@ -80,11 +80,15 @@ public class BlueprintEditor extends JSplitPane {
   
   /** the window manager */
   private WindowManager windowManager;
+
+  /** the blueprint manager */
+  private BlueprintManager blueprintManager;
     
   /**
    * Constructor   */
-  public BlueprintEditor(WindowManager winMgr) { 
+  public BlueprintEditor(BlueprintManager bpMgr, WindowManager winMgr) { 
     // remember
+    blueprintManager = bpMgr;
     windowManager = winMgr;
     // preview
     preview = new Preview();
@@ -228,7 +232,7 @@ public class BlueprintEditor extends JSplitPane {
       if (gedcom==null) return;
       // create a tree of available TagPaths
       TagPathTree tree = new TagPathTree();
-      TagPath[] paths = TagPath.filter(MetaProperty.getPaths(Property.class), BlueprintManager.getInstance().getType(blueprint));
+      TagPath[] paths = TagPath.filter(MetaProperty.getPaths(Property.class), blueprintManager.getType(blueprint));
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
       int option =  windowManager.openDialog(
@@ -281,7 +285,7 @@ public class BlueprintEditor extends JSplitPane {
     public String getId() {
       String prefix;
       if (blueprint==null) prefix = "X";
-      else prefix = Gedcom.getPrefixFor(BlueprintManager.getInstance().getType(blueprint));
+      else prefix = Gedcom.getPrefixFor(blueprintManager.getType(blueprint));
       return prefix+"999";
     }
     /**
@@ -290,7 +294,7 @@ public class BlueprintEditor extends JSplitPane {
     public String getTag() {
       return blueprint==null ? 
         super.getTag() : 
-        Gedcom.getTagFor(BlueprintManager.getInstance().getType(blueprint));
+        Gedcom.getTagFor(blueprintManager.getType(blueprint));
     }
     /**
      * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath, boolean)

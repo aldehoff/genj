@@ -23,7 +23,6 @@ import genj.Version;
 import genj.gedcom.Gedcom;
 import genj.io.FileAssociation;
 import genj.lnf.LnFBridge;
-import genj.renderer.BlueprintManager;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
@@ -111,9 +110,6 @@ public class App {
     // create window manager
     winMgr = new DefaultWindowManager(new Registry(registry, "window"));
     
-// testing plugability of other window managers (will use for applet, too)    
-//    winMgr = new LightweightWindowManager(new Registry(registry, "window"));
-    
     // Set the Look&Feel
     LnFBridge.LnF lnf = LnFBridge.getInstance().getLnF(registry.get("lnf", (String)null));
     if (lnf!=null) {
@@ -144,8 +140,8 @@ public class App {
       public void run() {
         // remember file associations
         FileAssociation.write(registry);
-        // tell BlueprintManager
-        BlueprintManager.getInstance().shutdown();
+        // take a snapshot of view configuration
+        center.snapshot();
         // close all frames we know
         winMgr.closeAll();
         // Store registry 

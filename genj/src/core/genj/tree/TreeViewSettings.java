@@ -118,7 +118,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     colors = new ColorChooser();
     
     // blueprint options
-    blueprintList = new BlueprintList(manager.getWindowManager());
+    blueprintList = new BlueprintList(manager.getBlueprintManager(), manager.getWindowManager());
     
     // bookmarks
     Box bookmarks = new Box(BoxLayout.Y_AXIS);

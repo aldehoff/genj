@@ -178,26 +178,6 @@ public class LightweightWindowManager extends DefaultWindowManager {
   }
   
   /**
-   * @see genj.window.WindowManager#closeAllFrames()
-   */
-  public void closeAll() {
-
-    // check all keys    
-    String[] keys = recallKeys();
-  
-    for (int k=0; k<keys.length; k++) {
-      Object frame = recall(keys[k]);
-      if (frame instanceof JInternalFrame)
-        ((JInternalFrame)frame).dispose();
-    }
-    
-    // continue with super impl
-    super.closeAll();
-    
-    // done
-  }
-  
-  /**
    * @see genj.window.WindowManager#closeFrame(java.lang.String)
    */
   public void close(String key) {

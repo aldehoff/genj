@@ -236,4 +236,18 @@ public abstract class AbstractWindowManager implements WindowManager {
     registry.put(key, bounds);
   }
   
+  /**
+   * @see genj.window.WindowManager#closeAll()
+   */
+  public void closeAll() {
+
+    // loop through keys    
+    String[] keys = recallKeys();
+    for (int k=0; k<keys.length; k++) {
+      close(keys[k]);
+    }
+    
+    // done
+  }
+  
 } //AbstractWindowManager

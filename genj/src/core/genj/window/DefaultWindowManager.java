@@ -262,20 +262,6 @@ public class DefaultWindowManager extends AbstractWindowManager {
   }
   
   /**
-   * @see genj.window.WindowManager#closeAllFrames()
-   */
-  public void closeAll() {
-
-    // loop through keys    
-    String[] keys = recallKeys();
-    for (int k=0; k<keys.length; k++) {
-      close(keys[k]);
-    }
-    
-    // done
-  }
-  
-  /**
    * @see genj.window.WindowManager#closeFrame(java.lang.String)
    */
   public void close(String key) {

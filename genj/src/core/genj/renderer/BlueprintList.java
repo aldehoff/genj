@@ -70,20 +70,21 @@ public class BlueprintList extends JSplitPane {
   private Gedcom gedcom; 
   
   /** a reference to the BlueprintManager */
-  private final static BlueprintManager bpManager = BlueprintManager.getInstance();
+  private BlueprintManager blueprintManager;
   
   /** the window manager */
   private WindowManager windowManager;
   
   /**
    * Constructor   */
-  public BlueprintList(WindowManager winMgr) {
+  public BlueprintList(BlueprintManager bpMgr, WindowManager winMgr) {
     
     // remember
+    blueprintManager = bpMgr;
     windowManager = winMgr;
     
     // create editor
-    editor = new BlueprintEditor(windowManager);
+    editor = new BlueprintEditor(bpMgr, windowManager);
     
     // prepare tree
     Callback glue = new Callback();
@@ -165,7 +166,7 @@ public class BlueprintList extends JSplitPane {
       // get html
       String html = node.blueprint!=null?node.blueprint.getHTML():"";
       // add it
-      Blueprint blueprint = bpManager.addBlueprint(node.type, name, html);
+      Blueprint blueprint = blueprintManager.addBlueprint(node.type, name, html);
       // show it
       if (node.blueprint!=null) node = (Node)node.getParent();
       Node child = new Node(node.type, blueprint);
@@ -209,10 +210,10 @@ public class BlueprintList extends JSplitPane {
       ); 
       if (rc!=0) return;
       // update selection with default
-      int type = bpManager.getType(blueprint);
-      selection[type] = bpManager.getBlueprint(type, "");
+      int type = blueprintManager.getType(blueprint);
+      selection[type] = blueprintManager.getBlueprint(type, "");
       // delete it
-      bpManager.delBlueprint(blueprint);
+      blueprintManager.delBlueprint(blueprint);
       // show it
       DefaultTreeModel model = (DefaultTreeModel)treeBlueprints.getModel();
       model.removeNodeFromParent(node);
@@ -332,7 +333,7 @@ public class BlueprintList extends JSplitPane {
       // remember type
       type = tYpe;
       // create a sub-note for every blueprint
-      List bps = bpManager.getBlueprints(type);      
+      List bps = blueprintManager.getBlueprints(type);      
       for (int b=0; b<bps.size(); b++)
         add(new Node(type,(Blueprint)bps.get(b)));
       // done

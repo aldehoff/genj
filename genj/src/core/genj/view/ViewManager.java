@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.print.PrintManager;
+import genj.renderer.BlueprintManager;
 import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -81,6 +82,9 @@ public class ViewManager {
 
   /** a window manager */
   private WindowManager windowManager = null;
+  
+  /** a blueprint manager */
+  private BlueprintManager blueprintManager = null;
 
   /**
    * Constructor
@@ -89,8 +93,20 @@ public class ViewManager {
     registry = reGistry;
     printManager = pManager;
     windowManager = wManager;
+    blueprintManager = new BlueprintManager(registry);
   }
 
+  /**
+   * Makes a snapshot of the current view configuration
+   */
+  public void snapshot() {
+    // tell to blueprint manager
+    blueprintManager.snapshot();
+    // save window setup?
+    // ...
+    // done
+  }
+  
   /**
    * Returns all known view factories
    */
@@ -198,6 +214,13 @@ public class ViewManager {
    */
   public WindowManager getWindowManager() {
     return windowManager;
+  }
+  
+  /**
+   * The blueprint manager
+   */
+  public BlueprintManager getBlueprintManager() {
+    return blueprintManager;
   }
   
   /**
@@ -376,6 +399,7 @@ public class ViewManager {
    * Closes all views on given Gedcom
    */
   public void closeViews(Gedcom gedcom) {
+    
     // look for views looking at gedcom    
     Iterator it = key2viewwidget.values().iterator();
     while (it.hasNext()) {

@@ -27,7 +27,6 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.io.Filter;
 import genj.renderer.Blueprint;
-import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.ActionDelegate;
 import genj.util.ColorSet;
@@ -171,7 +170,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     isAdjustFonts = registry.get("adjust", isAdjustFonts);
     
     // grab blueprints
-    blueprints = BlueprintManager.getInstance().readBlueprints(registry);
+    blueprints = manager.getBlueprintManager().recallBlueprints(registry);
     
     // setup model
     model = new Model(gedcm);
@@ -288,7 +287,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     registry.put("font"    , contentFont);
     registry.put("adjust"  , isAdjustFonts);
     // blueprints
-    BlueprintManager.getInstance().writeBlueprints(blueprints, registry);
+    manager.getBlueprintManager().rememberBlueprints(blueprints, registry);
     // root    
     if (model.getRoot()!=null) registry.put("root", model.getRoot().getId());
     if (currentEntity!=null) registry.put("current", currentEntity.getId());

@@ -57,7 +57,7 @@ public class EntityViewSettings extends JTabbedPane implements Settings {
     main.add(checkAntialiasing);
     
     // blueprint options
-    blueprintList = new BlueprintList(manager.getWindowManager());
+    blueprintList = new BlueprintList(manager.getBlueprintManager(),manager.getWindowManager());
     
     // add those tabs
     add(entityView.resources.getString("page.main")      , main);
