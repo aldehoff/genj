@@ -5,7 +5,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.gedcom.PropertyName;
@@ -16,14 +15,18 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * A report that shows entities with properties that contain
- * the same choice as the criteria (e.g. everyone living in Rendsburg)
- * @author nmeier
+ * A report that uses PropertyChoiceValue's referencing ability. For
+ * a given PropertyChoiceValue's value it shows those properties
+ * with the same value (e.g. everyone living in Rendsburg)
+ * 
+ * 20030529: NAME*, PLAC, CITY, POST, CTRY, FORM, OCCU, RELA
+ * 
+ * @author nils
  */
-public class ReportListSameChoices extends Report {
+public class ReportSameValues extends Report {
 
   /**
-   * We only accept instances of PropertyChoice
+   * We only accept instances of PropertyChoice and PropertyName
    * 
    * @see genj.report.Report#accepts(java.lang.Object)
    */
@@ -37,11 +40,11 @@ public class ReportListSameChoices extends Report {
       val = ((PropertyName)context).getLastName();
       
     // o.k.?
-    if (val==null) 
+    if (val==null||val.length()==0) 
       return null;
     
-    // translate
-    return getName() + " ("+Gedcom.getName( ((Property)context).getTag() )+"="+val+")";
+    // return a meaningfull text for that context
+    return i18n("xname", val );
   }
 
   /**
@@ -97,4 +100,4 @@ public class ReportListSameChoices extends Report {
     // done
   }
 
-} //ReportValueReferences
+} //ReportSameValues
