@@ -73,6 +73,12 @@ import javax.swing.event.ChangeListener;
 /* package */class BasicEditor extends Editor implements GedcomListener {
 
   // templates for entities
+  //
+  //  'INDI'           - label        - Individual
+  //   INDI:BIRT:DATE  - bean         - date of birth
+  //  (INDI:BIRT:NOTE) - wrapped bean - note for birth 
+  //  (?INDI:RESI:PLAC) - wrapped bean - place of residence (if exists)
+  //
   private final static HashMap TEMPLATES = new HashMap();
   
   static {
@@ -90,7 +96,7 @@ import javax.swing.event.ChangeListener;
      " INDI:OCCU\n"+
      " INDI:OCCU:DATE\n"+
      " INDI:OCCU:PLAC\n"+
-     "'INDI:RESI' (INDI:RESI:NOTE)\n"+
+     "'INDI:RESI' (INDI:RESI:NOTE) (?INDI:RESI:PLAC)\n"+
      " INDI:RESI:DATE\n"+
      " INDI:RESI:ADDR\n"+
      "'INDI:RESI:ADDR:CITY' INDI:RESI:ADDR:CITY\n"+
@@ -376,8 +382,8 @@ import javax.swing.event.ChangeListener;
    * parse entity and path
    */
   private void createBeans(Entity entity, String path) {
-    
-    // a 'label'?
+  
+    // a label e.g. 'INDI'?
     if (path.startsWith("'")&&path.endsWith("'")) {
       path = path.substring(1, path.length()-1);
       // add label
@@ -389,16 +395,22 @@ import javax.swing.event.ChangeListener;
       // done
       return;
     } 
-    // maybe a popup bean?
+    
+    // a wrapped bean e.g. (INDI:BIRT:NOTE) or conditional (?INDI:BIRT:NOTE) ?
     if (path.startsWith("(")&&path.endsWith(")")) {
       path = path.substring(1, path.length()-1);
+      if (path.startsWith("?")) {
+        path = path.substring(1);
+        if (entity.getProperty(new TagPath(path))==null)
+          return;
+      }
       PopupBean popup = new PopupBean(createBean(entity, new TagPath(path)));
       beanPanel.add(popup);
       // done
       return;
     }
     
-    // standard bean!
+    // standard bean e.g. INDI:NAME!
     PropertyBean bean = createBean(entity, new TagPath(path));
     beanPanel.add(bean, bean.getWeight());
 
@@ -463,6 +475,7 @@ import javax.swing.event.ChangeListener;
       if (prop.getParent()==null)
         img = img.getDisabled(50);
       setIcon(img);
+      setToolTipText(wrapped.getProperty().getName());
   
       // fix looks
       setFocusable(false);
@@ -499,16 +512,13 @@ import javax.swing.event.ChangeListener;
         popup.hide();
         popup=null;
       }
-//      // patch wrapped preferred size (make it bigger)
-//      Dimension preferred = wrapped.getPreferredSize();
-//      Dimension max = wrapped.getMaximumSize();
-//      Dimension avail = beanPanel.getSize();
-//      if (avail.width<max.width && avail.width>preferred.width)
-//        preferred.width = avail.width;
-//      wrapped.setPreferredSize(preferred);
+      // prepare a panel with wrapped
+      JPanel content = new JPanel(new BorderLayout());
+      content.add(new JLabel(wrapped.getProperty().getName()), BorderLayout.NORTH);
+      content.add(wrapped, BorderLayout.CENTER);
       // show popup
       Point pos = getLocationOnScreen();
-      popup = PopupFactory.getSharedInstance().getPopup(this, wrapped, pos.x+getWidth(), pos.y);
+      popup = PopupFactory.getSharedInstance().getPopup(this, content, pos.x+getWidth(), pos.y);
       popup.show();
       // request focus
       SwingUtilities.getWindowAncestor(wrapped).setFocusableWindowState(true);
