@@ -30,6 +30,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -46,6 +47,7 @@ public class ButtonHelper {
   private Boolean isBorder        = null;
   private Resources resources     = null;
   private Container container     = null;
+  private ButtonGroup group       = null;
   private Dimension minSize       = null;
   private int horizontalAlignment = -1;
   private Vector collections      = new Vector();
@@ -73,6 +75,12 @@ public class ButtonHelper {
   public ButtonHelper setFontSize(int set) { fontSize=set; return this; }
   public ButtonHelper setShortTexts(boolean set) { isShortTexts=set; return this; }
   
+  /**
+   * Creates a buttonGroup that successive buttons will belong to     */
+  public ButtonGroup createGroup() {
+    group = new ButtonGroup();
+    return group;
+  }
   
   /**
    * Creates the button
@@ -116,8 +124,14 @@ public class ButtonHelper {
       result.setRequestFocusEnabled(isFocusable.booleanValue()); 
     if (isEnabled!=null) 
       result.setEnabled(isEnabled.booleanValue());
+      
+    // listening
     result.addActionListener((ActionListener)action.as(ActionListener.class));
 
+    // context
+    if (group!=null) {
+      group.add(result);
+    }
     if (container!=null) {
       container.add(result);
       if (container instanceof JToolBar) result.setMaximumSize(new Dimension(128,128));
@@ -129,6 +143,7 @@ public class ButtonHelper {
       }
     }
 
+    // done
     return result;
   }
 
