@@ -49,9 +49,6 @@ public class ContentRenderer {
   /** shape color for fams */
   /*package*/ Color cFamShape = null;
   
-  /** shape color for unknowns */
-  /*package*/ Color cUnknownShape = null;
-  
   /** shape color for arcs */
   /*package*/ Color cArcs = null;
 
@@ -135,14 +132,11 @@ public class ContentRenderer {
     if (cSelectedShape!=null&&content!=null&&content==selection) {
       return cSelectedShape;
     }
-    // indi?
-    if (content instanceof Indi)
-      return cIndiShape;
     // fam?
     if (content instanceof Fam)
       return cFamShape;
-    // unknown
-    return cUnknownShape;
+    // indi?
+    return cIndiShape;
   }
   
   /**

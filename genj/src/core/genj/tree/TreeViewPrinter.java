@@ -46,7 +46,6 @@ public class TreeViewPrinter implements Printer {
     renderer.cArcs          = Color.black;
     renderer.cFamShape      = Color.black;
     renderer.cIndiShape     = Color.black;
-    renderer.cUnknownShape  = Color.black;
     renderer.indiRenderer   = tree.getEntityRenderer(Gedcom.INDIVIDUALS)
       .setResolution(resolution);
     renderer.famRenderer    = tree.getEntityRenderer(Gedcom.FAMILIES   )

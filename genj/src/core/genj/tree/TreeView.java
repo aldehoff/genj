@@ -134,7 +134,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     colors = new ColorSet("content", Color.white, resources, registry);
     colors.add("indis"  , Color.black);
     colors.add("fams"   , Color.darkGray);
-    colors.add("substs" , Color.lightGray);
     colors.add("arcs"   , Color.blue);
     colors.add("selects", Color.red);
     // grab font
@@ -531,7 +530,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.cIndiShape     = Color.black;
       contentRenderer.cFamShape      = Color.black;
       contentRenderer.cArcs          = Color.lightGray;
-      contentRenderer.cUnknownShape  = Color.white;
       //contentRenderer.cSelectedShape = Color.white;
       contentRenderer.selection      = null;
       contentRenderer.indiRenderer   = null;
@@ -618,7 +616,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.cBackground    = colors.getColor("content");
       contentRenderer.cIndiShape     = colors.getColor("indis");
       contentRenderer.cFamShape      = colors.getColor("fams");
-      contentRenderer.cUnknownShape  = colors.getColor("substs");
       contentRenderer.cArcs          = colors.getColor("arcs");
       contentRenderer.cSelectedShape = colors.getColor("selects");
       contentRenderer.selection      = currentEntity;
