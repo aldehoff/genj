@@ -505,18 +505,23 @@ public class Model implements GedcomListener {
    * Helper that runs a TreeLayout
    */
   private Rectangle layout(TreeNode root, boolean isTopDown) throws LayoutException {
+    
+    // prepare theta
+    double theta = 0;
+    if (!isTopDown) theta += 180;
+    if (!isVertical) theta -= 90;
+    
     // layout
     TreeLayout layout = new TreeLayout();
-    layout.setTopDown(isTopDown);
     layout.setBendArcs(isBendArcs);
     layout.setDebug(false);
     layout.setIgnoreUnreachables(true);
     layout.setBalanceChildren(false);
     layout.setRoot(root);
-    layout.setVertical(isVertical);
-    //layout.setLatAlignment(0.5D);
-    return layout.layout(root, nodes.size()).getBounds();
+    layout.setOrientation(theta);
+    
     // done
+    return layout.layout(root, nodes.size()).getBounds();
   }
   
   
