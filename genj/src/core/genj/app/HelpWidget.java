@@ -25,6 +25,7 @@ import genj.util.Resources;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.io.File;
 import java.net.URL;
 
@@ -64,6 +65,13 @@ class HelpWidget extends JPanel {
     add(pCenter, BorderLayout.CENTER);    
     
     // done
+  }
+  
+  /**
+   * @see javax.swing.JComponent#getPreferredSize()
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(480,480);
   }
   
   /**
