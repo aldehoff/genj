@@ -64,7 +64,7 @@ import javax.swing.table.TableColumnModel;
 public class TableView extends JPanel implements ToolBarSupport, ContextSupport, FilterSupport {
   
   /** a static set of resources */
-  /*package*/ final static Resources resources = new Resources("genj.table");
+  private Resources resources = Resources.get(this);
   
   /** the gedcom we're looking at */
   private Gedcom gedcom;

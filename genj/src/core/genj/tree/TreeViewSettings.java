@@ -22,6 +22,7 @@ package genj.tree;
 import genj.renderer.BlueprintList;
 import genj.util.ActionDelegate;
 import genj.util.ColorSet;
+import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ListWidget;
 import genj.util.swing.ColorChooser;
@@ -65,13 +66,16 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
   
   /** blueprintlist */
   private BlueprintList blueprintList;
+  
+  /** resources */
+  private Resources resources = Resources.get(this);
 
   /** Checkboxes */
   private JCheckBox 
-    checkBending = new JCheckBox(TreeView.resources.getString("bend" )),
-    checkAntialiasing = new JCheckBox(TreeView.resources.getString("antialiasing" )),
-    checkAdjustFonts = new JCheckBox(TreeView.resources.getString("adjustfonts" )),
-    checkMarrSymbols = new JCheckBox(TreeView.resources.getString("marrsymbols" ))
+    checkBending = new JCheckBox(resources.getString("bend" )),
+    checkAntialiasing = new JCheckBox(resources.getString("antialiasing" )),
+    checkAdjustFonts = new JCheckBox(resources.getString("adjustfonts" )),
+    checkMarrSymbols = new JCheckBox(resources.getString("marrsymbols" ))
   ;
   
   /** font chooser */
@@ -87,13 +91,13 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     // panel for checkbox options    
     Box options = new Box(BoxLayout.Y_AXIS);
 
-    checkBending.setToolTipText(TreeView.resources.getString("bend.tip"));
+    checkBending.setToolTipText(resources.getString("bend.tip"));
     options.add(checkBending);
-    checkAntialiasing.setToolTipText(TreeView.resources.getString("antialiasing.tip"));
+    checkAntialiasing.setToolTipText(resources.getString("antialiasing.tip"));
     options.add(checkAntialiasing);
-    checkAdjustFonts.setToolTipText(TreeView.resources.getString("adjustfonts.tip"));
+    checkAdjustFonts.setToolTipText(resources.getString("adjustfonts.tip"));
     options.add(checkAdjustFonts);
-    checkMarrSymbols.setToolTipText(TreeView.resources.getString("marrsymbols.tip"));
+    checkMarrSymbols.setToolTipText(resources.getString("marrsymbols.tip"));
     options.add(checkMarrSymbols);
     
     options.add(fontChooser);    
@@ -125,10 +129,10 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     bookmarks.add(bookmarkActions);
     
     // add those tabs
-    add(TreeView.resources.getString("page.main")  , options);
-    add(TreeView.resources.getString("page.colors"), colors);
-    add(TreeView.resources.getString("page.bookmarks"), bookmarks);
-    add(TreeView.resources.getString("page.blueprints"), blueprintList);
+    add(resources.getString("page.main")  , options);
+    add(resources.getString("page.colors"), colors);
+    add(resources.getString("page.bookmarks"), bookmarks);
+    add(resources.getString("page.blueprints"), blueprintList);
     
     // done
   }
@@ -141,8 +145,8 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     DoubleValueSlider result = new DoubleValueSlider(min, max, (max+min)/2, false);
     result.setPreferredSliderWidth(128);
     result.setAlignmentX(0F);
-    result.setText(TreeView.resources.getString("info."+key));
-    result.setToolTipText(TreeView.resources.getString("info."+key+".tip"));
+    result.setText(resources.getString("info."+key));
+    result.setToolTipText(resources.getString("info."+key+".tip"));
     c.add(result);
   
     // done
@@ -248,7 +252,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
      * Constructor
      */
     private ActionBDelete() {
-      setText(view.resources.getString("bookmark.del"));
+      setText(resources.getString("bookmark.del"));
     }
     /**
      * @see genj.util.ActionDelegate#execute()

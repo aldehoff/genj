@@ -27,6 +27,7 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
+import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.Settings;
 import java.awt.event.ActionListener;
@@ -47,6 +48,7 @@ public class TableViewSettings extends JPanel implements Settings {
   private TagPathTree     pathTree;
   private TagPathList     pathList;
   private TableView       table;
+  private Resources       resources = Resources.get(this);
 
   /**
    * Creates the visual parts of the editor
@@ -85,18 +87,18 @@ public class TableViewSettings extends JPanel implements Settings {
     pathList = new TagPathList();
 
     // Up/Down of ordering
-    ButtonHelper bh = new ButtonHelper().setResources(TableView.resources).setInsets(0);
+    ButtonHelper bh = new ButtonHelper().setResources(resources).setInsets(0);
     AbstractButton bUp   = bh.create(new ActionUpDown(true));
     AbstractButton bDown = bh.create(new ActionUpDown(false));
     
     // Layout
-    gh.add(new JLabel(TableView.resources.getString("info.entities"))  ,0,1,1,1);
+    gh.add(new JLabel(resources.getString("info.entities"))  ,0,1,1,1);
     gh.add(cTypes                  ,1,1,2,1);
 
-    gh.add(new JLabel(TableView.resources.getString("info.columns"))  ,0,2,1,1);
+    gh.add(new JLabel(resources.getString("info.columns"))  ,0,2,1,1);
     gh.add(pathTree                ,1,2,2,1,gh.GROW_BOTH|gh.FILL_BOTH);
 
-    gh.add(new JLabel(TableView.resources.getString("info.order"))  ,0,3,1,1);
+    gh.add(new JLabel(resources.getString("info.order"))  ,0,3,1,1);
     gh.add(bUp                     ,0,4,1,1);
     gh.add(bDown                   ,0,5,1,1);
     gh.add(pathList                ,1,3,2,4,gh.GROW_BOTH|gh.FILL_BOTH);

@@ -63,7 +63,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
   private final Point2D UNITS = ScreenResolutionScale.getDotsPerCm();
   
   /** resources */
-  /*package*/ final static Resources resources = new Resources("genj.timeline");
+  private Resources resources = Resources.get(this);
   
   /** keeping track of our colors */
   /*package*/ ColorSet csContent, csRuler;

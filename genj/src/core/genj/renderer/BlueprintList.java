@@ -64,7 +64,7 @@ public class BlueprintList extends JSplitPane {
   private AbstractButton bAdd, bDel;
   
   /** resources */
-  private final static Resources resources = new Resources(BlueprintEditor.class);
+  private final static Resources resources = Resources.get(BlueprintEditor.class);
  
   /** the current Gedcom */
   private Gedcom gedcom; 

@@ -51,7 +51,7 @@ import javax.swing.JPanel;
  */
 public class NavigatorView extends JPanel implements ContextSupport {
   
-  /*package*/ static Resources resources = new Resources(NavigatorView.class);
+  private Resources resources = Resources.get(this);
   
   /** the label holding information about the current individual */
   private JLabel label;

@@ -21,13 +21,18 @@ package genj.util;
 
 import java.text.MessageFormat;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
  * Class which provides localized text-resources for a package
  */
 public class Resources {
+  
+  /** keep track of loaded resources */
+  private static Map instances = new HashMap();
 
   /** the wrapped ResourceBundle */
   private ResourceBundle rb;
@@ -37,39 +42,75 @@ public class Resources {
 
   /** a cached message format object */
   private MessageFormat format;
+  
+  /**
+   * Accessor (cached) 
+   */
+  public static Resources get(Object packgeMember) {
+    return get(calcPackage(packgeMember));
+  }
 
   /**
-   * Constructor
+   * Accessor  (cached)
    */
-  public Resources(Object packageMember) {
-
-    // Prepare information
-    String me = packageMember.getClass().getName();
-    String pkg = me.substring(0, me.lastIndexOf('.'));
-
-    init(pkg);
-
+  public static Resources get(String packge) {
+    Resources result = (Resources)instances.get(packge);
+    if (result==null) {
+      result = new Resources(packge);
+      instances.put(packge, result);
+    }
+    return result;
+  }
+  
+  /**
+   * Calc package for instance
+   */
+  private static String calcPackage(Object object) {
+    Class clazz = object instanceof Class ? (Class)object : object.getClass();
+    String name = clazz.getName();
+    return name.substring(0, name.lastIndexOf('.'));
   }
 
   /**
    * Constructor
    */
-  public Resources(Class packageMemberClass) {
+  private Resources(String pkg) {
+    
+    this.format=new MessageFormat("");
+    this.pkg=pkg;
 
-    // Prepare information
-    String me = packageMemberClass.getName();
-    String pkg = me.substring(0, me.lastIndexOf('.'));
+    String lang = "en";
+    try {
+      lang = System.getProperty("user.language");
+    } catch (Throwable t) {
+    }
 
-    init(pkg);
+    try {
 
+      String file;
+      if (pkg.length()==0) {
+        file = "resources";
+        pkg = "<default>";
+      } else {
+        file = pkg+".resources";
+      }
+
+      rb = ResourceBundle.getBundle(
+        file,
+        // Using Local.getDefault() doesn't seem to work
+        // under Linux ... will do our own constructor here :/
+        new Locale(lang,"")
+      );
+
+    } catch (RuntimeException e) {
+
+      Debug.log(Debug.WARNING, this,"Couldn't read resources for package '"+pkg+"'");
+
+    }
+
+    // Done
   }
 
-  /**
-   * Constructor
-   */
-  public Resources(String pkg) {
-    init(pkg);
-  }
   
   /**
    * Returns localized strings
@@ -143,46 +184,6 @@ public class Resources {
 
     return key;
 
-  }
-
-  /**
-   * Init
-   */
-  private void init(String pkg) {
-
-    this.format=new MessageFormat("");
-    this.pkg=pkg;
-
-    String lang = "en";
-    try {
-      lang = System.getProperty("user.language");
-    } catch (Throwable t) {
-    }
-
-    try {
-
-      String file;
-      if (pkg.length()==0) {
-        file = "resources";
-        pkg = "<default>";
-      } else {
-        file = pkg+".resources";
-      }
-
-      rb = ResourceBundle.getBundle(
-        file,
-        // Using Local.getDefault() doesn't seem to work
-        // under Linux ... will do our own constructor here :/
-        new Locale(lang,"")
-      );
-
-    } catch (RuntimeException e) {
-
-      Debug.log(Debug.WARNING, this,"Couldn't read resources for package '"+pkg+"'");
-
-    }
-
-    // Done
   }
 
   /**

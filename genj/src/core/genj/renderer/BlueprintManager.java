@@ -39,7 +39,7 @@ public class BlueprintManager {
   private static BlueprintManager instance;
   
   /** resources */
-  private Resources resources = new Resources(BlueprintManager.class);
+  private Resources resources = Resources.get(BlueprintManager.class);
   
   /** registry */
   private Registry registry = Registry.lookup("genj");

@@ -54,7 +54,7 @@ public class ViewManager {
   private static ViewManager instance;
 
   /** resources */
-  public final static Resources resources = new Resources("genj.view");
+  public static Resources resources = Resources.get(ViewManager.class);
 
   /** factories of views */
   static final private String[] FACTORIES = new String[]{

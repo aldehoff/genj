@@ -84,7 +84,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   /** an icon for bookmarking */
   private final static ImageIcon BOOKMARK_ICON = new ImageIcon(TreeView.class, "images/Bookmark.gif");      
 
-  /*package*/ static final Resources resources = new Resources(TreeView.class);
+  /** need resources */
+  private Resources resources = Resources.get(this);
   
   /** the units we use */
   private final Point2D UNITS = ScreenResolutionScale.getDotsPerCm();

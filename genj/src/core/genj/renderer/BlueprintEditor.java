@@ -61,7 +61,7 @@ public class BlueprintEditor extends JSplitPane {
   private Preview preview;
   
   /** resources */
-  private final static Resources resources = new Resources(BlueprintEditor.class);
+  private final static Resources resources = Resources.get(BlueprintEditor.class);
   
   /** the gedcom we're looking at*/
   private Gedcom gedcom;

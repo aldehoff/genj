@@ -34,7 +34,7 @@ public class Gedcom {
   
   /** static resourcs */
   static private Random seed = new Random();
-  static /*package*/ Resources resources = new Resources("genj.gedcom");
+  static /*package*/ Resources resources = Resources.get(Gedcom.class);
 
   private final static String[]
     ePrefixs  = { "I", "F", "M", "N", "S", "B", "R"},

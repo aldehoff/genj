@@ -22,6 +22,7 @@ package genj.timeline;
 import genj.app.TagPathList;
 import genj.gedcom.PropertyEvent;
 import genj.util.ColorSet;
+import genj.util.Resources;
 import genj.util.swing.ColorChooser;
 import genj.util.swing.DoubleValueSlider;
 import genj.view.Settings;
@@ -57,11 +58,14 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   /** a widget for selecting paths to show */
   private TagPathList pathsList = new TagPathList();
   
+  /** resources we use */
+  private Resources resources = Resources.get(this);
+  
   /** Checkbox for options */
   private JCheckBox[] checkOptions = {
-    new JCheckBox(TimelineView.resources.getString("info.show.tags" )),
-    new JCheckBox(TimelineView.resources.getString("info.show.dates")),
-    new JCheckBox(TimelineView.resources.getString("info.show.grid" ))
+    new JCheckBox(resources.getString("info.show.tags" )),
+    new JCheckBox(resources.getString("info.show.dates")),
+    new JCheckBox(resources.getString("info.show.grid" ))
   };
   
   /** sliders for event size */
@@ -83,14 +87,14 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     }
     sliderCmBefEvent = new DoubleValueSlider(TimelineView.MIN_CM_BEF_EVENT, TimelineView.MAX_CM_BEF_EVENT, 0, false);
     sliderCmBefEvent.setAlignmentX(0F);
-    sliderCmBefEvent.setToolTipText(TimelineView.resources.getString("info.befevent.tip"));
-    sliderCmBefEvent.setText(TimelineView.resources.getString("info.befevent"));
+    sliderCmBefEvent.setToolTipText(resources.getString("info.befevent.tip"));
+    sliderCmBefEvent.setText(resources.getString("info.befevent"));
     panelOptions.add(sliderCmBefEvent);
     
     sliderCmAftEvent = new DoubleValueSlider(TimelineView.MIN_CM_AFT_EVENT, TimelineView.MAX_CM_AFT_EVENT, 0, false);
     sliderCmAftEvent.setAlignmentX(0F);
-    sliderCmAftEvent.setToolTipText(TimelineView.resources.getString("info.aftevent.tip"));
-    sliderCmAftEvent.setText(TimelineView.resources.getString("info.aftevent"));
+    sliderCmAftEvent.setToolTipText(resources.getString("info.aftevent.tip"));
+    sliderCmAftEvent.setText(resources.getString("info.aftevent"));
     panelOptions.add(sliderCmAftEvent);
     
     // panel for main options

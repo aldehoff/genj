@@ -51,7 +51,7 @@ import javax.swing.JToolBar;
 public class EntityView extends JComponent implements ToolBarSupport, ContextSupport {
 
   /** language resources we use */  
-  /*package*/ final static Resources resources = new Resources("genj.entity");
+  /*package*/ final static Resources resources = Resources.get(EntityView.class);
 
   /** a dummy blueprint */
   private final static Blueprint BLUEPRINT_SELECT = new Blueprint(resources.getString("html.select"));

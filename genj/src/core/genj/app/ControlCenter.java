@@ -29,6 +29,7 @@ import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.FileChooser;
 import genj.util.swing.MenuHelper;
@@ -73,7 +74,8 @@ public class ControlCenter extends JPanel {
   private Registry registry;
   private Vector gedcomButtons = new Vector();
   private Vector tniButtons = new Vector();
-
+  private Resources resources = Resources.get(this);
+    
   /**
    * Constructor
    */
@@ -147,7 +149,7 @@ public class ControlCenter extends JPanel {
     // .. Buttons
     ButtonHelper bh =
       new ButtonHelper()
-        .setResources(App.resources)
+        .setResources(resources)
         .setInsets(4)
         .setFocusable(false)
         .setContainer(result)
@@ -164,13 +166,12 @@ public class ControlCenter extends JPanel {
     for (int i = 0; i < factories.length; i++) {
       bh.create(new ActionView(factories[i]));
     }
-    bh.setEnabled(true).removeCollection(gedcomButtons).setResources(
-      App.resources);
+    bh.setEnabled(true).removeCollection(gedcomButtons).setResources(resources);
 
     result.add(Box.createGlue());
 
     // Menu
-    MenuHelper mh = new MenuHelper().setResources(App.resources);
+    MenuHelper mh = new MenuHelper().setResources(resources);
     mh.createPopup(null, result);
     mh.createItem(new ActionToggleTnI());
 
@@ -183,7 +184,7 @@ public class ControlCenter extends JPanel {
    */
   private JMenuBar getMenuBar() {
 
-    MenuHelper mh = new MenuHelper().setResources(App.resources);
+    MenuHelper mh = new MenuHelper().setResources(resources);
 
     JMenuBar result = mh.createBar();
 
@@ -204,7 +205,7 @@ public class ControlCenter extends JPanel {
     ViewFactory[] factories = ViewManager.getInstance().getFactories();
     for (int i = 0; i < factories.length; i++)
       mh.createItem(new ActionView(factories[i]));
-    mh.setEnabled(true).setCollection(null).setResources(App.resources);
+    mh.setEnabled(true).setCollection(null).setResources(resources);
 
     result.add(Box.createHorizontalGlue());
 
@@ -273,7 +274,7 @@ public class ControlCenter extends JPanel {
       if (frame == null) {
         frame =
           App.getInstance().createFrame(
-            App.resources.getString("cc.title.about"),
+            resources.getString("cc.title.about"),
             Gedcom.getImage(),
             "about",
             null);
@@ -300,7 +301,7 @@ public class ControlCenter extends JPanel {
       if (frame == null) {
         frame =
           App.getInstance().createFrame(
-            App.resources.getString("cc.title.help"),
+            resources.getString("cc.title.help"),
             Images.imgHelp,
             "help",
             new Dimension(640, 480));
@@ -340,8 +341,8 @@ public class ControlCenter extends JPanel {
         int rc =
           JOptionPane.showConfirmDialog(
             frame,
-            App.resources.getString("cc.exit_changes?"),
-            App.resources.getString("app.warning"),
+            resources.getString("cc.exit_changes?"),
+            resources.getString("app.warning"),
             JOptionPane.YES_NO_OPTION);
         if (rc == JOptionPane.NO_OPTION) {
           return;
@@ -413,12 +414,12 @@ public class ControlCenter extends JPanel {
         gedcom = reader.readGedcom();
       } catch (GedcomIOException ex) {
         error =
-          App.resources.getString("cc.open.read_error", "" + ex.getLine())
+          resources.getString("cc.open.read_error", "" + ex.getLine())
             + ":\n"
             + ex.getMessage();
       } catch (GedcomFormatException ex) {
         error =
-          App.resources.getString("cc.open.format_error", "" + ex.getLine())
+          resources.getString("cc.open.format_error", "" + ex.getLine())
             + ":\n"
             + ex.getMessage();
       }
@@ -432,7 +433,7 @@ public class ControlCenter extends JPanel {
         JOptionPane.showMessageDialog(
           frame,
           error,
-          App.resources.getString("app.error"),
+          resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE);
       }
       if (gedcom != null) {
@@ -448,17 +449,17 @@ public class ControlCenter extends JPanel {
       // pop choice of opening
       String selections[] =
         {
-          App.resources.getString("cc.open.choice.new"),
-          App.resources.getString("cc.open.choice.local"),
-          App.resources.getString("cc.open.choice.inet"),
-          App.resources.getString("app.cancel"),
+          resources.getString("cc.open.choice.new"),
+          resources.getString("cc.open.choice.local"),
+          resources.getString("cc.open.choice.inet"),
+          resources.getString("app.cancel"),
           };
 
       int rc =
         JOptionPane.showOptionDialog(
           frame,
-          App.resources.getString("cc.open.choice"),
-          App.resources.getString("cc.open.title"),
+          resources.getString("cc.open.choice"),
+          resources.getString("cc.open.title"),
           0,
           JOptionPane.QUESTION_MESSAGE,
           null,
@@ -490,8 +491,8 @@ public class ControlCenter extends JPanel {
       FileChooser chooser =
         new GedcomFileChooser(
           frame,
-          App.resources.getString("cc.create.title"),
-          App.resources.getString("cc.create.action"));
+          resources.getString("cc.create.title"),
+          resources.getString("cc.create.action"));
       chooser.showDialog();
       // check the selection
       File file = chooser.getSelectedFile();
@@ -501,8 +502,8 @@ public class ControlCenter extends JPanel {
         int rc =
           JOptionPane.showConfirmDialog(
             frame,
-            App.resources.getString("cc.open.file_exists", file.getName()),
-            App.resources.getString("cc.create.title"),
+            resources.getString("cc.open.file_exists", file.getName()),
+            resources.getString("cc.create.title"),
             JOptionPane.YES_NO_OPTION);
         if (rc == JOptionPane.NO_OPTION)
           return;
@@ -526,8 +527,8 @@ public class ControlCenter extends JPanel {
       FileChooser chooser =
         new GedcomFileChooser(
           frame,
-          App.resources.getString("cc.open.title"),
-          App.resources.getString("cc.open.action"));
+          resources.getString("cc.open.title"),
+          resources.getString("cc.open.action"));
       chooser.showDialog();
       // check the selection
       File file = chooser.getSelectedFile();
@@ -549,20 +550,20 @@ public class ControlCenter extends JPanel {
 
       // pop a chooser    
       Vector vUrls = (Vector) registry.get("urls", new Vector());
-      JLabel lEnter = new JLabel(App.resources.getString("cc.open.enter_url"));
+      JLabel lEnter = new JLabel(resources.getString("cc.open.enter_url"));
       JComboBox cEnter = new JComboBox(vUrls);
       cEnter.setEditable(true);
       Object message[] = { lEnter, cEnter };
       Object options[] =
         {
-          App.resources.getString("app.ok"),
-          App.resources.getString("app.cancel")};
+          resources.getString("app.ok"),
+          resources.getString("app.cancel")};
 
       int rc =
         JOptionPane.showOptionDialog(
           frame,
           message,
-          App.resources.getString("cc.open.title"),
+          resources.getString("cc.open.title"),
           JOptionPane.OK_CANCEL_OPTION,
           JOptionPane.QUESTION_MESSAGE,
           null,
@@ -582,8 +583,8 @@ public class ControlCenter extends JPanel {
       } catch (MalformedURLException ex) {
         JOptionPane.showMessageDialog(
           frame,
-          App.resources.getString("cc.open.invalid_url"),
-          App.resources.getString("app.error"),
+          resources.getString("cc.open.invalid_url"),
+          resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE);
         return null;
       }
@@ -618,8 +619,8 @@ public class ControlCenter extends JPanel {
         if (origin.getName().equals(g.getName())) {
           JOptionPane.showMessageDialog(
             frame,
-            App.resources.getString("cc.open.already_open", g.getName()),
-            App.resources.getString("app.error"),
+            resources.getString("cc.open.already_open", g.getName()),
+            resources.getString("app.error"),
             JOptionPane.ERROR_MESSAGE);
           return false;
         }
@@ -636,11 +637,11 @@ public class ControlCenter extends JPanel {
       } catch (IOException ex) {
         JOptionPane.showMessageDialog(
           frame,
-          App.resources.getString("cc.open.no_connect_to", origin)
+          resources.getString("cc.open.no_connect_to", origin)
             + "\n["
             + ex.getMessage()
             + "]",
-          App.resources.getString("app.error"),
+          resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE);
         return false;
       }
@@ -654,7 +655,7 @@ public class ControlCenter extends JPanel {
       // .. show progress dialog
       new ProgressDialog(
         frame,
-        App.resources.getString("cc.open.loading"),
+        resources.getString("cc.open.loading"),
         "" + origin,
         reader,
         getThread());
@@ -734,8 +735,8 @@ public class ControlCenter extends JPanel {
         FileChooser chooser =
           new GedcomFileChooser(
             frame,
-            App.resources.getString("cc.save.title"),
-            App.resources.getString("cc.save.action"));
+            resources.getString("cc.save.title"),
+            resources.getString("cc.save.action"));
 
         // .. with options        
         SaveOptionsWidget options = new SaveOptionsWidget(gedcom);
@@ -771,8 +772,8 @@ public class ControlCenter extends JPanel {
         int rc =
           JOptionPane.showConfirmDialog(
             frame,
-            App.resources.getString("cc.open.file_exists", file.getName()),
-            App.resources.getString("cc.save.title"),
+            resources.getString("cc.open.file_exists", file.getName()),
+            resources.getString("cc.save.title"),
             JOptionPane.YES_NO_OPTION);
 
         if (rc == JOptionPane.NO_OPTION) {
@@ -791,8 +792,8 @@ public class ControlCenter extends JPanel {
         ex.printStackTrace();
         JOptionPane.showMessageDialog(
           frame,
-          App.resources.getString("cc.save.open_error", file.getAbsolutePath()),
-          App.resources.getString("app.error"),
+          resources.getString("cc.save.open_error", file.getAbsolutePath()),
+          resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE);
         return false;
       }
@@ -803,7 +804,7 @@ public class ControlCenter extends JPanel {
       // .. open progress dialog
       new ProgressDialog(
         frame,
-        App.resources.getString("cc.save.saving"),
+        resources.getString("cc.save.saving"),
         file.getAbsolutePath(),
         gedWriter,
         super.getThread());
@@ -828,10 +829,10 @@ public class ControlCenter extends JPanel {
       } catch (GedcomIOException ex) {
         JOptionPane.showMessageDialog(
           frame,
-          App.resources.getString("cc.save.write_error", "" + ex.getLine())
+          resources.getString("cc.save.write_error", "" + ex.getLine())
             + ":\n"
             + ex.getMessage(),
-          App.resources.getString("app.error"),
+          resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE);
         newOrigin = null;
       }
@@ -887,8 +888,8 @@ public class ControlCenter extends JPanel {
         int rc =
           JOptionPane.showConfirmDialog(
             frame,
-            App.resources.getString("cc.close_changes?"),
-            App.resources.getString("app.warning"),
+            resources.getString("cc.close_changes?"),
+            resources.getString("app.warning"),
             JOptionPane.YES_NO_OPTION);
         if (rc == JOptionPane.NO_OPTION) {
           return;
@@ -914,7 +915,7 @@ public class ControlCenter extends JPanel {
       super.setText(factory.getTitle(false));
       super.setShortText(factory.getTitle(true));
       super.setTip(
-        App.resources.getString("cc.tip.open_view", factory.getTitle(false)));
+        resources.getString("cc.tip.open_view", factory.getTitle(false)));
       super.setImage(factory.getImage());
     }
     /** run */

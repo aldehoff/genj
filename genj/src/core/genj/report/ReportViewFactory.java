@@ -21,6 +21,7 @@ package genj.report;
 
 import genj.gedcom.Gedcom;
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
 import java.awt.Dimension;
@@ -65,7 +66,7 @@ public class ReportViewFactory implements ViewFactory {
    * @see genj.view.ViewFactory#getName(boolean)
    */
   public String getTitle(boolean abbreviate) {
-    return ReportView.resources.getString("title" + (abbreviate?".short":""));
+    return Resources.get(this).getString("title" + (abbreviate?".short":""));
   }
 
 } //ReportViewFactory

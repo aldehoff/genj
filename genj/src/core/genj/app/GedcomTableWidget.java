@@ -23,6 +23,7 @@ import genj.gedcom.Change;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.SortableTableHeader;
 
 import java.util.Vector;
@@ -66,7 +67,7 @@ public class GedcomTableWidget extends JTable {
     for (int h=0; h<Gedcom.NUM_TYPES+1; h++) {
       TableColumn col = new TableColumn(h);
       if (h==0) 
-        col.setHeaderValue(App.resources.getString("cc.column_header.name"));
+        col.setHeaderValue(Resources.get(this).getString("cc.column_header.name"));
       else
         col.setHeaderValue(Gedcom.getImage(h-1));
       

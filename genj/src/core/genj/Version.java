@@ -37,7 +37,7 @@ public class Version {
    */
   private Version() {
 
-    version = new Resources(this).getString("version");
+    version = Resources.get(this).getString("version");
 
     if (version.length()==0) {
       version = "?";

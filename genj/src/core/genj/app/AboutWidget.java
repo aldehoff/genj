@@ -34,7 +34,9 @@ import genj.lnf.LnFBridge;
 import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
 import genj.util.GridBagHelper;
+import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.ChoiceWidget;
 import genj.util.swing.ScreenResolutionScale;
 import genj.view.ViewManager;
 import java.awt.BorderLayout;
@@ -56,6 +58,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -79,6 +82,9 @@ public class AboutWidget extends JPanel{
   /** the frame we're used it */
   private JFrame frame;
   
+  /** the resources we're using */
+  private Resources resources = Resources.get(AboutWidget.class);
+  
   /**
    * Constructor
    */
@@ -88,7 +94,7 @@ public class AboutWidget extends JPanel{
     frame=setFrame;
     
     // create a north panel
-    JLabel pNorth = new JLabel(App.resources.getString("cc.about.dialog.northpanel.label"), null, JLabel.CENTER);
+    JLabel pNorth = new JLabel(resources.getString("cc.about.dialog.northpanel.label"), null, JLabel.CENTER);
     
     // create a south panel
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -96,11 +102,11 @@ public class AboutWidget extends JPanel{
 
     // create a center panel
     JTabbedPane pCenter = new JTabbedPane(SwingConstants.LEFT);
-    pCenter.addTab(App.resources.getString("cc.about.dialog.tab1.title"), null, new WelcomePanel(), App.resources.getString("cc.about.dialog.tab1.title.tip"));
-    pCenter.addTab(App.resources.getString("cc.about.dialog.tab2.title"), null, new AuthorsPanel(), App.resources.getString("cc.about.dialog.tab2.title.tip"));
-    pCenter.addTab(App.resources.getString("cc.about.dialog.tab3.title"), null, new CopyrightPanel(), App.resources.getString("cc.about.dialog.tab3.title.tip"));
-    pCenter.addTab(App.resources.getString("cc.about.dialog.tab4.title"), null, new LookNFeelPanel(), App.resources.getString("cc.about.dialog.tab4.title.tip"));
-    pCenter.addTab(App.resources.getString("cc.about.dialog.tab5.title"), null, new AssociationPanel(), App.resources.getString("cc.about.dialog.tab5.title.tip"));
+    pCenter.addTab(resources.getString("cc.about.dialog.tab1.title"), null, new WelcomePanel(), resources.getString("cc.about.dialog.tab1.title.tip"));
+    pCenter.addTab(resources.getString("cc.about.dialog.tab2.title"), null, new AuthorsPanel(), resources.getString("cc.about.dialog.tab2.title.tip"));
+    pCenter.addTab(resources.getString("cc.about.dialog.tab3.title"), null, new CopyrightPanel(), resources.getString("cc.about.dialog.tab3.title.tip"));
+    pCenter.addTab(resources.getString("cc.about.dialog.tab4.title"), null, new LookNFeelPanel(), resources.getString("cc.about.dialog.tab4.title.tip"));
+    pCenter.addTab(resources.getString("cc.about.dialog.tab5.title"), null, new AssociationPanel(), resources.getString("cc.about.dialog.tab5.title.tip"));
 
     // create the main panel    
     setLayout(new BorderLayout());
@@ -151,7 +157,7 @@ public class AboutWidget extends JPanel{
       
       String path = dir + File.separatorChar + "doc" + File.separatorChar + "authors.txt";
       
-      readTextFile(text, path, App.resources.getString("cc.about.file_missing.text") + path);
+      readTextFile(text, path, resources.getString("cc.about.file_missing.text") + path);
 
       // setup looks
       setViewportView(text);      
@@ -177,14 +183,14 @@ public class AboutWidget extends JPanel{
       super(new BorderLayout());
         
       // the text
-      JTextArea text = new JTextArea("\n" + App.resources.getString("cc.about.tab1.text1") +"\n\n",DEFAULT_ROWS,DEFAULT_COLS);
+      JTextArea text = new JTextArea("\n" + resources.getString("cc.about.tab1.text1") +"\n\n",DEFAULT_ROWS,DEFAULT_COLS);
       text.setBorder(new EmptyBorder(3, 3, 3, 3));    
       text.setLineWrap(true);
       text.setWrapStyleWord(true);
       text.setEditable(false);
     
       // the version
-      JLabel version = new JLabel(App.resources.getString("app.title")+" "+Version.getInstance().toString());
+      JLabel version = new JLabel(resources.getString("app.title")+" "+Version.getInstance().toString());
     
       // looks
       add(text, BorderLayout.CENTER);
@@ -216,14 +222,14 @@ public class AboutWidget extends JPanel{
      */
     private JComponent getNorth() {
       
-      JTextArea text = new JTextArea(App.resources.getString("cc.about.tab3.text1"),3,DEFAULT_COLS);
+      JTextArea text = new JTextArea(resources.getString("cc.about.tab3.text1"),3,DEFAULT_COLS);
       text.setLineWrap(true);
       text.setWrapStyleWord(true);
       text.setEditable(false);
       
       JPanel panel = new JPanel(new BorderLayout());
       panel.setBorder(BorderFactory.createCompoundBorder(
-        BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab3.text1.title")),
+        BorderFactory.createTitledBorder(resources.getString("cc.about.tab3.text1.title")),
         new EmptyBorder(3, 3, 3, 3)
       ));
       panel.add(text, BorderLayout.CENTER);
@@ -246,7 +252,7 @@ public class AboutWidget extends JPanel{
       );
       
       String path = dir + File.separatorChar + "doc" + File.separatorChar + "gpl.txt";
-      readTextFile(text, path, App.resources.getString("cc.about.file_missing.text") + path);
+      readTextFile(text, path, resources.getString("cc.about.file_missing.text") + path);
       text.setLineWrap(false);
       text.setEditable(false);
       text.setBorder(new EmptyBorder(3, 3, 3, 3));
@@ -255,7 +261,7 @@ public class AboutWidget extends JPanel{
       JScrollPane scroll = new JScrollPane(text);
       scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
       scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      scroll.setBorder(BorderFactory.createTitledBorder(App.resources.getString("cc.about.tab3.text2.title")));
+      scroll.setBorder(BorderFactory.createTitledBorder(resources.getString("cc.about.tab3.text2.title")));
       
       // done
       return scroll;
@@ -273,6 +279,9 @@ public class AboutWidget extends JPanel{
     
     /** the ruler for setting screen resolution */
     private ScreenResolutionScale screenResRuler;
+    
+    /** combo box for language */
+    private ChoiceWidget choiceLanguages;
     
     /**
      * Constructor
@@ -292,15 +301,21 @@ public class AboutWidget extends JPanel{
       JPanel pResult = new JPanel();
       GridBagHelper gh = new GridBagHelper(pResult);
 
+      // what are the languages
+      String[] languages = {"en", "de", "es", "fr", "it", "ja"};
+      choiceLanguages = new ChoiceWidget(languages, App.getInstance().getLanguage());
+      gh.add(new JLabel("Language"), 0, 0);
+      gh.add(choiceLanguages, 1, 0);
+
       // what are the LnFs
       Object[] lnfs = LnFBridge.getInstance().getLnFs();
       if (lnfs.length==0) {
         JLabel label = new JLabel(
-          App.resources.getString("cc.about.tab4.l&f_file_missing"),
+          resources.getString("cc.about.tab4.l&f_file_missing"),
           (Icon)UIManager.get( "OptionPane.errorIcon"),
           SwingConstants.CENTER
         );
-        gh.add(label, 0,0,2,1);
+        gh.add(label, 0,1,2,1);
         
       } else {
       
@@ -311,10 +326,10 @@ public class AboutWidget extends JPanel{
         comboLnfs.setSelectedItem(LnFBridge.getInstance().getLastLnF());
         comboLnfs.addActionListener(this);
 
-        gh.add(new JLabel("Look&Feel" ), 0,0,1,1);
-        gh.add(comboLnfs               , 1,0,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
-        gh.add(new JLabel("Theme"     ), 0,1,1,1);
-        gh.add(comboThemes             , 1,1,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+        gh.add(new JLabel("Look&Feel" ), 0,1,1,1);
+        gh.add(comboLnfs               , 1,1,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+        gh.add(new JLabel("Theme"     ), 0,2,1,1);
+        gh.add(comboThemes             , 1,2,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
         
         actionPerformed(null);
       }
@@ -322,8 +337,8 @@ public class AboutWidget extends JPanel{
       // create ruler for adjusting resolution
       screenResRuler = new ScreenResolutionScale();
       
-      gh.add(new JLabel("Resolution (cm)"), 0,2,1,1);
-      gh.add(screenResRuler          , 1,2,1,1, gh.GROW_BOTH      |gh.FILL_BOTH      );
+      gh.add(new JLabel("Resolution (cm)"), 0,3,1,1);
+      gh.add(screenResRuler               , 1,3,1,1, gh.GROW_BOTH      |gh.FILL_BOTH      );
       
       // done
       return pResult;
@@ -335,7 +350,7 @@ public class AboutWidget extends JPanel{
     private JPanel getSouth() {
       // apply-button
       JPanel pResult = new JPanel();
-      pResult.add(new ButtonHelper().setResources(App.resources).create(new ActionApply()));
+      pResult.add(new ButtonHelper().setResources(resources).create(new ActionApply()));
       // done
       return pResult;
     }
@@ -350,6 +365,11 @@ public class AboutWidget extends JPanel{
       }
       /** run */
       public void execute() {
+        // check language 
+        if (choiceLanguages.hasChanged()) {
+          JOptionPane.showMessageDialog(AboutWidget.this, resources.getString("cc.about.dialog.restart"));
+          App.getInstance().setLanguage(choiceLanguages.getSelectedItem().toString());
+        }
         // update screen resolution
         screenResRuler.apply();
         // update lnf

@@ -69,7 +69,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   private Registry registry;
 
   /** the resources we use */
-  static final Resources resources = new Resources("genj.edit");
+  static final Resources resources = Resources.get(EditView.class);
 
   /** buttons we use */
   private AbstractButton    actionButtonAdd,

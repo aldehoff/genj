@@ -21,6 +21,7 @@ package genj.timeline;
 
 import genj.gedcom.Gedcom;
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
 import java.awt.Dimension;
@@ -65,7 +66,7 @@ public class TimelineViewFactory implements ViewFactory {
    * @see genj.view.ViewFactory#getName(boolean)
    */
   public String getTitle(boolean abbreviate) {
-    return TimelineView.resources.getString("title" + (abbreviate?".short":""));
+    return Resources.get(this).getString("title" + (abbreviate?".short":""));
   }
 
 } //TimelineViewFactory

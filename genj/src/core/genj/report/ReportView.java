@@ -75,7 +75,7 @@ public class ReportView extends JPanel {
   private static  ReportLoader loader;
   private static  ImageIcon imgShell,imgGui;
   private Registry registry;
-  /*package*/ final static Resources resources = new Resources(ReportView.class);
+  private Resources resources = Resources.get(this);
 
   /**
    * Report Renderer

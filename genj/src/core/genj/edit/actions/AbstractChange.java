@@ -46,7 +46,7 @@ import javax.swing.JTextArea;
 /*package*/ abstract class AbstractChange extends ActionDelegate {
   
   /** resources */
-  /*package*/ static Resources resources = new Resources(AbstractChange.class);
+  /*package*/ static Resources resources = Resources.get(AbstractChange.class);
   
   /** images we use for new entities */
   protected final static ImageIcon[] newImages = new ImageIcon[] {

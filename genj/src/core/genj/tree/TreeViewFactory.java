@@ -21,6 +21,7 @@ package genj.tree;
 
 import genj.gedcom.Gedcom;
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import genj.view.ViewFactory;
 import java.awt.Dimension;
@@ -72,7 +73,7 @@ public class TreeViewFactory implements ViewFactory {
    * @see genj.view.ViewFactory#getName(boolean)
    */
   public String getTitle(boolean abbreviate) {
-    return TreeView.resources.getString("title" + (abbreviate?".short":""));
+    return Resources.get(this).getString("title" + (abbreviate?".short":""));
   }
 
 } //TreeViewFactory

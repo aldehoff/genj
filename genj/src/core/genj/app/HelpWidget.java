@@ -22,6 +22,7 @@ package genj.app;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
+import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.ViewManager;
 import java.awt.BorderLayout;
@@ -80,7 +81,7 @@ class HelpWidget extends JPanel {
     JComponent pCenter = getContent();
     if (pCenter==null) {
       pCenter = new JLabel(
-        App.resources.getString("cc.help.help_file_missing"),
+        Resources.get(this).getString("cc.help.help_file_missing"),
         (Icon)UIManager.get( "OptionPane.errorIcon"),
         SwingConstants.CENTER
       );

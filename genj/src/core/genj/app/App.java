@@ -66,10 +66,9 @@ public class App {
   private final static String FRAME_KEY_PREFIX = "frame.";
 
   /** members */
-  private Registry registry;
+  /*package*/ Registry registry;
   private Hashtable openFrames = new Hashtable();
   private static App instance;
-  /*package*/ final static Resources resources = new Resources("genj.app");
 
   /**
    * Application Constructor
@@ -88,6 +87,16 @@ public class App {
     
     // init our data
     registry = new Registry("genj");
+    
+    // Check language
+    String lang = getLanguage();
+    if (lang!=null) try {
+      Debug.log(Debug.INFO, this, "Switching language to "+lang);
+      System.setProperty("user.language", lang);
+    } catch (Throwable t) {}
+
+    // lookup resources
+    Resources resources = Resources.get(this);
     
     // Make sure that Swing shows our localized texts
     Enumeration keys = resources.getKeys();
@@ -186,6 +195,21 @@ public class App {
       Debug.flush();
       System.exit(1);
     }
+  }
+  
+  /**
+   * Sets the language
+   */
+  public void setLanguage(String lang) {
+    if (lang!=null)
+      registry.put("language", lang);
+  }
+
+  /**
+   * Gets the language
+   */
+  public String getLanguage() {
+    return registry.get("language", (String)null);
   }
 
   /**
