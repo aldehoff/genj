@@ -347,7 +347,9 @@ public class Model implements Graph, GedcomListener {
         break;
     }
     // create gridcache
-    cache = new GridCache(bounds, 10.0);
+    cache = new GridCache(
+      bounds, 3*metrics.calcMax()
+    );
     Iterator it = getNodes().iterator();
     while (it.hasNext()) {
       TreeNode n = (TreeNode)it.next();

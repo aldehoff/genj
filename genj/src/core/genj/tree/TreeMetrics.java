@@ -43,7 +43,18 @@ public class TreeMetrics {
     hMarrs = Math.rint(hIndis/8*100)/100;
     pad    = Math.rint(padng   *100)/100;
     // done      
-
+  }
+  
+  /**
+   * Calculates the maximum value   */
+  /*package*/ double calcMax() {
+    double max = -Double.MAX_VALUE;
+    if (wIndis>max) max=wIndis;
+    if (hIndis>max) max=hIndis;
+    if (wFams >max) max=wFams ;
+    if (hFams >max) max=hFams ;
+    if (pad   >max) max=pad   ;
+    return max;
   }
   
 } //TreeMetrics

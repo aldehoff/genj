@@ -66,18 +66,27 @@ public class ContentRenderer {
   /** the entity renderer we're using */
   private EntityRenderer contentRenderer;
   
-  private String foo = 
-      "<b><prop path=INDI></b>\n" +
-      "<table>\n" +
-       "<tr valign=top><td>\n" +
-       "<table>\n" +
-        "<tr><td><prop path=INDI:SEX img=yes txt=no><i><prop path=INDI:NAME></i></td></tr>\n" +
-        "<tr><td><prop path=INDI:BIRT:DATE img=yes>, <u><prop path=INDI:BIRT:PLAC></u></td></tr>\n" +
-        "<tr><td><prop path=INDI:RESI:ADDR><br><prop path=INDI:RESI:ADDR:CITY><br><prop path=INDI:RESI:POST></u></td></tr>\n" +
-       "</table>\n" +
-       "</td><td>\n" +
-        "<prop path=INDI:OBJE:FILE>\n" +       "</td></tr>\n" +
-      "</table>";
+  private String foo =
+    "<b><prop path=INDI></b>\n"+
+    "<br><prop path=INDI:SEX img=yes txt=no>\n"+
+    " <i><prop path=INDI:NAME></i></td></tr>\n"+
+    "<br><prop path=INDI:BIRT:DATE img=yes>, <u><prop path=INDI:BIRT:PLAC></u>\n"+
+    "<br><prop path=INDI:RESI:ADDR>,\n"+
+    "    <prop path=INDI:RESI:ADDR:CITY>,\n"+
+    "    <prop path=INDI:RESI:ADDR:POST>\n"+
+    "<br><prop path=INDI:OBJE:FILE>\n";  
+   
+//      "<b><prop path=INDI></b>\n" +
+//      "<table>\n" +
+//       "<tr valign=top><td>\n" +
+//       "<table>\n" +
+//        "<tr><td><prop path=INDI:SEX img=yes txt=no><i><prop path=INDI:NAME></i></td></tr>\n" +
+//        "<tr><td><prop path=INDI:BIRT:DATE img=yes>, <u><prop path=INDI:BIRT:PLAC></u></td></tr>\n" +
+//        "<tr><td><prop path=INDI:RESI:ADDR><br><prop path=INDI:RESI:ADDR:CITY><br><prop path=INDI:RESI:POST></u></td></tr>\n" +
+//       "</table>\n" +
+//       "</td><td>\n" +
+//        "<prop path=INDI:OBJE:FILE>\n" +//       "</td></tr>\n" +
+//      "</table>";
   
   
   /**
@@ -110,10 +119,22 @@ public class ContentRenderer {
     // loop
     Iterator it = model.getEntitiesIn(clip).iterator();
     while (it.hasNext()) {
-      // grab node
+      // grab node and its shape
       Node node = (Node)it.next();
+      Shape shape = node.getShape();
+      Point2D pos = node.getPosition();
+      // no shape -> no rendering
+      if (shape==null) continue;
+      // bounds not intersecting clip -> no rendering
+      Rectangle2D r = shape.getBounds2D();
+      if (!clip.intersects(
+        pos.getX()+r.getMinX(), 
+        pos.getY()+r.getMinY(),
+        r.getWidth(),
+        r.getHeight() 
+      )) continue;
       // render it
-      renderNode(g, node);
+      renderNode(g, pos, shape, node.getContent());
       // next
     }
     // done
@@ -122,15 +143,10 @@ public class ContentRenderer {
   /**
    * Render a node
    */
-  private void renderNode(UnitGraphics g, Node node) {
-    // parameters
-    Point2D pos = node.getPosition();
+  private void renderNode(UnitGraphics g, Point2D pos, Shape shape, Object content) {
     double 
       x = pos.getX(),
       y = pos.getY();
-    Object content = node.getContent();
-    Shape shape = node.getShape();
-    if (shape==null) return;
     // draw its shape
     Color color = getColor(content);
     if (color!=cBackground) {

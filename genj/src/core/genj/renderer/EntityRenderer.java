@@ -59,6 +59,10 @@ public class EntityRenderer {
     PROP_IMAGE_WIDTH  = Property.getDefaultImage("INDI").getIconWidth()+4,
     PROP_IMAGE_HEIGHT = Property.getDefaultImage("INDI").getIconHeight();
   
+  /** replace value for no-property */
+  private static final Object
+    NULL = new Object();
+    
   /** a no value char array */
   private static final Segment EMPTY_SEGMENT = new Segment(); 
   
@@ -130,8 +134,8 @@ public class EntityRenderer {
     // mark views 
     Iterator it = propViews.iterator();
     while (it.hasNext()) {
-      View v = (View)it.next();
-      v.preferenceChanged(null,true,true);
+      PropertyView v = (PropertyView)it.next();
+      v.invalidate();
     }
     
     // done
@@ -209,6 +213,16 @@ public class EntityRenderer {
     public Shape modelToView(int pos, Shape a, Bias b) throws BadLocationException {
       throw new RuntimeException("modelToView() is not supported");
     }
+    /**
+     * Creates a shallow copy
+     */
+    protected final Object clone() {
+      try {
+        return super.clone();
+      } catch (CloneNotSupportedException cnse) {
+        throw new RuntimeException();
+      }
+    }
   } //BaseView
 
   /**
@@ -281,7 +295,7 @@ public class EntityRenderer {
   /**
    *
    */
-  private class PropertyView extends BaseView {
+  private class PropertyView extends BaseView implements Cloneable {
     
     /** our preference when looking at the property */
     private int preference;
@@ -291,6 +305,18 @@ public class EntityRenderer {
     
     /** the tag path used */
     private TagPath path = null;
+    
+    /** the cached property we're displaying */
+    private Object property = null;
+    
+    /** the cached font we're using */
+    private Font font = null;
+    
+    /** the cached foreground we're using */
+    private Color foreground = null;
+    
+    /** the cached preferred span */
+    private Dimension preferredSpan = null;
     
     /** 
      * Constructor
@@ -330,12 +356,28 @@ public class EntityRenderer {
     }
     
     /**
+     * Invalidates this views current state
+     */
+    private void invalidate() {
+      // invalidate cached information that's depending
+      // on the current entity's properties
+      property = null;
+      preferredSpan = null;
+      // signal through superclass
+      super.preferenceChanged(null,true,true);
+    }
+    
+    /**
      * Returns the property we're viewing
      */
     private Property getProperty() {
       if (entity==null) return null;
+      if (property!=null) return property==NULL ? null : (Property)property;
       path.setToFirst();
-      return entity.getProperty().getProperty(path, true);
+      property = entity.getProperty().getProperty(path, true);
+      if (property!=null) return (Property)property; 
+      property = NULL;
+      return null;
     }
     
     /** 
@@ -349,33 +391,24 @@ public class EntityRenderer {
      * Returns the current font
      */
     private Font getFont() {
-      return doc.getFont(getAttributes());
+      if (font==null) font = doc.getFont(getAttributes());
+      return font;
     }
     
     /** 
      * Returns the current fg color
      */
     private Color getForeground() {
-      return doc.getForeground(getAttributes());
+      if (foreground==null) foreground = doc.getForeground(getAttributes());
+      return foreground;
     }
     
-    /**
-     * @see javax.swing.text.View#getPreferredSpan(int)
-     */
-    public float getPreferredSpan(int axis) {
-      if (proxy==null) return 0;
-      Property p = getProperty();
-      if (p==null) return 0;
-      Dimension d = proxy.getSize(getFontMetrics(), p, preference);
-      return axis==X_AXIS ? d.width : d.height;
-    }
-
     /**
      * @see javax.swing.text.View#paint(Graphics, Shape)
      */
     public void paint(Graphics g, Shape allocation) {
       // find property
-      if (proxy==null) return ;
+      //if (proxy==null) return ;
       Property p = getProperty();
       if (p==null) return;
       // setup painting attributes
@@ -390,17 +423,32 @@ public class EntityRenderer {
      * @see javax.swing.text.View#getAlignment(int)
      */
     public float getAlignment(int axis) {
-      if (proxy==null) return 1;
       if (X_AXIS==axis)
         return super.getAlignment(axis);
       return proxy.getVerticalAlignment(getFontMetrics());
     }
     /**
+     * @see javax.swing.text.View#getPreferredSpan(int)
+     */
+    public float getPreferredSpan(int axis) {
+      // get the property
+      Property p = getProperty();
+      if (p==null) return 0;
+      // check cached preferred Spane
+      if (preferredSpan==null) {
+        preferredSpan =proxy.getSize(getFontMetrics(), p, preference);
+      }
+      return axis==X_AXIS ? preferredSpan.width : preferredSpan.height;
+    }
+    /**
      * @see javax.swing.text.View#getBreakWeight(int, float, float)
      */
     public int getBreakWeight(int axis, float pos, float len) {
-      if (len > getPreferredSpan(axis)) {
-          return GoodBreakWeight;
+      // not on vertical
+      if (axis==Y_AXIS) return BadBreakWeight;
+      // horizontal might work
+      if (len > getPreferredSpan(X_AXIS)) {
+        return GoodBreakWeight;
       }
       return BadBreakWeight;
     }  
@@ -408,10 +456,14 @@ public class EntityRenderer {
      * @see javax.swing.text.View#breakView(int, int, float, float)
      */
     public View breakView(int axis, int offset, float pos, float len) {
-      // don't allow a break
       return this;
+//      // not on vertical
+//      if (axis==Y_AXIS) return this;
+//      // break it
+//      View result = (View)clone();
+//      return result;
     }
   } //PropertyView
 
   
-}
+} //EntityRenderer
