@@ -124,6 +124,9 @@ public class Gedcom {
   /** encoding */
   private String encoding = ANSEL;
 
+  /** password for private information */
+  private String password = null;
+
   /**
    * Gedcom's Constructor
    */
@@ -556,6 +559,20 @@ public class Gedcom {
    */
   public String getEncoding() {
     return encoding;
+  }
+  
+  /**
+   * Accessor - password
+   */
+  public void setPassword(String set) {
+    password = set;
+  }
+  
+  /**
+   * Accessor - password
+   */
+  public String getPassword() {
+    return password;
   }
   
 } //Gedcom

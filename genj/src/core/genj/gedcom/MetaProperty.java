@@ -54,7 +54,8 @@ public class MetaProperty {
     IMG_CUSTOM  = loadImage("Attribute.gif"),
     IMG_LINK    = loadImage("Association.gif"),
     IMG_UNKNOWN = loadImage("Question.gif"),
-    IMG_ERROR   = loadImage("Error.gif");
+    IMG_ERROR   = loadImage("Error.gif"),
+    IMG_PRIVATE = loadImage("Private.gif");
     
   /** static - root for entities  */
   private static Map tag2root = new HashMap();

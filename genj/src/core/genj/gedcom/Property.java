@@ -55,6 +55,9 @@ public abstract class Property implements Comparable {
   /** whether we're transient or not */
   protected boolean isTransient = false;
 
+  /** whether we're private or not */
+  protected boolean isPrivate = false;
+
   /**
    * Lifecycle - callback when being added to parent
    */
@@ -208,82 +211,12 @@ public abstract class Property implements Comparable {
     return imageErr;
   }
 
-//  /**
-//   * Returns the index of given property or -1 when not found.
-//   * @param prop Property to look for
-//   */
-//  public int getIndexOf(Property prop) {
-//
-//    // Look through properties
-//    for (int i=0;i<getNoOfProperties();i++) {
-//      if (getProperty(i)==prop) {
-//        return i;
-//      }
-//    }
-//
-//    // Not found
-//    return -1;
-//  }
-
-//  /**
-//   * Returns the next sibling of this property
-//   * @return property beside or null
-//   */
-//  public Property getNextSibling() {
-//
-//    // No parent ?
-//    if (parent==null) {
-//      return null;
-//    }
-//
-//    // Wich index is this one ?
-//    int index = parent.getIndexOf(this);
-//    if (index==-1) {
-//      return null;
-//    }
-//
-//    // Me the last ?
-//    if (index==parent.getNoOfProperties()-1) {
-//      return null;
-//    }
-//
-//    // Return next sibling
-//    return parent.getProperty(index+1);
-//  }
-
   /**
    * Calculates the number of properties this property has.
    */
   public int getNoOfProperties() {
     return children.size();
   }
-
-//  /**
-//   * Calculates the number of properties this property has.
-//   * When recursive is true, sub-properties are counted recursively, too.
-//   * When valid is true, only valid sub-properties are counted.
-//   */
-//  public int getNoOfProperties(boolean recursive, int qfilter) {
-//
-//    // recursive
-//    int result = 0;
-//    for (int i=0;i<children.size();i++) {
-//      Property child = getProperty(i); 
-//      if (tst(qfilter, QUERY_VALID_TRUE  )&&!child.isValid())
-//        continue;
-//      if (tst(qfilter, QUERY_SYSTEM_FALSE)&&child.isSystem())
-//        continue;
-//
-//      // grab it
-//      result ++;
-//        
-//      // recursive step
-//      if (recursive)
-//        result += child.getNoOfProperties(true,qfilter);
-//    }
-//
-//    return result;
-//  }
 
   /**
    * Returns the property this property belongs to
@@ -337,32 +270,6 @@ public abstract class Property implements Comparable {
 
     // not found
   }
-  
-//  /**
-//   * Returns the previous sibling of this property
-//   * @return property beside or null
-//   */
-//  public Property getPreviousSibling() {
-//
-//    // No parent ?
-//    if (parent==null) {
-//      return null;
-//    }
-//
-//    // Wich index is this one ?
-//    int index = parent.getIndexOf(this);
-//    if (index==-1) {
-//      return null;
-//    }
-//
-//    // Me the first ?
-//    if (index==0) {
-//      return null;
-//    }
-//
-//    // Return previous sibling
-//    return parent.getProperty(index-1);
-//  }
   
   /**
    * Returns this property's properties (all children)
@@ -739,6 +646,21 @@ public abstract class Property implements Comparable {
       return false;
     
     return true;
+  }
+
+  /**
+   * Accessor - private
+   */
+  public boolean isPrivate() {
+    return isPrivate;
+  }
+  
+  /**
+   * Accessor - private
+   */
+  public void setPrivate(boolean set) {
+    isPrivate = set;
+    modNotify();
   }
   
 } //Property
