@@ -30,7 +30,6 @@ import genj.util.swing.UnitGraphics;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -446,8 +445,6 @@ import javax.swing.JComponent;
     
     Rectangle2D printable = getPrintable();
     UnitGraphics ug = new UnitGraphics(graphics, dpi.x, dpi.y);
-    ug.setColor(Color.lightGray);
-    ug.draw(printable,0,0,false);
     ug.pushClip(0,0, printable);
 
     // translate for to top left on page

@@ -145,22 +145,22 @@ public class PrintWidget extends JPanel {
       Printer renderer = task.getRenderer();
       Dimension pages = task.getPages(); 
       UnitGraphics ug = new UnitGraphics(g, dpiScreen.x*zoom, dpiScreen.y*zoom);
+      Rectangle2D clip = ug.getClip();
       for (int y=0;y<pages.height;y++) {
         for (int x=0;x<pages.width;x++) {
           // calculate layout
           Rectangle2D 
             page = task.getPage(x,y, padd), 
-            imageable = task.getPrintable(page); 
+            imageable = task.getPrintable(page);
+          // visible?
+          if (!clip.intersects(page))
+            continue;
           // draw page
           ug.setColor(Color.white);
           ug.draw(page, 0, 0, true);
-          // draw imageable
-          ug.setColor(Color.lightGray);
-          ug.draw(imageable, 0, 0, false);
           // draw number
           ug.setColor(Color.gray);
           ug.draw(String.valueOf(x+y*pages.width+1),page.getCenterX(),page.getCenterY(),0.5D,0.5D);
-          // draw content
           ug.pushTransformation();
           ug.pushClip(imageable);
           ug.translate(imageable.getMinX(), imageable.getMinY());
