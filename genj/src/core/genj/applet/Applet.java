@@ -35,6 +35,8 @@ import genj.window.WindowManager;
 import java.awt.BorderLayout;
 import java.net.URL;
 
+import javax.swing.JLabel;
+
 /**
  * THE GenJ Applet
  */
@@ -60,7 +62,7 @@ public class Applet extends java.applet.Applet {
    * @see java.applet.Applet#getAppletInfo()
    */
   public String getAppletInfo() {
-    return "GenealogyJ v"+Version.getInstance();
+    return "GenealogyJ "+Version.getInstance();
   }
 
   /**
@@ -140,8 +142,12 @@ public class Applet extends java.applet.Applet {
       throwable = null;
 
       // setup progress indicator
+      ProgressWidget progress = new ProgressWidget(this, getThread());
+      progress.setBackground(getBackground());
+      
       removeAll();
-      add(BorderLayout.CENTER, new ProgressWidget(this, getThread()));
+      add(BorderLayout.NORTH , new JLabel(getAppletInfo()));
+      add(BorderLayout.CENTER, progress);
       
       // continue
       return true;
