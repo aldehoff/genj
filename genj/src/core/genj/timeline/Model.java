@@ -353,16 +353,19 @@ import java.util.Set;
     // we need a valid date for that event
     PropertyDate pd = pe.getDate();
     if (pd==null) return;
-    // get start (has to be valid) and end
+    // get start (has to be valid) and end (has to be valid if range)
     PointInTime
       start = pd.getStart(),
       end   = pd.getEnd();
-    if (!start.isValid()) return;
-    if (!pd.isRange()||!end.isValid()) end = start;
-    // create the Event
-    Event e = new Event(pe, pd, start.toDouble(), end.toDouble());
-    // keep the event
-    insertEvent(e);
+    if (!start.isValid()) 
+      return;
+    if (pd.isRange()) {
+      if (!end.isValid())
+        return;
+      end = start;
+    }
+    // create event 
+    insertEvent(new Event(pe, pd));
     // done
   }
   
@@ -428,16 +431,38 @@ import java.util.Set;
     /** 
      * Constructor
      */
-    Event(PropertyEvent propEvent, PropertyDate propDate, double start, double end) {
+    Event(PropertyEvent propEvent, PropertyDate propDate) {
       // remember
       pe = propEvent;
       pd = propDate;
-      from  = start;
-      to  = end;
+      // setup time
+      from = toDouble(propDate.getStart(), propDate.getFormat()==propDate.AFT);
+      to  = toDouble(propDate.getEnd(), true);
       // calculate content
       content();
       // done
     }
+    /**
+     * Calculate to
+     */
+    private double toDouble(PointInTime pit, boolean roundUp) {
+      // year
+      double result = pit.getYear();
+      // month
+      int month = pit.getMonth();
+      if (month<0||month>=12)
+        return roundUp ? result+1 : result;
+      result += ((double)month)/12.0D;
+      // day
+      int day = pit.getDay();
+      if (day<0||day>31) {
+        return roundUp ? result+1D/12 : result;
+      }
+      result += ((double)day)/12/31;
+      // done
+      return result;
+    }
+    
     /** 
      * calculate a content
      */

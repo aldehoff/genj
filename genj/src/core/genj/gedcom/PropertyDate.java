@@ -356,6 +356,8 @@ public class PropertyDate extends Property {
      * Returns the year
      */
     public int getYear() {
+      if (end==this&&!isRange())
+        return start.getYear();
       return year;
     }
   
@@ -363,6 +365,8 @@ public class PropertyDate extends Property {
      * Returns the month
      */
     public int getMonth() {
+      if (end==this&&!isRange())
+        return start.getMonth();
       return month;
     }
 
@@ -370,6 +374,8 @@ public class PropertyDate extends Property {
      * Returns the day
      */
     public int getDay() {
+      if (end==this&&!isRange())
+        return start.getDay();
       return day;
     }
 
@@ -377,17 +383,18 @@ public class PropertyDate extends Property {
      * Setter
      */
     public void set(int d, int m, int y) {
-
-      // remember change
+      
+      // note change
       noteModifiedProperty();
 
-      // set it
+      // assume string is not needed anymore
       dateAsString=null;
       
+      // set it
       day   = d;
       month = m;
       year  = y;
-  
+      
       // done
     }
     
@@ -402,12 +409,7 @@ public class PropertyDate extends Property {
      * Setter
      */
     private void set(PIT other) {
-      // Remember change
-      noteModifiedProperty();
-      // set
-      year  = other.year;
-      month = other.month;
-      day   = other.day;
+      set(other.day, other.month, other.year);
     }
     
     /**

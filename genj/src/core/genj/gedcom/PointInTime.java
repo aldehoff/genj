@@ -153,29 +153,6 @@ public abstract class PointInTime implements Comparable {
   }
 
   /**
-   * Returns a double representation
-   */
-  public double toDouble() {
-
-    double result = 0;
-      
-    int year = getYear();
-    if (year>=0) {
-      result = year;
-      int month = getMonth();
-      if (month>=0&&month<12) {
-        result += ((double)month)/12;
-        int day = getDay();
-        if (day>=0&&day<31) {
-          result += ((double)day)/12/31;
-        } 
-      }
-    }
-       
-    return result;
-  }
-    
-  /**
    * Returns the localized month as string (either MAY or Mai)
    */
   public String getMonth(boolean localize) {

@@ -20,6 +20,7 @@
 package genj.timeline;
 
 import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.UnitGraphics;
@@ -176,10 +177,19 @@ public class ContentRenderer {
     // draw it's extend
     g.setColor(cTimespan);
     
-    g.draw(fromMark, event.from, level+1, true);
-    if (event.from!=event.to) {
-      g.draw( event.from, level + 1 - dotSize.y, event.to, level + 1 - dotSize.y );
-      g.draw(toMark, event.to, level+1, true);
+    switch (event.pd.getFormat()) {
+      case PropertyDate.AFT:
+      case PropertyDate.FROM:
+        g.draw(fromMark, event.from, level+1, true);
+        break;
+      case PropertyDate.BEF:
+      case PropertyDate.TO:
+        g.draw(toMark, event.from, level+1, true);
+        break;
+      default:
+        g.draw(fromMark, event.from, level+1, true);
+        g.draw( event.from, level + 1 - dotSize.y, event.to, level + 1 - dotSize.y );
+        g.draw(toMark, event.to, level+1, true);
     }
 
     // clipping from here    
@@ -223,19 +233,19 @@ public class ContentRenderer {
     
     // calculate dot-size
     dotSize.setLocation( 1D / graphics.getUnit().getX(), 1D / graphics.getUnit().getY() );
-    
+
     // calculate fromMark
     fromMark = new GeneralPath();
-    fromMark.moveTo((float)( 0F*dotSize.x),(float)(-1F*dotSize.y));
-    fromMark.lineTo((float)(-3F*dotSize.x),(float)(-5F*dotSize.y));
-    fromMark.lineTo((float)(-3F*dotSize.x),(float)(+3F*dotSize.y));
+    fromMark.moveTo((float)(3F*dotSize.x),(float)(-1F*dotSize.y));
+    fromMark.lineTo((float)(-1F*dotSize.x),(float)(-5F*dotSize.y));
+    fromMark.lineTo((float)(-1F*dotSize.x),(float)(+3F*dotSize.y));
     fromMark.closePath();
 
     // calculate toMark
     toMark = new GeneralPath();
-    toMark  .moveTo((float)( 0F*dotSize.x),(float)(-1F*dotSize.y));
-    toMark  .lineTo((float)( 4F*dotSize.x),(float)(-6F*dotSize.y));
-    toMark  .lineTo((float)( 4F*dotSize.x),(float)(+4F*dotSize.y));
+    toMark  .moveTo((float)(-3F*dotSize.x),(float)(-1F*dotSize.y));
+    toMark  .lineTo((float)( 1F*dotSize.x),(float)(-6F*dotSize.y));
+    toMark  .lineTo((float)( 1F*dotSize.x),(float)(+4F*dotSize.y));
     toMark  .closePath();
     
     // done
