@@ -132,13 +132,17 @@ public class Fam extends Entity {
     
     // Husband ?
     Indi husband = getHusband();
-    if (husband!=null&&!collect.contains(husband))
+    if (husband!=null&&!collect.contains(husband)) {
+      collect.add(husband); 
       husband.getAncestors(collect);
+    }
   
     // Wife ?
     Indi wife = getWife();
-    if (wife!=null&&!collect.contains(wife)) 
+    if (wife!=null&&!collect.contains(wife)) {
+      collect.add(wife); 
       wife.getAncestors(collect);
+    }
       
     // done
     return collect;
