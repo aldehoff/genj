@@ -169,7 +169,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     // all that fits in a scrollpane
     scrollContent = new JScrollPane(new ViewPortAdapter(content));
     scrollContent.setColumnHeaderView(new ViewPortAdapter(ruler));
-    scrollContent.getHorizontalScrollBar().addAdjustmentListener(new ChangeCenteredYear());
+//    scrollContent.getHorizontalScrollBar().addAdjustmentListener(new ChangeCenteredYear());
    
     // layout
     setLayout(new BorderLayout());

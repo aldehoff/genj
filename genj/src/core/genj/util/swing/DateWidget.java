@@ -146,7 +146,7 @@ public class DateWidget extends JPanel {
     int d = string2int(widgetDay.getText(), true);
     int y = string2int(widgetYear.getText(), false);
     int m = string2int(widgetMonth.getText(), true);
-    if (m<0&&widgetMonth.getText().equals(widgetMonth.getSelectedItem())) 
+    if (m==PointInTime.UNKNOWN&&widgetMonth.getText().equals(widgetMonth.getSelectedItem())) 
       m = widgetMonth.getSelectedIndex();    
     return PointInTime.getPointInTime(d, m, y, calendar);
   }
@@ -186,7 +186,7 @@ public class DateWidget extends JPanel {
    * transfer a date int into String
    */
   private String int2string(int i, boolean zeroBased) {
-    if (i<0)
+    if (i==PointInTime.UNKNOWN)
       return "";
     if (zeroBased)
       i++;    
@@ -200,7 +200,7 @@ public class DateWidget extends JPanel {
     try {
       return Integer.parseInt(s) - (zeroBased?1:0);
     } catch (NumberFormatException e) {
-      return -1;
+      return PointInTime.UNKNOWN;
     }
   }
 

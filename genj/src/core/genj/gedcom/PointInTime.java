@@ -30,6 +30,9 @@ import java.util.StringTokenizer;
  * A point in time - either hebrew, roman, frenchr, gregorian or julian
  */
 public class PointInTime implements Comparable {
+  
+  /** marker for unknown day,month,year */
+  public final static int UNKNOWN = Integer.MAX_VALUE;
 
   /** calendars */
   public final static GregorianCalendar GREGORIAN = new GregorianCalendar();
@@ -44,9 +47,9 @@ public class PointInTime implements Comparable {
   
   /** values */
   private int 
-    day = -1, 
-    month = -1, 
-    year = -1;
+    day   = UNKNOWN, 
+    month = UNKNOWN, 
+    year  = UNKNOWN;
 
   /**
    * Constructor
@@ -129,7 +132,7 @@ public class PointInTime implements Comparable {
    * @param string e.g. 25 MAY 1970
    */
   public static PointInTime getPointInTime(String string) {
-    PointInTime result = new PointInTime(-1,-1,-1, GREGORIAN);
+    PointInTime result = new PointInTime(UNKNOWN,UNKNOWN,UNKNOWN,GREGORIAN);
     result.set(new StringTokenizer(string));
     return result;
   }
@@ -145,6 +148,17 @@ public class PointInTime implements Comparable {
   }
   
   /**
+   * Calculate julian day
+   */
+  public int getJulianDay(boolean roundUp) {
+    try {
+      return calendar.toJulianDay(this, roundUp);
+    } catch (GedcomException e) {
+      return UNKNOWN;
+    }
+  }
+  
+  /**
    * Setter
    */
   public void set(Calendar cal) throws GedcomException {
@@ -155,7 +169,7 @@ public class PointInTime implements Comparable {
     if (!isComplete())
       throw new GedcomException("PointInTime not complete DD MMM YYYY - switching calendars n/a");
     // convert to julian date
-    int jd = calendar.toJulianDay(this);
+    int jd = calendar.toJulianDay(this, false);
     // convert to new instance
     set(cal.toPointInTime(jd));
   }  
@@ -216,11 +230,11 @@ public class PointInTime implements Comparable {
     // first is YYYY
     if (!tokens.hasMoreTokens()) {
         try {
-          set(-1,-1,Math.max(-1,Integer.parseInt(first)));
+          set(UNKNOWN,UNKNOWN,Integer.parseInt(first));
         } catch (NumberFormatException e) {
           return false;
         }
-        return getYear()>=0;
+        return getYear()!=UNKNOWN;
     }
     
     // have second
@@ -229,11 +243,11 @@ public class PointInTime implements Comparable {
     // first and second are MMM YYYY
     if (!tokens.hasMoreTokens()) {
       try {
-        set(-1, calendar.parseMonth(first), Integer.parseInt(second));
+        set(UNKNOWN, calendar.parseMonth(first), Integer.parseInt(second));
       } catch (NumberFormatException e) {
         return false;
       }
-      return getYear()>=0;
+      return getYear()!=UNKNOWN&&getMonth()!=UNKNOWN;
     }
 
     // have third
@@ -246,7 +260,7 @@ public class PointInTime implements Comparable {
       } catch (NumberFormatException e) {
         return false;
       }
-      return getYear()>=0&&getDay()>=0&&getDay()<=31;
+      return getYear()!=UNKNOWN&&getMonth()!=UNKNOWN&&getDay()!=UNKNOWN;
     }
 
     // wrong number of tokens
@@ -257,26 +271,14 @@ public class PointInTime implements Comparable {
    * Checks for completeness - DD MMM YYYY
    */
   public boolean isComplete() {
-    return isValid() && year>0 && month>=0 && day>=0;
+    return isValid() && year!=UNKNOWN && month!=UNKNOWN && day!=UNKNOWN;
   }
 
   /**
    * Checks for validity
    */
   public boolean isValid() {
-
-    // YYYY is always needed!
-    if (year<0)
-      return false;
-    // MM needed if DD!
-    if (month<0&&day>=0)
-      return false;
-    // DD at least not <-1
-    if (day<-1)
-      return false;
-
-    // rely on calendar specific
-    return calendar.isValid(day<0?0:day,month<0?0:month,year);
+    return calendar.isValid(day,month,year);
   }
     
   /**
@@ -307,7 +309,7 @@ public class PointInTime implements Comparable {
       return -1; 
     // compare
     try {
-      return calendar.toJulianDay(this) - other.calendar.toJulianDay(other);
+      return calendar.toJulianDay(this, false) - other.calendar.toJulianDay(other, false);
     } catch (GedcomException e) {
       return 0; // shouldn't really happen
     }
@@ -347,9 +349,9 @@ public class PointInTime implements Comparable {
       month = getMonth(),
       year = getYear();
       
-    if (year>0) {
-      if (month>=0) {
-        if (day>=0) {
+    if (year!=UNKNOWN) {
+      if (month!=UNKNOWN) {
+        if (day!=UNKNOWN) {
           buffer.append(new Integer(day+1));
         }
         buffer.append(calendar.getMonth(month, localize));
@@ -488,16 +490,35 @@ public class PointInTime implements Comparable {
     /**
      * Validity check day,month,year>0
      */
-    protected boolean isValid(int day, int month, int year) {
+    protected final boolean isValid(int day, int month, int year) {
 
+      // YYYY is always needed!
+      if (year==UNKNOWN)
+        return false;
+        
+      // MM needed if DD!
+      if (month==UNKNOWN&&day!=UNKNOWN)
+        return false;
+        
       // months have to be within range
-      if (month>=months.length)
+      if (month==UNKNOWN)
+        month = 0;
+      else if (month<0||month>=months.length)
         return false;
 
       // day has to be withing range
-      if (day>=getDays(month,year))
+      if (day==UNKNOWN)
+        day = 0;
+      else if (day<0||day>=getDays(month,year))
         return false;
 
+      // try to get juliant
+      try {
+        toJulianDay(day,month,year);
+      } catch (GedcomException e) {
+        return false;
+      }
+      
       // is good
       return true;
     }
@@ -510,15 +531,21 @@ public class PointInTime implements Comparable {
     /**
      * PIT -> Julian Day
      */
-    protected final int toJulianDay(PointInTime pit) throws GedcomException {
+    protected final int toJulianDay(PointInTime pit, boolean roundUp) throws GedcomException {
       
       // grab data and correct for missing day/month
       int 
-        year  =             pit.getYear () ,
-        month = Math.max(0, pit.getMonth()),
-        day   = Math.max(0, pit.getDay  ());
-      
-      
+        year  = pit.getYear () ,
+        month = pit.getMonth(),
+        day   = pit.getDay  ();
+
+      if (year ==UNKNOWN)
+        throw new GedcomException("Transformation to Julian Day requires year");
+      if (month==UNKNOWN) 
+        month = roundUp ? months.length-1 : 0;
+      if (day  ==UNKNOWN) 
+        day   = roundUp ? getDays(month, year) - 1 : 0;
+     
       return toJulianDay(day, month, year);
     }
 
@@ -731,26 +758,6 @@ public class PointInTime implements Comparable {
     }
     
     /**
-     * @see genj.gedcom.PointInTime.Calendar#isValid(int, int, int)
-     */
-    protected boolean isValid(int day, int month, int year) {
-      
-      // default checks
-      if (!super.isValid(day, month, year))
-        return false;
-        
-      // check range
-      try {
-        toJulianDay(day, month, year);
-      } catch (GedcomException e) {
-        return false;
-      }
-      
-      // ok        
-      return true;
-    }
-    
-    /**
      * @see genj.gedcom.PointInTime.Calendar#toJulianDay(genj.gedcom.PointInTime)
      */
     protected int toJulianDay(int d, int m, int y) throws GedcomException {
@@ -864,28 +871,18 @@ public class PointInTime implements Comparable {
     }
     
     /**
-     * @see genj.gedcom.PointInTime.Calendar#isValid(int, int, int)
-     */
-    protected boolean isValid(int day, int month, int year) {
-      // super has something to say about that
-      if (!super.isValid(day, month, year))
-        return false;
-      // make sure year is >=1
-      if (year<1)
-        return false;
-      // make sure Adar R is in leap year
-      if (month==5&&!isLeap(year))
-        return false;
-      // ok
-      return true; 
-    }
-
-    
-    /**
      * d,m,y -> Julian Day
      */
     protected int toJulianDay(int day, int month, int year) throws GedcomException {
 
+      // year ok?
+      if (year<1)
+        throw new GedcomException("Hebrew calendar starts with 1");
+
+      // make sure Adar R is in leap year
+      if (month==5&&!isLeap(year))
+        throw new GedcomException("There's no Adar R in non-leap year "+year);
+    
       // get tishri1 for year
       int jd = getTishri1(year);
       

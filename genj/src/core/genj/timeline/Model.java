@@ -355,12 +355,16 @@ import java.util.Set;
   private final void createEventFrom(PropertyEvent pe) {
     // we need a valid date for that event
     PropertyDate pd = pe.getDate();
-    if (pd==null) return;
-    // get start (has to be valid) and end (has to be valid if range)
-    if (!pd.getStart().isValid()||(pd.isRange()&&!pd.getEnd().isValid())) 
+    if (pd==null) 
+      return;
+    // get start and end
+    int 
+      start = pd.getStart().getJulianDay(false),
+      end   = pd.isRange() ? pd.getEnd().getJulianDay(true) : start;
+    if (start==PointInTime.UNKNOWN||end==PointInTime.UNKNOWN) 
       return;
     // create event 
-    insertEvent(new Event(pe, pd));
+    insertEvent(new Event(pe, pd, start, end));
     // done
   }
   
@@ -418,23 +422,23 @@ import java.util.Set;
    * An event in our model
    */
   /*package*/ class Event {
-     // FIXME use julian day for even tracking
 
     /** state */
-    /*package*/ double from, to;
+    /*package*/ int from, to;
     /*package*/ PropertyEvent pe;
     /*package*/ PropertyDate pd;
     /*package*/ String content;
+    
     /** 
      * Constructor
      */
-    Event(PropertyEvent propEvent, PropertyDate propDate) {
+    Event(PropertyEvent propEvent, PropertyDate propDate, int jd1, int jd2) {
       // remember
       pe = propEvent;
       pd = propDate;
       // setup time
-      from = toDouble(propDate.getStart(), propDate.getFormat()==propDate.AFT);
-      to  = toDouble(propDate.isRange() ? propDate.getEnd() : propDate.getStart(), true);
+      from = jd1;
+      to  = jd2;
       // calculate content
       content();
       // done
