@@ -32,12 +32,13 @@ import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Registry;
+import genj.view.ContextMenuSupport;
 import genj.view.ViewFactory;
 
 /**
  * The factory for the TableView
  */
-public class EditViewFactory implements ViewFactory {
+public class EditViewFactory implements ViewFactory, ContextMenuSupport {
   
   /** actions for creating entities */
   private final ActionCreate

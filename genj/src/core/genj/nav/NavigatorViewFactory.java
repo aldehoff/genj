@@ -58,11 +58,4 @@ public class NavigatorViewFactory implements ViewFactory {
     return new NavigatorView(gedcom,registry,frame);
   }
 
-  /**
-   * @see genj.view.ViewFactory#createActions(Entity)
-   */
-  public List createActions(Entity entity) {
-    return null;
-  }
-
 } //NavigatorViewFactory

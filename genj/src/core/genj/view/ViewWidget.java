@@ -316,7 +316,7 @@ import javax.swing.border.TitledBorder;
       // following makes sure that the menu disappears when 
       // anything is clicking in the view (@see setCurrentEntity())
       MenuSelectionManager.defaultManager().clearSelectedPath();
-      // fill them into a popup
+      // create a popup
       MenuHelper mh = new MenuHelper();
       JPopupMenu popup = mh.createPopup(entity.getId());
       popup.add(new JLabel(
@@ -324,11 +324,15 @@ import javax.swing.border.TitledBorder;
         ImgIconConverter.get(entity.getProperty().getImage(false)),
         JLabel.CENTER
       ));
-      popup.setDefaultLightWeightPopupEnabled(true);
-      Iterator it = actions.iterator();
-      while (it.hasNext()) {
-        ActionDelegate ad = (ActionDelegate)it.next();
-        mh.createItem(ad);
+      // take actions
+      Iterator outer = actions.iterator();
+      while (outer.hasNext()) {
+        Iterator inner = ((List)outer.next()).iterator();
+        mh.createSeparator();
+        while (inner.hasNext()) {
+          ActionDelegate ad = (ActionDelegate)inner.next();
+          mh.createItem(ad);
+        }
       }
       // show the popup
       popup.show(container, e.getPoint().x, e.getPoint().y);

@@ -19,35 +19,18 @@
  */
 package genj.view;
 
-import java.awt.Component;
-import java.awt.Frame;
+import genj.gedcom.Entity;
 import java.util.List;
 
-import javax.swing.JComponent;
-
-import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
-import genj.print.PrintRenderer;
-import genj.util.Registry;
-
 /**
- * The interface to a view's factory
+ * Support for a context menu on an entity
  */
-public interface ViewFactory {
+public interface ContextMenuSupport {
 
   /**
-   * Callback for creating a view 
+   * Callback for actions on an entity
+   * @return a list of ActionDelegates
    */
-  public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame);
-  
-  /**
-   * Callback for creating settings for a view
-   */
-  public JComponent createSettingsComponent(Component view);
-  
-  /**
-   * Callback for creating a printer for a view
-   */
-  public PrintRenderer createPrintRenderer(Component view);
-  
-} //ViewFactory
+  public List createActions(Entity entity);
+
+} //ContextMenuSupport

@@ -58,11 +58,4 @@ public class EntityViewFactory implements ViewFactory {
     return new EntityView(gedcom,registry,frame);
   }
 
-  /**
-   * @see genj.view.ViewFactory#createActions(Entity)
-   */
-  public List createActions(Entity entity) {
-    return null;
-  }
-  
 } //EntityViewFactory

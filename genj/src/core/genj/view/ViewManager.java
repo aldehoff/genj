@@ -246,8 +246,20 @@ public class ViewManager {
     List result = new ArrayList(16);
     for (int d=0; d<descriptors.length; d++) {
       Descriptor descriptor = descriptors[d];
-      List actions = descriptor.factory.createActions(entity);
-      if (actions!=null) result.addAll(actions);
+      if (descriptor.factory instanceof ContextMenuSupport) {
+        ContextMenuSupport cms = (ContextMenuSupport)descriptor.factory;
+        result.add(cms.createActions(entity));
+      }
+    }
+    // loop through views
+    Gedcom gedcom = entity.getGedcom();
+    Iterator views = viewWidgets.iterator();
+    while (views.hasNext()) {
+      ViewWidget view = (ViewWidget)views.next();
+      if (view.getGedcom()==gedcom&&view.getView() instanceof ContextMenuSupport) {
+        ContextMenuSupport cms = (ContextMenuSupport)view.getView();
+        result.add(cms.createActions(entity));
+      }
     }
     // done
     return result;

@@ -58,11 +58,4 @@ public class TimelineViewFactory implements ViewFactory {
     return new TimelineView(gedcom,registry,frame);
   }
 
-  /**
-   * @see genj.view.ViewFactory#createActions(Entity)
-   */
-  public List createActions(Entity entity) {
-    return null;
-  }
-
 } //TimelineViewFactory

@@ -58,11 +58,4 @@ public class TableViewFactory implements ViewFactory {
     return new TableView(gedcom,registry,frame);
   }
 
-  /**
-   * @see genj.view.ViewFactory#createActions(Entity)
-   */
-  public List createActions(Entity entity) {
-    return null;
-  }
-
 } //TableViewFactory
