@@ -24,13 +24,13 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 
 import genj.gedcom.*;
 import genj.util.*;
 import genj.util.swing.ButtonHelper;
-import awtx.table.*;
 import genj.app.*;
-import awtx.Table;
 
 /**
  * A panel allowing to match entities that show up on a left/right list
@@ -38,7 +38,7 @@ import awtx.Table;
  */
 class MatchEntitiesPanel extends JPanel implements GedcomListener {
 
-  private Table    tMatch;
+  private JTable   tMatch;
   private JButton  bDont,bDontAll;
   private Gedcom[] candidates = new Gedcom[2];
 
@@ -46,186 +46,22 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
     "These entities will be merged (their IDs match):";
 
   /**
-   * Class which models matching entities of two Gedcoms
-   */
-  class MatchModel extends AbstractTableModel {
-
-    private Vector matches = new Vector();
-    private Vector breaks  = new Vector();
-
-    /**
-     * Constructor
-     */
-    /*package*/ MatchModel() {
-
-      // Are we ready?
-      for (int i=0;i<candidates.length;i++)
-      if (candidates[i]==null)
-        return;
-
-      // Loop through ents
-      try {
-
-        EntityList[] entlists = candidates[0].getEntities();
-        Vector ms = new Vector();
-
-        for (int i=0;i<entlists.length;i++) {
-
-          for (int e=0;e<entlists[i].getSize();e++) {
-
-            // .. get entity
-            Entity e1 = entlists[i].get(e);
-            Entity e2 = candidates[1].getEntityFromId(e1.getId(),e1.getType());
-
-            // .. and twin
-            if (e2!=null) {
-              ms.addElement(new Match(e1,e2));
-            }
-
-            // .. next entity
-          }
-
-          // .. next list of entities
-        }
-
-        // remember matches
-        matches = ms;
-
-      } catch (Exception e) {
-        System.out.println(e);
-        e.printStackTrace();
-      }
-
-      // Done
-    }
-
-    /**
-     * Removes all matches from this model
-     */
-    void removeAll() {
-      matches.removeAllElements();
-      fireNumRowsChanged();
-    }
-
-    /**
-     * Removes a selection of matches from this model
-     */
-    void remove(int selection) {
-
-      if (matches.size()>selection) {
-        matches.removeElementAt(selection);
-      }
-
-      fireNumRowsChanged();
-    }
-
-    /**
-     * Returns number of Rows - that's the number of joined entities
-     */
-    public int getNumRows() {
-      return matches.size();
-    }
-
-    /**
-     * Returns number of Columns for initialization
-     */
-    public int getNumColumns() {
-      return candidates.length;
-    }
-
-    /**
-     * Returns the Cell Object row,col - that's one of the entities
-     */
-    public Object getObjectAt(int row, int col) {
-
-      Match m = getMatchAt(row);
-
-      switch (col) {
-      case 0: default:
-        return m.e1.toString();
-      case 1:
-        return m.e2.toString();
-      }
-    }
-
-    /**
-     * Returns a column name
-     */
-    public Object getHeaderAt(int col) {
-
-      switch (col) {
-      case 0: default:
-        return (candidates[0]==null?"?":candidates[0].getName());
-      case 1:
-        return (candidates[1]==null?"?":candidates[1].getName());
-      }
-
-    }
-
-    /**
-     * Returns the match for given row
-     */
-    public Match getMatchAt(int row) {
-      return (Match)matches.elementAt(row);
-    }
-
-    // EOC
-  }
-
-  /**
-   * A Match of two entities
-   */
-  private class Match {
-    Entity e1,e2;
-    Match(Entity e1, Entity e2) {
-      this.e1=e1;this.e2=e2;
-    }
-    // EOC
-  }
-
-  /**
    * Constructor
    */
   /*package*/ MatchEntitiesPanel() {
 
     // Create Table for joining info
-    tMatch = new Table();
-    tMatch.setModel(new MatchModel());
+    tMatch = new JTable(new MatchModel());
+    tMatch.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+      /**
+       * @see javax.swing.event.ListSelectionListener#valueChanged(ListSelectionEvent)
+       */
+      public void valueChanged(ListSelectionEvent e) {
+        bDont   .setEnabled(tMatch.getSelectedRowCount()>0);
+        bDontAll.setEnabled(tMatch.getRowCount()>0);
+      }
+    });
   
-    TableListener tlistener = new TableListener() {
-      // LCD
-      /** Handle selection */
-      public void rowSelectionChanged(int[] rows) {
-        bDont   .setEnabled(rows.length>0);
-        bDontAll.setEnabled(tMatch.getNumRows()>0);
-      }
-      /** action performed on row */
-      public void actionPerformed(int row) {
-      }
-      // EOC
-    };
-    tMatch.addTableListener(tlistener);
-  
-    // Create buttons for modifications
-    ActionListener alistener = new ActionListener() {
-      // LCD
-      /** action performed */
-      public void actionPerformed(ActionEvent e) {
-        // Break all matches
-        if (e.getActionCommand().equals("DONTALL")) {
-          dontMatches(true);
-          return;
-        }
-        // Break single match
-        if (e.getActionCommand().equals("DONT")) {
-          dontMatches(false);
-          return;
-        }
-      // Done
-      }
-      // EOC
-    };
-    
     ButtonHelper bh = new ButtonHelper().setInsets(new Insets(0,0,0,0));
     bDont    = bh.setEnabled(false).create(new ActionMatch(false));
     bDontAll = bh.setEnabled(true).create(new ActionMatch(true));
@@ -237,30 +73,10 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
     // Create master panel
     setLayout(new BorderLayout());
   
-    add(new JLabel(header),"North");
-    add(tMatch            ,"Center");
-    add(pActions          ,"South" );
+    add(new JLabel(header)     ,"North");
+    add(new JScrollPane(tMatch),"Center");
+    add(pActions               ,"South" );
   
-    // Done
-  }
-
-  /**
-   * Break Matches (entities' ID will be changed later)
-   */
-  void dontMatches(boolean all) {
-
-    // Anything to do?
-    if ((!all)&&(tMatch.getSelectedRow()==-1)) {
-      return;
-    }
-
-    MatchModel matches = (MatchModel)tMatch.getModel();
-    if (all) {
-      matches.removeAll();
-    } else {
-      matches.remove(tMatch.getSelectedRow());
-    }
-
     // Done
   }
 
@@ -273,11 +89,11 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
     MatchModel matches = (MatchModel)tMatch.getModel();
 
     // Make result array
-    Entity[][] result = new Entity[matches.getNumRows()][2];
+    Entity[][] result = new Entity[matches.getRowCount()][2];
 
     // Fill array
-    for (int r=0;r<matches.getNumRows();r++) {
-      Match m = matches.getMatchAt(r);
+    for (int r=0;r<matches.getRowCount();r++) {
+      MatchModel.Match m = matches.getMatchAt(r);
       result[r][0] = m.e1;
       result[r][1] = m.e2;
     }
@@ -296,7 +112,6 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
     }
 
     // Recalculate Matches
-    tMatch.setInitialColumnLayout(tMatch.SIZE_ALL_COLUMNS);
     tMatch.setModel(new MatchModel());
 
     // Done
@@ -385,6 +200,133 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
     }
     /** run */
     protected void run() {
+      MatchModel matches = (MatchModel)tMatch.getModel();
+      if (all) {
+        matches.removeAll();
+      } else {
+        matches.remove(tMatch.getSelectedRows());
+      }
     }
   } //ActionMatch
+  
+  /**
+   * Class which models matching entities of two Gedcoms
+   */
+  private class MatchModel extends AbstractTableModel {
+    
+    /** matches we know about */
+    private Vector matches = new Vector();
+    
+    /**
+     * Constructor
+     */
+    protected MatchModel() {
+
+      // Are we ready?
+      for (int i=0;i<candidates.length;i++)
+      if (candidates[i]==null)
+        return;
+
+      // Loop through ents
+      try {
+
+        EntityList[] entlists = candidates[0].getEntities();
+        Vector ms = new Vector();
+
+        for (int i=0;i<entlists.length;i++) {
+
+          for (int e=0;e<entlists[i].getSize();e++) {
+
+            // .. get entity
+            Entity e1 = entlists[i].get(e);
+            Entity e2 = candidates[1].getEntityFromId(e1.getId(),e1.getType());
+
+            // .. and twin
+            if (e2!=null) {
+              ms.addElement(new Match(e1,e2));
+            }
+
+            // .. next entity
+          }
+
+          // .. next list of entities
+        }
+
+        // remember matches
+        matches = ms;
+
+      } catch (Exception e) {
+        System.out.println(e);
+        e.printStackTrace();
+      }
+
+      // Done
+    }
+
+    /**
+     * Removes all matches from this model
+     */
+    protected void removeAll() {
+      int s = matches.size();
+      matches.removeAllElements();
+      super.fireTableRowsDeleted(0,s-1);
+    }
+
+    /**
+     * Removes a selection of matches from this model
+     */
+    protected void remove(int[] selection) {
+      if (selection.length==0) return;
+      for (int i=selection.length-1; i>=0; i--) {
+        matches.removeElementAt(selection[i]);
+      }
+      super.fireTableRowsDeleted(selection[0],selection[selection.length-1]);
+    }
+
+    /**
+     * Returns the match for given row
+     */
+    public Match getMatchAt(int row) {
+      return (Match)matches.elementAt(row);
+    }
+
+    /**
+     * @see javax.swing.table.TableModel#getColumnCount()
+     */
+    public int getColumnCount() {
+      return candidates.length;
+    }
+    /**
+     * @see javax.swing.table.TableModel#getColumnName(int)
+     */
+    public String getColumnName(int columnIndex) {
+      return (candidates[columnIndex]==null?"?":candidates[columnIndex].getName());
+    }
+    /**
+     * @see javax.swing.table.TableModel#getRowCount()
+     */
+    public int getRowCount() {
+      return matches.size();
+    }
+    /**
+     * @see javax.swing.table.TableModel#getValueAt(int, int)
+     */
+    public Object getValueAt(int row, int col) {
+      Match m = (Match)matches.elementAt(row);
+      if (col==0) return m.e1;
+      return m.e2;
+    }
+
+    /**
+     * A Match of two entities
+     */
+    private class Match {
+      Entity e1,e2;
+      Match(Entity e1, Entity e2) {
+        this.e1=e1;this.e2=e2;
+      }
+    } //Match
+
+  }
+  
 }
