@@ -23,7 +23,6 @@ import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
@@ -67,6 +66,76 @@ import javax.swing.event.ChangeListener;
  */
 /*package*/ class BasicEditor extends Editor implements GedcomListener {
 
+  // beans for given entity
+  private final static String[] PATHS = { 
+    "INDI:NAME", 
+    "INDI:SEX", 
+    "INDI:BIRT:DATE", 
+    "INDI:BIRT:PLAC", 
+    "INDI:DEAT:DATE",  
+    "INDI:DEAT:PLAC",
+    "INDI:OCCU",
+    "INDI:OCCU:DATE",
+    "INDI:OCCU:PLAC",
+    "INDI:RESI:DATE",
+    "INDI:RESI:ADDR",
+    "INDI:RESI:ADDR:CITY",
+    "INDI:RESI:ADDR:POST",
+    "INDI:OBJE:TITL",
+    "INDI:OBJE:FILE", 
+    "INDI:NOTE",
+    
+    "FAM:MARR:DATE",    "FAM:MARR:PLAC",
+    "FAM:DIV:DATE",
+    "FAM:DIV:PLAC",
+    "FAM:OBJE:TITL",
+    "FAM:OBJE:FILE", 
+    "FAM:NOTE",
+    
+    "OBJE:TITL",
+    "OBJE:FORM",
+    "OBJE:BLOB",
+    "OBJE:NOTE",
+    
+    "NOTE:NOTE",
+    
+    "REPO:NAME",
+    "REPO:ADDR",
+    "REPO:ADDR:CITY",
+    "REPO:ADDR:POST",
+    "REPO:NOTE",
+    
+    "SOUR:AUTH",
+    "SOUR:TITL",
+    "SOUR:TEXT",
+    "SOUR:OBJE:TITL",
+    "SOUR:OBJE:FILE",
+    "SOUR:NOTE",
+    
+    "SUBM:NAME",
+    "SUBM:ADDR",
+    "SUBM:ADDR:CITY",
+    "SUBM:ADDR:POST",
+    "SUBM:OBJE:TITL",
+    "SUBM:OBJE:FILE",
+    "SUBM:LANG",
+    "SUBM:RFN",
+    "SUBM:RIN"
+  };
+  
+
+  /** colors for tabborders */
+  private final static Color[] COLORS = {
+    Color.GRAY,
+    new Color(192, 48, 48),
+    new Color( 48, 48,128),
+    new Color( 48,128, 48),
+    new Color( 48,128,128),
+    new Color(128, 48,128),
+    new Color( 96, 64, 32),
+    new Color( 32, 64, 96)
+  };
+    
   /** our gedcom */
   private Gedcom gedcom = null;
 
@@ -168,7 +237,7 @@ import javax.swing.event.ChangeListener;
 
     // applicable?
     Entity set = context.getEntity();
-    if (!(set instanceof Indi) || entity == set)
+    if (entity == set)
       return;
 
     // continue
@@ -196,35 +265,20 @@ import javax.swing.event.ChangeListener;
     // setup for new entity
     if (entity!=null) {
 
-      // add beans for given entity
-      String[] paths = { 
-        "INDI:NAME", 
-        "INDI:SEX", 
-        "INDI:BIRT:DATE", 
-        "INDI:BIRT:PLAC", 
-        "INDI:DEAT:DATE",  
-        "INDI:DEAT:PLAC",
-        "INDI:OCCU",
-        "INDI:OCCU:DATE",
-        "INDI:OCCU:PLAC",
-        "INDI:RESI:DATE",
-        "INDI:RESI:ADDR",
-        "INDI:RESI:ADDR:CITY",
-        "INDI:RESI:ADDR:POST",
-        "INDI:OBJE:TITL",
-        "INDI:OBJE:FILE", 
-        "INDI:NOTE"
-      };
-  
       // loop over configured paths
-      for (int i=0; i<paths.length; i++) {
+      for (int i=0; i<PATHS.length; i++) {
   
-        // next path
-        TagPath path = new TagPath(paths[i]);
+        // an applicable path?
+        if (!PATHS[i].startsWith(entity.getTag()+':'))
+          continue;
+
+        TagPath path = new TagPath(PATHS[i]);
+  
+// FIXME gotta do this different to make sure sub-props belong to each other  
   
         // analyze & create if necessary
         MetaProperty meta = MetaProperty.get(path);
-        Property prop = entity.getProperty(path, Property.QUERY_VALID_TRUE|Property.QUERY_NO_LINK);
+        Property prop = entity.getProperty(path, Property.QUERY_NO_LINK|Property.QUERY_NO_BACKTRACK);
         if (prop == null)
           prop = meta.create("");
   
@@ -290,7 +344,7 @@ import javax.swing.event.ChangeListener;
    *  +-----------+
    * </pre>
    */
-  private Container getPanel(final TagPath path) {
+  private JComponent getPanel(final TagPath path) {
     
     // already known?
     JPanel result = (JPanel)path2panels.get(path);
@@ -301,16 +355,30 @@ import javax.swing.event.ChangeListener;
     if (path.length()==1)
       return beanPanel;
 
-    // create panel for it
+    // create border & panel for it
+    MetaProperty meta = MetaProperty.get(path);
+    TabBorder border = new TabBorder(meta.getName(), meta.getImage());
+
     result = new JPanel();
     result.setLayout(new ColumnLayout(100));
-    
-    MetaProperty meta = MetaProperty.get(path);
-    result.setBorder(new TabBorder(meta.getName(), meta.getImage()));
+    result.setBorder(border);
     result.setToolTipText(meta.getName());
 
+    // get parent 
+    JComponent parent = getPanel(new TagPath(path, path.length()-1));
+
+    // check color
+    if (parent.getBorder() instanceof TabBorder) {
+      TabBorder tb = (TabBorder)parent.getBorder();
+      border.setForeground(tb.getForeground());
+      border.setBackground(tb.getBackground());
+    } else {
+      border.setBackground(COLORS[parent.getComponentCount()&7]);
+      border.setForeground(Color.WHITE);
+    }
+    
     // add to parent panel
-    getPanel(new TagPath(path, path.length()-1)).add(result);
+    parent.add(result);
     
     // remember
     path2panels.put(path, result);
@@ -411,6 +479,9 @@ import javax.swing.event.ChangeListener;
 
     private String title;
     private ImageIcon img;
+    private Color 
+      background = Color.GRAY,
+      foreground = Color.WHITE;
     
     /**
      * Constructor
@@ -455,7 +526,35 @@ import javax.swing.event.ChangeListener;
     public boolean isBorderOpaque() {
       return true;
     }
-
+    
+    /**
+     * Accessor - background color
+     */
+    public void setBackground(Color set) {
+      background = set;
+    }
+    
+    /**
+     * Accessor - background color
+     */
+    public Color getBackground() {
+      return background;
+    }
+    
+    /**
+     * Accessor - foreground color
+     */
+    public void setForeground(Color set) {
+      foreground = set;
+    }
+    
+    /**
+     * Accessor - foreground color
+     */
+    public Color getForeground() {
+      return foreground;
+    }
+    
     /**
      * paint it
      */
@@ -469,7 +568,7 @@ import javax.swing.event.ChangeListener;
       FontMetrics fm = g.getFontMetrics();
 
       // fill tab      
-      g.setColor(Color.GRAY);
+      g.setColor(background);
       g.fillRect(1, insets.top, fm.getHeight(), height-insets.top-insets.bottom);
 
       // prepare parms
@@ -485,7 +584,7 @@ import javax.swing.event.ChangeListener;
       // show text
       if (title!=null) {
         if (y + fm.getStringBounds(title, g).getWidth() < bottom) {
-          g.setColor(Color.WHITE);
+          g.setColor(foreground);
           Graphics2D g2d = (Graphics2D)g;
           AffineTransform at = g2d.getTransform();
           g2d.rotate(Math.PI/2);
