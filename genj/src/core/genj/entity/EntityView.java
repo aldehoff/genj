@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.resume;
+package genj.entity;
 
 import genj.app.App;
 import genj.gedcom.Change;
@@ -62,13 +62,13 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
 /**
- * A rendering component showing a resume of the currently
- * selected entity
+ * A rendering component showing the currently selected entity
+ * via html
  */
-public class ResumeView extends JPanel implements ToolBarSupport, CurrentSupport {
+public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport {
 
   /** language resources we use */  
-  private final static Resources resources = new Resources("genj.resume");
+  private final static Resources resources = new Resources("genj.entity");
   
   /** a registry we keep */
   private Registry registry;
@@ -82,7 +82,7 @@ public class ResumeView extends JPanel implements ToolBarSupport, CurrentSupport
   /**
    * Constructor
    */
-  public ResumeView(Gedcom gedcom, Registry reg, Frame frame) {
+  public EntityView(Gedcom gedcom, Registry reg, Frame frame) {
     // save some stuff
     registry = reg;
     // listen to gedcom
@@ -137,7 +137,7 @@ public class ResumeView extends JPanel implements ToolBarSupport, CurrentSupport
   }
     
   /**
-   * Sets the entity to show the resume for
+   * Sets the entity to show
    */
   public void setEntity(Entity e) {
     if (e==null) renderer=NORENDERER;
@@ -188,4 +188,4 @@ public class ResumeView extends JPanel implements ToolBarSupport, CurrentSupport
     }
   } //GedcomConnector
 
-} //ResumeView
+} //EntityView

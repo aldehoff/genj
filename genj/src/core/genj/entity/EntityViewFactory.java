@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.resume;
+package genj.entity;
 
 import java.awt.Component;
 import java.awt.Frame;
@@ -31,15 +31,15 @@ import genj.util.Registry;
 import genj.view.ViewFactory;
 
 /**
- * The factory for the ResumeView
+ * The factory for the EntityView
  */
-public class ResumeViewFactory implements ViewFactory {
+public class EntityViewFactory implements ViewFactory {
 
   /**
    * @see genj.app.ViewFactory#createSettingsComponent(Component)
    */
   public JComponent createSettingsComponent(Component view) {
-    return new ResumeViewSettings((ResumeView)view);
+    return new EntityViewSettings((EntityView)view);
   }
 
   /**
@@ -53,7 +53,7 @@ public class ResumeViewFactory implements ViewFactory {
    * @see genj.app.ViewFactory#createViewComponent(Gedcom, Registry, Frame)
    */
   public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
-    return new ResumeView(gedcom,registry,frame);
+    return new EntityView(gedcom,registry,frame);
   }
 
 }

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.app;
+package genj.view;
 
 import genj.util.ImgIcon;
 
@@ -29,33 +29,30 @@ final public class Images {
   private static Images instance = new Images();
 
   public static ImgIcon
-    imgDelEntity,
-    imgNewFam,
-    imgNewSource,
-    imgGedcom,
-    imgNewIndi,
-    imgNewSubmitter,
-    imgNewRepository,
-    imgUndo,
-    imgNewMedia,
-    imgNewNote,
-    imgHelp;
+    imgTable,
+    imgTimeline,
+    imgTree,
+    imgEdit,
+    imgReport,
+    imgNavigator,
+    imgEntity,
+    imgSettings,
+    imgPrint;
 
   /**
    * Constructor which pre-loads all images
    */
   private Images() {
 
-    imgDelEntity    = new ImgIcon(this,"images/DelEntity.gif");
-    imgNewFam       = new ImgIcon(this,"images/NewFam.gif");
-    imgNewSource    = new ImgIcon(this,"images/NewSource.gif");
-    imgGedcom       = new ImgIcon(this,"images/Gedcom.gif");
-    imgNewIndi      = new ImgIcon(this,"images/NewIndi.gif");
-    imgNewSubmitter = new ImgIcon(this,"images/NewSubmitter.gif");
-    imgNewRepository= new ImgIcon(this,"images/NewRepository.gif");
-    imgUndo         = new ImgIcon(this,"images/Undo.gif");
-    imgNewMedia     = new ImgIcon(this,"images/NewMedia.gif");
-    imgNewNote      = new ImgIcon(this,"images/NewNote.gif");
-    imgHelp         = new ImgIcon(this,"images/Help.gif");
+    imgTable     = new ImgIcon(this,"images/Table.gif");
+    imgTimeline  = new ImgIcon(this,"images/Timeline.gif");
+    imgTree      = new ImgIcon(this,"images/Tree.gif");
+    imgEdit      = new ImgIcon(this,"images/Edit.gif");
+    imgReport    = new ImgIcon(this,"images/Report.gif");
+    imgNavigator = new ImgIcon(this,"images/Navigator.gif");
+    imgEntity    = new ImgIcon(this,"images/Entity.gif");
+    imgSettings     = new ImgIcon(this,"images/Settings.gif");
+    imgPrint        = new ImgIcon(this,"images/Print.gif");
   }
-}
+  
+} //Images

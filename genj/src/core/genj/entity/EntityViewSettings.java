@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.resume;
+package genj.entity;
 
 import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
@@ -37,9 +37,9 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 
 /**
- * The settings editor for the ResumeView
+ * The settings editor for the EntityView
  */
-public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
+public class EntityViewSettings extends JPanel implements ApplyResetSupport {
   
   /** a drop-down for available entities */
   private JComboBox dropEntities = new JComboBox();
@@ -47,16 +47,16 @@ public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
   /** a text-area for html */
   private JTextArea textHtml = new JTextArea();
   
-  /** the resume */
-  private ResumeView resumeView; 
+  /** the entity view */
+  private EntityView entityView; 
   
   /**
    * Constructor
    */
-  public ResumeViewSettings(ResumeView view) {
+  public EntityViewSettings(EntityView view) {
     
     // keep the view
-    resumeView = view;
+    entityView = view;
     
     // setup text area
     textHtml.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -99,14 +99,14 @@ public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
    * @see genj.app.ViewSettingsWidget#apply()
    */
   public void apply() {
-    resumeView.setHtml(unwrap(dropEntities.getSelectedItem()), textHtml.getText());
+    entityView.setHtml(unwrap(dropEntities.getSelectedItem()), textHtml.getText());
   }
 
   /**
    * @see genj.app.ViewSettingsWidget#reset()
    */
   public void reset() {
-    textHtml.setText(resumeView.getHtml(unwrap(dropEntities.getSelectedItem())));
+    textHtml.setText(entityView.getHtml(unwrap(dropEntities.getSelectedItem())));
   }
 
   /**
@@ -119,4 +119,4 @@ public class ResumeViewSettings extends JPanel implements ApplyResetSupport {
     }
   } //ActionSelect
 
-} //ResumeViewSettings
+} //EntityViewSettings

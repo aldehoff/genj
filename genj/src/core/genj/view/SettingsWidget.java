@@ -19,7 +19,6 @@
  */
 package genj.view;
 
-import genj.app.Images;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;

@@ -19,7 +19,6 @@
  */
 package genj.view;
 
-import genj.app.Images;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;

@@ -20,7 +20,6 @@
 package genj.view;
 
 import genj.app.App;
-import genj.app.Images;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
@@ -70,13 +69,13 @@ public class ViewManager {
 
   /** descriptors of views */
   static final private Descriptor[] descriptors = new Descriptor[]{
-    new Descriptor("genj.table.TableViewFactory"      ,"table"    ,Images.imgNewTable    , new Dimension(480,320)),
-    new Descriptor("genj.tree.TreeViewFactory"        ,"tree"     ,Images.imgNewTree     , new Dimension(480,480)),
-    new Descriptor("genj.timeline.TimelineViewFactory","timeline" ,Images.imgNewTimeline , new Dimension(480,256)),
-    new Descriptor("genj.edit.EditViewFactory"        ,"edit"     ,Images.imgNewEdit     , new Dimension(256,480)),
-    new Descriptor("genj.report.ReportViewFactory"    ,"report"   ,Images.imgNewReport   , new Dimension(480,320)),
-    new Descriptor("genj.nav.NavigatorViewFactory"    ,"navigator",Images.imgNewNavigator, new Dimension(140,200)),
-    new Descriptor("genj.resume.ResumeViewFactory"    ,"resume"   ,Images.imgNewResume   , new Dimension(320,320))
+    new Descriptor("genj.table.TableViewFactory"      ,"table"    ,Images.imgTable    , new Dimension(480,320)),
+    new Descriptor("genj.tree.TreeViewFactory"        ,"tree"     ,Images.imgTree     , new Dimension(480,480)),
+    new Descriptor("genj.timeline.TimelineViewFactory","timeline" ,Images.imgTimeline , new Dimension(480,256)),
+    new Descriptor("genj.edit.EditViewFactory"        ,"edit"     ,Images.imgEdit     , new Dimension(256,480)),
+    new Descriptor("genj.report.ReportViewFactory"    ,"report"   ,Images.imgReport   , new Dimension(480,320)),
+    new Descriptor("genj.nav.NavigatorViewFactory"    ,"navigator",Images.imgNavigator, new Dimension(140,200)),
+    new Descriptor("genj.entity.EntityViewFactory"    ,"entity"   ,Images.imgEntity   , new Dimension(320,320))
   };
   
   /** open views */
