@@ -7,8 +7,8 @@
  */
 import genj.chart.Chart;
 import genj.chart.IndexedSeries;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
@@ -16,6 +16,7 @@ import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 import javax.swing.JTabbedPane;
@@ -66,22 +67,21 @@ public class ReportEventsByMonths extends Report {
     // cast to what we expect
     Gedcom gedcom = (Gedcom)context;
     
-    // prepare calendar
-    Calendar c = CALENDARS[calendar];
-    String[] months = CALENDARS[calendar].getMonths(true);
-    
     // look for events we consider
     IndexedSeries[] series = {
-      new IndexedSeries("BIRT", months.length),  
-      new IndexedSeries("DEAT", months.length)
+      analyze(gedcom.getEntities("INDI"), "BIRT"),  
+      analyze(gedcom.getEntities("INDI"), "DEAT"),
+      analyze(gedcom.getEntities("FAM" ), "MARR")
     };
     
-    analyze(series, c, gedcom);
+    // show it in a chart per series
+    String[] categories = CALENDARS[calendar].getMonths(true);
     
-    // show it
     JTabbedPane charts = new JTabbedPane();
     for (int i=0;i<series.length;i++) {
-      charts.addTab(Gedcom.getName(series[i].getName()), new Chart(null, series[i], months, false));
+      String label = Gedcom.getName(series[i].getName());
+      Chart chart = new Chart(null, series[i], categories, false);
+      charts.addTab(label, chart);
     }
 
     showComponentToUser(charts);
@@ -89,38 +89,37 @@ public class ReportEventsByMonths extends Report {
     // done
   }
   
-  private void analyze(IndexedSeries[] series, Calendar c, Gedcom gedcom) {
+  private IndexedSeries analyze(Collection entities, String tag) {
     
-    // loop over individuals
-    Iterator indis = gedcom.getEntities(Gedcom.INDI).iterator();
-    while (indis.hasNext()) {
+    int months = CALENDARS[calendar].getMonths(true).length;
+    
+    IndexedSeries series = new IndexedSeries(tag, months);
+    
+    // loop over entities
+    Iterator it = entities.iterator();
+    while (it.hasNext()) {
       
-      Indi indi = (Indi)indis.next();
-      
-      // loop over series
-      for (int i=0;i<series.length;i++) {
-        analyze(indi, series[i], c);
+      Entity e = (Entity)it.next();
+
+      // check it out
+      Property event = e.getProperty(series.getName());
+      if (!(event instanceof PropertyEvent))
+        continue;
+      PropertyDate date = ((PropertyEvent)event).getDate();
+      if (date==null) 
+        continue;
+
+      // inc appropriate month
+      try {
+        series.inc(date.getStart().getPointInTime(CALENDARS[calendar]).getMonth());
+      } catch (Throwable t) {
       }
       
+      // next
     }
     
-  }
-  
-  private void analyze(Indi indi, IndexedSeries series, Calendar c) {
-    
-    Property event = indi.getProperty(series.getName());
-    if (!(event instanceof PropertyEvent))
-      return;
-    PropertyDate date = ((PropertyEvent)event).getDate();
-    if (date==null) 
-      return;
-
-    // inc appropriate month
-    try {
-      series.inc(date.getStart().getPointInTime(c).getMonth());
-    } catch (Throwable t) {
-    }
     // done
+    return series;
   }
   
 } //ReportBirthMonths
