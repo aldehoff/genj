@@ -30,10 +30,10 @@ Future
     (works nicely when the user has created an empty tree)
   O View-Menu in ControlCenter to open up views
   O Use colors to distinguish different events in TimelineView
-  O Add Look&Feel chooser (with Skin L&F support)
 
 1.9 - Aug xx 2002
 
+  N User can choose Look&Feel (with Skin/Theme support) through AboutDialog (download genj_lnf-x.y.zip to enable)
   N A new PropertySex is now unset when created - the user has to choose male/female eventually
   N Special entities REPOSITORY, SOURCE, SUBMITTER are now supported internally
   N NavigatorView

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.acl.LastOwnerException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -54,6 +55,9 @@ public class LnFBridge {
   /** Look&Feels */
   private LnF[] lnfs = new LnF[0];
   
+  /** last */
+  private static LnF lastLnF;
+  
   /**
    * Accessor - singleton
    */
@@ -66,114 +70,6 @@ public class LnFBridge {
    * Constructor
    */
   private LnFBridge() {
-    readDescriptor();
-  }
-
-  /**
-   * Sets a certain LnF by name
-   */
-  public boolean setLnF(String lnfName, String themeName, Vector rootComponents) {
-    // search for lnf
-    LnF lnf=null;
-    for (int i=0; i<lnfs.length; i++) {
-      if (lnfs[i].getName().equals(lnfName)) {
-        lnf=lnfs[i];
-        break;
-      }
-    }
-    if (lnf==null) return false;
-    
-    // search for theme
-    LnF.Theme theme=null;
-    LnF.Theme[] themes = lnf.getThemes();
-    for (int i=0; i<themes.length; i++) {
-      if (themes[i].getPack().equals(themeName)) {
-        theme=themes[i];
-        break;
-      }
-    }
-    if (lnf==null) return false;
-    
-    // set it
-    return setLnF(lnf,theme,rootComponents);
-  }
-  
-  /**
-   * Sets a certain LnF
-   */
-  public boolean setLnF(LnF lnf, LnF.Theme theme, final Vector rootComponents) {
-    
-    // try to load LnF
-    String type = lnf.getType();
-    String prefix = "[Debug]Look and feel #"+lnf+" of type "+type;
-    
-    // Apply theme(?)
-    if (lnf.getThemeKey()!=null) {
-      if (theme==null) theme=lnf.getThemes()[0];
-      try {
-        System.setProperty(lnf.getThemeKey(), getLnFDir() + theme.getPack());
-      } catch (ArrayIndexOutOfBoundsException aioobe) {
-      }
-    }
-
-    // Load and apply L&F
-    try {
-      
-      ClassLoader cl = lnf.getCL();
-      UIManager.getLookAndFeelDefaults().put("ClassLoader",cl);
-      UIManager.getDefaults().put("ClassLoader",cl);
-      UIManager.setLookAndFeel((LookAndFeel)cl.loadClass(type).newInstance());
-      
-    } catch (ClassNotFoundException cnfe) {
-      System.out.println(prefix+" is not accessible (ClassNotFoundException)");
-      return false;
-    } catch (ClassCastException cce) {
-      System.out.println(prefix+" is not a valid LookAndFeel (ClassCastException)");
-      return false;
-    } catch (MalformedURLException mue) {
-      System.out.println(prefix+" doesn't point to a valid archive (MalformedURLException)");
-      return false;
-    } catch (UnsupportedLookAndFeelException e) {
-      System.out.println(prefix+" is not supported on this platform (UnsupportedLookAndFeelException)");
-      return false;
-    } catch (Throwable t) {
-      System.out.println(prefix+" couldn't be set ("+t.getClass()+")");
-      return false;
-    }
-
-    // reflect it    
-    SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
-        Enumeration e = rootComponents.elements();
-        while (e.hasMoreElements()) SwingUtilities.updateComponentTreeUI((Component)e.nextElement());
-      }
-    });
-    
-    // done
-    return true;
-  }
-  
-  /**
-   * LnFs
-   */
-  public LnF[] getLnFs() {
-    return lnfs;
-  }
-  
-  /**
-   * Directory of LnF
-   */
-  private String getLnFDir() {
-    String dir = System.getProperty("genj.lnf.dir");
-    if (dir==null) dir = LNF_DIR;
-    return dir;
-  }
-  
-  /** 
-   * Read lnf descriptor
-   */
-  private void readDescriptor() {
-    
     try {
       
       // get the number of configured lnfs
@@ -195,14 +91,52 @@ public class LnFBridge {
   }
 
   /**
+   * Resolves a LnF
+   */
+  public LnF getLnF(String lnfName) {
+    
+    // search for lnf
+    for (int i=0; i<lnfs.length; i++) {
+      if (lnfs[i].getName().equals(lnfName)) {
+        return lnfs[i];
+      }
+    }
+    return null;
+  }
+  
+  /**
+   * LnFs
+   */
+  public LnF[] getLnFs() {
+    return lnfs;
+  }
+  
+  /**
+   * Directory of LnF
+   */
+  private static String getLnFDir() {
+    String dir = System.getProperty("genj.lnf.dir");
+    if (dir==null) dir = LNF_DIR;
+    return dir;
+  }
+  
+  /** 
+   * last LnF
+   */
+  public LnF getLastLnF() {
+    return lastLnF;
+  }
+  
+  /**
    * A LnF
    */
-  public class LnF {
+  public static class LnF {
     
     /** members */
-    private String name,type,archive,themekey;
+    private String name,type,archive;
     private Theme[] themes;
     private ClassLoader cl;
+    private Theme lastTheme;
     
     /**
      * Constructor
@@ -212,7 +146,6 @@ public class LnFBridge {
       name = registry.get("name","?");
       type = registry.get("type","?");
       archive = registry.get("jar",(String)null);
-      themekey = registry.get("themes.key", (String)null);
       
       // themes
       String[] ts = registry.get("themes",new String[0]);
@@ -227,7 +160,7 @@ public class LnFBridge {
     /**
      * Classloader
      */
-    public ClassLoader getCL() throws MalformedURLException {
+    private ClassLoader getCL() throws MalformedURLException {
       if (cl!=null) return cl;
       if (archive==null) {
         cl = getClass().getClassLoader();
@@ -238,6 +171,13 @@ public class LnFBridge {
       return cl;
     }
     
+    /** 
+     * last Theme
+     */
+    public Theme getLastTheme() {
+      return lastTheme;
+    }
+  
     /**
      * String
      */
@@ -250,13 +190,6 @@ public class LnFBridge {
      */
     public Theme[] getThemes() {
       return themes;
-    }
-    
-    /**
-     * ThemeKey
-     */
-    public String getThemeKey() {
-      return themekey;
     }
     
     /**
@@ -280,38 +213,124 @@ public class LnFBridge {
       return archive;
     }
     
+    /**
+     * Resolves a Theme by name
+     */
+    public Theme getTheme(String theme) {
+      
+      // search for theme
+      for (int i=0; i<themes.length; i++) {
+        if (themes[i].getName().equals(theme)) {
+          return themes[i];
+        }
+      }
+      return null;
+    }
+  
+    /**
+     * Applies the LnF (with given Theme)
+     */
+    public boolean apply(Theme theme, final Vector rootComponents) {
+      
+      // try to load LnF
+      String prefix = "[Debug]Look and feel #"+this+" of type "+type;
+      
+      // Load and apply L&F
+      try {
+        
+        ClassLoader cl = getCL();
+        UIManager.getLookAndFeelDefaults().put("ClassLoader",cl);
+        UIManager.getDefaults().put("ClassLoader",cl);
+        LookAndFeel lookAndFeel = (LookAndFeel)cl.loadClass(type).newInstance();
+        if (theme!=null) theme.apply(lookAndFeel);
+        UIManager.setLookAndFeel(lookAndFeel);
+        
+      } catch (ClassNotFoundException cnfe) {
+        System.out.println(prefix+" is not accessible (ClassNotFoundException)");
+        return false;
+      } catch (ClassCastException cce) {
+        System.out.println(prefix+" is not a valid LookAndFeel (ClassCastException)");
+        return false;
+      } catch (MalformedURLException mue) {
+        System.out.println(prefix+" doesn't point to a valid archive (MalformedURLException)");
+        return false;
+      } catch (UnsupportedLookAndFeelException e) {
+        System.out.println(prefix+" is not supported on this platform (UnsupportedLookAndFeelException)");
+        return false;
+      } catch (Throwable t) {
+        System.out.println(prefix+" couldn't be set ("+t.getClass()+")");
+        return false;
+      }
+      
+      // reflect it    
+      SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          Enumeration e = rootComponents.elements();
+          while (e.hasMoreElements()) SwingUtilities.updateComponentTreeUI((Component)e.nextElement());
+        }
+      });
+      
+      // remember
+      lastLnF = this;
+      lastTheme = theme;
+      
+      // done
+      return true;
+    }
+
+  } // LnF
+    
+  /**
+   * A Theme
+   */
+  public static class Theme {
+    
+    /** the name of the theme */
+    private String name;
+    
+    /** 
+     * Constructor
+     */
+    protected Theme(String setName) {
+      name=setName;
+    }
     
     /**
-     * A Theme
+     * String
      */
-    public class Theme {
-      
-      /** the archive of the theme */
-      private String pack;
-      
-      /** 
-       * Constructor
-       */
-      protected Theme(String setPack) {
-        pack=setPack;
-      }
-      
-      /**
-       * String
-       */
-      public String toString() {
-        return pack;
-      }
-      
-      /**
-       * Pack
-       */
-      public String getPack() {
-        return pack;
-      }
-      
-    } // Theme
+    public String toString() {
+      return getName();
+    }
     
-  } // LnF
+    /**
+     * Name
+     */
+    public String getName() {
+      return name;
+    }
+    
+    /**
+     * Returns the archive
+     */
+    public String getArchive() {
+      return new File(getLnFDir(), getName()).getAbsolutePath();
+    }
+
+    /**
+     * Applies a theme 
+     */
+    protected void apply(LookAndFeel lnf) throws Exception {
+      
+      // This is a hack for www.lfprod.com's SkinLookAndFeel ONLY right now
+      UIManager.put(
+        "SkinLookAndFeel.Skin", 
+        lnf.getClass().getMethod("loadThemePack", new Class[]{String.class}).invoke(lnf,new Object[]{getArchive()})
+      );
+      
+      // Done
+    }
   
+    
+  } // Theme
+    
 }

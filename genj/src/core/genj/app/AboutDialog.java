@@ -20,7 +20,7 @@
  *
  * AboutDialog class
  * This class creates the content of AboutDialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.7 2002-08-10 00:47:49 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.8 2002-08-12 17:55:12 nmeier Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -273,7 +273,7 @@ public class AboutDialog extends JPanel{
       if (comboLnfs==null) return;
       LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
       if (lnf==null) return;
-      App.getInstance().setLnF(lnf,(LnFBridge.LnF.Theme)comboThemes.getSelectedItem());
+      App.getInstance().setLnF(lnf,(LnFBridge.Theme)comboThemes.getSelectedItem());
     }
     
     /**
@@ -292,16 +292,19 @@ public class AboutDialog extends JPanel{
       comboLnfs.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
-          LnFBridge.LnF.Theme[] themes = lnf.getThemes();
+          LnFBridge.Theme[] themes = lnf.getThemes();
           if (themes.length==0) {
             comboThemes.setModel(new DefaultComboBoxModel());
             comboThemes.disable();
           } else {
             comboThemes.setModel(new DefaultComboBoxModel(themes));
+            comboThemes.setSelectedItem(lnf.getLastTheme());
             comboThemes.enable();
           }
         }
       });
+
+      comboLnfs.setSelectedItem(LnFBridge.getInstance().getLastLnF());
       
       // layout
       JPanel pResult = new JPanel();

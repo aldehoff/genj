@@ -77,9 +77,10 @@ public class App {
     }
     
     // Set the Look&Feel
-    String lnf = registry.get("lnf", (String)null);
-    String theme = registry.get("lnf.theme", (String)null);
-    LnFBridge.getInstance().setLnF(lnf, theme, new Vector());
+    LnFBridge.LnF lnf = LnFBridge.getInstance().getLnF(registry.get("lnf", (String)null));
+    if (lnf!=null) {
+      lnf.apply(lnf.getTheme(registry.get("lnf.theme", (String)null)), new Vector());
+    }
 
     // Disclaimer
     if (registry.get("disclaimer",0)==0) {
@@ -209,7 +210,7 @@ public class App {
   /**
    * Sets the LookAndFeel
    */
-  public void setLnF(LnFBridge.LnF lnf, LnFBridge.LnF.Theme theme) {
+  public void setLnF(LnFBridge.LnF lnf, LnFBridge.Theme theme) {
     
     // collect frames we know about
     Vector uis = new Vector();
@@ -217,9 +218,9 @@ public class App {
     while (frames.hasMoreElements()) uis.add(frames.nextElement());
     
     // set it!
-    if (LnFBridge.getInstance().setLnF(lnf, theme, uis)) {
+    if (lnf.apply(theme, uis)) {
       registry.put("lnf", lnf.getName());
-      if (theme!=null) registry.put("lnf.theme", theme.getPack());
+      if (theme!=null) registry.put("lnf.theme", theme.getName());
     }
     
     // remember
