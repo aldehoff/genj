@@ -27,7 +27,6 @@ import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
 import genj.print.PrintManager;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -826,6 +825,8 @@ public class ControlCenter extends JPanel {
     private String progress;
     /** exception we might encounter */
     private GedcomIOException ioex = null;
+    /** temporary and target file */
+    private File temp, result;
     /** 
      * Constructor
      */
@@ -852,13 +853,12 @@ public class ControlCenter extends JPanel {
       if (gedcom == null)
         return false;
 
-      // Dialog ?
+      // Do we need a file-dialog or not?
       Origin origin = gedcom.getOrigin();
-      File file;
       String encoding = null;
       String password = gedcom.getPassword();
       
-      if ((ask) || (origin == null) || (!origin.isFile())) {
+      if (ask || origin==null || !origin.isFile()) {
 
         // .. choose file
         FileChooser chooser = new GedcomFileChooser(
@@ -876,7 +876,7 @@ public class ControlCenter extends JPanel {
         }
 
         // .. take choosen one & filters
-        file = chooser.getSelectedFile();
+        result = chooser.getSelectedFile();
         filters = options.getFilters();
         if (gedcom.hasPassword())
           password = options.getPassword();
@@ -885,53 +885,54 @@ public class ControlCenter extends JPanel {
         // .. create new origin
         try {
           newOrigin =
-            Origin.create(new URL("file", "", file.getAbsolutePath()));
+            Origin.create(new URL("file", "", result.getAbsolutePath()));
         } catch (Throwable t) {
         }
 
       } else {
 
         // .. form File from URL
-        file = origin.getFile();
+        result = origin.getFile();
 
       }
 
-      // .. exists already?
-      if (file.exists()) {
+      // Need confirmation if File exists?
+      if (result.exists()&&ask) {
 
-        // aks user
-        if (ask) {
-          int rc = windowManager.openDialog(
-            null,
-            resources.getString("cc.save.title"),
-            WindowManager.IMG_WARNING,
-            resources.getString("cc.open.file_exists", file.getName()),
-            WindowManager.OPTIONS_YES_NO,
-            ControlCenter.this
-          );
-          if (rc!=0) {
-            newOrigin = null;
-            //20030221 no need to go for newOrigin in postExecute()
-            return false;
-          }
+        int rc = windowManager.openDialog(
+          null,
+          resources.getString("cc.save.title"),
+          WindowManager.IMG_WARNING,
+          resources.getString("cc.open.file_exists", result.getName()),
+          WindowManager.OPTIONS_YES_NO,
+          ControlCenter.this
+        );
+        if (rc!=0) {
+          newOrigin = null;
+          //20030221 no need to go for newOrigin in postExecute()
+          return false;
         }
         
-        // create backup
-        backup(file);
       }
-
-      // .. open writer on file
+      
+      // .. open io 
       try {
+        
+        // .. create a temporary output
+        temp = File.createTempFile("genj", ".ged", result.getParentFile());
+
+        // .. create writer
         gedWriter =
-          new GedcomWriter(gedcom, file.getName(), new FileOutputStream(file));
+          new GedcomWriter(gedcom, result.getName(), new FileOutputStream(temp));
         gedWriter.setFilters(filters);
         gedWriter.setPassword(password);
+        
       } catch (IOException ex) {
         windowManager.openDialog(
           null, 
           gedcom.getName(), 
           WindowManager.IMG_ERROR, 
-          resources.getString("cc.save.open_error", file.getAbsolutePath()),
+          resources.getString("cc.save.open_error", result.getAbsolutePath()),
           WindowManager.OPTIONS_OK,
           ControlCenter.this
         );
@@ -941,7 +942,7 @@ public class ControlCenter extends JPanel {
       // .. open progress dialog
       progress = windowManager.openNonModalDialog(
         null,
-        resources.getString("cc.save.saving", file.getName()),
+        resources.getString("cc.save.saving", result.getName()),
         WindowManager.IMG_INFORMATION,
         new ProgressWidget(gedWriter, getThread()),
         null,
@@ -959,12 +960,28 @@ public class ControlCenter extends JPanel {
      */
     protected void execute() {
 
-      // .. do the write
+      // catch io problems
       try {
+
+        // .. do the write
         gedWriter.writeGedcom();
-        if (newOrigin == null) {
-          gedcom.setUnchanged();
+
+        // .. make backup
+        if (result.exists()) {
+          File bak = new File(result.getAbsolutePath()+"~");
+          if (bak.exists()) 
+            bak.delete();
+          result.renameTo(bak);
         }
+        
+        // .. copy from temp to file
+        temp.renameTo(result);
+        temp.delete();
+       
+        // .. note changes are saved now
+        if (newOrigin == null) 
+          gedcom.setUnchanged();
+
       } catch (GedcomIOException ex) {
         ioex = ex;
       }
@@ -980,7 +997,7 @@ public class ControlCenter extends JPanel {
 
       // close progress
       windowManager.close(progress);
-    
+      
       // problem encountered?      
       if (ioex!=null) {
         windowManager.openDialog(
@@ -1002,24 +1019,6 @@ public class ControlCenter extends JPanel {
       // .. done
     }
     
-    /**
-     * Backup a file
-     */
-    private void backup(File file) {
-      
-      // calc bak
-      File bak = new File(file.getAbsolutePath()+"~");
-      
-      // remove if there
-      if (bak.exists()) bak.delete();
-      
-      // rename file
-      if (!file.renameTo(bak))
-        Debug.log(Debug.WARNING, this, "Couldn't backup "+file);
-      
-      // done
-    }
-
   } //ActionSave
 
   /**
