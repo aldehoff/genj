@@ -37,9 +37,11 @@ import java.util.Date;
  * @author nmeier
  */
 public class PropertyChange extends Property implements MultiLineSupport {
+
+  //tried to parse the decimal-fraction of a second, too, but SS is milliseconds
+  //new SimpleDateFormat("HH:mm:ss.SS"), 
   
   private final static SimpleDateFormat[] FORMATS = { 
-    new SimpleDateFormat("HH:mm:ss.SS"),
     new SimpleDateFormat("HH:mm:ss"),
     new SimpleDateFormat("HH:mm")
   };
@@ -106,19 +108,10 @@ public class PropertyChange extends Property implements MultiLineSupport {
       change = (PropertyChange)MetaProperty.get(entity, CHAN).create("");
       entity.addProperty(change);
     }
-    change.update();
     
-    // done
-  }
-  
-  /**
-   * Update change date/time
-   */
-  private void update() {
-
     // update values
-    pit = PointInTime.getNow();
-    time = System.currentTimeMillis();
+    change.pit = PointInTime.getNow();
+    change.time = System.currentTimeMillis();
 
     // done
   }
