@@ -28,7 +28,7 @@ import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.window.DefaultWindowManager;
+import genj.window.LightweightWindowManager;
 import genj.window.WindowManager;
 
 import java.io.File;
@@ -109,9 +109,9 @@ public class App {
     }
 
     // create window manager
-    winMgr = new DefaultWindowManager(new Registry(registry, "window"));
+//    winMgr = new DefaultWindowManager(new Registry(registry, "window"));
 // testing plugability of other window managers (will use for applet, too)    
-//    winMgr = new LightweightWindowManager(new Registry(registry, "window"));
+    winMgr = new LightweightWindowManager(new Registry(registry, "window"));
     
     // Set the Look&Feel
     LnFBridge.LnF lnf = LnFBridge.getInstance().getLnF(registry.get("lnf", (String)null));

@@ -19,10 +19,11 @@
  */
 package genj.window;
 
-import genj.util.AreaInScreen;
 import genj.util.Registry;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,8 +34,10 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
+import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuBar;
+import javax.swing.JScrollPane;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 
@@ -51,7 +54,7 @@ public class LightweightWindowManager extends AbstractWindowManager {
   
   /** one desktop */
   private JDesktopPane desktop;
-
+  
   /** 
    * Constructor
    */
@@ -63,17 +66,24 @@ public class LightweightWindowManager extends AbstractWindowManager {
   /**
    * Accessor to desktop
    */
-  private JDesktopPane getDesktop() {
+  private JDesktopPane getDesktop(String title, ImageIcon img) {
     // already there?
     if (desktop!=null) 
       return desktop;
     // create one
-    desktop = new JDesktopPane();
-    // and show
-    Runnable onClosing = new Runnable() {
-      public void run() {}
+    desktop = new JDesktopPane() {
+      /** max window */
+      public Dimension getPreferredSize() {
+        return Toolkit.getDefaultToolkit().getScreenSize();
+      }
     };
-    new DefaultWindowManager(registry).openFrame("desktop", "Desktop", null, desktop, null, onClosing, null);
+    // and show
+    JFrame frame = new JFrame(title);
+    frame.setIconImage(img.getImage());
+    frame.getContentPane().add(new JScrollPane(desktop));
+    frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    frame.pack();
+    frame.show();
     // done
     return desktop; 
   }
@@ -94,7 +104,8 @@ public class LightweightWindowManager extends AbstractWindowManager {
     close(key);
 
     // Create a frame
-    final JInternalFrame frame = new JInternalFrame(title, true, true, true, false);
+    final JInternalFrame frame = new JInternalFrame(title, true, true, true, true) {
+    };
 
     // setup looks
     if (image!=null) frame.setFrameIcon(image);
@@ -127,16 +138,19 @@ public class LightweightWindowManager extends AbstractWindowManager {
     });
 
     // place
+    JDesktopPane desktop = getDesktop(title, image);
+    Dimension screen = desktop.getSize();
+    
     Rectangle box = registry.get(key,(Rectangle)null);
     if (box==null) { 
       frame.pack();
-      frame.setBounds(new AreaInScreen(frame.getBounds()));
-    } else {
-      frame.setBounds(new AreaInScreen(box));
+      Dimension dim = frame.getSize();
+      box = new Rectangle(screen.width/2-dim.width/2, screen.height/2-dim.height/2,dim.width,dim.height);
     }
+    frame.setBounds(clip(box, screen));
 
     // show
-    getDesktop().add(frame);
+    desktop.add(frame);
     
     frame.show();
     

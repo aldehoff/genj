@@ -20,10 +20,11 @@
 package genj.window;
 
 import genj.util.ActionDelegate;
-import genj.util.AreaInScreen;
 import genj.util.Registry;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -45,6 +46,9 @@ import javax.swing.UIManager;
  * The default 'heavyweight' window manager
  */
 public class DefaultWindowManager extends AbstractWindowManager {
+
+  /** screen we're dealing with */
+  private Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
   
   /** registry */
   private Registry registry;
@@ -110,10 +114,10 @@ public class DefaultWindowManager extends AbstractWindowManager {
     Rectangle box = registry.get(key,(Rectangle)null);
     if (box==null) {
       frame.pack();
-      frame.setBounds(new AreaInScreen(frame.getSize()));
-    } else {
-      frame.setBounds(new AreaInScreen(box));
+      Dimension dim = frame.getSize();
+      box = new Rectangle(screen.width/2-dim.width/2, screen.height/2-dim.height/2,dim.width,dim.height);
     }
+    frame.setBounds(clip(box,screen));
 
     // show
     frame.show();
@@ -181,15 +185,14 @@ public class DefaultWindowManager extends AbstractWindowManager {
     });
 
     // place
-    Rectangle box = key!=null ? registry.get(key,(Rectangle)null) : null;
+    Rectangle box = registry.get(key,(Rectangle)null);
     if (box==null) {
       dlg.pack();
       dlg.setLocationRelativeTo(owner);
-      dlg.setBounds(new AreaInScreen(dlg.getBounds()));
-    } else {
-      dlg.setBounds(new AreaInScreen(box));
+      box = dlg.getBounds();
     }
-
+    dlg.setBounds(clip(box,screen));
+    
     // show
     dlg.show();
     
