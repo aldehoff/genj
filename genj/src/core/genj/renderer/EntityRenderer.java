@@ -347,8 +347,8 @@ public class EntityRenderer {
     /** the tag path used */
     private TagPath path = null;
     
-    /** maximum width/height */
-    private int maxw = 0, maxh = 0;
+    /** maximum horizontal/vertical */
+    private int maxV = 0, maxH = 0;
      
     /** the cached property we're displaying */
     private Object property = null;
@@ -397,8 +397,8 @@ public class EntityRenderer {
       }
       
       // check max size
-      maxw = getInt(atts, "maxw", 0, 100, 75);
-      maxh = getInt(atts, "maxh", 0, 100, 75);
+      maxH = getInt(atts, "maxh", 0, 100, 75);
+      maxV = getInt(atts, "maxv", 0, 100, 75);
       
       // done
     }
@@ -501,11 +501,11 @@ public class EntityRenderer {
       if (preferredSpan==null) {
         preferredSpan = proxy.getSize(getFontMetrics(), p, preference);
         preferredSpan.width = Math.min(
-          (int)(root.width  * maxw / 100),
+          (int)(root.width  * maxH / 100),
           preferredSpan.width
         );  
         preferredSpan.height = Math.min(
-          (int)(root.height * maxh / 100),
+          (int)(root.height * maxV / 100),
           preferredSpan.height
         );  
       }
