@@ -37,7 +37,9 @@ Future
   O Components in EditView receive correct focus for all proxies
   O Switch between localized names for month abbrv. and long (e.g. Jan and January)
   O Following links in EditView should also change focus in TreeView and TableView
-
+  O ResourceView showing all externally referred resources
+  O TagPath with conditions (e.g. INDI:FILE@if@TYPE=himself)
+  
 2.0 - Oct xx 2002
 
   O TreeView component replaced
