@@ -36,6 +36,9 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   
   /** our own editor */
   private Editor editor = new Editor();
+  
+  /** our own change flag */
+  private boolean hasChanged = false;
 
   /**
    * Constructor
@@ -69,6 +72,9 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     // try to set selection - not in values is ignored
     setSelectedItem(selection);
     
+    // we're not changed at this point
+    hasChanged = false;
+    
     // alignment fix
     setAlignmentX(LEFT_ALIGNMENT);
     
@@ -92,14 +98,15 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * Changed?
    */
   public boolean hasChanged() {
-    // check us & editor
-    return editor.hasChanged();
+    return isEditable() ? editor.hasChanged() : hasChanged;
   }
 
   /**
    * @see javax.swing.JComboBox#setSelectedItem(java.lang.Object)
    */
   public void setSelectedItem(Object anObject) {
+    // we're changed
+    hasChanged = true;
     // 20030510 mark change in editor
     editor.setChanged(true);
     // continue
