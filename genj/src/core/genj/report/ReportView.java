@@ -324,9 +324,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
       if (report.accepts(context)==null) {
         manager.getWindowManager().openDialog(
           null,
-          null,
+          report.getName(),
           WindowManager.IMG_ERROR,
-          resources.getString("report.noaccept", new String[]{report.getName(), context.getClass().getName() } ),
+          resources.getString("report.noaccept"),
           WindowManager.OPTIONS_OK,
           ReportView.this
         );
