@@ -69,10 +69,10 @@ public class ReportRelatives extends Report {
     new Relative( "aunt.paternal", "father+sister |father+brother+wife"   ),
     new Relative( "aunt.maternal", "mother+sister |mother+brother+wife"   ),
 
-    new Relative("brorson"       , "brother+son"),
-    new Relative("brorsdotter"   , "brother+daughter"),
-    new Relative("systerson"     , "sister+son"),
-    new Relative("systerdaughter", "sister+daughter"),
+    new Relative("nephew.fraternal", "brother+son"),
+    new Relative("niece.fraternal" , "brother+daughter"),
+    new Relative("nephew.sororal"  , "sister+son"),
+    new Relative("niece.sororal"   , "sister+daughter"),
 
     new Relative("cousin.paternal" , "uncle.paternal+son"),
     new Relative("cousin.maternal" , "uncle.maternal+son"),
