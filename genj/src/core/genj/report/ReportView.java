@@ -35,6 +35,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -141,7 +142,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     gh.add(lAuthor,3,1,1,1,GridBagHelper.GROWFILL_HORIZONTAL);
 
     // ... Report's version
-    lVersion = new JLabel("");
+    lVersion = new JLabel();
     lVersion.setForeground(Color.black);
 
     gh.add(new JLabel(resources.getString("report.version")),2,2);
@@ -157,6 +158,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
     // Panel for Report Output
     taOutput = new JTextArea();
+    taOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
     taOutput.setEditable(false);
 
     spOutput = new JScrollPane(taOutput);
