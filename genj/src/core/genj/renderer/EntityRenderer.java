@@ -73,7 +73,7 @@ public class EntityRenderer {
   private RootView root;
   
   /** the document we're looking at */
-  private HTMLDocument doc = new HTMLDocument();
+  private HTMLDocument doc = new MyHTMLDocument();
   
   /** the factory we're using to create views */
   private MyHTMLFactory factory = new MyHTMLFactory();
@@ -99,25 +99,36 @@ public class EntityRenderer {
   /** whether we have a debug mode */
   private boolean isDebug = false; 
   
-  /**
-   * 
-   */  
-  public EntityRenderer(Graphics g, Blueprint bp) {
+  /** our font scaling */
+  private float fontFactor = 1.0F;
 
-    if (g==null||bp==null) throw new IllegalArgumentException("Graphics and blueprint must not be null"); 
+  /**
+   * Constructor
+   */  
+  public EntityRenderer(Blueprint bp) {
+    this(bp, null, 1F);
+  }
     
-    // remember Graphics
-    graphics = g;
-    
+  /**
+   * Constructor
+   */  
+  public EntityRenderer(Blueprint bp, Font font, float fFactor) {
+
+    // keep the fFactor
+    fontFactor = fFactor;
+
     // we wrap the html in html/body
-    String html =
-      "<head><style type=\"text/css\">"+
-      " table { border-style: solid;}"+
-      " td  { border-style: solid;  }"+
-      "</style></head><body>"+
-      bp.getHTML()+
-      "</body></html>";      
-    
+    StringBuffer html = new StringBuffer();
+    html.append("<head><style type=\"text/css\">");
+    if (font!=null) {
+      html.append(" body { font-family: "+font.getName()+"; font-size: "+font.getSize()+"pt; } "    );
+    }
+    html.append(" table { border-style: solid;}" );
+    html.append(" td  { border-style: solid;  }" );
+    html.append("</style></head><body>");
+    html.append(bp.getHTML());
+    html.append("</body></html>");
+
     // read and parse the html
     try {
       
@@ -142,7 +153,7 @@ public class EntityRenderer {
       }
             
       // .. trigger parsing
-      new MyDocumentParser(dtd).parse(new StringReader(html), reader, false);
+      new MyDocumentParser(dtd).parse(new StringReader(html.toString()), reader, false);
       
       // .. flush reader
       reader.flush();      
@@ -162,8 +173,9 @@ public class EntityRenderer {
    */
   public void render(Graphics g, Entity e, Rectangle r) {
     
-    // keep the entity
+    // keep the entity and graphics
     entity = e;
+    graphics = g;
     
     // invalidate views 
     Iterator pv = propViews.iterator();
@@ -202,7 +214,19 @@ public class EntityRenderer {
   public void setDebug(boolean set) {
     isDebug = set;
   }
-  
+
+  /**
+   * Our own HTMLDocument   */  
+  private class MyHTMLDocument extends HTMLDocument {
+    /**
+     * @see javax.swing.text.DefaultStyledDocument#getFont(javax.swing.text.AttributeSet)
+     */
+    public Font getFont(AttributeSet attr) {
+      Font font = super.getFont(attr);
+      if (fontFactor!=1F) font = font.deriveFont(fontFactor*font.getSize2D());
+      return font;
+    }
+  } //MyHTMLDocument
   
   /**
    * My own parser that overrides the original's property 
@@ -408,9 +432,9 @@ public class EntityRenderer {
       // instead of using this view's attributes we get the
       // document's stylesheet and ask it for this view's
       // attributes
-      if (font==null) 
-        //font = doc.getFont(getAttributes());
+      if (font==null) {
         font = doc.getFont(doc.getStyleSheet().getViewAttributes(this));
+      }
       return font;
     }
     
@@ -633,7 +657,7 @@ public class EntityRenderer {
         if ("no".equals(atts.getAttribute("txt"))) 
           preference = PropertyRenderer.PREFER_IMAGE;
       }
-      
+
       // minimum?
       min = getInt(atts, "min", 1, 100, 1);
       

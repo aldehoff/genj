@@ -33,7 +33,6 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.DoubleValueSlider;
-import genj.util.swing.Graphics2D;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ScreenResolutionScale;
@@ -398,7 +397,11 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /**
    * Resolve a renderer   */
   /*package*/ EntityRenderer getEntityRenderer(int type) {
-    EntityRenderer result = new EntityRenderer(blueprints[type], contentFont);
+    EntityRenderer result = new EntityRenderer(
+      blueprints[type], 
+      contentFont,
+      (float)(isAdjustFonts ? UNITS.getY()*2.54D/72 : 1D)      
+    );
     return result;
   }
 
@@ -521,7 +524,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     public void paint(Graphics g) {
       // resolve our Graphics
-      if (isAdjustFonts) g = new Graphics2D(g, UNITS);
       UnitGraphics gw = new UnitGraphics(g,UNITS.getX()*zoom, UNITS.getY()*zoom);
       gw.setAntialiasing(isAntialiasing);
       // init renderer

@@ -144,10 +144,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     Blueprint blueprint;
     if (e==null) blueprint = BLUEPRINT_SELECT;
     else blueprint = blueprints[e.getType()];
-    renderer=new EntityRenderer(
-      getGraphics(),
-      blueprint
-    );
+    renderer=new EntityRenderer(blueprint);
     // remember    
     entity = e;
     // repaint
