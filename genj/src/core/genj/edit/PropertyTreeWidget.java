@@ -330,6 +330,17 @@ public class PropertyTreeWidget extends DnDTree {
     }
 
     public int getDropActions(Transferable transferable, Object parent, int index) {
+      
+      try {
+	      if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
+	        List dragged = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
+	        if (dragged.contains(parent))
+	          return 0;
+	      }
+      } catch (Exception e) {
+        return 0;
+      }
+        
         if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR) 
             || transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR)) {
 
