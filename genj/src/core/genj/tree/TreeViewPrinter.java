@@ -43,7 +43,7 @@ public class TreeViewPrinter implements Printer {
   /**
    * @see genj.print.PrintRenderer#renderPage(java.awt.Point, gj.ui.UnitGraphics)
    */
-  public void renderPage(Graphics2D g, Point page, Point resolution) {
+  public void renderPage(Graphics2D g, Point page, Point resolution, boolean preview) {
 
     UnitGraphics graphics = new UnitGraphics(g, resolution.x/2.54D*0.1D, resolution.y/2.54D*0.1D);
 
@@ -51,10 +51,14 @@ public class TreeViewPrinter implements Printer {
     renderer.cArcs          = Color.black;
     renderer.cFamShape      = Color.black;
     renderer.cIndiShape     = Color.black;
-    renderer.indiRenderer   = tree.getEntityRenderer(Gedcom.INDIVIDUALS)
-      .setResolution(resolution);
-    renderer.famRenderer    = tree.getEntityRenderer(Gedcom.FAMILIES   )
-      .setResolution(resolution);
+    renderer.selection      = null;
+
+    if (!preview) {    
+      renderer.indiRenderer   = tree.getEntityRenderer(Gedcom.INDIVIDUALS)
+        .setResolution(resolution);
+      renderer.famRenderer    = tree.getEntityRenderer(Gedcom.FAMILIES   )
+        .setResolution(resolution);
+    }
     
     renderer.render(graphics, tree.getModel());
 

@@ -104,7 +104,7 @@ public class UnitGraphics {
   
   /**
    * Access to the underlying Graphics   */
-  public Graphics getGraphics() {
+  public Graphics2D getGraphics() {
     return graphics;
   }
   
@@ -226,6 +226,13 @@ public class UnitGraphics {
    */
   public void pushClip(double x, double y, Rectangle2D r) {
     pushClip(x+r.getMinX(), y+r.getMinY(), x+r.getMaxX(), y+r.getMaxY());
+  }
+
+  /**
+   * Pushes a pop'able clip
+   */
+  public void pushClip(Rectangle2D r) {
+    pushClip(r.getMinX(), r.getMinY(), r.getMaxX(), r.getMaxY());
   }
 
   /**

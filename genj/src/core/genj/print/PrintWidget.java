@@ -31,7 +31,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
-import java.awt.geom.Point2D;
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.JComponent;
@@ -159,54 +159,88 @@ public class PrintWidget extends JTabbedPane {
      */
     public Dimension getPreferredSize() {
       // calculate
-      Point2D psize = calcPageSize();
+      Rectangle2D page = calcPage(0,0);
       Point pages = task.getPages(); 
       Point dpi = App.getInstance().getDPI();
       double 
-        width = (pages.x*(psize.getX()+pad) + pad)*dpi.x*zoom,
-        height= (pages.y*(psize.getY()+pad) + pad)*dpi.y*zoom;
+        width = (pages.x*(page.getWidth ()+pad) + pad)*dpi.x*zoom,
+        height= (pages.y*(page.getHeight()+pad) + pad)*dpi.y*zoom;
       // done
       return new Dimension((int)width, (int)height);
     }
-    
+
     /**
-     * Calculate page size in inch
+     * Calculate page in inches
      */
-    Point2D calcPageSize() {
+    private Rectangle2D calcPage(int x, int y) {
       Point dpi = task.getResolution();
       Dimension psize = task.getPageSize();
-      return new Point2D.Double(
-        (double)psize.width /dpi.x,
-        (double)psize.height/dpi.y
+      double 
+       w = (double)psize.width /dpi.x,
+       h = (double)psize.height/dpi.y;
+      return new Rectangle2D.Double(
+        pad + x*(w+pad),
+        pad + y*(h+pad), 
+        w, 
+        h
+      );
+    }
+    
+    /**
+     * Calculate imageable in inches
+     */
+    private Rectangle2D calcImageable(Rectangle2D page) {
+      Point dpi = task.getResolution();
+      Rectangle imageable = task.getImageable();
+      return new Rectangle2D.Double(
+        page.getMinX() + (imageable.getX()/dpi.x), 
+        page.getMinY() + (imageable.getY()/dpi.y), 
+        imageable.getWidth ()/dpi.x, 
+        imageable.getHeight()/dpi.y
       );
     }
     
     /**
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
-    // FIXME 
     protected void paintComponent(Graphics g) {
       // fill background
       g.setColor(Color.gray);
       g.fillRect(0,0,getWidth(),getHeight());
       g.setColor(Color.white);
       // render pages in app's dpi space
-      Point2D psize = calcPageSize();
+      Printer renderer = task.getRenderer();
       Point pages = task.getPages(); 
       Point dpi = App.getInstance().getDPI();
-      UnitGraphics ug = new UnitGraphics(g, dpi.x*zoom, dpi.y*zoom);
-      ug.setColor(Color.white);
-      Rectangle2D page = new Rectangle2D.Double(); 
-      for (int x=0;x<pages.x;x++) {
-        for (int y=0;y<pages.y;y++) {
-          page.setFrame( pad + x*(psize.getX()+pad) , pad + y*(psize.getY()+pad), psize.getX(), psize.getY());
+      dpi.x *= zoom;
+      dpi.y *= zoom;
+      UnitGraphics ug = new UnitGraphics(g, dpi.x, dpi.y);
+      for (int y=0;y<pages.y;y++) {
+        for (int x=0;x<pages.x;x++) {
+          // calculate layout
+          Rectangle2D 
+            page = calcPage(x,y), 
+            imageable = calcImageable(page); 
+          // draw page
+          ug.setColor(Color.white);
           ug.draw(page, 0, 0, true);
+          // draw imageable
+          ug.setColor(Color.lightGray);
+          ug.draw(imageable, 0, 0, false);
+          // draw number
+          ug.setColor(Color.gray);
+          ug.draw(String.valueOf(x+y*pages.x+1),page.getCenterX(),page.getCenterY(),0.5D,0.5D);
+          // draw content
+          // FIXME 
+//          ug.pushTransformation();
+//          ug.pushClip(page);
+//          ug.translate(page.getMinX() - (x*isize.getX()), page.getMinY() - (y*isize.getY()));
+//          renderer.renderPage(ug.getGraphics(), new Point(x,y), dpi, true);
+//          ug.popTransformation();
+//          ug.popClip();
+          // next   
         }
       }
-
-      // draw indicator      
-//      g.drawString(pages.x+" x "+pages.y,32,32);
-//      Graphics2D g2d = (Graphics2D)g;
       // done
     }
 

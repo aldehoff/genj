@@ -43,6 +43,6 @@ public interface Printer {
    * Renders page content (x,y) on given context (dots) and 
    * resolution (dpi) - g is clipped and translated already
    */  
-  public void renderPage(Graphics2D g, Point page, Point resolution);
+  public void renderPage(Graphics2D g, Point page, Point resolution, boolean preview);
   
 } //PrintRenderer

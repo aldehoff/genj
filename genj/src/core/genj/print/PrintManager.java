@@ -32,6 +32,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
@@ -182,7 +183,6 @@ public class PrintManager {
         new String[]{ resources.getString("dlg.label.print"), UIManager.getString("OptionPane.cancelButtonText")}
       ).packAndShow();
       
-  System.out.println(getPrintService());      
       // check choice
       if (ok!=0||getPages().x==0||getPages().y==0) {
         job.cancel();
@@ -277,7 +277,7 @@ public class PrintManager {
       );
 
       // render it
-      renderer.renderPage(g, new Point(col, row), getResolution());
+      renderer.renderPage(g, new Point(col, row), getResolution(), false);
       
       // done
       return PAGE_EXISTS;
@@ -339,8 +339,10 @@ public class PrintManager {
     /**
      * ImageableSize in dots
      */
-    /*package*/ Dimension getImageableSize() {
-      return new Dimension(
+    /*package*/ Rectangle getImageable() {
+      return new Rectangle(
+        (int)pageFormat.getImageableX(),
+        (int)pageFormat.getImageableY(),
         (int)pageFormat.getImageableWidth(),
         (int)pageFormat.getImageableHeight()
       );
@@ -354,13 +356,13 @@ public class PrintManager {
       if (pages!=null) return pages;
       
       Dimension content = renderer.calcSize(getResolution());
-      Dimension imageable = getImageableSize();
+      Rectangle imageable = getImageable();
       
       pages = new Point(
-        (int)Math.ceil( ((float)content.width ) / imageable.width),
-        (int)Math.ceil( ((float)content.height) / imageable.height)
+        (int)Math.ceil( (float)content.width  / imageable.width),
+        (int)Math.ceil( (float)content.height / imageable.height)
       );
-      
+
       // done
       return pages;
     }
@@ -369,11 +371,19 @@ public class PrintManager {
      * Computer printer name
      */
     /*package*/ String getPrintService() {
-      Object name = "*Default*";
+      Object name = "";
       try {
         name = job.getClass().getMethod("getPrintService", new Class[0]).invoke(job,new Object[0]);
-      } catch (Throwable t) {}
+      } catch (Throwable t) {
+      }
       return name.toString();
+    }
+    
+    /**
+     * print renderer
+     */
+    /*package*/ Printer getRenderer() {
+      return renderer;
     }
     
   } //PrintTask
