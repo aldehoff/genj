@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -81,7 +82,7 @@ public class MenuHelper  {
   /**
    * Creates a menu
    */
-  public JMenu createMenu(String text, ImageIcon img) {
+  public JMenu createMenu(String text, Icon img) {
     JMenu result = new JMenu(string(text));
     if (img!=null) result.setIcon(img);
 

@@ -143,14 +143,14 @@ public class ImageIcon extends javax.swing.ImageIcon {
   private static byte[] read(String name, InputStream in) {
     // check null (e.g. if resource wasn't found)
     if (in==null) {
-      Debug.log(Debug.WARNING, ImageIcon.class, "npe for "+name);
+      Debug.log(Debug.WARNING, ImageIcon.class, "no stream for "+name);
       return null;
     }
     // try to read it
     try {
       return new ByteArray(in).getBytes();
     } catch (IOException ex) {
-      Debug.log(Debug.WARNING, ImageIcon.class, "ioex for "+name);
+      Debug.log(Debug.WARNING, ImageIcon.class, "read error for "+name);
       return null;
     }
   }
@@ -169,8 +169,9 @@ public class ImageIcon extends javax.swing.ImageIcon {
   
   /**
    * Return a version with the given ImageIcon overlayed
+   * @param overlay the image to overlay this with (javax.swing.* is enough)
    */ 
-  public ImageIcon getOverLayed(ImageIcon overlay) {
+  public ImageIcon getOverLayed(javax.swing.ImageIcon overlay) {
 
     int height = Math.max(getIconHeight(), overlay.getIconHeight());
     int width = Math.max(getIconWidth(), overlay.getIconWidth());
@@ -183,7 +184,9 @@ public class ImageIcon extends javax.swing.ImageIcon {
     g.setClip(0,0,width,height);
     g.drawImage(image1, 0, 0, null);
     g.drawImage(image2, 0, 0, null);
+    g.dispose();
 
     return new ImageIcon(this, composite);
   }
+  
 } //ImageIcon 

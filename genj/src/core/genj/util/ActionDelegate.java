@@ -23,7 +23,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
@@ -42,7 +42,7 @@ public abstract class ActionDelegate implements Cloneable {
     ASYNC_NEW_INSTANCE   = 2;
   
   /** attributes */
-  public ImageIcon  img,roll,toggle;
+  public Icon       img,roll,toggle;
   public String     txt;
   public String     stxt;
   public String     tip;
@@ -213,7 +213,7 @@ public abstract class ActionDelegate implements Cloneable {
   /**
    * Image 
    */
-  public ActionDelegate setImage(ImageIcon i) {
+  public ActionDelegate setImage(Icon i) {
     img=i;
     return this;
   }
@@ -221,7 +221,7 @@ public abstract class ActionDelegate implements Cloneable {
   /**
    * Rollover
    */
-  public ActionDelegate setRollover(ImageIcon r) {
+  public ActionDelegate setRollover(Icon r) {
     roll=r;
     return this;
   }
@@ -229,7 +229,7 @@ public abstract class ActionDelegate implements Cloneable {
   /**
    * Toggle
    */
-  public ActionDelegate setToggle(ImageIcon t) {
+  public ActionDelegate setToggle(Icon t) {
     toggle=t;
     return this;
   }

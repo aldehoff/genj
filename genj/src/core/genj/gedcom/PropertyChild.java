@@ -31,7 +31,7 @@ public class PropertyChild extends PropertyXRef {
   public final static int[] 
     TARGET_TYPES = new int[]{ Gedcom.INDIVIDUALS };
 
-  private final static ImageIcon
+  public final static ImageIcon
     IMG_MALE   = MetaProperty.get(new TagPath("FAM:CHIL")).getImage("male"),
     IMG_FEMALE = MetaProperty.get(new TagPath("FAM:CHIL")).getImage("female"),
     IMG_UNKNOWN = MetaProperty.get(new TagPath("FAM:CHIL")).getImage();

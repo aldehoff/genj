@@ -1,6 +1,6 @@
 package genj.gedcom;
 
-import javax.swing.ImageIcon;
+import genj.util.swing.ImageIcon;
 
 /**
  * A relationship between entities
