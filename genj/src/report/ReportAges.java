@@ -25,8 +25,6 @@ import genj.report.Report;
 
 public class ReportAges extends Report {
     
-    //FIXME lots of date calculation that needs to be checked
-    
     public boolean reportBaptismAge = true;
     public boolean reportMarriageAge = true;
     public boolean reportAgeAtDivorce = true;

@@ -26,15 +26,13 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.46 2004-02-28 05:07:55 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.47 2004-02-29 21:19:35 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
  */
 public class ReportGedcomStatistics extends Report {
 
-//FIXME needs to refactored around multiple calendars/meaning of years
-    
     /** number of digits allowed in the fraction portion of a number */
     public int fractionDigits = 2;
     /** if individuals should be analyzed */
