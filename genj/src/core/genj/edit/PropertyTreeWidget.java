@@ -29,13 +29,18 @@ import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChange;
 import genj.gedcom.Transaction;
+import genj.io.GedcomReader;
+import genj.io.GedcomWriter;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +62,7 @@ import swingx.tree.DnDTreeModel;
  * A Property Tree
  */
 public class PropertyTreeWidget extends DnDTree {
-
+  
   /** a default renderer we keep around for colors */
   private DefaultTreeCellRenderer defaultRenderer;
   
@@ -267,14 +272,9 @@ public class PropertyTreeWidget extends DnDTree {
       property2view.clear();
   }
 
-  // keep a reference to transaction for removeFrom()
-  private static Transaction removeTransaction = null;
-
   /**
    * Our model
    */
-  private static Gedcom lastGedcomRemovedFrom = null;
-  
   private class Model extends AbstractTreeModel implements DnDTreeModel, GedcomListener {
 
     private Object NULL = new Object();
@@ -318,20 +318,12 @@ public class PropertyTreeWidget extends DnDTree {
     }
   
     /**
-     * DND support
-     */
-    public boolean removeBeforeInsert() {
-      return true;
-    }
-    
-    /**
      * DND support - remove nodes 
      */
-    public void removeFrom(List children) {
+    public void remove(List children, Object target) {
       
-      // start transaction
-      lastGedcomRemovedFrom = ((Property)children.get(0)).getGedcom();
-      lastGedcomRemovedFrom.startTransaction();
+      // start transaction for our gedcom
+      gedcom.startTransaction();
       
       for (int i=0;i<children.size();i++) {
         
@@ -344,38 +336,35 @@ public class PropertyTreeWidget extends DnDTree {
         // tell tree about it since that might change insert target
         fireTreeNodesRemoved(this, getPathToRoot(childsParent), new int[]{pos}, new Object[]{child});
       }
+      
+      // end transaction if target is not in same gedcom
+      if (gedcom!=((Property)target).getGedcom())
+        gedcom.endTransaction();
         
-      // continued
+      // done
+    }
+    
+    /**
+     * DND support - transferable
+     */
+    public Transferable getTransferable(List children) {
+      return GedcomWriter.writeTransferable(children);
     }
 
     /**
-     * DND support - insert child
+     * DND support - insert
      */
-    public void insertInto(List children, Object parentAsObject, int index, int action) {
-
-      Property parent = (Property)parentAsObject;
+    public void insert(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException {
 
       // start transaction for our gedcom?
       if (!gedcom.isTransaction())
         gedcom.startTransaction();
         
-      // perform copy/move
-      for (int i=0;i<children.size();i++) {
-        
-        Property child = (Property)children.get(i);
-        
-        // add copy of child
-        child = parent.addCopy(child, index+i);
-        
-      }
-      
-      // end transaction(s)
-      gedcom.endTransaction();      
-
-      if (lastGedcomRemovedFrom!=null) {
-        if (lastGedcomRemovedFrom.isTransaction())
-          lastGedcomRemovedFrom.endTransaction();
-        lastGedcomRemovedFrom = null;
+      // perform copy/move 
+      try {
+        GedcomReader.readTransferable(transferable, (Property)parent, index);
+      } finally {
+        gedcom.endTransaction();      
       }
       
       // done      
@@ -391,24 +380,8 @@ public class PropertyTreeWidget extends DnDTree {
     /**
      * DND support - insert test
      */
-    public boolean canInsert(List children, Object parent, int index, int action) {
-
-      // only copy and move property
-      if (action!=COPY&&action!=MOVE)
-        return false;
-
-      // check children of new parent
-      Property newParent = (Property)parent;
-      
-      for (int i=0;i<children.size();i++) {
-        Property child = (Property)children.get(i);
-        
-        // has to be fine with grammar
-        return newParent.getMetaProperty().allows(child.getTag());
-      }
-
-      // all fine
-      return true;      
+    public boolean canInsert(Transferable transferable, Object parent, int index, int action) {
+      return GedcomReader.canReadTransferable(transferable)&&(action==COPY||action==MOVE);      
     }
 
     /**
@@ -487,7 +460,7 @@ public class PropertyTreeWidget extends DnDTree {
       if (!tx.get(Transaction.ENTITIES_MODIFIED).contains(entity))
         return;
         
-      // preserve current selection
+      // FIXME apparently DnDTree's childIndex get messe up through structure change leading to bad path selection happening
       Property sel = getSelection();
 
       // follow changes
@@ -525,7 +498,7 @@ public class PropertyTreeWidget extends DnDTree {
       }
       
       // restore selection?
-      if (sel.getEntity()==entity) 
+      if (sel!=null&&sel.getEntity()==entity) 
         setSelection(sel);
 
       // Done

@@ -43,12 +43,11 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.util.Collections;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -67,6 +66,8 @@ import javax.swing.event.TreeSelectionListener;
  * access at the Gedcom record-structure
  */
 /*package*/ class AdvancedEditor extends Editor {
+  
+  private final static Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
   
   /** resources */
   private static Resources resources = Resources.get(AdvancedEditor.class);
@@ -213,7 +214,6 @@ import javax.swing.event.TreeSelectionListener;
 
     /** constructor */
     private Cut(Property deletee) {
-      
       super(deletee);
       
       super.setImage(Images.imgCut);
@@ -276,24 +276,11 @@ import javax.swing.event.TreeSelectionListener;
     }
     /** run */
     protected void execute() {
-      
       try {
-        
-        // get the textual representation
-        StringWriter out = new StringWriter();
-        new GedcomWriter(selection, out);
-        
-        // stick it into the system clipboard
-	    	Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-	    	  new StringSelection(out.toString()), null
-	      );
-	    	
-	    	// done
-	    	
+        clipboard.setContents(GedcomWriter.writeTransferable(Collections.singletonList(selection)), null);
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, AdvancedEditor.this, "Couldn't copy to system clipboard", t);
+        Debug.log(Debug.WARNING, AdvancedEditor.this, "Couldn't ask system clipboard for flavor", t);
       }
-
     }
 
   } //ActionCopy
@@ -332,22 +319,13 @@ import javax.swing.event.TreeSelectionListener;
       if (!isPasteAvail())
         return;
       
-      // start a transaction
+      // start a transaction and grab from clipboard
       gedcom.startTransaction();
-      
       try {
-        
-        // get the textual representation from system clipboard
-        String s = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this).getTransferData(DataFlavor.stringFlavor).toString();
-      	
-      	// paste it
-        new GedcomReader(parent, new StringReader(s));
-      	
+        GedcomReader.readTransferable(clipboard.getContents(null), parent, -1);
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, AdvancedEditor.this, "Couldn't paste system clipboard content", t);
+        Debug.log(Debug.WARNING, this, t);
       }
-      
-      // end transaction
       gedcom.endTransaction();
   
     }

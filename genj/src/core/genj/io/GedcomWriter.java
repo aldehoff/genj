@@ -30,10 +30,13 @@ import genj.gedcom.time.PointInTime;
 import genj.util.Debug;
 import genj.util.Trackable;
 
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -41,6 +44,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Type that knows how to write GEDCOM-data to InputStream
@@ -65,9 +69,24 @@ public class GedcomWriter implements Trackable {
   private String encoding;
 
   /**
+   * Write properties and their subs into a transferable
+   */
+  public static Transferable writeTransferable(List props) {
+    
+    StringWriter out = new StringWriter();
+    try {
+      new GedcomWriter(props, out);
+    } catch (IOException e) {
+      // can't happen
+    }
+    return new StringSelection(out.toString());
+    
+  }
+  
+  /**
    * Constructor used for converting a property into a text representation
    */
-  public GedcomWriter(Property prop, Writer writer) throws GedcomIOException, IOException {
+  private GedcomWriter(List props, Writer writer) throws IOException {
     
     // use a buffered out
     out = new BufferedWriter(writer);
@@ -75,8 +94,11 @@ public class GedcomWriter implements Trackable {
     // setup indent-spaces as level
     isIndentForLevels = true;
     
-    // write property
-    writeProperty("", prop);
+    // write properties
+    for (int i=0,j=props.size();i<j;i++) {
+      level = 0;
+      writeProperty("", (Property)props.get(i));
+    }
     
     // done
     out.close();

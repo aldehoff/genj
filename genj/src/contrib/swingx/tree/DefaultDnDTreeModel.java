@@ -18,80 +18,186 @@
  */
 package swingx.tree;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 
 public class DefaultDnDTreeModel extends DefaultTreeModel implements DnDTreeModel {
 
-    public DefaultDnDTreeModel(TreeNode root) {
-        super(root);
+  /** the dataFlavor used for transfers between different JVMs */
+  private static DataFlavor localFlavor;
+
+  static {
+    try {
+      localFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=java.lang.Object");
+    } catch (ClassNotFoundException e) {
+      throw new Error(e);
     }
+  }
 
-    /**
-     * Node should be removed before inserted.
-     */
-    public boolean removeBeforeInsert() {
-        return true;
-    }
+  /** the dataFlavor used for transfers in one JVM. */
+  private static DataFlavor serializedFlavor = new DataFlavor(java.io.Serializable.class, "Object");
 
-    public boolean canInsert(List children, Object parent, int index, int action) {
-        if (action != MOVE) {
-            return false;
-        }
 
-        for (int c = 0; c < children.size(); c++) {
-            if (isNodeAncestor((MutableTreeNode)children.get(c), (MutableTreeNode)parent)) {
-                return false;
-            }            
-        }
-        return true;
-    }
+  /**
+   * Constructor
+   * @param root the tree root
+   */
+  public DefaultDnDTreeModel(TreeNode root) {
+    super(root);
+  }
 
-    public boolean canRemove(List children) {
-        for (int c = 0; c < children.size(); c++) {
-            if (((MutableTreeNode)children.get(c)).getParent() == null) {
-                return false;
-            }            
-        }
-        return true;
-    }
+  public boolean canInsert(Transferable transferable, Object parent, int index, int action) {
+    if (action!=MOVE)
+      return false;
+    if (transferable.isDataFlavorSupported(localFlavor))
+      return true;
+    if (transferable.isDataFlavorSupported(serializedFlavor))
+      return true;
+    return false;
+  }
 
-    /**
-     * Remove child.
-     * 
-     * @param child     child to remove
-     */
-    public void removeFrom(List children) {
-        for (int c = children.size() - 1; c >= 0; c--) {
-            removeNodeFromParent((MutableTreeNode)children.get(c));
-        }
-    }
-
-    /**
-     * Insert children.
-     * 
-     * @param children  children to insert
-     * @param parent    parent to insert into
-     * @param index     index of children to insert
-     */
-    public void insertInto(List children, Object parent, int index, int action) {
-        if (action != MOVE) {
-           throw new IllegalArgumentException("action not supported: " + action);
-        }
-
-        for (int c = 0; c < children.size(); c++) {
-            insertNodeInto((MutableTreeNode)children.get(c), (MutableTreeNode)parent, index + c);
-        }
-    }
-
-    public boolean isNodeAncestor(TreeNode test, TreeNode node) {
-        do {
-            if (test == node) {
-                return true;
-            }        
-        } while((node = node.getParent()) != null);
-
+  public boolean canRemove(List children) {
+    for (int c = 0; c < children.size(); c++) {
+      if (((MutableTreeNode) children.get(c)).getParent() == null) {
         return false;
+      }
     }
+    return true;
+  }
+
+  /**
+   * Get a transferable for given children
+   */
+  public Transferable getTransferable(List children) {
+    return new DnDTreeTransferable(children);
+  }
+
+  /**
+   * Remove children
+   * 
+   * @param children
+   *          children to remove
+   */
+  public void remove(List children, Object newParent) {
+    for (int c = children.size() - 1; c >= 0; c--) {
+      removeNodeFromParent((MutableTreeNode) children.get(c));
+    }
+  }
+
+  /**
+   * Insert children.
+   * 
+   * @param transferable
+   *          transferable to insert
+   * @param parent
+   *          parent to insert into
+   * @param index
+   *          index of children to insert
+   */
+  public void insert(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException {
+    
+    if (action != MOVE) 
+      throw new IllegalArgumentException("action not supported: " + action);
+
+    List children;
+    if (transferable.isDataFlavorSupported(localFlavor))
+      children = (List)transferable.getTransferData(localFlavor);
+    else if (transferable.isDataFlavorSupported(serializedFlavor))
+      children = (List)transferable.getTransferData(serializedFlavor);
+    else throw new UnsupportedFlavorException(null);
+    
+    for (int c = 0; c < children.size(); c++) {
+      insertNodeInto((MutableTreeNode) children.get(c), (MutableTreeNode) parent, index + c);
+    }
+  }
+
+  public boolean isNodeAncestor(TreeNode test, TreeNode node) {
+    do {
+      if (test == node) {
+        return true;
+      }
+    } while ((node = node.getParent()) != null);
+
+    return false;
+  }
+
+  /**
+   * The transferable used to transfer nodes.
+   * 
+   * @see #toTransferable(java.util.List)
+   * @see #toTransferable(java.awt.datatransfer.Transferable)
+   */
+  private static class DnDTreeTransferable implements Transferable {
+
+    private List flavors;
+
+    private List nodes;
+
+    public DnDTreeTransferable(List nodes) {
+      this.nodes = nodes;
+
+      flavors = createFlavors(nodes);
+    }
+
+    protected List createFlavors(List nodes) {
+      List flavors = new ArrayList();
+
+      flavors.add(localFlavor);
+      flavors.add(DataFlavor.stringFlavor);
+
+      boolean serializable = true;
+      for (int n = 0; n < nodes.size(); n++) {
+        serializable = serializable && (nodes.get(n) instanceof Serializable);
+      }
+      if (serializable) {
+        flavors.add(serializedFlavor);
+      }
+
+      return flavors;
+    }
+
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+      if (isDataFlavorSupported(flavor)) {
+        if (localFlavor.equals(flavor)) {
+          return nodes;
+        }
+        if (serializedFlavor.equals(flavor)) {
+          return nodes;
+        }
+        if (DataFlavor.stringFlavor.equals(flavor)) {
+          return toString();
+        }
+      }
+      throw new UnsupportedFlavorException(flavor);
+    }
+
+    public String toString() {
+      StringBuffer buffer = new StringBuffer();
+      for (int n = 0; n < nodes.size(); n++) {
+        if (n > 0) {
+          buffer.append("\n");
+        }
+        buffer.append(nodes.get(n));
+      }
+      return buffer.toString();
+    }
+
+    public DataFlavor[] getTransferDataFlavors() {
+      return (DataFlavor[]) flavors.toArray(new DataFlavor[flavors.size()]);
+    }
+
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+      return flavors.contains(flavor);
+    }
+  }
+
 }

@@ -18,10 +18,13 @@
  */
 package swingx.tree;
 
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
+import java.io.IOException;
 import java.util.List;
 
-import javax.swing.tree.*;
+import javax.swing.tree.TreeModel;
 
 /**
  * A tree model that offers altering through DnD.
@@ -33,15 +36,6 @@ public interface DnDTreeModel extends TreeModel {
     public static final int LINK = DnDConstants.ACTION_LINK;
 
     /**
-     * Must nodes of this model be removed before they
-     * can be inserted.
-     * 
-     * @return  <code>true</code> if removal should happen
-     *          before insertion
-     */
-    public boolean removeBeforeInsert();
-
-    /**
      * Can the given children be removed from their parents.
      * 
      * @param children  children to test for removal
@@ -50,31 +44,37 @@ public interface DnDTreeModel extends TreeModel {
     public boolean canRemove(List children);
 
     /**
-     * Can the given children be inserted to the given parent.
-     * 
-     * @param children  children to test for insertion
-     * @param parent    parent of children to insert
-     * @return          <code>true</code> if children can be inserted
-     */
-    public boolean canInsert(List children, Object parent, int index, int action);
-
-    /**
      * Remove children from its parent.
      * 
-     * @param children     children to remove
+     * @param children   children to remove
+     * @param target     new parent if known (when dnd inside same vm)
      */
-    public void removeFrom(List children);
+    public void remove(List children, Object target);
+
+    /**
+     * Create a transferable for given children
+     */
+    public Transferable getTransferable(List children);
+    
+    /**
+     * Can the given children be inserted to the given parent.
+     * 
+     * @param transferable transferable to test for insertion
+     * @param parent       parent of children to insert
+     * @return             <code>true</code> if insert is acceptable
+     */
+    public boolean canInsert(Transferable transferable, Object parent, int index, int action);
 
     /**
      * Insert children to the given parent.
      * <br>
      * The list of children is garanteed to be ordered from top to bottom.
      * 
-     * @param children  children to insert
-     * @param parent    parent to insert into
-     * @param index     index of children to insert
+     * @param transferable transferable to insert
+     * @param parent       parent to insert into
+     * @param index        index for children to insert at
      */
-    public void insertInto(List children, Object parent, int index, int action);
+    public void insert(Transferable transferable, Object parent, int index, int action) throws IOException, UnsupportedFlavorException;
 }
 
 

@@ -145,41 +145,6 @@ public abstract class Property implements Comparable {
   }
   
   /**
-   * Adds a copy of given property 
-   * @param prop the property to add as copy
-   * @param pos the position of prop after adding
-   * @return the copy of prop that was added
-   */
-  // FIXME not necessary after having clipboard support
-  public Property addCopy(Property prop, int pos) {
-
-    // create a copy of prop
-    MetaProperty meta = getMetaProperty();
-    
-    MetaProperty copyMeta = meta.get(prop.getTag(), true);
-    String      copyValue = prop.getValue();
-
-    Property copy = copyMeta.create(copyValue);
-
-    // keep it    
-    addProperty(copy, pos);
-    
-    // link it if applicable
-    if (copy instanceof PropertyXRef) try {
-      ((PropertyXRef)copy).link();
-    } catch (GedcomException e) {
-    }
-    
-    // do it recursively for every child of prop
-    Property[] children = prop.getProperties();
-    for (int c=0; c<children.length; c++) 
-      copy.addCopy(children[c], -1);
-
-    // done
-    return copy;
-  }
-  
-  /**
    * Adds a sub-property to this property
    * @param prop new property to add
    */
