@@ -5,4 +5,4 @@
 2   POST type=SimpleValue img=Code.gif
 2   CTRY type=SimpleValue img=Place.gif
 1  PHON type=SimpleValue img=Phone.gif
-1  NOTE type=Multiline img=Note.gif
+1  NOTE type=MultilineValue img=Note.gif
