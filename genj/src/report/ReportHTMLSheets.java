@@ -30,7 +30,6 @@ import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 
 /**
  * GenJ - Report
@@ -44,48 +43,44 @@ public class ReportHTMLSheets extends Report {
   private final static Charset UTF8 = Charset.forName("UTF-8");
 
   /**
-   * This is the default stylesheet for the generated report sheets - important
-   * elements are
-   * 
-   * TABLE HEADER:
-   * <tr class=header>
-   *  ...
-   * </tr>
-   * 
-   * NAME GROUP:
-   * <namegroup>
-   *  <character>A</character>
-   *   <name>Adam<occurances>(<count>4</count>)</occurances></name>
-   *   ..
-   * </namegroup>
-   * 
-   * PROPERTY/VALUE
-   * <property0>Birth</property0>
-   * <property1>Date</property1>
-   * <property2>Addr</property2>
-   * <property3>City</property3>
-   * ...
-   * <value>Lohmar</value>
+   * This is the default stylesheet for the generated report sheets 
    */
-  static final String defaultStylesheet = 
-   "body { background: white; }" +
-   "a { color: black; text-decoration: none; }" +
-   "a:hover { text-decoration: underline; }" +
-   "p { color: black; }" +
-   "tr.header { background: yellow; }" +
-   "footer { display: block; font-size: 10; }" +
-   "property0 { font-weight: bold; text-decoration: underline; }" +
-   "property1 { margin-left: 1ex; font-style: italic; text-decoration: underline; }" +
-   "property2 { margin-left: 2ex; font-style: italic; }" +
-   "property3 { margin-left: 3ex; font-style: italic; }" +
-   "property4 { margin-left: 4ex; font-style: italic; }" +
-   "value { }" +
-   "namegroup { display: block; }" +
-   "namegroup character { display: block; color: red; font-weight: bold; }" +
-   "namegroup name { margin-right: 1ex; font-style: italic; }" +
-   "namegroup name occurances { color: 00009c; }" +
-   "namegroup name count { color: 3299cc; }";
-    
+  static final String[] defaultStylesheet = {
+   "body { background: white; }",
+   "a { color: black; text-decoration: none; }",
+   "a:hover { text-decoration: underline; }",
+   "p { color: black; }",
+   "",
+   "/* table header */",
+   "tr.header { background: yellow; }",
+   "",
+   "/* footer */",
+   "footer { display: block; font-size: 10; }",
+   "",
+   "/* <property0>Birth </property0> */",
+   "/*  <property1>Date </property1> */",
+   "/*  <property2>Addr </property2> */",
+   "/*   <property3>City</property3> */",
+   "property0 { font-weight: bold; text-decoration: underline; }",
+   "property1 { margin-left: 1ex; font-style: italic; text-decoration: underline; }",
+   "property2 { margin-left: 2ex; font-style: italic; }",
+   "property3 { margin-left: 3ex; font-style: italic; }",
+   "property4 { margin-left: 4ex; font-style: italic; }",
+   "",
+   "/* <value>Lohmar</value> */",
+   "value { }",
+   "",
+   "/* <namegroup> */",
+   "/*  <character>A</character> */",
+   "/*   <name>Adam<occurances>(<count>1</count>)</occurances></name> */",
+   "/*  <character>E</character> */",
+   "/*   <name>Eve<occurances>(<count>1</count>)</occurances></name> */",
+   "namegroup { display: block; margin-bottom: 1em; }",
+   "namegroup character { display: block; color: red; font-weight: bold; }",
+   "namegroup name { margin-right: 1ex; font-style: italic; }",
+   "namegroup name occurances { color: 00009c; }",
+   "namegroup name count { color: 3299cc; }"
+  };
 
   /** options - style sheet */
   public String css = "./style.css";
@@ -476,18 +471,18 @@ public class ReportHTMLSheets extends Report {
   private void exportStylesheet(File dir) throws IOException {
 
     File file = getFileForStylesheet(dir);
-    if (file==null||file.exists())
+    if (file==null||file.exists()) {
+      if (file.exists())
+        println(i18n("kept.stylesheet", css));
       return;
+    }
     
     println(i18n("exporting", new String[]{ file.getName(), dir.toString() }));
     PrintWriter out = getWriter(new FileOutputStream(file));
-    StringTokenizer tokens = new StringTokenizer(defaultStylesheet, "}", true);
-    while (tokens.hasMoreTokens()) {
-      String token = tokens.nextToken();
-      out.print(token);
-      if (token.equals("}"))
-        out.println();
-    }
+    
+    for (int i=0;i<defaultStylesheet.length;i++) 
+      out.println(defaultStylesheet[i]);
+    
     out.close();
   }
   
@@ -537,8 +532,8 @@ public class ReportHTMLSheets extends Report {
     try {
       switch (openBrowser) {
         case 0: break;
-        case 1: showBrowserToUser(getFileForIndex(dir).toURL());
-        case 2: showBrowserToUser(getFileForNames(dir).toURL());
+        case 1: showBrowserToUser(getFileForIndex(dir).toURL()); break;
+        case 2: showBrowserToUser(getFileForNames(dir).toURL()); break;
       }
     } catch (MalformedURLException e) {
       // shouldn't happen
