@@ -60,9 +60,11 @@ public class Debug {
   public static void setFile(File file) {
     // try to open a file for debugging
     try {
-      setOutput(new PrintStream(new FileOutputStream(file.getAbsolutePath(), true)));
+      PrintStream ps = new PrintStream(new FileOutputStream(file.getAbsolutePath(), true));
+      for (int i=0;i<80;i++) ps.print('#'); ps.println();
+      setOutput(ps);
     } catch (Throwable t) {
-      log(ERROR, Debug.class, "Failed to route debug log to "+file.getAbsoluteFile(), t);
+      log(WARNING, Debug.class, "Failed to route debug log to "+file.getAbsoluteFile(), t);
     }
   }
   
@@ -123,14 +125,14 @@ public class Debug {
       buf.append(':');
       buf.append(type.getName());
       buf.append(':');
+      if (msg!=null) buf.append(msg);
+      buf.append(':');
       if (t!=null) buf.append(t.getClass().getName());
       buf.append(':');
       if (t!=null) buf.append(t.getMessage()!=null?t.getMessage():"");
-      buf.append(':');
-      if (msg!=null) buf.append(msg);
       
       out.println(buf.toString());
-      if (level==ERROR) {
+      if (level==ERROR&&t!=null) {
         t.printStackTrace(out);
       }
       
@@ -146,6 +148,7 @@ public class Debug {
       }
     }
   
+    // done log()
   }
   
   /**
