@@ -16,7 +16,7 @@ import genj.report.Report;
 
 /**
  * @author Carsten Muessig <carsten.muessig@gmx.net>
- * @version 1.0
+ * @version 1.01
  */
 
 public class ReportFamily extends Report {
@@ -26,7 +26,7 @@ public class ReportFamily extends Report {
     public boolean reportDetailedChildrenData = true;
     
     /** this report's version */
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "1.01";
     
     public String getVersion() {
         return VERSION;
@@ -135,7 +135,7 @@ public class ReportFamily extends Report {
                 for(int i=0; i<families.length; i++) {
                     if(families[i]!=f) {
                         String str = "";
-                        if((trim(families[i].getMarriageDate().toString()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0))
+                        if((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0))
                             str = OPTIONS.getMarriageSymbol()+" "+trim(families[i].getMarriageDate())+" "+trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC")))+" ";
                         println(getIndent(4)+str+" "+i18n("entity", new String[] {families[i].getId(), families[i].toString()} ));
                     }
