@@ -22,6 +22,7 @@ import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
 
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -61,11 +62,8 @@ public class TreeLayout extends AbstractLayout implements Layout {
   /** whether arcs are direct or bended */
   private boolean isBendArcs = true;
 
-  /** whether we're vertical or not (=horizontal) */
-  private boolean isVertical = true;
-
-  /** whether we're doing it top/down or bottom/up */
-  private boolean isTopDown = true;
+  /** orientation */
+  private double orientation = 0;
 
   /** the root of the tree */
   /*package*/ Node declaredRoot = null;
@@ -188,34 +186,6 @@ public class TreeLayout extends AbstractLayout implements Layout {
   }
 
   /**
-   * Getter - whether we're vertical or not
-   */
-  public boolean isVertical() {
-    return isVertical;
-  }
-
-  /**
-   * Setter - whether we're vertical or not
-   */
-  public void setVertical(boolean set) {
-    isVertical=set;
-  }
-
-  /**
-   * Getter - whether we're doing it top/down (or bottom/up)
-   */
-  public boolean isTopDown() {
-    return isTopDown;
-  }
-
-  /**
-   * Setter - whether we're doing it top/down (or bottom/up)
-   */
-  public void setTopDown(boolean set) {
-    isTopDown = set;
-  }
-
-  /**
    * Set root of tree. If a graph does not have a
    * preset root or it is not connected then random
    * secondary roots are choosen automatically.
@@ -234,17 +204,31 @@ public class TreeLayout extends AbstractLayout implements Layout {
   }
 
   /**
-   * Accesspr - node options
+   * Accessor - node options
    */
   public void setNodeOptions(NodeOptions no) {
     nodeOptions = no;
   }
   
   /**
-   * Accesspr - node options
+   * Accessor - node options
    */
   public NodeOptions getNodeOptions() {
     return nodeOptions!=null ? nodeOptions : new DefaultNodeOptions();
+  }
+  
+  /**
+   * Accessor - orientation 0-359
+   */
+  public double getOrientation() {
+    return orientation;
+  }
+  
+  /**
+   * Accessor - orientation 0-359
+   */
+  public void setOrientation(double theta) {
+    orientation = theta;
   }
   
   /**
@@ -260,7 +244,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
   public Rectangle2D layout(Node root, int estimatedSize) throws LayoutException {
 
     // get an orientation
-    Orientation orientn = Orientation.get(isVertical,isTopDown);
+    Orientation orientn = new Orientation(orientation);
     NodeOptions nopt = getNodeOptions();
         
     // and a node layout
@@ -295,7 +279,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
     if (graph.getNodes().isEmpty()) return;
 
     // get an orientation
-    Orientation orientn = Orientation.get(isVertical,isTopDown);
+    Orientation orientn = new Orientation(orientation);
     NodeOptions nopt = getNodeOptions();
     
     // and a node layout
@@ -316,7 +300,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
     if (root==null||!graph.getNodes().contains(root)) root=(Node)unvisited.iterator().next();
 
     // loop as long as there are nodes that we haven't visited yet
-    Rectangle2D bounds = new Rectangle2D.Double();
+    Rectangle2D bounds = null;
     while (true) {
 
       // create a Tree for current root assuming that all nodes in it will be visited
@@ -324,7 +308,9 @@ public class TreeLayout extends AbstractLayout implements Layout {
       unvisited.removeAll(tree.getNodes());
 
       // update bounds
-      bounds.add(nlayout.layout(tree, isDebug()?debugShapes:null));
+      Rectangle r = nlayout.layout(tree, isDebug()?debugShapes:null);
+      if (bounds==null) bounds = r;
+      else bounds.add(r);
       
       // choose a new root (for a new sub-graph)
       if (isIgnoreUnreachables||unvisited.isEmpty()) break;

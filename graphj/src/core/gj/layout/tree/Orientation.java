@@ -1,59 +1,64 @@
+/**
+ * GraphJ
+ *
+ * Copyright (C) 2002 Nils Meier
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ */
 package gj.layout.tree;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * An Orientation
  */
-public abstract class Orientation {
+public class Orientation {
   
-  /** orientations */
-  private static final Map orientations = new HashMap();
-  
-  private static final Orientation
-    truetrue   = new truetrue  (),
-    falsetrue  = new falsetrue (),
-    truefalse  = new truefalse (),
-    falsefalse = new falsefalse();
-    
-  /**
-   * Constructor
-   */
-  private Orientation() {
-    orientations.put(getClass().getName(), this);
-  }
+  /** orientation's transformation */
+  private AffineTransform transform, inverse;
   
   /**
-   * Resolve an orientation
-   * @param vertical vertical or horizontal
-   * @param topdown top-down or bottom-up
-   * @return an orientation
+   * Constructor 0-359
    */
-  protected static Orientation get(boolean vertical, boolean topdown) {
-    return (Orientation) orientations.get(Orientation.class.getName()+"$"+vertical+topdown);
+  protected Orientation(double theta) {
+
+    // transform degree 0-359 into 2*Math.PI
+    theta = theta * 2*Math.PI / 360; 
+       
+    try {
+      transform = AffineTransform.getRotateInstance(theta);
+      inverse = transform.createInverse();
+    } catch (NoninvertibleTransformException e) {
+      // n/a
+    }
   }
-  
+
   /**
    * Returns the 2D bounds for a surface with lat/lon's
    */
   protected Rectangle getBounds(Contour c) {
-
-    Point
-      p1 = getPoint(c.north, c.west),
-      p2 = getPoint(c.south, c.east);
-      
-    int
-      x1 = Math.min(p1.x, p2.x),
-      y1 = Math.min(p1.y, p2.y),
-      x2 = Math.max(p1.x, p2.x),
-      y2 = Math.max(p1.y, p2.y);
-      
-    return new Rectangle(x1,y1,x2-x1,y2-y1);
+    
+    GeneralPath gp = new GeneralPath(new Rectangle(
+      c.west, c.north, c.east-c.west, c.south-c.north
+    ));
+    
+    gp.transform(transform);
+    
+    return gp.getBounds();
   }
 
   /**
@@ -61,141 +66,40 @@ public abstract class Orientation {
    */
   protected Contour getContour(Rectangle2D r2d) {
     
-    Rectangle r = r2d.getBounds(); 
-      
-    Point 
-      p1 = new Point(r.x, r.y),
-      p2 = new Point(r.x+r.width, r.y+r.height);
-      
-    int 
-      lon1 = getLongitude(p1),
-      lon2 = getLongitude(p2),
-      lat1 = getLatitude (p1),
-      lat2 = getLatitude (p2);
+    GeneralPath gp = new GeneralPath(r2d);
+    gp.transform(inverse);
+    Rectangle r = gp.getBounds(); 
 
-    int          
-      n = Math.min(lat1, lat2),
-      w = Math.min(lon1, lon2),
-      e = Math.max(lon1, lon2),
-      s = Math.max(lat1, lat2);
-
-    return new Contour(n,w,e,s);    
+    return new Contour(r.y,r.x,r.x+r.width,r.y+r.height);    
+           
   }
 
   /**
-   * Returns the longitude for a 2D position
+   * @see gj.layout.tree.Orientation.tst#getPoint(int, int)
    */
-  public abstract int getLongitude(Point2D p);
-
-  /**
-   * Returns the latitude for a 2D position
-   */
-  public abstract int getLatitude(Point2D p);
-
-  /**
-   * Returns the 2D position for given latitude/longitude
-   */
-  protected abstract Point getPoint(int lat, int lon);
+  public Point getPoint(int lat, int lon) {
+    Point result = new Point(lon, lat);
+    transform.transform(result, result);
+    return result;
+  }
   
   /**
-   * vertical=false, topdown=true
-   * 
-   *      +-+
-   *      | |
-   *    +-+ |
-   *    |   |
-   *  +-+   |
-   *  |     |
-   *  +-+   |
-   *    |   |
-   *    +-+ |
-   *      | |
-   *      +-+
-   */  
-  private static class falsetrue extends Orientation {
-    public int getLongitude(Point2D p) {
-      return (int)(-p.getY());
-    }
-    public int getLatitude(Point2D p) {
-      return (int)(p.getX());
-    }
-    protected Point getPoint(int lat, int lon) {
-      return new Point(lat,-lon);
-    }
-  } //falsetrue
+   * @see gj.layout.tree.Orientation.tst#getLatitude(java.awt.geom.Point2D)
+   */
+  public int getLatitude(Point2D p) {
+    Point result = new Point();
+    inverse.transform(p, result);
+    return result.y;
+  }
 
   /**
-   * vertical=true, topdown=true
-   * 
-   *     +-+
-   *     | |
-   *   +-+ +-+
-   *   |     |
-   * +-+     +-+
-   * |         |
-   * +---------+
-   */  
-  private static class truetrue extends Orientation {
-    public int getLongitude(Point2D p) {
-      return (int)(p.getX());
-    }
-    public int getLatitude(Point2D p) {
-      return (int)(p.getY());
-    }
-    protected Point getPoint(int lat, int lon) {
-      return new Point(lon,lat);
-    }
-  } //truetrue
-
-  /**
-   * vertical=false, topdown=false
-   * 
-   *  +-+
-   *  | |
-   *  | +-+
-   *  |   |
-   *  |   +-+
-   *  |     |
-   *  |   +-+
-   *  |   |
-   *  | +-+
-   *  | |
-   *  +-+
-   */  
-  private static class falsefalse extends Orientation {
-    public int getLatitude(Point2D p) {
-      return (int)(-p.getX());
-    }
-    public int getLongitude(Point2D p) {
-      return (int)(p.getY());
-    }
-    protected Point getPoint(int lat, int lon) {
-      return new Point(-lat,lon);
-    }
-  } //falsefalse
-
-  /**
-   * vertical=true, topdown=false
-   * 
-   * +---------+
-   * |         |
-   * +-+     +-+
-   *   |     |
-   *   +-+ +-+
-   *     | |
-   *     +-+
-   */  
-  private static class truefalse extends Orientation {
-    public int getLatitude(Point2D p) {
-      return (int)(-p.getY());
-    }
-    public int getLongitude(Point2D p) {
-      return (int)(-p.getX());
-    }
-    protected Point getPoint(int lat, int lon) {
-      return new Point(-lon,-lat);
-    }
-  } //truefalse
+   * @see gj.layout.tree.Orientation.tst#getLongitude(java.awt.geom.Point2D)
+   */
+  public int getLongitude(Point2D p) {
+    Point result = new Point();
+    inverse.transform(p, result);
+    return result.x;
+  }
 
 } //Orientation
 

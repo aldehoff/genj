@@ -22,6 +22,7 @@ import gj.model.Node;
 import gj.util.ArcHelper;
 import gj.util.ArcIterator;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -72,7 +73,7 @@ import java.util.Stack;
    * Apply to a node - root will stay at present position
    * @param tree the tree to layout
    */
-  /*package*/ Rectangle2D layout(Tree tree, Collection debugShapes) {
+  /*package*/ Rectangle layout(Tree tree, Collection debugShapes) {
 
     // Save root's original position
     Node root = tree.getRoot();
