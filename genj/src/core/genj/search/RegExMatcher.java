@@ -35,7 +35,7 @@ public class RegExMatcher implements Matcher {
    */
   public void init(String pattern) {
     try {
-      compiled = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+      compiled = Pattern.compile(pattern);
     } catch (PatternSyntaxException pe) {
       throw new IllegalArgumentException(pe.getDescription());
     }
