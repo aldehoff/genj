@@ -31,11 +31,13 @@ import genj.util.swing.HeadlessLabel;
 import genj.util.swing.TreeWidget;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Stack;
 
@@ -57,6 +59,14 @@ public class PropertyTreeWidget extends TreeWidget {
   
   /** the model */
   private Model model;
+
+  /**
+   * Constructor
+   */
+  public PropertyTreeWidget(Property setRoot) {
+    this(setRoot.getGedcom());
+    setRoot(setRoot);
+  }
     
   /**
    * Constructor
@@ -70,8 +80,15 @@ public class PropertyTreeWidget extends TreeWidget {
     // setup callbacks
     setCellRenderer(new Renderer());
     getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-
+    
     // done
+  }
+  
+  /**
+   * @see javax.swing.JTree#getPreferredScrollableViewportSize()
+   */
+  public Dimension getPreferredScrollableViewportSize() {
+    return new Dimension(256,128);
   }
   
   /**
@@ -95,49 +112,54 @@ public class PropertyTreeWidget extends TreeWidget {
   }
     
   /**
-   * Prepare the tree-model that lies behind the tree.
+   * Set the current root
    */
-  public void setEntity(Entity entity) {
-    model.setEntity(entity);
+  public void setRoot(Property property) {
+    // change?
+    if (model.getRoot()==property)
+      return;
+    // propagate to model
+    model.setRoot(property);
+    // show
     expandRows();
-  }
-  
-  /**
-   * Set the current property
-   */
-  public void setProperty(Property property) {
-    // set entity first
-    Entity e = property.getEntity();
-    setEntity(e);
     // select and show property
-    TreePath path = new TreePath(e.getPathTo(property));
-    scrollPathToVisible(path);
-    setSelectionPath(path);
+    setSelection(property);
   }
   
   /**
-   * Access to entity
+   * The current root
    */
-  public Entity getEntity() {
-    return model.getEntity();
+  public Property getRoot() {
+    return model.root;
+  }
+  
+  /**
+   * Selects a property (eventually switching root)
+   */
+  public void setSelection(Property select) {
+    // safety check
+    if (model.root==null||select==null)
+      return;
+    // get path
+    Property[] path = model.root.getPathTo(select);
+    if (path.length==0)
+      return;
+    // show and select
+    TreePath tpath = new TreePath(path);
+    scrollPathToVisible(tpath);
+    setSelectionPath(tpath);
+    // done
   }
   
   /**
    * Allows to return to previous entity
    */
-  public void setPreviousEntity() {
-    
+  public void setPrevious() {
     // tell model to go to previous
     if (!model.setPrevious()) return;
     expandRows();
-
     // select and show property
-    Entity entity = model.getEntity();
-    if (entity!=null) {
-      TreePath path = new TreePath(entity);
-      scrollPathToVisible(path);
-      setSelectionPath(path);
-    }
+    setSelection(model.root);
   }
   
   /**
@@ -167,27 +189,6 @@ public class PropertyTreeWidget extends TreeWidget {
     return (Property)path.getLastPathComponent();
   }
   
-//  /**
-//   * the selected properties
-//   */
-//  public Property[] getSelection() {
-//    
-//    // check selection
-//    TreePath paths[] = getSelectionPaths();
-//    if ( (paths==null) || (paths.length==0) ) {
-//      return new Property[0];
-//    }
-//
-//    // .. remove every selected node
-//    Property[] result = new Property[paths.length];
-//    for (int i=0;i<paths.length;i++) {
-//      result[i] = (Property)paths[i].getLastPathComponent();
-//    }
-//
-//    // done
-//    return result;    
-//  }
-  
   /**
    * @see javax.swing.JTree#getToolTipText(MouseEvent)
    */
@@ -197,6 +198,8 @@ public class PropertyTreeWidget extends TreeWidget {
     if (prop==null) return null;
     // .. transient?
     if (prop.isTransient()) return null;
+    // .. won't work if property is not part of entity (e.g. Cliboard.Copy)
+    if (prop.getEntity()==null) return null;
     // .. calc information text
     String info = MetaProperty.get(prop).getInfo();
     if (info==null) return null;
@@ -215,7 +218,7 @@ public class PropertyTreeWidget extends TreeWidget {
     private List listeners = new ArrayList();
   
     /** root of tree */
-    private Entity root = null;
+    private Property root = null;
 
     /** history stack */
     private Stack history = new Stack();
@@ -231,20 +234,19 @@ public class PropertyTreeWidget extends TreeWidget {
      */
     public Model(Gedcom gedcom) {
       this.gedcom=gedcom;
-      setEntity(null);
     }          
   
     /**
      * Set the root
      */
-    public void setEntity(Entity entity) {
+    public void setRoot(Property set) {
       // remember history
       if (root!=null) {
         history.push(root);
         if (history.size()>16) history.removeElementAt(0);
       }
       // remember
-      root = entity;
+      root = set;
       // notify
       fireStructureChanged();
       // make sure we don't show null-root
@@ -260,7 +262,7 @@ public class PropertyTreeWidget extends TreeWidget {
       // don't want current to end up on the stack
       root = null;
       // set it
-      setEntity((Entity)history.pop());
+      setRoot((Property)history.pop());
       // done
       return true;
     }
@@ -270,7 +272,7 @@ public class PropertyTreeWidget extends TreeWidget {
      */
     public void addTreeModelListener(TreeModelListener l) {
       // first?
-      if (listeners.isEmpty()) gedcom.addListener(this);
+      if (listeners.isEmpty()&&gedcom!=null) gedcom.addListener(this);
       // add
       listeners.add(l);
     }          
@@ -282,7 +284,7 @@ public class PropertyTreeWidget extends TreeWidget {
       // remove
       listeners.remove(l);
       // last?
-      if (listeners.isEmpty()) gedcom.removeListener(this);
+      if (listeners.isEmpty()&&gedcom!=null) gedcom.removeListener(this);
     }          
   
     /**
@@ -369,14 +371,6 @@ public class PropertyTreeWidget extends TreeWidget {
       return root!=null?root:DUMMY;
     }          
   
-    /** 
-     * Returns root of tree
-     */
-    public Entity getEntity() {
-      if (root==null) return null;
-      return root.getEntity();
-    }
-
     /**
      * Get cached value for given property
      */    
@@ -419,20 +413,26 @@ public class PropertyTreeWidget extends TreeWidget {
 
       // Entity deleted ?
       if ( change.isChanged(Change.EDEL) ) {
+        // our entity
+        Entity entity = root.getEntity();
         // Loop through known entity ?
         boolean affected = false;
         Iterator ents = change.getEntities(Change.EDEL).iterator();
         while (ents.hasNext()) {
           // the entity deleted
-          Entity entity = (Entity)ents.next();
+          Entity deleted = (Entity)ents.next();
           // ... a removed entity has to be removed from stack
-          while (history.removeElement(entity)) {};
+          for (ListIterator it = history.listIterator(); it.hasNext(); ) {
+            Property p = (Property)it.next();
+            if (p.getEntity()==deleted) it.remove();
+          } 
           // ... and might affect the current edit view
-          affected |= (entity==root);
+          affected |= (entity==deleted);
         }
         // Is this a show stopper at this point?
         if (affected==true) {
-          setEntity(null);
+          root = null;
+          setRoot(null);
           return;
         }
         // continue

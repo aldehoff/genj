@@ -170,7 +170,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
    */
   public void setContext(Property property) {
     if (!isSticky()) {
-      tree.setProperty(property);
+      tree.setRoot(property.getEntity());
+      tree.setSelection(property);
     } 
   }
 
@@ -241,7 +242,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
    * returns the currently viewed entity
    */
   /*package*/ Entity getCurrentEntity() {
-    return tree.getEntity();
+    Property root = tree.getRoot();
+    return root==null ? null : root.getEntity();
   }
   
   /**
@@ -256,7 +258,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     stopEdit();
 
     // Reset tree model
-    tree.setEntity(entity);
+    tree.setRoot(entity);
 
     // Done
   }
@@ -373,7 +375,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     }
     /** run */
     protected void execute() {
-      tree.setPreviousEntity();
+      tree.setPrevious();
     }
   } //ActionBack
   
@@ -606,15 +608,14 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
         return; // shouldn't happen
         
       // ask
-// FIXME wanne show copy-property tree here
-//      if (0!=manager.getWindowManager().openDialog(
-//        null,
-//        resources.getString("action.paste.tip"),
-//        WindowManager.IMG_QUESTION,
-//        "foo",
-//        new String[]{ resources.getString("action.paste"), WindowManager.OPTION_CANCEL},
-//        EditView.this
-//      )) return;        
+      if (0!=manager.getWindowManager().openDialog(
+        null,
+        resources.getString("action.paste.tip"),
+        WindowManager.IMG_QUESTION,
+        new JScrollPane(new PropertyTreeWidget(copy)),
+        new String[]{ resources.getString("action.paste"), WindowManager.OPTION_CANCEL},
+        EditView.this
+      )) return;        
         
       // paste contents
       if (!gedcom.startTransaction()) return;

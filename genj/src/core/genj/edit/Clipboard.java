@@ -24,6 +24,7 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
+import genj.util.swing.ImageIcon;
 
 /**
  * An app wide clipboard
@@ -77,18 +78,23 @@ public class Clipboard {
   public static class Copy extends Property {
     
     /** copied information */
-    private String tag, value;
+    private String tag, value, multiline;
+    private ImageIcon img;
+    private boolean isMultiline;
     
     /**
      * Constructor
      */
     /*package*/  Copy(Property prop) {
       // remember
+      img = prop.getImage(false);
+      isMultiline = prop instanceof MultiLineSupport;
       tag = prop.getTag();
-      if (prop instanceof MultiLineSupport)
-        value = ((MultiLineSupport)prop).getLinesValue();
-      else
-        value = prop.getValue();
+      value = prop.getValue();
+      
+      if (isMultiline)
+        multiline = ((MultiLineSupport)prop).getLinesValue();
+        
       // subs?
       Property[] children = prop.getProperties();
       for (int c=0; c<children.length; c++) {
@@ -110,7 +116,7 @@ public class Clipboard {
     private Property pasteRecursively(Property target, MetaProperty targetMeta) throws GedcomException {
       // add content to target
       MetaProperty meta = targetMeta.get(tag, false);
-      Property prop = meta.create(value);
+      Property prop = meta.create(multiline!=null?multiline:value);
       target.addProperty(prop);
       // link and recurse
       try {
@@ -153,6 +159,13 @@ public class Clipboard {
       return value;
     }
     
+    /**
+     * @see genj.gedcom.Property#getImage(boolean)
+     */
+    public ImageIcon getImage(boolean checkValid) {
+      return img;
+    }
+
   } //Copy
 
 } //Clipboard
