@@ -431,7 +431,7 @@ import javax.swing.event.ChangeListener;
   /**
    * A 'bean' we use for groups
    */
-  private static class PopupBean extends PopupWidget implements PropertyChangeListener {
+  private class PopupBean extends PopupWidget implements PropertyChangeListener {
     
     private PropertyBean wrapped;
     
@@ -442,8 +442,9 @@ import javax.swing.event.ChangeListener;
      */
     private PopupBean(PropertyBean wrapped) {
       
+      // remember wrapped
       this.wrapped = wrapped;
-  
+      
       // prepare image
       Property prop = wrapped.getProperty();
       ImageIcon img = prop.getImage(false);
@@ -486,12 +487,16 @@ import javax.swing.event.ChangeListener;
         popup.hide();
         popup=null;
       }
-      // screen pos
-      Point pos = getLocationOnScreen();
-      pos.x += getWidth()/2;
-      pos.y += getHeight()/2;
+//      // patch wrapped preferred size (make it bigger)
+//      Dimension preferred = wrapped.getPreferredSize();
+//      Dimension max = wrapped.getMaximumSize();
+//      Dimension avail = beanPanel.getSize();
+//      if (avail.width<max.width && avail.width>preferred.width)
+//        preferred.width = avail.width;
+//      wrapped.setPreferredSize(preferred);
       // show popup
-      popup = PopupFactory.getSharedInstance().getPopup(this, wrapped, pos.x, pos.y);
+      Point pos = getLocationOnScreen();
+      popup = PopupFactory.getSharedInstance().getPopup(this, wrapped, pos.x+getWidth(), pos.y);
       popup.show();
       // request focus
       SwingUtilities.getWindowAncestor(wrapped).setFocusableWindowState(true);
@@ -524,8 +529,7 @@ import javax.swing.event.ChangeListener;
       popup.hide();
       popup = null;
       // done
-    }
-        
+    }        
   } //Label
   
   /**
