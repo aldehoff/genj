@@ -90,8 +90,7 @@ class HelpWidget extends JPanel {
 
     // Load and init through bridge
     try {
-      Bridge bridge = (Bridge)Class.forName(Bridge.class.getName()+"Impl").newInstance();
-      return bridge.init(new URL("file","", file));
+      return new JHelp(new HelpSet(null,new URL("file","", file)));
     } catch (Exception e) {
       Debug.log(Debug.WARNING, this,"Problem reading help",e);
       return null;
@@ -124,21 +123,4 @@ class HelpWidget extends JPanel {
     
   }
 
-  /**
-   * A bridge to the JavaHelp classes that might not be
-   * there during runtime  
-   */
-  /*package*/ interface Bridge {
-    public JComponent init(URL url) throws Exception;
-  }
-  
-  /**
-   * Impl
-   */
-  /*package*/ static class BridgeImpl implements Bridge {
-    public JComponent init(URL url) throws Exception {
-      return new JHelp(new HelpSet(null,url));
-    }
-  }
-  
-}
+} //HelpWidget
