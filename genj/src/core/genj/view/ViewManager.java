@@ -120,7 +120,14 @@ public class ViewManager {
     
     // grab one from map
     Context result = (Context)gedcom2context.get(gedcom);
-    if (result!=null) {
+    
+    // fallback to last stored?
+    if (result==null) {
+      try {
+        result = new Context(gedcom.getEntity(getRegistry(gedcom).get("lastEntity", (String)null)));
+      } catch (Throwable t) {
+      }
+    } else {
       // still in valid entity?
       Entity entity = result.getEntity();
       // 20040305 make sure entity isn't null by now
@@ -131,9 +138,13 @@ public class ViewManager {
         result=null;
       }
     }
+    
     // fallback to first indi 
     if (result==null)
       result = new Context(gedcom, gedcom.getAnyEntity(Gedcom.INDI), null);
+
+    // remember
+    gedcom2context.put(gedcom, result);
     
     // done here
     return result;
@@ -151,6 +162,8 @@ public class ViewManager {
     // remember context
     Gedcom gedcom = context.getGedcom();
     gedcom2context.put(gedcom, context);
+    if (context.getEntity()!=null)
+      getRegistry(gedcom).put("lastEntity", context.getEntity().getId());
     
     // clear any menu selections
     MenuSelectionManager.defaultManager().clearSelectedPath();
@@ -215,32 +228,35 @@ public class ViewManager {
     }
     // done
   }
+  
+  /**
+   * Helper that returns registry for gedcom
+   */
+  private Registry getRegistry(Gedcom gedcom) {
+    Origin origin = gedcom.getOrigin();
+    String name = origin.getFileName();
+    Registry registry = Registry.lookup(name);
+    if (registry==null) 
+      registry = new Registry(name, origin);
+    return registry;
+  }
 
   /**
    * Helper that returns the next logical registry-view
    * for given gedcom and name of view
    */
-  private Registry getRegistry(Gedcom gedcom, String nameOfView) {
+  private Registry getNextRegistry(Gedcom gedcom, String nameOfView) {
 
     // Check which iteration number is available next
-    Origin origin = gedcom.getOrigin();
-    String name = origin.getFileName();
+    String name = gedcom.getOrigin().getFileName();
     int number;
     for (number=1;;number++) {
-      if (!key2viewwidget.containsKey(name+"."+nameOfView+"."+number)) {
+      if (!key2viewwidget.containsKey(name+"."+nameOfView+"."+number)) 
         break;
-      }
     }
 
-    // Try to find a registry
-    Registry registry = Registry.lookup(name);
-    if (registry==null) {
-      registry = new Registry(name, origin);
-    }
-
-    return new Registry(registry, nameOfView+"."+number);
-
-    // done
+    // create the view
+    return new Registry(getRegistry(gedcom), nameOfView+"."+number);
   }
   
   
@@ -289,7 +305,7 @@ public class ViewManager {
   public JComponent openView(ViewFactory factory, Gedcom gedcom) {
     
     // get a registry 
-    Registry registry = getRegistry(gedcom, getKey(factory));
+    Registry registry = getNextRegistry(gedcom, getKey(factory));
     
     // title & key
     final String 
