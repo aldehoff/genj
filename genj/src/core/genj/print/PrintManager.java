@@ -24,6 +24,7 @@ import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.Trackable;
+import genj.util.swing.ProgressWidget;
 import genj.window.WindowManager;
 
 import java.awt.Color;
@@ -104,6 +105,9 @@ public class PrintManager {
     /** the title */
     private String title;
     
+    /** progress key */
+    private String progress;
+    
     /**
      * Constructor     */
     private PrintTask(Printer reNderer, String tiTle, JComponent owNer) {
@@ -158,8 +162,13 @@ public class PrintManager {
       }
 
       // setup progress dlg
-// FIXME missing      
-//      new ProgressDialog(frame, title, "", this, getThread());
+      progress = winMgr.openDialog(
+        null, 
+        resources.getString("dlg.title", title),
+        WindowManager.IMG_INFORMATION, 
+        new ProgressWidget(this, getThread()),
+        owner
+      );
       
       // continue
       return true;
@@ -182,9 +191,13 @@ public class PrintManager {
      * @see genj.util.ActionDelegate#postExecute()
      */
     protected void postExecute() {
+      // close progress
+      winMgr.close(progress);
+      // something we should know about?
       if (throwable!=null) {
         Debug.log(Debug.WARNING, this, "print() threw error", throwable);
       }
+      // finished
     }
     
     /**
