@@ -203,7 +203,7 @@ public abstract class Calendar {
    */
   protected String getDayOfWeek(PointInTime pit, boolean localize) throws GedcomException {
     if (!pit.isComplete())
-      throw new GedcomException("");
+      throw new GedcomException(resources.getString("pit.incomplete"));
     String[] result = localize ? localizedWeekDays : localizedWeekDays;
     int dow = (pit.getJulianDay() + 1) % 7;
     return result[dow >= 0 ? dow : dow+7];

@@ -61,7 +61,7 @@ public class HebrewCalendar extends Calendar {
   protected PointInTime toPointInTime(int julianDay) throws GedcomException {
     
     // before Hebrew calendar start - ANNO MUNDI?
-    if (julianDay<SDN_OFFSET)
+    if (julianDay<=SDN_OFFSET)
       throw new GedcomException(resources.getString("hebrew.bef"));
 
     // call implementation
@@ -75,7 +75,7 @@ public class HebrewCalendar extends Calendar {
 
     // year ok?
     if (year<1)
-      throw new GedcomException("Hebrew calendar has to start with 1");
+      throw new GedcomException(resources.getString("hebrew.one"));
 
     // call implementation
     return JewishToSdn(year, month+1, day+1);
