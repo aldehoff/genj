@@ -30,6 +30,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -42,18 +43,18 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.GlyphView;
 import javax.swing.text.Segment;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.InlineView;
+import javax.swing.text.html.HTML.Tag;
 import javax.swing.text.html.HTMLEditorKit.HTMLFactory;
+import javax.swing.text.html.parser.DTD;
+import javax.swing.text.html.parser.DocumentParser;
 
 /**
- * 
+ * A renderer for entities - blueprint necessary
  */
 public class EntityRenderer {
   
@@ -72,11 +73,14 @@ public class EntityRenderer {
   /** the root of our rendering view */
   private RootView root;
   
-  /** the kit we're using */
-  private HTMLEditorKit kit = new MyHTMLEditorKit();
-  
   /** the document we're looking at */
   private HTMLDocument doc = new HTMLDocument();
+  
+  /** the factory we're using to create views */
+  private MyHTMLFactory factory = new MyHTMLFactory();
+  
+  /** a cached dtd for html */
+  private static DTD dtd = null;
   
   /** the entity we're looking at */
   private Entity entity;
@@ -109,9 +113,35 @@ public class EntityRenderer {
     // we wrap the html in html/body
     String html = "<html><body>"+bp.getHTML()+"</body></html>";
     
-    // read the html
+    // read and parse the html
     try {
-      kit.read(new StringReader(html), doc, 0);
+      
+      // I started out to use a HTMLEditorkit for reading the html into the document
+      //  new HTMLEditorKit().read(new StringReader(html), doc, 0);
+      // but this won't allow me to fix a problem with HTMLDocument.HTMLReader 
+      // so I'm using ParserDelegator directly allowing me to use MyHTMLReader
+      //  new ParserDelegator().parse(new StringReader(html), new HTMLReader(doc), false);
+      // but I also want to override the DocumentParser which is instantiated
+      // inside ParserDelegator.
+      //  new DocumentParser(dtd).parse(r, cb, ignoreCharSet);
+      // so I'm reading the dtd myself and creat my own DocumentParser
+      
+      // .. we need out own html reader (javax.swing.text.html.HTMLDocument.HTMLReader)
+      MyHTMLReader reader = new MyHTMLReader(doc);
+      
+      // .. because we want to use our own Parser we need to access the underlying
+      // dtd ourselves :(
+      if (dtd==null) {
+        dtd = DTD.getDTD("html32");
+        dtd.read(new DataInputStream(getClass().getResourceAsStream("/javax/swing/text/html/parser/html32.bdtd")));
+      }
+            
+      // .. trigger parsing
+      new MyDocumentParser(dtd).parse(new StringReader(html), reader, false);
+      
+      // .. flush reader
+      reader.flush();      
+      
     } catch (IOException ioe) {
       // can't happen
     } catch (BadLocationException ble) {
@@ -119,13 +149,13 @@ public class EntityRenderer {
     }
 
     // create the root view
-    root = new RootView(kit.getViewFactory().create(doc.getDefaultRootElement()));
+    root = new RootView(factory.create(doc.getDefaultRootElement()));
 
     // done    
   }
-
+  
   /**
-   * 
+   * Render the entity on given context
    */
   public void render(Graphics g, Entity e, Rectangle r) {
     
@@ -167,25 +197,73 @@ public class EntityRenderer {
     isDebug = set;
   }
   
+  
   /**
-   * 
+   * My own parser that overrides the original's property 
+   * <pre>strict=true</pre> - this will make the underlying parser 
+   * not skip spaces after close-tags
    */
-  private class MyHTMLEditorKit extends HTMLEditorKit {
-    
-    /** the view factory we use */
-    private ViewFactory factory = new MyHTMLFactory();
-  
+  private class MyDocumentParser extends DocumentParser {
     /**
-     * @see javax.swing.text.EditorKit#getViewFactory()
-     */
-    public ViewFactory getViewFactory() {
-      return factory;
+     * Constructor     */
+    private MyDocumentParser(DTD dtd) {
+      super(dtd);
+      // patch strictness
+      strict = true;
+      // done      
     }
-  
-  } //ModifiedHTMLEditorKit
+  } //MyDocumentParser
 
   /**
-   * 
+   * I've created my own subclass of HTMLDocument.HTMLReader a ParserCallback
+   * to achieve some special behaviour overriding protected method:
+   * @see HTMLDocument.HTMLReader.blockClose(Tag t)
+   */
+  private static class MyHTMLReader extends HTMLDocument.HTMLReader {
+    /** whether we ignore content */
+    private boolean skipContent = false;
+    /**
+     * Constructor     */
+    protected MyHTMLReader(HTMLDocument doc) {
+      doc.super(0);
+    }
+    /**
+     * In the original HTMLReader this will add a newline to the end
+     * of a block (if there was no newline already). For tables this
+     * means that there will be a InlineView (\n) that might flow into
+     * a separate *empty* line 
+     * <pre>
+     *  if(!lastWasNewline) {
+     *   addContent(NEWLINE, 0, 1, true);
+     *   lastWasNewline = true;
+     *  }
+     * </pre>
+     * 
+     * @see javax.swing.text.html.HTMLDocument.HTMLReader#blockClose(javax.swing.text.html.HTML.Tag)
+     */
+    protected void blockClose(Tag t) {
+      // skip anything that might be added to content from because
+      // of special considerations in superclasse - we don't want
+      // any trailing stuff (\n) added after a block. They tend to
+      // flow into the next line :(
+      skipContent = true;
+      // delegate to super
+      super.blockClose(t);
+      // back to accepting content
+      skipContent = false;
+    }
+    /**
+     * @see javax.swing.text.html.HTMLDocument.HTMLReader#addContent(char, int, int, boolean)
+     */
+    protected void addContent(char[] data, int offs, int length, boolean generateImpliedPIfNecessary) {
+      if (!skipContent) super.addContent(data, offs, length, generateImpliedPIfNecessary);
+    }
+    
+  } //MyHTMLReader
+  
+  /**
+   * My own HTMLFactory that extends the default one to support
+   * tags <i>prop</i> and <i>i18n</i>
    */
   private class MyHTMLFactory extends HTMLFactory {
     
@@ -212,22 +290,7 @@ public class EntityRenderer {
       // default to super
       View result = super.create(elem);
 
-      // Sadly InlineViews get generated for little '\n'
-      // segment that I don't know where they come from.
-      // They have the bad habit of not-breaking but flowing
-      // into a new-line when space is restricted and the
-      // result can be an empty line - so we replace those
-      // views with out EmptyView that is also flowing into
-      // the next line but doesn't take up any space (height!)
-      if (result instanceof InlineView && result.getClass().getName().indexOf("BRView")<0) {
-        GlyphView gv = (GlyphView)result;
-        Segment seg = gv.getText(gv.getStartOffset(), gv.getEndOffset());
-        if (seg.getEndIndex()-seg.getBeginIndex()==1&&seg.first()=='\n') {
-          return new EmptyView(elem);
-        }
-      }
-      
-      // .. keep track of TableViews
+      // .. keep track of TableViews for later dynamic invalidation
       if ("table".equals(elem.getName())) {
         tableViews.add(result);
       }
@@ -356,7 +419,14 @@ public class EntityRenderer {
       super.preferenceChanged(this,true,true);
     }
     
-  } //BaseView
+    /**
+     * we use our kit's view factory
+     */
+    public ViewFactory getViewFactory() {
+      return factory;
+    }
+
+  } //MyView
 
   /**
    * RootView onto a HTML Document
@@ -414,13 +484,6 @@ public class EntityRenderer {
       height = heIght;
       // delegate
       view.setSize(width, height);
-    }
-
-    /**
-     * we use our kit's view factory
-     */
-    public ViewFactory getViewFactory() {
-      return kit.getViewFactory();
     }
 
     /**
@@ -627,40 +690,5 @@ public class EntityRenderer {
     }
     
   } //PropertyView
-
-  /**
-   * EmptyView   */
-  private class EmptyView extends MyView {
-    
-    /**
-     * Constructor     */
-    private EmptyView(Element elem) {
-      super(elem);
-    }
-    
-    /**
-     * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
-     */
-    protected Dimension getPreferredSpan() {
-      return new Dimension(0,0);
-    }
-
-    /**
-     * @see javax.swing.text.View#paint(java.awt.Graphics, java.awt.Shape)
-     */
-    public void paint(Graphics g, Shape allocation) {
-      g.setColor(Color.red);
-      Rectangle r = allocation.getBounds();
-      g.fillRect(r.x,r.y,r.width,r.height);
-    }
-    
-    /**
-     * @see genj.renderer.EntityRenderer.MyView#getBreakWeight(int, float, float)
-     */
-    public int getBreakWeight(int axis, float pos, float len) {
-      return BadBreakWeight;
-    }
-
-  } //EmptyView
-  
+ 
 } //EntityRenderer
