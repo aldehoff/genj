@@ -733,6 +733,8 @@ public class ControlCenter extends JPanel {
     private Filter[] filters;
     /** progress key */
     private String progress;
+    /** exception we might encounter */
+    private GedcomIOException ioex = null;
     /** 
      * Constructor
      */
@@ -867,17 +869,7 @@ public class ControlCenter extends JPanel {
           gedcom.setUnchanged();
         }
       } catch (GedcomIOException ex) {
-        windowManager.openDialog(
-          null,
-          gedcom.getName(),
-          WindowManager.IMG_ERROR,
-          resources.getString("cc.save.write_error", "" + ex.getLine())
-            + ":\n"
-            + ex.getMessage(),
-          WindowManager.OPTIONS_OK,
-          ControlCenter.this
-        );
-        newOrigin = null;
+        ioex = ex;
       }
 
       // done
@@ -891,11 +883,25 @@ public class ControlCenter extends JPanel {
 
       // close progress
       windowManager.close(progress);
-      
-      // .. open new
-      if (newOrigin != null) {
-        tGedcoms.removeGedcom(newOrigin.getName());
-        new ActionOpen(newOrigin).trigger();
+    
+      // problem encountered?      
+      if (ioex!=null) {
+        windowManager.openDialog(
+          null,
+          gedcom.getName(),
+          WindowManager.IMG_ERROR,
+          resources.getString("cc.save.write_error", "" + ioex.getLine())
+            + ":\n"
+            + ioex.getMessage(),
+          WindowManager.OPTIONS_OK,
+          ControlCenter.this
+        );
+      } else {
+        // .. open new
+        if (newOrigin != null) {
+          tGedcoms.removeGedcom(newOrigin.getName());
+          new ActionOpen(newOrigin).trigger();
+        }
       }
 
       // .. done

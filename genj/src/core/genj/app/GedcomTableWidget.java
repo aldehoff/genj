@@ -246,7 +246,7 @@ public class GedcomTableWidget extends JTable {
      * @see javax.swing.table.TableModel#getValueAt(int, int)
      */
     public Object getValueAt(int row, int col) {
-      Gedcom gedcom = (Gedcom)gedcoms.get(row);
+      Gedcom gedcom = getGedcom(row);
       if (col==0) return gedcom.getName() + (gedcom.hasUnsavedChanges() ? "*" : "" );
       return ""+gedcom.getEntities(col-1).size();
     }
