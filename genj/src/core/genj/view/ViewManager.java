@@ -24,7 +24,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -270,12 +269,12 @@ public class ViewManager {
   /**
    * Get actions for given entity/gedcom
    */
-  private List getActions(Object context, JComponent target) {
+  private List getActions(Object context) {
     // loop through descriptors
     List result = new ArrayList(16);
     for (int f=0; f<factories.length; f++) {
       if (factories[f] instanceof ContextSupport) {
-        List as = getActions((ContextSupport)factories[f], context, target);
+        List as = getActions((ContextSupport)factories[f], context);
         if (as!=null&&!as.isEmpty()) result.add(as);
       }
     }
@@ -285,7 +284,7 @@ public class ViewManager {
     while (views.hasNext()) {
       ViewWidget view = (ViewWidget)views.next();
       if (view.getGedcom()==gedcom&&view.getView() instanceof ContextSupport) {
-        List as = getActions((ContextSupport)view.getView(), context, target);
+        List as = getActions((ContextSupport)view.getView(), context);
         if (as!=null&&!as.isEmpty()) result.add(as);
       }
     }
@@ -296,7 +295,7 @@ public class ViewManager {
   /**
    * Resolves the context information from support/context
    */
-  private List getActions(ContextSupport cs, Object context, JComponent target) {
+  private List getActions(ContextSupport cs, Object context) {
     // get result by calling appropriate support method
     List result;
     if (context instanceof Gedcom) 
@@ -306,11 +305,6 @@ public class ViewManager {
     else if (context instanceof Property) 
       result = cs.createActions ((Property)context);
     else throw new IllegalArgumentException();
-    // make sure target is set on ActionDelegates
-    Iterator it = result.iterator();
-    while (it.hasNext()) {
-      ((ActionDelegate)it.next()).setTarget(target);
-    }
     // done
     return result;
   }
@@ -395,7 +389,7 @@ public class ViewManager {
   /**
    * Fills a menu with context actions 
    */
-  public void fillContextMenu(MenuHelper mh, Gedcom gedcom, Object context, JComponent target) {
+  public void fillContextMenu(MenuHelper mh, Gedcom gedcom, Object context) {
 
     // we need Entity, property and Gedcom (above) from context
     Entity entity = null;
@@ -409,7 +403,7 @@ public class ViewManager {
 
     // items for property
     if (property!=null) {
-      List actions = getActions(property, target);
+      List actions = getActions(property);
       if (!actions.isEmpty()) {
         mh.createMenu(TagPath.get(property).toString(), property.getImage(false));
         mh.createItems(actions);
@@ -419,7 +413,7 @@ public class ViewManager {
     
     // items for entity
     if (entity!=null) {
-      List actions = getActions(entity, target);
+      List actions = getActions(entity);
       if (!actions.isEmpty()) {
         mh.createMenu(entity.getId(), entity.getProperty().getImage(false));
         mh.createItems(actions);
@@ -428,7 +422,7 @@ public class ViewManager {
     }
     
     // items for gedcom
-    List actions = getActions(gedcom, target);
+    List actions = getActions(gedcom);
     if (!actions.isEmpty()) {
       mh.createMenu(gedcom.getName(), Gedcom.getImage());
       mh.createItems(actions);
@@ -449,10 +443,11 @@ public class ViewManager {
 
     // create a popup
     MenuHelper mh = new MenuHelper().setTarget(container);
+    mh.setTarget(container);
     JPopupMenu popup = mh.createPopup("");
 
     // fill the context actions
-    fillContextMenu(mh, gedcom, context, container);
+    fillContextMenu(mh, gedcom, context);
     
     // show the popup
     if (popup.getComponentCount()>0)
