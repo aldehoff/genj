@@ -193,9 +193,17 @@ public class GedcomReader implements Trackable {
    */
   private void readEntity() throws GedcomIOException, GedcomFormatException {
 
-    // L XXXX
+    // "L XXXX" expected
     if (!readLine()||(level!=0)||(xref.length()==0)) {
-      throw new GedcomFormatException("Expected 0 @XREF@ INDI|FAM|OBJE|NOTE|REPO|SOUR|SUBN|SUBM",line);
+      String msg = "Expected 0 @XREF@ INDI|FAM|OBJE|NOTE|REPO|SOUR|SUBN|SUBM";
+      // at least still level identifyable?
+      if (level==0) {
+        // skip record
+        skipEntity(msg);
+        // continue
+        return;
+      }
+      throw new GedcomFormatException(msg,line);
     }
 
     // Create entity
@@ -212,16 +220,27 @@ public class GedcomReader implements Trackable {
       readProperties(ent, MetaProperty.get(ent), 1);
 
     } catch (GedcomException ex) {
-      //  throw new GedcomFormatException("Unknown entity with tag:"+tag,line);
-      warnings.append("Line "+line+": Dropped entity "+tag+" because "+ex.getMessage()+"\n");
-      do {
-        readLine();
-      } while (level!=0);
-      undoLine();
+      skipEntity(ex.getMessage());
     }
 
     // Done
     entity++;
+  }
+  
+  /**
+   * Skip entity
+   */
+  private void skipEntity(String msg) throws GedcomFormatException, GedcomIOException {
+    //  track it
+    int start = line;
+    try {
+      do {
+        readLine();
+      } while (level!=0);
+      undoLine();
+    } finally {
+      warnings.append("Line "+start+": Skipping "+(line-start)+" lines - "+msg+"\n");
+    }
   }
 
   /**
