@@ -174,7 +174,7 @@
    -->
   <target name="dist.app">
 
-     <!-- create genj_app_xyz.jar -->
+     <!-- create genj.jar -->
      <delete file="${dir.lib}/genj.jar"/>
      <jar jarfile="${dir.lib}/genj.jar" update="True">
        <fileset dir="${dir.build}/classes/core"/>
@@ -182,19 +182,33 @@
        <fileset dir="./images"/>
        <fileset dir="./language/en"/>
        <fileset dir="./src/core" includes="**/*.properties"/>
+     </jar>
+     
+     <!-- create run.jar -->
+     <delete file="${dir.lib}/run.jar"/>
+     <jar jarfile="${dir.lib}/run.jar" update="True">
        <manifest>
          <attribute name="Main-Class" value="genj.app.App"/>
-         <attribute name="Class-Path" value="jhbasic.jar graphj.jar genj_de.zip genj_en.zip genj_es.zip genj_fr.zip genj_it.zip genj_ja.zip"/>
+         <attribute name="Class-Path" value="./lib/genj.jar ./lib/jhbasic.jar ./lib/graphj.jar ./lib/genj_de.zip ./lib/genj_en.zip ./lib/genj_es.zip ./lib/genj_fr.zip ./lib/genj_it.zip ./lib/genj_ja.zip"/>
        </manifest>
      </jar>
+     
+     <!-- copy rcompile scripts so that we'll pick 'em up -->
+     <copy todir="${dir.build}/classes/report">
+       <fileset dir="./script" includes="rcompile.*"/>
+     </copy>
+     
+     
 
+     <!-- create genj_app-xyz.zip -->
      <zip zipfile="${dir.dist}/genj_app-${app.version}.zip" update="True">
-       <fileset dir="${dir.dist}" includes="lib/genj.jar"/>
+       <fileset dir="${dir.lib}" includes="run.jar"/>
+       <fileset dir="${dir.lib}/.." includes="lib/genj.jar"/>
        <fileset dir="." includes="lib/graphj.jar"/>
        <fileset dir="${dir.build}/classes" includes="report/**"/>
        <fileset dir="." includes="gedcom/**"/>
        <fileset dir="." includes="doc/**"/>
-       <fileset dir="script"/>
+       <fileset dir="./script" includes="run.*"/>
        <fileset dir="./src" includes="report/**"/>
      </zip>
 
