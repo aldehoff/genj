@@ -207,17 +207,18 @@ public class GedcomReader implements Trackable {
       } else {
         ent=gedcom.createEntity(tag, xref);
       }
+      
+      // Read entity's properties till end of record
+      readProperties(ent, MetaProperty.get(ent), 1);
+
     } catch (GedcomException ex) {
       //  throw new GedcomFormatException("Unknown entity with tag:"+tag,line);
-      warnings.append("Line "+line+": Dropped entity "+tag+"\n");
+      warnings.append("Line "+line+": Dropped entity "+tag+" because "+ex.getMessage()+"\n");
       do {
         readLine();
       } while (level!=0);
       undoLine();
     }
-
-    // Read entity's properties till end of record
-    readProperties(ent, MetaProperty.get(ent), 1);
 
     // Done
     entity++;
