@@ -36,7 +36,7 @@ public class ReportAges extends Report {
   public boolean reportAgeSinceBirth = true;
 
   /** bullets we use as prefix */
-  private final static String[] BULLETS = { " = ", " * ", " + " };
+  private final static String[] BULLETS = { " = ", " - ", "   "};
 
   /** localized strings */
   private final static String 
