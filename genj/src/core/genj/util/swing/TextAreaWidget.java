@@ -19,6 +19,8 @@
  */
 package genj.util.swing;
 
+import java.util.Set;
+
 import genj.util.ChangeSupport;
 
 import javax.swing.JTextArea;
@@ -41,6 +43,12 @@ public class TextAreaWidget extends JTextArea {
     setAlignmentX(0);
     
     getDocument().addDocumentListener(changeSupport);
+  }
+  
+  /**
+   * Override to avoid text area from grabbing focus traversal keys (tab)
+   */
+  public void setFocusTraversalKeys(int id, Set keystrokes) {
   }
 
   /**
