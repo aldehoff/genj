@@ -19,6 +19,8 @@
  */
 package genj.util;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -32,7 +34,7 @@ import javax.swing.event.DocumentListener;
 /**
  * Support for connecting change events sources and listeners
  */
-public class ChangeSupport implements DocumentListener, ChangeListener {
+public class ChangeSupport implements DocumentListener, ChangeListener, ActionListener {
 
   /** listeners */
   private List listeners = new LinkedList();
@@ -72,7 +74,7 @@ public class ChangeSupport implements DocumentListener, ChangeListener {
   }
   
   /**
-   * callback - proxy nested change event
+   * callback - change event = fire change event
    */
   public void stateChanged(ChangeEvent e) {
     fireChangeEvent();
@@ -88,6 +90,13 @@ public class ChangeSupport implements DocumentListener, ChangeListener {
     fireChangeEvent();
   }
   public void removeUpdate(DocumentEvent e) {
+    fireChangeEvent();
+  }
+  
+  /**
+   * callback - action events = fire change event
+   */
+  public void actionPerformed(ActionEvent e) {
     fireChangeEvent();
   }
   
