@@ -20,11 +20,9 @@
 package genj.app;
 
 import genj.gedcom.Property;
-import genj.util.ActionDelegate;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImgIconConverter;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
@@ -33,11 +31,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;

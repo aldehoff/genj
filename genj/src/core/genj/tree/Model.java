@@ -19,6 +19,21 @@
  */
 package genj.tree;
 
+import genj.gedcom.Change;
+import genj.gedcom.Entity;
+import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
+import genj.gedcom.Indi;
+import genj.gedcom.PropertyXRef;
+import gj.awt.geom.Path;
+import gj.layout.LayoutException;
+import gj.layout.tree.NodeOptions;
+import gj.layout.tree.Orientation;
+import gj.layout.tree.TreeLayout;
+import gj.model.Arc;
+import gj.model.Graph;
+import gj.model.Node;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
@@ -28,28 +43,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
-import genj.gedcom.Change;
-import genj.gedcom.Entity;
-import genj.gedcom.Fam;
-import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomListener;
-import genj.gedcom.Indi;
-import genj.gedcom.Property;
-import genj.gedcom.PropertyFamilySpouse;
-import genj.gedcom.PropertyHusband;
-import genj.gedcom.PropertyWife;
-import genj.gedcom.PropertyXRef;
-import gj.awt.geom.Path;
-import gj.layout.Layout;
-import gj.layout.LayoutException;
-import gj.layout.tree.NodeOptions;
-import gj.layout.tree.Orientation;
-import gj.layout.tree.TreeLayout;
-import gj.model.Arc;
-import gj.model.Graph;
-import gj.model.Node;
-import gj.util.ModelHelper;
 
 /**
  * Model of our tree

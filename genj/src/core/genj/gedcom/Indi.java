@@ -19,8 +19,8 @@
  */
 package genj.gedcom;
 
-import java.util.Date;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class for encapsulating a person
@@ -180,14 +180,14 @@ public class Indi extends PropertyIndi implements Entity {
   public Indi[] getPartners() {
     // Look at all families and remember spouses
     Fam[] fs = getFamilies();
-    Vector v = new Vector(fs.length);
+    List l = new ArrayList(fs.length);
     for (int f=0; f<fs.length; f++) {
       Indi p = fs[f].getOtherSpouse(this);
-      if (p!=null) v.addElement(p);
+      if (p!=null) l.add(p);
     }
     // Return result
-    Indi[] result = new Indi[v.size()];
-    v.toArray(result);
+    Indi[] result = new Indi[l.size()];
+    l.toArray(result);
     return result;
   }
   
@@ -197,14 +197,14 @@ public class Indi extends PropertyIndi implements Entity {
   public Indi[] getChildren() {
     // Look at all families and remember children
     Fam[] fs = getFamilies();
-    Vector v = new Vector(fs.length);
+    List l = new ArrayList(fs.length);
     for (int f=0; f<fs.length; f++) {
       Indi[]cs = fs[f].getChildren();
-      for (int c=0;c<cs.length;c++) v.addElement(cs[c]);
+      for (int c=0;c<cs.length;c++) l.add(cs[c]);
     }
     // Return result
-    Indi[] result = new Indi[v.size()];
-    v.toArray(result);
+    Indi[] result = new Indi[l.size()];
+    l.toArray(result);
     return result;
   }
   

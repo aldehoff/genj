@@ -19,7 +19,8 @@
  */
 package genj.gedcom;
 
-import java.util.*;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * Wrapper for a Property (could be read from XML file later)

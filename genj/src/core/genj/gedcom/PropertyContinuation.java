@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.Vector;
-import genj.util.*;
 
 /**
  * Gedcom Property : CONT

@@ -20,11 +20,10 @@
 package genj.gedcom;
 
 
-import java.awt.*;
-import java.io.*;
-import java.net.*;
-
-import genj.util.*;
+import genj.util.ImgIcon;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Gedcom Property : FILE

@@ -19,9 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-import genj.util.*;
-
 /**
  * Gedcom Property : ?
  * A property that is not supported by GenJ out of the box

@@ -5,9 +5,12 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.*;
-import genj.report.*;
-import java.io.*;
+import genj.gedcom.Gedcom;
+import genj.report.Report;
+import genj.report.ReportBridge;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * GenJ - Report to run an external program

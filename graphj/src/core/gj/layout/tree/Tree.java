@@ -21,13 +21,8 @@ import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcIterator;
 import gj.util.ModelHelper;
-
 import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**

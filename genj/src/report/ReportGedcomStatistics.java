@@ -8,15 +8,10 @@
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.report.Report;
 import genj.report.ReportBridge;
-
 import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
@@ -24,7 +19,7 @@ import java.util.TreeMap;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.15 2002-10-19 17:37:31 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.16 2002-11-01 20:20:26 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */

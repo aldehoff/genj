@@ -19,19 +19,6 @@
  */
 package genj.tree;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Shape;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
@@ -39,6 +26,12 @@ import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Node;
 import gj.ui.UnitGraphics;
+import java.awt.Color;
+import java.awt.Shape;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * The renderer knowing how to render the content of tree's model

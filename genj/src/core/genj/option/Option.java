@@ -19,9 +19,10 @@
  */
 package genj.option;
 
-import javax.swing.*;
+import genj.util.Resources;
 
-import genj.util.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 /**
  * The base-type for an option that is displayed as a Panel

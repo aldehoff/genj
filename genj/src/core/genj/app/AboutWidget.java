@@ -35,7 +35,6 @@ import genj.util.EnvironmentChecker;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 import genj.view.ViewManager;
-
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
@@ -45,10 +44,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;

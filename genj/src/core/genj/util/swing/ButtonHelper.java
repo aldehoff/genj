@@ -20,9 +20,7 @@
 package genj.util.swing;
 
 import genj.util.ActionDelegate;
-import genj.util.ImgIcon;
 import genj.util.Resources;
-
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;

@@ -24,19 +24,14 @@ import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.swing.ButtonHelper;
 import genj.view.ViewManager;
-
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;

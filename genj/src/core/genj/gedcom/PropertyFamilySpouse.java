@@ -19,10 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-
-import genj.util.*;
-
 /**
  * Gedcom Property : FAMS
  * The property wrapping the condition of being a spouse in a family

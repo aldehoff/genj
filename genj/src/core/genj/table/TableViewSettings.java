@@ -19,19 +19,21 @@
  */
 package genj.table;
 
-import java.awt.*;
-import java.util.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import genj.app.TagPathList;
+import genj.app.TagPathTree;
+import genj.app.TagPathTreeListener;
+import genj.gedcom.Gedcom;
+import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
-import genj.view.*;
-import genj.gedcom.*;
-import genj.option.*;
-import genj.app.*;
-import genj.util.Resources;
+import genj.view.ApplyResetSupport;
+import java.awt.event.ActionListener;
+
+import javax.swing.AbstractButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  * Class for providing ViewInfo information to a ViewEditor

@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.*;
-
 /**
  * Gedcom Property : REPO (entity)
  * Class for encapsulating a repository as property

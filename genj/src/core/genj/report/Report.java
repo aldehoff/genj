@@ -20,8 +20,6 @@
 package genj.report;
 
 import genj.gedcom.Gedcom;
-import java.io.*;
-import javax.swing.*;
 
 /**
  * Interface of a user definable GenjJ Report

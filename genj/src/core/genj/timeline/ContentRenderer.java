@@ -20,20 +20,14 @@
 package genj.timeline;
 
 import genj.gedcom.Entity;
-import genj.renderer.*;
 import genj.util.ImgIcon;
 import gj.ui.UnitGraphics;
-
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import java.util.List;

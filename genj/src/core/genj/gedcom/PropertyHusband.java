@@ -19,10 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-
-import genj.util.*;
-
 /**
  * Gedcom Property : HUSB
  * Property wrapping the condition of having a husband in a family

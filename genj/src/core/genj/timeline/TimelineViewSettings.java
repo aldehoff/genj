@@ -21,24 +21,16 @@ package genj.timeline;
 
 import genj.app.TagSelector;
 import genj.gedcom.PropertyEvent;
-import genj.util.ActionDelegate;
 import genj.util.swing.ColorChooser;
 import genj.util.swing.DoubleValueSlider;
 import genj.view.ApplyResetSupport;
-
 import java.awt.BorderLayout;
-import java.awt.Color;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeListener;
 
 /**
  * The ViewInfo representing settings of a TimelineView

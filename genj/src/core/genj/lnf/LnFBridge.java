@@ -19,6 +19,9 @@
  */
 package genj.lnf;
 
+import genj.util.Debug;
+import genj.util.EnvironmentChecker;
+import genj.util.Registry;
 import java.awt.Component;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,20 +29,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.acl.LastOwnerException;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-
-import genj.util.Debug;
-import genj.util.EnvironmentChecker;
-import genj.util.Registry;
 
 /**
  * A Bridge to Look&Feels

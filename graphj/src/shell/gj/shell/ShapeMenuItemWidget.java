@@ -15,15 +15,14 @@
  */
 package gj.shell;
 
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+
+import javax.swing.Action;
+import javax.swing.JMenuItem;
 
 /**
  * A Widget that shows a Shape

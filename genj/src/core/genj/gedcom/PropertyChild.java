@@ -19,10 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-
-import genj.util.*;
-
 /**
  * Gedcom Property : CHIL
  * The property wrapping the condition of having a child in a family

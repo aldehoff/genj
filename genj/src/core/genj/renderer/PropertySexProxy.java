@@ -19,9 +19,7 @@
  */
 package genj.renderer;
 
-import genj.gedcom.Entity;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyName;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;

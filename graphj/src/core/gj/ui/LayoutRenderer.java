@@ -16,9 +16,7 @@
 package gj.ui;
 
 import gj.layout.Layout;
-import gj.model.Arc;
 import gj.model.Graph;
-import gj.model.Node;
 
 /**
  * Interface to implementor knowing how to render a graph's layout information

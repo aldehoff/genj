@@ -15,24 +15,17 @@
  */
 package gj.model.factory;
 
-import gj.awt.geom.ShapeHelper;
 import gj.layout.PathHelper;
 import gj.model.Arc;
 import gj.model.MutableGraph;
 import gj.model.Node;
-import gj.util.ArcIterator;
 import gj.util.ModelHelper;
-
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * GraphFactory - a Tree

@@ -15,20 +15,15 @@
  */
 package gj.layout.circular;
 
-import gj.awt.geom.Geometry;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcIterator;
 import gj.util.ModelHelper;
-
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;

@@ -19,15 +19,13 @@
  */
 package genj.renderer;
 
+import genj.gedcom.Property;
+import genj.gedcom.PropertyFile;
+import genj.util.ImgIcon;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-
-import genj.gedcom.Property;
-import genj.gedcom.PropertyFile;
-import genj.gedcom.PropertyName;
-import genj.util.ImgIcon;
 
 /**
  * last, first

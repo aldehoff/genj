@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-
 /**
  * Gedcom Property : ABC
  * Class for encapsulating a property that describes a Reference to an entity

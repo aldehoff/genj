@@ -19,11 +19,16 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-import java.lang.reflect.Method;
+import genj.util.Debug;
+import genj.util.ImgIcon;
 import java.lang.reflect.Constructor;
-
-import genj.util.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Vector;
 
 /**
  * Abstract base type for all GEDCOM properties

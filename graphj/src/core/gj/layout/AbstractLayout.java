@@ -15,10 +15,6 @@
  */
 package gj.layout;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import gj.model.Node;
 
 /**
  * Base for Layouts (optional)

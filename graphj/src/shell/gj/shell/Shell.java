@@ -15,56 +15,33 @@
  */
 package gj.shell;
 
-import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 
-import gj.model.factory.EmptyFactory;
 import gj.model.factory.Factory;
-import gj.model.factory.GraphFactory;
-import gj.model.factory.TreeFactory;
 import gj.io.GraphReader;
 import gj.io.GraphWriter;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.layout.random.RandomLayout;
 
-import gj.model.Graph;
 import gj.model.MutableGraph;
-import gj.model.Node;
 
 import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.Properties;
-import gj.shell.util.ReflectHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 
 /**
  * A Shell for GraphJ's core functions

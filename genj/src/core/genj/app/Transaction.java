@@ -19,10 +19,9 @@
  */
 package genj.app;
 
-import java.awt.*;
-import javax.swing.*;
-
 import genj.util.ImgIcon;
+
+import javax.swing.JPanel;
 
 /**
  * Transaction - a transactional controller for a TransactionPanel

@@ -15,17 +15,15 @@
  */
 package gj.layout.tree;
 
-import java.awt.Color;
-import java.awt.Shape;
-import java.util.Iterator;
-
-import gj.awt.geom.Geometry;
 import gj.layout.Layout;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
 import gj.ui.LayoutRenderer;
 import gj.ui.UnitGraphics;
+import java.awt.Color;
+import java.awt.Shape;
+import java.util.Iterator;
 
 /**
  * A renderer for TreeLayout

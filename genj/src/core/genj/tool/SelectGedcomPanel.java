@@ -19,15 +19,18 @@
  */
 package genj.tool;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import javax.swing.*;
+import genj.app.Transaction;
+import genj.gedcom.Gedcom;
+import genj.util.GridBagHelper;
+import java.awt.Dimension;
+import java.awt.event.ActionListener;
+import java.util.Vector;
 
-import genj.gedcom.*;
-import genj.util.*;
-import genj.app.*;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 
 /**
  * A panel for selecting a Gedcom (has to be loaded into ControlCenter)

@@ -26,7 +26,6 @@ import genj.view.ApplyResetSupport;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 /**

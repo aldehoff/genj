@@ -19,11 +19,15 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-import java.awt.*;
-import java.io.*;
-
-import genj.util.*;
+import genj.util.Base64;
+import genj.util.ImgIcon;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.NoSuchElementException;
 
 /**
  * Gedcom Property : BLOB

@@ -19,20 +19,27 @@
  */
 package genj.edit;
 
-import javax.swing.*;
-import javax.swing.filechooser.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.Vector;
-
-import genj.gedcom.*;
-import genj.util.*;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyFile;
+import genj.util.EnvironmentChecker;
+import genj.util.ImgIcon;
 import genj.util.swing.ImgIconConverter;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 /**
  * A Proxy knows how to generate interaction components that the user

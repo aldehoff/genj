@@ -19,10 +19,13 @@
  */
 package genj.report;
 
-import java.util.*;
 import genj.util.Debug;
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * ClassLoad for Reports

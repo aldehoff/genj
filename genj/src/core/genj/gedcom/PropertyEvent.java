@@ -19,8 +19,8 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-import genj.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Gedcom Property : EVENT

@@ -15,29 +15,20 @@
  */
 package gj.shell;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
+import gj.shell.swing.GBLayout;
+import gj.shell.util.ReflectHelper;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
-import gj.shell.swing.GBLayout;
-import gj.shell.util.ReflectHelper;
-
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A widget that shows public attribues of an instance as properties 

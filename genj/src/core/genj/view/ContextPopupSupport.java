@@ -19,9 +19,8 @@
  */
 package genj.view;
 
-import genj.gedcom.Entity;
-
 import java.awt.Point;
+
 import javax.swing.JComponent;
 
 /**

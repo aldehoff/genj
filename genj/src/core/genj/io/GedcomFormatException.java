@@ -19,10 +19,6 @@
  */
 package genj.io;
 
-import java.io.*;
-
-import genj.gedcom.*;
-
 /**
  * An exception wrapping a problem with Gedcom data format
  */

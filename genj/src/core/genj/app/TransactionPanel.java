@@ -19,12 +19,19 @@
  */
 package genj.app;
 
-import javax.swing.*;
-
-import java.util.Vector;
 import genj.util.swing.ImgIconConverter;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  * TransactionPanel - a input transaction through several panels

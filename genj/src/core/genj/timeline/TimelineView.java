@@ -27,12 +27,11 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.ViewPortAdapter;
-import genj.view.CurrentSupport;
 import genj.view.ContextPopupSupport;
+import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import gj.ui.UnitGraphics;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -43,8 +42,6 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.text.NumberFormat;
 import java.util.Set;
 
 import javax.swing.JComponent;

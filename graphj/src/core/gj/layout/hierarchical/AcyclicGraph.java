@@ -19,17 +19,10 @@ import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
-import gj.model.impl.ArcImpl;
 import gj.model.impl.MutableGraphImpl;
-import gj.model.impl.NodeImpl;
 import gj.util.ArcIterator;
-
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * An acyclic Graph that will reverse arcs when addition

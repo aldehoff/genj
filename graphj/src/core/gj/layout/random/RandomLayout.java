@@ -15,11 +15,6 @@
  */
 package gj.layout.random;
 
-import java.awt.geom.Rectangle2D;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-
 import gj.layout.AbstractLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
@@ -27,6 +22,9 @@ import gj.layout.PathHelper;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
+import java.awt.geom.Rectangle2D;
+import java.util.Iterator;
+import java.util.Random;
 
 /**
  * A random layout

@@ -15,33 +15,17 @@
  */
 package gj.layout.tree;
 
-import java.awt.Shape;
-import java.awt.geom.Area;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import gj.awt.geom.Dimension2D;
-import gj.awt.geom.Geometry;
 import gj.awt.geom.Path;
 import gj.layout.AbstractLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
-import gj.layout.PathHelper;
-
-import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
-import gj.util.*;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A Layout for trees

@@ -19,21 +19,45 @@
  */
 package genj.report;
 
-import javax.swing.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
-import javax.swing.border.EmptyBorder;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.io.*;
-import java.net.*;
-
-import genj.gedcom.*;
-import genj.util.*;
+import genj.gedcom.Gedcom;
+import genj.util.ActionDelegate;
+import genj.util.Debug;
+import genj.util.EnvironmentChecker;
+import genj.util.GridBagHelper;
+import genj.util.ImgIcon;
+import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImgIconConverter;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Date;
+
+import javax.swing.AbstractButton;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * Component for running reports on genealogic data

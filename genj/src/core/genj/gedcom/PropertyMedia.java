@@ -19,10 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.util.ImgIcon;
 import java.util.List;
-import java.util.Vector;
-
-import genj.util.*;
 
 /**
  * Gedcom Property : MEDIA (entity)

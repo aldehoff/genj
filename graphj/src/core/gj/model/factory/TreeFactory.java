@@ -15,14 +15,11 @@
  */
 package gj.model.factory;
 
-import gj.awt.geom.ShapeHelper;
 import gj.layout.PathHelper;
 import gj.model.MutableGraph;
 import gj.model.Node;
-
 import java.awt.Shape;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -22,7 +22,6 @@ package genj.util.swing;
 import genj.util.ImgIcon;
 
 import javax.swing.ImageIcon;
-import java.awt.*;
 
 /**
  * This type can extract a swing.ImageIcon from a

@@ -19,13 +19,20 @@
  */
 package genj.io;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-import java.net.*;
-
-import genj.gedcom.*;
-import genj.util.*;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyXRef;
+import genj.util.Origin;
+import genj.util.Trackable;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 /**
  * Type that knows how to read GEDCOM-data from InputStream

@@ -21,13 +21,10 @@ import gj.layout.random.RandomLayout;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
-
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * An animation

@@ -19,19 +19,15 @@
  */
 package genj.timeline;
 
+import genj.gedcom.Gedcom;
+import genj.print.PrintRenderer;
+import genj.util.ImgIcon;
+import genj.util.Registry;
+import genj.view.ViewFactory;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.util.List;
 
 import javax.swing.JComponent;
-
-
-import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
-import genj.util.ImgIcon;
-import genj.view.ViewFactory;
-import genj.print.PrintRenderer;
-import genj.util.Registry;
 
 /**
  * The factory for the TableView

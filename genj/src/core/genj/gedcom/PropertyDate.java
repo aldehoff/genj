@@ -19,9 +19,9 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-
-import genj.util.*;
+import genj.util.WordBuffer;
+import java.util.Calendar;
+import java.util.StringTokenizer;
 
 /**
  * Gedcom Property : DATE

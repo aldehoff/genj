@@ -19,8 +19,10 @@
  */
 package genj.util;
 
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.Enumeration;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Class which provides localized text-resources for a package

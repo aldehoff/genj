@@ -19,20 +19,27 @@
  */
 package genj.tool;
 
-import java.awt.*;
-import java.awt.event.*;
+import genj.gedcom.Change;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
+import genj.util.ActionDelegate;
+import genj.util.Debug;
+import genj.util.swing.ButtonHelper;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.AbstractButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
-
-import genj.gedcom.*;
-import genj.util.*;
-import genj.util.swing.ButtonHelper;
-import genj.app.*;
 
 /**
  * A panel allowing to match entities that show up on a left/right list

@@ -19,22 +19,6 @@
  */
 package genj.applet;
 
-import java.applet.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.zip.ZipEntry;
-
-import genj.Version;
-import genj.tree.*;
-import genj.gedcom.*;
-import genj.util.*;
-import genj.timeline.*;
-import genj.table.*;
-import genj.io.*;
-
 /**
  * THE GenJ Applet
  */

@@ -20,17 +20,23 @@
 package genj.util.swing;
 
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.ImgIcon;
 import genj.util.Resources;
-
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 /**
  * Class which provides some static helpers for menu-handling

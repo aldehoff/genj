@@ -19,9 +19,7 @@
  */
 package genj.gedcom;
 
-import java.util.Vector;
-
-import genj.util.*;
+import genj.util.WordBuffer;
 
 /**
  * Gedcom Property : NAME

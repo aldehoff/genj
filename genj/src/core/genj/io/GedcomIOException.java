@@ -19,9 +19,6 @@
  */
 package genj.io;
 
-import java.io.*;
-
-import genj.gedcom.*;
 
 /**
  * Exception for IO problems during Gedcom operations

@@ -19,14 +19,17 @@
  */
 package genj.util.swing;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import genj.util.ImgIcon;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
-import javax.swing.*;
-import javax.swing.event.*;
-
-import genj.util.*;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * Generic component for editing dates

@@ -19,24 +19,47 @@
  */
 package genj.app;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.net.*;
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import genj.gedcom.Gedcom;
+import genj.io.GedcomFormatException;
+import genj.io.GedcomIOException;
+import genj.io.GedcomReader;
+import genj.io.GedcomWriter;
+import genj.tool.MergeTransaction;
+import genj.tool.VerifyTransaction;
+import genj.util.ActionDelegate;
+import genj.util.EnvironmentChecker;
+import genj.util.Origin;
+import genj.util.Registry;
+import genj.util.swing.ButtonHelper;
+import genj.util.swing.FileChooser;
+import genj.util.swing.MenuHelper;
+import genj.util.swing.ProgressDialog;
+import genj.view.ViewFactory;
+import genj.view.ViewManager;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.WindowListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.Vector;
 
-import genj.Version;
-import genj.gedcom.*;
-import genj.util.*;
-import genj.util.swing.*;
-import genj.view.*;
-import genj.print.*;
-import genj.tool.*;
-import genj.option.*;
-import genj.io.*;
+import javax.swing.Box;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * The central component of the GenJ application

@@ -19,19 +19,32 @@
  */
 package genj.edit;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.lang.reflect.Method;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import genj.gedcom.*;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyUnknown;
 import genj.util.Debug;
 import genj.util.ImgIcon;
 import genj.util.Resources;
 import genj.util.swing.ImgIconConverter;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * A bean that allows to choose a property from a list of properties

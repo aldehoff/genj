@@ -19,16 +19,20 @@
  */
 package genj.edit;
 
+import genj.gedcom.Change;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
+import genj.gedcom.Property;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
-
-import genj.gedcom.*;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 
 /**
  * A wrapper for properties as a TreeModel

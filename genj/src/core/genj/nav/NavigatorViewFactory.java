@@ -19,18 +19,15 @@
  */
 package genj.nav;
 
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.util.List;
-
-import javax.swing.JComponent;
-
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
 import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.view.ViewFactory;
+import java.awt.Dimension;
+import java.awt.Frame;
+
+import javax.swing.JComponent;
 
 /**
  * The factory for the TableView

@@ -15,6 +15,11 @@
  */
 package gj.model.impl;
 
+import gj.awt.geom.Path;
+import gj.model.Arc;
+import gj.model.Graph;
+import gj.model.MutableGraph;
+import gj.model.Node;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -26,15 +31,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import gj.awt.geom.Dimension2D;
-import gj.awt.geom.Path;
-import gj.model.Arc;
-import gj.model.Graph;
-import gj.model.MutableGraph;
-import gj.model.Node;
-import gj.util.ArcIterator;
 
 /**
  * @see gj.model.MutableGraph

@@ -19,18 +19,17 @@
  */
 package genj.report;
 
-import java.io.*;
+import genj.util.Debug;
+import genj.util.Registry;
+import java.io.CharArrayWriter;
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.Date;
+import java.util.Vector;
 
-import javax.swing.event.*;
-import genj.gedcom.*;
-import java.awt.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.event.*;
-import genj.util.*;
-import java.util.*;
-import javax.swing.tree.*;
-import javax.swing.*;
-import java.net.*;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  * A Bridge between a running report and the environment it's running in

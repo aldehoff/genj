@@ -19,9 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-import genj.util.*;
-
 /**
  * Gedcom Property : FAMC
  * A property wrapping the condition of being a child in a family

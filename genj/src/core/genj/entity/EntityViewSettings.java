@@ -27,7 +27,6 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 
-import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;

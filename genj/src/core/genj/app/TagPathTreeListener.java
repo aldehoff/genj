@@ -19,16 +19,7 @@
  */
 package genj.app;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.lang.reflect.Method;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import genj.gedcom.*;
-import genj.util.ImgIcon;
+import genj.gedcom.TagPath;
 
 /**
  * Notification Interface for selections on the TagPathTree component

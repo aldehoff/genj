@@ -15,8 +15,15 @@
  */
 package gj.io;
 
+import gj.awt.geom.Path;
+import gj.awt.geom.PathIteratorKnowHow;
+import gj.awt.geom.ShapeHelper;
+import gj.layout.PathHelper;
+import gj.model.Arc;
+import gj.model.MutableGraph;
+import gj.model.Node;
+import gj.util.ModelHelper;
 import java.awt.Shape;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -30,21 +37,9 @@ import java.util.Stack;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
-
-import gj.awt.geom.Path;
-import gj.awt.geom.ShapeHelper;
-import gj.awt.geom.PathIteratorKnowHow;
-import gj.layout.PathHelper;
-import gj.model.MutableGraph;
-import gj.model.Graph;
-import gj.model.Arc;
-import gj.model.Node;
-import gj.util.ModelHelper;
 
 /**
  * Read a graph

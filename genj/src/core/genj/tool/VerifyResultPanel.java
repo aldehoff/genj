@@ -19,16 +19,13 @@
  */
 package genj.tool;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.awt.BorderLayout;
+import java.util.Vector;
 
-import genj.gedcom.*;
-import genj.util.*;
-import genj.app.*;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 /**
  * A panel that shows the result of a verification

@@ -19,27 +19,15 @@
  */
 package genj.tree;
 
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JComponent;
-
-
-import genj.gedcom.Entity;
-import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Indi;
-import genj.gedcom.Property;
 import genj.print.PrintRenderer;
-import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Registry;
-import genj.view.ContextPopupSupport;
-import genj.view.ContextSupport;
 import genj.view.ViewFactory;
-import genj.view.ViewManager;
+import java.awt.Dimension;
+import java.awt.Frame;
+
+import javax.swing.JComponent;
 
 /**
  * A factory for our TreeView component et al

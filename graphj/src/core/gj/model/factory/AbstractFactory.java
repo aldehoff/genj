@@ -15,19 +15,13 @@
  */
 package gj.model.factory;
 
-import gj.model.factory.*;
-import gj.model.*;
-import gj.model.Node;
 import gj.model.Arc;
-import gj.model.Graph;
 import gj.model.MutableGraph;
-import gj.model.factory.*;
-
+import gj.model.Node;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Base for all Graph/Tree/.. creation

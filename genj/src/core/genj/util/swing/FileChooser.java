@@ -19,12 +19,11 @@
  */
 package genj.util.swing;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.filechooser.*;
-import javax.swing.*;
 import java.io.File;
+
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.filechooser.FileFilter;
 
 /**
  * Enhanced file chooser that accepts filter+description

@@ -15,28 +15,17 @@
  */
 package gj.layout.hierarchical;
 
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import gj.awt.geom.Path;
 import gj.layout.AbstractLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.layout.PathHelper;
 import gj.model.Arc;
 import gj.model.Graph;
-import gj.model.MutableGraph;
 import gj.model.Node;
-import gj.model.impl.MutableGraphImpl;
-import gj.util.ArcIterator;
 import gj.util.ModelHelper;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * A Layout for graphs

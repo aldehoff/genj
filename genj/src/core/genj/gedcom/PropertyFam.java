@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.*;
-
 /**
  * Gedcom Property : FAM (Entity)
  * Class for encapsulating a family in property

@@ -19,19 +19,27 @@
  */
 package genj.edit;
 
-import java.awt.*;
-import java.awt.event.*;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
+import genj.gedcom.IconValueAvailable;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyXRef;
+import genj.util.ImgIcon;
+import genj.util.swing.ImgIconConverter;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
-import java.util.StringTokenizer;
 
-import javax.swing.*;
-import javax.swing.event.*;
-
-import genj.gedcom.*;
-import genj.util.*;
-import genj.util.swing.ImgIconConverter;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 /**
  * A proxy for a property that links entities
@@ -188,8 +196,8 @@ class ProxyXRef extends Proxy implements ActionListener  {
     /** constructor */
     /*package*/ Hit(Property pProp) {
       prop = pProp;
-      text = Text.truncate(pProp.getEntity().toString(), 48, "...")+" | "
-          +prop.getTag()+":"+Text.truncate(prop.getValue(), 32, "...");
+      text = truncate(pProp.getEntity().toString(), 48, "...")+" | "
+          +prop.getTag()+":"+truncate(prop.getValue(), 32, "...");
     }
     /** getter */
     /*package*/ Property getProperty() {
@@ -198,6 +206,13 @@ class ProxyXRef extends Proxy implements ActionListener  {
     /** toString */
     public String toString() {
       return text;
+    }
+    /** truncates a string */
+    private String truncate(String text, int length, String padding) {
+      // nothing necessary?
+      if (text.length()<=length) return text;
+      // cut it
+      return text.substring(0, length-padding.length()) + padding;
     }
     // EOC
   }

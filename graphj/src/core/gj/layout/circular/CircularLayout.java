@@ -15,13 +15,6 @@
  */
 package gj.layout.circular;
 
-import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import gj.awt.geom.Geometry;
 import gj.layout.AbstractLayout;
 import gj.layout.Layout;
@@ -31,6 +24,8 @@ import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ModelHelper;
+import java.awt.geom.Rectangle2D;
+import java.util.Iterator;
 
 /**
  * A Layout that arranges nodes in a circle with the

@@ -22,12 +22,10 @@ package genj.timeline;
 import gj.ui.UnitGraphics;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
 
 /**
  * A renderer knowing how to render a ruler for the timeline

@@ -19,18 +19,20 @@
  */
 package genj.app;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.lang.reflect.Method;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import genj.gedcom.*;
-import genj.util.ImgIcon;
+import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImgIconConverter;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.util.Vector;
+
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 
 /**
  * A component that shows a list of TagPaths

@@ -19,12 +19,11 @@
  */
 package genj.nav;
 
-import genj.app.App;
 import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Indi;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -33,21 +32,14 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.CurrentSupport;
 import genj.view.ViewManager;
-
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 

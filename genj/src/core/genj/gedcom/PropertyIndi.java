@@ -19,10 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.Date;
-
-import genj.util.*;
-
 /**
  * Gedcom Property : INDI (entity)
  * Class for encapsulating a person as property

@@ -19,10 +19,7 @@
  */
 package genj.gedcom;
 
-import java.util.Vector;
-import java.awt.event.*;
-
-import genj.util.*;
+import genj.util.ImgIcon;
 
 /**
  * Gedcom Property : SEX

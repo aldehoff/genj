@@ -19,9 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-
-import genj.util.*;
 
 /**
  * Gedcom Property : WIFE

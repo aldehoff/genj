@@ -19,43 +19,39 @@
  */
 package genj.table;
 
+import genj.gedcom.Change;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
+import genj.gedcom.Property;
+import genj.gedcom.TagPath;
+import genj.renderer.PropertyProxy;
+import genj.util.ActionDelegate;
+import genj.util.Registry;
+import genj.util.Resources;
+import genj.util.swing.ButtonHelper;
+import genj.util.swing.HeadlessLabel;
+import genj.util.swing.SortableTableHeader;
+import genj.view.ContextPopupSupport;
+import genj.view.CurrentSupport;
+import genj.view.ToolBarSupport;
+import genj.view.ViewManager;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-
-import genj.renderer.PropertyProxy;
-import genj.util.ActionDelegate;
-import genj.util.ImgIcon;
-import genj.util.Registry;
-import genj.util.Resources;
-import genj.util.swing.ButtonHelper;
-import genj.util.swing.HeadlessLabel;
-import genj.util.swing.SortableTableHeader;
-import genj.view.CurrentSupport;
-import genj.view.ContextPopupSupport;
-import genj.view.ToolBarSupport;
-import genj.view.ViewManager;
-import genj.gedcom.*;
 
 /**
  * Component for showing entities of a gedcom file in a tabular way

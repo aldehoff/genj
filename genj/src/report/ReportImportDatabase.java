@@ -5,13 +5,26 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.*;
-import genj.report.*;
-import genj.util.Registry;
-
-import java.sql.*;
-import java.io.*;
-import java.util.*;
+import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
+import genj.gedcom.Indi;
+import genj.gedcom.PropertyFamilyChild;
+import genj.gedcom.PropertyHusband;
+import genj.gedcom.PropertyName;
+import genj.gedcom.PropertySex;
+import genj.gedcom.PropertyWife;
+import genj.gedcom.PropertyXRef;
+import genj.report.Report;
+import genj.report.ReportBridge;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Vector;
 
 /**
  * GenJ - Report

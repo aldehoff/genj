@@ -19,17 +19,29 @@
  */
 package genj.app;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-
-import genj.gedcom.*;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImgIconConverter;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Enumeration;
+import java.util.Vector;
+
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Component that allows to look at a Tree of TagPaths

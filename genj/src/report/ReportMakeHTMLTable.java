@@ -5,18 +5,27 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.*;
-import genj.report.*;
-
-import java.io.*;
-import java.util.*;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyEvent;
+import genj.gedcom.PropertyPlace;
+import genj.gedcom.PropertySex;
+import genj.gedcom.TagPath;
+import genj.report.Report;
+import genj.report.ReportBridge;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeMap;
 
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.12 2002-10-19 17:37:31 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.13 2002-11-01 20:20:26 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class ReportMakeHTMLTable implements Report {
 

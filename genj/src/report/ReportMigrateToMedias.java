@@ -5,9 +5,13 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.*;
-import genj.report.*;
-import java.io.*;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyFile;
+import genj.gedcom.PropertyMedia;
+import genj.report.Report;
+import genj.report.ReportBridge;
 import java.util.List;
 
 /**

@@ -19,11 +19,6 @@
  */
 package genj.gedcom;
 
-import java.awt.Image;
-import java.util.Vector;
-
-import genj.util.*;
-
 /**
  * Gedcom Property : AGE
  */

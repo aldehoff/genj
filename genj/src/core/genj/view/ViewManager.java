@@ -23,44 +23,25 @@ import genj.app.App;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.print.PrintProperties;
-import genj.print.PrintRenderer;
-import genj.print.Printer;
-import genj.util.ActionDelegate;
 import genj.util.Debug;
-import genj.util.ImgIcon;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.ButtonHelper;
-import genj.util.swing.ImgIconConverter;
 import genj.util.swing.MenuHelper;
-
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JToolBar;
 import javax.swing.MenuSelectionManager;
-import javax.swing.border.TitledBorder;
 
 /**
  * A bridge to open/manage Views

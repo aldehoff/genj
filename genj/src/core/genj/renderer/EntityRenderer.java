@@ -31,7 +31,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Toolkit;
 import java.io.IOException;
-import java.io.StringBufferInputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -42,13 +42,10 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.GlyphView;
-import javax.swing.text.Position;
 import javax.swing.text.Segment;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.Position.Bias;
-import javax.swing.text.html.BlockView;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.HTMLEditorKit.HTMLFactory;
@@ -94,7 +91,7 @@ public class EntityRenderer {
     
     // read the html
     try {
-      kit.read(new StringBufferInputStream(html), doc, 0);
+      kit.read(new StringReader(html), doc, 0);
     } catch (IOException ioe) {
       // can't happen
     } catch (BadLocationException ble) {

@@ -19,9 +19,12 @@
  */
 package genj.util;
 
-import java.io.*;
-import java.net.*;
-import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Class which stands for an origin of a resource - this Origin

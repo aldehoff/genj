@@ -19,11 +19,8 @@
  */
 package genj.util;
 
-import java.awt.*;
-import java.net.*;
-import java.io.*;
-import java.util.*;
-import javax.swing.ImageIcon;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Class that represents an improved ByteArray

@@ -19,6 +19,23 @@
  */
 package genj.edit;
 
+import genj.gedcom.Entity;
+import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
+import genj.gedcom.Indi;
+import genj.gedcom.Note;
+import genj.gedcom.Property;
+import genj.gedcom.Relationship;
+import genj.print.PrintRenderer;
+import genj.util.ActionDelegate;
+import genj.util.Debug;
+import genj.util.ImgIcon;
+import genj.util.Registry;
+import genj.util.Resources;
+import genj.view.ContextSupport;
+import genj.view.ViewFactory;
+import genj.view.ViewManager;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.ArrayList;
@@ -29,26 +46,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-
-import genj.gedcom.Entity;
-import genj.gedcom.Fam;
-import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomException;
-import genj.gedcom.Indi;
-import genj.gedcom.Note;
-import genj.gedcom.Property;
-import genj.gedcom.PropertyFamilyChild;
-import genj.gedcom.Relationship;
-import genj.print.PrintRenderer;
-import genj.util.ActionDelegate;
-import genj.util.Debug;
-import genj.util.ImgIcon;
-import genj.util.Registry;
-import genj.util.Resources;
-import genj.view.ContextPopupSupport;
-import genj.view.ContextSupport;
-import genj.view.ViewFactory;
-import genj.view.ViewManager;
 
 /**
  * The factory for the TableView

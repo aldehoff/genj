@@ -8,13 +8,10 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.ImgIcon;
 import genj.util.swing.SortableTableHeader;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;

@@ -15,33 +15,17 @@
  */
 package gj.ui;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
-import java.awt.geom.PathIterator;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
-
-import gj.util.ArcIterator;
-import gj.awt.geom.Geometry;
-import gj.awt.geom.ShapeHelper;
 import gj.awt.geom.Path;
+import gj.awt.geom.ShapeHelper;
 import gj.layout.Layout;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
+import java.awt.Color;
+import java.awt.Shape;
+import java.awt.geom.Point2D;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * A renderer that knows how to render a graph

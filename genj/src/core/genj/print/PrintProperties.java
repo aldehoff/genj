@@ -19,9 +19,8 @@
  */
 package genj.print;
 
-import java.awt.*;
-
-import genj.gedcom.*;
+import java.awt.Dimension;
+import java.awt.PrintJob;
 
 /**
  * A type for wrapping printing properties

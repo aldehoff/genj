@@ -15,8 +15,11 @@
  */
 package gj.io;
 
+import gj.awt.geom.PathIteratorKnowHow;
+import gj.model.Arc;
+import gj.model.Graph;
+import gj.model.Node;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -24,14 +27,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-
-import gj.awt.geom.PathIteratorKnowHow;
-import gj.model.Arc;
-import gj.model.Graph;
-import gj.model.Node;
 
 /**
  * Write a graph

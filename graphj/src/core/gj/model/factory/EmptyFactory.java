@@ -15,14 +15,8 @@
  */
 package gj.model.factory;
 
-import gj.awt.geom.ShapeHelper;
 import gj.model.MutableGraph;
-
 import java.awt.Shape;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * GraphFactory - a Tree

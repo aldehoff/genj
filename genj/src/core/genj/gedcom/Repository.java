@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.Date;
-
 /**
  * Class for encapsulating a repository
  */

@@ -19,16 +19,15 @@
  */
 package genj.tool;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import genj.app.Transaction;
+import genj.app.TransactionPanel;
+import genj.gedcom.Gedcom;
+import genj.util.ImgIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
 
-import genj.gedcom.*;
-import genj.util.*;
-import genj.app.*;
+import javax.swing.JPanel;
 
 /**
  * Transcation Definition - VERIFY

@@ -19,9 +19,8 @@
  */
 package genj.gedcom;
 
-import java.util.*;
-
-import genj.util.*;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
 
 /**
  * Gedcom Property : CAUSE

@@ -19,10 +19,11 @@
  */
 package genj.print;
 
-import java.awt.*;
-import javax.swing.*;
-
 import genj.util.Resources;
+import java.awt.Dimension;
+import java.awt.Graphics;
+
+import javax.swing.JPanel;
 
 /**
  * Interface between Printer and Renderer

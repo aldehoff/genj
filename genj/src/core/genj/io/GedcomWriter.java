@@ -19,13 +19,16 @@
  */
 package genj.io;
 
-import java.io.*;
+import genj.Version;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
+import genj.util.Trackable;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
-
-import genj.Version;
-import genj.gedcom.*;
-import genj.util.Trackable;
 
 /**
  * Type that knows how to write GEDCOM-data to InputStream
