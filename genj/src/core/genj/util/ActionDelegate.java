@@ -1,83 +1,103 @@
 package genj.util;
 
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Method;
-import java.util.Hashtable;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 /**
- * An ActionListener that delegates actions to a java object - either
- * provide that target in constructor or inherit and provide implementations
- * in concrete sub-class
+ * An Action
  */
-public class ActionDelegate implements ActionListener {
+public abstract class ActionDelegate implements ActionListener {
   
-  /** a marker for "no method there -> fallback" */
-  private final static Object FALLBACK = new Object();
+  public ImgIcon img,roll;
+  public String  txt;
+  public String  tip;
   
-  /** the target */
-  private Object target;
-  
-  /** the mapping */
-  private Hashtable mapping = new Hashtable();
-  
-  /** constants */
-  private final static Object[] EMPTY_OBJECT_ARRAY = new Object[0];
-  private final static Class[] EMPTY_CLASS_ARRAY = new Class[0];
-  
-  /**
-   * Constructor
-   */
-  public ActionDelegate(Object target) {
-    this.target=target;
-  }
-
-  /**
-   * Constructor
-   */
-  protected ActionDelegate() {
-    this.target=this;
-  }
-
   /**
    * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
    */
-  public void actionPerformed(ActionEvent e) {
-
-    String action = e.getActionCommand();
-    
-    // do we know a method already?
-    Object method = mapping.get(action);
-    if (method==null) {
-      try {
-        method = target.getClass().getMethod(action, EMPTY_CLASS_ARRAY);
-      } catch (Throwable t) {
-        method = FALLBACK;
-      }
-      mapping.put(action,method);
-    }
-    
-    // call it
+  public final void actionPerformed(ActionEvent e) {
+    // run & catch
     try {
-      if (method==FALLBACK) {
-        fallback(action);
-      } else {
-        ((Method)method).invoke(target, EMPTY_OBJECT_ARRAY);
-      }
+      run();
     } catch (Throwable t) {
-      System.out.println("[Debug]Action "+action+" delegated to "+target.getClass().getName()+" failed with:");
       t.printStackTrace();
     }
-
     // done
   }
-
+  
   /**
-   * Fallback in case delegation couldn't be matched (no action for method).
-   * Override if necessary
+   * Implementor's functionality
    */
-  public void fallback(String action) {
-    // noop
+  protected void run() {
   }
   
+  /**
+   * Image 
+   */
+  public ActionDelegate setImage(ImgIcon i) {
+    img=i;
+    return this;
+  }
+  
+  /**
+   * Rollover
+   */
+  public ActionDelegate setRollover(ImgIcon r) {
+    roll=r;
+    return this;
+  }
+  
+  
+  /**
+   * Text
+   */
+  public ActionDelegate setText(String t) {
+    txt=t;
+    return this;
+  }
+  
+  /**
+   * Tip
+   */
+  public ActionDelegate setTip(String t) {
+    tip=t;
+    return this;
+  }
+  
+  /**
+   * A default Frame close Action
+   */
+  public static class ActionDisposeFrame extends ActionDelegate {
+    /** a frame */
+    private Frame frame;
+    /** constructor */
+    public ActionDisposeFrame(Frame f) {
+      frame = f;
+    }
+    /** run */
+    public void run() {
+      frame.dispose();
+    }
+  }
+  
+  /**
+   * A specialized WindowClosed delegate
+   */
+  public static class WindowClosedRouter extends WindowAdapter implements WindowListener {
+    /** the target we're routing to */
+    private ActionDelegate delegate;
+    /** constructor */
+    public WindowClosedRouter(ActionDelegate delegate) {
+      this.delegate=delegate;
+    }
+    /** the routed close */
+    public void windowClosed(WindowEvent e) {
+      delegate.actionPerformed(null);
+    }
+  }
 }
+

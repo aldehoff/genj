@@ -175,7 +175,7 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
   /**
    * A Match of two entities
    */
-  class Match {
+  private class Match {
     Entity e1,e2;
     Match(Entity e1, Entity e2) {
       this.e1=e1;this.e2=e2;
@@ -188,60 +188,60 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
    */
   /*package*/ MatchEntitiesPanel() {
 
-  // Create Table for joining info
-  tMatch = new Table();
-  tMatch.setModel(new MatchModel());
-
-  TableListener tlistener = new TableListener() {
-    // LCD
-    /** Handle selection */
-    public void rowSelectionChanged(int[] rows) {
-      bDont   .setEnabled(rows.length>0);
-      bDontAll.setEnabled(tMatch.getNumRows()>0);
-    }
-    /** action performed on row */
-    public void actionPerformed(int row) {
-    }
-    // EOC
-  };
-  tMatch.addTableListener(tlistener);
-
-  // Create buttons for modifications
-  ActionListener alistener = new ActionListener() {
-    // LCD
-    /** action performed */
-    public void actionPerformed(ActionEvent e) {
-      // Break all matches
-      if (e.getActionCommand().equals("DONTALL")) {
-        dontMatches(true);
-        return;
-      }
-      // Break single match
-      if (e.getActionCommand().equals("DONT")) {
-        dontMatches(false);
-        return;
-      }
-    // Done
-    }
-    // EOC
-  };
+    // Create Table for joining info
+    tMatch = new Table();
+    tMatch.setModel(new MatchModel());
   
-  ButtonHelper bh = new ButtonHelper().setListener(alistener).setInsets(new Insets(0,0,0,0));
-  bDont    = bh.setText("Don't match").setAction("DONT"   ).setEnabled(false).create();
-  bDontAll = bh.setText("Match none" ).setAction("DONTALL").setEnabled(true ).create();
-
-  JPanel pActions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-  pActions.add(bDont);
-  pActions.add(bDontAll);
-
-  // Create master panel
-  setLayout(new BorderLayout());
-
-  add(new JLabel(header),"North");
-  add(tMatch            ,"Center");
-  add(pActions          ,"South" );
-
-  // Done
+    TableListener tlistener = new TableListener() {
+      // LCD
+      /** Handle selection */
+      public void rowSelectionChanged(int[] rows) {
+        bDont   .setEnabled(rows.length>0);
+        bDontAll.setEnabled(tMatch.getNumRows()>0);
+      }
+      /** action performed on row */
+      public void actionPerformed(int row) {
+      }
+      // EOC
+    };
+    tMatch.addTableListener(tlistener);
+  
+    // Create buttons for modifications
+    ActionListener alistener = new ActionListener() {
+      // LCD
+      /** action performed */
+      public void actionPerformed(ActionEvent e) {
+        // Break all matches
+        if (e.getActionCommand().equals("DONTALL")) {
+          dontMatches(true);
+          return;
+        }
+        // Break single match
+        if (e.getActionCommand().equals("DONT")) {
+          dontMatches(false);
+          return;
+        }
+      // Done
+      }
+      // EOC
+    };
+    
+    ButtonHelper bh = new ButtonHelper().setInsets(new Insets(0,0,0,0));
+    bDont    = bh.setEnabled(false).create(new ActionMatch(false));
+    bDontAll = bh.setEnabled(true).create(new ActionMatch(true));
+  
+    JPanel pActions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    pActions.add(bDont);
+    pActions.add(bDontAll);
+  
+    // Create master panel
+    setLayout(new BorderLayout());
+  
+    add(new JLabel(header),"North");
+    add(tMatch            ,"Center");
+    add(pActions          ,"South" );
+  
+    // Done
   }
 
   /**
@@ -371,4 +371,20 @@ class MatchEntitiesPanel extends JPanel implements GedcomListener {
     // Done
   }
 
+  /**
+   * Action - Match
+   */
+  private class ActionMatch extends ActionDelegate {
+    /** all? */
+    private boolean all;
+    /** constructor */
+    protected ActionMatch(boolean a) {
+      all=a;
+      if (all) super.setText("Match none");
+      else super.setText("Don't match");
+    }
+    /** run */
+    protected void run() {
+    }
+  } //ActionMatch
 }

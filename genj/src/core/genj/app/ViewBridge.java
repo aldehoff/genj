@@ -108,32 +108,15 @@ public class ViewBridge {
 
       // A button for editing the View's settings
       if (ViewEditor.getViewInfo(view)!=null) {
-        final Component _view = view;
-        final Frame _frame = frame;
-        bh.setListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            ViewEditor.startEditing(_view,_frame.getTitle());
-          }
-        });
-        scroll.add2Edge(bh.setImage(Images.imgSettings).setAction("VIEWEDIT").setTip("cc.tip.settings").create());
-        _frame.addWindowListener(new WindowAdapter() {
-          public void windowClosed(WindowEvent e) {
-            ViewEditor.stopEditing(_view);
-          }
-        });
+        scroll.add2Edge(bh.create(new ActionStartEdit(view,frame.getTitle())));
+        frame.addWindowListener(new ActionDelegate.WindowClosedRouter(new ActionStopEdit(view)));
       }
 
       // And a print button in case a PrintRenderer is existing
       try {
-        final PrintRenderer _renderer = (PrintRenderer)Class.forName(view.getClass().getName()+"PrintRenderer").newInstance();
-        _renderer.setView(view);
-        final Frame _frame = frame;
-        bh.setListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            Printer.print(_frame, _renderer, new PrintProperties(_frame.getTitle()));
-          }
-        });
-        scroll.add2Edge(bh.setImage(Images.imgPrint).setAction("PRINT").setTip("cc.tip.print").create());
+        PrintRenderer renderer = (PrintRenderer)Class.forName(view.getClass().getName()+"PrintRenderer").newInstance();
+        renderer.setView(view);
+        scroll.add2Edge(bh.create(new ActionPrint(frame,renderer)));
       } catch (Throwable t) {
         // won't support printing
       }
@@ -234,5 +217,60 @@ public class ViewBridge {
     }
   } //Descriptor
   
+
+  /**
+   * Action - View Edit
+   */
+  private class ActionStartEdit extends ActionDelegate {
+    /** a view */
+    private Component view;
+    /** a title */
+    private String title;
+    /** constructor */
+    protected ActionStartEdit(Component v, String t) {
+      super.setImage(Images.imgSettings).setTip("cc.tip.settings");
+      view=v;
+      title=t;
+    }
+    /** run */
+    protected void run() {
+      ViewEditor.startEditing(view,title);
+    }
+  } //ActionViewEdit
+
+  /**
+   * Action - Stop Edit
+   */
+  private class ActionStopEdit extends ActionDelegate {
+    /** a view */
+    private Component view;
+    /** constructor */
+    protected ActionStopEdit(Component v) {
+      view=v;
+    }
+    /** run */
+    protected void run() {
+      ViewEditor.stopEditing(view);
+    }
+  } //ActionViewEdit
   
+  /**
+   * Action - Print
+   */
+  private class ActionPrint extends ActionDelegate {
+    /** a frame */
+    private Frame frame;
+    /** a renderer */
+    private PrintRenderer renderer;
+    /** constructor */
+    protected ActionPrint(Frame f, PrintRenderer r) {
+      super.setImage(Images.imgPrint).setTip("cc.tip.print");
+      frame=f;
+      renderer=r;
+    }
+    /** run */
+    protected void run() {
+      Printer.print(frame, renderer, new PrintProperties(frame.getTitle()));
+    }
+  }
 }

@@ -81,8 +81,7 @@ public class AboutWidget extends JPanel{
     // create a south panel
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     JButton bExit = new JButton(App.resources.getString("view.close"));
-    bExit.setActionCommand("dispose");
-    bExit.addActionListener(new ActionDelegate(frame));
+    bExit.addActionListener(new ActionDelegate.ActionDisposeFrame(setFrame));
     pSouth.add(bExit);
 
     // create a center panel
@@ -259,26 +258,30 @@ public class AboutWidget extends JPanel{
     /**
      * Apply the LnF
      */
-    public void apply() {
-      LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
-      if (lnf==null) return;
-      App.getInstance().setLnF(lnf,(LnFBridge.Theme)comboThemes.getSelectedItem());
+    private class ActionApply extends ActionDelegate {
+      public void run() {
+        LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
+        if (lnf==null) return;
+        App.getInstance().setLnF(lnf,(LnFBridge.Theme)comboThemes.getSelectedItem());
+      }
     }
     
     /**
      * Update the LnF selection
      */
-    public void update() {
-      LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
-      if (lnf==null) return; // shouldn't be but old Swing might
-      LnFBridge.Theme[] themes = lnf.getThemes();
-      if (themes.length==0) {
-        comboThemes.setModel(new DefaultComboBoxModel());
-        comboThemes.disable();
-      } else {
-        comboThemes.setModel(new DefaultComboBoxModel(themes));
-        comboThemes.setSelectedItem(lnf.getLastTheme());
-        comboThemes.enable();
+    private class ActionUpdate extends ActionDelegate {
+      public void run() {
+        LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
+        if (lnf==null) return; // shouldn't be but old Swing might
+        LnFBridge.Theme[] themes = lnf.getThemes();
+        if (themes.length==0) {
+          comboThemes.setModel(new DefaultComboBoxModel());
+          comboThemes.disable();
+        } else {
+          comboThemes.setModel(new DefaultComboBoxModel(themes));
+          comboThemes.setSelectedItem(lnf.getLastTheme());
+          comboThemes.enable();
+        }
       }
     }
     
@@ -303,7 +306,7 @@ public class AboutWidget extends JPanel{
       comboLnfs = new JComboBox(new DefaultComboBoxModel(lnfs));
       comboLnfs.setActionCommand("update");
       comboLnfs.setSelectedItem(LnFBridge.getInstance().getLastLnF());
-      comboLnfs.addActionListener(new ActionDelegate(this));
+      comboLnfs.addActionListener(new ActionUpdate());
       
       // layout
       JPanel pResult = new JPanel();
@@ -314,7 +317,7 @@ public class AboutWidget extends JPanel{
       gh.add(comboThemes            , 1,1,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
       
       // show status
-      update();
+      new ActionUpdate().run();
       
       // done
       return pResult;
@@ -328,7 +331,7 @@ public class AboutWidget extends JPanel{
       // apply-button
       JButton bOk = new JButton(App.resources.getString("cc.about.tab4.button.apply"));
       bOk.setActionCommand("apply");
-      bOk.addActionListener(new ActionDelegate(this));
+      bOk.addActionListener(new ActionApply());
       
       // layout
       JPanel pResult = new JPanel();
@@ -339,5 +342,5 @@ public class AboutWidget extends JPanel{
     }
     
   } // LookNFeelPanel
-  
+
 }

@@ -54,7 +54,6 @@ public class ControlCenter extends JPanel {
   private ControlCenter me;
   private Registry registry;
   private Vector gedcomButtons = new Vector();
-  private Delegate actionDelegate = new Delegate();
 
   /**
    * Constructor
@@ -71,7 +70,7 @@ public class ControlCenter extends JPanel {
     frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     frame.addWindowListener(new WindowAdapter() {
       public void windowClosing(WindowEvent we) {
-        actionDelegate.exit();
+        new ActionExit().run();
       }
     });
     frame.setJMenuBar(getMenuBar());
@@ -113,7 +112,7 @@ public class ControlCenter extends JPanel {
     add(entityPane ,"South");
 
     // Load known gedcoms
-    SwingUtilities.invokeLater(new LastOpenLoader());
+    SwingUtilities.invokeLater(new ActionLoadLastOpen());
 
     // Done
   }
@@ -137,19 +136,20 @@ public class ControlCenter extends JPanel {
     // .. Buttons
     ButtonHelper bh = new ButtonHelper()
       .setResources(App.resources)
-      .setListener(actionDelegate)
       .setInsets(4)
       .setFocusable(false)
-      .setContainer(result);
+      .setContainer(result)
+      .setTextAllowed(false);
 
-    bh.setImage(Images.imgGedcom      ).setAction("open"        ).setTip("cc.tip.open_file"     ).setEnabled(true ).create();
+    bh.setEnabled(true).create(new ActionOpen());
+    
     bh.setEnabled(false).setCollection(gedcomButtons);
     ViewBridge.Descriptor[] ds=ViewBridge.getInstance().getDescriptors();
     for (int i=0; i<ds.length; i++) {
-      ViewBridge.Descriptor d = ds[i];
-      bh.setImage(d.img).setAction(VIEW_PREFIX+d.key).setTip("cc.tip.open_"+d.key).create();
+      bh.create(new ActionView(ds[i]));
     }
-    bh.setImage(Images.imgSettings    ).setAction("settings"    ).setTip("cc.tip.settings"      ).setEnabled(true ).create();
+    bh.setEnabled(true).setCollection(null);
+    bh.create(new ActionSettings());
 
     // done
     return result;
@@ -166,24 +166,22 @@ public class ControlCenter extends JPanel {
     // .. Buttons
     ButtonHelper bh = new ButtonHelper()
       .setResources(App.resources)
-      .setListener(actionDelegate)
       .setInsets(4)
       .setFocusable(false)
       .setContainer(result)
-      .setCollection(gedcomButtons);
-
-    bh.setEnabled(false)
-      .setContainer(result);
-    bh.setImage(Images.imgNewIndi      ).setAction(CREATE_PREFIX+Gedcom.INDIVIDUALS ).setTip("cc.tip.create_indi"       ).create();
-    bh.setImage(Images.imgNewFam       ).setAction(CREATE_PREFIX+Gedcom.FAMILIES    ).setTip("cc.tip.create_fam"        ).create();
-    bh.setImage(Images.imgNewMedia     ).setAction(CREATE_PREFIX+Gedcom.MULTIMEDIAS ).setTip("cc.tip.create_media"      ).create();
-    bh.setImage(Images.imgNewNote      ).setAction(CREATE_PREFIX+Gedcom.NOTES       ).setTip("cc.tip.create_note"       ).create();
+      .setCollection(gedcomButtons)
+      .setEnabled(false);
+      
+    bh.create(new ActionCreate(Gedcom.INDIVIDUALS, Images.imgNewIndi, "cc.tip.create_indi"));
+    bh.create(new ActionCreate(Gedcom.FAMILIES, Images.imgNewFam, "cc.tip.create_fam"));
+    bh.create(new ActionCreate(Gedcom.MULTIMEDIAS, Images.imgNewMedia, "cc.tip.create_media"));
+    bh.create(new ActionCreate(Gedcom.NOTES, Images.imgNewNote, "cc.tip.create_note"));
     bh.setCollection(null);
-    bh.setImage(Images.imgNewSource    ).setAction(CREATE_PREFIX+Gedcom.SOURCES     ).setTip("cc.tip.create_source"     ).create();
-    bh.setImage(Images.imgNewSubmitter ).setAction(CREATE_PREFIX+Gedcom.SUBMITTERS  ).setTip("cc.tip.create_submitter"  ).create();
-    bh.setImage(Images.imgNewRepository).setAction(CREATE_PREFIX+Gedcom.REPOSITORIES).setTip("cc.tip.create_repository" ).create();
+    bh.create(new ActionCreate(Gedcom.SOURCES, Images.imgNewSource, "cc.tip.create_source"));
+    bh.create(new ActionCreate(Gedcom.SUBMITTERS, Images.imgNewSubmitter, "cc.tip.create_submitter"));
+    bh.create(new ActionCreate(Gedcom.REPOSITORIES, Images.imgNewRepository, "cc.tip.create_repository"));
     bh.setCollection(gedcomButtons);
-    bh.setImage(Images.imgDelEntity    ).setAction("delete"       ).setTip("cc.tip.delete_entity"     ).create();
+    bh.create(new ActionDelete());
 
     // done
     return result;
@@ -194,129 +192,45 @@ public class ControlCenter extends JPanel {
    */
   private JMenuBar getMenuBar() {
     
-    MenuHelper mh = new MenuHelper()
-      .setListener(actionDelegate)
-      .setResources(App.resources);
+    MenuHelper mh = new MenuHelper().setResources(App.resources);
     
     JMenuBar result = mh.createBar();
 
     // Create Menues
-    mh.setText("cc.menu.file").createMenu();
+    mh.createMenu("cc.menu.file");
     
-      mh.setText("cc.menu.open"  ).setAction("open"  ).createItem();
+      mh.createItem(new ActionOpen());
       mh.createSeparator().setEnabled(false).setCollection(gedcomButtons);
-      mh.setText("cc.menu.save"  ).setAction("save"  ).createItem();
-      mh.setText("cc.menu.saveas").setAction("saveas").createItem();
-      mh.setText("cc.menu.close" ).setAction("close" ).createItem();
+      mh.createItem(new ActionSave(false));
+      mh.createItem(new ActionSave(true));
+      mh.createItem(new ActionClose());
       mh.createSeparator().setEnabled(true).setCollection(null);
-      mh.setText("cc.menu.exit"  ).setAction("exit"  ).createItem();
+      mh.createItem(new ActionExit());
 
-    mh.setMenu(null).setText("cc.menu.view").createMenu();
+    mh.setMenu(null).createMenu("cc.menu.view");
     
       mh.setEnabled(false).setCollection(gedcomButtons);    
       ViewBridge.Descriptor[] ds=ViewBridge.getInstance().getDescriptors();
-      for (int i=0; i<ds.length; i++) {
-        ViewBridge.Descriptor d = ds[i];
-        mh.setImage(d.img).setAction(VIEW_PREFIX+d.key).setText("cc.tip.open_"+d.key).createItem();
-      }
+      for (int i=0; i<ds.length; i++) 
+        mh.createItem(new ActionView(ds[i]));
       mh.setEnabled(true).setCollection(null);    
 
-    mh.setImage(null).setMenu(null).setText("cc.menu.tools").createMenu();
+    mh.setMenu(null).createMenu("cc.menu.tools");
 
       mh.setEnabled(false).setCollection(gedcomButtons);    
-      mh.setText("cc.menu.merge" ).setAction("merge" ).createItem();
-      mh.setText("cc.menu.verify").setAction("verify").createItem();
+      mh.createItem(new ActionMerge());
+      mh.createItem(new ActionVerify());
       mh.setEnabled(true).setCollection(null);    
 
     result.add(Box.createHorizontalGlue());
 
-    mh.setMenu(null).setText("cc.menu.help").createMenu();
+    mh.setMenu(null).createMenu("cc.menu.help");
     
-      mh.setText("cc.menu.contents").setAction("help").createItem();
-      mh.setText("cc.menu.about"   ).setAction("about"   ).createItem();
+      mh.createItem(new ActionHelp());
+      mh.createItem(new ActionAbout());
 
     // Done
     return result;
-  }
-
-  /**
-   * Read Gedcom from URL
-   */
-  private void readGedcomFrom(Origin origin) {
-
-    // Check if already open
-    Vector gedcoms = tGedcoms.getAllGedcoms();
-    for (int i=0;i<gedcoms.size();i++) {
-
-      Gedcom g = (Gedcom)gedcoms.elementAt(i);
-
-      if (origin.getName().equals(g.getName())) {
-        JOptionPane.showMessageDialog(frame,
-          App.resources.getString("cc.open.already_open", g.getName() ),
-          App.resources.getString("app.error"),
-          JOptionPane.ERROR_MESSAGE
-        );
-        return;
-      }
-    }
-
-    // Check for given argument
-    long size;
-    InputStream in;
-
-    // .. Open Connection and get input stream
-    Origin.Connection connection;
-    try {
-      connection = origin.open();
-      // .. query for input stream
-      in = connection.getInputStream();
-    } catch (IOException ex) {
-      JOptionPane.showMessageDialog(frame,
-        App.resources.getString("cc.open.no_connect_to", origin ) + "\n[" + ex.getMessage() +"]",
-        App.resources.getString("app.error"),
-        JOptionPane.ERROR_MESSAGE
-      );
-      return;
-    }
-    size = connection.getLength();
-
-    // .. read gedcom from it
-    final GedcomReader gedReader = new GedcomReader(in,origin,size);
-
-    final Thread threadReader = new Thread() {
-      // LCD
-      /** main */
-      public void run() {
-        String err=null;
-        try {
-          addGedcom(gedReader.readGedcom());
-        } catch (GedcomIOException ex) {
-          err = App.resources.getString("cc.open.read_error",""+ex.getLine())+":\n"+ex.getMessage();
-        } catch (GedcomFormatException ex) {
-          err = App.resources.getString("cc.open.format_error",""+ex.getLine())+":\n"+ex.getMessage();
-        }
-        if (err!=null) {
-          JOptionPane.showMessageDialog(frame,
-          err,
-          App.resources.getString("app.error"),
-          JOptionPane.ERROR_MESSAGE);
-        }
-      }
-      // EOC
-    };
-
-    //    threadReader.setPriority(Math.max(Thread.MIN_PRIORITY,threadReader.getPriority()-2));
-    threadReader.setPriority(Thread.MIN_PRIORITY);
-    threadReader.start();
-
-    // .. show progress dialog
-    new ProgressDialog(frame,App.resources.getString("cc.open.loading"),
-      ""+origin,
-      gedReader,
-      threadReader
-    );
-
-    // .. done
   }
 
   /**
@@ -334,30 +248,15 @@ public class ControlCenter extends JPanel {
   } //GedcomFileChooser
 
   /**
-   * A loader that loads Gedcoms that where open last time 
-   * the application was closed
+   * Action - about
    */
-  private class LastOpenLoader implements Runnable {
-    public void run() {
-      String[] gedcoms = registry.get("open",new String[0]);
-      for (int g=0;g<gedcoms.length;g++) {
-        try {
-          readGedcomFrom(Origin.create(gedcoms[g]));
-        } catch (MalformedURLException x) {
-        }
-      }
+  private class ActionAbout extends ActionDelegate { 
+    /** constructor */
+    protected ActionAbout() {
+      super.setText("cc.menu.about");
     }
-  } //LastOpenLoader
-
-  /**
-   * Our ActionDelegate
-   */
-  public class Delegate extends ActionDelegate {
-    
-    /**
-     * about
-     */
-    public void about() {
+    /** run */
+    protected void run() {
       // know the frame already?
       JFrame frame = App.getInstance().getFrame("about");
       if (frame==null) {
@@ -367,12 +266,19 @@ public class ControlCenter extends JPanel {
       }
       frame.show();
       // done      
+    } 
+  } //ActionAbout
+  
+  /**
+   * Action - help
+   */
+  private class ActionHelp extends ActionDelegate { 
+    /** constructor */
+    protected ActionHelp() {
+      super.setText("cc.menu.contents");
     }
-
-    /**
-     * help
-     */
-    public void help() {
+    /** run */
+    protected void run() {
       // know the frame already?
       JFrame frame = App.getInstance().getFrame("help");
       if (frame==null) {
@@ -382,13 +288,19 @@ public class ControlCenter extends JPanel {
       }
       frame.show();
       // done
-    }
+    } 
+  } //ActionHelp
 
-    /**
-     * close
-     */
-    public void exit() {
-  
+  /**
+   * Action - exit
+   */
+  private class ActionExit extends ActionDelegate { 
+    /** constructor */
+    protected ActionExit() {
+      super.setText("cc.menu.exit");
+    }
+    /** run */
+    protected void run() {
       // Remember open gedcoms
       boolean unsaved = false;
       Vector save = new Vector();
@@ -419,15 +331,24 @@ public class ControlCenter extends JPanel {
       App.getInstance().shutdown();
   
       // Done
-    }
+    } 
+  } //ActionExit
 
-    /**
-     * open
-     */
-    public void open() {
+  /**
+   * Action - open
+   */
+  private class ActionOpen extends ActionDelegate { 
+    
+    /** constructor */
+    protected ActionOpen() {
+      super.setImage(Images.imgGedcom);
+      super.setTip("cc.tip.open_file");
+      super.setText("cc.menu.open");
+    }
+    /** run */    
+    protected void run() {
   
       // ... ask for way to open
-  
       String selections[] = {
         App.resources.getString("cc.open.choice.new"),
         App.resources.getString("cc.open.choice.local"),
@@ -509,7 +430,7 @@ public class ControlCenter extends JPanel {
         }
   
         // Read !
-        readGedcomFrom(origin);
+        read(origin);
   
         // Done
         return;
@@ -565,7 +486,7 @@ public class ControlCenter extends JPanel {
         registry.put("urls",vUrls);
   
         // Read from URL
-        readGedcomFrom(origin);
+        read(origin);
   
         // .. Done
         return;
@@ -576,12 +497,118 @@ public class ControlCenter extends JPanel {
       }
   
     }
-
+    
     /**
-     * delete
+     * Read Gedcom from URL
      */
-    public void delete() {
+    protected void read(Origin origin) {
   
+      // Check if already open
+      Vector gedcoms = tGedcoms.getAllGedcoms();
+      for (int i=0;i<gedcoms.size();i++) {
+  
+        Gedcom g = (Gedcom)gedcoms.elementAt(i);
+  
+        if (origin.getName().equals(g.getName())) {
+          JOptionPane.showMessageDialog(frame,
+            App.resources.getString("cc.open.already_open", g.getName() ),
+            App.resources.getString("app.error"),
+            JOptionPane.ERROR_MESSAGE
+          );
+          return;
+        }
+      }
+  
+      // Check for given argument
+      long size;
+      InputStream in;
+  
+      // .. Open Connection and get input stream
+      Origin.Connection connection;
+      try {
+        connection = origin.open();
+        // .. query for input stream
+        in = connection.getInputStream();
+      } catch (IOException ex) {
+        JOptionPane.showMessageDialog(frame,
+          App.resources.getString("cc.open.no_connect_to", origin ) + "\n[" + ex.getMessage() +"]",
+          App.resources.getString("app.error"),
+          JOptionPane.ERROR_MESSAGE
+        );
+        return;
+      }
+      size = connection.getLength();
+  
+      // .. read gedcom from it
+      final GedcomReader gedReader = new GedcomReader(in,origin,size);
+  
+      final Thread threadReader = new Thread() {
+        // LCD
+        /** main */
+        public void run() {
+          String err=null;
+          try {
+            addGedcom(gedReader.readGedcom());
+          } catch (GedcomIOException ex) {
+            err = App.resources.getString("cc.open.read_error",""+ex.getLine())+":\n"+ex.getMessage();
+          } catch (GedcomFormatException ex) {
+            err = App.resources.getString("cc.open.format_error",""+ex.getLine())+":\n"+ex.getMessage();
+          }
+          if (err!=null) {
+            JOptionPane.showMessageDialog(frame,
+            err,
+            App.resources.getString("app.error"),
+            JOptionPane.ERROR_MESSAGE);
+          }
+        }
+        // EOC
+      };
+  
+      //    threadReader.setPriority(Math.max(Thread.MIN_PRIORITY,threadReader.getPriority()-2));
+      threadReader.setPriority(Thread.MIN_PRIORITY);
+      threadReader.start();
+  
+      // .. show progress dialog
+      new ProgressDialog(frame,App.resources.getString("cc.open.loading"),
+        ""+origin,
+        gedReader,
+        threadReader
+      );
+  
+      // .. done
+    }
+  
+    
+  } //ActionOpen
+
+  /**
+   * Action - LoadLastOpen
+   * the application was closed
+   */
+  private class ActionLoadLastOpen implements Runnable {
+    /** run */
+    public void run() {
+      String[] gedcoms = registry.get("open",new String[0]);
+      for (int g=0;g<gedcoms.length;g++) {
+        try {
+          new ActionOpen().read(Origin.create(gedcoms[g]));
+        } catch (MalformedURLException x) {
+        }
+      }
+    }
+  } //LastOpenLoader
+
+  /**
+   * Action delete
+   */
+  private class ActionDelete extends ActionDelegate { 
+    /** constructor */
+    protected ActionDelete() {
+      super.setImage(Images.imgDelEntity);
+      super.setTip("cc.tip.delete_entity");
+    }
+    /** run */
+    protected void run() {
       // Setup delete dialog
       JFrame frame = App.getInstance().createFrame(
         App.resources.getString("cc.title.delete_entity"),
@@ -589,33 +616,28 @@ public class ControlCenter extends JPanel {
         "delentity",
         null
       );
-  
       OptionDelEntity option = new OptionDelEntity(frame,tGedcoms.getAllGedcoms(),tGedcoms.getSelectedGedcom());
       frame.getContentPane().add(option);
       frame.pack();
       frame.show();
-  
       // Done
-    }
+    } 
+  } //ActionDelete
   
-    /**
-     * save
-     */
-    public void save() {
-      save(false);
+  /**
+   * Action - Save
+   */
+  private class ActionSave extends ActionDelegate {
+    /** which */
+    private boolean ask;
+    /** constructor */
+    protected ActionSave(boolean ask) {
+      this.ask=ask;
+      if (ask) super.setText("cc.menu.saveas");
+      else super.setText("cc.menu.save");
     }
-  
-    /**
-     * saveas
-     */
-    public void saveas() {
-      save(true);
-    }
-    
-    /**
-     * save
-     */
-    private void save(boolean ask) {
+    /** run */
+    protected void run() {
       
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
@@ -728,16 +750,24 @@ public class ControlCenter extends JPanel {
       return;
   
     }
-
-    /**
-     * close
-     */
-    public void close() {
+    
+  } //ActionSave
+  
+  /**
+   * Action - Close
+   */
+  private class ActionClose extends ActionDelegate { 
+    /** constructor */
+    protected ActionClose() {
+      super.setText("cc.menu.close");
+    }
+    /** run */
+    protected void run() {
   
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
       if (gedcom==null) return;
-
+  
       // changes we should care about?      
       if (gedcom.hasUnsavedChanges()) {
         int rc = JOptionPane.showConfirmDialog(
@@ -758,17 +788,24 @@ public class ControlCenter extends JPanel {
       gedcom.close();
   
       // Done
-    }
+    } 
+  } //ActionClose
   
-    /**
-     * merge
-     */
-    public void merge() {
+  /**
+   * Action - Merge
+   */
+  private class ActionMerge extends ActionDelegate { 
+    /** constructor */
+    protected ActionMerge() {
+      super.setText("cc.menu.merge");
+    }    
+    /** run */
+    protected void run() {
   
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
       if (gedcom==null) return;
-
+    
       // Setup merge dialog
       JFrame frame = App.getInstance().createFrame(
         App.resources.getString("cc.title.merge_gedcoms"),
@@ -776,27 +813,34 @@ public class ControlCenter extends JPanel {
         "merge",
         null
       );
-  
+    
       Transaction transaction = new MergeTransaction(gedcom, tGedcoms.getAllGedcoms(),ControlCenter.this);
-  
+    
       TransactionPanel tpanel = new TransactionPanel(frame,transaction);
       frame.getContentPane().add(tpanel);
-  
+    
       frame.pack();
       frame.show();
-  
+    
       // Done
-    }
+    } 
+  } //ActionMerge
 
-    /**
-     * verify
-     */
-    public void verify() {
+  /**
+   * Action - Verify
+   */
+  private class ActionVerify extends ActionDelegate { 
+    /** constructor */
+    protected ActionVerify() {
+      super.setText("cc.menu.verify");
+    }    
+    /** run */
+    protected void run() {
   
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
       if (gedcom==null) return;
-
+  
       // Setup verify dialog
       JFrame frame = App.getInstance().createFrame(
         App.resources.getString("cc.title.verify_gedcom"),
@@ -813,38 +857,60 @@ public class ControlCenter extends JPanel {
       frame.show();
   
       // Done
-    }
-    
-    /**
-     * settings
-     */
-    public void settings() {
+    } 
+  } //ActionVerify
+  
+  /**
+   * Action - Settings
+   */
+  protected class ActionSettings extends ActionDelegate { 
+    /** constructor */
+    protected ActionSettings() {
+      super.setImage(Images.imgSettings);
+      super.setTip("cc.tip.settings");
+    }    
+    /** run */
+    protected void run() {
       ViewEditor.startEditing(null,"");
+    } 
+  } // ActionSettings
+    
+  /**
+   * Action - Create
+   */
+  private class ActionCreate extends ActionDelegate { 
+    
+    /** type */
+    private int type;
+    
+    /** constructor */
+    protected ActionCreate(int type, ImgIcon img, String tip) {
+      this.type = type;
+      super.setImage(img);
+      super.setTip(tip);
     }
     
-    /**
-     * create
-     */
-    private void create(int which) {
+    /** run */
+    protected void run() {
   
       ImgIcon img;
-      int type;
+      int otype;
       
-      switch (which) {
+      switch (type) {
         case Gedcom.INDIVIDUALS:
-          type = OptionNewEntity.INDIVIDUAL;
+          otype = OptionNewEntity.INDIVIDUAL;
           img  = Images.imgNewIndi;
           break;
         case Gedcom.FAMILIES:
-          type = OptionNewEntity.FAMILY;
+          otype = OptionNewEntity.FAMILY;
           img  = Images.imgNewFam;
           break;
         case Gedcom.MULTIMEDIAS:
-          type = OptionNewEntity.MULTIMEDIA;
+          otype = OptionNewEntity.MULTIMEDIA;
           img  = Images.imgNewMedia;
           break;
         case Gedcom.NOTES:
-          type = OptionNewEntity.NOTE;
+          otype = OptionNewEntity.NOTE;
           img  = Images.imgNewNote;
           break;
         default:
@@ -852,54 +918,42 @@ public class ControlCenter extends JPanel {
       }
   
       JFrame frame = App.getInstance().createFrame(
-        App.resources.getString("cc.title.create_entity")+" - "+Gedcom.getNameFor(which,false),
+        App.resources.getString("cc.title.create_entity")+" - "+Gedcom.getNameFor(type,false),
         img,
-        Gedcom.getTagFor(which),
+        Gedcom.getTagFor(type),
         null
       );
   
-      OptionNewEntity option = new OptionNewEntity(frame,type,tGedcoms.getAllGedcoms(),tGedcoms.getSelectedGedcom());
+      OptionNewEntity option = new OptionNewEntity(frame,otype,tGedcoms.getAllGedcoms(),tGedcoms.getSelectedGedcom());
       frame.getContentPane().add(option);
       frame.pack();
       frame.show();
   
       // Done
     }
+  } //ActionCreate
 
-    /**
-     * fallback - one of the views?
-     */
-    public void fallback(String action) {
-      
+  /**
+   * ActionView
+   */
+  protected class ActionView extends ActionDelegate { 
+    /** which (ViewBridge.getDescriptors() index) */
+    private ViewBridge.Descriptor which;
+    /** constructor */
+    protected ActionView(ViewBridge.Descriptor which) {
+      this.which = which;
+      super.setText("cc.tip.open_"+which.key);
+      super.setImage(which.img);
+    }
+    /** run */
+    protected void run() {
       // Current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
       if (gedcom==null) return;
-
-      // One of the views?
-      if (action.startsWith(VIEW_PREFIX)) {
-        action = action.substring(VIEW_PREFIX.length());
-        ViewBridge.Descriptor[] ds = ViewBridge.getInstance().getDescriptors();
-        for (int d=0; d<ds.length; d++) {
-          if (ds[d].key.equals(action)) {
-            // Create new View
-            JFrame view = ViewBridge.getInstance().open(ds[d],gedcom);
-            if (view!=null) { view.pack(); view.show(); }
-            // Done
-            break;
-          }
-        }
-        return;
-      }
+      // Create new View
+      JFrame view = ViewBridge.getInstance().open(which,gedcom);
+      if (view!=null) { view.pack(); view.show(); }
+    } 
+  } //ActionView
       
-      // Create an entity?
-      if (action.startsWith(CREATE_PREFIX)) {
-        action = action.substring(CREATE_PREFIX.length());
-        create(Integer.parseInt(action));
-        return;
-      }
-      
-      // done and ignored
-    }    
-
-  } //ActionDelegate
 }

@@ -19,6 +19,7 @@
  */
 package genj.util.swing;
 
+import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Resources;
 
@@ -35,65 +36,48 @@ import javax.swing.JButton;
  */
 public class ButtonHelper {
   
-  private String text             = null;
-  private ImgIcon image           = null;
-  private ImgIcon rollover        = null;
   private Insets insets           = null;
-  private String tip              = null;
   private boolean isEnabled       = true;
   private boolean isFocusable     = true;
   private boolean isBorder        = true;
   private Resources resources     = null;
   private Container container     = null;
-  private ActionListener listener = null;
-  private String action           = null;
   private Dimension minSize       = null;
   private int horizontalAlignment = -1;
   private Vector collection       = null;
+  private boolean isTextAllowed   = true;
+  private boolean isImageAllowed  = true;
 
   /** Setters */    
-  public ButtonHelper setText(String set) { text=set; return this; }
-  public ButtonHelper setImage(ImgIcon set) { image=set; return this; }
-  public ButtonHelper setRollover(ImgIcon set) { rollover=set; return this; }
   public ButtonHelper setInsets(Insets set) { insets=set; return this; }
   public ButtonHelper setInsets(int val) { insets=new Insets(val,val,val,val); return this; }
-  public ButtonHelper setTip(String set) { tip=set; return this; }
   public ButtonHelper setEnabled(boolean set) { isEnabled=set; return this; }
   public ButtonHelper setFocusable(boolean set) { isFocusable=set; return this; }
   public ButtonHelper setBorder(boolean set) { isBorder=set; return this; }
   public ButtonHelper setResources(Resources set) { resources=set; return this; }
   public ButtonHelper setContainer(Container set) { container=set; return this; }
-  public ButtonHelper setListener(ActionListener set) { listener=set; return this; }
-  public ButtonHelper setAction(String set) { action=set; return this; }
   public ButtonHelper setMinimumSize(Dimension set) { minSize=set; return this; }
   public ButtonHelper setHorizontalAlignment(int set) { horizontalAlignment=set; return this; }
   public ButtonHelper setCollection(Vector set) { collection=set; return this; }
-
-  /**
-   * Creates the button and adds it to given Vector
-   */
-  public JButton create(Vector in) {
-    JButton result = create();
-    in.addElement(result);
-    return result;
-  }
-    
+  public ButtonHelper setImageAllowed(boolean set) { isImageAllowed=set; return this; }
+  public ButtonHelper setTextAllowed(boolean set) { isTextAllowed=set; return this; }
+  
+  
   /**
    * Creates the button
    */
-  public JButton create() {
+  public JButton create(ActionDelegate action) {
     
     JButton result = new JButton();
     
-    if (text!=null) 
-      result.setText(string(text));
-    if (image!=null) 
-      result.setIcon(ImgIconConverter.get(image));
-    if (rollover!=null) {
-      result.setRolloverIcon(ImgIconConverter.get(rollover));
-    }
-    if (tip!=null) 
-      result.setToolTipText(string(tip));
+    if (isTextAllowed&&action.txt!=null) 
+      result.setText(string(action.txt));
+    if (isImageAllowed&&action.img!=null) 
+      result.setIcon(ImgIconConverter.get(action.img));
+    if (isImageAllowed&&action.roll!=null)
+      result.setRolloverIcon(ImgIconConverter.get(action.roll));
+    if (action.tip!=null) 
+      result.setToolTipText(string(action.tip));
     if (insets!=null)
       result.setMargin(insets);
     if (minSize!=null)
@@ -104,11 +88,7 @@ public class ButtonHelper {
     result.setBorderPainted(isBorder);
     result.setRequestFocusEnabled(isFocusable); // This should be setFocusable which comes with JDK1.4
     result.setEnabled(isEnabled);
-
-    if (action!=null)
-      result.setActionCommand(action);
-    if (listener!=null)
-      result.addActionListener(listener);
+    result.addActionListener(action);
 
     if (container!=null)
       container.add(result);

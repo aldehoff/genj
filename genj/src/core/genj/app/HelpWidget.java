@@ -86,8 +86,7 @@ class HelpWidget extends JPanel {
     // create south component
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     JButton bExit = new JButton(App.resources.getString("view.close"));
-    bExit.setActionCommand("dispose");
-    bExit.addActionListener(new ActionDelegate(frame));
+    bExit.addActionListener(new ActionDelegate.ActionDisposeFrame(frame));
     pSouth.add(bExit);
     
     // layout
@@ -96,7 +95,7 @@ class HelpWidget extends JPanel {
     
     // done
   }
-
+  
   /**
    * Initialization of help
    */

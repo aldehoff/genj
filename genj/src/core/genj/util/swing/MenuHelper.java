@@ -19,6 +19,7 @@
  */
 package genj.util.swing;
 
+import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Resources;
 
@@ -44,11 +45,7 @@ public class MenuHelper  {
   private boolean enabled         = true;
 
   /** Setters */    
-  public MenuHelper setText(String set) { text=set; return this; }
-  public MenuHelper setAction(String set) { action=set; return this; }
-  public MenuHelper setImage(ImgIcon set) { image=set; return this; }
   public MenuHelper setMenu(JMenu set) { menu=set; return this; }
-  public MenuHelper setListener(ActionListener set) { listener=set; return this; }
   public MenuHelper setCollection(Vector set) { collection=set; return this; }
   public MenuHelper setResources(Resources set) { resources=set; return this; }
   public MenuHelper setBar(JMenuBar set) { bar=set; return this; }
@@ -66,9 +63,8 @@ public class MenuHelper  {
   /**
    * Creates a menu
    */
-  public JMenu createMenu() {
-    JMenu result = new JMenu();
-    init(result);
+  public JMenu createMenu(String text) {
+    JMenu result = new JMenu(string(text));
     if ((menu==null)&&(bar!=null)) bar.add(result);
     setMenu(result);
     return result;
@@ -77,23 +73,17 @@ public class MenuHelper  {
   /**
    * Creates an item
    */
-  public JMenuItem createItem() {
+  public JMenuItem createItem(ActionDelegate action) {
+    
     JMenuItem result = new JMenuItem();
-    init(result);
-    return result;
-  }
-  
-  /**
-   * Init of item or menu
-   */
-  private void init(JMenuItem result) {
-    if (image!=null) result.setIcon(ImgIconConverter.get(image));
-    if (text!=null) result.setText(getText(text));
-    if (action!=null) result.setActionCommand(action);
-    if (listener!=null) result.addActionListener(listener);
+    result.addActionListener(action);
+    if (action.txt!=null) result.setText(string(action.txt));
+    if (action.img!=null) result.setIcon(ImgIconConverter.get(action.img));
+    result.setEnabled(enabled);
     if (menu!=null) menu.add(result);
     if (collection!=null) collection.addElement(result);
-    result.setEnabled(enabled);
+    
+    return result;
   }
   
   /**
@@ -107,7 +97,7 @@ public class MenuHelper  {
   /**
    * Helper resolving a text
    */
-  private String getText(String txt) {
+  private String string(String txt) {
     if (resources==null) return txt;
     return resources.getString(txt);
   }

@@ -19,20 +19,52 @@
  */
 package genj.edit;
 
-import javax.swing.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
-import javax.swing.border.EmptyBorder;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-
-import genj.gedcom.*;
-import genj.option.*;
-import genj.util.*;
+import genj.app.App;
+import genj.gedcom.Change;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
+import genj.gedcom.GedcomListener;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyEvent;
+import genj.gedcom.Selection;
+import genj.util.ActionDelegate;
+import genj.util.ImgIcon;
+import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImgIconConverter;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Frame;
+import java.awt.event.MouseEvent;
+import java.util.Enumeration;
+import java.util.Vector;
+
+import javax.swing.AbstractButton;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextPane;
+import javax.swing.JTree;
+import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreePath;
+import sun.security.krb5.internal.crypto.p;
 
 /**
  * Component for editing genealogic entity properties
@@ -71,22 +103,27 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
 
   static final Resources resources = new Resources("genj.edit");
 
-  private final static Object[][] entity2create = new Object[][] {
-    { "spouse", Images.imgNewSpouse , "new.spouse", 
-      "child" , Images.imgNewChild  , "new.child", 
-      "parent", Images.imgNewParent , "new.parent",
-      "note"  , Images.imgNewNote   , "new.note",
-      "media" , Images.imgNewMedia  , "new.media" },
-    { "spouse", Images.imgNewSpouse , "new.spouse",
-      "child" , Images.imgNewChild  , "new.child", 
-      "note"  , Images.imgNewNote   , "new.note", 
-      "media" , Images.imgNewMedia  , "new.media" },
+  /** the actions for creating entities */  
+  private final ActionCreate
+    actionChild  = new ActionCreate(Images.imgNewSpouse, Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, "new.child"),
+    actionParent = new ActionCreate(Images.imgNewParent, Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, "new.parent"),
+    actionSpouse = new ActionCreate(Images.imgNewSpouse, Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, "new.spouse"),
+    actionNote   = new ActionCreate(Images.imgNewNote  , Gedcom.NOTES, 0, "new.note"),
+    actionMedia  = new ActionCreate(Images.imgNewMedia , Gedcom.MULTIMEDIAS, 0, "new.media")
+  ;
+
+  /** the creates for entities */  
+  private ActionDelegate[][] entity2create = new ActionDelegate[][] {
+    { actionSpouse,actionChild,actionParent,actionNote,actionMedia }, // INDIVIDUALS
+    { actionSpouse, actionChild, actionNote, actionMedia }, // FAMILIES
     { }, // MULTIMEDIAS
     { }, // NOTES
-    { }, // SOURCES      = 4,
-    { }, // SUBMITTERS   = 5,
-    { }  // REPOSITORIES = 6,
+    { }, // SOURCES
+    { }, // SUBMITTERS
+    { }  // REPOSITORIES
   };
+
+  
 
   /**
    * Class for rendering tree cell nodes
@@ -618,7 +655,6 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     if (entity!=null) {
       
       ButtonHelper bh = new ButtonHelper()
-        .setListener(new CreateDelegate())
         .setResources(resources)
         .setInsets(0)
         .setMinimumSize(new Dimension(0,0))
@@ -626,13 +662,9 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
         .setContainer(createPanel);
 
       // Create Buttons
-      Object[] creates = entity2create[entity.getType()];
-
-      for (int c=0;c<creates.length/3;c++) {
-        String action = (String )creates[c*3+0];
-        ImgIcon img   = (ImgIcon)creates[c*3+1];
-        String txt    = (String )creates[c*3+2];
-        bh.setText(txt).setAction(action).setImage(img).create();
+      ActionDelegate[] creates = entity2create[entity.getType()];
+      for (int c=0;c<creates.length;c++) {
+        bh.create(creates[c]);
       }
       
       // glue
@@ -805,16 +837,15 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
     ButtonHelper bh = new ButtonHelper()
       .setEnabled(false)
       .setResources(resources)
-      .setListener(new PropertyDelegate())
       .setInsets(0)
       .setMinimumSize(new Dimension(0,0))
       .setContainer(actionPanel);
     
-    actionButtonAdd    = bh.setAction("add" ).setText("action.add" ).setTip("tip.add_prop" ).create();
-    actionButtonRemove = bh.setAction("del" ).setText("action.del" ).setTip("tip.del_prop" ).create();
-    actionButtonUp     = bh.setAction("up"  ).setText("action.up"  ).setTip("tip.up_prop"  ).create();
-    actionButtonDown   = bh.setAction("down").setText("action.down").setTip("tip.down_prop").create();
-    actionButtonReturn = bh.setAction("back").setText(null).setImage(Images.imgReturn).setTip("tip.return" ).create();
+    actionButtonAdd    = bh.create(new ActionPropertyAdd());
+    actionButtonRemove = bh.create(new ActionPropertyDel());
+    actionButtonUp     = bh.create(new ActionPropertyUpDown(true));
+    actionButtonDown   = bh.create(new ActionPropertyUpDown(false));
+    actionButtonReturn = bh.create(new ActionBack());
 
     actionPanel.add(actionCheckStick);
     
@@ -822,21 +853,30 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   }
 
   /**
-   * A class that undestands actions from the CreatePanel 
+   * Action - create entity
    */
-  public class CreateDelegate extends ActionDelegate {
+  private class ActionCreate extends ActionDelegate {
     
-    /**
-     * Helper: Creat an entity
-     */
-    public void entity(int type, int relation, String msg) {
+    /** which */
+    private int type;
+    
+    /** relation */
+    private int relation;
+    
+    /** constructor */
+    protected ActionCreate(ImgIcon img, int t, int r, String txt) {
+      type = t;
+      relation = r;
+      super.setImage(img);
+      super.setText(txt);
+    } 
+    
+    /** run */
+    public void run() {
   
       // Recheck with the user
       String message = resources.getString(
-        "new.confirm", new String[] {
-          msg,
-          Gedcom.getNameFor(type,false)
-        }
+        "new.confirm", new String[] {resources.getString(txt),Gedcom.getNameFor(type,false)}
       );
   
       int option = JOptionPane.showOptionDialog(
@@ -896,54 +936,18 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       }
   
     }
-  
-  
-    /**
-     * Action: Create Child
-     */
-    public void child() {
-      entity(Gedcom.INDIVIDUALS,Gedcom.REL_CHILD,resources.getString("new.child"));
-    }
-  
-    /**
-     * Action: Create Parent
-     */
-    public void parent() {
-      entity(Gedcom.INDIVIDUALS,Gedcom.REL_PARENT,resources.getString("new.parent"));
-    }
-  
-    /**
-     * Action: Create Spouse
-     */
-    public void spouse() {
-      entity(Gedcom.INDIVIDUALS,Gedcom.REL_SPOUSE,resources.getString("new.spouse"));
-    }
-  
-    /**
-     * Action: Create Note
-     */
-    public void note() {
-      entity(Gedcom.NOTES, 0, resources.getString("new.note"));
-    }
-  
-    /**
-     * Action: Create Media
-     */
-    public void media() {
-      entity(Gedcom.MULTIMEDIAS, 0, resources.getString("new.media"));
-    }
-  
-  }
+  } //ActionCreate
 
   /**
-   * A class that undestands actions from the ActionPanel 
+   * Action - back
    */
-  public class PropertyDelegate extends ActionDelegate {
-    
-    /**
-     * Action: Return
-     */
-    public void back() {
+  private class ActionBack extends ActionDelegate {
+    /** constructor */
+    protected ActionBack() {
+      super.setImage(Images.imgReturn).setTip("tip.return");
+    }
+    /** run */
+    protected void run() {
   
       // Return to last entity from return-stack
       int last = returnStack.size()-1;
@@ -958,11 +962,19 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
 
       // .. done
     }
+  } //ActionBack
   
-    /**
-     * Action: Add
-     */
-    public void add() {
+  /**
+   * Action - add
+   */
+  private class ActionPropertyAdd extends ActionDelegate {
+    /** constructor */
+    protected ActionPropertyAdd() {
+      super.setText("action.add");
+      super.setTip("tip.add_prop");
+    }
+    /** run */
+    protected void run() {
   
       // Depending on Gedcom of current entity
       if (entity==null)
@@ -1039,11 +1051,19 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
       // .. UnlockWrite
       endTransaction();
     }
-  
-    /**
-     * Action: Del
-     */
-    public void del() {
+
+  } //ActionPropertyAdd
+    
+  /**
+   * Action - del
+   */
+  private class ActionPropertyDel extends ActionDelegate {
+    /** constructor */
+    protected ActionPropertyDel() {
+      super.setText("action.del").setTip("tip.del_prop");
+    }
+    /** run */
+    protected void run() {
   
       TreePath paths[] = treeOfProps.getSelectionPaths();
       boolean changed = false;
@@ -1114,25 +1134,22 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   
       // .. done
     }
+  } //ActionPropertyDel
   
-    /**
-     * Action: Down
-     */
-    public void down() {
-      updown(false);
+  /**
+   * Action - up/down
+   */
+  private class ActionPropertyUpDown extends ActionDelegate {
+    /** which */
+    boolean up;
+    /** constructor */
+    protected ActionPropertyUpDown(boolean up) {
+      this.up=up;
+      if (up) super.setText("action.up").setTip("tip.up_prop");
+      else super.setText("action.down").setTip("tip.down_prop");
     }
-      
-    /**
-     * Action: Up
-     */
-    public void up() {
-      updown(true);
-    }
-    
-    /**
-     * Action: Up/Down
-     */
-    public void updown(boolean up) {
+    /** run */
+    protected void run() {
   
       // .. LockWrite
       if (!gedcom.startTransaction()) {
@@ -1165,5 +1182,6 @@ public class EditView extends JPanel implements TreeSelectionListener, GedcomLis
   
     }
     
-  }  // ActionPanelActionDelegate
+  }  //ActionPropertyUpDown
+  
 }

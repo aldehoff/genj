@@ -67,13 +67,10 @@ public class ViewEditor extends JPanel {
     JPanel pActions = new JPanel();
 
     ButtonHelper bh = new ButtonHelper()
-      .setResources(resources)
-      .setListener(new ActionDelegate(this));
-    bApply = bh.setText("view.apply").setAction("apply").create();
-    bReset = bh.setText("view.reset").setAction("reset").create();
-    
-    bh.setListener(new ActionDelegate(frame));
-    bClose = bh.setText("view.close").setAction("dispose").create();
+      .setResources(resources);
+    bApply = bh.create(new ActionApply());
+    bReset = bh.create(new ActionReset());
+    bClose = bh.create(new ActionDelegate.ActionDisposeFrame(frame).setText("view.close"));
 
     pActions.add(bApply);
     pActions.add(bReset);
@@ -91,15 +88,21 @@ public class ViewEditor extends JPanel {
   /**
    * Applies the changes currently being done
    */
-  public void apply() {
-    if (currentInfo!=null) currentInfo.apply();
+  private class ActionApply extends ActionDelegate {
+    protected ActionApply() { super.setText("view.apply"); }
+    protected void run() {
+      if (currentInfo!=null) currentInfo.apply();
+    }
   }
 
   /**
    * Resets any change being done
    */
-  public void reset() {
-    if (currentInfo!=null) currentInfo.reset();
+  private class ActionReset extends ActionDelegate {
+    protected ActionReset() { super.setText("view.reset"); }
+    protected void run() {
+      if (currentInfo!=null) currentInfo.reset();
+    }
   }
 
   /**
@@ -154,7 +157,7 @@ public class ViewEditor extends JPanel {
       // get a new
       frame = App.getInstance().createFrame(
         App.resources.getString("cc.title.settings_edit"),
-        Images.imgGedcom,
+        Images.imgSettings,
         "settings",
         new Dimension(256,320)
       );

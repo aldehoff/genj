@@ -19,6 +19,7 @@
  */
 package genj.nav;
 
+import genj.app.App;
 import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
@@ -151,15 +152,14 @@ public class NavigatorView extends JPanel {
       .setBorder(false)
       .setInsets(0)
       .setResources(resources)
-      .setEnabled(false)
-      .setListener(new NavigateDelegate());
+      .setEnabled(false);
     
-      bFather = bh.setAction("father"  ).setRollover(Images.imgNavFatherOn         ).setImage(Images.imgNavFatherOff        ).setTip("tip.nav_father"  ).create();
-      bMother = bh.setAction("mother"  ).setRollover(Images.imgNavMotherOn         ).setImage(Images.imgNavMotherOff        ).setTip("tip.nav_mother"  ).create();
-      bOlder  = bh.setAction("osibling").setRollover(Images.imgNavOlderSiblingOn   ).setImage(Images.imgNavOlderSiblingOff  ).setTip("tip.nav_osibling").create();
-      bPartner= bh.setAction("partner" ).setRollover(Images.imgNavPartnerOn        ).setImage(Images.imgNavPartnerOff       ).setTip("tip.nav_partner" ).create();
-      bYounger= bh.setAction("ysibling").setRollover(Images.imgNavYoungerSiblingOn ).setImage(Images.imgNavYoungerSiblingOff).setTip("tip.nav_ysibling").create();
-      bChild  = bh.setAction("child"   ).setRollover(Images.imgNavChildOn          ).setImage(Images.imgNavChildOff         ).setTip("tip.nav_child"   ).create();
+      bFather = bh.create(new ActionFather()        );
+      bMother = bh.create(new ActionMother()        );
+      bOlder  = bh.create(new ActionOlderSibling()  );
+      bPartner= bh.create(new ActionPartner()       );
+      bYounger= bh.create(new ActionYoungerSibling());
+      bChild  = bh.create(new ActionChild()         );
 
     gh.add(bFather ,2,1,1,1,gh.FILL_NONE);
     gh.add(bMother ,3,1,1,1,gh.FILL_NONE);
@@ -173,51 +173,87 @@ public class NavigatorView extends JPanel {
   }
 
   /**
-   * A delegate that knows how to navigate
+   * Navigate 2 Father
    */
-  public class NavigateDelegate extends ActionDelegate {
-    
-    /**
-     * Navigate 2 Father
-     */
-    public void father() {
+  private class ActionFather extends ActionDelegate {
+    /** constructor */
+    protected ActionFather() {
+      super.setRollover(Images.imgNavFatherOn).setImage(Images.imgNavFatherOff).setTip("tip.nav_father"  );
+    }
+    /** run */
+    protected void run() {
       indi.getGedcom().fireEntitySelected(null, indi.getFather(), false);
     }
+  }
       
-    /**
-     * Navigate 2 Mother
-     */
-    public void mother() {
+  /**
+   * Navigate 2 Mother
+   */
+  private class ActionMother extends ActionDelegate {
+    /** constructor */
+    protected ActionMother() {
+      super.setRollover(Images.imgNavMotherOn).setImage(Images.imgNavMotherOff).setTip("tip.nav_mother"  );
+    }
+    /** run */
+    protected void run() {
       indi.getGedcom().fireEntitySelected(null, indi.getMother(), false);
     }
-      
-    /**
-     * Navigate 2 Previous
-     */
-    public void ysibling() {
+  }
+        
+  /**
+   * Navigate 2 Previous
+   */
+  private class ActionYoungerSibling extends ActionDelegate {
+    /** constructor */
+    protected ActionYoungerSibling() {
+      super.setRollover(Images.imgNavYoungerSiblingOn).setImage(Images.imgNavYoungerSiblingOff).setTip("tip.nav_ysibling");
+    }
+    /** run */
+    protected void run() {
       indi.getGedcom().fireEntitySelected(null, indi.getYoungerSibling(), false);
     }
-      
-    /**
-     * Navigate 2 Next
-     */
-    public void osibling() {
+  }      
+  
+  /**
+   * Navigate 2 Next
+   */
+  private class ActionOlderSibling extends ActionDelegate {
+    /** constructor */
+    protected ActionOlderSibling() {
+      super.setRollover(Images.imgNavOlderSiblingOn).setImage(Images.imgNavOlderSiblingOff).setTip("tip.nav_osibling");
+    }
+    /** run */
+    protected void run() {
       indi.getGedcom().fireEntitySelected(null, indi.getOlderSibling(), false);
     }
-      
-    /**
-     * Navigate 2 Partner
-     */
-    public void partner() {
+  }
+        
+  /**
+   * Navigate 2 Partner
+   */
+  private class ActionPartner extends ActionDelegate {
+    /** constructor */
+    protected ActionPartner() {
+      super.setRollover(Images.imgNavPartnerOn).setImage(Images.imgNavPartnerOff).setTip("tip.nav_partner" );
+    }
+    /** run */
+    protected void run() {
       indi.getGedcom().fireEntitySelected(null, indi.getPartners()[0], false);
     }
-      
-    /**
-     * Navigate 2 Child
-     */
-    public void child() {
+  }
+        
+  /**
+   * Navigate 2 Child
+   */
+  private class ActionChild extends ActionDelegate {
+    /** constructor */
+    protected ActionChild() {
+      super.setRollover(Images.imgNavChildOn).setImage(Images.imgNavChildOff).setTip("tip.nav_child"   );
+    }
+    /** run */
+    protected void run() {
       indi.getGedcom().fireEntitySelected(null, indi.getChildren()[0], false);
     }
-
-  } // NavigateDelegate 
+  }
+  
 }

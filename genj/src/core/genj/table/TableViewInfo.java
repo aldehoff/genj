@@ -25,6 +25,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
+import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 import genj.gedcom.*;
@@ -54,39 +55,13 @@ public class TableViewInfo extends JPanel implements ViewInfo {
     // Create!
     GridBagHelper gh = new GridBagHelper(this);
 
-    // Prepare an action listener
-    ActionListener alistener = new ActionListener() {
-      // LCD
-      /** notification about action */
-      public void actionPerformed(ActionEvent e) {
-        if (table==null) {
-          return;
-        }
-        // Selection of Type?
-        if (e.getSource()==cTypes) {
-          eType = cTypes.getSelectedIndex();
-          readFromTable();
-          return;
-        }
-        // Buttons?
-        if ("UP".equals(e.getActionCommand())) {
-          pathList.up();
-        }
-        if ("DOWN".equals(e.getActionCommand())) {
-          pathList.down();
-        }
-        // Done
-      }
-      // EOC
-    };
-
     // Chooseable type
     cTypes = new JComboBox();
 
     for (int i=Gedcom.FIRST_ETYPE;i<=Gedcom.LAST_ETYPE;i++) {
       cTypes.addItem(Gedcom.getNameFor(i,true));
     }
-    cTypes.addActionListener(alistener);
+    cTypes.addActionListener(new ActionChooseEntity());
 
     // Tree of TagPaths
     pathTree = new TagPathTree();
@@ -109,10 +84,10 @@ public class TableViewInfo extends JPanel implements ViewInfo {
     pathList = new TagPathList();
 
     // Up/Down of ordering
-    ButtonHelper bh = new ButtonHelper().setResources(TableView.resources).setListener(alistener).setInsets(0);
-    JButton bUp   = bh.setText("info.up"  ).setAction("UP"  ).create();
-    JButton bDown = bh.setText("info.down").setAction("DOWN").create();
-
+    ButtonHelper bh = new ButtonHelper().setResources(TableView.resources).setInsets(0);
+    JButton bUp   = bh.create(new ActionUpDown(true));
+    JButton bDown = bh.create(new ActionUpDown(false));
+    
     // Layout
     gh.add(new JLabel(TableView.resources.getString("info.entities"))  ,0,1,1,1);
     gh.add(cTypes                  ,1,1,2,1);
@@ -205,4 +180,40 @@ public class TableViewInfo extends JPanel implements ViewInfo {
 
     // Done
   }
+  
+
+  /**
+   * Action - ActionChooseEntity
+   */
+  private class ActionChooseEntity extends ActionDelegate {
+    /** constructor */
+    /** run */
+    public void run() {
+      if (table==null) return;
+      eType = cTypes.getSelectedIndex();
+      readFromTable();
+    }
+  } //ActionChooseEntity
+  
+  /**
+   * Action - ActionUpDown
+   */
+  private class ActionUpDown extends ActionDelegate {
+    /** up or down */
+    private boolean up;
+    /** constructor */
+    protected ActionUpDown(boolean up) {
+      this.up=up;
+      if (up) setText("info.up");
+      else setText("info.down");
+    }
+    /** run */
+    public void run() {
+      if (up)
+        pathList.up();
+      else 
+        pathList.down();
+    }
+  } //ActionUpDown
+  
 }
