@@ -42,12 +42,11 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
   private Entity    entity;
   private Frame     frame;
 
-  private JPanel            actionPanel;
   private AbstractButton    actionButtonAdd,
-                             actionButtonRemove,
-                             actionButtonUp,
-                             actionButtonDown,
-                             actionButtonReturn;
+                            actionButtonRemove,
+                            actionButtonUp,
+                            actionButtonDown,
+                            actionButtonReturn;
   private JCheckBox         actionCheckStick;
 
   private JPanel            createPanel;
@@ -217,25 +216,10 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     // Begin Layout
     setLayout(new BorderLayout());
 
-    // ACTION Component
-    actionPanel = new JPanel();
-    actionPanel.setLayout(new FlowLayout(FlowLayout.LEFT,0,0));
+    // NORTH - action buttons
+    add(createActionPanel(),BorderLayout.NORTH);
 
-    actionCheckStick  = new JCheckBox(ImgIconConverter.get(Images.imgStickOff));
-    actionCheckStick.setSelectedIcon (ImgIconConverter.get(Images.imgStickOn ));
-    actionCheckStick.setFocusPainted(false);
-    actionCheckStick.setSelected(registry.get("sticky",false));
-
-    actionButtonAdd    = addButton(actionPanel, "ADD"   ,"action.add"   ,null            ,"tip.add_prop" , false );
-    actionButtonRemove = addButton(actionPanel, "DEL"   ,"action.del"   ,null            ,"tip.del_prop" , false );
-    actionButtonUp     = addButton(actionPanel, "UP"    ,"action.up"    ,null            ,"tip.up_prop"  , false );
-    actionButtonDown   = addButton(actionPanel, "DOWN"  ,"action.down"  ,null            ,"tip.down_prop", false );
-    actionButtonReturn = addButton(actionPanel, "RETURN",null           ,Images.imgReturn,"tip.return"   , false );
-                         addButton(actionPanel, "STICK" ,null           ,null            ,"tip.stick"    , true  ,actionCheckStick);
-
-    add(actionPanel,BorderLayout.NORTH);
-
-    // SplitPane for top/lower section
+    // CENTER - SplitPane for top/lower section
 
       // TREE Component's ScrollPane
       paneForTree = new JScrollPane();
@@ -258,11 +242,10 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
       split.setDividerLocation(loc);
     }
     
-    // NEW Component
-    createPanel = new JPanel();
-    createPanel.setLayout(new FlowLayout(FlowLayout.LEFT,0,0));
+    // SOUTH - create buttons
+    createPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));
     add(createPanel,BorderLayout.SOUTH);
-
+    
     // Listeners
     gedcom.addListener(this);
 
@@ -679,14 +662,9 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
   /**
    * Helper that adds buttons to a panel
    */
-  private AbstractButton addButton(Container c, String action, String text, ImgIcon image, String tip, boolean enabled) {
-    return addButton(c, action, text, image, tip, enabled, new JButton());
-  }
-
-  /**
-   * Helper that adds buttons to a panel
-   */
-  private AbstractButton addButton(Container c, String action, String text, ImgIcon image, String tip, boolean enabled, AbstractButton result) {
+  private AbstractButton addButton(Container c, String action, String text, ImgIcon image, String tip, Insets insets, boolean enabled) {
+    
+    JButton result = new JButton();
 
     if (text!=null) {
       result.setText(resources.getString(text));
@@ -698,12 +676,14 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
       result.setToolTipText(resources.getString(tip));
     }
     result.setEnabled(enabled);
-    result.setMargin(new Insets(0,0,0,0));
+    result.setMargin(insets!=null?insets:new Insets(0,0,0,0));
 
     result.setActionCommand(action);
     result.addActionListener(this);
 
-    c.add(result);
+    if (c!=null) {
+      c.add(result);
+    }
 
     return result;
   }
@@ -1033,12 +1013,12 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
         String action = (String )creates[c*3+0];
         ImgIcon img   = (ImgIcon)creates[c*3+1];
         String tip    = (String )creates[c*3+2];
-        addButton(createPanel, action, tip, img, null, true).setFont(label.getFont());
+        addButton(createPanel, action, tip, img, null, null, true).setFont(label.getFont());
       }
     }
 
     // make sure that's seen, too
-    createPanel.validate();
+    createPanel.revalidate();
     createPanel.repaint();
 
     // Done
@@ -1184,5 +1164,58 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     actionButtonDown  .setEnabled(currentNode.getNextSibling()    !=null);
 
     // Done
+  }
+  
+  /**
+   * Creates a panl with action buttons
+   */
+  private JPanel createActionPanel() {
+    
+    JPanel actionPanel = new JPanel();
+    actionPanel.setLayout(new BoxLayout(actionPanel,BoxLayout.X_AXIS));
+
+    actionCheckStick  = new JCheckBox(ImgIconConverter.get(Images.imgStickOff));
+    actionCheckStick.setSelectedIcon (ImgIconConverter.get(Images.imgStickOn ));
+    actionCheckStick.setFocusPainted(false);
+    actionCheckStick.setSelected(registry.get("sticky",false));
+    actionCheckStick.setToolTipText(resources.getString("tip.stick"));
+
+    Insets i = new Insets(4,4,4,4);
+    actionButtonAdd    = addButton(actionPanel, "ADD"   ,"action.add"   ,null            ,"tip.add_prop" , i, false );
+    actionButtonRemove = addButton(actionPanel, "DEL"   ,"action.del"   ,null            ,"tip.del_prop" , i, false );
+    actionButtonUp     = addButton(actionPanel, "UP"    ,"action.up"    ,null            ,"tip.up_prop"  , i, false );
+    actionButtonDown   = addButton(actionPanel, "DOWN"  ,"action.down"  ,null            ,"tip.down_prop", i, false );
+    actionButtonReturn = addButton(actionPanel, "RETURN",null           ,Images.imgReturn,"tip.return"   , i, false );
+    
+    actionPanel.add(Box.createHorizontalGlue());
+    
+    actionPanel.add(actionCheckStick);
+    
+    actionPanel.add(Box.createHorizontalGlue());
+    
+    actionPanel.add(createNavPanel());
+    
+    return actionPanel;
+  }
+  
+  /**
+   * Creates a panel with nav buttons
+   */
+  private JPanel createNavPanel() {
+    
+    // create the result and get the grid bag going
+    JPanel result = new JPanel();
+    GridBagHelper h = new GridBagHelper(result);
+    
+    // add the buttons    
+    h.add(addButton(null, "NAVPREVGEN"  , null, Images.imgNavPrevGen, "tip.nav_prevgen", null, true),1,0,1,2,h.FILL_NONE);
+    h.add(addButton(null, "NAVPREVINGEN", null, Images.imgNavPrevInGen, "tip.nav_previngen", null, true),0,0,1,4,h.FILL_NONE);
+    h.add(addButton(null, "NAVNEXTINGEN", null, Images.imgNavNextInGen, "tip.nav_nextingen", null, true),2,0,1,4,h.FILL_NONE);
+    h.add(addButton(null, "NAVNEXTGEN"  , null, Images.imgNavNextGen, "tip.nav_nextgen", null, true),1,2,1,2,h.FILL_NONE);
+
+    result.setMaximumSize(result.getPreferredSize());
+    
+    // done
+    return result;
   }
 }
