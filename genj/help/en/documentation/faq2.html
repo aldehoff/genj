@@ -35,7 +35,7 @@
 <a name = "_faq_2_1">
 <Font color="red"><b>Q</b></Font> - You wanted to show a picture for 
 every person in the main <A Href="./../view/tree.html">tree view</A> ?
-  <Ul><Font color="green"><b>A</b></Font> - 
+<Ul><Font color="green"><b>A</b></Font> - 
 You can do that by either:<Br>
 + adding a OBJE-property to an individual which can have a FILE
   property referring to a file or a BLOB property that includes
@@ -49,8 +49,41 @@ You can do that by either:<Br>
 The first case let's you choose that property in the tree-settings 
 window so that all that shows in the entities box.
 (The default Gedcom supplied with the distribution does
- that for a picture from Nils Meier btw)
-  </Ul>
+ that for a picture from Nils Meier btw)<Br>
+<Br>
+
+<Font color="green"> > I had done all this before but all that is 
+achieved is in the "Tree View"  for a particular 
+individual the following information :
+OBJE @M005@</Font><Br>
+Yes, that's true if you go option 1:<Br>
+&nbsp;&nbsp;add a Multimedia (OBJE) instance and add a reference from the
+ indivdual to it<Br>
+Alternatively you can add a Multimedia (OBJE) property (!) to
+the individual that also lets you choose the picture. This will
+show up in the tree then because it's a chooseable property
+of the individual INDI|OBJE|FILE or INDI|OBJE|BLOB<Br>
+That's simply not good :( Normally in Gedcom a property contains
+the value
+<Ul>
+ INDI|NAME<Br>
+ INDI|SEX
+</Ul>
+but with special things like NOTE or OBJE it works differently
+<Ul>
+ INDI|NOTE          (<-- a note property with text)<Br>
+ INDI|NOTE -> NOTE  (<-- a note property pointing to a note entity)<Br>
+ INDI|OBJE|FILE     (<-- a obje property with the content in FILE)<Br>
+ INDI|OBJE|BLOB     (<-- a obje property with the content in BLOB)
+</Ul>
+But
+<Ul>
+ INDI|OBJE -> OBJE|FILE    (<-- a obje property pointing to a obje
+                            with the content in property FILE)<Br>
+ INDI|OBJE -> OBJE|BLOB    (<-- a obje property pointing to a obje
+                            with the content in property BLOB)
+</Ul>
+</Ul>
 
 </Ul>
 
