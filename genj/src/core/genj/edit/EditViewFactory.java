@@ -21,12 +21,15 @@ package genj.edit;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComponent;
 
-
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
+import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.view.ViewFactory;
 
@@ -55,5 +58,23 @@ public class EditViewFactory implements ViewFactory {
   public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
     return new EditView(gedcom,registry,frame);
   }
+  
+  /**
+   * @see genj.view.ViewFactory#createActions(Entity)
+   */
+  public List createActions(Entity entity) {
+    // create the actions
+    ActionDelegate one = new ActionDelegate() {
+      /** @see genj.util.ActionDelegate#execute() */
+      protected void execute() {
+        System.out.println("!");
+      }
+    };
+    one.setText("Foo");
+    // the result
+    List result = new ArrayList();
+    result.add(one);
+    return result;
+  }
 
-}
+} //EditViewFactory

@@ -21,9 +21,11 @@ package genj.view;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.util.List;
 
 import javax.swing.JComponent;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
 import genj.util.Registry;
@@ -34,18 +36,24 @@ import genj.util.Registry;
 public interface ViewFactory {
 
   /**
-   * 
+   * Callback for creating a view 
    */
   public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame);
   
   /**
-   * 
+   * Callback for creating settings for a view
    */
   public JComponent createSettingsComponent(Component view);
   
   /**
-   * 
+   * Callback for creating a printer for a view
    */
   public PrintRenderer createPrintRenderer(Component view);
+  
+  /**
+   * Callback for actions on an entity
+   * @return a list of ActionDelegates
+   */
+  public List createActions(Entity entity);
 
-}
+} //ViewFactory

@@ -28,6 +28,7 @@ import genj.util.Resources;
 import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.CurrentSupport;
+import genj.view.EntityPopupSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -36,6 +37,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
@@ -57,7 +59,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Component for showing entities' events in a timeline view
  */
-public class TimelineView extends JPanel implements ToolBarSupport, CurrentSupport {
+public class TimelineView extends JPanel implements ToolBarSupport, CurrentSupport, EntityPopupSupport {
 
   /** resources */
   /*package*/ final static Resources resources = new Resources("genj.timeline");
@@ -206,27 +208,6 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
   }
   
   /**
-   * @see genj.view.ToolBarSupport#populate(JToolBar)
-   */
-  public void populate(JToolBar bar) {
-    
-    // create a slider for cmPerYear
-    sliderCmPerYear = new DoubleValueSlider(MIN_CM_PER_YEAR, MAX_CM_PER_YEAR, cmPerYear, true);
-    sliderCmPerYear.setText(cm2txt(cmPerYear, "view.cm"));
-    sliderCmPerYear.setToolTipText(resources.getString("view.peryear.tip"));
-    sliderCmPerYear.addChangeListener(new ChangeCmPerYear());
-    bar.add(sliderCmPerYear);
-    
-    // create '/year' label
-    JLabel labelPerYear = new JLabel(resources.getString("view.peryear"));
-    labelPerYear.setFont(labelPerYear.getFont().deriveFont(9.0F));
-    sliderCmPerYear.setFont(labelPerYear.getFont());
-    bar.add(labelPerYear);
-    
-    // done
-  }
-  
-  /**
    * Accessor - paint tags
    */
   public boolean isPaintTags() {
@@ -283,6 +264,27 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
   }
   
   /**
+   * @see genj.view.ToolBarSupport#populate(JToolBar)
+   */
+  public void populate(JToolBar bar) {
+    
+    // create a slider for cmPerYear
+    sliderCmPerYear = new DoubleValueSlider(MIN_CM_PER_YEAR, MAX_CM_PER_YEAR, cmPerYear, true);
+    sliderCmPerYear.setText(cm2txt(cmPerYear, "view.cm"));
+    sliderCmPerYear.setToolTipText(resources.getString("view.peryear.tip"));
+    sliderCmPerYear.addChangeListener(new ChangeCmPerYear());
+    bar.add(sliderCmPerYear);
+    
+    // create '/year' label
+    JLabel labelPerYear = new JLabel(resources.getString("view.peryear"));
+    labelPerYear.setFont(labelPerYear.getFont().deriveFont(9.0F));
+    sliderCmPerYear.setFont(labelPerYear.getFont());
+    bar.add(labelPerYear);
+    
+    // done
+  }
+  
+  /**
    * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
    */
   public void setCurrentEntity(Entity entity) {
@@ -299,6 +301,33 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
     // try to scroll to first event
     model.getEvent(property);
   }
+
+  /**
+   * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
+   */
+  public JComponent getEntityPopupContainer() {
+    return content;
+  }
+
+  /**
+   * @see genj.view.EntityPopupSupport#getEntityAt(Point)
+   */
+  public Entity getEntityAt(Point pos) {
+    // is there an event?
+    Model.Event event = getEventAt(pos);
+    if (event==null) return null;
+    // grab its entity
+    return event.getEntity();
+  }
+
+  /**
+   * Returns the event at given position
+   */
+  protected Model.Event getEventAt(Point pos) {
+    double year = pixel2year(pos.x);
+    int layer = pos.y/contentRenderer.calcLayerHeight(getFontMetrics(getFont()));
+    return model.getEvent(year, layer);
+  }
   
   /** 
    * Calculates a year from given pixel position
@@ -311,6 +340,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
    * Scrolls so that given year is centered in view
    */
   protected void scroll2year(double year) {
+    centeredYear = year;
     int x = contentRenderer.cm2pixels( (year - model.min)*cmPerYear ) - scrollContent.getViewport().getWidth()/2;
     scrollContent.getHorizontalScrollBar().setValue(x);
   }
@@ -452,10 +482,10 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
   private class ContentClick extends MouseAdapter {
     /** @see java.awt.event.MouseAdapter#mousePressed(MouseEvent) */
     public void mousePressed(MouseEvent e) {
+      // not the popup
+      if (e.isPopupTrigger()) return;
       // find the event for that click
-      double year = pixel2year(e.getX());
-      int layer = e.getY()/contentRenderer.calcLayerHeight(getFontMetrics(getFont()));
-      Model.Event event = model.getEvent(year, layer);
+      Model.Event event = getEventAt(e.getPoint());
       if (event==null) return;
       // tell about it
       ViewManager.getInstance().setCurrentProperty(event.pe);

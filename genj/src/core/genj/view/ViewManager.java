@@ -243,6 +243,21 @@ public class ViewManager {
     
     // done
   }
+  
+  /**
+   * Get actions for given entity
+   */
+  /*package*/ List getActions(Entity entity) {
+    // loop through descriptors
+    List result = new ArrayList(16);
+    for (int d=0; d<descriptors.length; d++) {
+      Descriptor descriptor = descriptors[d];
+      List actions = descriptor.factory.createActions(entity);
+      if (actions!=null) result.addAll(actions);
+    }
+    // done
+    return result;
+  }
 
   /**
    * Opens a view on a gedcom file
@@ -297,7 +312,7 @@ public class ViewManager {
    */
   public static class Descriptor {
     
-    public String factory;
+    public ViewFactory factory;
     public String key;
     public ImgIcon img;
     public Dimension dim;
@@ -306,20 +321,17 @@ public class ViewManager {
      * Constructor
      */
     protected Descriptor(String f, String k, ImgIcon i, Dimension d) {
-      factory=f;key=k;img=i;dim=d;
-    }
-    
-    /**
-     * Get an instance of the factory
-     */
-    protected ViewFactory instantiate() {
+      // remember
+      key=k;img=i;dim=d;
+      // create
       try {
-        return (ViewFactory)Class.forName(factory).newInstance();
+        factory = (ViewFactory)Class.forName(f).newInstance();
       } catch (Throwable t) {
         throw new RuntimeException("ViewFactory "+factory+" couldn't be instantiated");
       }
+      // done
     }
-
+    
     /**
      * Return a title representation
      */

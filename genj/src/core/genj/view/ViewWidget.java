@@ -29,12 +29,17 @@ import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.MenuHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -42,6 +47,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSlider;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
@@ -81,19 +87,19 @@ import javax.swing.border.TitledBorder;
     this.gedcom = gedcom;
     this.frame = frame;
     
-    // create a factory
-    ViewFactory factory = descriptor.instantiate();
-  
     // create the view component
-    view = factory.createViewComponent(gedcom, registry, frame);
+    view = descriptor.factory.createViewComponent(gedcom, registry, frame);
 
     // create a toolbar
-    bar = createToolBar(factory, view, frame);
+    bar = createToolBar(descriptor.factory, view, frame);
     
     // setup layout
     setLayout(new BorderLayout());
     if (bar!=null) add(bar, registry.get("toolbar", BorderLayout.SOUTH));
     add(view, BorderLayout.CENTER);
+    
+    // install popup support
+    installPopupSupport();
     
     // done
   }
@@ -136,6 +142,18 @@ import javax.swing.border.TitledBorder;
     
     // done
     return result;
+  }
+  
+  /**
+   * Install the popup support
+   */
+  private void installPopupSupport() {
+    // check for support
+    if (!(view instanceof EntityPopupSupport)) return;
+    // install it
+    EntityPopupSupport eps = (EntityPopupSupport)view;
+    eps.getEntityPopupContainer().addMouseListener(new EntityPopupMouseListener());
+    // done
   }
   
   /**
@@ -249,5 +267,39 @@ import javax.swing.border.TitledBorder;
       ViewManager.getInstance().openSettings(ViewWidget.this);
     }
   } //ActionOpenSettings
+  
+  /**
+   * Our listener for mouse clicks on EntityPopupSupport components
+   */
+  private class EntityPopupMouseListener extends MouseAdapter {
+    public void mousePressed(MouseEvent e) {
+      // 20020829 on some OSes isPopupTrigger() will
+      // be true on mousePressed
+      mouseReleased(e);
+    }
+    public void mouseReleased(MouseEvent e) {
+      // no popup trigger no action
+      if (!e.isPopupTrigger()) return;
+      // grab the data we need
+      EntityPopupSupport esp = (EntityPopupSupport)view;
+      JComponent container = esp.getEntityPopupContainer();
+      Entity entity = esp.getEntityAt(e.getPoint());
+      if (entity==null) return;
+      // get the actions for that entity
+      List actions = ViewManager.getInstance().getActions(entity);
+      if (actions.isEmpty()) return;
+      // fill them into a popup
+      MenuHelper mh = new MenuHelper();
+      JPopupMenu popup = mh.createPopup(entity.getId());
+      Iterator it = actions.iterator();
+      while (it.hasNext()) {
+        ActionDelegate ad = (ActionDelegate)it.next();
+        mh.createItem(ad);
+      }
+      // show the popup
+      popup.show(container, e.getPoint().x, e.getPoint().y);
+      // done
+    }
+  } //EntityPopupMouseListener
   
 } //ViewWidget

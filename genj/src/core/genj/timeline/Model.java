@@ -135,15 +135,13 @@ import genj.gedcom.PropertyName;
   protected Event getEvent(double year, int layer) {
     // look for events in appropriate layer
     Iterator events = ((List)layers.get(layer)).iterator();
-    Event event = (Event)events.next();
     while (events.hasNext()) {
-      Event other = (Event)events.next();
-      if (other.from>year) break;
-      event = other;
-      if (year<event.to) break;
+      Event event = (Event)events.next();
+      if (event.from-timeBeforeEvent<year&&year<event.to+timeAfterEvent)
+        return event;
     }
-    // none found
-    return event;
+    // done
+    return null;
   }
   
   /**
@@ -444,6 +442,12 @@ import genj.gedcom.PropertyName;
      */
     public String toString() {
       return content;
+    }
+    /**
+     * The entity for that event
+     */
+    /*package*/ Entity getEntity() {
+      return pe.getEntity();
     }
   } //Event
   

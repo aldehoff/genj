@@ -23,10 +23,12 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -49,6 +51,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.SortableTableHeader;
 import genj.view.CurrentSupport;
+import genj.view.EntityPopupSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.gedcom.*;
@@ -56,7 +59,7 @@ import genj.gedcom.*;
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport, CurrentSupport {
+public class TableView extends JPanel implements ToolBarSupport, CurrentSupport, EntityPopupSupport {
   
   /** a static set of resources */
   /*package*/ final static Resources resources = new Resources("genj.table");
@@ -192,6 +195,35 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport 
   }
 
   /**
+   * @see genj.view.ToolBarSupport#populate(JToolBar)
+   */
+  public void populate(JToolBar bar) {
+    // create buttons for mode switch
+    ButtonHelper bh = new ButtonHelper();
+    for (int t=0;t<Gedcom.LAST_ETYPE;t++) {
+      bar.add(bh.create(new ActionChangeType(t)));
+    }
+    // done
+  }
+  
+  /**
+   * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
+   */
+  public JComponent getEntityPopupContainer() {
+    return table;
+  }
+
+  /**
+   * @see genj.view.EntityPopupSupport#getEntityAt(Point)
+   */
+  public Entity getEntityAt(Point pos) {
+    int row = table.rowAtPoint(pos);
+    if (row<0) return null;
+    table.getSelectionModel().setSelectionInterval(row, row);
+    return tableModel.getEntity(row);
+  }
+
+  /**
    * Grab current column widths
    */
   private void grabColumnWidths() {
@@ -241,18 +273,6 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport 
     // Done
   }  
   
-  /**
-   * @see genj.view.ToolBarSupport#populate(JToolBar)
-   */
-  public void populate(JToolBar bar) {
-    // create buttons for mode switch
-    ButtonHelper bh = new ButtonHelper();
-    for (int t=0;t<Gedcom.LAST_ETYPE;t++) {
-      bar.add(bh.create(new ActionChangeType(t)));
-    }
-    // done
-  }
-
   /**
    * Action - flip view to entity type
    */

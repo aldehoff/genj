@@ -21,10 +21,12 @@ package genj.entity;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.util.List;
 
 import javax.swing.JComponent;
 
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
 import genj.util.Registry;
@@ -56,4 +58,11 @@ public class EntityViewFactory implements ViewFactory {
     return new EntityView(gedcom,registry,frame);
   }
 
-}
+  /**
+   * @see genj.view.ViewFactory#createActions(Entity)
+   */
+  public List createActions(Entity entity) {
+    return null;
+  }
+  
+} //EntityViewFactory

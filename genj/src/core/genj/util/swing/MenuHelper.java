@@ -81,10 +81,22 @@ public class MenuHelper  {
   /**
    * Creates a PopupMenu
    */
+  public JPopupMenu createPopup(String label) {
+    // create one
+    JPopupMenu result = new JPopupMenu(string(label));
+    // that's the menu now
+    pushMenu(result);
+    // done
+    return result;
+  }
+
+  /**
+   * Creates a PopupMenu
+   */
   public JPopupMenu createPopup(String label, Component component) {
     
     // create one
-    final JPopupMenu result = new JPopupMenu(string(label));
+    final JPopupMenu result = createPopup(label);
     
     // start listening for it
     component.addMouseListener(new MouseAdapter() {
@@ -99,9 +111,6 @@ public class MenuHelper  {
         }
       }
     });
-    
-    // that's the menu now
-    pushMenu(result);
     
     // done
     return result;
