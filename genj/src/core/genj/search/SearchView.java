@@ -200,7 +200,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     gh.add(checkRegExp   ,1,0,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
     gh.add(labelCount    ,2,0,1,1);
     gh.add(choiceValue   ,0,1,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL, new Insets(3,3,3,3));
-    gh.add(labelPath     ,0,2,3,1);
+    gh.add(labelPath     ,0,2,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
     gh.add(choicePath    ,0,3,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL, new Insets(3,3,3,3));
     
     // prepare layout
