@@ -60,6 +60,19 @@ public class HeadlessLabel extends JComponent {
   private boolean isOpaque = false;
 
   /**
+   * Constructor
+   */
+  public HeadlessLabel() {
+  }
+
+  /**
+   * Constructor
+   */
+  public HeadlessLabel(Font font) {
+    setFont(font);
+  }
+
+  /**
    * Set HTML to render
    */
   public View setHTML(String set) {
