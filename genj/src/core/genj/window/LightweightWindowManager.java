@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
@@ -44,7 +43,7 @@ import javax.swing.event.InternalFrameEvent;
 /**
  * The window manager for 'lightweight' JInternalFrames etc.
  */
-public class LightweightWindowManager extends AbstractWindowManager {
+public class LightweightWindowManager extends DefaultWindowManager {
   
   /** registry */
   private Registry registry;
@@ -59,6 +58,7 @@ public class LightweightWindowManager extends AbstractWindowManager {
    * Constructor
    */
   public LightweightWindowManager(Registry regiStry) {
+    super(regiStry);
     // remember
     registry = regiStry;
   }
@@ -155,13 +155,6 @@ public class LightweightWindowManager extends AbstractWindowManager {
     frame.show();
     
     // done
-  }
-  
-  /**
-   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent, java.lang.String[], javax.swing.JComponent, java.lang.Runnable, java.lang.Runnable)
-   */
-  public int openDialog(String key, String title, Icon image, JComponent content, String[] options, JComponent owner, Runnable onClosing, Runnable onClose) {
-    throw new IllegalArgumentException("n/a");
   }
   
   /**
