@@ -19,86 +19,51 @@
  */
 package genj.edit;
 
-import genj.edit.beans.PropertyBean;
-import genj.edit.beans.SimpleValueBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomException;
-import genj.gedcom.Property;
-import genj.gedcom.PropertyEvent;
-import genj.gedcom.PropertyXRef;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.view.ContextSupport;
+import genj.view.Context;
+import genj.view.ContextListener;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
-import genj.window.CloseWindow;
-import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.util.Iterator;
+import java.util.Stack;
 
-import javax.swing.AbstractButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
-import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
 
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
+public class EditView extends JPanel implements ToolBarSupport, ContextListener {
 
   /** the gedcom we're looking at */
-  private Gedcom    gedcom;
-  
-  /** the title we have */
-  private String title;
+  private Gedcom  gedcom;
   
   /** the registry we use */
-  /*package*/ Registry registry;
+  private Registry registry;
 
   /** the view manager */
-  /*package*/ ViewManager manager;
+  private ViewManager manager;
   
   /** the resources we use */
   static final Resources resources = Resources.get(EditView.class);
 
-  /** buttons we use */
-  private AbstractButton    actionButtonAdd,
-                            actionButtonCut,
-                            actionButtonCopy,
-                            actionButtonPaste,
-                            actionButtonUp,
-                            actionButtonDown,
-                            actionButtonReturn,
-                            actionSticky;
+  /** actions we offer */
+  private Sticky sticky = new Sticky();
+  private Back   back   = new Back(); 
 
-  /** everything for the tree */
-  /*package*/ PropertyTreeWidget tree = null;
-  
-  /** everything for the proxy */
-  private JPanel            editPane;
-  private PropertyBean      bean = null;
+  /** whether we're sticky */
+  private  boolean isSticky = false;
 
-  /** splitpane for tree/proxy */
-  private JSplitPane        splitPane = null;
+  /** current editor */
+  private Editor editor;
   
   /**
    * Constructor
@@ -108,40 +73,17 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     super(new BorderLayout());
     
     // remember
-    title    = setTitle;
     gedcom   = setGedcom;
     registry = setRegistry;
     manager  = setManager;
 
-    // TREE Component's 
-    tree = new PropertyTreeWidget(setGedcom);
-
-    Callback callback = new Callback();
-    tree.addTreeSelectionListener(callback);
-    tree.addMouseListener(callback);
-    
-    JScrollPane treePane = new JScrollPane(tree);
-    treePane.setMinimumSize  (new Dimension(160, 128));
-    treePane.setPreferredSize(new Dimension(160, 128));
-        
-    // EDIT Component
-    editPane = new JPanel(new BorderLayout());
-
-    // SplitPane with tree/edit
-    splitPane = new JSplitPane(
-      JSplitPane.VERTICAL_SPLIT, 
-      treePane, 
-      new JScrollPane(editPane));
-    splitPane.setDividerLocation(registry.get("divider",-1));
-
-//    // tabbing
-//    JTabbedPane tabbing = new JTabbedPane();
-//    tabbing.addTab("Simple", new JPanel());
-//    tabbing.addTab("Advanced", splitPane);
+    // create current editor
+    editor = new AdvancedEditor();
+    editor.init(setGedcom, manager, registry);
 
     // layout
-    add(splitPane, BorderLayout.CENTER);
-    
+    add(editor, BorderLayout.CENTER);
+
     // Done
   }
 
@@ -154,16 +96,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
     // and addNotify() can happen during z-reordering
     
     // Check if we can preset something to edit
-    Entity entity = null;
+    Context context;
     try { 
-      entity = gedcom.getEntity(registry.get("last",(String)null)); 
+      context = new Context(gedcom.getEntity(registry.get("last",(String)null))); 
     } catch (Exception e) {
+      context = manager.getContext(gedcom); 
     }
-    if (entity==null) {
-      Property context = manager.getContext(gedcom); 
-      if (context!=null) entity = context.getEntity();
-    }
-    setEntity(entity);
+    setContext(context);
 
     // continue
     super.addNotify();    
@@ -174,10 +113,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
    */
   public void removeNotify() {
     
-    // Remember registry
-    registry.put("divider",splitPane.getDividerLocation());
-    registry.put("last", getCurrentEntity()!=null?getCurrentEntity().getId():"");
-    registry.put("sticky", isSticky());
+    // remember
+    Entity e = editor.getContext().getEntity();
+    registry.put("last", e!=null?e.getId():"");
 
     // Continue
     super.removeNotify();
@@ -186,34 +124,23 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   }
 
   /**
-   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
+   * Context listener callback
    */
-  public void setContext(Property property) {
-    if (!isSticky()) {
-      tree.setRoot(property.getEntity());
-      tree.setSelection(property);
-    } 
-  }
-
-  /**
-   * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
-   */
-  public JComponent getContextPopupContainer() {
-    return tree;
-  }
-
-  /**
-   * @see genj.view.EntityPopupSupport#getEntityAt(Point)
-   */
-  public Context getContextAt(Point pos) {
-    // find property&select
-    Property prop = tree.getPropertyAt(pos);
-    if (prop!=null)
-      tree.setSelection(prop);
+  public void setContext(Context context) {
+    // not if we're sticky
+    if (isSticky) 
+      return;
+    // get current
+    Context current = editor.getContext();
+    if (current.equals(context))
+      return;
+    // remember current 
+    back.push(current);
+    // tell editor
+    editor.setContext(context);
     // done
-    return prop!=null ? new Context(prop) : new Context(getCurrentEntity());
   }
-  
+
   /**
    * @see genj.view.ToolBarSupport#populate(JToolBar)
    */
@@ -228,25 +155,17 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       .setMinimumSize(new Dimension(0,0))
       .setContainer(bar);
 
-    // add new    
-    actionButtonAdd    = bh.create(new ActionAdd());
-    
-    // cut,copy,paste
-    actionButtonCut    = bh.create(new ActionCut());
-    actionButtonCopy   = bh.create(new ActionCopy());
-    actionButtonPaste  = bh.create(new ActionPaste());
-    
-    // up, down
-    actionButtonUp     = bh.create(new ActionUpDown(true));
-    actionButtonDown   = bh.create(new ActionUpDown(false));
-    
+    // ask editor
+    Iterator it = editor.getActions().iterator();
+    while (it.hasNext())
+      bh.create((ActionDelegate)it.next());
+
     // return in history
-    actionButtonReturn = bh.setEnabled(true).create(new ActionBack());
+    bh.setEnabled(true).create(back);
     
     // toggle sticky
-    actionSticky       = bh.create(new ActionSticky());
-    actionSticky.setSelected(registry.get("sticky",false));
-
+    bh.create(sticky);
+    
     // done
   }
   
@@ -258,511 +177,70 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
   }
   
   /**
-   * returns the currently viewed entity
-   */
-  /*package*/ Entity getCurrentEntity() {
-    Property root = tree.getRoot();
-    return root==null ? null : root.getEntity();
-  }
-  
-  /**
-   * Set the entity to display
-   */
-  /*pacakge*/ void setEntity(Entity entity) {
-
-    // already?
-    if (getCurrentEntity()==entity) 
-      return;
-
-    // Try to stop old editing first
-    tree.clearSelection();
-
-    // Reset tree model
-    tree.setRoot(entity);
-
-    // Done
-  }
-  
-  /**
-   * Change sticky status
-   */
-  public boolean setSticky(boolean set) {
-    boolean result = actionSticky.isSelected();
-    actionSticky.setSelected(set);
-    return result;
-  }
-
-  /**
-   * Check sticky status
+   * whether we're sticky
    */
   public boolean isSticky() {
-    return actionSticky!=null && actionSticky.isSelected();
+    return isSticky;
   }
-
+  
+  /**
+   * Current entity
+   */
+  public Entity getEntity() {
+    return editor.getContext().getEntity();
+  }
+  
   /**
    * Action - toggle
    */
-  private class ActionSticky extends ActionDelegate {
+  private class Sticky extends ActionDelegate {
     /** constructor */
-    protected ActionSticky() {
+    protected Sticky() {
       super.setImage(Images.imgStickOff);
       super.setToggle(Images.imgStickOn);
       super.setTip("action.stick.tip");
     }
     /** run */
     protected void execute() {
-      //noop
+      isSticky = !isSticky;
     }
   } //ActionBack
 
   /**
    * Action - back
    */
-  private class ActionBack extends ActionDelegate {
+  private class Back extends ActionDelegate {
+    private Stack stack = new Stack();
     /** constructor */
-    protected ActionBack() {
+    protected Back() {
       super.setImage(Images.imgReturn).setTip("action.return.tip");
     }
     /** run */
     protected void execute() {
-      tree.setPrevious();
+      if (stack.size()==0)
+        return;
+      // pop first valid on stack
+      while (!stack.isEmpty()) {
+        Context context = (Context)stack.pop();
+        if (context.isValid()) {
+          manager.setContext(context);      
+          // current was put on in error
+          if (!stack.isEmpty()) stack.pop();
+          return;
+        }
+      }
+    }
+    /** push another on stack */
+    protected void push(Context context) {
+      // won't put the same entity twice though
+      if (!stack.isEmpty()) {
+        Context current = (Context)stack.peek();
+        if (current.getEntity()==context.getEntity())
+          return;
+      }
+      // keep it
+      stack.push(context);
     }
   } //ActionBack
-  
-  /**
-   * Action - add
-   */
-  private class ActionAdd extends ActionDelegate {
-    /** constructor */
-    protected ActionAdd() {
-      super.setShortText("action.add");
-      super.setImage(Images.imgAdd);
-      super.setTip("action.add.tip");
-    }
-    /** run */
-    protected void execute() {
-  
-      // Depending on Gedcom of current entity
-      Entity entity = getCurrentEntity();
-      if (entity==null)
-        return;
-  
-      Gedcom gedcom = entity.getGedcom();
-  
-      // .. only in case of single selection
-      TreePath paths[] = tree.getSelectionPaths();
-      if ( (paths==null) || (paths.length!=1) ) 
-        return;
-      TreePath path = tree.getSelectionPath();
-  
-      // .. calculate new props
-      Property prop = (Property)path.getLastPathComponent();
-  
-      // .. Confirm
-      JLabel label = new JLabel(resources.getString("add.choose"));
-      ChoosePropertyBean choose = new ChoosePropertyBean(prop, resources);
-      JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
-  
-      int option = manager.getWindowManager().openDialog("add",resources.getString("add.title"),WindowManager.IMG_QUESTION,new JComponent[]{ label, choose, check },CloseWindow.OKandCANCEL(),EditView.this); 
-      
-      // .. not OK?
-      if (option!=0)
-        return;
-
-      // .. stop current 
-      tree.clearSelection();
-  
-      // .. Calculate chosen properties
-      Property[] props = choose.getResultingProperties();
-  
-      if ( (props==null) || (props.length==0) ) {
-        manager.getWindowManager().openDialog(null,null,WindowManager.IMG_ERROR,resources.getString("add.must_enter"),CloseWindow.OK(),EditView.this);
-        return;
-      }
-  
-      // .. add properties
-      gedcom.startTransaction();
-      try {
-        for (int i=0;i<props.length;i++) {
-          Property newProp = prop.addProperty(props[i]);
-          if (check.isSelected()) newProp.addDefaultProperties();
-        } 
-      } finally {
-        gedcom.endTransaction();
-      }
-         
-      // .. select added
-      Property select = props[0];
-      if (select instanceof PropertyEvent) {
-        Property pdate = ((PropertyEvent)select).getDate(false);
-        if (pdate!=null) select = pdate;
-      }
-      tree.setSelectionPath(new TreePath(entity.getPathTo(select)));
-      
-      // done
-    }
-
-  } //ActionPropertyAdd
-    
-  /**
-   * Action - up/down
-   */
-  private class ActionUpDown extends ActionDelegate {
-    /** which */
-    boolean up;
-    /** constructor */
-    protected ActionUpDown(boolean up) {
-      this.up=up;
-      if (up) super.setShortText("action.up").setTip("action.up.tip").setImage(Images.imgUp);
-      else super.setShortText("action.down").setTip("action.down.tip").setImage(Images.imgDown);
-    }
-    /** run */
-    protected void execute() {
-      
-      // get current property
-      Property prop = tree.getSelection();
-      if (prop==null)
-        return;
-        
-      Property parent = prop.getParent(); // has to be non-null
-  
-      // .. Stop Editing
-      tree.clearSelection();
-  
-      // .. LockWrite
-      gedcom.startTransaction();
-  
-      // .. Calculate property that is moved
-      Property sibling = (Property)tree.getModel().getChild(parent, tree.getModel().getIndexOfChild(parent, prop) + (up?-1:1));
-      parent.swapProperties(prop, sibling);
-  
-      // .. UnlockWrite
-      gedcom.endTransaction();
-  
-      // Expand the rows
-      tree.expandRows();
-  
-      // Reselect the property
-      TreePath path = new TreePath(prop.getEntity().getPathTo(prop));
-      tree.setSelectionPath(path);
-      tree.scrollPathToVisible(path);;
-      
-      // Done  
-    }
-    
-  }  //ActionPropertyUpDown
-  
-  /**
-   * Action - copy
-   */
-  private class ActionCopy extends ActionDelegate {
-    /** constructor */
-    private ActionCopy() {
-      setImage(Images.imgCopy);
-      setTip("action.copy.tip");
-    }
-    /** run */
-    protected void execute() {
-      
-      // check selection
-      Property prop = tree.getSelection();
-      if (prop==null) 
-        return; // shouldn't happen
-        
-      // grab it and its subs
-      Clipboard.getInstance().copy(prop);
-      
-      // deselect to avoid user pasting to same node
-      tree.setSelection(prop.getParent());
-      
-      // done
-    }
-  } //ActionCopy
-
-  /**
-   * Action - cut
-   */
-  private class ActionCut extends ActionCopy {
-    /** constructor */
-    private ActionCut() {
-      super.setImage(Images.imgCut);
-      super.setShortText("action.cut");
-      super.setTip("action.cut.tip");
-    }
-    /** run */
-    protected void execute() {
-      // check selection
-      Property prop = tree.getSelection();
-      if (prop==null) 
-        return; // shouldn't happen
-      // warn about cut
-      String veto = prop.getDeleteVeto();
-      if (veto!=null) { 
-        // Removing property {0} from {1} leads to:\n{2}
-        String msg = resources.getString("cut.warning", new String[] { 
-          prop.getTag(), prop.getEntity().getId(), veto 
-        });
-        // prepare actions
-        ActionDelegate[] actions = {
-          new CloseWindow(resources.getString("action.cut")), 
-          new CloseWindow(CloseWindow.TXT_CANCEL)
-        };
-        // ask the user
-        int rc = manager.getWindowManager().openDialog(null, resources.getString("action.cut.tip"), WindowManager.IMG_WARNING, msg, actions, EditView.this );
-        if (rc!=0)
-          return;
-        // continue
-      }
-      // copy first
-      super.execute();
-      // now cut
-      gedcom.startTransaction();
-      prop.getParent().delProperty(prop);
-      gedcom.endTransaction();
-      // done
-    }
-  } //ActionCut
-
-  /**
-   * Action - paste
-   */
-  private class ActionPaste extends ActionDelegate {
-    /** constructor */
-    private ActionPaste() {
-      super.setImage(Images.imgPaste);
-      super.setShortText("action.paste");
-      super.setTip("action.paste.tip");
-    }
-    /** run */
-    protected void execute() {
-      
-      // check selection
-      Property prop = tree.getSelection();
-      if (prop==null) 
-        return; // shouldn't happen
-        
-      // safety - check existing copy
-      Clipboard.Copy copy = Clipboard.getInstance().getCopy();
-      if (copy==null) 
-        return; // shouldn't happen
-        
-      // prepare actions
-      ActionDelegate[] actions = {
-        new CloseWindow(resources.getString("action.paste")), 
-        new CloseWindow(CloseWindow.TXT_CANCEL)
-      };
-      
-      // ask
-      if (0!=manager.getWindowManager().openDialog(null, resources.getString("action.paste.tip"), WindowManager.IMG_QUESTION, new JScrollPane(new PropertyTreeWidget(copy)), actions, EditView.this)) 
-        return;        
-        
-      // paste contents
-      gedcom.startTransaction();
-      Property result = null;
-      try {
-        result = copy.paste(prop);
-      } catch (GedcomException e) {
-        manager.getWindowManager().openDialog(null,resources.getString("action.paste.tip"),WindowManager.IMG_WARNING,e.getMessage(),CloseWindow.OK(),EditView.this);
-      }
-      gedcom.endTransaction();
-      
-      // propagate
-      if (result!=null)
-        manager.setContext(result);
-      
-      // done
-    }
-  } //ActionPaste
-
-  /**
-   * Handling selection of properties
-   */
-  private class Callback extends MouseAdapter implements TreeSelectionListener {
-    
-    private ActionDelegate ok = new OK(), cancel = new Cancel();
-    
-    /**
-     * callback - mouse doubleclick
-     */
-    public void mouseClicked(MouseEvent e) {
-      // double-click?
-      if (e.getClickCount()<2)
-        return;
-      // check against selected property
-      Property prop = tree.getPropertyAt(e.getPoint());
-      if (prop==null||prop!=tree.getSelection())
-        return;
-      // propagate any reference
-      if (prop instanceof PropertyXRef)
-        manager.setContext(((PropertyXRef)prop).getTarget());
-    }
-
-    /**
-     * callback - selection in tree has changed
-     */
-    public void valueChanged(TreeSelectionEvent e) {
-
-      // ask user for commit if
-      if (!gedcom.isTransaction()&&bean!=null&&ok.isEnabled()) {
-        if (0==manager.getWindowManager().openDialog(null, title, WindowManager.IMG_QUESTION, resources.getString("confirm.keep.changes"), CloseWindow.YESandNO(), editPane))
-          ok.trigger();
-      }
-
-      // Clean up
-      bean = null;
-      editPane.removeAll();
-      editPane.revalidate();
-      editPane.repaint();
-
-      // Check for 'no selection'
-      Property prop = tree.getSelection(); 
-      if (prop==null) {
-
-        // Disable action buttons
-        actionButtonAdd   .setEnabled(false);
-        actionButtonUp    .setEnabled(false);
-        actionButtonDown  .setEnabled(false);
-        actionButtonCut   .setEnabled(false);
-        actionButtonCopy  .setEnabled(false);
-        actionButtonPaste .setEnabled(false);
-
-        // Done
-        return;
-      }
-  
-      // Starting with new one
-      if (!prop.isSecret()) {
-
-        // get a bean for property
-        bean = getBean(prop);
-        
-        try {
-
-          // add bean to center of editPane 
-          editPane.add(bean, BorderLayout.CENTER);
-
-          // initialize bean
-          bean.init(prop, manager, registry);
-          
-          // and a label to the top
-          final JLabel label = new JLabel(bean.getLabel(), bean.getImage(), SwingConstants.LEFT);
-          editPane.add(label, BorderLayout.NORTH);
-
-          // and actions to the bottom
-          if (bean.isEditable()) {
-            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons).setFocusable(false);
-            bh.create(ok);
-            bh.create(cancel);
-            editPane.add(buttons, BorderLayout.SOUTH);
-          }
-          
-          // listen to it
-          bean.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-              label.setText(bean.getLabel());
-              label.setIcon(bean.getImage());
-              ok.setEnabled(true);
-              cancel.setEnabled(true);
-            }
-          });
-
-          // and request focus
-          bean.requestFocusInWindow();
-          
-        } catch (Throwable t) {
-          Debug.log(Debug.WARNING, this, "Property bean "+bean+" failed with "+t.getMessage(), t);
-        }
-        
-        // start without ok and cancel
-        ok.setEnabled(false);
-        cancel.setEnabled(false);
-      }
-
-      // add      
-      actionButtonAdd.setEnabled(true);
-      
-      // cut,copy,paste
-      actionButtonCut  .setEnabled(prop.getParent()!=null&&!prop.isTransient());
-      actionButtonCopy .setEnabled(prop.getParent()!=null&&!prop.isTransient());
-      actionButtonPaste.setEnabled(Clipboard.getInstance().getCopy()!=null);
-  
-      // up, down
-      int i=0,j=0;  
-      if (prop!=tree.getRoot()) {        
-        Property parent = prop.getParent();
-        i = tree.getModel().getIndexOfChild(parent, prop);
-        j = tree.getModel().getChildCount(parent);
-      }
-
-      actionButtonUp    .setEnabled(i>0);
-      actionButtonDown  .setEnabled(i<j-1);
-  
-      // Done
-    }
-
-    /** calculate a bean for given property */
-    private PropertyBean getBean(Property prop) {
-      
-      // create
-      try {
-        return (PropertyBean) Class.forName( "genj.edit.beans." + prop.getProxy() + "Bean").newInstance();
-      } catch (Throwable t) {
-        return new SimpleValueBean();
-      }
-      
-      // done
-    }
-    
-    /**
-     * A ok action
-     */
-    private class OK extends ActionDelegate {
-  
-      /** constructor */
-      private OK() {
-        setText(CloseWindow.TXT_OK);
-      }
-  
-      /** cancel current proxy */
-      protected void execute() {
-  
-        if (bean!=null) try {
-          gedcom.startTransaction();
-          bean.commit();
-        } finally {
-          gedcom.endTransaction();
-        }
-        
-        ok.setEnabled(false);
-        cancel.setEnabled(false);
-      }
-  
-    } //OK
-  
-    /**
-     * A cancel action
-     */
-    private class Cancel extends ActionDelegate {
-  
-      /** constructor */
-      private Cancel() {
-        setText(CloseWindow.TXT_CANCEL);
-      }
-  
-      /** cancel current proxy */
-      protected void execute() {
-        // disable ok&cancel
-        ok.setEnabled(false);
-        cancel.setEnabled(false);
-        // simulate a selection change
-        valueChanged(null);
-      }
-  
-    } //Cancel
-  
-    
-  } //Callback  
-
   
 } //EditView

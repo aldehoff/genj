@@ -162,7 +162,13 @@ public class MenuHelper  {
    * @param actions either ActionDelegates or lists of ActionDelegates that
    * will be separated visually by createSeparator
    */
-  public void createItems(List actions) {
+  public void createItems(List actions, boolean addLeadingSeparator) {
+    // nothing to do?
+    if (actions==null||actions.isEmpty())
+      return;
+    // add separator
+    if (addLeadingSeparator)
+      createSeparator(false);      
     // Loop through list
     Iterator it = actions.iterator();
     while (it.hasNext()) {
@@ -172,7 +178,7 @@ public class MenuHelper  {
         // a separator
         createSeparator(false);
         // recurse
-        createItems((List)o);
+        createItems((List)o, false);
       } else {
         // create
         createItem((ActionDelegate)o);

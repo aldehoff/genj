@@ -17,40 +17,40 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.entity;
+package genj.edit;
 
 import genj.gedcom.Gedcom;
 import genj.util.Registry;
-import genj.util.swing.ImageIcon;
-import genj.view.ViewFactory;
+import genj.view.Context;
 import genj.view.ViewManager;
 
-import javax.swing.JComponent;
+import java.util.List;
+
+import javax.swing.JPanel;
 
 /**
- * The factory for the EntityView
+ * The base class for our two editors basic and advanced
  */
-public class EntityViewFactory implements ViewFactory {
+/*package*/ abstract class Editor extends JPanel {
 
   /**
-   * @see genj.view.ViewFactory#createView(String, Gedcom, Registry)
+   * Initializer (post constructor)
    */
-  public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager) {
-    return new EntityView(title, gedcom, registry, manager);
-  }
+  public abstract void init(Gedcom gedcom, ViewManager manager, Registry registry);
 
+  /** 
+   * Accessor - current 
+   */
+  public abstract Context getContext();
+  
+  /** 
+   * Accessor - current 
+   */
+  public abstract void setContext(Context context);
+  
   /**
-   * @see genj.view.ViewFactory#getImage()
+   * Accessor - actions
    */
-  public ImageIcon getImage() {
-    return new ImageIcon(this, "images/View.gif");
-  }
+  public abstract List getActions();
 
-  /**
-   * @see genj.view.ViewFactory#getName(boolean)
-   */
-  public String getTitle(boolean abbreviate) {
-    return EntityView.resources.getString("title" + (abbreviate?".short":""));
-  }
-
-} //EntityViewFactory
+} //Editor

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.60 $ $Author: nmeier $ $Date: 2004-05-14 20:11:47 $
+ * $Revision: 1.61 $ $Author: nmeier $ $Date: 2004-06-01 08:45:29 $
  */
 package genj.gedcom;
 
@@ -605,6 +605,13 @@ public class Gedcom {
    */
   public boolean hasPassword() {
     return password!=PASSWORD_NOT_SET && password!=PASSWORD_UNKNOWN;
+  }
+  
+  /**
+   * Check for containment
+   */
+  public boolean contains(Entity entity) {
+    return getEntities(entity.getTag()).contains(entity);
   }
   
 } //Gedcom

@@ -41,7 +41,9 @@ import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.swing.ImageIcon;
-import genj.view.ActionSupport;
+import genj.view.ActionProvider;
+import genj.view.Context;
+import genj.view.ContextListener;
 import genj.view.Options;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
@@ -55,7 +57,7 @@ import javax.swing.JComponent;
 /**
  * The factory for the TableView
  */
-public class EditViewFactory implements ViewFactory, ActionSupport {
+public class EditViewFactory implements ViewFactory, ActionProvider, ContextListener {
     
   /** a noop is used for separators in returning actions */  
   private final static ActionDelegate aNOOP = ActionDelegate.NOOP;
@@ -84,19 +86,17 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
   /**
    * Callback - context change information
    */
-  public void contextChanged(ViewManager manager, Gedcom gedcom) {
+  public void setContext(Context context) {
+    ViewManager manager = context.getManager();
     // editor needed?
     if (!Options.getInstance().isOpenEditor)
       return;
-    // what's the context
-    Property context = manager.getContext(gedcom);
-    if (context==null)
-      return;
+    // what's the entity
     Entity entity = context.getEntity();
     // noop if EditView non-sticky or current is open
-    EditView[] edits = (EditView[])manager.getInstances(EditView.class, gedcom);
+    EditView[] edits = (EditView[])manager.getInstances(EditView.class, context.getGedcom());
     for (int i=0;i<edits.length;i++) {
-      if (!edits[i].isSticky()||edits[i].getCurrentEntity()==entity) 
+      if (!edits[i].isSticky()||edits[i].getEntity()==entity) 
         return;
     }
     // open

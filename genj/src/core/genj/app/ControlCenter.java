@@ -38,7 +38,9 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.ProgressWidget;
-import genj.view.ContextSupport;
+import genj.view.Context;
+import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
@@ -46,8 +48,7 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.Point;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -113,38 +114,34 @@ public class ControlCenter extends JPanel {
     viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager, FACTORIES);
     
     // Table of Gedcoms
-    tGedcoms = new GedcomTableWidget(registry);
-    tGedcoms.addMouseListener(new MouseAdapter() {
-      public void mouseClicked(MouseEvent e) {
-        mouseReleased(e);
-      }
-      public void mouseReleased(MouseEvent e) {
-        // waiting for popup trigger
-        if (!e.isPopupTrigger())
-          return;
-        // check row
-        int row = tGedcoms.rowAtPoint(e.getPoint());
-        if (row<0)
-          return;
-        // make sure it's selected
-        tGedcoms.getSelectionModel().setSelectionInterval(row,row);
-        // show context-menu
-        Gedcom gedcom = tGedcoms.getSelectedGedcom();
-        List actions = new ArrayList();
-        actions.add(new ActionClose());
-        actions.add(new ActionSave(false));
-        ContextSupport.Context context = new ContextSupport.Context(null, actions); 
-        viewManager.showContextMenu(tGedcoms, e.getPoint(), gedcom, context);
-      }
-    });
-
+    tGedcoms = new GedcomTableWidget(viewManager, registry);
+    
     // ... Listening
     tGedcoms.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent e) {
         ButtonHelper.setEnabled(gedcomButtons, tGedcoms.getSelectedGedcom() != null);
       }
     });
-
+    
+    // providing context
+    viewManager.registerContextProvider(new ContextProvider() {
+      public Context getContextAt(Point pos) {
+        Gedcom gedcom = tGedcoms.getGedcomAt(pos);
+        if (gedcom==null)
+          return null;
+        Context result = new Context(gedcom);
+        result.addAction(new ActionClose());
+        result.addAction(new ActionSave(false));
+        return result;
+      }
+    }, tGedcoms);
+    
+    viewManager.addContextListener(new ContextListener() {
+      public void setContext(Context context) {
+        tGedcoms.setSelection(context.getGedcom());
+      }
+    });
+    
     // Layout
     setLayout(new BorderLayout());
     add(createToolBar(), "North");

@@ -149,7 +149,7 @@ public class PopupWidget extends JButton {
       popup.setBackground(Color.white);
       MenuHelper mh = new MenuHelper();
       mh.pushMenu(popup);
-      mh.createItems(as);
+      mh.createItems(as, false);
 
       // .. calc position
       int x=0, y=0;

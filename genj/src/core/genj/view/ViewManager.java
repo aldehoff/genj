@@ -32,10 +32,13 @@ import genj.util.swing.MenuHelper;
 import genj.window.WindowManager;
 
 import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -60,8 +63,8 @@ public class ViewManager {
   /** open views */
   private Map key2viewwidget = new HashMap();
   
-  /** the currently selected entity */
-  private Map gedcom2current = new HashMap();
+  /** the currently valid context */
+  private Map gedcom2context = new HashMap();
   
   /** a print manager */
   private PrintManager printManager = null;
@@ -71,6 +74,9 @@ public class ViewManager {
   
   /** a blueprint manager */
   private BlueprintManager blueprintManager = null;
+  
+  /** context listeners */
+  private List contextListeners = new LinkedList();
 
   /**
    * Constructor
@@ -85,7 +91,10 @@ public class ViewManager {
     factories = new ViewFactory[factoryTypes.length];
     for (int f=0;f<factories.length;f++) {    
       try {
-        factories[f] = (ViewFactory)Class.forName(factoryTypes[f]).newInstance();
+        ViewFactory factory = (ViewFactory)Class.forName(factoryTypes[f]).newInstance();
+        factories[f] = factory;
+        if (factory instanceof ContextListener)
+          addContextListener((ContextListener)factory);
       } catch (Throwable t) {
         throw new IllegalArgumentException("Factory of type "+factories[f]+" cannot be instantiated ("+t.getMessage()+")");
       }
@@ -113,24 +122,27 @@ public class ViewManager {
   
   /**
    * Returns the last set context for given gedcom
-   * @return the property (might be null)
+   * @return the context
    */
-  public Property getContext(Gedcom gedcom) {
+  public Context getContext(Gedcom gedcom) {
+    
     // grab one from map
-    Property result = (Property)gedcom2current.get(gedcom);
+    Context result = (Context)gedcom2context.get(gedcom);
     if (result!=null) {
       // still in valid entity?
       Entity entity = result.getEntity();
       // 20040305 make sure entity isn't null by now
-      if (entity!=null&&gedcom.getEntities(entity.getTag()).contains(entity))
-        return result;
-      // remove from map 
-      gedcom2current.remove(gedcom);
+      if (entity==null||!gedcom.getEntities(entity.getTag()).contains(entity)) {
+        // remove from map 
+        gedcom2context.remove(gedcom);
+        // reset
+        result=null;
+      }
     }
-    // try first indi 
-    result = gedcom.getAnyEntity(Gedcom.INDI);
-    if (result!=null) 
-      gedcom2current.put(gedcom, result);
+    // fallback to first indi 
+    if (result==null)
+      result = new Context(gedcom, gedcom.getAnyEntity(Gedcom.INDI), null);
+    
     // done here
     return result;
   }
@@ -138,32 +150,34 @@ public class ViewManager {
   /**
    * Sets the current context
    */
-  public void setContext(Property property) {
-    // already?
-    Gedcom gedcom = property.getGedcom();
+  public void setContext(Context context) {
+    // valid?
+    if (!context.isValid())
+      return;
+    // connect to us
+    context.setManager(this);
     // remember
-    // 20030402 don't block propagation if already current
-    // let it be signalled twice if necessary
-    //   if (gedcom2current.get(gedcom)==property) return;
-    gedcom2current.put(gedcom, property);
+    Gedcom gedcom = context.getGedcom();
+    gedcom2context.put(gedcom, context);
     // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();
     // loop and tell to views
     Iterator it = key2viewwidget.values().iterator();
     while (it.hasNext()) {
-      ViewWidget vw = (ViewWidget)it.next();
+      ViewContainer vw = (ViewContainer)it.next();
       // only if view on same gedcom
       if (vw.getGedcom()!= gedcom) continue;
       // and context supported
-      if (vw.getView() instanceof ContextSupport)
-        ((ContextSupport)vw.getView()).setContext(property);
+      if (vw.getView() instanceof ContextListener)
+        ((ContextListener)vw.getView()).setContext(context);
       // next
     }
-    // loop and tell to factories
-    ViewFactory[] fs = getFactories();
-    for (int f=0; f<fs.length; f++) {
-      fs[f].contextChanged(this, gedcom);      
+    // loop and tell to context listeners
+    ContextListener[] ls = (ContextListener[])contextListeners.toArray(new ContextListener[contextListeners.size()]);
+    for (int l=0;l<ls.length;l++) {
+      ls[l].setContext(context);
     }
+    
     // done
   }
 
@@ -198,7 +212,7 @@ public class ViewManager {
   /**
    * Opens settings for given view settings component
    */
-  /*package*/ void openSettings(ViewWidget viewWidget) {
+  /*package*/ void openSettings(ViewContainer viewWidget) {
     
     // Frame already open?
     SettingsWidget settings = (SettingsWidget)windowManager.getContent("settings");
@@ -247,58 +261,6 @@ public class ViewManager {
   }
   
   
-  /**
-   * Resolves the Gedcom for given context
-   */
-  private Gedcom getGedcom(Object context) {
-    if (context instanceof Gedcom  ) return (Gedcom)context;
-    if (context instanceof Property) return ((Property)context).getGedcom();
-    throw new IllegalArgumentException("Unknown context "+context);
-  }
-
-  /**
-   * Get actions for given entity/gedcom
-   */
-  private List getActions(Object context) {
-    // loop through descriptors
-    List result = new ArrayList(16);
-    for (int f=0; f<factories.length; f++) {
-      if (factories[f] instanceof ActionSupport) {
-        List as = getActions((ActionSupport)factories[f], context);
-        if (as!=null&&!as.isEmpty()) result.add(as);
-      }
-    }
-    // loop through views
-    Gedcom gedcom = getGedcom(context);
-    Iterator views = key2viewwidget.values().iterator();
-    while (views.hasNext()) {
-      ViewWidget view = (ViewWidget)views.next();
-      if (view.getGedcom()==gedcom&&view.getView() instanceof ActionSupport) {
-        List as = getActions((ActionSupport)view.getView(), context);
-        if (as!=null&&!as.isEmpty()) result.add(as);
-      }
-    }
-    // done
-    return result;
-  }
-
-  /**
-   * Resolves the context information from support/context
-   */
-  private List getActions(ActionSupport cs, Object context) {
-    // get result by calling appropriate support method
-    List result;
-    if (context instanceof Gedcom) 
-      result = cs.createActions((Gedcom  )context, this);
-    else if (context instanceof Entity) 
-      result = cs.createActions ((Entity  )context, this);
-    else if (context instanceof Property) 
-      result = cs.createActions ((Property)context, this);
-    else throw new IllegalArgumentException();
-    // done
-    return result;
-  }
-
   /**
    * Calculate a logical key for given factory
    */
@@ -352,7 +314,7 @@ public class ViewManager {
       key = gedcom.getName() + "." + registry.getView();
     
     // the viewwidget
-    final ViewWidget viewWidget = new ViewWidget(key,title,gedcom,registry,factory, this);
+    final ViewContainer viewWidget = new ViewContainer(key,title,gedcom,registry,factory, this);
 
     // remember
     key2viewwidget.put(key, viewWidget);
@@ -390,14 +352,14 @@ public class ViewManager {
   public void closeViews(Gedcom gedcom) {
     
     // look for views looking at gedcom    
-    ViewWidget[] vws = (ViewWidget[])key2viewwidget.values().toArray(new ViewWidget[key2viewwidget.size()]);
+    ViewContainer[] vws = (ViewContainer[])key2viewwidget.values().toArray(new ViewContainer[key2viewwidget.size()]);
     for (int i=0;i<vws.length;i++) {
       if (vws[i].getGedcom()==gedcom) 
         windowManager.close(vws[i].getKey());
     }
     
     // remove its key from gedcom2current
-    gedcom2current.remove(gedcom);
+    gedcom2context.remove(gedcom);
 
     // done
   }
@@ -410,7 +372,7 @@ public class ViewManager {
     // loop through views
     Iterator vws = key2viewwidget.values().iterator();
     while (vws.hasNext()) {
-      ViewWidget vw = (ViewWidget)vws.next();
+      ViewContainer vw = (ViewContainer)vws.next();
       if (vw.getView()==view) {
         windowManager.show(vw.getKey());
         break;
@@ -420,65 +382,6 @@ public class ViewManager {
     // not found    
   }
 
-  /**
-   * Show a context menu for given point - at this
-   * point we assume that view instanceof EntityPopupSupport
-   */
-  public void showContextMenu(JComponent container, Point point, Gedcom gedcom, ContextSupport.Context context) {
-    
-    // 20021017 @see note at the bottom of file
-    MenuSelectionManager.defaultManager().clearSelectedPath();
-
-    // create a popup
-    MenuHelper mh = new MenuHelper().setTarget(container);
-    mh.setTarget(container);
-    JPopupMenu popup = mh.createPopup();
-
-    // the context might have some actions we're going to add
-    mh.createItems(context.getActions());
-  
-    // we need Entity, property and Gedcom (above) from context
-    Property property = context.getProperty();
-    if (property!=null) {
-      Entity entity = property.getEntity();
-  
-      // items for property
-      if (property!=entity) {
-        List actions = getActions(property);
-        if (!actions.isEmpty()) {
-          String title = "Property '"+TagPath.get(property)+'\'';
-          mh.createMenu(title, property.getImage(false));
-          mh.createItems(actions);
-          mh.popMenu();
-        }
-      }
-      
-      // items for entity
-      List actions = getActions(entity);
-      if (!actions.isEmpty()) {
-        String title = Gedcom.getEntityName(entity.getTag(),false)+" '"+entity.getId()+'\'';
-        mh.createMenu(title, entity.getImage(false));
-        mh.createItems(actions);
-        mh.popMenu();
-      }
-    }
-        
-    // items for gedcom
-    List actions = getActions(gedcom);
-    if (!actions.isEmpty()) {
-      String title = "Gedcom '"+gedcom.getName()+'\'';
-      mh.createMenu(title, Gedcom.getImage());
-      mh.createItems(actions);
-      mh.popMenu();
-    }
-    
-    // show the popup
-    if (popup.getComponentCount()>0)
-      popup.show(container, point.x, point.y);
-    
-    // done
-  }  
-  
   /**
    * Returns views and factories with given support 
    */
@@ -494,7 +397,7 @@ public class ViewManager {
     // loop through views
     Iterator views = key2viewwidget.values().iterator();
     while (views.hasNext()) {
-      ViewWidget view = (ViewWidget)views.next();
+      ViewContainer view = (ViewContainer)views.next();
       if (view.getGedcom()==gedcom && of.isAssignableFrom(view.getView().getClass()))
         result.add(view.getView());
     }
@@ -502,5 +405,118 @@ public class ViewManager {
     // done
     return result.toArray((Object[])Array.newInstance(of, result.size()));
   }
+  
+  /**
+   * Register a provider for a context menu
+   */
+  public void registerContextProvider(final ContextProvider provider, final JComponent component) {
 
+    component.addMouseListener(new MouseAdapter() {
+
+      /** callback - mouse press */
+      public void mousePressed(MouseEvent e) {
+        mouseReleased(e);
+      }
+  
+      /** callback - mouse release */
+      public void mouseReleased(MouseEvent e) {
+        
+        // no popup trigger no action
+        if (!e.isPopupTrigger()) 
+          return;
+        
+        // grab context
+        Context context = provider.getContextAt(e.getPoint());
+        if (context==null)
+          return;
+          
+        // show context menu
+        showContextMenu(context, component, e.getPoint());
+  
+        // done
+      }
+    });
+    
+  }
+  
+  /**
+   * Register a listener
+   */
+  public void addContextListener(ContextListener listener) {
+    contextListeners.add(listener);
+  }
+  
+  /**
+   * Deregister a listener
+   */
+  public void removeContextListener(ContextListener listener) {
+    contextListeners.remove(listener);
+  }
+  
+  /**
+   * Show a context menu
+   */
+  public void showContextMenu(Context context, JComponent component, Point pos) {
+    
+    // make sure context contains at least gedcom
+    Property property = context.getProperty();
+    Entity entity = context.getEntity();
+    Gedcom gedcom = context.getGedcom();
+    
+    if (gedcom==null)
+      return;
+
+    // make sure any existing popup is cleared
+    MenuSelectionManager.defaultManager().clearSelectedPath();
+    
+    // propagate a selection change
+    setContext(context);
+
+    // create a popup
+    MenuHelper mh = new MenuHelper().setTarget(component);
+    JPopupMenu popup = mh.createPopup();
+
+    // popup local actions?
+    List actions = context.getActions();
+    if (!actions.isEmpty())
+      mh.createItems(actions, false);
+  
+    // find ActionSupport implementors
+    ActionProvider[] as = (ActionProvider[])getInstances(ActionProvider.class, context.getGedcom());
+
+    // items for property
+    if (property!=null&&property!=entity) {
+      String title = "Property '"+TagPath.get(property)+'\'';
+      mh.createMenu(title, property.getImage(false));
+      for (int i = 0; i < as.length; i++) {
+        mh.createItems(as[i].createActions(property, this), true);
+      }
+      mh.popMenu();
+    }
+        
+    // items for entity
+    if (entity!=null) {
+      String title = Gedcom.getEntityName(entity.getTag(),false)+" '"+entity.getId()+'\'';
+      mh.createMenu(title, entity.getImage(false));
+      for (int i = 0; i < as.length; i++) {
+        mh.createItems(as[i].createActions(entity, this), true);
+      }
+      mh.popMenu();
+    }
+        
+    // items for gedcom
+    String title = "Gedcom '"+gedcom.getName()+'\'';
+    mh.createMenu(title, Gedcom.getImage());
+    for (int i = 0; i < as.length; i++) {
+      mh.createItems(as[i].createActions(gedcom, this), true);
+    }
+    mh.popMenu();
+  
+    // show the popup
+    if (popup.getComponentCount()>0)
+      popup.show(component, pos.x, pos.y);
+
+    // done      
+  }
+  
 } //ViewManager

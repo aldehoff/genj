@@ -17,40 +17,32 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.entity;
+package genj.view;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.util.Registry;
-import genj.util.swing.ImageIcon;
-import genj.view.ViewFactory;
-import genj.view.ViewManager;
+import genj.gedcom.Property;
 
-import javax.swing.JComponent;
+import java.util.List;
 
 /**
- * The factory for the EntityView
+ * Support for a actions of property/entity/gedcom
  */
-public class EntityViewFactory implements ViewFactory {
+public interface ActionProvider {
+  
+  /**
+   * Callback for actions on a property
+   */
+  public List createActions(Property property, ViewManager manager);
 
   /**
-   * @see genj.view.ViewFactory#createView(String, Gedcom, Registry)
+   * Callback for actions on an entity
    */
-  public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager) {
-    return new EntityView(title, gedcom, registry, manager);
-  }
+  public List createActions(Entity entity, ViewManager manager);
 
   /**
-   * @see genj.view.ViewFactory#getImage()
+   * Callback for actions on a gedcom
    */
-  public ImageIcon getImage() {
-    return new ImageIcon(this, "images/View.gif");
-  }
+  public List createActions(Gedcom gedcom, ViewManager manager);
 
-  /**
-   * @see genj.view.ViewFactory#getName(boolean)
-   */
-  public String getTitle(boolean abbreviate) {
-    return EntityView.resources.getString("title" + (abbreviate?".short":""));
-  }
-
-} //EntityViewFactory
+} //ContextMenuSupport

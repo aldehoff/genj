@@ -38,7 +38,9 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.view.ContextSupport;
+import genj.view.Context;
+import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
@@ -63,7 +65,6 @@ import java.util.Set;
 import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -95,8 +96,8 @@ import javax.swing.event.ListSelectionListener;
 /**
  * View for searching
  */
-public class SearchView extends JPanel implements ToolBarSupport, ContextSupport {
-
+public class SearchView extends JPanel implements ToolBarSupport, ContextListener{
+  
   /** formatting */
   private final static String
    OPEN = "<font color=red>",
@@ -228,7 +229,26 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     add(BorderLayout.CENTER, new JScrollPane(listResults) );
     choiceValue.requestFocus();
 
+    // register as context provider
+    manager.registerContextProvider(new ContextProvider() {
+      public Context getContextAt(Point pos) {
+        int row = listResults.locationToIndex(pos);
+        if (row<0) 
+          return null;
+        return new Context(results.getHit(row).getProperty());
+      }
+    }, listResults);
+
     // done
+  }
+
+  /**
+   * callback - context changed
+   */  
+  public void setContext(Context context) {
+    int row = results.getRow(context.getEntity(), context.getProperty());
+    listResults.setSelectedIndex(row);
+    listResults.ensureIndexIsVisible(row);
   }
 
   /**
@@ -266,33 +286,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     ActionStop   stop   = new ActionStop  (search);
     bSearch = bh.setEnabled(true ).create(search);
     bStop   = bh.setEnabled(false).create(stop);
-  }
-  
-  /**
-   * @see genj.view.ContextSupport#getContextAt(java.awt.Point)
-   */
-  public Context getContextAt(Point pos) {
-    Property context = null;
-    int row = listResults.locationToIndex(pos);
-    if (row>=0) {
-      listResults.setSelectedIndex(row);
-      context = results.getHit(row).getProperty();
-    } 
-    return new Context(context);
-  }  
-
-  /**
-   * @see genj.view.ContextSupport#getContextPopupContainer()
-   */
-  public JComponent getContextPopupContainer() {
-    return listResults;
-  }
-
-  /**
-   * @see genj.view.ContextSupport#setContext(genj.gedcom.Property)
-   */
-  public void setContext(Property property) {
-    // ignored
   }
   
   /**
@@ -730,6 +723,26 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     }
     
     /**
+     * Find a result for entity, property
+     */
+    public int getRow(Entity entity, Property prop) {
+      // gotta be good
+      if (entity==null)
+        return -1;
+      // loop
+      int e = -1;
+      for (int p=0;p<hits.size();p++) {
+        Hit hit = (Hit)hits.get(p);
+        if (hit.getProperty()==prop)
+          return p;
+        if (e<0&&hit.getProperty().getEntity()==entity)
+          e = p;
+      }
+      // return row for entity
+      return e;
+    }
+    
+    /**
      * @see javax.swing.ListModel#getElementAt(int)
      */
     public Object getElementAt(int index) {
@@ -810,9 +823,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
      */
     public void valueChanged(ListSelectionEvent e) {
       int row = listResults.getSelectedIndex();
-      if (row>=0) {
-        manager.setContext(results.getHit(row).getProperty());
-      }
+      if (row>=0)
+        manager.setContext(new Context(results.getHit(row).getProperty()));
     }
   } //Renderer
   

@@ -246,7 +246,8 @@ public abstract class AbstractWindowManager implements WindowManager {
     // temporary key? nothing to stash away
     if (key.startsWith("_")) return;
     // keep bounds
-    registry.put(key, bounds);
+    if (bounds!=null)
+      registry.put(key, bounds);
   }
   
   /**

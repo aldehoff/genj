@@ -25,7 +25,9 @@ import genj.gedcom.Transaction;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.SortableTableHeader;
+import genj.view.ViewManager;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +57,7 @@ import javax.swing.table.TableColumnModel;
   /**
    * Constructor
    */
-  public GedcomTableWidget(Registry reGistry) {
+  public GedcomTableWidget(ViewManager mgr, Registry reGistry) {
  
     // change the header to ours    
     setTableHeader(new SortableTableHeader());
@@ -89,10 +91,27 @@ import javax.swing.table.TableColumnModel;
     for (int c=0, max=getColumnModel().getColumnCount(); c<widths.length&&c<max; c++) {
       getColumnModel().getColumn(c).setPreferredWidth(widths[c]);
     }    
-    
+
     // done
   }
   
+  /**
+   * Select a gedcom
+   */
+  public void setSelection(Gedcom gedcom) {
+    int row = model.getRowFor(gedcom);
+    if (row>=0)
+      getSelectionModel().setSelectionInterval(row,row);
+  }
+
+  /**
+   * Return gedcom at given position 
+   */  
+  public Gedcom getGedcomAt(Point pos) {
+    int row = rowAtPoint(pos);
+    return row<0 ? null : model.getGedcom(row);
+  }
+
   /**
    * Hooking into the tear-down process to store our
    * settings in (set) registry

@@ -19,30 +19,14 @@
  */
 package genj.view;
 
-import genj.gedcom.Gedcom;
-import genj.util.Registry;
-import genj.util.swing.ImageIcon;
-
-import javax.swing.JComponent;
-
 /**
- * The interface to a view's factory
+ * Support for a popup menu on entities
  */
-public interface ViewFactory {
+public interface ContextListener {
 
   /**
-   * Callback for creating a view 
+   * Get context
    */
-  public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager);
-  
-  /**
-   * Returns an image for this view
-   */
-  public ImageIcon getImage();
-  
-  /**
-   * Returns a localized title for this view
-   */
-  public String getTitle(boolean abbreviate);
-  
-} //ViewFactory
+  public void setContext(Context context);
+
+}

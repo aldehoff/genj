@@ -24,6 +24,7 @@ import genj.edit.EditViewFactory;
 import genj.edit.Images;
 import genj.gedcom.Entity;
 import genj.util.ActionDelegate;
+import genj.view.Context;
 import genj.view.ViewManager;
 
 /**
@@ -48,8 +49,7 @@ public class OpenForEdit extends ActionDelegate {
    */
   protected void execute() {
     EditView edit = (EditView)manager.openView(EditViewFactory.class, candidate.getGedcom());
-    edit.setSticky(false);
-    manager.setContext(candidate);
+    manager.setContext(new Context(candidate));
   }
   
 } //OpenForEdit

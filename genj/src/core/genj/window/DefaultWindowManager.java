@@ -87,8 +87,18 @@ public class DefaultWindowManager extends AbstractWindowManager {
        * late (one frame) after dispose()
        */
       public void dispose() {
+        // grab bounds
+        Rectangle bounds = getBounds();
+        try {
+          // 20040531 window bounds shouldn't be remembered if maximized
+          // try to determine if we shouldn't keep bounds (e.g. maximized)
+          int state = getExtendedState();
+          if (state!=NORMAL&&state!=ICONIFIED)
+            bounds = null;
+        } catch (Throwable t) {
+        }
         // forget about key but keep bounds
-        forget(key, getBounds(), registry);
+        forget(key, bounds, registry);
         // continue
         super.dispose();
         // callback?

@@ -23,7 +23,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
-import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
@@ -32,7 +31,8 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.view.ContextSupport;
+import genj.view.Context;
+import genj.view.ContextListener;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -40,7 +40,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +56,7 @@ import javax.swing.border.TitledBorder;
 /**
  * A navigator with buttons to easily navigate through Gedcom data
  */
-public class NavigatorView extends JPanel implements ContextSupport, GedcomListener {
+public class NavigatorView extends JPanel implements ContextListener, GedcomListener {
   
   private static Resources resources = Resources.get(NavigatorView.class);
 
@@ -128,14 +127,14 @@ public class NavigatorView extends JPanel implements ContextSupport, GedcomListe
     gedcom.addGedcomListener(this);
 
     // init
-    Property context = manager.getContext(gedcom);
+    Context context = manager.getContext(gedcom);
     if (context!=null&&(context.getEntity() instanceof Indi))
       setCurrentEntity(context.getEntity());
     else {
       Indi first = (Indi)gedcom.getAnyEntity(Gedcom.INDI);
       if (first!=null) setCurrentEntity(first);
     }
-
+    
     // done    
 
   }
@@ -168,25 +167,12 @@ public class NavigatorView extends JPanel implements ContextSupport, GedcomListe
   }
 
   /**
-   * @see genj.view.ContextPopupSupport#getContextPopupContainer()
-   */
-  public JComponent getContextPopupContainer() {
-    return null;
-  }
-  
-  /**
-   * @see genj.view.ContextPopupSupport#getContextAt(java.awt.Point)
-   */
-  public Context getContextAt(Point pos) {
-    return null;
+   * Context listener callback
+   */  
+  public void setContext(Context context) {
+    setCurrentEntity(context.getEntity());
   }
 
-  /**
-   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
-   */
-  public void setContext(Property property) {
-    setCurrentEntity(property.getEntity());
-  }
   
   /**
    * Set the current entity
@@ -293,8 +279,9 @@ public class NavigatorView extends JPanel implements ContextSupport, GedcomListe
    * propagate the selection of an entity
    */
   private void fireCurrentEntity(Entity e) {
-    if (e==null) return;
-    manager.setContext(e);
+    if (e==null) 
+      return;
+    manager.setContext(new Context(e));
   }
 
   /**

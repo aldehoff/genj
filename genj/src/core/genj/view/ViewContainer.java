@@ -27,8 +27,6 @@ import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.Box;
 import javax.swing.JComponent;
@@ -39,7 +37,7 @@ import javax.swing.SwingConstants;
 /**
  * A wrapper for our views enabling action buttons
  */
-/*package*/ class ViewWidget extends JPanel {
+/*package*/ class ViewContainer extends JPanel {
   
   /** the registry this view is for */
   private Registry registry;
@@ -69,7 +67,7 @@ import javax.swing.SwingConstants;
   /** 
    * Constructor
    */
-  /*package*/ ViewWidget(String kEy, String tiTle, Gedcom geDcom, Registry regIstry, ViewFactory facTory, ViewManager manAger) {
+  /*package*/ ViewContainer(String kEy, String tiTle, Gedcom geDcom, Registry regIstry, ViewFactory facTory, ViewManager manAger) {
     
     // remember
     manager = manAger;
@@ -88,9 +86,6 @@ import javax.swing.SwingConstants;
 
     // install a toolbar
     installToolBar(view, factory);
-    
-    // install popup support
-    installPopupSupport();
     
     // done
   }
@@ -130,20 +125,6 @@ import javax.swing.SwingConstants;
     // add it
     add(bar, registry.get("toolbar", BorderLayout.WEST));
     
-    // done
-  }
-  
-  /**
-   * Install the popup support
-   */
-  private void installPopupSupport() {
-    // check for support
-    if (!(view instanceof ContextSupport)) return;
-    // install it
-    ContextSupport eps = (ContextSupport)view;
-    JComponent container = eps.getContextPopupContainer();
-    if (container!=null)
-      container.addMouseListener(new EntityPopupMouseListener());
     // done
   }
   
@@ -253,31 +234,8 @@ import javax.swing.SwingConstants;
     }
     /** run */
     protected void execute() {
-      manager.openSettings(ViewWidget.this);
+      manager.openSettings(ViewContainer.this);
     }
   } //ActionOpenSettings
   
-  /**
-   * Our listener for mouse clicks on EntityPopupSupport components
-   */
-  private class EntityPopupMouseListener extends MouseAdapter {
-    public void mousePressed(MouseEvent e) {
-//      // double-click?
-//      if (e.getClickCount()>1) {
-//      }
-      // 20020829 on some OSes isPopupTrigger() will
-      // be true on mousePressed
-      mouseReleased(e);
-    }
-    public void mouseReleased(MouseEvent e) {
-      // no popup trigger no action
-      if (!e.isPopupTrigger()) return;
-      // show a context menu
-      ContextSupport esp = (ContextSupport)view;
-      ContextSupport.Context context = esp.getContextAt(e.getPoint());
-      manager.showContextMenu(esp.getContextPopupContainer(), e.getPoint(), gedcom, context);
-      // done
-    }
-  }
-
 } //ViewWidget

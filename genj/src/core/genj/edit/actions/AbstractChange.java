@@ -19,7 +19,6 @@
  */
 package genj.edit.actions;
 
-import genj.edit.EditView;
 import genj.edit.Images;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
@@ -27,6 +26,7 @@ import genj.gedcom.GedcomException;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
+import genj.view.Context;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
@@ -133,15 +133,8 @@ import javax.swing.JTextArea;
     // unlock gedcom
     gedcom.endTransaction();
     // set focus?
-    if (focus!=null) {
-      // no editor open?
-      if (manager.getInstances(EditView.class, gedcom).length==0) {
-        new OpenForEdit(focus, manager).trigger();
-      } else {
-        // set current        
-        manager.setContext(focus);
-      }
-    }
+    if (focus!=null)
+      manager.setContext(new Context(focus));
     // done
   }
   

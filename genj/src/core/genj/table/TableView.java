@@ -33,7 +33,9 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.SortableTableHeader;
-import genj.view.ContextSupport;
+import genj.view.Context;
+import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -47,7 +49,6 @@ import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -61,7 +62,7 @@ import javax.swing.table.TableColumnModel;
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport, ContextSupport, FilterSupport {
+public class TableView extends JPanel implements ToolBarSupport, ContextProvider, ContextListener, FilterSupport {
 
   /** a static set of resources */
   private Resources resources = Resources.get(this);
@@ -115,15 +116,22 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
       }
     };
     table.setTableHeader(new SortableTableHeader());
-    table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    table.setCellSelectionEnabled(true);
+    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     table.setAutoCreateColumnsFromModel(true);
     table.getTableHeader().setReorderingAllowed(false);
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
+
+    // listen to row and column selections
     table.getSelectionModel().addListSelectionListener(selectionCallback);
+    table.getColumnModel().getSelectionModel().addListSelectionListener(selectionCallback);
     
     setLayout(new BorderLayout());
     add(new JScrollPane(table), BorderLayout.CENTER);
+    
+    // register as context provider 
+    manager.registerContextProvider(this, table);
     
     // done
   }
@@ -177,21 +185,25 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   }
   
   /**
-   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
+   * callback - context changed
    */
-  public void setContext(Property property) {
+  public void setContext(Context context) {
+
     // a type that we're interested in?
     // 20030730 Bug #780563 - used == instead of equals 
-    Entity entity = property.getEntity();
-    if (!entity.getTag().equals(tableModel.getType())) return;
-    // already selected?
-    int row = table.getSelectionModel().getLeadSelectionIndex();
-    if (row>=0 && row<tableModel.getRowCount() && tableModel.getEntity(row)==entity) return;
+    Entity entity = context.getEntity();
+    if (entity==null||!entity.getTag().equals(tableModel.getType())) 
+      return;
+      
     // change selection
-    row = tableModel.getRow(entity);
-    table.scrollRectToVisible(table.getCellRect(row,0,true));
-    selectionCallback.skipNext();
-    table.getSelectionModel().setSelectionInterval(row,row);
+    Point rowcol = tableModel.getRowCol(entity, context.getProperty());
+    table.scrollRectToVisible(table.getCellRect(rowcol.y,rowcol.x,true));
+    //selectionCallback.skipNext();
+    if (rowcol.x>=0)
+      table.setColumnSelectionInterval(rowcol.x,rowcol.x);
+    if (rowcol.y>=0)
+      table.setRowSelectionInterval(rowcol.y,rowcol.y);
+
     // done
   }
 
@@ -209,21 +221,12 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   }
   
   /**
-   * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
-   */
-  public JComponent getContextPopupContainer() {
-    return table;
-  }
-
-  /**
    * @see genj.view.EntityPopupSupport#getContextAt(Point)
    */
   public Context getContextAt(Point pos) {
     int row = table.rowAtPoint(pos);
     if (row<0) return null;
     int col = table.columnAtPoint(pos);
-    // select it
-    table.getSelectionModel().setSelectionInterval(row, row);
     // context is either entity or property
     if (col>=0) {
       Property prop = (Property)tableModel.getValueAt(row, col);
@@ -370,23 +373,13 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
    * Callback for list selections
    */
   private class SelectionCallback implements ListSelectionListener {
-    /** skip next callback */
-    private boolean skip = false;
-    /**
-     * set to skip
-     */
-    private void skipNext() {
-      skip = true;
-    }
     /**
      * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
      */
     public void valueChanged(ListSelectionEvent e) {
-      // skip this callback?
-      if (skip) {
-        skip = false;
+      // don't bother on adjusting
+      if (e.getValueIsAdjusting())
         return;
-      } 
       // grab row & col
       int 
         row = table.getSelectedRow(),
@@ -398,7 +391,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
       if (context==null&&row>=0) context = tableModel.getEntity(row);
       if (context==null) return;
       // set
-      manager.setContext(context);
+      manager.setContext(new Context(context));
     }
   } //SelectionCallback
   

@@ -26,7 +26,7 @@ import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
-import genj.view.ActionSupport;
+import genj.view.ActionProvider;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
@@ -38,7 +38,7 @@ import javax.swing.JComponent;
 /**
  * The factory for the TableView
  */
-public class ReportViewFactory implements ViewFactory, ActionSupport {
+public class ReportViewFactory implements ViewFactory, ActionProvider {
 
   /*package*/ final static ImageIcon IMG = new ImageIcon(ReportViewFactory.class, "View.gif");
   
@@ -63,12 +63,6 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
     return Resources.get(this).getString("title" + (abbreviate?".short":""));
   }
 
-  /**
-   * callback - broadcast from manager that context changed
-   */
-  public void contextChanged(ViewManager manager, Gedcom gedcom) {
-  }
-  
   /**
    * Reports ew offer to run on an entity
    * @see genj.view.ActionSupport#createActions(genj.gedcom.Entity, genj.view.ViewManager)

@@ -19,30 +19,16 @@
  */
 package genj.view;
 
-import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
-
-import java.util.List;
+import java.awt.Point;
 
 /**
- * Support for a actions of property/entity/gedcom
+ * Support for a popup menu on entities
  */
-public interface ActionSupport {
-  
-  /**
-   * Callback for actions on a property
-   */
-  public List createActions(Property property, ViewManager manager);
+public interface ContextProvider {
 
   /**
-   * Callback for actions on an entity
+   * Get context
    */
-  public List createActions(Entity entity, ViewManager manager);
+  public Context getContextAt(Point pos);
 
-  /**
-   * Callback for actions on a gedcom
-   */
-  public List createActions(Gedcom gedcom, ViewManager manager);
-
-} //ContextMenuSupport
+} //EntityPopupSupport

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.43 $ $Author: nmeier $ $Date: 2004-05-26 20:02:59 $
+ * $Revision: 1.44 $ $Author: nmeier $ $Date: 2004-06-01 08:45:31 $
  */
 package genj.report;
 
@@ -33,6 +33,8 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
+import genj.view.Context;
+import genj.view.ContextProvider;
 import genj.view.ViewManager;
 import genj.view.widgets.SelectEntityWidget;
 import genj.window.CloseWindow;
@@ -40,6 +42,7 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Point;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
@@ -623,7 +626,7 @@ public abstract class Report implements Cloneable {
    * manager (a.k.a. not deleted)
    * Listening for updates as a GedcomListener was just too much work  ;)
    */
-  private static class ItemList extends JList implements ListCellRenderer, ListSelectionListener {
+  private static class ItemList extends JList implements ContextProvider, ListCellRenderer, ListSelectionListener {
 
     /** the view manager */
     private ViewManager manager;
@@ -646,7 +649,26 @@ public abstract class Report implements Cloneable {
       setCellRenderer(this);
       label.setOpaque(true);
       addListSelectionListener(this);
+      manager.registerContextProvider(this, this);
       // done
+    }
+
+    /**
+     * callback - provide context 
+     */    
+    public Context getContextAt(Point pos) {
+      // find row
+      int row = locationToIndex(pos);
+      if (row<0)
+        return new Context(gedcom);      
+      // select
+      setSelectedIndex(row);
+      // check item
+      Item item = (Item)getModel().getElementAt(row);
+      Property target = item.getTarget();
+      if (target==null)
+        return new Context(gedcom);      
+      return new Context(target);
     }
 
     /**
@@ -658,11 +680,8 @@ public abstract class Report implements Cloneable {
       Item item = (Item)getSelectedValue();
       if (item==null)
         return;
-      Property target = item.getTarget();
-      if (target==null)
-        return;
       // propagate
-      manager.setContext(target);
+      manager.setContext(new Context(gedcom, null, item.getTarget()));
     }
 
     /**

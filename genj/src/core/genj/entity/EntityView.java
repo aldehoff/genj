@@ -22,14 +22,14 @@ package genj.entity;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Property;
 import genj.gedcom.Transaction;
 import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.view.ContextSupport;
+import genj.view.Context;
+import genj.view.ContextProvider;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -43,14 +43,14 @@ import java.awt.RenderingHints;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
 /**
  * A rendering component showing the currently selected entity
  * via html
  */
-public class EntityView extends JComponent implements ToolBarSupport, ContextSupport, GedcomListener {
+public class EntityView extends JPanel implements ToolBarSupport, ContextProvider, GedcomListener {
 
   /** language resources we use */  
   /*package*/ final static Resources resources = Resources.get(EntityView.class);
@@ -100,10 +100,21 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
     isAntialiasing  = registry.get("antial"  , false);
     
     // set first entity
-    Property context = manager.getContext(gedcom); 
-    if (context!=null) setContext(context.getEntity());
+    Context context = manager.getContext(gedcom); 
+    if (context!=null) 
+      setEntity(context.getEntity());
+    
+    // enable context popup
+    manager.registerContextProvider(this, this);
     
     // done    
+  }
+
+  /**
+   * callback - context provider
+   */  
+  public Context getContextAt(Point pos) {
+    return entity==null ? null : new Context(entity);
   }
   
   /**
@@ -214,29 +225,8 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
   public boolean isAntialiasing() {
     return isAntialiasing;
   }
-  
-  /**
-   * @see genj.view.ContextPopupSupport#getContextAt(java.awt.Point)
-   */
-  public Context getContextAt(Point pos) {
-    return new Context(entity); 
-  }
-  
-  /**
-   * @see genj.view.ContextPopupSupport#getContextPopupContainer()
-   */
-  public JComponent getContextPopupContainer() {
-    return this;
-  }
 
-  /**
-   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
-   */
-  public void setContext(Property property) {
-    setEntity(property.getEntity());
-  }
-
-  /**
+  /**  
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
   public void handleChange(Transaction tx) {

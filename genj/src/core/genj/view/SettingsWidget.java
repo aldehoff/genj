@@ -87,7 +87,7 @@ import javax.swing.border.TitledBorder;
   /**
    * Sets the ViewSettingsWidget to display
    */
-  protected void setViewWidget(ViewWidget vw) {
+  protected void setViewWidget(ViewContainer vw) {
     
     // clear content
     pSettings.removeAll();

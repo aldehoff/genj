@@ -39,9 +39,6 @@ import java.util.Iterator;
  */
 public class ContentRenderer {
 
-  /** background color */
-  /*package*/ Color cBackground = null;
-  
   /** shape color for indis */
   /*package*/ Color cIndiShape = null;
   
@@ -67,8 +64,6 @@ public class ContentRenderer {
     // translate to center
     Rectangle bounds = model.getBounds();
     g.translate(-bounds.getX(), -bounds.getY());
-    // render background
-    renderBackground(g, bounds);
     // render the arcs
     renderArcs(g, model);
     // render the nodes
@@ -114,11 +109,8 @@ public class ContentRenderer {
       x = pos.getX(),
       y = pos.getY();
     // draw its shape
-    Color color = getColor(content);
-    if (color!=cBackground) {
-      g.setColor(color);
-      g.draw(shape, x, y);
-    }
+    g.setColor(getColor(content));
+    g.draw(shape, x, y);
     // draw its content
     renderContent(g, x, y, shape, content);
     // done
@@ -171,7 +163,6 @@ public class ContentRenderer {
     // clip is the range we'll be looking in range
     Rectangle clip = g.getClip().getBounds();
     // prepare color
-    if (cArcs==cBackground) return;
     g.setColor(cArcs);
     // loop
     Iterator it = model.getArcsIn(clip).iterator();
@@ -186,13 +177,4 @@ public class ContentRenderer {
     // done
   }
   
-  /**
-   * Render the background
-   */
-  private void renderBackground(UnitGraphics g, Rectangle bounds) {
-    if (cBackground==null) return;
-    g.setColor(cBackground);
-    g.draw(bounds, 0, 0, true);
-  }
-
 } //ContentRenderer

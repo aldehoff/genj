@@ -155,13 +155,27 @@ import javax.swing.table.TableColumnModel;
   }
   
   /**
-   * Returns the row for given entity
+   * Returns the row,col for given entity,prop
    */
-  /*package*/ int getRow(Entity e) {          
-    for (int r=0; r<rows.length; r++) {
-      if (rows[r].getEntity()==e) return r;
+  /*package*/ Point getRowCol(Entity e, Property p) {
+    
+    int row=-1,col=-1;
+    
+    outer: for (int r=0; r<rows.length; r++) {
+      if (rows[r].getEntity()==e) {
+        row = r;
+        Property[] cols = rows[r].getColumns();
+        for (int c=0; c<cols.length; c++) {
+          if (cols[c]==p) {
+            col = c;
+            break;
+          }
+        }
+        break outer;
+      } 
     }
-    return -1;
+    
+    return new Point(col, row);
   }
   
   /**

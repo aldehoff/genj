@@ -19,7 +19,6 @@
  */
 package genj.report;
 
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.option.OptionsWidget;
 import genj.util.ActionDelegate;
@@ -28,6 +27,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
+import genj.view.Context;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
@@ -625,14 +625,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // no id no fun
       if (id==null)
         return;
-        
-      // try to find entity with id
-      Entity entity = gedcom.getEntity(id);
-      if (entity==null)
-        return;
-
       // propagate to other views through manager
-      manager.setContext(entity);
+      manager.setContext(new Context(gedcom.getEntity(id)));
       
       // done
     }

@@ -20,14 +20,15 @@
 package genj.timeline;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
 import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
-import genj.view.ContextSupport;
+import genj.view.Context;
+import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -54,7 +55,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Component for showing entities' events in a timeline view
  */
-public class TimelineView extends JPanel implements ToolBarSupport, ContextSupport {
+public class TimelineView extends JPanel implements ToolBarSupport, ContextListener, ContextProvider {
 
   /** the units we use */
   private final Point DPI;
@@ -172,6 +173,9 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     // layout
     setLayout(new BorderLayout());
     add(scrollContent, BorderLayout.CENTER);
+    
+    // register as context provider
+    manager.registerContextProvider(this, content);
     
     // scroll to last centered year
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -307,18 +311,6 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
   }
 
   /**
-   * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
-   */
-  public void setContext(Property property) {
-    // try to scroll to first event
-    Model.Event event = model.getEvent(property);
-    if (event==null) event = model.getEvent(property.getEntity());
-    if (event!=null) makeVisible(event);
-    // do a repaint, too
-    content.repaint();
-  }
-
-  /**
    * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
    */
   public JComponent getContextPopupContainer() {
@@ -331,9 +323,22 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
   public Context getContextAt(Point pos) {
     // is there an event?
     Model.Event event = getEventAt(pos);
-    if (event==null) return new Context(null);
+    if (event==null) 
+      return null;
     // grab its entity
     return new Context(event.getProperty());
+  }
+  
+  /**
+   * callback - context event
+   */
+  public void setContext(Context context) {
+    // try to scroll to first event
+    Model.Event event = model.getEvent(context.getProperty());
+    if (event==null) event = model.getEvent(context.getEntity());
+    if (event!=null) makeVisible(event);
+    // do a repaint, too
+    content.repaint();
   }
 
   /**
@@ -437,7 +442,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
       contentRenderer.cTimespan   = csContent.getColor("timespan");
       contentRenderer.cGrid       = csContent.getColor("grid"    );
       contentRenderer.cSelected   = csContent.getColor("selected");
-      contentRenderer.selection   = manager.getContext(model.gedcom);
+      contentRenderer.selection   = manager.getContext(model.gedcom).getProperty();
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;
       contentRenderer.paintTags = isPaintTags;
@@ -526,7 +531,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
       Model.Event event = getEventAt(e.getPoint());
       if (event==null) return;
       // tell about it
-      manager.setContext(event.pe);
+      manager.setContext(new Context(event.pe));
     }
   } //ContentClick  
     

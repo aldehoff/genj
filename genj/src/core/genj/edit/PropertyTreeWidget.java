@@ -31,6 +31,8 @@ import genj.gedcom.Transaction;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.TreeWidget;
+import genj.view.Context;
+import genj.view.ContextProvider;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -40,10 +42,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -60,7 +60,7 @@ import javax.swing.tree.TreeSelectionModel;
 /**
  * A Property Tree
  */
-public class PropertyTreeWidget extends TreeWidget {
+public class PropertyTreeWidget extends TreeWidget implements ContextProvider {
 
   /** a default renderer we keep around for colors */
   private DefaultTreeCellRenderer defaultRenderer;
@@ -106,7 +106,24 @@ public class PropertyTreeWidget extends TreeWidget {
     // continue
     super.removeNotify();
   }
+  
+  /**
+   * ContextProvider - context at given position
+   */
+  public Context getContextAt(Point pos) {
 
+    // property at that point?
+    Property prop = getPropertyAt(pos);
+    // Entity known?
+    Entity entity = null;
+    Property root = getRoot();
+    if (root!=null) {
+      entity = root.getEntity();
+    }
+    // done
+    return new Context(model.gedcom, entity, prop);
+  }
+  
   /**
    * @see javax.swing.JTree#getPreferredScrollableViewportSize()
    */
@@ -125,8 +142,6 @@ public class PropertyTreeWidget extends TreeWidget {
     model.setRoot(property);
     // show
     expandRows();
-    // select and show property
-    setSelection(property);
   }
   
   /**
@@ -160,17 +175,6 @@ public class PropertyTreeWidget extends TreeWidget {
     scrollPathToVisible(tpath);
     setSelectionPath(tpath);
     // done
-  }
-  
-  /**
-   * Allows to return to previous entity
-   */
-  public void setPrevious() {
-    // tell model to go to previous
-    if (!model.setPrevious()) return;
-    expandRows();
-    // select and show property
-    setSelection(model.root);
   }
   
   /**
@@ -256,9 +260,6 @@ public class PropertyTreeWidget extends TreeWidget {
     /** root of tree */
     private Property root = null;
 
-    /** history stack */
-    private Stack history = new Stack();
-  
     /** the gedcom we're looking at */
     private Gedcom gedcom;
     
@@ -289,31 +290,12 @@ public class PropertyTreeWidget extends TreeWidget {
      * Set the root
      */
     public void setRoot(Property set) {
-      // remember history
-      if (root!=null) {
-        history.push(root);
-        if (history.size()>16) history.removeElementAt(0);
-      }
       // remember
       root = set;
       // notify
       fireStructureChanged();
       // make sure we don't show null-root
       setRootVisible(root!=null);
-    }
-  
-    /**
-     * Sets the root to the previous one
-     */
-    public boolean setPrevious() {
-      // is there one?
-      if (history.isEmpty()) return false;
-      // don't want current to end up on the stack
-      root = null;
-      // set it
-      setRoot((Property)history.pop());
-      // done
-      return true;
     }
   
     /**
@@ -454,11 +436,6 @@ public class PropertyTreeWidget extends TreeWidget {
         while (ents.hasNext()) {
           // the entity deleted
           Entity deleted = (Entity)ents.next();
-          // ... a removed entity has to be removed from stack
-          for (ListIterator it = history.listIterator(); it.hasNext(); ) {
-            Property p = (Property)it.next();
-            if (p.getEntity()==deleted) it.remove();
-          } 
           // ... and might affect the current edit view
           affected |= (entity==deleted);
         }
