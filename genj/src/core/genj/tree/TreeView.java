@@ -185,6 +185,8 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
       // init renderer
       contentRenderer.cBackground    = Color.white;
       contentRenderer.cIndiShape     = Color.black;
+      contentRenderer.cFamShape      = Color.green;
+      contentRenderer.cMarrShape     = Color.pink;
       contentRenderer.cArcs          = Color.blue;
       contentRenderer.cSelectedShape = Color.red;
       contentRenderer.selection      = currentEntity;

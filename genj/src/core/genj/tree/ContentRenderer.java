@@ -28,9 +28,13 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Fam;
+import genj.gedcom.Indi;
 import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Node;
@@ -47,6 +51,12 @@ public class ContentRenderer {
   /** shape color for indis */
   /*package*/ Color cIndiShape = null;
   
+  /** shape color for fams */
+  /*package*/ Color cFamShape = null;
+  
+  /** shape color for marr */
+  /*package*/ Color cMarrShape = null;
+  
   /** shape color for arcs */
   /*package*/ Color cArcs = null;
 
@@ -55,11 +65,18 @@ public class ContentRenderer {
 
   /** an entity that we consider selected */
   /*package*/ Entity selection = null;
+  
+  /** map of entity types to colors */
+  private Map ent2color = new HashMap();
 
   /**
    * Render the content
    */
   public void render(UnitGraphics ug, Model model) {  
+    // prepare colors
+    ent2color.put(Model.IndiNode.class, cIndiShape);
+    ent2color.put(Model.FamNode .class, cFamShape );
+    ent2color.put(Model.MarrNode.class, cMarrShape);
     // translate to center
     Rectangle2D bounds = model.getBounds();
     ug.translate(-bounds.getX(), -bounds.getY());
@@ -98,16 +115,26 @@ public class ContentRenderer {
       x = pos.getX(),
       y = pos.getY();
     Object content = node.getContent();
-    // draw its shape & content
     Shape shape = node.getShape();
-    if (shape!=null) {
-      if (cSelectedShape!=null&&content!=null&&content==selection) g.setColor(cSelectedShape);
-      else g.setColor(cIndiShape);
-      g.draw(shape, x, y, false);
-      g.pushClip(x, y, shape.getBounds2D());
-      renderContent(g, x, y, content);
-      g.popClip();
+    if (shape==null) return;
+    // draw its shape
+    Color color;
+    if (cSelectedShape!=null&&content!=null&&content==selection) {
+      g.setColor(cSelectedShape);
+    } else {
+      if (Model.IndiNode.class.isAssignableFrom(node.getClass()))
+        g.setColor(cIndiShape);
+      if (Model.FamNode.class.isAssignableFrom(node.getClass()))
+        g.setColor(cFamShape);
+      if (Model.MarrNode.class.isAssignableFrom(node.getClass()))
+        g.setColor(cMarrShape);
     }
+    g.draw(shape, x, y, false);
+    // draw its content
+    if (content==null) return;
+    g.pushClip(x, y, shape.getBounds2D());
+    renderContent(g, x, y, content);
+    g.popClip();
     // done
   }
   
