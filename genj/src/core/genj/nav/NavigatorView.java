@@ -34,9 +34,12 @@ import genj.view.ContextSupport;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +50,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 /**
@@ -65,7 +69,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
     CHILD    = "tip.child";
     
   /** the label holding information about the current individual */
-  private JLabel labelCurrent;
+  private JLabel labelCurrent, labelSelf;
   
   /** the current individual */
   private Indi current;
@@ -98,7 +102,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
     labelCurrent.setBorder(BorderFactory.createTitledBorder(Gedcom.getNameFor(Gedcom.INDIVIDUALS,false)));
     add(labelCurrent,BorderLayout.NORTH);
     
-    JPanel panel = createPanel();
+    JPanel panel = createPopupPanel();
     add(panel,BorderLayout.CENTER);
     
     // date
@@ -177,6 +181,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
       setJumps(CHILD   , null);
       // update label
       labelCurrent.setText("n/a");
+      labelCurrent.setIcon(null);
     } else {
       // jumps
       setJump (FATHER  , current.getFather());
@@ -187,11 +192,20 @@ public class NavigatorView extends JPanel implements ContextSupport {
       setJumps(CHILD   , current.getChildren());
       // update label
       labelCurrent.setText(getNameOrID(current));
+      labelCurrent.setIcon(current.getImage(false));
+      labelSelf.setIcon(current.getImage(false));
     }
           
     // done
   }
   
+  /**
+   * Return popup by key
+   */
+  private PopupWidget getPopup(String key) {
+    return (PopupWidget)key2popup.get(key);  
+  }
+
   /**
    * Resolve name or ID from indi
    */
@@ -213,7 +227,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
    */
   private void setJumps(String key, Indi[] is) {
     // lookup popup
-    PopupWidget popup = (PopupWidget)key2popup.get(key);
+    PopupWidget popup = getPopup(key);
     // no jumps?
     popup.setEnabled(is.length>0);
     // loop jumps
@@ -261,47 +275,93 @@ public class NavigatorView extends JPanel implements ContextSupport {
     // done
     return result;
   }
-  
+
   /**
    * Creates the panel
    */
-  private JPanel createPanel() {    
+  private JPanel createPopupPanel() {    
     
     final String title = resources.getString("nav.navigate.title");
     final TitledBorder border = BorderFactory.createTitledBorder(title);
-    final JPanel result = new JPanel();    
+    final JPanel result = new PopupPanel();
     result.setBorder(border);
     GridBagHelper gh = new GridBagHelper(result);
     
+    labelSelf = new JLabel(Gedcom.getImage(Gedcom.INDIVIDUALS),SwingConstants.CENTER);
     // add the buttons
     gh.add(
       createPopup(FATHER, Images.imgNavFatherOff, Images.imgNavFatherOn) 
-      ,3,2,1,1
+      ,4,1,1,1
     );
     gh.add(
       createPopup(MOTHER, Images.imgNavMotherOff, Images.imgNavMotherOn) 
-      ,4,2,1,1
+      ,5,1,1,1
     );
     gh.add(
       createPopup(OSIBLING, Images.imgNavOlderSiblingOff, Images.imgNavOlderSiblingOn) 
-      ,1,3,2,1
+      ,1,2,2,1,0,new Insets(12,0,12,12)
+    );
+    gh.add(
+      labelSelf
+      ,4,2,1,1
     );
     gh.add(
       createPopup(PARTNER, Images.imgNavPartnerOff, Images.imgNavPartnerOn)
-      ,3,3,2,1,0,new Insets(12,0,12,0)
+      ,5,2,1,1
     );
     gh.add(
       createPopup(YSIBLING, Images.imgNavYoungerSiblingOff, Images.imgNavYoungerSiblingOn)
-      ,5,3,2,1
+      ,7,2,2,1,0,new Insets(12,12,12,0)
     );
     gh.add(
       createPopup(CHILD, Images.imgNavChildOff, Images.imgNavChildOn)  
-      ,3,4,2,1
+      ,4,3,2,1
     );
 
     // done
     return result;
   }
+  
+  /**
+   * A panel for the popup buttons that connects 'em with lines
+   */
+  private class PopupPanel extends JPanel {
+    /**
+     * @see javax.swing.JComponent#paintChildren(java.awt.Graphics)
+     */
+    protected void paintChildren(Graphics g) {
+    
+      // paint lines
+      g.setColor(Color.lightGray);
+      
+      line(g,getPopup(MOTHER), getPopup(OSIBLING));
+      line(g,getPopup(MOTHER), getPopup(YSIBLING));
+      line(g,getPopup(MOTHER), labelSelf);
+      line(g,getPopup(PARTNER), getPopup(CHILD));
+          
+      // now paint popup buttons
+      super.paintChildren(g);
+    
+      // done
+    }
+    
+    /**
+     * connect components (lower/left - top/center)
+     */
+    private void line(Graphics g, JComponent c1, JComponent c2) {
+      Rectangle
+        a = c1.getBounds(),
+        b = c2.getBounds();
+      int y = (a.y+a.height+b.y)/2;
+      int x = a.x;
+      g.drawLine(x,a.y+a.height,x,y);
+      x = b.x+b.width/2;
+      g.drawLine(x,y,x,b.y);
+      g.drawLine(a.x,y,x,y);
+//      g.drawLine(a.x,a.y+a.height,b.x+b.width/2,b.y);
+    }
+  
+  } //PopupPanel
 
   /**
    * Jump to another indi
