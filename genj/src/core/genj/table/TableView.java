@@ -207,8 +207,12 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
   public Object getContextAt(Point pos) {
     int row = table.rowAtPoint(pos);
     if (row<0) return null;
+    int col = table.columnAtPoint(pos);
+    // select it
     table.getSelectionModel().setSelectionInterval(row, row);
-    return tableModel.getEntity(row);
+    // context is either entity or property
+    if (col<0) return tableModel.getEntity(row);
+    return tableModel.getValueAt(row, col);
   }
 
   /**
