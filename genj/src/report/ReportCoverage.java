@@ -1,5 +1,7 @@
 /**
- * Reports are Freeware Code Snippets
+ * ReportCoverage - 
+ *
+ * Copyright (c) 2003 Tom Morris
  *
  * This report is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,6 +14,7 @@ import genj.report.Report;
 
 /**
  * GenJ -  ReportCoverage
+ * @author Tom Morris
  * @version 1.0
  */
 public class ReportCoverage extends Report {
@@ -48,6 +51,15 @@ public class ReportCoverage extends Report {
     return i18n("description");
   }
 
+  /**
+   * @see genj.report.Report#accepts(java.lang.Object)
+   */
+  public String accepts(Object context) {
+    // we accept GEDCOM or Individuals 
+    return context instanceof Indi || context instanceof Gedcom ? getName() : null;  
+  }
+  
+
 	final int maxdepth = 100;
 	int[] count;
 
@@ -55,27 +67,33 @@ public class ReportCoverage extends Report {
    * This method actually starts this report
    */
   public void start(Object context) {
-		Gedcom gedcom=(Gedcom)context;
 		int depth;
+		Indi indi;
 
+		// If we were passed a person to start at, use that
+    if (context instanceof Indi) {
+      indi = (Indi)context;
+    } else {
+    // Otherwise, ask the user select the root of the tree for analysis
+			Gedcom gedcom=(Gedcom)context;
+			indi = (Indi)getEntityFromUser (
+				 i18n("select"), // msg
+				 gedcom,                        // our gedcom instance
+				 Gedcom.INDIVIDUALS,            // type INDIVIDUALS
+				 "INDI:NAME"                    // sort by name
+				 );
+		}
+
+    if (indi==null) {
+      return;
+    }
+    
 		// Allocate and initialize our count of ancestors at each generation
 		count = new int[maxdepth];
 		for (int i=0; i<count.length; i++) {
 			count[i]=0;
 		}
 
-    // Let the user select the root of the tree for analysis
-    Indi indi = (Indi)getEntityFromUser(
-      i18n("select"), // msg
-      gedcom,                        // our gedcom instance
-      Gedcom.INDIVIDUALS,            // type INDIVIDUALS
-      "INDI:NAME"                    // sort by name
-    );
-
-    if (indi==null) {
-      return;
-    }
-    
 		println(i18n("root",indi.getName()));
 
     // Count the ancestors (recursively)
@@ -103,12 +121,12 @@ public class ReportCoverage extends Report {
 				int poss = pow2(i);
 				cum_count += count[i];
 				cum_poss += poss;
-				println(justify(""+i,5)+
-											 justify(""+poss,14)+
-											 justify(""+count[i],10)+
-											 justify(""+(count[i]*100/poss),5)+"%"+
-											 justify(""+cum_count,10)+
-											 justify(""+(cum_count*100/cum_poss),5)+"%"
+				println(justify(i,5)+
+											 justify(poss,14)+
+											 justify(count[i],10)+
+											 justify((count[i]*100/poss),5)+"%"+
+											 justify(cum_count,10)+
+											 justify((cum_count*100/cum_poss),5)+"%"
 											 );
 			}
 			
@@ -156,18 +174,5 @@ public class ReportCoverage extends Report {
       }
       return result;
   }
-  /**
-   * Helper to right justify monospaced text in a field
-   */
-  private String justify(String text, int width) {
-		String spaces = "                               ";
-
-		if (width>spaces.length()) {
-			return null;
-		}
-
-		return spaces.substring(1,width-text.length())+text;
-  }
 
 }
-
