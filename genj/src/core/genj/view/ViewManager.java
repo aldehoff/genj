@@ -98,7 +98,7 @@ public class ViewManager {
         if (factory instanceof ContextListener)
           addContextListener((ContextListener)factory);
       } catch (Throwable t) {
-        throw new IllegalArgumentException("Factory of type "+factories[f]+" cannot be instantiated ("+t.getMessage()+")");
+        throw new IllegalArgumentException("Factory of type "+factoryTypes[f]+" cannot be instantiated ("+t.getMessage()+")");
       }
     }
     
@@ -571,4 +571,4 @@ public class ViewManager {
     
   } //ContextChange
   
-} //ViewManager
+} //ViewManager
