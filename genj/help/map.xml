@@ -6,6 +6,7 @@
   <mapID target="cc"       url="cc.html" />
 
   <mapID target="views"      url="views.html" />
+  <mapID target="context"    url="context.html" />
   <mapID target="entities"   url="entities.html" />
   <mapID target="specials"   url="specials.html" />
 
@@ -31,14 +32,13 @@
 
   <mapID target="team"      url="team.html" />
 
-  <mapID target="img.NewGedcom"     url="../images/Gedcom.gif"      />
-  <mapID target="img.NewEdit"       url="../images/views/Edit.gif"     />
-  <mapID target="img.NewTree"       url="../images/views/Tree.gif"     />
-  <mapID target="img.NewTable"      url="../images/views/Table.gif"    />
-  <mapID target="img.NewTimeline"   url="../images/views/Timeline.gif" />
-  <mapID target="img.NewReport"     url="../images/views/Report.gif"   />
-  <mapID target="img.NewNavigator"  url="../images/views/Navigator.gif"   />
-  <mapID target="img.NewEntity"     url="../images/views/Entity.gif"   />
+  <mapID target="img.Edit"       url="../images/views/Edit.gif"     />
+  <mapID target="img.Tree"       url="../images/views/Tree.gif"     />
+  <mapID target="img.Table"      url="../images/views/Table.gif"    />
+  <mapID target="img.Timeline"   url="../images/views/Timeline.gif" />
+  <mapID target="img.Report"     url="../images/views/Report.gif"   />
+  <mapID target="img.Navigator"  url="../images/views/Navigator.gif"   />
+  <mapID target="img.Entity"     url="../images/views/Entity.gif"   />
 
   <mapID target="img.Indi"          url="../images/Indi.gif" />
   <mapID target="img.Fam"           url="../images/Fam.gif" />
@@ -47,10 +47,5 @@
   <mapID target="img.Source"        url="../images/Source.gif" />
   <mapID target="img.Submitter"     url="../images/Submitter.gif" />
   <mapID target="img.Repository"    url="../images/Repository.gif" >
-
-  <mapID target="img.Welcome"       url="../images/Welcome.gif" />
-  <mapID target="img.Intro"         url="../images/Cause.gif" />
-  <mapID target="img.Gedcom"        url="../images/Blob.gif" />
-
 
 </map>

@@ -1,0 +1,79 @@
+<html>
+
+<body>
+<h2>Working with Context Menues</h2>
+
+<p>
+ The most important thing to try while working with GenJ is triggering
+ the context-menues. A right-click <font size=-2>(your platform might 
+ have a different mouse action to trigger them)</font> on the information 
+ displayed in one of the <a href="./views.html">views</a> will reveal 
+ actions you can take.
+</p>
+
+<p>
+ The context-menu always is structured the same way : at first place it 
+ shows a sub-menu for what you have clicked on and then subsequentially
+ more sub-menues that broaden the context. 
+</p>
+
+<p>
+ In the following example the context for a Name-property is shown. 
+ The first sub-menu is for the property itself and actions on it, the 
+ second sub-menu is for the entitiy (here an Individual) this property 
+ belongs to, the third sub-menu is for the file (Gedcom) the entity belongs to. 
+  <blockquote><img src="../images/screenshots/context1.png"></blockquote>
+ The sub-menu for the Individual 'I008' shows the following actions:
+ <ul>
+  <li>Add Child - a child (and family if necessary) for I008
+  <li>Add Spouse - a spouse (and family if necessary) for I008
+  <li>Add Sibling - a sibling (and parents if necessary) for I008
+  <li>Add Repository - a external repository with information concerning I008
+  <li>Add Multimedia Object - an object storing binary data 
+  <li>Add Note - a note describing I008
+  <li>Add Submitter - the person who submitted the information about I008
+  <li>Add Source - the source for information about I008
+  <li>Add Association - an association with another Individual
+  <li>Delete - to remove the entity I008
+ </ul>
+</p>
+
+<p>
+ The next example again shows a context-menu for a property but this time
+ the actions for the property itself are shown (first sub-menu).
+  <blockquote><img src="../images/screenshots/context3.png"></blockquote>
+ These are the actions offered:
+ <ul>
+  <li>Add Note - this note can keep data specific to that birth
+  <li>Add Source - this source can capture where the information about the birth came from
+  <li>Add Multimedia Object - this object can store binary data that concerns the birth
+  <li>Delete - remove the information about the birth (property BIRT) completely
+ </ul>
+</p>
+
+
+<p>
+ Lastly an example which shows the dynamic content of the context-menues.
+ The special circumstances explained:
+ <ul>
+  <li>the context being clicked on isn't a property but an entity 
+    (here Individual I008) so no sub-menu for a property is shown
+    (first sub-menu is the one for Individual I008)
+  <li>a context-menu can be used by the current view to
+    offer special view-dependent actions - here it's 
+      <a href="./view/tree.html">Tree View</a>'s
+    <em>Add Bookmark</em>
+ </ul>
+  <blockquote><img src="../images/screenshots/context2.png"></blockquote>
+ The actions shown in the opened sub-menu allow to create un-related/referenced* 
+ entities in file example.ged .
+ 
+ <p align=right><font size=-2>
+ it's better to grow information and create entities that are related to
+ existing ones through the first (two) sub-menues
+ </font></p>
+</p>
+
+
+</body>
+</html>

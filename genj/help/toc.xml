@@ -1,17 +1,18 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <toc version="1.0">
-  <tocitem target="intro"       text="@intro@"    image="img.Intro"       />
-  <tocitem target="gedcom"      text="@gedcom@"   image="img.Gedcom"      />
-  <tocitem target="cc"          text="@cc@"       image="img.NewGedcom"   />
+  <tocitem target="intro"       text="@intro@"    />
+  <tocitem target="gedcom"      text="@gedcom@"   />
+  <tocitem target="cc"          text="@cc@"       />
   <tocitem target="views"       text="@views@">
-    <tocitem target="v.table"       text="@v.table@"       image="img.NewTable"    />
-    <tocitem target="v.tree"        text="@v.tree@"        image="img.NewTree"     />
-    <tocitem target="v.timeline"    text="@v.timeline@"    image="img.NewTimeline" />
-    <tocitem target="v.edit"        text="@v.edit@"        image="img.NewEdit"     />
-    <tocitem target="v.report"      text="@v.report@"      image="img.NewReport"   />
-    <tocitem target="v.navigator"   text="@v.navigator@"   image="img.NewNavigator"   />
-    <tocitem target="v.entity"      text="@v.entity@"      image="img.NewEntity"   />
+    <tocitem target="v.table"       text="@v.table@"       image="img.Table"    />
+    <tocitem target="v.tree"        text="@v.tree@"        image="img.Tree"     />
+    <tocitem target="v.timeline"    text="@v.timeline@"    image="img.Timeline" />
+    <tocitem target="v.edit"        text="@v.edit@"        image="img.Edit"     />
+    <tocitem target="v.report"      text="@v.report@"      image="img.Report"   />
+    <tocitem target="v.navigator"   text="@v.navigator@"   image="img.Navigator"/>
+    <tocitem target="v.entity"      text="@v.entity@"      image="img.Entity"   />
   </tocitem>
+  <tocitem target="context"     text="@context@"/>
   <tocitem target="entities"    text="@entities@">
     <tocitem target="e.indi"        text="@e.indi@"          image="img.Indi"        />
     <tocitem target="e.family"      text="@e.family@"        image="img.Fam"         />
@@ -26,5 +27,5 @@
     <tocitem target="x.faq1"        text="@x.faq1@"     />
     <tocitem target="x.faq2"        text="@x.faq2@"     />
   </tocitem>
-  <tocitem target="team"      text="@team@"       image="img.Fam"        />
+  <tocitem target="team"        text="@team@"/>
 </toc>
