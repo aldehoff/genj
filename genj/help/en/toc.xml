@@ -29,8 +29,10 @@
     <tocitem target="x.resedit"   text="Resource Editor" image="img.ResEdit"/>
   </tocitem>
   <tocitem target="documentation"    text="General Documentation">
-    <tocitem target="d.gpl"     text="GNU GPL"            image="img.GNUgpl"/>
+    <tocitem target="d.changes"     text="Changes">
+    </tocitem>
     <tocitem target="d.developer"   text="Developer HowTo" image="img.Developer"/>
+    <tocitem target="d.gpl"     text="GNU GPL"            image="img.GNUgpl"/>
   </tocitem>
   <tocitem target="team"      text="The Team"       image="img.Fam"        />
 </toc>
