@@ -23,6 +23,7 @@ import genj.util.ImgIcon;
 import genj.util.Resources;
 
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 
@@ -45,6 +46,8 @@ public class ButtonHelper {
   private Container container     = null;
   private ActionListener listener = null;
   private String action           = null;
+  private Dimension minSize       = null;
+  private int horizontalAlignment = -1;
 
   /** Setters */    
   public ButtonHelper setText(String set) { text=set; return this; }
@@ -60,6 +63,17 @@ public class ButtonHelper {
   public ButtonHelper setContainer(Container set) { container=set; return this; }
   public ButtonHelper setListener(ActionListener set) { listener=set; return this; }
   public ButtonHelper setAction(String set) { action=set; return this; }
+  public ButtonHelper setMinimumSize(Dimension set) { minSize=set; return this; }
+  public ButtonHelper setHorizontalAlignment(int set) { horizontalAlignment=set; return this; }
+
+  /**
+   * Creates the button and adds it to given Container
+   */
+  public JButton create(Container in) {
+    JButton result = create();
+    in.add(result);
+    return result;
+  }
     
   /**
    * Creates the button
@@ -79,6 +93,10 @@ public class ButtonHelper {
       result.setToolTipText(string(tip));
     if (insets!=null)
       result.setMargin(insets);
+    if (minSize!=null)
+      result.setMinimumSize(minSize);
+    if (horizontalAlignment>=0)
+      result.setHorizontalAlignment(horizontalAlignment);
     
     result.setBorderPainted(isBorder);
     result.setRequestFocusEnabled(isFocusable); // This should be setFocusable which comes with JDK1.4

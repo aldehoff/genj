@@ -31,6 +31,7 @@ import java.util.*;
 import genj.gedcom.*;
 import genj.option.*;
 import genj.util.*;
+import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImgIconConverter;
 
 /**
@@ -243,7 +244,8 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     }
     
     // SOUTH - create buttons
-    createPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));
+    createPanel = new JPanel();
+    createPanel.setLayout(new BoxLayout(createPanel,BoxLayout.X_AXIS));
     add(createPanel,BorderLayout.SOUTH);
     
     // Listeners
@@ -660,37 +662,6 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
   }
 
   /**
-   * Helper that adds buttons to a panel
-   */
-  private AbstractButton createButton(Container c, String action, String text, ImgIcon image, String tip, Insets insets, boolean enabled, boolean borderPainted) {
-    
-    JButton result = new JButton();
-
-    if (text!=null) {
-      result.setText(resources.getString(text));
-    }
-    if (image!=null) {
-      result.setIcon(ImgIconConverter.get(image));
-    }
-    if (tip!=null) {
-      result.setToolTipText(resources.getString(tip));
-    }
-    result.setBorderPainted(borderPainted);
-    result.setRequestFocusEnabled(false); // setFocusable is 1.4
-    result.setEnabled(enabled);
-    result.setMargin(insets!=null?insets:new Insets(0,0,0,0));
-
-    result.setActionCommand(action);
-    result.addActionListener(this);
-
-    if (c!=null) {
-      c.add(result);
-    }
-
-    return result;
-  }
-
-  /**
    * Let proxy flush editing property
    * @return status for successfull flushing of edit
    */
@@ -1000,13 +971,18 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     // Remove all
     createPanel.removeAll();
 
-    Label label=new Label(resources.getString("new"));
-    createPanel.add(label);
-
-    //new Font("Arial", Font.PLAIN, 8)
-
+    // 1st a label
+    createPanel.add(new JLabel(resources.getString("new")));
+    
     // None
     if (entity!=null) {
+      
+      ButtonHelper bh = new ButtonHelper()
+        .setListener(this)
+        .setResources(resources)
+        .setInsets(0)
+        .setMinimumSize(new Dimension(0,0))
+        .setHorizontalAlignment(SwingConstants.LEADING);
 
       // Create Buttons
       Object[] creates = entity2create[entity.getType()];
@@ -1014,9 +990,12 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
       for (int c=0;c<creates.length/3;c++) {
         String action = (String )creates[c*3+0];
         ImgIcon img   = (ImgIcon)creates[c*3+1];
-        String tip    = (String )creates[c*3+2];
-        createButton(createPanel, action, tip, img, null, null, true, true).setFont(label.getFont());
+        String txt    = (String )creates[c*3+2];
+        bh.setText(txt).setAction(action).setImage(img).create(createPanel);
       }
+      
+      // glue
+      createPanel.add(Box.createHorizontalGlue());
     }
 
     // make sure that's seen, too
@@ -1182,15 +1161,56 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     actionCheckStick.setSelected(registry.get("sticky",false));
     actionCheckStick.setToolTipText(resources.getString("tip.stick"));
 
-    actionButtonAdd    = createButton(actionPanel, "ADD"   ,"action.add"   ,null            ,"tip.add_prop" , null, false, true );
-    actionButtonRemove = createButton(actionPanel, "DEL"   ,"action.del"   ,null            ,"tip.del_prop" , null, false, true );
-    actionButtonUp     = createButton(actionPanel, "UP"    ,"action.up"    ,null            ,"tip.up_prop"  , null, false, true );
-    actionButtonDown   = createButton(actionPanel, "DOWN"  ,"action.down"  ,null            ,"tip.down_prop", null, false, true );
-    actionButtonReturn = createButton(actionPanel, "RETURN",null           ,Images.imgReturn,"tip.return"   , null, false, true );
+    ButtonHelper bh = new ButtonHelper()
+      .setEnabled(false)
+      .setResources(resources)
+      .setListener(this)
+      .setInsets(0)
+      .setMinimumSize(new Dimension(0,0));
     
+    actionButtonAdd    = bh.setAction("ADD" ).setText("action.add" ).setTip("tip.add_prop" ).create(actionPanel);
+    actionButtonRemove = bh.setAction("DEL" ).setText("action.del" ).setTip("tip.del_prop" ).create(actionPanel);
+    actionButtonUp     = bh.setAction("UP"  ).setText("action.up"  ).setTip("tip.up_prop"  ).create(actionPanel);
+    actionButtonDown   = bh.setAction("DOWN").setText("action.down").setTip("tip.down_prop").create(actionPanel);
+    actionButtonReturn = bh.setAction("RETURN").setText(null).setImage(Images.imgReturn).setTip("tip.return" ).create(actionPanel);
+
     actionPanel.add(actionCheckStick);
     
     return actionPanel;
   }
   
 }
+
+  /**
+   * Helper that adds buttons to a panel
+   */
+/*  
+  private AbstractButton createButton(Container c, String action, String text, ImgIcon image, String tip, Insets insets, boolean enabled, boolean borderPainted) {
+    
+    JButton result = new JButton();
+
+    if (text!=null) {
+      result.setText(resources.getString(text));
+    }
+    if (image!=null) {
+      result.setIcon(ImgIconConverter.get(image));
+    }
+    if (tip!=null) {
+      result.setToolTipText(resources.getString(tip));
+    }
+    result.setBorderPainted(borderPainted);
+    result.setRequestFocusEnabled(false); // setFocusable is 1.4
+    result.setEnabled(enabled);
+    result.setMargin(insets!=null?insets:new Insets(0,0,0,0));
+
+    result.setActionCommand(action);
+    result.addActionListener(this);
+
+    if (c!=null) {
+      c.add(result);
+    }
+
+    return result;
+  }
+*/
+

@@ -137,6 +137,7 @@ public class LnFBridge {
     private Theme[] themes;
     private ClassLoader cl;
     private Theme lastTheme;
+    private LookAndFeel instance;
     
     /**
      * Constructor
@@ -155,6 +156,27 @@ public class LnFBridge {
       }
       
       // done
+    }
+    
+    /**
+     * Type
+     */
+    private LookAndFeel getInstance() throws Exception {
+      
+      // create an instance once
+      if (instance==null) {
+        instance = (LookAndFeel)cl.loadClass(type).newInstance();      
+      } 
+      
+      // Reset Metal's current theme (some L&Fs change it)
+      if (instance.getClass()==javax.swing.plaf.metal.MetalLookAndFeel.class) {
+        ((javax.swing.plaf.metal.MetalLookAndFeel)instance).setCurrentTheme(
+          new javax.swing.plaf.metal.DefaultMetalTheme()
+        );
+      }
+      
+      // here it is
+      return instance;
     }
     
     /**
@@ -239,10 +261,10 @@ public class LnFBridge {
       // Load and apply L&F
       try {
         
-        ClassLoader cl = getCL();
-        UIManager.getLookAndFeelDefaults().put("ClassLoader",cl);
-        UIManager.getDefaults().put("ClassLoader",cl);
-        LookAndFeel lookAndFeel = (LookAndFeel)cl.loadClass(type).newInstance();
+        UIManager.getLookAndFeelDefaults().put("ClassLoader",getCL());
+        UIManager.getDefaults().put("ClassLoader",getCL());
+        
+        LookAndFeel lookAndFeel = getInstance();
         if (theme!=null) theme.apply(lookAndFeel);
         UIManager.setLookAndFeel(lookAndFeel);
         
