@@ -1,32 +1,43 @@
 <HTML>
-
 <BODY>
-<H2>Media</H2>
+
+
+<H2>
+  M&eacute;dia
+</H2>
 
 <P>
-A Media (OBJE is the corresponding tag) is an entity wrapping any 
-multimeda data you can think of. 
-GenJ is aware about image files and will try to display the 
-information in any of the views.
-When creating a media by clicking on <IMG src="../../images/Media.gif"></IMG>
-you can specify a file by opening a file-chooser. The data of that file
-is included in your Gedcom-file (Base64 encoded). To keep the file
-small it is also possible not to choose a file at that point. Simply 
-add a FILE property to the entity later that points to a file on disk.
-This is an external file that has to be shipped separately.
+Un M&eacute;dia (auquel on associe l'&eacute;tiquette OBJE) est une 
+entit&eacute; qui regroupe toutes les donn&eacute;es multim&eacute;dia 
+auxquelles vous pourriez penser. GenJ accepte les fichiers images et 
+essaiera d'afficher les informations dans n'importe quels types de 
+visualisations (vues). Quand vous cr&eacute;ez un m&eacute;dia en cliquant 
+sur <IMG src="../../images/Media.gif"></IMG> vous pouvez sp&eacute;cifier 
+un fichier en ouvrant un navigateur. Les donn&eacute;es de ce fichier sont 
+incorpor&eacute;es dans votre fichier Gedcom (encod&eacute;es en Base64). 
+Pour &eacute;viter de trop faire grossir votre fichier Gedcom, il vous est 
+possible de ne pas choisir un fichier. A la place vous pouvez simplement 
+ajouter une propri&eacute;t&eacute; FILE &agrave; l'entit&eacute; qui par 
+la suite va pointer sur un fichier localis&eacute; sur votre disque. Ce 
+fichier sera externe &agrave; l'application et devra donc &ecirc;tre 
+achemin&eacute; s&eacute;paremment.
 </P>
 
 <P>
-Medias are by default not linked to any other entity. After creation you 
-can add a OBJE property (yes, OBJE is the tag for a media entity and
-the tag for the media property) to any entity and link it to a media 
-by entering its id and pressing link. 
+Par d&eacute;faut, les M&eacute;dias ne sont pas li&eacute;s aux autres 
+entit&eacute;s. Apr&eacute;s avoir &eacute;t&eacute; cr&eacute;&eacute;e, 
+vous pouvez ajouter une propri&eacute;t&eacute; OBJE (oui, OBJE est 
+l'&eacute;tiquette pour une entit&eacute; m&eacute;dia mais aussi 
+l'&eacute;tiquette pour une propri&eacute;t&eacute; m&eacute;dia) &agrave; 
+une entit&eacute; quelconque et la lier &agrave; un m&eacute;dia en entrant 
+son id et en appuyant sur lien.
 </P>
 
 <P>
-A media according to Gedcom has default properties - here are two
-examples based on the inclusion of the data or a reference to an
-external file.
+Un m&eacute;dia, d'apr&eacute;s la norme Gedcom, poss&eacute;de des 
+propri&eacute;t&eacute;s par d&eacute;faut - voici deux exemples bas&eacute;s 
+sur l'incorporation de donn&eacute;es ou faisant r&eacute;f&eacute;rence 
+&agrave; un fichier externe.
 <PRE>
 @M004@ OBJE
  TITL Taken from myimage.gif
@@ -40,6 +51,8 @@ external file.
  FILE myimage.jpg
 </PRE>
 </P>
+
+<Br>
 
 
 </BODY>
