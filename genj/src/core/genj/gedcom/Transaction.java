@@ -51,6 +51,12 @@ public class Transaction {
   
   /** whether we're an undo */
   private boolean isRollback = false; 
+
+  /** prev and next transaction */
+  /*package*/ Transaction prev, next;
+  
+  /** change flag before tx */
+  /*package*/ boolean hasUnsavedChangesBefore;
   
   /**
    * Constructor
@@ -59,6 +65,7 @@ public class Transaction {
 
     // remember    
     gedcom = ged;
+    hasUnsavedChangesBefore = ged.hasUnsavedChanges();
     
     time = System.currentTimeMillis();
 

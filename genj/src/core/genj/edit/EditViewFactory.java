@@ -24,6 +24,7 @@ import genj.edit.actions.CreateEntity;
 import genj.edit.actions.CreateRelationship;
 import genj.edit.actions.DelEntity;
 import genj.edit.actions.OpenForEdit;
+import genj.edit.actions.Redo;
 import genj.edit.actions.RunExternal;
 import genj.edit.actions.SetSubmitter;
 import genj.edit.actions.SwapSpouses;
@@ -192,10 +193,11 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(new CreateEntity(gedcom, Gedcom.REPO, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SOUR, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SUBM, manager));
-    if (gedcom.canUndo()) {
-      result.add(ActionDelegate.NOOP);
-      result.add(new Undo(gedcom, manager));
-    }
+
+    result.add(ActionDelegate.NOOP);
+    result.add(new Undo(gedcom, manager));
+    result.add(new Redo(gedcom, manager));
+
     // done
     return result;
   }

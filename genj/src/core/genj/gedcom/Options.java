@@ -41,6 +41,9 @@ public class Options implements OptionProvider {
   /** option - text symbol for marriage */
   protected String txtMarriageSymbol = "+";
 
+  /** option - number of undos */
+  protected int numberOfUndos = 10;
+
   /**
    * Singleton access
    */
@@ -91,6 +94,20 @@ public class Options implements OptionProvider {
       txtMarriageSymbol = set;
     else
       txtMarriageSymbol = "+";
+  }
+
+  /**
+   * accessor - number of undos
+   */
+  public int getNumberOfUndos() {
+    return numberOfUndos;
+  }
+
+  /**
+   * accessor - number of undos
+   */
+  public void setNumberOfUndos(int i) {
+    numberOfUndos = Math.max(10,i);
   }
 
   /** 

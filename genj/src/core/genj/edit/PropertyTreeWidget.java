@@ -590,7 +590,6 @@ public class PropertyTreeWidget extends DnDTree {
 
       // create if necessary
       if (view==null) {
-
         // create one
         view = setHTML(calcHTML(prop));
         

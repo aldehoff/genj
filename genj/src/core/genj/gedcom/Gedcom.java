@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.66 $ $Author: nmeier $ $Date: 2004-07-22 06:15:36 $
+ * $Revision: 1.67 $ $Author: nmeier $ $Date: 2004-07-26 19:04:55 $
  */
 package genj.gedcom;
 
@@ -37,7 +37,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 /**
@@ -118,7 +117,10 @@ public class Gedcom {
   /** transaction support */
   private Transaction transaction = null;
   private boolean hasUnsavedChanges;
-  private Stack transactions = new Stack();
+
+  private ArrayList 
+    undos = new ArrayList(),
+    redos = new ArrayList();
 
   /** listeners */
   private List listeners = new ArrayList(10);
@@ -211,6 +213,21 @@ public class Gedcom {
    */
   public synchronized void removeGedcomListener(GedcomListener which) {
     listeners.remove(which);
+  }
+  
+  /**
+   * Notify Listeners of possible changes through given transaction
+   */
+  private void notifyGedcomListeners(Transaction tx) {
+    // send message to all listeners
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      try {
+        gls[l].handleChange(transaction);
+      } catch (Throwable t) {
+      }
+    }
+    // done
   }
   
   /**
@@ -485,40 +502,36 @@ public class Gedcom {
     if (transaction==null)
       return;
 
-    try {
+    // any changes?
+    if (transaction.hasChanges()) {
+
+      // remember change
+      hasUnsavedChanges = true;
+
+      // keep it for undo
+      undos.add(transaction);
+      redos.clear();
       
-      // need to notify?
-      if (transaction.hasChanges()) {
+      // check number of undos
+      while (undos.size()>Options.getInstance().getNumberOfUndos())
+        undos.remove(0);
+    
+      // let everyone know
+      notifyGedcomListeners(transaction);
 
-        // remember
-        if (!transaction.isRollback())
-        // FIXME got to limit the number of kept transactions and allow to redo transactions that were undone (linked list)
-          transactions.push(transaction);
-
-        // remember change
-        hasUnsavedChanges = true;
-
-        // send message to all listeners
-        GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-        for (int l=0;l<gls.length;l++) {
-          gls[l].handleChange(transaction);
-        }
-        
-        // done
-      }
-      
-    } finally {
-      transaction = null;
     }
-
+    
+    // forget current
+    transaction = null;
+    
     // done
   }
-  
+
   /**
    * Test for undo
    */
   public boolean canUndo() {
-    return !transactions.isEmpty();
+    return !undos.isEmpty();
   }
   
   /**
@@ -527,22 +540,79 @@ public class Gedcom {
   public synchronized void undo() {
     
     // there?
-    if (transactions.isEmpty())
-      throw new IllegalArgumentException("No transcation to undo");
+    if (undos.isEmpty())
+      throw new IllegalArgumentException("undo not possible");
+    Transaction undo = (Transaction)undos.remove(undos.size()-1);
 
-    // start new
-    startTransaction().setRollback(true);
+    // Is there a transaction running?
+    if (transaction!=null)
+      throw new IllegalStateException("Cannot undo while concurrent transaction is active");
 
-    // roll it back
-    Transaction tx = (Transaction)transactions.pop();
-    Change[] changes = tx.getChanges();
+    // start one
+    transaction = new Transaction(this);
+    transaction.setRollback(true);
+
+    // rollback changes of last transaction
+    Change[] changes = undo.getChanges();
     for (int i=changes.length-1;i>=0;i--)
       changes[i].undo();
 
-    // end tx
-    endTransaction();
+    // reset change status
+    hasUnsavedChanges = undo.hasUnsavedChangesBefore;
+
+    // keep undos as redo
+    redos.add(transaction);
+    
+    // let everyone know
+    notifyGedcomListeners(transaction);
 
     // done
+    transaction = null;
+
+  }
+    
+  /**
+   * Test for redo
+   */
+  public boolean canRedo() {
+    return !redos.isEmpty();
+  }
+  
+  /**
+   * Performs a redo
+   */
+  public synchronized void redo() {
+
+    // there?
+    if (redos.isEmpty())
+      throw new IllegalArgumentException("redo not possible");
+    Transaction redo = (Transaction)redos.remove(redos.size()-1);
+
+    // Is there a transaction running?
+    if (transaction!=null)
+      throw new IllegalStateException("Cannot redo while concurrent transaction is active");
+
+    // start one
+    transaction = new Transaction(this);
+    transaction.setRollback(true);
+
+    // rollback changes of last undo
+    Change[] changes = redo.getChanges();
+    for (int i=0;i<changes.length;i++)
+      changes[i].undo();
+
+    // keep change status
+    hasUnsavedChanges = changes.length>0;
+
+    // keep transaction as undo
+    undos.add(transaction);
+    
+    // let everyone know
+    notifyGedcomListeners(transaction);
+
+    // done
+    transaction = null;
+    
   }
   
   /**

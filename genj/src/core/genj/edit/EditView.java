@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.edit.actions.Redo;
 import genj.edit.actions.Undo;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
@@ -67,6 +68,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   private Sticky sticky = new Sticky();
   private Back   back   = new Back(); 
   private Undo   undo;
+  private Redo   redo;
 
   /** whether we're sticky */
   private  boolean isSticky = false;
@@ -88,8 +90,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     registry = setRegistry;
     manager  = setManager;
 
-    // prepare undo action
+    // prepare undo/redo actions
     undo = new Undo(gedcom, manager);
+    redo = new Redo(gedcom, manager);
     
     // create current editor
     // FIXME need editor switch
@@ -121,8 +124,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     }
     setContext(context);
 
-    // listen for available undos
+    // listen for available undos/removes
     gedcom.addGedcomListener(undo);
+    gedcom.addGedcomListener(redo);
 
     // continue
     super.addNotify();    
@@ -139,6 +143,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
 
     // dont listen for available undos
     gedcom.removeGedcomListener(undo);
+    gedcom.removeGedcomListener(redo);
 
     // forget this instance
     instances.remove(this);
@@ -221,8 +226,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     // toggle sticky
     bh.create(sticky);
     
-    // toggle sticky
+    // add undo/redo
     bh.create(undo);
+    bh.create(redo);
     
     // done
   }
