@@ -44,7 +44,10 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Type that knows how to write GEDCOM-data to InputStream
+ * GedcomWriter is a custom write for Gedcom compatible information. Normally
+ * it's used by GenJ's application when trying to save to a file. This type 
+ * can be used by 3rd parties that are interested in writing Gedcom from
+ * a GenJ object-representation managed outside of GenJ as well.
  */
 public class GedcomWriter implements Trackable {
 
@@ -66,7 +69,10 @@ public class GedcomWriter implements Trackable {
   private String encoding;
 
   /**
-   * Constructor used for converting a property into a text representation
+   * Convert a list of Gedcom properties into a text representation
+   * @param props a list of properties
+   * @param writer output to write to
+   * @see genj.gedcom.Property
    */
   public static void write(List props, Writer writer) throws IOException {
     new GedcomWriter(props,writer);
@@ -90,10 +96,11 @@ public class GedcomWriter implements Trackable {
   }
   
   /**
-   * Constructor for creating a writer that writes on writeGedcom()
-   * @param ged data to write
-   * @param name the logical name (header value)
-   * @param enc either IBMPC, ASCII, UNICODE or ANSEL
+   * Constructor for a writer that will write gedcom-formatted output
+   * on writeGedcom()
+   * @param ged object to write out
+   * @param name file name stored as header value
+   * @param enc encoding - either IBMPC, ASCII, UNICODE or ANSEL
    * @param stream the stream to write to
    */
   public GedcomWriter(Gedcom ged, String name, String enc, OutputStream stream) {
@@ -146,7 +153,7 @@ public class GedcomWriter implements Trackable {
   }
 
   /**
-   * Cancels operation
+   * Thread-safe cancel of writeGedcom()
    */
   public void cancel() {
     cancel = true;
@@ -154,6 +161,7 @@ public class GedcomWriter implements Trackable {
 
   /**
    * Returns progress of save in %
+   * @return percent as 0 to 100
    */
   public int getProgress() {
     if (progress == 0) {
@@ -163,14 +171,15 @@ public class GedcomWriter implements Trackable {
   }
 
   /**
-   * Returns state as explanatory string
+   * Returns current write state as string
    */
   public String getState() {
     return line + " Lines & " + entity + " Entities";
   }
 
   /**
-   * Sets filters to use
+   * Sets filters to use for checking whether to write 
+   * entities/properties or not
    */
   public void setFilters(Filter[] fs) {
     if (fs == null)
@@ -179,7 +188,7 @@ public class GedcomWriter implements Trackable {
   }
   
   /**
-   * Sets password to use
+   * Sets password to use for properties marked for encryption
    */
   public void setPassword(String pwd) {
     password = pwd;
@@ -274,10 +283,10 @@ public class GedcomWriter implements Trackable {
   }
 
   /**
-   * Do the writing
+   * Actually writes the gedcom-information 
    * @exception GedcomIOException
    */
-  public boolean writeGedcom() throws GedcomIOException {
+  public void write() throws GedcomIOException {
 
     Collection ents = gedcom.getEntities(); 
     total = ents.size();
@@ -298,7 +307,6 @@ public class GedcomWriter implements Trackable {
     }
 
     // Done
-    return true;
   }
 
   /**

@@ -132,9 +132,12 @@
              nohelp="yes"
              nodeprecatedlist="yes">
         <fileset dir="./src/core" defaultexcludes="yes">
-          <include name="genj/gedcom/**.java" />
+          <include name="genj/gedcom/*.java" />
+          <include name="genj/gedcom/time/*.java" />
           <include name="genj/report/Report.java" />
-          <include name="genj/io/**.java" />
+          <include name="genj/io/Gedcom*.java" />
+          <include name="genj/util/Origin.java" />
+          <include name="genj/util/Trackable.java" />
           <include name="genj/chart/**.java" />
         </fileset>
     </javadoc>

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.5 $ $Author: nmeier $ $Date: 2004-12-14 22:25:40 $
+ * $Revision: 1.6 $ $Author: nmeier $ $Date: 2005-04-04 19:39:50 $
  */
 package genj.chart;
 
@@ -46,7 +46,9 @@ import org.jfree.chart.renderer.xy.XYAreaRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 
 /**
- * A chart component wrapping JFreeChart
+ * A Chart in GenJ can be created by instantiating an object of this
+ * type and then displaying it as standard JComponent. The constructors
+ * each address a different charting type.
  */
 public class Chart extends JPanel {
   
@@ -62,7 +64,13 @@ public class Chart extends JPanel {
   }
   
   /**
-   * Constructor
+   * Constructor for a chart with indexed series of data, shown on a 2d pane
+   * as one plot per series or one horizontal stripe per series (stacked).
+   * @param title the title of the chart
+   * @param labelAxisX a label for the x-axis
+   * @param labelAxisY a label for the y-axis
+   * @param series one or more indexed series to show
+   * @param stacked whether to stack horizontal stripes one for each series instead of showing one plot per series
    */
   public Chart(String title, String labelAxisX, String labelAxisY, IndexedSeries[] series, NumberFormat format, boolean stacked) {
 
@@ -83,7 +91,16 @@ public class Chart extends JPanel {
   }
   
   /**
-   * Constructor
+   * Constructor for a chart with x/y series of data shown on a 2d pane
+   * as one plot per series. Note: The difference between this and
+   * the first constructor is that of indexed series (where all x-values
+   * are shared indexes) and arbitrary series.
+   * @param title the title of the chart
+   * @param labelAxisX a label for the x-axis
+   * @param labelAxisY a label for the y-axis
+   * @param series one or more x/y series to show
+   * @param format a number format to use for x-values
+   * @param shapes whether to show little shape indicators for each x/y pair additionally to the plot
    */
   public Chart(String title, String labelAxisX, String labelAxisY, XYSeries[] series, NumberFormat format, boolean shapes) {
     
@@ -105,7 +122,12 @@ public class Chart extends JPanel {
   }
   
   /**
-   * Constructor - a pie chart
+   * Constructor for a pie chart with one series of data containing the
+   * values for the pieces of the pie.
+   * @param title the title of the pie chart
+   * @param series one series defining the pie/pieces
+   * @param categories a category string per index in series
+   * @param legend whether to show a legend
    */
   public Chart(String title, IndexedSeries series, String[] categories, boolean legend) {
     
@@ -118,7 +140,33 @@ public class Chart extends JPanel {
   }
   
   /**
-   * Constructor 
+   * Constructor for a chart with indexed series and categories where
+   * each category groups the values of all series.
+   * Example:
+   * <pre>
+   *   X     Y          Z
+   *   |Y   X|Z   Y     |
+   *   ||Z  |||  X|Z  XY|
+   *   Jan  Feb  Mar  Apr
+   * </pre>
+   * or
+   * <pre>
+   *         X
+   *    X    X
+   *    X    Y         X
+   *    X    Y    X    Y
+   *    Y    Y    Y    Z
+   *    Y    Z    Y    Z
+   *    Z    Z    Z    Z
+   *   Jan  Feb  Mar  Apr
+   * </pre>
+   * @param title the title of the chart
+   * @param labelCatAxis a label for category-axis
+   * @param series one or more indexed series to show
+   * @param categories the categories to show 
+   * @param format a number format to use for y-values
+   * @param isStacked whether to stack series per categories instead of placing them side by side
+   * @param isVertical whether to show the chart vertical instead of horizontal
    */
   public Chart(String title, String labelCatAxis, IndexedSeries[] series, String[] categories, NumberFormat format, boolean isStacked, boolean isVertical) {
 

@@ -47,7 +47,10 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 /**
- * Type that knows how to read GEDCOM-data from InputStream
+ * GedcomReader is a custom reader for Gedcom compatible information. Normally
+ * it's used by GenJ's application or applet when trying to open a file or
+ * simply reading from a stream. This type can be used by 3rd parties that
+ * are interested in reading Gedcom into the GenJ object representation as well.
  */
 public class GedcomReader implements Trackable {
 
@@ -90,9 +93,11 @@ public class GedcomReader implements Trackable {
   private List warnings = new ArrayList(128);
   
   /**
-   * Reading properties from reader
+   * Read properties from input and create Gedcom properties for given property
+   * @param reader where to read from
    * @param parent the parent to add to
-   * @param pos the position to read to or -1 for best placement
+   * @param pos the position to add read properties to or -1 for best placement
+   * @see genj.gedcom.Property
    */
   public static List read(Reader reader, Property parent, int pos) throws IOException, UnsupportedFlavorException {
     
@@ -127,7 +132,7 @@ public class GedcomReader implements Trackable {
   }
   
   /**
-   * Constructor
+   * Constructor for a reader that reads from given origin
    * @param org the origin of the gedcom stream to read from
    */
   public GedcomReader(Origin org) throws IOException {
@@ -151,7 +156,9 @@ public class GedcomReader implements Trackable {
   }
   
   /**
-   * Set password to use
+   * Set password to use to decrypt private properties
+   * @param password password to use or Gedcom.PASSWORD_UNKNOWN - if the password
+   *  doesn't match a GedcomEncryptionException is thrown during read
    */
   public void setPassword(String password) {
     
@@ -166,7 +173,7 @@ public class GedcomReader implements Trackable {
   }
 
   /**
-   * Cancels operation (async ok)
+   * Thread-safe cancel of read()
    */
   public void cancel() {
 
@@ -181,13 +188,14 @@ public class GedcomReader implements Trackable {
 
   /**
    * Returns progress of save in %
+   * @return percent as 0 to 100
    */
   public int getProgress() {
     return progress;
   }
 
   /**
-   * Returns state as explanatory string
+   * Returns current read state as explanatory string
    */
   public String getState() {
     switch (state) {
@@ -201,8 +209,8 @@ public class GedcomReader implements Trackable {
   }
 
   /**
-   * Returns warnings of operation
-   * @return the warning as String
+   * Returns warnings encountered while reading
+   * @return the warnings as a list of String
    */
   public List getWarnings() {
     return warnings;
@@ -290,9 +298,10 @@ public class GedcomReader implements Trackable {
   }
 
   /**
-   * Read Gedcom data
-   * @exception GedcomIOException reading from <code>BufferedReader</code> failed
+   * Actually writes the gedcom-information 
+   * @exception GedcomIOException reading failed
    * @exception GedcomFormatException reading Gedcom-data brought up wrong format
+   * @exception GedcomEncryptionException encountered encrypted property and password didn't match
    */
   public Gedcom read() throws GedcomIOException, GedcomFormatException {
 

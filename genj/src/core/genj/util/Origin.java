@@ -30,9 +30,16 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * Class which stands for an origin of a resource - all files
- * loaded relative to this Origin are loaded from the same
- * directory
+ * An origin describes where a resource came from. This is normally
+ * a URL that points to that resource. Other resources can be 
+ * loaded relative to the initial origin. Supported origins are
+ * file-system (file://) and remote http resource (http://).
+ * A resource can be comprised of an archive (jar or zip) - the
+ * URL then has to include an anchor that identifies the file
+ * in the archive serving as the origin. 
+ * Other resources can be opened relative to an origin - that's 
+ * either relative to the same 'directory' of the original or
+ * pulled from the same archive.
  */
 public abstract class Origin {
   
@@ -53,7 +60,8 @@ public abstract class Origin {
   }
 
   /**
-   * factory for given string location
+   * Factory method to create an instance for given location string
+   * @param s url as string
    */
   public static Origin create(String s) throws MalformedURLException {
     // delegate
@@ -61,7 +69,9 @@ public abstract class Origin {
   }
   
   /**
-   * factory for given url
+   * Factory method to create an instance for given url
+   * @param url either http://host/dir/file or ftp://dir/file or
+   *   protocol://[host/]dir/file.zip#file 
    */
   public static Origin create(URL url) {
 
@@ -75,12 +85,15 @@ public abstract class Origin {
   }
 
   /**
-   * Open connection to this origin
+   * Open this origin for input
+   * @return stream to read from
    */
   public abstract InputStream open() throws IOException;
 
   /**
-   * Open file based on this origin
+   * Open resource relative to this origin
+   * @param name the name of resource to open - either relative "./somethingelse"
+   *  or absolute "file://dir/somethingelse"
    */
   public final InputStream open(String name) throws IOException {
 
@@ -129,7 +142,9 @@ public abstract class Origin {
   public abstract boolean isFile();
 
   /**
-   * Calculates the relative path for given file if applicable
+   * Tries to calculate a relative path for given file
+   * @param file the file that might be relative to this origin
+   * @return relative path or null if not applicable
    */
   public String calcRelativeLocation(String file) {
 
@@ -152,19 +167,31 @@ public abstract class Origin {
   public abstract File getFile();
   
   /**
-   * Returns a File representation of a resource relative to this origin
+   * Returns an absolute file representation of a resource relative 
+   * to this origin
+   * @exception IllegalArgumentException if not applicable (e.g. for origin http://host/dir/file)
    */
   public abstract File getFile(String name);
 
   /**
-   * Returns the Origin's FileName file://d:/gedcom/[example.ged]
+   * Returns the Origin's FileName - for example
+   * <pre>
+   *  file://d:/gedcom/[example.ged]
+   *  http://host/dir/[example.ged]
+   *  http://host/dir/archive.zip#[example.ged]
+   * </pre>
    */
   public String getFileName() {
     return getName();
   }
 
   /**
-   * The name of this origin file://d:/gedcom/[example.ged]
+   * Returns the origin's distinctive name - for example
+   * <pre>
+   *  file://d:/gedcom/[example.ged]
+   *  http://host/dir/[example.ged]
+   *  http://host/dir/[archive.zip#example.ged]
+   * </pre>
    */
   public String getName() {
     String path = back2forwardslash(url.toString());

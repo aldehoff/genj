@@ -960,7 +960,7 @@ public class ControlCenter extends JPanel {
       try {
 
         // .. do the write
-        gedWriter.writeGedcom();
+        gedWriter.write();
 
         // .. make backup
         if (result.exists()) {

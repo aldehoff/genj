@@ -27,7 +27,10 @@ import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
 
 /**
- * A series of x,y values
+ * A x/y series is an implementation for x/y value pairs. It's
+ * suitable for collecting statistical information for data that
+ * doesn't have an inherent indexed character (like events
+ * on an arbitrary timeline).
  */
 public class XYSeries {
 
@@ -45,21 +48,22 @@ public class XYSeries {
   }
     
   /** 
-   * Accessor - size
+   * Accessor - get number of points in series
    */
   public int getSize() {
     return points.size();
   }
   
   /**
-   * Accessor - point by index
+   * Accessor - get points by index
    */
   private Point2D.Float getPointByIndex(int i) {
     return (Point2D.Float)points.get(i);
   }
     
   /**
-   * Accessor - point by x
+   * Accessor - get point by its x value
+   * @return existing point or new point if didn't exist
    */
   private Point2D.Float getPointForX(float x) {
     
@@ -89,7 +93,21 @@ public class XYSeries {
   }
   
   /**
-   * Increment a value by x
+   * Accessor - set current y-value at given x-position
+   * @param x the x-position to increment (new point for x is created if necessary)
+   * @param y the new y-value
+   */
+  public void set(float x, float y) {
+    // find point
+    Point2D.Float point = getPointForX(x);
+    // set
+    point.y = y;
+    // done
+  }
+  
+  /**
+   * Accessor - increment current y-value at given x-position
+   * @param x the x-position to increment (new point for x is created if necessary)
    */
   public void inc(float x) {
     // find point
@@ -100,7 +118,8 @@ public class XYSeries {
   }
   
   /**
-   * Convenient converter
+   * Convenient converter to get a list of series from
+   * a dynamic collection containing xy series
    */
   public static XYSeries[] toArray(Collection c) {
     return (XYSeries[])c.toArray(new XYSeries[c.size()]);
@@ -108,7 +127,7 @@ public class XYSeries {
   /**
    * Wrap into something JFreeChart can use
    */
-  public static XYDataset toXYDataset(XYSeries[] series) {
+  /*package*/ static XYDataset toXYDataset(XYSeries[] series) {
     return new XYDatasetImpl(series);
   }
   
