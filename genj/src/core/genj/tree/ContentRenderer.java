@@ -54,8 +54,8 @@ public class ContentRenderer {
   /** shape color for fams */
   /*package*/ Color cFamShape = null;
   
-  /** shape color for marr */
-  /*package*/ Color cMarrShape = null;
+  /** shape color for unknowns */
+  /*package*/ Color cUnknownShape = null;
   
   /** shape color for arcs */
   /*package*/ Color cArcs = null;
@@ -68,9 +68,6 @@ public class ContentRenderer {
   
   /** whether to render content */
   /*package*/ boolean isRenderContent = true;
-  
-  /** whether to render arcs */
-  /*package*/ boolean isRenderArcs = true;
   
   /**
    * Render the content
@@ -118,21 +115,31 @@ public class ContentRenderer {
     Shape shape = node.getShape();
     if (shape==null) return;
     // draw its shape
-    Color color;
-    if (cSelectedShape!=null&&content!=null&&content==selection) {
-      g.setColor(cSelectedShape);
-    } else {
-      if (Model.IndiNode.class.isAssignableFrom(node.getClass()))
-        g.setColor(cIndiShape);
-      if (Model.FamNode.class.isAssignableFrom(node.getClass()))
-        g.setColor(cFamShape);
-      if (Model.MarrNode.class.isAssignableFrom(node.getClass()))
-        g.setColor(cMarrShape);
+    Color color = getColor(content);
+    if (color!=cBackground) {
+      g.setColor(color);
+      g.draw(shape, x, y, false);
     }
-    g.draw(shape, x, y, false);
     // draw its content
     renderContent(g, x, y, shape, content);
     // done
+  }
+  
+  /**
+   * Calc color for given node   */
+  private Color getColor(Object content) {
+    // selected?
+    if (cSelectedShape!=null&&content!=null&&content==selection) {
+      return cSelectedShape;
+    }
+    // indi?
+    if (content instanceof Indi)
+      return cIndiShape;
+    // fam?
+    if (content instanceof Fam)
+      return cFamShape;
+    // unknown
+    return cUnknownShape;
   }
   
   /**
@@ -154,9 +161,8 @@ public class ContentRenderer {
    * Render the arcs
    */
   private void renderArcs(UnitGraphics g, Collection arcs) {
-    // check
-    if (!isRenderArcs) return;
     // prepare color
+    if (cArcs==cBackground) return;
     g.setColor(cArcs);
     // loop
     Iterator it = arcs.iterator();

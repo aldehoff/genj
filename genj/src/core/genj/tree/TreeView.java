@@ -54,6 +54,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
+import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
@@ -65,7 +66,6 @@ import genj.view.ContextSupport;
 import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
-import gj.layout.tree.TreeLayoutRenderer;
 import gj.ui.UnitGraphics;
 
 /**
@@ -73,13 +73,13 @@ import gj.ui.UnitGraphics;
  */
 public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupport, ToolBarSupport, ContextSupport {
   
-  /*package*/ static final Resources resources = new Resources(TreeView.class); 
+  /*package*/ static final Resources resources = new Resources(TreeView.class);
   
   /** the units we use */
   private final static double UNITS = UnitGraphics.CENTIMETERS;
   
   /** our model */
-  private Model model;
+  /*package*/ Model model;
 
   /** our content */
   private Content content;
@@ -105,6 +105,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /** the registry we're working with */
   private Registry registry;
   
+  /** our colors */
+  /*package*/ ColorSet colors;
+  
   /**
    * Constructor
    */
@@ -112,8 +115,16 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // remember
     frame = fRame;
     registry = regIstry;
+    // grab colors
+    colors = new ColorSet("content", Color.white, resources, registry);
+    colors.add("indis"  , Color.black);
+    colors.add("fams"   , Color.green);
+    colors.add("substs" , Color.lightGray);
+    colors.add("arcs"   , Color.blue);
+    colors.add("selects", Color.red);
+    
     // setup sub-parts
-    model = new Model(gedcm);
+    model = new Model(gedcm, registry.get("vertical",true));
     contentRenderer = new ContentRenderer();
     content = new Content();
     JScrollPane scroll = new JScrollPane(new ViewPortAdapter(content));
@@ -137,6 +148,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     registry.put("overview", overview.isVisible());
     registry.put("overview", overview.getSize());
     if (sliderZoom!=null) registry.put("zoom", (float)sliderZoom.getValue());
+    registry.put("vertical", model.isVertical());
     super.removeNotify();
   }
   
@@ -240,7 +252,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // done
   }
 
-
   /**
    * Resolves entity at given position
    */
@@ -287,11 +298,11 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.cBackground    = Color.white;
       contentRenderer.cIndiShape     = Color.black;
       contentRenderer.cFamShape      = Color.black;
-      contentRenderer.cArcs          = Color.black;
+      contentRenderer.cArcs          = Color.lightGray;
+      contentRenderer.cUnknownShape  = Color.white;
       contentRenderer.cSelectedShape = Color.red;
       contentRenderer.selection      = currentEntity;
       contentRenderer.isRenderContent= false;
-      contentRenderer.isRenderArcs   = false;
       // let the renderer do its work
       ug.pushTransformation();
       contentRenderer.render(ug, model);
@@ -368,19 +379,16 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       // go 2d
       UnitGraphics ug = new UnitGraphics(g, UNITS*zoom, UNITS*zoom);
       // init renderer
-      contentRenderer.cBackground    = Color.white;
-      contentRenderer.cIndiShape     = Color.black;
-      contentRenderer.cFamShape      = Color.green;
-      contentRenderer.cArcs          = Color.blue;
-      contentRenderer.cSelectedShape = Color.red;
+      contentRenderer.cBackground    = colors.getColor("content");
+      contentRenderer.cIndiShape     = colors.getColor("indis");
+      contentRenderer.cFamShape      = colors.getColor("fams");
+      contentRenderer.cUnknownShape  = colors.getColor("substs");
+      contentRenderer.cArcs          = colors.getColor("arcs");
+      contentRenderer.cSelectedShape = colors.getColor("selects");
       contentRenderer.selection      = currentEntity;
       contentRenderer.isRenderContent= true;
-      contentRenderer.isRenderArcs   = true;
       // let the renderer do its work
       contentRenderer.render(ug, model);
-      // render the layout, too
-//      ug.setColor(Color.green);
-//      new TreeLayoutRenderer().render(model, model.getLayout(), ug);
       // done
     }
     

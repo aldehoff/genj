@@ -57,7 +57,7 @@ public class TreeViewFactory implements ViewFactory {
    * @see genj.app.ViewFactory#createSettingsComponent(Component)
    */
   public JComponent createSettingsComponent(JComponent view) {
-    return null;
+    return new TreeViewSettings((TreeView)view);
   }
 
   /**
