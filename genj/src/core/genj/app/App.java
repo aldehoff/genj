@@ -181,7 +181,10 @@ public class App {
    * Accessor - DPI
    */  
   public Point getDPI() {
-    return registry.get("dpi",ScreenResolutionScale.getSystemDPI()); 
+    Point dpi = registry.get("dpi",ScreenResolutionScale.getSystemDPI()); 
+    if (dpi==null)
+      dpi = ScreenResolutionScale.getSystemDPI();
+    return dpi;
   }
   
   /** 
