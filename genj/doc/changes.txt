@@ -45,6 +45,7 @@ Future
   O TreeView should indicate if there's more data that's not shown (e.g. hidden spouses, hidden parents, hidden children)
   O Support for multiple pictures or animated gifs (TreeView repaint?)
   O EditView jump from entity to referencing entity (multiple! "back-link")
+  O Blueprint import from other .ged.properties
   
 2.0 - Oct xx 2002
 

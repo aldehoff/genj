@@ -24,6 +24,9 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.renderer.Blueprint;
+import genj.renderer.BlueprintManager;
+import genj.renderer.EntityRenderer;
 import genj.util.ActionDelegate;
 import genj.util.ColorSet;
 import genj.util.Registry;
@@ -104,6 +107,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /** our colors */
   /*package*/ ColorSet colors;
   
+  /** our blueprints */
+  /*package*/ Blueprint[] blueprints = new Blueprint[Gedcom.NUM_TYPES];
+  
   /**
    * Constructor
    */
@@ -118,7 +124,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     colors.add("substs" , Color.lightGray);
     colors.add("arcs"   , Color.blue);
     colors.add("selects", Color.red);
-    
+    // grab blueprints
+    blueprints = BlueprintManager.getInstance().readBlueprints(registry);
     // setup model
     model = new Model(gedcm);
     model.setVertical(registry.get("vertical",true));
@@ -180,6 +187,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
    * @see javax.swing.JComponent#removeNotify()
    */
   public void removeNotify() {
+    // settings
     registry.put("overview", overview.isVisible());
     registry.put("overview", overview.getSize());
     if (sliderZoom!=null) registry.put("zoom", (float)sliderZoom.getValue());
@@ -194,8 +202,11 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     registry.put("hfams"   ,(float)m.hFams );
     registry.put("pad"     ,(float)m.pad   );
     registry.put("antial"  , isAntialising );
-    
+    // blueprints
+    BlueprintManager.getInstance().writeBlueprints(blueprints, registry);
+    // root    
     if (model.getRoot()!=null) registry.put("root", model.getRoot().getId());
+    // done
     super.removeNotify();
   }
   
@@ -397,7 +408,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.cUnknownShape  = Color.white;
       //contentRenderer.cSelectedShape = Color.white;
       contentRenderer.selection      = null;
-      contentRenderer.isRenderContent= false;
+      contentRenderer.indiRenderer   = null;
+      contentRenderer.famRenderer    = null;
       // let the renderer do its work
       ug.pushTransformation();
       contentRenderer.render(ug, model);
@@ -482,7 +494,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       contentRenderer.cArcs          = colors.getColor("arcs");
       contentRenderer.cSelectedShape = colors.getColor("selects");
       contentRenderer.selection      = currentEntity;
-      contentRenderer.isRenderContent= true;
+      contentRenderer.indiRenderer   = new EntityRenderer(g, blueprints[Gedcom.INDIVIDUALS]);
+      contentRenderer.famRenderer    = new EntityRenderer(g, blueprints[Gedcom.FAMILIES   ]);
       // let the renderer do its work
       contentRenderer.render(ug, model);
       // done

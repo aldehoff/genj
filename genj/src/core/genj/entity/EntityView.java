@@ -67,7 +67,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
   private Entity entity = null;
   
   /** the blueprints we're using */
-  private Blueprint[] blueprints = new Blueprint[Gedcom.NUM_TYPES];
+  private Blueprint[] blueprints;
   
   /** a manager we're using */
   private BlueprintManager bpManager = BlueprintManager.getInstance();
@@ -82,11 +82,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     // listen to gedcom
     gedcom.addListener(new GedcomConnector());
     // resolve blueprints
-    String[] names = registry.get("blueprints", (String[])null);
-    for (int i=0; i<blueprints.length; i++) {
-      String name = names!=null&&i<names.length ? names[i] : "";
-      blueprints[i] = bpManager.getBlueprint(i, name);
-    }
+    blueprints = bpManager.readBlueprints(registry);
     // done    
   }
   
@@ -105,11 +101,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
   public void removeNotify() {
     super.removeNotify();
     // store blueprints
-    String[] names = new String[blueprints.length];
-    for (int i=0; i<names.length; i++) {
-      names[i] = blueprints[i].getName();   	
-    }
-    registry.put("blueprints", names);
+    bpManager.writeBlueprints(blueprints, registry);
     // done
   }
 

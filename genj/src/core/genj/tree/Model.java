@@ -94,6 +94,12 @@ public class Model implements Graph, GedcomListener {
   }
   
   /**
+   * Accessor - gedcom   */
+  public Gedcom getGedcom() {
+    return gedcom;
+  }
+  
+  /**
    * Accessor - current root
    */
   public void setRoot(Entity entity) {

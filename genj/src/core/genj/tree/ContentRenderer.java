@@ -22,7 +22,6 @@ package genj.tree;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
-import genj.renderer.Blueprint;
 import genj.renderer.EntityRenderer;
 import gj.awt.geom.Path;
 import gj.model.Arc;
@@ -62,53 +61,13 @@ public class ContentRenderer {
   /** an entity that we consider selected */
   /*package*/ Entity selection = null;
   
-  /** whether to render content */
-  /*package*/ boolean isRenderContent = true;
-  
   /** the entity renderer we're using */
-  private EntityRenderer contentRenderer;
-  
-  private String foo =
-    "<table><tr valign=top>\n"+
-    " <td>\n"+
-    "  <b><prop path=INDI></b>\n"+
-    "  <br>\n"+
-    "  <prop path=INDI:SEX img=yes txt=no>\n"+
-    "   <i><prop path=INDI:NAME></i>\n"+
-    "  <br>\n"+
-    "  <prop path=INDI:BIRT:DATE img=yes>,\n"+
-    "   <u><prop path=INDI:BIRT:PLAC></u>\n"+
-    "  <br>\n"+
-    "  <prop path=INDI:RESI:ADDR img=yes>,\n"+ 
-    "   <prop path=INDI:RESI:ADDR:CITY>\n"+  
-    "    <prop path=INDI:RESI:ADDR:POST>\n"+
-    " </td><td valign=center>\n"+
-    "  <prop path=INDI:OBJE:FILE min=30>\n"+
-    " </td>\n"+
-    "</tr></table>\n";
-   
-//      "<b><prop path=INDI></b>\n" +
-//      "<table>\n" +
-//       "<tr valign=top><td>\n" +
-//       "<table>\n" +
-//        "<tr><td><prop path=INDI:SEX img=yes txt=no><i><prop path=INDI:NAME></i></td></tr>\n" +
-//        "<tr><td><prop path=INDI:BIRT:DATE img=yes>, <u><prop path=INDI:BIRT:PLAC></u></td></tr>\n" +
-//        "<tr><td><prop path=INDI:RESI:ADDR><br><prop path=INDI:RESI:ADDR:CITY><br><prop path=INDI:RESI:POST></u></td></tr>\n" +
-//       "</table>\n" +
-//       "</td><td>\n" +
-//        "<prop path=INDI:OBJE:FILE>\n" +//       "</td></tr>\n" +
-//      "</table>";
-  
+  /*package*/ EntityRenderer indiRenderer, famRenderer;
   
   /**
    * Render the content
    */
   public void render(UnitGraphics ug, Model model) {  
-    // prepare renderer
-    contentRenderer = new EntityRenderer(
-      ug.getGraphics(), 
-      new Blueprint("foo", foo)
-    );
     // translate to center
     Rectangle2D bounds = model.getBounds();
     ug.translate(-bounds.getX(), -bounds.getY());
@@ -191,7 +150,10 @@ public class ContentRenderer {
    */
   private void renderContent(UnitGraphics g, double x, double y, Shape shape, Object content) {
     // safety check
-    if (!isRenderContent||!(content instanceof Entity)) return;
+    EntityRenderer renderer = null;
+    if (content instanceof Indi) renderer = indiRenderer;
+    if (content instanceof Fam ) renderer = famRenderer;
+    if (renderer==null) return;
     // preserve clip&transformation
     Rectangle2D r2d = shape.getBounds2D();
     g.pushClip(x, y, r2d);
@@ -200,7 +162,7 @@ public class ContentRenderer {
     g.translate(x, y);
     Rectangle r = g.units2pixels(r2d);
     r.x+=2;r.y+=2;r.width-=4;r.height-=4;
-    contentRenderer.render(g.getGraphics(), (Entity)content, r);
+    renderer.render(g.getGraphics(), (Entity)content, r);
     // restore clip&transformation
     g.popTransformation();    
     g.popClip();

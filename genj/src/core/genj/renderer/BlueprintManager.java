@@ -20,6 +20,7 @@
 package genj.renderer;
 
 import genj.gedcom.Gedcom;
+import genj.util.Registry;
 import genj.util.Resources;
 
 import java.util.ArrayList;
@@ -102,4 +103,29 @@ public class BlueprintManager {
     throw new IllegalArgumentException("Blueprint is not registered"); 
   }
 
+  /**
+   * Helper that reads blueprings from a registry   */
+  public static Blueprint[] readBlueprints(Registry registry) {
+    // resolve blueprints
+    Blueprint[] bps = new Blueprint[Gedcom.NUM_TYPES];
+    String[] names = registry.get("blueprints", (String[])null);
+    for (int i=0; i<bps.length; i++) {
+      String name = names!=null&&i<names.length ? names[i] : "";
+      bps[i] = getInstance().getBlueprint(i, name);
+    }
+    // done
+    return bps;
+  }
+
+  /**
+   * Helper that writes blueprings to a registry
+   */
+  public static void writeBlueprints(Blueprint[] bps, Registry registry) {
+    String[] names = new String[bps.length];
+    for (int i=0; i<names.length; i++) {
+      names[i] = bps[i].getName();     
+    }
+    registry.put("blueprints", names);
+  }
+  
 } //BlueprintManager

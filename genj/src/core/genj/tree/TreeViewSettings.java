@@ -19,6 +19,7 @@
  */
 package genj.tree;
 
+import genj.renderer.BlueprintList;
 import genj.util.swing.ColorChooser;
 import genj.util.swing.DoubleValueSlider;
 import genj.view.ApplyResetSupport;
@@ -46,6 +47,9 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
   
   /** colorchooser for colors */
   private ColorChooser colors;
+  
+  /** blueprintlist */
+  private BlueprintList blueprintList;
 
   /** Checkboxes */
   JCheckBox 
@@ -79,9 +83,13 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     colors = new ColorChooser();
     colors.addSet(tree.colors);
     
+    // blueprint options
+    blueprintList = new BlueprintList(tree.model.getGedcom());
+    
     // add those tabs
     add(tree.resources.getString("page.main")  , options);
     add(tree.resources.getString("page.colors"), colors);
+    add(tree.resources.getString("page.blueprints"), blueprintList);
     
     // reset
     reset();
@@ -121,6 +129,8 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
       sliderCmFamHeight .getValue(),
       sliderCmPadding   .getValue()
     ));
+    // blueprints
+    tree.blueprints = blueprintList.getSelection();
     // make sure that shows
     tree.repaint();
     // done
@@ -142,6 +152,8 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     sliderCmFamWidth  .setValue(m.wFams );
     sliderCmFamHeight .setValue(m.hFams );
     sliderCmPadding   .setValue(m.pad   );
+    // blueprints
+    blueprintList.setSelection(tree.blueprints);
     // done
   }
 
