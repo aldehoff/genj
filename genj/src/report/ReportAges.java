@@ -207,13 +207,14 @@ public class ReportAges extends Report {
         Delta age = null;
         
         // give up if no birth date
-        if (indi.getBirthDate() == null) {
+        PropertyDate birth = indi.getBirthDate(); 
+        if (birth == null) {
             println("@"+indi.getId()+"@ "+indi.getName());
             println(i18n("noBirthDate"));
             return;
         }
         // print birth date
-        println("@"+indi.getId()+"@ "+indi.getName()+" *"+indi.getBirthDate());
+        println("@"+indi.getId()+"@ "+indi.getName()+" *"+birth);
         println();
         
         if(reportBaptismAge) {
@@ -253,12 +254,14 @@ public class ReportAges extends Report {
                 println(getIndent(2)+i18n("noChildren"));
             else {
                 for(int i=0;i<children.length;i++) {
-                    println(getIndent(2)+"@"+children[i].getId()+"@ "+children[i].getName());
-                    if(children[i].getBirthDate() == null)
+                    Indi child = children[i];
+                    println(getIndent(2)+"@"+child.getId()+"@ "+children[i].getName());
+                    PropertyDate cbirth = child.getBirthDate();
+                    if(cbirth == null)
                         println(getIndent(3)+i18n("noBirthDate"));
                     else {
-                        println(getIndent(3)+i18n("birth", children[i].getBirthDate()));
-                        age = calculateAge(indi, children[i].getBirthDate(), null);
+                        println(getIndent(3)+i18n("birth", cbirth));
+                        age = calculateAge(indi, cbirth, null);
                         printAge(age, 4, "childBirthBeforeBirth", null);
                     }
                 }
@@ -286,12 +289,13 @@ public class ReportAges extends Report {
         
         if(reportDeathAge) {
             println(getIndent(1)+i18n("deathAge"));
-            if(indi.getDeathDate() == null)
+            PropertyDate death = indi.getDeathDate(); 
+            if(death == null)
                 println(getIndent(2)+i18n("noDeathDate"));
             else {
-                println(getIndent(2)+i18n("death", indi.getDeathDate()));
-                age = calculateAge(indi, indi.getDeathDate(), null);
-                printAge(age, 3, "deathBeforeBirth", null);
+                println(getIndent(2)+i18n("death", death));
+                age = calculateAge(indi, death, null);
+                printAge(age, 3, "deathBeforeBirth", birth);
             }
             println();
         }
