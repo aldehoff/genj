@@ -20,7 +20,6 @@
 package genj.gedcom;
 
 import java.util.*;
-
 import genj.util.*;
 
 /**
@@ -32,7 +31,7 @@ public class PropertyEvent extends Property {
   private String tag;
 
   /** known EVENT tags */
-  private static String[] tags;
+  private static List tags;
 
   /**
    * Constructor of address Gedcom-line
@@ -147,29 +146,24 @@ public class PropertyEvent extends Property {
   /**
    * Returns the list of tags which identify PropertyEvents
    */
-  public static String[] getTags() {
+  public static List getTags() {
 
     // Already calculated?
     if (tags!=null) {
       return tags;
     }
 
-    Vector v = new Vector(100);
+    // fill new
+    tags = new ArrayList(32);
     for (int i=0;i<metaDefs.length;i++) {
       MetaDefinition def = metaDefs[i];
       if (def.isEvent()) {
-        v.addElement(def.getTag());
+        tags.add(def.getTag());
       }
     }
 
-    String[] result = new String[v.size()];
-    Enumeration e = v.elements();
-    for (int i=0;e.hasMoreElements();i++) {
-      result[i] = e.nextElement().toString();
-    }
-
-    tags = result;
-    return result;
+    // done
+    return tags;
   }
 
   /**
