@@ -11,6 +11,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFam;
 import genj.gedcom.PropertyFile;
+import genj.gedcom.PropertyMedia;
 import genj.gedcom.TagPath;
 import genj.report.Report;
 import genj.report.ReportBridge;
@@ -27,7 +28,7 @@ import java.util.StringTokenizer;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.19 2002-11-15 07:45:18 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.20 2003-01-20 19:29:09 nmeier Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -143,20 +144,20 @@ public class ReportAppletDetails implements Report {
    */
   private void exportImage(Entity ent, File dir, PrintWriter out) throws IOException {
 
-    String url = "";
+    String url = null;
 
-    // Does that entity have an image?
-    TagPath path = new TagPath("OBJE:FILE");
-    Property prop = ent.getProperty().getProperty(path,true);
-    if ( (prop!=null) && (prop instanceof PropertyFile) ) {
-      url = exportImage( (PropertyFile) prop, dir , ent.getId());
-
-      // Here comes the IMG-tag
-      out.println("<IMG src=\""+url+"\"></IMG>");
+    // Does that entity have a multimedia object associated with it?
+    TagPath path = new TagPath("INDI:OBJE");
+    PropertyMedia media = (PropertyMedia)ent.getProperty().getProperty(path,true);
+    if (media!=null) {
+      PropertyFile file = media.getFile();
+      if (file!=null) { 
+        url = exportImage( file, dir , ent.getId());
+        // Here comes the IMG-tag
+        out.println("<IMG src=\""+url+"\"></IMG>");
+      }
     }
-    else {
-      out.println("No image<Br>available.");
-    }
+    if (url==null) out.println("No image<Br>available.");
   }
 
   /**
@@ -252,7 +253,7 @@ public class ReportAppletDetails implements Report {
                   + "</a></td></tr>");
     }
     else {
-      exportProperty(tag, value, out, level);
+      if (value!=null) exportProperty(tag, value, out, level);
     }
 
     for (int i=0;i<prop.getNoOfProperties();i++) {
