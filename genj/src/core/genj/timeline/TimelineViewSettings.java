@@ -28,13 +28,26 @@ import java.awt.BorderLayout;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 /**
  * The ViewInfo representing settings of a TimelineView
+ * +remember the event last visible in the middle
+ * +colors
+ *  ruler 
+ *    background
+ *    foreground
+ *  content 
+ *  background
+ *  tag color
+ *  txt color
+ *  date color
+ *  line color
  */
-public class TimelineViewSettings extends JPanel implements ApplyResetSupport {
+public class TimelineViewSettings extends JTabbedPane implements ApplyResetSupport {
   
   /** keeping track of timeline these settings are for */
   private TimelineView timeline;
@@ -57,16 +70,27 @@ public class TimelineViewSettings extends JPanel implements ApplyResetSupport {
     // remember
     timeline = timelineView;
     
-    // create a panel for the options
+    // panel for main options
+    JPanel panelMain = new JPanel(new BorderLayout());
+    
     Box panelOptions = new Box(BoxLayout.Y_AXIS);
     for (int i=0; i<checkOptions.length; i++) {
       panelOptions.add(checkOptions[i]);
     }
     
-    // layout
-    setLayout(new BorderLayout());
-    add(selectorEventTags, BorderLayout.CENTER);
-    add(panelOptions, BorderLayout.SOUTH);
+    panelMain.add(selectorEventTags, BorderLayout.CENTER);
+    panelMain.add(panelOptions, BorderLayout.SOUTH);
+    
+    // panel for colors
+    JPanel panelColors = new JPanel(new BorderLayout());
+    
+    JColorChooser colorChooser = new JColorChooser();
+    colorChooser.setPreviewPanel(new JPanel());
+    panelColors.add(colorChooser, BorderLayout.CENTER);
+
+    // add those tabs
+    add("Main"  , panelMain);
+    add("Colors", panelColors);
 
     // init
     reset();
