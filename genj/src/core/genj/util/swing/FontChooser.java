@@ -19,6 +19,8 @@
  */
 package genj.util.swing;
 
+import genj.util.EnvironmentChecker;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -34,7 +36,7 @@ import javax.swing.JTextField;
 /**
  * A component for choosing a font */
 public class FontChooser extends JPanel {
-
+  
   /** list of all font families */
   private static String[] families = null;
   
@@ -43,6 +45,16 @@ public class FontChooser extends JPanel {
   
   /** text for size */
   private JTextField size;
+  
+  /** 
+   * apparently on some systems there might be a problem with 
+   * accessing all fonts (vmcrash reported by dmoyne) when
+   * we render each and every of those fonts in the font-selection-list
+   */
+  private final static boolean isRenderWithFont = 
+    null == EnvironmentChecker.getProperty(FontChooser.class, "genj.debug.fontproblems", null, "supress font usage in font-selection-list");
+    
+
   
   /**
    * Constructor   */
@@ -224,7 +236,8 @@ public class FontChooser extends JPanel {
       if (value instanceof Font) {
         Font font = (Font)value;
         super.getListCellRendererComponent(list, font.getFamily(), index, isSelected, cellHasFocus);
-        setFont(font);
+        if (isRenderWithFont)
+          setFont(font);
       } else {
         super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
       }
