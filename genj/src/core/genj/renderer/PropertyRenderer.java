@@ -118,29 +118,6 @@ public class PropertyRenderer {
   }  
   
   /**
-   * Calculates the preferred size with given metrics, prop and image/text preferrence
-   * @param metrics current font metrics
-   * @param prop property 
-   * @param preference rendering preference
-   * @param dpi resolution or null  
-   */
-  public Dimension2D getSize(Font font, FontRenderContext context, Property prop, int preference, Point dpi) {
-    return getSize(font, context, prop.getImage(false), prop.getDisplayValue(), preference, dpi);
-  }
-  
-  /**
-   * Renders the property on g with given bounds and image/text preference 
-   * @param g to render on
-   * @param bounds to stay in
-   * @param prop property 
-   * @param preference rendering preference
-   * @param dpi resolution or null  
-   */
-  public void render(Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
-    render(g,bounds,prop.getImage(false),prop.getDisplayValue(),preference,dpi);
-  }
-  
-  /**
    * Calculates the vertical alignment offset - by default the baseline of the current font
    */
   public float getVerticalAlignment(Font font, FontRenderContext context) {  
@@ -151,9 +128,20 @@ public class PropertyRenderer {
   }
 
   /**
+   * Calculates the preferred size with given metrics, prop and image/text preferrence
+   * @param metrics current font metrics
+   * @param prop property 
+   * @param preference rendering preference
+   * @param dpi resolution or null  
+   */
+  public Dimension2D getSize(Font font, FontRenderContext context, Property prop, int preference, Point dpi) {
+    return getSize(font, context, prop, prop.getDisplayValue(), preference, dpi);
+  }
+  
+  /**
    * Implementation for calculating size with given img/txt
    */
-  public Dimension2D getSize(Font font, FontRenderContext context, ImageIcon img, String txt, int preference, Point dpi) {
+  protected Dimension2D getSize(Font font, FontRenderContext context, Property prop, String txt, int preference, Point dpi) {
     double 
       w = 0,
       h = 0;
@@ -165,6 +153,7 @@ public class PropertyRenderer {
     }
     // add image size
     if (isImage(preference)) {
+      ImageIcon img = prop.getImage(false);
       LineMetrics lm = font.getLineMetrics("", context);
       float max = lm.getHeight();
       float scale = 1F;
@@ -179,11 +168,23 @@ public class PropertyRenderer {
   }
 
   /**
+   * Renders the property on g with given bounds and image/text preference 
+   * @param g to render on
+   * @param bounds to stay in
+   * @param prop property 
+   * @param preference rendering preference
+   * @param dpi resolution or null  
+   */
+  public void render(Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
+    render(g,bounds,prop,prop.getDisplayValue(),preference,dpi);
+  }
+  
+  /**
    * Implementation for rendering img/txt 
    */
-  public void render(Graphics2D g, Rectangle bounds, ImageIcon img, String txt, int preference, Point dpi) {
+  protected void render(Graphics2D g, Rectangle bounds, Property prop, String txt, int preference, Point dpi) {
     // image?
-    if (isImage(preference)) render(g, bounds, img, dpi);
+    if (isImage(preference)) render(g, bounds, prop.getImage(false), dpi);
     // text?
     if (isText(preference)) render(g, bounds, txt);
     // done
@@ -451,14 +452,14 @@ public class PropertyRenderer {
      * size override
      */
     public Dimension2D getSize(Font font, FontRenderContext context, Property prop, int preference, Point dpi) {
-      return super.getSize(font, context, prop.getImage(false), ((genj.gedcom.Entity)prop).getId(), preference, dpi);
+      return super.getSize(font, context, prop, ((genj.gedcom.Entity)prop).getId(), preference, dpi);
     }
   
     /**
      * render override
      */
     public void render(Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
-      super.render(g, bounds, prop.getImage(false), ((genj.gedcom.Entity)prop).getId(), preference, dpi);
+      super.render(g, bounds, prop, ((genj.gedcom.Entity)prop).getId(), preference, dpi);
     }
     
   } //Entity
@@ -475,7 +476,7 @@ public class PropertyRenderer {
       if (prop instanceof PropertyXRef) {
         Object e = ((PropertyXRef)prop).getReferencedEntity();
         if (e!=null) 
-          return super.getSize(font, context, prop.getImage(false), e.toString(), preference, dpi);
+          return super.getSize(font, context, prop, e.toString(), preference, dpi);
       }
       return super.getSize(font, context, prop, preference, dpi);
     }
@@ -487,7 +488,7 @@ public class PropertyRenderer {
       if (prop instanceof PropertyXRef) {
         Object e = ((PropertyXRef)prop).getReferencedEntity();
         if (e!=null) {
-          super.render(g, bounds, prop.getImage(false), e.toString(), preference, dpi);
+          super.render(g, bounds, prop, e.toString(), preference, dpi);
           return;
         }
       }
@@ -505,14 +506,14 @@ public class PropertyRenderer {
      * size override
      */
     public Dimension2D getSize(Font font, FontRenderContext context, Property prop, int preference, Point dpi) {
-      return super.getSize(font, context, prop.getImage(false), STARS, preference, dpi);
+      return super.getSize(font, context, prop, STARS, preference, dpi);
     }
   
     /**
      * render override
      */
     public void render( Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
-      super.render(g, bounds, prop.getImage(false), STARS, preference, dpi);
+      super.render(g, bounds, prop, STARS, preference, dpi);
     }
     
   } //Secret
