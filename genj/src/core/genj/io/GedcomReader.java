@@ -54,7 +54,7 @@ public class GedcomReader implements Trackable {
   private String value;
   private String undoLine,gedcomLine;
   private Origin origin;
-  private Vector pxrefs;
+  private Vector xrefs;
   private StringBuffer warnings;
   private boolean cancel=false;
   private Thread worker;
@@ -209,7 +209,7 @@ public class GedcomReader implements Trackable {
     // Create Gedcom
     int expected = Math.max((int)length/ENTITY_AVG_SIZE,100);
     gedcom = new Gedcom(origin,expected);
-    pxrefs = new Vector(expected);
+    xrefs = new Vector(expected);
 
     // Read the Header
     readHeader();
@@ -245,17 +245,16 @@ public class GedcomReader implements Trackable {
     state++;
 
     // Link references
-    PropertyXRef pxref;
-    int xcount = pxrefs.size();
+    int xcount = xrefs.size();
     for (int i=0;i<xcount;i++) {
-      pxref = (PropertyXRef)pxrefs.elementAt(i);
+      XRef xref = (XRef)xrefs.elementAt(i);
       try {
-        pxref.link();
+        xref.prop.link();
 
         progress = Math.min(100,(int)(i*(100*2)/xcount));  // 100*2 because Links are probably backref'd
 
       } catch (GedcomException ex) {
-        warnings.append("Line "+line+": Property "+pxref.getTag()+" - "+
+        warnings.append("Line "+xref.line+": Property "+xref.prop.getTag()+" - "+
                  ex.getMessage()+"\n");
       }
     }
@@ -460,7 +459,7 @@ public class GedcomReader implements Trackable {
 
       // .. a reference ? Remember !
       if (prop instanceof PropertyXRef) {
-        pxrefs.addElement(prop);
+        xrefs.addElement(new XRef(line,(PropertyXRef)prop));
       }
 
       // .. read its properties
@@ -478,4 +477,19 @@ public class GedcomReader implements Trackable {
   private void undoLine() {
     undoLine = gedcomLine;
   }
-}
+  
+  /**
+   * Keeping track of XRefs
+   */
+  private static class XRef {
+    /** attributes */
+    int line;
+    PropertyXRef prop;
+    /** constructor */
+    XRef(int l, PropertyXRef p) {
+      line = l;
+      prop = p;
+    }
+  } //XRef
+  
+} //GedcomReader
