@@ -142,7 +142,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
       getClass().getMethod("requestFocusInWindow", new Class[]{})
         .invoke(this, new Object[]{});
     } catch (Throwable t) {
-      requestFocus();
+      super.requestFocus();
     }
   }
       

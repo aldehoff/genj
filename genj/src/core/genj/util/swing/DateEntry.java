@@ -197,7 +197,7 @@ public class DateEntry extends JPanel {
       getClass().getMethod("requestFocusInWindow", new Class[]{})
         .invoke(this, new Object[]{});
     } catch (Throwable t) {
-      requestFocus();
+      super.requestFocus();
     }
   }
   

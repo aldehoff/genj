@@ -143,7 +143,7 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
       getClass().getMethod("requestFocusInWindow", new Class[]{})
         .invoke(this, new Object[]{});
     } catch (Throwable t) {
-      requestFocus();
+      super.requestFocus();
     }
   }
   
