@@ -26,7 +26,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.ButtonModel;
 import javax.swing.DefaultButtonModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -80,7 +79,7 @@ public class PopupWidget extends JButton {
     // delegate
     super(text, icon);
     // our own model
-    super.setModel(new Model());
+    setModel(new Model());
     // keep actions
     if (actions!=null) setActions(actions);
     // done
@@ -111,13 +110,6 @@ public class PopupWidget extends JButton {
         ((ActionDelegate)as.get(0)).trigger();
     }
   } //Model
-  
-  /**
-   * @see javax.swing.AbstractButton#setModel(javax.swing.ButtonModel)
-   */
-  public void setModel(ButtonModel newModel) {
-    // ignored
-  }
   
   /**
    * Gets the toolbar we're in (might be null)
