@@ -262,4 +262,5 @@ public class TableView extends JPanel implements ToolBarSupport {
     }
   } //ActionMode
   
+  
 } //TableView

@@ -9,6 +9,7 @@ import genj.gedcom.Selection;
 import genj.gedcom.TagPath;
 import genj.util.ImgIcon;
 
+import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
@@ -34,14 +35,22 @@ import javax.swing.table.TableColumnModel;
     };
   
   /** the current mode */
-  private Filter filter = filters[0];
+  private Filter filter;
+  
+  /** the list of entities we're looking at right now */
+  private Entity[] entities;
   
   /**
    * Constructor
    */
   /*pacakge*/ EntityTableModel(Gedcom gedcom) {
+    // remember
     this.gedcom=gedcom;
+    // listen
     gedcom.addListener(this);
+    // set starting type
+    setType(Gedcom.INDIVIDUALS);
+    // done
   }
 
   /**
@@ -85,9 +94,11 @@ import javax.swing.table.TableColumnModel;
    */
   /*package*/ void setType(int entity) {
     // already?
-    if (filter.type==entity) return;
+    if (filters[entity]==filter) return;
     // remember
     filter = filters[entity];
+    // grab entities
+    entities = gedcom.getEntities(filter.type).toArray();
     // propagate
     fireTableStructureChanged();
   }
@@ -103,7 +114,7 @@ import javax.swing.table.TableColumnModel;
    * Returns the entity at given row index
    */
   /*package*/ Entity getEntity(int row) {
-    return gedcom.getEntities(filter.type).get(row);
+    return entities[row];
   }
   
   /**
@@ -128,14 +139,14 @@ import javax.swing.table.TableColumnModel;
    * @see javax.swing.table.TableModel#getRowCount()
    */
   public int getRowCount() {
-    return gedcom.getEntities(filter.type).getSize();
+    return entities.length;
   }
 
   /**
    * @see javax.swing.table.TableModel#getValueAt(int, int)
    */
   public Object getValueAt(int rowIndex, int columnIndex) {
-    Entity e = gedcom.getEntities(filter.type).get(rowIndex);
+    Entity e = entities[rowIndex];
     filter.paths[columnIndex].setToFirst();
     return e.getProperty().getProperty(filter.paths[columnIndex], false);
   }
