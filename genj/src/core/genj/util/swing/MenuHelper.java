@@ -36,6 +36,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.event.PopupMenuListener;
 
 /**
  * Class which provides some static helpers for menu-handling
@@ -68,7 +69,7 @@ public class MenuHelper  {
     pushMenu(result);
     return result;
   }
-
+  
   /**
    * Creates a menu
    */
@@ -95,6 +96,16 @@ public class MenuHelper  {
     return result;
   }
   
+  /**
+   * Creates a menu with an action fired on open
+   */
+  public JMenu createMenu(ActionDelegate action) {
+    JMenu result = createMenu(action.txt, action.img);
+    result.getPopupMenu().addPopupMenuListener((PopupMenuListener)action.as(PopupMenuListener.class));
+    action.setTarget(result);
+    return result;
+  }
+
   /**
    * Creates a PopupMenu
    */

@@ -406,7 +406,8 @@ public class ViewManager {
     if (property!=null) {
       List actions = getActions(property);
       if (!actions.isEmpty()) {
-        mh.createMenu(TagPath.get(property).toString(), property.getImage(false));
+        String title = "Property '"+TagPath.get(property)+'\'';
+        mh.createMenu(title, property.getImage(false));
         mh.createItems(actions);
         mh.popMenu();
       }
@@ -416,7 +417,8 @@ public class ViewManager {
     if (entity!=null) {
       List actions = getActions(entity);
       if (!actions.isEmpty()) {
-        mh.createMenu(entity.getId(), entity.getProperty().getImage(false));
+        String title = Gedcom.getNameFor(entity.getType(),false)+" '"+entity.getId()+'\'';
+        mh.createMenu(title, entity.getProperty().getImage(false));
         mh.createItems(actions);
         mh.popMenu();
       }
@@ -425,7 +427,8 @@ public class ViewManager {
     // items for gedcom
     List actions = getActions(gedcom);
     if (!actions.isEmpty()) {
-      mh.createMenu(gedcom.getName(), Gedcom.getImage());
+      String title = "Gedcom '"+gedcom.getName()+'\'';
+      mh.createMenu(title, Gedcom.getImage());
       mh.createItems(actions);
       mh.popMenu();
     }

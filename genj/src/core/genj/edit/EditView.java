@@ -50,6 +50,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -103,9 +104,6 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /** splitpane for tree/proxy */
   private JSplitPane        splitPane = null;
   
-  /** menu for actions */
-  private JMenuBar          menuActions;
-  
   /** an entity to show in next open EditView */
   private static Entity preselectEntity = null;
   
@@ -137,10 +135,8 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     setLayout(new BorderLayout());
     add(splitPane, BorderLayout.CENTER);
     
-    // menu
-    menuActions = new JMenuBar();
-    ((JFrame)setFrame).setJMenuBar(menuActions);
-    updateMenu();
+    // menubar
+    installMenuBar((JFrame)setFrame);
     
     // Done
   }
@@ -374,18 +370,66 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /*package*/ boolean isSticky() {
     return actionSticky!=null && actionSticky.isSelected();
   }
+
   /**
-   * Updates the menu
+   * Creates the top menu bar
    */
-  private void updateMenu() {
-    menuActions.removeAll();
+  private void installMenuBar(JFrame frame) {
+    
+    // prepare bar
     MenuHelper mh = new MenuHelper();
     mh.setTarget(this);
-    mh.pushMenu(menuActions);
-    ViewManager.getInstance().fillContextMenu(mh, gedcom, getCurrentEntity());
-    menuActions.revalidate();
-    menuActions.repaint();
+    frame.setJMenuBar(mh.createBar());
+    
+    // create action menu
+    mh.createMenu(new ActionMenu());
+    
   }
+  
+  /**
+   * Fill the action-menu
+   */
+  private class ActionMenu extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionMenu() {
+      setText(resources.getString("action"));
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      
+      // prepare menu for actions
+      JMenu menu = (JMenu)target;
+      menu.removeAll();
+      MenuHelper mh = new MenuHelper().setTarget(EditView.this).pushMenu(menu);
+      
+      // check selection
+      Property[] selection = getSelection();
+      if (selection.length==1) {
+        ViewManager.getInstance().fillContextMenu(mh, gedcom, selection[0]);
+      } else {
+        ViewManager.getInstance().fillContextMenu(mh, gedcom, getCurrentEntity());
+      }
+      
+      // done
+    }
+
+  } //FillActionMenu
+//  /**
+//   * Updates the menu
+//   */
+//  private void updateMenu() {
+//    menuActions.removeAll();
+//    MenuHelper mh = new MenuHelper();
+//    mh.setTarget(this);
+//    mh.pushMenu(menuActions);
+//    ViewManager.getInstance().fillContextMenu(mh, gedcom, getCurrentEntity());
+//    menuActions.revalidate();
+//    menuActions.repaint();
+//  }
 
   /**
    * Prepare a proxy for editing a property
@@ -460,6 +504,27 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     proxyPane.repaint();
 
     // Done
+  }
+  
+  /**
+   * the selected properties
+   */
+  private Property[] getSelection() {
+    
+    // check selection
+    TreePath paths[] = tree.getSelectionPaths();
+    if ( (paths==null) || (paths.length==0) ) {
+      return new Property[0];
+    }
+
+    // .. remove every selected node
+    Property[] result = new Property[paths.length];
+    for (int i=0;i<paths.length;i++) {
+      result[i] = (Property)paths[i].getLastPathComponent();
+    }
+
+    // done
+    return result;    
   }
 
   /**
@@ -596,16 +661,10 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       // .. Stop Editing
       stopEdit(true);
       
-      // check selection
-      TreePath paths[] = tree.getSelectionPaths();
-      if ( (paths==null) || (paths.length==0) ) {
-        return;
-      }
-
-      // .. remove every selected node
-      for (int i=0;i<paths.length;i++) {
-        Property prop = (Property)paths[i].getLastPathComponent();
-        new DelProperty(prop).setTarget(EditView.this).trigger();
+      // go through selection
+      Property[] ps = getSelection();
+      for (int i=0;i<ps.length;i++) {
+        new DelProperty(ps[i]).setTarget(EditView.this).trigger();
       }
   
       // go to parent property
@@ -866,8 +925,6 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
      * @see javax.swing.event.TreeModelListener#treeStructureChanged(TreeModelEvent)
      */
     public void treeStructureChanged(TreeModelEvent e) {
-      // update the menu
-      updateMenu();
       // show all rows 
       expandRows();
     }
