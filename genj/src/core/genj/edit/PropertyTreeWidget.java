@@ -18,20 +18,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package genj.edit;
-
+ 
 import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MetaProperty;
-import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyMultilineValue;
 import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
 import genj.io.PropertyTransferable;
-import genj.renderer.Options;
 import genj.util.WordBuffer;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
@@ -46,14 +42,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.plaf.TreeUI;
-import javax.swing.text.View;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;

@@ -6,20 +6,20 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-import java.util.Hashtable;
-import java.io.PrintWriter;
-import java.io.FileOutputStream;
-import java.io.File;
-import java.util.ArrayList;
-import genj.report.Report;
-import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
 import genj.gedcom.Entity;
-import genj.gedcom.Fam;
-import genj.gedcom.TagPath;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.Property;
+import genj.gedcom.TagPath;
+import genj.report.Report;
 import genj.util.ReferenceSet;
 import genj.window.CloseWindow;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Hashtable;
 
 /**
  * GenJ - Report
