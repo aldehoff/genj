@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.util.WordBuffer;
+
 /**
  * Gedcom Property : ASSO
  * Property wrapping the condition of a property having an association 
@@ -45,6 +47,44 @@ public class PropertyAssociation extends PropertyXRef {
    */
   public PropertyAssociation(PropertyXRef target) {
     super(target);
+  }
+  
+  /**
+   * We're trying to give a bit more information than the
+   * default display value (target.getEntity().toString())
+   * For example:
+   *  Birth Meier, Nils (I008) 25 May 1970 Rendsburg
+   * @see genj.gedcom.PropertyXRef#getDisplayValue()
+   */
+  public String getDisplayValue() {
+    
+    // find target
+    PropertyXRef target = getTarget();
+    if (target==null)
+      return super.getDisplayValue();
+    
+    // check its parent
+    Property parent = target.getParent();
+    if (target==null)
+      return super.getDisplayValue();
+    
+    // collect some info e.g.
+    //  Meier, Nils (I008) - Birth - 25 May 1970 - Rendsburg
+    WordBuffer result = new WordBuffer(" - ");
+    result.append(parent.getEntity());
+    
+    result.append(Gedcom.getName(parent.getTag()));
+    
+    Property date = parent.getProperty("DATE");
+    if (date!=null)
+      result.append(date);
+    
+    Property place = parent.getProperty("PLAC");
+    if (place!=null)
+      result.append(place);
+    
+    // done
+    return result.toString();
   }
   
   /**
