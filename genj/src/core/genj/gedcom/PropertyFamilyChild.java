@@ -99,7 +99,7 @@ public class PropertyFamilyChild extends PropertyXRef {
     
     // Enclosing individual has a childhood already (in case of non-adoption)?
     if (!adoption&&indi.getFamc()!=null)
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already child of a family");
+      throw new GedcomException("Individual @"+indi.getId()+"@ is already child of a family and adoptions are not supported");
 
     // Look for family (not-existing -> Gedcom throws Exception)
     String id = getReferencedId();
