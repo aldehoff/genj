@@ -50,8 +50,8 @@ public interface WindowManager {
   public final static String[]
     OPTIONS_YES_NO    = new String[]{ OPTION_YES, OPTION_NO },
     OPTIONS_OK_CANCEL = new String[]{ OPTION_OK, OPTION_CANCEL },
-    OPTIONS_OK        = new String[]{ OPTION_CANCEL },
-    OPTIONS_CANCEL    = new String[]{ OPTION_OK };
+    OPTIONS_OK        = new String[]{ OPTION_OK },
+    OPTIONS_CANCEL    = new String[]{ OPTION_CANCEL };
     
   /**
    * Opens a frame
