@@ -16,7 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */package genj.gedcom.time;
+ */
+package genj.gedcom.time;
 
 import genj.util.WordBuffer;
 
@@ -113,15 +114,19 @@ public class Delta implements Comparable {
 
     // grab earlier values  
     int 
-      yearlier =     earlier.getYear (),
+      yearlier =           earlier.getYear (),
       mearlier = Delta.fix(earlier.getMonth()),
       dearlier = Delta.fix(earlier.getDay  ());
   
     // age at what point in time?
     int 
-      ylater =     later.getYear (),
+      ylater =           later.getYear (),
       mlater = Delta.fix(later.getMonth()),
       dlater = Delta.fix(later.getDay  ());
+    
+    // make sure years are not empty (could be on all UNKNOWN PIT)
+    if (yearlier==PointInTime.UNKNOWN||ylater==PointInTime.UNKNOWN)
+      return null;
     
     // calculate deltas
     int years  = ylater - yearlier;
