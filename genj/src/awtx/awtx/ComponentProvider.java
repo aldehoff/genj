@@ -300,7 +300,7 @@ public class ComponentProvider {
     }
 
     // Done
-    System.out.println("[Debug]Creating "+modeNames[mode]+" components from now on");
+    //System.out.println("[Debug]Creating "+modeNames[mode]+" components from now on");
   }
 
   /**
