@@ -45,8 +45,8 @@ public class PropertyAssociation extends PropertyXRef {
    */
   public Property addDefaultProperties() {
     Entity e = getReferencedEntity();
-    addProperty(new PropertyGenericAttribute("TYPE",e==null?"":getGedcom().getTagFor(e.getType())));
-    addProperty(new PropertyGenericAttribute("RELA"));
+    addProperty(Property.createInstance("TYPE",e==null?"":getGedcom().getTagFor(e.getType()),false));
+    addProperty(Property.createInstance("RELA",true));
     return this;
   }
 

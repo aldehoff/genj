@@ -150,15 +150,16 @@ public abstract class Property implements Comparable {
 
     new MetaDefinition("ASSO","Association", new String[]{ "TYPE", "RELA"}) ,
 
-    // Generic Attributes
-    new MetaDefinition("PHON" ,"GenericAttribute") ,
-    new MetaDefinition("AGNC" ,"GenericAttribute") ,
-    new MetaDefinition("TYPE" ,"GenericAttribute") ,
-    new MetaDefinition("TITL" ,"GenericAttribute") ,
-    new MetaDefinition("FORM" ,"GenericAttribute") ,
-    new MetaDefinition("RELA" ,"GenericAttribute") ,
+    new MetaDefinition("RELA","Relationship") ,
 
-    // Medai
+    // Generic Attributes
+    new MetaDefinition("PHON","GenericAttribute") ,
+    new MetaDefinition("AGNC","GenericAttribute") ,
+    new MetaDefinition("TYPE","GenericAttribute") ,
+    new MetaDefinition("TITL","GenericAttribute") ,
+    new MetaDefinition("FORM","GenericAttribute") ,
+
+    // Media
     new MetaDefinition("OBJE","Media"           ,new String[]{"TITL","FORM", "BLOB", "FILE"}) ,
     new MetaDefinition("FILE","File"            ),
 
