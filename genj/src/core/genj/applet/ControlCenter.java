@@ -21,6 +21,7 @@ package genj.applet;
 
 import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.GridBagHelper;
 import genj.util.WordBuffer;
 import genj.util.swing.ButtonHelper;
@@ -127,6 +128,7 @@ public class ControlCenter extends JPanel {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
+      Debug.log(Debug.INFO, ControlCenter.this, "factory="+factory);
       viewManager.openView(factory, gedcom);
     }
   } //ActionView
