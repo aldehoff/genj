@@ -221,7 +221,7 @@ import javax.swing.SwingConstants;
     }
     /** run */
     protected void execute() {
-      PrintManager.getInstance().print(view); 
+      PrintManager.getInstance().print(getFrame(), view); 
     }
   } //ActionOpenSettings
   

@@ -47,12 +47,14 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -429,6 +431,7 @@ public class ControlCenter extends JPanel {
      * (sync) post execute
      */
     protected void postExecute() {
+      // any error bubbling up?
       if (error != null) {
         JOptionPane.showMessageDialog(
           frame,
@@ -436,9 +439,23 @@ public class ControlCenter extends JPanel {
           resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE);
       }
+      // got a successfull gedcom
       if (gedcom != null) {
         addGedcom(gedcom);
       }
+      // show warnings, too
+      List warnings = reader.getWarnings();
+      if (!warnings.isEmpty()) {
+        App.getInstance().createDialog(
+          "Warnings", 
+          "warnings",
+          new Dimension(480,300), 
+          ControlCenter.this,
+          new JScrollPane(new JList(warnings.toArray())),
+          null
+        ).packAndShow();
+      }
+      // done
     }
 
     /** 

@@ -21,9 +21,8 @@ package genj.util.swing;
 
 import genj.util.GridBagHelper;
 import genj.util.Trackable;
-import java.awt.BorderLayout;
+
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -34,8 +33,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 /**
  * A Dialog used to show the progress of an operation
@@ -172,33 +169,6 @@ public class ProgressDialog extends JDialog implements ActionListener {
     // Remember this number as unused
     hashDialogs.remove(""+frame.hashCode()+dlgNumber);
 
-    // Warnings ?
-    String warnings=trackable.getWarnings();
-    if ((warnings==null)||(warnings.length()==0)) {
-      return;
-    }
-
-    // Get Warnings into component
-    JTextArea taWarnings = new JTextArea();
-    taWarnings.setText(warnings);
-    taWarnings.setEditable(false);
-    JScrollPane spWarnings = new JScrollPane(taWarnings,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS) {
-      public Dimension getPreferredSize() {
-      return new Dimension(224,128);
-      }
-    };
-
-    // Prepare a dialog
-    JDialog dlgWarnings = new JDialog((Frame)null,title);
-    dlgWarnings.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-    // Prepare layout
-    Container c = dlgWarnings.getContentPane();
-    c.setLayout(new BorderLayout());
-    c.add(new JLabel(item+" - Warnings:"),"North");
-    c.add(spWarnings,"Center");
-
-    dlgWarnings.pack();
-    dlgWarnings.show();
-  }            
-}
+  }
+              
+} //ProgressDialog

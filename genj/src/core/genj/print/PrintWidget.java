@@ -20,11 +20,14 @@
 package genj.print;
 
 import genj.util.ActionDelegate;
+import genj.util.GridBagHelper;
+import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Point;
 
 import javax.swing.JComponent;
@@ -40,20 +43,34 @@ public class PrintWidget extends JTabbedPane {
   /** task */
   private PrintManager.PrintTask task;
   
+  /** resources */
+  private Resources resources;
+  
   /**
    * Constructor   */
-  public PrintWidget(PrintManager.PrintTask tAsk) {
+  public PrintWidget(PrintManager.PrintTask tAsk, Resources reSources) {
     
-    // remember task
+    // remember 
     task = tAsk;
+    resources = reSources;
+
+    // reset current stuff shown
+    reset();
+  }
+  
+  /**
+   * Resets the visual representation - brutal but
+   * easiest for everything that might have changed
+   * after a printer setup dialog ended
+   */    
+  private void reset() {
     
-    // create panels
-    MainPanel panelMain = new MainPanel();
-    JComponent panelPreview = new JScrollPane(new Preview());
+    // start from scratch
+    removeAll();
     
-    // layout
-    add("Main", panelMain);
-    add("Preview", panelPreview);
+    // new stuff
+    add(resources.getString("dlg.tab.settings"), new SettingsPanel());
+    add(resources.getString("dlg.tab.preview" ), new JScrollPane(new Preview()));
     
     // done    
   }
@@ -61,15 +78,23 @@ public class PrintWidget extends JTabbedPane {
   /**
    * Main Panel
    */
-  private class MainPanel extends JPanel {
+  private class SettingsPanel extends JPanel {
 
     /**
      * Constructor     */
-    private MainPanel() {
-      // layout
-      add(new JLabel("Printing is under development - This won't work!"));
-      ButtonHelper bh = new ButtonHelper().setContainer(this);
-      bh.create(new PageSetup());
+    private SettingsPanel() {
+
+      // get some helpers      
+      ButtonHelper bh = new ButtonHelper();
+      GridBagHelper gh = new GridBagHelper(this).setInsets(new Insets(4,4,4,4));
+
+      // Choose printer
+      gh.add(new JLabel(resources.getString("dlg.label.printer")), 0, 0);
+      gh.add(bh.create(new ActionPrinterSetup())                 , 1, 0);
+      gh.add(new JLabel(task.getPrinter())                       , 2, 0);
+      
+      gh.addFiller(99,99);
+      
       // done
     }
 
@@ -97,20 +122,21 @@ public class PrintWidget extends JTabbedPane {
   } //Preview
 
   /**
-   * Show Page Setup
+   * Action - Show Printer Setup
    */
-  private class PageSetup extends ActionDelegate {
+  private class ActionPrinterSetup extends ActionDelegate {
     /**
      * Constructor
      */
-    private PageSetup() {
-      super.setText("Page Setup");
+    private ActionPrinterSetup() {
+      super.setText(resources.getString("dlg.label.setup"));
     }
     /**
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      task.showPageDialog();
+      task.showPrinterDialog();
+      reset();
     }
   } //PrintDlg
   

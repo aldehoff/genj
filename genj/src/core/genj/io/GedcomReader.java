@@ -38,6 +38,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -64,7 +66,7 @@ public class GedcomReader implements Trackable {
   private Origin origin;
   private Vector xrefs;
   private String submitter;
-  private StringBuffer warnings;
+  private List warnings;
   private boolean cancel=false;
   private Thread worker;
   private Object lock = new Object();
@@ -86,7 +88,7 @@ public class GedcomReader implements Trackable {
     length   = len;
     level    = 0;
     read     = 0;
-    warnings = new StringBuffer(512);
+    warnings = new ArrayList(128);
     
     // Done
   }
@@ -171,8 +173,8 @@ public class GedcomReader implements Trackable {
    * Returns warnings of operation
    * @return the warning as String
    */
-  public String getWarnings() {
-    return warnings.toString();
+  public List getWarnings() {
+    return warnings;
   }
 
   /**
@@ -239,7 +241,7 @@ public class GedcomReader implements Trackable {
       } while (level!=0);
       undoLine();
     } finally {
-      warnings.append("Line "+start+": Skipping "+(line-start)+" lines - "+msg+"\n");
+      warnings.add("Line "+start+": Skipping "+(line-start)+" lines - "+msg);
     }
   }
 
@@ -297,7 +299,7 @@ public class GedcomReader implements Trackable {
         Submitter sub = (Submitter)gedcom.getEntity(submitter.replace('@',' ').trim(), Gedcom.SUBMITTERS);
         gedcom.setSubmitter(sub);
       } catch (Throwable t) {
-        warnings.append("Submitter "+submitter+" couldn't be resolved\n");
+        warnings.add("Submitter "+submitter+" couldn't be resolved");
       }
     }
 
@@ -311,8 +313,8 @@ public class GedcomReader implements Trackable {
         progress = Math.min(100,(int)(i*(100*2)/xcount));  // 100*2 because Links are probably backref'd
 
       } catch (GedcomException ex) {
-        warnings.append("Line "+xref.line+": Property "+xref.prop.getTag()+" - "+
-                 ex.getMessage()+"\n");
+        warnings.add("Line "+xref.line+": Property "+xref.prop.getTag()+" - "+
+                 ex.getMessage());
       }
     }
 

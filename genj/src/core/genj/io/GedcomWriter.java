@@ -137,13 +137,6 @@ public class GedcomWriter implements Trackable {
   }
 
   /**
-   * Returns warnings of operation
-   */
-  public String getWarnings() {
-    return "";
-  }
-
-  /**
    * Sets filters to use
    */
   public void setFilters(Filter[] fs) {

@@ -407,6 +407,15 @@ public class App {
     }
     
     /**
+     * Packs and shows the dialog
+     */
+    public int packAndShow() {
+      pack();
+      show();
+      return getChoice();
+    }
+    
+    /**
      * The index of the choice made by the user     */
     public int getChoice() {
       return choice;
@@ -415,12 +424,18 @@ public class App {
     /**
      * Create Dialog buttons     */
     private JPanel createButtons(String[] choices) {
+      // none?
+      if (choices==null) {
+        choices = new String[] { UIManager.getString("OptionPane.okButtonText")};
+      }
+      // loop
       JPanel result = new JPanel();
       result.setLayout(new FlowLayout(FlowLayout.RIGHT));
       ButtonHelper bh = new ButtonHelper().setContainer(result);
       for (int i=0; i<choices.length; i++) {
         result.add(bh.create(new Choice(choices[i],i)));
       }
+      // done
       return result;
     }
     

@@ -39,9 +39,4 @@ public interface Trackable {
    */
   public String getState();
 
-  /**
-   * Returns warnings of operation
-   */
-  public String getWarnings();
-
-}
+} //Trackable

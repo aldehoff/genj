@@ -20,8 +20,12 @@
 package genj.print;
 
 import genj.app.App;
+import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
+import genj.util.Resources;
+import genj.util.Trackable;
+import genj.util.swing.ProgressDialog;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -35,6 +39,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
@@ -42,19 +47,14 @@ import javax.swing.UIManager;
  * A manager for printing */
 public class PrintManager {
   
-  // 1 printunit = 1/72 inch = 1/72 * 2.54 cm
-  // => cm / 2.54 * 72 = printunit
-  //private final static double CM2PRINTUNIT = 1/2.54 * 72;
-  
-  /** the default resolution in dots per cm */
-//  private final static Point2D.Double resolution = 
-//    new Point2D.Double(72/2.54, 72/2.54);
-
   /** singleton */
   private static PrintManager instance = null;
   
   /** registry */
   private static Registry registry = Registry.lookup("genj");
+  
+  /** resources */
+  private Resources resources = Resources.get(PrintManager.class);
   
   /**
    * Constructor   */
@@ -72,15 +72,14 @@ public class PrintManager {
   /**
    * Prints a view
    */
-  public boolean print(JComponent view) {
+  public void print(JFrame frame, JComponent view) {
     // calculate Printer
     Printer printer = getPrinter(view);
-    if (printer==null) return false;
+    if (printer==null) return;
     printer.setView(view);
     // our own task for printing
-    new PrintTask(printer, view);    
+    new PrintTask(frame, printer, view).trigger();    
     // done
-    return false;
   }
   
   /**
@@ -107,7 +106,13 @@ public class PrintManager {
 
   /**
    * Our own task for printing   */  
-  /*package*/ class PrintTask {
+  /*package*/ class PrintTask extends ActionDelegate implements Printable, Trackable {
+    
+    /** the base frame */
+    private JFrame frame;
+    
+    /** the owning component */
+    private JComponent owner;
     
     /** our print job */
     private PrinterJob job;
@@ -124,70 +129,124 @@ public class PrintManager {
     /** pages */
     private Point pages;
     
+    /** current page*/
+    private int page = 0;
+    
+    /** any problem that might occur async */
+    private Throwable throwable;
+    
     /**
      * Constructor     */
-    private PrintTask(Printer reNderer, JComponent owner) {
+    private PrintTask(JFrame fRame, Printer reNderer, JComponent owNer) {
       
       // remember renderer
+      frame = fRame;
       renderer = reNderer;
+      owner = owNer;
       
-      // create a job
-      job = PrinterJob.getPrinterJob();
-      
-      // initial page format
-      pageFormat = job.defaultPage();
-      pageFormat.setOrientation(registry.get("printer.orientation", PageFormat.PORTRAIT));
-      
-      // show dialog
-      boolean cont = showDialog(owner);
-      if (!cont||getPages().x==0||getPages().y==0) {
-        job.cancel();
-        return;
-      }
-
-      // glue to us as the printable     
-      job.setPrintable(new PrintableImpl(getPages(), getResolution(), renderer), pageFormat);
-      
-      // call
-      try {
-        job.print();
-      } catch (PrinterException pe) {
-        Debug.log(Debug.WARNING, this, "print() threw error", pe);
-        JOptionPane.showMessageDialog(owner, pe.getMessage(), "Print Error", JOptionPane.ERROR_MESSAGE);
-      }
-      
-      // done
+      // setup async
+      setAsync(super.ASYNC_SAME_INSTANCE);
+     
     }
     
     /**
-     * Show a print dialog
+     * @see genj.util.ActionDelegate#preExecute()
      */
-    private boolean showDialog(JComponent owner) {
-            
-      // create a print widget
-      widget = new PrintWidget(this);
+    protected boolean preExecute() {
+      
+      // create a job
+      job = PrinterJob.getPrinterJob();
+      if (job==null) {
+        Debug.log(Debug.WARNING, this, "Couldn't get PrintJob");
+        return false;
+      }
+      job.setJobName("GenealogyJ");
+
+      // initial page format
+      pageFormat = job.defaultPage();
+      pageFormat.setOrientation(registry.get("printer.orientation", PageFormat.PORTRAIT));
+
+      // glue to us as the printable     
+      job.setPrintable(this, pageFormat);
+      
+      // show dialog
+      widget = new PrintWidget(this, resources);
       
       // show it in dialog
-      App.Dialog dlg = App.getInstance().createDialog(
-        "Printing", 
+      int ok = App.getInstance().createDialog(
+        resources.getString("dlg.title", frame.getTitle()), 
         "print", 
         new Dimension(480,320), 
         owner, 
         widget,
         new String[]{ "Print", UIManager.getString("OptionPane.cancelButtonText")}
-      );
-      dlg.pack();
-      dlg.show();
+      ).packAndShow();
       
       // check choice
-      return dlg.getChoice()==0;
+      if (ok!=0||getPages().x==0||getPages().y==0) {
+        job.cancel();
+        return false;
+      }
+
+      // setup progress dlg
+      new ProgressDialog(frame, resources.getString("progress.title"), "", this, getThread());
+      
+      // continue
+      return true;
+    }
+    
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      // this is on another thread
+      try {
+        job.print();
+      } catch (PrinterException pe) {
+        throwable = pe;
+      }
+    }
+    
+    /**
+     * @see genj.util.ActionDelegate#postExecute()
+     */
+    protected void postExecute() {
+      if (throwable!=null) {
+        Debug.log(Debug.WARNING, this, "print() threw error", throwable);
+        JOptionPane.showMessageDialog(owner, throwable.getMessage(), "Print Error", JOptionPane.ERROR_MESSAGE);
+      }
+    }
+    
+    /**
+     * @see genj.util.Trackable#cancel()
+     */
+    public void cancel() {
+      cancel(true);
+    }
+    
+    /**
+     * @see genj.util.Trackable#getProgress()
+     */
+    public int getProgress() {
+      return (int)(page/(float)(getPages().x*getPages().y) * 100);
+    }
+    
+    /**
+     * @see genj.util.Trackable#getState()
+     */
+    public String getState() {
+      return resources.getString("progress.page", new String[]{""+(page+1), ""+(getPages().x*getPages().y)} );
     }
     
     /**
      * Show page dialog     */
-    /*package*/ void showPageDialog() {
-      // let the user change things
-      pageFormat = job.pageDialog(getPageFormat());
+    /*package*/ void showPrinterDialog() {
+      // I wished we could just use job.printDialog here - but
+      // Java's printing doesn't update the pageFormat in this
+      // method so offering the user to change settings in one
+      // of this dialogs is pretty useless - gotta use pageDialog
+      // instead :(
+      pageFormat = job.pageDialog(pageFormat);
       // preserve page format
       registry.put("printer.orientation", pageFormat.getOrientation());
       // reset pages
@@ -219,7 +278,7 @@ public class PrintManager {
     }
     
     /**
-     * Resolve pages     */
+     * Compute pages     */
     /*package*/ Point getPages() {
 
       // already calculated?
@@ -238,41 +297,15 @@ public class PrintManager {
       return pages;
     }
     
-  } //PrintTask
-
-  /**
-   * PrintManager
-   */
-  private static class PrintableImpl implements Printable {
-    
-    /** renderer we use */
-    private Printer renderer;
-    
-    /** the resolution */
-    private Point resolution;
-    
-    /** pages */
-    private Point[] pageSequence;
-    
     /**
-     * Constructor
+     * Computer printer name
      */
-    /*package*/ PrintableImpl(Point pages, Point resolUtion, Printer rendErer) {
-  
-      // remember renderer
-      renderer = rendErer;
-      resolution = resolUtion;
-      
-      // setup pages
-      pageSequence = new Point[pages.x*pages.y];
-      int i = 0;
-      for (int x=0; x<pages.x; x++) {
-        for (int y=0; y<pages.y; y++) {
-          pageSequence[i++] = new Point(x,y);         
-        }
-      }
-  
-      // ready      
+    /*package*/ String getPrinter() {
+      Object name = "Unknown";
+      try {
+        name = job.getClass().getMethod("getPrintService", new Class[0]).invoke(job,new Object[0]);
+      } catch (Throwable t) {}
+      return name.toString();
     }
     
     /**
@@ -282,8 +315,13 @@ public class PrintManager {
     public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
   
       // what's the current page
-      if (pageIndex==pageSequence.length) return NO_SUCH_PAGE;
-      Point page = pageSequence[pageIndex]; 
+      page = pageIndex;
+      int 
+        row = pageIndex/getPages().x,
+        col = pageIndex%getPages().x;
+      if (row>=getPages().x||row>=getPages().y) return NO_SUCH_PAGE;
+      
+      Point page = new Point(col, row);
   
       // draw border
       Graphics2D g = (Graphics2D)graphics;
@@ -308,14 +346,13 @@ public class PrintManager {
       );
 
       // render it
-      renderer.renderPage(g, page, resolution);
+      renderer.renderPage(g, page, getResolution());
       
       // done
       return PAGE_EXISTS;
   
     }
   
-  } //PrintableImpl  
-
+  } //PrintTask
 
 } //PrintManager

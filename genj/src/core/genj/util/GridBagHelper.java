@@ -36,6 +36,7 @@ public class GridBagHelper {
   private GridBagLayout layout;
   private GridBagConstraints constraints;
   private Container container;
+  private Insets insets = new Insets(0,0,0,0);
 
   public final static int
     FILL_HORIZONTAL =  1,
@@ -83,6 +84,15 @@ public class GridBagHelper {
     // Done
   }
 
+  
+  /**
+   * Sets insets to use
+   */
+  public GridBagHelper setInsets(Insets set) {
+    insets = set;
+    return this;
+  }
+
   /**
    * Adds component to container with GridBagLayout (1x1 grids)
    * @param component component to add
@@ -119,7 +129,7 @@ public class GridBagHelper {
    * @return Added component
    */
   public Component add(Component component,int x,int y,int w,int h,int parm) {
-    return add(component,x,y,w,h,parm,new Insets(0,0,0,0));
+    return add(component,x,y,w,h,parm,insets);
   }
 
   /**
@@ -186,4 +196,4 @@ public class GridBagHelper {
     return ((value&mask)!=0);
   }
 
-}
+} //GridBagHelper
