@@ -29,10 +29,10 @@ final public class Images {
   private static Images instance = new Images();
 
   public static ImgIcon
-    imgNavLeftSiblingOn,
-    imgNavLeftSiblingOff,
-    imgNavRightSiblingOn,
-    imgNavRightSiblingOff,
+    imgNavYoungerSiblingOn,
+    imgNavYoungerSiblingOff,
+    imgNavOlderSiblingOn,
+    imgNavOlderSiblingOff,
     imgNavChildOn,
     imgNavChildOff,
     imgNavMotherOn,
@@ -46,10 +46,10 @@ final public class Images {
    * Constructor which pre-loads all images
    */
   private Images() {
-    imgNavLeftSiblingOn   = new ImgIcon(this,"NavLeftSiblingOn.gif");
-    imgNavLeftSiblingOff  = new ImgIcon(this,"NavLeftSiblingOff.gif");
-    imgNavRightSiblingOn  = new ImgIcon(this,"NavRightSiblingOn.gif");
-    imgNavRightSiblingOff = imgNavLeftSiblingOff;
+    imgNavYoungerSiblingOn   = new ImgIcon(this,"NavYoungerSiblingOn.gif");
+    imgNavYoungerSiblingOff  = new ImgIcon(this,"NavYoungerSiblingOff.gif");
+    imgNavOlderSiblingOn  = new ImgIcon(this,"NavOlderSiblingOn.gif");
+    imgNavOlderSiblingOff = imgNavYoungerSiblingOff;
     imgNavChildOn         = new ImgIcon(this,"NavChildOn.gif");
     imgNavChildOff        = new ImgIcon(this,"NavChildOff.gif");
     imgNavFatherOn        = new ImgIcon(this,"NavFatherOn.gif");

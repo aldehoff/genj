@@ -149,9 +149,9 @@ public class Indi extends PropertyIndi implements Entity {
   }
   
   /**
-   * Calculate the 'previous' sibling
+   * Calculate the 'younger' sibling
    */
-  public Indi getLeftSibling() {
+  public Indi getYoungerSibling() {
     
     // this is a child in a family?
     Fam f = getFamc();
@@ -168,9 +168,9 @@ public class Indi extends PropertyIndi implements Entity {
   }
   
   /**
-   * Calculate the 'next' sibling
+   * Calculate the 'older' sibling
    */
-  public Indi getRightSibling() {
+  public Indi getOlderSibling() {
     
     // this is a child in a family?
     Fam f = getFamc();

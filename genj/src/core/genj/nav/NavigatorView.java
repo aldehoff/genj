@@ -32,6 +32,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagLayout;
@@ -125,9 +126,9 @@ public class NavigatorView extends JPanel {
       // buttons
       bFather.setEnabled(indi.getFather()!=null);
       bMother.setEnabled(indi.getMother()!=null);
-      bPrev.setEnabled(indi.getLeftSibling()!=null);
+      bPrev.setEnabled(indi.getYoungerSibling()!=null);
       bPartner.setEnabled(indi.getPartners().length>0);
-      bNext.setEnabled(indi.getRightSibling()!=null);
+      bNext.setEnabled(indi.getOlderSibling()!=null);
       bChild.setEnabled(indi.getChildren().length>0);
       
     }
@@ -145,12 +146,12 @@ public class NavigatorView extends JPanel {
     
     // our action delegation
     ActionDelegate ad = new ActionDelegate(this);
-    ad.add("FATHER" , "nav2Father")
-      .add("MOTHER" , "nav2Mother")
-      .add("LEFT"   , "nav2LeftSibling")
-      .add("PARTNER", "nav2Partner")
-      .add("RIGHT"  , "nav2RightSibling")
-      .add("CHILD"  , "nav2Child");
+    ad.add("FATHER"  , "nav2Father")
+      .add("MOTHER"  , "nav2Mother")
+      .add("YSIBLING", "nav2YoungerSibling")
+      .add("PARTNER" , "nav2Partner")
+      .add("OSIBLING", "nav2OlderSibling")
+      .add("CHILD"   , "nav2Child");
     
     // add the buttons    
     ButtonHelper bh = new ButtonHelper()
@@ -161,12 +162,12 @@ public class NavigatorView extends JPanel {
       .setEnabled(false)
       .setListener(ad);
     
-      bFather = bh.setAction("FATHER" ).setRollover(Images.imgNavFatherOn      ).setImage(Images.imgNavFatherOff      ).setTip("tip.nav_father" ).create();
-      bMother = bh.setAction("MOTHER" ).setRollover(Images.imgNavMotherOn      ).setImage(Images.imgNavMotherOff      ).setTip("tip.nav_mother" ).create();
-      bPrev   = bh.setAction("LEFT"   ).setRollover(Images.imgNavLeftSiblingOn ).setImage(Images.imgNavLeftSiblingOff ).setTip("tip.nav_lefts"  ).create();
-      bPartner= bh.setAction("PARTNER").setRollover(Images.imgNavPartnerOn     ).setImage(Images.imgNavPartnerOff     ).setTip("tip.nav_partner").create();
-      bNext   = bh.setAction("RIGHT"  ).setRollover(Images.imgNavRightSiblingOn).setImage(Images.imgNavRightSiblingOff).setTip("tip.nav_rights" ).create();
-      bChild  = bh.setAction("CHILD"  ).setRollover(Images.imgNavChildOn       ).setImage(Images.imgNavChildOff       ).setTip("tip.nav_child"  ).create();
+      bFather = bh.setAction("FATHER"  ).setRollover(Images.imgNavFatherOn         ).setImage(Images.imgNavFatherOff        ).setTip("tip.nav_father"  ).create();
+      bMother = bh.setAction("MOTHER"  ).setRollover(Images.imgNavMotherOn         ).setImage(Images.imgNavMotherOff        ).setTip("tip.nav_mother"  ).create();
+      bPrev   = bh.setAction("YSIBLING").setRollover(Images.imgNavYoungerSiblingOn ).setImage(Images.imgNavYoungerSiblingOff).setTip("tip.nav_ysibling").create();
+      bPartner= bh.setAction("PARTNER" ).setRollover(Images.imgNavPartnerOn        ).setImage(Images.imgNavPartnerOff       ).setTip("tip.nav_partner" ).create();
+      bNext   = bh.setAction("OSIBLING").setRollover(Images.imgNavOlderSiblingOn   ).setImage(Images.imgNavOlderSiblingOff  ).setTip("tip.nav_osibling").create();
+      bChild  = bh.setAction("CHILD"   ).setRollover(Images.imgNavChildOn          ).setImage(Images.imgNavChildOff         ).setTip("tip.nav_child"   ).create();
 
     gh.add(bFather ,2,1,1,1,gh.FILL_NONE);
     gh.add(bMother ,3,1,1,1,gh.FILL_NONE);
@@ -196,15 +197,15 @@ public class NavigatorView extends JPanel {
   /**
    * Navigate 2 Previous
    */
-  public void nav2LeftSibling() {
-    indi.getGedcom().fireEntitySelected(null, indi.getLeftSibling(), false);
+  public void nav2YoungerSibling() {
+    indi.getGedcom().fireEntitySelected(null, indi.getYoungerSibling(), false);
   }
     
   /**
    * Navigate 2 Next
    */
-  public void nav2RightSibling() {
-    indi.getGedcom().fireEntitySelected(null, indi.getRightSibling(), false);
+  public void nav2OlderSibling() {
+    indi.getGedcom().fireEntitySelected(null, indi.getOlderSibling(), false);
   }
     
   /**
