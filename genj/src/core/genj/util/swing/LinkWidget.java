@@ -24,6 +24,14 @@ public class LinkWidget extends JButton {
   /**
    * Constructor
    */
+  public LinkWidget(ImageIcon img) {
+    this();
+    setIcon(img);
+  }
+  
+  /**
+   * Constructor
+   */
   public LinkWidget() {
 
     // change looks
