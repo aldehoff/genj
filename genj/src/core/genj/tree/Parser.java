@@ -73,7 +73,7 @@ import java.awt.geom.Rectangle2D;
     // init values
     initMarrShapes();
     initEntityShapes();
-    initSignShapes();
+    initFoldUnfoldShapes();
     
     // done    
   }
@@ -177,7 +177,7 @@ import java.awt.geom.Rectangle2D;
   /**
    * Init shapes/padding for signs
    */
-  private void initSignShapes() {
+  private void initFoldUnfoldShapes() {
     
     // how we pad signs (n, e, s, w)
     padMinusPlus  = new double[]{  
@@ -240,14 +240,23 @@ import java.awt.geom.Rectangle2D;
       // do we have a family we're child in?
       Fam famc = indi.getFamc();
       if (famc!=null) {
-        // check minus as a substitute pivot
-        TreeNode pivot = node;
-        if (model.isFoldSymbols()) {
-          pivot = model.add(new TreeNode(null, shapePlus, padMinusPlus));
-          model.add(new TreeArc(node, pivot, false));
+        // stop when hiding ancestors
+        if (model.isHideAncestors(indi)) {
+          // show plus
+          if (model.isFoldSymbols()) {
+            TreeNode plus = model.add(new TreeNode(model.new FoldUnfold(indi,true), shapePlus, padMinusPlus));
+            model.add(new TreeArc(node, plus, false));
+          }
+        } else {
+          TreeNode pivot = node;
+          // show minus
+          if (model.isFoldSymbols()) {
+            pivot = model.add(new TreeNode(model.new FoldUnfold(indi,true), shapeMinus, padMinusPlus));
+            model.add(new TreeArc(node, pivot, false));
+          }
+          // grab the family's husband/wife and their ancestors
+          recurse(famc, pivot);
         }
-        // grab the family's husband/wife and their ancestors
-        recurse(famc, pivot);
       } 
       // done
       return node;
@@ -396,16 +405,18 @@ import java.awt.geom.Rectangle2D;
       // grab fams
       Fam[] fams = indi.getFamilies();
       if (fams.length>0) {
-        // check hiding of descendants
+        // stop when hiding descendants
         if (model.isHideDescendants(indi)) {
-          if (model.isFoldSymbols()) {
-            TreeNode plus = model.add(new TreeNode(null, shapePlus, padMinusPlus));
+          // show plus
+          if(model.isFoldSymbols()) {
+            TreeNode plus = model.add(new TreeNode(model.new FoldUnfold(indi,false), shapePlus, padMinusPlus));
             model.add(new TreeArc(node, plus, false));
           }
         } else {
           TreeNode pivot = node;
+          // show minus
           if (model.isFoldSymbols()) {
-            pivot = model.add(new TreeNode(null, shapeMinus, padMinusPlus));
+            pivot = model.add(new TreeNode(model.new FoldUnfold(indi,false), shapeMinus, padMinusPlus));
             model.add(new TreeArc(node, pivot, false));
           }
           // loop through fams
@@ -503,18 +514,20 @@ import java.awt.geom.Rectangle2D;
      */
     protected TreeNode parse(Indi indi) {
       // parse under artificial pivot
-      TreeNode pivot = model.add(new TreeNode(null, null, null));
-      origin = recurse(indi, pivot);
+      TreeNode nPivot = model.add(new TreeNode(null, null, null));
+      // the origin is not nPivot!!!
+      origin = recurse(indi, nPivot);
       // done
-      return pivot;
+      return nPivot;
     }
     /**
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
      */
     protected TreeNode parse(Fam fam) {
-      TreeNode node = recurse(fam);
-      node.padding = padIndis; // patch first fams padding
-      return node;
+      TreeNode nFam = recurse(fam);
+      nFam.padding = padIndis; // patch first fams padding
+      origin = nFam;
+      return nFam;
     }
         
     /**
@@ -530,8 +543,8 @@ import java.awt.geom.Rectangle2D;
       
       // no families is simply
       if (fams.length==0) {
-        TreeNode nIndi = new TreeNode(indi,shapeIndis,padIndis);
-        model.add(new TreeArc(pivot, model.add(nIndi), pivot.getShape()!=null));
+        TreeNode nIndi = model.add(new TreeNode(indi,shapeIndis,padIndis));
+        model.add(new TreeArc(pivot, nIndi, pivot.getShape()!=null));
         return nIndi;        
       }
 
@@ -570,8 +583,7 @@ import java.awt.geom.Rectangle2D;
      */
     private TreeNode recurse(Fam fam) {
       // node for fam
-      TreeNode nFam = new TreeNode(fam, shapeFams, padFams);
-      model.add(nFam);
+      TreeNode nFam = model.add(new TreeNode(fam, shapeFams, padFams));
       // grab the children
       Indi[] children = fam.getChildren();
       for (int c=0; c<children.length; c++) {

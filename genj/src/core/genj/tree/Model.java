@@ -29,7 +29,6 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import gj.layout.LayoutException;
 import gj.layout.tree.TreeLayout;
-import gj.model.Graph;
 import gj.model.Node;
 
 import java.awt.Shape;
@@ -50,7 +49,7 @@ import java.util.Set;
 /**
  * Model of our tree
  */
-public class Model implements Graph, GedcomListener {
+public class Model implements GedcomListener {
   
   /** listeners */
   private List listeners = new ArrayList(3);
@@ -249,17 +248,24 @@ public class Model implements Graph, GedcomListener {
   }
   
   /**
-   * Entities by range
+   * Nodes by range
    */
-  public Set getEntitiesIn(Rectangle2D range) {
+  public Collection getNodesIn(Rectangle2D range) {
     if (cache==null) return new HashSet();
     return cache.get(range);
   }
 
   /**
+   * Arcs by range
+   */
+  public Collection getArcsIn(Rectangle2D range) {
+    return arcs;
+  }
+
+  /**
    * An node by position
    */
-  /*pacakge*/ TreeNode getNodeAt(double x, double y) {
+  public TreeNode getNodeAt(double x, double y) {
     // do we have a cache?
     if (cache==null) return null;
     // get nodes in possible range
@@ -281,11 +287,19 @@ public class Model implements Graph, GedcomListener {
     return null;
   }
      /**
+   * Content by position
+   */
+  public Object getContentAt(double x, double y) {
+    TreeNode node = getNodeAt(x, y);
+    return node!=null ? node.getContent() : null;
+  }
+
+  /**
    * An entity by position
    */
   public Entity getEntityAt(double x, double y) {
-    TreeNode node = getNodeAt(x,y);
-    return node!=null ? node.entity : null; 
+    Object content = getContentAt(x, y);
+    return content instanceof Entity ? (Entity)content : null;
   }
   
   /**
@@ -295,6 +309,13 @@ public class Model implements Graph, GedcomListener {
     return (Node)entities2nodes.get(e);
   }
   
+  /**
+   * The models space bounds
+   */
+  public Rectangle2D getBounds() {
+    return bounds;
+  }
+
   /**
    * Add a bookmark
    */
@@ -331,27 +352,6 @@ public class Model implements Graph, GedcomListener {
    */
   public boolean isHideAncestors(Indi indi) {
     return hideAncestors.contains(indi);
-  }
-  
-  /**
-   * @see gj.model.Graph#getArcs()
-   */
-  public Collection getArcs() {
-    return arcs;
-  }
-
-  /**
-   * @see gj.model.Graph#getBounds()
-   */
-  public Rectangle2D getBounds() {
-    return bounds;
-  }
-
-  /**
-   * @see gj.model.Graph#getNodes()
-   */
-  public Collection getNodes() {
-    return nodes;
   }
   
   /**
@@ -407,12 +407,14 @@ public class Model implements Graph, GedcomListener {
     
     // done
   }
-
+  
   /**
    * Adds a node   */
   /*package*/ TreeNode add(TreeNode node) {
-    if (node.entity!=null) {
-      entities2nodes.put(node.entity, node);
+    // check content
+    Object content = node.getContent();
+    if (content instanceof Entity) {
+      entities2nodes.put(content, node);
     }
     nodes.add(node);
     return node;
@@ -444,27 +446,32 @@ public class Model implements Graph, GedcomListener {
     
     // nothing to do if no root set
     if (root==null) return;
-    
-    // parse its descendants
-    Parser descendants = Parser.getInstance(false, isFamilies, this, metrics);
-    layout(descendants.parse(root), true);
-    // keep bounds
-    Rectangle2D r = bounds.getFrame();
-    // parse its ancestors 
-    layout(descendants.align(Parser.getInstance(true, isFamilies, this, metrics).parse(root)), false);
-    // update bounds
-    bounds.add(r);
+
+    // parse and layout    
+    try {
+      // parse its descendants
+      Parser descendants = Parser.getInstance(false, isFamilies, this, metrics);
+      bounds.add(layout(descendants.parse(root), true));
+      // parse its ancestors 
+      bounds.add(layout(descendants.align(Parser.getInstance(true, isFamilies, this, metrics).parse(root)), false));
+    } catch (LayoutException e) {
+      e.printStackTrace();
+      root = null;
+      update();
+      return;
+    }
     
     // create gridcache
     cache = new GridCache(
       bounds, 3*metrics.calcMax()
     );
-    Iterator it = getNodes().iterator();
+    Iterator it = nodes.iterator();
     while (it.hasNext()) {
       TreeNode n = (TreeNode)it.next();
       Shape s = n.getShape();
       if (s!=null) cache.put(n, s.getBounds2D(), n.getPosition());
     }
+    
     // notify
     fireStructureChanged();
     // done
@@ -473,21 +480,17 @@ public class Model implements Graph, GedcomListener {
   /**
    * Helper that runs a TreeLayout
    */
-  protected void layout(TreeNode root, boolean isTopDown) {
+  private Rectangle2D layout(TreeNode root, boolean isTopDown) throws LayoutException {
     // layout
-    try {
-      TreeLayout layout = new TreeLayout();
-      layout.setTopDown(isTopDown);
-      layout.setBendArcs(isBendArcs);
-      layout.setDebug(false);
-      layout.setIgnoreUnreachables(true);
-      layout.setBalanceChildren(false);
-      layout.setRoot(root);
-      layout.setVertical(isVertical);
-      layout.layout(this);
-    } catch (LayoutException e) {
-      e.printStackTrace();
-    }
+    TreeLayout layout = new TreeLayout();
+    layout.setTopDown(isTopDown);
+    layout.setBendArcs(isBendArcs);
+    layout.setDebug(false);
+    layout.setIgnoreUnreachables(true);
+    layout.setBalanceChildren(false);
+    layout.setRoot(root);
+    layout.setVertical(isVertical);
+    return layout.layout(root, nodes.size());
     // done
   }
   
@@ -518,4 +521,29 @@ public class Model implements Graph, GedcomListener {
       ((ModelListener)listeners.get(l)).bookmarksChanged(this);
     }
   }
+  
+  /**
+   * FoldUnfold
+   */
+  /*package*/ class FoldUnfold implements Runnable {
+    /** indi */
+    private Indi indi;
+    /** set to change */
+    private Set set;
+    /**
+     * constructor
+     */
+    protected FoldUnfold(Indi which, boolean ancestors) {
+      indi = which;
+      set = ancestors ? hideAncestors : hideDescendants; 
+    }
+    /**
+     * perform 
+     */
+    public void run() {
+      if (!set.remove(indi)) set.add(indi);
+      update();
+    }
+  } //Fold
+  
 } //Model

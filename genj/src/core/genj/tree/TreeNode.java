@@ -19,10 +19,10 @@
  */
 package genj.tree;
 
-import genj.gedcom.Entity;
 import gj.layout.tree.NodeOptions;
 import gj.layout.tree.Orientation;
 import gj.model.Node;
+
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -32,8 +32,8 @@ import java.util.List;
  * A node in our genealogy tree */
 /*package*/ class TreeNode implements Node, NodeOptions {
   
-  /** the entity */
-  protected Entity entity;
+  /** the content */
+  /*package*/ Object content;
   
   /** arcs of this entity */
   /*package*/ List arcs = new ArrayList(5);
@@ -50,9 +50,9 @@ import java.util.List;
   /**
    * Constructor
    */
-  /*package*/ TreeNode(Entity enTity, Shape sHape, double[] padDing) {
+  /*package*/ TreeNode(Object cOntent, Shape sHape, double[] padDing) {
     // remember
-    entity = enTity;
+    content = cOntent;
     shape = sHape;
     padding = padDing;
     // done
@@ -69,7 +69,7 @@ import java.util.List;
    * @see gj.model.Node#getContent()
    */
   public Object getContent() {
-    return entity;
+    return content;
   }
 
   /**

@@ -27,12 +27,12 @@ import genj.util.swing.UnitGraphics;
 import gj.awt.geom.Path;
 import gj.model.Arc;
 import gj.model.Node;
+
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -71,7 +71,7 @@ public class ContentRenderer {
     // render background
     renderBackground(g, bounds);
     // render the arcs
-    renderArcs(g, model.getArcs());
+    renderArcs(g, model);
     // render the nodes
     renderNodes(g, model);
     // done
@@ -84,7 +84,7 @@ public class ContentRenderer {
     // clip is the range we'll be looking in range
     Rectangle2D clip = g.getClip();
     // loop
-    Iterator it = model.getEntitiesIn(clip).iterator();
+    Iterator it = model.getNodesIn(clip).iterator();
     while (it.hasNext()) {
       // grab node and its shape
       Node node = (Node)it.next();
@@ -167,12 +167,14 @@ public class ContentRenderer {
   /**
    * Render the arcs
    */
-  private void renderArcs(UnitGraphics g, Collection arcs) {
+  private void renderArcs(UnitGraphics g, Model model) {
+    // clip is the range we'll be looking in range
+    Rectangle2D clip = g.getClip();
     // prepare color
     if (cArcs==cBackground) return;
     g.setColor(cArcs);
     // loop
-    Iterator it = arcs.iterator();
+    Iterator it = model.getArcsIn(clip).iterator();
     while (it.hasNext()) {
       // grab arc
       Arc arc = (Arc)it.next();

@@ -434,7 +434,9 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
    * @see genj.view.ContextPopupSupport#getContextAt(Point)
    */
   public Context getContextAt(Point pos) {
-    Entity e = getEntityAt(pos);
+    
+    Point2D p = view2model(pos);
+    Entity e = model.getEntityAt(p.getX(), p.getY());
     if (e==null) return null;
     return new Context(e, Collections.singletonList(new ActionBookmark(e, true)));
   }
@@ -540,11 +542,11 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   }
 
   /**
-   * Resolves entity at given position
+   * Translate a view position into a model position
    */
-  public Entity getEntityAt(Point pos) {
+  private Point2D view2model(Point pos) {
     Rectangle2D bounds = model.getBounds();
-    return model.getEntityAt(
+    return new Point2D.Double(
       pos.x / (UNITS.getX()*zoom) + bounds.getMinX(), 
       pos.y / (UNITS.getY()*zoom) + bounds.getMinY()
     );
@@ -768,14 +770,21 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      * @see java.awt.event.MouseListener#mousePressed(MouseEvent)
      */
     public void mousePressed(MouseEvent e) {
-      // a new selection?
-      Entity entity = getEntityAt(e.getPoint());
-      if (entity==null||entity==currentEntity) return;
-      // note it already
-      currentEntity = entity;
-      repaint();
-      // propagate it
-      ViewManager.getInstance().setContext(entity);
+      // check node
+      Point2D p = view2model(e.getPoint());
+      Object content = model.getContentAt(p.getX(), p.getY());
+      // entity?
+      if (content instanceof Entity) {
+        // change current!
+        currentEntity = (Entity)content;
+        repaint();
+        // propagate it
+        ViewManager.getInstance().setContext(currentEntity);
+      }
+      // runnable?
+      if (content instanceof Runnable) {
+        ((Runnable)content).run();
+      }
       // done
     }
     
@@ -784,10 +793,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      */
     public void mouseClicked(MouseEvent e) {
       // double -> root
-      if (e.getClickCount()>1) {
-        Entity entity = getEntityAt(e.getPoint());
-        if (entity!=null) setRoot(entity);
-      }
+      if (e.getClickCount()>1) setRoot(currentEntity);
       // done
     }
     /**
