@@ -56,7 +56,7 @@ public class FileChooserWidget extends JPanel {
   public FileChooserWidget(String extensions) {
     super(new BorderLayout());
     add(BorderLayout.CENTER, text);
-    add(BorderLayout.EAST  , new ButtonHelper().setFocusable(false).create(new Choose()));      
+    add(BorderLayout.EAST  , new ButtonHelper().setInsets(0).setFocusable(false).create(new Choose()));      
     this.extensions = extensions;
   }
   

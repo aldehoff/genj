@@ -93,7 +93,7 @@ public class FileChooser extends JFileChooser {
         
       WordBuffer buf = new WordBuffer(',');
       for (int i=0; i<exts.length; i++) {
-        exts[i] = tokens.nextToken();
+        exts[i] = tokens.nextToken().toLowerCase().trim();
         buf.append("*."+exts[i]);
       }
       descr = buf.toString();
