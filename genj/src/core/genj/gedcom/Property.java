@@ -23,7 +23,6 @@ import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
