@@ -193,7 +193,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
     
     // check
     Property media = getParent();
-    if (!updateSubs||!(media instanceof PropertyMedia||media instanceof Media)) 
+    if (!updateSubs||!media.getTag().equals("OBJE")) 
       return;
       
     // title?
