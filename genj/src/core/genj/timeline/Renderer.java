@@ -32,7 +32,7 @@ public abstract class Renderer {
   /**
    * Convert cm into pixels
    */
-  protected int cm2pixels(double cm) {
+  protected final int cm2pixels(double cm) {
     // 1 Centimeters = 0.393701  Inches
     return inches2pixels(cm*0.393701);
   }
@@ -40,7 +40,7 @@ public abstract class Renderer {
   /**
    * Convert inches into pixels
    */
-  protected int inches2pixels(double inches) {
+  protected final int inches2pixels(double inches) {
     // pixels = inches * dpi
     return (int)(inches*dpi);
   }
@@ -48,7 +48,7 @@ public abstract class Renderer {
   /**
    * Convert pixels into cm
    */
-  protected double pixels2cm(int pixels) {
+  protected final double pixels2cm(int pixels) {
     // 1 inch = 2.54 cm
     return pixels2inches(pixels)*2.54;
   }
@@ -56,7 +56,7 @@ public abstract class Renderer {
   /**
    * Convert pixels into inches
    */
-  protected double pixels2inches(int pixels) {
+  protected final double pixels2inches(int pixels) {
     // pixels = inches * dpi
     return ((double)pixels)/dpi;
   }

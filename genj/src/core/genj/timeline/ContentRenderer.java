@@ -57,7 +57,7 @@ public class ContentRenderer extends Renderer {
     Iterator layers = model.layers.iterator();
     for (int l=0; layers.hasNext(); l++) {
       List layer = (List)layers.next();
-      render(g, model, layer, l);
+      render(g, g.getFontMetrics(), model, layer, l);
     }
     // done
   }
@@ -65,8 +65,61 @@ public class ContentRenderer extends Renderer {
   /** 
    * Renders a layer
    */
-  private void render(Graphics g, Model model, List layer, int level) {
+  private final void render(Graphics g, FontMetrics fm, Model model, List layer, int level) {
+    // loop through events
+    Iterator events = layer.iterator();
+    while (events.hasNext()) {
+      Model.Event event = (Model.Event)events.next();
+      render(g, fm, model, event, level);
+    }
+    // done
+  }
+  
+  /**
+   * Renders an event
+   */
+  private final void render(Graphics g, FontMetrics fm, Model model, Model.Event event, int level) {
+    // calculate some parameters
+    int
+      fh  = fm.getHeight(),
+      fd  = fm.getDescent(),
+      x1  = cm2pixels((event.from-model.min)*cmPyear),
+      x2  = cm2pixels((event.to-model.min)*cmPyear),
+      y   = level*(fh+1);
+
+    boolean em  = event.prop.getEntity().equals(model.gedcom.getLastEntity());
+
+    // color
+    if (colorize) g.setColor(em ? Color.red : Color.black);
     
+    // draw it's extend
+    g.drawLine(x1-1, y+fh-1, x1-1, y+fh);
+    g.drawLine(x1, y+fh  , x2, y+fh);
+    g.drawLine(x2+1, y+fh-1, x2+1, y+fh);
+    
+    // draw it's text and image (not extending past model.max)
+    ImgIcon img = event.prop.getImage(false);
+    
+    double years = pixels2cm(img.getIconWidth() + fm.stringWidth(event.tag))/cmPyear;
+    if (event.from+years > model.max) {
+      x1 = cm2pixels((model.max-model.min-years)*cmPyear);
+    }
+    img.paintIcon(g, x1, y+fh/2-img.getIconHeight()/2);
+    x1+=img.getIconWidth();
+    g.drawString(event.tag, x1, y + fh - fd);
+      
+    // done
+  }
+  
+  /**
+   * Calculates text for given event
+   */
+  private final String calcString(Model.Event event) {
+    return event.prop.getTag() + " of " + event.prop.getEntity() + " (" + event.prop.getDate() + ")";
+  }
+  
+/*    
+  private void render(Graphics g, Model model, List layer, int level) {
     // prepare parameters
     int 
       fh = g.getFontMetrics().getHeight(),
@@ -81,7 +134,7 @@ public class ContentRenderer extends Renderer {
       int     x1  = cm2pixels((event.from-model.min)*cmPyear);
       int     x2  = cm2pixels((event.to-model.min)*cmPyear);
       String  tag = event.prop.getTag() + " of " + event.prop.getEntity() + " (" + event.prop.getDate() + ")";
-      int     y   = level*fh;
+      int     y   = level*(fh+1);
       ImgIcon img = event.prop.getImage(false);
       boolean em  = event.prop.getEntity().equals(model.gedcom.getLastEntity());
 
@@ -103,5 +156,5 @@ public class ContentRenderer extends Renderer {
     }
     // done
   }
-
+*/
 } //RulerRenderer

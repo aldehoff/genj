@@ -149,21 +149,21 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   /**
    * Converts double to int
    */
-  private int i(double d) {
+  private final int i(double d) {
     return (int)(d*10);
   }
   
   /**
    * Converts int to double
    */
-  private double d(int i) {
+  private final double d(int i) {
     return ((double)i)/10;
   }
   
   /**
    * Convert cmPyear into text
    */
-  private String cm2txt(double cm) {
+  private final String cm2txt(double cm) {
     return NumberFormat.getInstance().format(cm)+"cm";
   }
     

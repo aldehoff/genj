@@ -28,7 +28,9 @@ import java.util.Map;
 import java.util.Set;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 
@@ -77,7 +79,7 @@ import genj.gedcom.PropertyEvent;
   /**
    * Gather Events
    */
-  private void insertEvents() {
+  private final void insertEvents() {
     
     // reset
     min = Double.MAX_VALUE;
@@ -97,7 +99,7 @@ import genj.gedcom.PropertyEvent;
    * Gather Events for given entities
    * @param es list of entities to find events in
    */
-  private void insertEventsFrom(List es) {
+  private final void insertEventsFrom(List es) {
     // loop through entities
     for (int i=0; i<es.size(); i++) {
       Entity e = (Entity)es.get(i);
@@ -114,7 +116,7 @@ import genj.gedcom.PropertyEvent;
    * Gather Event for given PropertyEvent
    * @param pe property to use
    */
-  private void insertEventFrom(PropertyEvent pe) {
+  private final void insertEventFrom(PropertyEvent pe) {
     // we need a valid date for that event
     PropertyDate date = pe.getDate();
     if (date==null) return;
@@ -137,7 +139,7 @@ import genj.gedcom.PropertyEvent;
   /**
    * Insert the Event into one of our layers
    */
-  private void insertEvent(Event e) {
+  private final void insertEvent(Event e) {
     
     // find a level that suits us
     for (int l=0;l<layers.size();l++) {
@@ -159,14 +161,14 @@ import genj.gedcom.PropertyEvent;
    * Insert the Event into a layer
    * @return whether that was successfull
    */
-  private boolean insertEvent(Event e, List layer) {
+  private final boolean insertEvent(Event e, List layer) {
     return false;
   }
   
   /**
    * Helper transforming a point in time into a double value
    */
-  private double wrap(PropertyDate.PointInTime p) {
+  private final double wrap(PropertyDate.PointInTime p) {
     return (double)p.getYear(0) + ((double)p.getMonth(1)-1)/12 + ((double)p.getDay(0)/12/31);
   }
   
@@ -177,19 +179,37 @@ import genj.gedcom.PropertyEvent;
     /** state */
     /*package*/ double from, to;
     /*package*/ PropertyEvent prop;
+    /*package*/ String tag;
     /** 
      * Constructor
      */
     Event(PropertyEvent propEvent, double start, double end) {
+      // remember
       prop = propEvent;
       from  = start;
       to  = end;
+      // calculate tag
+      Entity e = propEvent.getEntity();
+      tag = e instanceof Indi ? tag((Indi)e) : tag((Fam)e);
+      // done
     }
-    /** 
-     * String representation
+    /**
+     * calculate the tag
      */
-    public String toString() {
-      return prop.getTag() + '@' + from + '>' + to;
+    private final String tag(Indi indi) {
+      return indi.getName();
+    }
+    /**
+     * calculate the tag
+     */
+    private final String tag(Fam fam) {
+      Indi 
+        husband = fam.getHusband(),
+        wife = fam.getWife();
+      if (husband!=null&&wife!=null) return husband.getName() + " and " + wife.getName();
+      if (husband!=null) return husband.getName();
+      if (wife!=null) return wife.getName();
+      return "@"+fam.getId()+"@";
     }
   } //Event
   
