@@ -70,7 +70,7 @@ public class PropertySimpleValue extends Property {
    * Sets the value of this property
    */
   public void setValue(String value) {
-    noteModifiedProperty();
+    modNotify();
     this.value=value;
   }
   

@@ -212,7 +212,7 @@ public class EntityView extends JComponent implements ToolBarSupport, ContextSup
      * @see genj.gedcom.GedcomListener#handleChange(Change)
      */
     public void handleChange(Change change) {
-      if (change.isChanged(change.EDEL)&&change.getEntities(change.EDEL).contains(entity)) {
+      if (change.getChanges(change.EDEL).contains(entity)) {
         setEntity(null);
       }
       repaint();

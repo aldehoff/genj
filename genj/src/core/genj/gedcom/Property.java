@@ -22,7 +22,6 @@ package genj.gedcom;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,8 +49,13 @@ public abstract class Property implements Comparable {
    * Lifecycle - callback when being added to parent
    */
   /*package*/ void addNotify(Property parent) {
+
+    // remember parent
     this.parent=parent;
-    noteAddedProperty();
+
+    // propagate
+    changeNotify(this, Change.PADD);
+
   }
 
   /**
@@ -59,11 +63,13 @@ public abstract class Property implements Comparable {
    */
   /*package*/ void delNotify() {
 
-    // Remember it
-    noteDeletedProperty();
+    // propagate
+    changeNotify(this, Change.PDEL);
 
-    // Say it to properties
-    delProperties(toArray(children));
+    // delete all properties
+    while (!children.isEmpty()) {
+      delProperty((Property)children.get(0));
+    }      
     
     // forget parent
     parent = null;
@@ -72,29 +78,38 @@ public abstract class Property implements Comparable {
   }
   
   /**
+   * Lifecycle - callback expected for changes being made 
+   */
+  /*package*/ void modNotify() {
+    // tell it to parent
+    if (parent!=null)
+      parent.changeNotify(this, Change.PMOD);
+    // done      
+  }
+  
+  /**
+   * Lifecycle - callback when property changed. Is propagated
+   * 'up' the owner chain
+   * @param status Change.PMOD || Change.PDEL || Change.PADD 
+   */
+  /*package*/ void changeNotify(Property prop, int status) {
+    // tell it to parent
+    if (parent!=null)
+      parent.changeNotify(prop, status);
+    // done      
+  }
+  
+  /**
    * Adds another property to this property
    * @param prop new property to add
    */
-  public final Property addProperty(Property prop) {
+  public Property addProperty(Property prop) {
     // Remember
     children.add(prop);
     // Notify
     prop.addNotify(this);
     // Done
     return prop;
-  }
-
-  /**
-   * Removes an array of properties
-   */
-  public void delProperties(Property[] which) {
-    // single swoop remove
-    children.removeAll(Arrays.asList(which));
-    // notify
-    for (int i=0;i<which.length;i++) {
-      which[i].delNotify();
-    }
-    // done
   }
 
   /**
@@ -112,7 +127,8 @@ public abstract class Property implements Comparable {
 
     // Look for second class properties
     for (int i=0;i<children.size();i++) {
-      if (getProperty(i).delProperty(which)) return true;
+      if (getProperty(i).delProperty(which)) 
+        return true;
     }
 
     // Not found
@@ -535,57 +551,28 @@ public abstract class Property implements Comparable {
    * Moves a property amongst its siblings
    */
   public void move(int move) {
-    
-    // Look for position amongst siblings
-    int pos = 0;
-    while (parent.getProperty(pos)!=this) pos++;
-    
-    // check lower/upper boundary
-    move = Math.min(1,Math.max(-1, move));
-    if (move<0&&pos==0) return;
-    if (move>0&&pos==parent.getNoOfProperties()-1) return;
-    
-    // move it
-    Property sibling = parent.getProperty(pos+move);
-    parent.children.set(pos+move, this);
-    parent.children.set(pos, sibling);
 
-    sibling.noteDeletedProperty();    
-    sibling.noteAddedProperty  ();    
-    noteDeletedProperty();    
-    noteAddedProperty  ();    
+// FIXME    
+//    // Look for position amongst siblings
+//    int pos = 0;
+//    while (parent.getProperty(pos)!=this) pos++;
+//    
+//    // check lower/upper boundary
+//    move = Math.min(1,Math.max(-1, move));
+//    if (move<0&&pos==0) return;
+//    if (move>0&&pos==parent.getNoOfProperties()-1) return;
+//    
+//    // move it
+//    Property sibling = parent.getProperty(pos+move);
+//    parent.children.set(pos+move, this);
+//    parent.children.set(pos, sibling);
+//
+//    sibling.noteDeletedProperty();    
+//    sibling.noteAddedProperty  ();    
+//    noteDeletedProperty();    
+//    noteAddedProperty  ();    
 
     // done
-  }
-
-  /**
-   * Notify Gedcom that this property has been added
-   */
-  /*package*/ void noteAddedProperty() {
-    Gedcom gedcom = getGedcom();
-    if (gedcom!=null) {
-      gedcom.noteAddedProperty(this);
-    }
-  }
-
-  /**
-   * Notify Gedcom that this property has been deleted
-   */
-  /*package*/ void noteDeletedProperty() {
-    Gedcom gedcom = getGedcom();
-    if (gedcom!=null) {
-      gedcom.noteDeletedProperty(this);
-    }
-  }
-
-  /**
-   * Notify Gedcom that this property has been changed
-   */
-  /*package*/ void noteModifiedProperty() {
-    Gedcom gedcom = getGedcom();
-    if (gedcom!=null) {
-      gedcom.noteModifiedProperty(this);
-    }
   }
 
   /**

@@ -88,7 +88,7 @@ public class PropertyAge extends Property {
     else
       ageAsString = newValue;
     // notify
-    noteModifiedProperty();
+    modNotify();
     // Done
   }
   

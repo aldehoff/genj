@@ -251,7 +251,7 @@ public class PropertyDate extends Property {
       throw new IllegalArgumentException("Unknown format '"+newFormat+"'");
 
     // remember as modified      
-    noteModifiedProperty();
+    modNotify();
 
     // remember
     format=newFormat;
@@ -268,7 +268,7 @@ public class PropertyDate extends Property {
    */
   public void setValue(String newValue) {
 
-    noteModifiedProperty();
+    modNotify();
 
     // Reset value
     start.reset();
@@ -385,7 +385,7 @@ public class PropertyDate extends Property {
     public void set(int d, int m, int y) {
       
       // note change
-      noteModifiedProperty();
+      modNotify();
 
       // assume string is not needed anymore
       dateAsString=null;

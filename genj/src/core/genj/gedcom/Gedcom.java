@@ -78,12 +78,7 @@ public class Gedcom {
   /** change/transaction support */
   private boolean isTransaction = false;
   private boolean hasUnsavedChanges;
-  private Set addedEntities     ,
-              deletedEntities   ,
-              modifiedEntities  ;
-  private Set addedProperties   ,
-              deletedProperties ,
-              modifiedProperties;
+  private Set[] changes;
 
   /** listeners */
   private List listeners = new ArrayList(10);
@@ -206,9 +201,6 @@ public class Gedcom {
     // Store id
     id2entities[type].put(id,result);
     
-    // Mark change
-    noteAddedEntity(result);
-    
     // notify
     result.addNotify(this);
 
@@ -231,9 +223,6 @@ public class Gedcom {
 
     // Tell it
     which.delNotify();
-
-    // Notify deletion
-    noteDeletedEntity(which);
 
     // Delete it
     entities   [type].remove(which);
@@ -334,111 +323,59 @@ public class Gedcom {
     isTransaction = true;
 
     // ... prepare rememberance of changes
-    addedEntities      = new HashSet(64);
-    deletedEntities    = new HashSet(64);
-    modifiedEntities   = new HashSet(64);
-    addedProperties    = new HashSet(64);
-    deletedProperties  = new HashSet(64);
-    modifiedProperties = new HashSet(64);
+    changes = new Set[Change.NUM];
+    for (int i=0;i<Change.NUM;i++)
+      changes[i] = new HashSet(64);
 
     // .. done
     return true;
   }
 
   /**
+   * Whether there's a transaction going on
+   */
+  /*package*/ boolean isTransaction() {
+    return isTransaction;
+  }
+  
+  /**
+   * Returns change set
+   */
+  /*package*/ Set getTransactionChanges(int which) {
+    return changes[which]; 
+  }
+  
+  /**
    * Ends Transaction
    * @return the change that has been made
    */
-  public synchronized Change endTransaction() {
+  public synchronized void endTransaction() {
 
     // Is there a transaction going on?
     if (!isTransaction)
       throw new RuntimeException("Attempt to end non existing Transaction");
 
-    // Changes that need to signaled to listeners ?
-    final Change change = new Change(
-      this,
-      addedEntities,
-      deletedEntities,
-      modifiedEntities,
-      addedProperties,
-      deletedProperties,
-      modifiedProperties
-    );
+    // wrao in change
+    Change change = new Change( this, changes );
 
-    hasUnsavedChanges |= (change.getChange()!=0);
+    // end tx
+    isTransaction = false;
+    changes = null;
 
-    addedEntities      = null;
-    deletedEntities    = null;
-    modifiedEntities   = null;
-    addedProperties    = null;
-    deletedProperties  = null;
-    modifiedProperties = null;
+    // need to notify?
+    if (change.isEmpty())
+      return;
+      
+    // remember change
+    hasUnsavedChanges = true;
 
-    // ... send message to all listeners
+    // send message to all listeners
     GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
     for (int l=0;l<gls.length;l++) {
       gls[l].handleChange(change);
     }
 
-    // ... End
-    isTransaction = false;
-
-    // ... Done
-    return change;
-  }
-
-  /**
-   * Notification that an entity has been added.
-   * That change will be notified to listeners after unlocking write.
-   */
-  /*package*/ void noteAddedEntity(Entity entity) {
-    if (isTransaction) {
-      addedEntities.add(entity);
-    }
-  }
-
-  /**
-   * Notification that a property has been added.
-   * That change will be notified to listeners after unlocking write.
-   */
-  /*package*/ void noteAddedProperty(Property prop) {
-    if (isTransaction) {
-      addedProperties.add(prop);
-      modifiedEntities.add(prop.getEntity());
-    }
-  }
-
-  /**
-   * Notification that an entity has been deleted.
-   * That change will be notified to listeners after unlocking write.
-   */
-  /*package*/ void noteDeletedEntity(Entity entity) {
-    if (isTransaction) {
-      deletedEntities.add(entity);
-    }
-  }
-
-  /**
-   * Notification that a property has been deleted.
-   * That change will be notified to listeners after unlocking write.
-   */
-  /*package*/ void noteDeletedProperty(Property prop) {
-    if (isTransaction) {
-      deletedProperties.add(prop);
-      modifiedEntities.add(prop.getEntity());
-    }
-  }
-
-  /**
-   * Notification that a property has been modified
-   * That change will be notified to listeners after unlocking write.
-   */
-  /*package*/ void noteModifiedProperty(Property property) {
-    if (isTransaction) {
-      modifiedProperties.add(property);
-      modifiedEntities.add(property.getEntity());
-    }
+    // done
   }
   
   /**

@@ -130,7 +130,7 @@ public class NavigatorView extends JPanel implements ContextSupport {
     // date
     useGedcom.addListener(new GedcomListener() {
       public void handleChange(Change change) {
-        if (change.getEntities(change.EDEL).contains(current)) setCurrentEntity(null);
+        if (change.getChanges(change.EDEL).contains(current)) setCurrentEntity(null);
         else setCurrentEntity(current);
       }
     });

@@ -183,7 +183,7 @@ public class PropertyName extends Property {
    */
   public PropertyName setName(String first, String last, String suff) {
 
-    noteModifiedProperty();
+    modNotify();
 
     // forget/remember
     rememberLastName(lastName, last);
@@ -232,7 +232,7 @@ public class PropertyName extends Property {
    */
   public void setValue(String newValue) {
 
-    noteModifiedProperty();
+    modNotify();
     
     // New empty Value ?
     if (newValue==null) {

@@ -47,8 +47,48 @@ public abstract class Entity extends Property {
     // init status    
     type = ged.getTypeFor(getClass());
     tag = ged.getTagFor(type);
+    
+    // note
+    if (gedcom.isTransaction())
+      gedcom.getTransactionChanges(Change.EADD).add(this);
 
     // done    
+  }
+  
+  /**
+   * @see genj.gedcom.Property#delNotify()
+   */
+  void delNotify() {
+    
+    // note
+    if (gedcom.isTransaction())
+      gedcom.getTransactionChanges(Change.EDEL).add(this);
+
+    // forget
+    gedcom = null;
+    
+    // done    
+  }
+  
+  /**
+   * Lifecycle - callback when any property contained
+   * in record changed
+   */
+  /*package*/ void changeNotify(Property prop, int status) {
+    
+    // gedcom with transaction to tell it to?
+    if (gedcom==null||!gedcom.isTransaction())
+      return;
+      
+    // propagate change
+    gedcom.getTransactionChanges(status).add(prop);
+    gedcom.getTransactionChanges(Change.EMOD).add(this);
+    
+    // Reflect change of property
+    PropertyChange change = (PropertyChange)getProperty("CHAN");
+    if (change!=null) change.update();
+    
+    // done
   }
 
   /**

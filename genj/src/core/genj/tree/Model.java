@@ -399,7 +399,7 @@ public class Model implements GedcomListener {
    */
   public void handleChange(Change change) {
     // was any entity deleted?
-    Set deleted = change.getEntities(change.EDEL);
+    Set deleted = change.getChanges(change.EDEL);
     if (deleted.size()>0) {
       // root has to change?
       if (deleted.contains(root)) {
@@ -421,7 +421,7 @@ public class Model implements GedcomListener {
       return;
     }
     // was a relationship property deleted, added or changed?
-    for (Iterator pmods=change.getProperties(change.PMOD).iterator();pmods.hasNext();) {
+    for (Iterator pmods=change.getChanges(change.PMOD).iterator();pmods.hasNext();) {
       if (pmods.next() instanceof PropertyXRef) {
         update();
         return;
@@ -429,7 +429,7 @@ public class Model implements GedcomListener {
     }
     // was an individual or family created and we're without root
     if (root==null) {
-      for (Iterator eadds=change.getProperties(change.EADD).iterator();eadds.hasNext();) {
+      for (Iterator eadds=change.getChanges(change.EADD).iterator();eadds.hasNext();) {
         Entity e = (Entity)eadds.next();
         if (e instanceof Fam || e instanceof Indi) {
           setRoot(e);
@@ -438,7 +438,7 @@ public class Model implements GedcomListener {
       }
     }
     // was a property changed that we should notify about?
-    Set emods = change.getEntities(change.EMOD);
+    Set emods = change.getChanges(change.EMOD);
     if (!emods.isEmpty()) {
       ArrayList nodes = new ArrayList(emods.size());
       for (Iterator es=emods.iterator();es.hasNext();) {

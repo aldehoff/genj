@@ -167,7 +167,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
   public void setValue(String value) {
 
     // Remember the change
-    noteModifiedProperty();
+    modNotify();
 
     // Remember the value
     file = value.replace('\\','/');

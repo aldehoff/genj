@@ -149,7 +149,7 @@ public abstract class PropertyXRef extends Property {
   protected void setTarget(PropertyXRef target) {
 
     // Remember change
-    noteModifiedProperty();
+    modNotify();
 
     // Do it
     this.target=target;
@@ -172,7 +172,7 @@ public abstract class PropertyXRef extends Property {
    */
   public void setValue(String vAlue) {
 
-    noteModifiedProperty();
+    modNotify();
 
     // referenced entity exists ?
     unlink();

@@ -219,14 +219,17 @@ import java.util.Set;
    */
   public void handleChange(Change change) {
     // deleted or added entities/properties -> recreate
-    if (change.isChanged(change.EDEL)||change.isChanged(change.EADD)||change.isChanged(change.PADD)||change.isChanged(change.PDEL)) {
+    if (!(change.getChanges(change.EDEL).isEmpty()
+        &&change.getChanges(change.EADD).isEmpty()
+        &&change.getChanges(change.PADD).isEmpty()
+        &&change.getChanges(change.PDEL).isEmpty())) {
       createEvents();
       return;
     }
     // changed properties -> scan for dates or names
     boolean changed = false;
-    if (change.isChanged(change.PMOD)) {
-      Iterator ps = change.getProperties(change.PMOD).iterator();
+    if (!change.getChanges(change.PMOD).isEmpty()) {
+      Iterator ps = change.getChanges(change.PMOD).iterator();
       while (ps.hasNext()) {
         Property p = (Property)ps.next();
         // a date -> lets recreate everything

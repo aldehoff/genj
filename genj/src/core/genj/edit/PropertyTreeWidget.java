@@ -410,12 +410,12 @@ public class PropertyTreeWidget extends TreeWidget {
       if (root==null) return;
 
       // Entity deleted ?
-      if ( change.isChanged(Change.EDEL) ) {
+      if ( !change.getChanges(Change.EDEL).isEmpty() ) {
         // our entity
         Entity entity = root.getEntity();
         // Loop through known entity ?
         boolean affected = false;
-        Iterator ents = change.getEntities(Change.EDEL).iterator();
+        Iterator ents = change.getChanges(Change.EDEL).iterator();
         while (ents.hasNext()) {
           // the entity deleted
           Entity deleted = (Entity)ents.next();
@@ -437,7 +437,7 @@ public class PropertyTreeWidget extends TreeWidget {
       }
 
       // Property added/removed ?
-      if ( change.isChanged(Change.PADD)||change.isChanged(Change.PDEL)) {
+      if (!(change.getChanges(Change.PADD).isEmpty()&&change.getChanges(Change.PDEL).isEmpty())) {
         // reset
         fireStructureChanged();
         // show rows
@@ -447,9 +447,9 @@ public class PropertyTreeWidget extends TreeWidget {
       }
 
       // Property modified ?
-      if ( change.isChanged(change.PMOD) ) {
-        if ( change.getEntities(Change.EMOD).contains(root.getEntity())) {
-          firePropertiesChanged(change.getProperties(Change.PMOD));
+      if ( !change.getChanges(change.PMOD).isEmpty() ) {
+        if ( change.getChanges(Change.EMOD).contains(root.getEntity())) {
+          firePropertiesChanged(change.getChanges(Change.PMOD));
           return;
         }
       }

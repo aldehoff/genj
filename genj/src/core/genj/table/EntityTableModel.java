@@ -266,7 +266,7 @@ import javax.swing.table.TableColumnModel;
    */
   public void handleChange(Change change) {
     // a drastic change (entities added/deleted) ? 
-    if (change.isChanged(Change.EADD)||change.isChanged(Change.EDEL)) {
+    if (!(change.getChanges(Change.EADD).isEmpty()&&change.getChanges(Change.EDEL).isEmpty())) {
       // rebuild!
       prepareRows();
       fireTableDataChanged();
@@ -274,7 +274,7 @@ import javax.swing.table.TableColumnModel;
       return;
     }
     // any rows to update?
-    Set emods = change.getEntities(change.EMOD);
+    Set emods = change.getChanges(change.EMOD);
     int 
      first = -1,
      last  = -1; 

@@ -28,90 +28,34 @@ import java.util.Set;
 public class Change {
 
   public static final int
-    EADD    = 1,
-    EDEL    = 2,
-    PADD    = 4,
-    PDEL    = 8,
-    PMOD    = 16,
-    EMOD    = 32;
+    EADD    = 0,
+    EDEL    = 1,
+    EMOD    = 2,
+    PADD    = 3,
+    PDEL    = 4,
+    PMOD    = 5,
+    NUM      = 6;
 
   private Gedcom gedcom;
 
-  private Set eadd , edel,  emod;
-  private Set padd , pdel , pmod ;
-
-  private int change;
+  private Set[] sets;
 
   /**
    * Constructor
-   * @param gedcom Gedcom that has been changed
-   * @param eadd Added entities
-   * @param edel Deleted entities
-   * @param padd Added properties
-   * @param pdel Deleted properties
-   * @param pmod Modified properties
    */
-  public Change(Gedcom gedcom, Set eadd, Set edel, Set emod, Set padd, Set pdel, Set pmod ) {
+  public Change(Gedcom geDcom, Set[] seTs) {
 
     // Remember
-    this.gedcom=gedcom;
-
-    this.eadd = eadd;
-    this.edel = edel;
-    this.emod = emod;
-    this.padd = padd;
-    this.pdel = pdel;
-    this.pmod = pmod;
-
-    // What's the change like?
-    change = 0;
-    if ((eadd!=null)&&(eadd.size()>0)) {
-      change |= EADD;
-    }
-    if ((edel!=null)&&(edel.size()>0)) {
-      change |= EDEL;
-    }
-    if ((emod!=null)&&(emod.size()>0)) {
-      change |= EMOD;
-    }
-    if ((padd!=null)&&(padd.size()>0)) {
-      change |= PADD;
-    }
-    if ((pdel!=null)&&(pdel.size()>0)) {
-      change |= PDEL;
-    }
-    if ((pmod!=null)&&(pmod.size()>0)) {
-      change |= PMOD;
-    }
+    gedcom = geDcom;
+    sets   = seTs;
+    
   }
 
   /**
-   * What has changed
-   * @return change information as <code>int</code>
+   * Returns Set
    */
-  public int getChange() {
-    return change;
-  }
-
-  /**
-   * Returns Entities which have been changed
-   * @param which one of
-   *  EADD added entities
-   *  EDEL deleted entities
-   *  EMOD entities with modified/added/deleted properties
-   */
-  public Set getEntities(int which) {
-
-    switch (which) {
-      case EADD:
-        return eadd;
-      case EDEL:
-        return edel;
-      case EMOD:
-        return emod;
-    }
-
-    throw new IllegalArgumentException("Unknown type of entities");
+  public Set getChanges(int which) {
+    return sets[which];
   }
 
   /**
@@ -120,29 +64,14 @@ public class Change {
   public Gedcom getGedcom() {
     return gedcom;
   }
-
-  /**
-   * Added/Deleted/Modified Properties
-   */
-  public Set getProperties(int which) {
-    switch (which) {
-      case PADD:
-        return padd;
-      case PDEL:
-        return pdel;
-      case PMOD:
-        return pmod;
-    }
-    throw new IllegalArgumentException("Unknown type of properties");
-  }
-
-  /**
-   * What has changed
-   * @param change what information to test
-   * @return bool
-   */
-  public boolean isChanged(int change) {
-    return (this.change&change) != 0;
-  }
   
+  /**
+   * whether something was actually changed
+   */
+  public boolean isEmpty() {
+    for (int i=0;i<NUM;i++)
+      if (!sets[i].isEmpty()) return false;
+    return true;
+  }
+
 } //Change

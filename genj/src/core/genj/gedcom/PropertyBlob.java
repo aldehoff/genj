@@ -200,7 +200,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     }
     
     // Remember changed property
-    noteModifiedProperty();
+    modNotify();
 
     // Done
     return this;
@@ -229,7 +229,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     valueAsIcon   = null;
 
     // Remember changed property
-    noteModifiedProperty();
+    modNotify();
 
     // Done
   }          

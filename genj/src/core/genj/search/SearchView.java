@@ -689,7 +689,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
      * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
      */
     public void handleChange(Change change) {
-      if (change.isChanged(Change.PDEL))
+      if (!change.getChanges(Change.PDEL).isEmpty())
         clear();
     }
     
