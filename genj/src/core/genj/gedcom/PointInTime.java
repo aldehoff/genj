@@ -195,7 +195,7 @@ public abstract class PointInTime implements Comparable {
     if (year>0) {
       if (month>=0&&month<MONTHS.length) {
         if (day>=0) buffer.append(new Integer(day+1));
-        buffer.append(getMonth(localize));
+        buffer.append(getMonth(localize, true));
       }    
       buffer.append(new Integer(year));
     }
@@ -206,23 +206,25 @@ public abstract class PointInTime implements Comparable {
   /**
    * Returns the localized month as string (either MAY or Mai)
    */
-  public String getMonth(boolean localize) {
+  public String getMonth(boolean localize, boolean abbreviate) {
     int month = getMonth();
     if (month<0||month>=12)
       return "";
     String mmm = MONTHS[month];
     if (localize) mmm = Gedcom.getResources().getString("prop.date.mon."+mmm);
+    if (abbreviate&&mmm.length()>3) mmm = mmm.substring(0,3);
     return mmm;
   }
   
   /**
    * Access to (localized) gedcom months 
    */
-  public static String[] getMonths(boolean localize) {
+  public static String[] getMonths(boolean localize, boolean abbreviate) {
     String[] result = new String[12];
     for (int m=0;m<result.length;m++) {
       String mmm = MONTHS[m];
       if (localize) mmm = Gedcom.getResources().getString("prop.date.mon."+mmm);
+      if (abbreviate&&mmm.length()>3) mmm = mmm.substring(0,3);
       result[m] = mmm;
     }
     return result;

@@ -70,7 +70,7 @@ public class ReportBirthdays extends Report {
     Gedcom gedcom = (Gedcom)context;
 
     // Show months and check user's selection
-    String[] months = PointInTime.getMonths(true);
+    String[] months = PointInTime.getMonths(true, false);
     String selection = (String)getValueFromUser(i18n("select"),months,null);
     if (selection==null) 
       return;
