@@ -141,7 +141,7 @@ public class ReportPlaceHistory extends Report {
     
     // create series for the top n
     Map result = new HashMap();
-    for (int s=0; s<values.length&&s<topn; s++) {
+    for (int s=values.length-1, i=0; s>=0&&i<topn; s--,i++) {
       result.put(values[s], new XYSeries(values[s]));
     }
     
