@@ -165,7 +165,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       g.fillRect(0,0,r.width,r.height);
       // let the renderer do its work
       rulerRenderer.cmPyear = cmPyear;
-      rulerRenderer.render(model, g);
+      rulerRenderer.render(g, model);
       // done
     }
   
@@ -202,7 +202,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       g.fillRect(0,0,r.width,r.height);
       // let the renderer do its work
       contentRenderer.cmPyear = cmPyear;
-      contentRenderer.render(model, g);
+      contentRenderer.render(g, model);
       // done
     }
   

@@ -22,6 +22,7 @@ package genj.timeline;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,18 +41,18 @@ import genj.gedcom.PropertyEvent;
   private Gedcom gedcom;
   
   /** limits */
-  private double
-    max = 2020.0D,
-    min = 1901.0D;
+  private double 
+    max = Double.NaN,
+    min = Double.NaN;
 
   /** a filter for events that we're interested in */
   private Set filter;
   
   /** default filter */
-  private final static String[] DEFAULT_FILTER = { "BIRT" };
+  private final static String[] DEFAULT_FILTER = { "BIRT", "MARR", "RESI" };
     
   /** our levels */
-  private List levels;
+  private List layers;
   
   /**
    * Constructor
@@ -74,12 +75,46 @@ import genj.gedcom.PropertyEvent;
   }
   
   /**
+   * Returns the maximum
+   * @return double
+   */
+  /*package*/ double getMaximum() {
+    return max;
+  }
+
+  /**
+   * Returns the minimum
+   * @return double
+   */
+  /*package*/ double getMinimum() {
+    return min;
+  }
+  
+  /**
+   * Returns max-min
+   */
+  /*package*/ double getTimespan() {  
+    return max-min;
+  }
+  
+  /** 
+   * Returns the layers (containing lists of events)
+   */
+  /*package*/ List getLayers() {
+    return layers;
+  }
+
+  /**
    * Gather Events
    */
   private void insertEvents() {
     
+    // reset
+    min = Double.MAX_VALUE;
+    max = -Double.MAX_VALUE;
+    
     // prepare some space
-    levels = new ArrayList(10);
+    layers = new ArrayList(10);
     
     // look for events in INDIs and FAMs
     insertEventsFrom(gedcom.getEntities(Gedcom.INDIVIDUALS));
@@ -122,17 +157,40 @@ import genj.gedcom.PropertyEvent;
     // create the Event
     Event e = new Event(pe, wrap(start), wrap(end));
     // remember min and max
-    min = Math.min(e.s, min);
-    max = Math.max(e.e, max);
+    min = Math.min(Math.floor(e.from), min);
+    max = Math.max(Math.ceil (e.to  ), max);
     // keep the event
     insertEvent(e);
     // done
   }
   
   /**
-   * Insert the Event into right position in our layers
+   * Insert the Event into one of our layers
    */
   private void insertEvent(Event e) {
+    
+    // find a level that suits us
+    for (int l=0;l<layers.size();l++) {
+      // try to insert in level
+      List layer = (List)layers.get(l);
+      if (insertEvent(e, layer)) return;
+      // continue
+    }
+    
+    // create a new layer
+    List layer = new LinkedList();
+    layers.add(layer);
+    layer.add(e);
+    
+    // done
+  }
+  
+  /**
+   * Insert the Event into a layer
+   * @return whether that was successfull
+   */
+  private boolean insertEvent(Event e, List layer) {
+    return false;
   }
   
   /**
@@ -145,47 +203,24 @@ import genj.gedcom.PropertyEvent;
   /**
    * An event in our model
    */
-  private class Event {
+  /*package*/ class Event {
     /** state */
-    double s, e;
-    PropertyEvent pe;
+    /*package*/ double from, to;
+    /*package*/ PropertyEvent prop;
     /** 
      * Constructor
      */
     Event(PropertyEvent propEvent, double start, double end) {
-      pe = propEvent;
-      s  = start;
-      e  = end;
+      prop = propEvent;
+      from  = start;
+      to  = end;
     }
     /** 
      * String representation
      */
     public String toString() {
-      return pe.getTag() + '@' + s + '>' + e;
+      return prop.getTag() + '@' + from + '>' + to;
     }
   } //Event
   
-  /**
-   * Returns the maximum
-   * @return double
-   */
-  public double getMaximum() {
-    return max;
-  }
-
-  /**
-   * Returns the minimum
-   * @return double
-   */
-  public double getMinimum() {
-    return min;
-  }
-  
-  /**
-   * Returns max-min
-   */
-  public double getSpan() {  
-    return max-min;
-  }
-
 } //TimelineModel 

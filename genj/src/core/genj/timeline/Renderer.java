@@ -45,4 +45,21 @@ public abstract class Renderer {
     return (int)(inches*dpi);
   }
   
+  /**
+   * Convert pixels into cm
+   */
+  protected double pixels2cm(int pixels) {
+    // 1 inch = 2.54 cm
+    return pixels2inches(pixels)*2.54;
+  }
+
+  /**
+   * Convert pixels into inches
+   */
+  protected double pixels2inches(int pixels) {
+    // pixels = inches * dpi
+    return ((double)pixels)/dpi;
+  }
+  
+  
 } //Renderer
