@@ -49,7 +49,7 @@
     <echo>**********************************************</echo>
     <mkdir dir="${dir.build}/classes/contrib"/>
     <javac srcdir="src/contrib" destdir="${dir.build}/classes/contrib"
-           debug="${javac.debug}" optimize="off" deprecation="on" target="1.3">
+           debug="${javac.debug}" optimize="off" deprecation="on" source="1.4" target="1.4">
       <classpath refid="project.class.path"/>
     </javac>
   </target>
@@ -63,7 +63,7 @@
     <echo>**********************************************</echo>
     <mkdir dir="${dir.build}/classes/core"/>
     <javac srcdir="src/core" destdir="${dir.build}/classes/core"
-           debug="${javac.debug}" optimize="off" deprecation="on" target="1.3">
+           debug="${javac.debug}" optimize="off" deprecation="on" source="1.4" target="1.4">
       <classpath refid="project.class.path"/>
     </javac>
   </target>
@@ -74,7 +74,7 @@
   <target name="compile.report" depends="init">
     <mkdir dir="${dir.build}/classes/report"/>
     <javac srcdir="src/report" destdir="${dir.build}/classes/report"
-           debug="${javac.debug}" optimize="off" deprecation="on" target="1.3">
+           debug="${javac.debug}" optimize="off" deprecation="on" source="1.4" target="1.4">
       <classpath refid="project.class.path"/>
     </javac>
   </target>
