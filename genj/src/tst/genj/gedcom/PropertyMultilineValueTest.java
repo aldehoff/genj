@@ -35,6 +35,15 @@ public class PropertyMultilineValueTest extends TestCase {
   }
   
   /**
+   * Test display value computation
+   */
+  public void testDisplayValue() {
+    
+    mle.setValue("one\ntwo\nthree");
+    assertEquals("wrong display value", ((Property)mle).getDisplayValue(), "one...");
+  }
+  
+  /**
    * Test simple iterator
    */
   public void testSimpleIterator() {

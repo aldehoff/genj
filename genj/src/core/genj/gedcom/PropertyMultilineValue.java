@@ -66,7 +66,7 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
    */
   public String getDisplayValue() {
     int dots = lines.indexOf('\n');
-    return dots<0 ? lines : lines.substring(dots+1)+"...";
+    return dots<0 ? lines : lines.substring(0, dots)+"...";
   }
 
   /**
