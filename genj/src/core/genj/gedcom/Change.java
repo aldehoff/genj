@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 
@@ -53,13 +51,14 @@ public class Change {
    * @param pdel Deleted properties
    * @param pmod Modified properties
    */
-  public Change(Gedcom gedcom, Set eadd, Set edel, Set padd, Set pdel, Set pmod ) {
+  public Change(Gedcom gedcom, Set eadd, Set edel, Set emod, Set padd, Set pdel, Set pmod ) {
 
     // Remember
     this.gedcom=gedcom;
 
     this.eadd = eadd;
     this.edel = edel;
+    this.emod = emod;
     this.padd = padd;
     this.pdel = pdel;
     this.pmod = pmod;
@@ -71,6 +70,9 @@ public class Change {
     }
     if ((edel!=null)&&(edel.size()>0)) {
       change |= EDEL;
+    }
+    if ((emod!=null)&&(emod.size()>0)) {
+      change |= EMOD;
     }
     if ((padd!=null)&&(padd.size()>0)) {
       change |= PADD;
@@ -92,36 +94,6 @@ public class Change {
   }
 
   /**
-   * Resolves all entities which has properties that haveve been changed,
-   * added or deleted
-   */
-  private Set getEMOD() {
-
-    // Already  calculated?
-    if (emod!=null) {
-      return emod;
-    }
-
-    // Calculate
-    emod = new HashSet(pmod.size()+padd.size()+pdel.size());
-
-    Iterator e = pmod.iterator();
-    while (e.hasNext()) {
-      emod.add( ((Property)e.next()).getEntity() );
-    }
-    e = padd.iterator();
-    while (e.hasNext()) {
-      emod.add( ((Property)e.next()).getEntity() );
-    }
-    e = pdel.iterator();
-    while (e.hasNext()) {
-      emod.add( ((Property)e.next()).getEntity() );
-    }
-
-    return emod;
-  }
-
-  /**
    * Returns Entities which have been changed
    * @param which one of
    *  EADD added entities
@@ -136,7 +108,7 @@ public class Change {
       case EDEL:
         return edel;
       case EMOD:
-        return getEMOD();
+        return emod;
     }
 
     throw new IllegalArgumentException("Unknown type of entities");

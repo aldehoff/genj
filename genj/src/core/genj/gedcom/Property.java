@@ -41,7 +41,7 @@ public abstract class Property implements Comparable {
   private Property parent=null;
   
   /** children of this property */
-  private List childs = new ArrayList();
+  private List children = new ArrayList();
   
   /** images */
   protected ImageIcon image, imageErr;
@@ -63,7 +63,7 @@ public abstract class Property implements Comparable {
     noteDeletedProperty();
 
     // Say it to properties
-    delProperties(toArray(childs));
+    delProperties(toArray(children));
     
     // forget parent
     parent = null;
@@ -77,7 +77,7 @@ public abstract class Property implements Comparable {
    */
   public final Property addProperty(Property prop) {
     // Remember
-    childs.add(prop);
+    children.add(prop);
     // Notify
     prop.addNotify(this);
     // Done
@@ -89,7 +89,7 @@ public abstract class Property implements Comparable {
    */
   public void delProperties(Property[] which) {
     // single swoop remove
-    childs.removeAll(Arrays.asList(which));
+    children.removeAll(Arrays.asList(which));
     // notify
     for (int i=0;i<which.length;i++) {
       which[i].delNotify();
@@ -104,14 +104,14 @@ public abstract class Property implements Comparable {
   public boolean delProperty(Property which) {
 
     // Look for first class properties
-    if (childs.contains(which)) {
-      childs.remove(which);
+    if (children.contains(which)) {
+      children.remove(which);
       which.delNotify();
       return true;
     }
 
     // Look for second class properties
-    for (int i=0;i<childs.size();i++) {
+    for (int i=0;i<children.size();i++) {
       if (getProperty(i).delProperty(which)) return true;
     }
 
@@ -134,7 +134,7 @@ public abstract class Property implements Comparable {
   public int getDepthOfProperties() {
     // recursive search
     int result = 0;
-    for (int i=0;i<childs.size();i++) {
+    for (int i=0;i<children.size();i++) {
       result = Math.max( result, getProperty(i).getDepthOfProperties()+1 );
     }
     // Done
@@ -227,7 +227,7 @@ public abstract class Property implements Comparable {
    * Calculates the number of properties this property has.
    */
   public int getNoOfProperties() {
-    return childs.size();
+    return children.size();
   }
 
   /**
@@ -239,7 +239,7 @@ public abstract class Property implements Comparable {
 
     // recursive
     int result = 0;
-    for (int i=0;i<childs.size();i++) {
+    for (int i=0;i<children.size();i++) {
       Property child = getProperty(i); 
       if (child.isValid() || !validOnly)
         result ++;
@@ -333,7 +333,7 @@ public abstract class Property implements Comparable {
    * Returns this property's properties (all children)
    */
   public Property[] getProperties() {
-    return toArray(childs);
+    return toArray(children);
   }
 
   /**
@@ -386,7 +386,7 @@ public abstract class Property implements Comparable {
   public Property[] getProperties(TagPath path, boolean validOnly) {
 
     // Gather 'em
-    List result = new ArrayList(childs.size());
+    List result = new ArrayList(children.size());
     getPropertiesRecursively(path, 0, result, validOnly);
 
     // done
@@ -408,7 +408,7 @@ public abstract class Property implements Comparable {
     }
 
     // Search in properties
-    for (int i=0;i<childs.size();i++) {
+    for (int i=0;i<children.size();i++) {
       getProperty(i).getPropertiesRecursively(path,pos+1,fill,validOnly);
     }
 
@@ -420,7 +420,7 @@ public abstract class Property implements Comparable {
    * Returns this property's nth property
    */
   public Property getProperty(int n) {
-    return (Property)childs.get(n);
+    return (Property)children.get(n);
   }
 
   /**
@@ -547,8 +547,8 @@ public abstract class Property implements Comparable {
     
     // move it
     Property sibling = parent.getProperty(pos+move);
-    parent.childs.set(pos+move, this);
-    parent.childs.set(pos, sibling);
+    parent.children.set(pos+move, this);
+    parent.children.set(pos, sibling);
 
     sibling.noteDeletedProperty();    
     sibling.noteAddedProperty  ();    

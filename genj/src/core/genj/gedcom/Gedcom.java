@@ -20,6 +20,7 @@
 package genj.gedcom;
 
 import genj.util.Origin;
+import genj.util.ReferenceSet;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * The object-representation of a Gedom file
@@ -77,13 +79,17 @@ public class Gedcom {
   private boolean isTransaction = false;
   private boolean hasUnsavedChanges;
   private Set addedEntities     ,
-              deletedEntities   ;
+              deletedEntities   ,
+              modifiedEntities  ;
   private Set addedProperties   ,
               deletedProperties ,
               modifiedProperties;
 
   /** listeners */
   private List listeners = new ArrayList(10);
+  
+  /** mapping tags refence sets */
+  private Map tags2refsets = new HashMap();
 
   /**
    * Gedcom's Constructor
@@ -330,6 +336,7 @@ public class Gedcom {
     // ... prepare rememberance of changes
     addedEntities      = new HashSet(64);
     deletedEntities    = new HashSet(64);
+    modifiedEntities   = new HashSet(64);
     addedProperties    = new HashSet(64);
     deletedProperties  = new HashSet(64);
     modifiedProperties = new HashSet(64);
@@ -353,6 +360,7 @@ public class Gedcom {
       this,
       addedEntities,
       deletedEntities,
+      modifiedEntities,
       addedProperties,
       deletedProperties,
       modifiedProperties
@@ -362,6 +370,7 @@ public class Gedcom {
 
     addedEntities      = null;
     deletedEntities    = null;
+    modifiedEntities   = null;
     addedProperties    = null;
     deletedProperties  = null;
     modifiedProperties = null;
@@ -384,12 +393,9 @@ public class Gedcom {
    * That change will be notified to listeners after unlocking write.
    */
   /*package*/ void noteAddedEntity(Entity entity) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-      return;
+    if (isTransaction) {
+      addedEntities.add(entity);
     }
-    addedEntities.add(entity);
   }
 
   /**
@@ -397,14 +403,10 @@ public class Gedcom {
    * That change will be notified to listeners after unlocking write.
    */
   /*package*/ void noteAddedProperty(Property prop) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-      return;
+    if (isTransaction) {
+      addedProperties.add(prop);
+      modifiedEntities.add(prop.getEntity());
     }
-    addedProperties.add(prop);
-    modifiedProperties.add(prop);
-    // Done
   }
 
   /**
@@ -412,16 +414,9 @@ public class Gedcom {
    * That change will be notified to listeners after unlocking write.
    */
   /*package*/ void noteDeletedEntity(Entity entity) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-      return;
+    if (isTransaction) {
+      deletedEntities.add(entity);
     }
-
-    // Remember
-    deletedEntities.add(entity);
-
-    // Done
   }
 
   /**
@@ -429,15 +424,10 @@ public class Gedcom {
    * That change will be notified to listeners after unlocking write.
    */
   /*package*/ void noteDeletedProperty(Property prop) {
-
-    // Is there a transaction running?
-    if (!isTransaction)
-      return;
-
-    deletedProperties.add(prop);
-    modifiedProperties.add(prop);
-    
-    // Done
+    if (isTransaction) {
+      deletedProperties.add(prop);
+      modifiedEntities.add(prop.getEntity());
+    }
   }
 
   /**
@@ -445,13 +435,28 @@ public class Gedcom {
    * That change will be notified to listeners after unlocking write.
    */
   /*package*/ void noteModifiedProperty(Property property) {
-
-    // Is there a transaction running?
-    if (!isTransaction)
-      return;
-
-    modifiedProperties.add(property);
-    // Done
+    if (isTransaction) {
+      modifiedProperties.add(property);
+      modifiedEntities.add(property.getEntity());
+    }
+  }
+  
+  /**
+   * Get a reference set for given tag
+   */
+  /*package*/ ReferenceSet getReferenceSet(String tag) {
+    // lookup
+    ReferenceSet result = (ReferenceSet)tags2refsets.get(tag);
+    if (result==null) {
+      // .. instantiate if necessary
+      result = new ReferenceSet();
+      tags2refsets.put(tag, result);
+      // .. and pre-fill
+      StringTokenizer tokens = new StringTokenizer(Gedcom.resources.getString(tag+".vals",""),",");
+      while (tokens.hasMoreElements()) result.add(tokens.nextToken().trim(), null);
+    }
+    // done
+    return result;
   }
 
   /**
