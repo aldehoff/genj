@@ -36,8 +36,8 @@ public abstract class Property implements Comparable {
 
   private static final Property NO_KNOWN_PROPERTIES[] = {};
   private static final String   NO_KNOWN_SUB_TAGS  [] = {};
-  private static final String   EVT_SUB_TAGS       [] = new String[]{ "DATE", "PLAC", "ADDR", "AGNC", "TYPE" };
-  private static final String   IAT_SUB_TAGS       [] = new String[]{ "ADDR", "AGNC", "DATE", "PLAC", "TYPE" };
+  private static final String   EVT_SUB_TAGS       [] = new String[]{ "DATE", "PLAC", "ADDR", "PHON", "AGNC", "TYPE" };
+  private static final String   IAT_SUB_TAGS       [] = new String[]{ "ADDR", "PHON", "AGNC", "DATE", "PLAC", "TYPE" };
 
   /**
    * Common fields for every Property: parent and vector of child properties
@@ -83,7 +83,7 @@ public abstract class Property implements Comparable {
     new MetaDefinition("NOTE","Note", new String[]{"DATE"}) ,
 
     // SUBM Record
-    new MetaDefinition("SUBM","Submitter",new String[]{"NAME","ADDR"}),
+    new MetaDefinition("SUBM","Submitter",new String[]{"NAME","ADDR","PHONE"}),
 
     // INDI Attributes
     new MetaDefinition("CAST","IndividualAttribute",IAT_SUB_TAGS) ,
@@ -123,6 +123,7 @@ public abstract class Property implements Comparable {
     new MetaDefinition("WILL","Event",EVT_SUB_TAGS) ,
     new MetaDefinition("GRAD","Event",EVT_SUB_TAGS) ,
     new MetaDefinition("RETI","Event",EVT_SUB_TAGS) ,
+    new MetaDefinition("EVEN","Event",EVT_SUB_TAGS) ,
 
     // FAM Events
     new MetaDefinition("ANUL","Event",EVT_SUB_TAGS) ,
@@ -148,10 +149,11 @@ public abstract class Property implements Comparable {
     new MetaDefinition("POST","PostalCode") ,
 
     // Generic Attributes
-    new MetaDefinition("AGNC","GenericAttribute") ,
-    new MetaDefinition("TYPE","GenericAttribute") ,
-    new MetaDefinition("TITL","GenericAttribute") ,
-    new MetaDefinition("FORM","GenericAttribute") ,
+    new MetaDefinition("PHON" ,"GenericAttribute") ,
+    new MetaDefinition("AGNC" ,"GenericAttribute") ,
+    new MetaDefinition("TYPE" ,"GenericAttribute") ,
+    new MetaDefinition("TITL" ,"GenericAttribute") ,
+    new MetaDefinition("FORM" ,"GenericAttribute") ,
 
     // Medai
     new MetaDefinition("OBJE","Media"           ,new String[]{"TITL","FORM", "BLOB", "FILE"}) ,
@@ -164,7 +166,7 @@ public abstract class Property implements Comparable {
     new MetaDefinition("PUBL","GenericAttribute") ,
 
     // Repository
-    new MetaDefinition("REPO","Repository"    ,new String[]{"NAME"}) ,
+    new MetaDefinition("REPO","Repository"    ,new String[]{"NAME","ADDR","PHONE"}) ,
   };
 
   /**
