@@ -331,7 +331,8 @@ public abstract class Report implements Cloneable {
     
     // check result and apply format
     if (result==null) {
-      Debug.log(Debug.WARNING, this, "Unknown i18 '"+key+"' for "+getName());
+      // 20030529 - don't do a recursive getName() here
+      Debug.log(Debug.WARNING, this, "Unknown i18 key : "+key);
       result = key;
     } else {
       if (subs!=null&&subs.length>0)
