@@ -6,7 +6,6 @@
     <pathelement path ="${dir.build}/version"/>
     <pathelement path ="${dir.build}/classes/awtx"/>
     <pathelement path ="${dir.build}/classes/core"/>
-    <pathelement path ="${dir.build}/classes/report"/>
     <fileset dir="lib">
         <include name="**/*.jar"/>
     </fileset>
