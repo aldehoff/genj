@@ -166,9 +166,6 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     content.addMouseListener(new ContentClick());
     ruler = new Ruler();
     
-    // start listeing
-    model.addListener(modelListener);
-    
     // all that fits in a scrollpane
     scrollContent = new JScrollPane(new ViewPortAdapter(content));
     scrollContent.setColumnHeaderView(new ViewPortAdapter(ruler));
@@ -189,7 +186,16 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     // done
   }
 
-  
+
+  /**
+   * @see javax.swing.JComponent#addNotify()
+   */
+  public void addNotify() {
+    // start listeing
+    model.addListener(modelListener);
+    // continue
+    super.addNotify();
+  }
   
   /**
    * @see javax.swing.JComponent#removeNotify()

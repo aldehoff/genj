@@ -652,7 +652,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      * Constructor     */
     private Overview(JScrollPane scroll) {
       super(scroll.getViewport());
-      model.addListener(this);
       super.setSize(new Dimension(TreeView.this.getWidth()/4,TreeView.this.getHeight()/4));
     }
     /**
@@ -664,11 +663,23 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       super.setSize(width, height);
     }
     /**
+     * @see java.awt.Panel#addNotify()
+     */
+    public void addNotify() {
+      // listen
+      model.addListener(this);
+      // continue
+      super.addNotify();
+    }
+
+    /**
      * @see java.awt.Container#removeNotify()
      */
     public void removeNotify() {
-      super.removeNotify();
+      // no listen
       model.removeListener(this);
+      // continue
+      super.removeNotify();
     }
     /**
      * @see genj.util.swing.ViewPortOverview#paintContent(java.awt.Graphics, double, double)
@@ -719,16 +730,25 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      * Constructor
      */
     private Content() {
-      model.addListener(this);
       addMouseListener(this);
+    }
+    
+    /**
+     * @see javax.swing.JComponent#addNotify()
+     */
+    public void addNotify() {
+      model.addListener(this);
+      // continue
+      super.addNotify();
     }
     
     /**
      * @see javax.swing.JComponent#removeNotify()
      */
     public void removeNotify() {
-      super.removeNotify();
       model.removeListener(this);
+      // continue
+      super.removeNotify();
     }
 
     /**
