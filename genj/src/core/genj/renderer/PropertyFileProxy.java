@@ -39,7 +39,7 @@ public class PropertyFileProxy extends PropertyProxy {
   /**
    * @see genj.renderer.PropertyProxy#getSize(FontMetrics, Property, boolean, boolean)
    */
-  public Dimension getSize(FontMetrics metrics, Property prop, boolean isText, boolean isImage) {
+  public Dimension getSize(FontMetrics metrics, Property prop, int preference) {
     ImgIcon img = getImage(prop);
     if (img==null) return ZERO_DIMENSION;
     return new Dimension(img.getIconWidth(), img.getIconHeight());
@@ -48,10 +48,15 @@ public class PropertyFileProxy extends PropertyProxy {
   /**
    * @see genj.renderer.PropertyProxy#render(Graphics, FontMetrics, Rectangle, Property, boolean, boolean)
    */
-  public void render(Graphics g, FontMetrics metrics, Rectangle bounds, Property prop, boolean isText, boolean isImage) {
+  public void render(Graphics g, Rectangle bounds, Property prop, int preference) {
+    // grab the image
     ImgIcon img = getImage(prop);
     if (img==null) return;
-    img.paintIcon(g, bounds.x, bounds.y);
+    // check if we should zoom
+    double zoom = Math.min(1.0D, ((double)bounds.height)/img.getIconHeight());
+    // paint
+    img.paintIcon(g, bounds.x, bounds.y, zoom);
+    // done
   }
   
   /**

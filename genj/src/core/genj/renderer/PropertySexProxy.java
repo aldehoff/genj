@@ -19,49 +19,35 @@
  */
 package genj.renderer;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyName;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
 /**
- * 
+ * last, first
+ * first last
+ * first last suffix
  */
-public class PropertyDateProxy extends PropertyProxy {
+public class PropertySexProxy extends PropertyProxy {
 
   /**
    * @see genj.renderer.PropertyProxy#getSize(FontMetrics, Property, boolean, boolean)
    */
   public Dimension getSize(FontMetrics metrics, Property prop, int preference) {
-    return super.getSize(metrics, prop.getImage(false), getDate(prop), preference);
+    if (preference==PREFER_DEFAULT) preference = PREFER_IMAGE;
+    return super.getSize(metrics, prop, preference);
   }
 
   /**
    * @see genj.renderer.PropertyProxy#render(Graphics, FontMetrics, Rectangle, Property, boolean, boolean)
    */
-  public void render(Graphics g, Rectangle bounds, Property prop, int preference) {
-    super.render(g, bounds, prop.getImage(false), getDate(prop), preference);
-  }
-  
-  /**
-   * 
-   */
-  protected void render(Graphics g, Rectangle bounds, String txt) {
-    int w = g.getFontMetrics().stringWidth(txt);
-    bounds.x += bounds.width-w;
-    super.render(g, bounds, txt);
+  public void render( Graphics g, Rectangle bounds, Property prop, int preference) {
+    if (preference==PREFER_DEFAULT) preference = PREFER_IMAGE;
+    super.render(g, bounds, prop, preference);
   }
 
-  /**
-   * Helper to get the date of PropertyDate
-   */
-  private String getDate(Property prop) {
-    if (!(prop instanceof PropertyDate)||!prop.isValid()) 
-      return prop.getValue();
-    PropertyDate date = (PropertyDate)prop;
-    return date.toString(false, true);
-  }  
-
-} //PropertyDateProxy
+} //PropertyNameProxy

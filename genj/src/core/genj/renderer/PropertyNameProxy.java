@@ -37,19 +37,19 @@ public class PropertyNameProxy extends PropertyProxy {
   /**
    * @see genj.renderer.PropertyProxy#getSize(FontMetrics, Property, boolean, boolean)
    */
-  public Dimension getSize(FontMetrics metrics, Property prop, boolean isText, boolean isImage) {
-    return super.getSize(metrics, prop.getImage(false), getName(prop), isText, isImage);
+  public Dimension getSize(FontMetrics metrics, Property prop, int preference) {
+    return super.getSize(metrics, prop.getImage(false), getName(prop), preference);
   }
 
   /**
    * @see genj.renderer.PropertyProxy#render(Graphics, FontMetrics, Rectangle, Property, boolean, boolean)
    */
-  public void render( Graphics g, FontMetrics metrics, Rectangle bounds, Property prop, boolean isText, boolean isImage) {
-    super.render(g, metrics, bounds, prop.getImage(false), getName(prop), isText, isImage);
+  public void render( Graphics g, Rectangle bounds, Property prop, int preference) {
+    super.render(g, bounds, prop.getImage(false), getName(prop), preference);
   }
 
   /**
-   * Helper to get the image of PropertyFile
+   * Helper to get the name of PropertyName
    */
   private String getName(Property prop) {
     if (!(prop instanceof PropertyName)||!prop.isValid()) 

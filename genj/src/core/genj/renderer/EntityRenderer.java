@@ -58,9 +58,6 @@ import javax.swing.text.html.HTMLEditorKit.HTMLFactory;
  */
 public class EntityRenderer {
   
-  /** a default PropertyProxy */
-  private final static PropertyProxy DEFAULT_PROPERTY_PROXY = new PropertyProxy();
-  
   /** the property image width */
   private static final int 
     PROP_IMAGE_WIDTH  = Property.getDefaultImage("INDI").getIconWidth()+4,
@@ -282,11 +279,8 @@ public class EntityRenderer {
    */
   private class PropertyView extends BaseView {
     
-    /** do we view the image? */
-    private boolean isImage = false;
-    
-    /** do we view the text? */
-    private boolean isText = true;
+    /** our preference when looking at the property */
+    private int preference;
     
     /** the proxy used */
     private PropertyProxy proxy = null;
@@ -312,12 +306,7 @@ public class EntityRenderer {
         // know it already?
         proxy = (PropertyProxy) proxies.get(name);
         if (proxy==null) {
-          // get one
-          try {
-            proxy = (PropertyProxy)Class.forName("genj.renderer.Property"+name+"Proxy").newInstance();
-          } catch (Throwable t) {
-            proxy = DEFAULT_PROPERTY_PROXY;
-          }
+          proxy = PropertyProxy.get(name);
           proxies.put(name, proxy);
         }
 
@@ -325,9 +314,13 @@ public class EntityRenderer {
       }      
       
       // check image&text
+      preference = PropertyProxy.PREFER_DEFAULT;
       AttributeSet atts = elem.getAttributes();
-      if ("yes".equals(atts.getAttribute("img"))) isImage=true;
-      if (isImage && "no".equals(atts.getAttribute("txt"))) isText=false;
+      if ("yes".equals(atts.getAttribute("img"))) {
+        preference = PropertyProxy.PREFER_IMAGEANDTEXT;
+        if ("no".equals(atts.getAttribute("txt"))) 
+          preference = PropertyProxy.PREFER_IMAGE;
+      }
       
       // done
     }
@@ -369,7 +362,7 @@ public class EntityRenderer {
       if (proxy==null) return 0;
       Property p = getProperty();
       if (p==null) return 0;
-      Dimension d = proxy.getSize(getFontMetrics(), p, isText, isImage);
+      Dimension d = proxy.getSize(getFontMetrics(), p, preference);
       return axis==X_AXIS ? d.width : d.height;
     }
 
@@ -386,7 +379,7 @@ public class EntityRenderer {
       g.setFont(getFont());
       // render
       Rectangle bounds = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
-      proxy.render(g, getFontMetrics(), bounds, p, isText, isImage);
+      proxy.render(g, bounds, p, preference);
       // done
     }
     /**

@@ -20,7 +20,10 @@
 package genj.table;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,10 +36,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import genj.renderer.PropertyProxy;
 import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Registry;
@@ -88,6 +93,7 @@ public class TableView extends JPanel implements ToolBarSupport {
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     table.setAutoCreateColumnsFromModel(false);
     table.getTableHeader().setReorderingAllowed(false);
+    table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
     setLayout(new BorderLayout());
     add(new JScrollPane(table), BorderLayout.CENTER);
     
@@ -106,6 +112,9 @@ public class TableView extends JPanel implements ToolBarSupport {
         Entity entity = selection.getEntity();
         // a type that we're interested in?
         if (entity.getType()!=tableModel.getType()) return;
+        // already selected?
+        int old = table.getSelectionModel().getLeadSelectionIndex();
+        if (old>=0 && tableModel.getEntity(old)==entity) return;
         // change selection
         EntityList es = TableView.this.gedcom.getEntities(entity.getType());
         for (int e=0; e<es.getSize(); e++) {
@@ -265,5 +274,49 @@ public class TableView extends JPanel implements ToolBarSupport {
     }
   } //ActionMode
   
-  
+  /**
+   * Renderer for properties in cells
+   */
+  private class PropertyTableCellRenderer extends JLabel implements TableCellRenderer {
+    /** current property */
+    private Property prop;
+    /** attributes */
+    private boolean isSelected;
+    /**
+     * @see javax.swing.table.TableCellRenderer#getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)
+     */
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focs, int row, int col) {
+      // there's a property here
+      prop = (Property)value;
+      // and some status
+      isSelected = selected;
+      // ready
+      return this;
+    }
+    /**
+     * @see javax.swing.JComponent#paintComponent(Graphics)
+     */
+    protected void paintComponent(Graphics g) {
+      // our bounds
+      Rectangle bounds = getBounds();
+      bounds.x=0; bounds.y=0;
+      // background?
+      if (isSelected) {
+        g.setColor(table.getSelectionBackground());
+        g.fillRect(0,0,bounds.width,bounds.height);
+        g.setColor(table.getSelectionForeground());
+      } else {
+        g.setColor(table.getForeground());
+      }
+      g.setFont(table.getFont());
+      // no prop and we're done
+      if (prop==null) return;
+      // get the proxy
+      PropertyProxy proxy = PropertyProxy.get(prop.getProxy());
+      // let it render
+      proxy.render(g, bounds, prop, proxy.PREFER_DEFAULT);
+      // done
+    }
+  } //PropertyTableCellRenderer
+    
 } //TableView

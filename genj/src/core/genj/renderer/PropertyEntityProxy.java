@@ -35,15 +35,15 @@ public class PropertyEntityProxy extends PropertyProxy {
   /**
    * @see genj.renderer.PropertyProxy#getSize(FontMetrics, Property, boolean, boolean)
    */
-  public Dimension getSize(FontMetrics metrics, Property prop, boolean isText, boolean isImage) {
-    return super.getSize(metrics, prop.getImage(false), ((Entity)prop).getId(), isText, isImage);
+  public Dimension getSize(FontMetrics metrics, Property prop, int preference) {
+    return super.getSize(metrics, prop.getImage(false), ((Entity)prop).getId(), preference);
   }
 
   /**
    * @see genj.renderer.PropertyProxy#render(Graphics, FontMetrics, Rectangle, Property, boolean, boolean)
    */
-  public void render( Graphics g, FontMetrics metrics, Rectangle bounds, Property prop, boolean isText, boolean isImage) {
-    super.render(g, metrics, bounds, prop.getImage(false), ((Entity)prop).getId(), isText, isImage);
+  public void render(Graphics g, Rectangle bounds, Property prop, int preference) {
+    super.render(g, bounds, prop.getImage(false), ((Entity)prop).getId(), preference);
   }
 
 } //PropertyNameProxy
