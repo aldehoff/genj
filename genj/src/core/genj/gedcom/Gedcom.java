@@ -1139,9 +1139,9 @@ public class Gedcom implements GedcomListener {
       public boolean on(Entity e) {
         // .. set source
         if (e.getGedcom()==g1)
-        e.getProperty().addProperty(new PropertyNote(_n1));
+          e.getProperty().addProperty(new PropertyNote(_n1));
         else
-        e.getProperty().addProperty(new PropertyNote(_n2));
+          e.getProperty().addProperty(new PropertyNote(_n2));
         // .. please continue
         return true;
       }
@@ -1149,11 +1149,11 @@ public class Gedcom implements GedcomListener {
 
       // .. Tag entities
       for (int l=0;l<g1.entities.length;l++)
-      g1.entities[l].operate(a);
+        g1.entities[l].operate(a);
 
       // .. Tag entities
       for (int l=0;l<g2.entities.length;l++)
-      g2.entities[l].operate(a);
+        g2.entities[l].operate(a);
 
       // .. done
     }

@@ -30,7 +30,7 @@ import java.util.*;
 public abstract class PropertyXRef extends Property {
 
   /** the target property that this xref references */
-  protected PropertyXRef target;
+  private PropertyXRef target;
 
   /** the value for a broken xref */
   protected String       value ;
@@ -41,12 +41,10 @@ public abstract class PropertyXRef extends Property {
    */
   public PropertyXRef(PropertyXRef target) {
 
-    if (target instanceof Entity) {
-      throw new IllegalArgumentException("target mustn't be an Entity");
-    }
-
-    this.target = target;
-    this.value  = (target==null ? "" : null);
+    setTarget(target);
+    
+    if (target==null) value="";
+    
   }
 
   /**
@@ -155,8 +153,13 @@ public abstract class PropertyXRef extends Property {
    */
   protected void setTarget(PropertyXRef target) {
 
-    if (target instanceof Entity)
-      throw new IllegalArgumentException("target mustn't be of type Entity");
+    // Did we get an entity that we want to link to?
+    if (target instanceof Entity) {
+      // .. create a 'substitute' foreign x-ref 
+      PropertyForeignXRef fx = new PropertyForeignXRef(this);
+      ((Entity)target).addForeignXRef(fx);
+      target = fx;
+    }
 
     // Remember change
     noteModifiedProperty();
@@ -201,10 +204,7 @@ public abstract class PropertyXRef extends Property {
     target = null;
 
     // ... delete back referencing property in referenced entity
-    //     if that property isn't the entity itself (e.g. PropertyMedia)
-    if (!(t instanceof Entity)) {
-      t.getEntity().getProperty().delProperty(t);
-    }
+    t.getEntity().getProperty().delProperty(t);
 
     // ... should be unlinked vice-versa now
   }

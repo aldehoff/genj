@@ -67,5 +67,18 @@ public interface Entity {
    * Sets entity's id
    */
   public void setId(String setId);
+  
+  /**
+   * Adds another foreign xref - normally references between
+   * entities are modelled via a property in each entity (e.g.
+   * FAMC-CHIL or FAMS-HUSB). They are linked against each 
+   * other. If a property doesn't have a complement in an 
+   * entity (e.g. NOTE-?) this 'hidden' property handles the
+   * back reference (therefore NOTE-ForeignXRef). It is 
+   * expected that any functionality overriden in superclass
+   * Property (e.g. delProperty) takes these foreigns into
+   * consideration
+   */
+  public void addForeignXRef(PropertyForeignXRef fxref);
 
 }

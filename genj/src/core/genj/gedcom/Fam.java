@@ -329,4 +329,12 @@ public class Fam extends PropertyFam implements Entity {
     // Done
     return result;
   }
+
+  /**
+   * @see Entity#addForeignXRef(PropertyForeignXRef)
+   */  
+  public void addForeignXRef(PropertyForeignXRef fxref) {
+    throw new RuntimeException("Not supported yet");
+  }
+  
 }

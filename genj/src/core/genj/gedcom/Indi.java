@@ -367,4 +367,11 @@ public class Indi extends PropertyIndi implements Entity {
 
     return result;
   }
+
+  /**
+   * @see Entity#addForeignXRef(PropertyForeignXRef)
+   */  
+  public void addForeignXRef(PropertyForeignXRef fxref) {
+    throw new RuntimeException("Not supported yet");
+  }
 }
