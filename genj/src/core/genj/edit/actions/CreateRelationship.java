@@ -30,7 +30,6 @@ import genj.window.WindowManager;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.AbstractList;
 
 import javax.swing.JComponent;
 
@@ -123,24 +122,22 @@ public class CreateRelationship extends AbstractChange {
       ents = gedcom.getEntities(targetType, "");
     }
 
-    final ChoiceWidget result = new ChoiceWidget(new AbstractList() {
-      public int size() {
-        return ents.length+1;
-      }
-      public Object get(int index) {
-        if (index==0)
-          return  "*New*";
-        Entity e = (Entity)ents[index-1];
-        return e.toString() + " (" + e.getId() + ')';
-      }
-    });
-    
+    // prepare a list of string items
+    Object[] items = new Object[ents.length+1];
+    items[0] = "*New*";
+    for (int i=0;i<ents.length;i++)
+      items[i+1] = ents[i].toString() + " (" + ents[i].getId() + ')';
+
+    // wrap it in choice
+    final ChoiceWidget result = new ChoiceWidget(items, items[0]);
     result.setEditable(false);
     result.setSelectedIndex(0);
     result.addItemListener(new ItemListener() {
       public void itemStateChanged(ItemEvent e) {
-        Object item = e.getItem();
-        existing = item instanceof Entity ? (Entity)item : null;
+        // translate index to existing entity being chosen
+        // can't use getItem() here because we have simple strings in model
+        int i = result.getSelectedIndex();
+        existing = i==0 ? null : ents[i-1]; 
         // refresh abstract change
         refresh();
       }
