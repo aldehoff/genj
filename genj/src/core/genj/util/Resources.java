@@ -85,6 +85,8 @@ public class Resources {
     } catch (Throwable t) {
     }
 
+Debug.log(Debug.INFO, this, pkg + ":" + lang);
+
     try {
 
       String file;
