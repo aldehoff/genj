@@ -90,7 +90,7 @@ public abstract class Property implements Comparable {
     // reset meta
     meta = null;
     
-    // delete children first
+    // tell children first (they might have to do some cleanup themselves)
     Property[] props = getProperties();
     for (int i=props.length-1;i>=0;i--) {
       props[i].delNotify(tx);
@@ -150,6 +150,7 @@ public abstract class Property implements Comparable {
    * @param pos the position of prop after adding
    * @return the copy of prop that was added
    */
+  // FIXME not necessary after having clipboard support
   public Property addCopy(Property prop, int pos) {
 
     // create a copy of prop
