@@ -20,29 +20,24 @@
 package genj.renderer;
 
 import genj.gedcom.Gedcom;
+import genj.util.Resources;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.parsers.SAXParserFactory;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
+import java.util.StringTokenizer;
 
 /**
  * A manager for our blueprints */
 public class BlueprintManager {
-
-  private final static String BLUEPRINT="blueprint";
 
   /** blueprints per entity */
   private List[] blueprints = new List[Gedcom.NUM_TYPES];
 
   /** singleton */
   private static BlueprintManager instance;
+  
+  /** resources */
+  private Resources resources = new Resources(BlueprintManager.class);
   
   /**
    * Singleton access   */
@@ -55,12 +50,15 @@ public class BlueprintManager {
    * Constructor   */
   private BlueprintManager() {
     
-    try {
-      XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
-      reader.setContentHandler(new Handler());
-      reader.parse(new InputSource(getClass().getResourceAsStream("blueprints.xml")));
-    } catch (Throwable t) {
-      t.printStackTrace();
+    // load blueprints
+    for (int t=0;t<Gedcom.NUM_TYPES;t++) {
+      String tag = Gedcom.getTagFor(t);
+      StringTokenizer names = new StringTokenizer(resources.getString("blueprints."+tag));
+      while (names.hasMoreTokens()) {
+        String name = names.nextToken();
+        String html = resources.getString("blueprints."+tag+"."+name);
+        getBlueprints(t).add(new Blueprint(name,html));
+      }
     }
     
     // done
@@ -102,49 +100,4 @@ public class BlueprintManager {
     throw new IllegalArgumentException("Blueprint is not registered"); 
   }
 
-  /**
-   * XML document handler that knows how to get Blueprints   */
-  private class Handler extends DefaultHandler {
-    
-    /** the type of the current blueprint */
-    private int type;
-    
-    /** the name of the current blueprint */
-    private String name;
-    
-    /** the buffer for gathering html */
-    private StringBuffer html = new StringBuffer(256);
-    
-    /**
-     * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-     */
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-      // blueprint?
-      if (BLUEPRINT.equals(qName)) {
-        name = attributes.getValue("name");
-        type = Gedcom.getTypeFor(attributes.getValue("type"));
-        html.setLength(0);
-      }
-      //done
-    }
-    /**
-     * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-     */
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-      // blueprint? or no current?
-      if (!BLUEPRINT.equals(qName)||name==null) return;
-      // create one
-      getBlueprints(type).add(new Blueprint(name, html.toString()));
-      name = null;
-    }
-    /**
-     * @see org.xml.sax.helpers.DefaultHandler#characters(char, int, int)
-     */
-    public void characters(char[] ch, int start, int length) throws SAXException {
-      if (name==null) return;
-      html.append(ch, start,length);
-    }
-
-  }; //BlueprintHandler
-  
 } //BlueprintManager

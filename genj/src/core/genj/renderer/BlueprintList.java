@@ -34,8 +34,8 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
@@ -167,8 +167,11 @@ public class BlueprintList extends JSplitPane {
    * A tree model of blueprints   */
   private class Glue implements TreeModel, TreeCellRenderer, TreeSelectionListener { 
     
-    /** a performance label we keep */
-    private JLabel label = new HeadlessLabel();
+    /** a radiobutton */
+    private JRadioButton button = new JRadioButton();
+    
+    /** a label */
+    private HeadlessLabel label = new HeadlessLabel();
     
     /** a color for selection backgrounds */
     private Color cSelection = new JTable().getSelectionBackground();
@@ -177,22 +180,24 @@ public class BlueprintList extends JSplitPane {
      * @see javax.swing.tree.TreeCellRenderer#getTreeCellRendererComponent(javax.swing.JTree, java.lang.Object, boolean, boolean, boolean, int, boolean)
      */
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-      // the simple stuff
-      label.setOpaque(selected);
-      label.setBackground(cSelection);
       // a list of blueprints?
       if (value instanceof TypeList) {
+        // the simple stuff
+        label.setOpaque(selected);
+        label.setBackground(cSelection);
+        // type information
         int t = ((TypeList)value).type;
         label.setText(Gedcom.getNameFor(t, true));
         label.setIcon(Gedcom.getImage(t));
+        // done
+        return label;
       }
-      // a blueprint
-      if (value instanceof Blueprint) {
-        label.setText(((Blueprint)value).getName());
-        label.setIcon(null);
-      }
+      // a blueprint!
+      button.setOpaque(selected);
+      button.setBackground(cSelection);
+      button.setText(((Blueprint)value).getName());
       // done
-      return label; 
+      return button; 
     }
     /**
      * @see javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event.TreeSelectionEvent)
@@ -297,7 +302,9 @@ public class BlueprintList extends JSplitPane {
      * a list for a type     */
     private class TypeList extends ArrayList {
       int type;
+      int selection = 0;
       TypeList(int tYpe, List list) { super(list); type=tYpe; }
+      public boolean equals(Object o) { return this==o; }
     } //TypeList
     
   } //BlueprintTree     
