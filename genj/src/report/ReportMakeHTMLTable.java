@@ -19,9 +19,9 @@ import java.util.Hashtable;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.19 2003-06-11 23:44:25 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.20 2003-07-21 07:37:48 island1 Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class ReportMakeHTMLTable extends Report {
 
@@ -111,7 +111,7 @@ public class ReportMakeHTMLTable extends Report {
    * Returns the name of this report - should be localized.
    */
   public String getName() {
-    return "Make HTML-Table";
+    return i18n("script_name");
   }
 
   /**
@@ -119,7 +119,7 @@ public class ReportMakeHTMLTable extends Report {
    * @return Information as String
    */
   public String getInfo() {
-    return "This report exports individuals' information to HTML";
+    return i18n("info");
   }
 
   /**
@@ -169,10 +169,10 @@ public class ReportMakeHTMLTable extends Report {
 
     switch (indi.getSex()) {
     case PropertySex.MALE:
-            htmlCell("Male");
+            htmlCell(i18n("Male"));
             break;
     case PropertySex.FEMALE:
-            htmlCell("Female");
+            htmlCell(i18n("Female"));
             break;
     default:
             htmlCell(EMPTY_CELL_STRING);
@@ -245,7 +245,7 @@ public class ReportMakeHTMLTable extends Report {
 
     // And whether code translation should happen or not
     isTranslateUnicode2HTML = getOptionFromUser(
-      "Do you want to transform Unicode- into HTML-codes (slow)?", OPTION_YESNO
+      i18n("Unicode2HTML"), OPTION_YESNO
     );
 
     // HEAD
@@ -261,14 +261,14 @@ public class ReportMakeHTMLTable extends Report {
 
     // TABLE HEADER
     println("<TR BGCOLOR=\"yellow\">");  //F. Massonneau 03/04/2002
-    htmlCell("ID");
-    htmlCell("Last Name");
-    htmlCell("First Name");
-    htmlCell("Sex");
-    htmlCell("Birth");
-    htmlCell("Place");
-    htmlCell("Death");
-    htmlCell("Place");
+    htmlCell(i18n("ID"));
+    htmlCell(i18n("LastName"));
+    htmlCell(i18n("FirstName"));
+    htmlCell(i18n("Sex"));
+    htmlCell(i18n("Birth"));
+    htmlCell(i18n("BirthPlace"));
+    htmlCell(i18n("Death"));
+    htmlCell(i18n("DeathPlace"));
     println("</TR>");  //F. Massonneau 03/04/2002
 
     // Go through individuals
