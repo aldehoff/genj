@@ -276,7 +276,8 @@ public class DateWidget extends JPanel {
      * @see genj.util.ActionDelegate#getText()
      */
     public String getText() {
-      WordBuffer result = new WordBuffer(newCalendar.getName());
+      WordBuffer result = new WordBuffer();
+      result.append(newCalendar.getName());
       result.setFiller(" - ");
       try {
         PointInTime pit = getValue().getPointInTime(newCalendar); 

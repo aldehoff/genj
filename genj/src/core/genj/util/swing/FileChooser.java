@@ -91,7 +91,7 @@ public class FileChooser extends JFileChooser {
       if (exts.length==0)
         throw new IllegalArgumentException("extensions required");
         
-      WordBuffer buf = new WordBuffer(',');
+      WordBuffer buf = new WordBuffer(",");
       for (int i=0; i<exts.length; i++) {
         exts[i] = tokens.nextToken().toLowerCase().trim();
         buf.append("*."+exts[i]);

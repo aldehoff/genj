@@ -34,9 +34,9 @@ public class WordBuffer {
   /** 
    * Constructor
    */
-  public WordBuffer(String content) {
-    buffer = new StringBuffer(content.length()*2);
-    buffer.append(content);
+  public WordBuffer(String filler) {
+    this();
+    setFiller(filler);
   }
   
   /** 
@@ -44,14 +44,6 @@ public class WordBuffer {
    */
   public WordBuffer() {
     buffer = new StringBuffer(80);
-  }
-  
-  /** 
-   * Constructor
-   */
-  public WordBuffer(char fill) {
-    buffer = new StringBuffer(80);
-    filler = ""+fill;
   }
   
   /**

@@ -63,7 +63,7 @@ public class CreateRelationship extends AbstractChange {
    */
   protected String getConfirmMessage() {
 
-    WordBuffer result = new WordBuffer('\n');
+    WordBuffer result = new WordBuffer("\n");
     
     // You are about to create a {0} in {1}! / You are about to reference {0} in {1}!
     // This {0} will be {1}.

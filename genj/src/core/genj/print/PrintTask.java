@@ -317,7 +317,7 @@ import javax.swing.JComponent;
    * transform print attributes to string
    */
   private String toString(PrintRequestAttributeSet atts) {
-    WordBuffer buf = new WordBuffer(',');
+    WordBuffer buf = new WordBuffer(",");
     Attribute[] array = attributes.toArray();
     for (int i = 0; i < array.length; i++) 
       buf.append(array[i].getClass().getName()+"="+array[i].toString());
