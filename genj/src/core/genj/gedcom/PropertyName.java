@@ -19,11 +19,10 @@
  */
 package genj.gedcom;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import genj.util.ReferenceSet;
 import genj.util.WordBuffer;
+
+import java.util.List;
 
 /**
  * Gedcom Property : NAME
@@ -33,7 +32,7 @@ public class PropertyName extends Property {
   private final static String TAG =  "NAME";
   
   /** all names */
-  private static ReferenceSet names = new ReferenceSet();
+  private static ReferenceSet lastNames = new ReferenceSet();
 
   /** the first + last name */
   private String
@@ -189,9 +188,9 @@ public class PropertyName extends Property {
 
     noteModifiedProperty();
 
-    // remember
-    names.remove(lastName);
-    names.add(last);
+    // forget/remember
+    lastNames.remove(lastName, this);
+    lastNames.add(last, this);
 
     // Make sure no Information is kept in base class
     nameAsString=null;
@@ -257,7 +256,14 @@ public class PropertyName extends Property {
    * Return all last names
    */
   public List getLastNames() {
-    return new ArrayList(names);
+    return lastNames.getValues();
   }
 
+  /**
+   * Returns all PropertyNames that contain the same name 
+   */
+  public Property[] getSameLastNames() {
+    return toArray(lastNames.getReferences(getLastName()));
+  }
+  
 } //PropertyName

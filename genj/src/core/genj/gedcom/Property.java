@@ -646,7 +646,7 @@ public abstract class Property implements Comparable {
   /**
    * Convert collection of properties into array
    */
-  private static Property[] toArray(Collection ps) {
+  protected static Property[] toArray(Collection ps) {
     return (Property[])ps.toArray(new Property[ps.size()]);
   }
   

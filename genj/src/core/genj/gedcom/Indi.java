@@ -120,7 +120,7 @@ public class Indi extends Entity {
     }
     
     // done
-    return toArray(result);
+    return toIndiArray(result);
   }
   
   /**
@@ -143,7 +143,7 @@ public class Indi extends Entity {
     }
     
     // done
-    return toArray(result);
+    return toIndiArray(result);
   }
   
   /** 
@@ -432,7 +432,7 @@ public class Indi extends Entity {
   /**
    * list of indis to array
    */
-  public static Indi[] toArray(Collection c) {
+  private static Indi[] toIndiArray(Collection c) {
     return (Indi[])c.toArray(new Indi[c.size()]);    
   }
 

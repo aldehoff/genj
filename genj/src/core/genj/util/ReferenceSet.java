@@ -1,102 +1,102 @@
 package genj.util;
 
-import java.util.AbstractSet;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * A hashmap that counts the number of adds vs. remove per key
- * a.k.a. a reference count
+ * A hashmap that keeps track of values and their references
  */
-public class ReferenceSet extends AbstractSet {
+public class ReferenceSet {
 
-  /** the map we use for counting */
-  private Map key2ref = new TreeMap();
+  /** the map we use for key->referrers */
+  private Map key2references = new TreeMap();
   
   /**
-   * Ref
+   * Returns the references for value
    */
-  private static class Ref {
-    int count = 0; 
-  } //Ref
-
+  public Collection getReferences(Object val) {
+    // null is ignored
+    if (val==null) 
+      return Collections.EMPTY_LIST;
+    // lookup
+    Set references = (Set)key2references.get(val);
+    if (references==null) 
+      return Collections.EMPTY_LIST;
+    // return references
+    return references;
+  }
+  
   /**
    * Returns the reference count of given object
    */
-  public int getCount(Object o) {
+  public int getCount(Object val) {
     // null is ignored
-    if (o==null) return 0;
-    // increase counter
-    Ref ref = (Ref)key2ref.get(o);
-    if (ref==null) return 0;
+    if (val==null) return 0;
+    // lookup
+    Set references = (Set)key2references.get(val);
+    if (references==null) return 0;
     // done
-    return ref.count;
+    return references.size();
   }
 
   /**
-   * @see genj.util.ReferenceSet#add(java.lang.Object)
+   * Add a value
    */
-  public boolean add(Object o) {
-    // null is ignored
-    if (o==null) return false;
-    // increase counter
-    Ref ref = (Ref)key2ref.get(o);
-    if (ref==null) {
-      ref = new Ref();
-      key2ref.put(o, ref);
-    } 
-    ref.count++;
-    // done
-    return true;
+  public boolean add(Object val) {
+    return add(val, null);
   }
-  
+
   /**
-   * @see genj.util.ReferenceSet#remove(java.lang.Object)
+   * Add a value and its reference
    */
-  public boolean remove(Object o) {
+  public boolean add(Object val, Object reference) {
     // null is ignored
-    if (o==null) return false;
-    // find counter
-    Ref ref = (Ref)key2ref.get(o);
-    if (ref==null)
-      return false;
-    // decrease
-    ref.count--;
-    // remove?
-    if (ref.count<=0) {
-      key2ref.remove(o);
+    if (val==null) return false;
+    // lookup
+    Set references = (Set)key2references.get(val);
+    if (references==null) {
+      references = new HashSet();
+      key2references.put(val, references);
     }
+    // keep reference
+    if (reference!=null)
+      references.add(reference);
     // done
     return true;
   }
-
+  
   /**
-   * @see java.util.Collection#iterator()
+   * Remove a value for given reference
    */
-  public Iterator iterator() {
-    return key2ref.keySet().iterator();
-  }
-
-  /**
-   * @see java.util.Collection#size()
-   */
-  public int size() {
-    return key2ref.size();
+  public boolean remove(Object val, Object reference) {
+    // null is ignored
+    if (val==null) 
+      return false;
+    // lookup
+    Set references = (Set)key2references.get(val);
+    if (references==null) 
+      return false;
+    // remove
+    if (!references.remove(reference))
+      return false;
+    // remove value
+    if (references.isEmpty())
+      key2references.remove(val);
+    // done
+    return true; 
   }
   
   /**
-   * @see genj.util.ReferenceSet#toArray()
+   * Return all values
    */
-  public Object[] toArray() {
-    return key2ref.keySet().toArray();
-  }
-  
-  /**
-   * @see genj.util.ReferenceSet#toArray(java.lang.Object[])
-   */
-  public Object[] toArray(Object[] a) {
-    return key2ref.keySet().toArray(a);
+  public List getValues() {
+    return new ArrayList(key2references.keySet());
   }
 
 

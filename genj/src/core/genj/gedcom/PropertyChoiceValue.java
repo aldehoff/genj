@@ -21,7 +21,6 @@ package genj.gedcom;
 
 import genj.util.ReferenceSet;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,12 +47,12 @@ public class PropertyChoiceValue extends PropertySimpleValue {
       tags2refsets.put(tag, result);
       // .. and pre-fill
       StringTokenizer tokens = new StringTokenizer(Gedcom.resources.getString(tag+".vals",""),",");
-      while (tokens.hasMoreElements()) result.add(tokens.nextToken().trim());
+      while (tokens.hasMoreElements()) result.add(tokens.nextToken().trim(), null);
     }
     // done
     return result;
   }
-
+  
   /**
    * Remember a value
    */
@@ -61,10 +60,17 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     String tag = getTag();
     ReferenceSet refSet = getRefSet();
     // forget old
-    if (oldValue.length()>0) refSet.remove(oldValue);
+    if (oldValue.length()>0) refSet.remove(oldValue, this);
     // remember new
-    if (newValue.length()>0) refSet.add(newValue);
+    if (newValue.length()>0) refSet.add(newValue, this);
     // done
+  }
+  
+  /**
+   * Returns all Properties that contain the same value 
+   */
+  public Property[] getSameChoices() {
+    return toArray(getRefSet().getReferences(getValue()));
   }
   
   /**
@@ -91,7 +97,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    * Used choices
    */
   public List getChoices() {
-    return new ArrayList(getRefSet());
+    return getRefSet().getValues();
   }
   
   /**
