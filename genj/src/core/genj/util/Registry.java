@@ -558,7 +558,7 @@ public class Registry {
    * Calculates a filename for given registry name
    */
   private static File getFile(String name) {
-    return new File(System.getProperty("user.dir"),name+".properties");
+    return new File(System.getProperty("user.home"),name+".properties");
   }
 
   /**
