@@ -111,7 +111,7 @@ public class PropertyEvent extends Property {
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
-    return "Empty";
+    return "Event";
   }
 
   /**
@@ -120,7 +120,7 @@ public class PropertyEvent extends Property {
    * @return proxy's logical name
    */
   public static String getProxy(TagPath path) {
-    return "Empty";
+    return "Event";
   }
 
   /**

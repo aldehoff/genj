@@ -8,7 +8,6 @@
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyBirth;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.report.Report;
@@ -112,11 +111,10 @@ public class ReportAges implements Report {
 
         // we found an event
         PropertyEvent event = (PropertyEvent) prop;
-        PropertyDate pDate = event.getDate();
+        PropertyDate pDate = event.getDate(true);
         if (pDate != null) {
-          String out = event.getTag() + ": " + pDate;
-          if (! (event instanceof PropertyBirth))
-            out += ", " + indi.getAge(pDate);
+          String out = event.getTag() + ": " + pDate
+            + ", " + indi.getAge(pDate);
           bridge.println(out);
         }
       }

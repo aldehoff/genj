@@ -21,7 +21,9 @@ package genj.edit;
 
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyBirth;
+import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyEvent;
+
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.FlowLayout;
@@ -32,10 +34,10 @@ import javax.swing.JTextField;
 
 /**
  * A Proxy knows how to generate interaction components that the user
- * will use to change a property : BIRT
+ * will use to change a property : *Events*
  * This Proxy was written by Dan Kionka, and only exists to display the age.
  */
-class ProxyBirth extends Proxy implements ItemListener {
+class ProxyEvent extends Proxy implements ItemListener {
 
   /**
    * Finish proxying edit for property Birth
@@ -61,21 +63,31 @@ class ProxyBirth extends Proxy implements ItemListener {
    * components to edit this property
    */
   protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
+    
+    // only for individuals 
+    if (!(setProp.getEntity() instanceof Indi)) return;
+    
+    // we need a panel for label and text
     JPanel ageLine = new JPanel(new FlowLayout(FlowLayout.LEFT));
     ageLine.setAlignmentX(0);
     JTextField ageText = new JTextField(10);
-
     ageLine.add(new JLabel("Age:"));
     ageLine.add(ageText);
     ageText.setEditable(false);
     in.add(ageLine);
 
-    prop=setProp;
-    PropertyBirth p = (PropertyBirth)prop;
+    // and setup age info
+    PropertyEvent event = (PropertyEvent)setProp;
+    Indi indi = (Indi)event.getEntity();
 
-    Indi indi = (Indi) p.getParent();
-    String ageStr = indi.getAge();
-    ageText.setText((ageStr.length() == 0) ? "(unknown)" : ageStr);
+    PropertyDate date = event.getDate(true);
+    String age = null;
+    if (date!=null) {
+      age = indi.getAge(date);
+    }
+    ageText.setText(age==null ? "(unknown)" : age);
+
+    // done
   }
 
 }

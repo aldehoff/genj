@@ -100,7 +100,7 @@ public abstract class Property implements Comparable {
     new MetaDefinition("TITL","IndividualAttribute",IAT_SUB_TAGS) ,
 
     // INDI Events
-    new MetaDefinition("BIRT","Birth",EVT_SUB_TAGS) ,
+    new MetaDefinition("BIRT","Event",EVT_SUB_TAGS) ,
     new MetaDefinition("CHR" ,"Event",EVT_SUB_TAGS) ,
     new MetaDefinition("DEAT","Event",EVT_SUB_TAGS) ,
     new MetaDefinition("BURI","Event",EVT_SUB_TAGS) ,
