@@ -119,6 +119,15 @@ public class ChoiceWidget extends JComboBox {
   }
 
   /**
+   * set values
+   */
+  public void setValues(Object[] set) {
+    // set
+    model.setValues(set);
+    // done  
+  }
+
+  /**
    * Patch preferred size. The default behavior of JComboBox can
    * lead to pretty wide preferred sizes if contained values are
    * long.
@@ -426,8 +435,12 @@ public class ChoiceWidget extends JComboBox {
     /**
      * Setter - values
      */
-    private void setValues(Object[] vaLues) {
-      values = vaLues;
+    private void setValues(Object[] set) {
+      if (values.length>0) 
+        fireIntervalRemoved(this, 0, values.length-1);
+      values = set;
+      if (values.length>0) 
+        fireIntervalAdded(this, 0, values.length-1);
     }
 
     /**
