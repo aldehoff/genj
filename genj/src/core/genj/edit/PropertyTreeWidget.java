@@ -31,6 +31,7 @@ import genj.gedcom.PropertyMultilineValue;
 import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
+import genj.renderer.Options;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 
@@ -507,6 +508,7 @@ public class PropertyTreeWidget extends DnDTree {
      */
     private Renderer() {
       setOpaque(true);
+      setFont(Options.getInstance().getDefaultFont());
     }
     
     /**
@@ -518,9 +520,6 @@ public class PropertyTreeWidget extends DnDTree {
       if (!(object instanceof Property))
         return this;
       Property prop = (Property)object;
-
-      // grab current font
-      setFont(PropertyTreeWidget.this.getFont());
 
       // prepare color
       if (defaultRenderer!=null) {

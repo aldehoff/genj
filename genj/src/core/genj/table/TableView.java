@@ -26,6 +26,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.io.Filter;
+import genj.renderer.Options;
 import genj.renderer.PropertyRenderer;
 import genj.util.ActionDelegate;
 import genj.util.Dimension2d;
@@ -468,6 +469,12 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     private Property prop;
     /** attributes */
     private boolean isSelected;
+    /**
+     * constructor
+     */
+    /*package*/ PropertyTableCellRenderer() {
+      setFont(Options.getInstance().getDefaultFont());
+    }
     /**
      * @see javax.swing.table.TableCellRenderer#getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)
      */

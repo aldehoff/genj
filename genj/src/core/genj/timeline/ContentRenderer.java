@@ -22,6 +22,7 @@ package genj.timeline;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
+import genj.renderer.Options;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.UnitGraphics;
 
@@ -194,7 +195,7 @@ public class ContentRenderer {
     // draw its image
     ImageIcon img = event.pe.getImage(false);
     g.draw(img, event.from, level+0.5, 0, 0.5);
-    int dx=img.getIconWidth();
+    int dx=img.getIconWidth() + 2;
 
     // draw its tag    
     if (paintTags) {
@@ -205,6 +206,7 @@ public class ContentRenderer {
     }
 
     // draw its text 
+    g.setFont(Options.getInstance().getDefaultFont());
     g.setColor(em ? cSelected : cText);
     String txt = event.content;
     g.draw(txt, event.from, level+1, 0, 1, dx, 0);
