@@ -76,10 +76,11 @@ public class ReportLoader {
     // Load reports
     Iterator rs = reports.iterator();
     while (rs.hasNext()) {
+      String rname = rs.next().toString(); 
       try {
-        instances.add(cl.loadClass(rs.next().toString()).newInstance());
+        instances.add(cl.loadClass(rname).newInstance());
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, this, t);
+        Debug.log(Debug.WARNING, this, "Failed to instantiate "+rname, t);
       }
     }
 
