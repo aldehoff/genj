@@ -890,7 +890,7 @@ public class PointInTime implements Comparable {
      = { 3,7,11 };
      
     private static final String[] YEARS 
-     = { "An I", "An II", "An III", "An IV", "An V", "An VI", "An VII", "An VIII", "An IX", "An X", "An xI", "An XII", "An XIII", "An XIV" };
+     = { "An I", "An II", "An III", "An IV", "An V", "An VI", "An VII", "An VIII", "An IX", "An X", "An XI", "An XII", "An XIII", "An XIV" };
     
     /**
      * Constructor
