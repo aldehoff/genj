@@ -27,6 +27,7 @@ import genj.util.swing.ChoiceWidget;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
+import java.awt.geom.Point2D;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -76,4 +77,11 @@ public class ChoiceBean extends PropertyBean {
     
   }
   
+  /**
+   * growth is good
+   */
+  public Point2D getWeight() {
+    return new Point2D.Double(0.5,0);
+  }
+
 } //ProxyChoice

@@ -19,6 +19,8 @@
  */
 package genj.edit.beans;
 
+import java.awt.geom.Point2D;
+
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
@@ -86,6 +88,13 @@ public class NameBean extends PropertyBean {
     defaultFocus = tFirst;
 
     // done
+  }
+  
+  /**
+   * Grow is ok
+   */
+  public Point2D getWeight() {
+    return new Point2D.Double(0.1,0);
   }
 
 } //ProxyName

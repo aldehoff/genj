@@ -26,6 +26,7 @@ import genj.util.swing.TextAreaWidget;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
+import java.awt.geom.Point2D;
 
 import javax.swing.JScrollPane;
 
@@ -71,4 +72,12 @@ public class MLEBean extends PropertyBean {
     // Done
   }
   
+  /**
+   * growth is good
+   */
+  public Point2D getWeight() {
+    // patched to give only NOTE a weight of 1
+    return new Point2D.Double("NOTE".equals(property.getTag())?1:0.1,1);
+  }
+
 } //ProxyMLE

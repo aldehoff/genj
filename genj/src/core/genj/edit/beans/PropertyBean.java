@@ -32,6 +32,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -136,6 +137,13 @@ public abstract class PropertyBean extends JPanel {
    */
   public boolean isEditable() {
     return true;
+  }
+  
+  /** 
+   * Weight
+   */
+  public Point2D getWeight() {
+    return null;
   }
   
   /** 
