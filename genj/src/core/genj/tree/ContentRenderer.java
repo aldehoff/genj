@@ -28,6 +28,7 @@ import gj.model.Arc;
 import gj.model.Node;
 import gj.ui.UnitGraphics;
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -191,12 +192,14 @@ public class ContentRenderer {
     // safety check
     if (!isRenderContent||!(content instanceof Entity)) return;
     // preserve clip&transformation
-    Rectangle2D r = shape.getBounds2D();
-    g.pushClip(x, y, r);
+    Rectangle2D r2d = shape.getBounds2D();
+    g.pushClip(x, y, r2d);
     g.pushTransformation();
     // draw it - FIXME : use a blueprint
     g.translate(x, y);
-    contentRenderer.render(g.getGraphics(), (Entity)content, g.units2pixels(r));
+    Rectangle r = g.units2pixels(r2d);
+    r.x+=2;r.y+=2;r.width-=4;r.height-=4;
+    contentRenderer.render(g.getGraphics(), (Entity)content, r);
     // restore clip&transformation
     g.popTransformation();    
     g.popClip();

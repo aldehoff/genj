@@ -24,7 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.renderer.PropertyProxy;
+import genj.renderer.PropertyRenderer;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -325,7 +325,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
       // no prop and we're done
       if (prop==null) return;
       // get the proxy
-      PropertyProxy proxy = PropertyProxy.get(prop.getProxy());
+      PropertyRenderer proxy = PropertyRenderer.get(prop.getProxy());
       // let it render
       proxy.render(g, bounds, prop, proxy.PREFER_DEFAULT);
       // done
