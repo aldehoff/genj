@@ -136,7 +136,12 @@ public abstract class PropertyXRef extends Property {
   }
   
   /**
-   * Returns a display value to be shown on the foreign end
+   * Returns a display value to be shown on the foreign end - this
+   * does really apply only to references that don't come with an
+   * explicit back-reference like ASSO, NOTE and OBJE.
+   * In case like those the PropertyForeignXRef will ask back here
+   * to display something meaningful (e.g. nicely overwritten in
+   * PropertyAssociation "Witness: John Doe")
    */
   protected String getForeignDisplayValue() {
     return resources.getString("foreign.xref", getEntity().toString());
