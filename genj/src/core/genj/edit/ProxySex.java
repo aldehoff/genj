@@ -109,6 +109,9 @@ class ProxySex extends Proxy implements ItemListener {
     
     rbSex[p.getSex()].setSelected(true);
 
+    // reset changed
+    changed = false;
+
     // Done
     return null;
   }
