@@ -37,36 +37,34 @@ import awtx.*;
 /**
  * A broker for Views into Gedcom information
  */
-class ViewBridge {
+public class ViewBridge {
   
   /** instance */
   private static ViewBridge instance;
-
-  /** the views we have */
-  static private final Object modes[][] = {
-    { "genj.edit.EditView"        ,"edit"     ,Images.imgNewEdit     , new Dimension(256,480) },
-    { "genj.table.TableView"      ,"table"    ,Images.imgNewTable    , new Dimension(480,320) },
-    { "genj.tree.TreeView"        ,"tree"     ,Images.imgNewTree     , new Dimension(480,480) },
-    { "genj.timeline.TimelineView","timeline" ,Images.imgNewTimeline , new Dimension(480,256) },
-    { "genj.report.ReportView"    ,"report"   ,Images.imgNewReport   , new Dimension(480,320) },
-    { "genj.nav.NavigatorView"    ,"navigator",Images.imgNewNavigator, new Dimension(140,200) }
+  
+  /** descriptors of views */
+  static final private Descriptor[] descriptors = new Descriptor[]{
+    new Descriptor("genj.table.TableView"      ,"table"    ,Images.imgNewTable    , new Dimension(480,320)),
+    new Descriptor("genj.tree.TreeView"        ,"tree"     ,Images.imgNewTree     , new Dimension(480,480)),
+    new Descriptor("genj.timeline.TimelineView","timeline" ,Images.imgNewTimeline , new Dimension(480,256)),
+    new Descriptor("genj.edit.EditView"        ,"edit"     ,Images.imgNewEdit     , new Dimension(256,480)),
+    new Descriptor("genj.report.ReportView"    ,"report"   ,Images.imgNewReport   , new Dimension(480,320)),
+    new Descriptor("genj.nav.NavigatorView"    ,"navigator",Images.imgNewNavigator, new Dimension(140,200))
   };
 
-  /** the known views' ids */
-  static final int
-    EDIT     = 0,
-    TABLE    = 1,
-    TREE     = 2,
-    TIMELINE = 3,
-    REPORT   = 4,
-    NAVIGATOR= 5;
-    
   /**
    * Singleton access
    */
   public static ViewBridge getInstance() {
     if (instance==null) instance = new ViewBridge();
     return instance;
+  }
+  
+  /**
+   * Returns all known descriptors
+   */
+  public Descriptor[] getDescriptors() {
+    return descriptors;
   }
 
   /**
@@ -193,29 +191,23 @@ class ViewBridge {
   /**
    * Opens a view on a gedcom file
    */
-  public JFrame open(int mode, Gedcom gedcom) {
+  public JFrame open(Descriptor descriptor, Gedcom gedcom) {
     
     try {
       
-      // get the meta-information      
-      String  classname = (String)modes[mode][0];
-      String  name = (String)modes[mode][1];
-      ImgIcon image = (ImgIcon)modes[mode][2];
-      Dimension dimension = (Dimension)modes[mode][3];
-      
       // create a registry for that view
-      Registry registry = getRegistryFor(gedcom, name);
+      Registry registry = getRegistryFor(gedcom, descriptor.key);
 
       // Create an enclosing Frame
       JFrame frame = App.getInstance().createFrame(
-        gedcom.getName()+" - "+App.resources.getString("cc.view."+name)+" ("+registry.getViewSuffix()+")",
-        image,
+        gedcom.getName()+" - "+App.resources.getString("cc.view."+descriptor.key)+" ("+registry.getViewSuffix()+")",
+        descriptor.img,
         registry.getName() + "." + registry.getView(),
-        dimension
+        descriptor.dim
       );
       
       // Create the viewing component
-      Component view = createView(classname, gedcom, registry, frame);
+      Component view = createView(descriptor.type, gedcom, registry, frame);
       frame.getContentPane().add(view);
       
       // Done
@@ -229,4 +221,19 @@ class ViewBridge {
     return null;
     // Done
   }
+  
+  /**
+   * A descriptor of a View
+   */  
+  public static class Descriptor {
+    public String type;
+    public String key;
+    public ImgIcon img;
+    public Dimension dim;
+    /*package*/ Descriptor(String t, String k, ImgIcon i, Dimension d) {
+      type=t;key=k;img=i;dim=d;
+    }
+  } //Descriptor
+  
+  
 }

@@ -123,13 +123,12 @@ public class ControlCenter extends JPanel implements ActionListener {
       .setContainer(gedcomPane);
 
     bh.setImage(Images.imgGedcom      ).setAction("OPEN"        ).setTip("cc.tip.open_file"     ).setEnabled(true ).create();
-    bh.setCollection(gedcomButtons);
-    bh.setImage(Images.imgNewTable    ).setAction("NEWTABLE"    ).setTip("cc.tip.open_table"    ).setEnabled(false).create();
-    bh.setImage(Images.imgNewTree     ).setAction("NEWTREE"     ).setTip("cc.tip.open_tree"     ).setEnabled(false).create();
-    bh.setImage(Images.imgNewTimeline ).setAction("NEWTIMELINE" ).setTip("cc.tip.open_timeline" ).setEnabled(false).create();
-    bh.setImage(Images.imgNewEdit     ).setAction("NEWEDIT"     ).setTip("cc.tip.open_edit"     ).setEnabled(false).create();
-    bh.setImage(Images.imgNewReport   ).setAction("NEWREPORT"   ).setTip("cc.tip.open_report"   ).setEnabled(false).create();
-    bh.setImage(Images.imgNewNavigator).setAction("NEWNAVIGATOR").setTip("cc.tip.open_navigator").setEnabled(false).create();
+    bh.setEnabled(false).setCollection(gedcomButtons);
+    ViewBridge.Descriptor[] ds=ViewBridge.getInstance().getDescriptors();
+    for (int i=0; i<ds.length; i++) {
+      ViewBridge.Descriptor d = ds[i];
+      bh.setImage(d.img).setAction(d.key).setTip("cc.tip.open_"+d.key).create();
+    }
     bh.setImage(Images.imgSettings    ).setAction("VIEWEDIT"    ).setTip("cc.tip.settings"      ).setEnabled(true ).create();
 
     // Actions Pane
@@ -559,36 +558,14 @@ public class ControlCenter extends JPanel implements ActionListener {
       return;
     }
 
-    // New Properties View ?
-    if (e.getActionCommand().equals("NEWEDIT")) {
-      actionOpenView(ViewBridge.EDIT,gedcom);
-      return;
+    // Hmm, maybe on of the views?
+    ViewBridge.Descriptor[] ds = ViewBridge.getInstance().getDescriptors();
+    for (int d=0; d<ds.length; d++) {
+      if (ds[d].key.equals(e.getActionCommand())) {
+        actionOpenView(ds[d],gedcom);
+      }
     }
-    // New Table View ?
-    if (e.getActionCommand().equals("NEWTABLE")) {
-      actionOpenView(ViewBridge.TABLE,gedcom);
-      return;
-    }
-    // New Tree View ?
-    if (e.getActionCommand().equals("NEWTREE")) {
-      actionOpenView(ViewBridge.TREE,gedcom);
-      return;
-    }
-    // New timeline View ?
-    if (e.getActionCommand().equals("NEWTIMELINE")) {
-      actionOpenView(ViewBridge.TIMELINE,gedcom);
-      return;
-    }
-    // New report View?
-    if (e.getActionCommand().equals("NEWREPORT")) {
-      actionOpenView(ViewBridge.REPORT,gedcom);
-      return;
-    }
-    // New navigator View?
-    if (e.getActionCommand().equals("NEWNAVIGATOR")) {
-      actionOpenView(ViewBridge.NAVIGATOR,gedcom);
-      return;
-    }
+    
     // Save As ?
     if (e.getActionCommand().equals("SAVEAS")) {
       actionSave(gedcom,true);
@@ -799,7 +776,6 @@ public class ControlCenter extends JPanel implements ActionListener {
     // Create Menues
     mh.setText("cc.menu.file").createMenu();
     
-      // Create Items
       mh.setText("cc.menu.open"  ).setAction("OPEN"  ).createItem();
       mh.createSeparator().setEnabled(false).setCollection(gedcomButtons);
       mh.setText("cc.menu.save"  ).setAction("SAVE"  ).createItem();
@@ -808,9 +784,17 @@ public class ControlCenter extends JPanel implements ActionListener {
       mh.createSeparator().setEnabled(true).setCollection(null);
       mh.setText("cc.menu.exit"  ).setAction("EXIT"  ).createItem();
 
-    mh.setMenu(null).setText("cc.menu.tools").createMenu();
-
+    mh.setMenu(null).setText("cc.menu.view").createMenu();
+    
       mh.setEnabled(false).setCollection(gedcomButtons);    
+      ViewBridge.Descriptor[] ds=ViewBridge.getInstance().getDescriptors();
+      for (int i=0; i<ds.length; i++) {
+        ViewBridge.Descriptor d = ds[i];
+        mh.setImage(d.img).setAction(d.key).setText("cc.tip.open_"+d.key).createItem();
+      }
+
+    mh.setImage(null).setMenu(null).setText("cc.menu.tools").createMenu();
+
       mh.setText("cc.menu.merge" ).setAction("MERGE" ).createItem();
       mh.setText("cc.menu.verify").setAction("VERIFY").createItem();
       mh.setEnabled(true).setCollection(null);    
@@ -848,10 +832,10 @@ public class ControlCenter extends JPanel implements ActionListener {
   /**
    * Open a specific view
    */
-  private void actionOpenView(int which, Gedcom gedcom) {
+  private void actionOpenView(ViewBridge.Descriptor descriptor, Gedcom gedcom) {
 
     // Create new View
-    JFrame view = ViewBridge.getInstance().open(which,gedcom);
+    JFrame view = ViewBridge.getInstance().open(descriptor,gedcom);
     if (view==null) return;
     view.pack();
     view.show();
