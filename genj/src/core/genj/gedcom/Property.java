@@ -23,6 +23,7 @@ import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
@@ -375,10 +376,14 @@ public abstract class Property implements Comparable {
     // check mutual inclusion
     if (!(children.containsAll(set)&&set.containsAll(children)))
       throw new IllegalArgumentException("change of properties not allowed");
+    // do the change
+    List old = new ArrayList(children);
+    children.clear();
+    children.addAll(set);
 	  // remember change
 	  Transaction tx = getTransaction();
 	  if (tx!=null) {
-	    Change change = new Change.PropertyShuffle(this, children);
+	    Change change = new Change.PropertyShuffle(this, old);
 	    tx.get(Transaction.PROPERTIES_MODIFIED).add(this);
 	    tx.addChange(change);
 	    
@@ -386,9 +391,6 @@ public abstract class Property implements Comparable {
       propagateChange(change);
 
 	  }
-    // do the change
-    children.clear();
-    children.addAll(set);
     // done
   }
   
