@@ -42,7 +42,7 @@ public class PropertyDate extends Property {
 
   /** format types */
   public static final int
-    DATE    = 0,
+    DATE    = 0,			// unable to parse - use dateAsString
     FROMTO  = 1,
     FROM    = 2,
     TO      = 3,
@@ -336,14 +336,24 @@ public class PropertyDate extends Property {
   }
 
   /**
+   * dkionka: Helper that verifies month value
+   */
+  private boolean goodMonth(Integer month) {
+    return ((month != null)
+	    && (month.intValue() >= 1)
+	    && (month.intValue() <= months.length));
+  }
+
+  /**
    * Helper that transforms Integer/null to month MMM
+   *
+   * dkionka: Bad month used to throw NumberFormatException, but no point
+   * giving error here since bad value already set.
    */
   private String i2mmm(Integer i) throws NumberFormatException {
     if (i==null)
       return "";
-    if (i.intValue()>months.length)
-      throw new NumberFormatException();
-    return months[i.intValue()-1];
+    return (goodMonth(i) ? months[i.intValue()-1] : i2s(i));
   }
 
   /**
@@ -443,7 +453,8 @@ public class PropertyDate extends Property {
     for (t=0;t<attrib0.length;t++) {
 
       // .. found modifier
-      if ( f.equals(attrib0[t]) ) {
+      // dkionka: accept ABT or ABT.
+      if ( f.equals(attrib0[t]) || f.equals(attrib0[t]+".") ) {
 
         // ... type is standalone (TO,ABT,CAL,...) ?
         if ( attrib1[t] == null ) {
@@ -619,7 +630,7 @@ public class PropertyDate extends Property {
    * Returns this date as a string
    */
   public String toString() {
-    return toString(0) + ' ' + toString(1);
+    return (toString(0) + ' ' + toString(1)).trim();
   }
 
   /**
@@ -636,7 +647,7 @@ public class PropertyDate extends Property {
 
     // Still invalid string information ?
     if (dateAsString!=null) {
-      return dateAsString;
+      return (which==0) ? dateAsString : "";	// dkionka: do not give it twice
     }
 
     // Abbreviation?
