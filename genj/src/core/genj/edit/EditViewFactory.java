@@ -27,8 +27,10 @@ import genj.gedcom.Indi;
 import genj.gedcom.Note;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
+import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyNote;
 import genj.gedcom.Relationship;
+import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
@@ -39,7 +41,9 @@ import genj.view.ViewFactory;
 import genj.view.ViewManager;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -111,6 +115,10 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   public List createActions(Property property) {
     // create the actions
     List result = new ArrayList();
+    // add FileAssociations for PropertyFile
+    if (property instanceof PropertyFile) { 
+      createActions(result, (PropertyFile)property); 
+    }
     // everything but a note can get a note attached
     if (!(property instanceof PropertyNote))
       result.add(new Create(property.getGedcom(), Gedcom.NOTES, new Relationship.LinkedBy(property,Gedcom.NOTES)));
@@ -198,6 +206,27 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     if (fam.getNoOfSpouses()<2)
       result.add(new Create(fam.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentIn(fam)));
   }
+  
+  /**
+   * Create actions for PropertyFile
+   */
+  private void createActions(List result, PropertyFile file) {
+    
+    // find suffix
+    String suffix = file.getValue();
+    if (suffix==null) return;
+    int i = suffix.lastIndexOf('.');
+    if (i<0) return;
+    suffix = suffix.substring(i+1);
+    // lookup associations
+    Iterator it = FileAssociation.get(suffix).iterator();
+    while (it.hasNext()) {
+      FileAssociation fa = (FileAssociation)it.next(); 
+      result.add(new External(file,fa));
+    }
+    // done
+  }
+  
   
   /**
    * ActionEdit - edit an entity
@@ -391,5 +420,30 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       candidate.getParent().delProperty(candidate);
     }
   } //PDelete
+  
+  /**
+   * External action    */
+  private static class External extends ActionDelegate {
+    /** the wrapped association */
+    private FileAssociation association;
+    /** the wrapped file */
+    private PropertyFile file;
+    /**
+     * Constructor     */
+    /*package*/ External(PropertyFile f, FileAssociation fa) {
+      association = fa;
+      file = f;
+      super.setImage(file.getImage(false));
+      super.setText(association.getAction()+" (*."+association.getSuffix()+" external)");
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      File f = file.getFile();
+      if (f==null) return;
+      association.execute(new String[]{ f.toString() });
+    }
+  } //External
 
 } //EditViewFactory

@@ -29,6 +29,7 @@
 package genj.app;
 
 import genj.Version;
+import genj.io.FileAssociation;
 import genj.lnf.LnFBridge;
 import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
@@ -36,7 +37,6 @@ import genj.util.GridBagHelper;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ScreenResolutionScale;
 import genj.view.ViewManager;
-
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -45,7 +45,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -56,10 +59,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.AbstractTableModel;
 
 /**
  * AboutDialog 
@@ -92,6 +97,7 @@ public class AboutWidget extends JPanel{
     pCenter.addTab(App.resources.getString("cc.about.dialog.tab2.title"), null, new AuthorsPanel(), App.resources.getString("cc.about.dialog.tab2.title.tip"));
     pCenter.addTab(App.resources.getString("cc.about.dialog.tab3.title"), null, new CopyrightPanel(), App.resources.getString("cc.about.dialog.tab3.title.tip"));
     pCenter.addTab(App.resources.getString("cc.about.dialog.tab4.title"), null, new LookNFeelPanel(), App.resources.getString("cc.about.dialog.tab4.title.tip"));
+    pCenter.addTab(App.resources.getString("cc.about.dialog.tab5.title"), null, new AssociationPanel(), App.resources.getString("cc.about.dialog.tab5.title.tip"));
 
     // create the main panel    
     setLayout(new BorderLayout());
@@ -373,4 +379,135 @@ public class AboutWidget extends JPanel{
     
   } // LookNFeelPanel
 
-}
+  /**
+   * Associations
+   */
+  private class AssociationPanel extends JPanel {
+    
+    /** buttons */
+    private AbstractButton bAdd, bDel, bEdit;
+    
+    /**
+     * Constructor
+     */
+    private AssociationPanel() {
+      
+      // table with associations
+      JTable table = new JTable();
+      table.getTableHeader().setReorderingAllowed(false);
+      table.setModel(new Model());
+      
+      // panel with actions
+      JPanel panel = new JPanel();
+      ButtonHelper bh = new ButtonHelper();
+      bh.setContainer(panel);
+      bAdd = bh.create(new Add ());
+      bDel = bh.create(new Del ());
+      bEdit= bh.create(new Edit());
+      
+      // layout
+      setLayout(new BorderLayout());
+      add(new JScrollPane(table), BorderLayout.CENTER);
+      add(panel                 , BorderLayout.SOUTH );
+      
+      // done
+    }
+    
+    /**
+     * Action - Add Association
+     */
+    private class Add extends ActionDelegate {
+      /**
+       * Constructor
+       */
+      private Add() {
+        super.setText("Add");
+      }
+      /**
+       * @see genj.util.ActionDelegate#execute()
+       */
+      protected void execute() {
+      }
+    } //Add
+    
+    /**
+     * Action - Del Association
+     */
+    private class Del extends ActionDelegate {
+      /**
+       * Constructor
+       */
+      private Del() {
+        super.setText("Delete");
+      }
+      /**
+       * @see genj.util.ActionDelegate#execute()
+       */
+      protected void execute() {
+      }
+    } //Del
+    
+    /**
+     * Action - Edit Association
+     */
+    private class Edit extends ActionDelegate {
+      /**
+       * Constructor
+       */
+      private Edit() {
+        super.setText("Edit");
+      }
+      /**
+       * @see genj.util.ActionDelegate#execute()
+       */
+      protected void execute() {
+      }
+    } //Edit
+    
+    /**
+     * AssociationsModel
+     */
+    private class Model extends AbstractTableModel {
+      
+      /** instances we know about */
+      List instances = new ArrayList(FileAssociation.getAll());
+      
+      /**
+       * @see javax.swing.table.TableModel#getRowCount()
+       */
+      public int getRowCount() {
+        return instances.size();
+      }
+      
+      /**
+       * @see javax.swing.table.TableModel#getColumnCount()
+       */
+      public int getColumnCount() {
+        return 3;
+      }
+      /**
+       * @see javax.swing.table.TableModel#getValueAt(int, int)
+       */
+      public Object getValueAt(int row, int col) {
+        FileAssociation association = (FileAssociation)instances.get(row);  
+        switch (col) { default:
+          case 0: return association.getSuffix();
+          case 1: return association.getAction();
+          case 2: return association.getExecutable();
+        }
+      }
+      /**
+       * @see javax.swing.table.AbstractTableModel#getColumnName(int)
+       */
+      public String getColumnName(int col) {
+        switch (col) { default:
+          case 0: return "Suffix";
+          case 1: return "Action";
+          case 2: return "Executable";
+        }
+      }
+    } //Associations
+    
+  } //AssociationPanel
+  
+} //AboutWidget

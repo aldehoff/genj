@@ -169,6 +169,14 @@ public class PropertyFile extends Property implements IconValueAvailable {
   }
   
   /**
+   * The files location (if externally accessible)    */
+  public File getFile() {
+    File result = getGedcom().getOrigin().calcAbsoluteLocation(file);
+    if (!result.exists()||!result.isFile()) return null;
+    return result;
+  }
+  
+  /**
    * Resolve the maximum load   */
   private int getMaxLoad() {
     // already known?

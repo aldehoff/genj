@@ -116,5 +116,11 @@ public class ZipOrigin extends Origin {
     return super.getName();
   }
 
+  /**
+   * @see genj.util.Origin#calcAbsoluteLocation(java.lang.String)
+   */
+  public File calcAbsoluteLocation(String file) {
+    return null;
+  }
 
 }

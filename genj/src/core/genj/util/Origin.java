@@ -197,6 +197,16 @@ public class Origin {
 
     return file.substring(u.length());
   }
+  
+  /**
+   * Calculates the absolute path for given file (if possible)   */
+  public File calcAbsoluteLocation(String file) {
+    // Absolute file specification?
+    if ((file.charAt(0)=='/') || (file.indexOf(":")>0) ) {
+      return new File(file);
+    }
+    return new File(getFile().getParent(), file);
+  }
 
   /**
    * Returns the Origin as a File (e.g. to use to write to)
