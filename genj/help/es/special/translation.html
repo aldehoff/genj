@@ -19,47 +19,60 @@ These parts are independent so that the translation can be done step by step or 
 
 <h2>GenJ program</h2>
 <p>
-The path is <tt>dev/genj/language/[identifiaction of the language sample, e.g. en=englisch, de=german]</tt>. Only the *.properties files are relevant, where the texts on the right side of the equal sign have to be translated. <b>Texts on the left side of the equal sign remain unchanged.</b>
+All files are encoded in UTF-8. Please make sure that you also use this format in your text editor. The path is <tt>dev/genj/language/[identifiaction of the language sample, e.g. en=englisch, de=german]/genj/</tt>. Only the *.properties files are relevant, where the texts on the right side of the equal sign have to be translated. <b>Texts on the left side of the equal sign remain unchanged.</b>
+
+<blockquote>
+<img src="../../images/screenshots/translate1.png">
+</blockquote>
 
 <blockquote>
 <b>Example (en => de)</b><br>
 cc.menu.file = File <b>(english sample)</b><br>
-cc.menu.file = Datei <b>(german translation)</b>
+cc.menu.file = Datei <b>(german translation)</b><br>
+cc.menu.file = Fichier <b>(french translation)</b>
 </blockquote>
 
-In case of missing translations English is automatically used as default language. The *.properties files have to be renamed so that the identification of the new langueage with a leading underscore _ appears in the name. <b>Note:</b> English language files (default language) have no underscore and no language identifaction in the file name.
+In case of missing translations English is automatically used as default language. The *.properties files have to be renamed so that the identification of the new language with a leading underscore _ is added to the end of the file name. <b>Note:</b> English language files (default language) have no underscore and no language identifaction in the file name.
 
 <blockquote>
-<b>Example (en => de)</b><br>
+<b>Example (en => de, fr)</b><br>
 resources.properties<br>
-resources_de.properties
+resources_de.properties (german)<br>
+resources_fr.properties (french)
 </blockquote>
 
-After renaming the directory in identification of the new language the translation of the program files is ready.
+After renaming the directory to the identification of the new language the translation of the program files is ready.
 
 <blockquote>
-<b>Example (en => de)</b><br>
-dev/genj/language/en<br>
-dev/genj/language/de
+<b>Example (en => de, fr)</b><br>
+dev/genj/language/en/genj<br>
+dev/genj/language/de/genj/ (german)<br>
+dev/genj/language/fr/genj/ (french)
 </blockquote>
 </p>
 
 <h2>Reports</h2>
 <p>
-Here are the *.properties files in <tt>dev/genj/src/report</tt> relevant. A new line has to be added for each entry. Existing entries can be used as sample via copy and paste. On the left side of the equal sign in the new entry a dot followed by language identification has to be added or an existing identification has to be changed that way. <b>Note:</b> English entries (default language) have no dot and no language identification.
+Here are the *.properties files in <tt>dev/genj/src/report</tt> relevant which are also encoded in UTF-8. A new line has to be added for each entry. Existing entries can be used as sample via copy and paste. On the left side of the equal sign in the new entry a dot followed by language identification has to be added or an existing identification has to be changed that way. <b>Note:</b> English entries (default language) have no dot and no language identification.
 
 <blockquote>
-<b>Example (en => de)</b><br>
-name =<br>
-name.de =
+<img src="../../images/screenshots/translate2.png">
 </blockquote>
 
-The text on the right side of the equal sign has to be translated. English as default language is used for missing translations. Text enclosed by <tt>{}</tt> or <tt>@@</tt> is a placeholder for variables. Solche Werte bleiben ver&auml;ndert. Escape sequences start with <tt>\</tt> like <tt>\n</tt>. Sequences like <tt>\u00ED</tt> is Unicode which is transformed into readable letters during the execution of GenJ.
+<blockquote>
+<b>Example (en => de, fr)</b><br>
+name = Gedcom Statistics <br>
+name.de = Gedcom-Statistik (german)<br>
+name.fr = Statistiques des donn&eacute;es Gedcom (french)
+</blockquote>
+
+The text on the right side of the equal sign has to be translated. English as default language is used for missing translations. Text enclosed by <tt>{}</tt> or <tt>@@</tt> is a placeholder for variables and shouldn't be touched. Escape sequences start with <tt>\</tt> like <tt>\n</tt>. Sequences like <tt>\u00ED</tt> is Unicode which is transformed into readable letters during the execution of GenJ.
 
 <blockquote>
-<b>Example (en => de)</b><br>
-name = List of Descendants<br>
-name.de = Liste von Nachfahren
+<b>Example (en => de, fr)</b><br>
+females = Females: {0} ({1}%)<Br>
+females.de&nbsp;= Weiblich: {0} ({1}%)<Br>
+females.fr&nbsp;= Femmes : {0} ({1}%)
 </blockquote>
 
 The translation is complete if all entries in all *.properties files haven been processed.
