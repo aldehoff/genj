@@ -84,16 +84,21 @@ public class RulerRenderer extends ContentRenderer {
   private void renderEvents(UnitGraphics g, double from, double to) {
     
     g.setColor(cTimespan);
-
     Rectangle2D clip = g.getClip();
-    List events = Repository.getInstance().getEvents();
-    for (int i=0;i<events.size();i++) {
+
+    int 
+    	fromYear = (int)Math.floor(clip.getX()),
+  		toYear   = (int)Math.ceil (clip.getMaxX());
+    
+    Repository cday = Repository.getInstance();
+    List events = cday.getEvents();
+    for (int i=cday.getStartIndex(fromYear);i<events.size();i++) {
       Event event = (Event)events.get(i);
       PointInTime time = event.getTime();
       double year = time.getYear();
-      if (year<clip.getX()-1)
+      if (year<fromYear)
         continue;
-      if (year>clip.getMaxX()+1)
+      if (year>toYear)
         break;
       try {
         year = Model.toDouble(time, false);
