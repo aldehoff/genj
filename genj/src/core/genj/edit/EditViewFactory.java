@@ -157,7 +157,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     result.add(ActionDelegate.NOOP);
     result.add(new EDelete(entity));
     // add an "edit in EditView"
-    if (ViewManager.getInstance().getOpenViews(EditView.class).isEmpty()) {
+    if (ViewManager.getInstance().getOpenViews(EditView.class, entity.getGedcom()).isEmpty()) {
       result.add(ActionDelegate.NOOP);
       result.add(new Edit(entity));
     }
@@ -355,7 +355,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       // set focus?
       if (result!=null) {
         // no editor open?
-        if (ViewManager.getInstance().getOpenViews(EditView.class).isEmpty()) {
+        if (ViewManager.getInstance().getOpenViews(EditView.class, gedcom).isEmpty()) {
           EditView.preselectEntity = result;
           ViewManager.getInstance().openView(EditViewFactory.this, gedcom);
         }

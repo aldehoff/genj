@@ -336,13 +336,13 @@ public class ViewManager {
   
   /**
    * Returns views of given type    */
-  public List getOpenViews(Class type) {
+  public List getOpenViews(Class type, Gedcom gedcom) {
     List result = new ArrayList(5);
     // look through views
     Iterator it = viewWidgets.iterator();
     while (it.hasNext()) {
       ViewWidget vw = (ViewWidget)it.next();
-      if (vw.getView().getClass().equals(type)) result.add(vw.getView());
+      if (vw.getView().getClass().equals(type) && vw.getGedcom()==gedcom) result.add(vw.getView());
     }
     // done
     return result;
