@@ -340,7 +340,8 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship.AssociatedWith#toString()
      */
     public String toString() {
-      return Gedcom.resources.getString("rel.association.with", property.getEntity());
+      TagPath path = new TagPath(property.getEntity().getProperty().getPathTo(property));
+      return Gedcom.resources.getString("rel.association.with", new Object[]{ path, property.getEntity()});
     }
     
     /**
@@ -349,12 +350,17 @@ public abstract class Relationship {
     public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       // add association
-      PropertyAssociation pa = new PropertyAssociation("ASSO", property.getEntity().getId());
-      entity.getProperty().addProperty(pa);
-      pa.link();
-      pa.addDefaultProperties();
-      // focus changes to entity that got the ASSO
-      return entity;
+      PropertyAssociation pa = new PropertyAssociation("ASSO", entity.getId());
+      property.addProperty(pa);
+      try {
+        pa.link();
+        pa.addDefaultProperties();
+      } catch (GedcomException ge) {
+        property.delProperty(pa);
+        throw ge;
+      }
+      // focus stays with entity getting the ASSO
+      return property.getEntity();
     }
     
   } //AssociatedWith

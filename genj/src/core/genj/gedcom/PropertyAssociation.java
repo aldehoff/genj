@@ -21,8 +21,8 @@ package genj.gedcom;
 
 /**
  * Gedcom Property : ASSO
- * Property wrapping the condition of having an association to 
- * another entity
+ * Property wrapping the condition of a property having an association 
+ * to another entity
  */
 public class PropertyAssociation extends PropertyXRef {
 
@@ -78,21 +78,18 @@ public class PropertyAssociation extends PropertyXRef {
       return;
     }
 
-    // Get enclosing indi?
-    Indi indi;
-    try {
-      indi = (Indi)getEntity();
-    } catch (ClassCastException ex) {
-      throw new GedcomException("ASSO can't be linked when not in indi");
-    }
-
     // Look for entity
     String id = getReferencedId();
-    if (id.length()==0) return;
+    if (id.length()==0) {
+      return;
+    } 
 
     Entity ent = (Entity)getGedcom().getEntity(id);
-    if (ent == null) 
-      return;
+    if (ent==null) 
+      throw new GedcomException("Couldnt't find individual with ID "+id);
+    if (!(ent instanceof Indi)) {
+      throw new GedcomException("Target of ASSO has to be Individual");
+    }
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);

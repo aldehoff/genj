@@ -46,10 +46,19 @@ public class PropertyForeignXRef extends PropertyXRef {
    * getValue method comment.
    */
   public String getValue() {
+    // the property/entity we're originating from
     Property p = getTarget();
     Entity e = p.getEntity();
-    return "linked through "+new TagPath(e.getProperty().getPathTo(p))+" in "+e.getId();
-    //return "";
+    // "linked through INDI:BIRT:ASSO in I001"
+    String result = "linked by "+new TagPath(e.getProperty().getPathTo(p))+" in "+e.getId();
+    // relationship information?    
+    Property rela = p.getProperty("RELA");
+    if (rela!=null&&rela.getValue().length()>0) { 
+      result += " ("+rela.getValue()+")";
+    } 
+    
+    // done
+    return result;
   }
 
   /**
