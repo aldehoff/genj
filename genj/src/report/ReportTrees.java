@@ -125,7 +125,8 @@ public class ReportTrees extends Report {
 			});
 		
 		// Print sorted list
-		println(justify(i18n("count"),6)+"  Name\n");
+		println(justify(i18n("count"),7)+"  "+i18n("name"));
+    println("------  ----------------------------------------------");
 		int grandtotal=0;
 		int loners=0;
 		for (int i=0; i<stats.numTrees; i++) {
@@ -134,7 +135,7 @@ public class ReportTrees extends Report {
 				loners +=count;
 			} else {
 				grandtotal+=count;
-				println(justify(count,6)+"  "+stats.trees[i].name);
+				println(justify(count,7)+"  "+stats.trees[i].name);
 			}
 		}
 
