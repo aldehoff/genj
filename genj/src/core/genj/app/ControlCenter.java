@@ -120,6 +120,7 @@ public class ControlCenter extends JPanel {
       .setFocusable(false)
       .setContainer(result)
       .setTextAllowed(imageAndText)
+      .setShortTexts(true)
       .setImageOverText(imageAndText)
       .setFontSize(10);
 
@@ -877,6 +878,7 @@ public class ControlCenter extends JPanel {
     protected ActionSettings() {
       super.setImage(Images.imgSettings);
       super.setText("cc.view.settings");
+      super.setShortText("cc.view.short.settings");
       super.setTip("cc.tip.settings");
     }    
     /** run */
@@ -953,6 +955,7 @@ public class ControlCenter extends JPanel {
     protected ActionView(ViewManager.Descriptor which) {
       this.which = which;
       super.setText("cc.view."+which.key);
+      super.setShortText("cc.view.short."+which.key);
       super.setTip("cc.tip.open_"+which.key);
       super.setImage(which.img);
     }
