@@ -269,8 +269,13 @@ import javax.swing.table.TableColumnModel;
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
   public void handleChange(Change change) {
-    prepareRows();
-    fireTableDataChanged();
+    if (change.isChanged(Change.EADD)||change.isChanged(Change.EDEL)) {
+      prepareRows();
+      fireTableDataChanged();
+      return;
+    }
+    if (rows.length>0)
+      fireTableRowsUpdated(0, rows.length-1);
   }
 
   /**
