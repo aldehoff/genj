@@ -53,11 +53,8 @@ public class ProgressWidget extends JPanel {
   /** label for state */
   private JLabel        state;
   
-  /** a callback we use */
-  private Callback callback = new Callback();
-  
   /** timer */
-  private Timer timer = new Timer(100, callback);
+  private Timer timer;
   
   /**
    * Constructor
@@ -83,7 +80,21 @@ public class ProgressWidget extends JPanel {
 
     // .. cancel
     gh.setParameter(0)
-       .add(new ButtonHelper().create(callback), 0, 2);
+       .add(new ButtonHelper().create(new Cancel()), 0, 2);
+
+    // prepare timer
+    timer = new Timer(100, new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        // update progress bar      
+        progress.setValue(trackable.getProgress());
+        // update state
+        state.setText(trackable.getState());
+        // still going?
+        if (!worker.isAlive())
+          timer.stop();
+        // done for now
+      }
+    });
        
     // done
   }
@@ -112,13 +123,13 @@ public class ProgressWidget extends JPanel {
   }
 
   /**
-   * Callback
+   * Cancel
    */
-  private class Callback extends ActionDelegate implements ActionListener {
+  private class Cancel extends ActionDelegate {
     /**
      * Constructor
      */
-    private Callback() {
+    private Cancel() {
       setText(OPTION_CANCEL);
     }
     /**
@@ -127,23 +138,6 @@ public class ProgressWidget extends JPanel {
     protected void execute() {
       trackable.cancel();
     }
-    /**
-     * on timer
-     */
-    public void actionPerformed(ActionEvent ae) {
-
-      // update progress bar      
-      progress.setValue(trackable.getProgress());
-  
-      // update state
-      state.setText(trackable.getState());
-            
-      // still going?
-      if (!worker.isAlive())
-        timer.stop();
-
-      // done for now
-    }
-  } //Callback
+  } //Cancel
   
 } //ProgressWidget

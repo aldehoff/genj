@@ -32,8 +32,6 @@ import genj.view.ViewManager;
 import genj.view.widgets.PathListWidget;
 import genj.view.widgets.PathTreeWidget;
 
-import java.awt.event.ActionListener;
-
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -66,7 +64,7 @@ public class TableViewSettings extends JPanel implements Settings {
     for (int i=0;i<Gedcom.ENTITIES.length;i++) {
       cTypes.addItem(Gedcom.getEntityName(Gedcom.ENTITIES[i],true));
     }
-    cTypes.addActionListener((ActionListener)new ActionChooseEntity().as(ActionListener.class));
+    cTypes.addActionListener(new ActionChooseEntity());
 
     // Tree of TagPaths
     pathTree = new PathTreeWidget();

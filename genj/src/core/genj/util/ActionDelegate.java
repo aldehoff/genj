@@ -19,9 +19,8 @@
  */
 package genj.util;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -30,7 +29,7 @@ import javax.swing.SwingUtilities;
 /**
  * An Action
  */
-public abstract class ActionDelegate implements Cloneable {
+public abstract class ActionDelegate implements Runnable, ActionListener, Cloneable {
   
   /** a noop ActionDelegate */
   public static final ActionDelegate NOOP = new ActionNOOP();
@@ -56,6 +55,22 @@ public abstract class ActionDelegate implements Cloneable {
   private Thread thread;
   private Object threadLock = new Object();
   
+  /**
+   * trigger execution - ActionListener support
+   * @see ActionDelegate#trigger()
+   */
+  public final void actionPerformed(ActionEvent e) {
+    trigger();
+  }
+  
+  /**
+   * trigger execution - Runnable support
+   * @see ActionDelegate#trigger()
+   */
+  public final void run() {
+    trigger();
+  }
+
   /**
    * trigger execution
    * @return status of preExecute (true unless overridden)
@@ -266,43 +281,6 @@ public abstract class ActionDelegate implements Cloneable {
     return this;
   }
   
-  /**
-   * Returns this delegate wrapped in a proxy now triggered
-   * by that contract (without selector)
-   */  
-  public Object as(Class contract) {
-    return as(contract,null);
-  }
-
-  /**
-   * Returns this delegate wrapped in a proxy now triggered
-   * by that contract (with selector)
-   */  
-  public Object as(Class contract, String selector) {
-    return Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{contract}, new InvocationHandlerTrigger(selector));
-  }
-
-  /**
-   * InvocationHandler trigger
-   */
-  private class InvocationHandlerTrigger implements InvocationHandler {
-    /** a selector */
-    private String selector;
-    /**
-     * Constructor
-     */
-    private InvocationHandlerTrigger(String selector) {
-      this.selector = selector;
-    }
-    /**
-     * @see java.lang.reflect.InvocationHandler#invoke(Object, Method, Object[])
-     */
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      if (selector==null||selector.equals(method.getName())) trigger();
-      return null;
-    }
-  } //InvocationHandlerTrigger
-
   /**
    * Async Execution
    */

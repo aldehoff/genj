@@ -64,6 +64,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
@@ -108,9 +109,11 @@ public class ControlCenter extends JPanel {
     tGedcoms = new GedcomTableWidget(registry);
 
     // ... Listening
-    tGedcoms.getSelectionModel().addListSelectionListener(
-      (ListSelectionListener) new ActionToggleButtons().as(
-        ListSelectionListener.class));
+    tGedcoms.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+      public void valueChanged(ListSelectionEvent e) {
+        ButtonHelper.setEnabled(gedcomButtons, tGedcoms.getSelectedGedcom() != null);
+      }
+    });
 
     // Layout
     setLayout(new BorderLayout());
@@ -137,8 +140,7 @@ public class ControlCenter extends JPanel {
     // continue
     super.addNotify();
     // Load known gedcoms
-    SwingUtilities.invokeLater(
-      (Runnable) new ActionLoadLastOpen().as(Runnable.class));
+    SwingUtilities.invokeLater(new ActionLoadLastOpen());
   }
   
   /**
@@ -1015,16 +1017,4 @@ public class ControlCenter extends JPanel {
     }
   } //ActionView
 
-  /**
-   * Action - ActionToggleButtons
-   */
-  private class ActionToggleButtons extends ActionDelegate {
-    /** run */
-    protected void execute() {
-      ButtonHelper.setEnabled(
-        gedcomButtons,
-        tGedcoms.getSelectedGedcom() != null);
-    }
-  } //ActionToggleButtons    
-
-}
+} //ControlCenter

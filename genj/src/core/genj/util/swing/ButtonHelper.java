@@ -26,7 +26,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -156,7 +155,7 @@ public class ButtonHelper {
       result.setEnabled( !action.enabled ? false : isEnabled.booleanValue());
       
     // listening
-    result.addActionListener((ActionListener)action.as(ActionListener.class));
+    result.addActionListener(action);
 
     // context
     if (group!=null) {
