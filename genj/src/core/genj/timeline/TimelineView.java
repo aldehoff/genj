@@ -577,7 +577,6 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       Context context = null;
       if (event!=null) {
         context = new Context(event.pd);
-        setContext(context);
         manager.setContext(context);
       }
 
