@@ -111,7 +111,7 @@ import javax.swing.table.TableColumnModel;
   /**
    * Remove gedcom by name
    */
-  public boolean removeGedcom(String name) {
+  public boolean removesGedcom(String name) {
     for (int i=0; i<model.getRowCount(); i++) {
       Gedcom gedcom = model.getGedcom(i);
       if (gedcom.getName().equals(name)) {
@@ -125,12 +125,13 @@ import javax.swing.table.TableColumnModel;
   /**
    * Check for gedcom with name
    */
-  public boolean containsGedcom(String name) {
+  public Gedcom getGedcom(String name) {
     for (int i=0; i<model.getRowCount(); i++) {
-      if (model.getGedcom(i).getName().equals(name))
-        return true;
+      Gedcom gedcom = model.getGedcom(i);
+      if (gedcom.getName().equals(name))
+        return gedcom;
     }
-    return false;
+    return null;
   }
   
   /**

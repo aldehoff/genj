@@ -720,7 +720,7 @@ public class ControlCenter extends JPanel {
     private boolean open(Origin origin) {
 
       // Check if already open
-      if (tGedcoms.containsGedcom(origin.getName())) {
+      if (tGedcoms.getGedcom(origin.getName())!=null) {
         windowManager.openDialog(
           null, 
           origin.getName(), 
@@ -1012,7 +1012,9 @@ public class ControlCenter extends JPanel {
       } else {
         // .. open new
         if (newOrigin != null) {
-          tGedcoms.removeGedcom(newOrigin.getName());
+          Gedcom old = tGedcoms.getGedcom(newOrigin.getName());
+          if (old!=null)
+            removeGedcom(old);
           new ActionOpen(newOrigin).trigger();
         }
       }
