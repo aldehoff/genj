@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -350,12 +351,15 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
      * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
      */
     protected Object getConfirmMessage() {
-      // You are about to create a {0} in {1}!
-      String about = resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom});
-      // This entity will not be connected ... / This entity will be {0}.
-      String detail = resources.getString("confirm.new.related", relationship);
-      // done
-      return about + '\n' + detail;
+      return new JComboBox(gedcom.getEntities(type).toArray());
+      
+      
+//      // You are about to create a {0} in {1}!
+//      String about = resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom});
+//      // This entity will not be connected ... / This entity will be {0}.
+//      String detail = resources.getString("confirm.new.related", relationship);
+//      // done
+//      return about + '\n' + detail;
     }
     /**
      * @see genj.edit.EditViewFactory.Change#change()
