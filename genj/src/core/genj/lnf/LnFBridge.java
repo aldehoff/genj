@@ -68,11 +68,40 @@ public class LnFBridge {
   private LnFBridge() {
     readDescriptor();
   }
+
+  /**
+   * Sets a certain LnF by name
+   */
+  public boolean setLnF(String lnfName, String themeName, Vector rootComponents) {
+    // search for lnf
+    LnF lnf=null;
+    for (int i=0; i<lnfs.length; i++) {
+      if (lnfs[i].getName().equals(lnfName)) {
+        lnf=lnfs[i];
+        break;
+      }
+    }
+    if (lnf==null) return false;
+    
+    // search for theme
+    LnF.Theme theme=null;
+    LnF.Theme[] themes = lnf.getThemes();
+    for (int i=0; i<themes.length; i++) {
+      if (themes[i].getPack().equals(themeName)) {
+        theme=themes[i];
+        break;
+      }
+    }
+    if (lnf==null) return false;
+    
+    // set it
+    return setLnF(lnf,theme,rootComponents);
+  }
   
   /**
    * Sets a certain LnF
    */
-  public void setLnF(LnF lnf, LnF.Theme theme, final Vector rootComponents) {
+  public boolean setLnF(LnF lnf, LnF.Theme theme, final Vector rootComponents) {
     
     // try to load LnF
     String type = lnf.getType();
@@ -101,15 +130,19 @@ public class LnFBridge {
       UIManager.setLookAndFeel((LookAndFeel)cl.loadClass(type).newInstance());
     } catch (ClassNotFoundException cnfe) {
       System.out.println(prefix+" is not accessible (ClassNotFoundException)");
+      return false;
     } catch (ClassCastException cce) {
       System.out.println(prefix+" is not a valid LookAndFeel (ClassCastException)");
+      return false;
     } catch (MalformedURLException mue) {
       System.out.println(prefix+" doesn't point to a valid archive (MalformedURLException)");
+      return false;
     } catch (UnsupportedLookAndFeelException e) {
       System.out.println(prefix+" is not supported on this platform (UnsupportedLookAndFeelException)");
+      return false;
     } catch (Throwable t) {
       System.out.println(prefix+" couldn't be set ("+t.getClass()+")");
-      return;
+      return false;
     }
 
     // reflect it    
@@ -121,6 +154,7 @@ public class LnFBridge {
     });
     
     // done
+    return true;
   }
   
   /**

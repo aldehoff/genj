@@ -29,6 +29,7 @@ import java.net.*;
 
 import genj.gedcom.*;
 import genj.util.*;
+import genj.lnf.LnFBridge;
 
 /**
  * Main Class for GenJ Application
@@ -43,75 +44,10 @@ public class App {
   private Registry registry = Registry.getRegistry("genj");
   private JFrame frame;
   private ControlCenter center;
+  private Hashtable openFrames = new Hashtable();
+  private static App instance;
 
   final static Resources resources = new Resources("genj.app");
-
-  /**
-   * Listening to Window Events
-   */
-  private class AppWindowListener implements WindowListener {
-
-    /**
-     * Invoked when a window is activated.
-     */
-    public void windowActivated(WindowEvent e) {
-    }
-
-    /**
-     * Invoked when a window has been closed.
-     */
-    public void windowClosed(WindowEvent e) {
-
-      // Store registry so that current settings
-      // are available next time
-      Registry.saveToDisk();
-
-      // Current frame ?
-      if (e.getSource() == frame){
-        System.exit(0);
-      }
-  
-    // Done
-    }
-
-    /**
-     * Invoked when a window is in the process of being closed.
-     * The close operation can be overridden at this point.
-     */
-    public void windowClosing(WindowEvent e) {
-
-      // Remember position
-      registry.put("frame",frame.getBounds());
-      center.close();
-
-      // Done
-    }
-
-    /**
-     * Invoked when a window is deactivated.
-     */
-    public void windowDeactivated(WindowEvent e) {
-    }
-
-    /**
-     * Invoked when a window is de-iconified.
-     */
-    public void windowDeiconified(WindowEvent e) {
-    }
-
-    /**
-     * Invoked when a window is iconified.
-     */
-    public void windowIconified(WindowEvent e) {
-    }
-
-    /**
-     * Invoked when a window has been opened.
-     */
-    public void windowOpened(WindowEvent e) {
-    }
-
-  }
 
   /**
    * Application Constructor
@@ -139,7 +75,11 @@ public class App {
         );
       }
     }
-//    UIManager.put("OptionPane.yesButtonText", "Natuerlich");
+    
+    // Set the Look&Feel
+    String lnf = registry.get("lnf", (String)null);
+    String theme = registry.get("lnf.theme", (String)null);
+    LnFBridge.getInstance().setLnF(lnf, theme, new Vector());
 
     // Disclaimer
     if (registry.get("disclaimer",0)==0) {
@@ -158,13 +98,20 @@ public class App {
 
     }
 
-    // Make ToolTip HeavyWeight
-    //ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
-
     // Create frame
-    frame = new JFrame(resources.getString("app.title"));
-    frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    frame.setIconImage(Images.imgGedcom.getImage());
+    frame = createFrame(resources.getString("app.title"),Images.imgGedcom,"main");
+    frame.addWindowListener(new WindowAdapter() {
+      public void windowClosed(WindowEvent we) {
+        // tell everyone we're shutting down
+        center.close();
+        Enumeration e = getFrames().elements();
+        while (e.hasMoreElements()) ((JFrame)e.nextElement()).dispose();
+        // Store registry 
+        Registry.saveToDisk();      
+        // exit
+        System.exit(0);
+      }
+    });
 
     // Create the desktop
     center = new ControlCenter(frame,registry);
@@ -173,20 +120,18 @@ public class App {
     // Menu-Bar
     frame.setJMenuBar(center.getMenu());
 
-    // Handler
-    frame.addWindowListener(new AppWindowListener());
-
     // Show it
-
-    Rectangle saved = registry.get("frame",(Rectangle)null);
-    if (saved!=null) {
-      frame.setBounds(saved);
-    } else {
-      frame.pack();
-    }
+    frame.pack();
     frame.show();
 
     // Done
+  }
+  
+  /**
+   * Singleton access
+   */
+  public static App getInstance() {
+    return instance;
   }
 
   /**
@@ -196,12 +141,97 @@ public class App {
 
     // Startup and catch Swing missing
     try {
-      new App();
+      instance = new App();
     } catch (NoClassDefFoundError err) {
       System.out.println("Error: Swing is missing - please install v1.1 and put swing.jar in your CLASSPATH!");
       err.printStackTrace();
       System.exit(1);
     }
   }
+
+  /**
+   * Returns a previously opened Frame by key
+   */
+  public JFrame getFrame(String key) {
+    return (JFrame)openFrames.get(key);
+  }
+  
+  /**
+   * Returns all know JFrames that have been opened
+   */
+  public Hashtable getFrames() {
+    return openFrames;
+  }
+
+  /**
+   * Creates a Frame which remembers it's position from last time
+   */
+  public JFrame createFrame(String title, ImgIcon image, final String key) {
+
+    final String resource = "frame."+key;
+
+    // Create the frame
+    JFrame frame = new JFrame(title) {
+      // LCD
+      /** Disposes of this frame */
+      public void dispose() {
+        registry.put(resource,getBounds());
+        openFrames.remove(key);
+        super.dispose();
+      }
+      /** Packs this frame to optimal/remembered size */
+      public void pack() {
+        Rectangle box = registry.get(resource,(Rectangle)null);
+        if (box==null) {
+          super.pack();
+        } else {
+          Dimension s = this.getPreferredSize();
+          setBounds(
+          box.x,
+          box.y,
+          Math.max(box.width,s.width),
+          Math.max(box.height,s.height)
+          );
+        }
+        invalidate();
+        validate();
+        doLayout();
+      }
+      // EOC
+    };
+
+    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    if (image!=null) {
+      frame.setIconImage(image.getImage());
+    }
+
+    openFrames.put(key,frame);
+
+    // Done
+    return frame;
+  }
+
+  /**
+   * Sets the LookAndFeel
+   */
+  public void setLnF(LnFBridge.LnF lnf, LnFBridge.LnF.Theme theme) {
+    
+    // collect frames we know about
+    Vector uis = new Vector();
+    uis.add(frame);
+    Enumeration views = View.getAll();
+    while (views.hasMoreElements()) uis.add(views.nextElement());
+    Enumeration frames = getFrames().elements();
+    while (frames.hasMoreElements()) uis.add(frames.nextElement());
+    
+    // set it!
+    if (LnFBridge.getInstance().setLnF(lnf, theme, uis)) {
+      registry.put("lnf", lnf.getName());
+      if (theme!=null) registry.put("lnf.theme", theme.getPack());
+    }
+    
+    // remember
+  }
+
 
 }

@@ -36,7 +36,6 @@ import genj.util.*;
 import genj.util.swing.*;
 import genj.print.*;
 import genj.tool.*;
-import genj.lnf.LnFBridge;
 import genj.option.*;
 import genj.io.*;
 
@@ -53,7 +52,6 @@ public class ControlCenter extends JPanel implements ActionListener {
   private Vector busyGedcoms;
   private ControlCenter me;
   private JMenu gedcomMenu,toolMenu,helpMenu;
-  private Hashtable openFrames = new Hashtable();
   private Registry registry;
   private HelpBridge helpBridge;
 
@@ -216,10 +214,10 @@ public class ControlCenter extends JPanel implements ActionListener {
   private void actionAbout() {
     
     // know the frame already?
-    JFrame frame = getOpenFrame("ABOUT");
+    JFrame frame = App.getInstance().getFrame("about");
     if (frame==null) {
       // create it
-      frame = getFrame(App.resources.getString("cc.title.about"),null,"ABOUT");
+      frame = App.getInstance().createFrame(App.resources.getString("cc.title.about"),null,"about");
       frame.getContentPane().add(new AboutDialog(frame,this));
     }
     frame.pack();
@@ -260,7 +258,7 @@ public class ControlCenter extends JPanel implements ActionListener {
   private void actionDelEntity() {
 
     // Setup delete dialog
-    JFrame frame = getFrame(
+    JFrame frame = App.getInstance().createFrame(
       App.resources.getString("cc.title.delete_entity"),
       Images.imgDelEntity,
       "delentity"
@@ -301,7 +299,7 @@ public class ControlCenter extends JPanel implements ActionListener {
   private void actionMerge(Gedcom gedcom) {
 
     // Setup merge dialog
-    JFrame frame = getFrame(
+    JFrame frame = App.getInstance().createFrame(
       App.resources.getString("cc.title.merge_gedcoms"),
       Images.imgGedcom,
       "merge"
@@ -351,7 +349,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       return;
     }
 
-    JFrame frame = getFrame(
+    JFrame frame = App.getInstance().createFrame(
       App.resources.getString("cc.title.create_entity"),
       img,
       "newentity"
@@ -762,7 +760,7 @@ public class ControlCenter extends JPanel implements ActionListener {
   private void actionVerify(Gedcom gedcom) {
 
     // Setup verify dialog
-    JFrame frame = getFrame(
+    JFrame frame = App.getInstance().createFrame(
       App.resources.getString("cc.title.verify_gedcom"),
       Images.imgGedcom,
       "verify"
@@ -784,14 +782,14 @@ public class ControlCenter extends JPanel implements ActionListener {
   private void actionViewEdit() {
 
     // Open?
-    JFrame frame = getOpenFrame("settings");
+    JFrame frame = App.getInstance().getFrame("settings");
     if (frame!=null) {
       frame.dispose();
       return;
     }
 
     // Setup editor dialog
-    frame = getFrame(
+    frame = App.getInstance().createFrame(
       App.resources.getString("cc.title.settings_edit"),
       Images.imgGedcom,
       "settings"
@@ -829,15 +827,14 @@ public class ControlCenter extends JPanel implements ActionListener {
     super.addNotify();
 
     // Load known gedcoms
-    Runnable later = new Runnable() {
+    SwingUtilities.invokeLater(new Runnable() {
       // LCD
       /** main */
       public void run() {
         loadLastOpen();
       }
       // EOC
-    };
-    new Thread(later).start();
+    });
 
     // Done
   }
@@ -877,8 +874,6 @@ public class ControlCenter extends JPanel implements ActionListener {
     registry.put("columns",tGedcoms.getColumnWidths());
 
     // Done
-    frame.dispose();
-
   }
 
   /**
@@ -893,54 +888,6 @@ public class ControlCenter extends JPanel implements ActionListener {
     b.setMargin(new Insets(4,4,4,4));
     b.setRequestFocusEnabled(false);
     return b;
-  }
-
-  /**
-   * Creates a Frame which remembers it's position from last time
-   */
-  private JFrame getFrame(String title, ImgIcon image, final String key) {
-
-    final String resource = "frame."+key;
-
-    // Create the frame
-    JFrame frame = new JFrame(title) {
-      // LCD
-      /** Disposes of this frame */
-      public void dispose() {
-        registry.put(resource,getBounds());
-        openFrames.remove(key);
-        super.dispose();
-      }
-      /** Packs this frame to optimal/remembered size */
-      public void pack() {
-        Rectangle box = registry.get(resource,(Rectangle)null);
-        if (box==null) {
-          super.pack();
-        } else {
-          Dimension s = this.getPreferredSize();
-          setBounds(
-          box.x,
-          box.y,
-          Math.max(box.width,s.width),
-          Math.max(box.height,s.height)
-          );
-        }
-        invalidate();
-        validate();
-        doLayout();
-      }
-      // EOC
-    };
-
-    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    if (image!=null) {
-      frame.setIconImage(image.getImage());
-    }
-
-    openFrames.put(key,frame);
-
-    // Done
-    return frame;
   }
 
   /**
@@ -988,13 +935,6 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     // Done
     return menuBar;
-  }
-
-  /**
-   * Returns a previously opened Frame by key
-   */
-  private JFrame getOpenFrame(String key) {
-    return (JFrame)openFrames.get(key);
   }
 
   /**
@@ -1192,19 +1132,6 @@ public class ControlCenter extends JPanel implements ActionListener {
     super.removeNotify();
   }
   
-  /**
-   * Sets the LookAndFeel
-   */
-  public void setLnF(LnFBridge.LnF lnf, LnFBridge.LnF.Theme theme) {
-    Vector uis = new Vector();
-    uis.add(frame);
-    Enumeration views = View.getAll();
-    while (views.hasMoreElements()) uis.add(views.nextElement());
-    Enumeration frames = openFrames.elements();
-    while (frames.hasMoreElements()) uis.add(frames.nextElement());
-    LnFBridge.getInstance().setLnF(lnf, theme, uis);
-  }
-
   /**
    * Creates a FileChooser for given arguments
    */

@@ -20,7 +20,7 @@
  *
  * AboutDialog class
  * This class creates the content of AboutDialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.5 2002-08-09 18:26:52 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.6 2002-08-09 22:08:01 nmeier Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -270,7 +270,7 @@ public class AboutDialog extends JPanel{
     public void actionPerformed(ActionEvent e) {
       LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
       if (lnf==null) return;
-      cc.setLnF(lnf,null);
+      App.getInstance().setLnF(lnf,null);
     }
     
     /**
