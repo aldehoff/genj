@@ -33,6 +33,8 @@
     </tocitem>
     <tocitem target="d.todo"     text="To Do">
     </tocitem>
+    <tocitem target="d.faq"     text="FAQ">
+    </tocitem>
     <tocitem target="d.developer"   text="Developer HowTo" image="img.Developer"/>
     <tocitem target="d.gpl"     text="GNU GPL"            image="img.GNUgpl"/>
   </tocitem>

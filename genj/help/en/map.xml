@@ -33,6 +33,7 @@
   <mapID target="documentation"     url="documentation/documentation.html" />
   <mapID target="d.changes"     url="documentation/changes.html" />
   <mapID target="d.todo"     url="documentation/todo.html" />
+  <mapID target="d.faq"    url="documentation/faq.html" />
   <mapID target="d.developer"    url="documentation/developer.html" />
   <mapID target="d.gpl"     url="documentation/gpl.html" />
 
