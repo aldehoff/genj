@@ -172,6 +172,8 @@ public class ScreenResolutionScale extends JComponent {
         getHeight()/2 - txt.length*fh/2 + i*fh + fh
       );
     }
+    
+    graphcs.drawString("cm", 16, 16+fm.getAscent());
   }
   
   /**
