@@ -29,7 +29,6 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyNote;
-import genj.gedcom.PropertySource;
 import genj.gedcom.Relationship;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
@@ -123,12 +122,11 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     // everything but a note can get a note attached
     if (!(property instanceof PropertyNote))
       result.add(new Create(property.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(property,Gedcom.NOTES)));
-    // everything but a source can get a source attached
-    if (!(property instanceof PropertySource))
-      result.add(new Create(property.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(property,Gedcom.SOURCES)));
-    // event can get can get an obje attached
-    if (property instanceof PropertyEvent)
+    // event can get can get an obje|SOUR attached
+    if (property instanceof PropertyEvent) {
       result.add(new Create(property.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(property,Gedcom.MULTIMEDIAS)));
+      result.add(new Create(property.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(property,Gedcom.SOURCES)));
+    }
     // delete possible
     result.add(new PDelete(property));
     // done
