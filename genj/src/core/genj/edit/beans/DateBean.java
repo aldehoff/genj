@@ -33,6 +33,7 @@ import genj.util.swing.PopupWidget;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
@@ -88,10 +89,14 @@ public class DateBean extends PropertyBean {
 
     // check date2 visibility
     date2.setVisible(format.isRange());
+    
+    // set text of chooser and label
     choose.setText(format.getLabel1());
     label.setText(format.getLabel2());
 
+    // set image and tooltip of chooser
     choose.setIcon(format==PropertyDate.DATE ? PIT : null);
+    choose.setToolTipText(format.getLabel());
     
     // show
     revalidate();
@@ -115,15 +120,26 @@ public class DateBean extends PropertyBean {
 
     // setup components
     WindowManager mgr = viewManager.getWindowManager();
-    
-    choose = new PopupWidget("from", PIT, actions);
 
+    // .. the chooser (making sure the preferred size is pre-computed to fit-it-all)
+    choose = new PopupWidget(null, PIT, actions);
+    Dimension pref = choose.getPreferredSize();
+    choose.setIcon(null);
+    for (int i=0,j=PropertyDate.FORMATS.length;i<j;i++) {
+      choose.setText(PropertyDate.FORMATS[i].getLabel1());
+      pref.width = Math.max(pref.width, choose.getPreferredSize().width);
+    }
+    choose.setPreferredSize(pref);
+
+    // .. first date
     date1 = new DateWidget(p.getStart(), mgr);
     date1.addChangeListener(changeSupport);
     date1.setAlignmentX(0);
 
+    // .. the label
     label = new JLabel("to");
     
+    // .. second date
     date2 = new DateWidget(p.getEnd(), mgr);
     date2.addChangeListener(changeSupport);
 
