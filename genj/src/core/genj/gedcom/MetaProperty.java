@@ -161,6 +161,15 @@ public class MetaProperty implements Comparable {
   }
   
   /**
+   * Test
+   */
+  public boolean allows(String sub, Class type) {
+    // has to be defined as sub with isGrammar==true
+    MetaProperty meta = (MetaProperty)mapOfSubs.get(sub);
+    return meta!=null && type.isAssignableFrom(meta.getType());
+  }
+  
+  /**
    * Acessor - subs
    * This is package private to make callees go through
    * indvidual properties rather than accessing this directly.
