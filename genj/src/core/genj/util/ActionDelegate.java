@@ -34,6 +34,9 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
   /** a noop ActionDelegate */
   public static final ActionDelegate NOOP = new ActionNOOP();
   
+  /** a lock for CallAsyncExecute */ 
+  private static boolean[] SEMAPHORE_SYNC = { false };
+  
   /** async modes */
   public static final int 
     ASYNC_NOT_APPLICABLE = 0,
@@ -299,6 +302,14 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
         thread = null;
       }
       
+      // make sure we don't have two sync-back's at the same time
+      synchronized (SEMAPHORE_SYNC) {
+        try {
+          while (SEMAPHORE_SYNC[0]) SEMAPHORE_SYNC.wait();
+        } catch (Throwable t) {}
+        SEMAPHORE_SYNC[0] = true;
+      }
+      
       // queue handleThrowable
       if (thrown!=null)
         SwingUtilities.invokeLater(new CallSyncHandleThrowable(thrown));
@@ -317,6 +328,12 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
         postExecute();
       } catch (Throwable t) {
         handleThrowable("postExecute", t);
+      } finally {
+        // someone else can now proceed into sync-back
+        synchronized (SEMAPHORE_SYNC) {
+          SEMAPHORE_SYNC[0] = false;
+          SEMAPHORE_SYNC.notify();
+        }
       }
     }
   } //SyncPostExecute
