@@ -1063,7 +1063,7 @@ public class ControlCenter extends JPanel {
       OptionsWidget widget = new OptionsWidget(windowManager);
       widget.setOptions(OptionProvider.getAllOptions());
       // open dialog
-      windowManager.openDialog("options", "Options", WindowManager.IMG_INFORMATION, widget, CloseWindow.OK(), ControlCenter.this);
+      windowManager.openDialog("options", getText(), WindowManager.IMG_INFORMATION, widget, CloseWindow.OK(), ControlCenter.this);
       // done
     }
   } //ActionOptions
