@@ -23,6 +23,11 @@ import java.util.StringTokenizer;
  */
 public class ReportRelatives extends Report {
   
+  private final static int
+    UNKNOWN = PropertySex.UNKNOWN,
+    MALE = PropertySex.MALE,
+    FEMALE = PropertySex.FEMALE;
+  
   /**
    * A relative
    */
@@ -35,7 +40,7 @@ public class ReportRelatives extends Report {
     
     /** constructor */
     Relative(String key, String expression) {
-      this(key, expression, PropertySex.UNKNOWN);
+      this(key, expression, UNKNOWN);
     }
     
     /** constructor */
@@ -56,13 +61,13 @@ public class ReportRelatives extends Report {
     new Relative("mother"     , "INDI:FAMC:*:..:WIFE:*:.."   ),
     new Relative("husband"    , "INDI:FAMS:*:..:HUSB:*:.."   ),
     new Relative("wife"       , "INDI:FAMS:*:..:WIFE:*:.."   ),
-    new Relative("daughter"   , "INDI:FAMS:*:..:CHIL:*:.."   , PropertySex.FEMALE),
-    new Relative("son"        , "INDI:FAMS:*:..:CHIL:*:.."   , PropertySex.MALE),
-    new Relative("brother"    , "INDI:FAMC:*:..:CHIL:*:.."   , PropertySex.MALE),
-    new Relative("sister"     , "INDI:FAMC:*:..:CHIL:*:.."   , PropertySex.FEMALE),
+    new Relative("daughter"   , "INDI:FAMS:*:..:CHIL:*:.."   , FEMALE),
+    new Relative("son"        , "INDI:FAMS:*:..:CHIL:*:.."   , MALE),
+    new Relative("brother"    , "INDI:FAMC:*:..:CHIL:*:.."   , MALE),
+    new Relative("sister"     , "INDI:FAMC:*:..:CHIL:*:.."   , FEMALE),
     
-    new Relative("grandson"     , "son+son|daughter+son"          , PropertySex.MALE),
-    new Relative("granddaughter", "son+daughter|daughter+daughter", PropertySex.FEMALE),
+    new Relative("grandson"     , "son+son|daughter+son"          , MALE),
+    new Relative("granddaughter", "son+daughter|daughter+daughter", FEMALE),
     
     new Relative("uncle.paternal", "father+brother|father+sister +husband"),
     new Relative("uncle.maternal", "mother+brother|mother+sister +husband"),
@@ -183,7 +188,7 @@ public class ReportRelatives extends Report {
     for (int i = 0; i < found.length; i++) {
       if (found[i]!=root) {
         Indi indi = (Indi)found[i];
-        if (sex==PropertySex.UNKNOWN||indi.getSex()==sex)
+        if (sex==UNKNOWN||indi.getSex()==sex)
           result.add(found[i]);
       }
     }
