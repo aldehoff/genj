@@ -53,7 +53,7 @@ public class Debug {
     
     // try to open a file for debugging
     try {
-      out = new PrintStream(new FileOutputStream(file, true));
+      out = new PrintStream(new FileOutputStream(file.getAbsolutePath(), true));
     } catch (Throwable t) {
       log(ERROR, Debug.class, "Failed to route debug log to "+file.getAbsoluteFile(), t);
     }
