@@ -40,9 +40,6 @@ import javax.swing.SwingUtilities;
  */
 public class PopupWidget extends JButton {
   
-  /** popup */
-  private JPopupMenu popup = null;
-  
   /** list of actions */
   private List items = new ArrayList();
 
@@ -107,34 +104,6 @@ public class PopupWidget extends JButton {
 
   
   /**
-   * Our special model
-   */
-  private class Model extends DefaultButtonModel implements Runnable {
-    /** our menu trigger */
-    public void setPressed(boolean b) {
-      // continue
-      super.setPressed(b);
-      // show menue (delayed)
-      if (b) SwingUtilities.invokeLater(this);
-    }
-    /** EDT callback */
-    public void run() { 
-      showPopup(); 
-    }
-    /**
-     * action performed
-     */
-    protected void fireActionPerformed(ActionEvent e) {
-      // fire action on popup button press?
-      if (isFireOnClick) { 
-        List as = getActions();
-        if (!as.isEmpty())
-          ((ActionDelegate)as.get(0)).trigger();
-      }
-    }
-  } //Model
-  
-  /**
    * Gets the toolbar we're in (might be null)
    */
   protected JToolBar getToolBar() {
@@ -146,42 +115,47 @@ public class PopupWidget extends JButton {
    * Change popup's visibility
    */
   public void showPopup() {
-    
-    // cancel popup?
-    if (popup!=null) { 
-      popup.setVisible(false);
-      popup = null;
-    }
-    
-    // show popup?
-    List as = getActions(); //give chance to override
-    if (!as.isEmpty()) {
 
-      // .. create an populate        
-      popup = new JPopupMenu();
-      popup.setBackground(Color.white);
-      MenuHelper mh = new MenuHelper();
-      mh.pushMenu(popup);
-      mh.createItems(as, false);
-
-      // .. calc position
-      int x=0, y=0;
-      JToolBar bar = getToolBar();
-      if (bar==null) {
-        x += getWidth();
+    // create it
+    JPopupMenu popup = createPopup();
+  
+    // calc position
+    int x=0, y=0;
+    JToolBar bar = getToolBar();
+    if (bar==null) {
+      x += getWidth();
+    } else {
+      if (JToolBar.VERTICAL==bar.getOrientation()) {
+        x += bar.getLocation().x==0 ? getWidth() : -popup.getPreferredSize().width;
       } else {
-        if (JToolBar.VERTICAL==bar.getOrientation()) {
-          x += bar.getLocation().x==0 ? getWidth() : -popup.getPreferredSize().width;
-        } else {
-          y += bar.getLocation().y==0 ? getHeight() : -popup.getPreferredSize().height;
-        }
+        y += bar.getLocation().y==0 ? getHeight() : -popup.getPreferredSize().height;
       }
-
-      // .. show        
-      popup.show(PopupWidget.this, x, y);
     }
     
+    // show it
+    popup.show(PopupWidget.this, x, y);
+    
+  }
+  
+  /**
+   * implementation for popup generation
+   */
+  protected JPopupMenu createPopup() {
+    
+    // no actions no popup
+    List as = getActions(); //give chance to override
+    if (as.isEmpty()) 
+      return null;
+
+    // .. create an populate        
+    JPopupMenu popup = new JPopupMenu();
+    popup.setBackground(Color.white);
+    MenuHelper mh = new MenuHelper();
+    mh.pushMenu(popup);
+    mh.createItems(as, false);
+
     // done
+    return popup;
   }
   
   /**
@@ -218,4 +192,32 @@ public class PopupWidget extends JButton {
     isFireOnClick = set;
   }
 
+  /**
+   * Our special model
+   */
+  private class Model extends DefaultButtonModel implements Runnable {
+    /** our menu trigger */
+    public void setPressed(boolean b) {
+      // continue
+      super.setPressed(b);
+      // show menue (delayed)
+      if (b) SwingUtilities.invokeLater(this);
+    }
+    /** EDT callback */
+    public void run() { 
+      showPopup(); 
+    }
+    /**
+     * action performed
+     */
+    protected void fireActionPerformed(ActionEvent e) {
+      // fire action on popup button press?
+      if (isFireOnClick) { 
+        List as = getActions();
+        if (!as.isEmpty())
+          ((ActionDelegate)as.get(0)).trigger();
+      }
+    }
+  } //Model
+  
 } //PopupButton
