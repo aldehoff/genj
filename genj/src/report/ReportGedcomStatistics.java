@@ -9,6 +9,7 @@
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertySex;
+import genj.gedcom.TagPath;
 import genj.report.Report;
 import genj.report.ReportBridge;
 import java.util.AbstractMap;
@@ -19,7 +20,7 @@ import java.util.TreeMap;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.16 2002-11-01 20:20:26 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.17 2003-03-27 00:31:26 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -175,7 +176,7 @@ public class ReportGedcomStatistics implements Report {
   private void analyzeIndividualBirth(Indi indi, Statistics stats) {
       
       // And here comes the check for place
-      Object place = indi.getProperty("INDI:BIRT:PLAC");
+      Object place = indi.getProperty(new TagPath("INDI:BIRT:PLAC"));
       if ((place==null) || (place.toString().trim().length()==0)){
         place = UNKNOWN_PLACE;
       }
@@ -192,13 +193,13 @@ public class ReportGedcomStatistics implements Report {
   private void analyzeIndividualDeath(Indi indi, Statistics stats) {
       
       // We only look at individuals with a DEATH property
-      Object deat = indi.getProperty("INDI:DEAT");
+      Object deat = indi.getProperty(new TagPath("INDI:DEAT"));
       if (deat==null) {
         return;
       }
       
       // And here comes the check for place
-      Object place = indi.getProperty("INDI:DEAT:PLAC");
+      Object place = indi.getProperty(new TagPath("INDI:DEAT:PLAC"));
       if ((place==null) || (place.toString().trim().length()==0)){
         place = UNKNOWN_PLACE;
       }

@@ -140,7 +140,7 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
    * Returns the title of this media
    */
   private String getTitle() {
-    Property title = getProperty("OBJE:TITL");
+    Property title = getProperty("TITL");
     return title!=null ? title.getValue() : EMPTY_STRING; 
   }
 

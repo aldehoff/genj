@@ -50,7 +50,7 @@ public class Fam extends Entity {
    * Returns child #i
    */
   public Indi getChild(int which) {
-    Property[] chils = getProperties(new TagPath("FAM:CHIL"),true);
+    Property[] chils = getProperties("CHIL",true);
     if (which > chils.length) {
       throw new IllegalArgumentException("Family doesn't have "+which+" children");
     }
@@ -61,7 +61,7 @@ public class Fam extends Entity {
    * Returns children
    */
   public Indi[] getChildren() {
-    Property chils[] = getProperties(new TagPath("FAM:CHIL"),true);
+    Property chils[] = getProperties("CHIL", true);
     Indi result[] = new Indi[chils.length];
     for (int i=0;i<result.length;i++) {
       result[i] = ((PropertyChild)chils[i]).getChild();
@@ -73,7 +73,7 @@ public class Fam extends Entity {
    * Returns the husband of the family
    */
   public Indi getHusband() {
-    Property husb = getProperty("FAM:HUSB",true);
+    Property husb = getProperty("HUSB", true);
     if (husb instanceof PropertyHusband)
       return ((PropertyHusband)husb).getHusband();
     return null;    
@@ -83,7 +83,7 @@ public class Fam extends Entity {
    * The number of children
    */
   public int getNoOfChildren() {
-    Property[] chils = getProperties(new TagPath("FAM:CHIL"),true);
+    Property[] chils = getProperties("CHIL", true);
     return chils.length;
   }
   

@@ -23,6 +23,7 @@ import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -109,7 +110,7 @@ public abstract class Property implements Comparable {
     noteDeletedProperty();
 
     // Say it to properties
-    delProperties((Property[])childs.toArray(new Property[childs.size()]));
+    delProperties(toArray(childs));
 
     // Done
   }
@@ -306,7 +307,7 @@ public abstract class Property implements Comparable {
     getPathToRecursively(result, prop);
     
     // Done
-    return (Property[])result.toArray(new Property[result.size()]);
+    return toArray(result);
   }
 
   /**
@@ -360,6 +361,31 @@ public abstract class Property implements Comparable {
   }
 
   /**
+   * Returns this property's properties by tag
+   * (only valid children are considered)
+   */
+  public Property[] getProperties(String tag) {
+    return getProperties(tag, true);
+  }
+
+  /**
+   * Returns this property's properties by tag
+   */
+  public Property[] getProperties(String tag, boolean validOnly) {
+    // safety check
+    if (tag.indexOf(':')>0) throw new IllegalArgumentException("Path not allowed");
+    // loop children
+    ArrayList result = new ArrayList();
+    for (int c=0;c<getNoOfProperties();c++) {
+      Property child = getProperty(c);
+      if (child.getTag().equals(tag)&&(!validOnly||child.isValid()))
+        result.add(child);  
+    }
+    // not found
+    return toArray(result);
+  }
+
+  /**
    * Returns this property's properties which are of given type
    */
   public List getProperties(Class type) {
@@ -388,7 +414,7 @@ public abstract class Property implements Comparable {
     getPropertiesRecursively(path, 0, result, validOnly);
 
     // done
-    return (Property[])result.toArray(new Property[result.size()]);
+    return toArray(result);
   }
 
   protected List getPropertiesRecursively(TagPath path, int pos, List fill, boolean validOnly) {
@@ -422,29 +448,35 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Returns this property's property by path
+   * Returns this property's property by tag
+   * (only valid children are considered)
    */
-  public Property getProperty(String path) {
-    return getProperty(path, true);
+  public Property getProperty(String tag) {
+    return getProperty(tag, true);
   }
 
   /**
    * Returns this property's property by path
-   * (only valid children are considered)
    */
-  public Property getProperty(String path, boolean validOnly) {
-    // maybe a simple tag?
-    if (!TagPath.isPath(path)) {
-      for (int c=0;c<getNoOfProperties();c++) {
-        Property child = getProperty(c);
-        if (!child.getTag().equals(path)) continue;
-        if (validOnly&&!child.isValid()) continue;
-        return child;
-      }
-      return null;
+  public Property getProperty(String tag, boolean validOnly) {
+    // safety check
+    if (tag.indexOf(':')>0) throw new IllegalArgumentException("Path not allowed");
+    // loop children
+    for (int c=0;c<getNoOfProperties();c++) {
+      Property child = getProperty(c);
+      if (!child.getTag().equals(tag)) continue;
+      if (validOnly&&!child.isValid()) continue;
+      return child;
     }
-    // go all the way
-    return getProperty(new TagPath(path), validOnly);
+    // not found
+    return null;
+  }
+
+  /**
+   * Returns this property's property by path
+   */
+  public Property getProperty(TagPath path) {
+    return getProperty(path, true);
   }
   
   /**
@@ -618,84 +650,12 @@ public abstract class Property implements Comparable {
     return MetaProperty.get(this).getSubs(filter);
   }
 
-//  /**
-//   * Set of sub-properties 
-//   */
-//  private class PropertySet {
-//    
-//    /** the elements */
-//    private Vector vector = new Vector();
-//
-//    /**
-//     * Adds another property to this set
-//     * @prop the property to add to this list
-//     */
-//    protected void add(Property prop) {
-//      vector.addElement(prop);
-//      prop.addNotify(Property.this);
-//    }
-//
-//    /**
-//     * Property in list?
-//     */
-//    protected boolean contains(Property property) {
-//      return vector.contains(property);
-//    }
-//  
-//    /**
-//     * Removes a property
-//     */
-//    protected void delete(Property which) {
-//      vector.removeElement(which);
-//      which.delNotify();
-//    }
-//
-//    /**
-//     * Removes all properties
-//     */
-//    protected void deleteAll() {
-//      Enumeration e = ((Vector)vector.clone()).elements();
-//      vector.removeAllElements();
-//      while (e.hasMoreElements())
-//        ((Property)e.nextElement()).delNotify();
-//    }
-//
-//    /**
-//     * Returns one of the properties in this set by index
-//     */
-//    public Property get(int which) {
-//      return ((Property)vector.elementAt(which));
-//    }
-//
-//    /**
-//     * Returns one of the properties in this set by tag
-//     */
-//    public Property get(String tag) {
-//      Property p;
-//      for (int i=0;i<getSize();i++) {
-//        p = get(i);
-//        if (p.getTag().equals(tag)) return p;
-//      }
-//      return null;
-//    }
-//
-//    /**
-//     * Returns the number of properties in this set
-//     */
-//    public int getSize() {
-//      return vector.size();
-//    }
-//  
-//    /**
-//     * Swaps place of properties given by index
-//     */
-//    public void swap(int i, int j) {
-//      Object o = vector.elementAt(i);
-//      vector.setElementAt(vector.elementAt(j),i);
-//      vector.setElementAt(o,j);
-//    }          
-//    
-//  }
-
+  /**
+   * Convert collection of properties into array
+   */
+  private static Property[] toArray(Collection ps) {
+    return (Property[])ps.toArray(new Property[ps.size()]);
+  }
+  
 } //Property
 
