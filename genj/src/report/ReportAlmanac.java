@@ -48,7 +48,7 @@ public class ReportAlmanac extends Report {
 
     int num = 0;
     while (events.hasNext()) {
-      println(events.next());
+      println(" + "+events.next());
       num++;
     }
     println(i18n("found", new Integer(num)));
