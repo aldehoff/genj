@@ -178,8 +178,13 @@ public class ViewManager {
     
     // see if source is a view which will get context message first
     JComponent view = context.getView();
-    if (view!=null&&view instanceof ContextListener)
-      ((ContextListener)view).setContext(context);
+    if (view!=null&&view instanceof ContextListener) {
+      try {
+        ((ContextListener)view).setContext(context);
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, view, "threw "+t+" on setContext()");
+      }
+    }
     
     // loop and tell to views
     Iterator it = key2viewwidget.values().iterator();
