@@ -437,27 +437,6 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Right Align a number as simple text
-   */
-  public final String align(int num, int width) {
-    return align(num+"", width, ALIGN_RIGHT);
-  }
-
-  /**
-   * Left Align a simple text
-   */
-  public final String align(String text, int width) {
-    return align(text, width, ALIGN_RIGHT);
-  }
-
-  /**
-   * Align a number as simple text
-   */
-  public final String align(int num, int width, int alignment) {
-    return align(num+"", width, alignment);
-  }
-
-  /**
    * Align a simple text
    * @param txt the text to align
    * @param length the length of the result
