@@ -12,6 +12,9 @@ import java.util.Hashtable;
  */
 public class ActionDelegate implements ActionListener {
   
+  /** a marker for "no method there -> fallback" */
+  private final static Object FALLBACK = new Object();
+  
   /** the target */
   private Object target;
   
@@ -44,20 +47,23 @@ public class ActionDelegate implements ActionListener {
     String action = e.getActionCommand();
     
     // do we know a method already?
-    Method method = (Method)mapping.get(action);
+    Object method = mapping.get(action);
     if (method==null) {
       try {
         method = target.getClass().getMethod(action, EMPTY_CLASS_ARRAY);
-        mapping.put(action,method);
       } catch (Throwable t) {
-        System.out.println("[Debug]Action "+action+" couldn't be delegated to "+target.getClass().getName());
-        return;
+        method = FALLBACK;
       }
+      mapping.put(action,method);
     }
     
     // call it
     try {
-      method.invoke(target, EMPTY_OBJECT_ARRAY);
+      if (method==FALLBACK) {
+        fallback(action);
+      } else {
+        ((Method)method).invoke(target, EMPTY_OBJECT_ARRAY);
+      }
     } catch (Throwable t) {
       System.out.println("[Debug]Action "+action+" delegated to "+target.getClass().getName()+" failed with:");
       t.printStackTrace();
@@ -66,4 +72,12 @@ public class ActionDelegate implements ActionListener {
     // done
   }
 
+  /**
+   * Fallback in case delegation couldn't be matched (no action for method).
+   * Override if necessary
+   */
+  public void fallback(String action) {
+    // noop
+  }
+  
 }

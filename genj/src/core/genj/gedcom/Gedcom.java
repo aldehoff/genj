@@ -1115,7 +1115,7 @@ public class Gedcom implements GedcomListener {
   public static String getTagFor(int type) {
     return eTags[type];
   }
-
+  
   /**
    * Notification that a change in a Gedcom-object took place.
    */

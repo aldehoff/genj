@@ -67,16 +67,12 @@ public class AboutWidget extends JPanel{
   /** the frame we're used it */
   private JFrame frame;
   
-  /** the control center */
-  private ControlCenter cc;
-  
   /**
    * Constructor
    */
-  public AboutWidget(JFrame setFrame, ControlCenter setCc) {
+  public AboutWidget(JFrame setFrame) {
 
     // remember    
-    cc=setCc;
     frame=setFrame;
     
     // create a north panel

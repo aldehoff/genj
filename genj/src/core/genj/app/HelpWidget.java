@@ -119,7 +119,7 @@ class HelpWidget extends JPanel {
       Bridge bridge = (Bridge)Class.forName(Bridge.class.getName()+"Impl").newInstance();
       return bridge.init(url);
     } catch (Throwable t) {
-      t.printStackTrace();
+      System.out.println("[Debug]... exception "+t.getMessage());
       return null;
     }
     
