@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.text.NumberFormat;
 
 import javax.swing.JComponent;
 
@@ -52,33 +53,60 @@ public class ScreenResolutionScale extends JComponent {
   protected void paintComponent(Graphics g) {
     
     // clear background
-    g.setColor(Color.lightGray);
+    g.setColor(Color.white);
     g.fillRect(0,0,getWidth(),getHeight());
+    g.setColor(Color.black);
+    g.drawRect(0,0,getWidth()-1,getHeight()-1);
     
     // draw ticks   
+    //g.setColor(Color.gray);
+    g.setPaintMode();
     UnitGraphics ug = new UnitGraphics(g, dpc.getX(), dpc.getY());
     Rectangle2D clip = ug.getClip();
     FontMetrics fm = g.getFontMetrics(); 
-    int fd = fm.getHeight() - fm.getDescent();
+    int
+      fh = fm.getHeight(),
+      fd = fh - fm.getDescent();
 
-    g.setColor(getForeground());
-    for (int x=1;x<clip.getMaxX(); x++) {
+    for (int X=1;X<clip.getMaxX(); X++) {
       // segment
-      ug.draw(x,0,x,0.3);
-      ug.draw(""+x, x, 0, 0, 2, fd);
+      ug.setColor(Color.gray);
+      for (double x=0.1; x<0.9; x+=0.1)
+        ug.draw(X-x,0,X-x,0.1,0,1);
+      ug.setColor(Color.black);
+      ug.draw(X,0,X,0.4,0,1);
+      ug.draw(""+X, X, 1, 0, 2, 0);
       // next
     }
 
-    for (int y=1;y<clip.getMaxY(); y++) {
+    for (int Y=1;Y<clip.getMaxY(); Y++) {
       // segment
-      ug.draw(0,y,0.3,y);
-      ug.draw(""+y, 0.3, y, 1.0, 0, fd);
+      ug.setColor(Color.gray);
+      for (double y=0.1; y<0.9; y+=0.1)
+        ug.draw(0,Y-y,0.1,Y-y,1,0);
+      ug.setColor(Color.black);
+      ug.draw(0,Y,0.4,Y,0,1);
+      ug.draw(""+Y, 1, Y, 1.0, 0, fd);
       // next
     }
-    
+
     // draw label
-//    String s = "Click and drag until scale matches real world!";
-//    g.drawString(s, getWidth()/2 - fm.stringWidth(s)/2, getHeight()/2);
+    g.setColor(Color.black);
+    NumberFormat nf = NumberFormat.getInstance();
+    nf.setMaximumFractionDigits(2);
+    String[] txt = new String[]{
+      ""+nf.format(dpc.getX()),
+      "by",
+      ""+nf.format(dpc.getY()),
+      "pixels/cm"
+    };
+    for (int i = 0; i < txt.length; i++) {
+      g.drawString(
+        txt[i], 
+        getWidth()/2 - fm.stringWidth(txt[i])/2, 
+        getHeight()/2 - txt.length*fh/2 + i*fh + fh
+      );
+    }
 
     // done
   }
