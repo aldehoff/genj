@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.54 $ $Author: nmeier $ $Date: 2004-12-08 00:15:20 $
+ * $Revision: 1.55 $ $Author: nmeier $ $Date: 2004-12-08 17:01:08 $
  */
 package genj.report;
 
@@ -211,6 +211,8 @@ public abstract class Report implements Cloneable {
       option.restore(registry);
       // we use i18n() to resolve names for options
       option.setName(i18n(option.getProperty()));    
+      // set category
+      option.setCategory(getName());
     }
     
     // done
