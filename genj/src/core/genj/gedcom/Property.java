@@ -40,7 +40,8 @@ public abstract class Property implements Comparable {
   public static final int
     QUERY_ALL          = 0,
     QUERY_VALID_TRUE   = 1,
-    QUERY_SYSTEM_FALSE = 2;
+    QUERY_SYSTEM_FALSE = 2,
+    QUERY_FOLLOW_LINK  = 4;
 
   /** parent of this property */
   private Property parent=null;
@@ -532,16 +533,25 @@ public abstract class Property implements Comparable {
     // test filter
     if (!is(qfilter)) return null;
     
-    // Me?
+    // path traversed? (it's me)
     if (pos==path.length()-1) 
       return this;
-
+      
+    // follow a link? (this probably should be into PropertyXref.class - override)
+    if ((qfilter&QUERY_FOLLOW_LINK)!=0&&this instanceof PropertyXRef) {
+      Property p = ((PropertyXRef)this).getReferencedEntity();
+      if (p!=null) p = p.getPropertyRecursively(path, pos+1, qfilter);
+      if (p!=null)
+        return p;
+    }
+    
     // Search in properties
     for (int i=0;i<getNoOfProperties();i++) {
       Property p = getProperty(i).getPropertyRecursively(path, pos+1, qfilter);
-      if (p!=null) return p;
+      if (p!=null) 
+        return p;
     }
-
+    
     // not found
     return null;
   }
