@@ -68,6 +68,14 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
 
     return raw;
   }
+  
+  /**
+   * Title of Blob
+   */
+  public String getTitle() {
+    // FIXME resolve title
+    return "Foo";
+  }
 
   /**
    * Returns the logical name of the proxy-object which knows this object
@@ -127,7 +135,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
 
     // Try to create image
     try {
-      valueAsIcon = new ImageIcon(bs);
+      valueAsIcon = new ImageIcon(getTitle(), bs);
     } catch (Throwable t) {
     }
 

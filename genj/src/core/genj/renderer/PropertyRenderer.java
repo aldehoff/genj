@@ -339,7 +339,7 @@ public class PropertyRenderer {
       if (img==null) return EMPTY_DIM;
       
       // check physical size
-      Point2D size = img.getPhysicalSize();
+      Point2D size = img.getPhysicalSize(dpi);
         
       // transform into dot-space
       return new Dimension((int)(size.getX()*dpi.x), (int)(size.getY()*dpi.y));
@@ -362,7 +362,7 @@ public class PropertyRenderer {
       
       // calculate factor - the image's dpi might be
       // different than that of the rendered surface
-      Point idpi = img.getResolution();
+      Point idpi = img.getResolution(dpi);
       double
        scalex = (double)dpi.x/idpi.x, 
        scaley = (double)dpi.y/idpi.y;

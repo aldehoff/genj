@@ -107,7 +107,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
       // try to create an image if smaller than max load
       Origin.Connection c = getGedcom().getOrigin().openFile(file);
       if (c.getLength()<getMaxValueAsIconSize()) { 
-        valueAsIcon = new ImageIcon(c.getInputStream());
+        valueAsIcon = new ImageIcon(file, c.getInputStream());
         // 20021205 for tiffs we get an image with size (-1,-1);
         if (valueAsIcon!=null&&(valueAsIcon.getIconWidth()<=0||valueAsIcon.getIconHeight()<=0))
           valueAsIcon = null;

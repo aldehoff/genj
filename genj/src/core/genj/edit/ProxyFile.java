@@ -105,9 +105,9 @@ import javax.swing.JScrollPane;
     // try to open
     try {
       Origin.Connection c = property.getGedcom().getOrigin().openFile(file);
-      preview.setImage(c.getInputStream());
+      preview.setImage(file, c.getInputStream());
     } catch (Throwable t) {
-      preview.setImage(null);
+      preview.setImage(null, null);
     }
 
     // done
@@ -125,9 +125,9 @@ import javax.swing.JScrollPane;
     // try to open
     byte[] data = blob.getBlobData();
     if (data!=null) {
-      preview.setImage(new ByteArrayInputStream(data));
+      preview.setImage(blob.getTitle(),new ByteArrayInputStream(data));
     } else {
-      preview.setImage(null);
+      preview.setImage(null, null);
     }
 
     // done
@@ -216,7 +216,7 @@ import javax.swing.JScrollPane;
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      preview.setZoom((float)zoom/100);
+      preview.setZoom(zoom);
     }
   } //ActionZoom
   
@@ -233,27 +233,29 @@ import javax.swing.JScrollPane;
      */
     protected Preview() {
       addMouseListener(this);
-      setZoom(view.registry.get("file.zoom", 1.0F));
+      setZoom(view.registry.get("file.zoom", 100));
     }
     /**
      * Sets the zoom level
      */
-    protected void setZoom(float zoom) {
+    protected void setZoom(int zoom) {
       view.registry.put("file.zoom", zoom);
+      setToolTipText(zoom+"%");
+      float factor = (float)zoom/100;
       dpi = App.getInstance().getDPI();
-      dpi.x = (int)(dpi.x*zoom);
-      dpi.y = (int)(dpi.y*zoom);
+      dpi.x = (int)(dpi.x*factor);
+      dpi.y = (int)(dpi.y*factor);
       revalidate();
       repaint();
     }
     /**
      * Sets the image to preview
      */
-    protected void setImage(InputStream in) {
+    protected void setImage(String name, InputStream in) {
       if (in==null) {
         img = null;
       } else {
-        img = new ImageIcon(in);
+        img = new ImageIcon(name, in);
       }
       revalidate();
       repaint();
@@ -268,7 +270,7 @@ import javax.swing.JScrollPane;
       UnitGraphics ug = new UnitGraphics(g, 1, 1);
       // calculate factor - the image's dpi might be
       // different than that of the rendered surface
-      Point idpi = img.getResolution();
+      Point idpi = img.getResolution(dpi);
       double
        scalex = (double)dpi.x/idpi.x, 
        scaley = (double)dpi.y/idpi.y;
