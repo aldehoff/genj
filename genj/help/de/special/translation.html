@@ -1,0 +1,73 @@
+<html>
+<body>
+
+<h2>Wie &uuml;bersetze ich GenJ in eine andere Sprache?</h2>
+
+<p>
+Eine vollst&auml;ndige &Uuml;bersetzung besteht aus 3 Teilen:
+
+<blockquote>
+<ol>
+  <li>GenJ-Programm</li>
+  <li>Reporte</li>
+  <li>Anleitung</li>
+</ol>
+</blockquote>
+
+Die 3 Teile sind unabh&auml;ngig voneinander, so dass die &Uuml;bersetzung auch schrittweise oder nur zum Teil (beispielsweise GenJ-Programm und Reporte, nicht aber die Anleitung) erfolgen kann. Sie sollten sich bei der &Uuml;bersetzung <b>an einer vorhandenen Sprache orientieren</b>, z. B. Englisch. Wenn Sie CVS-Zugang haben, k&ouml;nnen Sie sich die ben&ouml;tigten Dateien (Sprachvorlagen) vom CVS-Server herunterladen. Die Zugangsdaten stehen auf der Internetseite von GenJ. Ansonsten besuchen Sie das GenJ-Forum und bitten um Zusendung der Sprachvorlagen. Die Sprachdateien liegen in folgenden CVS-Ordnern und sind wie unten angegeben zu bearbeiten. Jedes Verzeichnis enth&auml;lt Unterverzeichnisse, in denen sich ebenfalls Dateien befinden, die zu bearbeiten sind. Bei einer Zusendung per eMail kann die Verzeichnis-Struktur evtl. etwas von der abweichen, die Namen sind jedoch gleich.
+</p>
+
+<h2>GenJ-Programm</h2>
+<p>
+Der Pfad lautet <tt>dev/genj/language/[Landesk&uuml;rzel der Sprachvorlage, z. B. de=deutsch, en=englisch]</tt>. Es sind alle Dateien mit der Endung *.properties zu bearbeiten, wobei es lediglich <b>die Texte rechts vom Gleichheitszeichen zu &uuml;bersetzen</b> gilt. Die Bezeichnungen links vom Gleichheitszeichen m&uuml;ssen unver&auml;ndert bleiben.
+
+<blockquote>
+<b>Beispiel (en => de)</b><br>
+cc.menu.file = File <b>(englisch Vorlage)</b><br>
+cc.menu.file = Datei <b>(deutsche &Uuml;bersetzung)</b>
+</blockquote>
+
+Zum Schluss sind die *.properties-Dateien umzubenennen, so dass das Landesk&uuml;rzel der neuen Sprache im Namen erscheint. Dabei ist dem K&uuml;rzel ein Unterstrich _ voranzustellen. <b>Hinweis:</b> Englische Sprachdatein haben weder einen Unterstrich noch ein Landesk&uuml;rzel im Dateinamen.
+
+<blockquote>
+<b>Beispiel (en => de)</b><br>
+resources.properties<br>
+resources_de.properties
+</blockquote>
+
+Nun ist nur noch der Ordner umzubenennen, so dass er das Landesk&uuml;rzel der neuen Sprache als Namen tr&auml;gt und die Programmdateien sind fertig &Uuml;bersetzt.
+
+<blockquote>
+<b>Beispiel (en => de)</b><br>
+dev/genj/language/en<br>
+dev/genj/language/de
+</blockquote>
+</p>
+
+<h2>Reporte</h2>
+<p>
+Es sind alle *.properties-Dateien in <tt>dev/genj/src/report</tt> zu bearbeiten. Dabei ist pro Eintrag eine neue Zeile hinzuzuf&uuml;gen. Bestehende Eintr&auml;ge k&ouml;nnen durch kopieren und einf&uuml;gen als Vorlage verwendet werden. Links vom Gleichheitszeichen wird ein Punkt gefolgt vom neuen Landesk&uuml;rzel eingetragen. Ein evtl. bestehendes K&uuml;rzel wird &uuml;berschrieben. <b>Hinweis:</b> Englische Eintr&auml;ge haben weder einen Punkt noch ein Landesk&uuml;rzel.
+
+<blockquote>
+<b>Beispiel (en => de)</b><br>
+name =<br>
+name.de =
+</blockquote>
+
+Der Text rechts vom Gleichheitszeichen wird in die neue Sprache &uuml;bersetzt. Bei Text, der von <tt>{}</tt> oder <tt>@@</tt> umschlossen sind, handelt es sich um Platzhalter f&uuml;r Variablen. Solche Werte d&uuml;rfen nicht ver&auml;ndert werden, da die Report-Ausgabe sonst falsch formatiert wird. Steuerzeichen beginnen mit <tt>\</tt> wie beispielsweise <tt>\n</tt>. Bei Zeichen in der Form <tt>\u00ED</tt> handelt es sich um Unicode, der bei der Ausf&uuml;hrung von GenJ in lesbare Buchstaben umgewandelt wird.
+
+<blockquote>
+<b>Beispiel (en => de)</b><br>
+name = List of Descendants<br>
+name.de = Liste von Nachfahren
+</blockquote>
+
+Die &Uuml;bersetzung ist komplett, wenn alle Eintr&auml;ge in den *.properties-Dateien auf diese Art und Weise &uuml;bersetzt wurden.
+</p>
+
+<h2>Anleitung</h2>
+<p>
+Die Anleitung ist im HTML-Format geschrieben. Somit sind alle *.html-Dateien in <tt>dev/genj/help/[Landesk&uuml;rzel der Sprachvorlage, z. B. de=deutsch, en=englisch]</tt> zu bearbeiten. HTML-Kennzeichen wie <tt>&lt;br&gt;</tt> oder <tt>&lt;/p&gt;</tt> bleiben unver&auml;ndert. Zur &Uuml;bersetzung wird ausschlie&szlig;lich der Text bearbeitet. Nachdem der Ordner umbenannt wurde, so dass er das Landesk&uuml;rzel der neuen Sprache als Namen tr&auml;gt, ist die Anleitung fertig &uuml;bersetzt (siehe Abschnitt GenJ-Programm f&uuml;r ein Beispiel).
+
+</body>
+</html>
