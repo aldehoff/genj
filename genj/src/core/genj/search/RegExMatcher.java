@@ -46,7 +46,7 @@ public class RegExMatcher extends Matcher {
     try {
       compiled = Pattern.compile(pattern);
     } catch (PatternSyntaxException pe) {
-      throw new IllegalArgumentException(pe.getDescription());
+      throw new IllegalArgumentException("There's a problem with the regular expression '"+pattern+"': "+pe.getDescription());
     }
   }
   
