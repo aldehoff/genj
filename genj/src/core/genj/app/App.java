@@ -120,9 +120,10 @@ public class App {
     FileAssociation.read(registry);
 
     // Disclaimer
-    if (registry.get("disclaimer",0)==0) {
+    String version = Version.getInstance().toString();
+    if (!version.equals(registry.get("disclaimer",""))) {
 
-      registry.put("disclaimer",1);
+      registry.put("disclaimer", version);
 
       JTextPane tpane = new JTextPane();
       tpane.setText(resources.getString("app.disclaimer"));
