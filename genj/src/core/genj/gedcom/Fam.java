@@ -253,10 +253,10 @@ public class Fam extends Entity {
     WordBuffer wb = new WordBuffer('+');
 
     Indi husband = getHusband();
-    if (husband!=null) wb.append(husband.getName());
+    if (husband!=null) wb.append(husband.toString());
     
     Indi wife = getWife();
-    if (wife!=null) wb.append(wife.getName());
+    if (wife!=null) wb.append(wife.toString());
 
     // Done
     return wb.length()>0 ? wb.toString() : super.toString();
