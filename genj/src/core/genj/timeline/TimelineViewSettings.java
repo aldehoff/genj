@@ -92,11 +92,13 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     sliderCmBefEvent = new DoubleValueSlider(timeline.MIN_CM_BEF_EVENT, timeline.MAX_CM_BEF_EVENT, timeline.cmBefEvent, false);
     sliderCmBefEvent.setAlignmentX(0F);
     sliderCmBefEvent.setToolTipText(timeline.resources.getString("info.befevent.tip"));
+    sliderCmBefEvent.setText(timeline.resources.getString("info.befevent"));
     panelOptions.add(sliderCmBefEvent);
     
     sliderCmAftEvent = new DoubleValueSlider(timeline.MIN_CM_AFT_EVENT, timeline.MAX_CM_AFT_EVENT, timeline.cmAftEvent, false);
     sliderCmAftEvent.setAlignmentX(0F);
     sliderCmAftEvent.setToolTipText(timeline.resources.getString("info.aftevent.tip"));
+    sliderCmAftEvent.setText(timeline.resources.getString("info.aftevent"));
     panelOptions.add(sliderCmAftEvent);
     
     // panel for main options
@@ -112,13 +114,6 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     // add those tabs
     add("Main"  , panelMain);
     add("Colors", colorChooser);
-
-    // listen
-    ActionSlider as = new ActionSlider();
-    ChangeListener cl = (ChangeListener)as.as(ChangeListener.class);
-    sliderCmAftEvent.addChangeListener(cl);
-    sliderCmBefEvent.addChangeListener(cl);
-    as.trigger();
 
     // init
     reset();
@@ -165,21 +160,4 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     // Done
   }
 
-  /**
-   * Action - slider changes
-   */
-  private class ActionSlider extends ActionDelegate {
-    /** @see genj.util.ActionDelegate#execute() */
-    protected void execute() {
-      // get values
-      double 
-        cmBefEvent = sliderCmBefEvent.getValue(),
-        cmAftEvent = sliderCmAftEvent.getValue();
-      // update labels
-      sliderCmBefEvent.setText(timeline.cm2txt(cmBefEvent, "info.befevent"));
-      sliderCmAftEvent.setText(timeline.cm2txt(cmAftEvent, "info.aftevent"));
-      // done
-    }
-  } //ActionSlider
-    
 } //TimelineViewSettings

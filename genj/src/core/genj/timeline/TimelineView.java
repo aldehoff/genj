@@ -274,7 +274,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
     
     // create a slider for cmPerYear
     sliderCmPerYear = new DoubleValueSlider(MIN_CM_PER_YEAR, MAX_CM_PER_YEAR, cmPerYear, true);
-    sliderCmPerYear.setText(cm2txt(cmPerYear, "view.cm"));
+    sliderCmPerYear.setText(resources.getString("view.cm"));
     sliderCmPerYear.setToolTipText(resources.getString("view.peryear.tip"));
     sliderCmPerYear.addChangeListener(new ChangeCmPerYear());
     bar.add(sliderCmPerYear);
@@ -360,11 +360,11 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
   /**
    * Convert cmPyear into text
    */
-  protected final String cm2txt(double cm, String txt) {
-    NumberFormat nf = NumberFormat.getInstance();
-    nf.setMaximumFractionDigits(1);
-    return resources.getString(txt, nf.format(cm));
-  }
+//  protected final String cm2txt(double cm, String txt) {
+//    NumberFormat nf = NumberFormat.getInstance();
+//    nf.setMaximumFractionDigits(1);
+//    return resources.getString(txt, nf.format(cm));
+//  }
   
   /**
    * The ruler 'at the top'
@@ -459,9 +459,6 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
     public void stateChanged(ChangeEvent e) {
       // get the new value
       cmPerYear = sliderCmPerYear.getValue();
-      // update label&tip
-      String s = cm2txt(cmPerYear, "view.cm");
-      sliderCmPerYear.setText(s);
       // update model
       model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
       // done
