@@ -539,7 +539,7 @@ public class GedcomReader implements Trackable {
      * Constructor
      */
     private InputStreamSniffer(InputStream in) {
-      super(in, 256);
+      super(in, 4096);
       
       // done
     }
