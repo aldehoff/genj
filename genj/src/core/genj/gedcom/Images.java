@@ -100,7 +100,7 @@ public class Images {
       String  val = props.getProperty(key);
       try {
         result.put(key.toLowerCase(), new ImgIcon(getClass().getResourceAsStream("images/"+val)));
-      } catch (IOException e) {
+      } catch (Throwable t) {
 				System.out.println("[Debug]Warning: couldn't load image "+val);
 			}
     }
