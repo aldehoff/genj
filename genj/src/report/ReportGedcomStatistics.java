@@ -23,7 +23,7 @@ import java.util.TreeMap;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.12 2002-04-24 03:28:03 timmsc Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.13 2002-04-29 18:43:27 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -194,6 +194,12 @@ public class ReportGedcomStatistics implements Report {
    * Analyzes an Individual's DEATH
    */
   private void analyzeIndividualDeath(Indi indi, Statistics stats) {
+      
+      // We only look at individuals with a DEATH property
+      Object deat = indi.getProperty("INDI:DEAT");
+      if (deat==null) {
+        return;
+      }
       
       // And here comes the check for place
       Object place = indi.getProperty("INDI:DEAT:PLAC");
