@@ -26,6 +26,7 @@ import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 
 import javax.swing.Box;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -43,13 +44,14 @@ public class FontChooser extends JPanel {
   private JTextField textSize;
   
   /** list of all fonts */
-  private static final Font[] allFonts = getAllFonts();
+  private static Font[] allFonts = null;
 
   /**
    * Constructor   */
   public FontChooser() {
     // sub-components
-    comboFonts = new JComboBox(getAllFonts());
+    comboFonts = new JComboBox();
+    comboFonts.setPrototypeDisplayValue(getFont());
     textSize = new JTextField(2);
     textSize.setText("12");
     // listening
@@ -58,9 +60,21 @@ public class FontChooser extends JPanel {
     //layout
     setAlignmentX(0F);
     GridBagHelper gh = new GridBagHelper(this);
-    gh.add(comboFonts      , 0, 0);
+    gh.add(comboFonts      , 0, 0, 1, 1, gh.GROW_HORIZONTAL);
     gh.add(textSize        , 1, 0);
     gh.add(Box.createGlue(), 2, 0, 1, 1, gh.GROW_BOTH);
+    // done
+  }
+  
+  /**
+   * @see javax.swing.JComponent#addNotify()
+   */
+  public void addNotify() {
+    super.addNotify();
+    
+    // init combobox with fontlist
+    comboFonts.setModel(new DefaultComboBoxModel(getAllFonts()));
+    
     // done
   }
   
@@ -75,7 +89,8 @@ public class FontChooser extends JPanel {
    * Helper to get fontlist
    */
   private static Font[] getAllFonts() {
-    return GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
+    if (allFonts==null) allFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
+    return allFonts;
   }
   
   /**
@@ -92,6 +107,8 @@ public class FontChooser extends JPanel {
   /**
    * Accessor - selected font   */
   public void setSelectedFont(Font font) {
+    // make sure fonts are prepared
+    getAllFonts();
     // look for font
     for (int f=0; f<allFonts.length; f++) {
       if (allFonts[f].getName().equals(font.getName())) {
