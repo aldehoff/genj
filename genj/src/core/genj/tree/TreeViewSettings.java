@@ -24,13 +24,14 @@ import genj.util.ActionDelegate;
 import genj.util.ColorSet;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.ListWidget;
 import genj.util.swing.ColorChooser;
-import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.FontChooser;
+import genj.util.swing.ListWidget;
+import genj.util.swing.SpinnerWidget;
 import genj.view.Settings;
 
 import java.awt.Container;
+import java.text.NumberFormat;
 import java.util.List;
 
 import javax.swing.AbstractButton;
@@ -53,13 +54,8 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
   /** keeping track of tree these settings are for */
   private TreeView view;
 
-  /** sliders for box size */
-  private DoubleValueSlider 
-    sliderCmIndiWidth, 
-    sliderCmIndiHeight,
-    sliderCmFamWidth,
-    sliderCmFamHeight,
-    sliderCmPadding;
+  /** models for spinners */
+  private SpinnerWidget.FractionModel[] spinModels = new SpinnerWidget.FractionModel[5]; 
   
   /** colorchooser for colors */
   private ColorChooser colors;
@@ -84,6 +80,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
   /** bookmark list */
   private JList bookmarkList;
 
+
   /**
    * Constructor   */
   public TreeViewSettings() {
@@ -102,11 +99,11 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     
     options.add(fontChooser);    
     
-    sliderCmIndiWidth = createSlider(options, 1.0, 16.0, "indiwidth" );
-    sliderCmIndiHeight= createSlider(options, 0.4, 16.0, "indiheight");
-    sliderCmFamWidth  = createSlider(options, 1.0, 16.0, "famwidth"  );
-    sliderCmFamHeight = createSlider(options, 0.4, 16.0, "famheight" );
-    sliderCmPadding   = createSlider(options, 0.1,  4.0, "padding"   );
+    spinModels[0] = createSpinner("indiwidth",  options, 1.0, 16.0);
+    spinModels[1] = createSpinner("indiheight", options, 0.4, 16.0);
+    spinModels[2] = createSpinner("famwidth",   options, 1.0, 16.0);
+    spinModels[3] = createSpinner("famheight",  options, 0.4, 16.0);
+    spinModels[4] = createSpinner("padding",    options, 1.0,  4.0);
     
     // color chooser
     colors = new ColorChooser();
@@ -138,19 +135,31 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
   }
   
   /**
-   * Create a slider
+   * Create a spinner
    */
-  private DoubleValueSlider createSlider(Container c, double min, double max, String key) {
-    // create and preset
-    DoubleValueSlider result = new DoubleValueSlider(min, max, (max+min)/2, false);
-    result.setPreferredSliderWidth(128);
-    result.setAlignmentX(0F);
-    result.setText(resources.getString("info."+key));
-    result.setToolTipText(resources.getString("info."+key+".tip"));
-    c.add(result);
-  
+  private SpinnerWidget.FractionModel createSpinner(String key, Container c, double min, double max) {
+    
+    // prepare data
+    String 
+      txt = resources.getString("info."+key),
+      tip = resources.getString("info."+key+".tip");
+
+    // prepare format
+    NumberFormat format = NumberFormat.getInstance();
+    format.setMinimumFractionDigits(1);
+    format.setMaximumFractionDigits(1);
+
+    // create
+    SpinnerWidget.FractionModel result = new SpinnerWidget.FractionModel(min, max, 1);
+        
+    SpinnerWidget sw = new SpinnerWidget(txt, 5, result);
+    sw.setToolTipText(tip);
+    sw.setFormat(format);
+    c.add(sw);
+    
     // done
-    return result;   }
+    return result;
+  }
   
   /**
    * @see genj.view.Settings#setView(javax.swing.JComponent)
@@ -202,11 +211,11 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     colors.apply();
     // metrics
     view.getModel().setMetrics(new TreeMetrics(
-      (int)Math.rint(sliderCmIndiWidth .getValue()*10),
-      (int)Math.rint(sliderCmIndiHeight.getValue()*10),
-      (int)Math.rint(sliderCmFamWidth  .getValue()*10),
-      (int)Math.rint(sliderCmFamHeight .getValue()*10),
-      (int)Math.rint(sliderCmPadding   .getValue()*10)
+      (int)(spinModels[0].getDoubleValue()*10),
+      (int)(spinModels[1].getDoubleValue()*10),
+      (int)(spinModels[2].getDoubleValue()*10),
+      (int)(spinModels[3].getDoubleValue()*10),
+      (int)(spinModels[4].getDoubleValue()*10)
     ));
     // blueprints
     view.setBlueprints(blueprintList.getSelection());
@@ -227,11 +236,12 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     colors.reset();
     // metrics
     TreeMetrics m = view.getModel().getMetrics();
-    sliderCmIndiWidth .setValue(m.wIndis/10D);
-    sliderCmIndiHeight.setValue(m.hIndis/10D);
-    sliderCmFamWidth  .setValue(m.wFams /10D);
-    sliderCmFamHeight .setValue(m.hFams /10D);
-    sliderCmPadding   .setValue(m.pad   /10D);
+    int[] values = new int[] {
+      m.wIndis, m.hIndis, m.wFams, m.hFams, m.pad   
+    };
+    for (int i=0;i<values.length;i++) {
+      spinModels[i].setDoubleValue(values[i]*0.1D);
+    }
     // blueprints
     blueprintList.setSelection(view.getBlueprints());
     // done

@@ -34,7 +34,6 @@ import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupButton;
 import genj.util.swing.ScreenResolutionScale;
@@ -71,6 +70,7 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -108,7 +108,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   private double zoom = 1.0D;
 
   /** our current zoom */  
-  private DoubleValueSlider sliderZoom;  
+  private JSlider sliderZoom;  
   
   /** the frame we're in */
   private Frame frame;
@@ -219,7 +219,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     overview = new Overview(scroll);
     overview.setVisible(registry.get("overview", false));
     overview.setSize(registry.get("overview", new Dimension(64,64)));
-    zoom = registry.get("zoom", 1.0F);
+    zoom = Math.max(0.1, Math.min(1.0, registry.get("zoom", 1.0F)));
     
     // setup layout
     add(overview);
@@ -258,7 +258,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     // settings
     registry.put("overview", overview.isVisible());
     registry.put("overview", overview.getSize());
-    if (sliderZoom!=null) registry.put("zoom", (float)sliderZoom.getValue());
+    registry.put("zoom", (float)zoom);
     registry.put("vertical", model.isVertical());
     registry.put("families", model.isFamilies());
     registry.put("bend"    , model.isBendArcs());
@@ -466,9 +466,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   public void populate(JToolBar bar) {
 
     // zooming!    
-    sliderZoom = new DoubleValueSlider(0.1D,1.0D,zoom,false);
+    sliderZoom = new JSlider(1, 100, (int)(zoom*100));
     sliderZoom.addChangeListener(new ZoomGlue());
-    sliderZoom.setText("%");
     sliderZoom.setAlignmentX(0F);
     bar.add(sliderZoom);
     
@@ -846,8 +845,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      * @see javax.swing.event.ChangeListener#stateChanged(ChangeEvent)
      */
     public void stateChanged(ChangeEvent e) {
-      DoubleValueSlider dvs = (DoubleValueSlider)e.getSource();
-      zoom = dvs.getValue();
+      zoom = sliderZoom.getValue()*0.01D;
       content.invalidate();
       TreeView.this.validate();
       scrollToCurrent();

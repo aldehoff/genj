@@ -24,8 +24,8 @@ import genj.gedcom.Property;
 import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.DoubleValueSlider;
 import genj.util.swing.ScreenResolutionScale;
+import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.ContextSupport;
@@ -45,7 +45,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -78,7 +77,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
   private Ruler ruler;
 
   /** our slider for cm per year */  
-  private DoubleValueSlider sliderCmPerYear;
+  private SliderWidget sliderCmPerYear;
   
   /** our scrollpane */
   private JScrollPane scrollContent;
@@ -284,17 +283,10 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
   public void populate(JToolBar bar) {
     
     // create a slider for cmPerYear
-    sliderCmPerYear = new DoubleValueSlider(MIN_CM_PER_YEAR, MAX_CM_PER_YEAR, cmPerYear, true);
-    sliderCmPerYear.setText(resources.getString("view.cm"));
+    sliderCmPerYear = new SliderWidget(1, 100, 100); // FIXME 20030417
     sliderCmPerYear.setToolTipText(resources.getString("view.peryear.tip"));
     sliderCmPerYear.addChangeListener(new ChangeCmPerYear());
     bar.add(sliderCmPerYear);
-    
-    // create '/year' label
-    JLabel labelPerYear = new JLabel(resources.getString("view.peryear"));
-    labelPerYear.setFont(labelPerYear.getFont().deriveFont(9.0F));
-    sliderCmPerYear.setFont(labelPerYear.getFont());
-    bar.add(labelPerYear);
     
     // done
   }
@@ -467,7 +459,9 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     /** @see javax.swing.event.ChangeListener#stateChanged(ChangeEvent) */
     public void stateChanged(ChangeEvent e) {
       // get the new value
-      cmPerYear = sliderCmPerYear.getValue();
+      int i = sliderCmPerYear.getValue();
+      cmPerYear = MIN_CM_PER_YEAR + 
+         Math.exp(i*0.1)/Math.exp(10) * (MAX_CM_PER_YEAR-MIN_CM_PER_YEAR);
       // update model
       model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
       // done

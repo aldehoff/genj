@@ -24,7 +24,7 @@ import genj.gedcom.PropertyEvent;
 import genj.util.ColorSet;
 import genj.util.Resources;
 import genj.util.swing.ColorChooser;
-import genj.util.swing.DoubleValueSlider;
+import genj.util.swing.SpinnerWidget;
 import genj.view.Settings;
 
 import java.awt.BorderLayout;
@@ -68,9 +68,11 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     new JCheckBox(resources.getString("info.show.grid" ))
   };
   
-  /** sliders for event size */
-  private DoubleValueSlider sliderCmBefEvent, sliderCmAftEvent;
-  
+  /** models for spinners */
+  private SpinnerWidget.FractionModel
+    modCmBefEvent = new SpinnerWidget.FractionModel(TimelineView.MIN_CM_BEF_EVENT, TimelineView.MAX_CM_BEF_EVENT, 1),
+    modCmAftEvent = new SpinnerWidget.FractionModel(TimelineView.MIN_CM_AFT_EVENT, TimelineView.MAX_CM_AFT_EVENT, 1);
+     
   /** colorchooser for colors */
   private ColorChooser colorChooser;
     
@@ -85,17 +87,14 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
       checkOptions[i].setAlignmentX(0F);
       panelOptions.add(checkOptions[i]);
     }
-    sliderCmBefEvent = new DoubleValueSlider(TimelineView.MIN_CM_BEF_EVENT, TimelineView.MAX_CM_BEF_EVENT, 0, false);
-    sliderCmBefEvent.setAlignmentX(0F);
-    sliderCmBefEvent.setToolTipText(resources.getString("info.befevent.tip"));
-    sliderCmBefEvent.setText(resources.getString("info.befevent"));
-    panelOptions.add(sliderCmBefEvent);
     
-    sliderCmAftEvent = new DoubleValueSlider(TimelineView.MIN_CM_AFT_EVENT, TimelineView.MAX_CM_AFT_EVENT, 0, false);
-    sliderCmAftEvent.setAlignmentX(0F);
-    sliderCmAftEvent.setToolTipText(resources.getString("info.aftevent.tip"));
-    sliderCmAftEvent.setText(resources.getString("info.aftevent"));
-    panelOptions.add(sliderCmAftEvent);
+    SpinnerWidget spinCmBefEvent = new SpinnerWidget(resources.getString("info.befevent"), 5, modCmBefEvent);
+    spinCmBefEvent.setToolTipText(resources.getString("info.befevent.tip"));
+    panelOptions.add(spinCmBefEvent);
+    
+    SpinnerWidget spinCmAftEvent = new SpinnerWidget( resources.getString("info.aftevent"), 5, modCmAftEvent );
+    spinCmAftEvent.setToolTipText(resources.getString("info.aftevent.tip"));
+    panelOptions.add(spinCmAftEvent);
     
     // panel for main options
     JPanel panelMain = new JPanel(new BorderLayout());
@@ -126,7 +125,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     view.setPaintGrid(checkOptions[2].isSelected());
     
     // sliders
-    view.setCMPerEvents(sliderCmBefEvent.getValue(), sliderCmAftEvent.getValue());
+    view.setCMPerEvents(modCmBefEvent.getDoubleValue(), modCmAftEvent.getDoubleValue());
     
     // colors
     colorChooser.apply();
@@ -163,8 +162,8 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     checkOptions[2].setSelected(view.isPaintGrid());
 
     // sliders
-    sliderCmBefEvent.setValue(view.getCmBeforeEvents());
-    sliderCmAftEvent.setValue(view.getCmAfterEvents());
+    modCmBefEvent.setDoubleValue(view.getCmBeforeEvents());
+    modCmAftEvent.setDoubleValue(view.getCmAfterEvents());
     
     // colors
     colorChooser.reset();

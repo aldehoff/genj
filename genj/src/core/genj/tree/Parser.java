@@ -136,6 +136,7 @@ import java.awt.geom.Rectangle2D;
     
     // patch bounds - I wish I could just make the marr symbol
     // laterally align with the boxes of husband/wife instead
+    // FIXME 20030417 doesn't work with big pad!
     Rectangle2D r = shapeMarrs.getBounds2D();
     if (model.isVertical()) {
       r.add(0, shapeIndis.getBounds2D().getMinY());
