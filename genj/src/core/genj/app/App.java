@@ -70,7 +70,7 @@ public class App {
     String log = EnvironmentChecker.getProperty(App.class, new String[]{"genj.debug.file", "user.home/.genj/genj.log"}, "", "choose log-file");
     if (log.length()>0) {
       File file = new File(log);
-      if (file.exists()&&file.length()>Options.getInstance().getMaxLogSize())
+      if (file.exists()&&file.length()>Options.getInstance().getMaxLogSizeKB()*1024)
         file.delete();
       Debug.setFile(file);
     }

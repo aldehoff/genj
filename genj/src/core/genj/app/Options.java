@@ -66,7 +66,7 @@ public class Options implements OptionProvider {
   private Resources resources;
  
   /** maximum log file size */
-  private long maxLogSize = 16*1024;
+  private long maxLogSizeKB = 16;
   
   /** the current looknfeel */
   private int lookAndFeel = -1;
@@ -225,15 +225,15 @@ public class Options implements OptionProvider {
   /** 
    * Getter - maximum log size
    */
-  public long getMaxLogSize() {
-    return maxLogSize;
+  public long getMaxLogSizeKB() {
+    return maxLogSizeKB;
   }
   
   /** 
    * Setter - maximum log size
    */
-  public void setMaxLogSize(long set) {
-    maxLogSize = Math.max(4096, set);
+  public void setMaxLogSizeKB(long set) {
+    maxLogSizeKB = Math.max(4, set);
   }
   
   /**
