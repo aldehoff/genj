@@ -569,6 +569,8 @@ public class Gedcom {
    * Accessor - password
    */
   public void setPassword(String set) {
+    if (set==null)
+      throw new IllegalArgumentException("Password can't be null");
     password = set;
   }
   
