@@ -144,15 +144,14 @@ public class PropertyFile extends Property implements IconValueAvailable {
   /**
    * Sets this property's value
    */
-  public boolean setValue(File f) {
-    //return setValue("file:"+f);
-    return setValue(f.toString());
+  public void setValue(File f) {
+    setValue(f.toString());
   }
 
   /**
    * Sets this property's value
    */
-  public boolean setValue(String value) {
+  public void setValue(String value) {
 
     // Remember the change
     noteModifiedProperty();
@@ -163,7 +162,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
     // Reinit our icon calculation
     isIconChecked = false;
     isRelativeChecked = false;
-    return true;
+
   }
 
   /**

@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.WordBuffer;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,13 +37,10 @@ public class TagPath {
 
   /** the list of tags that describe the path */
   private String tags[];
-
-  /** the position in the path */
-  private int position;
   
   /** the hash of this path (immutable) */
-  private int hash;
-  
+  private int hash = 0;
+
   /**
    * Constructor for TagPath
    * @param path path as colon separated string value a:b:c
@@ -55,18 +50,16 @@ public class TagPath {
 
     // Parse path
     StringTokenizer tokens = new StringTokenizer(path,":",false);
-    int num = tokens.countTokens();
-    if (num==0)
+    int length = tokens.countTokens();
+    if (length==0)
       throw new IllegalArgumentException("No valid path :"+path);
 
     // ... setup data
-    tags = new String[num];
-    for (int i=0;i<num;i++) {
+    tags = new String[length];
+    for (int i=0;i<length;i++) {
       tags[i] = tokens.nextToken();
+      hash += tags[i].hashCode();
     }
-
-    position = 0;
-    hash = path.hashCode();
 
     // Done
   }
@@ -77,38 +70,24 @@ public class TagPath {
   public TagPath(Property[] props) {
     
     // decompose property path
-    WordBuffer b = new WordBuffer(':');
-    
     tags = new String[props.length];
-    for (int i=0; i<props.length; i++) {
+    
+    for (int i=0; i<tags.length; i++) {
     	tags[i] = props[i].getTag();
-      b.append(tags[i]);
+      hash += tags[i].hashCode();
     }
-    position = 0;
-    hash = b.toString().hashCode();
     
     // done
   }
 
   /**
-   * Returns the path as a string
-   * @return a colon separated string representation of this path a:b:c
+   * Constructor for TagPath
    */
-  public String asString() {
-    String result = tags[0];
-    for (int i=1;i<tags.length;i++)
-      result = result + ":" + tags[i];
-    return result;
-  }
-
-  /**
-   * Sets this path's internal postition one position back
-   * @exception IllegalArgumentException in case internal position can't be backed
-   */
-  public void back() {
-    if (position==0)
-      throw new IllegalArgumentException("Path's internal position can't be backed");
-    position--;
+  public TagPath(TagPath other, String tag) {
+    tags = new String[other.tags.length+1];
+    System.arraycopy(other.tags, 0, tags, 0, other.tags.length);
+    tags[tags.length-1] = tag;
+    hash = other.hash+tag.hashCode();
   }
 
   /**
@@ -128,7 +107,7 @@ public class TagPath {
 
     // Size ?
     TagPath other = (TagPath)obj;
-    if (other.length()!=length()) {
+    if (other.tags.length!=tags.length) {
       return false;
     }
 
@@ -165,6 +144,7 @@ public class TagPath {
     }
 
   }
+  
   /**
    * Returns the n-th tag of this path
    * @param which 1-based number
@@ -183,13 +163,28 @@ public class TagPath {
   }
 
   /**
-   * Returns the next tag in internal kept order
-   * @return next tag as <code>String</code>
+   * Returns the length of this path
+   * @return length of this path
    */
-  public String getNext() {
-    String result = tags[position];
-    position++;
+  public int length() {
+    return tags.length;
+  }
+  
+  /**
+   * Returns the path as a string
+   */
+  public String toString() {
+    String result = tags[0];
+    for (int i=1;i<tags.length;i++)
+      result = result + ":" + tags[i];
     return result;
+  }
+  
+  /**
+   * @see java.lang.Object#hashCode()
+   */
+  public int hashCode() {
+    return hash;
   }
 
   /**
@@ -236,46 +231,12 @@ public class TagPath {
     return new TagPath(p);
   }
 
-
   /**
-   * Returns true when this path's internal postition is not at the end
-   * @return <code>true</code> is internal position is not at the end
+   * Simple test for path : contains ':'
    */
-  public boolean hasMore() {
-    if (position>=length()) {
-      return false;
-    }
-    return true;
+  public static boolean isPath(String path) {
+    return path.indexOf(':')>0;
   }
 
-  /**
-   * Returns the length of this path
-   * @return length of this path
-   */
-  public int length() {
-    return tags.length;
-  }
 
-  /**
-   * Resets this path's internal postition
-   */
-  public void setToFirst() {
-    position = 0;
-  }
-
-  /**
-   * Returns the path as a string
-   * @see #asString()
-   */
-  public String toString() {
-    return asString();
-  }
-  
-  /**
-   * @see java.lang.Object#hashCode()
-   */
-  public int hashCode() {
-    return hash;
-  }
-
-}
+} //TagPath

@@ -71,7 +71,7 @@ public class PropertyForeignXRef extends PropertyXRef {
   /**
    * setValue method comment.
    */
-  public boolean setValue(String newValue) {
+  public void setValue(String newValue) {
     throw new RuntimeException("setValue is not support by ForeignXRefs");
   }
 
@@ -79,7 +79,7 @@ public class PropertyForeignXRef extends PropertyXRef {
    * getImage method comment.
    */
   public ImageIcon getImage(boolean checkValid) {
-    return MetaProperty.get("ASSO").getImage();
+    return MetaProperty.loadImage("Association.gif");
   }
 
   /**

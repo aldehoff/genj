@@ -20,8 +20,6 @@
 package genj.edit;
 
 import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomException;
 import genj.gedcom.IconValueAvailable;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -31,13 +29,10 @@ import genj.view.ViewManager;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -55,52 +50,31 @@ class ProxyXRef extends Proxy implements ActionListener  {
   private JTextField tfield;
 
   /**
-   * When button is pressed
-   */
-  public void actionPerformed(ActionEvent e) {
-
-    // Jump to linked entity ?
-    if ("JUMP".equals(e.getActionCommand())) {
-      jump();
-      return;
-    }
-
-    // Jump to linked entity ?
-    if ("JUMP".equals(e.getActionCommand())) {
-      jump();
-      return;
-    }
-
-    // Find entity-id by entered information ?
-    if ("FIND".equals(e.getActionCommand())) {
-      find();
-      return;
-    }
-
-    // Link entered entity-id ?
-    if ("LINK".equals(e.getActionCommand())) {
-      link();
-      return;
-    }
-
-   // Unknown
-    return;
-  }
-
-  /**
    * Finish editing a property through proxy
    */
   protected void finish() {
 
     // Has something been edited ?
-    if ( !hasChanged() ) {
-      return;
-    }
+    if (!hasChanged()) return;
 
     // Store changed value
     prop.setValue(tfield.getText());
 
     // Done
+  }
+  
+  /**
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
+  public void actionPerformed(ActionEvent e) {
+    // get entity
+    Entity target = ((PropertyXRef)prop).getReferencedEntity();
+    if (target!=null) {
+      boolean sticky = edit.setSticky(false);
+      ViewManager.getInstance().setCurrentEntity(target);
+      edit.setSticky(sticky);
+    }
+    // done 
   }
 
   /**
@@ -115,159 +89,6 @@ class ProxyXRef extends Proxy implements ActionListener  {
 
     String id = ((PropertyXRef)prop).getReferencedId();
     return !tfield.getText().equals(id);
-  }
-
-  /**
-   * Find id by entered information
-   */
-  private void find() {
-
-    // Check if we have something to look for
-    String text = tfield.getText();
-    if (text.length()==0) {
-      return;
-    }
-
-    // First we analyze what kind of target to expect
-    PropertyXRef xref = (PropertyXRef)prop;
-
-    int type = xref.getExpectedReferencedType();
-    String name = Gedcom.getNameFor(type, false);
-
-    // Then we try to find it through Gedcom
-    List all = prop.getGedcom().getEntities(type);
-
-    List hits = new ArrayList(10);
-    for (int e=0;e<all.size();e++) {
-
-      // .. here's the entity we're checking (ignoring current)
-      Entity entity = (Entity)all.get(e);
-      if (entity==edit.getCurrentEntity()) {
-        continue;
-      }
-
-      // .. do the lookup
-      Property property = entity.getProperty().find(text);
-      if (property!=null) {
-        hits.add(new Hit(property));
-      }
-    }
-
-    // Anything found?
-    if (hits.size()==0) {
-      JOptionPane.showMessageDialog(
-        edit,
-        EditView.resources.getString("proxy.find.none", name),
-        EditView.resources.getString("proxy.find.result"),
-        JOptionPane.INFORMATION_MESSAGE
-      );
-      return;
-    }
-
-    // Then we display the result for the user to choose from
-    Hit result = (Hit)JOptionPane.showInputDialog(
-      edit,
-      EditView.resources.getString("proxy.find.select")+" "+Gedcom.getNameFor(type,false),
-      EditView.resources.getString("proxy.find.result"),
-      JOptionPane.QUESTION_MESSAGE,
-      null,
-      hits.toArray(),
-      null
-    );
-
-    // .. something?
-    if (result==null) {
-      return;
-    }
-
-    // Change the value
-    tfield.setText(result.getProperty().getEntity().getId());
-
-    // Done
-
-  }
-
-  /**
-   * Type that wraps a find hit
-   */
-  private class Hit {
-    /** the property that matched */
-    private Property prop;
-    /** text representation */
-    private String text;
-    /** constructor */
-    /*package*/ Hit(Property pProp) {
-      prop = pProp;
-      text = truncate(pProp.getEntity().toString(), 48, "...")+" | "
-          +prop.getTag()+":"+truncate(prop.getValue(), 32, "...");
-    }
-    /** getter */
-    /*package*/ Property getProperty() {
-      return prop;
-    }
-    /** toString */
-    public String toString() {
-      return text;
-    }
-    /** truncates a string */
-    private String truncate(String text, int length, String padding) {
-      // nothing necessary?
-      if (text.length()<=length) return text;
-      // cut it
-      return text.substring(0, length-padding.length()) + padding;
-    }
-    // EOC
-  }
-
-  /**
-   * Link to referenced entity
-   */
-  private void link() {
-
-    // .. try to write
-    Gedcom gedcom = prop.getGedcom();
-
-    if (!gedcom.startTransaction()) {
-      return;
-    }
-
-    // Try to link
-    String id = "@"+tfield.getText()+"@";
-    prop.setValue(id);
-    try {
-      ((PropertyXRef)prop).link();
-      edit.setCurrentEntity(prop.getEntity());
-    } catch (GedcomException ex) {
-      JOptionPane.showMessageDialog(
-        edit.getFrame(),
-        ex.getMessage(),
-        EditView.resources.getString("error"),
-        JOptionPane.ERROR_MESSAGE
-      );
-    }
-
-    // Unlock
-    gedcom.endTransaction();
-
-    // Done
-    return;
-  }
-
-  /**
-   * Jump to referenced entity
-   */
-  private void jump() {
-
-    // get entity
-    Entity e = ((PropertyXRef)prop).getReferencedEntity();
-    if (e==null) return;
-    
-    // propagate 
-    boolean sticky = edit.setSticky(false);
-    ViewManager.getInstance().setCurrentEntity(e);
-    edit.setSticky(sticky);
-    
-    // done 
   }
 
   /**
@@ -325,25 +146,6 @@ class ProxyXRef extends Proxy implements ActionListener  {
       EditView.resources.getString("proxy.enter_id_here")
     );
     in.add(tfield);
-
-    JButton link = createButton(
-      EditView.resources.getString("proxy.link"),
-      "LINK",
-      true,
-      this,
-      Images.imgLink
-    );
-    in.add(link);
-
-    JButton find = createButton(
-      EditView.resources.getString("proxy.find"),
-      "FIND",
-      true,
-      this,
-      Images.imgFind
-    );
-    in.add(find);
-
     ButtonHelper.requestFocusFor(tfield);
 
     // Done

@@ -1,0 +1,6 @@
+0 SOUR type=Source img=Source.gif
+1 TITL default type=SimpleValue img=Attribute.gif
+1 AUTH default type=SimpleValue img=Note.gif
+1 ABBR type=SimpleValue img=Note.gif
+1 PUBL type=SimpleValue img=Note.gif
+1 TEXT default type=MultilineValue img=Note.gif

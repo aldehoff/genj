@@ -19,7 +19,7 @@
  */
 package genj.timeline;
 
-import genj.app.TagSelector;
+import genj.app.TagPathSelector;
 import genj.gedcom.PropertyEvent;
 import genj.util.ColorSet;
 import genj.util.swing.ColorChooser;
@@ -55,7 +55,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   private TimelineView view;
   
   /** a widget for selecting tags to show */
-  private TagSelector selectorEventTags = new TagSelector();
+  private TagPathSelector selectorEventTags = new TagPathSelector();
   
   /** Checkbox for options */
   private JCheckBox[] checkOptions = {
@@ -148,8 +148,10 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   public void reset() {
     
     // EventTags to choose from
-    selectorEventTags.setTags(PropertyEvent.getEventTags());
-    selectorEventTags.setSelection(view.getModel().getFilter());
+    selectorEventTags.setPaths(PropertyEvent.getTagPaths());
+    
+    // FIXME
+    //selectorEventTags.setSelectedPaths(view.getModel().getFilter());
 
     // Checks
     checkOptions[0].setSelected(view.isPaintTags());

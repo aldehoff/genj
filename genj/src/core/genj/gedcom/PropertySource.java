@@ -67,10 +67,11 @@ public class PropertySource extends PropertyXRef {
     noteModifiedProperty();
 
     // Just add 'em
-    if (this instanceof Entity) {
-      addProperty(new PropertyGenericAttribute("TITL"));
-      addProperty(new PropertyText());
-    }
+// FIXME    
+//    if (this instanceof Entity) {
+//      addProperty(new PropertySimpleValue("TITL"));
+//      addProperty(new PropertyText());
+//    }
     
     // Done
     return this;

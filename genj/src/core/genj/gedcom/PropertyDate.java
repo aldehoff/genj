@@ -311,7 +311,7 @@ public class PropertyDate extends Property {
   /**
    * Accessor Value
    */
-  public boolean setValue(String newValue) {
+  public void setValue(String newValue) {
 
     noteModifiedProperty();
 
@@ -324,17 +324,17 @@ public class PropertyDate extends Property {
     // Empty Date ?
     StringTokenizer tokens = new StringTokenizer(newValue);
     if ( tokens.countTokens() == 0 ) {
-      return true;
+      return;
     }
 
     // Parsing wrong ?
     if ( parseDate(newValue,tokens) == false ){
       dateAsString=newValue;
-      return false;
+      return;
     }
 
     // Everything o.k.
-    return true;
+    return;
   }
 
   /**

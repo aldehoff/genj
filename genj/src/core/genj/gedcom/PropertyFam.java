@@ -58,8 +58,7 @@ public abstract class PropertyFam extends Property {
   /**
    * Accessor Value
    */
-  public boolean setValue(String value) {
-    return false;
+  public void setValue(String value) {
   }
 
-}
+} //PropertyFam

@@ -22,6 +22,7 @@ package genj.io;
 import genj.Version;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyXRef;
@@ -35,7 +36,6 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.Calendar;
-import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -323,23 +323,21 @@ public class GedcomWriter implements Trackable {
     }
 
     // This property's value
-    if (prop.isMultiLine() == Property.NO_MULTI) {
+    if (prop instanceof MultiLineSupport) {
+
+      // .. more lines from iterator
+      MultiLineSupport.Line lines = ((MultiLineSupport)prop).getLines();
+      line(0, prefix + lines.getTag(), lines.getValue());
+      line(1);
+      while (lines.next())
+        line(0, lines.getTag(), lines.getValue());
+      line(-1);
+
+    } else {
+      
       // .. just a single line
       line(0, prefix + prop.getTag(), prop.getValue());
-    } else {
-      // .. more lines from iterator
-      Enumeration iterator = prop.getLineIterator();
-      // .. just one though?
-      if (!iterator.hasMoreElements()) {
-        line(0, prefix + prop.getTag(), "");
-      } else {
-        line(0, prefix + prop.getTag(), iterator.nextElement().toString());
-        line(1);
-        while (iterator.hasMoreElements()) {
-          line(0, "CONT", iterator.nextElement().toString());
-        }
-        line(-1);
-      }
+      
     }
 
     // Properties
@@ -366,4 +364,6 @@ public class GedcomWriter implements Trackable {
     // Tailer
     line("TRLR", "");
   }
-}
+  
+  
+} //GedcomWriter

@@ -10,7 +10,6 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
-import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.report.Report;
@@ -23,9 +22,9 @@ import java.util.TreeMap;
 /**
  * GenJ - Report.
  * This report exports individuals' information to HTML.
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.13 2002-11-01 20:20:26 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.14 2003-03-13 18:50:28 nmeier Exp $
  * @author Nils Meier nils@meiers.net
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class ReportMakeHTMLTable implements Report {
 
@@ -188,7 +187,7 @@ public class ReportMakeHTMLTable implements Report {
       // ... this might fail in case we don't get a PropertyEvent back
       PropertyEvent event = (PropertyEvent)indi.getProperty(new TagPath("BIRT"),true);
       PropertyDate date = (PropertyDate)event.getProperty(new TagPath("DATE"),true);
-      PropertyPlace place = (PropertyPlace)event.getProperty(new TagPath("PLAC"),true);
+      Property place = event.getProperty(new TagPath("PLAC"),true);
       htmlCell(bridge,date);
       htmlCell(bridge,place);
     } catch (Exception e) {
@@ -199,7 +198,7 @@ public class ReportMakeHTMLTable implements Report {
     try {
       PropertyEvent event = (PropertyEvent)indi.getProperty(new TagPath("DEAT"),true);
       PropertyDate date = (PropertyDate)event.getProperty(new TagPath("DATE"),true);
-      PropertyPlace place = (PropertyPlace)event.getProperty(new TagPath("PLAC"),true);
+      Property place = event.getProperty(new TagPath("PLAC"),true);
       htmlCell(bridge,date);
       htmlCell(bridge,place);
     } catch (Exception e) {

@@ -90,21 +90,15 @@ public class Repository extends PropertyRepository implements Entity {
    * Returns this property as a string
    */
   public String toString() {
-    PropertyName name = getName();
-    return getId()+":"+(name!=null?name.getValue():"");
+    return getId()+":"+getName();
   }
 
   /**
    * Returns the name of this repository
    */
-  private PropertyName getName() {
-    for (int i=0;i<getNoOfProperties();i++) {
-      Property child = getProperty(i);
-      if (child instanceof PropertyName) {
-        return (PropertyName)child;
-      }
-    }
-    return null;
+  private String getName() {
+    Property name = getProperty("NAME");
+    return name!=null ? name.getValue() : ""; 
   }
   
 } //Repository

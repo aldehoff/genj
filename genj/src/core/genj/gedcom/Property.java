@@ -19,11 +19,11 @@
  */
 package genj.gedcom;
 
-import genj.util.Debug;
 import genj.util.swing.ImageIcon;
-import java.lang.reflect.Method;
+
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
@@ -32,54 +32,19 @@ import java.util.Vector;
  */
 public abstract class Property implements Comparable {
 
-  private static final Property NO_KNOWN_PROPERTIES[] = {};
-  private static final String   NO_KNOWN_SUB_TAGS  [] = {};
-
-  /**
-   * Common fields for every Property: parent and vector of child properties
-   * Define tag and value in subclass, or hard-wire in getTag() and getValue()
-   */
+  /** parent of this property */
   protected Property  parent=null;
+  
+  /** children of this property */
   protected PropertySet children=null;
+  
+  /** images */
+  protected ImageIcon image, imageErr;
 
+  /** constants for moving properties amongst siblings */
   public static final int
     UP   = 1,
     DOWN = 2;
-
-  public final static int
-    NO_MULTI=1,
-    MULTI_NEWLINE=2,
-    MULTI_BLOCK=3;
-
-  /**
-   * Helper for getPathTo
-   */
-  private Vector _getPathTo(Property prop) {
-
-    // Prop is me ?
-    if (prop==this) {
-      Vector result = new Vector(10);
-      result.addElement(this);
-      return result;
-    }
-
-    // One of my properties ?
-    Vector result = null;
-    for (int i=0;i<getNoOfProperties();i++) {
-      // .. test it
-      result = getProperty(i)._getPathTo(prop);
-      if (result!=null)
-      break;
-      // .. next
-    }
-
-    // Found ? Add myself
-    if (result!=null)
-      result.addElement(this);
-
-    // Done
-    return result;
-  }
 
   /**
    * Adds default properties to this property
@@ -90,13 +55,12 @@ public abstract class Property implements Comparable {
     if (getEntity()==null) throw new IllegalArgumentException("Not part of entity is null!");
     
     // ask for default sub-properties
-    MetaProperty meta = MetaProperty.get(this);
-    MetaProperty[] subs = meta.getSubs(this, true);
+    MetaProperty[] subs = MetaProperty.getSubs(this, true); 
     
     // loop
     for (int s=0; s<subs.length; s++) {
       if (getProperty(subs[s].getTag())==null) {
-      	addProperty(subs[s].instantiate("")).addDefaultProperties();
+      	addProperty(subs[s].create("")).addDefaultProperties();
       }
     }
     
@@ -127,28 +91,6 @@ public abstract class Property implements Comparable {
 
     // Done
     return prop;
-  }
-
-  /**
-   * Calculates a property's standard proxy from given TagPath
-   */
-  public static String calcDefaultProxy(TagPath path) {
-
-    // Find class for tag
-    Class c = MetaProperty.get(path).getPropertyClass();
-
-    // Get proxy value
-    Class  argtypes[] = { path.getClass() };
-    Object arg     [] = { path            };
-    try {
-      Method method = c.getMethod("getProxy",argtypes);
-      return (String)method.invoke(null,arg);
-    } catch (Exception e) {
-      Debug.log(Debug.WARNING, Property.class, e);
-    }
-
-    // Error means unknown
-    return PropertyUnknown.getProxy(null);
   }
 
   /**
@@ -314,9 +256,16 @@ public abstract class Property implements Comparable {
    * Returns the image which is associated with this property.
    */
   public ImageIcon getImage(boolean checkValid) {
-    if (!checkValid||isValid())
-      return MetaProperty.get(this).getImage();
-    return MetaProperty.get(this).getImage("err");
+    
+    // valid or not ?
+    if (!checkValid||isValid()) {
+      if (image==null) image = MetaProperty.get(this).getImage(); 
+      return image;
+    }
+    
+    // not valid
+    if (imageErr==null) imageErr = MetaProperty.get(this).getImage("err"); 
+    return imageErr;
   }
 
   /**
@@ -334,16 +283,6 @@ public abstract class Property implements Comparable {
 
     // Not found
     return 0;
-  }
-
-  /**
-   * Returns a LineIterator which can be used to iterate through
-   * several lines of data in case of isMultiLine equals true;
-   * Should be implemented by properties with several lines.
-   * Returns null when single line only
-   */
-  public Enumeration getLineIterator() {
-    return null;
   }
 
   /**
@@ -419,22 +358,40 @@ public abstract class Property implements Comparable {
    */
   public Property[] getPathTo(Property prop) {
 
-    // Try to find vector
-    Vector v = _getPathTo(prop);
-    if (v==null) {
-      return null;
-    }
-
-    // Transform to array
-    Property[] result = new Property[v.size()];
-    for (int i=0;i<result.length;i++) {
-      result[result.length-1-i] = (Property)v.elementAt(i);
-    }
-
+    // Create a linked list
+    LinkedList result = new LinkedList();
+    
+    // look for it
+    getPathToRecursively(result, prop);
+    
     // Done
-    return result;
+    return (Property[])result.toArray(new Property[result.size()]);
   }
 
+  /**
+   * Recursive getPathTo
+   */
+  private void getPathToRecursively(LinkedList path, Property prop) {
+    
+    // is it me?
+    if (prop==this) {
+      path.add(this);
+      return;
+    }
+    
+    // maybe it's one of my children
+    for (int i=0;i<getNoOfProperties();i++) {
+      getProperty(i).getPathToRecursively(path, prop);
+      if (path.size()>0) {
+        // .. add myself
+        path.addFirst(this);
+        break;
+      } 
+    }
+
+    // not found
+  }
+  
   /**
    * Returns the previous sibling of this property
    * @return property beside or null
@@ -466,20 +423,17 @@ public abstract class Property implements Comparable {
    */
   public List getProperties(Class type) {
     List props = new ArrayList(10);
-    internalGetProperties(props, type);
+    getPropertiesRecursively(props, type);
     return props;
   }
   
-  /** 
-   * Fills list of properties with properties of given type
-   */
-  private void internalGetProperties(List props, Class type) {
+  private void getPropertiesRecursively(List props, Class type) {
     for (int c=0;c<getNoOfProperties();c++) {
       Property child = getProperty(c);
       if (type.isAssignableFrom(child.getClass())) {
         props.add(child);
       }
-      child.internalGetProperties(props, type);
+      child.getPropertiesRecursively(props, type);
     }
   }
 
@@ -489,60 +443,41 @@ public abstract class Property implements Comparable {
   public Property[] getProperties(TagPath path, boolean validOnly) {
 
     // No properties there ?
-    if (children==null) {
-      return new Property[0];
-    }
+    if (children==null) return new Property[0];
 
     // Gather 'em
-    Vector vresult = new Vector(children.getSize());
-    getPropertiesInto(path,vresult,validOnly);
+    List result = new ArrayList(children.getSize());
+    getPropertiesRecursively(path, 0, result, validOnly);
 
-    Property[] result = new Property[vresult.size()];
-    for (int i=0;i<result.length;i++) {
-      result[i]=(Property)vresult.elementAt(i);
-    }
-
-    // Done
-    return result;
+    // done
+    return (Property[])result.toArray(new Property[result.size()]);
   }
 
-  /**
-   * Helper for getProperties
-   */
-  private void getPropertiesInto(TagPath path,Vector fill, boolean validOnly) {
+  private List getPropertiesRecursively(TagPath path, int pos, List fill, boolean validOnly) {
 
     // Correct here ?
-    if (!path.getNext().equals(getTag())) {
-      path.back();
-      return;
-    }
+    if (!path.get(pos).equals(getTag())) return fill;
 
-    // Me ?
-    if (!path.hasMore()) {
-      path.back();
+    // Me the last one?
+    if (pos==path.length()-1) {
       // .. only when valid
-      if ( (validOnly) && (!isValid()) ) {
-      return;
-      }
-      // .. add me
-      fill.addElement(this);
+      if ( (!validOnly) || (isValid()) ) 
+        fill.add(this);
       // .. done
-      return;
+      return fill;
     }
 
     // Does this one have properties ?
-    if (children==null) {
-      path.back();
-      return;
-    }
+    if (children==null) return fill;
 
     // Search in properties
     Property p;
     for (int i=0;i<children.getSize();i++) {
-      children.get(i).getPropertiesInto(path,fill,validOnly);
+      children.get(i).getPropertiesRecursively(path,pos+1,fill,validOnly);
     }
 
-    path.back();
+    // done
+    return fill;
   }
 
   /**
@@ -555,10 +490,28 @@ public abstract class Property implements Comparable {
 
   /**
    * Returns this property's property by path
-   * (only valid children are considered
    */
   public Property getProperty(String path) {
-    return getProperty(new TagPath(path), true);
+    return getProperty(path, true);
+  }
+
+  /**
+   * Returns this property's property by path
+   * (only valid children are considered)
+   */
+  public Property getProperty(String path, boolean validOnly) {
+    // maybe a simple tag?
+    if (!TagPath.isPath(path)) {
+      for (int c=0;c<getNoOfProperties();c++) {
+        Property child = getProperty(c);
+        if (!child.getTag().equals(path)) continue;
+        if (validOnly&&!child.isValid()) continue;
+        return child;
+      }
+      return null;
+    }
+    // go all the way
+    return getProperty(new TagPath(path), validOnly);
   }
   
   /**
@@ -567,63 +520,18 @@ public abstract class Property implements Comparable {
   public Property getProperty(TagPath path, boolean validOnly) {
 
     // if we're an entity then we check the tag and skip
-    if (this instanceof Entity) {
-      if (!getTag().equals(path.getNext())) return null;
-    }
+    if (this instanceof Entity && !getTag().equals(path.get(0))) return null;
 
-    // Empty TagPath means us
-    if (!path.hasMore()) {
-      // .. validity?
-      if ( (validOnly) && (!isValid()) ) {
-        return null;
-      }
-      // .. we're o.k.
-      return this;
-    }
-
-    // This is what we are looking for
-    String next = path.getNext();
-
-    // Loop through the children
-    if (children!=null) {
-      
-      Property child;
-      Property result;
-      
-      for (int i=0;i<children.getSize();i++) {
-  
-        child = children.get(i);
-  
-        // .. check that child
-        if (child.getTag().equals(next)) {
-          result = child.getProperty(path, validOnly);
-          if (result != null) {
-            return result;
-          }
-        }
-  
-        // .. we have to keep on looking
-      }
-      
-    }
-
-    // Getting here ... restore path for a sibling
-    path.back();
-
-    return null;
+    // look for it
+    Property[] result = getProperties(path, validOnly);
+    if (result.length==0) return null;
+    return result[0];
   }
-
+  
   /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
-    return "Unknown";
-  }
-
-  /**
-   * Returns the logical name of the proxy-object which knows this object
-   */
-  public static String getProxy(TagPath path) {
     return "Unknown";
   }
 
@@ -636,15 +544,6 @@ public abstract class Property implements Comparable {
    * Returns the value of this property as string.
    */
   abstract public String getValue();
-
-  /**
-   * Returns wether this property consists of several lines
-   * @return NO_MULTI, MULTI_NEWLINE, MULTI_BLOCK
-   * @see #getLineIterator()
-   */
-  public int isMultiLine() {
-    return NO_MULTI;
-  }
 
   /**
    * Returns <b>true</b> if this property is valid
@@ -729,7 +628,7 @@ public abstract class Property implements Comparable {
   /**
    * Sets this property's value as string.
    */
-  public abstract boolean setValue(String newValue);
+  public abstract void setValue(String newValue);
 
   /**
    * The default toString returns the value of this property
@@ -877,6 +776,6 @@ public abstract class Property implements Comparable {
     }          
     
   } // PropertySet
-  
+
 } //Property
 

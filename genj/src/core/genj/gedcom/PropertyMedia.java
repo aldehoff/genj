@@ -60,7 +60,8 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     if (this instanceof Entity) {
       return "Entity";
     }
-    // OBJE linked to Entity Media or FILE
+    // link or inline
+    if (getNoOfProperties()>0) return "Empty";
     return "XRef";
   }
 
@@ -120,15 +121,6 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     // .. and point to it
     setTarget(fxref);
 
-//  20020209 guess we shouldn't remove stuff that still might be of some importance
-//    // Are there any properties that can be deleted ?
-//    Property[] known = getKnownProperties();
-//    for (int i=0;i<known.length;i++) {
-//      TagPath path = new TagPath(getTag()+":"+known[i].getTag());
-//      Property[] props = getProperties(path,false);
-//      delProperties(props);
-//    }
-
     // Done
 
   }
@@ -164,6 +156,31 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     PropertyMedia target = (PropertyMedia )super.getReferencedEntity();
     if (target!=null) return target.getFile();
     return (PropertyFile)getProperty(new TagPath("OBJE:FILE"), true);    
+  }
+  
+  /**
+   * @see genj.gedcom.Property#addDefaultProperties()
+   */
+  public Property addDefaultProperties() {
+    // no props if linked
+    if (getTarget()!=null) return this;
+    return super.addDefaultProperties();
+  }
+  
+  /**
+   * @see genj.gedcom.PropertyXRef#toString()
+   */
+  public String toString() {
+    if (getTarget()!=null) return super.toString();
+    return getTitle();
+  }
+
+  /**
+   * Returns the title of this media
+   */
+  private String getTitle() {
+    Property title = getProperty("OBJE:TITL");
+    return title!=null ? title.getValue() : ""; 
   }
 
 } //PropertyMedia

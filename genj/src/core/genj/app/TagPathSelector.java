@@ -20,14 +20,16 @@
 package genj.app;
 
 import genj.gedcom.MetaProperty;
+import genj.gedcom.TagPath;
 import genj.util.swing.HeadlessLabel;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,17 +43,18 @@ import javax.swing.ListCellRenderer;
 /**
  * A component allowing to select a Tag
  */
-public class TagSelector extends JComponent {
+public class TagPathSelector extends JComponent {
 
   /** members */
-  private JList   lChoose;
-  private List    entries = new ArrayList(64);
+  private JList lChoose;
+  private Set entries = new LinkedHashSet(64);
+  private Set selection = new HashSet();
   private boolean isChanged = false;
 
   /**
    * Constructor
    */
-  public TagSelector() {
+  public TagPathSelector() {
 
     // create a list
     lChoose = new JList();
@@ -76,12 +79,7 @@ public class TagSelector extends JComponent {
    * Returns selected tags
    */
   public Set getSelection() {
-    Set result = new HashSet(entries.size());
-    for (int e=0; e<entries.size(); e++) {
-      Entry entry = (Entry)entries.get(e);
-      if (entry.selected) result.add(entry.tag);
-    }
-    return result;
+    return selection;
   }
 
   /**
@@ -94,16 +92,13 @@ public class TagSelector extends JComponent {
   /**
    * Specifies tags to be selected
    */
-  public void setSelection(Set tags) {
+  public void setSelectedPaths(Set paths) {
     
     // change is reset
     isChanged = false;
 
     // Loop through available tags
-    for (int e=0; e<entries.size(); e++) {
-      Entry entry = (Entry)entries.get(e);
-      entry.selected = tags.contains(entry.tag);
-    }
+    selection = new HashSet(paths);
 
     // show it
     repaint();
@@ -114,27 +109,16 @@ public class TagSelector extends JComponent {
   /**
    * Sets the tags used by this list
    */
-  public void setTags(List tags) {
+  public void setPaths(List paths) {
+    
     // gather the entries
     entries.clear();
-    for (int e=0;e<tags.size();e++) {
-      entries.add(new Entry(tags.get(e).toString()));
-    }
+    entries.addAll(paths);
+
     // set it
     lChoose.setListData(entries.toArray());
     // done
   }
-
-  /**
-   * An entry in our list
-   */
-  private class Entry {
-    /** members */
-    String tag;
-    boolean selected;
-    /** constructor */
-    Entry(String pTag) { tag = pTag; }
-  } //Entry
 
   /**
    * Tag List Cell Renderer
@@ -160,12 +144,12 @@ public class TagSelector extends JComponent {
 
     /** callback for component that renders element */
     public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
-      // here's the entry
-      Entry entry = (Entry)value;
+      // here's the path
+      TagPath path = (TagPath)value;
       // prepare its data
-      label.setText( entry.tag );
-      label.setIcon( MetaProperty.get(entry.tag).getImage() );
-      check.setSelected( entry.selected );
+      label.setText( path.toString() );
+      label.setIcon( MetaProperty.get(path).getImage() );
+      check.setSelected( selection.contains(path) );
       // done
       return panel;
     }
@@ -182,8 +166,8 @@ public class TagSelector extends JComponent {
       int pos = lChoose.locationToIndex(me.getPoint());
       if (pos==-1) return;
       // Get entry and invert selection
-      Entry entry = (Entry)lChoose.getModel().getElementAt(pos);
-      entry.selected = !entry.selected;
+      TagPath path = (TagPath)lChoose.getModel().getElementAt(pos);
+      if (!selection.remove(path)) selection.add(path);
       isChanged = true;
       // Show it 
       lChoose.repaint(lChoose.getCellBounds(pos,pos));

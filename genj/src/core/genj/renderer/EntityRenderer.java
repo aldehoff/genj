@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -35,10 +36,8 @@ import java.awt.geom.Point2D;
 import java.io.DataInputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -61,13 +60,9 @@ public class EntityRenderer {
   
   /** the property image width */
   private static final int 
-    PROP_IMAGE_WIDTH  = MetaProperty.get("INDI").getImage().getIconWidth()+4,
-    PROP_IMAGE_HEIGHT = MetaProperty.get("INDI").getImage().getIconHeight();
+    PROP_IMAGE_WIDTH  = MetaProperty.get(new TagPath("INDI")).getImage().getIconWidth()+4,
+    PROP_IMAGE_HEIGHT = MetaProperty.get(new TagPath("INDI")).getImage().getIconHeight();
   
-  /** replace value for no-property */
-  private static final Object
-    NULL = new Object();
-    
   /** a no value char array */
   private static final Segment EMPTY_SEGMENT = new Segment(); 
   
@@ -91,9 +86,6 @@ public class EntityRenderer {
   
   /** all TableViews we know */
   private List tableViews = new ArrayList(4);
-  
-  /** the proxies we know */
-  private Map prenderers = new HashMap(10);
   
   /** the graphics we're for */
   private Graphics graphics;
@@ -627,16 +619,19 @@ public class EntityRenderer {
     private int preference;
     
     /** the proxy used */
-    private PropertyRenderer prenderer = null;
+    private PropertyRenderer cachedRenderer = null;
     
     /** the tag path used */
     private TagPath path = null;
     
     /** the cached property we're displaying */
-    private Object property = null;
+    private Property cachedProperty = null;
     
     /** minimum percentage of the rendering space */
     private int min;
+    
+    /** valid or not */
+    private boolean isValid = false;
     
     /** 
      * Constructor
@@ -644,26 +639,13 @@ public class EntityRenderer {
     PropertyView(Element elem) {
       super(elem);
       
-      // grab path&proxy
+      // grab path
       Object p = elem.getAttributes().getAttribute("path");
       if (p!=null) try {
-        
         path = new TagPath(p.toString());
-      
-        // get a 'logical' proxy name
-        String name = Property.calcDefaultProxy(path);
-
-        // know it already?
-        prenderer = (PropertyRenderer) prenderers.get(name);
-        if (prenderer==null) {
-          prenderer = PropertyRenderer.get(name);
-          prenderers.put(name, prenderer);
-        }
-
-        // proxy is setup
       } catch (IllegalArgumentException e) {
         // ignoring wrong path
-      }       
+      }
       
       // check image&text
       preference = PropertyRenderer.PREFER_DEFAULT;
@@ -673,7 +655,7 @@ public class EntityRenderer {
         if ("no".equals(atts.getAttribute("txt"))) 
           preference = PropertyRenderer.PREFER_IMAGE;
       }
-
+      
       // minimum?
       min = getInt(atts, "min", 1, 100, 1);
       
@@ -694,24 +676,50 @@ public class EntityRenderer {
     }
     
     /**
-     * Returns the property we're viewing
+     * Get Property
      */
     private Property getProperty() {
-      if (entity==null||path==null) return null;
-      if (property!=null) return property==NULL ? null : (Property)property;
-      path.setToFirst();
-      property = entity.getProperty().getProperty(path, true);
-      if (property!=null) return (Property)property; 
-      property = NULL;
-      return null;
+      // still looking for property?
+      if (!isValid) {
+        cachedProperty = path!=null ? entity.getProperty().getProperty(path, true) : null;
+        // valid now
+        isValid = true;
+      }      
+      // done
+      return cachedProperty;
     }
+    
+    /** 
+     * Get Renderer
+     */
+    private PropertyRenderer getRenderer(Property prop) {
+      // not known?
+      if (cachedRenderer==null) {
+        // get renderer for property's proxy
+        String proxy;
+        // property?
+        if (prop!=null) {
+          proxy = prop.getProxy();
+        } else {
+          proxy = path!=null ? path.getLast() : "";
+        }
+        cachedRenderer = PropertyRenderer.get(proxy);
+      }
+      // check renderer/prop compatibility
+      if (prop==null&&!cachedRenderer.isNullRenderer()) return null;
+      // done
+      return cachedRenderer;
+    }
+    
     /**
      * @see javax.swing.text.View#paint(Graphics, Shape)
      */
     public void paint(Graphics g, Shape allocation) {
-      // find property
-      Property p = getProperty();
-      if (p==null&&!prenderer.isNullRenderer()) return;
+      // property and renderer
+      Property property = getProperty();
+      PropertyRenderer renderer = getRenderer(property);
+      // no renderer - no paint
+      if (renderer==null) return;
       // setup painting attributes and bounds
       g.setColor(super.getForeground());
       g.setFont(super.getFont());
@@ -723,7 +731,7 @@ public class EntityRenderer {
       // clip and render
       Shape old = g.getClip();
       g.clipRect(r.x, r.y, r.width, r.height);
-      prenderer.render(g, r, p, preference, resolution);
+      renderer.render(g, r, property, preference, resolution);
       g.setClip(old);
       // done
     }
@@ -731,10 +739,16 @@ public class EntityRenderer {
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
     protected Dimension getPreferredSpan() {
-      // get the property
-      Property p = getProperty();
-      if (p==null&&!prenderer.isNullRenderer()) return new Dimension(0,0);
-      return prenderer.getSize(getFontMetrics(), p, preference, resolution);
+      if (new TagPath("INDI:OBJE:FILE").equals(path)) {
+        "".toString();
+      }
+      // property and renderer
+      Property property = getProperty();
+      PropertyRenderer renderer = getRenderer(property);
+      // no renderer - no spane
+      if (renderer==null) return new Dimension(0,0);
+      // calc span
+      return renderer.getSize(getFontMetrics(), property, preference, resolution);
     }
     /**
      * @see javax.swing.text.View#getMinimumSpan(int)
@@ -748,7 +762,9 @@ public class EntityRenderer {
      * @see genj.renderer.EntityRenderer.MyView#getVerticalAlignment()
      */
     protected float getVerticalAlignment() {
-      return prenderer==null ? 0 : prenderer.getVerticalAlignment(getFontMetrics());
+      PropertyRenderer renderer = getRenderer(getProperty());
+      if (renderer==null) return 0;
+      return renderer.getVerticalAlignment(getFontMetrics());
     }
     /**
      * Invalidates this views current state
@@ -756,7 +772,7 @@ public class EntityRenderer {
     protected void invalidate() {
       // invalidate cached information that's depending
       // on the current entity's properties
-      property = null;
+      isValid = false;
       super.invalidate();
     }
     

@@ -19,8 +19,8 @@
  */
 package genj.gedcom;
 
-import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * Gedcom Property : EVENT
@@ -128,25 +128,7 @@ public class PropertyEvent extends Property {
   /**
    * Sets the value of this property
    */
-  public boolean setValue(String value) {
-    return false;
-  }
-
-  /**
-   * Returns the list of tags which identify PropertyEvents
-   */
-  public static List getEventTags() {
-
-    // get 'em
-    List metas = MetaProperty.getEvents();
-    List result = new ArrayList(metas.size());
-    for (int i=0;i<metas.size();i++) {
-      MetaProperty def = (MetaProperty)metas.get(i);
-      result.add(def.getTag());
-    }
-
-    // done
-    return result;
+  public void setValue(String value) {
   }
 
   /**
@@ -154,6 +136,13 @@ public class PropertyEvent extends Property {
    */
   public String toString() {
     return getTag()+'@'+getDateAsString();
+  }
+
+  /**
+   * Returns the list of tags which identify PropertyEvents
+   */
+  public static List getTagPaths() {
+    return MetaProperty.getEventTagPaths();  
   }
 
 } //PropertyEvent

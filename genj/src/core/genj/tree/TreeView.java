@@ -23,7 +23,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.io.Filter;
@@ -82,7 +81,7 @@ import javax.swing.event.ChangeListener;
 public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupport, ToolBarSupport, ContextSupport, FilterSupport {
   
   /** an icon for bookmarking */
-  private final static ImageIcon BOOKMARK_ICON = MetaProperty.get("EVEN").getImage();      
+  private final static ImageIcon BOOKMARK_ICON = new ImageIcon(TreeView.class, "images/Bookmark.gif");      
 
   /*package*/ static final Resources resources = new Resources(TreeView.class);
   

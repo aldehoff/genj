@@ -20,54 +20,30 @@
 package genj.gedcom;
 
 /**
- * Gedcom Property : ?
- * A property that is not supported by GenJ out of the box
+ * An interface for properties with multiple lines
+ * CONCatenated or CONTinued
  */
-public class PropertyUnknown extends Property {
-
-  /** the unknown tag */
-  String tag;
-
-  /** the value */
-  String value;
+public interface MultiLineSupport {
 
   /**
-   * Constructor of unknown Gedcom-line
-    */
-  public PropertyUnknown(String tag, String value) {
-    setValue(value);
-    this.tag = tag;
-  }
-
-  /**
-   * Returns some explanationary information about this property.
-   * Here not known.
+   * Return the multiline iterator
    */
-  public String getInfo() {
-    return "";
-  }
-
-  /**
-   * Accessor for tag
+  public Line getLines();
+  
+  /** 
+   * Return the multiline value
    */
-  public String getTag() {
-    return tag;
-  }
-
+  public String getLinesValue();
+  
   /**
-   * Accessor for value
+   * An iterator over multiple lines
    */
-  public String getValue() {
-    return value;
-  }
+  public interface Line {
+    
+    public String getTag();
+    public String getValue();
+    public boolean next();
+    
+  } //Iterator
 
-  /**
-   * Accessor for value
-   */
-  public boolean setValue(String value) {
-    noteModifiedProperty();
-    this.value=value;
-    // Done
-    return true;
-  }
-}
+} //MultiLineSupport

@@ -19,58 +19,37 @@
  */
 package genj.gedcom;
 
-
 /**
- * Gedcom Property : ZIP
+ * A property that doesn't have a value
  */
-public class PropertyPostalCode extends Property {
-
-  /**
-   * the zip-code
-   */
-  private String code;
-
+public class PropertyNoValue extends PropertySimpleValue {
+  
   /**
    * Constructor
    */
-  public PropertyPostalCode() {
+  public PropertyNoValue(String tag, String value) {
+    super(tag,"");
   }
-
+  
   /**
-   * Constructor of code Gedcom-line
-   */
-  public PropertyPostalCode(String value) {
-    setValue(value);
-  }
-
-  /**
-   * Constructor
-  */
-  public PropertyPostalCode(String tag, String value) {
-    setValue(value);
-  }
-
-  /**
-   * Accessor Tag
-   */
-  public String getTag() {
-    return "POST";
-  }
-
-  /**
-   * Accessor Value
+   * @see genj.gedcom.Property#getValue()
    */
   public String getValue() {
-    return code;
+    return "";
+  }
+  
+  /**
+   * @see genj.gedcom.Property#setValue(java.lang.String)
+   */
+  public void setValue(String newValue) {
   }
 
   /**
-   * Accessor Value
+   * @see genj.gedcom.Property#getProxy()
    */
-  public boolean setValue(String value) {
-    noteModifiedProperty();
-    code=value;
-    // Done
-    return true;
-  }          
-}
+  public String getProxy() {
+    return "Empty";
+  }
+
+
+} //PropertyWithoutValue

@@ -34,12 +34,12 @@ import javax.swing.table.TableColumnModel;
   /** the modes we know about */  
   private Filter[] filters = new Filter[]{
       new Filter(Gedcom.INDIVIDUALS , new String[]{"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"}),
-      new Filter(Gedcom.FAMILIES    , new String[]{"FAM","FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" }),
+      new Filter(Gedcom.FAMILIES    , new String[]{"FAM" ,"FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" }),
       new Filter(Gedcom.MULTIMEDIAS , new String[]{"OBJE","OBJE:FILE"}),
       new Filter(Gedcom.NOTES       , new String[]{"NOTE","NOTE:NOTE"}),
-      new Filter(Gedcom.SOURCES     , new String[]{"SOUR", "SOUR:TITL", "SOUR:TEXT"}),
-      new Filter(Gedcom.SUBMITTERS  , new String[]{"SUBM","SUBM:SUBM"}),
-      new Filter(Gedcom.REPOSITORIES, new String[]{"REPO", "REPO:NAME", "REPO:NOTE"})
+      new Filter(Gedcom.SOURCES     , new String[]{"SOUR","SOUR:TITL", "SOUR:TEXT"}),
+      new Filter(Gedcom.SUBMITTERS  , new String[]{"SUBM","SUBM", "SUBM:NAME" }),
+      new Filter(Gedcom.REPOSITORIES, new String[]{"REPO","REPO:NAME", "REPO:NOTE"})
     };
   
   /** the current mode */
@@ -160,7 +160,6 @@ import javax.swing.table.TableColumnModel;
       Entity e = (Entity)es.get(r);
       Property[] ps = new Property[tps.length];
       for (int p=0; p<ps.length; p++) {
-        tps[p].setToFirst();
         ps[p] = e.getProperty().getProperty(tps[p], false);
       }
       rows[r] = new Row(e, ps);

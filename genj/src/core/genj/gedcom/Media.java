@@ -86,4 +86,11 @@ public class Media extends PropertyMedia implements Entity {
     this.id=id;
   }
   
+  /**
+   * Returns this property as a string
+   */
+  public String toString() {
+    return getId()+':'+super.toString();
+  }
+
 } //Media

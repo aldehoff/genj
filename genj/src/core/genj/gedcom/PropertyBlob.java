@@ -21,17 +21,17 @@ package genj.gedcom;
 
 import genj.util.Base64;
 import genj.util.swing.ImageIcon;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
 
 /**
  * Gedcom Property : BLOB
  */
-public class PropertyBlob extends Property implements IconValueAvailable {
+public class PropertyBlob extends Property implements MultiLineSupport, IconValueAvailable {
 
   /** the raw bytes */
   private byte[]  raw;
@@ -44,47 +44,6 @@ public class PropertyBlob extends Property implements IconValueAvailable {
 
   /** whether was checked for image */
   private boolean isIconChecked;
-
-  /**
-   * Member class for iterating through adress' lines of base64-encoded data
-   */
-  private class Base64LineIterator implements Enumeration {
-
-    /** the base64 string */
-    private String base64;
-
-    /** the offset in the string */
-    private int offset;
-
-    /** the break line value */
-    private final int LINE = 72;
-
-    /** Constructor */
-    public Base64LineIterator(String base64) {
-      this.base64 = base64;
-      this.offset = 0;
-    }
-
-    /** whether this iterator has more lines */
-    public boolean hasMoreElements() {
-      return (offset < base64.length());
-    }
-
-    /** Returns the next line of this iterator */
-    public Object nextElement() throws NoSuchElementException {
-
-      String result;
-      try {
-        result = base64.substring( offset, Math.min(offset+LINE,base64.length()) );
-      } catch (StringIndexOutOfBoundsException e) {
-        throw new NoSuchElementException();
-      }
-      offset+=LINE;
-      return result;
-    }
-
-    // EOC
-  }
 
   /**
    * Constructor of Blob Gedcom-line
@@ -136,23 +95,6 @@ public class PropertyBlob extends Property implements IconValueAvailable {
     }
 
     return raw;
-  }
-
-  /**
-   * Returns a LineIterator which can be used to iterate through
-   * several lines of this address
-   */
-  public Enumeration getLineIterator() {
-
-    if (raw!=null) {
-      String b64 = Base64.encode(raw);
-      return new Base64LineIterator(b64);
-    }
-    if (base64!=null) {
-      return new Base64LineIterator(base64);
-    }
-
-    return new Base64LineIterator("");
   }
 
   /**
@@ -222,10 +164,30 @@ public class PropertyBlob extends Property implements IconValueAvailable {
   }
 
   /**
-   * This property incorporates several lines as block with no newline
+   * Returns an Iterator which can be used to iterate through
+   * several lines of this blob's value
    */
-  public int isMultiLine() {
-    return MULTI_BLOCK;
+  public MultiLineSupport.Line getLines() {
+
+    if (raw!=null) {
+      String b64 = Base64.encode(raw);
+      return new Base64Iterator(b64);
+    }
+    if (base64!=null) {
+      return new Base64Iterator(base64);
+    }
+
+    return new Base64Iterator("");
+  }
+  
+  /**
+   * @see genj.gedcom.MultiLineSupport#getLinesValue()
+   */
+  public String getLinesValue() {
+    if (base64==null) {
+      return Base64.encode(raw);
+    }
+    return base64;
   }
 
   /**
@@ -273,22 +235,68 @@ public class PropertyBlob extends Property implements IconValueAvailable {
   /**
    * Sets a property value line
    */
-  public boolean setValue(String value) {
+  public void setValue(String value) {
 
-    // Remember value
-    raw    =null;
-    base64 =value.trim();
-    if (base64.length()==0)
-      base64 = null;
+    // reset current data
+    raw    = null;
+    base64 = null;
+    
+    // collect value
+    StringBuffer buf = new StringBuffer();
+    StringTokenizer lines = new StringTokenizer(value);
+    while (lines.hasMoreTokens()) {
+      buf.append(lines.nextToken());
+    }
+    if (buf.length()>0) 
+      base64 = buf.toString();
 
     // Successfull new information
-    isIconChecked=false;
-    valueAsIcon   =null;
+    isIconChecked = false;
+    valueAsIcon   = null;
 
     // Remember changed property
     noteModifiedProperty();
 
     // Done
-    return true;
   }          
-}
+
+  /**
+   * Member class for iterating through adress' lines of base64-encoded data
+   */
+  private class Base64Iterator implements MultiLineSupport.Line {
+
+    /** the base64 string */
+    private String base64;
+
+    /** the offset in the string */
+    private int offset;
+
+    /** the break line value */
+    private final int LINE = 72;
+
+    /** Constructor */
+    public Base64Iterator(String base64) {
+      this.base64 = base64;
+      this.offset = 0;
+    }
+    
+    /** current tag */
+    public String getTag() {
+      return offset==0 ? PropertyBlob.this.getTag() : "CONT";
+    }
+
+    /** Returns the next line of this iterator */
+    public String getValue() {
+      return base64.substring( offset, Math.min(offset+LINE,base64.length()) );
+    }
+
+    /** set to next */
+    public boolean next() {
+      if (offset<base64.length()) return false;
+      offset+=LINE;
+      return true;
+    }
+
+  } //Base64Iterator
+
+} //PropertyBlob

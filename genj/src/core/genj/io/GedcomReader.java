@@ -23,6 +23,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
+import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
@@ -94,6 +95,7 @@ public class GedcomReader implements Trackable {
    * Initialize the reader we're using
    */
   private Reader createReader(InputStream stream) {
+    
     // prepare sniffer
     InputStreamSniffer sniffer = new InputStreamSniffer(stream);
     String encoding = sniffer.getEncoding();
@@ -204,7 +206,7 @@ public class GedcomReader implements Trackable {
       if ((fixDuplicateIDs)&&(gedcom.getEntity(xref)!=null)) {
         ent=gedcom.createEntity(tag, null);
       } else {
-        ent=gedcom.createEntity(tag,xref);
+        ent=gedcom.createEntity(tag, xref);
       }
       prop=ent.getProperty();
     } catch (GedcomException ex) {
@@ -219,7 +221,7 @@ public class GedcomReader implements Trackable {
     // Read entity's properties till end of record
     // NM 19990720 Have to make sure that prop is not null
     if (prop!=null) {
-      readProperties(prop,1);
+      readProperties(prop, MetaProperty.get(prop), 1);
     }
 
     // Done
@@ -471,65 +473,68 @@ public class GedcomReader implements Trackable {
    * @exception GedcomIOException reading from <code>BufferedReader</code> failed
    * @exception GedcomFormatException reading Gedcom-data brought up wrong format
    */
-  private void readProperties(Property of,int currentlevel) throws GedcomIOException, GedcomFormatException {
-
+  private void readProperties(Property of, MetaProperty meta, int currentlevel) throws GedcomIOException, GedcomFormatException {
+  
     // Property with multiLine?
-    int ml = of.isMultiLine();
-    if (ml!=Property.NO_MULTI) {
-
+    if (of instanceof MultiLineSupport) {
+  
       StringBuffer bvalue = new StringBuffer(value);
       while (peekLine()) {
-
-        // .. CONT ?
-        // NM 20010710 allows CONT & CONC now
-        if ( (!(tag.equals("CONT")||tag.equals("CONC"))) || (level!=currentlevel)) {
-          break;
-        }
-
+        
+        // .. CONT or CONC?
+        boolean 
+          isCont = tag.equals("CONT"),
+          isConc = tag.equals("CONC");
+          
+        // still multiline?
+        if (!(isCont||isConc)||(level!=currentlevel)) break;
+  
         // .. Take it
         readLine();
-
+  
         // .. remember another value line
-        if (ml==Property.MULTI_NEWLINE) {
-          bvalue.append("\n");
-        }
-
+        if (isCont) bvalue.append("\n");
         bvalue.append(value);
+        
+        // .. next
       }
-
+  
       // Change value
       of.setValue(bvalue.toString());
     }
-
+  
     // Get properties of property
     Property prop;
     do {
-
+  
       // .. try to get next property
-      if (!readLine()) {
+      if (!readLine()) 
         throw new GedcomFormatException("Unexpected end of record",line);
-      }
-
+  
       // .. end of property ?
-      if (level<currentlevel) {
+      if (level<currentlevel) 
         break;
-      }
-
-      // .. here's the property
-      prop = MetaProperty.instantiate(tag, value);
+  
+      // .. get meta property for child
+      MetaProperty child = meta.get(tag);
+  
+      // .. create property instance
+      prop = child.create(value);
+      
+      // .. and add to prop
       of.addProperty(prop);
-
+  
       // .. a reference ? Remember !
-      if (prop instanceof PropertyXRef) {
+      if (prop instanceof PropertyXRef)
         xrefs.addElement(new XRef(line,(PropertyXRef)prop));
-      }
-
-      // .. read its properties
-      readProperties(prop,currentlevel+1);
-
+  
+      // .. recurse into its properties
+      readProperties(prop, child, currentlevel+1);
+      
       // .. next property
     } while (true);
-
+  
+    // restore what we haven't consumed
     undoLine();
   }
 

@@ -21,9 +21,9 @@ package genj.gedcom;
 
 
 /**
- * Gedcom Property : XYZ
+ * Gedcom Property for simple values
  */
-public class PropertyGenericAttribute extends Property {
+public class PropertySimpleValue extends Property {
 
   /** A generic Attribute's tag */
   private String tag;
@@ -34,14 +34,14 @@ public class PropertyGenericAttribute extends Property {
   /**
    * Constructor of address Gedcom-line
    */
-  public PropertyGenericAttribute(String initTag) {
+  public PropertySimpleValue(String initTag) {
     tag = initTag;
   }
 
   /**
    * Constructor of address Gedcom-line
    */
-  public PropertyGenericAttribute(String tag, String value) {
+  public PropertySimpleValue(String tag, String value) {
 
     // Remember
     this.tag = tag;
@@ -66,9 +66,9 @@ public class PropertyGenericAttribute extends Property {
   /**
    * Sets the value of this property
    */
-  public boolean setValue(String value) {
+  public void setValue(String value) {
     noteModifiedProperty();
     this.value=value;
-    return true;
   }
-}
+  
+} //PropertySimpleValue

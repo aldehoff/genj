@@ -21,6 +21,7 @@ package genj.app;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.io.Filter;
@@ -30,7 +31,6 @@ import genj.view.FilterSupport;
 import genj.view.ViewManager;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -207,11 +207,11 @@ import javax.swing.JTextField;
       // check if path is applying
       if (paths.contains(property.getPath())) return false;
       // check if value is applying
-      if (property.isMultiLine()!=Property.NO_MULTI) {
-        Enumeration lines = property.getLineIterator();
-        while (lines.hasMoreElements()) {
-          if (!accept(lines.nextElement().toString())) return false;
-        }
+      if (property instanceof MultiLineSupport) {
+        MultiLineSupport.Line it = ((MultiLineSupport)property).getLines();
+        do {
+          if (!accept(it.getValue())) return false;
+        } while (it.next());
       }
       // simple
       return accept(property.getValue());

@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.util.swing.ImageIcon;
+
 /**
  * Class for encapsulating a note
  */
@@ -26,6 +28,7 @@ public class Note extends PropertyNote implements Entity {
 
   private String id = "";
   private Gedcom gedcom;
+  private Delegate delegate = new Delegate();
 
   /**
    * Constructor for Note
@@ -39,6 +42,7 @@ public class Note extends PropertyNote implements Entity {
    */
   public void addNotify(Gedcom gedcom) {
     this.gedcom = gedcom;
+    addProperty(delegate);
   }
 
   /**
@@ -90,11 +94,7 @@ public class Note extends PropertyNote implements Entity {
    * Returns this property as a string
    */
   public String toString() {
-    // try sub-property
-    PropertyNote sub = getSubNote(false);
-    if (sub!=null) return getId()+":"+sub.toString();
-    // fallback id only
-    return getId();
+    return getId()+":"+delegate.getLinesValue();
   }
   
   /**
@@ -114,42 +114,53 @@ public class Note extends PropertyNote implements Entity {
   /**
    * @see genj.gedcom.PropertyNote#setValue(java.lang.String)
    */
-  public boolean setValue(String v) {
-    // ignoring empty
-    if (v.trim().length()==0) return true;
-    // keep in sub-note
-    getSubNote(true).setValue(v);
-    // done
-    return true;
+  public void setValue(String v) {
+    delegate.setValue(v);
+  }
+  
+  /**
+   * @see genj.gedcom.Property#delProperty(genj.gedcom.Property)
+   */
+  public boolean delProperty(Property which) {
+    // ignore request to delete delegate
+    if (which==delegate) return false;
+    // o.k.
+    return super.delProperty(which);
+  }
+  
+  /**
+   * @see genj.gedcom.PropertyNote#getLines()
+   */
+  public Line getLines() {
+    return delegate.getLines();
   }
 
   /**
-   * Get a unique sub-note we use to
-   * keep value-date that someone might
-   * try to store in this node
+   * Delegate 
    */
-  private PropertyNote getSubNote(boolean create) {
-    for (int i=0;i<getNoOfProperties();i++) {
-      Property child = getProperty(i);
-      if (child instanceof PropertyNote) {
-        return (PropertyNote)child;
-      }
+  private class Delegate extends PropertyMultilineValue {
+    
+    /**
+     * Constructor
+     */
+    private Delegate() {
+      super("NOTE", "");
+    };
+    
+    /**
+     * @see genj.gedcom.Property#getImage(boolean)
+     */
+    public ImageIcon getImage(boolean checkValid) {
+      return Note.this.getProperty().getImage(false);
     }
-    PropertyNote result = null; 
-    if (create) {
-      result = new PropertyNote(null, ""); 
-      addProperty(result);
+
+    /**
+     * @see genj.gedcom.Property#isTransient()
+     */
+    public boolean isTransient() {
+      return true;
     }
-    return result;
-  }
-
-  /**
-   * @see genj.gedcom.Property#addDefaultProperties()
-   */
-  public Property addDefaultProperties() {
-    getSubNote(true);
-    return this;
-  }
-
+    
+  } //Delegate
   
 } //Note

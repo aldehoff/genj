@@ -37,7 +37,6 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.util.HashMap;
-
 import java.util.Map;
 
 import javax.swing.AbstractButton;
@@ -259,7 +258,10 @@ public class BlueprintEditor extends JSplitPane {
       tag2value.put("NAME", "John /Doe/");
       tag2value.put("SEX" , "M");
       tag2value.put("DATE", "01 JAN 1900");
-      tag2value.put("PLAC", "Somewhere");
+      tag2value.put("PLAC", "Nice Place");
+      tag2value.put("ADDR", "Long Address");
+      tag2value.put("CITY", "Big City");
+      tag2value.put("POST", "12345");
     }
     /**
      * @see genj.gedcom.Indi#getId()
@@ -282,16 +284,33 @@ public class BlueprintEditor extends JSplitPane {
      * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath, boolean)
      */
     public Property getProperty(TagPath path, boolean validOnly) {
-      // single?
-      if (path.length()==1) return path.getLast().equals(getTag()) ? this : null;
-      // grab a value and wrap it in the property
-      Object value = tag2value.get(path.getLast());
-      if (value==null) value = "some "+path.getLast().toLowerCase();
-      // .. create the property
-      Property result = MetaProperty.instantiate(path.getLast(), value.toString());
-      // done
-      return result;
+      // safety check for root-tag
+      if (!path.get(0).equals(getTag())) return null;
+      // fake it
+      return fakeProperty(this, path, 0);
     }
+    
+    /**
+     * Fake having a property
+     */
+    private Property fakeProperty(Property prop, TagPath path, int pos) {
+
+      // me?
+      if (path.length()-1==pos) return prop;
+
+      // check if we have a property for tag at pos in path
+      String tag = path.get(++pos);
+      Property result = prop.getProperty(tag);
+      if (result==null) {
+        // otherwise create it
+        Object value = tag2value.get(tag);
+        if (value==null) value = "Something";
+        result = prop.addProperty(MetaProperty.get(prop).get(tag).create(value.toString()));
+      }      
+      // done
+      return fakeProperty(result, path, pos);
+    }
+    
   } //ExampleIndi
   
 } //RenderingSchemeEditor

@@ -214,6 +214,9 @@ public class Gedcom {
     
     // Mark change
     noteAddedEntity(result);
+    
+    // notify
+    result.addNotify(this);
 
     // Done
     return result;
@@ -563,7 +566,7 @@ public class Gedcom {
    */
   public static ImageIcon getImage(int type) {
     try {
-      return MetaProperty.get(getTagFor(type)).getImage();
+      return MetaProperty.get(new TagPath(getTagFor(type))).getImage();
     } catch (ArrayIndexOutOfBoundsException e) {
       throw new IllegalArgumentException("Unknown type");
     }

@@ -59,22 +59,6 @@ public class PropertyRepository extends PropertyXRef {
   }
 
   /**
-   * Adds all default properties to this property
-   */
-  public Property addDefaultProperties() {
-
-    noteModifiedProperty();
-
-    // Just add 'em
-    if (this instanceof Entity) {
-      addProperty(new PropertyName());
-      addProperty(new PropertyNote());
-    }
-    
-    // Done
-    return this;
-  }
-  /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {

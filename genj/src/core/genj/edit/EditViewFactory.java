@@ -109,7 +109,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       result.add(new CreateRelationship(property.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(property,Gedcom.SOURCES)));
     }
     // association
-    result.add(new CreateRelationship(property.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(property) ));
+ // FIXME ASSO
+ // result.add(new CreateRelationship(property.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(property) ));
     // delete possible
     result.add(ActionDelegate.NOOP);
     result.add(new DelProperty(property));
@@ -134,7 +135,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     // standards
     if (!(entity instanceof Note)) 
       result.add(new CreateRelationship(entity.getGedcom(), Gedcom.NOTES       , new Relationship.LinkedBy(entity.getProperty(),Gedcom.NOTES)));
-    result.add(new CreateRelationship(entity.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(entity.getProperty()) ));
+  // FIXME ASSO
+  // result.add(new CreateRelationship(entity.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(entity.getProperty()) ));
     // add delete
     result.add(ActionDelegate.NOOP);
     result.add(new DelEntity(entity));

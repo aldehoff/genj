@@ -19,10 +19,10 @@
  */
 package genj.edit;
 
+import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.util.swing.ButtonHelper;
 
-import java.util.Enumeration;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -95,15 +95,13 @@ class ProxyMLE extends Proxy implements DocumentListener {
     prop=setProp;
 
     // Calculate value to show
-    String value="";
-
-    Enumeration iterator = prop.getLineIterator();
-    if (iterator==null) {
-      value = prop.getValue();
+    String value;
+    if (prop instanceof MultiLineSupport) {
+      value = ((MultiLineSupport)prop).getLinesValue();
     } else {
-      while (iterator.hasMoreElements())
-        value += iterator.nextElement() +"\n";
+      value = prop.getValue(); 
     }
+
     tarea = new JTextArea(value,6,20);
     tarea.setLineWrap(true);
     tarea.setWrapStyleWord(true);
@@ -117,4 +115,5 @@ class ProxyMLE extends Proxy implements DocumentListener {
     // Done
     ButtonHelper.requestFocusFor(tarea);
   }
-}
+  
+} //ProxyMLE

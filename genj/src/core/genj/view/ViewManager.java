@@ -136,7 +136,7 @@ public class ViewManager {
   public void setCurrentEntity(Entity entity) {
     // already?
     Gedcom gedcom = entity.getGedcom();
-    if (gedcom2current.get(gedcom)==entity) return;
+    //if (gedcom2current.get(gedcom)==entity) return;
     // remember
     gedcom2current.put(gedcom, entity);
     // 20021017 @see note at the bottom of file

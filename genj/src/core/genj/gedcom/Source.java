@@ -93,21 +93,16 @@ public class Source extends PropertySource implements Entity {
    * Returns this property as a string
    */
   public String toString() {
-    PropertyText txt = getText();
-    return getId()+":"+(txt!=null?txt.getValue():"");
-  }
-  
-  /**
-   * Returns the text for this source
-   */
-  private PropertyText getText() {
+
+    // look for text
     for (int i=0;i<getNoOfProperties();i++) {
       Property child = getProperty(i);
-      if (child instanceof PropertyText) {
-        return (PropertyText)child;
-      }
+      if (child.getTag().equals("TEXT")) 
+        return getId()+":"+child.getValue();
     }
-    return null;
+
+    // id only    
+    return getId();
   }
   
 } //Source

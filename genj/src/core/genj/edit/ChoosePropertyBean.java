@@ -52,12 +52,17 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
   private JList lChoose;
   private JScrollPane spInfo;
   private JTextPane tpInfo;
+  private Property parent;
 
   /**
    * Constructor
    */
-  public ChoosePropertyBean(MetaProperty[] defs, Resources resources) {
-
+  public ChoosePropertyBean(Property pArent, Resources resources) {
+    
+    // keep parent and calculate possible properties
+    parent = pArent;
+    MetaProperty[] defs = MetaProperty.get(parent).getSubs(false);
+    
     // Layout
     GridBagLayout layout = new GridBagLayout();
     setLayout(layout);
@@ -141,22 +146,22 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
 
     Property[] result = null;
 
-    // ... prepare list of selected properties
+    // list of selected properties
     if (rbChoose.isSelected() == true) {
       Object[] objs = lChoose.getSelectedValues();
       result = new Property[objs.length];
       for (int i=0;i<objs.length;i++) {
-        result[i] = ((MetaProperty)objs[i]).instantiate("");
+        result[i] = ((MetaProperty)objs[i]).create("");
       }
-    } else {
-      // ... create a single entry property list
-      if (tfNew.getText().equals("")) {
-        result = new Property[0];
-      } else {
-        result = new Property[1];
-        result[0] = MetaProperty.get(tfNew.getText()).instantiate("");
-      }
+      return result;
     }
+    
+    // single entered property
+    if (tfNew.getText().equals("")) 
+      return new Property[0];
+
+    result = new Property[1];
+    result[0] = MetaProperty.get(parent, tfNew.getText()).create("");
     
     // done
     return result;

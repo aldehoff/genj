@@ -12,9 +12,11 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyFam;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyMedia;
+import genj.gedcom.PropertyMultilineValue;
 import genj.gedcom.TagPath;
 import genj.report.Report;
 import genj.report.ReportBridge;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,13 +24,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.20 2003-01-20 19:29:09 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.21 2003-03-13 18:50:26 nmeier Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -211,16 +212,15 @@ public class ReportAppletDetails implements Report {
    */
   private void exportProperty(Property prop, PrintWriter out, int level) {
 
-    String value = "";
-    if (prop.isMultiLine() != Property.NO_MULTI) {
-      Enumeration li = prop.getLineIterator();
-      while (li.hasMoreElements()) {
-        value += li.nextElement() + "\n";
-      }
+    // calculate value
+    String value;
+    if (prop instanceof PropertyMultilineValue) {
+      value = ((PropertyMultilineValue)prop).getLinesValue();
     } else {
       value = prop.getValue();
     }
     
+    // calculate tag
     String tag = prop.getTag();
     if (tag.equals("NAME")) {
       // Replace /Last/ with LAST

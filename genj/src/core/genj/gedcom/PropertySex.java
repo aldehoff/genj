@@ -25,6 +25,11 @@ import genj.util.swing.ImageIcon;
  * Gedcom Property : SEX
  */
 public class PropertySex extends Property {
+  
+  /** images */
+  private final static ImageIcon
+    IMG_MALE   = MetaProperty.get(new TagPath("INDI:SEX")).getImage("male"),
+    IMG_FEMALE = MetaProperty.get(new TagPath("INDI:SEX")).getImage("female");
 
   /** sexes */
   private static final int UNKNOWN = -1;
@@ -73,25 +78,23 @@ public class PropertySex extends Property {
    */
   public static ImageIcon getDefaultImage(int sex) {
     switch (sex) {
-      case MALE:
-        return MetaProperty.get("SEX").getImage("m");
-      case FEMALE:
-        return MetaProperty.get("SEX").getImage("f");
-      }
-      throw new IllegalArgumentException("Unknown sex");
+      case MALE: return IMG_MALE;
+      case FEMALE: return IMG_FEMALE;
+    }
+    throw new IllegalArgumentException("Unknown sex");
   }
 
   /**
    * Image
    */
   public ImageIcon getImage(boolean checkValid) {
+    // validity?
     if (checkValid&&(!isValid()))
       return super.getImage(true);
+    // check it
     switch (sex) {
-      case FEMALE:
-        return MetaProperty.get("SEX").getImage("f");
-      case MALE:
-        return MetaProperty.get("SEX").getImage("m");
+      case MALE: return IMG_MALE;
+      case FEMALE: return IMG_FEMALE;
       default:
         return super.getImage(checkValid);
     }
@@ -179,7 +182,7 @@ public class PropertySex extends Property {
   /**
    * Accessor for Value
    */
-  public boolean setValue(String newValue) {
+  public void setValue(String newValue) {
 
     noteModifiedProperty();
 
@@ -187,25 +190,24 @@ public class PropertySex extends Property {
     if (newValue.length()!=1) {
       sexAsString=newValue;
       // Done
-      return false;
+      return;
     }
     // Female or Male ?
     switch (newValue.charAt(0)) {
       case 'f' :
       case 'F' :
-      sex = FEMALE;
-      sexAsString=null;
-      return true;
+        sex = FEMALE;
+        sexAsString=null;
+        return;
       case 'm' :
-      case 'M' : sex = MALE;
-      sexAsString=null;
-      // Done
-      return true;
+      case 'M' : 
+        sex = MALE;
+        sexAsString=null;
+        return;
     }
     // Done
     sexAsString=newValue;
     // Done
-    return false;
   }
 
   /**

@@ -23,8 +23,15 @@ package genj.gedcom;
  * Gedcom Property : INDI (entity)
  * Class for encapsulating a person as property
  */
-public abstract class PropertyIndi extends Property{
-
+public abstract class PropertyIndi extends PropertyNoValue {
+  
+  /**
+   * Constructor
+   */
+  protected PropertyIndi() {
+    super("INDI", "");
+  }
+  
   /**
    * Returns the logical name of the proxy-object which knows this object
    */
@@ -48,18 +55,4 @@ public abstract class PropertyIndi extends Property{
     return "INDI";
   }
 
-  /**
-   * Accessor for Value
-   */
-  public String getValue() {
-    return "";
-  }
-
-  /**
-   * Accessor for Value
-   */
-  public boolean setValue(String value) {
-    return false;
-  }
-  
-}
+} //PropertyIndi

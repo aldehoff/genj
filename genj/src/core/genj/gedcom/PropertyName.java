@@ -202,16 +202,10 @@ public class PropertyName extends Property {
   /**
    * sets the name to a new gedcom value
    */
-  public boolean setValue(String newValue) {
+  public void setValue(String newValue) {
 
     noteModifiedProperty();
     
-    // don't know entity - remember unparsed
-    if (!(getEntity() instanceof Indi||getEntity() instanceof Submitter)) {
-      nameAsString = newValue;
-      return true;
-    }
-
     // New empty Value ?
     if (newValue==null) {
       nameAsString=null;
@@ -219,7 +213,7 @@ public class PropertyName extends Property {
       firstName=null;
 
       // Done
-      return true;
+      return;
     }
 
     // Only name specified ?
@@ -229,7 +223,7 @@ public class PropertyName extends Property {
       lastName = "";
 
       // Done
-      return true;
+      return;
     }
 
     // Name AND First name
@@ -240,7 +234,7 @@ public class PropertyName extends Property {
     if (l.indexOf('/') == -1)  {
       nameAsString=newValue;
       // Done
-      return false;
+      return;
     }
 
     // ... format ok
@@ -252,7 +246,7 @@ public class PropertyName extends Property {
     firstName = f;
     lastName  = l;
     // Done
-    return true;
+
   }
 
-}
+} //PropertyName

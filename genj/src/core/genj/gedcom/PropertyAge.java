@@ -72,7 +72,7 @@ public class PropertyAge extends Property {
   /**
    * Accessor Value
    */
-  public boolean setValue(String newValue) {
+  public void setValue(String newValue) {
     // Transformation to int
     Integer i;
     try {
@@ -81,13 +81,12 @@ public class PropertyAge extends Property {
       noteModifiedProperty();
       ageAsString=newValue;
       age=0;
-      return false;
+      return;
     }
     // OK
     noteModifiedProperty();
     ageAsString=null;
     age = i.intValue();
     // Done
-    return true;
   }
 }

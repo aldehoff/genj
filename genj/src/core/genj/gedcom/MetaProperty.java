@@ -22,16 +22,19 @@ package genj.gedcom;
 import genj.util.Debug;
 import genj.util.swing.ImageIcon;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -39,265 +42,396 @@ import java.util.StringTokenizer;
  * Wrapper for a Property (could be read from XML file later)
  */
 public class MetaProperty {
-  
-  /** meta.properties */
-  private static Properties properties = loadProperties();
-  
-  /** instances */
-  private static Map instances = new HashMap();
-  
-  /** events */
-  private static Set events = new HashSet();
-  
-  /** unknown */
-  private final static MetaProperty UNKNOWN = new MetaProperty("?","Unknown");
 
-  /** globally loaded images */    
-  private static Map images = new HashMap(); 
+  /** static - images */
+  private final static String
+    IMG_UNKNOWN = "Question.gif",
+    IMG_ERROR   = "Error.gif";
+    
+  /** static - loaded images */    
+  private static Map name2images;
+  
+  /** static - entity meta properties */
+  private static Map roots = new HashMap();
+  
+  /** static - one parser that is triggered */
+  private static Parser parser = new Parser();
+  
+  /** super */
+  private MetaProperty supr;
+  
+  /** tag */
+  private String tag;
+  
+  /** cached - image */
+  private ImageIcon image;
+  
+  /** cached - type */
+  private Class type;
 
-  /** Members */
-  private String    theTag;
-  private Class     theClass;
-  private boolean  isEvent;
-  private ImageIcon theImage = null;
-  private Map       theImages = new HashMap();
+  /** cached - info */
+  private String info;
+  
+  /** properties */
+  private Map props;
+  
+  /** subs */
+  private Set defSubs = new LinkedHashSet();
+  private Map allSubs = new LinkedHashMap();
+  private Set visibleSubs = new LinkedHashSet();
+    
 
   /**
    * Constructor
    */
-  private MetaProperty(String tag, String type) {
-    // Remember data
-    theTag = tag;
-    
-    // Figure out the class
-    try {
-      // easy for null
-      if (type==null) theClass = PropertyUnknown.class;
-      else theClass = Class.forName(Property.class.getName()+type);
-    } catch (Throwable throwable) {
-      Debug.log(Debug.WARNING, this, "meta.properties #"+tag+" points to non existing type Property"+type);
-      theClass = PropertyUnknown.class;
-    }
-    
-    // event?
-    isEvent = PropertyEvent.class.isAssignableFrom(theClass);
-    
-    // done
-  }
-
-  /**
-   * The property's type
-   */
-  public Class getPropertyClass() {
-    return theClass;
-  }
-  
-  /**
-   * Returns some explanationary information about the property.
-   */
-  public String getInfo() {
-
-    // Find Info that matches tag
-    String tag = getTag();
-
-    String name = Gedcom.getResources().getString(tag+".name");
-    String info = Gedcom.getResources().getString(tag+".info");
-
-    return name+":\n"+info;
-  }
-
-  /**
-   * The subs defined for the meta-definition
-   */
-  public MetaProperty[] getSubs(Property parent, boolean defaultsOnly) {
-    
-    // Try to find subs TAG.subs.PATH or TAG.subs
-    String subs = properties.getProperty(theTag+".subs."+parent.getPath().toString());
-    if (subs==null)
-      subs = properties.getProperty(theTag+".subs");
-    if (subs==null) return new MetaProperty[0];
-
-    // .. a variable?    
-    if (subs.startsWith("$")) subs = properties.getProperty(subs.substring(1));
-
-    // Loop sub-tags    
-    Set result = new LinkedHashSet();
-    StringTokenizer tokens = new StringTokenizer(subs,",");
-    while (tokens.hasMoreTokens()) {
-      // the sub-tag
-      String sub = tokens.nextToken();
-      // .. a variable?    
-      if (sub.startsWith("$")) sub = properties.getProperty(sub.substring(1));
-      // check default
-      if (sub.startsWith("!")) {
-        sub = sub.substring(1);
-      } else {
-        if (defaultsOnly) continue;
-      } 
-      // here it is
-      MetaProperty mp = get(sub);
-      if (mp!=null) result.add(mp);
-    }
-
-    // done        
-    return (MetaProperty[])result.toArray(new MetaProperty[result.size()]);
-  }
-
-  /**
-   * The property's tag
-   */
-  public String getTag() {
-    return theTag;
-  }
-  
-  /**
-   * The property's image
-   */
-  public ImageIcon getImage() {
-    // got it already?
-    if (theImage!=null) return theImage;
-    // get it
-    theImage = getImage(null);
-    // done
-    return theImage;
-  }
-  
-  /**
-   * The property's image
-   */
-  public ImageIcon getImage(String qualifier) {
-    // know it?
-    ImageIcon result = (ImageIcon)theImages.get(qualifier);
-    if (result!=null) return result;
-    // try to lookup/load
-    try {
-      // .. looks like SEX.img
-      String key = getTag()+".img";
-      // .. maybe like SEX.img.m
-      if (qualifier!=null) key += '.'+qualifier;
-      // .. img either name of .gif or variable $
-      String img = properties.getProperty(key);
-      if (img.startsWith("$")) img = properties.getProperty(img.substring(1));
-      // .. check loaded images
-      result = (ImageIcon)images.get(img);
-      if (result==null) {
-        result = new ImageIcon(getClass(), "images/"+img);
-        images.put(img, result);
-      }
-      // .. have it
-    } catch (Throwable t) {
-      // .. fallback to UNKNOWN's image
-      result = UNKNOWN.getImage(qualifier);
-    }
+  private MetaProperty(String tag, Map props, MetaProperty supr) {
     // remember
-    theImages.put(qualifier, result);
+    this.tag = tag;
+    this.props = props;
+    this.supr = supr;
     // done
+  }
+  
+  /**
+   * Resolve property
+   */
+  private String getProperty(String key, String fallback) {
+    String result = (String)props.get(key);
+    if (result==null) result = fallback;
     return result;
   }
-
+  
   /**
-   * Returns whether this definition represents an event or not
+   * Load image (once)
    */
-  public boolean isEvent() {
-    return isEvent;
-  }
-
-  /**
-   * static property loader
-   */
-  private static Properties loadProperties() {
-    
-    // loading meta.properties
-    Properties props = new Properties();
-    try {
-      props.load(MetaProperty.class.getResourceAsStream("meta.properties"));
-    } catch(IOException e) {
-      throw new Error("Couldn't load MetaDefinition's meta.properties");
+  /*package*/ static ImageIcon loadImage(String name) {
+    // init map
+    if (name2images==null) name2images = new HashMap();
+    // look up
+    ImageIcon result = (ImageIcon)name2images.get(name);
+    if (result==null) {
+      result = new ImageIcon(MetaProperty.class, "images/"+name);
+      name2images.put(name, result);
     }
-    
-    // done
-    return props;
-  }
-  
-  /**
-   * Resolve event instances
-   */
-  public static List getEvents() {
-    List result = new ArrayList(events.size());
-    Iterator it = events.iterator();
-    while (it.hasNext()) {
-      result.add(it.next());
-    }
-    return result;
-  }
-  
-  /**
-   * Resolve the MetaProperty for given property
-   */
-  public static MetaProperty get(Property p) {
-    return get(p.getTag());
-  }
-  
-  /**
-   * Resolve the MetaProperty for given tag-path
-   */
-  public static MetaProperty get(TagPath p) {
-    return get(p.getLast());
-  }
-  
-  /**
-   * Resolve MetaDefinition instance
-   */
-  public static MetaProperty get(String tag) {
-    
-    // do we have that information already?
-    MetaProperty result = (MetaProperty)instances.get(tag);
-    if (result!=null) 
-      return result;
-    
-    // try to get the information we need
-    String type = properties.getProperty(tag+".type");
-
-    // create it
-    result = new MetaProperty(tag, type);
-    instances.put(tag, result);
-    if (result.isEvent()) events.add(result);
-    
     // done
     return result;
   }
   
   /**
-   * Instantiate property
+   * Create an instance
    */
-  public Property instantiate(String value) {
+  public Property create(String value) {
     
-    // Instantiate Property object
+    Property result;
+    
     try {
+      
       // .. get constructor of property
-      Object parms[] = { getTag(), value };
+      Object parms[] = { tag, value };
       Class  parmclasses[] = { String.class , String.class };
-      Constructor constructor = theClass.getConstructor(parmclasses);
+
+      Constructor constructor = getType().getConstructor(parmclasses);
 
       // .. get object
-      Property result = (Property)constructor.newInstance(parms);
-      
-      // Done
-      return result;
-
+      result = (Property)constructor.newInstance(parms);
+    
     } catch (Throwable t) {
+      
       Debug.log(Debug.WARNING, this, t);
+      
+      result = new PropertySimpleValue(tag, value); 
     }
 
-    // Error means unknown
-    return new PropertyUnknown(getTag(),value);
+    // done 
+    return result;
   }
   
   /**
-   * Instantitate property
+   * Accessor - image
    */
-  public static Property instantiate(String tag, String value) {
-    return get(tag).instantiate(value);
+  public ImageIcon getImage() {
+    if (image==null)
+      image = loadImage(getProperty("img", IMG_UNKNOWN));
+    return image;
   }
 
+  /**
+   * Accessor - image
+   */
+  public ImageIcon getImage(String postfix) {
+    Object name = props.get("img."+postfix);
+    if (name==null) return getImage() ;
+    return loadImage(name.toString());
+  }
+
+  /**
+   * Accessor - tag
+   */
+  public String getTag() {
+    return tag;
+  }
+
+  /**
+   * Accessor - type
+   */
+  public Class getType() {
+    // check cached type
+    if (type==null) {
+      String clazz = "genj.gedcom.Property"+getProperty("type", "SimpleValue");
+      try {
+        type = Class.forName(clazz);
+      } catch (ClassNotFoundException e) {
+        Debug.log(Debug.WARNING, this, "Property type "+clazz+" can't be loaded", e);    
+        type = PropertySimpleValue.class;
+      }
+    }
+    // done
+    return type;
+  }
+
+  /**
+   * Accessor - some explanationary information about the meta
+   */
+  public String getInfo() {
+    // check cached info
+    if (info==null) {
+      info = Gedcom.getResources().getString(tag+".name")
+        +":\n"+Gedcom.getResources().getString(tag+".info");
+    }
+    // done
+    return info;
+  }
+  
+  /**
+   * Acessor - subs
+   */
+  public MetaProperty[] getSubs(boolean defaults) {
+    // defaults or all?
+    Collection result = defaults ? defSubs : visibleSubs; 
+    // done
+    return (MetaProperty[])result.toArray(new MetaProperty[result.size()]);
+  }
+  
+  /**
+   * Acessor - subs
+   */
+  public static MetaProperty[] getSubs(Property prop, boolean defaults) {
+    return get(prop.getPath()).getSubs(defaults);
+  }
+
+  /**
+   * Resolve sub by tag
+   */
+  public MetaProperty get(String tag) {
+    // current tag in map?
+    MetaProperty result = (MetaProperty)allSubs.get(tag);
+    if (result==null) {
+      result = new MetaProperty(tag, Collections.EMPTY_MAP, null);
+      allSubs.put(tag, result);
+    }
+    // done
+    return result;
+  }
+  
+  /**
+   * Static - resolve instance
+   */
+  public static MetaProperty get(TagPath path, boolean persist) {
+    return getRecursively(roots, path, 0, persist);
+  }
+  
+  public static MetaProperty get(TagPath path) {
+    return get(path, true);
+  }
+  
+  private static MetaProperty getRecursively(Map map, TagPath path, int pos, boolean persist) {
+    
+    // current tag in map?
+    String tag = path.get(pos++);
+    MetaProperty result = (MetaProperty)map.get(tag);
+    if (result==null) {
+      result = new MetaProperty(tag, Collections.EMPTY_MAP, null);
+      if (persist) map.put(tag, result);
+    }
+    
+    // more to go?
+    if (pos<path.length()) return getRecursively(result.allSubs, path, pos, persist);
+    
+    // done
+    return result;
+  }
+
+  /**
+   * Static - resolve instance
+   */
+  public static MetaProperty get(Property prop) {
+    return get(prop.getPath());    
+  }
+
+  /**
+   * Static - resolve instance
+   */
+  public static MetaProperty get(Property prop, String sub) {
+    return get(prop).get(sub);    
+  }
+
+  /**
+   * Static - resolve event tags
+   */
+  public static List getEventTagPaths() {
+    // FIXME
+    return new ArrayList(0);
+//    List result = new ArrayList(path2instance.size());
+//    Iterator it = path2instance.values().iterator();
+//    while (it.hasNext()) {
+//      MetaProperty meta = (MetaProperty)it.next();
+//      if (PropertyEvent.class.isAssignableFrom(meta.getType())) result.add(meta.path);
+//    }
+//    return result;
+  }
+
+  /**
+   * Parers for our descriptors
+   */
+  private static class Parser {
+    
+    /** the current stack of MetaProperties */
+    private List stack = new ArrayList();
+    
+    /**
+     * Constructor
+     */
+    Parser() {
+      
+      // loop over types and parse 'em
+      try {
+        for (int t=0;t<Gedcom.NUM_TYPES;t++) {
+          parse(MetaProperty.class.getResourceAsStream(Gedcom.getTagFor(t)+".meta"));
+        }
+      } catch (Throwable t) {
+        Debug.log(Debug.ERROR, MetaProperty.class, "Error reading meta.xml", t);
+      }
+
+      // done    
+    }
+    
+    /**
+     * parse input
+     */
+    private void parse(InputStream in) throws IOException {
+
+      BufferedReader reader = new BufferedReader(new InputStreamReader(in));      
+    
+      // loop over lines
+      while (true) {
+
+        // read next line
+        String line = reader.readLine();
+        if (line==null) break;
+        
+        // .. and trim
+        line = line.trim();
+        if (line.length()==0) continue;
+        
+        // work on line
+        push(line);
+        
+        // continue 
+      }
+      
+      // done     
+    }
+    
+    /**
+     * push a line
+     */
+    private void push(String line) {
+
+      // break into tokens
+      StringTokenizer tokens = new StringTokenizer(line);
+        
+      // grab level and tag
+      int level = Integer.parseInt(tokens.nextToken());
+      String tag = tokens.nextToken();
+        
+      // grab props
+      Map props = new FIFO();
+      
+      while (tokens.hasMoreTokens()) {
+        String prop = tokens.nextToken();
+        int i = prop.indexOf('=');
+        // .. either 'abc=def' or 'xyz'
+        if (i>0) props.put(prop.substring(0,i), prop.substring(i+1));
+        else props.put(prop, "");
+      }
+      
+      boolean isDefault = props.containsKey("default"); 
+      boolean isHidden  = props.containsKey("hide");
+      
+      // do we have to take elements from the stack first?
+      while (stack.size()>level) pop();
+      
+      // check super's properties first
+      MetaProperty supr = null;
+      Object path = props.get("super");
+      if (path!=null) {
+        supr = MetaProperty.get(new TagPath(path.toString()));
+        props.putAll(supr.props);
+      }
+      
+      // instantiate      
+      MetaProperty meta = new MetaProperty(tag, props, supr);
+      
+      // keep it in hierarchy
+      if (level==0) {
+        roots.put(meta.tag, meta);
+      } else {
+        MetaProperty parent = peek();
+        parent.allSubs.put(meta.tag, meta);
+        if (!isHidden) parent.visibleSubs.add(meta);
+        if (isDefault) parent.defSubs.add(meta);
+      }
+        
+      // add to end of stack
+      stack.add(meta);
+    }
+
+    /**
+     * Pop from stack
+     */
+    private MetaProperty pop() {
+      // here's the one going away
+      MetaProperty meta = (MetaProperty)stack.remove(stack.size()-1);
+      // in case it has a super type we add its subs now
+      if (meta.supr!=null) {
+        meta.allSubs.putAll(meta.supr.allSubs);
+        meta.defSubs.addAll(meta.supr.defSubs);
+      }
+      // done 
+      return meta;
+    }
+    
+    /**
+     * Peek from stack
+     */
+    private MetaProperty peek() {
+      return (MetaProperty)stack.get(stack.size()-1);
+    }
+    
+  } //Parser
+  
+  /**
+   * Map that doesn't overwrite values
+   */
+  private static class FIFO extends HashMap {
+    /**
+     * @see java.util.HashMap#put(java.lang.Object, java.lang.Object)
+     */
+    public Object put(Object key, Object value) {
+      if (containsKey(key)) return null;
+      return super.put(key, value);
+    }
+
+  } //FIFO
+  
 } //MetaDefinition

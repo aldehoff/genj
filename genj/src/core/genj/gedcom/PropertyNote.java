@@ -19,15 +19,13 @@
  */
 package genj.gedcom;
 
-import java.util.Enumeration;
-import java.util.StringTokenizer;
 
 /**
  * Gedcom Property : NOTE (entity/property)
  * A property that either consists of NOTE information or
  * refers to a NOTE entity
  */
-public class PropertyNote extends PropertyXRef {
+public class PropertyNote extends PropertyXRef implements MultiLineSupport {
 
   /**
    * Constructor with reference
@@ -54,26 +52,6 @@ public class PropertyNote extends PropertyXRef {
   public PropertyNote(String tag, String value) {
     super(null);
     setValue(value);
-  }
-
-  /**
-   * Returns a LineIterator which can be used to iterate through
-   * several lines of this address
-   */
-  public Enumeration getLineIterator() {
-    // iterate
-    return new StringTokenizer(super.getValue(), "\n");
-  }
-
-  /**
-   * Returns this property's value cut to a first line in
-   * case someone actually asks us
-   */
-  public String getValue() {
-    String result = super.getValue();    
-    int pos = result.indexOf('\n');
-    if (pos>=0) result = result.substring(0,pos)+"...";
-    return result;
   }
 
   /**
@@ -107,16 +85,6 @@ public class PropertyNote extends PropertyXRef {
    */
   public String getTag() {
     return "NOTE";
-  }
-
-  /**
-   * This property incorporates several lines with newlines
-   */
-  public int isMultiLine() {
-    // not if this is a valid linke
-    if (getReferencedEntity()!=null) return NO_MULTI;
-    // sure bring it on!
-    return MULTI_NEWLINE;
   }
 
   /**
@@ -163,7 +131,35 @@ public class PropertyNote extends PropertyXRef {
     // always
     return true;
   }
-
   
+  /**
+   * @see genj.gedcom.PropertyXRef#toString()
+   */
+  public String toString() {
+    return super.getValue();
+  }
+  
+  /**
+   * @see genj.gedcom.PropertyXRef#getValue()
+   */
+  public String getValue() {
+    return PropertyMultilineValue.getFirstLine(super.getValue());
+  }
+
+  /**
+   * @see genj.gedcom.MultiLineSupport#getLines()
+   */
+  public Line getLines() {
+    return new PropertyMultilineValue.MLLine(getTag(), super.getValue());
+  }
+
+  /**
+   * @see genj.gedcom.MultiLineSupport#getLinesValue()
+   */
+  public String getLinesValue() {
+    return super.getValue();
+  }
+
+ 
 } //PropertyNote
 

@@ -92,7 +92,7 @@ public class PropertyRelationship extends Property {
   /**
    * Sets the value of this property
    */
-  public boolean setValue(String value) {
+  public void setValue(String value) {
     // forget old
     forget(relationship);
     // change
@@ -101,7 +101,6 @@ public class PropertyRelationship extends Property {
     // remember new
     remember(relationship);
     // done
-    return true;
   }
 
   /**

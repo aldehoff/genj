@@ -1,0 +1,43 @@
+0 FAM type=Fam img=Fam.gif
+
+1  MARR default type=Event img=Marriage.gif
+2   TYPE type=SimpleValue img=Type.gif
+2   DATE default type=Date img=Date.gif
+2   PLAC default type=SimpleValue img=Place.gif
+2   ADDR type=MultilineValue img=Addr.gif
+3    CITY default  type=SimpleValue img=Place.gif
+3    POST type=SimpleValue img=Code.gif
+3    CTRY type=SimpleValue img=Place.gif
+2   PHON type=SimpleValue img=Phone.gif
+2   AGE  type=SimpleValue img=Time.gif
+2   AGNC type=SimpleValue img=Phone.gif
+2   CAUS type=SimpleValue img=Phone.gif
+
+1  ANUL super=FAM:MARR img=Event.gif
+1  CENS super=FAM:ANUL
+1  DIV  super=FAM:ANUL
+1  DIVF super=FAM:ANUL
+1  ENGA super=FAM:ANUL
+1  ENGA super=FAM:ANUL
+1  ENGA super=FAM:ANUL
+1  ENGA super=FAM:ANUL
+1  ENGA super=FAM:ANUL
+1  MARB super=FAM:ANUL
+1  MARC super=FAM:ANUL
+1  MARL super=FAM:ANUL
+1  MARS super=FAM:ANUL
+1  EVEN super=FAM:ANUL
+2   TYPE default type=SimpleValue img=Type.gif
+
+1  NCHI type=SimpleValue img=Attribute.gif
+
+1  HUSB hide type=Husband img=Link2Indi.gif img.err=LinkXIndi.gif
+1  WIFE hide type=Wife img=Link2Indi.gif img.err=LinkXIndi.gif
+1  CHIL hide type=Child img=Link2Indi.gif img.err=LinkXIndi.gif
+
+1  SUBM hide type=Submitter img=Submitter.gif
+1  OBJE type=Media img=Media.gif
+2   TITL default type=SimpleValue img=Attribute.gif
+2   FORM default type=SimpleValue img=Format.gif
+2   FILE default type=File img=Disk.gif
+2   NOTE type=Note img=Note.gif

@@ -19,21 +19,21 @@
  */
 package genj.renderer;
 
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.geom.Point2D;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
+import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyName;
 import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
+
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 
@@ -55,12 +55,14 @@ public class PropertyRenderer {
 
   /** an replacement for a 'broken' image */  
   private final static ImageIcon broken = 
-    //new ImageIcon(new javax.swing.text.html.ImageView(null).getNoImageIcon());
-    //new ImageIcon(Object.class.getResourceAsStream("/javax/swing/text/html/icons/image-failed.gif"));
     new ImageIcon(PropertyRenderer.class, "Broken.gif");
 
   /** cached renderer instances */
   private static Map cache = new HashMap();
+  
+  static {
+    cache.put("FILE", new PropertyRenderer.File());
+  }
 
   /** 
    * static accessor  
@@ -224,16 +226,17 @@ public class PropertyRenderer {
      * size override
      */
     public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point2D.Float resolution) {
-      // check lines 
-      Enumeration it = prop.getLineIterator();
-      if (it==null) return EMPTY_DIM;
+      //.gotta be multiline
+      if (!(prop instanceof MultiLineSupport))
+        return super.getSize(metrics, prop, preference, resolution);
       // count 'em
       int lines = 0;
       int width = 0;
-      while (it.hasMoreElements()) {
-        width = Math.max(width, metrics.stringWidth(it.nextElement().toString()));
+      MultiLineSupport.Line line = ((MultiLineSupport)prop).getLines();
+      do {
         lines++;
-      }
+        width = Math.max(width, metrics.stringWidth(line.getValue()));
+      } while (line.next());
       // done
       return new Dimension(width, metrics.getHeight()*lines);
     }
@@ -242,9 +245,13 @@ public class PropertyRenderer {
      * render override
      */
     public void render( Graphics g, Rectangle bounds, Property prop, int preference, Point2D.Float resolution) {
+      //.gotta be multiline
+      if (!(prop instanceof MultiLineSupport)) {
+        super.render(g, bounds, prop, preference, resolution);
+        return;
+      }
       // get lines
-      Enumeration it = prop.getLineIterator();
-      if (it==null) return;
+      MultiLineSupport.Line line = ((MultiLineSupport)prop).getLines();
       // paint
       Rectangle clip = g.getClipBounds();
       int 
@@ -255,15 +262,18 @@ public class PropertyRenderer {
       r.y = bounds.y;
       r.width = bounds.width;
       r.height= h;
-      while (it.hasMoreElements()) {
+      do {
+        
         // .. line at a time
-        String line = it.nextElement().toString();
-        super.render(g, r, line);
+        super.render(g, r, line.getValue());
+        
         // .. movin' down
         r.y += h;
+        
         // .. break if not visible anymore
         if (r.y>m) break;
-      }
+        
+      } while (line.next());
       // done
     }
     
@@ -339,13 +349,6 @@ public class PropertyRenderer {
     }
     
     /**
-     * @see genj.renderer.PropertyRenderer#isNullRenderer()
-     */
-    protected boolean isNullRenderer() {
-      return true;
-    }
-    
-    /**
      * 
      */
     public float getVerticalAlignment(FontMetrics metrics) {  
@@ -356,21 +359,23 @@ public class PropertyRenderer {
      * Helper to get the image of PropertyFile
      */
     private ImageIcon getImage(Property prop, int preference) {
-      // since we're isNullRenderer prop might be null
-      if (prop==null) {
-        return isImage(preference) ? null : broken;
-      } 
       // check file for image
       ImageIcon result = null;
-      if (prop instanceof PropertyFile) { 
-        PropertyFile file = (PropertyFile)prop;
-        result = file.getValueAsIcon();
-      }
-      if (result==null) result = broken;
+      if (prop instanceof PropertyFile) 
+        result = ((PropertyFile)prop).getValueAsIcon();
+      // fallback
+      if (result==null&&isImage(preference)) return broken;
       // done
       return result;
     }  
   
+    /**
+     * @see genj.renderer.PropertyRenderer#isNullRenderer()
+     */
+    protected boolean isNullRenderer() {
+      return true;
+    }
+
   } //File
 
   /**
