@@ -145,7 +145,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     // stop listeing
     model.removeListener(modelListener);
     // store stuff in registry
-    regstry.put("cmpyear" , (float)cmPyear);
+    regstry.put("cmpyear" , (float)Math.rint(cmPyear*10)/10);
     regstry.put("cmpevent", (float)cmPevent);
     regstry.put("paintdates", isPaintDates);
     regstry.put("paintgrid" , isPaintGrid);
@@ -168,7 +168,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   public void populate(JToolBar bar) {
     
     // create a slider for cmPerYear
-    sliderCmPerYear = new JSlider(i(MIN_CMPERYEAR),i(MAX_CMPERYEAR),i(cmPyear));
+    sliderCmPerYear = new JSlider(0,99,value2percent(cmPyear, MIN_CMPERYEAR, MAX_CMPERYEAR));
     sliderCmPerYear.setAlignmentX(0F);
     sliderCmPerYear.setMaximumSize(sliderCmPerYear.getPreferredSize());
     sliderCmPerYear.addChangeListener((ChangeListener)new ActionCmPerYear().as(ChangeListener.class));
@@ -185,7 +185,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     bar.add(labelPerYear);
 
     // create a slider for pixelsPerEvent
-    sliderCmPerEvent = new JSlider(i(MIN_CMPEREVENT),i(MAX_CMPEREVENT),i(cmPevent));
+    sliderCmPerEvent = new JSlider(0,99,value2percent(cmPevent, MIN_CMPEREVENT, MAX_CMPEREVENT));
     sliderCmPerEvent.setAlignmentX(0F);
     sliderCmPerEvent.setMaximumSize(sliderCmPerEvent.getPreferredSize());
     sliderCmPerEvent.addChangeListener((ChangeListener)new ActionCmPerEvent().as(ChangeListener.class));
@@ -255,24 +255,26 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   }
   
   /**
-   * Converts double to int
+   * Converts a double value between min and max into a percent 0-99
    */
-  private final int i(double d) {
-    return (int)(d*10);
+  private final int value2percent(double d, double min, double max) {
+    return (int)( 100 - Math.exp( (max - d) / (max-min) * Math.log(100) ) );
   }
   
   /**
-   * Converts int to double
+   * Converts a percentage 0-99 to a double value using an exponential scale
    */
-  private final double d(int i) {
-    return ((double)i)/10;
+  private final double percent2value(int i, double min, double max) {
+    return max - Math.log(100-i)/Math.log(100) * (max-min);
   }
   
   /**
    * Convert cmPyear into text
    */
   private final String cm2txt(double cm) {
-    return NumberFormat.getInstance().format(cm)+"cm";
+    NumberFormat nf = NumberFormat.getInstance();
+    nf.setMaximumFractionDigits(1);
+    return nf.format(cm)+"cm";
   }
   
   /**
@@ -343,7 +345,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     /** @see genj.util.ActionDelegate#execute() */
     protected void execute() {
       // get the new value
-      cmPyear = d(sliderCmPerYear.getValue());
+      cmPyear = percent2value(sliderCmPerYear.getValue(), MIN_CMPERYEAR, MAX_CMPERYEAR);
       // update label
       labelCmPerYear.setText(cm2txt(cmPyear));
       // update model
@@ -359,7 +361,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     /** @see genj.util.ActionDelegate#execute() */
     protected void execute() {
       // get the new value
-      cmPevent = d(sliderCmPerEvent.getValue());
+      cmPevent = percent2value(sliderCmPerEvent.getValue(), MIN_CMPEREVENT, MAX_CMPEREVENT);
       // update label
       labelCmPerEvent.setText(cm2txt(cmPevent));
       // update model
