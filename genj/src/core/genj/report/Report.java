@@ -443,7 +443,28 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Align a simple text
+   * Creates an indent for text outputs. The method supports several levels
+   * and front strings.
+   *
+   * @param level for indent (can be thought of columns)
+   * @param spacesPerLevel space character between one level
+   * @param front String in front of the indented text  
+   */
+    public final String getIndent(int level, int spacesPerLevel, String front) {
+        String oneLevel = "";
+        while(oneLevel.length() != spacesPerLevel)
+            oneLevel=oneLevel+" ";
+        StringBuffer buffer = new StringBuffer(256);
+        while (--level>0) {
+            buffer.append(oneLevel);
+        }
+        buffer.append(front);
+        return buffer.toString();
+    }  
+  
+  
+  /**
+   * Aligns a simple text for text outputs.
    * @param txt the text to align
    * @param length the length of the result
    * @param alignment one of LEFT,CENTER,RIGHT
