@@ -303,9 +303,6 @@ public class Model implements Graph, GedcomListener {
   /**
    * Adds a node   */
   /*package*/ TreeNode add(TreeNode node) {
-    
-    System.out.println(node.entity);
-    
     Object key = node.entity;
     if (key==null) key = node;
     entities2nodes.put(key, node);
