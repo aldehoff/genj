@@ -72,45 +72,45 @@ public abstract class Report implements Cloneable {
   private final static String lang = EnvironmentChecker.getProperty(Report.class, "user.language", null, "i18n for reports");
 
   /** i18n texts */
-  private Properties i18n; 
+  private Properties i18n;
 
   /** out */
   private PrintWriter out;
-  
+
   /** a view manager */
   private ViewManager viewManager;
-  
+
   /** local registry */
   private Registry registry;
-  
+
   /** owning component */
   private JComponent owner;
-  
+
   /**
-   * integration - private instance for a run 
+   * integration - private instance for a run
    */
   /*package*/ Report getInstance(ViewManager viEwManager, JComponent owNer, PrintWriter ouT) {
-    
+
     try {
-      
+
       // clone this
       Report result = (Report)clone();
-      
+
       // remember context for result
       result.registry = new Registry(REGISTRY, getClass().getName());
       result.viewManager = viEwManager;
       result.out = ouT;
       result.owner = owNer;
-            
+
       // done
       return result;
-      
+
     } catch (CloneNotSupportedException e) {
       Debug.log(Debug.ERROR, this, e);
       throw new RuntimeException("getInstance() failed");
     }
   }
-  
+
   /**
    * integration - log a message
    */
@@ -156,12 +156,12 @@ public abstract class Report implements Cloneable {
     t.printStackTrace(new PrintWriter(awriter));
     log(awriter.toString());
   }
-  
+
   /**
    * Helper method that queries the user for a directory
    */
   protected final File getDirectoryFromUser(String title, String button) {
-  
+
     JFileChooser chooser = new JFileChooser(".");
     chooser.setFileSelectionMode(chooser.DIRECTORIES_ONLY);
     chooser.setDialogTitle(title);
@@ -169,9 +169,9 @@ public abstract class Report implements Cloneable {
       return null;
     }
     return chooser.getSelectedFile();
-    
+
   }
-  
+
   /**
    * Helper method that shows (resulting) properties to the user
    */
@@ -184,21 +184,21 @@ public abstract class Report implements Cloneable {
 
     // open a non-modal dialog
     viewManager.getWindowManager().openNonModalDialog(
-      null, 
+      null,
       getName(),
-      ReportViewFactory.IMG, 
-      content, 
+      ReportViewFactory.IMG,
+      content,
       WindowManager.OPTION_OK,
       owner
     );
-    
+
     // done
   }
-  
+
   /**
    * Helper method that queries the user for an entity
    * @param gedcom to use
-   * @param type the type of entities to show 
+   * @param type the type of entities to show
    * @param sortPath path to sort by or null
    */
   protected final Entity getEntityFromUser(String msg, Gedcom gedcom, int type, String sortPath) {
@@ -212,62 +212,62 @@ public abstract class Report implements Cloneable {
     // show
     return (Entity)getValueFromUser(msg, ents.toArray(), ents.get(0));
   }
-  
+
   /**
    * Helper method that queries the user for a choice of non-editable items
    */
   protected final Object getValueFromUser(String msg, Object[] choices, Object selected) {
-  
+
     ChoiceWidget choice = new ChoiceWidget(choices, selected);
     choice.setEditable(false);
-      
+
     int rc = viewManager.getWindowManager().openDialog(
-      null, 
-      getName(), 
+      null,
+      getName(),
       WindowManager.IMG_QUESTION,
       new JComponent[]{new JLabel(msg),choice},
       WindowManager.OPTIONS_OK_CANCEL,
       owner
     );
-      
+
     return rc==0 ? choice.getSelectedItem() : null;
   }
-  
+
   /**
    * Helper method that queries the user for a text-value giving him a
    * choice of remembered values
    */
   protected final String getValueFromUser(String key, String msg, String[] choices) {
-  
+
     // Choice to include already entered stuff?
     if ((key!=null)&&(registry!=null)) {
-  
+
       // Do we know values for this already?
       String[] presets = registry.get(key, (String[])null);
       if (presets != null) {
         choices = presets;
       }
     }
-    
-    // prepare txt 
-  
+
+    // prepare txt
+
     // show 'em
     ChoiceWidget choice = new ChoiceWidget(choices, "");
-      
+
     int rc = viewManager.getWindowManager().openDialog(
-      null, 
-      "Report Input", 
+      null,
+      "Report Input",
       WindowManager.IMG_QUESTION,
       new JComponent[]{new JLabel(msg),choice},
       WindowManager.OPTIONS_OK_CANCEL,
       owner
     );
-      
+
     String result = rc==0 ? choice.getText() : null;
-  
+
     // Remember?
     if (key!=null&&result!=null&&result.length()>0) {
-  
+
       Vector v = new Vector(choices.length+1);
       v.addElement(result);
       for (int i=0;i<choices.length;i++) {
@@ -276,19 +276,19 @@ public abstract class Report implements Cloneable {
       }
       registry.put(key,v);
     }
-  
+
     // Done
     return result;
   }
-  
+
   /**
    * Helper method that queries the user for yes/no input
    */
   protected final boolean getValueFromUser(String msg, boolean yesnoORokcancel) {
     int rc = viewManager.getWindowManager().openDialog(
-      null, 
+      null,
       getName(),
-      WindowManager.IMG_QUESTION, 
+      WindowManager.IMG_QUESTION,
       msg,
       yesnoORokcancel ? WindowManager.OPTIONS_YES_NO : WindowManager.OPTIONS_OK_CANCEL,
       owner
@@ -296,33 +296,33 @@ public abstract class Report implements Cloneable {
     // Done
     return rc==0;
   }
-  
+
   /**
    * i18n of a string
    */
   protected final String i18n(String key) {
     return i18n(key, (Object[])null);
   }
-  
+
   /**
    * i18n of a string
    */
   protected final String i18n(String key, int sub) {
     return i18n(key, new Integer(sub));
   }
-  
+
   /**
    * i18n of a string
    */
   protected final String i18n(String key, Object sub) {
     return i18n(key, new Object[]{sub});
   }
-  
+
   /**
    * i18n of a string
    */
   protected final String i18n(String key, Object[] subs) {
-    
+
     // get i18n properties
     if (i18n==null) {
       i18n = new Properties();
@@ -332,17 +332,17 @@ public abstract class Report implements Cloneable {
         Debug.log(Debug.INFO, this, "Couldn't read i18n for "+this);
       }
     }
-    
+
     // look it up in language
     String result = null;
     if (lang!=null) {
       result = i18n.getProperty(key+'.'+lang);
     }
-    
+
     // fallback if necessary
     if (result==null)
       result = i18n.getProperty(key);
-    
+
     // check result and apply format
     if (result==null) {
       // 20030529 - don't do a recursive getName() here
@@ -352,7 +352,7 @@ public abstract class Report implements Cloneable {
       if (subs!=null&&subs.length>0)
         result = new MessageFormat(result).format(subs);
     }
-    
+
     // done
     return result;
   }
@@ -360,9 +360,9 @@ public abstract class Report implements Cloneable {
   /**
    * Left Align a number as simple text
    */
-	protected final String align(int num, int width) {
-		return align(num+"", width, ALIGN_LEFT);
-	}																				
+  protected final String align(int num, int width) {
+    return align(num+"", width, ALIGN_LEFT);
+  }
 
   /**
    * Left Align a simple text
@@ -370,9 +370,16 @@ public abstract class Report implements Cloneable {
   protected final String align(String text, int width) {
     return align(text, width, ALIGN_LEFT);
   }
- 
+
   /**
-   * Align a simple text 
+   * Align a number as simple text
+   */
+  protected final String align(int num, int width, int alignment) {
+    return align(num+"", width, alignment);
+  }
+
+  /**
+   * Align a simple text
    * @param txt the text to align
    * @param length the length of the result
    * @param alignment one of LEFT,CENTER,RIGHT
@@ -387,7 +394,7 @@ public abstract class Report implements Cloneable {
 
     // prepare result
     StringBuffer buffer = new StringBuffer(length);
-    
+
     int before,after;
     switch (alignment) {
       default:
@@ -402,46 +409,61 @@ public abstract class Report implements Cloneable {
         break;
     }
     after = n-before;
-    
+
     // space before
     for (int i=0; i<before; i++)
       buffer.append(' ');
-    
+
     // txt
     buffer.append(txt);
-    
+
     // space after
     for (int i=0; i<after; i++)
       buffer.append(' ');
-      
+
     // done
     return buffer.toString();
   }
 
   /**
-   * Returns the author of this script
+   * Returns the name of this report.
+   * This default version get the information from the .property file. A report
+   * has to override this method to use another method.
+   * @return  Name of the report.
    */
-  public abstract String getAuthor();
+  public String getName() {
+    return i18n("name");
+  }
+
+  /**
+   * Returns the author of this script.
+   * This default version get the information from the .property file. A report
+   * has to override this method to use another method.
+   * @return  Name of the author.
+   */
+  public String getAuthor() {
+    return i18n("author");
+  }
 
   /**
    * Returns the version of this script
+   * This default version get the information from the .property file. A report
+   * has to override this method to use another method.
+   * @return  Version of the report.
    */
-  public abstract String getVersion();
+  public String getVersion() {
+     return i18n("version");
+  }
 
   /**
-   * Returns information about this report. A report
-   * has to override this method to return a <code>String</code>
-   * containing information about the author, version
-   * and copyright of the report.
-   * @return a string containing information about the author, version
-   * and copyright of the report
+   * Returns information about this report.
+   * This default version get the information from the .property file. A report
+   * has to override this method to use another method.
+   * @return  Description about the report.
    */
-  public abstract String getInfo();
-
-  /**
-   * Returns the name of this report - should be localized.
-   */
-  public abstract String getName();
+  public String getInfo() {
+    return i18n("info");
+  }
 
   /**
    * Called by GenJ to start this report's execution - has to be
@@ -465,12 +487,12 @@ public abstract class Report implements Cloneable {
   public boolean usesStandardOut() {
     return true;
   }
-  
+
   /**
    * Whether the report allows to be run on a given context - default
-   * only accepts Gedcom 
+   * only accepts Gedcom
    * @param context will an instance of either Gedcom, Entity or Property
-   * @return null for no - string specific to context for yes 
+   * @return null for no - string specific to context for yes
    */
   public String accepts(Object context) {
     return context instanceof Gedcom ? getName() :  null;
@@ -479,19 +501,19 @@ public abstract class Report implements Cloneable {
   /**
    * A list of properties - I'm currently simply checking if getParent()!=null
    * to figure out whether the property is still o.k. (a.k.a. not deleted)
-   * Listening for updates as a GedcomListener was just too much work  ;) 
+   * Listening for updates as a GedcomListener was just too much work  ;)
    */
   private static class PropertyList extends JList implements ListCellRenderer, ListSelectionListener {
-    
+
     /** the view manager */
     private ViewManager manager;
-    
+
     /** a headless label for rendering */
     private HeadlessLabel label = new HeadlessLabel();
-    
+
     /** gedcom */
-    private Gedcom gedcom; 
-    
+    private Gedcom gedcom;
+
     /**
      * Constructor
      */
@@ -515,7 +537,7 @@ public abstract class Report implements Cloneable {
       Property prop = (Property)getSelectedValue();
       if (prop!=null&&prop.getParent()!=null) manager.setContext(prop);
     }
-    
+
     /**
      * Our own rendering
      * @see javax.swing.ListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
@@ -536,11 +558,11 @@ public abstract class Report implements Cloneable {
         String txt = ent.getId() + ' ' + ent.toString() + ' ' + prop.getPath();
         label.setText(txt);
         label.setIcon(prop.getImage(false));
-      }      
+      }
       // done
       return label;
     }
-    
+
   } //PropertyList
 
 } //Report
