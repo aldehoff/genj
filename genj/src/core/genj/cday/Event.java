@@ -19,8 +19,10 @@
  */
 package genj.cday;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
+import genj.util.WordBuffer;
 
 /**
  * A CDay event
@@ -42,7 +44,14 @@ public class Event implements Comparable {
   
   /** to String */
   public String toString() {
-    return isBirthday ? pit + " Birth of "+text : pit + " " + text;
+    WordBuffer result = new WordBuffer();
+    result.append(pit.toString());
+    if (isBirthday) {
+      result.append(Gedcom.getName("BIRT"));
+      result.append(":");
+    }
+    result.append(text);
+    return result.toString();
   }
   
   /** comparison */
