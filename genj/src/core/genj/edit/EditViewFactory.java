@@ -26,6 +26,7 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.Note;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyNote;
 import genj.gedcom.Relationship;
 import genj.print.PrintRenderer;
@@ -128,6 +129,9 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     // everything but a note can get a note attached
     if (!(property instanceof PropertyNote))
       result.add(new Create(property.getGedcom(), Gedcom.NOTES, new Relationship.LinkedBy(property,Gedcom.NOTES)));
+    // event can get can get an obje attached
+    if (property instanceof PropertyEvent)
+      result.add(new Create(property.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(property,Gedcom.MULTIMEDIAS)));
     // done
     return result;
   }
