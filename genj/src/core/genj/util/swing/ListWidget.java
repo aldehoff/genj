@@ -53,8 +53,8 @@ public class ListWidget extends JList {
       super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
       if (value instanceof ActionDelegate) {
         ActionDelegate action = (ActionDelegate)value; 
-        setText(action.txt);
-        setIcon(action.img);
+        setText(action.getText());
+        setIcon(action.getImage());
       }
       return this;
     }

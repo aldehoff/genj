@@ -104,25 +104,25 @@ public class ButtonHelper {
     
     // create the button
     AbstractButton result;
-    if (action.toggle!=null)
+    if (action.getToggle()!=null)
       result = new ToggleWidget();
     else
       result = createButton();
     
     // its text
-    String s = string((isShortTexts&&action.stxt!=null) ? action.stxt : action.txt);
+    String s = string((isShortTexts&&action.getShortText()!=null) ? action.getShortText() : action.getText());
     result.putClientProperty("save.text", s);
     if (isTextAllowed) result.setText(s);
     
     // its image
-    if (isImageAllowed&&action.img!=null) 
-      result.setIcon(action.img);
-    if (isImageAllowed&&action.roll!=null)
-      result.setRolloverIcon(action.roll);
-    if (isImageAllowed&&action.toggle!=null)
-      result.setSelectedIcon(action.toggle);
-    if (action.tip!=null) 
-      result.setToolTipText(string(action.tip));
+    if (isImageAllowed&&action.getImage()!=null) 
+      result.setIcon(action.getImage());
+//    if (isImageAllowed&&action.roll!=null)
+//      result.setRolloverIcon(action.roll);
+    if (isImageAllowed&&action.getToggle()!=null)
+      result.setSelectedIcon(action.getToggle());
+    if (action.getTip()!=null) 
+      result.setToolTipText(string(action.getTip()));
     if (insets!=null)
       result.setMargin(insets);
     if (minSize!=null)
@@ -151,8 +151,8 @@ public class ButtonHelper {
     } catch (Throwable t) { 
       result.setRequestFocusEnabled(isFocusable.booleanValue()); 
     }
-    if (isEnabled!=null||!action.enabled) 
-      result.setEnabled( !action.enabled ? false : isEnabled.booleanValue());
+    if (isEnabled!=null||!action.isEnabled()) 
+      result.setEnabled( !action.isEnabled() ? false : isEnabled.booleanValue());
       
     // listening
     result.addActionListener(action);

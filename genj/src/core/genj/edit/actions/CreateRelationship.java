@@ -72,7 +72,7 @@ public class CreateRelationship extends AbstractChange {
         WindowManager.IMG_QUESTION,
         relationship.getName(true),
         names,
-        target
+        getTarget()
       );
       if (choice<0) return;
       // set targetType

@@ -194,9 +194,9 @@ public class MenuHelper  {
     // create a menu item
     JMenuItem result = new JMenuItem();
     result.addActionListener(action);
-    if (action.txt!=null) result.setText(string(action.txt));
-    if (action.img!=null) result.setIcon(action.img);
-    result.setEnabled(enabled&&action.enabled);
+    if (action.getText()!=null) result.setText(string(action.getText()));
+    if (action.getImage()!=null) result.setIcon(action.getImage());
+    result.setEnabled(enabled&&action.isEnabled());
   
     // add it to current menu on stack  
     Object menu = peekMenu();

@@ -44,12 +44,12 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
     ASYNC_NEW_INSTANCE   = 2;
   
   /** attributes */
-  public Icon       img,roll,toggle;
-  public String     txt;
-  public String     stxt;
-  public String     tip;
-  public JComponent target;
-  public boolean   enabled = true;
+  private Icon       img,toggle;
+  private String     txt;
+  private String     stxt;
+  private String     tip;
+  private JComponent target;
+  private boolean   enabled = true;
   
   /** whether we're async or not */
   private int async = ASYNC_NOT_APPLICABLE;
@@ -221,7 +221,7 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
   }
   
   /**
-   * Set frame
+   * accessor - target component
    */
   public ActionDelegate setTarget(JComponent t) {
     target = t;
@@ -229,7 +229,14 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
   }
   
   /**
-   * Image 
+   * accessor - target component
+   */
+  public JComponent getTarget() {
+    return target;
+  }
+  
+  /**
+   * accessor - image 
    */
   public ActionDelegate setImage(Icon i) {
     img=i;
@@ -237,15 +244,14 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
   }
   
   /**
-   * Rollover
+   * accessor - image 
    */
-  public ActionDelegate setRollover(Icon r) {
-    roll=r;
-    return this;
+  public Icon getImage() {
+    return img;
   }
   
   /**
-   * Toggle
+   * accessor - toggle icon
    */
   public ActionDelegate setToggle(Icon t) {
     toggle=t;
@@ -253,23 +259,44 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
   }
   
   /**
-   * Text
+   * accessor - toggle icon
+   */
+  public Icon getToggle() {
+    return toggle;
+  }
+  
+  /**
+   * accessor - text
    */
   public ActionDelegate setText(String t) {
     txt=t;
     return this;
   }
+
+  /**
+   * accessor - text
+   */
+  public String getText() {
+    return txt;
+  }
   
   /**
-   * Text
+   * accessor - short text
    */
   public ActionDelegate setShortText(String t) {
     stxt=t;
     return this;
   }
+
+  /**
+   * accessor - short text
+   */
+  public String getShortText() {
+    return stxt;
+  }
   
   /**
-   * Tip
+   * accessor - tip
    */
   public ActionDelegate setTip(String t) {
     tip=t;
@@ -277,11 +304,25 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
   }
   
   /**
-   * Enabled
+   * accessor - tip
+   */
+  public String getTip() {
+    return tip;
+  }
+  
+  /**
+   * accessor - enabled
    */
   public ActionDelegate setEnabled(boolean e) {
     enabled = e;
     return this;
+  }
+
+  /**
+   * accessor - enabled
+   */
+  public boolean isEnabled() {
+    return enabled;
   }
   
   /**

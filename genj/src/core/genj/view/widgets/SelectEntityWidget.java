@@ -236,7 +236,7 @@ public class SelectEntityWidget extends JPanel {
       Comparator comparator = new PropertyComparator(tagPath);
       Arrays.sort(list, 1, list.length, comparator);
       listWidget.setModel(new DefaultComboBoxModel(list));
-      sortWidget.setIcon(img);
+      sortWidget.setIcon(getImage());
     }
         
   } //Sort

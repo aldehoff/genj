@@ -106,8 +106,8 @@ import javax.swing.JTextArea;
       int rc = manager.getWindowManager().openDialog(
         getClass().getName(), null, WindowManager.IMG_QUESTION, 
         new JComponent[]{ c, new JScrollPane(confirm)} , 
-        new String[] { resources.getString("confirm.proceed", txt ), WindowManager.OPTION_CANCEL }, 
-        target 
+        new String[] { resources.getString("confirm.proceed", getText() ), WindowManager.OPTION_CANCEL }, 
+        getTarget() 
       );
       if (rc!=0)
         return;
@@ -119,7 +119,7 @@ import javax.swing.JTextArea;
     try {
       change();
     } catch (GedcomException ex) {
-      manager.getWindowManager().openDialog(null, null, WindowManager.IMG_ERROR, ex.getMessage(), (String[])null, target);
+      manager.getWindowManager().openDialog(null, null, WindowManager.IMG_ERROR, ex.getMessage(), (String[])null, getTarget());
     }
     // unlock gedcom
     gedcom.endTransaction();

@@ -124,7 +124,7 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
       report = rePort;
       manager = maNager;
       // show
-      setImage(getImage());
+      setImage(IMG);
       setText(txt);
     }
     /** callback */
@@ -132,7 +132,7 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
       // a report without standard out?
       if (!report.usesStandardOut()) {
         // run right there
-        report.getInstance(manager, target, null).start(context);
+        report.getInstance(manager, getTarget(), null).start(context);
         return;
       }
       // get handle of a ReportView 

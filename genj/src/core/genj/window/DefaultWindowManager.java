@@ -240,7 +240,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
     if (isModal) {
       // analyze - the disabled action is the choosen one :)
       for (int i=0; i<actions.length; i++) {
-        if (!actions[i].enabled) return i;
+        if (!actions[i].isEnabled()) return i;
       }
     }
         

@@ -57,11 +57,11 @@ public class TogglePrivate extends ActionDelegate {
     if (property.getNoOfProperties()>0) {
       recursive = manager.getWindowManager().openDialog(
         null,
-        txt,
+        getText(),
         WindowManager.IMG_QUESTION,
         AbstractChange.resources.getString("recursive"),
         WindowManager.OPTIONS_YES_NO,
-        target
+        getTarget()
       );
     }
 
@@ -72,11 +72,12 @@ public class TogglePrivate extends ActionDelegate {
     if (pwd==Gedcom.PASSWORD_UNKNOWN) {
       manager.getWindowManager().openDialog(
         null, 
-        txt, 
+        getText(), 
         WindowManager.IMG_WARNING, 
         "This Gedcom file contains encrypted information that has to be decrypted before changing private/public status of other information", 
         WindowManager.OPTIONS_OK, 
-        target);
+        getTarget()
+      );
       return;              
     }
     
@@ -84,11 +85,11 @@ public class TogglePrivate extends ActionDelegate {
       
       pwd = manager.getWindowManager().openDialog(
         null,
-        txt,
+        getText(),
         WindowManager.IMG_QUESTION,
         AbstractChange.resources.getString("password", gedcom.getName()),
         "",
-        target
+        getTarget() 
       );
       
       // canceled?
