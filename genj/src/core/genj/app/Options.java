@@ -65,6 +65,9 @@ public class Options implements OptionProvider {
   /** resources */
   private Resources resources;
  
+  /** maximum log file size */
+  private long maxLogSize = 16*1024;
+  
   /** the current looknfeel */
   private int lookAndFeel = -1;
   
@@ -217,6 +220,20 @@ public class Options implements OptionProvider {
     }
     // done
     return languages;
+  }
+
+  /** 
+   * Getter - maximum log size
+   */
+  public long getMaxLogSize() {
+    return maxLogSize;
+  }
+  
+  /** 
+   * Setter - maximum log size
+   */
+  public void setMaxLogSize(long set) {
+    maxLogSize = Math.max(4096, set);
   }
   
   /**
@@ -398,5 +415,5 @@ public class Options implements OptionProvider {
     } // Action
 
   } //FileAssociationOption
-  
+
 } //Options

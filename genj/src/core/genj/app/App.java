@@ -68,8 +68,12 @@ public class App {
     // Startup Information
     Debug.log(Debug.INFO, App.class, "GenJ App - Version "+Version.getInstance()+" - "+new Date());
     String log = EnvironmentChecker.getProperty(App.class, new String[]{"genj.debug.file", "user.home/.genj/genj.log"}, "", "choose log-file");
-    if (log.length()>0) 
-      Debug.setFile(new File(log));
+    if (log.length()>0) {
+      File file = new File(log);
+      if (file.exists()&&file.length()>Options.getInstance().getMaxLogSize())
+        file.delete();
+      Debug.setFile(file);
+    }
     EnvironmentChecker.log();
     
     // check VM version
