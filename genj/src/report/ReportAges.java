@@ -237,7 +237,7 @@ public class ReportAges extends Report {
     if (age == null)
       println(getIndent(2) + i18n("error"));
     else
-      println(getIndent(2) + AGE + " " + age);
+      println(getIndent(2) + AGE + ": " + age);
   }
 
   /**
