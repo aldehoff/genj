@@ -47,8 +47,19 @@ public class OpenForEdit extends ActionDelegate {
    * @see genj.util.ActionDelegate#execute()
    */
   protected void execute() {
-    EditView edit = (EditView)manager.openView(EditViewFactory.class, context.getGedcom());
-    manager.setContext(context);
+
+    // open an EditView that isn't sticky - we have to
+    // sequentially open each edit until we find a non-sticky one
+    EditView edit;
+    while (true) {
+	    edit = (EditView)manager.openView(EditViewFactory.class, context.getGedcom());
+	    if (!edit.isSticky()) 
+	      break;
+    }
+    
+    // make sure the context change follows through
+    context.setSource(edit);
+    edit.setContext(context);
   }
   
 } //OpenForEdit
