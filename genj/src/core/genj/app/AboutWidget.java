@@ -50,6 +50,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -401,7 +402,7 @@ public class AboutWidget extends JPanel{
      */
     private String[] getAvailableLanguages() {
       // prepare result with default "en"
-      ArrayList result = new ArrayList(10);
+      TreeSet result = new TreeSet();
       result.add("en");
       // look for language libraries (./lib/genj_pt_BR.jar)
       File[] libs = new File("./lib").listFiles();
