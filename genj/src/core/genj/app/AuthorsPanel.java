@@ -17,10 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * About Menu class - Authors
+ * About Dialog class - Authors
  * This class creates the content on the Authors tabbed pane in the
- * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AuthorsPanel.java,v 1.4 2002-05-19 12:46:02 island1 Exp $
+ * About Dialog application
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AuthorsPanel.java,v 1.5 2002-05-21 17:55:59 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *

@@ -17,10 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * About Menu class - Welcome
+ * About Dialog class - Welcome
  * This class creates the content on the Welcome tabbed pane in the
- * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/WelcomePanel.java,v 1.5 2002-05-18 07:31:26 island1 Exp $
+ * About Dialog application
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/WelcomePanel.java,v 1.6 2002-05-21 17:55:59 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *

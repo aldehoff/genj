@@ -17,10 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * About Menu class - Copyright
+ * About Dialog class - Copyright
  * This class creates the content on the Copyright tabbed pane in the
- * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/CopyrightPanel.java,v 1.5 2002-05-20 16:41:04 island1 Exp $
+ * About Dialog application
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/CopyrightPanel.java,v 1.6 2002-05-21 17:55:59 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.1
  *
