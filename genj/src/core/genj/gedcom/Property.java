@@ -125,8 +125,7 @@ public abstract class Property implements Comparable {
   public boolean delProperty(Property which) {
 
     // Look for first class properties
-    if (children.contains(which)) {
-      children.remove(which);
+    if (children.remove(which)) {
       which.delNotify();
       return true;
     }
@@ -652,7 +651,9 @@ public abstract class Property implements Comparable {
    * Marking a property as system can be honoured by the UI (don't show)
    */
   public boolean isSystem() {
-    return false;
+    if (parent==null)
+      return false;
+    return parent.isSystem();
   }
 
   /**
