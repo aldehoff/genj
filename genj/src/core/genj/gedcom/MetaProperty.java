@@ -51,6 +51,7 @@ public class MetaProperty {
   
   /** static - images */
   public final static ImageIcon
+    IMG_CUSTOM  = loadImage("Attribute.gif"),
     IMG_LINK    = loadImage("Association.gif"),
     IMG_UNKNOWN = loadImage("Question.gif"),
     IMG_ERROR   = loadImage("Error.gif");
@@ -232,8 +233,13 @@ public class MetaProperty {
    */
   public ImageIcon getImage() {
     if (image==null) {
+      // check 'img' attribute
       String s = getAttribute("img", null);
-      image = s==null ? IMG_UNKNOWN : loadImage(s);
+      // unknown?
+      if (s==null) 
+        image = getTag().startsWith("_") ? IMG_CUSTOM : IMG_UNKNOWN;
+      else  // load it
+        image = loadImage(s);
     }
     return image;
   }
