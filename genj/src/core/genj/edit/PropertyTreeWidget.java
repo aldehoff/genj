@@ -413,12 +413,14 @@ public class PropertyTreeWidget extends TreeWidget {
     public void handleChange(Change change) {
 
       // Could we be affected at all?
-      if (root==null) return;
+      if (root==null) 
+        return;
+        
+      // our entity
+      Entity entity = root.getEntity();
 
       // Entity deleted ?
       if ( !change.getChanges(Change.EDEL).isEmpty() ) {
-        // our entity
-        Entity entity = root.getEntity();
         // Loop through known entity ?
         boolean affected = false;
         Iterator ents = change.getChanges(Change.EDEL).iterator();
@@ -441,23 +443,41 @@ public class PropertyTreeWidget extends TreeWidget {
         }
         // continue
       }
+      
+      // at least same entity modified?
+      if (!change.getChanges(change.EMOD).contains(entity))
+        return;
 
       // Property added/removed ?
-      if (!(change.getChanges(Change.PADD).isEmpty()&&change.getChanges(Change.PDEL).isEmpty())) {
-        // reset
-        fireStructureChanged();
-        // show rows
-        expandRows();
-        // done
-        return;
-      }
-
-      // Property modified ?
-      if ( !change.getChanges(change.PMOD).isEmpty() ) {
-        if ( change.getChanges(Change.EMOD).contains(root.getEntity())) {
-          firePropertiesChanged(change.getChanges(Change.PMOD));
+      Iterator padds = change.getChanges(Change.PADD).iterator();
+      while (padds.hasNext()) {
+        Property padd = (Property)padds.next();
+        if (!padd.isSystem()) {
+          // reset
+          fireStructureChanged();
+          // show rows
+          expandRows();
+          // done
           return;
         }
+      }
+      Iterator pdels = change.getChanges(Change.PDEL).iterator();
+      while (pdels.hasNext()) {
+        Property pdel = (Property)pdels.next();
+        if (!pdel.isSystem()) {
+          // reset
+          fireStructureChanged();
+          // show rows
+          expandRows();
+          // done
+          return;
+        }
+      }
+
+      // A simple property modified?
+      if ( !change.getChanges(change.PMOD).isEmpty() ) {
+        firePropertiesChanged(change.getChanges(Change.PMOD));
+        return;
       }
 
       // Done

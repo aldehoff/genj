@@ -448,14 +448,18 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       }
   
       // .. add properties
-      if (!gedcom.startTransaction()) return;
+      if (!gedcom.startTransaction()) 
+        return;
       
-      for (int i=0;i<props.length;i++) {
-        Property newProp = prop.addProperty(props[i]);
-        if (check.isSelected()) newProp.addDefaultProperties();
-      } 
-      gedcom.endTransaction();
-     
+      try {
+        for (int i=0;i<props.length;i++) {
+          Property newProp = prop.addProperty(props[i]);
+          if (check.isSelected()) newProp.addDefaultProperties();
+        } 
+      } finally {
+        gedcom.endTransaction();
+      }
+         
       // .. select added
       Property select = props[0];
       if (select instanceof PropertyEvent) {
@@ -667,18 +671,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
         actionButtonCut   .setEnabled(false);
         actionButtonCopy  .setEnabled(false);
         actionButtonPaste .setEnabled(false);
-
-// FIXME
-//        // can we restore the old?
-//        TreePath path = e.getOldLeadSelectionPath();
-//        if (path!=null) {
-//          Property old = (Property)path.getLastPathComponent();
-//          if (old!=null&&old.getParent()!=null) try {
-//            tree.setSelectionPath(path);
-//          } catch (Throwable t) {
-//            // can happen if old isn't valid anymore
-//          }
-//        }
 
         // Done
         return;
