@@ -739,9 +739,6 @@ public class EntityRenderer {
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
     protected Dimension getPreferredSpan() {
-      if (new TagPath("INDI:OBJE:FILE").equals(path)) {
-        "".toString();
-      }
       // property and renderer
       Property property = getProperty();
       PropertyRenderer renderer = getRenderer(property);

@@ -312,7 +312,7 @@ public abstract class Property implements Comparable {
   /**
    * Recursive getPathTo
    */
-  private void getPathToRecursively(LinkedList path, Property prop) {
+  protected void getPathToRecursively(LinkedList path, Property prop) {
     
     // is it me?
     if (prop==this) {
@@ -368,7 +368,7 @@ public abstract class Property implements Comparable {
     return props;
   }
   
-  private void getPropertiesRecursively(List props, Class type) {
+  protected void getPropertiesRecursively(List props, Class type) {
     for (int c=0;c<getNoOfProperties();c++) {
       Property child = getProperty(c);
       if (type.isAssignableFrom(child.getClass())) {
@@ -391,7 +391,7 @@ public abstract class Property implements Comparable {
     return (Property[])result.toArray(new Property[result.size()]);
   }
 
-  private List getPropertiesRecursively(TagPath path, int pos, List fill, boolean validOnly) {
+  protected List getPropertiesRecursively(TagPath path, int pos, List fill, boolean validOnly) {
 
     // Correct here ?
     if (!path.get(pos).equals(getTag())) return fill;
@@ -459,14 +459,17 @@ public abstract class Property implements Comparable {
     return getPropertyRecursively(path, 0, validOnly);
   }
   
-  private Property getPropertyRecursively(TagPath path, int pos, boolean validOnly) {
+  protected Property getPropertyRecursively(TagPath path, int pos, boolean validOnly) {
 
     // Correct here ?
     if (!path.get(pos).equals(getTag())) return null;
 
-    // Me the last one?
+    // Validity?
+    if (validOnly && !isValid()) return null;
+    
+    // Me?
     if (pos==path.length()-1) 
-      return !validOnly || isValid() ? this : null;
+      return this;
 
     // Search in properties
     for (int i=0;i<getNoOfProperties();i++) {
