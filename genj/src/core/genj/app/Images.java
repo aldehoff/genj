@@ -46,7 +46,8 @@ final public class Images {
     imgNewReport,
     imgNewNavigator,
     imgSettings,
-    imgPrint;
+    imgPrint,
+    imgHelp;
 
   /**
    * Constructor which pre-loads all images
@@ -71,5 +72,6 @@ final public class Images {
     imgNewNavigator = new ImgIcon(this,"images/NewNavigator.gif");
     imgSettings     = new ImgIcon(this,"images/Settings.gif");
     imgPrint        = new ImgIcon(this,"images/Print.gif");
+    imgHelp         = new ImgIcon(this,"images/Help.gif");
   }
 }

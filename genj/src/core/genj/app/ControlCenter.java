@@ -44,13 +44,12 @@ import genj.io.*;
 public class ControlCenter extends JPanel implements ActionListener {
 
   /** members */
-  private GedcomTable tGedcoms;
+  private GedcomTableWidget tGedcoms;
   private JFrame frame;
   private Vector busyGedcoms;
   private ControlCenter me;
   private JMenu gedcomMenu,toolMenu,helpMenu;
   private Registry registry;
-  private HelpBridge helpBridge;
   private Vector gedcomButtons = new Vector();
 
   /**
@@ -74,7 +73,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     frame.setJMenuBar(createMenuBar());
 
     // Table of Gedcoms
-    tGedcoms = new GedcomTable();
+    tGedcoms = new GedcomTableWidget();
     tGedcoms.setRegistry(registry);
 
     // ... Listening
@@ -175,7 +174,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     if (frame==null) {
       // create it
       frame = App.getInstance().createFrame(App.resources.getString("cc.title.about"),null,"about",null);
-      frame.getContentPane().add(new AboutDialog(frame,this));
+      frame.getContentPane().add(new AboutWidget(frame,this));
     }
     frame.pack();
     frame.show();
@@ -235,20 +234,25 @@ public class ControlCenter extends JPanel implements ActionListener {
    */
   public void actionHelp() {
 
-    if (helpBridge!=null) {
-      helpBridge.open(registry);
+    // maybe we opened a frame already?
+    JFrame frame = App.getInstance().getFrame("help");
+    if (frame!=null) {
+      frame.show();
       return;
     }
 
-    try {
-      HelpBridge h = (HelpBridge)Class.forName("genj.app.HelpBridgeImpl").newInstance();
-      h.open(registry);
-      helpBridge = h;
-    } catch (Throwable e) {
-      String m = e.getMessage()+"@"+e.getClass().getName();
-      System.out.println("[Debug]Couldn't build a bridge to Java Help - make sure the setup correctly includes jhbasic.jar in the CLASSPATH ("+m+")");
-    }
+    // open it
+    frame = App.getInstance().createFrame(
+      App.resources.getString("cc.title.help"),
+      Images.imgHelp,
+      "help",
+      new Dimension(640,480)
+    );
+    frame.getContentPane().add(new HelpWidget(frame));
+    frame.pack();
+    frame.show();
 
+    // done
   }
 
   /**
@@ -749,7 +753,7 @@ public class ControlCenter extends JPanel implements ActionListener {
   /**
    * Closes all frame created by this controlcenter
    */
-  private boolean shutdown() {
+  private void shutdown() {
 
     // Remember open gedcoms
     boolean unsaved = false;
@@ -773,20 +777,14 @@ public class ControlCenter extends JPanel implements ActionListener {
         JOptionPane.YES_NO_OPTION
       );
       if (rc==JOptionPane.NO_OPTION) {
-        return false;
+        return;
       }
-    }
-
-    // Tell the HelpBridge
-    if (helpBridge!=null) {
-      helpBridge.close(registry);
     }
 
     // Tell it to the app
     App.getInstance().shutdown();
 
     // Done
-    return true;
   }
 
   /**

@@ -26,7 +26,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-public class GedcomTable extends JTable {
+public class GedcomTableWidget extends JTable {
   
   /** default column headers */
   private static final Object headers[] = {
@@ -53,7 +53,7 @@ public class GedcomTable extends JTable {
   /**
    * Constructor
    */
-  public GedcomTable() {
+  public GedcomTableWidget() {
     
     // Prepare a model
     model = new Model();

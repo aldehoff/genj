@@ -20,7 +20,7 @@
  *
  * AboutDialog class
  * This class creates the content of AboutDialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.11 2002-08-15 07:17:23 island1 Exp $
+ * $Header: /cvsroot/genj/dev/src/core/genj/app/AboutDialog.java,v 1.11 2002/08/15 07:17:23 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -43,6 +43,7 @@ import java.io.Reader;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -53,12 +54,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 /**
  * AboutDialog 
  */
-public class AboutDialog extends JPanel{
+public class AboutWidget extends JPanel{
   
   private final static int DEFAULT_ROWS = 16, DEFAULT_COLS = 40;
   
@@ -71,7 +73,7 @@ public class AboutDialog extends JPanel{
   /**
    * Constructor
    */
-  public AboutDialog(JFrame setFrame, ControlCenter setCc) {
+  public AboutWidget(JFrame setFrame, ControlCenter setCc) {
 
     // remember    
     cc=setCc;
@@ -82,7 +84,7 @@ public class AboutDialog extends JPanel{
     
     // create a south panel
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    JButton bExit = new JButton(App.resources.getString("cc.about.dialog.exit"));
+    JButton bExit = new JButton(App.resources.getString("view.close"));
     bExit.setActionCommand("dispose");
     bExit.addActionListener(new ActionDelegate(frame));
     pSouth.add(bExit);
@@ -291,7 +293,13 @@ public class AboutDialog extends JPanel{
       
       // what are the LnFs
       Object[] lnfs = LnFBridge.getInstance().getLnFs();
-      if (lnfs.length==0) return new JLabel(App.resources.getString("cc.about.tab4.l&f_file_missing"), SwingConstants.CENTER);
+      if (lnfs.length==0) {
+        return new JLabel(
+          App.resources.getString("cc.about.tab4.l&f_file_missing"),
+          (Icon)UIManager.get( "OptionPane.errorIcon"),
+          SwingConstants.CENTER
+        );
+      }
       
       // create a combo with LnFs      
       comboThemes = new JComboBox();
