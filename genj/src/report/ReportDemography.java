@@ -75,30 +75,8 @@ public class ReportDemography extends Report {
     // Looping over each individual in gedcom
     Iterator indis = gedcom.getEntities(Gedcom.INDI).iterator();
     while (indis.hasNext()) {
-      
       Indi indi = (Indi)indis.next();
-      
-      // check it's birth and death
-      PropertyDate birth = indi.getBirthDate();
-      PropertyDate death = indi.getDeathDate();
-      if (birth==null||death==null)
-        continue;
-      
-      // compute a delta
-      Delta delta = Delta.get(birth.getStart(), death.getStart());
-      if (delta==null||delta.getYears()<0)
-        continue;
-      int years = delta.getYears();
-
-      // for the male series we decrease the number of individuals
-      // and for females we increase. That's how we get the male
-      // bars on the left and the females on the right of the axis.
-      int group = years>=max ? 0 : categories.length - (years/ageGroupSize) - 1;
-      if (indi.getSex() == PropertySex.MALE)
-        males.dec(group);
-      else
-        females.inc(group);
-
+      analyze(indi, males, females, max);
       // next
     }
 
@@ -108,12 +86,41 @@ public class ReportDemography extends Report {
     // show it in a chart 
     // + we're using a custom format so that the male series' negative 
     //   values show up as a positive ones.
-    // + isStacked makes sure the bars for the series are overlapping
-    //   instead of stacked
+    // + isStacked makes sure the bars for the series are stacked instead
+    //   of being side by side
     // + isVertical makes the main axis for the categories go from top
     //   to bottom
     showChartToUser(new Chart(title, PropertyAge.getLabelForAge(), new IndexedSeries[]{ males, females}, categories, new DecimalFormat("#; #"), true, true));
       
+    // done
+  }
+  
+  /**
+   * Analyze one individual
+   */
+  private void analyze(Indi indi, IndexedSeries males, IndexedSeries females, int max) {
+    
+    // check it's birth and death
+    PropertyDate birth = indi.getBirthDate();
+    PropertyDate death = indi.getDeathDate();
+    if (birth==null||death==null)
+      return;
+    
+    // compute a delta
+    Delta delta = Delta.get(birth.getStart(), death.getStart());
+    if (delta==null||delta.getYears()<0)
+      return;
+    int years = delta.getYears();
+
+    // for the male series we decrease the number of individuals
+    // and for females we increase. That's how we get the male
+    // bars on the left and the females on the right of the axis.
+    int group = years>=max ? 0 : (max-years-1)/ageGroupSize + 1;
+    if (indi.getSex() == PropertySex.MALE)
+      males.dec(group);
+    else
+      females.inc(group);
+
     // done
   }
   

@@ -20,6 +20,7 @@
 package genj.chart;
 
 import java.awt.geom.Point2D;
+import java.util.Collection;
 import java.util.LinkedList;
 
 import org.jfree.data.xy.AbstractXYDataset;
@@ -99,6 +100,12 @@ public class XYSeries {
   }
   
   /**
+   * Convenient converter
+   */
+  public static XYSeries[] toArray(Collection c) {
+    return (XYSeries[])c.toArray(new XYSeries[c.size()]);
+  }
+  /**
    * Wrap into something JFreeChart can use
    */
   public static XYDataset toXYDataset(XYSeries[] series) {
@@ -158,34 +165,5 @@ public class XYSeries {
     }
 
   } //Wrapper
-  
-  /**
-   * A list for xy-series
-   */
-  public static class Collector extends java.util.ArrayList {
-    
-    /**
-     * Accessor - a series by name
-     */
-    public XYSeries get(String name) {
-      XYSeries result;
-      for (int i = 0; i < size(); i++) {
-        result = (XYSeries)get(i);
-        if (result.name.equals(name))
-          return result;
-      }
-      result = new XYSeries(name);
-      add(result);
-      return result;
-    }
-    
-    /**
-     * converter to array
-     */
-    public XYSeries[] toSeriesArray() {
-      return (XYSeries[])super.toArray(new XYSeries[size()]);
-    }
-  
-  } //List
   
 } //XYSeries

@@ -21,6 +21,7 @@ package genj.chart;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.jfree.data.category.CategoryDataset;
@@ -77,6 +78,13 @@ public class IndexedSeries {
    */
   public void dec(int cat) {
     set(cat, get(cat)-1);
+  }
+  
+  /**
+   * Convenient converter
+   */
+  public static IndexedSeries[] toArray(Collection c) {
+    return (IndexedSeries[])c.toArray(new IndexedSeries[c.size()]);
   }
 
   /**
@@ -246,44 +254,6 @@ public class IndexedSeries {
     }
     
   } //Wrapper
-  
-  /**
-   * A list for indexed-series
-   */
-  public static class Collector extends java.util.ArrayList {
-    
-    int seriesSize;
-    
-    /**
-     * Constructor
-     */
-    public Collector(int seriesSize) {
-      this.seriesSize = seriesSize;
-    }
-    
-    /**
-     * Accessor - a series by name
-     */
-    public IndexedSeries get(String name) {
-      IndexedSeries result;
-      for (int i = 0; i < size(); i++) {
-        result = (IndexedSeries)get(i);
-        if (result.name.equals(name))
-          return result;
-      }
-      result = new IndexedSeries(name, seriesSize);
-      add(result);
-      return result;
-    }
-    
-    /**
-     * converter to array
-     */
-    public IndexedSeries[] toSeriesArray() {
-      return (IndexedSeries[])super.toArray(new IndexedSeries[size()]);
-    }
-  
-  } //List
   
   
 } //CategorySeries
