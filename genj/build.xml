@@ -228,10 +228,13 @@
        <fileset dir="./help/images"/>
      </copy>
      <copy todir="${dir.help}">
-       <fileset dir="./help" includes="${language}/**"/>
+       <fileset dir="./help" includes="${language}/**/*.html"/>
        <filterset>
          <filtersfile file="./help/${language}/resources.properties"/>
        </filterset>
+     </copy>
+     <copy todir="${dir.help}">
+       <fileset dir="./help" includes="${language}/**/*.png"/>
      </copy>
      <copy todir="${dir.help}/${language}">
        <fileset dir="./help" includes="*.xml, *.html"/>
