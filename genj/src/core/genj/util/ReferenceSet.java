@@ -1,7 +1,6 @@
 package genj.util;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -40,14 +39,14 @@ public class ReferenceSet {
   /**
    * Returns the references for a given key
    */
-  public Collection getReferences(Object key) {
+  public Set getReferences(Object key) {
     // null is ignored
     if (key==null) 
-      return Collections.EMPTY_LIST;
+      return Collections.EMPTY_SET;
     // lookup
     Set references = (Set)key2references.get(key);
     if (references==null) 
-      return Collections.EMPTY_LIST;
+      return Collections.EMPTY_SET;
     // return references
     return references;
   }
