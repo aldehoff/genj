@@ -29,10 +29,16 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyFamilySpouse;
+import genj.gedcom.PropertyHusband;
+import genj.gedcom.PropertyWife;
 import gj.awt.geom.Path;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
@@ -46,7 +52,7 @@ import gj.util.ModelHelper;
 /**
  * Model of our tree
  */
-public class Model implements Graph {
+public class Model implements Graph, GedcomListener {
   
   /** listeners */
   private List listeners = new ArrayList(3);
@@ -66,9 +72,9 @@ public class Model implements Graph {
   /** parameters */
   private double 
     padIndis    = 1.0D,
-    padFams     = 1.0D,
+    //padFams     = 1.0D,
     widthIndis  = 3.0D,
-    widthFams   = 4.0D,
+    widthFams   = 2.8D,
     widthMarrs  = widthIndis/16,
     heightIndis = 2.0D,
     heightFams  = 1.0D,
@@ -83,23 +89,32 @@ public class Model implements Graph {
     shapeIndi = new Rectangle2D.Double(-widthIndis/2,-heightIndis/2,widthIndis,heightIndis),
     shapeFam  = new Rectangle2D.Double(-widthFams /2,-heightFams /2,widthFams ,heightFams );
 
+  /** gedcom we're looking at */
+  private Gedcom gedcom;
+  
+  /** the root we've used */
+  private Entity root;
+
   /**
    * Constructor
    */
-  public Model() {
+  public Model(Gedcom ged) {
+    gedcom = ged;
   }
   
   /**
    * Sets the root
    */
-  public void setRoot(Entity root) {
+  public void setRoot(Entity entity) {
     // Indi or Fam plz
-    if (!(root instanceof Indi||root instanceof Fam)) 
+    if (!(entity instanceof Indi||entity instanceof Fam)) 
       throw new IllegalArgumentException("Indi or Fam please");
     // clear old
     arcs.clear();
     nodes.clear();
     bounds.setFrame(0,0,0,0);
+    // keep as root
+    root = entity;
     // build and layout the tree
     if (root instanceof Indi)
       layout((Indi)root);
@@ -122,6 +137,7 @@ public class Model implements Graph {
    */
   public void addListener(ModelListener l) {
     listeners.add(l);
+    if (listeners.size()==1) gedcom.addListener(this);
   }
   
   /**
@@ -129,6 +145,14 @@ public class Model implements Graph {
    */
   public void removeListener(ModelListener l) {
     listeners.remove(l);
+    if (listeners.size()==0) gedcom.removeListener(this);
+  }
+  
+  /**
+   * @see genj.gedcom.GedcomListener#handleChange(Change)
+   */
+  public void handleChange(Change change) {
+    setRoot(root);
   }
   
   /**
@@ -145,7 +169,7 @@ public class Model implements Graph {
    */
   private void layout(Indi indi) {
     // create tree descendants of ancestor
-    MyNode dnode = new MyNode(null);
+    MyNode dnode = new MyNode(null, null);
     IndiNode inode = new IndiNode(indi);
     new MyArc(dnode, inode, false);
     inode.addDescendants(dnode);
@@ -156,7 +180,7 @@ public class Model implements Graph {
     // create tree of ancestors
     inode = new IndiNode(indi);
     inode.getPosition().setLocation(firstPos);
-    inode.addAncestors();
+    inode.addAncestors(null);
     layout(inode, false);
     // update bounds
     bounds.add(firstHalf);
@@ -169,15 +193,12 @@ public class Model implements Graph {
   private void layout(Fam fam) {
     // create tree for descendants 
     FamNode fnode = new FamNode(fam);
-    fnode.addDescendants();
-    layout(fnode, true);
-    Rectangle2D firstHalf = bounds.getFrame();
+    layout(fnode.addDescendants(fnode), true);
+    Rectangle2D r = bounds.getFrame();
     // create tree for ancestors
-    fnode = new FamNode(fam);
-    fnode.addAncestors();
-    layout(fnode, false);
+    layout(new FamNode(fam).addAncestors(), false);
     // update bounds
-    bounds.add(firstHalf);
+    bounds.add(r);
     // done
   }
   
@@ -191,6 +212,7 @@ public class Model implements Graph {
       layout.setBendArcs(true);
       layout.setDebug(false);
       layout.setIgnoreUnreachables(true);
+      layout.setBalanceChildren(false);
       layout.setRoot(root);
       layout.applyTo(this);
     } catch (LayoutException e) {
@@ -252,12 +274,16 @@ public class Model implements Graph {
     /** position of this entity */
     private Point2D pos = new Point2D.Double();
     
+    /** the shape */
+    private Shape shape;
+    
     /**
      * Constructor
      */
-    private MyNode(Entity etity) {
+    private MyNode(Entity enTity, Shape sHape) {
       // remember
-      entity = etity;
+      entity = enTity;
+      shape = sHape;
       // publish
       nodes.add(this);
       // done
@@ -288,19 +314,21 @@ public class Model implements Graph {
      * @see gj.model.Node#getShape()
      */
     public Shape getShape() {
-      return null;
+      return shape;
     }
     
     /**
      * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double)
      */
     public double getLatitude(Node node, double min, double max) {
+      // default is centered
       return min + (max-min) * 0.5;
     }
     /**
      * @see gj.layout.tree.NodeOptions#getLongitude(Node, double, double, double, double)
      */
     public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
+      // default is centered
       return minc + (maxc-minc) * 0.5;
     }
     /**
@@ -310,39 +338,48 @@ public class Model implements Graph {
       return 0;
     }
   } //MyNode
-  
+
+
   /**
    * A node for an individual
    */
   /*package*/ class IndiNode extends MyNode {
+    
     /** whether we're used as ancestor or descendant */
     private boolean isAncestor;
+    
+    /** a role we play as an ancestor */
+    private Class role;
+    
     /**
      * Constructor
      */
     private IndiNode(Indi indi) {
-      super(indi);
+      super(indi, shapeIndi);
     }
     /**
      * Add descendants - spouses and marriages and children
      */
-    private void addDescendants(MyNode node) {
+    private void addDescendants(MyNode pivot) {
       // mark as being descendant
       isAncestor = false;
       // we wrap an indi
       Indi indi = (Indi)entity;
       // loop through our fams
       Fam[] fams = indi.getFamilies();
+      FamNode first = null;
       for (int f=0; f<fams.length; f++) {
-        // the family
-        Fam fam = fams[f];
-        // add node for fam below
-        FamNode fnode = new FamNode(fam);
-        fnode.addDescendants();
+        // add node for fam, marr and spouse
+        FamNode  fnode = new FamNode(fams[f]);
+        MarrNode mnode = new MarrNode();
+        IndiNode snode = new IndiNode(fams[f].getOtherSpouse(indi));
+        // pivot takes marr and spouse
+        new MyArc(pivot, mnode, false);
+        new MyArc(pivot, snode, false);
         new MyArc(this, fnode, false);
-        // arc to marr and spouse
-        new MyArc(node, new MarrNode(), false);
-        new MyArc(node, new IndiNode(fam.getOtherSpouse(indi)), false);
+        // add fams descendants to first family
+        if (first==null) first = fnode;
+        fnode.addDescendants(first);
         // next family
       }
       // done
@@ -350,9 +387,10 @@ public class Model implements Graph {
     /**
      * Add ancestors
      */
-    private void addAncestors() {
+    private void addAncestors(Class setRole) {
       // mark as being ancestor
       isAncestor = true;
+      role = setRole;
       // we wrap an indi (might be a hull though)
       Indi indi = (Indi)entity;
       if (indi==null) return;
@@ -366,12 +404,6 @@ public class Model implements Graph {
       // done
     }
     /**
-     * @see gj.model.Node#getShape()
-     */
-    public Shape getShape() {
-      return shapeIndi;
-    }
-    /**
      * @see genj.tree.Model.MyNode#getPadding(Node, int)
      */
     public double getPadding(Node node, int dir) {
@@ -381,8 +413,18 @@ public class Model implements Graph {
      * @see genj.tree.Model.MyNode#getLongitude(Node, double, double, double, double)
      */
     public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
-      if (isAncestor) return super.getLongitude(node, minc, maxc, mint, maxt);
-      return minc - widthIndis + (widthFams - widthMarrs)/2;
+      // Ancestor
+      if (isAncestor) {
+        // with role
+        if (role==PropertyHusband.class)
+          return mint-padIndis/2;
+        if (role==PropertyWife.class)
+          return maxt+padIndis/2;
+        // without role
+        return super.getLongitude(node, minc, maxc, mint, maxt);
+      }
+      // Descendant
+      return minc + widthFams/2 - widthIndis - padIndis/2 - widthMarrs/2;
     }
   } //MyINode
   
@@ -391,18 +433,18 @@ public class Model implements Graph {
    */
   /*package*/ class FamNode extends MyNode {
     /** side we're reducing padding */
-    private int sideWithReducedPadding = SOUTH;
+    private int sideWithReducedPadding = NORTH;
     /**
      * Constructor
      */
     private FamNode(Fam fam) {
       // delegate
-      super(fam);
+      super(fam, shapeFam);
     }
     /**
      * Add descendants
      */
-    private void addDescendants() {
+    private FamNode addDescendants(MyNode pivot) {
       // Looking at the fam
       Fam fam = (Fam)entity;
       // grab the children
@@ -412,35 +454,29 @@ public class Model implements Graph {
         Indi child = children[c];
         IndiNode node = new IndiNode(child);
         // create a node&arc for it
-        new MyArc(this, node, true);       
+        new MyArc(pivot, node, true);       
         // and add descendants
-        node.addDescendants(this);
+        node.addDescendants(pivot);
         // next child
       }
       // remembering side for reduced padding
       sideWithReducedPadding = NORTH;
       // done
+      return this;
     }
     /**
      * Add ancestors
      */
-    private void addAncestors() {
+    private FamNode addAncestors() {
       // Looking at the fam
-      final Fam fam = (Fam)entity;
+      Fam fam = (Fam)entity;
+      int noOfSpouses = fam.getNoOfSpouses();
       // husband
-      IndiNode hnode = new IndiNode(fam.getHusband()) {
-        public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
-          return fam.getNoOfSpouses() == 1 ? minc+(maxc-minc)*0.5D : mint-padIndis/2;
-        }
-      };
-      hnode.addAncestors();
+      IndiNode hnode = new IndiNode(fam.getHusband());
+      hnode.addAncestors(noOfSpouses<2?null:PropertyHusband.class);
       // wife
-      IndiNode wnode = new IndiNode(fam.getWife()) {
-        public double getLongitude(Node node, double minc, double maxc, double mint, double maxt) {
-          return fam.getNoOfSpouses() == 1 ? minc+(maxc-minc)*0.5D : maxt+padIndis/2;
-        }
-      };
-      wnode.addAncestors();      
+      IndiNode wnode = new IndiNode(fam.getWife());
+      wnode.addAncestors(noOfSpouses<2?null:PropertyWife.class);
       // connect
       new MyArc(this, wnode, false);
       new MyArc(this, new MarrNode(), false);
@@ -448,20 +484,16 @@ public class Model implements Graph {
       // remembering side for reduced padding
       sideWithReducedPadding = SOUTH;
       // done
-    }
-    /**
-     * @see genj.tree.Model.MyNode#getShape()
-     */
-    public Shape getShape() {
-      return shapeFam;
+      return this;
     }
     /**
      * @see genj.tree.Model.MyNode#getPadding(Node, int)
      */
     public double getPadding(Node node, int dir) {
       if (dir==sideWithReducedPadding) 
-        return -padIndis/2 + padFams/10;
-      return padFams/2;
+        return -padIndis*0.40;
+      if (dir==WEST||dir==EAST) return padIndis*0.05;
+      return padIndis/2;
     }
   } //MyFNode
 
@@ -474,13 +506,7 @@ public class Model implements Graph {
      */
     private MarrNode() {
       // delegate
-      super(null);
-    }
-    /**
-     * @see genj.tree.Model.MyNode#getShape()
-     */
-    public Shape getShape() {
-      return shapeMarr;
+      super(null, shapeMarr);
     }
     /**
      * @see genj.tree.Model.MyNode#getPadding(Node, int)

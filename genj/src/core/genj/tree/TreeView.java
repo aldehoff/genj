@@ -58,13 +58,13 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
   private final static double UNITS = UnitGraphics.CENTIMETERS;
   
   /** our model */
-  private Model model = new Model();
+  private Model model;
 
   /** our content */
-  private Content content = new Content();
+  private Content content;
   
   /** our content renderer */
-  private ContentRenderer contentRenderer = new ContentRenderer();
+  private ContentRenderer contentRenderer;
   
   /** our current selection */
   private Entity currentEntity = null;
@@ -73,6 +73,10 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
    * Constructor
    */
   public TreeView(Gedcom gedcm, Registry regstry, Frame frame) {
+    // setup sub-parts
+    model = new Model(gedcm);
+    content = new Content();
+    contentRenderer = new ContentRenderer();
     // setup content
     setViewportView(new ViewPortAdapter(content));
     // init model
@@ -149,6 +153,14 @@ public class TreeView extends JScrollPane implements CurrentSupport, ContextPopu
      */
     private Content() {
       model.addListener(this);
+    }
+    
+    /**
+     * @see javax.swing.JComponent#removeNotify()
+     */
+    public void removeNotify() {
+      super.removeNotify();
+      model.removeListener(this);
     }
 
     /**
