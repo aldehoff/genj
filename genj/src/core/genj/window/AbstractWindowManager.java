@@ -126,7 +126,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   public int openDialog(String key, String title, Icon img, String txt, ActionDelegate[] options, Component owner) {
 
     // create a textpane for the txt
-    TextAreaWidget text = new TextAreaWidget("", 4, 20);
+    TextAreaWidget text = new TextAreaWidget("", 4, 40);
     text.setLineWrap(true);
     text.setWrapStyleWord(true);
     text.setText(txt);
