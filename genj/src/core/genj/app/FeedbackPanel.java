@@ -20,9 +20,9 @@
  * About Menu class - Feedback
  * This class creates the content on the Feedback tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.7 2002-05-20 10:33:14 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.8 2002-05-20 13:47:38 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
- * @version 1.2
+ * @version 1.3
  *
  */
 
@@ -204,25 +204,25 @@ public class FeedbackPanel extends JPanel implements ActionListener
      if (_clickMeMode) {
        try {
          String inputFileName = "feedback.txt";
-         /* Here I should put another "if" statement to check whether or not
-         * the file feedback.txt exist. If yes, then I load the text from that
-         * file and display it. If it doesn't exist, then I display the default
-         * info system with a call to "getSystemInfo()".
-         */
-         // Code to load a text from a file
          File inputFile = new File(inputFileName);
-         FileInputStream in = new FileInputStream(inputFile);
-         byte bt[] = new byte[(int)inputFile.length()];
-         in.read(bt);
-         s = new String(bt);
-         in.close();
+         // Code to load a text from a file
+         if (inputFile.length() > 0) {
+           FileInputStream in = new FileInputStream(inputFile);
+           byte bt[] = new byte[(int)inputFile.length()];
+           in.read(bt);
+           s = new String(bt);
+           in.close();
+           ta1Panel2.setText("");
+           ta1Panel2.setText(s);
+         }
+         else {
+           ta1Panel2.setText(getSystemInfo());
+         }
        }
        // If something goes wrong, I try to catch the error and display something
        catch(java.io.IOException e) {
          System.out.println("Cannot read from text file feedback.txt");
        }
-       ta1Panel2.setText("");
-       ta1Panel2.setText(s);
      }
    }
   }
