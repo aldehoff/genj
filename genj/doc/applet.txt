@@ -2,29 +2,43 @@ GenJ - Applet HOWTO
 
 INTRODUCTION
 
- There are two basic modes of how to run the GenJ applet. You can
- either provide your Gedcom information and external files (e.g.
- pictures, .properties) unzipped relative to a 'current' directory.
- Or you can zip this information and let GenJ read this information
- on the fly.
+ There are two basic modes of how to package your data
+ for the GenJ applet. You can provide all your Gedcom 
+ information and external files (e.g. pictures, .properties) 
+ in a directory relative to the applet's HTML page.
+ Alternatively you can also create an archive of all this 
+ information (use zip and preserve directory structure).
+ 
+ You can either use ./lib/genj.jar and ./lib/graph.jar 
+ coming with the default distribution genj_app-x.y.zip 
+ or download genj_applet-x.y.zip and use it's contained 
+ smaller libraries (reduced to necessary minimum).
 
 PREPARING IT (unzipped)
 
  Follow these steps to provide all necessary files for running GenJ
  as an applet:
 
-  + place genj.jar + applet-unzipped.html in [directory]
+  + place genj.jar + graphj.jar in [directory]
 
   + place [file].ged, [file].ged.properties and any images into [directory]
 
-  + adopt applet's GEDCOM-tag in applet-unzipped.html
+  + add a HTML page that includes the following tag
 
-     <param name=GEDCOM value="[file].ged">
+   <applet 
+     code="genj.applet.Applet.class" 
+     width="200" 
+     height="160" 
+     archive="./genj.jar, ./graphj.jar"
+     alt="GenealogyJ">
+    <param name="gedcom" value="./[file.ged]">
+   </applet>
 
   + make sure that the result looks like this
 
-    ./applet-unzipped.html
+    ./[your-html].html
     ./genj.jar
+    ./graph.jar
     ./file.ged
     ./file.ged.properties
     ./image1.jpg
@@ -36,30 +50,21 @@ PREPARING IT (zipped)
 
   + place [file].zip into [directory]
 
-  + adopt applet's GEDCOM-tag in applet-unzipped.html
+  + add a HTML page that includes the following tag
 
-     <param name=GEDCOM value="[file].zip#[file].ged">
+   <applet 
+     code="genj.applet.Applet.class" 
+     width="200" 
+     height="160" 
+     archive="./genj.jar, ./graphj.jar"
+     alt="GenealogyJ">
+    <param name="gedcom" value="./[file.zip]#[file.ged]">
+   </applet>
 
   + make sure that the result looks like this
 
-    ./applet-zipped.html
+    ./[your-html].html
+    ./graph.jar
     ./genj.jar
     ./file.zip
-
-PREPARING DETAILS (optional)
-
-  + place results of report "Applet Details" in [directory]/details
-
-  + add applet's GEDCOM-tag in applet-xyz.html
-
-     <param name=DETAIL value="./details">
-
-  + make sure that the result looks like above plus
-
-    ./...
-    ./details/i001.html
-    ./details/...
-    ./details/imageA.jpg
-    ./details/...
-
 

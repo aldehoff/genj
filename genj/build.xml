@@ -29,7 +29,7 @@
     <mkdir dir="${dir.run}"/>
     <mkdir dir="${dir.dist}"/>
     <!-- create ./lib -->
-    <property name="dir.lib" value="${dir.dist}/lib"/>
+    <property name="dir.lib" value="${dir.build}/lib"/>
     <delete dir="${dir.lib}"/>
     <mkdir dir="${dir.lib}"/>
   </target>
@@ -96,7 +96,7 @@
 
     <!-- create genj_ll-xyz.zip -->
     <zip zipfile="${dir.dist}/genj_${language}-${app.version}.zip" update="True">
-      <fileset dir="${dir.dist}" includes="**/genj_${language}.jar"/>
+      <fileset dir="${dir.lib}/.." includes="lib/genj_${language}.jar"/>
     </zip>
   </target>
 
@@ -124,9 +124,12 @@
       genj/view/widgets/*
      "/>
 
-     <!-- create genj_applet_xyz.jar -->
-     <delete file="${dir.lib}/genj.jar"/>
-     <jar jarfile="${dir.lib}/genj.jar" update="True">
+     <!-- applet sub -->
+     <mkdir dir="${dir.build}/applet"/>
+
+     <!-- create genj.jar -->
+     <delete file="${dir.build}/applet/genj.jar"/>
+     <jar jarfile="${dir.build}/applet/genj.jar" update="True">
        <fileset dir="${dir.build}/classes/core" excludes="${exclude}"/>
        <fileset dir="./images" excludes="${exclude}"/>
        <fileset dir="./language/en" excludes="${exclude}"/>
@@ -134,6 +137,15 @@
            includes="**/*.properties"/>
        <fileset dir="${dir.build}/version"/>
      </jar>
+     
+     <!-- copy graphj.jar -->
+     <copy todir="${dir.build}/applet" file="./lib/graphj.jar"/>
+
+     <!-- create genj_applet_xyz.jar -->
+     <zip zipfile="${dir.dist}/genj_applet-${app.version}.zip" update="True">
+       <fileset dir="${dir.build}" includes="applet/*"/>
+       <fileset dir="." includes="doc/*"/>
+     </zip>
 
   </target>
 
@@ -166,8 +178,6 @@
        <fileset dir="./script" includes="rcompile.*"/>
      </copy>
      
-     
-
      <!-- create genj_app-xyz.zip -->
      <zip zipfile="${dir.dist}/genj_app-${app.version}.zip" update="True">
        <fileset dir="${dir.lib}" includes="run.jar"/>
@@ -209,18 +219,18 @@
    -->
   <target name="dist.help.language">
 
+     <!-- clean -->
+     <delete dir="${dir.build}/help"/>
+
      <!-- create ./help -->
-     <antcall target="dist.help.language.files"><param name="dir.help" value="${dir.dist}/help"/></antcall>
+     <antcall target="dist.help.language.files"><param name="dir.help" value="${dir.build}/help"/></antcall>
   
      <!-- create ./genj_help_xx-yy.zip -->
      <zip zipfile="${dir.dist}/genj_help_${language}-${app.version}.zip" update="True">
-       <fileset dir="${dir.dist}" includes="help/**"/>
+       <fileset dir="${dir.build}" includes="help/**"/>
        <fileset dir="." includes="lib/jhbasic.jar"/>
      </zip>
      
-     <!-- cleanup -->
-     <delete dir="${dir.dist}/help"/>
-
   </target>
 
 
@@ -241,7 +251,7 @@
      <antcall target="dist.languages"/>
 
      <!-- do the applet -->
-     <!-- <antcall target="dist.applet"/>  -->
+     <antcall target="dist.applet"/>
 
      <!-- do the application -->
      <antcall target="dist.app"/> 
