@@ -32,7 +32,6 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 
 /**
@@ -66,7 +65,7 @@ public class ContentRenderer {
    */
   public void render(UnitGraphics g, Model model) {  
     // translate to center
-    Rectangle2D bounds = model.getBounds();
+    Rectangle bounds = model.getBounds();
     g.translate(-bounds.getX(), -bounds.getY());
     // render background
     renderBackground(g, bounds);
@@ -82,7 +81,7 @@ public class ContentRenderer {
    */
   private void renderNodes(UnitGraphics g, Model model) {
     // clip is the range we'll be looking in range
-    Rectangle2D clip = g.getClip();
+    Rectangle clip = g.getClip().getBounds();
     // loop
     Iterator it = model.getNodesIn(clip).iterator();
     while (it.hasNext()) {
@@ -93,7 +92,7 @@ public class ContentRenderer {
       // no shape -> no rendering
       if (shape==null) continue;
       // bounds not intersecting clip -> no rendering
-      Rectangle2D r = shape.getBounds2D();
+      Rectangle r = shape.getBounds();
       if (!clip.intersects(
         pos.getX()+r.getMinX(), 
         pos.getY()+r.getMinY(),
@@ -150,7 +149,7 @@ public class ContentRenderer {
     if (content instanceof Fam ) renderer = famRenderer;
     if (renderer==null) return;
     // preserve clip&transformation
-    Rectangle2D r2d = shape.getBounds2D();
+    Rectangle r2d = shape.getBounds();
     g.pushClip(x, y, r2d);
     g.pushTransformation();
     // draw it
@@ -169,7 +168,7 @@ public class ContentRenderer {
    */
   private void renderArcs(UnitGraphics g, Model model) {
     // clip is the range we'll be looking in range
-    Rectangle2D clip = g.getClip();
+    Rectangle clip = g.getClip().getBounds();
     // prepare color
     if (cArcs==cBackground) return;
     g.setColor(cArcs);
@@ -189,7 +188,7 @@ public class ContentRenderer {
   /**
    * Render the background
    */
-  private void renderBackground(UnitGraphics g, Rectangle2D bounds) {
+  private void renderBackground(UnitGraphics g, Rectangle bounds) {
     if (cBackground==null) return;
     g.setColor(cBackground);
     g.draw(bounds, 0, 0, true);

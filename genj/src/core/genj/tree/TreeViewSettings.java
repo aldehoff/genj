@@ -202,11 +202,11 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     colors.apply();
     // metrics
     view.getModel().setMetrics(new TreeMetrics(
-      (float)sliderCmIndiWidth .getValue(),
-      (float)sliderCmIndiHeight.getValue(),
-      (float)sliderCmFamWidth  .getValue(),
-      (float)sliderCmFamHeight .getValue(),
-      (float)sliderCmPadding   .getValue()
+      (int)Math.rint(sliderCmIndiWidth .getValue()*10),
+      (int)Math.rint(sliderCmIndiHeight.getValue()*10),
+      (int)Math.rint(sliderCmFamWidth  .getValue()*10),
+      (int)Math.rint(sliderCmFamHeight .getValue()*10),
+      (int)Math.rint(sliderCmPadding   .getValue()*10)
     ));
     // blueprints
     view.setBlueprints(blueprintList.getSelection());
@@ -227,11 +227,11 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     colors.reset();
     // metrics
     TreeMetrics m = view.getModel().getMetrics();
-    sliderCmIndiWidth .setValue(m.wIndis);
-    sliderCmIndiHeight.setValue(m.hIndis);
-    sliderCmFamWidth  .setValue(m.wFams );
-    sliderCmFamHeight .setValue(m.hFams );
-    sliderCmPadding   .setValue(m.pad   );
+    sliderCmIndiWidth .setValue(m.wIndis/10D);
+    sliderCmIndiHeight.setValue(m.hIndis/10D);
+    sliderCmFamWidth  .setValue(m.wFams /10D);
+    sliderCmFamHeight .setValue(m.hFams /10D);
+    sliderCmPadding   .setValue(m.pad   /10D);
     // blueprints
     blueprintList.setSelection(view.getBlueprints());
     // done

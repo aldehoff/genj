@@ -47,7 +47,7 @@ import java.awt.geom.Rectangle2D;
   protected Path shapeMarrs, shapeIndis, shapeFams, shapePlus, shapeMinus, shapeNext; 
 
   /** padding (n, e, s, w) */
-  protected double[] padIndis, padMinusPlus; 
+  protected int[] padIndis, padMinusPlus; 
   
   /** 
    * gets an instance of a parser
@@ -118,7 +118,7 @@ import java.awt.geom.Rectangle2D;
     }
 
     // calculate maximum extension    
-    float d = Math.min(metrics.wIndis/4, metrics.hIndis/4);
+    int d = Math.min(metrics.wIndis/4, metrics.hIndis/4);
     
     // create result      
     Ellipse2D e = new Ellipse2D.Float(-d*0.3F,-d*0.3F,d*0.6F,d*0.6F);
@@ -136,8 +136,8 @@ import java.awt.geom.Rectangle2D;
     
     // patch bounds
     shapeMarrs.setBounds2D( model.isVertical() ?
-      new Rectangle2D.Float(-d/2,-(metrics.hIndis+metrics.pad)/2,d,metrics.hIndis+metrics.pad) :
-      new Rectangle2D.Float(-metrics.wIndis/2,-d/2,metrics.wIndis,d)
+      new Rectangle2D.Double(-d*0.5D,-(metrics.hIndis+metrics.pad)*0.5D,d,metrics.hIndis+metrics.pad) :
+      new Rectangle2D.Double(-metrics.wIndis*0.5D,-d*0.5D,metrics.wIndis,d)
     );
     
     // done
@@ -149,7 +149,7 @@ import java.awt.geom.Rectangle2D;
   private void initEntityShapes() {
     
     // .. padding (n,w,e,s)
-    padIndis  = new double[] { 
+    padIndis  = new int[] { 
       metrics.pad/2, 
       metrics.pad/2, 
       metrics.pad/2, 
@@ -181,15 +181,15 @@ import java.awt.geom.Rectangle2D;
   private void initFoldUnfoldShapes() {
     
     // how we pad signs (n,w,e,s)
-    padMinusPlus  = new double[]{  
-      -padIndis[0], 
+    padMinusPlus  = new int[]{  
+      -padIndis[3], 
        padIndis[1], 
        padIndis[2], 
        padIndis[3]     
     };
 
-    // size of signs
-    double d = 0.3;
+    // size of signs (3mm)
+    double d = 3;
     
     // plus
     shapePlus = new Path();
@@ -278,13 +278,13 @@ import java.awt.geom.Rectangle2D;
   private static class AncestorsWithFams extends Parser {
     
     /** how we pad families */
-    private double[] padFams;
+    private int[] padFams;
       
     /** how we pad husband, wife */
-    private double[] padHusband, padWife;
+    private int[] padHusband, padWife;
     
     /** offset of spouses */
-    private double offsetSpouse;
+    private int offsetSpouse;
     
     /**
      * Constructor
@@ -293,21 +293,21 @@ import java.awt.geom.Rectangle2D;
       super(model, metrics);
       
       // .. fams ancestors (n,w,e,s)
-      padFams  = new double[]{  
+      padFams  = new int[]{  
          padIndis[0], 
          padIndis[1], 
          padIndis[2], 
-        -metrics.pad*0.40, 
+        -(int)(metrics.pad*0.40),
       };
 
-      padHusband = new double[]{
+      padHusband = new int[]{
         padIndis[0],
         padIndis[1],
         0,
         padIndis[3]
       };
 
-      padWife = new double[]{
+      padWife = new int[]{
         padIndis[0],
         0,
         padIndis[2],
@@ -356,7 +356,7 @@ import java.awt.geom.Rectangle2D;
     /**
      * parse an individual's ancestors
      */
-    private TreeNode parse(Indi indi, TreeNode nIndi, double align) {
+    private TreeNode parse(Indi indi, TreeNode nIndi, int align) {
       // might be a placeholder call
       if (indi==null) return nIndi;
       // do we have a family we're child in? 
@@ -455,13 +455,13 @@ import java.awt.geom.Rectangle2D;
     private TreeNode origin;
   
     /** how we pad families */
-    private double[] padFams;
+    private int[] padFams;
     
     /** how we pad husband, wife */
-    private double[] padHusband, padWife, padNext;
+    private int[] padHusband, padWife, padNext;
     
     /** how we offset an indi above its marr */
-    private double offsetHusband;
+    private int offsetHusband;
       
     /**
      * Constructor
@@ -470,28 +470,28 @@ import java.awt.geom.Rectangle2D;
       super(model, metrics);
 
       // how we pad fams (n,w,e,s)
-      padFams  = new double[]{  
-        -metrics.pad*0.4, 
+      padFams  = new int[]{  
+        -(int)(metrics.pad*0.4), 
          padIndis[1], 
          padIndis[2], 
          padIndis[3]     
       };
       
-      padHusband = new double[]{
+      padHusband = new int[]{
         padIndis[0],
         padIndis[1],
         0,
         padIndis[3]
       };
 
-      padWife = new double[]{
+      padWife = new int[]{
         padIndis[0],
         0,
         padIndis[2],
         0
       };
       
-      padNext = new double[] {
+      padNext = new int[] {
         padIndis[0],
         -padIndis[1],
         0,
@@ -499,8 +499,8 @@ import java.awt.geom.Rectangle2D;
       };
       
       offsetHusband = model.isVertical() ? 
-        - (metrics.wIndis + shapeMarrs.getBounds2D().getWidth ())/2 :
-        - (metrics.hIndis + shapeMarrs.getBounds2D().getHeight())/2;
+        - (metrics.wIndis + shapeMarrs.getBounds().width )/2 :
+        - (metrics.hIndis + shapeMarrs.getBounds().height)/2;
       // done
     }
     
@@ -572,7 +572,7 @@ import java.awt.geom.Rectangle2D;
         /**
          * @see genj.tree.TreeNode#getLongitude(gj.model.Node, gj.layout.tree.Branch[], gj.layout.tree.Orientation)
          */
-        public double getLongitude(Node node, Branch[] children, Orientation o) {
+        public int getLongitude(Node node, Branch[] children, Orientation o) {
           return super.getLongitude(node, children, o) + offsetHusband;
         }
       });

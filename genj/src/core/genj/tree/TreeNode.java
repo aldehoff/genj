@@ -24,6 +24,7 @@ import gj.layout.tree.NodeOptions;
 import gj.layout.tree.Orientation;
 import gj.model.Node;
 
+import java.awt.Point;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import java.util.List;
 /*package*/ class TreeNode implements Node, NodeOptions {
   
   /** no padding */
-  private final static double[] NO_PADDING = new double[4];
+  private final static int[] NO_PADDING = new int[4];
 
   /** the content */
   /*package*/ Object content;
@@ -43,21 +44,21 @@ import java.util.List;
   /*package*/ List arcs = new ArrayList(5);
   
   /** position of this entity */
-  /*package*/ Point2D.Double pos = new Point2D.Double();
+  /*package*/ Point pos = new Point();
   
   /** the shape */
   /*package*/ Shape shape;
   
   /** padding */
-  /*package*/ double[] padding;
+  /*package*/ int[] padding;
   
   /** alignment switch */
-  /*package*/ double align = 0;
+  /*package*/ int align = 0;
   
   /**
    * Constructor
    */
-  /*package*/ TreeNode(Object cOntent, Shape sHape, double[] padDing) {
+  /*package*/ TreeNode(Object cOntent, Shape sHape, int[] padDing) {
     // remember
     content = cOntent;
     shape = sHape;
@@ -94,17 +95,9 @@ import java.util.List;
   }
   
   /**
-   * @see gj.layout.tree.NodeOptions#getLatitude(Node, double, double, Orientation)
-   */
-  public double getLatitude(Node node, double min, double max, Orientation o) {
-    // default is centered
-    return min + (max-min) * 0.5;
-  }
-  
-  /**
    * @see gj.layout.tree.NodeOptions#getLongitude(gj.model.Node, gj.layout.tree.Branch[], gj.layout.tree.Orientation)
    */
-  public double getLongitude(Node node, Branch[] children, Orientation o) {
+  public int getLongitude(Node node, Branch[] children, Orientation o) {
     // centered
     if (align==0) 
       return Branch.getLongitude(children, 0.5, o);
@@ -118,7 +111,7 @@ import java.util.List;
   /**
    * @see gj.layout.tree.NodeOptions#getPadding(gj.model.Node, gj.layout.tree.Orientation)
    */
-  public double[] getPadding(Node node, Orientation o) {
+  public int[] getPadding(Node node, Orientation o) {
     return padding;
   }
 

@@ -45,7 +45,6 @@ import genj.view.ContextSupport;
 import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
-import gj.model.Node;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -88,7 +87,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   private Resources resources = Resources.get(this);
   
   /** the units we use */
-  private final Point2D UNITS = ScreenResolutionScale.getDotsPerCm();
+  private final Point2D UNITS;
   
   /** our model */
   private Model model;
@@ -147,6 +146,10 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     frame = fRame;
     registry = regIstry;
     
+    // grab resolution (patched to millimeters used here)
+    Point2D dotsPerCm = ScreenResolutionScale.getDotsPerCm();
+    UNITS = new Point2D.Double(dotsPerCm.getX()/10, dotsPerCm.getY()/10);
+    
     // grab colors
     colors = new ColorSet("content", Color.white, resources, registry);
     colors.addPropertyChangeListener(new PropertyChangeListener() {
@@ -174,11 +177,11 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     model.setMarrSymbols(registry.get("marrs",true));
     TreeMetrics defm = model.getMetrics();
     model.setMetrics(new TreeMetrics(
-      registry.get("windis",(float)defm.wIndis),
-      registry.get("hindis",(float)defm.hIndis),
-      registry.get("wfams" ,(float)defm.wFams ),
-      registry.get("hfams" ,(float)defm.hFams ),
-      registry.get("pad"   ,(float)defm.pad   )
+      registry.get("windis",defm.wIndis),
+      registry.get("hindis",defm.hIndis),
+      registry.get("wfams" ,defm.wFams ),
+      registry.get("hfams" ,defm.hFams ),
+      registry.get("pad"   ,defm.pad   )
     ));
     isAntialiasing = registry.get("antial", false);
  
@@ -388,12 +391,12 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     // allowed?
     if (!(entity instanceof Indi||entity instanceof Fam)) return;
     // Node for it?
-    Node node = model.getNode(entity);
+    TreeNode node = model.getNode(entity);
     if (node==null) return;
     // remember
     currentEntity = entity;
     // scroll
-    scrollTo(node.getPosition());
+    scrollTo(node.pos);
     // make sure it's reflected
     content.repaint();
     // done
@@ -401,7 +404,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   
   /**
    * Scroll to given position   */
-  private void scrollTo(Point2D p) {
+  private void scrollTo(Point p) {
     // remember
     center.setLocation(p);
     // scroll
@@ -426,7 +429,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     if (currentEntity==null) 
       return;
     // Node for it?
-    Node node = model.getNode(currentEntity);
+    TreeNode node = model.getNode(currentEntity);
     if (node==null) {
       // hmm, retry with other
       currentEntity = null;
@@ -434,7 +437,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       return;
     } 
     // scroll
-    scrollTo(node.getPosition());
+    scrollTo(node.pos);
     // done    
   }
   
@@ -444,8 +447,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
    */
   public Context getContextAt(Point pos) {
     
-    Point2D p = view2model(pos);
-    Entity e = model.getEntityAt(p.getX(), p.getY());
+    Point p = view2model(pos);
+    Entity e = model.getEntityAt(p.x, p.y);
     if (e==null) return new Context(null);
     return new Context(e, Collections.singletonList(new ActionBookmark(e, true)));
   }
@@ -552,11 +555,11 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   /**
    * Translate a view position into a model position
    */
-  private Point2D view2model(Point pos) {
-    Rectangle2D bounds = model.getBounds();
-    return new Point2D.Double(
-      pos.x / (UNITS.getX()*zoom) + bounds.getMinX(), 
-      pos.y / (UNITS.getY()*zoom) + bounds.getMinY()
+  private Point view2model(Point pos) {
+    Rectangle bounds = model.getBounds();
+    return new Point(
+      (int)Math.rint(pos.x / (UNITS.getX()*zoom) + bounds.getMinX()), 
+      (int)Math.rint(pos.y / (UNITS.getY()*zoom) + bounds.getMinY())
     );
   }
   
@@ -788,8 +791,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      */
     public void mousePressed(MouseEvent e) {
       // check node
-      Point2D p = view2model(e.getPoint());
-      Object content = model.getContentAt(p.getX(), p.getY());
+      Point p = view2model(e.getPoint());
+      Object content = model.getContentAt(p.x, p.y);
       // entity?
       if (content instanceof Entity) {
         // change current!
@@ -811,8 +814,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     public void mouseClicked(MouseEvent e) {
       // double click
       if (e.getClickCount()>1) {
-        Point2D p = view2model(e.getPoint());
-        Object content = model.getContentAt(p.getX(), p.getY());
+        Point p = view2model(e.getPoint());
+        Object content = model.getContentAt(p.x, p.y);
         if (content instanceof Entity)
           setRoot((Entity)content);
       } 

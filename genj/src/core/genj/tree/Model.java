@@ -31,9 +31,8 @@ import gj.layout.LayoutException;
 import gj.layout.tree.TreeLayout;
 import gj.model.Node;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,7 +61,7 @@ public class Model implements GedcomListener {
   private Collection nodes = new ArrayList(100);
 
   /** bounds */
-  private Rectangle2D bounds = new Rectangle2D.Double();
+  private Rectangle bounds = new Rectangle();
   
   /** caching */
   private GridCache cache = null;
@@ -98,7 +97,7 @@ public class Model implements GedcomListener {
   private Entity root;
 
   /** metrics */
-  private TreeMetrics metrics = new TreeMetrics( 6.0F, 3.0F, 3.0F, 1.5F, 1.0F );
+  private TreeMetrics metrics = new TreeMetrics( 60, 30, 30, 15, 10 );
   
   /** bookmarks */
   private LinkedList bookmarks = new LinkedList();
@@ -253,7 +252,7 @@ public class Model implements GedcomListener {
   /**
    * Nodes by range
    */
-  public Collection getNodesIn(Rectangle2D range) {
+  public Collection getNodesIn(Rectangle range) {
     if (cache==null) return new HashSet();
     return cache.get(range);
   }
@@ -261,28 +260,27 @@ public class Model implements GedcomListener {
   /**
    * Arcs by range
    */
-  public Collection getArcsIn(Rectangle2D range) {
+  public Collection getArcsIn(Rectangle range) {
     return arcs;
   }
 
   /**
    * An node by position
    */
-  public TreeNode getNodeAt(double x, double y) {
+  public TreeNode getNodeAt(int x, int y) {
     // do we have a cache?
     if (cache==null) return null;
     // get nodes in possible range
-    double
+    int
       w = Math.max(metrics.wIndis, metrics.wFams),
       h = Math.max(metrics.hIndis, metrics.hFams);
-    Rectangle2D range = new Rectangle2D.Double(x-w/2, y-h/2, w, h);
+    Rectangle range = new Rectangle(x-w/2, y-h/2, w, h);
     // loop nodes
     Iterator it = cache.get(range).iterator();
     while (it.hasNext()) {
       TreeNode node = (TreeNode)it.next();
-      Point2D pos = node.getPosition();
       Shape shape = node.getShape();
-      if (shape!=null&&shape.getBounds2D().contains(x-pos.getX(),y-pos.getY()))
+      if (shape!=null&&shape.getBounds2D().contains(x-node.pos.x,y-node.pos.y))
         return node;
     }
     
@@ -292,7 +290,7 @@ public class Model implements GedcomListener {
      /**
    * Content by position
    */
-  public Object getContentAt(double x, double y) {
+  public Object getContentAt(int x, int y) {
     TreeNode node = getNodeAt(x, y);
     return node!=null ? node.getContent() : null;
   }
@@ -300,7 +298,7 @@ public class Model implements GedcomListener {
   /**
    * An entity by position
    */
-  public Entity getEntityAt(double x, double y) {
+  public Entity getEntityAt(int x, int y) {
     Object content = getContentAt(x, y);
     return content instanceof Entity ? (Entity)content : null;
   }
@@ -308,14 +306,14 @@ public class Model implements GedcomListener {
   /**
    * A node for entity (might be null)
    */
-  public Node getNode(Entity e) {
-    return (Node)entities2nodes.get(e);
+  public TreeNode getNode(Entity e) {
+    return (TreeNode)entities2nodes.get(e);
   }
   
   /**
    * The models space bounds
    */
-  public Rectangle2D getBounds() {
+  public Rectangle getBounds() {
     return bounds;
   }
 
@@ -495,8 +493,7 @@ public class Model implements GedcomListener {
     Iterator it = nodes.iterator();
     while (it.hasNext()) {
       TreeNode n = (TreeNode)it.next();
-      Shape s = n.getShape();
-      if (s!=null) cache.put(n, s.getBounds2D(), n.getPosition());
+      if (n.shape!=null) cache.put(n, n.shape.getBounds(), n.pos);
     }
     
     // notify
@@ -507,7 +504,7 @@ public class Model implements GedcomListener {
   /**
    * Helper that runs a TreeLayout
    */
-  private Rectangle2D layout(TreeNode root, boolean isTopDown) throws LayoutException {
+  private Rectangle layout(TreeNode root, boolean isTopDown) throws LayoutException {
     // layout
     TreeLayout layout = new TreeLayout();
     layout.setTopDown(isTopDown);
@@ -517,7 +514,7 @@ public class Model implements GedcomListener {
     layout.setBalanceChildren(false);
     layout.setRoot(root);
     layout.setVertical(isVertical);
-    return layout.layout(root, nodes.size());
+    return layout.layout(root, nodes.size()).getBounds();
     // done
   }
   

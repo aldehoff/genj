@@ -20,11 +20,11 @@
 package genj.tree;
 
 /**
- * Metrics a Tree's model is based on 
+ * Metrics a Tree's model is based on (based on millimeters)
  */  
 public class TreeMetrics {
     
-  /*package*/ float
+  /*package*/ int
     wIndis, hIndis,
     wFams, hFams,
     pad;
@@ -32,26 +32,14 @@ public class TreeMetrics {
   /**
    * Constructor
    */
-  public TreeMetrics(float windis, float hindis, float wfams, float hfams, float padng) {
+  public TreeMetrics(int windis, int hindis, int wfams, int hfams, int padng) {
     // remember
-    wIndis = (float)Math.rint(windis  *100)/100;
-    hIndis = (float)Math.rint(hindis  *100)/100;
-    wFams  = (float)Math.rint(wfams   *100)/100;
-    hFams  = (float)Math.rint(hfams   *100)/100;
-    pad    = (float)Math.rint(padng   *100)/100;
+    wIndis = windis;
+    hIndis = hindis;
+    wFams  = wfams;
+    hFams  = hfams;
+    pad    = padng;
     // done      
-  }
-  
-  /**
-   * Calculates the maximum value   */
-  /*package*/ float calcMax() {
-    float max = -Float.MAX_VALUE;
-    if (wIndis>max) max=wIndis;
-    if (hIndis>max) max=hIndis;
-    if (wFams >max) max=wFams ;
-    if (hFams >max) max=hFams ;
-    if (pad   >max) max=pad   ;
-    return max;
   }
   
   /**
@@ -70,6 +58,18 @@ public class TreeMetrics {
       pad    == other.pad   ;
   }
 
-  
+  /**
+   * Calculates the maximum value
+   */
+  /*package*/ int calcMax() {
+    int max = Integer.MIN_VALUE;
+    if (wIndis>max) max=wIndis;
+    if (hIndis>max) max=hIndis;
+    if (wFams >max) max=wFams ;
+    if (hFams >max) max=hFams ;
+    if (pad   >max) max=pad   ;
+    return max;
+  }
+
 } //TreeMetrics
 
