@@ -20,7 +20,15 @@
 package genj.gedcom;
 
 /**
- * RELA property as sub-property for ASSOciation
+ * RELA property as sub-property for ASSOciation - it contains
+ * a textual RELAtionship description for that ASSOciation. We
+ * also use it to store the path to the ASSOciation's target 
+ * (the anchor) because ASSOciations are represented with
+ * back-pointing properties in Gedcom. The anchor contains the
+ * path to the ASSOciation's ForeignXRef's parent, e.g.
+ * INDI:BIRT or FAM:MARR. On load we can provide the ASSOciation
+ * with that anchor for reconstruction of the old appropriate
+ * link.
  */
 public class PropertyRelationship extends PropertyChoiceValue {
 
@@ -77,13 +85,17 @@ public class PropertyRelationship extends PropertyChoiceValue {
    */
   /*package*/ TagPath getAnchor() {
 
-    // fallback to target?
+    // try to find accurate target base on target's parent
     Property target = getTarget();
-    if (target==null||target instanceof PropertyForeignXRef)
-      return anchor;
+    if (target!=null) {
+      Property panchor = target.getParent();
+      if (panchor!=null)
+        return panchor.getPath();
+    }
+    
+    // fallback to current cached anchor
+    return anchor;
 
-    // use target's path
-    return target.getPath();
   }
 
 } //PropertyRelationship
