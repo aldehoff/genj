@@ -23,17 +23,8 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.util.swing.SwingFactory;
 
-import java.awt.Component;
-
-import javax.swing.ComboBoxEditor;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -44,11 +35,8 @@ import javax.swing.event.PopupMenuListener;
 class ProxyChoice extends Proxy{
 
   /** members */
-  private JComboBox combo;
+  private SwingFactory.JComboBox combo;
   
-  /** editor */
-  private Editor editor;
-
   /**
    * Finish editing a property through proxy
    */
@@ -70,7 +58,7 @@ class ProxyChoice extends Proxy{
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-    return editor.hasChanged();
+    return combo.hasChanged();
   }
 
   /**
@@ -88,126 +76,15 @@ class ProxyChoice extends Proxy{
     }
 
     // Setup controls
-    editor = new Editor();
-    combo = new SwingFactory().JComboBox(items, null);
+    combo = new SwingFactory().JComboBox(items, prop.getValue());
     combo.setEditable(true);
-    combo.setEditor(editor);
-    combo.addPopupMenuListener(editor);
-
-    editor.setText(prop.getValue());
     
     // layout
     in.add(combo);
     
-    SwingFactory.requestFocusFor(editor);
+    SwingFactory.requestFocusFor(combo);
     
     // Done
   }
   
-  /**
-   * our own editor
-   */
-  private class Editor extends JTextField implements ComboBoxEditor, DocumentListener, PopupMenuListener {
-    
-    /** change flag */  
-    private boolean changed = false;
-    
-    /**
-     * Constructor
-     */
-    private Editor() {
-      getDocument().addDocumentListener(this);
-    }
-    
-    /**
-     * Changed?
-     */
-    public boolean hasChanged() {
-      return changed;
-    }
-      
-    /**
-     * @see javax.swing.ComboBoxEditor#getEditorComponent()
-     */
-    public Component getEditorComponent() {
-      return this;
-    }
-
-    /**
-     * @see javax.swing.ComboBoxEditor#getItem()
-     */
-    public Object getItem() {
-      return getText();
-    }
-
-    /**
-     * @see javax.swing.ComboBoxEditor#setItem(java.lang.Object)
-     */
-    public void setItem(Object set) {
-      if (set==null) set = "";
-      setText(set.toString());
-      changed = true;
-    }
-    
-    /**
-     * @see genj.edit.ProxyChoice.Editor#setText(java.lang.String)
-     */
-    public void setText(String t) {
-      super.setText(t);
-      changed = false;
-    }
-
-    /**
-     * Change notification
-     */
-    public void changedUpdate(DocumentEvent e) {
-      changed = true;
-    }
-
-    /**
-     * Document event - insert
-     */
-    public void insertUpdate(DocumentEvent e) {
-      changed = true;
-    }
-
-    /**
-     * Document event - remove
-     */
-    public void removeUpdate(DocumentEvent e) {
-      changed = true;
-    }
-    
-    /**
-     * @see javax.swing.event.PopupMenuListener#popupMenuCanceled(javax.swing.event.PopupMenuEvent)
-     */
-    public void popupMenuCanceled(PopupMenuEvent e) {
-      // ignored
-    }
-
-    /**
-     * @see javax.swing.event.PopupMenuListener#popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent)
-     */
-    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-      // ignored
-    }
-
-    /**
-     * @see javax.swing.event.PopupMenuListener#popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent)
-     */
-    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-      // try to find prefix in combo
-      String pre = getText();
-      for (int i=0; i<combo.getItemCount(); i++) {
-        String item = (String) combo.getItemAt(i);
-        if (item.regionMatches(true, 0, pre, 0, pre.length())) {
-          combo.setSelectedIndex(i);
-          break;
-        }
-      }
-      // done
-    }
-
-  } //Editor
-
 } //ProxyChoice
