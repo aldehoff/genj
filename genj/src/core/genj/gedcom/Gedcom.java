@@ -971,7 +971,7 @@ public class Gedcom implements GedcomListener {
   /**
    * Returns the Resources (lazily)
    */
-  static Resources getResources() {
+  public static Resources getResources() {
     if (resources==null) {
       resources = new Resources("genj.gedcom");
     }
