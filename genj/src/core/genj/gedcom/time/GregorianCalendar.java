@@ -67,6 +67,10 @@ public class GregorianCalendar extends Calendar {
    */
   protected int toJulianDay(int day, int month, int year) {
 
+    // there's no year 0 - anything B.C. has to be shifted
+    if (year<0)
+      year++;
+
     // Communications of the ACM by Henry F. Fliegel and Thomas C. Van Flandern entitled 
     // ``A Machine Algorithm for Processing Calendar Dates''. 
     // CACM, volume 11, number 10, October 1968, p. 657.  

@@ -49,8 +49,8 @@ public class HebrewCalendar extends Calendar {
 
   /**
    * the calendar begins at sunset the night before 
-   * Monday, October 7, 3760 B.C.E. (Julian calendar)
-   * Monday, September 9, 3760 B.C.E (Gregorian calendar)
+   * Monday, October 7, 3761 B.C.E. (Julian calendar)
+   * Monday, September 9, 3761 B.C.E (Gregorian calendar)
    * Julian day 347997.5.
    */
   private static final int 
@@ -78,7 +78,7 @@ public class HebrewCalendar extends Calendar {
   /**
    * Julian Day -> PIT
    */
-  public PointInTime toPointInTime(int julianDay) throws GedcomException {
+  protected PointInTime toPointInTime(int julianDay) throws GedcomException {
     
     // before Hebrew calendar start - ANNO MUNDI?
     if (julianDay<ANNO_MUNDI)
@@ -107,7 +107,7 @@ public class HebrewCalendar extends Calendar {
   /**
    * d,m,y -> Julian Day
    */
-  public int toJulianDay(int day, int month, int year) throws GedcomException {
+  protected int toJulianDay(int day, int month, int year) throws GedcomException {
 
     // year ok?
     if (year<1)
@@ -156,7 +156,7 @@ public class HebrewCalendar extends Calendar {
     return tishri1;   
   }
     
-  public int _getTishri1(int year) {
+  private int _getTishri1(int year) {
         
     // In general the 1st of Tishri of that year avoids
     // Sunday, Wednesday, and Friday

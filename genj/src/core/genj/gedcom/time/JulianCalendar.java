@@ -44,7 +44,11 @@ public class JulianCalendar extends GregorianCalendar {
    * @see genj.gedcom.PointInTime.GregorianCalendar#toJulianDay(int, int, int)
    */
   protected int toJulianDay(int day, int month, int year) {
-    
+
+    // there's no year 0 - anything B.C. has to be shifted
+    if (year<0)
+      year++;
+
     int 
       y = year,
       m = month+1,
