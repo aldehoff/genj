@@ -34,9 +34,9 @@ public class PropertyName extends Property {
   
   /** the first + last name */
   private String
-    lastName  = null,
-    firstName = null,
-    suffix    = null;
+    lastName  = EMPTY_STRING,
+    firstName = EMPTY_STRING,
+    suffix    = EMPTY_STRING;
 
   /** the name if unparsable */
   private String nameAsString;
@@ -170,9 +170,10 @@ public class PropertyName extends Property {
     
     WordBuffer wb = new WordBuffer();
     wb.append(firstName);
-    if ((lastName!=null) && (lastName.length()>0))
+    // 20050328 need last name //'s if there's a suffix
+    if (lastName.length()>0||suffix.length()>0)
       wb.append("/"+lastName+"/");
-    if ((suffix!=null) && (suffix.length()>0) )
+    if (suffix.length()>0)
       wb.append(suffix);
     return wb.toString();
   }
@@ -186,8 +187,10 @@ public class PropertyName extends Property {
     if (nameAsString!=null)
       return nameAsString;
     
-    WordBuffer b = new WordBuffer().setFiller(", ");
+    WordBuffer b = new WordBuffer();
     b.append(getLastName());
+    b.append(getSuffix());
+    b.setFiller(", ");
     b.append(getFirstName());
     
     return b.toString();
@@ -213,9 +216,9 @@ public class PropertyName extends Property {
     // Make sure no Information is kept in base class
     nameAsString=null;
 
-    lastName  = last!=null ? last.trim() : null;
-    firstName = first!=null ? first.trim() : null;
-    suffix    = suff!=null ? suff.trim() : suff;
+    lastName  = last.trim();
+    firstName = first.trim();
+    suffix    = suff.trim();
 
     // tell about it 
     propagateChange(old);
@@ -257,15 +260,9 @@ public class PropertyName extends Property {
    */
   public void setValue(String newValue) {
 
-    // New empty Value ?
-    if (newValue==null) {
-      setName(null,null,null);
-      return;
-    }
-
     // Only name specified ?
     if (newValue.indexOf('/')<0) {
-      setName(newValue, "", null);
+      setName(newValue, EMPTY_STRING, EMPTY_STRING);
       return;
     }
 
@@ -275,7 +272,7 @@ public class PropertyName extends Property {
 
     // ... wrong format (2 x '/'s !)
     if (l.indexOf('/') == -1)  {
-      setName(null,null,null);
+      setName(EMPTY_STRING,EMPTY_STRING,EMPTY_STRING);
       nameAsString=newValue;
       return;
     }
