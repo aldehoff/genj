@@ -108,7 +108,7 @@ import javax.swing.JScrollPane;
   /**
    * Shows property's image if possible
    */
-  private void showFile(String file) {
+  private void showFile(String file, boolean warnAboutSize) {
 
     // show value
     tFile.setTemplate(false);
@@ -120,7 +120,7 @@ import javax.swing.JScrollPane;
       if (loader!=null) {
         loader.cancel(true);
       }
-      loader = new Loader(file);
+      loader = new Loader(file, warnAboutSize);
       view2loader.put(view, loader);
       loader.trigger();
     }
@@ -138,7 +138,7 @@ import javax.swing.JScrollPane;
     tFile.setTemplate(true);
 
     // .. preview
-    preview.setImage(new ImageIcon(blob.getTitle(), blob.getBlobData()), false);
+    preview.setImage(new ImageIcon(blob.getTitle(), blob.getBlobData()));
 
     // done
   }
@@ -178,7 +178,7 @@ import javax.swing.JScrollPane;
 
     // display what we've got
     if (property instanceof PropertyFile)
-      showFile(((PropertyFile)property).getValue());
+      showFile(((PropertyFile)property).getValue(), false);
     if (property instanceof PropertyBlob)
       showFile((PropertyBlob)property);
       
@@ -227,7 +227,7 @@ import javax.swing.JScrollPane;
       updateFormatAndTitle = check.isSelected();
       
       // show it 
-      showFile(file.toString());
+      showFile(file.toString(), true);
       
       // remember changed
       tFile.setChanged(true);
@@ -290,30 +290,9 @@ import javax.swing.JScrollPane;
     /**
      * Sets the image to preview
      */
-    protected void setImage(ImageIcon set, boolean warnAboutSize) {
-      
+    protected void setImage(ImageIcon set) {
       // remember
       img = set;
-
-      // warn
-      if (warnAboutSize&&img!=null&&img.getByteSize()>PropertyFile.getMaxValueAsIconSize(false)) {
-        
-        String txt = view.resources.getString("proxy.file.max", new String[]{
-          img.getDescription(),
-          String.valueOf(PropertyFile.toKB(img.getByteSize())),
-          String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
-          PropertyFile.MINUS_D_KEY
-        }); 
-        
-        view.manager.getWindowManager().openDialog(
-          null,null,
-          WindowManager.IMG_INFORMATION,
-          txt,
-          WindowManager.OPTIONS_OK,
-          view
-        );
-      }
-      
       // show
       setZoom(zoom);
     }
@@ -426,6 +405,8 @@ import javax.swing.JScrollPane;
    * Async Image Loader
    */
   private class Loader extends ActionDelegate {
+    /** warn about filesize */
+    private boolean warn;
     /** file to load */
     private String file;
     /** the result */
@@ -433,7 +414,8 @@ import javax.swing.JScrollPane;
     /**
      * constructor
      */
-    private Loader(String setFile) {
+    private Loader(String setFile, boolean setWarn) {
+      warn = setWarn;
       file = setFile;
       setAsync(super.ASYNC_SAME_INSTANCE);
     }
@@ -442,7 +424,7 @@ import javax.swing.JScrollPane;
      */
     protected boolean preExecute() {
       // kill current
-      preview.setImage(null, false);
+      preview.setImage(null);
       // show wait
       preview.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
       // continue
@@ -464,12 +446,36 @@ import javax.swing.JScrollPane;
      * sync show result
      */
     protected void postExecute() {
-      
+
+      // check 
       preview.setCursor(null);
-      if (result!=null) {
-        preview.setImage(result, true);
-        result = null;
+      if (result==null)
+        return;
+        
+      // warn about size
+      if (warn&&result.getByteSize()>PropertyFile.getMaxValueAsIconSize(false)) {
+        
+        String txt = view.resources.getString("proxy.file.max", new String[]{
+          result.getDescription(),
+          String.valueOf(PropertyFile.toKB(result.getByteSize())),
+          String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
+          PropertyFile.MINUS_D_KEY
+        }); 
+        
+        view.manager.getWindowManager().openDialog(
+          null,null,
+          WindowManager.IMG_INFORMATION,
+          txt,
+          WindowManager.OPTIONS_OK,
+          view
+        );
       }
+      
+      // show
+      preview.setImage(result);
+      result = null;
+      
+      // done
     }
 
   } //Loader
