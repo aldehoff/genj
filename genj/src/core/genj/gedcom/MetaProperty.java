@@ -78,7 +78,10 @@ public class MetaProperty {
   private String info;
   
   /** whether this has been instantiated */
-  private boolean instantiated = false;
+  private boolean isInstantiated = false;
+  
+  /** whether this is grammar conform */
+  private boolean isGrammar;
   
   /** properties */
   private Map props;
@@ -90,10 +93,11 @@ public class MetaProperty {
   /**
    * Constructor
    */
-  private MetaProperty(String tag, Map props) {
+  private MetaProperty(String tag, Map props, boolean grammar) {
     // remember tags&props
     this.tag = tag;
     this.props = props;
+    this.isGrammar = grammar;
     // find super
     String path = getAttribute("super", null);
     if (path!=null) supr = MetaProperty.get(new TagPath(path));
@@ -141,8 +145,10 @@ public class MetaProperty {
   /**
    * Test
    */
-  /*package*/ boolean allows(String sub) {
-    return mapOfSubs.containsKey(sub);
+  public boolean allows(String sub) {
+    // has to be defined as sub with isGrammar==true
+    MetaProperty meta = (MetaProperty)mapOfSubs.get(sub);
+    return meta==null ? false : meta.isGrammar;
   }
   
   /**
@@ -208,7 +214,7 @@ public class MetaProperty {
     }
     
     // increate count
-    instantiated = true;
+    isInstantiated = true;
 
     // done 
     return result;
@@ -288,7 +294,7 @@ public class MetaProperty {
     // current tag in map?
     MetaProperty result = (MetaProperty)mapOfSubs.get(tag);
     if (result==null) {
-      result = new MetaProperty(tag, Collections.EMPTY_MAP);
+      result = new MetaProperty(tag, Collections.EMPTY_MAP, false);
       if (persist) addSub(result);
     }
     // done
@@ -303,7 +309,7 @@ public class MetaProperty {
     MetaProperty root = (MetaProperty)tag2root.get(tag);
     // something we didn't know about yet?
     if (root==null) {
-      root = new MetaProperty(tag, Collections.EMPTY_MAP);
+      root = new MetaProperty(tag, Collections.EMPTY_MAP, false);
       tag2root.put(tag, root);
     }
     // recurse into      
@@ -359,7 +365,7 @@ public class MetaProperty {
   private static void getPathsRecursively(MetaProperty meta, Class property, TagPath path, Collection result) {
 
     // something worthwhile to dive into?
-    if (!meta.instantiated) 
+    if (!meta.isInstantiated) 
       return;
     
     // type match?
@@ -460,10 +466,10 @@ public class MetaProperty {
       while (stack.size()>level) pop();
       
       // instantiate
-      MetaProperty meta = new MetaProperty(tag, props);
+      MetaProperty meta = new MetaProperty(tag, props, true);
       if (level==0) {
         tag2root.put(tag, meta);
-        meta.instantiated = true; // fake instantiated
+        meta.isInstantiated = true; // fake instantiated
       } else {
         peek().addSub(meta);
       }
