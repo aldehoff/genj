@@ -474,9 +474,8 @@ public class PropertyTreeWidget extends DnDTree {
      * Tells wether object is a leaf
      */
     public boolean isLeaf(Object node) {
-      if (node==NULL)
-        return true;
-      return ((Property)node).getNoOfProperties()==0;
+      // nothing is leaf - allows to drag everywhere
+      return false;
     }          
   
     /**
