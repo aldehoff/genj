@@ -34,15 +34,15 @@ public class ReportNameHistory extends Report {
   private int lifespanWithoutDEAT = 80;
   
   /** minimum percentage of name to be considered */
-  private int minUseOfName = 2;
+  private float minUseOfName = 2;
   
   /** Accessor - minimum percentage of name to be considered */
-  public int getMinUseOfName() {
+  public float getMinUseOfName() {
     return minUseOfName;
   }
   
   /** Accessor - minimum percentage of name to be considered */
-  public void setMinUseOfName(int set) {
+  public void setMinUseOfName(float set) {
     minUseOfName = Math.max(0, Math.min(set, 50));
   }
   
@@ -101,7 +101,7 @@ public class ReportNameHistory extends Report {
     }
     
     // show it
-    showChartToUser(new Chart(getName(), null, i18n("yaxis"), IndexedSeries.toArray(name2series.values()), yearStart, yearEnd, new DecimalFormat("#"), true));
+    showChartToUser(new Chart(i18n("title", gedcom.getName()), null, i18n("yaxis"), IndexedSeries.toArray(name2series.values()), yearStart, yearEnd, new DecimalFormat("#"), true));
 
     // done
   }
