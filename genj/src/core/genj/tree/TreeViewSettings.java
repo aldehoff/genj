@@ -53,7 +53,7 @@ import javax.swing.event.ListSelectionListener;
 
 /**
  * The settings component for the Tree View */
-public class TreeViewSettings extends JTabbedPane implements Settings, ModelListener {
+public class TreeViewSettings extends JTabbedPane implements Settings {
 
   /** keeping track of tree these settings are for */
   private TreeView view;
@@ -185,30 +185,14 @@ public class TreeViewSettings extends JTabbedPane implements Settings, ModelList
    * @see genj.view.Settings#setView(javax.swing.JComponent, genj.view.ViewManager)
    */
   public void setView(JComponent viEw) {
-    // stop listening to old?
-    if (view!=null) view.getModel().removeListener(this);
     // remember
     view = (TreeView)viEw;
     // update characteristics
     colors.setColorSets(new ColorSet[]{view.colors});
     blueprintList.setGedcom(view.getModel().getGedcom());
-    // start listening to new?
-    view.getModel().addListener(this);
     // done
   }
   
-  /**
-   * @see genj.tree.ModelListener#nodesChanged(genj.tree.Model, java.util.List)
-   */
-  public void nodesChanged(Model model, List nodes) {
-  }
-
-  /**
-   * @see genj.tree.ModelListener#structureChanged(genj.tree.Model)
-   */
-  public void structureChanged(Model model) {
-  }
-
   /**
    * @see genj.view.ApplyResetSupport#apply()
    */
