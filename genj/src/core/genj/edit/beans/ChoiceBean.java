@@ -27,7 +27,11 @@ import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
 import genj.view.ViewManager;
+import genj.window.CloseWindow;
+import genj.window.WindowManager;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 
 import javax.swing.JCheckBox;
@@ -57,13 +61,13 @@ public class ChoiceBean extends PropertyBean {
     // change value
     prop.setValue(choice.getText(), global.isSelected());
 
+    // refresh choices
+    choice.setValues(prop.getChoices(gedcom).toArray());
+
     // hide global
     global.setSelected(false);
     global.setVisible(false);
     
-    // refresh choices
-    choice.setValues(prop.getChoices(gedcom).toArray());
-
     // Done
   }
 
@@ -87,13 +91,26 @@ public class ChoiceBean extends PropertyBean {
     global.setVisible(false);
     global.setRequestFocusEnabled(false);
     
+    // listen to changes in choice and show global checkbox if applicable
     choice.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
-        int others = ((PropertyChoiceValue)property).getSameChoices().length;
-        if (others>1) {
+        String confirm = getGlobalConfirmMessage();
+        if (confirm!=null) {
           global.setVisible(true);
-          global.setToolTipText("Change all "+others+" occurances of '"+property.getValue()+"' into '"+choice.getText()+"'");
+          global.setToolTipText(confirm);
         }
+      }
+    });
+    
+    // listen to selection of global and ask for confirmation
+    global.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        String confirm = getGlobalConfirmMessage();
+        if (confirm!=null&&global.isSelected()) {
+          int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.IMG_QUESTION, confirm, CloseWindow.YESandNO(), ChoiceBean.this);
+          if (rc!=0)
+            global.setSelected(false);
+        }        
       }
     });
     
@@ -106,6 +123,16 @@ public class ChoiceBean extends PropertyBean {
     // focus
     defaultFocus = choice;
     
+  }
+
+  /**
+   * Create confirm message for global
+   */
+  private String getGlobalConfirmMessage() {
+    int others = ((PropertyChoiceValue)property).getSameChoices().length;
+    if (others<2)
+      return null;
+    return resources.getString("choice.global.confirm", new String[]{ ""+others, property.getValue(), choice.getText() });
   }
   
   /**
