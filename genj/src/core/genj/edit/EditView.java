@@ -35,6 +35,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImgIconConverter;
 import genj.view.CurrentSupport;
+import genj.view.EntityPopupSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -46,6 +47,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
@@ -55,6 +57,7 @@ import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -77,7 +80,7 @@ import javax.swing.tree.TreePath;
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends JSplitPane implements CurrentSupport, ToolBarSupport {
+public class EditView extends JSplitPane implements CurrentSupport, ToolBarSupport, EntityPopupSupport {
 
   /** the gedcom we're looking at */
   private Gedcom    gedcom;
@@ -255,6 +258,20 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
    */
   public void setCurrentProperty(Property property) {
     // ignored
+  }
+  
+  /**
+   * @see genj.view.EntityPopupSupport#getEntityPopupContainer()
+   */
+  public JComponent getEntityPopupContainer() {
+    return tree;
+  }
+
+  /**
+   * @see genj.view.EntityPopupSupport#getEntityAt(Point)
+   */
+  public Entity getEntityAt(Point pos) {
+    return currentEntity;
   }
   
   /**

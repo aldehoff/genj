@@ -148,9 +148,9 @@ public class TimelineView extends JPanel implements ToolBarSupport, CurrentSuppo
     csContent.add("grid"    , Color.lightGray);
     csContent.add("selected", Color.red  );
    
-    csRuler = new ColorSet("ruler", Color.blue, resources, regstry);
+    csRuler = new ColorSet("ruler", Color.white, resources, regstry);
     csRuler.add("text", Color.black);
-    csRuler.add("tick", Color.white);
+    csRuler.add("tick", Color.lightGray);
     
     // create/keep our sub-parts
     model = new Model(gedcom, (Set)regstry.get("filter", model.DEFAULT_FILTER));

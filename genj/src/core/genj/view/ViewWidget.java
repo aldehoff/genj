@@ -29,6 +29,7 @@ import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.ImgIconConverter;
 import genj.util.swing.MenuHelper;
 
 import java.awt.BorderLayout;
@@ -137,7 +138,7 @@ import javax.swing.border.TitledBorder;
     }
   
     // .. a button for closing the View
-    bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(genj.gedcom.Images.get("X")));
+    bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(Images.imgClose));
 
     // add it
     String o = descriptor.dim.width<descriptor.dim.height ? BorderLayout.WEST : BorderLayout.SOUTH;
@@ -293,6 +294,11 @@ import javax.swing.border.TitledBorder;
       // fill them into a popup
       MenuHelper mh = new MenuHelper();
       JPopupMenu popup = mh.createPopup(entity.getId());
+      popup.add(new JLabel(
+        entity.getId(), 
+        ImgIconConverter.get(entity.getProperty().getImage(false)),
+        JLabel.CENTER
+      ));
       Iterator it = actions.iterator();
       while (it.hasNext()) {
         ActionDelegate ad = (ActionDelegate)it.next();

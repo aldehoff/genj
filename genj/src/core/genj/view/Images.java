@@ -37,7 +37,8 @@ final public class Images {
     imgNavigator,
     imgEntity,
     imgSettings,
-    imgPrint;
+    imgPrint,
+    imgClose;
 
   /**
    * Constructor which pre-loads all images
@@ -51,8 +52,9 @@ final public class Images {
     imgReport    = new ImgIcon(this,"images/Report.gif");
     imgNavigator = new ImgIcon(this,"images/Navigator.gif");
     imgEntity    = new ImgIcon(this,"images/Entity.gif");
-    imgSettings     = new ImgIcon(this,"images/Settings.gif");
-    imgPrint        = new ImgIcon(this,"images/Print.gif");
+    imgSettings  = new ImgIcon(this,"images/Settings.gif");
+    imgPrint     = new ImgIcon(this,"images/Print.gif");
+    imgClose     = new ImgIcon(this,"images/Close.gif");
   }
   
 } //Images

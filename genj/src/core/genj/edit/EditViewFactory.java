@@ -30,6 +30,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
+import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.view.ViewFactory;
 
@@ -37,6 +38,35 @@ import genj.view.ViewFactory;
  * The factory for the TableView
  */
 public class EditViewFactory implements ViewFactory {
+  
+  /** actions for creating entities */
+  private final ActionCreate
+    actionChild  = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_CHILD, "new.child"),
+    actionParent = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_PARENT, "new.parent"),
+    actionSpouse = new ActionCreate(Images.imgNewIndi  , Gedcom.INDIVIDUALS, Gedcom.REL_SPOUSE, "new.spouse"),
+    actionNote   = new ActionCreate(Images.imgNewNote  , Gedcom.NOTES, 0, "new.note"),
+    actionMedia  = new ActionCreate(Images.imgNewMedia , Gedcom.MULTIMEDIAS, 0, "new.media")
+  ;
+  
+  private final ActionDelete actionDelete = new ActionDelete();
+  
+  /** actions on entities */
+  private ActionDelegate[][] entity2create = new ActionDelegate[][] {
+    // INDIVIDUALS
+    { actionDelete,actionChild,actionParent,actionSpouse,actionNote,actionMedia }, 
+    // FAMILIES
+    { actionDelete,actionChild,actionNote,actionSpouse,actionMedia }, 
+    // MULTIMEDIAS
+    { actionDelete }, 
+    // NOTES
+    { actionDelete }, 
+    // SOURCES
+    { actionDelete }, 
+    // SUBMITTERS
+    { actionDelete }, 
+    // REPOSITORIES
+    { actionDelete }  
+  };
 
   /**
    * @see genj.app.ViewFactory#createSettingsComponent(Component)
@@ -64,17 +94,50 @@ public class EditViewFactory implements ViewFactory {
    */
   public List createActions(Entity entity) {
     // create the actions
-    ActionDelegate one = new ActionDelegate() {
-      /** @see genj.util.ActionDelegate#execute() */
-      protected void execute() {
-        System.out.println("!");
-      }
-    };
-    one.setText("Foo");
-    // the result
     List result = new ArrayList();
-    result.add(one);
+    ActionDelegate[] actions = entity2create[entity.getType()];
+    for (int a=0; a<actions.length; a++) {
+      result.add(actions[a]);
+    }
+    // done
     return result;
   }
+
+  /**
+   * ActionDelete - delete an entity
+   */  
+  private class ActionDelete extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionDelete() {
+      super.setImage(Images.imgDelete);
+      super.setText(EditView.resources.getString("delete"));
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+    }
+  } //ActionDelete
+  
+
+  /**
+   * ActionCreate - create an entity
+   */  
+  private class ActionCreate extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private ActionCreate(ImgIcon img, int t, int r, String txt) {
+      super.setImage(img);
+      super.setText(EditView.resources.getString("new", EditView.resources.getString(txt)));
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+    }
+  } //ActionCreate
 
 } //EditViewFactory

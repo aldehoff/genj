@@ -37,7 +37,17 @@ final public class Images {
     imgUp,
     imgDown,
     imgAdd,
-    imgRemove;
+    imgRemove,
+    imgIndi,
+    
+    imgDelete,
+    imgNewFam,
+    imgNewIndi,
+    imgNewMedia,
+    imgNewNote,
+    imgNewRepository,
+    imgNewSource,
+    imgNewSubmitter;
 
   /**
    * Constructor which pre-loads all images
@@ -54,5 +64,13 @@ final public class Images {
     imgAdd       = new ImgIcon(this,"images/Add.gif");
     imgRemove    = new ImgIcon(this,"images/Remove.gif");
     
+    imgDelete        = new ImgIcon(this,"images/entity/Delete.gif");
+    imgNewFam        = new ImgIcon(this,"images/entity/NewFam.gif");
+    imgNewIndi       = new ImgIcon(this,"images/entity/NewIndi.gif");
+    imgNewMedia      = new ImgIcon(this,"images/entity/NewMedia.gif");
+    imgNewNote       = new ImgIcon(this,"images/entity/NewNote.gif");
+    imgNewRepository = new ImgIcon(this,"images/entity/NewRepository.gif");
+    imgNewSource     = new ImgIcon(this,"images/entity/NewSource.gif");
+    imgNewSubmitter  = new ImgIcon(this,"images/entity/NewSubmitter.gif");
   }
 }
