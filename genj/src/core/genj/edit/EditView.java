@@ -32,6 +32,8 @@ import genj.view.Context;
 import genj.view.ContextListener;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import genj.window.CloseWindow;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -41,7 +43,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
@@ -121,7 +125,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
       
     // keep new
     editor = set;
-    editor.init(gedcom, manager, registry);
+    editor.init(gedcom, this, registry);
 
     // add to layout
     add(editor, BorderLayout.CENTER);
@@ -188,6 +192,50 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     super.removeNotify();
 
     // Done
+  }
+  
+  /**
+   * WindowManager
+   */
+  /*package*/ WindowManager getWindowManager() {
+    return manager.getWindowManager();
+  }
+  
+  /**
+   * ViewManager
+   */
+  /*package*/ ViewManager getViewManager() {
+    return manager;
+  }
+  
+  /**
+   * Ask the user whether he wants to commit changes 
+   */
+  /*package*/ boolean isCommitChanges() {
+      
+    if (Options.getInstance().isAutoCommit)
+      return true;
+    
+    JCheckBox auto = new JCheckBox(resources.getString("confirm.autocomit"));
+    auto.setFocusable(false);
+    
+    int rc = manager.getWindowManager().openDialog(null, 
+        resources.getString("confirm.keep.changes"), WindowManager.IMG_QUESTION, 
+        new JComponent[] {
+          new JLabel(resources.getString("confirm.keep.changes")),
+          auto
+        },
+        CloseWindow.YESandNO(), 
+        this
+    );
+    
+    if (rc!=0)
+      return false;
+    
+    Options.getInstance().isAutoCommit = auto.isSelected();
+    
+    return true;
+    
   }
   
   /**

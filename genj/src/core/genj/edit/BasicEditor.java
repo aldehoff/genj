@@ -37,7 +37,6 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
-import genj.view.ViewManager;
 import genj.window.CloseWindow;
 
 import java.awt.BorderLayout;
@@ -80,6 +79,9 @@ import javax.swing.event.ChangeListener;
   //  (?INDI:RESI:PLAC) - wrapped bean - place of residence (if exists)
   //
   private final static HashMap TEMPLATES = new HashMap();
+  
+  // FIXME auto focus on first line
+  // FIXME confirm on exit
   
   static {
     
@@ -187,8 +189,8 @@ import javax.swing.event.ChangeListener;
   /** registry */
   private Registry registry;
 
-  /** view manager */
-  private ViewManager manager;
+  /** edit */
+  private EditView view;
 
   /** bean container */
   private JPanel beanPanel;
@@ -210,11 +212,11 @@ import javax.swing.event.ChangeListener;
   /**
    * Callback - init for edit
    */
-  public void init(Gedcom gedcom, ViewManager manager, Registry registry) {
+  public void init(Gedcom gedcom, EditView edit, Registry registry) {
 
     // remember
     this.gedcom = gedcom;
-    this.manager = manager;
+    this.view = edit;
     this.registry = registry;
     
     // make user focus root
@@ -294,6 +296,10 @@ import javax.swing.event.ChangeListener;
    * Callback - set current context
    */
   public void setContext(Context context) {
+    
+    // something to be committed?
+    if (!gedcom.isTransaction()&&entity!=null&&ok.isEnabled()&&view.isCommitChanges()) 
+      ok.trigger();
 
     // set if new
     Entity set = context.getEntity();
@@ -319,7 +325,7 @@ import javax.swing.event.ChangeListener;
   /**
    * Set current entity
    */
-  public void setEntity(Entity set) {
+  private void setEntity(Entity set) {
 
     // remember
     entity = set;
@@ -368,7 +374,7 @@ import javax.swing.event.ChangeListener;
       prop = meta.create("");
     
     PropertyBean bean = PropertyBean.get(prop);
-    bean.init(entity.getGedcom(), prop, path, manager, registry);
+    bean.init(entity.getGedcom(), prop, path, view.getViewManager(), registry);
     bean.addChangeListener(changeCallback);
     
     // remember

@@ -33,7 +33,6 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.Context;
-import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
@@ -106,11 +105,8 @@ import javax.swing.event.TreeSelectionListener;
   /** splitpane for tree/bean */
   private JSplitPane        splitPane = null;
 
-  /** window manager */
-  private WindowManager     winManager;
-
-  /** view manager */
-  private ViewManager       viewManager;
+  /** view */
+  private EditView editView;
 
   /** actions */
   private ActionDelegate    
@@ -123,12 +119,11 @@ import javax.swing.event.TreeSelectionListener;
   /**
    * Initialize
    */
-  public void init(Gedcom ged, ViewManager manager, Registry regty) {
+  public void init(Gedcom ged, EditView view, Registry regty) {
     
     // remember
     gedcom = ged;
-    viewManager = manager;
-    winManager = viewManager.getWindowManager();
+    editView = view;
     registry = regty;
     
     // TREE Component's 
@@ -242,7 +237,7 @@ import javax.swing.event.TreeSelectionListener;
           new CloseWindow(CloseWindow.TXT_CANCEL)
         };
         // ask the user
-        int rc = winManager.openDialog("cut.warning", resources.getString("action.cut"), WindowManager.IMG_WARNING, msg, actions, AdvancedEditor.this );
+        int rc = editView.getWindowManager().openDialog("cut.warning", resources.getString("action.cut"), WindowManager.IMG_WARNING, msg, actions, AdvancedEditor.this );
         if (rc!=0)
           return;
         // continue
@@ -370,7 +365,7 @@ import javax.swing.event.TreeSelectionListener;
       ChoosePropertyBean choose = new ChoosePropertyBean(parent, resources);
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
-      int option = winManager.openDialog("add",resources.getString("add.title"),WindowManager.IMG_QUESTION,new JComponent[]{ label, choose, check },CloseWindow.OKandCANCEL(), AdvancedEditor.this); 
+      int option = editView.getWindowManager().openDialog("add",resources.getString("add.title"),WindowManager.IMG_QUESTION,new JComponent[]{ label, choose, check },CloseWindow.OKandCANCEL(), AdvancedEditor.this); 
       
       // .. not OK?
       if (option!=0)
@@ -383,7 +378,7 @@ import javax.swing.event.TreeSelectionListener;
       Property[] props = choose.getResultingProperties();
   
       if ( (props==null) || (props.length==0) ) {
-        winManager.openDialog(null,null,WindowManager.IMG_ERROR,resources.getString("add.must_enter"),CloseWindow.OK(), AdvancedEditor.this);
+        editView.getWindowManager().openDialog(null,null,WindowManager.IMG_ERROR,resources.getString("add.must_enter"),CloseWindow.OK(), AdvancedEditor.this);
         return;
       }
   
@@ -490,7 +485,7 @@ import javax.swing.event.TreeSelectionListener;
           // we're the source
           ctx.setSource(AdvancedEditor.this);
           // tell others
-          viewManager.setContext(ctx);
+          editView.getViewManager().setContext(ctx);
         }
       }
     }
@@ -531,37 +526,9 @@ import javax.swing.event.TreeSelectionListener;
       });
       
       // show context menu
-      viewManager.showContextMenu(context, actions, tree, e.getPoint());
+      editView.getViewManager().showContextMenu(context, actions, tree, e.getPoint());
 
       // done
-    }
-    
-    /** 
-     * ask user for commit confirmation
-     */
-    private boolean isCommit() {
-      
-      if (Options.getInstance().isAutoCommit)
-        return true;
-      
-      JCheckBox auto = new JCheckBox(resources.getString("confirm.autocomit"));
-      auto.setFocusable(false);
-      
-      int rc = winManager.openDialog("confirmCommit", 
-          resources.getString("confirm.keep.changes"), WindowManager.IMG_QUESTION, 
-          new JComponent[] {
-          	new JLabel(resources.getString("confirm.keep.changes")),
-          	auto
-      		},
-          CloseWindow.YESandNO(), 
-          editPane);
-      
-      if (rc!=0)
-        return false;
-      
-      Options.getInstance().isAutoCommit = auto.isSelected();
-      
-      return true;
     }
     
     /**
@@ -576,7 +543,7 @@ import javax.swing.event.TreeSelectionListener;
         Gedcom gedcom = root.getGedcom();
   
         // ask user for commit if
-        if (!gedcom.isTransaction()&&bean!=null&&ok.isEnabled()&&isCommit()) 
+        if (!gedcom.isTransaction()&&bean!=null&&ok.isEnabled()&&editView.isCommitChanges()) 
           ok.trigger();
   
       }
@@ -600,7 +567,7 @@ import javax.swing.event.TreeSelectionListener;
           editPane.add(bean, BorderLayout.CENTER);
   
           // initialize bean
-          bean.init(gedcom, prop, null, viewManager, registry);
+          bean.init(gedcom, prop, null, editView.getViewManager(), registry);
           
           // and a label to the top
           final JLabel label = new JLabel(Gedcom.getName(prop.getTag()), prop.getImage(false), SwingConstants.LEFT);
@@ -637,7 +604,7 @@ import javax.swing.event.TreeSelectionListener;
       }
   
       // tell everyone
-      viewManager.setContext(getContext());
+      editView.getViewManager().setContext(getContext());
   
       // Done
     }

@@ -22,7 +22,6 @@ package genj.edit;
 import genj.gedcom.Gedcom;
 import genj.util.Registry;
 import genj.view.Context;
-import genj.view.ViewManager;
 
 import javax.swing.JPanel;
 
@@ -34,7 +33,7 @@ import javax.swing.JPanel;
   /**
    * Initializer (post constructor)
    */
-  public abstract void init(Gedcom gedcom, ViewManager manager, Registry registry);
+  public abstract void init(Gedcom gedcom, EditView view, Registry registry);
 
   /** 
    * Accessor - current 
