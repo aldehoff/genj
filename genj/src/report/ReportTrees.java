@@ -118,7 +118,7 @@ public class ReportTrees extends Report {
             });
             
             // Print sorted list
-            println(align(i18n("count"),7)+"  "+i18n("name"));
+            println(align(i18n("count"),7, Report.ALIGN_RIGHT)+"  "+i18n("name"));
             println("-------  ----------------------------------------------");
             
             int grandtotal=0;
@@ -129,7 +129,7 @@ public class ReportTrees extends Report {
                     loners +=count;
                 } else {
                     grandtotal+=count;
-                    println(align(count,7)+"  "+stats.trees[i].name);
+                    println(align(""+count,7, Report.ALIGN_RIGHT)+"  "+stats.trees[i].name);
                 }
             }
             

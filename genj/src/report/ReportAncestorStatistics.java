@@ -188,14 +188,14 @@ public class ReportAncestorStatistics extends Report {
       GenerationInfo info = (GenerationInfo) itr.next();
 
       // Print line
-      println(align(info.iLevel, 10, Report.ALIGN_LEFT) +
-              align(info.iPossibleCount, 10, Report.ALIGN_RIGHT) +
-              align(info.iKnownCount, 10, Report.ALIGN_RIGHT) +
-              align(info.dCoverage + "%", 10, Report.ALIGN_RIGHT) +
-              align(info.iKnownCumul, 10, Report.ALIGN_RIGHT) +
-              align(info.dCoverageCumul + "%", 10, Report.ALIGN_RIGHT) +
-              align(info.iDiffCount, 10, Report.ALIGN_RIGHT) +
-              align(info.dImplex + "%", 10, Report.ALIGN_RIGHT));
+      println(align(""+info.iLevel, 10, Report.ALIGN_LEFT) +
+              align(""+info.iPossibleCount, 10, Report.ALIGN_RIGHT) +
+              align(""+info.iKnownCount, 10, Report.ALIGN_RIGHT) +
+              align(""+info.dCoverage + "%", 10, Report.ALIGN_RIGHT) +
+              align(""+info.iKnownCumul, 10, Report.ALIGN_RIGHT) +
+              align(""+info.dCoverageCumul + "%", 10, Report.ALIGN_RIGHT) +
+              align(""+info.iDiffCount, 10, Report.ALIGN_RIGHT) +
+              align(""+info.dImplex + "%", 10, Report.ALIGN_RIGHT));
     }
     println();
 
