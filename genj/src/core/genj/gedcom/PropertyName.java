@@ -39,9 +39,7 @@ public class PropertyName extends Property {
    * Constructor for Name Gedcom line
    */
   public PropertyName() {
-    // Setup data
-    lastName  = "";
-    firstName = "";
+    setValue("");
   }
 
   /**
@@ -72,6 +70,8 @@ public class PropertyName extends Property {
    * Returns <b>true</b> if this property is valid
    */
   public boolean isValid() {
+    /// no indi -> true
+    if (!(getEntity() instanceof Indi)) return true;
     return nameAsString==null;
   }
 
@@ -189,6 +189,15 @@ public class PropertyName extends Property {
     // Done
     return this;
   }
+  
+  /**
+   * @see genj.gedcom.PropertyName#addNotify(genj.gedcom.Property)
+   */
+  public void addNotify(Property parent) {
+    super.addNotify(parent);
+    // might have to update name now inside indi
+    if (nameAsString!=null) setValue(nameAsString); 
+  }
 
   /**
    * sets the name to a new gedcom value
@@ -196,6 +205,12 @@ public class PropertyName extends Property {
   public boolean setValue(String newValue) {
 
     noteModifiedProperty();
+    
+    // don't know entity - remember unparsed
+    if (!(getEntity() instanceof Indi)) {
+      nameAsString = newValue;
+      return true;
+    }
 
     // New empty Value ?
     if (newValue==null) {

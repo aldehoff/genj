@@ -170,7 +170,7 @@ public abstract class Property implements Comparable {
     new MetaDefinition("TEXT" ,"Text") ,
 
     // Repository
-    new MetaDefinition("REPO","Repository"    ,new String[]{"NAME","ADDR","PHONE"}) ,
+    new MetaDefinition("REPO","Repository"    ,new String[]{"NAME","ADDR","PHONE","NOTE"}) ,
   };
 
   /**

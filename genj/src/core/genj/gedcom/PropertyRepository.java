@@ -67,7 +67,8 @@ public class PropertyRepository extends PropertyXRef {
 
     // Just add 'em
     if (this instanceof Entity) {
-      addProperty(new PropertyGenericAttribute("TITL"));
+      addProperty(new PropertyName());
+      addProperty(new PropertyNote());
     }
     
     // Done
@@ -156,4 +157,13 @@ public class PropertyRepository extends PropertyXRef {
   public int getExpectedReferencedType() {
     return Gedcom.REPOSITORIES;
   }
-}
+  
+  /**
+   * @see genj.gedcom.PropertyXRef#isValid()
+   */
+  public boolean isValid() {
+    // always
+    return true;
+  }
+  
+} //PropertyRepository

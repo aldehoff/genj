@@ -130,7 +130,21 @@ public class Source extends PropertySource implements Entity {
    * Returns this property as a string
    */
   public String toString() {
-    return getId()+":"+super.toString();
+    PropertyText txt = getText();
+    return getId()+":"+(txt!=null?txt.getValue():"");
+  }
+  
+  /**
+   * Returns the text for this source
+   */
+  private PropertyText getText() {
+    for (int i=0;i<getNoOfProperties();i++) {
+      Property child = getProperty(i);
+      if (child instanceof PropertyText) {
+        return (PropertyText)child;
+      }
+    }
+    return null;
   }
   
 } //Source
