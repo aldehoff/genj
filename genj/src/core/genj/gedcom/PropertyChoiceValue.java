@@ -61,9 +61,9 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     String tag = getTag();
     ReferenceSet refSet = getRefSet();
     // forget old
-    refSet.remove(oldValue);
+    if (oldValue.length()>0) refSet.remove(oldValue);
     // remember new
-    refSet.add(newValue);
+    if (newValue.length()>0) refSet.add(newValue);
     // done
   }
   
