@@ -64,12 +64,8 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     addProperty(new PropertyGenericAttribute("TITL"));
     addProperty(new PropertyGenericAttribute("FORM"));
 
-    // Am I an entity ?
-    if (getEntity()==this) {
-      addProperty(new PropertyBlob());
-    } else {
-      addProperty(new PropertyFile());
-    }
+    // 20021002 encourage PropertyFile
+    addProperty(new PropertyFile());
 
     // Done
   }
