@@ -54,8 +54,10 @@ public class OptionsWidget extends JPanel {
     // setup
     DefaultTableColumnModel columns = new DefaultTableColumnModel();
     columns.addColumn(new TableColumn(0));
-    columns.addColumn(new TableColumn(1,16));
+    columns.addColumn(new TableColumn(1));
+    
     model = new Model();
+    
     table = new JTable(model, columns) {
       /** we know how to find the correct editor */
       public TableCellEditor getCellEditor(int row, int col) {
@@ -72,7 +74,7 @@ public class OptionsWidget extends JPanel {
         if (option.getType()==Boolean.TYPE)
           return new DefaultCellEditor(new JCheckBox());
         // all else
-        return new DefaultCellEditor(new JTextField());
+        return new DefaultCellEditor(new JTextField(8));
       }
       /** we know how to find the correct renderer */
       public TableCellRenderer getCellRenderer(int row, int col) {
@@ -103,7 +105,22 @@ public class OptionsWidget extends JPanel {
    * Set options to display
    */
   public void setOptions(Option[] options) {
+    // let model know
     model.setOptions(options);
+    
+    // recalc column widths
+    int w = 0;
+    for (int i=0;i<options.length;i++) {
+      w = Math.max(w,
+        table.getCellEditor(i,1).getTableCellEditorComponent(table, null, false,  i, 1)
+          .getPreferredSize().width
+        );
+    }
+    table.getColumnModel().getColumn(0).setPreferredWidth(getWidth());
+    table.getColumnModel().getColumn(1).setPreferredWidth(w);
+
+    // layout
+    doLayout();
   }
   
   /** 
