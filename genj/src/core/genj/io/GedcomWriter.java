@@ -187,9 +187,12 @@ public class GedcomWriter implements Trackable {
     out.write(l, 0, l.length());
     out.write(' ');
     out.write(tag, 0, tag.length());
-    out.write(' ');
-    if (value != null)
+    
+    // 20030715 only write separating ' ' if value.length()>0 
+    if (value!=null&&value.length()>0) {
+      out.write(' ');
       out.write(value, 0, value.length());
+    }
     out.newLine();
 
     // next
