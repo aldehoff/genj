@@ -9,7 +9,6 @@ Future
     - Let user choose matching entities through point&click
   O Generic printing for all views
   O Printing with Title/Pagenumber/Filename/Author/GenerationPerPage
-  O Confirmation during delete of entities about unlinked families (leftovers)
   O Global tree-file attributes (e.g. Notes)
   O A better method of assigning IDs to entities (a system that means a little bit more than randomness)
   O Find entities in tree view by text
@@ -25,6 +24,7 @@ Future
   O Localize Print texts
   O Printing dialogs remember parameters now (e.g. margins)
   O Printing forgets about paper orientation between pages
+  O Wizard that asks what to do after deletion of entities (remove empty family, remove lost branch, ...)
 
 1.8 - Mar xx 2002 (not released)
 
