@@ -23,6 +23,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.gedcom.time.PointInTime;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -55,7 +56,7 @@ public class DateBean extends PropertyBean {
   /**
    * Finish proxying edit for property Date
    */
-  public void commit() {
+  public void commit(Transaction tx) {
 
     PropertyDate p = (PropertyDate)property;
 

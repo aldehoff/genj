@@ -23,6 +23,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
@@ -153,7 +154,7 @@ public abstract class PropertyBean extends JPanel {
   /**
    * Commit any changes made by the user
    */
-  public abstract void commit();
+  public abstract void commit(Transaction tx);
   
   /**
    * Editable? default is yes

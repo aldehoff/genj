@@ -23,6 +23,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.gedcom.time.Delta;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
@@ -50,7 +51,7 @@ public class AgeBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commit(Transaction tx) {
     property.setValue(tfield.getText());
   }
 

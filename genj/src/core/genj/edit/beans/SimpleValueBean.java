@@ -22,6 +22,7 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.util.Registry;
 import genj.util.swing.TextFieldWidget;
 import genj.view.ViewManager;
@@ -43,7 +44,7 @@ public class SimpleValueBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commit(Transaction tx) {
     if (tfield!=null) {
       property.setValue(tfield.getText());
     }

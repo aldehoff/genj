@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
 import genj.util.ActionDelegate;
@@ -428,8 +429,8 @@ import javax.swing.event.TreeSelectionListener;
       Gedcom gedcom = root.getGedcom();
   
       if (bean!=null) try {
-        gedcom.startTransaction();
-        bean.commit();
+        Transaction tx = gedcom.startTransaction();
+        bean.commit(tx);
       } finally {
         gedcom.endTransaction();
       }

@@ -23,6 +23,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
@@ -54,15 +55,20 @@ public class ChoiceBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commit(Transaction tx) {
     
     PropertyChoiceValue prop = (PropertyChoiceValue)property;
 
-    // change value
-    prop.setValue(choice.getText(), global.isSelected());
-
-    // refresh choices
+    // check if property has been touched already 
+    // in current transaction
+    if (!tx.get(Transaction.PROPERTIES_MODIFIED).contains(prop)) {
+	    // change value
+	    prop.setValue(choice.getText(), global.isSelected());
+    }
+    
+    // refresh choices & value
     choice.setValues(prop.getChoices(gedcom).toArray());
+    choice.setText(prop.getDisplayValue());
 
     // hide global
     global.setSelected(false);

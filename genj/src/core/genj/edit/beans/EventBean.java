@@ -25,6 +25,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.util.Registry;
@@ -50,7 +51,7 @@ public class EventBean extends PropertyBean {
   /**
    * Finish proxying edit for property Birth
    */
-  public void commit() {
+  public void commit(Transaction tx) {
     // known might be null!
     if (known!=null) {
       ((PropertyEvent)property).setKnownToHaveHappened(known.isSelected());

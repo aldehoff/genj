@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.TextFieldWidget;
@@ -45,7 +46,7 @@ public class NameBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commit(Transaction tx) {
 
     // ... calc texts
     String first = tFirst.getText().trim();

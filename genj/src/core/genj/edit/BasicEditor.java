@@ -572,13 +572,13 @@ import javax.swing.event.ChangeListener;
     protected void execute() {
 
       // commit changes
-      gedcom.startTransaction();
+      Transaction tx = gedcom.startTransaction();
 
       // commit bean changes
       try {
         for (int i=0,j=beans.size();i<j;i++) {
           PropertyBean bean = (PropertyBean)beans.get(i);
-          bean.commit();
+          bean.commit(tx);
           Property prop = bean.getProperty();
           TagPath path = bean.getPath();
           if (prop.getValue().length() > 0 && prop.getParent() == null)
@@ -597,7 +597,7 @@ import javax.swing.event.ChangeListener;
       // disable commit/cancel since all changes are committed
       ok.setEnabled(false);
       cancel.setEnabled(false);
-
+      
       // done
     }
 

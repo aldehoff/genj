@@ -25,6 +25,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.Origin;
@@ -157,7 +158,7 @@ public class FileBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commit(Transaction tx) {
     
     // propagate
     String file = chooser.getFile().toString();
