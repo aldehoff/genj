@@ -14,6 +14,8 @@
     <pathelement path ="./language/fr"/>
     <pathelement path ="./language/it"/>
     <pathelement path ="./language/ja"/>
+    <pathelement path ="./language/hu"/>
+    <pathelement path ="./language/ru"/>
     <pathelement path ="./src/core"/>
     <pathelement path ="./src/report"/>
     <pathelement path ="./images"/>
