@@ -216,6 +216,7 @@
        <zipfileset dir="." includes="doc/**"/>
        <zipfileset dir="./script" includes="run.*" filemode="755"/>
        <zipfileset dir="." includes="contrib/cday/**"/>
+       <zipfileset dir="." includes="contrib/almanac/**"/>
      </zip>
 
   </target>
