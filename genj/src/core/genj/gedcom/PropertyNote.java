@@ -83,9 +83,6 @@ public class PropertyNote extends PropertyXRef implements MultiLineSupport {
     // ... and point
     setTarget(fxref);
 
-    // Are there any properties that can be deleted ?
-    delAllProperties();
-
     // Done
   }
   

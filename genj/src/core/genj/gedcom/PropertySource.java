@@ -24,10 +24,7 @@ package genj.gedcom;
  * A property that either consists of SOURCE information or
  * refers to a SOURCE entity
  */
-public class PropertySource extends PropertyXRef {
-
-  /** the source's content */
-  private String source;
+public class PropertySource extends PropertyXRef implements MultiLineSupport {
 
   /**
    * Empty Constructor
@@ -44,6 +41,17 @@ public class PropertySource extends PropertyXRef {
   }
 
   /**
+   * Returns the logical name of the proxy-object which knows this object
+   */
+  public String getProxy() {
+    // 20021113 if linked then we stay XRef
+    if (super.getReferencedEntity()!=null)
+      return super.getProxy();
+    // multiline
+    return "MLE";    
+  }
+
+  /**
    * Returns the tag of this property
    */
   public String getTag() {
@@ -56,29 +64,17 @@ public class PropertySource extends PropertyXRef {
    */
   public void link() throws GedcomException {
 
-    // No Property Source?
-    if (source!=null) {
-      return;
-    }
+    // something to do ?
+    if (getReferencedEntity()!=null) return;
 
-    // Get enclosing entity ?
-    Entity entity = getEntity();
-
-    // Something to do ?
-    if (getReferencedEntity()!=null) {
-      return;
-    }
 
     // Look for Source
     String id = getReferencedId();
-    if (id.length()==0) {
-      return;
-    }
+    if (id.length()==0) return;
 
     Source source = (Source)getGedcom().getEntity(id, Gedcom.SOURCES);
-    if (source == null) {
-      throw new GedcomException("Couldn't find entity with ID "+id);
-    }
+    if (source == null)
+      return;
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
@@ -87,7 +83,7 @@ public class PropertySource extends PropertyXRef {
     // ... and point
     setTarget(fxref);
 
-    // don't delete anything because we may have children, like PAGE
+    // done
   }
 
   /**
@@ -105,5 +101,53 @@ public class PropertySource extends PropertyXRef {
     return true;
   }
   
+  /**
+   * @see genj.gedcom.PropertyXRef#toString()
+   */
+  public String toString() {
+    return super.getValue();
+  }
+  
+  /**
+   * @see genj.gedcom.PropertyXRef#getValue()
+   */
+  public String getValue() {
+    return PropertyMultilineValue.getFirstLine(super.getValue());
+  }
+
+  /**
+   * @see genj.gedcom.MultiLineSupport#getLines()
+   */
+  public Line getLines() {
+    return new PropertyMultilineValue.MLLine(getTag(), super.getValue());
+  }
+
+  /**
+   * @see genj.gedcom.MultiLineSupport#getLinesValue()
+   */
+  public String getLinesValue() {
+    return super.getValue();
+  }
+
+  /**
+   * @see genj.gedcom.PropertyMedia#getDefaultMetaProperties()
+   */
+  public MetaProperty[] getDefaultMetaProperties() {
+    // no props if NOT linked
+    if (getTarget()==null) return new MetaProperty[0];
+    // proceed
+    return super.getDefaultMetaProperties();
+  }
+  
+  /**
+   * @see genj.gedcom.PropertyMedia#getVisibleMetaProperties()
+   */
+  public MetaProperty[] getVisibleMetaProperties() {
+    // no props if NOT linked
+    if (getTarget()==null) return new MetaProperty[0];
+    // proceed
+    return super.getVisibleMetaProperties();
+  }
+
 } //PropertySource
 
