@@ -62,17 +62,31 @@ public abstract class Calendar {
     
     // localize months
     for (int m=0;m<months.length;m++) {
+
+      // month key      
       String mmm = months[m];
+
+      // month name
       String localized = resources.getString("mon."+mmm);
-      String abbreviated;
   
       // calculate abbreviation
+      //  1. substring(0,indexOf('|'))    ,if indexOf('|')>0
+      //  2. substring(indexOf(',')+1)    ,if indexOf(',')>0
+      //  3. substring(0,3)               ,otherwise
+      String abbreviated;
+
       int marker = localized.indexOf('|'); 
       if (marker>0) {
         abbreviated = localized.substring(0, marker);
         localized = abbreviated + localized.substring(marker+1);
       } else {
-        abbreviated = localized.length()>3 ? localized.substring(0,3) : localized;
+        marker = localized.indexOf(',');
+        if (marker>0) {
+          abbreviated = localized.substring(marker+1);
+          localized = localized.substring(0, marker);
+        } else {
+          abbreviated = localized.length()>3 ? localized.substring(0,3) : localized;
+        }
       }
   
       // remember
