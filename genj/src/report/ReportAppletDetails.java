@@ -10,10 +10,11 @@ import genj.report.*;
 
 import java.io.*;
 import java.util.StringTokenizer;
+import java.util.ArrayList;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.8 2002-04-25 18:17:45 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.9 2002-04-29 04:12:24 timmsc Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -37,6 +38,8 @@ public class ReportAppletDetails implements Report {
   public String getVersion() {
     return VERSION;
   }
+
+  private ArrayList propertiesToLink;
   
   /**
    * Returns the name of this report - should be localized.
@@ -75,6 +78,12 @@ public class ReportAppletDetails implements Report {
    * Exports the given entity to given directory
    */
   private void export(Entity ent, File dir, PrintWriter out) throws IOException {
+    propertiesToLink = new ArrayList();
+    propertiesToLink.add("FAMS");
+    propertiesToLink.add("FAMC");
+    propertiesToLink.add("HUSB");
+    propertiesToLink.add("WIFE");
+    propertiesToLink.add("CHIL");
 
     // HEAD
     out.println("<HTML>");
@@ -96,9 +105,11 @@ public class ReportAppletDetails implements Report {
     out.println("</TD>");
 
     // Property Column
-    out.println("<TD width=\"50%\" valign=\"top\" align=\"left\"><PRE>");
+    out.println("<TD width=\"50%\" valign=\"top\" align=\"left\">");
+    out.println("<TABLE border=0>");
     exportProperty(ent.getProperty(),out,0);
-    out.println("</PRE></TD>");
+    out.println("</TABLE>");
+    out.println("</TD>");
 
     // END TABLE
     out.println("</TR>");
@@ -189,8 +200,20 @@ public class ReportAppletDetails implements Report {
     } else {
       value = prop.getValue();
     }
-
-    exportProperty(prop.getTag(), value, out, level);
+    
+    String tag = prop.getTag();
+    
+    if ( propertiesToLink.contains(tag) ) {
+      out.println("<tr><td valign=TOP><b><u>"
+                  + Gedcom.getResources().getString(prop.getTag() + ".name")
+                  + "</u></b></td><td>"
+                  + "<A HREF=\"" + value.replace('@',' ').trim() + ".html\">"
+                  + value
+                  + "</a></td></tr>");
+    }
+    else {
+      exportProperty(tag, value, out, level);
+    }
 
     ReferencePropertySet props = prop.getProperties();
     for (int i=0;i<props.getSize();i++) {
@@ -204,16 +227,22 @@ public class ReportAppletDetails implements Report {
    */
   private void exportProperty(String tag, String value, PrintWriter out, int level) {
 
+    out.print("<tr><td valign=TOP>");
+
     // a loop for multi lines
     exportSpaces(out, level);
-
-    out.print(tag + " ");
+    
+    
+    out.print("<b><u>" + 
+              Gedcom.getResources().getString(tag + ".name") +
+              "</u></b></td><td><pre>");
 
     value = value.trim();
 
     // below conditional is an optimization, but is not logically necessary.
     if (value.length() <= MAX_LINE_LENGTH) {
       out.println(value);
+      out.println("</pre></td></tr>");
       return;
     }
 
@@ -228,31 +257,18 @@ public class ReportAppletDetails implements Report {
       while (wordtok.hasMoreTokens()) {
         String next = wordtok.nextToken();
         if (line.length() + next.length() > MAX_LINE_LENGTH) {
-          if (first) {
-            out.println(line);
-            first = false;
-          }
-          else {
-            exportSpaces(out, level);
-            out.println(padding + line);
-          }
+          out.println(line);
           line = "";
         }
-
         line += next + " ";
       }
     
       if (line.length() > 0) {
-        if (first)
-          out.println(line);
-        else {
-          exportSpaces(out, level);
-          out.println(padding + line);
-        }
+        out.println(line);
         line = "";
       }
     }
-
+    out.println("</pre></td></tr>");
     // Done
   }
 
@@ -261,7 +277,7 @@ public class ReportAppletDetails implements Report {
    */
   public void exportSpaces(PrintWriter out, int num) {
     for (int c=0;c<num;c++) {
-      out.print(" ");
+      out.print("&nbsp;");
     }
   }
 
