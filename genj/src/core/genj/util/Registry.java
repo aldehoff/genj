@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.18 $ $Author: nmeier $ $Date: 2004-05-23 09:21:13 $
+ * $Revision: 1.19 $ $Author: nmeier $ $Date: 2004-10-04 23:18:43 $
  */
 package genj.util;
 
@@ -32,11 +32,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -152,6 +154,27 @@ public class Registry {
     // Done
   }
   
+  /**
+   * Remove keys
+   */
+  public void remove(String prefix) {
+    List keys = new ArrayList(properties.keySet());
+    for (int i=0,j=keys.size();i<j;i++) {
+      String key = (String)keys.get(i);
+      if (key.startsWith(prefix))
+        properties.remove(key);
+    }
+  }
+  
+  /**
+   * Return the root parent in registry hierarchy
+   */
+  public Registry getRoot() {
+    if (parent==null)
+      return this;
+    return parent.getRoot();
+  }
+
   /**
    * Return the parent of this registry
    * @return parent if this is a view
