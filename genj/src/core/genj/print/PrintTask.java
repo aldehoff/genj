@@ -140,8 +140,6 @@ import javax.swing.JComponent;
     if (service==null)
       throw new PrintException("Couldn't find suitable printer");
     // check suitability
-    Debug.log(Debug.INFO, this, "Found PrintService "+service+" isDocFlavorSupported=="+service.isDocFlavorSupported(FLAVOR));
-    
     if (service.isDocFlavorSupported(FLAVOR))
       return service;
     
