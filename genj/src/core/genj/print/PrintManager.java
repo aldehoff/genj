@@ -173,8 +173,9 @@ public class PrintManager {
       widget = new PrintWidget(this, resources);
       
       // show it in dialog
+      String title = resources.getString("dlg.title", frame.getTitle()); 
       int ok = App.getInstance().createDialog(
-        resources.getString("dlg.title", frame.getTitle()), 
+        title, 
         "print", 
         new Dimension(480,320), 
         owner, 
@@ -189,7 +190,7 @@ public class PrintManager {
       }
 
       // setup progress dlg
-      new ProgressDialog(frame, resources.getString("progress.title"), "", this, getThread());
+      new ProgressDialog(frame, title, "", this, getThread());
       
       // continue
       return true;

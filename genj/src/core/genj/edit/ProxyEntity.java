@@ -60,82 +60,11 @@ class ProxyEntity extends Proxy {
     
     Entity e = (Entity)property;
 
-//    // ID Panel
-//    JPanel box = new JPanel();
-//    box.setLayout(new BoxLayout(box,BoxLayout.X_AXIS));
-//    box.setAlignmentX(0);
-     
-//    // Label
-//    JLabel lid = new JLabel(EditView.resources.getString("proxy.id_of_entity"));
-//    box.add(lid);
-//
-//    // ID ?
-//    tfield = new TextFieldWidget(e.getId(), 80);
-//    tfield.setToolTipText(resources.getString("proxy.enter_id_here"));
-//    tfield.getDocument().addDocumentListener(new DocumentListener() {
-//      public void changedUpdate(DocumentEvent e) {
-//        bchange.setEnabled(true);
-//      }
-//      public void insertUpdate(DocumentEvent e) {
-//        bchange.setEnabled(true);
-//      }
-//      public void removeUpdate(DocumentEvent e) {
-//        bchange.setEnabled(true);
-//      }
-//    });
-//    box.add(tfield);
-    
-//    // Button
-//    bchange = new ButtonHelper().setContainer(box).setEnabled(false).create(new ActionChange());
-
     // Layout
-//    in.add(box);
     in.add(new Preview(e));
 
     // Done
     return null;
   }
-
-//  /**
-//   * Action for changing ID
-//   */
-//  private class ActionChange extends ActionDelegate {
-//    /**
-//     * Constructor
-//     */
-//    private ActionChange() {
-//      setText(resources.getString("proxy.change"));
-//      setEnabled(false);
-//    }
-//    /**
-//     * @see genj.util.ActionDelegate#execute()
-//     */
-//    protected void execute() {
-//      // Warn about this action's side-effects
-//      int rc = JOptionPane.showConfirmDialog(
-//        view,
-//        EditView.resources.getString("proxy.change_id?"),
-//        EditView.resources.getString("warning"),
-//        JOptionPane.YES_NO_OPTION,
-//        JOptionPane.WARNING_MESSAGE
-//      );
-//      if (rc==JOptionPane.NO_OPTION) return;
-//
-//      // Calc parms
-//      Gedcom gedcom = property.getGedcom();
-//      Entity entity = property.getEntity();
-//      
-//      // Can I write ?
-//      if (!gedcom.startTransaction()) return;
-//
-//      // Do the change
-//      gedcom.setId(entity,tfield.getText());
-//      
-//      // done
-//      gedcom.endTransaction();
-//      bchange.setEnabled(false);
-//    }
-//
-//  } //ActionChange
   
 } //ProxyEntity

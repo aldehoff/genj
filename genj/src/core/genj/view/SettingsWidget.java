@@ -22,6 +22,7 @@ package genj.view;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+
 import java.awt.BorderLayout;
 import java.util.Map;
 import java.util.Vector;
@@ -29,7 +30,6 @@ import java.util.WeakHashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
@@ -44,7 +44,6 @@ import javax.swing.border.TitledBorder;
   /** components */
   private JPanel pSettings,pActions;
   private Vector vButtons = new Vector();
-  private JLabel lIdle;
   
   /** settings */
   private Settings settings;
@@ -53,10 +52,6 @@ import javax.swing.border.TitledBorder;
    * Constructor
    */
   protected SettingsWidget(Resources resources, JFrame frame) {
-    
-    // Idle case prep
-    lIdle = new JLabel(resources.getString("view.choose"),Images.imgSettings,JLabel.CENTER);
-    lIdle.setHorizontalTextPosition(lIdle.LEADING);
     
     // Panel for ViewSettingsWidget
     pSettings = new JPanel(new BorderLayout());
@@ -100,8 +95,6 @@ import javax.swing.border.TitledBorder;
       editor.setBorder(new TitledBorder(vw.getFrame().getTitle()));
       pSettings.add(editor, BorderLayout.CENTER);
       settings.reset();
-    } else {
-      pSettings.add(lIdle, BorderLayout.CENTER);
     }
       
     // enable buttons

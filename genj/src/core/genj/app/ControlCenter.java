@@ -278,7 +278,7 @@ public class ControlCenter extends JPanel {
       if (frame == null) {
         frame =
           App.getInstance().createFrame(
-            resources.getString("cc.title.about"),
+            resources.getString("cc.menu.about"),
             Gedcom.getImage(),
             "about",
             null);
@@ -306,7 +306,7 @@ public class ControlCenter extends JPanel {
       if (frame == null) {
         frame =
           App.getInstance().createFrame(
-            resources.getString("cc.title.help"),
+            resources.getString("cc.menu.help"),
             Images.imgHelp,
             "help",
             new Dimension(640, 480));
