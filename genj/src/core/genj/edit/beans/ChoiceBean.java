@@ -81,8 +81,10 @@ public class ChoiceBean extends PropertyBean {
     // setup choices
     Object[] items = ((PropertyChoiceValue)property).getChoices(setGedcom).toArray();
 
-    // prepare a choice for the user
-    choice = new ChoiceWidget(items, property.getValue());
+    // prepare a choice for the user - we're using getDisplayValue() here
+    // because like in PropertyRelationship's case there might be more
+    // in the gedcom value than what we want to display (witness@INDI:BIRT)
+    choice = new ChoiceWidget(items, property.getDisplayValue());
     choice.addChangeListener(changeSupport);
 
     // add a checkbox for global
@@ -132,7 +134,10 @@ public class ChoiceBean extends PropertyBean {
     int others = ((PropertyChoiceValue)property).getSameChoices().length;
     if (others<2)
       return null;
-    return resources.getString("choice.global.confirm", new String[]{ ""+others, property.getValue(), choice.getText() });
+    // we're using getDisplayValue() here
+    // because like in PropertyRelationship's case there might be more
+    // in the gedcom value than what we want to display (witness@INDI:BIRT)
+    return resources.getString("choice.global.confirm", new String[]{ ""+others, property.getDisplayValue(), choice.getText() });
   }
   
   /**
