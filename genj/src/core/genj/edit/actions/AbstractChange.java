@@ -133,8 +133,11 @@ import javax.swing.JTextArea;
     // unlock gedcom
     gedcom.endTransaction();
     // set focus?
-    if (focus!=null)
-      manager.setContext(new Context(focus));
+    if (focus!=null) {
+      Context ctx = new Context(focus);
+      ctx.setSource(getTarget());
+      manager.setContext(ctx);
+    }
     // done
   }
   
