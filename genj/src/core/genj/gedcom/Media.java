@@ -30,8 +30,8 @@ public class Media extends Entity {
    * @see genj.gedcom.Entity#toString()
    */
   public String toString() {
-    Property title = getProperty("TITL");
-    return title!=null ? title.getValue() : super.toString(); 
+    String title = getTitle();
+    return title.length()>0 ? title : super.toString(); 
   }
 
   /**
@@ -40,6 +40,14 @@ public class Media extends Entity {
   public PropertyFile getFile() {
     Property file = getProperty("FILE", true);
     return (file instanceof PropertyFile) ? (PropertyFile)file : null;    
+  }
+  
+  /**
+   * Returns the title of this OBJE
+   */
+  public String getTitle() {
+    Property title = getProperty("TITL");
+    return title==null ? EMPTY_STRING : title.getValue();
   }
 
   /**

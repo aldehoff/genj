@@ -31,6 +31,8 @@ import java.util.StringTokenizer;
  * Gedcom Property : BLOB
  */
 public class PropertyBlob extends Property implements MultiLineSupport, IconValueAvailable {
+  
+  private final static String BLOB = "BLOB";
 
   /** the raw bytes */
   private byte[]  raw;
@@ -73,8 +75,8 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    * Title of Blob
    */
   public String getTitle() {
-    // FIXME resolve title
-    return "Foo";
+    Entity e = getEntity();
+    return (e instanceof Media) ? ((Media)e).getTitle() : getTag();
   }
 
   /**
@@ -88,14 +90,14 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    * Returns the tag of this property
    */
   public String getTag() {
-    return "BLOB";
+    return BLOB;
   }
   
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
   public void setTag(String tag) throws GedcomException {
-    if (!"BLOB".equals(tag)) throw new GedcomException("Unsupported Tag");
+    if (!BLOB.equals(tag)) throw new GedcomException("Unsupported Tag");
   }
 
   /**
