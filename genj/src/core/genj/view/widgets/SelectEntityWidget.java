@@ -26,7 +26,6 @@ import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
-import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 
 import java.awt.BorderLayout;
@@ -184,9 +183,6 @@ public class SelectEntityWidget extends JPanel {
     /** path */
     private TagPath tagPath;
     
-    /** image */
-    private ImageIcon image;
-    
     /**
      * Constructor
      */
@@ -201,8 +197,7 @@ public class SelectEntityWidget extends JPanel {
         meta = MetaProperty.get(new TagPath(tagPath, tagPath.length()-1));
       else
         meta = MetaProperty.get(tagPath);
-      image = meta.getImage();
-      setImage(image);
+      setImage(meta.getImage());
       
       // text
       String txt = tagPath.length()==1?"ID":meta.getName();
@@ -218,7 +213,7 @@ public class SelectEntityWidget extends JPanel {
       Comparator comparator = new PropertyComparator(tagPath);
       Arrays.sort(list, 1, list.length, comparator);
       listWidget.setModel(new DefaultComboBoxModel(list));
-      sortWidget.setIcon(image);
+      sortWidget.setIcon(img);
     }
         
   } //Sort

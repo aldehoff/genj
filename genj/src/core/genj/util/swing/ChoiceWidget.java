@@ -146,6 +146,13 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   }
   
   /**
+   * Accessor - whether a selectAll() should occur on focus gained
+   */
+  public void setSelectAllOnFocus(boolean set) {
+    editor.setSelectAllOnFocus(set);
+  }
+    
+  /**
    * Current text value
    */
   public String getText() {
@@ -246,6 +253,8 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    */
   private class Editor extends TextFieldWidget implements ComboBoxEditor, FocusListener, Runnable {
     
+    private boolean ignoreInsertUpdate = false;
+    
     /**
      * Constructor
      */
@@ -295,7 +304,9 @@ public class ChoiceWidget extends javax.swing.JComboBox {
      * @see genj.util.swing.TextFieldWidget#setText(java.lang.String)
      */
     public void setText(String t) {
+      ignoreInsertUpdate = true;
       super.setText(t);
+      ignoreInsertUpdate = false;
       super.setChanged(true);
     }
     
@@ -322,7 +333,8 @@ public class ChoiceWidget extends javax.swing.JComboBox {
       // let super do its thing
       super.insertUpdate(e);
       // add a auto-complete callback
-      SwingUtilities.invokeLater(this);
+      if (!ignoreInsertUpdate)
+        SwingUtilities.invokeLater(this);
     }
     
     /**

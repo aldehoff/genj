@@ -74,11 +74,14 @@ public class DateWidget extends JPanel {
     widgetCalendar.setActions(switches);
     
     widgetYear  = new TextFieldWidget("",5+1);
+    widgetYear.setSelectAllOnFocus(true);
     
     widgetMonth = new ChoiceWidget();
     widgetMonth.setIgnoreCase(true);
+    widgetMonth.setSelectAllOnFocus(true);
 
     widgetDay   = new TextFieldWidget("",2+1);
+    widgetDay.setSelectAllOnFocus(true);
     
     // Layout
     setLayout(new FlowLayout(FlowLayout.LEFT));

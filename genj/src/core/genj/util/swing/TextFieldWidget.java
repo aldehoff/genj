@@ -36,6 +36,9 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
   /** whether we're a template */
   private boolean isTemplate = false;
   
+  /** whether we do a selectAll() on focus */
+  private boolean isSelectAllOnFocus = false;
+  
   /**
    * Constructor
    */
@@ -88,16 +91,23 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
   }
   
   /**
+   * Accessor isSelectAllOnFocus
+   */
+  public void setSelectAllOnFocus(boolean set) {
+    isSelectAllOnFocus = set;
+  }
+  
+  /**
    * @see java.awt.Component#processFocusEvent(java.awt.event.FocusEvent)
    */
   protected void processFocusEvent(FocusEvent e) {
-    if (e.getID()==FocusEvent.FOCUS_GAINED && isTemplate) {
-      setText("");
-      isTemplate = false;
-    } else {
-      // 20040301 testing to select all input on focus - makes
-      // it way easier to edit when things are overriden right away
-      selectAll();
+    if (e.getID()==FocusEvent.FOCUS_GAINED) {
+      if (isTemplate) {
+        setText("");
+        isTemplate = false;
+      }
+      if (isSelectAllOnFocus)
+        selectAll();
     }
     super.processFocusEvent(e);
   }
