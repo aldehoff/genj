@@ -20,15 +20,16 @@
 package genj.timeline;
 
 import genj.gedcom.PropertyEvent;
-import genj.util.ColorSet;
 import genj.util.Resources;
-import genj.util.swing.ColorChooser;
+import genj.util.swing.ColorsWidget;
 import genj.util.swing.SpinnerWidget;
 import genj.view.Settings;
 import genj.view.ViewManager;
 import genj.view.widgets.PathListWidget;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.util.Iterator;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -76,7 +77,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     modCmAftEvent = new SpinnerWidget.FractionModel(TimelineView.MIN_CM_AFT_EVENT, TimelineView.MAX_CM_AFT_EVENT, 1);
      
   /** colorchooser for colors */
-  private ColorChooser colorChooser;
+  private ColorsWidget colorWidget;
     
   /**
    * @see genj.view.Settings#init(genj.view.ViewManager)
@@ -107,11 +108,11 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     panelMain.add(panelOptions, BorderLayout.SOUTH);
     
     // color chooser
-    colorChooser = new ColorChooser();
+    colorWidget = new ColorsWidget();
     
     // add those tabs
     add(resources.getString("page.main")  , panelMain);
-    add(resources.getString("page.colors"), colorChooser);
+    add(resources.getString("page.colors"), colorWidget);
 
     // done
   }
@@ -133,7 +134,11 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     view.setCMPerEvents(modCmBefEvent.getDoubleValue(), modCmAftEvent.getDoubleValue());
     
     // colors
-    colorChooser.apply();
+    Iterator colors = view.colors.keySet().iterator();
+    while (colors.hasNext()) {
+      String key = colors.next().toString();
+      view.colors.put(key, colorWidget.getColor(key));
+    }
     
     // Done
   }
@@ -144,11 +149,6 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   public void setView(JComponent viEw) {
     // remember
     view = (TimelineView)viEw;
-    // characteristics
-    colorChooser.setColorSets( new ColorSet[]{
-      view.csContent,
-      view.csRuler  
-    });
   }
 
 
@@ -171,7 +171,14 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     modCmAftEvent.setDoubleValue(view.getCmAfterEvents());
     
     // colors
-    colorChooser.reset();
+    colorWidget.removeAllColors();
+    Iterator keys = view.colors.keySet().iterator();
+    while (keys.hasNext()) {
+      String key = keys.next().toString();
+      String name = resources.getString("color."+key);
+      Color color = (Color)view.colors.get(key);
+      colorWidget.addColor(key, name, color);
+    }
     
     // Done
   }

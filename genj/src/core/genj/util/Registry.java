@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.20 $ $Author: nmeier $ $Date: 2004-11-03 20:41:47 $
+ * $Revision: 1.21 $ $Author: nmeier $ $Date: 2004-11-07 01:14:05 $
  */
 package genj.util;
 
@@ -36,9 +36,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -216,6 +218,31 @@ public class Registry {
       return v;
 
     return v.substring(pos+1);
+  }
+  
+  /**
+   * Returns a map of values
+   */
+  public Map get(String prefix, Map def) {
+    Map result = new HashMap();
+    // loop over keys in map
+    Iterator keys = def.keySet().iterator();
+    while (keys.hasNext()) {
+      // grab from default
+      Object key = keys.next();
+      Object value = def.get(key);
+      // try to get a better value
+      try {
+        value = getClass().getMethod("get", new Class[]{ String.class, value.getClass() })
+          .invoke(this, new Object[]{ prefix+"."+key, value });
+      } catch (Throwable t) {
+        
+      }
+      // keep it
+      result.put(key, value);
+    }
+    // done
+    return result;
   }
 
   /**
@@ -531,6 +558,27 @@ public class Registry {
   }
 
   /**
+   * Remember an array of values
+   */
+  public void put(String prefix, Map values) {
+    
+    // loop over keys in map
+    Iterator keys = values.keySet().iterator();
+    while (keys.hasNext()) {
+      // grab value
+      Object key = keys.next();
+      Object value = values.get(key);
+      // try to store
+      try {
+        value = getClass().getMethod("put", new Class[]{ String.class, value.getClass() })
+          .invoke(this, new Object[]{ prefix+"."+key, value });
+      } catch (Throwable t) {        
+      }
+    }
+    // done
+  }
+  
+  /**
    * Remembers an array of ints
    */
   public void put(String key, int[] value) {
@@ -751,4 +799,5 @@ public class Registry {
 
     // Done
   }
-}
+
+} //Registry

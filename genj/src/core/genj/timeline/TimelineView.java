@@ -21,7 +21,6 @@ package genj.timeline;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.SliderWidget;
@@ -42,6 +41,8 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -65,7 +66,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
   private Resources resources = Resources.get(this);
   
   /** keeping track of our colors */
-  /*package*/ ColorSet csContent, csRuler;
+  /*package*/ Map colors = new HashMap();
     
   /** our model */
   private Model model;
@@ -145,18 +146,15 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     isPaintGrid  = regstry.get("paintgrid" , false);
     isPaintTags  = regstry.get("painttags" , false);
 
-    csContent = new ColorSet("content", Color.white, resources, regstry);
-    csContent.add("text"    , Color.black);
-    csContent.add("tag"     , Color.green);
-    csContent.add("date"    , Color.gray );
-    csContent.add("timespan", Color.blue );
-    csContent.add("grid"    , Color.lightGray);
-    csContent.add("selected", Color.red  );
+    colors.put("background", Color.WHITE);
+    colors.put("text"      , Color.BLACK);
+    colors.put("tag"       , Color.GREEN);
+    colors.put("date"      , Color.GRAY );
+    colors.put("timespan"  , Color.BLUE );
+    colors.put("grid"      , Color.LIGHT_GRAY);
+    colors.put("selected"  , Color.RED  );
+    colors = regstry.get("color", colors);
    
-    csRuler = new ColorSet("ruler", Color.white, resources, regstry);
-    csRuler.add("text", Color.black);
-    csRuler.add("tick", Color.lightGray);
-    
     // create/keep our sub-parts
     model = new Model(gedcom, regstry.get("filter", (String[])null));
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
@@ -200,6 +198,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     regstry.put("painttags"  , isPaintTags);
     regstry.put("filter"     , model.getPaths());
     regstry.put("centeryear" , (float)centeredYear);
+    regstry.put("color", colors);
     // done
     super.removeNotify();
   }
@@ -365,9 +364,9 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
      */
     protected void paintComponent(Graphics g) {
       // let the renderer do its work
-      rulerRenderer.cBackground = csRuler.getColor("ruler");
-      rulerRenderer.cText = csRuler.getColor("text");
-      rulerRenderer.cTick = csRuler.getColor("tick");
+      rulerRenderer.cBackground = (Color)colors.get("background");
+      rulerRenderer.cText = (Color)colors.get("text");
+      rulerRenderer.cTick = rulerRenderer.cText;
       // prepare UnitGraphics
       UnitGraphics graphics = new UnitGraphics(
         g,
@@ -425,13 +424,13 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       if (selection==null)
         selection = ctx.getEntity();
       // let the renderer do its work
-      contentRenderer.cBackground = csContent.getColor("content" );
-      contentRenderer.cText       = csContent.getColor("text"    );
-      contentRenderer.cDate       = csContent.getColor("date"    );
-      contentRenderer.cTag        = csContent.getColor("tag"     );
-      contentRenderer.cTimespan   = csContent.getColor("timespan");
-      contentRenderer.cGrid       = csContent.getColor("grid"    );
-      contentRenderer.cSelected   = csContent.getColor("selected");
+      contentRenderer.cBackground = (Color)colors.get("background" );
+      contentRenderer.cText       = (Color)colors.get("text"    );
+      contentRenderer.cDate       = (Color)colors.get("date"    );
+      contentRenderer.cTag        = (Color)colors.get("tag"     );
+      contentRenderer.cTimespan   = (Color)colors.get("timespan");
+      contentRenderer.cGrid       = (Color)colors.get("grid"    );
+      contentRenderer.cSelected   = (Color)colors.get("selected");
       contentRenderer.selection   = selection;
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;

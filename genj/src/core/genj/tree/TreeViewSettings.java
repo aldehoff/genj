@@ -21,19 +21,20 @@ package genj.tree;
 
 import genj.renderer.BlueprintList;
 import genj.util.ActionDelegate;
-import genj.util.ColorSet;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.ColorChooser;
+import genj.util.swing.ColorsWidget;
 import genj.util.swing.FontChooser;
 import genj.util.swing.ListWidget;
 import genj.util.swing.SpinnerWidget;
 import genj.view.Settings;
 import genj.view.ViewManager;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.AbstractButton;
@@ -62,7 +63,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   private SpinnerWidget.FractionModel[] spinModels = new SpinnerWidget.FractionModel[5]; 
   
   /** colorchooser for colors */
-  private ColorChooser colors;
+  private ColorsWidget colorWidget;
   
   /** blueprintlist */
   private BlueprintList blueprintList;
@@ -115,7 +116,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     spinModels[4] = createSpinner("padding",    options, 1.0,  4.0);
     
     // color chooser
-    colors = new ColorChooser();
+    colorWidget = new ColorsWidget();
     
     // blueprint options
     blueprintList = new BlueprintList(manager.getBlueprintManager(), manager.getWindowManager());
@@ -147,7 +148,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     
     // add those tabs
     add(resources.getString("page.main")  , options);
-    add(resources.getString("page.colors"), colors);
+    add(resources.getString("page.colors"), colorWidget);
     add(resources.getString("page.bookmarks"), bookmarks);
     add(resources.getString("page.blueprints"), blueprintList);
     
@@ -188,7 +189,6 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     // remember
     view = (TreeView)viEw;
     // update characteristics
-    colors.setColorSets(new ColorSet[]{view.colors});
     blueprintList.setGedcom(view.getModel().getGedcom());
     // done
   }
@@ -204,7 +204,11 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     view.setContentFont(fontChooser.getSelectedFont());
     view.getModel().setMarrSymbols(checkMarrSymbols.isSelected());
     // colors
-    colors.apply();
+    Iterator colors = view.colors.keySet().iterator();
+    while (colors.hasNext()) {
+      String key = colors.next().toString();
+      view.colors.put(key, colorWidget.getColor(key));
+    }
     // bookmarks
     List bookmarks = new ArrayList();
     ListModel list = bookmarkList.getModel();
@@ -236,7 +240,14 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     fontChooser.setSelectedFont(view.getContentFont());
     checkMarrSymbols.setSelected(view.getModel().isMarrSymbols());
     // colors
-    colors.reset();
+    colorWidget.removeAllColors();
+    Iterator keys = view.colors.keySet().iterator();
+    while (keys.hasNext()) {
+      String key = keys.next().toString();
+      String name = resources.getString("color."+key);
+      Color color = (Color)view.colors.get(key);
+      colorWidget.addColor(key, name, color);
+    }
     // bookmarks
     bookmarkList.setModel(new DefaultComboBoxModel(view.getModel().getBookmarks().toArray()));
     // metrics

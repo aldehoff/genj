@@ -30,7 +30,6 @@ import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.ActionDelegate;
-import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
@@ -59,8 +58,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -128,7 +125,7 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
   private boolean isAdjustFonts = false; 
   
   /** our colors */
-  /*package*/ ColorSet colors;
+  /*package*/ Map colors = new HashMap();
   
   /** our blueprints */
   private Map tag2blueprint = new HashMap();
@@ -158,16 +155,12 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
     );
     
     // grab colors
-    colors = new ColorSet("content", Color.white, resources, registry);
-    colors.addPropertyChangeListener(new PropertyChangeListener() {
-      public void propertyChange(PropertyChangeEvent evt) {
-        repaint();
-      }
-    });
-    colors.add("indis"  , Color.black);
-    colors.add("fams"   , Color.darkGray);
-    colors.add("arcs"   , Color.blue);
-    colors.add("selects", Color.red);
+    colors.put("background", Color.WHITE);
+    colors.put("indis"     , Color.BLACK);
+    colors.put("fams"      , Color.DARK_GRAY);
+    colors.put("arcs"      , Color.BLUE);
+    colors.put("selects"   , Color.RED);
+    colors = registry.get("color", colors);
     
     // grab font
     contentFont = registry.get("font", contentFont);
@@ -274,14 +267,17 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
     registry.put("antial"  , isAntialiasing );
     registry.put("font"    , contentFont);
     registry.put("adjust"  , isAdjustFonts);
+    registry.put("color", colors);
     // blueprints
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
       String tag = Gedcom.ENTITIES[t];
       registry.put("blueprint."+tag, getBlueprint(tag).getName()); 
     }
     // root    
-    if (model.getRoot()!=null) registry.put("root", model.getRoot().getId());
-    if (currentEntity!=null) registry.put("current", currentEntity.getId());
+    if (model.getRoot()!=null) 
+      registry.put("root", model.getRoot().getId());
+    if (currentEntity!=null) 
+      registry.put("current", currentEntity.getId());
     // bookmarks
     String[] bs = new String[model.getBookmarks().size()];
     Iterator it = model.getBookmarks().iterator();
@@ -783,17 +779,17 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
      */
     public void paint(Graphics g) {
       // fill backgound
-      g.setColor(colors.getColor("content"));
+      g.setColor((Color)colors.get("background"));
       Rectangle r = g.getClipBounds();
       g.fillRect(r.x,r.y,r.width,r.height);
       // resolve our Graphics
       UnitGraphics gw = new UnitGraphics(g,DPMM.getX()*zoom, DPMM.getY()*zoom);
       gw.setAntialiasing(isAntialiasing);
       // init renderer
-      contentRenderer.cIndiShape     = colors.getColor("indis");
-      contentRenderer.cFamShape      = colors.getColor("fams");
-      contentRenderer.cArcs          = colors.getColor("arcs");
-      contentRenderer.cSelectedShape = colors.getColor("selects");
+      contentRenderer.cIndiShape     = (Color)colors.get("indis");
+      contentRenderer.cFamShape      = (Color)colors.get("fams");
+      contentRenderer.cArcs          = (Color)colors.get("arcs");
+      contentRenderer.cSelectedShape = (Color)colors.get("selects");
       contentRenderer.selection      = currentEntity;
       contentRenderer.indiRenderer   = getEntityRenderer(Gedcom.INDI);
       contentRenderer.famRenderer    = getEntityRenderer(Gedcom.FAM );
