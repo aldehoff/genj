@@ -297,9 +297,7 @@ public class AboutWidget extends JPanel{
       gh.setParameter(gh.GROWFILL_HORIZONTAL);
 
       // what are the languages
-      //String[] languages = {"en", "de", "es", "fr", "it", "ja"};
-      String[] languages = {"en", "de", "fr", "hu", "es"};
-      choiceLanguages = new ChoiceWidget(languages, App.getInstance().getLanguage());
+      choiceLanguages = new ChoiceWidget(getAvailableLanguages(), App.getInstance().getLanguage());
       choiceLanguages.setEditable(false);
       gh.add(new JLabel(resources.getString("cc.about.tab4.language")), 0, 0);
       gh.add(choiceLanguages, 1, 0);
@@ -396,6 +394,28 @@ public class AboutWidget extends JPanel{
         comboThemes.setSelectedItem(lnf.getLastTheme());
         comboThemes.setEnabled(true);
       }
+    }
+    
+    /**
+     * Check available language libraries
+     */
+    private String[] getAvailableLanguages() {
+      // prepare result with default "en"
+      ArrayList result = new ArrayList(10);
+      result.add("en");
+      // look for language libraries (./lib/genj_pt_BR.jar)
+      File[] libs = new File("./lib").listFiles();
+      if (libs!=null)
+        for (int l=0;l<libs.length;l++) {
+          File lib = libs[l];
+          if (!lib.isFile()) continue;
+          String name = lib.getName();
+          if (!name.startsWith("genj_")) continue;
+          if (!name.endsWith  (".jar" )) continue;
+          result.add(name.substring(5, name.length()-4));
+        }
+      // done
+      return (String[])result.toArray(new String[result.size()]);
     }
     
   } // LookNFeelPanel

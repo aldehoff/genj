@@ -27,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -87,13 +88,20 @@ public class Resources {
   /**
    * Calc file for package (package/resources.properties)
    */
-  private String calcFile(String pkg, String lang) {
+  private String calcFile(String pkg, String lang, String country) {
 
-    // dots in package name become slashs
-    pkg = pkg.replace('.','/');
+    // dots in package name become slashs - /pkg/sub/resources
+    String file = '/'+pkg.replace('.','/')+"/resources";
     
-    // filename is always '/resources[_ll].properties' 
-    return '/'+pkg+"/resources"+(lang!=null?'_'+lang:"")+".properties";   
+    // add language and country '/resources[_ll[_CC]].properties' 
+    if (lang!=null) {
+      file += '_'+lang;
+      if (country!=null) {
+        file += '_'+country;
+      }
+    }
+    
+    return file+".properties";   
   }
 
   /**
@@ -101,54 +109,29 @@ public class Resources {
    */
   private Resources(String pkg) {
     
-    // 20030428 Used to use ResourceBundle here to get access to the
-    // appropriate PropertyResourceBundle. Had problems though
-    // because of the decision to name default (english) resource-files
-    // 
-    //   resources.properties and NOT resources_en.properties
-    //
-    // Example
-    //  1. system is FR
-    //  2. boots and initializes default locale FR
-    //  3. App switches language to EN
-    //  4. Initialize Resources for pkg
-    //  5. ResourceBundle tries resources_en.properties (can't find)
-    //  6  ResourceBundle tries resources_fr.properties (the default)
-    // Impossible to get at EN.
-    // 
-    // Tried to change 'default' locale to make ResourceBundle try
-    //  5. resources_en.properties
-    //  6. resources.properties
-    // but that messed up other components who are interested in the
-    // default Locale too!
-    //
-    // Backed out and using homegrown dual load - loading
-    //  1. resources.properties
-    //  2. resources_lang.properties
-    // now.
-    
-    
     // init simple members
     this.format=new MessageFormat("");
     this.pkg=pkg;
 
     // try to find language
-    String lang = null;
-    try {
-      lang = System.getProperty("user.language");
-    } catch (Throwable t) {
-    }
+    Locale locale = Locale.getDefault();
 
-    // have to load the defaults 
+    // loading english first (primary language)
     try {
-      load(getClass().getResourceAsStream(calcFile(pkg, null)));
+      load(getClass().getResourceAsStream(calcFile(pkg, null, null)));
     } catch (Throwable t) {
       Debug.log(Debug.WARNING, this,"Couldn't read default resources for package '"+pkg+"'");
     }
     
-    // try to load the appropriate language - english is default though
-    if (lang!=null&&!"en".equals(lang)) try {
-      load(getClass().getResourceAsStream(calcFile(pkg, lang)));
+    // trying to load language specific next
+    try {
+      load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), null)));
+    } catch (Throwable t) {
+    }
+
+    // trying to load language and country specific next
+    try {
+      load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), locale.getCountry())));
     } catch (Throwable t) {
     }
 

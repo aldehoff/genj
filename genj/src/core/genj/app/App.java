@@ -34,6 +34,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 import javax.swing.UIManager;
@@ -90,7 +91,15 @@ public class App {
     String lang = getLanguage();
     if (lang!=null) try {
       Debug.log(Debug.INFO, this, "Switching language to "+lang);
-      System.setProperty("user.language", lang);
+      
+      String country = "";
+      
+      int i = lang.indexOf('_');
+      if (i>0) {
+        country = lang.substring(i+1);
+        lang = lang.substring(0, i);
+      }
+      Locale.setDefault(new Locale(lang,country));
     } catch (Throwable t) {}
 
     // Make sure that Swing shows our localized texts
