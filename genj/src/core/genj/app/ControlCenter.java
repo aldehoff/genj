@@ -438,22 +438,25 @@ public class ControlCenter extends JPanel {
           error,
           resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE);
+      } else {
+        // show warnings
+        if (reader!=null) {
+          List warnings = reader.getWarnings();
+          if (!warnings.isEmpty()) {
+            App.getInstance().createDialog(
+              "Warnings", 
+              "warnings",
+              new Dimension(480,300), 
+              ControlCenter.this,
+              new JScrollPane(new JList(warnings.toArray())),
+              null
+            ).packAndShow();
+          }
+        }
       }
       // got a successfull gedcom
       if (gedcom != null) {
         addGedcom(gedcom);
-      }
-      // show warnings, too
-      List warnings = reader.getWarnings();
-      if (!warnings.isEmpty()) {
-        App.getInstance().createDialog(
-          "Warnings", 
-          "warnings",
-          new Dimension(480,300), 
-          ControlCenter.this,
-          new JScrollPane(new JList(warnings.toArray())),
-          null
-        ).packAndShow();
       }
       // done
     }
