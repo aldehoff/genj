@@ -539,7 +539,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         lVersion .setText(report.getVersion());
         tpInfo   .setText(report.getInfo());
         tpInfo   .setCaretPosition(0);
-        owOptions.setOptions(Option.getOptions(report));
+        owOptions.setOptions(Option.getOptions(report, report.getI18nProperties()));
       }
     }
     

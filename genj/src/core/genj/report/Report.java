@@ -129,6 +129,17 @@ public abstract class Report implements Cloneable {
     if (out!=null)
       out.println(txt);
   }
+  
+  /**
+   * Create a properties set of i18n texts
+   */
+  /*package*/ Properties getI18nProperties() {
+    return new Properties() {
+      public String getProperty(String key) {
+        return i18n(key);
+      }
+    };
+  }
 
   /**
    * Access to context's registry
@@ -346,7 +357,10 @@ public abstract class Report implements Cloneable {
     if (i18n==null) {
       i18n = new Properties();
       try {
-        i18n.load(getClass().getResourceAsStream(getClass().getName()+".properties"));
+        String rtype = getClass().getName();
+        while (rtype.indexOf('.') >= 0)
+          rtype = rtype.substring(rtype.indexOf('.')+1);
+        i18n.load(getClass().getResourceAsStream(rtype+".properties"));
       } catch (Throwable t) {
         Debug.log(Debug.INFO, this, "Couldn't read i18n for "+this);
       }

@@ -100,7 +100,7 @@ public class OptionsWidget extends JPanel {
      */
     public Object getValueAt(int row, int col) {
       Option option = options[row];
-      return col==0 ? option.getName() : option.toText();
+      return col==0 ? option.getName() : option.getValue();
     }
     
   } //Model

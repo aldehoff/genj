@@ -20,22 +20,33 @@
 package genj.option;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
- * The abstract base type of all options
+ * An option is simply a wrapped public field of a type 
+ * with meta-information (JavaBean 'light')
  */
-public abstract class Option {
+public class Option {
+  
+  /** option is for instance */
+  private Object instance;
   
   /** a name that can be presented to the user */
   private String name;
   
+  /** field */
+  private Field field;
+  
   /**
    * Constructor
    */
-  public Option(String naMe) {
+  public Option(Object inStance, String naMe, Field fiEld) {
+    instance = inStance;
     name = naMe;
+    field = fiEld;
   }
   
   /**
@@ -46,31 +57,57 @@ public abstract class Option {
   }
   
   /**
-   * Get options in member variables of instance
+   * Accessor - current value of this option
    */
-  public static Option[] getOptions(Object instance) {
+  public Object getValue() {
+    try {
+      return field.get(instance);
+    } catch (Throwable t) {
+      // shouldn't happen
+      throw new RuntimeException();
+    }
+  }
+  
+  /**
+   * Get options for given instance - supported are
+   * int, boolean and String
+   */
+  public static Option[] getOptions(Object instance, Properties field2name) {
     
     // prepare result
     List result = new ArrayList();
     
     // loop over fields of instance
     Field[] fields = instance.getClass().getFields();
+    
     for (int f=0;f<fields.length;f++) {
+      
       Field field = fields[f];
-      // grab all Option fields
-      if (Option.class.isAssignableFrom(field.getType())) try {
-        result.add(field.get(instance));
-      } catch (Throwable t) {
-      }
+      Class type = field.getType();
+      
+      // test access
+      int mod = field.getModifiers();
+      
+      if (Modifier.isFinal(mod) || !Modifier.isPublic(mod) || Modifier.isStatic(mod)) 
+        continue;
+        
+      // calc name
+      String name = field.getName();
+      String s = field2name.getProperty(name);
+      if (s!=null) name = s;
+      
+      // int, boolean, String?
+      if (String.class.isAssignableFrom(type) ||
+          Integer.TYPE.isAssignableFrom(type) ||
+          Boolean.TYPE.isAssignableFrom(type))
+        result.add(new Option(instance, name, field));
+
+      // next
     }
     
     // done
     return (Option[])result.toArray(new Option[result.size()]);
   }
   
-  /**
-   * Calculates a text representation
-   */
-  protected abstract String toText();
 
 } //Option

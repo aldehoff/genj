@@ -11,8 +11,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.option.OptionBoolean;
-import genj.option.OptionNumeric;
 import genj.report.Report;
 
 import java.util.ArrayList;
@@ -26,16 +24,15 @@ import java.util.List;
 public class ReportValidate extends Report {
   
   /** our options */
-  public OptionBoolean 
-    isEmptyValueValid = new OptionBoolean("Empty Values are Valid", true);
+  public boolean isEmptyValueValid = true;
 
   /** options of reports are picked up via field-introspection */
-  public OptionNumeric
-    maxLife    = new OptionNumeric("Maximum Lifespan", 90),
-    minAgeMARR = new OptionNumeric("Minimum age when marrying", 15),
-    maxAgeBAPM = new OptionNumeric("Maximum age when baptised",  6),
-    maxAgeCHRI = new OptionNumeric("Maximum age when christened",  6),    
-    minAgeRETI = new OptionNumeric("Minimum age when retiring", 45);
+  public int
+    maxLife    = 90,
+    minAgeMARR = 15,
+    maxAgeBAPM =  6,
+    maxAgeCHRI =  6,    
+    minAgeRETI = 45;
     
 /** Jerome's check still to be migrated:
 
@@ -190,7 +187,7 @@ public class ReportValidate extends Report {
     List result = new ArrayList();
 
     // non-valid properties
-    result.add(new TestValid(isEmptyValueValid.isSelected()));
+    result.add(new TestValid(isEmptyValueValid));
     
     // spouses with wrong gender
     result.add(new TestSpouseGender());
@@ -199,7 +196,7 @@ public class ReportValidate extends Report {
     result.add(new TestDate("INDI:BIRT:DATE",TestDate.AFTER  ,"INDI:DEAT:DATE"));
     
     // max lifespane
-    result.add(new TestAge ("INDI:DEAT:DATE",TestAge .GREATER,maxLife.getValue()));
+    result.add(new TestAge ("INDI:DEAT:DATE",TestAge .GREATER,maxLife));
     
     // burial before death
     result.add(new TestDate("INDI:BURI:DATE",TestDate.BEFORE ,"INDI:DEAT:DATE"));
@@ -211,16 +208,16 @@ public class ReportValidate extends Report {
     result.add(new TestDate(LIFETIME_DATES  ,TestDate.AFTER  ,"INDI:DEAT:DATE"));
 
     // max BAPM age 
-    result.add(new TestAge ("INDI:BAPM:DATE",TestAge .GREATER,maxAgeBAPM.getValue()));
+    result.add(new TestAge ("INDI:BAPM:DATE",TestAge .GREATER,maxAgeBAPM));
     
     // max CHRI age 
-    result.add(new TestAge ("INDI:CHRI:DATE",TestAge .GREATER,maxAgeCHRI.getValue()));
+    result.add(new TestAge ("INDI:CHRI:DATE",TestAge .GREATER,maxAgeCHRI));
     
     // min RETI age
-    result.add(new TestAge ("INDI:RETI:DATE",TestAge .LESS   ,minAgeRETI.getValue()));
+    result.add(new TestAge ("INDI:RETI:DATE",TestAge .LESS   ,minAgeRETI));
 
     // min MARR age
-    result.add(new TestAge ("FAM:MARR:DATE" ,TestAge .LESS   ,minAgeMARR.getValue()));
+    result.add(new TestAge ("FAM:MARR:DATE" ,TestAge .LESS   ,minAgeMARR));
 
     // marriage after divorce 
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:DIV:DATE"));
