@@ -40,6 +40,10 @@ public class TagPath {
   
   /** the hash of this path (immutable) */
   private int hash = 0;
+  
+  /** our marker */
+  public final static char SEPARATOR = ':';
+  public final static String SEPARATOR_STRING = String.valueOf(SEPARATOR);
 
   /**
    * Constructor for TagPath
@@ -49,18 +53,21 @@ public class TagPath {
   public TagPath(String path) throws IllegalArgumentException {
 
     // Parse path
-    StringTokenizer tokens = new StringTokenizer(path,":",false);
+    StringTokenizer tokens = new StringTokenizer(path,SEPARATOR_STRING,false);
     int length = tokens.countTokens();
-    if (length==0)
-      throw new IllegalArgumentException("No valid path :"+path);
+    if (length==0||path.charAt(0)==SEPARATOR||path.charAt(path.length()-1)==SEPARATOR)
+      throw new IllegalArgumentException("No valid path '"+path+"'");
 
     // ... setup data
     tags = new String[length];
     for (int i=0;i<length;i++) {
-      tags[i] = tokens.nextToken();
+      String token = tokens.nextToken().trim();
+      if (token.length()==0) 
+        throw new IllegalArgumentException("No valid path token #"+(i+1)+" in '"+path+"'");
+      tags[i] = token;
       hash += tags[i].hashCode();
     }
-
+    
     // Done
   }
   
