@@ -84,9 +84,9 @@ public class FrenchRCalendar extends Calendar {
       if (y>FrenchRCalendar.LEAP_YEARS[l]) jd++; 
     // check range
     if (jd<FrenchRCalendar.AN_I)
-      throw new GedcomException(PointInTime.resources.getString("frenchr.bef"));
+      throw new GedcomException(resources.getString("frenchr.bef"));
     if (jd>=FrenchRCalendar.UNTIL)
-      throw new GedcomException(PointInTime.resources.getString("frenchr.aft"));
+      throw new GedcomException(resources.getString("frenchr.aft"));
     // sum
     return jd;
   }
@@ -98,9 +98,9 @@ public class FrenchRCalendar extends Calendar {
 
     // check range
     if (julianDay<FrenchRCalendar.AN_I)
-      throw new GedcomException(PointInTime.resources.getString("frenchr.bef"));
+      throw new GedcomException(resources.getString("frenchr.bef"));
     if (julianDay>=FrenchRCalendar.UNTIL)
-      throw new GedcomException(PointInTime.resources.getString("frenchr.aft"));
+      throw new GedcomException(resources.getString("frenchr.aft"));
     
     julianDay = julianDay - FrenchRCalendar.AN_I;
     

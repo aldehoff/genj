@@ -277,10 +277,10 @@ public class DateWidget extends JPanel {
       } catch (GedcomException e) {
         int rc = manager.openDialog(
           null,
-          "Switching Calendar failed", 
+          Calendar.TXT_CALENDAR_SWITCH, 
           manager.IMG_ERROR, 
           e.getMessage(), 
-          new String[]{ manager.OPTION_OK, "Reset" }, 
+          new String[]{ manager.OPTION_OK, Calendar.TXT_CALENDAR_RESET }, 
           DateWidget.this
         );
         if (rc==0) 

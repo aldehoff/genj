@@ -21,6 +21,7 @@ package genj.gedcom.time;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 
 import java.util.HashMap;
@@ -39,8 +40,15 @@ public abstract class Calendar {
   protected String[] months;
   protected Map
     localizedMonthNames = new HashMap(),
-    abbreviatedMonthNames = new HashMap(); 
-   
+    abbreviatedMonthNames = new HashMap();
+    
+  protected final static Resources resources = PointInTime.resources; 
+
+  /** some messages */
+  public final static String 
+    TXT_CALENDAR_SWITCH = resources.getString("cal.switch"),
+    TXT_CALENDAR_RESET  = resources.getString("cal.reset");
+
   /** 
    * Constructor 
    */
@@ -49,13 +57,13 @@ public abstract class Calendar {
     // initialize members
     months = mOnths;
     escape = esc;
-    name = PointInTime.resources.getString("cal."+key);
+    name = resources.getString("cal."+key);
     image = new ImageIcon(Gedcom.class, img);
     
     // localize months
     for (int m=0;m<months.length;m++) {
       String mmm = months[m];
-      String localized = PointInTime.resources.getString("mon."+mmm);
+      String localized = resources.getString("mon."+mmm);
       String abbreviated;
   
       // calculate abbreviation
@@ -182,23 +190,23 @@ public abstract class Calendar {
       
     // YYYY is always needed - no calendar includes a year 0!
     if (year==PointInTime.UNKNOWN||year==0)
-      throw new GedcomException(PointInTime.resources.getString("year.invalid"));
+      throw new GedcomException(resources.getString("year.invalid"));
       
     // MM needed if DD!
     if (month==PointInTime.UNKNOWN&&day!=PointInTime.UNKNOWN)
-      throw new GedcomException(PointInTime.resources.getString("month.invalid"));
+      throw new GedcomException(resources.getString("month.invalid"));
       
     // months have to be within range
     if (month==PointInTime.UNKNOWN)
       month = 0;
     else if (month<0||month>=months.length)
-      throw new GedcomException(PointInTime.resources.getString("month.invalid"));
+      throw new GedcomException(resources.getString("month.invalid"));
 
     // day has to be withing range
     if (day==PointInTime.UNKNOWN)
       day = 0;
     else if (day<0||day>=getDays(month,year))
-      throw new GedcomException(PointInTime.resources.getString("day.invalid"));
+      throw new GedcomException(resources.getString("day.invalid"));
 
     // try to get julian day
     return toJulianDay(day, month, year);

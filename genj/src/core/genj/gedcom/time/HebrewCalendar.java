@@ -82,7 +82,7 @@ public class HebrewCalendar extends Calendar {
     
     // before Hebrew calendar start - ANNO MUNDI?
     if (julianDay<ANNO_MUNDI)
-      throw new GedcomException(PointInTime.resources.getString("hebrew.bef"));
+      throw new GedcomException(resources.getString("hebrew.bef"));
       
     int hebrewDay = julianDay-ANNO_MUNDI+1; 
       
