@@ -77,7 +77,7 @@ public class RulerRenderer extends ContentRenderer {
     renderSpan(graphics, model, fm, from, to, width);
     
     // render cday events
-    renderAlmanac(graphics, from, to);
+    renderAlmanac(graphics);
     
     // done
   }
@@ -85,20 +85,20 @@ public class RulerRenderer extends ContentRenderer {
   /**
    * Renders CDay event markers
    */
-  private void renderAlmanac(UnitGraphics g, double from, double to) {
+  private void renderAlmanac(UnitGraphics g) {
     
     // prepare drawing - color, clip, years etc.
     g.setColor(cTimespan);
     Rectangle2D clip = g.getClip();
-    int 
-    	fromYear = (int)Math.floor(clip.getX()),
-  		toYear   = (int)Math.ceil (clip.getMaxX());
+    PointInTime 
+      from = Model.toPointInTime(clip.getX()),
+      to   = Model.toPointInTime(clip.getMaxX());
 
     // we calculate how much time is covered per pixel
     double timePerPixel = dotSize.x;
     
     // iterate over according years
-    Iterator almanac = Almanac.getInstance().getEvents(fromYear, toYear, acats);
+    Iterator almanac = Almanac.getInstance().getEvents(from, to, acats);
     double last = 0;
     while (almanac.hasNext()) {
       // event to handle

@@ -61,6 +61,9 @@ public class Almanac {
   /** categories */
   private List categories = new ArrayList();
   
+  /** whether we've loaded all events */
+  private boolean isLoaded = false;
+  
   /** 
    * Singleton Accessor 
    */
@@ -80,9 +83,27 @@ public class Almanac {
         new CDayLoader().load();
         new AlmanacLoader().load();
   	    Debug.log(Debug.INFO, Almanac.this, "Loaded "+events.size()+" events");
+  	    synchronized (events) {
+  	      isLoaded = true;
+  	      events.notifyAll();
+  	    }
       }
     }).start();
     // done for now
+  }
+  
+  /**
+   * Wait for events to be loaded (this blocks)
+   */
+  public boolean waitLoaded() {
+    synchronized (events) {
+      while (!isLoaded) try {
+        events.wait();
+      } catch (InterruptedException e) {
+        return false;
+      }
+    }
+    return true;
   }
   
   /**
@@ -139,10 +160,10 @@ public class Almanac {
   }
   
   /**
-   * Accessor - a range of events
+   * Accessor - a range of events by (gregorian) year
    */
-  public Iterator getEvents(int startYear, int endYear, Set cats) {
-    return new Range(startYear, endYear, cats);
+  public Iterator getEvents(PointInTime from, PointInTime to, Set cats) {
+    return new Range(from, to, cats);
   }
   
   /**
@@ -401,7 +422,7 @@ public class Almanac {
     
     private int start, end;
     
-    private int endYear;
+    private PointInTime earliest, latest;
     
     private long origin = -1;
     private long originDelta;
@@ -415,14 +436,15 @@ public class Almanac {
      */
     Range(PointInTime when, int days, Set cats) throws GedcomException {
 
-      endYear = when.getYear()+1;
+      earliest = new PointInTime(1-1,1-1,when.getYear()-1);
+      latest = new PointInTime(31-1,12-1,when.getYear()+1);
       
 	    // convert to julian day
 	    origin = when.getJulianDay();
 	    originDelta = days;
 	    
 	    // init
-	    init(when.getYear()-1, cats);
+	    init(cats);
   	    
       // done
     }
@@ -430,21 +452,25 @@ public class Almanac {
     /**
      * Constructor
      */
-    Range(int startYear, int endYear, Set cats) {
+    Range(PointInTime from, PointInTime to, Set cats) {
       
-      this.endYear = endYear;
+      if (!from.isValid()||!to.isValid())
+        throw new IllegalArgumentException();
+      
+      earliest = from;
+      latest = to;
 
       // init
-      init(startYear, cats);
+      init(cats);
     }
     
-    private void init(int startYear, Set cats) {
+    private void init(Set cats) {
       
       categories = cats;
       
 	    synchronized (events) {
 	      end = events.size();
-	      start = getStartIndex(startYear);
+	      start = getStartIndex(earliest.getYear());
         hasNext();
 	    }
     }
@@ -480,8 +506,12 @@ public class Almanac {
 		      // good category?
 		      if (categories!=null&&!next.isCategory(categories)) 
 	          continue;
-	        // it's still in year range?
-		      if (next.getTime().getYear()>endYear) 
+		      // before earliest?
+		      PointInTime time = next.getTime();
+		      if (time.compareTo(earliest)<0)
+		        continue;
+	        // after latest?
+		      if (time.compareTo(latest)>0) 
 		        return end();
 		      // check against origin?
 		      if (origin>0) {
