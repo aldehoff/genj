@@ -249,7 +249,7 @@ public class GedcomWriter implements Trackable {
       // Close Output
       out.close();
 
-    } catch (IOException ex) {
+    } catch (Exception ex) {
       throw new GedcomIOException("Error while writing / "+ex.getMessage(), line);
     }
 
