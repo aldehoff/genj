@@ -169,7 +169,7 @@ public class PropertyDate extends Property {
   /**
    * Helper which returns given date in gedcom string-format
    */
-  public static String getString(Calendar c) {
+  public static String getDateString(Calendar c) {
 
     return c.get(Calendar.DAY_OF_MONTH)
       + " " + months[c.get(Calendar.MONTH)]
@@ -177,6 +177,15 @@ public class PropertyDate extends Property {
 
   }
 
+  /**
+   * Helper which returns given time in gedcom string-format
+   */
+  public static String getTimeString(Calendar c) {
+    return c.get(Calendar.HOUR_OF_DAY)
+      + ":" + c.get(Calendar.MINUTE)
+      + ":" + c.get(Calendar.SECOND);
+  }
+  
   /**
    * Accessor Tag
    */

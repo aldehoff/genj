@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.List;
@@ -51,6 +52,7 @@ public class GedcomWriter implements Trackable {
   private BufferedWriter out;
   private String file;
   private String date;
+  private String time;
   private String encoding = null;
   private int level;
   private int total, progress;
@@ -70,12 +72,15 @@ public class GedcomWriter implements Trackable {
     
     if (encoding==null) encoding = ANSEL;
 
+    Calendar now = Calendar.getInstance();
+
     // init data
     gedcom = ged;
     file = name;
     level = 0;
     line = 1;
-    date = PropertyDate.getString(Calendar.getInstance());
+    date = PropertyDate.getDateString(now);
+    time = PropertyDate.getTimeString(now);
     out = new BufferedWriter(createWriter(stream, encoding));
 
     // Done
@@ -281,6 +286,8 @@ public class GedcomWriter implements Trackable {
     line(+0, "CHAR", encoding);
     line(+0, "FILE", file);
     line(+0, "DATE", date);
+    line(+1, "TIME", time);
+    line(-1);
     line(-1);
   }
 
