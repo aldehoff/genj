@@ -36,7 +36,7 @@ import genj.util.Resources;
 /**
  * Class for providing ViewInfo information to a ViewEditor
  */
-public class TableViewInfo extends JPanel implements ViewInfo {
+public class TableViewSettings extends ViewSettingsWidget {
 
   /** components */
   private JComboBox       cTypes;
@@ -50,7 +50,11 @@ public class TableViewInfo extends JPanel implements ViewInfo {
   /**
    * Creates the visual parts of the editor
    */
-  public TableViewInfo() {
+  public TableViewSettings(TableView table) {
+
+    // remember
+    this.table = table;
+    this.eType = table.getType();
 
     // Create!
     GridBagHelper gh = new GridBagHelper(this);
@@ -100,6 +104,9 @@ public class TableViewInfo extends JPanel implements ViewInfo {
     gh.add(bDown                   ,0,5,1,1);
     gh.add(pathList                ,1,3,2,4,gh.GROW_BOTH|gh.FILL_BOTH);
 
+    // init data
+    reset();
+
     // Done
   }
 
@@ -107,20 +114,17 @@ public class TableViewInfo extends JPanel implements ViewInfo {
    * Tells the ViewInfo to apply made changes
    */
   public void apply() {
-    writeToTable();
+    // Write columns by TagPaths
+    TagPath[] paths = pathList.getPaths();
+    table.setTagPaths(eType,paths);
+
+    // Done
   }
 
   /**
-   * Has to return the component used to edit for editing
+   * Tells the ViewInfo to reset made changes
    */
-  public Component getEditor() {
-    return this;
-  }
-
-  /**
-   * Reflect state of Table in our Editor
-   */
-  private void readFromTable() {
+  public void reset() {
 
     // Clear reference to table for listeners
     TableView t = table;
@@ -145,44 +149,6 @@ public class TableViewInfo extends JPanel implements ViewInfo {
   }
 
   /**
-   * Tells the ViewInfo to reset made changes
-   */
-  public void reset() {
-    readFromTable();
-  }
-
-  /**
-   * Initializes this ViewInfo with the given View
-   */
-  public void setView(Component comp) throws IllegalArgumentException {
-
-    // Preset values
-    if (!(comp instanceof TableView))
-      throw new IllegalArgumentException();
-
-    // Calculate Table component & starting type
-    table = (TableView)comp;
-    eType = table.getType();
-
-    readFromTable();
-
-    // Done
-  }
-
-  /**
-   * Write changed state to Table
-   */
-  private void writeToTable() {
-
-    // Write columns by TagPaths
-    TagPath[] paths = pathList.getPaths();
-    table.setTagPaths(eType,paths);
-
-    // Done
-  }
-  
-
-  /**
    * Action - ActionChooseEntity
    */
   private class ActionChooseEntity extends ActionDelegate {
@@ -191,7 +157,7 @@ public class TableViewInfo extends JPanel implements ViewInfo {
     public void execute() {
       if (table==null) return;
       eType = cTypes.getSelectedIndex();
-      readFromTable();
+      reset();
     }
   } //ActionChooseEntity
   

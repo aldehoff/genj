@@ -36,7 +36,7 @@ import genj.util.Resources;
 /**
  * Class for providing PInfo information to a ViewEditor
  */
-public class TreeViewInfo extends JTabbedPane implements ViewInfo {
+public class TreeViewSettings extends ViewSettingsWidget {
 
   private TreeView   tree;
 
@@ -77,7 +77,15 @@ public class TreeViewInfo extends JTabbedPane implements ViewInfo {
   /**
    * Constructor
    */
-  public TreeViewInfo() {
+  public TreeViewSettings(TreeView tree) {
+    
+    // initial layout
+    JTabbedPane tabbed = new JTabbedPane();
+    setLayout(new BorderLayout());
+    add(tabbed, BorderLayout.CENTER);
+    
+    // remember
+    this.tree = tree;
 
     // Create a listener
     ActionListener alistener = new ActionListener() {
@@ -108,9 +116,6 @@ public class TreeViewInfo extends JTabbedPane implements ViewInfo {
     TagPathTreeListener tlistener = new TagPathTreeListener() {
       // LCD
       public void handleSelection(TagPath p, boolean on) {
-        if (tree==null) {
-          return;
-        }
         if (on) {
           layoutProperties.add(p,null);
         } else {
@@ -146,7 +151,7 @@ public class TreeViewInfo extends JTabbedPane implements ViewInfo {
       helper.add(pathTree,1,row++,1,1,helper.GROW_BOTH|helper.FILL_BOTH);
       helper.add(layoutProperties,1,row++,1,1,helper.GROW_BOTH|helper.FILL_BOTH);
 
-    add(resources.getString("page.properties"),panel);
+    tabbed.add(resources.getString("page.properties"),panel);
 
     // Options
     panel = new JPanel();panel.setBorder(defaultBorder);
@@ -167,7 +172,7 @@ public class TreeViewInfo extends JTabbedPane implements ViewInfo {
       helper.add(comboFont,1,row++,1,1);
       helper.add(textFont,1,row++,1,1);
 
-    add(resources.getString("page.options"),panel);
+    tabbed.add(resources.getString("page.options"),panel);
 
     // Bookmarks
     panel = new JPanel();panel.setBorder(defaultBorder);
@@ -186,7 +191,7 @@ public class TreeViewInfo extends JTabbedPane implements ViewInfo {
 
       helper.add(new JScrollPane(listBookmarks),1,row++,5,1,helper.GROW_BOTH|helper.FILL_BOTH);
 
-    add(resources.getString("page.bookmarks"),panel);
+    tabbed.add(resources.getString("page.bookmarks"),panel);
 
     // Done
   }
@@ -220,13 +225,6 @@ public class TreeViewInfo extends JTabbedPane implements ViewInfo {
   }
 
   /**
-   * Tells the ViewInfo to apply made changes
-   */
-  public void apply() {
-    writeToTree();
-  }
-
-  /**
    * Changes the type to the current ComboBox selection
    */
   private void changeType() {
@@ -235,7 +233,7 @@ public class TreeViewInfo extends JTabbedPane implements ViewInfo {
       return;
     }
     entity = filter[i];
-    readFromTree();
+    reset();
   }
 
   /**
@@ -293,9 +291,9 @@ public class TreeViewInfo extends JTabbedPane implements ViewInfo {
   }
 
   /**
-   * Reflect state of Tree in our Editor
+   * Tells the ViewInfo to reset made changes
    */
-  private void readFromTree() {
+  public void reset() {
 
     // ?
     if (tree==null) {
@@ -363,33 +361,9 @@ public class TreeViewInfo extends JTabbedPane implements ViewInfo {
   }
 
   /**
-   * Tells the ViewInfo to reset made changes
+   * Tells the ViewInfo to apply made changes
    */
-  public void reset() {
-    readFromTree();
-  }
-
-  /**
-   * Initializes this ViewInfo with the given View
-   */
-  public void setView(Component comp) throws IllegalArgumentException {
-
-    // Correct type?
-    if (!(comp instanceof TreeView))
-      throw new IllegalArgumentException();
-
-    // Calculate Table component & read
-    tree = (TreeView)comp;
-
-    readFromTree();
-
-    // Done
-  }
-
-  /**
-   * Write changed state to Tree
-   */
-  private void writeToTree() {
+  public void apply() {
 
     // Write Options
     tree.setShadow         (checkPaints[0].isSelected());

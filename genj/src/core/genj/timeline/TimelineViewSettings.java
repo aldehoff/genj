@@ -33,7 +33,7 @@ import genj.app.*;
 /**
  * The ViewInfo representing settings of a TimelineView
  */
-public class TimelineViewInfo extends JPanel implements ViewInfo {
+public class TimelineViewSettings extends ViewSettingsWidget {
 
   /** members */
   private TimelineView timeline;
@@ -48,8 +48,11 @@ public class TimelineViewInfo extends JPanel implements ViewInfo {
   /**
    * Creates the visual parts of the editor
    */
-  public TimelineViewInfo() {
-
+  public TimelineViewSettings(TimelineView timeline) {
+    
+    // remember
+    this.timeline = timeline;
+    
     // Create components
     selectorEventTags = new TagSelector();
     scalaPercentPerYear = new Scala();
@@ -69,6 +72,9 @@ public class TimelineViewInfo extends JPanel implements ViewInfo {
     for (int i=0;i<checkPaints.length;i++) {
       helper.add(checkPaints[i],1,row++,1,1);
     }
+    
+    // init
+    reset();
 
     // Done
   }
@@ -77,25 +83,26 @@ public class TimelineViewInfo extends JPanel implements ViewInfo {
    * Tells the ViewInfo to apply made changes
    */
   public void apply() {
-    writeToTimeline();
+    // EventTags to choose from
+    if (selectorEventTags.isChanged()) {
+      timeline.setEventTags(selectorEventTags.getSelectedTags());
+    }
+
+    // Space for one year
+    timeline.setPercentagePerYear(scalaPercentPerYear.getValue());
+
+    // Checks
+    timeline.setPaintTags (checkPaints[0].isSelected());
+    timeline.setPaintDates(checkPaints[1].isSelected());
+    timeline.setPaintGrid (checkPaints[2].isSelected());
+
+    // Done
   }
 
   /**
-   * Has to return the component used for editing
+   * Tells the ViewInfo to reset made changes
    */
-  public Component getEditor() {
-    return this;
-  }
-
-  /**
-   * Reflect state in our Editor
-   */
-  private void readFromTimeline() {
-
-    // Anything to read from?
-    if (timeline==null)
-      return;
-
+  public void reset() {
     // EventTags to choose from
     String tags[] = PropertyEvent.getTags();
     selectorEventTags.setTags(tags);
@@ -112,52 +119,4 @@ public class TimelineViewInfo extends JPanel implements ViewInfo {
     // Done
   }
 
-  /**
-   * Tells the ViewInfo to reset made changes
-   */
-  public void reset() {
-    readFromTimeline();
-  }
-
-  /**
-   * Initializes this ViewInfo with the given View
-   */
-  public void setView(Component comp) throws IllegalArgumentException {
-
-    // Correct type?
-    if (!(comp instanceof TimelineView))
-      throw new IllegalArgumentException();
-
-    // Calculate Timeline component & starting type
-    timeline = (TimelineView)comp;
-    readFromTimeline();
-
-    // Done
-  }
-
-  /**
-   * Write changed state
-   */
-  private void writeToTimeline() {
-
-    // Anything to write to?
-    if (timeline==null) {
-      return;
-    }
-
-    // EventTags to choose from
-    if (selectorEventTags.isChanged()) {
-      timeline.setEventTags(selectorEventTags.getSelectedTags());
-    }
-
-    // Space for one year
-    timeline.setPercentagePerYear(scalaPercentPerYear.getValue());
-
-    // Checks
-    timeline.setPaintTags (checkPaints[0].isSelected());
-    timeline.setPaintDates(checkPaints[1].isSelected());
-    timeline.setPaintGrid (checkPaints[2].isSelected());
-
-    // Done
-  }
 }

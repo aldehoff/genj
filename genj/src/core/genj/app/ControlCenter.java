@@ -123,7 +123,7 @@ public class ControlCenter extends JPanel {
     bh.setEnabled(true).create(new ActionOpen());
     
     bh.setEnabled(false).setCollection(gedcomButtons);
-    ViewBridge.Descriptor[] ds=ViewBridge.getInstance().getDescriptors();
+    ViewManager.Descriptor[] ds=ViewManager.getInstance().getDescriptors();
     for (int i=0; i<ds.length; i++) {
       bh.create(new ActionView(ds[i]));
     }
@@ -190,7 +190,7 @@ public class ControlCenter extends JPanel {
     mh.setMenu(null).createMenu("cc.menu.view");
     
       mh.setEnabled(false).setCollection(gedcomButtons);    
-      ViewBridge.Descriptor[] ds=ViewBridge.getInstance().getDescriptors();
+      ViewManager.Descriptor[] ds=ViewManager.getInstance().getDescriptors();
       for (int i=0; i<ds.length; i++) 
         mh.createItem(new ActionView(ds[i]));
       mh.setEnabled(true).setCollection(null);    
@@ -768,7 +768,7 @@ public class ControlCenter extends JPanel {
       }
   
       // Close all views for that gedcom
-      ViewBridge.getInstance().closeAll(gedcom);
+      ViewManager.getInstance().closeViews(gedcom);
   
       // Close instance
       gedcom.close();
@@ -857,7 +857,7 @@ public class ControlCenter extends JPanel {
     }    
     /** run */
     protected void execute() {
-      ViewEditor.startEditing(null,"");
+      ViewManager.getInstance().openSettings(null);
     } 
   } // ActionSettings
     
@@ -924,9 +924,9 @@ public class ControlCenter extends JPanel {
    */
   protected class ActionView extends ActionDelegate { 
     /** which (ViewBridge.getDescriptors() index) */
-    private ViewBridge.Descriptor which;
+    private ViewManager.Descriptor which;
     /** constructor */
-    protected ActionView(ViewBridge.Descriptor which) {
+    protected ActionView(ViewManager.Descriptor which) {
       this.which = which;
       super.setText("cc.tip.open_"+which.key);
       super.setTip("cc.tip.open_"+which.key);
@@ -938,8 +938,7 @@ public class ControlCenter extends JPanel {
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
       if (gedcom==null) return;
       // Create new View
-      JFrame view = ViewBridge.getInstance().open(which,gedcom);
-      if (view!=null) { view.pack(); view.show(); }
+      ViewManager.getInstance().openView(which,gedcom);
     } 
   } //ActionView
       
@@ -949,14 +948,7 @@ public class ControlCenter extends JPanel {
   private class ActionToggleButtons extends ActionDelegate {
     /** run */
     protected void execute() {
-      // is a gedcom selected
-      boolean on = (tGedcoms.getSelectedGedcom()!=null);
-      // switch on/off AbstractButtons related to Gedcom
-      Enumeration e = gedcomButtons.elements();
-      while (e.hasMoreElements()) {
-        ((AbstractButton)e.nextElement()).setEnabled(on);
-      }
-      // done
+      ButtonHelper.setEnabled(gedcomButtons, tGedcoms.getSelectedGedcom()!=null);
     }
   } //ActionToggleButtons    
   

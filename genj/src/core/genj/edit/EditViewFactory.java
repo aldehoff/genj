@@ -17,32 +17,41 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.app;
+package genj.edit;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Frame;
+
+import genj.app.ViewFactory;
+import genj.app.ViewSettingsWidget;
+import genj.gedcom.Gedcom;
+import genj.print.PrintRenderer;
+import genj.util.Registry;
 
 /**
- * Interface between ViewEditor and XXXViewInfo classes
+ * The factory for the TableView
  */
-public interface ViewInfo {
+public class EditViewFactory implements ViewFactory {
 
   /**
-   * Tells the ViewInfo to apply made changes
+   * @see genj.app.ViewFactory#createSettingsComponent(Component)
    */
-  public void apply();
+  public ViewSettingsWidget createSettingsComponent(Component view) {
+    return null;
+  }
 
   /**
-   * Has to return the component used for editing
+   * @see genj.app.ViewFactory#createPrintRenderer(Component)
    */
-  public Component getEditor();
+  public PrintRenderer createPrintRenderer(Component view) {
+    return null;
+  }
 
   /**
-   * Tells the ViewInfo to reset made changes
+   * @see genj.app.ViewFactory#createViewComponent(Gedcom, Registry, Frame)
    */
-  public void reset();
+  public Component createViewComponent(Gedcom gedcom, Registry registry, Frame frame) {
+    return new EditView(gedcom,registry,frame);
+  }
 
-  /**
-   * Initializes this ViewInfo with the given View
-   */
-  public void setView(Component comp) throws IllegalArgumentException;
 }

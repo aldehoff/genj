@@ -182,7 +182,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getFather(), false);
+      indi.getGedcom().fireEntitySelected(null, indi.getFather(), true);
     }
   }
       
@@ -196,7 +196,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getMother(), false);
+      indi.getGedcom().fireEntitySelected(null, indi.getMother(), true);
     }
   }
         
@@ -210,7 +210,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getYoungerSibling(), false);
+      indi.getGedcom().fireEntitySelected(null, indi.getYoungerSibling(), true);
     }
   }      
   
@@ -224,7 +224,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getOlderSibling(), false);
+      indi.getGedcom().fireEntitySelected(null, indi.getOlderSibling(), true);
     }
   }
         
@@ -238,7 +238,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getPartners()[0], false);
+      indi.getGedcom().fireEntitySelected(null, indi.getPartners()[0], true);
     }
   }
         
@@ -252,7 +252,7 @@ public class NavigatorView extends JPanel {
     }
     /** run */
     protected void execute() {
-      indi.getGedcom().fireEntitySelected(null, indi.getChildren()[0], false);
+      indi.getGedcom().fireEntitySelected(null, indi.getChildren()[0], true);
     }
   }
   
