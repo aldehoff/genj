@@ -46,7 +46,7 @@ public class TableView extends Table {
   private static final String defaultPaths [][] = {
     {"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"},
     {"FAM","FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" },
-    {"OBJE","OBJE:BLOB"},
+    {"OBJE","OBJE:FILE"},
     {"NOTE"},
     {"SOUR"},
     {"SUBM"},
