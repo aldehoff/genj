@@ -65,7 +65,7 @@ import javax.swing.JTextArea;
   }
   
   /** 
-   * Returns the confirmation message
+   * Returns the confirmation message - null if none
    */
   protected abstract String getConfirmMessage();
   
@@ -79,7 +79,9 @@ import javax.swing.JTextArea;
    * Callback to update confirm text
    */
   protected void refresh() {
-    confirm.setText(getConfirmMessage());
+    // might be no confirmation showing
+    if (confirm!=null)
+      confirm.setText(getConfirmMessage());
   }
   
   private JTextArea confirm;
@@ -90,24 +92,27 @@ import javax.swing.JTextArea;
   protected void execute() {
     
     // prepare confirmation message for user
-    confirm = new JTextArea(getConfirmMessage(), 6, 40);
-    confirm.setWrapStyleWord(true);
-    confirm.setLineWrap(true);
-    confirm.setEditable(false);
-
-    // prepare options
-    JComponent c = getOptions();
-
-    // Recheck with the user
-    int rc = manager.getWindowManager().openDialog(
-      getClass().getName(), null, WindowManager.IMG_QUESTION, 
-      new JComponent[]{ c, new JScrollPane(confirm)} , 
-      new String[] { resources.getString("confirm.proceed", txt ), WindowManager.OPTION_CANCEL }, 
-      target 
-    );
-    if (rc!=0)
-      return;
-    
+    String msg = getConfirmMessage();
+    if (msg!=null) {
+      confirm = new JTextArea(msg, 6, 40);
+      confirm.setWrapStyleWord(true);
+      confirm.setLineWrap(true);
+      confirm.setEditable(false);
+  
+      // prepare options
+      JComponent c = getOptions();
+  
+      // Recheck with the user
+      int rc = manager.getWindowManager().openDialog(
+        getClass().getName(), null, WindowManager.IMG_QUESTION, 
+        new JComponent[]{ c, new JScrollPane(confirm)} , 
+        new String[] { resources.getString("confirm.proceed", txt ), WindowManager.OPTION_CANCEL }, 
+        target 
+      );
+      if (rc!=0)
+        return;
+    }
+        
     // lock gedcom
     if (!gedcom.startTransaction()) return;
     // let sub-class handle create
