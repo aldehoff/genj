@@ -48,6 +48,13 @@ public class Option {
     name = naMe;
     field = fiEld;
   }
+
+  /**
+   * Accessor - a unique key for this option
+   */ 
+  public String getKey() {
+    return field.getName();
+  }
   
   /**
    * Accessor - type of this option
