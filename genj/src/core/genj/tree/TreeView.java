@@ -341,12 +341,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       super.setSize(new Dimension(TreeView.this.getWidth()/4,TreeView.this.getHeight()/4));
     }
     /**
-     * @see java.awt.Container#getMaximumSize()
-     */
-    public Dimension getMaximumSize() {
-      return super.getSize();
-    }
-    /**
      * @see java.awt.Component#setSize(int, int)
      */
     public void setSize(int width, int height) {
@@ -567,8 +561,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
         h = parent.getHeight();
       Component[] cs = parent.getComponents();
       for (int c=0; c<cs.length; c++) {
-        Dimension max = cs[c].getMaximumSize();
-        cs[c].setBounds(0,0,Math.min(w,max.width),Math.min(h,max.height));
+        if (cs[c]==overview) continue;
+        cs[c].setBounds(0,0,w,h);
       }
       // done
     }
