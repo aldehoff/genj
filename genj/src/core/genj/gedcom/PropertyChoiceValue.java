@@ -66,6 +66,27 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     // delegate
     super.setValue(value);
   }
+  
+  /**
+   * A special value that allows global substitution
+   */
+  public void setValue(String value, boolean global) {
+    
+    // more?
+    if (global) {
+      // change value of all with value
+      Property[] others = getSameChoices();
+      for (int i=0;i<others.length;i++) {
+        if (others[i]!=this) 
+          others[i].setValue(value);
+      }
+    }    
+      
+    // change me
+    setValue(value);
+    
+    // done
+  }
 
   /**
    * @see genj.gedcom.Property#addNotify(genj.gedcom.Property)
@@ -91,6 +112,9 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   
   /**
    * Used choices (this will not work unless parent not null)
+   * 20041210 I'm passing gedcom here so properties that haven't
+   * been added to a parent yet (EditView) can already be edited
+   * nicely
    */
   public List getChoices(Gedcom gedcom) {
     return gedcom.getReferenceSet(getTag()).getKeys();
