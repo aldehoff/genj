@@ -231,28 +231,19 @@ import java.util.Stack;
         contours[c].translate(0, dlon);
         ModelHelper.translate(nodes[c],orientn.getPoint2D(dlat,dlon));
         
-        // balance children?
-//        if (tlayout.isBalanceChildren) {
-//    
-//          // re-position all nodes east of [min]
-//          double slon = (orientn.getLongitude(nodes[c].getPosition()) - orientn.getLongitude(nodes[min].getPosition()))/(c-min);
-//          dlon = 0;
-//          for (int s=min+1;s<c;s++) {
-//            // calc delta which will place all nodes min<s<n fine
-//            dlon = Math.max(
-//              dlon,
-//              (orientn.getLongitude(nodes[min].getPosition())+(s-min)*slon) - orientn.getLongitude(nodes[s].getPosition())
-//            );
-//            // reality-check against delta constraints
-//            for (int m=s;m<c;m++) dlon = Math.min(deltas[m] - deltas[min], dlon);
-//            // contour and sub-tree @ node
-//            contours[s].translate(0,dlon);
-//            ModelHelper.translate(nodes[s],orientn.getPoint2D(0,dlon));
+        // balance children from right to left
+// FIXME balancing        
+//        for (int s=c-1;s>min;s--) {
+//          deltas[s]+=dlon;
+//          double olat = orientn.getLatitude (nodes[s].getPosition());
+//          double olon = orientn.getLongitude(nodes[s].getPosition()); 
+//          double nlon = nodeop .getLongitude(nodes[s], olon, olon+deltas[s]);
+//          if (nlon!=olon) {
+//            contours[s].translate(0,nlon-olon);
+//            ModelHelper.translate(nodes[s], orientn.getPoint2D(0,nlon-olon));
 //          }
-//      
-//          // done
 //        }
-
+    
         // 'new' child is positioned
       }
       
@@ -284,7 +275,7 @@ import java.util.Stack;
     if (children.length==0) {
 
       // a leaf is simply placed
-      lon = 0;
+      lon = nodeop.getLongitude(node, 0, 0, 0, 0, orientn);
       lat = 0;
 
     } else {

@@ -437,7 +437,6 @@ public class TreeLayout extends AbstractLayout implements Layout {
         return ((NodeOptions)node).getLongitude(node, minc, maxc, mint, maxt, o);
       return minc + (maxc-minc) * Math.min(1D, Math.max(0D, lonAlignment));
     }
-
   } //DefaultNodeOptions
   
   /**
