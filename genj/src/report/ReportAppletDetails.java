@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.15 2002-10-19 17:37:31 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.16 2002-10-23 21:39:41 nmeier Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -402,8 +402,8 @@ public class ReportAppletDetails implements Report {
 
     // Loop through individuals & families
     try {
-      export((Entity)gedcom.getEntities(gedcom.INDIVIDUALS),dir,bridge);
-      export((Entity)gedcom.getEntities(gedcom.FAMILIES   ),dir,bridge);
+      export(gedcom.getEntities(gedcom.INDIVIDUALS),dir,bridge);
+      export(gedcom.getEntities(gedcom.FAMILIES   ),dir,bridge);
     } catch (IOException e) {
       bridge.println("IOError while exporting :(");
     }
