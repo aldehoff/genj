@@ -76,19 +76,21 @@ public class Resources {
    */
   private Resources(String pkg) {
     
+    // init simple members
     this.format=new MessageFormat("");
     this.pkg=pkg;
 
+    // try to find language
     String lang = "en";
     try {
       lang = System.getProperty("user.language");
     } catch (Throwable t) {
     }
 
-Debug.log(Debug.INFO, this, pkg + ":" + lang);
-
+    // try to load it
     try {
 
+      // calculate resource-name package.resources[.properties]
       String file;
       if (pkg.length()==0) {
         file = "resources";
@@ -97,12 +99,19 @@ Debug.log(Debug.INFO, this, pkg + ":" + lang);
         file = pkg+".resources";
       }
 
-      rb = ResourceBundle.getBundle(
-        file,
-        // Using Local.getDefault() doesn't seem to work
-        // under Linux ... will do our own constructor here :/
-        new Locale(lang,"")
-      );
+      // the locale we'll use
+      Locale locale = new Locale(lang,"");
+      
+      // if we don't set the default then -Duser.language will
+      // take effect for 'en' because we use resources.properties
+      // for english as THE default 
+      try { 
+        Locale.setDefault(locale);
+      } catch (Throwable t) {
+      }
+      
+      // get it
+      rb = ResourceBundle.getBundle(file, locale);
 
     } catch (RuntimeException e) {
 
