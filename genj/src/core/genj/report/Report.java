@@ -26,6 +26,7 @@ import genj.gedcom.Property;
 import genj.option.Option;
 import genj.util.Debug;
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
 import genj.view.ViewManager;
@@ -37,7 +38,6 @@ import java.awt.Component;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
-import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
@@ -432,7 +432,7 @@ public abstract class Report implements Cloneable {
       result = key;
     } else {
       if (subs!=null&&subs.length>0)
-        result = new MessageFormat(result).format(subs);
+        result = Resources.getMessageFormat(result).format(subs);
     }
 
     // done

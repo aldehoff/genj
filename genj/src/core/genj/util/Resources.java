@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Class which provides localized text-resources for a package
@@ -54,8 +55,8 @@ public class Resources {
   /** the package name this resource is for */
   private String pkg;
 
-  /** a cached message format object */
-  private MessageFormat format;
+  /** cached message formats */
+  private WeakHashMap msgFormats = new WeakHashMap();
   
   /**
    * Accessor (cached) 
@@ -110,7 +111,6 @@ public class Resources {
   private Resources(String pkg) {
     
     // init simple members
-    this.format=new MessageFormat("");
     this.pkg=pkg;
 
     // try to find language
@@ -217,18 +217,34 @@ public class Resources {
    */
   public String getString(String key, Object[] substitutes) {
 
-    // Get Value
-    String value = getString(key);
+    // do we have a message format already?
+    MessageFormat format = (MessageFormat)msgFormats.get(key);
+    if (format==null) {
+      format = getMessageFormat(getString(key));
+      msgFormats.put(key, format);
+    }
 
-    // .. this is our pattern
-    format.applyPattern(value);
-
-    // .. which we fill with substitutes
-    String result = format.format(substitutes);
-
-    // Done
-    return result;
-
+    // fill with substitutes
+    return format.format(substitutes);
+  }
+  
+  /**
+   * Generate a MessageFormat for given pattern
+   */
+  public static MessageFormat getMessageFormat(String pattern) {
+    // have to patch single quotes to doubles because
+    // MessageFormat doesn't like those 
+    if (pattern.indexOf('\'')>=0) {
+      StringBuffer buffer = new StringBuffer(pattern.length()+8);
+      for (int i=0,j=pattern.length();i<j;i++) {
+        char c = pattern.charAt(i);
+        if (c=='\'') buffer.append("''");
+        else buffer.append(c);
+      }
+      pattern = buffer.toString();
+    }
+    // got it
+    return new MessageFormat(pattern);
   }
 
   /**
