@@ -51,7 +51,7 @@ public class FileAssociation {
    * Constructor
    */
   public FileAssociation(String s, String a, String e) {
-    suffix = s;
+    suffix = s.toLowerCase();
     action = a;
     executable = e;
   }
@@ -159,7 +159,7 @@ public class FileAssociation {
   /**
    * Gets associations   */
   public static List get(String suffix) {
-    List result = (List)instances.get(suffix);
+    List result = (List)instances.get(suffix.toLowerCase());
     if (result==null) result = new ArrayList(0);
     return result;
   }
