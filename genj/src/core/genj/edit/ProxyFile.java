@@ -23,11 +23,16 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.util.EnvironmentChecker;
+import genj.util.swing.MenuHelper;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -35,6 +40,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -43,7 +49,7 @@ import javax.swing.SwingConstants;
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : FILE
  */
-class ProxyFile extends Proxy implements ActionListener {
+class ProxyFile extends Proxy implements ActionListener{
 
   /** members */
   private EditView     edit;
@@ -129,7 +135,7 @@ class ProxyFile extends Proxy implements ActionListener {
     // Image from File?
     ImageIcon icon = pFile.getValueAsIcon();
     if ( (icon==null)||(icon.getIconWidth()<1)||(icon.getIconHeight()<1) ) {
-      lImage.setText("No image file or bigger than "+PropertyFile.getMaxValueAsIconSize()+" bytes");
+      lImage.setText("No preview available");
       lImage.setIcon(null);
     } else {
       lImage.setIcon(icon);
@@ -169,6 +175,7 @@ class ProxyFile extends Proxy implements ActionListener {
     // Any graphical information that could be shown ?
     lImage = new JLabel();
     lImage.setHorizontalAlignment(SwingConstants.CENTER);
+    lImage.addMouseListener(new Popup());
     sImage = new JScrollPane(lImage);
     sImage.setMinimumSize(new Dimension(0,0));
     in.add(sImage);
@@ -178,4 +185,26 @@ class ProxyFile extends Proxy implements ActionListener {
     // Done
   }
 
-}
+  /**
+   * Popup   */
+  private class Popup extends MouseAdapter {
+    public void mousePressed(MouseEvent e) {
+      mouseReleased(e);
+    }
+    public void mouseReleased(MouseEvent e) {
+      // no popup trigger no action
+      if (!e.isPopupTrigger()) return;
+      // find actions for file
+      List actions = new ArrayList(6);
+      EditViewFactory.createActions(actions, (PropertyFile)prop);
+      if (actions.isEmpty()) return;
+      // show a context menu
+      MenuHelper mh = new MenuHelper().setTarget(lImage);
+      JPopupMenu popup = mh.createPopup("");
+      mh.createItems(actions);
+      popup.show(lImage, e.getPoint().x, e.getPoint().y);
+      // done
+    }
+  } //Popup
+  
+} //ProxyFile

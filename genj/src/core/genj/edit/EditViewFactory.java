@@ -210,7 +210,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   /**
    * Create actions for PropertyFile
    */
-  private void createActions(List result, PropertyFile file) {
+  /*package*/ static void createActions(List result, PropertyFile file) {
     
     // find suffix
     String suffix = file.getValue();
