@@ -31,7 +31,6 @@ public class ReportValidate extends Report {
     maxLife    = 90,
     minAgeMARR = 15,
     maxAgeBAPM =  6,
-    maxAgeCHRI =  6,    
     minAgeRETI = 45;
     
 /** Jerome's check still to be migrated:
@@ -125,7 +124,6 @@ public class ReportValidate extends Report {
     println("***This Report is not finished yet - work in progress***");
     println(" Still to do:");
     println(" + migrate all of Jerome's anomaly checks");
-    println(" + keep report options between restarts");
     println(" + discuss best way to word results");
     println(" + add gedcom grammar checks");
     flush();
@@ -217,7 +215,7 @@ public class ReportValidate extends Report {
     result.add(new TestAge ("INDI:BAPM:DATE",TestAge .GREATER,maxAgeBAPM));
     
     // max CHRI age 
-    result.add(new TestAge ("INDI:CHRI:DATE",TestAge .GREATER,maxAgeCHRI));
+    result.add(new TestAge ("INDI:CHRI:DATE",TestAge .GREATER,maxAgeBAPM));
     
     // min RETI age
     result.add(new TestAge ("INDI:RETI:DATE",TestAge .LESS   ,minAgeRETI));
