@@ -72,9 +72,9 @@ import java.awt.geom.Rectangle2D;
     metrics = mEtrics;
     
     // init values
-    initMarrShapes();
     initEntityShapes();
     initFoldUnfoldShapes();
+    initMarrShapes();
     
     // done    
   }
@@ -130,16 +130,22 @@ import java.awt.geom.Rectangle2D;
     AffineTransform 
       at1 = AffineTransform.getTranslateInstance(-dx,-dy),
       at2 = AffineTransform.getTranslateInstance( dx, dy);
- 
+
     shapeMarrs.append(e.getPathIterator(at1));
     shapeMarrs.append(e.getPathIterator(at2));
     
-    // patch bounds
-    shapeMarrs.setBounds2D( model.isVertical() ?
-      new Rectangle2D.Double(-d*0.5D,-(metrics.hIndis+metrics.pad)*0.5D,d,metrics.hIndis+metrics.pad) :
-      new Rectangle2D.Double(-metrics.wIndis*0.5D,-d*0.5D,metrics.wIndis,d)
-    );
-    
+    // patch bounds - I wish I could just make the marr symbol
+    // laterally align with the boxes of husband/wife instead
+    Rectangle2D r = shapeMarrs.getBounds2D();
+    if (model.isVertical()) {
+      r.add(0, shapeIndis.getBounds2D().getMinY());
+      r.add(0, shapeIndis.getBounds2D().getMaxY());
+    } else {
+      r.add(shapeIndis.getBounds2D().getMinX(), 0);
+      r.add(shapeIndis.getBounds2D().getMaxX(), 0);
+    }
+    shapeMarrs.setBounds2D(r);
+   
     // done
   }
 
@@ -501,6 +507,7 @@ import java.awt.geom.Rectangle2D;
       offsetHusband = model.isVertical() ? 
         - (metrics.wIndis + shapeMarrs.getBounds().width )/2 :
         - (metrics.hIndis + shapeMarrs.getBounds().height)/2;
+        
       // done
     }
     

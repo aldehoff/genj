@@ -514,6 +514,7 @@ public class Model implements GedcomListener {
     layout.setBalanceChildren(false);
     layout.setRoot(root);
     layout.setVertical(isVertical);
+    //layout.setLatAlignment(0.5D);
     return layout.layout(root, nodes.size()).getBounds();
     // done
   }
