@@ -80,7 +80,7 @@ public class ContentRenderer {
     "   <prop path=INDI:RESI:ADDR:CITY>\n"+  
     "    <prop path=INDI:RESI:ADDR:POST>\n"+
     " </td><td>\n"+
-    "  <prop path=INDI:OBJE:FILE maxw=25>\n"+
+    "  <prop path=INDI:OBJE:FILE maxh=25>\n"+
     " </td>\n"+
     "</tr></table>\n";
    
