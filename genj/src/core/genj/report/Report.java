@@ -251,7 +251,7 @@ public abstract class Report implements Cloneable {
 
     // open a non-modal dialog
     viewManager.getWindowManager().openNonModalDialog(
-      null,
+      registry.getView()+"#items",
       getName(),
       ReportViewFactory.IMG,
       content,
