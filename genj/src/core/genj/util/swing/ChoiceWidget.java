@@ -42,10 +42,21 @@ public class ChoiceWidget extends javax.swing.JComboBox {
     
     super(values);
     
+    // apparently the default model preselects a value
+    // which isn't overridden by selection if selection
+    // isn't in values
+    getModel().setSelectedItem(null);
+    
+    // try to set selection - not in values is ignored
     setSelectedItem(selection);
+    
+    // alignment fix
     setAlignmentX(LEFT_ALIGNMENT);
+    
+    // our editor
     setEditor(editor);
     
+    // initially unchanged
     isChanged = false;
   }
     
