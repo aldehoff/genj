@@ -6,6 +6,8 @@
  */
 package genj.util;
 
+import java.awt.Dimension;
+import java.awt.Point;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -27,11 +29,8 @@ public class ImageSniffer {
   private int read = 0;
 
   /** sniffed values */  
-  protected int 
-    width = 0, 
-    height= 0, 
-    dpiy  = -1, 
-    dpix  = -1;
+  protected Dimension dimension;
+  protected Point dpi;
     
   /**
    * Constructor
@@ -57,7 +56,11 @@ public class ImageSniffer {
     } catch (IOException e) {
     }
 
-    //System.out.println(suffix+":"+width+"x"+height+" / "+dpix+"x"+dpiy+"["+read+"]");
+    // validate what we've got
+    if (dpi!=null&&(dpi.x<=0||dpi.y<=0))
+      dpi = null;
+    if (dimension!=null&&(dimension.width<1||dimension.height<1))
+      dimension = null;
     
     // done    
   }
@@ -71,30 +74,18 @@ public class ImageSniffer {
   
   /**
    * Accessor - resolution (dpi)
+   * @return null if unknown
    */
-  public int getDPIx() {
-    return dpix;
+  public Point getDPI() {
+    return dpi;
   }
 
   /**
-   * Accessor - resolution (dpi)
+   * Accessor - dimension
+   * @return null if unknown
    */
-  public int getDPIy() {
-    return dpiy;
-  }
-
-  /**
-   * Accessor - width
-   */
-  public int getWidth() {
-    return width;
-  }
-
-  /**
-   * Accessor - height
-   */
-  public int getHeight() {
-    return height;
+  public Dimension getDimension() {
+    return dimension;
   }
 
   /**
@@ -113,8 +104,10 @@ public class ImageSniffer {
       return;
 
     // width & height
-    width = sniffShortLittleEndian();
-    height = sniffShortLittleEndian();
+    dimension = new Dimension(
+    	sniffShortLittleEndian(),
+    	sniffShortLittleEndian()
+    );
 
     // no resolution
           
@@ -150,8 +143,10 @@ public class ImageSniffer {
       return;
 
     // width & height
-    width  = sniffIntBigEndian();
-    height = sniffIntBigEndian();
+    dimension = new Dimension(
+      sniffIntBigEndian(),
+      sniffIntBigEndian()
+    );
     
     // skip rest + crc
     skip(len-8+4);
@@ -175,8 +170,10 @@ public class ImageSniffer {
           x = sniffIntBigEndian(),
           y = sniffIntBigEndian();
         if (in.read()==1) { //meter
-          dpix = (int)Math.round(2.54D*x/100);
-          dpiy = (int)Math.round(2.54D*y/100);
+          dpi = new Point(
+          	(int)Math.round(2.54D*x/100),
+          	(int)Math.round(2.54D*y/100)
+          );
         }
         break;
       }
@@ -191,6 +188,76 @@ public class ImageSniffer {
   }
 
   /**
+   * sniffer - tiff
+   * 
+   * @see http://www.media.mit.edu/pia/Research/deepview/exif.html
+   */
+  private boolean sniffTiff() throws IOException {
+    
+    int start = read;
+
+    // analyze TIFF header
+    boolean intel;
+    switch (sniffShortLittleEndian()) {
+      case 0x4949: //II = intel
+        intel = true;
+        break;
+      case 0x4d4d: //MM = motorola
+        intel = false; 
+        break;
+      default:
+        return false;
+    }
+    
+    // skip 0x002a
+    skip(2);
+    
+    // jump to IFD (Image File Directory)
+    skip(sniffInt(intel)-(read-start));
+    
+    // loop directory looking for x/y resolution
+    int xres = 0, yres = 0;
+    for (int i=0,j=sniffShort(intel);i<j;i++) {
+      // directory image information entry - 12 bytes
+      int tag = sniffShort(intel),
+          format = sniffShort(intel),
+          components = sniffInt(intel),
+          value = sniffInt(intel);
+      switch (tag) {
+      	case 0x011a: //x-resolution
+      	  xres = value;
+      		break;
+      	case 0x011b: //y-resolution
+      	  yres = value;
+      		break;
+      }
+      // check next
+    }
+    
+    // did we get resolution offsets that still work?
+    if (xres<(read-start)||yres<(read-start)) 
+      return false;
+    
+    // lookup resolution values
+    if (xres<yres) {
+      skip(xres-(read-start));
+      xres = sniffInt(intel) / sniffInt(intel);
+      skip(yres-(read-start));
+      yres = sniffInt(intel) / sniffInt(intel);
+    } else {
+      skip(yres-(read-start));
+      yres = sniffInt(intel) / sniffInt(intel);
+      skip(xres-(read-start));
+      xres = sniffInt(intel) / sniffInt(intel);
+    }
+    dpi = new Point(xres, yres);
+    
+    // done
+    return true;
+    
+  }
+  
+  /**
    * sniffer - jpg
    * 
    * @see http://www.dcs.ed.ac.uk/home/mxr/gfx/2d/JPEG.txt
@@ -198,7 +265,8 @@ public class ImageSniffer {
   private void sniffJpg() throws IOException {
 
     final byte[] 
-      JFIF = "JFIF".getBytes();
+      JFIF = "JFIF".getBytes(),
+      EXIF = "Exif".getBytes();
 
     // loop chunks
     chunks: while (true) {
@@ -211,7 +279,15 @@ public class ImageSniffer {
         
       // marker?
       switch (marker) {
-        case 0xffe0: // APPx
+        case 0xffe1: // EXIF
+          // looking for Exif and trailing short
+          if (!sniff(EXIF))
+            break;
+          skip(2);
+          // tiff from here
+          sniffTiff();
+          break;
+        case 0xffe0: // jpeg APPx
           // looking for JFIF
           if (sniff(JFIF)) {
             // skip '0'(1) and version(2)
@@ -219,12 +295,13 @@ public class ImageSniffer {
             // check units
             switch (read()) {
               case 1: // dots per inch
-                dpix = sniffShortBigEndian();
-                dpiy = sniffShortBigEndian();
+                dpi = new Point(sniffShortBigEndian(), sniffShortBigEndian());
                 break;
               case 2: // dots per cm
-                dpix = (int)(sniffShortBigEndian() * 2.54f);
-                dpiy = (int)(sniffShortBigEndian() * 2.54f);
+                dpi = new Point(
+	                (int)(sniffShortBigEndian() * 2.54f),
+	                (int)(sniffShortBigEndian() * 2.54f)
+                );
                 break;
               }
           }
@@ -247,9 +324,14 @@ public class ImageSniffer {
         case 0xffcf:
           // bitsPerPixel = a * b
           read(); //a
-          height = sniffShortBigEndian();
-          width = sniffShortBigEndian();
+          dimension = new Dimension(
+	          sniffShortBigEndian(),
+	          sniffShortBigEndian()
+          );
           read(); //b
+          break;
+        case 0xffd9:
+          // EOI
           break chunks;
         default:
           if ((marker & 0xff00) != 0xff00)
@@ -273,11 +355,11 @@ public class ImageSniffer {
     skip(16);
     
     // width & height    
-    width = sniffIntLittleEndian();
-    height = sniffIntLittleEndian();
+    dimension = new Dimension(
+	    sniffIntLittleEndian(),
+	    sniffIntLittleEndian()
+    );
     
-    if (width < 1 || height < 1) return;
-
     // skip short
     skip(2);
 
@@ -293,14 +375,10 @@ public class ImageSniffer {
     skip(8);
     
     // resolution
-    int x = sniffIntLittleEndian();
-    if (x > 0) {
-      dpix  = (int)Math.round(2.54D*x/100); // dots per meter
-    }
-    int y = sniffIntLittleEndian();
-    if (y > 0) {
-      dpiy = (int)Math.round(2.54D*y/100); // dots per meter
-    }
+    dpi = new Point(
+      (int)Math.round(2.54D*sniffIntLittleEndian()/100), // dots per meter
+      (int)Math.round(2.54D*sniffIntLittleEndian()/100)  // dots per meter
+    );
 
     // done
     suffix = "bmp";
@@ -341,6 +419,13 @@ public class ImageSniffer {
   }
   
   /**
+   * Sniffer - int as intel or motorola
+   */
+  private int sniffInt(boolean intel) throws IOException {
+    return intel ? sniffIntLittleEndian() : sniffIntBigEndian();  
+  }
+  
+  /**
    * Sniffer - int big endian
    */
   private int sniffIntBigEndian() throws IOException {
@@ -362,6 +447,13 @@ public class ImageSniffer {
       (read() & 0xff) << 24 ;
   }
 
+  /**
+   * Sniffer - short as intel or motorola
+   */
+  private int sniffShort(boolean intel) throws IOException {
+    return intel ? sniffShortLittleEndian() : sniffShortBigEndian();  
+  }
+  
   /**
    * Sniffer - short big endian
    */  

@@ -90,9 +90,7 @@ public class ImageIcon extends javax.swing.ImageIcon {
     // sniff resolution
     String msg;
     
-    ImageSniffer is = new ImageSniffer(new ByteArrayInputStream(data));
-    if (is.getDPIx()>0&&is.getDPIy()>0)
-      dpi = new Point(is.getDPIx(), is.getDPIy());
+    dpi = new ImageSniffer(new ByteArrayInputStream(data)).getDPI();
     
     // done
   }
