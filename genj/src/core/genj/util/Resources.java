@@ -97,7 +97,7 @@ public class Resources {
 
     Debug.log(Debug.WARNING, this,"Resource '"+key+"' for pkg '"+pkg+"' is missing");
 
-    return "";
+    return key;
   }
 
   /**
@@ -138,7 +138,7 @@ public class Resources {
 
     Debug.log(Debug.WARNING, this,"Resource '"+key+"' for pkg '"+pkg+"' is missing");
 
-    return "";
+    return key;
 
   }
 
