@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -46,6 +47,7 @@ public class DateWidget extends JPanel {
   private PopupWidget widgetCalendar; 
   private TextFieldWidget widgetDay,widgetYear;
   private ChoiceWidget widgetMonth;
+  private JLabel widgetDayOfWeek;
   
   /** calendar switches */
   private ArrayList switches;
@@ -83,6 +85,8 @@ public class DateWidget extends JPanel {
     widgetDay   = new TextFieldWidget("",2+1);
     widgetDay.setSelectAllOnFocus(true);
     
+    widgetDayOfWeek = new JLabel();
+    
     // Layout
     setLayout(new FlowLayout(FlowLayout.LEFT));
     
@@ -96,6 +100,7 @@ public class DateWidget extends JPanel {
       default: 
         add(widgetYear); add(widgetMonth); add(widgetDay ); format = "yyyy-mmm-dd"; break;
     }
+    add(widgetDayOfWeek);
     
     widgetCalendar.setToolTipText(format);
     widgetDay.setToolTipText(format);
@@ -216,14 +221,21 @@ public class DateWidget extends JPanel {
    */
   private void updateStatus() {
     // check whether valid
-    if (getValue()==null) {
+    PointInTime value = getValue();
+    if (value==null) {
       // show 'X' on disabled button
       widgetCalendar.setEnabled(false);
       widgetCalendar.setIcon(MetaProperty.IMG_ERROR);
+      widgetDayOfWeek.setText("");
     } else {
       // show current calendar on enabled button
       widgetCalendar.setEnabled(true);
-      widgetCalendar.setIcon(calendar.getImage());       
+      widgetCalendar.setIcon(calendar.getImage());
+      try {       
+        widgetDayOfWeek.setText(value.getDayOfWeek(true));
+      } catch (GedcomException e) {
+        widgetDayOfWeek.setText("");
+      }
     }
   }
 

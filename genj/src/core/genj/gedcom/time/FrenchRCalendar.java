@@ -36,6 +36,9 @@ public class FrenchRCalendar extends Calendar {
   private static final String MONTHS[] 
    = { "VEND","BRUM","FRIM","NIVO","PLUV","VENT","GERM","FLOR","PRAI","MESS","THER","FRUC","COMP" };
   
+  private static final String WEEKDAYS[] 
+   = { "PRI", "DUO", "TRI", "QUA", "QUI", "SEX", "SEP", "OCT", "NON", "DEC", "VER", "GEN", "TRA", "OPI", "REC", "REV" };
+   
   private static final int[] LEAP_YEARS
    = { 3,7,11 };
    
@@ -52,7 +55,7 @@ public class FrenchRCalendar extends Calendar {
    * Constructor
    */
   protected FrenchRCalendar() {
-    super("@#DFRENCH R@" , "french", "images/FrenchR.gif", FrenchRCalendar.MONTHS);
+    super("@#DFRENCH R@" , "french", "images/FrenchR.gif", MONTHS, WEEKDAYS);
   }
   
   /**
@@ -77,6 +80,21 @@ public class FrenchRCalendar extends Calendar {
     return (year+1) % 4 == 0;
   }
   
+  /**
+   * @see genj.gedcom.time.Calendar#getDayOfWeek(genj.gedcom.time.PointInTime)
+   */
+  protected String getDayOfWeek(PointInTime pit, boolean localize) throws GedcomException {
+    if (!pit.isComplete()) 
+      throw new GedcomException("");
+    // localized?
+    String[] result = localize ? localizedWeekDays : localizedWeekDays;
+    // Jour Complémentaire?
+    if (pit.getMonth()==13-1)
+      return result[10+pit.getDay()];
+    // normal 30 days month
+    return result[pit.getDay()%10];
+  }
+
   /**
    * @see genj.gedcom.PointInTime.Calendar#toJulianDay(genj.gedcom.PointInTime)
    */

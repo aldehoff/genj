@@ -38,6 +38,7 @@ public abstract class Calendar {
   protected String name;
   protected ImageIcon image;
   protected String[] months;
+  protected String[] weekDays, localizedWeekDays;
   protected Map
     localizedMonthNames = new HashMap(),
     abbreviatedMonthNames = new HashMap();
@@ -52,13 +53,19 @@ public abstract class Calendar {
   /** 
    * Constructor 
    */
-  protected Calendar(String esc, String key, String img, String[] mOnths) {
+  protected Calendar(String esc, String key, String img, String[] mOnths, String[] weEkDays) {
     
     // initialize members
     months = mOnths;
     escape = esc;
     name = resources.getString("cal."+key);
     image = new ImageIcon(Gedcom.class, img);
+    
+    // localize weekdays
+    weekDays = weEkDays;
+    localizedWeekDays = new String[weekDays.length];
+    for (int wd=0;wd<weekDays.length;wd++)
+      localizedWeekDays[wd] = resources.getString("day."+weekDays[wd]);
     
     // localize months
     for (int m=0;m<months.length;m++) {
@@ -191,6 +198,17 @@ public abstract class Calendar {
    */
   public abstract int getDays(int month, int year);
       
+  /**
+   * Access to (localized) day of week
+   */
+  protected String getDayOfWeek(PointInTime pit, boolean localize) throws GedcomException {
+    if (!pit.isComplete())
+      throw new GedcomException("");
+    String[] result = localize ? localizedWeekDays : localizedWeekDays;
+    int dow = (pit.getJulianDay() + 1) % 7;
+    return result[dow >= 0 ? dow : dow+7];
+  }
+  
   /**
    * PIT -> Julian Day
    */

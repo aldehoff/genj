@@ -156,6 +156,13 @@ public class PointInTime implements Comparable {
   }
   
   /**
+   * Calculate day of week
+   */
+  public String getDayOfWeek(boolean localize) throws GedcomException {
+    return calendar.getDayOfWeek(this, localize);
+  }
+  
+  /**
    * Setter
    */
   public void set(Calendar cal) throws GedcomException {

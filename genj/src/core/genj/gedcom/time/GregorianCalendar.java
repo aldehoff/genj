@@ -28,8 +28,13 @@ public class GregorianCalendar extends Calendar {
 
   protected static final String MONTHS[]
     = { "JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC" };
+    
+  protected static final String WEEKDAYS[]
+    = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" };
+
   private static final int MONTH_LENGTH[]
     = {31,28,31,30,31,30,31,31,30,31,30,31}; // 0-based
+    
   private static final int LEAP_MONTH_LENGTH[]
     = {31,29,31,30,31,30,31,31,30,31,30,31}; // 0-based
 
@@ -44,7 +49,7 @@ public class GregorianCalendar extends Calendar {
    * Constructor
    */
   protected GregorianCalendar(String esc, String key, String img) {
-    super(esc, key, img, GregorianCalendar.MONTHS);
+    super(esc, key, img, MONTHS, WEEKDAYS);
   }
 
   /**

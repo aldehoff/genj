@@ -45,11 +45,14 @@ public class HebrewCalendar extends Calendar {
   private static final String[] MONTHS 
    = { "TSH","CSH","KSL","TVT","SHV","ADR","ADS","NSN","IYR","SVN","TMZ","AAV","ELL" };
 
+  private static final String[] WEEKDAYS 
+  = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAB" };
+   
   /**
    * Constructor
    */
   protected HebrewCalendar() {
-    super("@#DHEBREW@", "hebrew", "images/Hebrew.gif", HebrewCalendar.MONTHS);
+    super("@#DHEBREW@", "hebrew", "images/Hebrew.gif", MONTHS, WEEKDAYS);
   }
   
   /**
