@@ -193,8 +193,10 @@ public class MetaProperty {
     try {
       result = (Property)getType().newInstance();
       result.setTag(tag);
-    } catch (Throwable t) {
-      Debug.log(Debug.WARNING, this, t);
+    } catch (Exception e) {
+      // 20030530 catch exceptions only - during load
+      // an outofmemoryerrror could happen here
+      Debug.log(Debug.WARNING, this, e);
       result = new PropertySimpleValue(); 
       ((PropertySimpleValue)result).setTag(tag);
     }
