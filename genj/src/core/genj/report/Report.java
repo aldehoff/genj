@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.49 $ $Author: nmeier $ $Date: 2004-11-09 19:20:15 $
+ * $Revision: 1.50 $ $Author: nmeier $ $Date: 2004-11-19 22:26:53 $
  */
 package genj.report;
 
@@ -456,8 +456,11 @@ public abstract class Report implements Cloneable {
       Debug.log(Debug.WARNING, this, "Unknown i18 key : "+key);
       result = key;
     } else {
-      if (subs!=null&&subs.length>0)
+      if (subs!=null&&subs.length>0) {
+        for (int i=0;i<subs.length;i++) 
+          if (subs[i]==null) subs[i]="";
         result = Resources.getMessageFormat(result).format(subs);
+      }
     }
 
     // done
