@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.67 $ $Author: nmeier $ $Date: 2004-07-26 19:04:55 $
+ * $Revision: 1.68 $ $Author: nmeier $ $Date: 2004-07-26 19:25:42 $
  */
 package genj.gedcom;
 
@@ -596,9 +596,9 @@ public class Gedcom {
     transaction = new Transaction(this);
     transaction.setRollback(true);
 
-    // rollback changes of last undo
+    // rollback changes of last undo (reverse order again)
     Change[] changes = redo.getChanges();
-    for (int i=0;i<changes.length;i++)
+    for (int i=changes.length-1;i>=0;i--)
       changes[i].undo();
 
     // keep change status
