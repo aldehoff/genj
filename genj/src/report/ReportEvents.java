@@ -115,7 +115,7 @@ public class ReportEvents extends Report {
         
         
         // loop individuals
-        for (Iterator indis = gedcom.getEntities(gedcom.INDI).iterator(); indis.hasNext(); ) {
+        for (Iterator indis = gedcom.getEntities(Gedcom.INDI).iterator(); indis.hasNext(); ) {
             analyze((Indi)indis.next(), births, baptisms, marriages, divorces, emigrations, immigrations, naturalizations, deaths);
         }
         
@@ -328,7 +328,7 @@ public class ReportEvents extends Report {
             return false;
         
         PointInTime start = date.getStart();
-        if (start.getCalendar()!=start.GREGORIAN)
+        if (start.getCalendar()!=PointInTime.GREGORIAN)
             return false;
         
         // check criteria

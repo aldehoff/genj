@@ -242,17 +242,17 @@ import java.util.Set;
    */
   public void handleChange(Transaction tx) {
     // deleted or added entities/properties -> recreate
-    if (!(tx.getChanges(tx.EDEL).isEmpty()
-        &&tx.getChanges(tx.EADD).isEmpty()
-        &&tx.getChanges(tx.PADD).isEmpty()
-        &&tx.getChanges(tx.PDEL).isEmpty())) {
+    if (!(tx.getChanges(Transaction.EDEL).isEmpty()
+        &&tx.getChanges(Transaction.EADD).isEmpty()
+        &&tx.getChanges(Transaction.PADD).isEmpty()
+        &&tx.getChanges(Transaction.PDEL).isEmpty())) {
       createEvents();
       return;
     }
     // changed properties -> scan for dates or names
     boolean changed = false;
-    if (!tx.getChanges(tx.PMOD).isEmpty()) {
-      Iterator ps = tx.getChanges(tx.PMOD).iterator();
+    if (!tx.getChanges(Transaction.PMOD).isEmpty()) {
+      Iterator ps = tx.getChanges(Transaction.PMOD).iterator();
       while (ps.hasNext()) {
         Property p = (Property)ps.next();
         // a date -> lets recreate everything
@@ -457,7 +457,7 @@ import java.util.Set;
       pe = propEvent;
       pd = propDate;
       // setup time
-      from = toDouble(propDate.getStart(), propDate.getFormat()==propDate.AFT);
+      from = toDouble(propDate.getStart(), propDate.getFormat()==PropertyDate.AFT);
       to  = propDate.isRange() ? toDouble(propDate.getEnd(), false) : from;
       // from<to?
       if (from>to)
@@ -484,7 +484,7 @@ import java.util.Set;
 
       // month
       int month = pit.getMonth();
-      if (month==pit.UNKNOWN)
+      if (month==PointInTime.UNKNOWN)
         return roundUp ? result+1 : result;
 
       double months = calendar.getMonths(); 

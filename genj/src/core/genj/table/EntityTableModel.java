@@ -244,7 +244,7 @@ import javax.swing.table.AbstractTableModel;
    */
   public void handleChange(Transaction tx) {
     // a drastic tx (entities added/deleted) ? 
-    if (!(tx.getChanges(tx.EADD).isEmpty()&&tx.getChanges(tx.EDEL).isEmpty())) {
+    if (!(tx.getChanges(Transaction.EADD).isEmpty()&&tx.getChanges(Transaction.EDEL).isEmpty())) {
       // rebuild!
       prepareRows();
       sortRows();
@@ -253,7 +253,7 @@ import javax.swing.table.AbstractTableModel;
       return;
     }
     // any rows to update?
-    Set emods = tx.getChanges(tx.EMOD);
+    Set emods = tx.getChanges(Transaction.EMOD);
     int 
      first = -1,
      last  = -1; 

@@ -77,8 +77,8 @@ public class ControlCenter extends JPanel {
     p.add(new JLabel(gedcom.getOrigin().getFileName(), SwingConstants.CENTER));
     
     WordBuffer words = new WordBuffer();
-    words.append(gedcom.getEntities(Gedcom.INDI).size()+" "+gedcom.getEntityName(Gedcom.INDI, true));
-    words.append(gedcom.getEntities(Gedcom.FAM ).size()+" "+gedcom.getEntityName(Gedcom.FAM , true));
+    words.append(gedcom.getEntities(Gedcom.INDI).size()+" "+Gedcom.getEntityName(Gedcom.INDI, true));
+    words.append(gedcom.getEntities(Gedcom.FAM ).size()+" "+Gedcom.getEntityName(Gedcom.FAM , true));
     
     p.add(new JLabel(words.toString(), SwingConstants.CENTER));
     

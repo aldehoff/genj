@@ -531,10 +531,10 @@ public class PropertyTreeWidget extends DnDTree {
       Entity entity = root.getEntity();
 
       // Entity deleted ?
-      if ( !tx.getChanges(tx.EDEL).isEmpty() ) {
+      if ( !tx.getChanges(Transaction.EDEL).isEmpty() ) {
         // Loop through known entity ?
         boolean affected = false;
-        Iterator ents = tx.getChanges(tx.EDEL).iterator();
+        Iterator ents = tx.getChanges(Transaction.EDEL).iterator();
         while (ents.hasNext()) {
           // the entity deleted
           Entity deleted = (Entity)ents.next();
@@ -551,11 +551,11 @@ public class PropertyTreeWidget extends DnDTree {
       }
       
       // at least same entity modified?
-      if (!tx.getChanges(tx.EMOD).contains(entity))
+      if (!tx.getChanges(Transaction.EMOD).contains(entity))
         return;
 
       // Property removed?
-      Iterator pdels = tx.getChanges(tx.PDEL).iterator();
+      Iterator pdels = tx.getChanges(Transaction.PDEL).iterator();
       while (pdels.hasNext()) {
         Property pdel = (Property)pdels.next();
         if (pdel.getEntity()==entity) {
@@ -566,7 +566,7 @@ public class PropertyTreeWidget extends DnDTree {
       }
 
       // Property added?
-      Iterator padds = tx.getChanges(tx.PADD).iterator();
+      Iterator padds = tx.getChanges(Transaction.PADD).iterator();
       while (padds.hasNext()) {
         Property padd = (Property)padds.next();
         // only look at those from same entity
@@ -578,8 +578,8 @@ public class PropertyTreeWidget extends DnDTree {
       }
       
       // A simple property modified?
-      if ( !tx.getChanges(tx.PMOD).isEmpty() ) {
-        firePropertiesChanged(tx.getChanges(tx.PMOD));
+      if ( !tx.getChanges(Transaction.PMOD).isEmpty() ) {
+        firePropertiesChanged(tx.getChanges(Transaction.PMOD));
         return;
       }
 

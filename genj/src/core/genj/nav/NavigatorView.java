@@ -155,7 +155,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
    * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
    */
   public void handleChange(Transaction tx) {
-    if (tx.getChanges(tx.EDEL).contains(current)) setCurrentEntity(null);
+    if (tx.getChanges(Transaction.EDEL).contains(current)) setCurrentEntity(null);
     else setCurrentEntity(current);
   }
   

@@ -26,7 +26,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.61 2004-06-25 15:43:21 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.62 2004-07-05 18:29:38 gulcher Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -265,7 +265,7 @@ public class ReportGedcomStatistics extends Report {
         Gedcom gedcom = (Gedcom)context;
         
         // what to analyze
-        Entity[] indis = gedcom.getEntities(gedcom.INDI, "");
+        Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");
         Entity[] fams = gedcom.getEntities(Gedcom.FAM,"");
         
         // where to write the statistic data

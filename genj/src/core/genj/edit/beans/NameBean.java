@@ -73,13 +73,13 @@ public class NameBean extends PropertyBean {
     tSuff  = new TextFieldWidget(pname.getSuffix()   , 10); 
     tSuff.addChangeListener(changeSupport);
 
-    add(new JLabel(pname.getLabelForFirstName()));
+    add(new JLabel(PropertyName.getLabelForFirstName()));
     add(tFirst);
 
-    add(new JLabel(pname.getLabelForLastName()));
+    add(new JLabel(PropertyName.getLabelForLastName()));
     add(cLast);
 
-    add(new JLabel(pname.getLabelForSuffix()));
+    add(new JLabel(PropertyName.getLabelForSuffix()));
     add(tSuff);
 
 

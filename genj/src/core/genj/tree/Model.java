@@ -413,7 +413,7 @@ import java.util.Set;
    */
   public void handleChange(Transaction tx) {
     // was any entity deleted?
-    Set deleted = tx.getChanges(tx.EDEL);
+    Set deleted = tx.getChanges(Transaction.EDEL);
     if (deleted.size()>0) {
       // root has to change?
       if (deleted.contains(root)) 
@@ -432,7 +432,7 @@ import java.util.Set;
       return;
     }
     // was a relationship property deleted, added or changed?
-    for (Iterator pmods=tx.getChanges(tx.PMOD).iterator();pmods.hasNext();) {
+    for (Iterator pmods=tx.getChanges(Transaction.PMOD).iterator();pmods.hasNext();) {
       if (pmods.next() instanceof PropertyXRef) {
         update();
         return;
@@ -440,7 +440,7 @@ import java.util.Set;
     }
     // was an individual or family created and we're without root
     if (root==null) {
-      for (Iterator eadds=tx.getChanges(tx.EADD).iterator();eadds.hasNext();) {
+      for (Iterator eadds=tx.getChanges(Transaction.EADD).iterator();eadds.hasNext();) {
         Entity e = (Entity)eadds.next();
         if (e instanceof Fam || e instanceof Indi) {
           setRoot(e);
@@ -449,7 +449,7 @@ import java.util.Set;
       }
     }
     // was a property changed that we should notify about?
-    Set emods = tx.getChanges(tx.EMOD);
+    Set emods = tx.getChanges(Transaction.EMOD);
     if (!emods.isEmpty()) {
       ArrayList nodes = new ArrayList(emods.size());
       for (Iterator es=emods.iterator();es.hasNext();) {

@@ -22,6 +22,7 @@ package genj.view.widgets;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
@@ -186,7 +187,7 @@ public class SelectEntityWidget extends JPanel {
          
       // DATE?
       if (path.getLast().equals("DATE")) {
-        PropertyDate pd = (PropertyDate)e.getProperty(path, e.QUERY_VALID_TRUE);
+        PropertyDate pd = (PropertyDate)e.getProperty(path, Property.QUERY_VALID_TRUE);
         String date = pd!=null ? pd.toString(true) : "?";
         return  date + " - " + e.toString() + " (" + e.getId() + ')';
       }

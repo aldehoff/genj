@@ -120,9 +120,9 @@ public class PointInTime implements Comparable {
   public static PointInTime getNow() {
     java.util.Calendar now = java.util.Calendar.getInstance(); // default to current time
     return new PointInTime(
-      now.get(now.DATE) - 1,      
-      now.get(now.MONTH),      
-      now.get(now.YEAR)
+      now.get(java.util.Calendar.DATE) - 1,      
+      now.get(java.util.Calendar.MONTH),      
+      now.get(java.util.Calendar.YEAR)
     );      
   }  
   

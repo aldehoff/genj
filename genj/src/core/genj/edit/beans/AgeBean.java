@@ -70,7 +70,7 @@ public class AgeBean extends PropertyBean {
     // layout
     GridBagHelper gh = new GridBagHelper(this);
     gh.add(tfield                                       ,0,0);
-    gh.setParameter(gh.GROWFILL_HORIZONTAL);
+    gh.setParameter(GridBagHelper.GROWFILL_HORIZONTAL);
     gh.add(new JLabel(TEMPLATE)                         ,1,0);
     gh.setParameter(0);
     gh.add(new ButtonHelper().create(new ActionUpdate()),2,0);

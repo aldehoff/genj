@@ -88,7 +88,7 @@ public class ReportTrees extends Report {
         Gedcom gedcom = (Gedcom)context;
         
         // Get a list of the individuals and create a stati
-        Entity[] indis = gedcom.getEntities(gedcom.INDI, "INDI:NAME");
+        Entity[] indis = gedcom.getEntities(Gedcom.INDI, "INDI:NAME");
         Statistics stats = new Statistics(indis.length);
         
         println(i18n("fileheader",gedcom.getName()));

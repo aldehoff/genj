@@ -492,8 +492,8 @@ public class ReportHTMLSheets extends Report {
 
     // Loop through individuals & families
     try {
-      exportSheets(gedcom.getEntities(gedcom.INDI),dir);
-      exportSheets(gedcom.getEntities(gedcom.FAM ),dir);
+      exportSheets(gedcom.getEntities(Gedcom.INDI),dir);
+      exportSheets(gedcom.getEntities(Gedcom.FAM ),dir);
       exportIndex(gedcom, dir);
     } catch (IOException e) {
       println("Error while exporting: "+e.getMessage());

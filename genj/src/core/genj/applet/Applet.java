@@ -183,7 +183,7 @@ public class Applet extends java.applet.Applet {
         reader.setPassword(Gedcom.PASSWORD_UNKNOWN);
          
         gedcom = reader.read();
-        Thread.currentThread().sleep(100);
+        Thread.sleep(100);
         
       } catch (Throwable t) {
         throwable = t;
@@ -208,7 +208,7 @@ public class Applet extends java.applet.Applet {
           new CloseWindow("Retry"), 
           new CloseWindow(CloseWindow.TXT_CANCEL)
         };
-        int rc = winMgr.openDialog(null, "Error", winMgr.IMG_ERROR, url+"\n"+throwable.getMessage(), actions, Applet.this);        
+        int rc = winMgr.openDialog(null, "Error", WindowManager.IMG_ERROR, url+"\n"+throwable.getMessage(), actions, Applet.this);        
         
         if (rc==0) trigger();
         

@@ -105,10 +105,10 @@ public class EventBean extends PropertyBean {
     known.setEditable(false);
     
     GridBagHelper gh = new GridBagHelper(this);
-    gh.add(label1, 0, 0, 1, 1, gh.FILL_HORIZONTAL    );
-    gh.add(txt   , 1, 0, 1, 1, gh.GROWFILL_HORIZONTAL);
-    gh.add(label2, 0, 1, 1, 1, gh.FILL_HORIZONTAL    );
-    gh.add(known , 1, 1, 1, 1, gh.GROWFILL_HORIZONTAL);
+    gh.add(label1, 0, 0, 1, 1, GridBagHelper.FILL_HORIZONTAL    );
+    gh.add(txt   , 1, 0, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
+    gh.add(label2, 0, 1, 1, 1, GridBagHelper.FILL_HORIZONTAL    );
+    gh.add(known , 1, 1, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
     gh.addFiller(0,2);
 
     // done

@@ -168,7 +168,7 @@ public abstract class AbstractWindowManager implements WindowManager {
     Insets insets = new Insets(8,8,8,8);
     GridBagHelper gh = new GridBagHelper(container);
     gh.add(icon   , 0, 0, 1, 2, 0, insets);
-    gh.add(content, 1, 0, 1, 1, gh.GROWFILL_BOTH, insets);
+    gh.add(content, 1, 0, 1, 1, GridBagHelper.GROWFILL_BOTH, insets);
     gh.add(buttons, 1, 1, 1, 1, 0);
 
     // done

@@ -71,7 +71,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     rbChoose.setEnabled(defs.length>0);
     rbChoose.addItemListener(this);
     rbChoose.setAlignmentX(0);
-    gh.add(rbChoose,1,1,2,1, gh.GROWFILL_HORIZONTAL);
+    gh.add(rbChoose,1,1,2,1, GridBagHelper.GROWFILL_HORIZONTAL);
 
     // .. List of tags
     lChoose = new JList(defs);
@@ -82,20 +82,20 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     JScrollPane sp = new JScrollPane(lChoose);
     // 20030527 grrrrrrr why is this necessary
     sp.setMinimumSize(sp.getPreferredSize());
-    gh.add(sp,1,2,1,1,gh.GROWFILL_VERTICAL);
+    gh.add(sp,1,2,1,1,GridBagHelper.GROWFILL_VERTICAL);
 
     // .. Info field
     tpInfo = new JTextPane();
     tpInfo.setText("");
     tpInfo.setEditable(false);
     spInfo = new JScrollPane(tpInfo);
-    gh.add(spInfo,2,2,1,1,gh.GROWFILL_BOTH);
+    gh.add(spInfo,2,2,1,1,GridBagHelper.GROWFILL_BOTH);
 
     // RadioButton for new props
     rbNew = new JRadioButton(resources.getString("choose.new"),defs.length==0);
     rbNew.addItemListener(this);
     rbNew.setAlignmentX(0);
-    gh.add(rbNew,1,3,2,1, gh.GROWFILL_HORIZONTAL);
+    gh.add(rbNew,1,3,2,1, GridBagHelper.GROWFILL_HORIZONTAL);
 
     ButtonGroup group = new ButtonGroup();
     group.add(rbChoose);
@@ -105,7 +105,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     tfNew = new JTextField();
     tfNew.setEnabled(defs.length==0);
     tfNew.setAlignmentX(0);
-    gh.add(tfNew,1,4,2,1, gh.GROWFILL_HORIZONTAL);
+    gh.add(tfNew,1,4,2,1, GridBagHelper.GROWFILL_HORIZONTAL);
 
     // Pre select
     if (defs.length>0) {

@@ -293,7 +293,7 @@ public class DateWidget extends JPanel {
       try {
         pit.set(newCalendar);
       } catch (GedcomException e) {
-        int rc = manager.openDialog(null, Calendar.TXT_CALENDAR_SWITCH, manager.IMG_ERROR, e.getMessage(), CloseWindow.OKand(Calendar.TXT_CALENDAR_RESET), DateWidget.this);
+        int rc = manager.openDialog(null, Calendar.TXT_CALENDAR_SWITCH, WindowManager.IMG_ERROR, e.getMessage(), CloseWindow.OKand(Calendar.TXT_CALENDAR_RESET), DateWidget.this);
         if (rc==0) 
           return;
         pit = new PointInTime(newCalendar);

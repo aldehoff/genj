@@ -212,16 +212,16 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     GridBagHelper gh = new GridBagHelper(paneCriteria);
     // .. line 0
     gh.add(labelValue    ,0,0,2,1,0, new Insets(0,0,0,8));
-    gh.add(checkRegExp   ,2,0,1,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+    gh.add(checkRegExp   ,2,0,1,1, GridBagHelper.GROW_HORIZONTAL|GridBagHelper.FILL_HORIZONTAL);
     gh.add(labelCount    ,3,0,1,1);
     // .. line 1
     gh.add(popupPatterns ,0,1,1,1);
-    gh.add(choiceValue   ,1,1,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL, new Insets(3,3,3,3));
+    gh.add(choiceValue   ,1,1,3,1, GridBagHelper.GROW_HORIZONTAL|GridBagHelper.FILL_HORIZONTAL, new Insets(3,3,3,3));
     // .. line 2
-    gh.add(labelPath     ,0,2,4,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL);
+    gh.add(labelPath     ,0,2,4,1, GridBagHelper.GROW_HORIZONTAL|GridBagHelper.FILL_HORIZONTAL);
     // .. line 3
     gh.add(popupPaths    ,0,3,1,1);
-    gh.add(choicePath    ,1,3,3,1, gh.GROW_HORIZONTAL|gh.FILL_HORIZONTAL, new Insets(0,3,3,3));
+    gh.add(choicePath    ,1,3,3,1, GridBagHelper.GROW_HORIZONTAL|GridBagHelper.FILL_HORIZONTAL, new Insets(0,3,3,3));
     
     // prepare layout
     setLayout(new BorderLayout());
@@ -593,7 +593,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     
     /** search in gedcom (not on EDT) */
     private void search(Gedcom gedcom) {
-      for (int t=0; t<gedcom.ENTITIES.length; t++) {
+      for (int t=0; t<Gedcom.ENTITIES.length; t++) {
         for (Iterator es=gedcom.getEntities(Gedcom.ENTITIES[t]).iterator();es.hasNext();) {
           search((Entity)es.next());
         }
@@ -718,7 +718,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
      * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
      */
     public void handleChange(Transaction tx) {
-      if (!tx.getChanges(tx.PDEL).isEmpty())
+      if (!tx.getChanges(Transaction.PDEL).isEmpty())
         clear();
     }
     

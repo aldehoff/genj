@@ -65,6 +65,7 @@ import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -173,11 +174,11 @@ public class ReportView extends JPanel implements ToolBarSupport {
         return super.getPreferredSize();
       }
     };
-    spList.setHorizontalScrollBarPolicy(spList.HORIZONTAL_SCROLLBAR_NEVER);
+    spList.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     gh.add(spList,1,1,1,4,GridBagHelper.GROWFILL_VERTICAL);
 
     // ... Report's author
-    gh.setParameter(gh.FILL_HORIZONTAL);
+    gh.setParameter(GridBagHelper.FILL_HORIZONTAL);
     
     lAuthor = new JLabel("");
     lAuthor.setForeground(Color.black);
@@ -197,7 +198,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     tpInfo.setEnabled(false);
     JScrollPane spInfo = new JScrollPane(tpInfo);
     gh.add(new JLabel(resources.getString("report.info")),2,3);
-    gh.add(spInfo,2,4,2,1,gh.FILL_BOTH);
+    gh.add(spInfo,2,4,2,1,GridBagHelper.FILL_BOTH);
 
     // done
     return reportPanel;

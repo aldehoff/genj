@@ -408,7 +408,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
     public void tableChanged(TableModelEvent e) {
       // big change?
       TableColumnModel columns = table.getColumnModel();
-      if (columns.getColumnCount()>0&&e!=null&&e.getFirstRow()!=e.HEADER_ROW)
+      if (columns.getColumnCount()>0&&e!=null&&e.getFirstRow()!=TableModelEvent.HEADER_ROW)
         return;
       // clear columns
       while (columns.getColumnCount() > 0)
@@ -469,7 +469,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextProvider
       // get the proxy
       PropertyRenderer proxy = PropertyRenderer.get(prop);
       // let it render
-      proxy.render(g, bounds, prop, proxy.PREFER_DEFAULT, manager.getDPI());
+      proxy.render(g, bounds, prop, PropertyRenderer.PREFER_DEFAULT, manager.getDPI());
       // done
     }
   } //PropertyTableCellRenderer

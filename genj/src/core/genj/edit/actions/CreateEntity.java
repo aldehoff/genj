@@ -35,7 +35,7 @@ public class CreateEntity extends AbstractChange {
    * Constructor
    */
   public CreateEntity(Gedcom ged, String tag, ViewManager manager) {
-    super(ged, ged.getEntityImage(tag).getOverLayed(imgNew), resources.getString("new", Gedcom.getEntityName(tag, false) ), manager);
+    super(ged, Gedcom.getEntityImage(tag).getOverLayed(imgNew), resources.getString("new", Gedcom.getEntityName(tag, false) ), manager);
     etag = tag;
   }
   

@@ -104,7 +104,7 @@ public class ReportPhonetics extends Report {
             printPhonetic(indi);
         } else {
             Gedcom gedcom = (Gedcom) context;
-            Entity[] indis = gedcom.getEntities(gedcom.INDI, "");
+            Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");
             printPhonetic(indis);
         }
     }

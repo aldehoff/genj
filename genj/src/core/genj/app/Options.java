@@ -334,12 +334,12 @@ public class Options implements OptionProvider {
         final FileChooserWidget
           executable = new FileChooserWidget(FileChooserWidget.EXECUTABLES);
         GridBagHelper gh = new GridBagHelper(panel);
-        gh.add(new JLabel(localize("suffix"), JLabel.LEFT), 0,0,1,1,gh.FILL_HORIZONTAL);
-        gh.add(suffixes                                   , 1,0,1,1,gh.GROWFILL_HORIZONTAL);
-        gh.add(new JLabel(localize("name"  ), JLabel.LEFT), 0,1,1,1,gh.FILL_HORIZONTAL);
-        gh.add(name                                       , 1,1,1,1,gh.GROWFILL_HORIZONTAL);
-        gh.add(new JLabel(localize("exec"  ), JLabel.LEFT), 0,2,1,1,gh.FILL_HORIZONTAL);
-        gh.add(executable                                 , 1,2,1,1,gh.GROWFILL_HORIZONTAL);
+        gh.add(new JLabel(localize("suffix"), JLabel.LEFT), 0,0,1,1,GridBagHelper.FILL_HORIZONTAL);
+        gh.add(suffixes                                   , 1,0,1,1,GridBagHelper.GROWFILL_HORIZONTAL);
+        gh.add(new JLabel(localize("name"  ), JLabel.LEFT), 0,1,1,1,GridBagHelper.FILL_HORIZONTAL);
+        gh.add(name                                       , 1,1,1,1,GridBagHelper.GROWFILL_HORIZONTAL);
+        gh.add(new JLabel(localize("exec"  ), JLabel.LEFT), 0,2,1,1,GridBagHelper.FILL_HORIZONTAL);
+        gh.add(executable                                 , 1,2,1,1,GridBagHelper.GROWFILL_HORIZONTAL);
 
         // setup data from existing FileAssociation
         if (association!=null) {
@@ -369,7 +369,7 @@ public class Options implements OptionProvider {
         
         // show a dialog with file association fields
         WindowManager mgr = widget.getWindowManager();
-        int rc = mgr.openDialog(null, getName(), mgr.IMG_QUESTION, panel, actions, widget);
+        int rc = mgr.openDialog(null, getName(), WindowManager.IMG_QUESTION, panel, actions, widget);
 
         // analyze option
         switch (rc) {

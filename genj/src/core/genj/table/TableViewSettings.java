@@ -93,15 +93,15 @@ public class TableViewSettings extends JPanel implements Settings {
     
     // Layout
     gh.add(new JLabel(resources.getString("info.entities"))  ,0,1,1,1);
-    gh.add(cTypes                  ,1,1,2,1,gh.GROWFILL_HORIZONTAL);
+    gh.add(cTypes                  ,1,1,2,1,GridBagHelper.GROWFILL_HORIZONTAL);
 
     gh.add(new JLabel(resources.getString("info.columns"))   ,0,2,1,1);
-    gh.add(pathTree                ,1,2,2,2,gh.GROWFILL_BOTH);
+    gh.add(pathTree                ,1,2,2,2,GridBagHelper.GROWFILL_BOTH);
 
     gh.add(new JLabel(resources.getString("info.order"))  ,0,4,1,1);
-    gh.add(bUp                                            ,0,5,1,1,gh.FILL_HORIZONTAL);
-    gh.add(bDown                                          ,0,6,1,1,gh.FILL_HORIZONTAL);
-    gh.add(pathList                                       ,1,4,2,4,gh.GROWFILL_BOTH);
+    gh.add(bUp                                            ,0,5,1,1,GridBagHelper.FILL_HORIZONTAL);
+    gh.add(bDown                                          ,0,6,1,1,GridBagHelper.FILL_HORIZONTAL);
+    gh.add(pathList                                       ,1,4,2,4,GridBagHelper.GROWFILL_BOTH);
 
     // Done
   }

@@ -160,7 +160,7 @@ public class LnF {
     
     // Reset Metal's current theme (some L&Fs change it)
     if (instance.getClass()==javax.swing.plaf.metal.MetalLookAndFeel.class) {
-      ((javax.swing.plaf.metal.MetalLookAndFeel)instance).setCurrentTheme(
+      javax.swing.plaf.metal.MetalLookAndFeel.setCurrentTheme(
         new javax.swing.plaf.metal.DefaultMetalTheme()
       );
     }

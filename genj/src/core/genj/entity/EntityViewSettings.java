@@ -60,8 +60,8 @@ public class EntityViewSettings extends JTabbedPane implements Settings {
     blueprintList = new BlueprintList(manager.getBlueprintManager(),manager.getWindowManager());
     
     // add those tabs
-    add(entityView.resources.getString("page.main")      , main);
-    add(entityView.resources.getString("page.blueprints"), blueprintList);
+    add(EntityView.resources.getString("page.main")      , main);
+    add(EntityView.resources.getString("page.blueprints"), blueprintList);
     
     // done
   }

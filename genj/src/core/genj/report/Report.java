@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.46 $ $Author: nmeier $ $Date: 2004-06-25 10:02:21 $
+ * $Revision: 1.47 $ $Author: gulcher $ $Date: 2004-07-05 18:29:40 $
  */
 package genj.report;
 
@@ -243,13 +243,13 @@ public abstract class Report implements Cloneable {
     // show directory chooser
     String dir = registry.get(key, EnvironmentChecker.getProperty(this, "user.home", ".", "looking for report dir to let the user choose from"));
     JFileChooser chooser = new JFileChooser(dir);
-    chooser.setFileSelectionMode(chooser.DIRECTORIES_ONLY);
+    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     chooser.setDialogTitle(title);
     int rc = chooser.showDialog(owner,button);
     
     // check result
     File result = chooser.getSelectedFile(); 
-    if (rc!=chooser.APPROVE_OPTION||result==null)
+    if (rc!=JFileChooser.APPROVE_OPTION||result==null)
       return null;
     
     // keep it
@@ -288,7 +288,7 @@ public abstract class Report implements Cloneable {
       chooser.setDialogTitle(Resources.get(ReportView.class).getString("option.browser"));
       int rc = chooser.showOpenDialog(owner);
       browser = chooser.getSelectedFile(); 
-      if (rc!=chooser.APPROVE_OPTION||browser==null)
+      if (rc!=JFileChooser.APPROVE_OPTION||browser==null)
         return;
     
       // keep it
