@@ -283,6 +283,7 @@ public class App {
     // show disclaimer
     JTextPane tpane = new JTextPane();
     tpane.setText(resources.getString("app.disclaimer"));
+    tpane.setEditable(false);
     JScrollPane spane = new JScrollPane(tpane) {
       public Dimension getPreferredSize() {
         return new Dimension(300,200);
@@ -290,7 +291,6 @@ public class App {
     };
 
     JOptionPane.showMessageDialog(null,spane,"Disclaimer",JOptionPane.INFORMATION_MESSAGE);
-
     // done
   }
   
