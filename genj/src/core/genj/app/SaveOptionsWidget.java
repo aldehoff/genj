@@ -69,7 +69,7 @@ import javax.swing.JTextField;
     
     // property filter
     Box props = create.Box(BoxLayout.Y_AXIS);
-    create.JLabel("Exclude Tag (Paths):");
+    create.JLabel("Exclude Tags:");
     textTags = create.JTextField("e.g. \"INDI:BIRT:NOTE, ADDR\"", true, 10);
     create.JLabel("Exclude Values containing:");
     textValues = create.JTextField("e.g. \"secret, private\"", true, 10);
@@ -86,7 +86,7 @@ import javax.swing.JTextField;
     // layout
     add("Filter by Entities", types);
     add("by Properties"   , props);
-    if (filterViews.length>0) add("by View", others);
+    add("by View", others);
     
     // done
   }
