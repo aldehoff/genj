@@ -31,10 +31,6 @@ public class PropertyWife extends PropertyXRef {
   
   public final static String TAG = "WIFE";
 
-  /** applicable target types */
-  public final static String[] 
-    TARGET_TYPES = { Gedcom.INDI };
-
   /**
    * Empty Constructor
    */
@@ -144,8 +140,8 @@ public class PropertyWife extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
-    return TARGET_TYPES;
+  public String getTargetType() {
+    return Gedcom.INDI;
   }
 
 } //PropertyWife

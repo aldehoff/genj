@@ -25,11 +25,15 @@ package genj.gedcom;
  * to another entity
  */
 public class PropertyAssociation extends PropertyXRef {
-
-  /** applicable target types */
-  public final static String[] 
-    TARGET_TYPES = { Gedcom.INDI, Gedcom.FAM, Gedcom.SUBM };
-
+  
+  /** available target types */
+  public static final String[] TARGET_TYPES = {
+    Gedcom.INDI, Gedcom.FAM, Gedcom.SUBM
+  };
+  
+  /** our target type */
+  private String targetType = Gedcom.INDI;
+  
   /**
    * Empty Constructor
    */
@@ -42,7 +46,7 @@ public class PropertyAssociation extends PropertyXRef {
   public PropertyAssociation(PropertyXRef target) {
     super(target);
   }
-
+  
   /**
    * Returns a warning string that describes what happens when this
    * property would be deleted
@@ -97,8 +101,15 @@ public class PropertyAssociation extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
-    return TARGET_TYPES;
+  public String getTargetType() {
+    return targetType;
+  }
+  
+  /**
+   * The expected referenced type
+   */
+  public void setTargetType(String set) {
+    targetType = set;
   }
   
 } //PropertyAssociation

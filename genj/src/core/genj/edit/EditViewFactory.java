@@ -36,9 +36,17 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyAssociation;
 import genj.gedcom.PropertyFile;
+import genj.gedcom.PropertyMedia;
+import genj.gedcom.PropertyNote;
+import genj.gedcom.PropertyRepository;
+import genj.gedcom.PropertySource;
+import genj.gedcom.PropertySubmitter;
+import genj.gedcom.PropertyXRef;
 import genj.gedcom.Relationship;
 import genj.gedcom.Submitter;
+import genj.gedcom.Relationship.XRefBy;
 import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
@@ -119,15 +127,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
       
     // Check what xrefs can be added
     MetaProperty[] subs = property.getSubMetaProperties(0);
-    for (int s=0;s<subs.length;s++) {
-      // create Relationship.XRef where applicable
-      MetaProperty sub = subs[s]; 
-      if (Relationship.XRefBy.isApplicable(sub)) {
-        Relationship rel = new Relationship.XRefBy(property, sub);
-        result.add(new CreateRelationship(rel, manager));
-      }
-      // .. next
-    }
+    for (int s=0;s<subs.length;s++) 
+      createXRefActions(result, property, subs[s], manager);
     
     // Toggle "Private"
     if (Enigma.isAvailable())
@@ -156,15 +157,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
 
     // Check what xrefs can be added
     MetaProperty[] subs = entity.getSubMetaProperties(0);
-    for (int s=0;s<subs.length;s++) {
-      // create Relationship.XRef where applicable
-      MetaProperty sub = subs[s]; 
-      if (Relationship.XRefBy.isApplicable(sub)) {
-        Relationship rel = new Relationship.XRefBy(entity,sub);
-        result.add(new CreateRelationship(rel, manager));
-      }
-      // .. next
-    }
+    for (int s=0;s<subs.length;s++) 
+      createXRefActions(result, entity, subs[s], manager);
 
     // add delete
     result.add(ActionDelegate.NOOP);
@@ -248,4 +242,38 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     // done
   }
 
+  /**
+   * Create CreateRelationship actions for property
+   */
+  private void createXRefActions(List result, Property parent, MetaProperty sub, ViewManager manager) {
+    
+    Class type = sub.getType();
+    
+    // ASSO is special
+    if (type==PropertyAssociation.class) {
+      for (int i=0;i<PropertyAssociation.TARGET_TYPES.length;i++) {
+        PropertyAssociation asso = (PropertyAssociation)sub.create("");
+        asso.setTargetType(PropertyAssociation.TARGET_TYPES[i]);
+        result.add(new CreateRelationship(new XRefBy(parent, asso), manager));
+      }
+      return;
+    }
+      
+    // OBJE references/entities with BLOB data is discouraged
+    if (type==PropertyMedia.class) 
+      return;
+
+    // NOTE||REPO||SOUR||SUBM
+    if (type==PropertyNote.class||
+        type==PropertyRepository.class||
+        type==PropertySource.class||
+        type==PropertySubmitter.class) {
+      // .. make sure @@ forces a non-substitute!
+      result.add(new CreateRelationship(new XRefBy(parent, (PropertyXRef)sub.create("@@")), manager));
+      return;
+    }
+
+    // not applicable
+  }
+  
 } //EditViewFactory

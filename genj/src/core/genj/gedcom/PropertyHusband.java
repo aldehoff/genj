@@ -27,10 +27,6 @@ public class PropertyHusband extends PropertyXRef {
 
   public final static String TAG = "HUSB";
 
-  /** applicable target types */
-  public final static String[] 
-    TARGET_TYPES = { Gedcom.INDI };
-
   /**
    * Empty Constructor
    */
@@ -139,8 +135,8 @@ public class PropertyHusband extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
-    return TARGET_TYPES;
+  public String getTargetType() {
+    return Gedcom.INDI;
   }
   
 } //PropertyHusband

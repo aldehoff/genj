@@ -29,10 +29,6 @@ public class PropertyFamilySpouse extends PropertyXRef {
     PATH_FAMHUSB = new TagPath("FAM:HUSB"),
     PATH_FAMWIFE = new TagPath("FAM:WIFE");
 
-  /** applicable target types */
-  public final static String[] 
-    TARGET_TYPES = { Gedcom.FAM };
-
   /**
    * Empty Constructor
    */
@@ -170,8 +166,9 @@ public class PropertyFamilySpouse extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
-    return TARGET_TYPES;
+  public String getTargetType() {
+    return Gedcom.FAM;
+
   }
   
 } //PropertyFamilySpouse

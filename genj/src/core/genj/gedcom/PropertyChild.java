@@ -32,10 +32,6 @@ public class PropertyChild extends PropertyXRef {
     PATH_INDIFAMC = new TagPath("INDI:FAMC"),
     PATH_INDIADOPFAMC = new TagPath("INDI:ADOP:FAMC");
     
-  /** applicable target types */
-  public final static String[] 
-    TARGET_TYPES = { Gedcom.INDI };
-
   public final static ImageIcon
     IMG_MALE    = MetaProperty.get(PATH_FAMCHIL).getImage("male"),
     IMG_FEMALE  = MetaProperty.get(PATH_FAMCHIL).getImage("female"),
@@ -181,8 +177,8 @@ public class PropertyChild extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
-    return TARGET_TYPES;
+  public String getTargetType() {
+    return Gedcom.INDI;
   }
   
   /**

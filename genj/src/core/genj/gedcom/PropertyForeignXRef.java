@@ -91,7 +91,7 @@ public class PropertyForeignXRef extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
+  public String getTargetType() {
     throw new RuntimeException("getExpectedReferencedType is not support by ForeignXRefs");
   }
 

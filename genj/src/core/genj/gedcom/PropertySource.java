@@ -27,10 +27,6 @@ import genj.util.swing.ImageIcon;
  */
 public class PropertySource extends PropertyXRef {
 
-  /** applicable target types */
-  public final static String[] 
-    TARGET_TYPES = { Gedcom.SOUR };
-
   /**
    * Empty Constructor
    */
@@ -99,8 +95,8 @@ public class PropertySource extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
-    return TARGET_TYPES;
+  public String getTargetType() {
+    return Gedcom.SOUR;
   }
 
   /**

@@ -19,18 +19,15 @@
  */
 package genj.edit.actions;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Relationship;
-import genj.util.ActionDelegate;
 import genj.view.ViewManager;
 import genj.view.widgets.SelectEntityWidget;
-import genj.window.CloseWindow;
-import genj.window.WindowManager;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JComponent;
 
@@ -38,9 +35,6 @@ import javax.swing.JComponent;
  * Add an entity via relationship (new or existing)
  */
 public class CreateRelationship extends AbstractChange {
-
-  /** the target type */
-  private String targetType;
 
   /** the relationship */
   private Relationship relationship;
@@ -52,52 +46,34 @@ public class CreateRelationship extends AbstractChange {
    * Constructor
    */
   public CreateRelationship(Relationship relatshp, ViewManager manager) {
-    super(relatshp.getGedcom(), relatshp.getImage().getOverLayed(imgNew), resources.getString("new", relatshp.getName(false)), manager);
+    super(relatshp.getGedcom(), relatshp.getImage().getOverLayed(imgNew), resources.getString("new", relatshp.getName()), manager);
     relationship = relatshp;
   }
 
   /**
-   * @see genj.edit.actions.CreateRelationship#execute()
+   * Target Type
    */
-  protected void execute() {
-    // check if we have to choose a target type
-    String[] types = relationship.getTargetTypes();
-    if (types.length>1) {
-      // collect actions for types
-      ActionDelegate[] actions = new ActionDelegate[types.length];
-      for (int n=0;n<types.length;n++) 
-        actions[n] = new CloseWindow(Gedcom.getName(types[n], false));
-      // show dialog
-      int rc = manager.getWindowManager().openDialog(null, relationship.getName(false), WindowManager.IMG_QUESTION, relationship.getName(true), actions, getTarget());
-      if (rc<0) 
-        return;
-      // set targetType
-      targetType = types[rc];
-    } else {
-      targetType = types[0];
-    }
-
-    // continue
-    super.execute();
+  private String getTargetType() {
+    return relationship.getTargetType();
   }
-
+  
   /**
    * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
    */
   protected String getConfirmMessage() {
-
+    
     // You are about to create a {0} in {1}! / You are about to reference {0} in {1}!
     // This {0} will be {1}.
     String about = existing==null ?
-      resources.getString("confirm.new", new Object[]{ Gedcom.getName(targetType,false), gedcom})
+      resources.getString("confirm.new", new Object[]{ Gedcom.getName(getTargetType(),false), gedcom})
      :
       resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom});
 
     // relationship detail
-    String detail = resources.getString("confirm.new.related", relationship.getName(true) );
+    String detail = resources.getString("confirm.new.related", relationship.getDescription() );
 
     // Entity comment?
-    String comment = resources.getString("confirm."+targetType);
+    String comment = resources.getString("confirm."+getTargetType());
 
     // combine
     return about + '\n' + detail + '\n' + comment ;
@@ -108,7 +84,7 @@ public class CreateRelationship extends AbstractChange {
    */
   protected JComponent getOptions() {
 
-    final SelectEntityWidget result = new SelectEntityWidget(targetType, gedcom.getEntities(targetType), "*New*");
+    final SelectEntityWidget result = new SelectEntityWidget(getTargetType(), gedcom.getEntities(getTargetType()), "*New*");
     result.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         // grab current selection (might be null)
@@ -127,7 +103,7 @@ public class CreateRelationship extends AbstractChange {
     // create the entity if necessary
     if (existing==null) {
       // focus always changes to new that we create now
-      focus = gedcom.createEntity(targetType);
+      focus = gedcom.createEntity(getTargetType());
       focus.addDefaultProperties();
       // perform the relationship to new
       relationship.apply(focus);

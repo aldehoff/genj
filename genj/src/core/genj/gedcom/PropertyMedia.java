@@ -30,10 +30,6 @@ import java.util.List;
  */
 public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
 
-  /** applicable target types */
-  public final static String[] 
-    TARGET_TYPES = { Gedcom.OBJE };
-
   /**
    * Empty Constructor
    */
@@ -107,8 +103,8 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
-    return TARGET_TYPES;
+  public String getTargetType() {
+    return Gedcom.OBJE;
   }
 
   /**

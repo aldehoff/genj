@@ -7,22 +7,18 @@ import genj.util.swing.ImageIcon;
  */
 public abstract class Relationship {
   
-  /** target type individuals static */
-  private final static String[]
-    TARGET_INDIVIDUALS = { Gedcom.INDI };
-  
   /** Gedcom this applies */
   protected Gedcom gedcom;
   
-  /** the applicable target types */
-  protected String[] targetTypes;
+  /** the applicable target type */
+  protected String targetType;
   
   /**
    * Constructor
    */
-  protected Relationship(Gedcom ged, String[] types) {
+  protected Relationship(Gedcom ged, String type) {
     gedcom = ged;
-    targetTypes = types;
+    targetType = type;
   }
   
   /**
@@ -42,19 +38,24 @@ public abstract class Relationship {
    * An image
    */
   public ImageIcon getImage() {
-    return Gedcom.getEntityImage(getTargetTypes()[0]);
+    return Gedcom.getEntityImage(getTargetType());
   }
   
   /**
    * A name
    */
-  public abstract String getName(boolean verbose);
+  public abstract String getName();
   
   /**
-   * The target type(s)
+   * A description
    */
-  public String[] getTargetTypes() {
-    return targetTypes;
+  public abstract String getDescription();
+  
+  /**
+   * The target type
+   */
+  public String getTargetType() {
+    return targetType;
   }
   
   /**
@@ -73,51 +74,56 @@ public abstract class Relationship {
     /** linked by owner */
     private Property owner;
     
-    /** its sub */
-    private MetaProperty sub;
-    
     /** the xref we're referencing through */
-    private MetaProperty mxref;
     private PropertyXRef xref;
     
     /** Constructor */
-    public XRefBy(Property owner, MetaProperty mxref) {
-      super(owner.getGedcom(), null);
+    public XRefBy(Property owner, PropertyXRef xref) {
+      super(owner.getGedcom(), xref.getTargetType());
       // keep owner      
       this.owner = owner;
-      this.mxref = mxref;
-      this.xref = (PropertyXRef)mxref.create("@@"); //@@ makes sure we'll get a xref for note/submitter
-      // update target types
-      targetTypes = xref.getTargetTypes();
+      this.xref = xref;
       // done
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName(boolean)
+     * @see genj.gedcom.Relationship#getName()
      */
-    public String getName(boolean verbose) {
-      // "Note"|"Media"|"Source"|... or "Something for"
-      
-      // is there only one target type?
-      String name;
-      if (targetTypes.length==1)
-        name = Gedcom.getName(targetTypes[0], false);
-      else // there must be a more generic translation otherwise
-        name = Gedcom.resources.getString("rel.xref."+xref.getTag());
-      // verbose?
-      if (verbose)
-        name = Gedcom.resources.getString("rel.xref.for", new String[]{name, owner.toString()});
-      // done
-      return name;
-    }
-    
-    /**
-     * @see genj.gedcom.Relationship.XRefBy#getImage()
-     */
-    public ImageIcon getImage() {
-      return mxref.getImage();
-    }
+    public String getName() {
 
+      // {0} getTargetType()
+      //rel.xref                = {0}
+      //rel.ASSO                = Association with {0}
+
+      // try to find right resource key to construct name (fallback is rel.xref)
+      String rkey = "rel."+xref.getTag();
+      if (!Gedcom.resources.contains(rkey))
+        rkey = "rel.xref";
+
+      // look it up
+      return Gedcom.resources.getString(rkey, Gedcom.getName(getTargetType()));
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getDescription()
+     */
+    public String getDescription() {
+
+      // {0} getTargetType()
+      // {1} owner
+      
+      //rel.xref.desc           = {0} for {1}
+      //rel.ASSO.desc           = Association between {1} and {0}
+
+      // try to find right resource key to construct description (fallback is rel.xref.desc)
+      String rkey = "rel."+xref.getTag()+".desc";
+      if (!Gedcom.resources.contains(rkey))
+        rkey = "rel.xref.desc";
+      
+      //  look it up
+      return Gedcom.resources.getString(rkey, new String[]{ Gedcom.getName(getTargetType()), owner.toString()});
+    }
+    
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
@@ -129,27 +135,6 @@ public abstract class Relationship {
       xref.addDefaultProperties();
       //  focus stays with owner
       return owner.getEntity();
-    }
-
-    /**
-     * Wether this relationship is applicable for given owner
-     */
-    public static boolean isApplicable(MetaProperty mxref) {
-      // has to be xref
-      Class type = mxref.getType();
-      if (!PropertyXRef.class.isAssignableFrom(type))
-        return false;
-      // and not one of the special kinship relationships
-      if (type==PropertyFamilySpouse.class) return false;
-      if (type==PropertyFamilyChild.class) return false;
-      if (type==PropertyHusband.class) return false;
-      if (type==PropertyWife.class) return false;
-      if (type==PropertyChild.class) return false;
-      // 20040619 discouraging OBJE reference'd entities
-      // and not OBJE since it's discouraged
-      if (type==PropertyMedia.class) return false;
-      // o.k.
-      return true;
     }
 
   } // LinkedBy
@@ -164,18 +149,22 @@ public abstract class Relationship {
     
     /** Constructor */
     public ChildIn(Fam famly) {
-      super(famly.getGedcom(), TARGET_INDIVIDUALS);
+      super(famly.getGedcom(), Gedcom.INDI);
       family = famly;
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName(boolean)
+     * @see genj.gedcom.Relationship#getName()
      */
-    public String getName(boolean verbose ) {
-      // "Child in .." or "Child"
-      return verbose ? 
-        Gedcom.resources.getString("rel.child.in", family) : 
-        Gedcom.resources.getString("rel.child");
+    public String getName( ) {
+      return Gedcom.resources.getString("rel.child");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getDescription()
+     */
+    public String getDescription() {
+      return Gedcom.resources.getString("rel.child.in", family);
     }
     
     /**
@@ -200,18 +189,24 @@ public abstract class Relationship {
     
     /** Constructor */
     public ChildOf(Indi parnt) {
-      super(parnt.getGedcom(), TARGET_INDIVIDUALS);
+      super(parnt.getGedcom(), Gedcom.INDI);
       parent = parnt;
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName(boolean)
+     * @see genj.gedcom.Relationship#getName()
      */
-    public String getName(boolean verbose) {
-      // "Child of Meier, Nils" or "Child"
-      return verbose ? 
-        Gedcom.resources.getString("rel.child.of", parent) :
-        Gedcom.resources.getString("rel.child");
+    public String getName() {
+      // "Child"
+      return Gedcom.resources.getString("rel.child");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getDescription()
+     */
+    public String getDescription() {
+      // "Child of Meier, Nils"
+      return Gedcom.resources.getString("rel.child.of", parent);
     }
     
     /**
@@ -250,18 +245,23 @@ public abstract class Relationship {
     
     /** Constructor */
     public ParentIn(Fam famly) {
-      super(famly.getGedcom(), TARGET_INDIVIDUALS);
+      super(famly.getGedcom(), Gedcom.INDI);
       family = famly;
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName(boolean)
+     * @see genj.gedcom.Relationship#getName()
      */
-    public String getName(boolean verbose) {
-      // "Parent in .." or "Parent"
-      return verbose ? 
-        Gedcom.resources.getString("rel.parent.in", family) :
-        Gedcom.resources.getString("rel.parent");
+    public String getName() {
+      return Gedcom.resources.getString("rel.parent");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getDescription()
+     */
+    public String getDescription() {
+      // "Parent in .." 
+      return Gedcom.resources.getString("rel.parent.in", family);
     }
     
     /**
@@ -287,18 +287,24 @@ public abstract class Relationship {
     
     /** Constructor */
     public ParentOf(Indi chil) {
-      super(chil.getGedcom(), TARGET_INDIVIDUALS);
+      super(chil.getGedcom(), Gedcom.INDI);
       child = chil;
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName(boolean)
+     * @see genj.gedcom.Relationship#getName()
      */
-    public String getName(boolean verbose ) {
-      // "Parent of Meier, Nils" or "Parent"
-      return verbose ? 
-        Gedcom.resources.getString("rel.parent.of", child) :
-        Gedcom.resources.getString("rel.parent");
+    public String getName( ) {
+      // "Parent"
+      return Gedcom.resources.getString("rel.parent");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getDescription()
+     */
+    public String getDescription() {
+      // "Parent of Meier, Nils"
+      return Gedcom.resources.getString("rel.parent.of", child);
     }
     
     /**
@@ -336,18 +342,24 @@ public abstract class Relationship {
     
     /** Constructor */
     public SpouseOf(Indi spose) {
-      super(spose.getGedcom(), TARGET_INDIVIDUALS);
+      super(spose.getGedcom(), Gedcom.INDI);
       spouse = spose;
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName(boolean)
+     * @see genj.gedcom.Relationship#getName()
      */
-    public String getName(boolean verbose) {
+    public String getName() {
+      // "Spouse"
+      return Gedcom.resources.getString("rel.spouse");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getDescription()
+     */
+    public String getDescription() {
       // "Spouse of Meier, Nils" or "Spouse"
-      return verbose ?
-        Gedcom.resources.getString("rel.spouse.of", spouse) : 
-        Gedcom.resources.getString("rel.spouse");
+      return Gedcom.resources.getString("rel.spouse.of", spouse);
     }
     
     /**
@@ -382,17 +394,24 @@ public abstract class Relationship {
     
     /** Constructor */
     public SiblingOf(Indi siblng) {
-      super(siblng.getGedcom(), TARGET_INDIVIDUALS);
+      super(siblng.getGedcom(), Gedcom.INDI);
       sibling = siblng;
     }
     
     /**
-     * @see genj.gedcom.Relationship#getName(boolean)
+     * @see genj.gedcom.Relationship#getName()
      */
-    public String getName(boolean verbose) {
-      return verbose ? 
-        Gedcom.resources.getString("rel.sibling.of", sibling) :
-        Gedcom.resources.getString("rel.sibling");
+    public String getName() {
+      // "Sibling"
+      return Gedcom.resources.getString("rel.sibling");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship#getDescription()
+     */
+    public String getDescription() {
+      // "Sibling of Meier, Nils"
+      return Gedcom.resources.getString("rel.sibling.of", sibling);
     }
     
     /**

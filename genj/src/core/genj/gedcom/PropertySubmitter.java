@@ -27,10 +27,6 @@ package genj.gedcom;
  */
 public class PropertySubmitter extends PropertyXRef {
 
-  /** applicable target types */
-  public final static String[] 
-    TARGET_TYPES = { Gedcom.SUBM };
-
   /**
    * Empty Constructor
    */
@@ -82,8 +78,8 @@ public class PropertySubmitter extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
-    return TARGET_TYPES;
+  public String getTargetType() {
+    return Gedcom.SUBM;
   }
   
   /**

@@ -28,10 +28,6 @@ import genj.util.swing.ImageIcon;
  */
 public class PropertyNote extends PropertyXRef {
 
-  /** applicable target types */
-  public final static String[] 
-    TARGET_TYPES = { Gedcom.NOTE };
-
   /**
    * Empty Constructor
    */
@@ -101,8 +97,8 @@ public class PropertyNote extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
-    return TARGET_TYPES;
+  public String getTargetType() {
+    return Gedcom.NOTE;
   }
   
   /**

@@ -25,10 +25,6 @@ package genj.gedcom;
  */
 public class PropertyRepository extends PropertyXRef {
 
-  /** applicable target types */
-  public final static String[] 
-    TARGET_TYPES = { Gedcom.REPO };
-
   /** the repository's content */
   private String repository;
 
@@ -96,8 +92,8 @@ public class PropertyRepository extends PropertyXRef {
   /**
    * The expected referenced type
    */
-  public String[] getTargetTypes() {
-    return TARGET_TYPES;
+  public String getTargetType() {
+    return Gedcom.REPO;
   }
   
   /**
