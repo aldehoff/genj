@@ -223,13 +223,10 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    * Create actions for PropertyFile
    */
   /*package*/ static void createActions(List result, PropertyFile file) {
-    
+
     // find suffix
-    String suffix = file.getValue();
-    if (suffix==null) return;
-    int i = suffix.lastIndexOf('.');
-    if (i<0) return;
-    suffix = suffix.substring(i+1);
+    String suffix = file.getSuffix();
+      
     // lookup associations
     Iterator it = FileAssociation.get(suffix).iterator();
     while (it.hasNext()) {

@@ -123,7 +123,30 @@ public class PropertyFile extends Property implements IconValueAvailable {
    * Sets this property's value
    */
   public void setValue(File f) {
+    
+    // delegate to value
     setValue(f.toString());
+    
+    // check if we can update the TITL/FORM in parent OBJE
+    Property parent = getParent();
+    if (parent instanceof PropertyMedia) {
+      
+      // title?
+      Property title = parent.getProperty("TITL");
+      if (title==null) {
+        title = parent.addProperty(new PropertySimpleValue());
+      }
+      title.setValue(f.getName());
+      
+      // format?
+      Property format = parent.getProperty("FORM");
+      if (format==null) {
+        format = parent.addProperty(new PropertySimpleValue()); 
+      }
+      format.setValue(getSuffix());
+      
+    }    
+    // done
   }
 
   /**
@@ -172,6 +195,20 @@ public class PropertyFile extends Property implements IconValueAvailable {
     }
     // done
     return max_load;
+  }
+
+  /**
+   * Calculate suffix of file (empty string if n/a)
+   */
+  public String getSuffix() {
+    // check for suffix
+    String result = "";
+    if (file!=null) {
+      int i = file.lastIndexOf('.');
+      if (i>=0) result = file.substring(i+1);
+    }
+    // done
+    return result;
   }
   
 } //PropertyFile
