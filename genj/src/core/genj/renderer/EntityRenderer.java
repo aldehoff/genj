@@ -136,6 +136,13 @@ public class EntityRenderer {
     // done
   }
   
+  /** 
+   * Getter - entity
+   */
+  public Entity getEntity() {
+    return entity;
+  }
+  
   /**
    * 
    */
