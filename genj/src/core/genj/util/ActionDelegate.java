@@ -58,8 +58,9 @@ public abstract class ActionDelegate implements Cloneable {
   
   /**
    * trigger execution
+   * @return status of preExecute (true unless overridden)
    */
-  public final ActionDelegate trigger() {
+  public final boolean trigger() {
 
     // do we have to create a new instance?
     if (async==ASYNC_NEW_INSTANCE) {
@@ -71,7 +72,7 @@ public abstract class ActionDelegate implements Cloneable {
         t.printStackTrace();
         handleThrowable("trigger", new RuntimeException("Couldn't clone instance of "+getClass().getName()+" for ASYNC_NEW_INSTANCE"));
       }
-      return this;
+      return false;
     }
     
     // pre
@@ -103,7 +104,7 @@ public abstract class ActionDelegate implements Cloneable {
     }
     
     // done
-    return this;
+    return preExecuteOk;
   }
   
   /**
