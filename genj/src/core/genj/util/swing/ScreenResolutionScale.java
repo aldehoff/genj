@@ -41,44 +41,52 @@ import javax.swing.JComponent;
  * by dragging a ruler */
 public class ScreenResolutionScale extends JComponent {
   
-  /** global dots per cm */
-  private static Point2D.Double globalDpc = new Point2D.Double( 
-    0.393701D * Toolkit.getDefaultToolkit().getScreenResolution(),
-    0.393701D * Toolkit.getDefaultToolkit().getScreenResolution()
-  );
-
-  /** current dots per cm */
-  private Point2D.Double dpc = new Point2D.Double( 
-    globalDpc.x,
-    globalDpc.y
-  );
+  /** current dpi */
+  private Point dpi = getSystemDPI();
+  
+  /** dpi2cm */
+  private final static float DPI2CM = 1F/2.54F;
 
   /**
    * Constructor   */
   public ScreenResolutionScale() {
     addMouseMotionListener(new MouseGlue());
   }
+  
+  /**
+   * Accessor - system dpi
+   */
+  public static Point getSystemDPI() {
+    return new Point( 
+      Toolkit.getDefaultToolkit().getScreenResolution(),
+      Toolkit.getDefaultToolkit().getScreenResolution()
+    );
+  }
+  
+  /**
+   * Accessor - dpi
+   */
+  public Point getDPI() {
+    return new Point(dpi);
+  }
 
   /**
-   * Set dotspercentimeters
+   * Accessor - dpi
    */
-  public static void setDotsPerCm(Point2D set) {
-    globalDpc.x = set.getX();
-    globalDpc.y = set.getY();
+  public void setDPI(Point set) {
+    dpi.setLocation(set);
   }
-  
+
   /**
-   * Get dotspercentimeters   */
-  public static Point2D getDotsPerCm() {
-    return new Point2D.Double(globalDpc.x, globalDpc.y);
+   * Accessor - dpc
+   */
+  public Point2D getDPC() {
+    return new Point2D.Float(
+      DPI2CM * dpi.x,
+      DPI2CM * dpi.y
+    );
   }
-  
-  /**
-   * Apply current settings to global   */
-  public void apply() {
-    setDotsPerCm(dpc);
-  }
-  
+
   /**
    * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
    */
@@ -104,9 +112,8 @@ public class ScreenResolutionScale extends JComponent {
   private void paintScale(Graphics graphcs) {
 
     // wrap it
-    UnitGraphics gw = new UnitGraphics(graphcs, dpc.getX(), dpc.getY());
+    UnitGraphics gw = new UnitGraphics(graphcs, DPI2CM * dpi.x, DPI2CM * dpi.y);
     gw.setAntialiasing(true);
-    //gw.scale(dpc.getX(), dpc.getY());
 
     // set font
     gw.setFont(new Font("Arial", Font.PLAIN, 10));
@@ -114,7 +121,8 @@ public class ScreenResolutionScale extends JComponent {
     // draw ticks   
     Rectangle2D clip = gw.getClip();
 
-    for (int X=1;X<clip.getMaxX(); X++) {
+    int X=1;
+    do {
       // segment
       gw.setColor(Color.gray);
       for (double x=0.1; x<0.9; x+=0.1)
@@ -123,9 +131,10 @@ public class ScreenResolutionScale extends JComponent {
       gw.draw(X,0,X,0.4);
       gw.draw(""+X, X, 1, 0.0D, 0.0D);
       // next
-    }
+    } while (X++<clip.getMaxX());
 
-    for (int Y=1;Y<clip.getMaxY(); Y++) {
+    int Y=1;
+    do {
       // segment
       gw.setColor(Color.gray);
       for (double y=0.1; y<0.9; y+=0.1)
@@ -134,8 +143,7 @@ public class ScreenResolutionScale extends JComponent {
       gw.draw(0,Y,0.4,Y);
       gw.draw(""+Y, 1, Y, 0.0, 0.0);
       // next
-    }
-
+    } while (Y++<clip.getMaxY());
     // done
   }
   
@@ -152,10 +160,10 @@ public class ScreenResolutionScale extends JComponent {
     NumberFormat nf = NumberFormat.getInstance();
     nf.setMaximumFractionDigits(2);
     String[] txt = new String[]{
-      ""+nf.format(dpc.getX()),
+      ""+nf.format(dpi.x),
       "by",
-      ""+nf.format(dpc.getY()),
-      "pixels/cm"
+      ""+nf.format(dpi.y),
+      "DPI"
     };
     for (int i = 0; i < txt.length; i++) {
       graphcs.drawString(
@@ -170,7 +178,7 @@ public class ScreenResolutionScale extends JComponent {
    * @see javax.swing.JComponent#getPreferredSize()
    */
   public Dimension getPreferredSize() {
-    return new Dimension((int)(10D*dpc.x),(int)(10D*dpc.y));
+    return new Dimension(3*dpi.x, 3*dpi.y);
   }
   
   /**
@@ -189,10 +197,10 @@ public class ScreenResolutionScale extends JComponent {
     private boolean axis;
     
     /** the start position of a drag */
-    private Point2D.Double startPos = new Point2D.Double();
+    private Point startPos = new Point();
     
     /** the start dotsPcms of a drag */
-    private Point2D.Double startDPC = new Point2D.Double();
+    private Point startDPI = new Point();
     
     /**
      * @see java.awt.event.MouseMotionAdapter#mouseMoved(java.awt.event.MouseEvent)
@@ -202,8 +210,8 @@ public class ScreenResolutionScale extends JComponent {
       // remember current position
       startPos.x = e.getPoint().x;
       startPos.y = e.getPoint().y;
-      startDPC.x = dpc.x;
-      startDPC.y = dpc.y;
+      startDPI.x = dpi.x;
+      startDPI.y = dpi.y;
 
       // check mode n-s/w-e      
       axis = startPos.x>startPos.y;
@@ -219,11 +227,13 @@ public class ScreenResolutionScale extends JComponent {
      */
     public void mouseDragged(MouseEvent e) {
       // update axis resolution
-      Point p = e.getPoint();
+      float 
+        x = e.getPoint().x,
+        y = e.getPoint().y;
       if (axis) 
-        dpc.x = Math.max(10, startDPC.x * (p.x/startPos.x) );
+        dpi.x = (int)Math.max(10, startDPI.x * (x/startPos.x) );
       else     
-        dpc.y = Math.max(10, startDPC.y * (p.y/startPos.y) );
+        dpi.y = (int)Math.max(10, startDPI.y * (y/startPos.y) );
         
       // show it
       repaint();

@@ -336,6 +336,7 @@ public class AboutWidget extends JPanel{
       
       // create ruler for adjusting resolution
       screenResRuler = new ScreenResolutionScale();
+      screenResRuler.setDPI(App.getInstance().getDPI());
       
       gh.add(new JLabel(resources.getString("cc.about.tab4.resolution")), 0,3,1,1);
       gh.add(screenResRuler               , 1,3,1,1, gh.GROW_BOTH      |gh.FILL_BOTH      );
@@ -365,18 +366,19 @@ public class AboutWidget extends JPanel{
       }
       /** run */
       public void execute() {
+        App app = App.getInstance();
         // check language 
         if (choiceLanguages.hasChanged()) {
           JOptionPane.showMessageDialog(AboutWidget.this, resources.getString("cc.about.dialog.restart"));
-          App.getInstance().setLanguage(choiceLanguages.getSelectedItem().toString());
+          app.setLanguage(choiceLanguages.getSelectedItem().toString());
         }
         // update screen resolution
-        screenResRuler.apply();
+        app.setDPI(screenResRuler.getDPI());
         // update lnf
         if (comboLnfs!=null) {
           LnFBridge.LnF lnf = (LnFBridge.LnF)comboLnfs.getSelectedItem();
           if (lnf!=null) {
-            App.getInstance().setLnF(lnf,(LnFBridge.Theme)comboThemes.getSelectedItem());
+            app.setLnF(lnf,(LnFBridge.Theme)comboThemes.getSelectedItem());
           }
         }
         // done

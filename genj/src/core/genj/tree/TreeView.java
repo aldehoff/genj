@@ -19,6 +19,7 @@
  */
 package genj.tree;
 
+import genj.app.App;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -36,7 +37,6 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupButton;
-import genj.util.swing.ScreenResolutionScale;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortOverview;
@@ -87,7 +87,11 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   private Resources resources = Resources.get(this);
   
   /** the units we use */
-  private final Point2D UNITS;
+  private final Point DPI = App.getInstance().getDPI();
+  private final Point2D DPMM = new Point2D.Float(
+    DPI.x / 2.54F / 10,
+    DPI.y / 2.54F / 10
+  );
   
   /** our model */
   private Model model;
@@ -145,10 +149,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     // remember
     frame = fRame;
     registry = regIstry;
-    
-    // grab resolution (patched to millimeters used here)
-    Point2D dotsPerCm = ScreenResolutionScale.getDotsPerCm();
-    UNITS = new Point2D.Double(dotsPerCm.getX()/10, dotsPerCm.getY()/10);
     
     // grab colors
     colors = new ColorSet("content", Color.white, resources, registry);
@@ -406,8 +406,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     Rectangle2D b = model.getBounds();
     Dimension   d = getSize();
     content.scrollRectToVisible(new Rectangle(
-      (int)( (p.getX()-b.getMinX()) * (UNITS.getX()*zoom) ) - d.width /2,
-      (int)( (p.getY()-b.getMinY()) * (UNITS.getY()*zoom) ) - d.height/2,
+      (int)( (p.getX()-b.getMinX()) * (DPMM.getX()*zoom) ) - d.width /2,
+      (int)( (p.getY()-b.getMinY()) * (DPMM.getY()*zoom) ) - d.height/2,
       d.width ,
       d.height
     ));
@@ -552,8 +552,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   private Point view2model(Point pos) {
     Rectangle bounds = model.getBounds();
     return new Point(
-      (int)Math.rint(pos.x / (UNITS.getX()*zoom) + bounds.getMinX()), 
-      (int)Math.rint(pos.y / (UNITS.getY()*zoom) + bounds.getMinY())
+      (int)Math.rint(pos.x / (DPMM.getX()*zoom) + bounds.getMinX()), 
+      (int)Math.rint(pos.y / (DPMM.getY()*zoom) + bounds.getMinY())
     );
   }
   
@@ -653,7 +653,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     protected void renderContent(Graphics g, double zoomx, double zoomy) {
 
       // go 2d
-      UnitGraphics gw = new UnitGraphics(g,UNITS.getX()*zoomx*zoom, UNITS.getY()*zoomy*zoom);
+      UnitGraphics gw = new UnitGraphics(g,DPMM.getX()*zoomx*zoom, DPMM.getY()*zoomy*zoom);
       
       // init renderer
       contentRenderer.cBackground    = Color.white;
@@ -749,8 +749,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     public Dimension getPreferredSize() {
       Rectangle2D bounds = model.getBounds();
       double 
-        w = bounds.getWidth () * (UNITS.getX()*zoom),
-        h = bounds.getHeight() * (UNITS.getY()*zoom);
+        w = bounds.getWidth () * (DPMM.getX()*zoom),
+        h = bounds.getHeight() * (DPMM.getY()*zoom);
       return new Dimension((int)w,(int)h);
     }
   
@@ -759,7 +759,7 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      */
     public void paint(Graphics g) {
       // resolve our Graphics
-      UnitGraphics gw = new UnitGraphics(g,UNITS.getX()*zoom, UNITS.getY()*zoom);
+      UnitGraphics gw = new UnitGraphics(g,DPMM.getX()*zoom, DPMM.getY()*zoom);
       gw.setAntialiasing(isAntialiasing);
       // init renderer
       contentRenderer.cBackground    = colors.getColor("content");
@@ -773,9 +773,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       // special handling for adjusting fonts?
 //   FIXME dpi      
       if (isAdjustFonts) {
-        Point dpi = new Point((int)(UNITS.getX()*10*2.54), (int)(UNITS.getY()*10*2.54));
-        contentRenderer.indiRenderer.setResolution(dpi);
-        contentRenderer. famRenderer.setResolution(dpi);
+        contentRenderer.indiRenderer.setResolution(DPI);
+        contentRenderer. famRenderer.setResolution(DPI);
       }
       // let the renderer do its work
       contentRenderer.render(gw, model);

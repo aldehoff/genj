@@ -39,8 +39,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.Date;
 import java.util.Enumeration;
@@ -66,7 +66,7 @@ public class App {
   private final static String FRAME_KEY_PREFIX = "frame.";
 
   /** members */
-  /*package*/ Registry registry;
+  private Registry registry;
   private Hashtable openFrames = new Hashtable();
   private static App instance;
 
@@ -116,10 +116,6 @@ public class App {
       lnf.apply(lnf.getTheme(registry.get("lnf.theme", (String)null)), new Vector());
     }
     
-    // Preset resolution (dots per centimeters)
-    Point2D dpc = registry.get("resolution",(Point2D)null); 
-    if (dpc!=null) ScreenResolutionScale.setDotsPerCm(dpc);
-    
     // Load file associations
     FileAssociation.read(registry);
 
@@ -158,8 +154,6 @@ public class App {
    * Shutdown
    */
   public void shutdown() {
-    // remember resolution 
-    registry.put("resolution", ScreenResolutionScale.getDotsPerCm());
     // remember file associations
     FileAssociation.write(registry);
     // tell BlueprintManager
@@ -195,6 +189,27 @@ public class App {
       Debug.flush();
       System.exit(1);
     }
+  }
+  
+  /** 
+   * Accessor - DPI
+   */  
+  public Point getDPI() {
+    return registry.get("dpi",ScreenResolutionScale.getSystemDPI()); 
+  }
+  
+  /** 
+   * Accessor - DPI
+   */  
+  public void setDPI(Point dpi) {
+    registry.put("dpi",dpi); 
+  }
+  
+  /**
+   * Gets the registry
+   */
+  public Registry getRegistry() {
+    return registry;
   }
   
   /**

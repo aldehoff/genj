@@ -19,12 +19,12 @@
  */
 package genj.timeline;
 
+import genj.app.App;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.ColorSet;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.ScreenResolutionScale;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
@@ -59,7 +59,11 @@ import javax.swing.event.ChangeListener;
 public class TimelineView extends JPanel implements ToolBarSupport, ContextSupport {
 
   /** the units we use */
-  private final Point2D UNITS = ScreenResolutionScale.getDotsPerCm();
+  private final Point DPI = App.getInstance().getDPI();
+  private final Point2D DPC = new Point2D.Float(
+    DPI.x / 2.54F,
+    DPI.y / 2.54F
+  );
   
   /** resources */
   private Resources resources = Resources.get(this);
@@ -302,7 +306,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     // try to scroll to first event
     Model.Event event = model.getEvent(property);
     if (event==null) event = model.getEvent(property.getEntity());
-    if (event!=null) scroll2year(event.from);
+    if (event!=null) makeVisible(event);
     // do a repaint, too
     content.repaint();
   }
@@ -338,7 +342,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
    * Calculates a year from given pixel position
    */
   protected double pixel2year(int x) {
-    return model.min + x/(UNITS.getX()*cmPerYear);
+    return model.min + x/(DPC.getX()*cmPerYear);
   }
 
   /** 
@@ -346,10 +350,22 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
    */
   protected void scroll2year(double year) {
     centeredYear = year;
-    int x = (int)((year-model.min)*UNITS.getX()*cmPerYear) - scrollContent.getViewport().getWidth()/2;
+    int x = (int)((year-model.min)*DPC.getX()*cmPerYear) - scrollContent.getViewport().getWidth()/2;
     scrollContent.getHorizontalScrollBar().setValue(x);
   }
   
+  /**
+   * Make sure the given event is visible
+   */
+  protected void makeVisible(Model.Event event) {
+    double 
+      min = model.min + scrollContent.getHorizontalScrollBar().getValue()/DPC.getX()/cmPerYear,
+      max = min + scrollContent.getViewport().getWidth()/DPC.getX()/cmPerYear;
+
+    if (event.to>max || event.from<min)      
+      scroll2year(event.from);
+  }
+    
   /**
    * The ruler 'at the top'
    */
@@ -366,7 +382,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
       // prepare UnitGraphics
       UnitGraphics graphics = new UnitGraphics(
         g,
-        UNITS.getX()*cmPerYear, 
+        DPC.getX()*cmPerYear, 
         getFontMetrics(getFont()).getHeight()+1
       );
       graphics.translate(-model.min,0);
@@ -397,7 +413,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
      */
     public Dimension getPreferredSize() {
       return new Dimension(
-        (int)((model.max-model.min) * UNITS.getX()*cmPerYear),
+        (int)((model.max-model.min) * DPC.getX()*cmPerYear),
          model.layers.size()  * (getFontMetrics(getFont()).getHeight()+1)
       );
     }
@@ -422,7 +438,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
       // prepare UnitGraphics
       UnitGraphics graphics = new UnitGraphics(
         g,
-        UNITS.getX()*cmPerYear, 
+        DPC.getX()*cmPerYear, 
         getFontMetrics(getFont()).getHeight()+1
       );
       graphics.translate(-model.min,0);

@@ -75,7 +75,7 @@ public class ViewManager {
   
   /** the currently selected entity */
   private Map gedcom2current = new HashMap();
-  
+
   /**
    * Singleton access
    */
@@ -83,7 +83,7 @@ public class ViewManager {
     if (instance==null) instance = new ViewManager();
     return instance;
   }
-  
+
   /**
    * Returns all known view factories
    */
