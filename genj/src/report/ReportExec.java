@@ -29,14 +29,14 @@ public class ReportExec extends Report {
    * @see genj.report.Report#getInfo()
    */
   public String getInfo() {
-    return "This report prompts for an executable and runs it";
+    return i18n("info");
   }
 
   /**
    * @see genj.report.Report#getName()
    */
   public String getName() {
-    return "Run Executable";
+    return i18n("script_name");
   }
 
   /**
@@ -52,7 +52,7 @@ public class ReportExec extends Report {
   public void start(Object context) {
     
     // get the name of the executable
-    String cmd = getValueFromUser( "executables", "Please enter path and name of the executable to run", new String[0]);
+    String cmd = getValueFromUser( "executables", i18n("WhichExecutable"), new String[0]);
 
     if(cmd == null) 
       return;
@@ -67,7 +67,7 @@ public class ReportExec extends Report {
         println(line);
       }
     } catch (IOException ioe) {
-      println("*** Sorry, failed with "+ioe.getMessage());
+      println(i18n("Error")+ioe.getMessage());
     }
     
     // done
