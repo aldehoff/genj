@@ -80,13 +80,13 @@ public class NavigatorView extends JPanel implements ContextSupport {
     imgNavOlderSiblingOff  = imgNavYoungerSiblingOn.getDisabled(gp),
     imgNavChildOn          = new ImageIcon(NavigatorView.class,"NavChildOn.gif"),
     imgNavChildOff         = imgNavChildOn.getDisabled(gp),
-    imgNavFatherOn         = new ImageIcon(NavigatorView.class,"NavFatherOn.gif"),
+    imgNavFatherOn         = Indi.IMG_MALE,//new ImageIcon(NavigatorView.class,"NavFatherOn.gif"),
     imgNavFatherOff        = imgNavFatherOn.getDisabled(gp),
-    imgNavMotherOn         = new ImageIcon(NavigatorView.class,"NavMotherOn.gif"),
+    imgNavMotherOn         = Indi.IMG_FEMALE,//new ImageIcon(NavigatorView.class,"NavMotherOn.gif"),
     imgNavMotherOff        = imgNavMotherOn.getDisabled(gp),
-    imgNavMalePartnerOn    = new ImageIcon(NavigatorView.class,"NavMalePartnerOn.gif"),
+    imgNavMalePartnerOn    = Indi.IMG_MALE,//new ImageIcon(NavigatorView.class,"NavMalePartnerOn.gif"),
     imgNavMalePartnerOff   = imgNavMalePartnerOn.getDisabled(gp),
-    imgNavFemalePartnerOn  = new ImageIcon(NavigatorView.class,"NavFemalePartnerOn.gif"),
+    imgNavFemalePartnerOn  = Indi.IMG_FEMALE,//new ImageIcon(NavigatorView.class,"NavFemalePartnerOn.gif"),
     imgNavFemalePartnerOff = imgNavFemalePartnerOn.getDisabled(gp);
 
 
@@ -327,38 +327,28 @@ public class NavigatorView extends JPanel implements ContextSupport {
     GridBagHelper gh = new GridBagHelper(result);
     
     // add the buttons
-    gh.add(
-      createPopup(FATHER, imgNavFatherOff, imgNavFatherOn) 
-      ,4,1,1,1
-    );
-    gh.add(
-      createPopup(MOTHER, imgNavMotherOff, imgNavMotherOn) 
-      ,5,1,1,1
-    );
-    gh.add(
-      createPopup(OSIBLING, imgNavOlderSiblingOff, imgNavOlderSiblingOn) 
-      ,1,2,2,1,0,new Insets(12,0,12,12)
-    );
+    JComponent
+      popFather   = createPopup(FATHER, imgNavFatherOff, imgNavFatherOn),
+      popMother   = createPopup(MOTHER, imgNavMotherOff, imgNavMotherOn),
+      popOSibling = createPopup(OSIBLING, imgNavOlderSiblingOff, imgNavOlderSiblingOn),
+      popPartner  = createPopup(PARTNER, imgNavMalePartnerOff, imgNavMalePartnerOn),
+      popYSibling = createPopup(YSIBLING, imgNavYoungerSiblingOff, imgNavYoungerSiblingOn),
+      popChildren = createPopup(CHILD, imgNavChildOff, imgNavChildOn); 
 
     labelSelf = new JLabel(Gedcom.getImage(Gedcom.INDIVIDUALS),SwingConstants.CENTER);
-    labelSelf.setPreferredSize(getPopup(FATHER).getPreferredSize());
-    gh.add(
-      labelSelf
-      ,4,2,1,1
-    );
 
-    gh.add(
-      createPopup(PARTNER, imgNavMalePartnerOff, imgNavMalePartnerOn)
-      ,5,2,1,1
-    );
-    gh.add(
-      createPopup(YSIBLING, imgNavYoungerSiblingOff, imgNavYoungerSiblingOn)
-      ,7,2,2,1,0,new Insets(12,12,12,0)
-    );
-    gh.add(
-      createPopup(CHILD, imgNavChildOff, imgNavChildOn)  
-      ,4,3,2,1
-    );
+    popPartner.setPreferredSize(popOSibling.getPreferredSize());
+    popFather .setPreferredSize(popOSibling.getPreferredSize());
+    popMother .setPreferredSize(popOSibling.getPreferredSize());
+    labelSelf.setPreferredSize(popOSibling.getPreferredSize());
+    
+    gh.add(popFather  ,4,1,1,1);
+    gh.add(popMother  ,5,1,1,1);
+    gh.add(popOSibling,1,2,2,1,0,new Insets(12,0,12,12));
+    gh.add(labelSelf  ,4,2,1,1);
+    gh.add(popPartner ,5,2,1,1);
+    gh.add(popYSibling,7,2,2,1,0,new Insets(12,12,12,0));
+    gh.add(popChildren,4,3,2,1);
 
     // done
     return result;
