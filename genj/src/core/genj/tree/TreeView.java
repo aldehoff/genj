@@ -205,12 +205,14 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     
     // bookmarks
     String[] bs = registry.get("bookmarks", new String[0]);
+    List bookmarks = new ArrayList();
     for (int i=0;i<bs.length;i++) {
       try {
-        model.addBookmark(new Bookmark(this, gedcm, bs[i]));
+        bookmarks.add(new Bookmark(this, gedcm, bs[i]));
       } catch (Throwable t) {
       }
     }
+    model.setBookmarks(bookmarks);
 
     // setup child components
     contentRenderer = new ContentRenderer();
