@@ -92,6 +92,8 @@ import java.util.List;
     } else {
       date1 = (PropertyDate)prop;
     }
+    if (date1==null)
+      return;
     
     // get date to check against - won't continue if
     // that's not a PropertyDate
