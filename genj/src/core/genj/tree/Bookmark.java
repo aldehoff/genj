@@ -99,7 +99,7 @@ public class Bookmark extends ActionDelegate {
     // Either scroll to or change root
     TreeNode node = tree.getModel().getNode(entity);
     if (node!=null)
-      tree.setContext(entity);
+      tree.setCurrent(entity);
     else
       tree.setRoot(entity);
   }

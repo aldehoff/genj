@@ -412,6 +412,15 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     // anything new?
     Entity entity = property.getEntity();
     if (entity==currentEntity) return;
+    // do it
+    setCurrent(entity);
+  }
+  
+  /**
+   * Set current entity
+   */
+  /*package*/ void setCurrent(Entity entity) {
+    
     // allowed?
     if (!(entity instanceof Indi||entity instanceof Fam)) return;
     // Node for it?
