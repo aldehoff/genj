@@ -344,8 +344,12 @@ public class PointInTime implements Comparable {
           buffer.append(new Integer(day+1));
         }
         buffer.append(calendar.getMonth(month, localize));
-      }    
-      buffer.append(calendar.getYear(year, localize));
+      }
+          
+      if (calendar==GREGORIAN||!localize)
+        buffer.append(calendar.getYear(year, localize));
+      else
+        buffer.append(calendar.getYear(year, localize)+calendar.marker);
     }
     
     return buffer;
@@ -423,16 +427,12 @@ public class PointInTime implements Comparable {
    */
   public static abstract class Calendar {
     
-//    public static final int
-//      GEDCOM = 0,
-//      LONG   = 1,
-//      SHORT  = 2;
-    
     /** fields */
     protected String escape;
     protected String name;
     protected ImageIcon image;
     protected String[] months;
+    protected String marker;
     protected Map
       localizedMonthNames = new HashMap(),
       abbreviatedMonthNames = new HashMap(); 
@@ -447,6 +447,7 @@ public class PointInTime implements Comparable {
       escape = esc;
       name = Gedcom.resources.getString("prop.date.cal."+key);
       image = new ImageIcon(Gedcom.class, img);
+      marker = "("+key.charAt(0)+")";
       
       // localize months
       for (int m=0;m<months.length;m++) {
