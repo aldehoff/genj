@@ -298,7 +298,7 @@ public class Indi extends Entity {
    * Returns the families in which this individual is a child
    */
   public Fam[] getCFamilies() {
-
+    // FIXME ADOP refactoring
     ArrayList result = new ArrayList(getNoOfProperties());
     
     for (int i=0,j=getNoOfProperties();i<j;i++) {

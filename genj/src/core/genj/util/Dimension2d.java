@@ -20,6 +20,7 @@
 package genj.util;
 
 import java.awt.geom.Dimension2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Impl for Dimension2D
@@ -29,6 +30,11 @@ public class Dimension2d extends Dimension2D {
   private float width  = 0;
   private float height = 0;
 
+  public Dimension2d(Rectangle2D rectangle) {
+    width = (float)rectangle.getWidth();
+    height= (float)rectangle.getHeight();
+  }
+  
   public Dimension2d() {
   }
   

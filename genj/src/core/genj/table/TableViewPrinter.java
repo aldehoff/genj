@@ -24,6 +24,7 @@ import genj.print.Printer;
 import genj.renderer.PropertyRenderer;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -49,11 +50,10 @@ public class TableViewPrinter implements Printer {
     table = (TableView)view;
   }
 
-
   /**
-   * @see genj.print.Printer#calcSize(java.awt.Point, Point)
+   * @see genj.print.Printer#calcSize(Dimension2D, Point)
    */
-  public void calcSize(Dimension2D sizeInInches, Point dpi) {
+  public Dimension calcSize(Dimension2D pageSizeInInches, Point dpi) {
 
     // grab model
     EntityTableModel model = table.getModel();
@@ -61,14 +61,12 @@ public class TableViewPrinter implements Printer {
     // prepare our font render context
     FontRenderContext context = new FontRenderContext(null, false, true);
     
-    // loop rows
-    float 
-      factorx = 1,//dpi.x/72F,
-      factory = 1;//dpi.y/72F;
+    // calculate a factor 
     
+    // loop rows
     rowHeights = new int[model.getRowCount()];
     colWidths = new int[model.getColumnCount()];
-
+    
     for (int row=0;row<rowHeights.length;row++) {
 
       // loop cells
@@ -81,8 +79,10 @@ public class TableViewPrinter implements Printer {
         
         // grab size
         Dimension2D dim = PropertyRenderer.get(prop).getSize(font, context, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
-        rowHeights[row] = Math.max(rowHeights[row], (int)Math.ceil(dim.getHeight()*factory));
-        colWidths[col] = Math.max(colWidths[col], (int)Math.ceil(dim.getWidth()*factorx));
+        
+        // update col and row
+        rowHeights[row] = (int)Math.max(rowHeights[row], Math.ceil(dim.getHeight()));
+        colWidths[col] = (int)Math.max(colWidths[col], Math.ceil(dim.getWidth()));
         
         // next
       }
@@ -91,7 +91,7 @@ public class TableViewPrinter implements Printer {
     
     // done
 //    sizeInInches.setSize(size.width/(float)dpi.x,size.height/(float)dpi.y);
-    sizeInInches.setSize(1,1);
+    return new Dimension(1,1);
   }
   
 

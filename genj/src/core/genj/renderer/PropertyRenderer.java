@@ -358,7 +358,7 @@ public class PropertyRenderer {
         return EMPTY_DIM;
 
       // ask it for size
-      return img.getSize(dpi);
+      return img.getSizeInPoints(dpi);
         
     }
     

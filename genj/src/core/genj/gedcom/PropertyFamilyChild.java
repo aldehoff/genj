@@ -88,6 +88,7 @@ public class PropertyFamilyChild extends PropertyXRef {
     Property ps[];
 
     // Enclosing individual has a childhood already ?
+// FIXME need to refactor ADOP as event with CHIL
 //    if (indi.getFamc()!=null)
 //      throw new GedcomException("Individual @"+indi.getId()+"@ is already child of a family");
 

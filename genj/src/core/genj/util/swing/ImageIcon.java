@@ -21,6 +21,7 @@ package genj.util.swing;
 
 import genj.util.ByteArray;
 import genj.util.Debug;
+import genj.util.Dimension2d;
 import genj.util.ImageSniffer;
 
 import java.awt.Dimension;
@@ -29,7 +30,7 @@ import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.geom.Point2D;
+import java.awt.geom.Dimension2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageProducer;
@@ -128,19 +129,27 @@ public class ImageIcon extends javax.swing.ImageIcon {
    * Size in inches
    * @return size in inches or null if not known
    */
-  public Point2D getPhysicalSize() {
+  public Dimension2D getSizeInInches() {
     // check whether we have a resolution
-    if (dpi==null) return null;
-    return new Point2D.Double((double)getIconWidth()/dpi.x, (double)getIconHeight()/dpi.y);
+    if (dpi==null) 
+      return null;
+    return new Dimension2d(
+      (double)getIconWidth ()/dpi.x, 
+      (double)getIconHeight()/dpi.y
+    );
   }
   
   /**
-   * Size in target space (dpi)
+   * Size in points of give target space resolution
    */
-  public Dimension getSize(Point dpiTarget) {
-    Point2D size = getPhysicalSize();
-    if (size==null) return new Dimension(getIconWidth(), getIconHeight());
-    return new Dimension((int)(size.getX()*dpiTarget.x), (int)(size.getY()*dpiTarget.y));
+  public Dimension getSizeInPoints(Point dpiTarget) {
+    Dimension2D sizeInInches = getSizeInInches();
+    if (sizeInInches==null) 
+      return new Dimension(getIconWidth(), getIconHeight());
+    return new Dimension(
+      (int)(sizeInInches.getWidth()*dpiTarget.x), 
+      (int)(sizeInInches.getHeight()*dpiTarget.y)
+    );
   }
   
   /**

@@ -19,6 +19,7 @@
  */
 package genj.print;
 
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Dimension2D;
@@ -35,9 +36,9 @@ public interface Printer {
   public void setView(JComponent view);
   
   /**
-   * Calculates the size of the content in inches
+   * Calculates the size of the content in page
    */
-  public void calcSize(Dimension2D sizeInInches, Point dpi);
+  public Dimension calcSize(Dimension2D pageSizeInInches, Point dpi);
   
   /**
    * Renders page content (x,y) on given context (dots) and 

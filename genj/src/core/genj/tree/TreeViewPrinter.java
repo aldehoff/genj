@@ -21,9 +21,11 @@ package genj.tree;
 
 import genj.gedcom.Gedcom;
 import genj.print.Printer;
+import genj.renderer.EntityRenderer;
 import genj.util.swing.UnitGraphics;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -38,19 +40,28 @@ public class TreeViewPrinter implements Printer {
   /** the tree view */
   private TreeView tree;
   
+  /** renderers to use */
+  private EntityRenderer indiRenderer, famRenderer;
+  
   /**
    * Sets the view to print   */
   public void setView(JComponent view) {
     tree = (TreeView)view;
+    
+    indiRenderer = tree.createEntityRenderer(Gedcom.INDI);
+    famRenderer = tree.createEntityRenderer(Gedcom.FAM);
   }
 
 
   /**
-   * @see genj.print.Printer#calcSize(java.awt.Point, Point)
+   * @see genj.print.Printer#calcSize(Dimension2D, Point)
    */
-  public void calcSize(Dimension2D sizeInDPI, Point dpi) {
+  public Dimension calcSize(Dimension2D pageSizeInInches, Point dpi) {
     Rectangle mmbounds = tree.getModel().getBounds();
-    sizeInDPI.setSize(mmbounds.width*0.1F/2.54F, mmbounds.height*0.1F/2.54F);
+    return new Dimension(
+      (int)Math.ceil(mmbounds.width*0.1F/2.54F / pageSizeInInches.getWidth()), 
+      (int)Math.ceil(mmbounds.height*0.1F/2.54F  / pageSizeInInches.getHeight())
+    );
   }
 
   /**
@@ -67,10 +78,8 @@ public class TreeViewPrinter implements Printer {
     renderer.selection      = null;
 
     if (!preview) {    
-      renderer.indiRenderer   = tree.createEntityRenderer(Gedcom.INDI)
-        .setResolution(dpi);
-      renderer.famRenderer    = tree.createEntityRenderer(Gedcom.FAM )
-        .setResolution(dpi);
+      renderer.indiRenderer   = indiRenderer.setResolution(dpi);
+      renderer.famRenderer    =  famRenderer.setResolution(dpi);
     }
     
     renderer.render(graphics, tree.getModel());

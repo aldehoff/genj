@@ -311,7 +311,7 @@ public class FileBean extends PropertyBean {
       if (zoom==0)
         return new Dimension(img.getIconWidth(), img.getIconHeight());
       // check physical size
-      Dimension dim = img.getSize(viewManager.getDPI());
+      Dimension dim = img.getSizeInPoints(viewManager.getDPI());
       float factor = (float)zoom/100;
       dim.width *= factor;
       dim.height *= factor;

@@ -25,6 +25,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.UnitGraphics;
+import genj.view.Options;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -80,8 +81,8 @@ public class PrintWidget extends JPanel {
       public void itemStateChanged(ItemEvent e) {
         // only selection is interesting
         if (e.getStateChange()!=ItemEvent.SELECTED) 
-        // change service
-        task.setService((PrintService)services.getSelectedItem());
+          // change service
+          task.setService((PrintService)services.getSelectedItem());
       }
     });
     add(services, new Point2D.Double(1,0));
@@ -112,20 +113,20 @@ public class PrintWidget extends JPanel {
     
     private float 
       padd = 0.1F, // inch
-      zoom = 0.1F; // 10% FIXME
+      zoom = 1F; // 10% FIXME
 
-    private Point dpi = new Point(96,96);
+    private Point dpiScreen = Options.getInstance().getDPI();
     
     /**
      * @see javax.swing.JComponent#getPreferredSize()
      */
     public Dimension getPreferredSize() {
       // calculate
-      Point pages = task.getPages(); 
-      Rectangle2D page = task.getPage(pages.x-1,pages.y-1, padd);
+      Dimension pages = task.getPages(); 
+      Rectangle2D page = task.getPage(pages.width-1,pages.height-1, padd);
       return new Dimension(
-        (int)((page.getMaxX())*dpi.x *zoom),
-        (int)((page.getMaxY())*dpi.y*zoom)
+        (int)((page.getMaxX())*dpiScreen.x*zoom),
+        (int)((page.getMaxY())*dpiScreen.y*zoom)
       );
     }
 
@@ -141,10 +142,10 @@ public class PrintWidget extends JPanel {
       
       // render pages in app's dpi space
       Printer renderer = task.getRenderer();
-      Point pages = task.getPages(); 
-      UnitGraphics ug = new UnitGraphics(g, dpi.x*zoom, dpi.y*zoom);
-      for (int y=0;y<pages.y;y++) {
-        for (int x=0;x<pages.x;x++) {
+      Dimension pages = task.getPages(); 
+      UnitGraphics ug = new UnitGraphics(g, dpiScreen.x*zoom, dpiScreen.y*zoom);
+      for (int y=0;y<pages.height;y++) {
+        for (int x=0;x<pages.width;x++) {
           // calculate layout
           Rectangle2D 
             page = task.getPage(x,y, padd), 
@@ -157,13 +158,13 @@ public class PrintWidget extends JPanel {
           ug.draw(imageable, 0, 0, false);
           // draw number
           ug.setColor(Color.gray);
-          ug.draw(String.valueOf(x+y*pages.x+1),page.getCenterX(),page.getCenterY(),0.5D,0.5D);
+          ug.draw(String.valueOf(x+y*pages.width+1),page.getCenterX(),page.getCenterY(),0.5D,0.5D);
           // draw content
           ug.pushTransformation();
           ug.pushClip(imageable);
           ug.translate(imageable.getMinX() - (x*imageable.getWidth()), imageable.getMinY() - (y*imageable.getHeight()));
           ug.getGraphics().scale(zoom,zoom);
-          renderer.renderPage(ug.getGraphics(), new Point(x,y), dpi, true);
+          renderer.renderPage(ug.getGraphics(), new Point(x,y), dpiScreen, true);
           ug.popTransformation();
           ug.popClip();
           // next   
@@ -189,8 +190,10 @@ public class PrintWidget extends JPanel {
       // show settings
       Point pos = task.getOwner().getLocationOnScreen();
       PrintService choice = ServiceUI.printDialog(null, pos.x, pos.y, task.getServices(), task.getService(), null, task.getAttributes());
-      if (choice!=null) 
+      if (choice!=null) {
         services.setSelectedItem(choice);
+        task.setService(choice);
+      }
 
       // update preview
       preview.revalidate();

@@ -58,7 +58,6 @@ import javax.print.attribute.standard.MediaPrintableArea;
 import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
-import javax.print.attribute.standard.PrinterResolution;
 import javax.swing.JComponent;
 
 /**
@@ -98,6 +97,9 @@ import javax.swing.JComponent;
   
   /** settings */
   private PrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+  
+  /** pages */
+  private Dimension cachedPages;
 
   /**
    * Constructor
@@ -182,6 +184,8 @@ import javax.swing.JComponent;
    * Set current service
    */
   /*package*/ void setService(PrintService set) {
+    // forget cached information
+    cachedPages = null;
     // known?
     if (service==set)
       return;
@@ -201,12 +205,14 @@ import javax.swing.JComponent;
   /**
    * Resolve resolution (in inches)
    */
-  /*package*/ Dimension getResolution() {
-    PrinterResolution resolution = (PrinterResolution)getAttribute(PrinterResolution.class);
-    return new Dimension(
-      resolution.getCrossFeedResolution(PrinterResolution.DPI),
-      resolution.getFeedResolution(PrinterResolution.DPI)
-    );
+  /*package*/ Point getResolution() {
+    // In java printing the resolution is always 72dpi
+    return new Point(72,72);
+//    PrinterResolution resolution = (PrinterResolution)getAttribute(PrinterResolution.class);
+//    return new Point(
+//      resolution.getCrossFeedResolution(PrinterResolution.DPI),
+//      resolution.getFeedResolution(PrinterResolution.DPI)
+//    );
   }
   
   /**
@@ -289,18 +295,10 @@ import javax.swing.JComponent;
   /**
    * Compute pages
    */
-  /*package*/Point getPages() {
-
-    Dimension2D contentInInches = new Dimension2d();
-    renderer.calcSize(contentInInches, new Point(72,72));
-    
-    Rectangle2D printableInInches = getPrintable();
-    
-    return new Point(
-      (int)Math.ceil( contentInInches.getWidth ()/ printableInInches.getWidth ()),
-      (int)Math.ceil( contentInInches.getHeight()/ printableInInches.getHeight())
-    );
-
+  /*package*/ Dimension getPages() {
+    if (cachedPages==null)
+      cachedPages = renderer.calcSize(new Dimension2d(getPrintable()), getResolution());
+    return cachedPages;
   }
   
   /**
@@ -368,12 +366,12 @@ import javax.swing.JComponent;
     // show it in dialog
     int choice = manager.getWindowManager().openDialog("print", title, WindowManager.IMG_QUESTION, widget, actions, owner);
 
-    // check choice
-    if (choice != 0 || getPages().x == 0 || getPages().y == 0)
-      return false;
-
     // keep settings
     registry.put(attributes);
+
+    // check choice
+    if (choice != 0 || getPages().width == 0 || getPages().height == 0)
+      return false;
 
     // file output?
     String file = EnvironmentChecker.getProperty(this, "genj.print.file", null, "Print file output");
@@ -421,14 +419,14 @@ import javax.swing.JComponent;
    * @see genj.util.Trackable#getProgress()
    */
   public int getProgress() {
-    return (int) (page / (float) (getPages().x * getPages().y) * 100);
+    return (int) (page / (float) (getPages().width * getPages().height) * 100);
   }
 
   /**
    * @see genj.util.Trackable#getState()
    */
   public String getState() {
-    return this.manager.resources.getString("progress", new String[] { "" + (page + 1), "" + (getPages().x * getPages().y) });
+    return this.manager.resources.getString("progress", new String[] { "" + (page + 1), "" + (getPages().width * getPages().height) });
   }
 
   /**
@@ -436,16 +434,17 @@ import javax.swing.JComponent;
    */
   public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
     // what's the current page
+    Dimension pages = getPages();
     int
-      row = pageIndex/getPages().x,
-      col = pageIndex%getPages().x;
-    if (col>=getPages().x||row>=getPages().y) 
+      row = pageIndex/pages.width,
+      col = pageIndex%pages.width;
+    if (col>=pages.width||row>=pages.height) 
       return NO_SUCH_PAGE;
 
     page = pageIndex;
 
     // prepare current page/clip
-    Point dpi = new Point(72,72);//getResolution();
+    Point dpi = getResolution();
     
     Rectangle2D printable = getPrintable();
     UnitGraphics ug = new UnitGraphics(graphics, dpi.x, dpi.y);
