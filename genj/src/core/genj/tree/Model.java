@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Model of our tree
@@ -213,7 +214,7 @@ public class Model implements Graph, GedcomListener {
   /**
    * Entities by range
    */
-  public List getEntitiesIn(Rectangle2D range) {
+  public Set getEntitiesIn(Rectangle2D range) {
     return cache.get(range);
   }
      /**
@@ -302,6 +303,9 @@ public class Model implements Graph, GedcomListener {
   /**
    * Adds a node   */
   /*package*/ TreeNode add(TreeNode node) {
+    
+    System.out.println(node.entity);
+    
     Object key = node.entity;
     if (key==null) key = node;
     entities2nodes.put(key, node);

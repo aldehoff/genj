@@ -338,8 +338,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     private Overview(JScrollPane scroll) {
       super(scroll.getViewport());
       model.addListener(this);
-//      super.setMaximumSize(new Dimension(128,128));
-      super.setSize(new Dimension(128,128));
+      super.setSize(new Dimension(TreeView.this.getWidth()/4,TreeView.this.getHeight()/4));
     }
     /**
      * @see java.awt.Container#getMaximumSize()
@@ -347,20 +346,21 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     public Dimension getMaximumSize() {
       return super.getSize();
     }
-//    /**
-//     * @see javax.swing.JComponent#removeNotify()
-//     */
-//    public void removeNotify() {
-//      super.removeNotify();
-//      model.removeListener(this);
-//    }
-//    /**
-//     * @see java.awt.Component#setSize(java.awt.Dimension)
-//     */
-//    public void setSize(Dimension d) {
-//      super.setSize(d);
-//      setMaximumSize(d);
-//    }
+    /**
+     * @see java.awt.Component#setSize(int, int)
+     */
+    public void setSize(int width, int height) {
+      width = Math.max(16,width);
+      height = Math.max(16,height);
+      super.setSize(width, height);
+    }
+    /**
+     * @see java.awt.Container#removeNotify()
+     */
+    public void removeNotify() {
+      super.removeNotify();
+      model.removeListener(this);
+    }
     /**
      * @see genj.util.swing.ViewPortOverview#paintContent(java.awt.Graphics, double, double)
      */

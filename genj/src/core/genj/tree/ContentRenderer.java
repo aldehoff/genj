@@ -66,6 +66,20 @@ public class ContentRenderer {
   /** the entity renderer we're using */
   private EntityRenderer contentRenderer;
   
+  private String foo = 
+      "<b><prop path=INDI></b>\n" +
+      "<table>\n" +
+       "<tr valign=top><td>\n" +
+       "<table>\n" +
+        "<tr><td><prop path=INDI:SEX img=yes txt=no><i><prop path=INDI:NAME></i></td></tr>\n" +
+        "<tr><td><prop path=INDI:BIRT:DATE img=yes>, <u><prop path=INDI:BIRT:PLAC></u></td></tr>\n" +
+        "<tr><td><prop path=INDI:RESI:ADDR><br><prop path=INDI:RESI:ADDR:CITY><br><prop path=INDI:RESI:POST></u></td></tr>\n" +
+       "</table>\n" +
+       "</td><td>\n" +
+        "<prop path=INDI:OBJE:FILE>\n" +       "</td></tr>\n" +
+      "</table>";
+  
+  
   /**
    * Render the content
    */
@@ -73,7 +87,7 @@ public class ContentRenderer {
     // prepare renderer
     contentRenderer = new EntityRenderer(
       ug.getGraphics(), 
-      "<font color=#ff0000>Individual</font>'s <b>content</b>"
+      foo
     );
     // translate to center
     Rectangle2D bounds = model.getBounds();
@@ -150,13 +164,14 @@ public class ContentRenderer {
    */
   private void renderContent(UnitGraphics g, double x, double y, Shape shape, Object content) {
     // safety check
-    if (!isRenderContent||content==null) return;
+    if (!isRenderContent||!(content instanceof Entity)) return;
     // preserve clip&transformation
     Rectangle2D r = shape.getBounds2D();
     g.pushClip(x, y, r);
     g.pushTransformation();
     // draw it - FIXME : render appropriate entity content here
     g.translate(x, y);
+    contentRenderer.setEntity((Entity)content);
     contentRenderer.render(g.getGraphics(), g.units2pixels(r));
     // restore clip&transformation
     g.popTransformation();    

@@ -22,7 +22,9 @@ package genj.tree;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * GridCache - caching information in a 2d grid */
@@ -108,9 +110,9 @@ public class GridCache {
   /**
    * Gets objects by coordinate
    */
-  public List get(Rectangle2D range) {
+  public Set get(Rectangle2D range) {
     
-    List result = new ArrayList();
+    Set result = new HashSet();
 
     // Clip
     int
@@ -138,12 +140,12 @@ public class GridCache {
 
   /**
    * Get the content of a grid cell   */
-  public void get(List list, int row, int col) {
+  public void get(Set set, int row, int col) {
     // what's in the grid?
     Object o = grid[row][col];
     if (o==null) return;
-    if (o instanceof EntryList) list.addAll((EntryList)o);
-    else list.add(o);
+    if (o instanceof EntryList) set.addAll((EntryList)o);
+    else set.add(o);
     // done
   }
 
