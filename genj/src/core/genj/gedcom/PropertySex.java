@@ -28,11 +28,12 @@ public class PropertySex extends Property {
   
   /** images */
   private final static ImageIcon
+    IMG_UNKNOWN= MetaProperty.get(new TagPath("INDI:SEX")).getImage(),
     IMG_MALE   = MetaProperty.get(new TagPath("INDI:SEX")).getImage("male"),
     IMG_FEMALE = MetaProperty.get(new TagPath("INDI:SEX")).getImage("female");
 
   /** sexes */
-  private static final int UNKNOWN = -1;
+  public static final int UNKNOWN = 0;
   public static final int MALE    = 1;
   public static final int FEMALE  = 2;
 
@@ -58,12 +59,13 @@ public class PropertySex extends Property {
   /**
    * Image
    */
-  public static ImageIcon getDefaultImage(int sex) {
+  public ImageIcon getImage(int sex) {
     switch (sex) {
       case MALE: return IMG_MALE;
       case FEMALE: return IMG_FEMALE;
+      default:
+        return IMG_UNKNOWN;
     }
-    throw new IllegalArgumentException("Unknown sex");
   }
 
   /**
@@ -101,9 +103,14 @@ public class PropertySex extends Property {
    * Returns localized label for sex of male/female
    */
   static public String getLabelForSex(int which) {
-    if (which==MALE)
-      return Gedcom.getResources().getString("prop.sex.male");
-    return Gedcom.getResources().getString("prop.sex.female");
+    switch (which) {
+      case MALE:
+        return Gedcom.getResources().getString("prop.sex.male");
+      case FEMALE:
+        return Gedcom.getResources().getString("prop.sex.female");
+      default:
+        return Gedcom.getResources().getString("prop.sex.unknown");
+    }
   }
 
   /**

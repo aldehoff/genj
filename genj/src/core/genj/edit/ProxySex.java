@@ -20,12 +20,10 @@
 package genj.edit;
 
 import genj.gedcom.PropertySex;
-import genj.util.swing.ImageIcon;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -38,7 +36,8 @@ import javax.swing.JRadioButton;
 class ProxySex extends Proxy implements ItemListener {
 
   /** members */
-  private JRadioButton rbMale,rbFemale;
+  private JRadioButton[] rbSex = new JRadioButton[3];
+  
   private boolean changed=false;
 
   /**
@@ -51,11 +50,13 @@ class ProxySex extends Proxy implements ItemListener {
     
     // Gather data change
     PropertySex sex = (PropertySex)property; 
-    if ( rbMale.getModel().isSelected() == true)
-      sex.setSex(PropertySex.MALE);
-    if ( rbFemale.getModel().isSelected() == true)
-    sex.setSex(PropertySex.FEMALE);
-      
+    for (int i=0;i<rbSex.length;i++) {
+      if (rbSex[i].isSelected()) {
+        sex.setSex(i);
+        break;
+      }
+    }
+    
     // Done
   }
 
@@ -78,15 +79,14 @@ class ProxySex extends Proxy implements ItemListener {
     changed=true;
 
     // Gather data change
-    PropertySex sex = (PropertySex)property; 
-    ImageIcon img;
-    if ( rbMale.getModel().isSelected() == true)
-      img=sex.getDefaultImage(PropertySex.MALE);
-    else
-      img=sex.getDefaultImage(PropertySex.FEMALE);
-
-    // Image change
-    label.setIcon(img);
+    PropertySex sex = (PropertySex)property;
+     
+    for (int i=0;i<rbSex.length;i++) {
+      if (rbSex[i].isSelected()) {
+        label.setIcon(sex.getImage(i));
+        break;
+      }
+    }
 
     // Done
   }          
@@ -97,37 +97,20 @@ class ProxySex extends Proxy implements ItemListener {
   protected JComponent start(JPanel in) {
 
     PropertySex p = (PropertySex) property;
-
-    rbMale   = new JRadioButton( p.getLabelForSex(PropertySex.MALE)   );
-    rbFemale = new JRadioButton( p.getLabelForSex(PropertySex.FEMALE) );
-
-    rbMale.setBorder(BorderFactory.createEmptyBorder(4,4,4,4));
-    rbFemale.setBorder(BorderFactory.createEmptyBorder(4,4,4,4));
-
-    in.add(rbMale);
-    in.add(rbFemale);
-
     ButtonGroup bg = new ButtonGroup();
-    rbMale  .getModel().setGroup(bg);
-    rbFemale.getModel().setGroup(bg);
 
-    JComponent focus = null;
-    switch (p.getSex()) {
-      case PropertySex.MALE:
-        rbMale  .getModel().setSelected(true);
-        focus = rbFemale;
-        break;
-      case PropertySex.FEMALE:
-        rbFemale.getModel().setSelected(true);
-        focus = rbMale;
-        break;
+    for (int i=0;i<rbSex.length;i++) {
+      rbSex[i] = new JRadioButton( p.getLabelForSex(i) );
+      in.add(rbSex[i]);
+      
+      rbSex[i].getModel().setGroup(bg);
+      rbSex[i].getModel().addItemListener(this);
     }
-
-    rbMale.getModel().addItemListener(this);
-    rbFemale.getModel().addItemListener(this);
+    
+    rbSex[p.getSex()].setSelected(true);
 
     // Done
-    return focus;
+    return null;
   }
 
 } //ProxySex
