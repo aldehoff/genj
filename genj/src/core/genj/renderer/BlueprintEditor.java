@@ -128,6 +128,7 @@ public class BlueprintEditor extends JSplitPane {
       gedcom = geDcom;
       blueprint = scHeme;
       html.setText(blueprint.getHTML());
+      html.setCaretPosition(0);
       b = true;
     }
     bInsert.setEnabled(b);
@@ -140,6 +141,13 @@ public class BlueprintEditor extends JSplitPane {
    * Commits changes   */
   public void commit() {
     if (blueprint!=null) blueprint.setHTML(html.getText());
+  }
+  
+  /**
+   * Make sure html is visible
+   */
+  public void setHTMLVisible(boolean v) {
+    setDividerLocation( v ? 0.5D : 1.0D);
   }
   
   /**
@@ -260,5 +268,6 @@ public class BlueprintEditor extends JSplitPane {
       // done
       return result;
     }
-  } //ExampleIndi  
+  } //ExampleIndi
+
 } //RenderingSchemeEditor

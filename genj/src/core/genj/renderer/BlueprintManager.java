@@ -99,7 +99,7 @@ public class BlueprintManager {
     int num = 0;
     for (int i=0; i < others.size(); i++) {
       Blueprint other = (Blueprint)others.get(i);
-      if (other.getName().equals(name)) num++;
+      if (other.getName().startsWith(name)) num++;
     }
     if (num>0) blueprint.setName(name+"-"+num);
     // keep it

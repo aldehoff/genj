@@ -111,6 +111,7 @@ public class BlueprintList extends JSplitPane {
   /**
    * Acessor - selection   */
   public Blueprint[] getSelection() {
+    editor.commit();
     return selection;
   }
   
@@ -158,6 +159,8 @@ public class BlueprintList extends JSplitPane {
       DefaultTreeModel model = (DefaultTreeModel)treeBlueprints.getModel(); 
       model.insertNodeInto(child, node, node.getChildCount() );
       treeBlueprints.setSelectionPath(new TreePath(model.getPathToRoot(child)));
+      // make sure the html editor shows
+      editor.setHTMLVisible(true);
       // done
     }
   } //ActionAdd

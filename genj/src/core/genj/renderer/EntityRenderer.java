@@ -419,9 +419,14 @@ public class EntityRenderer {
      * Constructor     */
     private I18NView(Element elem) {
       super(elem);
-      // resolve and localize text
+      // resolve and localize text .. tag
       Object o = elem.getAttributes().getAttribute("tag");
       if (o!=null) txt = Gedcom.getName(o.toString());
+      // resolve and localize text .. type
+      o = elem.getAttributes().getAttribute("entity");
+      if (o!=null) try {
+        txt = Gedcom.getNameFor(Gedcom.getTypeFor(o.toString()), false);
+      } catch (IllegalArgumentException e) {}
       // done
     }
     /**
