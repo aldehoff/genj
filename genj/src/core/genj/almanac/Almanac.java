@@ -377,7 +377,7 @@ public class Almanac {
     // 19700525\Births\Nils Meier
     private Pattern REGEX_LINE = Pattern.compile("(.*?)\\\\(.*?)\\\\(.*)");
     
-    private final String DIR = "./contrib/wikipedia";
+    private final String DIR = "./contrib/wikipedias";
     
     private final String SUFFIX = ".wikipedia.zip";
     
@@ -391,17 +391,20 @@ public class Almanac {
       
       // look for applicable one (language)
       String lang = Locale.getDefault().getLanguage();
+      String[] list = result.list(this);
+      if (list!=null) {
+        List files = Arrays.asList(list);
+        
+        // en.wikipedia?
+        if (files.contains(lang+SUFFIX)) 
+          file = lang+SUFFIX;
+        else if (files.contains("en"+SUFFIX))
+          file = "en"+SUFFIX;
+        else if (!files.isEmpty())
+          file = (String)files.get(0);
+      }
       
-      List files = Arrays.asList(result.list(this));
-      
-      // en.wikipedia?
-      if (files.contains(lang+SUFFIX)) 
-        file = lang+SUFFIX;
-      else if (files.contains("en"+SUFFIX))
-        file = "en"+SUFFIX;
-      else if (!files.isEmpty())
-        file = (String)files.get(0);
-      
+      // done
       return result;
     }
 
