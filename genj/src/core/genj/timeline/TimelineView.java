@@ -104,7 +104,7 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     MAX_CM_AFT_EVENT = 9.0D;
     
   /** centimeters per year/event */
-  /*package*/ double 
+  private double 
     cmPerYear = DEF_CM_PER_YEAR,
     cmBefEvent = DEF_CM_BEF_EVENT,
     cmAftEvent = DEF_CM_AFT_EVENT;
@@ -262,6 +262,20 @@ public class TimelineView extends JPanel implements ToolBarSupport, ContextSuppo
     cmAftEvent = after;
     // update model
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
+  }
+  
+  /** 
+   * Accessor - time per event
+   */
+  public double getCmBeforeEvents() {
+    return cmBefEvent;
+  }
+  
+  /** 
+   * Accessor - time per event
+   */
+  public double getCmAfterEvents() {
+    return cmAftEvent;
   }
   
   /**

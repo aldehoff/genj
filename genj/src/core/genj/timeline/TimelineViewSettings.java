@@ -120,6 +120,8 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     view.setPaintTags(checkOptions[0].isSelected());
     view.setPaintDates(checkOptions[1].isSelected());
     view.setPaintGrid(checkOptions[2].isSelected());
+    
+    // sliders
     view.setCMPerEvents(sliderCmBefEvent.getValue(), sliderCmAftEvent.getValue());
     
     // colors
@@ -155,6 +157,10 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     checkOptions[0].setSelected(view.isPaintTags());
     checkOptions[1].setSelected(view.isPaintDates());
     checkOptions[2].setSelected(view.isPaintGrid());
+
+    // sliders
+    sliderCmBefEvent.setValue(view.getCmBeforeEvents());
+    sliderCmAftEvent.setValue(view.getCmAfterEvents());
     
     // colors
     colorChooser.reset();
