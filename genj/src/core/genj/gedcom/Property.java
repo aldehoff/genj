@@ -64,6 +64,9 @@ public abstract class Property implements Comparable {
 
     // Say it to properties
     delProperties(toArray(childs));
+    
+    // forget parent
+    parent = null;
 
     // Done
   }
