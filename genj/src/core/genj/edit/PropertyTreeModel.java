@@ -22,6 +22,8 @@ package genj.edit;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
@@ -31,23 +33,60 @@ import genj.gedcom.*;
 /**
  * A wrapper for properties as a TreeModel
  */
-public class PropertyTreeModel implements TreeModel {
+public class PropertyTreeModel implements TreeModel, GedcomListener {
 
+  /** listeners */
   private List listeners = new ArrayList();
+  
+  /** root of tree */
   private Property root;
+
+  /** history stack */
+  private Stack history = new Stack();
+  
+  /** the gedcom we're looking at */
+  private Gedcom gedcom;
 
   /**
    * Constructor
    */
-  public PropertyTreeModel() {
+  public PropertyTreeModel(Gedcom gedcom) {
+    this.gedcom=gedcom;
+    gedcom.addListener(this);
   }          
+
+  /**
+   * Destructor
+   */
+  /*package*/ void destructor() {
+    gedcom.removeListener(this);
+  }
   
   /**
    * Set the root
    */
-  public void setRoot(Property setRoot) {
-    root = setRoot;
+  public void setRoot(Entity entity) {
+    // remember history
+    if (root!=null) {
+      history.push(root.getEntity());
+      if (history.size()>16) history.removeElementAt(0);
+    }
+    // change
+    root = entity==null ? null : entity.getProperty();
     fireStructureChanged();
+  }
+  
+  /**
+   * Sets the root to the previous one
+   */
+  public void setPrevious() {
+    // is there one?
+    if (history.isEmpty()) return;
+    // set it
+    setRoot((Entity)history.pop());
+    // don't want it on the stack though
+    history.pop();
+    // done
   }
   
   /**
@@ -55,6 +94,13 @@ public class PropertyTreeModel implements TreeModel {
    */
   public void addTreeModelListener(TreeModelListener l) {
     listeners.add(l);
+  }          
+  
+  /**
+   * Removes a Listener from this model
+   */
+  public void removeTreeModelListener(TreeModelListener l) {
+    listeners.remove(l);
   }          
   
   /**
@@ -91,7 +137,7 @@ public class PropertyTreeModel implements TreeModel {
    */
   public void fireStructureChanged() {
 
-    Object path[] = { root };
+    Object[] path = new Object[]{ root!=null ? (Object)root : ""};
     TreeModelEvent ev = new TreeModelEvent(this,path);
 
     // .. tell it to all listeners
@@ -146,16 +192,57 @@ public class PropertyTreeModel implements TreeModel {
   }          
   
   /**
-   * Removes a Listener from this model
-   */
-  public void removeTreeModelListener(TreeModelListener l) {
-    listeners.remove(l);
-  }          
-  
-  /**
    * Changes a object at given path (not used here)
    */
   public void valueForPathChanged(TreePath path, Object newValue) {
   } 
+  
+  /**
+   * @see genj.gedcom.GedcomListener#handleChange(Change)
+   */
+  public void handleChange(Change change) {
+
+    // Could we be affected at all?
+    if (root==null) return;
+
+    // Entity deleted ?
+    if ( change.isChanged(Change.EDEL) ) {
+      // Loop through known entity ?
+      boolean affected = false;
+      Iterator ents = change.getEntities(Change.EDEL).iterator();
+      while (ents.hasNext()) {
+        // the entity deleted
+        Entity entity = (Entity)ents.next();
+        // ... a removed entity has to be removed from stack
+        while (history.removeElement(entity)) {};
+        // ... and might affect the current edit view
+        affected |= (entity.getProperty()==root);
+      }
+      // Is this a show stopper at this point?
+      if (affected==true) {
+        setRoot(null);
+        return;
+      }
+      // continue
+    }
+
+    // Property added/removed ?
+    if ( change.isChanged(Change.PADD)||change.isChanged(Change.PDEL)) {
+      // reset
+      fireStructureChanged();
+      // done
+      return;
+    }
+
+    // Property modified ?
+    if ( change.isChanged(change.PMOD) ) {
+      if ( change.getEntities(Change.EMOD).contains(root.getEntity())) {
+        firePropertiesChanged(change.getProperties(Change.PMOD));
+        return;
+      }
+    }
+
+    // Done
+  }
   
 } //PropertyTreeModel

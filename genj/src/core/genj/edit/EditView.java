@@ -77,7 +77,7 @@ import javax.swing.tree.TreePath;
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends JSplitPane implements GedcomListener, CurrentSupport, ToolBarSupport {
+public class EditView extends JSplitPane implements CurrentSupport, ToolBarSupport {
 
   /** the gedcom we're looking at */
   private Gedcom    gedcom;
@@ -110,11 +110,6 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
   private JPanel            proxyPane;
   private Proxy             currentProxy = null;
 
-  /** stack of entities we've been looking at */
-  private final static int  MAX_RETURN  = 10;
-  private Stack             returnStack = new Stack();
-  
-  
   /**
    * Constructor
    */
@@ -142,9 +137,6 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
     setContinuousLayout(true);
     setDividerLocation(registry.get("divider",-1));
     
-    // Listeners
-    gedcom.addListener(this);
-
     // Check if we can preset something to edit
     Entity entity = null;
     String last = registry.get("last",(String)null);
@@ -170,9 +162,6 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
     registry.put("last", currentEntity!=null?currentEntity.getId():"");
     registry.put("sticky", checkSticky.isSelected());
 
-    // Stop Listening
-    gedcom.removeListener(this);
-
     // Continue
     super.removeNotify();
 
@@ -180,8 +169,6 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
   }
 
   /**
-   * Notification that a change in a Gedcom-object took place.
-   */
   public void handleChange(Change change) {
 
     // Do I show an entity's properties now ?
@@ -246,17 +233,15 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
       if ( change.getEntities(Change.EMOD).contains(currentEntity)) {
         PropertyTreeModel treeModel = (PropertyTreeModel)tree.getModel();
         treeModel.firePropertiesChanged(change.getProperties(Change.PMOD));
-        /*
-        if (change.getProperties(change.PMOD).contains(currentProperty)) {
-          stopEdit(false);
-        }
-        */
+        //if (change.getProperties(change.PMOD).contains(currentProperty))
+        //  stopEdit(false);
         return;
       }
     }
 
     // Done
   }
+*/
 
   /**
    * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
@@ -289,7 +274,7 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
     actionButtonRemove = bh.create(new ActionPropertyDel());
     actionButtonUp     = bh.create(new ActionPropertyUpDown(true));
     actionButtonDown   = bh.create(new ActionPropertyUpDown(false));
-    actionButtonReturn = bh.create(new ActionBack());
+    actionButtonReturn = bh.setEnabled(true).create(new ActionBack());
 
     // sticky checkbox
     checkSticky  = new JCheckBox(ImgIconConverter.get(Images.imgStickOff));
@@ -325,18 +310,13 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
     // Try to stop old editing first
     stopEdit(true);
 
-    // Put last entity on return-stack
-    if (entity!=null) {
-      returnStack.push(entity);
-      if (returnStack.size()>MAX_RETURN) returnStack.removeElementAt(0);
-      if (actionButtonReturn!=null) actionButtonReturn.setEnabled(!returnStack.isEmpty());
-    }
+    //if (actionButtonReturn!=null) actionButtonReturn.setEnabled(!returnStack.isEmpty());
 
     // Remember entity
     currentEntity=entity;
 
     // Reset tree model
-    tree.setRoot(currentEntity.getProperty());
+    tree.setRoot(currentEntity);
 
     // Pre-selected editing node ?
     if ((currentEntity!=null)&&(tree.isShowing())) {
@@ -431,16 +411,7 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
     }
     /** run */
     protected void execute() {
-      // won't do if there's none
-      if (returnStack.isEmpty()) return;
-      
-      // Return to last entity from return-stack
-      Entity old = (Entity)returnStack.pop();
-      setEntity(old);
-      returnStack.pop();
-      actionButtonReturn.setEnabled(!returnStack.isEmpty());
-
-      // .. done
+      tree.setPrevious();
     }
   } //ActionBack
   
@@ -450,7 +421,8 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
   private class ActionPropertyAdd extends ActionDelegate {
     /** constructor */
     protected ActionPropertyAdd() {
-      super.setText("action.add");
+      super.setShortText("action.add");
+      super.setImage(Images.imgAdd);
       super.setTip("tip.add_prop");
     }
     /** run */
@@ -517,6 +489,14 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
         prop.addProperty(props[i]);
       }
       gedcom.endTransaction();
+     
+      // .. select added
+      Property select = props[0];
+      if (select instanceof PropertyEvent) {
+        Property pdate = ((PropertyEvent)select).getDate(false);
+        if (pdate!=null) select = pdate;
+      }
+      tree.setSelectionPath(new TreePath(currentEntity.getProperty().getPathTo(select)));
       
       // done
     }
@@ -529,7 +509,8 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
   private class ActionPropertyDel extends ActionDelegate {
     /** constructor */
     protected ActionPropertyDel() {
-      super.setText("action.del").setTip("tip.del_prop");
+      super.setShortText("action.del").setTip("tip.del_prop");
+      super.setImage(Images.imgRemove);
     }
     /** run */
     protected void execute() {
@@ -609,8 +590,8 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
     /** constructor */
     protected ActionPropertyUpDown(boolean up) {
       this.up=up;
-      if (up) super.setText("action.up").setTip("tip.up_prop");
-      else super.setText("action.down").setTip("tip.down_prop");
+      if (up) super.setShortText("action.up").setTip("tip.up_prop").setImage(Images.imgUp);
+      else super.setShortText("action.down").setTip("tip.down_prop").setImage(Images.imgDown);
     }
     /** run */
     protected void execute() {
@@ -634,12 +615,13 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
       // .. UnlockWrite
       gedcom.endTransaction();
   
-      // 03.02.2000 Since the movement of properties is not
-      // signalled by any event, we have to reselect the node again
-      //tree.setRoot(currentEntity.getProperty());
-      //TreePath path = new TreePath(currentEntity.getProperty().getPathTo(prop));
-      //tree.setSelectionPath(path);
+      // Expand the rows
+      tree.expandRows();
   
+      // Reselect the property
+      tree.setSelectionPath(new TreePath(prop.getEntity().getProperty().getPathTo(prop)));
+      
+      // Done  
     }
     
   }  //ActionPropertyUpDown
@@ -656,19 +638,42 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
      * Constructor
      */
     private PropertyTree() {
-      super(new PropertyTreeModel());
+      super(new PropertyTreeModel(gedcom));
       label.setOpaque(true);
       label.setFont(getFont());
       ToolTipManager.sharedInstance().registerComponent(this);
       setCellRenderer(this);
       getSelectionModel().addTreeSelectionListener(this);
     }
+    
+    /**
+     * @see javax.swing.JComponent#removeNotify()
+     */
+    public void removeNotify() {
+      ((PropertyTreeModel)getModel()).destructor();
+      super.removeNotify();
+    }
+
+    /**
+     * Returns to the previous entity
+     */
+    private void setPrevious() {
+      ((PropertyTreeModel)getModel()).setPrevious();
+      expandRows();
+    }
 
     /**
      * Prepare the tree-model that lies behind the tree.
      */
-    private void setRoot(Property root) {
+    private void setRoot(Entity root) {
       ((PropertyTreeModel)getModel()).setRoot(root);
+      expandRows();
+    }
+    
+    /** 
+     * Expands all rows
+     */
+    private void expandRows() {
        for (int i=0;i<getRowCount();i++) expandRow(i);
     }
     
@@ -744,6 +749,9 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
      * @see javax.swing.event.TreeSelectionListener#valueChanged(TreeSelectionEvent)
      */
     public void valueChanged(TreeSelectionEvent e) {
+      
+      // stop editing
+      stopEdit(true);
   
       // Look if exactly one node has been selected
       if (tree.getSelectionCount()==0) {
@@ -766,8 +774,7 @@ public class EditView extends JSplitPane implements GedcomListener, CurrentSuppo
         return;
       }
   
-      // Stop editing via old proxy before starting with new one
-      stopEdit(true);
+      // Starting with new one
       startEdit(false);
   
       // Enable action buttons

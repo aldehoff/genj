@@ -33,7 +33,11 @@ final public class Images {
     imgStickOff,
     imgReturn,
     imgFind,
-    imgLink;
+    imgLink,
+    imgUp,
+    imgDown,
+    imgAdd,
+    imgRemove;
 
   /**
    * Constructor which pre-loads all images
@@ -45,6 +49,10 @@ final public class Images {
     imgFind      = new ImgIcon(this,"images/Find.gif");
     imgLink      = new ImgIcon(this,"images/Link.gif");
     imgReturn    = new ImgIcon(this,"images/Return.gif");
+    imgUp        = new ImgIcon(this,"images/Up.gif");
+    imgDown      = new ImgIcon(this,"images/Down.gif");
+    imgAdd       = new ImgIcon(this,"images/Add.gif");
+    imgRemove    = new ImgIcon(this,"images/Remove.gif");
     
   }
 }

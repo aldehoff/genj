@@ -39,6 +39,8 @@ Future
   O Following links in EditView should also change focus in TreeView and TableView
   O ResourceView showing all externally referred resources
   O TagPath with conditions (e.g. INDI:FILE@if@TYPE=himself)
+  O Option for TableView to switch to setCurrentEntity's type
+  O TableView should center row after setCurrentEntity (not just show it)
   
 2.0 - Oct xx 2002
 

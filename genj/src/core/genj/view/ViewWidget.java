@@ -90,13 +90,12 @@ import javax.swing.border.TitledBorder;
     // create the view component
     view = descriptor.factory.createViewComponent(gedcom, registry, frame);
 
-    // create a toolbar
-    bar = createToolBar(descriptor.factory, view, frame);
-    
     // setup layout
     setLayout(new BorderLayout());
-    if (bar!=null) add(bar, registry.get("toolbar", BorderLayout.SOUTH));
     add(view, BorderLayout.CENTER);
+
+    // install a toolbar
+    installToolBar(descriptor, view, frame);
     
     // install popup support
     installPopupSupport();
@@ -107,41 +106,44 @@ import javax.swing.border.TitledBorder;
   /**
    * Helper that creates the toolbar for the view
    */
-  private JToolBar createToolBar(ViewFactory factory, Component view, Frame frame) {
+  private void installToolBar(ViewManager.Descriptor descriptor, Component view, Frame frame) {
     
     // only if ToolBarSupport
-    if (!(view instanceof ToolBarSupport)) return null;
+    if (!(view instanceof ToolBarSupport)) return;
 
     // Create one
-    JToolBar result = new JToolBar();
+    bar = new JToolBar();
     
     // Fill Toolbar
-    ((ToolBarSupport)view).populate(result);
-    result.add(Box.createGlue());
+    ((ToolBarSupport)view).populate(bar);
+    bar.add(Box.createGlue());
 
     // add our buttons     
     ButtonHelper bh = new ButtonHelper()
       .setResources(ViewManager.resources)
-      .setContainer(result);
+      .setContainer(bar);
 
     // .. a button for editing the View's settings
-    settings = factory.createSettingsComponent(view);
+    settings = descriptor.factory.createSettingsComponent(view);
     if (settings!=null) {
       settings.setBorder(new TitledBorder(frame.getTitle()));
       bh.create(new ActionOpenSettings());
     }
   
     // .. a button for printing View
-    PrintRenderer renderer = factory.createPrintRenderer(view);
+    PrintRenderer renderer = descriptor.factory.createPrintRenderer(view);
     if (renderer!=null) {
       bh.create(new ActionPrint(renderer, frame));
     }
   
     // .. a button for closing the View
     bh.create(new ActionDelegate.ActionDisposeFrame(frame).setImage(genj.gedcom.Images.get("X")));
+
+    // add it
+    String o = descriptor.dim.width<descriptor.dim.height ? BorderLayout.WEST : BorderLayout.SOUTH;
+    add(bar, registry.get("toolbar", o));
     
     // done
-    return result;
   }
   
   /**
