@@ -61,8 +61,8 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     
     // keep parent and calculate possible properties
     parent = pArent;
-    MetaProperty[] defs = parent.getVisibleMetaProperties();
-    
+    MetaProperty[] defs = parent.getMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+        
     // Layout
     GridBagLayout layout = new GridBagLayout();
     setLayout(layout);

@@ -108,7 +108,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       createActions(result, (PropertyFile)property); 
       
     // Check what xrefs can be added
-    MetaProperty[] subs = property.getVisibleMetaProperties();
+    MetaProperty[] subs = property.getMetaProperties(0);
     for (int s=0;s<subs.length;s++) {
       // create Relationship.XRef where applicable
       MetaProperty sub = subs[s]; 
@@ -148,7 +148,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     result.add(ActionDelegate.NOOP);
 
     // Check what xrefs can be added
-    MetaProperty[] subs = entity.getAllMetaProperties();
+    MetaProperty[] subs = entity.getMetaProperties(0);
     for (int s=0;s<subs.length;s++) {
       // create Relationship.XRef where applicable
       MetaProperty sub = subs[s]; 

@@ -128,26 +128,6 @@ public class PropertySource extends PropertyXRef implements MultiLineSupport {
   public String getLinesValue() {
     return super.getValue();
   }
-
-  /**
-   * @see genj.gedcom.PropertyMedia#getDefaultMetaProperties()
-   */
-  public MetaProperty[] getDefaultMetaProperties() {
-    // no props if NOT linked
-    if (getTarget()==null) return new MetaProperty[0];
-    // proceed
-    return super.getDefaultMetaProperties();
-  }
   
-  /**
-   * @see genj.gedcom.PropertyMedia#getVisibleMetaProperties()
-   */
-  public MetaProperty[] getVisibleMetaProperties() {
-    // no props if NOT linked
-    if (getTarget()==null) return new MetaProperty[0];
-    // proceed
-    return super.getVisibleMetaProperties();
-  }
-
 } //PropertySource
 

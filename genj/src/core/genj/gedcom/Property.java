@@ -695,27 +695,6 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Resolve all meta properties
-   */
-  public MetaProperty[] getAllMetaProperties() {
-    return MetaProperty.get(this).getAllSubs();
-  }
-
-  /**
-   * Resolve visible meta properties
-   */
-  public MetaProperty[] getVisibleMetaProperties() {
-    return MetaProperty.get(this).getVisibleSubs();
-  }
-
-  /**
-   * Resolve default meta properties
-   */
-  public MetaProperty[] getDefaultMetaProperties() {
-    return MetaProperty.get(this).getDefaultSubs();
-  }
-
-  /**
    * Adds default properties to this property
    */
   public final Property addDefaultProperties() {
@@ -724,7 +703,7 @@ public abstract class Property implements Comparable {
     if (getEntity()==null) throw new IllegalArgumentException("entity is null!");
     
     // loop
-    MetaProperty[] subs = getDefaultMetaProperties(); 
+    MetaProperty[] subs = getMetaProperties(MetaProperty.FILTER_DEFAULT); 
     for (int s=0; s<subs.length; s++) {
       if (getProperty(subs[s].getTag())==null)
         addProperty(subs[s].create(EMPTY_STRING)).addDefaultProperties();
@@ -732,6 +711,14 @@ public abstract class Property implements Comparable {
 
     // done    
     return this;
+  }
+
+  /**
+   * Resolve meta properties
+   * @param attr comma separated list of attributes to filter
+   */
+  public MetaProperty[] getMetaProperties(int filter) {
+    return MetaProperty.get(this).getSubs(filter);
   }
 
   /**

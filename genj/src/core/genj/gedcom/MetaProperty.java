@@ -41,6 +41,13 @@ import java.util.StringTokenizer;
  */
 public class MetaProperty {
 
+  /** static - flags */
+  public final static int
+    FILTER_NOT_HIDDEN = 1,
+    FILTER_DEFAULT    = 2,
+    FILTER_LINKED     = 4,
+    FILTER_NOT_LINKED = 8; 
+  
   /** static - images */
   private final static String
     IMG_UNKNOWN = "Question.gif",
@@ -74,10 +81,8 @@ public class MetaProperty {
   private Map props;
   
   /** subs */
-  private List defSubs = new ArrayList(16);
-  private List visibleSubs = new ArrayList(16);
-  private Map  allSubs = new HashMap();
-    
+  private Map mapOfSubs = new HashMap();
+  private List listOfSubs = new ArrayList();
 
   /**
    * Constructor
@@ -87,32 +92,58 @@ public class MetaProperty {
     this.tag = tag;
     this.props = props;
     this.supr = supr;
+    // inherit subs?
+    if (supr!=null) {
+      mapOfSubs.putAll(supr.mapOfSubs);
+      listOfSubs.addAll(supr.listOfSubs);
+    }
     // done
   }
   
   /**
    * Resolve property
    */
-  private String getProperty(String key, String fallback) {
+  private String getAttribute(String key, String fallback) {
     String result = (String)props.get(key);
     if (result==null) result = fallback;
     return result;
   }
 
   /**
-   * Inherit subs from super
+   * Add a sub
    */
-  private void inherit() {
+  private void addSub(MetaProperty sub) {
+    mapOfSubs.put(sub.tag, sub);
+    listOfSubs.add(sub);
+  }
+  
+  /**
+   * Acessor - subs
+   */
+  /*package*/ MetaProperty[] getSubs(int filter) {
+    
+    // Loop over subs
+    List result = new ArrayList(listOfSubs.size());
+    for (int s=0;s<listOfSubs.size();s++) {
       
-    // super?
-    if (supr==null) return;
-    
-    // grab subs
-    allSubs.putAll(supr.allSubs);
-    defSubs.addAll(supr.defSubs);
-    visibleSubs.addAll(supr.visibleSubs);
-    
+      // .. next sub
+      MetaProperty sub = (MetaProperty)listOfSubs.get(s);
+
+      // .. filter
+      if ((filter&FILTER_DEFAULT)!=0&&sub.getAttribute("default",null)==null)
+        continue;
+      if ((filter&FILTER_NOT_HIDDEN)!=0&&sub.getAttribute("hide",null)!=null)
+        continue;
+      if ((filter&FILTER_LINKED)!=0&&sub.getAttribute("linked",null)==null)
+        continue;
+      if ((filter&FILTER_NOT_LINKED)!=0&&sub.getAttribute("linked",null)!=null)
+        continue;
+      
+      // .. keep
+      result.add(sub);
+    }
     // done
+    return toArray(result);
   }
   
   /**
@@ -158,7 +189,7 @@ public class MetaProperty {
    */
   public ImageIcon getImage() {
     if (image==null)
-      image = loadImage(getProperty("img", IMG_UNKNOWN));
+      image = loadImage(getAttribute("img", IMG_UNKNOWN));
     return image;
   }
 
@@ -184,7 +215,7 @@ public class MetaProperty {
   public Class getType() {
     // check cached type
     if (type==null) {
-      String clazz = "genj.gedcom."+getProperty("type", "PropertySimpleValue");
+      String clazz = "genj.gedcom."+getAttribute("type", "PropertySimpleValue");
       try {
         type = Class.forName(clazz);
 
@@ -198,13 +229,6 @@ public class MetaProperty {
     return type;
   }
   
-  /**
-   * Accessor - Type Chec
-   */
-  public boolean isType(Class clazz) {
-    return clazz.isAssignableFrom(getType());
-  }
-
   /**
    * Accessor - some explanationary information about the meta
    */
@@ -220,35 +244,14 @@ public class MetaProperty {
   }
   
   /**
-   * Acessor - subs
-   */
-  /*package*/ MetaProperty[] getDefaultSubs() {
-    return toArray(defSubs);
-  }
-  
-  /**
-   * Acessor - subs
-   */
-  /*package*/ MetaProperty[] getVisibleSubs() {
-    return toArray(visibleSubs);
-  }
-  
-  /**
-   * Acessor - subs
-   */
-  /*package*/ MetaProperty[] getAllSubs() {
-    return toArray(allSubs.values());
-  }
-  
-  /**
    * Resolve sub by tag
    */
   public MetaProperty get(String tag) {
     // current tag in map?
-    MetaProperty result = (MetaProperty)allSubs.get(tag);
+    MetaProperty result = (MetaProperty)mapOfSubs.get(tag);
     if (result==null) {
       result = new MetaProperty(tag, Collections.EMPTY_MAP, null);
-      allSubs.put(tag, result);
+      addSub(result);
     }
     // done
     return result;
@@ -276,7 +279,7 @@ public class MetaProperty {
     }
     
     // more to go?
-    if (pos<path.length()) return getRecursively(result.allSubs, path, pos, persist);
+    if (pos<path.length()) return getRecursively(result.mapOfSubs, path, pos, persist);
     
     // done
     return result;
@@ -322,7 +325,7 @@ public class MetaProperty {
       if (sub.type!=null&&property.isAssignableFrom(sub.type)) 
         result.add(new TagPath(stack));
       // recurse into
-      getPathsRecursively(sub.allSubs, property, stack, result);
+      getPathsRecursively(sub.mapOfSubs, property, stack, result);
       // rewind
       stack.pop();
     }
@@ -399,7 +402,7 @@ public class MetaProperty {
       String tag = tokens.nextToken();
         
       // grab props
-      Map props = new FIFO();
+      Map props = new PutOnceHashMap();
       
       while (tokens.hasMoreTokens()) {
         String prop = tokens.nextToken();
@@ -408,9 +411,6 @@ public class MetaProperty {
         if (i>0) props.put(prop.substring(0,i), prop.substring(i+1));
         else props.put(prop, "");
       }
-      
-      boolean isDefault = props.containsKey("default"); 
-      boolean isHidden  = props.containsKey("hide");
       
       // do we have to take elements from the stack first?
       while (stack.size()>level) pop();
@@ -429,10 +429,7 @@ public class MetaProperty {
         roots.put(tag, meta);
         meta.getType(); // resolve type otherwise getPaths won't find anything
       } else {
-        MetaProperty parent = peek();
-        parent.allSubs.put(tag, meta);
-        if (!isHidden) parent.visibleSubs.add(meta);
-        if (isDefault) parent.defSubs.add(meta);
+        peek().addSub(meta);
       }
       
       // add to end of stack
@@ -442,13 +439,8 @@ public class MetaProperty {
     /**
      * Pop from stack
      */
-    private MetaProperty pop() {
-      // here's the one going away
-      MetaProperty meta = (MetaProperty)stack.remove(stack.size()-1);
-      // tell it to inherit now (after it has been read completely!)
-      meta.inherit();
-      // done 
-      return meta;
+    private void pop() {
+      stack.remove(stack.size()-1);
     }
     
     /**
@@ -463,7 +455,7 @@ public class MetaProperty {
   /**
    * Map that doesn't overwrite values
    */
-  private static class FIFO extends HashMap {
+  private static class PutOnceHashMap extends HashMap {
     /**
      * @see java.util.HashMap#put(java.lang.Object, java.lang.Object)
      */
@@ -473,5 +465,6 @@ public class MetaProperty {
     }
 
   } //FIFO
+  
   
 } //MetaDefinition
