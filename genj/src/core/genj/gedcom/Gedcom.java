@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.59 $ $Author: nmeier $ $Date: 2004-05-13 20:07:59 $
+ * $Revision: 1.60 $ $Author: nmeier $ $Date: 2004-05-14 20:11:47 $
  */
 package genj.gedcom;
 
@@ -444,6 +444,13 @@ public class Gedcom {
   }
   
   /**
+   * Test for transaction going on
+   */
+  public synchronized boolean isTransaction() {
+    return transaction!=null;
+  }
+  
+  /**
    * Access current transaction
    */
   public synchronized Transaction getTransaction() {
@@ -461,21 +468,23 @@ public class Gedcom {
     if (transaction==null)
       return;
 
-    // end tx
-    Transaction tx = transaction;
-    transaction = null;
+    try {
+      // need to notify?
+      if (transaction.hasChanges()) {
 
-    // need to notify?
-    if (!tx.hasChanges())
-      return;
-      
-    // remember change
-    hasUnsavedChanges = true;
+        // remember change
+        hasUnsavedChanges = true;
 
-    // send message to all listeners
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      gls[l].handleChange(tx);
+        // send message to all listeners
+        GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+        for (int l=0;l<gls.length;l++) {
+          gls[l].handleChange(transaction);
+        }
+        
+        // done
+      }
+    } finally {
+      transaction = null;
     }
 
     // done
