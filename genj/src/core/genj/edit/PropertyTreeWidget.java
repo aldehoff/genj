@@ -448,10 +448,6 @@ public class PropertyTreeWidget extends DnDTree {
       for (int i=0;i<children.size();i++) {
         Property child = (Property)children.get(i);
         
-        // has to be property
-        if (!(child instanceof Property))
-          return false;
-          
         // can't be xref from different entity
         if (child instanceof PropertyXRef&&child.getEntity()!=newParent.getEntity())
           return false;
