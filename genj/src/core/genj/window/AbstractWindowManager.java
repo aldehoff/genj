@@ -23,6 +23,7 @@ import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.TextAreaWidget;
 import genj.util.swing.TextFieldWidget;
 
 import java.awt.BorderLayout;
@@ -45,7 +46,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 
 /**
@@ -88,21 +88,16 @@ public abstract class AbstractWindowManager implements WindowManager {
   public int openDialog(String key, String title, Icon img, String txt, String[] options, Component owner) {
 
     // create a textpane for the txt
-    JTextPane text = new JTextPane();
+    TextAreaWidget text = new TextAreaWidget("", 4, 20);
+    text.setLineWrap(true);
+    text.setWrapStyleWord(true);
     text.setText(txt);
-    text.setEditable(false);
+    text.setEditable(false);    
     text.setCaretPosition(0);
-    
-    // make sure it doesn't grab focus 
-    // since it's just static text  
     text.setFocusable(false);
-      
+
     // wrap in reasonable sized scroll
-    JScrollPane content = new JScrollPane(text) {
-      public Dimension getPreferredSize() {
-        return new Dimension(240,80);
-      }
-    };
+    JScrollPane content = new JScrollPane(text);
       
     // delegate
     return openDialog(key, title, img, content, options, owner);
