@@ -218,7 +218,7 @@
        <zipfileset dir="." includes="gedcom/**"/>
        <zipfileset dir="." includes="doc/**"/>
        <zipfileset dir="./script" includes="run.*" filemode="755"/>
-       <zipfileset dir="." includes="contrib/cday/**"/>
+       <zipfileset dir="." includes="contrib/almanac/**"/>
        <zipfileset dir="." includes="contrib/wikipedia/en.wikipedia.zip"/>
        <zipfileset dir="." includes="contrib/wikipedia/license.txt"/>
      </zip>
