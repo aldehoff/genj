@@ -34,33 +34,15 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * This class adds support for a CDAY style event repository with
- * entries one per line. This code respects births (B) and event (S)
- * with a date-format of MMDDYYYY.
- * <code>
- *  B01011919 J. D. Salinger, author of 'Catcher in the Rye'.
- *  S04121961 Cosmonaut Yuri Alexeyevich Gagarin becomes first man in orbit.
- * </code>
- * The files considered as input have to reside in ./contrib/cday and end in
- * <code>
- *  .own
- *  .all
- *  .jan, .feb, .mar, .apr, .may, .jun, .jul, .oct, .sep, .nov, .dec
- * </code>
- * @see http://cday.sourceforge.net
+ * A global Almanac for all kinds of historic events
  */
 public class Almanac {
-  
-  private final static String DIR = "./contrib/cday";
-  
-  private final static String[] SUFFIXES = {
-    ".own", ".all", ".jan", ".feb", ".mar", ".apr", ".may", ".jun", ".jul", ".oct", ".sep", ".nov", ".dec" 
-  };
   
   /** listeners */
   private List listeners = new ArrayList(10);
@@ -87,8 +69,14 @@ public class Almanac {
    * Constructor
    */
   private Almanac() {
-    // load what we can find
-    new Thread(new Loader()).start();
+    // load what we can find async
+    new Thread(new Runnable() {
+      public void run() {
+        new CDayLoader().load();
+        new AlmanacLoader().load();
+  	    Debug.log(Debug.INFO, Almanac.this, "Loaded "+events.size()+" events");
+      }
+    }).start();
     // done for now
   }
   
@@ -153,74 +141,71 @@ public class Almanac {
   }
   
   /**
-   * A loader for cday files in ./cday
+   * A loader for almanac files
    */  
-  private class Loader implements Runnable {
+  private abstract class Loader {
     
 		/**
 		 * async load
 		 */
-		public void run() {
+		protected void load() {
 		  
-		  // prepare the charset for loading
-		  Charset charset = Charset.forName("ISO-8859-1");
-
 		  // look into dir
 		  File[] files;
 		  
-		  File dir = new File(DIR);
+		  File dir = getDirectory();
 		  if (!dir.exists()||!dir.isDirectory())
 		    files = new File[0];
 		  else
 		    files = dir.listFiles();
 		  
-	    Debug.log(Debug.INFO, Almanac.this, "Found "+files.length+" CDay file(s) in "+dir.getAbsoluteFile());
-		  if (files.length==0) 
+		  if (files.length==0) {
+		    Debug.log(Debug.INFO, Almanac.this, "Found no file(s) in "+dir.getAbsoluteFile());
 		    return;
+		  }
 		  
 		  // load each one
 		  for (int f = 0; f < files.length; f++) {
 		    File file = files[f];
-		    if (isGoodSuffix(file)) {
+		    if (filter(file)) {
     	    Debug.log(Debug.INFO, Almanac.this, "Loading "+file.getAbsoluteFile());
     	    try {
-	          load(file, charset);
+	          load(file);
 	        } catch (IOException e) {
 	    	    Debug.log(Debug.WARNING, Almanac.this, "IO Problem reading "+file.getAbsoluteFile(), e);
 	        }
 		    }
       }
 		  
-	    Debug.log(Debug.INFO, Almanac.this, "Loaded "+events.size()+" events");
-      
 		  // done
 		}    
 		
 		/**
-		 * check a suffix for applicability
-		 */
-		private boolean isGoodSuffix(File file) {
-		  
-		  // check suffixes
-		  String name = file.getName().toLowerCase();
-		  for (int s = 0; s < SUFFIXES.length; s++) {
-        if (name.endsWith(SUFFIXES[s]))
-          return true;
-      }
-		  
-		  // not good
-		  return false;
-		}
-		
-		/**
 		 * load one file
 		 */
-		private void load(File file, Charset charset) throws IOException {
+		protected void load(File file) throws IOException {
 		  
 		  // read its lines
-		  BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset));
-		  for (String line = in.readLine(); line!=null; line = in.readLine()) 
-		    load(line);
+		  BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), getCharset()));
+		  for (String line = in.readLine(); line!=null; line = in.readLine())  {
+		    
+		    try {
+			    Event event = load(line);
+			    if (event!=null) {
+			      // Search for correct index
+			      int index = Collections.binarySearch(events, event);
+			      if (index < 0) 
+			        index = -index-1;
+					  // keep
+			      synchronized (events) {
+			        events.add(index, event);
+			      }
+			    }
+		    } catch (Throwable t) {
+		    }
+		  
+		    // next
+		  }
 		    
 		  // notify about changes
       fireStateChanged(); 
@@ -229,58 +214,161 @@ public class Almanac {
 		}
 		
 		/**
-		 * load one line
+		 * load one line and create an Event (or null)
 		 */
-		private boolean load(String line) {
-		  
+		protected abstract Event load(String line) throws GedcomException ;
+		
+		/**
+		 * check a suffix for applicability
+		 */
+		protected abstract boolean filter(File file);
+
+		/**
+		 * resolve directory to look for files in
+		 */
+    protected abstract File getDirectory();
+    
+    /**
+     * resolve charset
+     */
+    protected abstract Charset getCharset();
+    
+  } //Loader
+ 
+  /**
+	 * This class adds support for the ALMANAC style event repository
+	 * (our own invention)
+	 */
+  private class AlmanacLoader extends Loader {
+    /** only .almanac */
+    protected boolean filter(File file) {
+      return file.getName().toLowerCase().endsWith(".almanac");
+    }
+    /** look into ./contrib/almanac */
+    protected File getDirectory() {
+      return new File("./contrib/almanac");
+    }
+    /** create an event */
+    protected Event load(String line) throws GedcomException {
+      // comment?
+      if (line.startsWith("#"))
+        return null;
+      // break it by ';'
+      StringTokenizer cols = new StringTokenizer(line, ";", true);
+      // #1 date YYYYMMDD
+      String date = cols.nextToken().trim();cols.nextToken();
+      if (date.length()<4)
+        return null;
+      int year  = Integer.parseInt(date.substring(0, 4));
+      int month = date.length()>=6 ? Integer.parseInt(date.substring(4, 6)) : 0;
+      int day   = date.length()>=8 ? Integer.parseInt(date.substring(6, 8)) : 0;
+      PointInTime time = new PointInTime(day, month, year);
+      if (!time.isValid())
+        return null;
+      // #2 date
+      String date2 = cols.nextToken();
+      if (!date2.equals(";")) {
+        cols.nextToken();
+      }
+      // #3 country
+      String country = cols.nextToken().trim();
+      if (!country.equals(";")) {
+        cols.nextToken();
+      }
+      // #4 significance
+      int sig = Integer.parseInt(cols.nextToken());
+      cols.nextToken();
+      // #5 type
+      String type = cols.nextToken().trim();
+      if (type.equals(";")||type.length()==0)
+        return null;
+      cols.nextToken();
+      // #6 description
+      String desc = cols.nextToken().trim();
+      // done
+      return new Event(getCategory(type), time, desc);
+    }
+    /** charset */
+    protected Charset getCharset() {
+		  return Charset.forName("UTF-8");
+    }
+  } //AlmanacLoader
+  
+  /**
+	 * This class adds support for a CDAY style event repository with
+	 * entries one per line. This code respects births (B) and event (S)
+	 * with a date-format of MMDDYYYY.
+	 * <code>
+	 *  B01011919 J. D. Salinger, author of 'Catcher in the Rye'.
+	 *  S04121961 Cosmonaut Yuri Alexeyevich Gagarin becomes first man in orbit.
+	 * </code>
+	 * The files considered as input have to reside in ./contrib/cday and end in
+	 * <code>
+	 *  .own
+	 *  .all
+	 *  .jan, .feb, .mar, .apr, .may, .jun, .jul, .oct, .sep, .nov, .dec
+	 * </code>
+	 * @see http://cday.sourceforge.net
+   */
+  private class CDayLoader extends Loader {
+    
+    private final String DIR = "./contrib/cday";
+    
+    private final String[] SUFFIXES = {
+      ".own", ".all", ".jan", ".feb", ".mar", ".apr", ".may", ".jun", ".jul", ".oct", ".sep", ".nov", ".dec" 
+    };
+    
+    /** our directory */
+    protected File getDirectory() {
+      return new File(DIR);
+    }
+    
+    /** filter files */
+    protected boolean filter(File file) {
+		  // check suffixes
+		  String name = file.getName().toLowerCase();
+		  for (int s = 0; s < SUFFIXES.length; s++) {
+        if (name.endsWith(SUFFIXES[s]))
+          return true;
+      }
+		  // not good
+		  return false;
+    }
+    
+    /** create an event */
+    protected Event load(String line) throws GedcomException {
+
 		  // check format (B|S)MMDDYYYY some event
 		  if (line.length()<11)
-		    return false;
+		    return null;
 		  
 		  // grab category
       String c = line.substring(0,1);
 		  
 		  // check date
 		  int day, month, year;
-		  try {
-			  month = Integer.parseInt(line.substring(1, 3));
-			  day   = Integer.parseInt(line.substring(3, 5));
-			  year  = Integer.parseInt(line.substring(5, 9));
-		  } catch (NumberFormatException e) {
-		    return false;
-		  }
+		  month = Integer.parseInt(line.substring(1, 3));
+		  day   = Integer.parseInt(line.substring(3, 5));
+		  year  = Integer.parseInt(line.substring(5, 9));
 		  
 		  // check text
 		  String text = line.substring(10).trim();
 		  if (text.length()==0)
-		    return false;
+		    return null;
 		  
 		  // lookup category
 		  Category cat = getCategory(c);
 
       // create event
-      Event event;
-      try {
-		    event = new Event(cat, new PointInTime(day-1, month-1, year), text); 
-		  } catch (GedcomException e) {
-		    return false;
-		  }
-        
-      // Search for correct index
-      int index = Collections.binarySearch(events, event);
-      if (index < 0) 
-        index = -index-1;
-      
-		  // instantiate
-      synchronized (events) {
-        events.add(index, event);
-      }
-      
-		  // done
-		  return true;
-		}
-		
-  } //Loader
+		  return new Event(cat, new PointInTime(day-1, month-1, year), text); 
+    }
+    
+    /** charset */
+    protected Charset getCharset() {
+		  return Charset.forName("ISO-8859-1");
+    }
+    
+  } //CDAY
   
   /**
    * An iterator over a range of events
