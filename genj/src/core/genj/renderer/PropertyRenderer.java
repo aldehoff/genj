@@ -35,6 +35,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
@@ -140,7 +141,7 @@ public class PropertyRenderer {
   }
   
   /**
-   * Calculates the vertical alignment offset 
+   * Calculates the vertical alignment offset - by default the baseline of the current font
    */
   public float getVerticalAlignment(Font font, FontRenderContext context) {  
     LineMetrics lm = font.getLineMetrics("", context);
@@ -156,19 +157,23 @@ public class PropertyRenderer {
     double 
       w = 0,
       h = 0;
-    // calculate text size
+    // calculate text size (the default size we use)
     if (isText(preference)) {
-      if (null!=txt) {
-        Rectangle2D bounds = font.getStringBounds(txt, context);
-        w += bounds.getWidth();
-        h = Math.max(h, bounds.getHeight());
-      }
+      Rectangle2D bounds = font.getStringBounds(txt, context);
+      w += bounds.getWidth();
+      h = Math.max(h, bounds.getHeight());
     }
-    // add image size (don't increase height though)
+    // add image size
     if (isImage(preference)) {
-      w += img.getIconWidth() + IMAGE_GAP;
-      h = h!=0 ? h : img.getIconHeight();
+      LineMetrics lm = font.getLineMetrics("", context);
+      float max = lm.getHeight();
+      float scale = 1F;
+      if (max<img.getIconHeight()) 
+        scale = max/img.getIconHeight();
+      w += (int)Math.ceil(img.getIconWidth()*scale) + IMAGE_GAP;
+      h = Math.max(h, lm.getHeight());
     }
+    
     // done
     return new Dimension2d(w,h);
   }
@@ -193,22 +198,24 @@ public class PropertyRenderer {
     if (bounds.getHeight()==0||bounds.getWidth()==0)
       return;
     
-    // draw image with maximum height as available
-    g.drawImage(
-      img.getImage(), 
-      (int)bounds.getX(), 
-      (int)bounds.getY(), 
-      img.getIconWidth(), 
-      (int)Math.min(img.getIconHeight(), bounds.getHeight()), 
-      null
-    );
-
+    // draw image with maximum height of a character
+    int 
+      w = img.getIconWidth(),
+      max = g.getFontMetrics().getHeight();
+    
+    AffineTransform at = AffineTransform.getTranslateInstance(bounds.getX(), bounds.getY());
+    if (max<img.getIconHeight()) {
+      float scale = max/(float)img.getIconHeight();
+      at.scale(scale, scale);
+      w = (int)Math.ceil(w*scale);
+    }
+    g.drawImage(img.getImage(), at, null);
+    
     // patch bounds for skip
-    int skip = img.getIconWidth() + IMAGE_GAP;
-    bounds.x += skip;
-    bounds.width -= skip;
+    bounds.x += w+IMAGE_GAP;
+    bounds.width -= w+IMAGE_GAP;
   }
-
+  
   /**
    * Implementation for rendering txt
    */
@@ -406,7 +413,7 @@ public class PropertyRenderer {
     }
 
     /**
-     * Put pictures at the bottom so text-lines all are aligned
+     * place pictures on baseline of current font
      */
     public float getVerticalAlignment(Font font, FontRenderContext context) {
       return 1F;
