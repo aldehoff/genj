@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.50 $ $Author: nmeier $ $Date: 2004-11-19 22:26:53 $
+ * $Revision: 1.51 $ $Author: nmeier $ $Date: 2004-12-06 21:18:25 $
  */
 package genj.report;
 
@@ -256,6 +256,17 @@ public abstract class Report implements Cloneable {
     // keep it
     registry.put(key, result.toString());    
     return result;
+  }
+  
+  /**
+   * Helper method that shows a component to the user
+   */
+  public final void showComponentToUser(JComponent component) {
+    
+    // open a non-modal dialog
+    viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#component",getName(),ReportViewFactory.IMG,component,CloseWindow.OK(),owner);
+    
+    
   }
 
   /**
