@@ -158,7 +158,10 @@ public abstract class ActionDelegate implements Cloneable {
    * Trigger a syncExecute callback
    */
   protected final void sync() {
-    SwingUtilities.invokeLater(new CallSyncExecute());
+    if (SwingUtilities.isEventDispatchThread())
+      syncExecute();
+    else
+      SwingUtilities.invokeLater(new CallSyncExecute());
   }
   
   /**
