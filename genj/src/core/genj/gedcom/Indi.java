@@ -33,11 +33,18 @@ import java.util.Set;
  * Class for encapsulating a person
  */
 public class Indi extends Entity {
+  
+  private final static TagPath
+    PATH_INDI = new TagPath("INDI"),
+    PATH_INDIFAMS = new TagPath("INDI:FAMS"),
+    PATH_INDIFAMC = new TagPath("INDI:FAMC"),
+    PATH_INDIBIRTDATE = new TagPath("INDI:BIRT:DATE"),
+    PATH_INDIDEATDATE = new TagPath("INDI:DEAT:DATE");
 
   public final static ImageIcon
-    IMG_MALE   = MetaProperty.get(new TagPath("INDI")).getImage("male"),
-    IMG_FEMALE = MetaProperty.get(new TagPath("INDI")).getImage("female"),
-    IMG_UNKNOWN = MetaProperty.get(new TagPath("INDI")).getImage();
+    IMG_MALE    = MetaProperty.get(PATH_INDI).getImage("male"),
+    IMG_FEMALE  = MetaProperty.get(PATH_INDI).getImage("female"),
+    IMG_UNKNOWN = MetaProperty.get(PATH_INDI).getImage();
     
   /**
    * Adds a family in which the individual is a partner
@@ -69,7 +76,7 @@ public class Indi extends Entity {
    * Deletes a family in which the person was a partner
    */
   /*package*/ Indi delFam(int which ) {
-    Property[] fams = getProperties(new TagPath("INDI:FAMS"),QUERY_VALID_TRUE);
+    Property[] fams = getProperties(PATH_INDIFAMS,QUERY_VALID_TRUE);
     if (which > fams.length)
       throw new IllegalArgumentException("Individual isn't spouse in "+which+" families");
     delProperty(fams[which-1]);
@@ -80,7 +87,7 @@ public class Indi extends Entity {
    * Deletes the family in which the Individual was child
    */
   /*package*/ Indi delFamc() {
-    Property prop = getProperty(new TagPath("INDI:FAMC"),QUERY_VALID_TRUE);
+    Property prop = getProperty(PATH_INDIFAMC,QUERY_VALID_TRUE);
     if (prop==null) {
       return this;
     }
@@ -93,7 +100,7 @@ public class Indi extends Entity {
    */
   public PropertyDate getBirthDate() {
     // Calculate BIRT|DATE
-    return (PropertyDate)getProperty(new TagPath("INDI:BIRT:DATE"),QUERY_VALID_TRUE);
+    return (PropertyDate)getProperty(PATH_INDIBIRTDATE,QUERY_VALID_TRUE);
   }
 
   /**
@@ -101,7 +108,7 @@ public class Indi extends Entity {
    */
   public PropertyDate getDeathDate() {
     // Calculate DEAT|DATE
-    return (PropertyDate)getProperty(new TagPath("INDI:DEAT:DATE"),QUERY_VALID_TRUE);
+    return (PropertyDate)getProperty(PATH_INDIDEATDATE,QUERY_VALID_TRUE);
   }
   
   /**
@@ -110,16 +117,18 @@ public class Indi extends Entity {
   public Indi[] getOlderSiblings() {
     
     // this is a child in a family?
-    Fam f = getFamc();
+    Fam f[] = getCFamilies();
     if (f==null) 
       return new Indi[0];
     
     // what are the children of that one
     LinkedList result = new LinkedList();
-    Indi[] cs = f.getChildren();
+    for (int inx=0; inx < f.length; inx++) {
+        Indi[] cs = f[inx].getChildren();
     for (int c=0;c<cs.length;c++) {
       if (cs[c]==this) break;
       result.addFirst(cs[c]);
+    }
     }
     
     // done
@@ -132,17 +141,19 @@ public class Indi extends Entity {
   public Indi[] getYoungerSiblings() {
     
     // this is a child in a family?
-    Fam f = getFamc();
+    Fam f[] = getCFamilies();
     if (f==null) 
       return new Indi[0];
     
     // what are the children of that one
     LinkedList result = new LinkedList();
     
-    Indi[] cs = f.getChildren();
+    for (int inx=0; inx < f.length; inx++) {
+        Indi[] cs = f[inx].getChildren();
     for (int c=cs.length-1;c>=0;c--) {
       if (cs[c]==this) break;
       result.addFirst(cs[c]);
+    }
     }
     
     // done
@@ -177,7 +188,8 @@ public class Indi extends Entity {
     List l = new ArrayList(fs.length);
     for (int f=0; f<fs.length; f++) {
       Indi[]cs = fs[f].getChildren();
-      for (int c=0;c<cs.length;c++) l.add(cs[c]);
+      for (int c=0;c<cs.length;c++)
+          if (!l.contains(cs[c])) l.add(cs[c]);
     }
     // Return result
     Indi[] result = new Indi[l.size()];
@@ -196,6 +208,21 @@ public class Indi extends Entity {
     return f.getHusband();
   }
 
+  public Indi[] getFathers() {
+      LinkedList result = new LinkedList();
+    
+      Fam f[] = getCFamilies();
+      for (int inx=0; inx < f.length; inx++) {
+          Indi cs = f[inx].getHusband();
+          if (cs==this) break;
+          if (!result.contains(cs))
+            result.addFirst(cs);
+      }
+    
+      // done
+      return toIndiArray(result);
+  }
+
   /** 
    * Calculate indi's mother
    */
@@ -205,6 +232,21 @@ public class Indi extends Entity {
     if (f==null) return null;
     // ask fam
     return f.getWife();
+  }
+
+  public Indi[] getMothers() {
+      LinkedList result = new LinkedList();
+
+      Fam f[] = getCFamilies();
+      for (int inx=0; inx < f.length; inx++) {
+          Indi cs = f[inx].getWife();
+          if (cs==this) break;
+          if (!result.contains(cs))
+            result.addFirst(cs);
+      }
+    
+      // done
+      return toIndiArray(result);
   }
 
   /**
@@ -245,6 +287,18 @@ public class Indi extends Entity {
     }
     return ((PropertyFamilySpouse)props[which]).getFamily();
   }
+// TODO: K. Mraz - evaluate if this is necessary for adop tag change...  
+//  /**
+//   * Get Family with option to create
+//   */
+//  /*package*/ Fam getFam(boolean create) throws GedcomException {
+//    Fam fam = getFam(0);
+//    if (fam!=null||!create) return fam;
+//    fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
+//    if (getSex()==PropertySex.FEMALE) fam.setWife(this);
+//    else fam.setHusband(this);
+//    return fam;    
+//  }
   
   /**
    * Returns the family in which the person is child
@@ -255,6 +309,29 @@ public class Indi extends Entity {
       return null;
     }
     return ((PropertyFamilyChild)prop).getFamily();
+  }
+
+  /**
+   * Get Family with option to create
+   */
+  public Fam getFamc(boolean create) throws GedcomException {
+    Fam fam = getFamc();
+    if (fam!=null||!create) return fam;
+    fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
+    fam.addChild(this);
+    return fam;    
+  }
+
+  /**
+   * Returns the families in which this individual is a child
+   */
+  public Fam[] getCFamilies() {
+    Property[] props = getProperties("FAMC",QUERY_VALID_TRUE);
+    Fam[] result = new Fam[props.length];
+    for (int f=0; f<result.length; f++) {
+      result[f] = ((PropertyFamilyChild)props[f]).getFamily();
+    }    
+    return result;
   }
 
   /**
@@ -301,6 +378,7 @@ public class Indi extends Entity {
   /** 
    * Returns the number of parents this individual has
    */
+  // TODO: K. Mraz - make this understand individual can be member of multiple familes
   public int getNoOfParents() {
     Fam fam = getFamc();
     return fam==null?0:fam.getNoOfSpouses();
@@ -350,6 +428,7 @@ public class Indi extends Entity {
     return getAncestors(new HashSet());
   }
   
+  // TODO: K. Mraz - make this understand individual can be member of multiple familes
   /*package*/ Set getAncestors(Set collect) {
     
     // would be in parental family

@@ -27,14 +27,19 @@ import genj.util.swing.ImageIcon;
  */
 public class PropertyChild extends PropertyXRef {
 
+  private final static TagPath
+    PATH_FAMCHIL = new TagPath("FAM:CHIL"),
+    PATH_INDIFAMC = new TagPath("INDI:FAMC"),
+    PATH_INDIADOPFAMC = new TagPath("INDI:ADOP:FAMC");
+    
   /** applicable target types */
   public final static String[] 
     TARGET_TYPES = { Gedcom.INDI };
 
   public final static ImageIcon
-    IMG_MALE   = MetaProperty.get(new TagPath("FAM:CHIL")).getImage("male"),
-    IMG_FEMALE = MetaProperty.get(new TagPath("FAM:CHIL")).getImage("female"),
-    IMG_UNKNOWN = MetaProperty.get(new TagPath("FAM:CHIL")).getImage();
+    IMG_MALE    = MetaProperty.get(PATH_FAMCHIL).getImage("male"),
+    IMG_FEMALE  = MetaProperty.get(PATH_FAMCHIL).getImage("female"),
+    IMG_UNKNOWN = MetaProperty.get(PATH_FAMCHIL).getImage();
 
   /**
    * Empty Constructor
@@ -141,7 +146,7 @@ public class PropertyChild extends PropertyXRef {
     }
 
     // Connect back from child (maybe using back reference)
-    ps = child.getProperties(new TagPath("INDI:FAMC"),QUERY_ALL);
+    ps = child.getProperties(PATH_INDIFAMC,QUERY_ALL);
 
     PropertyFamilyChild pfc;
     for (int i=0;i<ps.length;i++) {
@@ -152,7 +157,7 @@ public class PropertyChild extends PropertyXRef {
         setTarget(pfc);
         return;
       } else {
-          ps = child.getProperties(new TagPath("INDI:ADOP:FAMC"),QUERY_ALL);
+          ps = child.getProperties(PATH_INDIADOPFAMC,QUERY_ALL);
           for (int j=0;j<ps.length;j++) {
             pfc = (PropertyFamilyChild)ps[j];
             // 20030616 compare against fam.getId()!!!

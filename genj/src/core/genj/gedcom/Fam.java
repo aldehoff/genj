@@ -28,6 +28,12 @@ import genj.util.WordBuffer;
  * Class for encapsulating a family with parents and children
  */
 public class Fam extends Entity {
+  
+  private final static TagPath
+    PATH_FAMHUSB = new TagPath("FAM:HUSB"),
+    PATH_FAMWIFE = new TagPath("FAM:WIFE"),
+    PATH_FAMMARRDATE = new TagPath("FAM:MARR:DATE"),
+    PATH_FAMDIVDATE = new TagPath("FAM:DIV:DATE");
 
   /**
    * Adds another child to the family
@@ -177,7 +183,7 @@ public class Fam extends Entity {
   private Indi setHusband(Indi husband) throws GedcomException {
     
     // Remove old husband
-    PropertyHusband ph = (PropertyHusband)getProperty(new TagPath("FAM:HUSB"),QUERY_VALID_TRUE);
+    PropertyHusband ph = (PropertyHusband)getProperty(PATH_FAMHUSB,QUERY_VALID_TRUE);
     if (ph!=null) 
       delProperty(ph);
       
@@ -211,7 +217,7 @@ public class Fam extends Entity {
   private Indi setWife(Indi wife) throws GedcomException {
 
     // Remove old wife
-    PropertyWife pw = (PropertyWife)getProperty(new TagPath("FAM:WIFE"),QUERY_VALID_TRUE);
+    PropertyWife pw = (PropertyWife)getProperty(PATH_FAMWIFE,QUERY_VALID_TRUE);
     if (pw!=null) 
       delProperty(pw);
 
@@ -305,7 +311,7 @@ public class Fam extends Entity {
    */
   public PropertyDate getMarriageDate() {
     // Calculate MARR|DATE
-    return (PropertyDate)getProperty(new TagPath("FAM:MARR:DATE"),QUERY_VALID_TRUE);
+    return (PropertyDate)getProperty(PATH_FAMMARRDATE,QUERY_VALID_TRUE);
   }
 
   /**
@@ -314,7 +320,7 @@ public class Fam extends Entity {
    */
   public PropertyDate getDivorceDate() {
     // Calculate DIV|DATE
-    return (PropertyDate)getProperty(new TagPath("FAM:DIV:DATE"),QUERY_VALID_TRUE);
+    return (PropertyDate)getProperty(PATH_FAMDIVDATE,QUERY_VALID_TRUE);
   }
 
   /**

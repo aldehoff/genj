@@ -39,10 +39,11 @@ public abstract class Property implements Comparable {
     
   /** query flags */
   public static final int
-    QUERY_ALL          = 0,
-    QUERY_VALID_TRUE   = 1,
-    QUERY_FOLLOW_LINK  = 4,
-    QUERY_NO_LINK      = 8;
+    QUERY_ALL          =  0,
+    QUERY_VALID_TRUE   =  1,
+    QUERY_FOLLOW_LINK  =  4,
+    QUERY_NO_LINK      =  8,
+    QUERY_NO_BACKTRACK = 16;
     
   /** parent of this property */
   private Property parent=null;
@@ -545,33 +546,19 @@ public abstract class Property implements Comparable {
    * Returns this property's property by path
    */
   public Property getProperty(TagPath path, int qfilter) {
-    return getPropertyRecursively(path, 0, path.get(0), qfilter);
+    return getPropertyRecursively(path, 0, qfilter);
   }
   
-  private Property getPropertyRecursively(TagPath path, int pos, String tag, int qfilter) {
+  private Property getPropertyRecursively(TagPath path, int pos, int qfilter) {
 
-    // go up parent chain for all coming '..'s
-    if (tag.equals("..")) {
-      Property p = this;
-      do {
-        // get parent
-        p = p.getParent();
-        if (p==null)
-          return null;
-        // skip tag (end?)
-        pos ++;
-        if (pos==path.length())
-          break;
-        // next
-        tag = path.get(pos);
-      } while (tag.equals(".."));
-      
-      // ask p to continue
-      return p.getPropertyRecursively(path, pos-1, ".", qfilter); 
-    }
+    String tag = path.get(pos);
     
-    // Correct here - either '.' or matching tag?
-    if (!(tag.equals(".")||tag.equals(getTag()))) 
+    // a '..'?
+    if (tag.equals("..")) 
+      return parent==null ? null : parent.getPropertyRecursively(path, pos+1, qfilter);
+
+    // Correct here?
+    if (!tag.equals(getTag())) 
       return null;
 
     // test filter
@@ -585,16 +572,25 @@ public abstract class Property implements Comparable {
     // follow a link? (this probably should be into PropertyXref.class - override)
     if ((qfilter&QUERY_FOLLOW_LINK)!=0&&this instanceof PropertyXRef) {
       Property p = ((PropertyXRef)this).getReferencedEntity();
-      if (p!=null) p = p.getPropertyRecursively(path, pos+1, path.get(pos+1), qfilter);
+      if (p!=null)
+        p = p.getPropertyRecursively(path, pos+1, qfilter);
       if (p!=null)
         return p;
     }
     
-    // Search in properties
+    // Search for next tag in properties
     for (int i=0;i<getNoOfProperties();i++) {
-      Property p = getProperty(i).getPropertyRecursively(path, pos+1, path.get(pos+1), qfilter);
-      if (p!=null) 
+
+      Property ith = getProperty(i);
+      
+      // try recursively
+      Property p = ith.getPropertyRecursively(path, pos+1, qfilter);
+      if (p!=null)
         return p;
+
+      // FIXME this doesn't allow for advanced selector like 'nth'
+      if (ith.getTag().equals(path.get(pos+1))&&(qfilter&QUERY_NO_BACKTRACK)!=0)
+        break;
     }
     
     // not found

@@ -55,7 +55,7 @@ public abstract class PropertyXRef extends Property {
   /**
    * Method for notifying being removed from another parent
    */
-  public void delNotify(Transaction tx) {
+  protected void delNotify(Transaction tx) {
 
     // Let it through
     super.delNotify(tx);
@@ -69,7 +69,7 @@ public abstract class PropertyXRef extends Property {
       return;
       
     // ... delete back referencing property unless this is a rollback
-    if (!tx.isRollback())
+    if (tx==null||!tx.isRollback())
       target.getParent().delProperty(target);
 
   }

@@ -124,53 +124,41 @@ public class PropertyFamilySpouse extends PropertyXRef {
     if (indi.getSex()==PropertySex.UNKNOWN) 
       indi.setSex(husband==null ? PropertySex.MALE : PropertySex.FEMALE);
 
-    // place as husband or wife
-    PropertyXRef backref;
-    
-    found: switch (indi.getSex()) {
-      // HUSB
-      case PropertySex.MALE: default:{
-        // swap if necessary
-        if (husband!=null)
-          fam.swapSpouses();
-        // look for dead back reference
-        Property[] ps = fam.getProperties(new TagPath("FAM:HUSB"),QUERY_ALL);
-        for (int i=0;i<ps.length;i++) {
-          PropertyHusband ph = (PropertyHusband)ps[i];
-          if ( (!ph.isValid()) && (ph.getReferencedId().equals(indi.getId())) ) {
-            backref = ph;
-            break found;
-          }
-        }
-        // create new back ref
-        backref = new PropertyHusband();
-        break;
-      } 
-      // WIFE
-      case PropertySex.FEMALE : {
-        // swap if necessary
-        if (wife!=null)
-          fam.swapSpouses();
-        // look for dead back reference
-        Property[] ps = fam.getProperties(new TagPath("FAM:WIFE"),QUERY_ALL);
-        for (int i=0;i<ps.length;i++) {
-          PropertyWife pw = (PropertyWife)ps[i];
-          if ( (!pw.isValid()) && (pw.getReferencedId().equals(indi.getId())) ) {
-            backref = pw;
-            break found;
-          }
-        }
-        // create new back ref
-        backref = new PropertyWife();
-        break;      
+    // check for already existing back reference which takes precedence
+    Property[] husbands = fam.getProperties(new TagPath("FAM:HUSB"),QUERY_ALL);
+    for (int i=0;i<husbands.length;i++) {
+      PropertyHusband ph = (PropertyHusband)husbands[i];
+      if ( !ph.isValid() && ph.getReferencedId().equals(indi.getId()) ) {
+        ph.setTarget(this);
+        setTarget(ph);
+        return;
       }
-    } 
-
-    // connect
-    if (backref.getParent()==null)
-      fam.addProperty(backref);
-    backref.setTarget(this);
-    setTarget(backref);
+    }
+    Property[] wifes = fam.getProperties(new TagPath("FAM:WIFE"),QUERY_ALL);
+    for (int i=0;i<wifes.length;i++) {
+      PropertyWife pw = (PropertyWife)wifes[i];
+      if ( !pw.isValid() && pw.getReferencedId().equals(indi.getId()) ) {
+        pw.setTarget(this);
+        setTarget(pw);
+        return;
+      }
+    }
+    
+    // place as husband/wife as appropriately
+    if (indi.getSex()==PropertySex.MALE) {
+      // swap if necessary
+      if (husband!=null)
+        fam.swapSpouses();
+      // create new back ref
+      setTarget(new PropertyHusband(this));
+    } else {
+      // swap if necessary
+      if (wife!=null)
+        fam.swapSpouses();
+      // create new back ref
+      setTarget(new PropertyWife(this));
+    }
+    fam.addProperty(getTarget());
 
     // Done
   }
