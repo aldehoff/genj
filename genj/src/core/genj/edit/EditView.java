@@ -141,15 +141,17 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
    */
   public void addNotify() {
     
+    // let super do its thing first
+    super.addNotify();    
+    
     // remember
     instances.add(this);
     
     // Check if we can preset something to edit
-    Context context;
-    try { 
+    Context context = manager.getContext(gedcom);
+    if (isSticky) try { 
       context = new Context(gedcom.getEntity(registry.get("last",(String)null))); 
     } catch (Exception e) {
-      context = manager.getContext(gedcom); 
     }
     setContext(context);
 
@@ -157,8 +159,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     gedcom.addGedcomListener(undo);
     gedcom.addGedcomListener(redo);
 
-    // continue
-    super.addNotify();    
   }
 
   /**

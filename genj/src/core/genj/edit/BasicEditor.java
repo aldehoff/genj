@@ -43,6 +43,7 @@ import genj.window.CloseWindow;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.FlowLayout;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -57,6 +58,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingConstants;
@@ -208,6 +210,10 @@ import javax.swing.event.ChangeListener;
     this.gedcom = gedcom;
     this.manager = manager;
     this.registry = registry;
+    
+    // make user focus root
+    setFocusTraversalPolicy(new FocusPolicy());
+    setFocusCycleRoot(true);
 
     // create panels for beans and links
     beanPanel = new JPanel(new NestedBlockLayout(true, 3));
@@ -295,7 +301,7 @@ import javax.swing.event.ChangeListener;
       for (int i=0,j=beanPanel.getComponentCount();i<j;i++) {
         JComponent c = (JComponent)beanPanel.getComponent(i);
         if (c instanceof PropertyBean && ((PropertyBean)c).getPath().equals(path)) {
-          c.requestFocusInWindow();
+          System.out.println(c.requestFocusInWindow());
           break;
         }
       }
@@ -619,4 +625,22 @@ import javax.swing.event.ChangeListener;
 
   } //Cancel
 
+  /**
+   * ContainerOrderFocusTraversalPolicy would do fine but Sun
+   * (namely David Mendenhall) in its eternal wisdom has decided
+   * to put the working accept() check into a protected method
+   * of LayoutFocusTraversalPolicy
+   */
+  private class FocusPolicy extends ContainerOrderFocusTraversalPolicy {
+    private Hack hack = new Hack();
+    protected boolean accept(Component c) {
+      return hack.accept(c);
+    }
+    private class Hack extends LayoutFocusTraversalPolicy {
+      protected boolean accept(Component c) {
+        return super.accept(c);
+      }
+    }
+  } //FocusPolicy
+  
 } //BasicEditor
