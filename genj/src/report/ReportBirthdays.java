@@ -73,6 +73,14 @@ public class ReportBirthdays implements Report {
    */
   public boolean start(ReportBridge bridge, Gedcom gedcom) {
 
+    /*    
+    try {
+      Thread.currentThread().sleep(3000);
+    } catch (InterruptedException e) {
+      throw new ReportCancelledException();
+    }
+    */
+
     final String months[] = { "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
 
     // Calculate Month

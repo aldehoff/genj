@@ -70,6 +70,6 @@ public interface Report {
    * @param gedcom gedcom object on which the report is supposed
    * @exception InterruptedException in case running Thread is interrupted
    */
-  public boolean start(ReportBridge bridge, Gedcom gedcom) throws InterruptedException;
+  public boolean start(ReportBridge bridge, Gedcom gedcom);
 
 }

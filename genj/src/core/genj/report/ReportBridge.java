@@ -87,7 +87,7 @@ public class ReportBridge {
   public void println(String s) throws ReportCancelledException {
 
     // Our hook into checking for Interrupt
-    if ((view!=null)&&(view.isInterrupted()))
+    if (Thread.interrupted())
       throw new ReportCancelledException();
 
     // Append it
