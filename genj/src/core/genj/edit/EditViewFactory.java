@@ -26,6 +26,7 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.Note;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyNote;
 import genj.gedcom.Relationship;
 import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
@@ -124,8 +125,9 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
   public List createActions(Property property) {
     // create the actions
     List result = new ArrayList();
-    // one dummy
-    result.add(new Create(property.getGedcom(), Gedcom.NOTES, new Relationship.LinkedBy(property,Gedcom.NOTES)));
+    // everything but a note can get a note attached
+    if (!(property instanceof PropertyNote))
+      result.add(new Create(property.getGedcom(), Gedcom.NOTES, new Relationship.LinkedBy(property,Gedcom.NOTES)));
     // done
     return result;
   }

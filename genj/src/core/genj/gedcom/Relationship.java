@@ -51,7 +51,8 @@ public abstract class Relationship {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-      return "a " + getName() + " for " + owner.getEntity().getId();
+      return "a " + getName() + " for " + owner.getEntity().getId() 
+        + "[" + TagPath.get(owner) + "]";
     }
     
     /**

@@ -40,7 +40,7 @@ public class TagPath {
 
   /** the position in the path */
   private int position;
-
+  
   /**
    * Constructor for TagPath
    * @param path path as colon separated string value a:b:c
@@ -193,6 +193,22 @@ public class TagPath {
     // done
     return result;
   }
+
+  /**
+   * Resolve a path from given property
+   */
+  public static TagPath get(Property prop) {
+    
+    String p = prop.getTag();
+    while (!(prop instanceof Entity)) {
+      prop = prop.getParent();
+      p = prop.getTag() + ":" + p;
+    }
+    
+    // done
+    return new TagPath(p);
+  }
+
 
   /**
    * Returns true when this path's internal postition is not at the end

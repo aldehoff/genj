@@ -69,6 +69,7 @@ public class PropertyNote extends PropertyXRef {
    */
   public PropertyNote(PropertyXRef target) {
     super(target);
+    setValue("");
   }
 
   /**
@@ -87,8 +88,6 @@ public class PropertyNote extends PropertyXRef {
    */
   public PropertyNote(String tag, String value) {
     super(null);
-
-    // Setup value
     setValue(value);
   }
 
@@ -97,6 +96,7 @@ public class PropertyNote extends PropertyXRef {
    * several lines of this address
    */
   public LineIterator getLineIterator() {
+    // iterate
     return new NoteLineIterator();
   }
 
@@ -104,20 +104,13 @@ public class PropertyNote extends PropertyXRef {
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
-    // 20021113 if linked then we stay XRef - otherwise always MLE!
+    // if entity stay entity
+    if (this instanceof Entity) return "Entity";
+    // 20021113 if linked then we stay XRef
     if (super.getReferencedEntity()!=null)
       return "XRef";
+    // multiline
     return "MLE";    
-//    // Entity Note? Should be Entity but has to be Note to be editable :(
-//    if (this instanceof Entity)
-//      return "MLE";
-//
-//    // Property XRef linked to Entity Note?
-//    if (super.getValue().startsWith("@") || note==null)
-//      return "XRef";
-//
-//    // Seems to be Property Note
-//    return "MLE";
   }
 
   /**
@@ -129,10 +122,10 @@ public class PropertyNote extends PropertyXRef {
 
     // Entity Note? Should be Entity but has to be Note to be editable :(
     if (path.length()==1)
-      return "MLE";
+      return "Entity";
 
-    // Property XRef linked to Entity Note - or Property Note
-    return "XRef";
+    // Could be XRef or MLE
+    return "MLE";
   }
 
   /**
@@ -147,31 +140,29 @@ public class PropertyNote extends PropertyXRef {
    */
   public String getValue() {
 
-    // Note?
-    if (note!=null) {
-      int pos = note.indexOf('\n');
-      if (pos<0) return note;
-      return note.substring(0,pos)+"...";
-    }
-
-    if (this instanceof Entity)
-      return "";
-
-    // XRef to Note!
-    return super.getValue();
+    // entity?
+    if (this instanceof Entity) return super.getValue();
+    
+    // valid xref?
+    if (getReferencedEntity()!=null) return super.getValue();
+    
+    // Note!
+    if (note==null) return "";
+    
+    int pos = note.indexOf('\n');
+    if (pos<0) return note;
+    return note.substring(0,pos)+"...";
+    
   }
 
   /**
    * This property incorporates several lines with newlines
    */
   public int isMultiLine() {
-
-    // Note?
-    if ((note!=null)||(this instanceof Entity))
-      return MULTI_NEWLINE;
-
-    // XRef!
-    return NO_MULTI;
+    // not if we're an enity
+    if (this instanceof Entity) return NO_MULTI;
+    // sure bring it on!
+    return MULTI_NEWLINE;
   }
 
   /**
@@ -227,22 +218,28 @@ public class PropertyNote extends PropertyXRef {
    */
   public boolean setValue(String v) {
 
+    // trim it
     v = v.trim();
 
-    // Hmm, reference?
+    // we're no entity -> can keep value as is
     if (!(this instanceof Entity)) {
-
-      if ( (v.length()==0) || (v.startsWith("@")) ) {
+      // might be a reference
+      if ( v.startsWith("@") && v.endsWith("@") ) {
         note=null;
         super.setValue(v);
         return true;
       }
+      // keep value
+      note = v;
+      return true;
     }
 
-    // No reference!
-    super.setValue("");
+    // 20021113 we're an entity -> add it as sub-property
+    if (v.length()>0)
+      getSubNote(true).setValue(v);
+
+    // mark modified
     noteModifiedProperty();
-    note=v;
 
     // Done
     return true;
@@ -253,13 +250,35 @@ public class PropertyNote extends PropertyXRef {
    */
   public String toString() {
 
-    Entity e = getReferencedEntity();
-    if (e==null) {
-      return note==null ? "" : note;
+    // no entity? 
+    if (!(this instanceof Entity)) {
+      if (getReferencedEntity()!=null)
+        return getReferencedEntity().toString();
+      return note;
     }
 
-    return super.toString();
-
+    // we're an entity
+    PropertyNote sub = getSubNote(false);
+    if (sub!=null) return sub.toString();
+    
+    return "";
+  }
+  
+  /**
+   * Get the first attached not   */
+  private PropertyNote getSubNote(boolean create) {
+    for (int i=0;i<getNoOfProperties();i++) {
+      Property child = getProperty(i);
+      if (child instanceof PropertyNote) {
+        return (PropertyNote)child;
+      }
+    }
+    PropertyNote result = null; 
+    if (create) {
+      result = new PropertyNote(null, ""); 
+      addProperty(result);
+    }
+    return result;
   }
 
   /**

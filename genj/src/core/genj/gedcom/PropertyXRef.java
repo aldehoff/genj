@@ -213,7 +213,7 @@ public abstract class PropertyXRef extends Property {
   public String toString() {
     Entity e = getReferencedEntity();
     if (e==null) {
-      return "";
+      return super.toString();
     }
     return e.toString();
   }

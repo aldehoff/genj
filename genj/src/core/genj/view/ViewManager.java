@@ -23,6 +23,7 @@ import genj.app.App;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -276,7 +277,7 @@ public class ViewManager {
     for (int f=0; f<factories.length; f++) {
       if (factories[f] instanceof ContextSupport) {
         List as = getActions((ContextSupport)factories[f], context);
-        if (as!=null) result.add(as);
+        if (as!=null&&!as.isEmpty()) result.add(as);
       }
     }
     // loop through views
@@ -286,7 +287,7 @@ public class ViewManager {
       ViewWidget view = (ViewWidget)views.next();
       if (view.getGedcom()==gedcom&&view.getView() instanceof ContextSupport) {
         List as = getActions((ContextSupport)view.getView(), context);
-        if (as!=null) result.add(as);
+        if (as!=null&&!as.isEmpty()) result.add(as);
       }
     }
     // done
@@ -387,7 +388,7 @@ public class ViewManager {
     if (property!=null) {
       List actions = getActions(property);
       if (!actions.isEmpty()) {
-        mh.createMenu(property.getTag(), property.getImage(false));
+        mh.createMenu(TagPath.get(property).toString(), property.getImage(false));
         mh.createItems(actions);
         mh.popMenu();
       }
