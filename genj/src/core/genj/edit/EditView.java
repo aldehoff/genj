@@ -22,7 +22,6 @@ package genj.edit;
 import genj.edit.actions.DelProperty;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.util.ActionDelegate;
@@ -30,22 +29,16 @@ import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.HeadlessLabel;
 import genj.util.swing.MenuHelper;
-import genj.util.swing.TreeWidget;
 import genj.view.ContextPopupSupport;
 import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
-import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -58,12 +51,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
-import javax.swing.JTree;
-import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 /**
@@ -92,7 +81,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
                             actionSticky;
 
   /** everything for the tree */
-  private PropertyTree      tree = null;
+  private PropertyTreeWidget      tree = null;
   private JScrollPane       treePane = null;
   
   /** everything for the proxy */
@@ -116,11 +105,13 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     this.registry = setRegistry;
 
     // TREE Component's 
-    tree = new PropertyTree();
+    tree = new PropertyTreeWidget(setGedcom);
+    tree.addTreeSelectionListener(new SelectionHandler());
+    
     treePane = new JScrollPane(tree);
     treePane.setMinimumSize  (new Dimension(160, 128));
     treePane.setPreferredSize(new Dimension(160, 128));
-
+    
     // EDIT Component
     proxyPane = new JPanel();
     proxyPane.setLayout(new BoxLayout(proxyPane,BoxLayout.Y_AXIS));
@@ -329,7 +320,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
    * returns the currently viewed entity
    */
   /*package*/ Entity getCurrentEntity() {
-    return tree.getPropertyModel().getEntity();
+    return tree.getEntity();
   }
   
   /**
@@ -530,8 +521,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     }
     /** run */
     protected void execute() {
-      tree.getPropertyModel().setPrevious();
-      tree.expandRows();
+      tree.setPreviousEntity();
     }
   } //ActionBack
   
@@ -695,141 +685,20 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   }  //ActionPropertyUpDown
 
   /**
-   * Class for rendering tree cell nodes
+   * Handling selection of properties
    */
-  private class PropertyTree extends TreeWidget implements TreeCellRenderer, TreeSelectionListener {
-    
-    /** a label for rendering */
-    private HeadlessLabel label = new HeadlessLabel();
+  private class SelectionHandler implements TreeSelectionListener {
     
     /**
-     * Constructor
-     */
-    private PropertyTree() {
-      setModel(new PropertyTreeModel(gedcom));
-      label.setOpaque(true);
-      ToolTipManager.sharedInstance().registerComponent(this);
-      setCellRenderer(this);
-      getSelectionModel().addTreeSelectionListener(this);
-    }
-    
-    /**
-     * Access to the underlying model
-     */
-    private PropertyTreeModel getPropertyModel() {
-      return (PropertyTreeModel)getModel();
-    }
-
-    /**
-     * Prepare the tree-model that lies behind the tree.
-     */
-    private void setEntity(Entity entity) {
-      getPropertyModel().setEntity(entity);
-      expandRows();
-    }
-    
-    /** 
-     * Expands all rows
-     */
-    private void expandRows() {
-       for (int i=0;i<getRowCount();i++) expandRow(i);
-    }
-    
-    /**
-     * returns the currently selected property
-     */
-    private Property getCurrentProperty() {
-      // Calculate selection path
-      TreePath path = tree.getSelectionPath();
-      if (path==null) return null;
-      // got it
-      if (path.getLastPathComponent() instanceof Property)
-        return (Property)path.getLastPathComponent();
-      // none found
-      return null;
-    }
-    
-    /**
-     * @see javax.swing.tree.TreeCellRenderer#getTreeCellRendererComponent(JTree, Object, boolean, boolean, boolean, int, boolean)
-     */
-    public Component getTreeCellRendererComponent(JTree tree, Object object, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-
-      if (!(object instanceof Property)) {
-        label.setText(null);
-        label.setIcon(null);
-        return label;
-      }
-
-      // only accepting properties here
-      Property prop = (Property)object;
-
-      // Set the text
-      String tag = prop.getTag();
-      if (prop instanceof Entity)
-        tag = "@"+((Entity)prop).getId()+"@ "+tag;
-
-      String value = prop.getValue();
-      if (value==null) label.setText(tag);
-      else label.setText(tag + ' ' + value);
-      
-      // Set the image
-      label.setIcon(prop.getImage(true));
-      
-      // background
-      Color fg,bg;
-      if (selected) {
-        bg = UIManager.getColor("Tree.selectionBackground");
-        fg = UIManager.getColor("Tree.selectionForeground");
-      } else {
-        bg = UIManager.getColor("Tree.textBackground");
-        fg = UIManager.getColor("Tree.textForeground");
-      }
-      label.setBackground(bg);
-      label.setForeground(fg);
-      
-      // font
-      if (prop.isTransient()) {
-        label.setFont(getFont().deriveFont(Font.ITALIC));
-      } else {
-        label.setFont(getFont());
-      }
-
-      // Done
-      return label;
-    }
-
-    /**
-     * @see javax.swing.JTree#getToolTipText(MouseEvent)
-     */
-    public String getToolTipText(MouseEvent event) {
-      // .. calc path to node under mouse
-      TreePath path = super.getPathForLocation(event.getX(),event.getY());
-      if ((path==null) || (path.getPathCount()==0)) return null;
-      // .. calc property
-      Object p = path.getLastPathComponent();
-      if (!(p instanceof Property)) return "";
-      // .. transient?
-      if (((Property)p).isTransient()) return null;
-      // .. calc information text
-      String info = MetaProperty.get((Property)p).getInfo();
-      if (info==null) return "?";
-      // .. return max 60
-      info = info.replace('\n',' ');
-      if (info.length()<=60)
-        return info;
-      return info.substring(0,60)+"...";
-    }
-    
-    /**
-     * @see javax.swing.event.TreeSelectionListener#valueChanged(TreeSelectionEvent)
+     * @see javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event.TreeSelectionEvent)
      */
     public void valueChanged(TreeSelectionEvent e) {
-      
+
       // stop editing
       stopEdit(true);
   
       // Look if exactly one node has been selected
-      if (tree.getSelectionCount()==0||getCurrentProperty()==null) {
+      if (tree.getSelectionCount()==0||tree.getCurrentProperty()==null) {
         // Disable action buttons
         actionButtonAdd   .setEnabled(false);
         actionButtonRemove.setEnabled(false);
@@ -853,7 +722,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       startEdit(false);
   
       // Enable action buttons
-      Property prop = getCurrentProperty();
+      Property prop = tree.getCurrentProperty();
       
       actionButtonAdd.setEnabled(true);
       if (prop.getParent()!=null) {
@@ -870,4 +739,5 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     
   } //PropertyTree  
 
+  
 } //EditView

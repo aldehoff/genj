@@ -37,4 +37,13 @@ public class TreeWidget extends JTree {
     setModel(null);
   }
   
+  /** 
+   * Expands all rows
+   */
+  public void expandRows() {
+     for (int i=0;i<getRowCount();i++) {
+       expandRow(i); 
+     } 
+  }
+  
 } //TreeWidget
