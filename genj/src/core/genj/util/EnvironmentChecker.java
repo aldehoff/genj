@@ -9,7 +9,8 @@ public class EnvironmentChecker {
         "java.vendor", "java.vendor.url",
         "java.version", "java.class.version",
         "os.name", "os.arch", "os.version",
-        "browser", "browser.vendor", "browser.version"
+        "browser", "browser.vendor", "browser.version",
+        "user.name", "user.home", "user.dir"
   };
 
   /**
