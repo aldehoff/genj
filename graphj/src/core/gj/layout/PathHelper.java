@@ -22,6 +22,7 @@ import java.awt.geom.Rectangle2D;
 
 import gj.awt.geom.Geometry;
 import gj.awt.geom.Path;
+import gj.model.Arc;
 import gj.model.Node;
 
 /**
@@ -30,12 +31,10 @@ import gj.model.Node;
 public class PathHelper {
 
   /**
-   * Creates a simple path between two nodes
+   * Updates a path of an arc
    */
-  public static Path create(Node from, Node to) {
-    Path result = new Path();
-    update(result, from.getPosition(), from.getShape(), to.getPosition(), to.getShape());
-    return result;
+  public static Path update(Arc arc) {
+    return update(arc.getPath(), arc.getStart(), arc.getEnd());
   }
 
   /**
@@ -74,22 +73,13 @@ public class PathHelper {
   }
 
   /**
-   * @see #update(Path, Point2D, Shape, Point2D, Shape, int, boolean)
-   */
-  public static Path update(Path path, Point2D p1, Shape s1, Point2D p2, Shape s2) {
-    return update(path,p1,s1,p2,s2,0,false);
-  }
-
-  /**
    * Updates given path with a line between given points between two shapes
    * @param p1 the starting point
    * @param s1 the shape sitting at p1
    * @param p2 the ending point
    * @param s2 the shape sitting at p2
-   * @param i the sequential number of this path as one of the paths between p1 and p2
-   * @param reversed whether this path follows the general direction of the other paths between p1 and p2
-   */  
-  public static Path update(Path path, Point2D p1, Shape s1, Point2D p2, Shape s2, int i, boolean reversed) {
+   */
+  public static Path update(Path path, Point2D p1, Shape s1, Point2D p2, Shape s2) {
     
     // clean things up initially
     path.reset();
@@ -114,39 +104,6 @@ public class PathHelper {
       return path;
     }
 
-    // Parallels for i>1 and with shape
-    if (i>0&&s1!=null&&s2!=null) {
-      
-      i++;
-
-      Rectangle2D 
-        r1 = s1.getBounds2D(),
-        r2 = s2.getBounds2D();
-        
-      double distance = Math.min(
-        Math.min(r1.getWidth(),r1.getHeight()),
-        Math.min(r2.getWidth(),r2.getHeight())
-      ) *0.2;
-
-      double lastAngle = Geometry.getAngle(p1,p2);
-      double RIGHTANGLE = 2*Math.PI/4;
-      
-      double 
-        c     = ((i&1)==0?1:-1)*(i>>1)*distance,
-        alpha = lastAngle + (reversed?RIGHTANGLE:-RIGHTANGLE),
-        dx    = Math.cos(alpha)*c,
-        dy    = Math.sin(alpha)*c;
-
-      Point2D
-        a = new Point2D.Double(p1.getX() + dx, p1.getY() + dy ),
-        b = new Point2D.Double(p2.getX() + dx, p2.getY() + dy );
-        
-      path.moveTo(calculateProjection(b, a, p1, s1));
-      path.lineTo(calculateProjection(a, b, p2, s2));
-      
-      return path;        
-    }
-    
     // A simple line
     path.moveTo(calculateProjection(p2, p1, p1, s1));
     path.lineTo(calculateProjection(p1, p2, p2, s2));
@@ -167,7 +124,8 @@ public class PathHelper {
     // intersect the projection start-end with the shape    
     if (s!=null) {
       Point2D p = Geometry.getClosestIntersection(
-        p1, p1, p2,
+        p1, 
+        p1, p2,
         s.getPathIterator(AffineTransform.getTranslateInstance(p3.getX(), p3.getY()))
       );
       if (p!=null) return p;

@@ -303,8 +303,7 @@ public class GraphWidget extends JPanel {
         PathHelper.update(
           it.arc.getPath(),
           from.getPosition(), from.getShape(), 
-          to.getPosition(), to.getShape(),
-          it.i,from!=node
+          to.getPosition(), to.getShape()
         );
       }
       // show it
@@ -437,7 +436,7 @@ public class GraphWidget extends JPanel {
       Node to = getElement(content.getX(e), content.getY(e));
       if (to!=null) {
         Arc arc = graph.createArc(from, to, new Path());
-        PathHelper.update(arc.getPath(), from.getPosition(), from.getShape(), to.getPosition(), to.getShape(), 0,false);
+        PathHelper.update(arc.getPath(), from.getPosition(), from.getShape(), to.getPosition(), to.getShape());
       }
       repaint();
       dndNoOp.start(e);

@@ -121,13 +121,14 @@ public class Geometry {
   
   /**
    * Calculates the intersecting points of a line and a shape
-   * @param aStart+aEnd line segment describing line A
-   * @param shape the shape described through given PathIterator
-   * @param curveThreshold the threshold for breaking curves into lines
-   * @return either intersecting point or null 
+   * @param proximity fix for 'closest'
+   * @param lineStart start of line
+   * @param lineEnd end of line
+   * @param shape the shape described as a PathIterator
+   * @return closest intersection or fix 
    */
-  public static Point2D getClosestIntersection(Point2D proximity, Point2D lineStart, Point2D lineEnd, PathIterator shape) {
-    return new OpGetClosestIntersection(proximity, lineStart, lineEnd, shape).getResult();
+  public static Point2D getClosestIntersection(Point2D fix, Point2D lineStart, Point2D lineEnd, PathIterator shape) {
+    return new OpGetClosestIntersection(fix, lineStart, lineEnd, shape).getResult();
   }
   
   /**

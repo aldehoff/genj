@@ -16,7 +16,6 @@
 package gj.model.factory;
 
 import gj.model.Arc;
-import gj.model.MutableGraph;
 import gj.model.Node;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -90,17 +89,5 @@ public abstract class AbstractFactory implements Factory {
     return new Point2D.Double(x + Math.random()*w, y + Math.random()*h);
     
   }
-  
 
-  /**
-   * Creates a graph
-   */
-  public abstract void create(MutableGraph graph, Shape nodeShape);
-  
-  /**
-   * Returns the factory's name
-   */
-  public abstract String getName();
-  
-  
-}
+} //AbstractFactory
