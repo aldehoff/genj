@@ -33,9 +33,9 @@ public class PointInTime implements Comparable {
 
   /** calendars */
   public final static GregorianCalendar GREGORIAN = new GregorianCalendar();
-  public final static JulianCalendar    JULIAN    = new JulianCalendar();
-  public final static Calendar          HEBREW    = new HebrewCalendar();
-  public final static FrenchRCalendar   FRENCHR   = new FrenchRCalendar();
+  public final static    JulianCalendar JULIAN    = new    JulianCalendar();
+  public final static    HebrewCalendar HEBREW    = new    HebrewCalendar();
+  public final static   FrenchRCalendar FRENCHR   = new   FrenchRCalendar();
     
   public final static Calendar[] CALENDARS = { GREGORIAN, JULIAN, HEBREW, FRENCHR };
   
@@ -292,26 +292,25 @@ public class PointInTime implements Comparable {
    * @param offset 0 start with year 1 start with month 2 start with day
    */  
   public int compareTo(PointInTime other, int offset) {
-
-    // FIXME need to use julian day comparison of for different calendars 
     
-    int result;
-      
-    // Year ?
-    if (--offset<0)
-      if ((result=getYear()-other.getYear())!=0) return result;
-      
-    // Month
-    if (--offset<0)
-      if ((result=getMonth()-other.getMonth())!=0) return result;
-      
-    // Day
-    if (--offset<0)
-      if ((result=getDay()-other.getDay())!=0) return result;
-      
-    // Equal
-    return 0;
+    // FIXME what to do about the offset
     
+    // check valid
+    boolean
+      v1 = isValid(),
+      v2 = other.isValid();
+    if (!v1&&!v2)
+      return 0;
+    if (!v2)
+      return 1;
+    if (!v1)
+      return -1; 
+    // compare
+    try {
+      return calendar.toJulianDay(this) - other.calendar.toJulianDay(other);
+    } catch (GedcomException e) {
+      return 0; // shouldn't really happen
+    }
   }
 
   /**
@@ -370,66 +369,11 @@ public class PointInTime implements Comparable {
    */
   public static int[] getDelta(PointInTime earlier, PointInTime later) {
 
-    // FIXME use Julian Day for delta calculation
-
-    // null check
-    if (earlier==null||later==null) 
-      return null;
-           
-    // valid?
-    if (!earlier.isValid()||!later.isValid())
-      return null;
-        
-    // ordering?
-    if (earlier.compareTo(later)>0) {
-      PointInTime p = earlier;
-      earlier = later;
-      later = p;
-    }
-  
-    // grab earlier values  
-    int 
-      yearlier = earlier.getYear(),
-      mearlier = Math.max(0,earlier.getMonth()),
-      dearlier = Math.max(0,earlier.getDay  ());
+// FIXME how does delta look for different calendars?
+//    return earlier.calendar.toJulianDay(later) -
+//      later.calendar.toJulianDay(later); 
     
-    // age at what point in time?
-    int 
-      ylater = later.getYear(),
-      mlater = Math.max(0, later.getMonth()),
-      dlater = Math.max(0, later.getDay  ());
-      
-    // calculate deltas
-    int 
-      ydelta = ylater - yearlier,
-      mdelta = mlater - mearlier,
-      ddelta = dlater - dearlier;
-      
-    // check day
-    if (ddelta<0) {
-      // decrease months
-      mdelta -=1;
-      // increase days with days in previous month
-      java.util.Calendar c = java.util.Calendar.getInstance();
-      c.set(yearlier, mearlier, 1);
-      int days = c.getActualMaximum(c.DATE);
-      ddelta = dlater + (days-dearlier); 
-    }
-    
-    // check month now<then
-    if (mdelta<0) {
-      // decrease years
-      ydelta -=1;
-      // increase months
-      mdelta +=12;
-    } 
-
-    // check valid 
-    if (ydelta<0||mdelta<0||ddelta<0||(ydelta+mdelta+ddelta==0))  
-      return null;
-
-    // done
-    return new int[]{ ydelta, mdelta, ddelta };
+    return null;
   }
 
   /**
@@ -566,7 +510,22 @@ public class PointInTime implements Comparable {
     /**
      * PIT -> Julian Day
      */
-    protected abstract int toJulianDay(PointInTime pit) throws GedcomException;
+    protected final int toJulianDay(PointInTime pit) throws GedcomException {
+      
+      // grab data and correct for missing day/month
+      int 
+        year  =             pit.getYear () ,
+        month = Math.max(0, pit.getMonth()),
+        day   = Math.max(0, pit.getDay  ());
+      
+      
+      return toJulianDay(day, month, year);
+    }
+
+    /**
+     * PIT -> Julian Day
+     */
+    protected abstract int toJulianDay(int day, int month, int year) throws GedcomException;
     
     /**
      * Julian Day -> PIT
@@ -574,8 +533,6 @@ public class PointInTime implements Comparable {
     protected abstract PointInTime toPointInTime(int julianDay) throws GedcomException;
     
   } //Calendar
-
-  // FIXME need calendar for hebrew
 
   /**
    * Our own gregorian - dunno if java.util.GregorianCalendar would be of much help
@@ -619,17 +576,17 @@ public class PointInTime implements Comparable {
     }
     
     /**
-     * @see genj.gedcom.PointInTime.Calendar#getJulianDay(genj.gedcom.PointInTime)
+     * @see genj.gedcom.PointInTime.Calendar#toJulianDay(int, int, int)
      */
-    protected int toJulianDay(PointInTime pit) {
+    protected int toJulianDay(int day, int month, int year) {
 
       // Communications of the ACM by Henry F. Fliegel and Thomas C. Van Flandern entitled 
       // ``A Machine Algorithm for Processing Calendar Dates''. 
       // CACM, volume 11, number 10, October 1968, p. 657.  
       int
-       d = pit.getDay  ()+1,
-       m = pit.getMonth()+1,
-       y = pit.getYear ();      
+       d = day   + 1,
+       m = month + 1,
+       y = year     ;      
       
       return ( 1461 * ( y + 4800 + ( m - 14 ) / 12 ) ) / 4 +
              ( 367 * ( m - 2 - 12 * ( ( m - 14 ) / 12 ) ) ) / 12 -
@@ -679,16 +636,14 @@ public class PointInTime implements Comparable {
     }
     
     /**
-     * @see genj.gedcom.PointInTime.GregorianCalendar#getJulianDay(genj.gedcom.PointInTime)
+     * @see genj.gedcom.PointInTime.GregorianCalendar#toJulianDay(int, int, int)
      */
-    protected int toJulianDay(PointInTime pit) {
-      
-      // see http://quasar.as.utexas.edu/BillInfo/JulianDatesG.html
+    protected int toJulianDay(int day, int month, int year) {
       
       int 
-        y = pit.getYear(),
-        m = pit.getMonth()+1,
-        d = pit.getDay()+1;
+        y = year,
+        m = month+1,
+        d = day+1;
       
       if (m<2) {
         y--;
@@ -733,8 +688,8 @@ public class PointInTime implements Comparable {
     
     /* valid from 22 SEP 1792 to not including 1 JAN 1806 */
     private static final int
-      AN_I  = GREGORIAN.toJulianDay(getPointInTime(22-1, 9-1, 1792)),
-      UNTIL = GREGORIAN.toJulianDay(getPointInTime( 1-1, 1-1, 1806));
+      AN_I  = GREGORIAN.toJulianDay(22-1, 9-1, 1792),
+      UNTIL = GREGORIAN.toJulianDay( 1-1, 1-1, 1806);
 
     private static final String MONTHS[] 
      = { "VEND","BRUM","FRIM","NIVO","PLUV","VENT","GERM","FLOR","PRAI","MESS","THER","FRUC","COMP" };
@@ -798,9 +753,6 @@ public class PointInTime implements Comparable {
     /**
      * @see genj.gedcom.PointInTime.Calendar#toJulianDay(genj.gedcom.PointInTime)
      */
-    protected int toJulianDay(PointInTime pit) throws GedcomException {
-      return toJulianDay(pit.getDay(), pit.getMonth(), pit.getYear());
-    }
     protected int toJulianDay(int d, int m, int y) throws GedcomException {
       // calc days
       int jd = AN_I + 365*(y-1) + m*30 + d;
@@ -886,11 +838,12 @@ public class PointInTime implements Comparable {
    
     /**
      * the calendar begins at sunset the night before 
-     * Monday, October 7, 3761 B.C.E. in the Julian 
-     * calendar, or Julian day 347995.5.
+     * Monday, October 7, 3761 B.C.E. (Julian calendar)
+     * Monday, September 9, 3761 B.C.E (Gregorian calendar)
+     * Julian day 347997.5.
      */
     private static final int 
-      ANNO_MUNDI = 347995;
+      ANNO_MUNDI = 347997;
    
     private static final String[] MONTHS 
      = { "TSH","CSH","KSL","TVT","SHV","ADR","ADS","NSN","IYR","SVN","TMZ","AAV","ELL" };
@@ -903,19 +856,92 @@ public class PointInTime implements Comparable {
     }
     
     /**
-     * PIT -> Julian Day
-     */
-    protected int toJulianDay(PointInTime pit) throws GedcomException {
-      throw new GedcomException("Transformation from Hebrew Calendar not implemented yet");
-    }
-      
-    /**
      * Julian Day -> PIT
      */
     protected PointInTime toPointInTime(int julianDay) throws GedcomException {
+      // FIXME transformation Julian Day to Hebrew is missing
       throw new GedcomException("Transformation to Hebrew Calendar not implemented yet");
     }
     
+    /**
+     * @see genj.gedcom.PointInTime.Calendar#isValid(int, int, int)
+     */
+    protected boolean isValid(int day, int month, int year) {
+      // super has something to say about that
+      if (!super.isValid(day, month, year))
+        return false;
+      // make sure year is >=1
+      if (year<1)
+        return false;
+      // make sure Adar R is in leap year
+      if (month==5&&!isLeap(year))
+        return false;
+      // ok
+      return true; 
+    }
+
+    
+    /**
+     * d,m,y -> Julian Day
+     */
+    protected int toJulianDay(int day, int month, int year) throws GedcomException {
+
+      // get tishri1 for year
+      int jd = getTishri1(year);
+      
+      // add months
+      for (int m=0;m<month;m++)
+        jd += getDays(m, year);
+      
+      // add days
+      jd += day;
+      
+      // add 1 because hebrew day starts at 18:00
+      jd ++;
+      
+      // done
+      return jd;
+    }
+    
+    /**
+     * Calculates Tishri 1 (first day of Tishri) in given year
+     * @return tishri1 in julian day
+     */
+    private int getTishri1(int year) {
+
+      // need tishri one (adjusted) for last, this and next year
+      int
+        last    = _getTishri1(year-1),
+        tishri1 = _getTishri1(year  ),
+        next    = _getTishri1(year+1);
+     
+      // adjust due to length of adjacent years
+      if (next-tishri1==356)
+        tishri1 += 2;
+      else if (tishri1-last==382)
+        tishri1 ++;
+        
+      // done
+      return tishri1;   
+    }
+      
+    private int _getTishri1(int year) {
+          
+      // In general the 1st of Tishri of that year avoids
+      // Sunday, Wednesday, and Friday
+      
+      int months = ((235 * year) - 234) / 19;
+      int parts = 12084 + (13753 * months);
+      int jd = (months * 29) + parts / 25920;
+
+      if ( (3 * (jd + 1))%7 < 3) {
+        jd++;
+      }
+
+      // done if first day of calendar is added
+      return ANNO_MUNDI + jd;
+    }
+
     /**
      * @see genj.gedcom.PointInTime.Calendar#getDays(int, int)
      */
@@ -943,16 +969,18 @@ public class PointInTime implements Comparable {
       return 30;
     }
     
-    /**
-     * Days in a year
-     */
-    private int getDays(int year) { 
-      return 0;//toJulianDay()
+    private int getDays(int year) {
+      try {
+        return toJulianDay(1,1,year+1) - toJulianDay(1,1,year); 
+      } catch (Throwable t) {
+        // shouldn't happen
+        throw new RuntimeException();
+      }
     }
     
     /**
-     * whether a given year is a leap year - these are the years
-     *  0, 3, 6, 8, 11, 14, 17 mod 19
+     * whether a given year is a leap year 
+     *  0, 3, 6, 8, 11, 14, 17 in metonic cycle (mod 19)
      */
     private boolean isLeap(int year) {
       return (14*7+1)%19<7;    

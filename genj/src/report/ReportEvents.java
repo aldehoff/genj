@@ -212,6 +212,8 @@ public class ReportEvents extends Report {
    */
   private void report(HashMap ent2hits) {
     
+    // FIXME gotta check that this is still working with new calendars and stuff
+    
     ArrayList hits = new ArrayList(ent2hits.values());
 
     // sort the hits either by
