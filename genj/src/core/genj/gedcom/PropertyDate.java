@@ -20,6 +20,8 @@
 package genj.gedcom;
 
 import genj.util.WordBuffer;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.StringTokenizer;
 
@@ -69,6 +71,9 @@ public class PropertyDate extends Property {
 
   /** month names */
   private final static String months[] = {"JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
+
+  /** time format */
+  private final static SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
 
   /**
    * Constructor
@@ -181,9 +186,7 @@ public class PropertyDate extends Property {
    * Helper which returns given time in gedcom string-format
    */
   public static String getTimeString(Calendar c) {
-    return c.get(Calendar.HOUR_OF_DAY)
-      + ":" + c.get(Calendar.MINUTE)
-      + ":" + c.get(Calendar.SECOND);
+    return timeFormat.format(c.getTime());
   }
   
   /**

@@ -46,7 +46,7 @@ public class GedcomWriter implements Trackable {
 
   public static final String UNICODE = "UNICODE", ASCII = "ASCII", IBMPC = "IBMPC", ANSEL = "ANSEL";
 
-  public static final String[] ENCODINGS = { IBMPC, ANSEL, ASCII, UNICODE };
+  public static final String[] ENCODINGS = { ANSEL, UNICODE, ASCII, IBMPC };
 
   private Gedcom gedcom;
   private BufferedWriter out;
@@ -281,17 +281,20 @@ public class GedcomWriter implements Trackable {
     line(+1, "SOUR", "GENJ");
     line(+1, "VERS", Version.getInstance().toString());
     line(+0, "NAME", "GenealogyJ");
+    line(+0, "CORP", "Nils Meier");
+    line(+1, "ADDR", "http://genj.sourceforge.net");
+    line(-1);
     line(-1);
     line(+0, "DEST", "ANY");
+    line(+0, "DATE", date);
+    line(+1, "TIME", time);
+    line(-1);
     line(+0, "GEDC", "");
     line(+1, "VERS", "5.5");
     line(+0, "FORM", "Lineage-Linked");
     line(-1);
     line(+0, "CHAR", encoding);
     line(+0, "FILE", file);
-    line(+0, "DATE", date);
-    line(+1, "TIME", time);
-    line(-1);
     line(-1);
   }
 
