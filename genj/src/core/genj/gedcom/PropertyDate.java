@@ -338,8 +338,10 @@ public class PropertyDate extends Property {
       emod = formats[format].endModifier;
       
     if (localize) {
-      smod = Gedcom.getResources().getString("prop.date.mod."+smod);  
-      emod = Gedcom.getResources().getString("prop.date.mod."+emod);  
+      if (smod.length()>0)
+        smod = Gedcom.getResources().getString("prop.date.mod."+smod);  
+      if (emod.length()>0)
+        emod = Gedcom.getResources().getString("prop.date.mod."+emod);  
     }
       
     // collect information
