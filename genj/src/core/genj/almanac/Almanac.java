@@ -19,24 +19,30 @@
  */
 package genj.almanac;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
 import genj.util.Debug;
+import genj.util.Resources;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -45,6 +51,8 @@ import javax.swing.event.ChangeListener;
  * A global Almanac for all kinds of historic events
  */
 public class Almanac {
+  
+  private final static Resources RESOURCES = Resources.get(Almanac.class);
   
   /** language we use for events */
   private final static String LANG = Locale.getDefault().getLanguage();
@@ -80,7 +88,7 @@ public class Almanac {
     // load what we can find async
     new Thread(new Runnable() {
       public void run() {
-        new CDayLoader().load();
+        new WikipediaLoader().load();
         new AlmanacLoader().load();
   	    Debug.log(Debug.INFO, Almanac.this, "Loaded "+events.size()+" events");
   	    synchronized (events) {
@@ -121,6 +129,21 @@ public class Almanac {
   }
   
   /**
+   * Get a category by name
+   */
+  protected String getCategory(String add) {
+    synchronized (categories) {
+      for (int i = 0; i < categories.size(); i++) {
+        String old = (String)categories.get(i);
+        if (old.equals(add))
+          return old;
+      }
+      categories.add(add);
+      return add;
+    }
+  }
+  
+  /**
    * Update listeners
    */
   protected void fireStateChanged() {
@@ -135,21 +158,9 @@ public class Almanac {
    * Accessor - categories
    */
   public List getCategories() {
-    return categories;
-  }
-  
-  /**
-   * Accessor - category
-   */
-  public Category getCategory(String key) {
-    for (int c=0; c<categories.size(); c++) {
-      Category cat = (Category)categories.get(c);
-      if (cat.getKey().equals(key))
-        return cat;
+    synchronized (categories) {
+      return new ArrayList(categories);
     }
-    Category cat = new Category(key);
-    categories.add(cat);
-    return cat;
   }
   
   /**
@@ -169,7 +180,7 @@ public class Almanac {
   /**
    * A loader for almanac files
    */  
-  private abstract class Loader {
+  private abstract class Loader implements FilenameFilter {
     
 		/**
 		 * async load
@@ -193,7 +204,7 @@ public class Almanac {
 		  // load each one
 		  for (int f = 0; f < files.length; f++) {
 		    File file = files[f];
-		    if (filter(file)) {
+		    if (accept(dir, file.getName())) {
     	    Debug.log(Debug.INFO, Almanac.this, "Loading "+file.getAbsoluteFile());
     	    try {
 	          load(file);
@@ -212,7 +223,7 @@ public class Almanac {
 		protected void load(File file) throws IOException {
 		  
 		  // read its lines
-		  BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), getCharset()));
+		  BufferedReader in = open(file);
 		  for (String line = in.readLine(); line!=null; line = in.readLine())  {
 		    
 		    try {
@@ -238,26 +249,21 @@ public class Almanac {
 		  
 		  // done
 		}
-		
+    
+    /**
+     * get buffered reader from file
+     */
+    protected abstract BufferedReader open(File file) throws IOException;
+    
 		/**
 		 * load one line and create an Event (or null)
 		 */
 		protected abstract Event load(String line) throws GedcomException ;
 		
 		/**
-		 * check a suffix for applicability
-		 */
-		protected abstract boolean filter(File file);
-
-		/**
 		 * resolve directory to look for files in
 		 */
     protected abstract File getDirectory();
-    
-    /**
-     * resolve charset
-     */
-    protected abstract Charset getCharset();
     
   } //Loader
  
@@ -267,12 +273,18 @@ public class Almanac {
 	 */
   private class AlmanacLoader extends Loader {
     /** only .almanac */
-    protected boolean filter(File file) {
-      return file.getName().toLowerCase().endsWith(".almanac");
+    public boolean accept(File dir, String name) {
+      return name.toLowerCase().endsWith(".almanac");
     }
     /** look into ./contrib/almanac */
     protected File getDirectory() {
       return new File("./contrib/almanac");
+    }
+    /**
+     * get buffered reader from file
+     */
+    protected BufferedReader open(File file) throws IOException {
+      return new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8")));
     }
     /** create an event */
     protected Event load(String line) throws GedcomException {
@@ -305,10 +317,7 @@ public class Almanac {
       int sig = Integer.parseInt(cols.nextToken());
       cols.nextToken();
       // #5 type
-      List cats = new ArrayList();
-      String type = cols.nextToken().trim();
-      for (int c=0;c<type.length();c++) 
-        cats.add(getCategory(type.substring(c,c+1)));
+      List cats = getCategories(cols.nextToken().trim());
       if (cats.isEmpty())
         return null;
       cols.nextToken();
@@ -331,9 +340,19 @@ public class Almanac {
       // done
       return new Event(cats, time, desc);
     }
-    /** charset */
-    protected Charset getCharset() {
-		  return Charset.forName("UTF-8");
+    /** derive category names for key */
+    private List getCategories(String cats) {
+      
+      List result = new ArrayList();
+      for (int c=0;c<cats.length();c++) {
+        String key = cats.substring(c,c+1);
+        String cat = RESOURCES.getString("category."+key, false);
+        if (cat==null)
+          cat = RESOURCES.getString("category.*");
+        result.add(getCategory(cat));
+      }
+      
+      return result;
     }
   } //AlmanacLoader
   
@@ -353,64 +372,80 @@ public class Almanac {
 	 * </code>
 	 * @see http://cday.sourceforge.net
    */
-  private class CDayLoader extends Loader {
+  private class WikipediaLoader extends Loader {
     
-    private final String DIR = "./contrib/cday";
+    // 19700525\Births\Nils Meier
+    private Pattern REGEX_LINE = Pattern.compile("(.*?)\\\\(.*?)\\\\(.*)");
     
-    private final String[] SUFFIXES = {
-      ".own", ".all", ".jan", ".feb", ".mar", ".apr", ".may", ".jun", ".jul", ".oct", ".sep", ".nov", ".dec" 
-    };
+    private final String DIR = "./contrib/wikipedia";
+    
+    private final String SUFFIX = ".wikipedia.zip";
+    
+    private String file;
     
     /** our directory */
     protected File getDirectory() {
-      return new File(DIR);
+      
+      // we know were those are
+      File result = new File(DIR);
+      
+      // look for applicable one (language)
+      String lang = Locale.getDefault().getLanguage();
+      
+      List files = Arrays.asList(result.list(this));
+      
+      // en.wikipedia?
+      if (files.contains(lang+SUFFIX)) 
+        file = lang+SUFFIX;
+      else if (files.contains("en"+SUFFIX))
+        file = "en"+SUFFIX;
+      else if (!files.isEmpty())
+        file = (String)files.get(0);
+      
+      return result;
+    }
+
+    /** filter files */
+    public boolean accept(File dir, String name) {
+      return file==null ? name.endsWith(SUFFIX) : file.equals(name);
     }
     
-    /** filter files */
-    protected boolean filter(File file) {
-		  // check suffixes
-		  String name = file.getName().toLowerCase();
-		  for (int s = 0; s < SUFFIXES.length; s++) {
-        if (name.endsWith(SUFFIXES[s]))
-          return true;
-      }
-		  // not good
-		  return false;
+    /**
+     * get buffered reader from file
+     */
+    protected BufferedReader open(File file) throws IOException {
+      ZipInputStream in = new ZipInputStream(new FileInputStream(file));
+      ZipEntry entry = in.getNextEntry();
+      if (!file.getName().startsWith(entry.getName()))
+        throw new IOException("Unexpected entry "+entry+" in "+file);
+      return new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
     }
     
     /** create an event */
     protected Event load(String line) throws GedcomException {
+      
+      // comment?
+      if (line.startsWith("#"))
+        return null;
+      
+      // match "YYYYMMDD;group;text"
+      Matcher match = REGEX_LINE.matcher(line);
+      if (!match.matches())
+        return null;
 
-		  // check format (B|S)MMDDYYYY some event
-		  if (line.length()<11)
-		    return null;
-		  
-		  // grab category
-      String c = line.substring(0,1);
-		  
-		  // check date
-		  int day, month, year;
-		  month = Integer.parseInt(line.substring(1, 3));
-		  day   = Integer.parseInt(line.substring(3, 5));
-		  year  = Integer.parseInt(line.substring(5, 9));
-		  
-		  // check text
-		  String text = line.substring(10).trim();
-		  if (text.length()==0)
-		    return null;
-		  if (c.toLowerCase().startsWith("b"))
-		    text = Gedcom.getName("BIRT") + ": " + text;
-		  
+      String yyyymmdd = match.group(1);
+      String group = match.group(2) + " (Wikipedia)";
+      String text = match.group(3);
+
+      PointInTime pit = new PointInTime(yyyymmdd);
+      if (!pit.isValid())
+        return null;
+      
 		  // lookup category
-		  List cats = Collections.singletonList(getCategory(c));
+		  List cats = Collections.singletonList(getCategory(group));
 
       // create event
-		  return new Event(cats, new PointInTime(day-1, month-1, year), text); 
-    }
-    
-    /** charset */
-    protected Charset getCharset() {
-		  return Charset.forName("ISO-8859-1");
+		  return new Event(cats, pit, text); 
     }
     
   } //CDAY

@@ -20,7 +20,6 @@
 package genj.timeline;
 
 import genj.almanac.Almanac;
-import genj.almanac.Category;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
@@ -38,6 +37,7 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -172,7 +172,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
    
     String[] ignored= regstry.get("almanac.ignore", new String[0]);
     for (int i=0;i<ignored.length;i++)
-      ignoredAlmanacCategories.add(Almanac.getInstance().getCategory(ignored[i]));
+      ignoredAlmanacCategories.add(ignored[i]);
     
     // create/keep our sub-parts
     model = new Model(gedcom, regstry.get("filter", (String[])null));
@@ -221,7 +221,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     
     String[] ignored = new String[ignoredAlmanacCategories.size()];
     for (int i=0;i<ignored.length;i++)
-      ignored[i] = ((Category)ignoredAlmanacCategories.get(i)).getKey();
+      ignored[i] = ignoredAlmanacCategories.get(i).toString();
     regstry.put("almanac.ignore", ignored);
 
     // done
@@ -484,6 +484,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       int days = (int)Math.ceil(5F/DPC.getX()/cmPerYear*365);
       // collect events and their text
       WordBuffer text = new WordBuffer();
+      int cursor = Cursor.DEFAULT_CURSOR;
       try {
 	      Iterator almanac = Almanac.getInstance().getEvents(when, days, getAlmanacCategories());
 	      if (almanac.hasNext()) {
@@ -494,10 +495,12 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
 		        text.append("</div>");
 		      }
 		      text.append("</body></html>");
+          cursor = Cursor.TEXT_CURSOR;
 	      }
       } catch (GedcomException ex) {
       }
       // set tooltip
+      setCursor(Cursor.getPredefinedCursor(cursor));
       setToolTipText(text.length()==0 ? null : text.toString());
       // done
     }
