@@ -322,6 +322,17 @@ public class Model implements Graph, GedcomListener {
         return;
       }
     }
+    // was an individual or family created and we're without root
+    if (root==null) {
+      Iterator es = change.getEntities(change.EADD).iterator();
+      while (es.hasNext()) {
+        Entity e = (Entity)es.next();
+        if (e instanceof Fam || e instanceof Indi) {
+          setRoot(e);
+          return;
+        }
+      }
+    }
     // done
   }
 
