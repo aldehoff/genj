@@ -46,6 +46,18 @@ public class PropertyFamilyChild extends PropertyXRef {
   }
 
   /**
+   * @see genj.gedcom.PropertyXRef#getForeignDisplayValue()
+   */
+  protected String getForeignDisplayValue() {
+    // can only really be called if this is an ADOPtion case
+    Property adop = getParent();
+    if (adop instanceof PropertyEvent&&adop.getTag().equals("ADOP"))
+      return resources.getString("foreign.ADOP", getEntity().toString());
+    // fallback
+    return super.getForeignDisplayValue();
+  }
+  
+  /**
    * Returns the reference to family
    */
   public Fam getFamily() {
@@ -71,9 +83,8 @@ public class PropertyFamilyChild extends PropertyXRef {
   public void link() throws GedcomException {
 
     // Something to do ?
-    if (getFamily()!=null) {
+    if (getFamily()!=null) 
       return;
-    }
 
     // Get enclosing individual ?
     Indi indi;
@@ -82,15 +93,13 @@ public class PropertyFamilyChild extends PropertyXRef {
     } catch (ClassCastException ex) {
       throw new GedcomException("FAMS can't be linked to family when not in individual");
     }
-
-    // Prepare some VARs
-    Property p;
-    Property ps[];
-
-    // Enclosing individual has a childhood already ?
-// FIXME need to refactor ADOP as event with CHIL
-//    if (indi.getFamc()!=null)
-//      throw new GedcomException("Individual @"+indi.getId()+"@ is already child of a family");
+    
+    // check if this is an adoption
+    boolean adoption = getParent().getClass()==PropertyEvent.class && getParent().getTag().equals("ADOP");
+    
+    // Enclosing individual has a childhood already (in case of non-adoption)?
+    if (!adoption&&indi.getFamc()!=null)
+      throw new GedcomException("Individual @"+indi.getId()+"@ is already child of a family");
 
     // Look for family (not-existing -> Gedcom throws Exception)
     String id = getReferencedId();
@@ -98,11 +107,13 @@ public class PropertyFamilyChild extends PropertyXRef {
     if (fam==null)
       throw new GedcomException("Couldn't find family with ID "+id);
 
-    // Enclosing individual is child in family ?
-    Indi cindi[] = fam.getChildren();
-    for (int inx=0; inx < cindi.length; inx++) {
+    // Enclosing individual is child in family  (in case of non-adoption)?
+    if (!adoption) {
+	    Indi cindi[] = fam.getChildren();
+	    for (int inx=0; inx < cindi.length; inx++) {
         if (cindi[inx]==indi)
-            throw new GedcomException("Family @"+id+"@ already contains Individual @"+indi.getId()+"@ as a child");
+          throw new GedcomException("Family @"+id+"@ already contains Individual @"+indi.getId()+"@ as a child");
+	    }
     }
 
     // Enclosing individual is Husband/Wife in family ?
@@ -113,24 +124,29 @@ public class PropertyFamilyChild extends PropertyXRef {
     if (fam.getAncestors().contains(indi))
       throw new GedcomException("Individual @"+indi.getId()+"@ is already ancestor of family @"+fam.getId()+"@");
 
-    // Connect back from family (maybe using invalid back reference)
-    PropertyChild pc;
-    for (int i=0,j=fam.getNoOfProperties();i<j;i++) {
-      Property prop = fam.getProperty(i);
-      if (!"CHIL".equals(prop.getTag()))
-        continue;
-      pc = (PropertyChild)prop;
-      if ( !pc.isValid() && pc.getReferencedId().equals(indi.getId()) ) {
-        pc.setTarget(this);
-        setTarget(pc);
-        return;
-      }
+    // Connect back from family (maybe using invalid back reference) if !adoption
+    if (!adoption) {
+	    for (int i=0,j=fam.getNoOfProperties();i<j;i++) {
+	      Property prop = fam.getProperty(i);
+	      if (!"CHIL".equals(prop.getTag()))
+	        continue;
+	      PropertyChild pc = (PropertyChild)prop;
+	      if ( !pc.isValid() && pc.getReferencedId().equals(indi.getId()) ) {
+	        pc.setTarget(this);
+	        setTarget(pc);
+	        return;
+	      }
+	    }
     }
 
     // .. new back referencing property
-    pc = new PropertyChild(this);
-    fam.addProperty(pc);
-    setTarget(pc);
+    PropertyXRef xref;
+    if (adoption)
+      xref = new PropertyForeignXRef(this);
+    else
+      xref = new PropertyChild(this);
+    fam.addProperty(xref);
+    setTarget(xref);
 
     // Done
   }

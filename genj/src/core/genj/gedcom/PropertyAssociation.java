@@ -48,6 +48,18 @@ public class PropertyAssociation extends PropertyXRef {
   }
   
   /**
+   * @see genj.gedcom.PropertyXRef#getForeignDisplayValue()
+   */
+  protected String getForeignDisplayValue() {
+    // do we know a relationship?
+    Property rela = getProperty("RELA");
+    if (rela!=null&&rela.getDisplayValue().length()>0) 
+      return rela.getDisplayValue() + ": " + getEntity().toString();
+    // fallback
+    return super.getForeignDisplayValue();
+  }
+  
+  /**
    * Returns a warning string that describes what happens when this
    * property would be deleted
    * @return warning as <code>String</code>, <code>null</code> when no warning

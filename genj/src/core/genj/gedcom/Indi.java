@@ -90,23 +90,26 @@ public class Indi extends Entity {
   }
   
   /**
-   * Calculate the 'younger' siblings
+   * Calculate the 'older' siblings - a list ordered by position in fam
    */
   public Indi[] getOlderSiblings() {
     
     // this is a child in a family?
-    Fam f[] = getCFamilies();
-    if (f==null) 
+    Fam fam = getFamc();
+    if (fam==null) 
       return new Indi[0];
     
-    // what are the children of that one
-    LinkedList result = new LinkedList();
-    for (int inx=0; inx < f.length; inx++) {
-        Indi[] cs = f[inx].getChildren();
-    for (int c=0;c<cs.length;c++) {
-      if (cs[c]==this) break;
-      result.addFirst(cs[c]);
+    // fine me in the list of siblings
+    Indi[] siblings = fam.getChildren();
+    int sibling = 0;
+    while (sibling<siblings.length) {
+      if (siblings[sibling++]==this) break;
     }
+
+    // wrap up the rest
+    List result = new ArrayList(siblings.length);
+    while (sibling<siblings.length) {
+      result.add(siblings[sibling++]);
     }
     
     // done
@@ -119,19 +122,20 @@ public class Indi extends Entity {
   public Indi[] getYoungerSiblings() {
     
     // this is a child in a family?
-    Fam f[] = getCFamilies();
-    if (f==null) 
+    Fam fam = getFamc();
+    if (fam==null) 
       return new Indi[0];
     
-    // what are the children of that one
+    // fine me in the list of siblings
+    Indi[] siblings = fam.getChildren();
+    int sibling = siblings.length-1;
+    while (sibling>=0)
+      if (siblings[sibling--]==this) break;
+
+    // wrap up the rest
     LinkedList result = new LinkedList();
-    
-    for (int inx=0; inx < f.length; inx++) {
-        Indi[] cs = f[inx].getChildren();
-    for (int c=cs.length-1;c>=0;c--) {
-      if (cs[c]==this) break;
-      result.addFirst(cs[c]);
-    }
+    while (sibling>=0) {
+      result.add(siblings[sibling--]);
     }
     
     // done
@@ -186,21 +190,6 @@ public class Indi extends Entity {
     return f.getHusband();
   }
 
-  public Indi[] getFathers() {
-      LinkedList result = new LinkedList();
-    
-      Fam f[] = getCFamilies();
-      for (int inx=0; inx < f.length; inx++) {
-          Indi cs = f[inx].getHusband();
-          if (cs==this) break;
-          if (!result.contains(cs))
-            result.addFirst(cs);
-      }
-    
-      // done
-      return toIndiArray(result);
-  }
-
   /** 
    * Calculate indi's mother
    */
@@ -211,21 +200,40 @@ public class Indi extends Entity {
     // ask fam
     return f.getWife();
   }
-
-  public Indi[] getMothers() {
-      LinkedList result = new LinkedList();
-
-      Fam f[] = getCFamilies();
-      for (int inx=0; inx < f.length; inx++) {
-          Indi cs = f[inx].getWife();
-          if (cs==this) break;
-          if (!result.contains(cs))
-            result.addFirst(cs);
-      }
-    
-      // done
-      return toIndiArray(result);
-  }
+  
+// nmeier - this is a little bit tricky since fathers could be
+// all blood-line fathers or simply husbands in a family with
+// an adopted child
+//
+//  public Indi[] getFathers() {
+//    LinkedList result = new LinkedList();
+//  
+//    Fam f[] = getCFamilies();
+//    for (int inx=0; inx < f.length; inx++) {
+//        Indi cs = f[inx].getHusband();
+//        if (cs==this) break;
+//        if (!result.contains(cs))
+//          result.addFirst(cs);
+//    }
+//  
+//    // done
+//    return toIndiArray(result);
+//  }
+//
+//  public Indi[] getMothers() {
+//      LinkedList result = new LinkedList();
+//
+//      Fam f[] = getCFamilies();
+//      for (int inx=0; inx < f.length; inx++) {
+//          Indi cs = f[inx].getWife();
+//          if (cs==this) break;
+//          if (!result.contains(cs))
+//            result.addFirst(cs);
+//      }
+//    
+//      // done
+//      return toIndiArray(result);
+//  }
 
   /**
    * Calculate indi's birth date
@@ -294,21 +302,23 @@ public class Indi extends Entity {
     return fam;    
   }
 
-  /**
-   * Returns the families in which this individual is a child
-   */
-  public Fam[] getCFamilies() {
-    // FIXME ADOP refactoring
-    ArrayList result = new ArrayList(getNoOfProperties());
-    
-    for (int i=0,j=getNoOfProperties();i<j;i++) {
-      Property prop = getProperty(i);
-      if ("FAMC".equals(prop.getTag())&&prop.isValid()) 
-        result.add(((PropertyFamilyChild)prop).getFamily());
-    }
-
-    return Fam.toFamArray(result);
-  }
+// nmeier - i'd like to keep ADOPted children out of the mix
+// for now since we'd have to look at callees and whether they'd
+// expect blood-line-only results or not 
+//  /**
+//   * Returns the families in which this individual is a child
+//   */
+//  public Fam[] getCFamilies() {
+//    ArrayList result = new ArrayList(getNoOfProperties());
+//    
+//    for (int i=0,j=getNoOfProperties();i<j;i++) {
+//      Property prop = getProperty(i);
+//      if ("FAMC".equals(prop.getTag())&&prop.isValid()) 
+//        result.add(((PropertyFamilyChild)prop).getFamily());
+//    }
+//
+//    return Fam.toFamArray(result);
+//  }
 
   /**
    * Returns indi's first name

@@ -124,6 +124,22 @@ public abstract class PropertyXRef extends Property {
   public abstract void link() throws GedcomException;
 
   /**
+   * @see genj.gedcom.Property#getDisplayValue()
+   */
+  public String getDisplayValue() {
+    if (target==null)
+      return "";
+    return target.getEntity().toString();
+  }
+  
+  /**
+   * Returns a display value to be shown on the foreign end
+   */
+  protected String getForeignDisplayValue() {
+    return resources.getString("foreign.xref", getEntity().toString());
+  }
+  
+  /**
    * Sets the entity's property this reference points to
    * @param target referenced entity's property
    */
@@ -144,7 +160,7 @@ public abstract class PropertyXRef extends Property {
    * Returns this reference's target
    * @return target or null
    */  
-  public Property getTarget() {
+  public PropertyXRef getTarget() {
     return target;
   }
 

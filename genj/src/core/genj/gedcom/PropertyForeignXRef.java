@@ -60,22 +60,7 @@ public class PropertyForeignXRef extends PropertyXRef {
    * A human readable text representation 
    */
   public String getDisplayValue() {
-    
-    // the property/entity we're originating from
-    Property p = getTarget();
-    Entity e = p.getEntity();
-    
-    // relationship information for association?
-    String result = resources.getString("linked");
-    if (p instanceof PropertyAssociation) {
-      Property rela = p.getProperty("RELA");
-      if (rela!=null&&rela.getDisplayValue().length()>0) 
-        result = rela.getDisplayValue();
-    }
-    result += ": " + e.toString();
-
-    // done
-    return result;
+    return getTarget().getForeignDisplayValue();
   }
 
   /**
