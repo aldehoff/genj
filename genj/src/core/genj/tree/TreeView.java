@@ -418,12 +418,20 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   /**
    * Scroll to current entity   */
   private void scrollToCurrent() {
-    // something to do?
-    if (currentEntity==null) currentEntity=model.getRoot();
-    if (currentEntity==null) return;
+    // fallback to root if current is not set
+    if (currentEntity==null) 
+      currentEntity=model.getRoot();
+    // has to have something though
+    if (currentEntity==null) 
+      return;
     // Node for it?
     Node node = model.getNode(currentEntity);
-    if (node==null) return;
+    if (node==null) {
+      // hmm, retry with other
+      currentEntity = null;
+      scrollToCurrent();
+      return;
+    } 
     // scroll
     scrollTo(node.getPosition());
     // done    
@@ -711,8 +719,16 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      * @see genj.tree.ModelListener#structureChanged(Model)
      */
     public void structureChanged(Model model) {
-      revalidate();
+      // 20030403 dropped revalidate() here because it works
+      // lazily - for scrolling to work the invalidate()/validate()
+      // has to run synchronously and the component has to 
+      // be layouted correctly. Then no intermediates are
+      // painted and the scroll calculation is correct
+      invalidate();
+      TreeView.this.validate(); // note: call on parent
+      // still shuffle a repaint
       repaint();
+      // scrolling should work now
       scrollToCurrent();
     }
     
@@ -828,7 +844,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     public void stateChanged(ChangeEvent e) {
       DoubleValueSlider dvs = (DoubleValueSlider)e.getSource();
       zoom = dvs.getValue();
-      content.revalidate();
+      content.invalidate();
+      TreeView.this.validate();
       scrollToCurrent();
       repaint();
     }
