@@ -14,7 +14,7 @@ while [ -h "$SCRIPT" ]; do
 done
 
 # final check if the GenJ main archive is right here
-if [ ! -e "./run.jar"  ]; then
+if [ ! -f "./run.jar"  ]; then
  echo "*** ERROR: Missing GenJ resource(s) in "`pwd`
  exit 1
 fi
