@@ -91,13 +91,17 @@ class HelpWidget extends JPanel {
 
     // Load and init through bridge
     try {
-      return new JHelp(new HelpSet(null,new URL("file","", file)));
-    } catch (Exception e) {
-      Debug.log(Debug.WARNING, this,"Problem reading help",e);
-      return null;
+      // without jumping through these hoops I'm getting java.lang.NoClassDefFoundError: javax/help/JHelp
+      // if HelpWidget.class is loaded :(
+      HelpSet set = (HelpSet)HelpSet.class.getConstructor(new Class[]{ClassLoader.class, URL.class})
+        .newInstance(new Object[]{null,new URL("file","", file)});
+      return (JComponent)JHelp.class.getConstructor(new Class[]{set.getClass()}).newInstance(new Object[]{set});
+    } catch (Throwable t) {
+      Debug.log(Debug.WARNING, this,"Problem reading help", t);
     }
     
-    // done    
+    // default - none
+    return null;
   }
 
   /**
