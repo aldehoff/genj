@@ -20,6 +20,7 @@
 package genj.renderer;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import java.awt.Color;
@@ -181,27 +182,28 @@ public class EntityRenderer {
      * @see javax.swing.text.ViewFactory#create(Element)
      */
     public View create(Element elem) {
-
-      View result;
       
+      String name = elem.getName();
+
       // check if the element is "prop"
-      if ("prop".equals(elem.getName())) {
-        result = new PropertyView(elem);
+      if ("prop".equals(name)) {
+        View result = new PropertyView(elem);
         propViews.add(result);
-      } else {
-        
-        // .. otherwise default to super
-        result = super.create(elem);
-        
-        // .. keep track of TableViews
-        if ("table".equals(elem.getName())) {
-          tableViews.add(result);
-        }
-          
+        return result;
         
       }
       
-      // done
+      // maybe its "tag"
+      if ("i18n".equals(name)) {
+        return new I18NView(elem);
+      }
+        
+      // default to super
+      View result = super.create(elem);
+      // .. keep track of TableViews
+      if ("table".equals(elem.getName())) {
+        tableViews.add(result);
+      }
       return result;
     }
   
@@ -211,6 +213,16 @@ public class EntityRenderer {
    * 
    */
   private abstract class MyView extends View {
+  
+    /** the cached font we're using */
+    private Font font = null;
+    
+    /** the cached foreground we're using */
+    private Color foreground = null;
+    
+    /** the cached preferred span */
+    private Dimension preferredSpan = null;
+    
     /**
      * Constructor
      */
@@ -230,15 +242,93 @@ public class EntityRenderer {
       throw new RuntimeException("modelToView() is not supported");
     }
     /**
-     * Creates a shallow copy
+     * @see javax.swing.text.View#getBreakWeight(int, float, float)
      */
-    protected final Object clone() {
-      try {
-        return super.clone();
-      } catch (CloneNotSupportedException cnse) {
-        throw new RuntimeException();
+    public int getBreakWeight(int axis, float pos, float len) {
+      // not on vertical
+      if (axis==Y_AXIS) return BadBreakWeight;
+      // horizontal might work after our content
+      if (len > getPreferredSpan(X_AXIS)) {
+        return ExcellentBreakWeight;
       }
+      return BadBreakWeight;
+    }  
+    /**
+     * @see javax.swing.text.View#breakView(int, int, float, float)
+     */
+    public View breakView(int axis, int offset, float pos, float len) {
+      return this;
     }
+    
+    /**
+     * @see javax.swing.text.View#getMaximumSpan(int)
+     */
+    public float getMaximumSpan(int axis) {
+      return getPreferredSpan(axis);
+    }
+    
+    /**
+     * @see javax.swing.text.View#getPreferredSpan(int)
+     */
+    public float getPreferredSpan(int axis) {
+      // check cached preferred Span
+      if (preferredSpan==null) {
+        preferredSpan = getPreferredSpan();
+      }
+      return axis==X_AXIS ? preferredSpan.width : preferredSpan.height;
+    }
+    
+    /**
+     * @see javax.swing.text.View#getAlignment(int)
+     */
+    public float getAlignment(int axis) {
+      if (X_AXIS==axis) return 0.5F;
+      return getVerticalAlignment();
+    }
+    
+    /**
+     * Get the preferred alignment     */
+    protected float getVerticalAlignment() {
+      return 0.5F;
+    }
+    
+    /**
+     * Get the preferred span     */
+    protected abstract Dimension getPreferredSpan();
+
+    /** 
+     * Returns the current metrics
+     */
+    protected FontMetrics getFontMetrics() {
+      return graphics.getFontMetrics(getFont());
+    }
+    
+    /** 
+     * Returns the current font
+     */
+    protected Font getFont() {
+      if (font==null) font = doc.getFont(getAttributes());
+      return font;
+    }
+    
+    /** 
+     * Returns the current fg color
+     */
+    protected Color getForeground() {
+      if (foreground==null) foreground = doc.getForeground(getAttributes());
+      return foreground;
+    }
+    
+    /**
+     * Invalidates this views current state
+     */
+    protected void invalidate() {
+      // invalidate preferred span
+      preferredSpan = null;
+      // signal preference change through super
+      super.preferenceChanged(this,true,true);
+    }
+    
   } //BaseView
 
   /**
@@ -307,18 +397,64 @@ public class EntityRenderer {
     }
 
     /**
-     * @see javax.swing.text.View#getPreferredSpan(int)
+     * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
-    public float getPreferredSpan(int axis) {
-      return view.getPreferredSpan(axis);
+    protected Dimension getPreferredSpan() {
+      return new Dimension(
+        (int)view.getPreferredSpan(X_AXIS),
+        (int)view.getPreferredSpan(Y_AXIS)
+      );
     }
 
   } //RootView
 
   /**
-   *
+   * A view for translating text   */
+  private class I18NView extends MyView {
+    
+    /** the text to paint */
+    private String txt = "?";
+    
+    /**
+     * Constructor     */
+    private I18NView(Element elem) {
+      super(elem);
+      // resolve and localize text
+      Object o = elem.getAttributes().getAttribute("tag");
+      if (o!=null) txt = Gedcom.getName(o.toString());
+      // done
+    }
+    /**
+     * @see javax.swing.text.View#paint(java.awt.Graphics, java.awt.Shape)
+     */
+    public void paint(Graphics g, Shape allocation) {
+      Rectangle r = allocation.getBounds();
+      g.setFont(getFont());
+      g.setColor(getForeground());
+      PropertyRenderer.DEFAULT_PROPERTY_PROXY.render(g,r,txt);
+    }
+    /**
+     * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
+     */
+    protected Dimension getPreferredSpan() {
+      return new Dimension(      
+        getFontMetrics().stringWidth(txt),
+        getFontMetrics().getHeight()
+      );
+    }
+    
+    /**
+     * @see genj.renderer.EntityRenderer.MyView#getVerticalAlignment()
+     */
+    protected float getVerticalAlignment() {
+      return PropertyRenderer.DEFAULT_PROPERTY_PROXY.getVerticalAlignment(getFontMetrics());
+    }
+  } //LocalizeView
+
+  /**
+   * A view that wraps a property and its value
    */
-  private class PropertyView extends MyView implements Cloneable {
+  private class PropertyView extends MyView {
     
     /** our preference when looking at the property */
     private int preference;
@@ -331,15 +467,6 @@ public class EntityRenderer {
     
     /** the cached property we're displaying */
     private Object property = null;
-    
-    /** the cached font we're using */
-    private Font font = null;
-    
-    /** the cached foreground we're using */
-    private Color foreground = null;
-    
-    /** the cached preferred span */
-    private Dimension preferredSpan = null;
     
     /** minimum percentage of the rendering space */
     private int min;
@@ -400,18 +527,6 @@ public class EntityRenderer {
     }
     
     /**
-     * Invalidates this views current state
-     */
-    private void invalidate() {
-      // invalidate cached information that's depending
-      // on the current entity's properties
-      property = null;
-      preferredSpan = null;
-      // signal preference change through super
-      super.preferenceChanged(this,true,true);
-    }
-    
-    /**
      * Returns the property we're viewing
      */
     private Property getProperty() {
@@ -423,30 +538,6 @@ public class EntityRenderer {
       property = NULL;
       return null;
     }
-    
-    /** 
-     * Returns the current metrics
-     */
-    private FontMetrics getFontMetrics() {
-      return graphics.getFontMetrics(getFont());
-    }
-    
-    /** 
-     * Returns the current font
-     */
-    private Font getFont() {
-      if (font==null) font = doc.getFont(getAttributes());
-      return font;
-    }
-    
-    /** 
-     * Returns the current fg color
-     */
-    private Color getForeground() {
-      if (foreground==null) foreground = doc.getForeground(getAttributes());
-      return foreground;
-    }
-    
     /**
      * @see javax.swing.text.View#paint(Graphics, Shape)
      */
@@ -466,25 +557,13 @@ public class EntityRenderer {
       // done
     }
     /**
-     * @see javax.swing.text.View#getAlignment(int)
+     * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
-    public float getAlignment(int axis) {
-      if (X_AXIS==axis)
-        return super.getAlignment(axis);
-      return proxy==null ? 0 : proxy.getVerticalAlignment(getFontMetrics());
-    }
-    /**
-     * @see javax.swing.text.View#getPreferredSpan(int)
-     */
-    public float getPreferredSpan(int axis) {
+    protected Dimension getPreferredSpan() {
       // get the property
       Property p = getProperty();
-      if (p==null) return 0;
-      // check cached preferred Spane
-      if (preferredSpan==null) {
-        preferredSpan = proxy.getSize(getFontMetrics(), p, preference);
-      }
-      return axis==X_AXIS ? preferredSpan.width : preferredSpan.height;
+      if (p==null) return new Dimension(0,0);
+      return proxy.getSize(getFontMetrics(), p, preference);
     }
     /**
      * @see javax.swing.text.View#getMinimumSpan(int)
@@ -495,29 +574,21 @@ public class EntityRenderer {
       return Math.min(pref, root.width*min/100);
     }
     /**
-     * @see javax.swing.text.View#getMaximumSpan(int)
+     * @see genj.renderer.EntityRenderer.MyView#getVerticalAlignment()
      */
-    public float getMaximumSpan(int axis) {
-      return getPreferredSpan(axis);
+    protected float getVerticalAlignment() {
+      return proxy==null ? 0 : proxy.getVerticalAlignment(getFontMetrics());
     }
     /**
-     * @see javax.swing.text.View#getBreakWeight(int, float, float)
+     * Invalidates this views current state
      */
-    public int getBreakWeight(int axis, float pos, float len) {
-      // not on vertical
-      if (axis==Y_AXIS) return BadBreakWeight;
-      // horizontal might work after our content
-      if (len > getPreferredSpan(X_AXIS)) {
-        return ExcellentBreakWeight;//GoodBreakWeight;
-      }
-      return BadBreakWeight;
-    }  
-    /**
-     * @see javax.swing.text.View#breakView(int, int, float, float)
-     */
-    public View breakView(int axis, int offset, float pos, float len) {
-      return this;
+    protected void invalidate() {
+      // invalidate cached information that's depending
+      // on the current entity's properties
+      property = null;
+      super.invalidate();
     }
+    
   } //PropertyView
 
   

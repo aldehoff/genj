@@ -513,6 +513,12 @@ public class Gedcom {
   }
 
   /**
+   * Returns a readable name for the given tag   */
+  public static String getName(String tag) {
+    return resources.getString(tag+".name");
+  }
+
+  /**
    * Returns the readable name of the given entity type
    */
   public static String getNameFor(int type, boolean plural) {

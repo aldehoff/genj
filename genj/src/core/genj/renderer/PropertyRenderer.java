@@ -47,7 +47,7 @@ public class PropertyRenderer {
     PREFER_IMAGEANDTEXT = 3;
   
   /** a default PropertyProxy */
-  private final static PropertyRenderer DEFAULT_PROPERTY_PROXY = new PropertyRenderer();
+  /*package*/ final static PropertyRenderer DEFAULT_PROPERTY_PROXY = new PropertyRenderer();
 
   /** cached renderer instances */
   private static Map cache = new HashMap();
