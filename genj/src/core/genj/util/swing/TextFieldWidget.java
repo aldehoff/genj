@@ -94,7 +94,11 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
     if (e.getID()==FocusEvent.FOCUS_GAINED && isTemplate) {
       setText("");
       isTemplate = false;
-    } 
+    } else {
+      // 20040301 testing to select all input on focus - makes
+      // it way easier to edit when things are overriden right away
+      selectAll();
+    }
     super.processFocusEvent(e);
   }
     
