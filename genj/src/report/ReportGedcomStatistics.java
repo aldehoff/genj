@@ -20,7 +20,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.27 2003-06-11 23:44:25 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.28 2003-09-24 20:09:17 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -36,6 +36,9 @@ public class ReportGedcomStatistics extends Report {
     /**package*/ ReferenceSet birthPlaces = new ReferenceSet();
     /**package*/ ReferenceSet deathPlaces = new ReferenceSet();
   }
+   
+  /** whether we sort places by their name or occurance */
+  public boolean isSortByPlace = true;
    
   /** the place that is not known */
 //  private final static String UNKNOWN_PLACE = "[unknown places]";
@@ -195,7 +198,8 @@ public class ReportGedcomStatistics extends Report {
 
     // Six: We show the birth places
     println("  "+i18n("about_birthplaces"));
-    Iterator births = stats.birthPlaces.getValues().iterator();
+    
+    Iterator births = stats.birthPlaces.getValues(isSortByPlace).iterator();
     while (births.hasNext()) {
       String place = (String)births.next();
       Integer count = new Integer(stats.birthPlaces.getCount(place));
@@ -207,7 +211,7 @@ public class ReportGedcomStatistics extends Report {
 
     // Seven: We show the death places
     println("  "+i18n("about_deathplaces"));
-    Iterator deaths = stats.deathPlaces.getValues().iterator();
+    Iterator deaths = stats.deathPlaces.getValues(isSortByPlace).iterator();
     while (deaths.hasNext()) {
       String place = (String)deaths.next();
       Integer count = new Integer(stats.deathPlaces.getCount(place));
