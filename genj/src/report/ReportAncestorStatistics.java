@@ -29,13 +29,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * GenJ - ReportImplex
- *
  * This report computes the implex factor.
  */
-public class ReportImplex extends Report {
-  private static final String AUTHOR = "Thierry Hardy";
-  private static final String VERSION = "0.2";
+public class ReportAncestorStatistics extends Report {
   private static final String FIELD_SEPARATOR =  " - ";
   private static final String LINE_SEPARATOR =  "---------------------------------------------------------------------------";
   private final int MAX_LEVEL = 100;
@@ -44,35 +40,6 @@ public class ReportImplex extends Report {
   private int[] iDiffCount = new int[MAX_LEVEL];
   private HashSet setIndi = new HashSet();
   private HashSet setSharedAncestor = new HashSet();
-
-  /**
-   * Returns the author of this report.
-   */
-  public String getAuthor() {
-    return AUTHOR;
-  }
-
-  /**
-   * Returns the version of this report.
-   */
-  public String getVersion() {
-    return VERSION;
-  }
-
-  /**
-   * Returns the name of this report.
-   */
-  public String getName() {
-    return i18n("name");
-  }
-
-  /**
-   * Returns information about this report.
-   */
-  public String getInfo() {
-    return i18n("info");
-  }
-
 
   /**
    * @see genj.report.Report#accepts(java.lang.Object)
@@ -278,14 +245,14 @@ public class ReportImplex extends Report {
         dImplex = Math.round(10000 * (iBasicCumul - iDiffCumul) / iBasicCumul) / 100;
 
         // Display line
-      println(align(i, 6) +
-              align(iPossibleCount, 11) +
-              align(iBasicCount[i], 11) +
-              align(dCoverage + "%", 11) +
-              align(iBasicCumul, 11) +
-              align(dAllCoverage + "%", 11) +
-              align(iDiffCount[i], 11) +
-              align(dImplex + "%", 11));
+      println(align(i, 5, Report.ALIGN_LEFT) +
+              align(iPossibleCount, 10, Report.ALIGN_RIGHT) +
+              align(iBasicCount[i], 10, Report.ALIGN_RIGHT) +
+              align(dCoverage + "%", 10, Report.ALIGN_RIGHT) +
+              align(iBasicCumul, 10, Report.ALIGN_RIGHT) +
+              align(dAllCoverage + "%", 10, Report.ALIGN_RIGHT) +
+              align(iDiffCount[i], 10, Report.ALIGN_RIGHT) +
+              align(dImplex + "%", 10, Report.ALIGN_RIGHT));
     }
   }
 }
