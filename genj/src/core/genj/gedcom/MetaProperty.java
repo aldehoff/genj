@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -66,7 +67,6 @@ public class MetaProperty {
    * Constructor
    */
   private MetaProperty(String tag, String type, String subs) {
-System.out.println(tag);
     // Remember data
     theTag = tag;
     
@@ -93,19 +93,19 @@ System.out.println(tag);
     // done
   }
 
-//  /**
-//   * Adds a possible-sub-tag to this definition
-//   */
-//  public void noteSub(Property prop) {
-//    // won't keep transients
-//    if (prop.isTransient()) return;
-//    // won't keep xrefs
-//    if (prop instanceof PropertyXRef) return;
-//    // won't keep known
-//    if (theSubs.contains(prop.getTag())) return;
-//    // keep it
-//    theSubs.add(prop.getTag());
-//  }
+  /**
+   * notifies this meta of a property being added
+   */
+  public void addNotify(Property prop) {
+    // won't keep transients
+    if (prop.isTransient()) return;
+    // won't keep xrefs
+    if (prop instanceof PropertyXRef) return;
+    // won't keep known
+    if (theSubs.contains(prop.getTag())) return;
+    // keep it
+    theSubs.add(prop.getTag());
+  }
 
   /**
    * The property's type
@@ -133,15 +133,16 @@ System.out.println(tag);
    */
   public MetaProperty[] getSubs(boolean defaultsOnly) {
     
-    List result = new ArrayList(theSubs.size());
+    Set result = new LinkedHashSet(theSubs.size());
     for (int i=0; i<theSubs.size(); i++) {
       String sub = theSubs.get(i).toString();
       if (sub.startsWith("!")) {
         sub = sub.substring(1);
-      } else if (defaultsOnly) continue; 
+      } else {
+        if (defaultsOnly) continue;
+      } 
       result.add(get(sub));
     }
-
         
     return (MetaProperty[])result.toArray(new MetaProperty[result.size()]);
   }
