@@ -112,6 +112,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
     if ((husband==indi)||(wife==indi))
       throw new GedcomException("Individual @"+indi.getId()+"@ is already spouse in family @"+id+"@");
 
+    // TODO: K. Mraz - make this understand individual can be member of multiple familes
     if (indi.getFamc()==fam)
       throw new GedcomException("Individual @"+indi.getId()+"@ is already child in family @"+id+"@");
       
@@ -143,7 +144,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
         }
         // create new back ref
         backref = new PropertyHusband();
-        return;
+        break;
       } 
       // WIFE
       case PropertySex.FEMALE : {
