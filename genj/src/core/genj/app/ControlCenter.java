@@ -113,12 +113,15 @@ public class ControlCenter extends JPanel {
     result.setLayout(new BoxLayout(result,BoxLayout.X_AXIS));
 
     // .. Buttons
+    boolean imageAndText = registry.get("imagesandtext", false);
+    
     ButtonHelper bh = new ButtonHelper()
       .setResources(App.resources)
       .setInsets(4)
       .setFocusable(false)
       .setContainer(result)
-      .setTextAllowed(false);
+      .setTextAllowed(imageAndText)
+      .setImageOverText(imageAndText);
 
     bh.setEnabled(true).create(new ActionOpen());
     
@@ -873,6 +876,7 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionSettings() {
       super.setImage(Images.imgSettings);
+      super.setText("cc.view.settings");
       super.setTip("cc.tip.settings");
     }    
     /** run */
@@ -948,7 +952,7 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionView(ViewManager.Descriptor which) {
       this.which = which;
-      super.setText("cc.tip.open_"+which.key);
+      super.setText("cc.view."+which.key);
       super.setTip("cc.tip.open_"+which.key);
       super.setImage(which.img);
     }
