@@ -8,19 +8,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.Fam;
-import genj.gedcom.Property;
-import genj.gedcom.TagPath;
 import genj.report.Report;
-import genj.util.ReferenceSet;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Hashtable;
+import java.util.List;
 
 
 /**
