@@ -55,19 +55,6 @@ public class Fam extends PropertyFam implements Entity {
   }
 
   /**
-   * Adds a marriage information to an individual
-   */
-  public void addMarriage(String value, String place) {
-    // BIRTH
-    Property p = new PropertyEvent("MARR");
-    addProperty(p);
-    PropertyDate date = new PropertyDate();
-    date.setValue(value);
-    p.addProperty(date);
-    p.addProperty(new PropertyPlace(place));
-  }
-
-  /**
    * Notification to entity that it has been added to a Gedcom
    */
   public void addNotify(Gedcom gedcom) {
@@ -122,8 +109,7 @@ public class Fam extends PropertyFam implements Entity {
    */
   public Indi getHusband() {
     Property husb = getProperty(new TagPath("FAM:HUSB"),true);
-    if (husb==null)
-      return null;
+    if (husb==null) return null;
     return ((PropertyHusband)husb).getHusband();
   }
 
@@ -132,20 +118,6 @@ public class Fam extends PropertyFam implements Entity {
    */
   public String getId() {
     return id;
-  }
-
-  /**
-   * Calculate fam's marriage date
-   */
-  public String getMarriageAsString() {
-
-    // Calculate DATE
-    PropertyDate p = (PropertyDate)getProperty(new TagPath("FAM:MARR:DATE"),true);
-    if (p==null)
-      return "";
-
-    // Return string value
-    return p.toString();
   }
 
   /**
@@ -171,9 +143,7 @@ public class Fam extends PropertyFam implements Entity {
    */
   public Indi getOtherSpouse(Indi spouse) {
     Indi wife = getWife();
-    if (wife==spouse) {
-      return getHusband();
-    }
+    if (wife==spouse) return getHusband();
     return wife;
   }
 
@@ -197,16 +167,29 @@ public class Fam extends PropertyFam implements Entity {
    */
   public Indi getWife() {
     Property wife = getProperty(new TagPath("FAM:WIFE"),true);
-    if (wife==null) {
-      return null;
-    }
+    if (wife==null) return null;
     return ((PropertyWife)wife).getWife();
   }
 
   /**
+   * Set Gedcom this entity's in
+   */
+  public void setGedcom(Gedcom gedcom) {
+    this.gedcom=gedcom;
+  }
+
+  /**
+   * Sets entity's id.
+   * @param id new id
+   */
+  public void setId(String id) {
+    this.id=id;
+  }
+  
+  /**
    * Checks wether this family is descendant of individual
    */
-  boolean isDescendantOf(Indi indi) {
+  /*package*/ boolean isDescendantOf(Indi indi) {
 
     // Prepare VARs
     Indi husband,wife;
@@ -227,21 +210,6 @@ public class Fam extends PropertyFam implements Entity {
     return false;
   }
 
-  /**
-   * Set Gedcom this entity's in
-   */
-  public void setGedcom(Gedcom gedcom) {
-    this.gedcom=gedcom;
-  }
-
-  /**
-   * Sets entity's id.
-   * @param id new id
-   */
-  public void setId(String id) {
-    this.id=id;
-  }
-  
   /**
    * Sets the husband of this family
    */

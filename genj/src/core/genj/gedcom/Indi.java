@@ -37,21 +37,6 @@ public class Indi extends PropertyIndi implements Entity {
   }
 
   /**
-   * Adds a birth information to an individual
-   */
-  /*package*/ void addBirth(String value, String place) {
-    // BIRTH
-    Property p = new PropertyEvent("BIRT");
-    addProperty(p);
-    PropertyDate date = new PropertyDate();
-    date.setValue(value);
-    p.addProperty(date);
-    if (place!=null) {
-      p.addProperty(new PropertyPlace(place));
-    }
-  }
-
-  /**
    * Adds a family in which the individual is a partner
    */
   /*package*/ Fam addFam() throws GedcomException {
