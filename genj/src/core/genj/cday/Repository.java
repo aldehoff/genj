@@ -82,40 +82,62 @@ public class Repository {
   }
   
   /**
+   * find start index of given year in events (log n)
+   */
+  public int getStartIndex(int year) {
+    synchronized (events) {
+      return getStartIndex(year, 0, events.size()-1);
+    }
+  }
+  private int getStartIndex(int year, int start, int end) {
+    
+    // no range?
+    if (end<=start)
+      return start;
+
+    int pivot = (start + end)/2;
+
+    int y = ((Event)events.get(pivot)).getTime().getYear();
+    if (y<year)
+      return getStartIndex(year, pivot+1, end);
+    return getStartIndex(year, start, pivot);
+  }
+  
+  /**
    * Accessor - event by year
    */
   public Event getEvent(PointInTime when) {
     
     Event result = null;
     
-    try {
-      
+    try {	synchronized (events) {
+
 	    // convert to julian day
 	    long julian = when.getJulianDay();
 	    
+	    // do a quick logn search for correct year
+	    int i = getStartIndex(when.getYear(), 0, events.size()-1);
+	    
 	    // loop over events
 	    long delta = -1;
+      for (int j=events.size(); i<j; i++) {
+        Event event = (Event)events.get(i);
+        PointInTime pit = event.getTime();
+        // check year
+        if (pit.getYear()<when.getYear())
+          continue;
+        if (pit.getYear()>when.getYear())
+          break;
+        // calculate delta
+        long d = pit.getJulianDay()-julian;
+        if (d<0) d=-d;
+        if (delta<0||d<delta) {
+          delta = d;
+          result = event;
+        }
+      }
 	    
-	    synchronized (events) {
-	      for (int i=0,j=events.size(); i<j; i++) {
-	        Event event = (Event)events.get(i);
-	        PointInTime pit = event.getTime();
-	        // check year
-	        if (pit.getYear()<when.getYear())
-	          continue;
-	        if (pit.getYear()>when.getYear())
-	          break;
-	        // calculate delta
-	        long d = pit.getJulianDay()-julian;
-	        if (d<0) d=-d;
-	        if (delta<0||d<delta) {
-	          delta = d;
-	          result = event;
-	        }
-	      }
-	    }
-	    
-    } catch (GedcomException e) {
+    } } catch (GedcomException e) {
     }
     
     // none found
