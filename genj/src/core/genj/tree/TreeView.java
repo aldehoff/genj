@@ -293,7 +293,8 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     
     // overview
     ButtonHelper bh = new ButtonHelper().setContainer(bar).setResources(resources);
-    bh.create(new ActionOverview());
+    bh.create(new ActionOverview())
+      .setSelected(overview.isVisible());
     
     // vertical/horizontal
     bh.create(new ActionOrientation())
@@ -568,6 +569,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     private ActionOverview() {
       super.setImage(Images.imgOverview);
+      super.setToggle(Images.imgOverview);
     }
     /**
      * @see genj.util.ActionDelegate#execute()

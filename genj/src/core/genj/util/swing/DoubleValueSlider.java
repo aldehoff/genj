@@ -96,8 +96,8 @@ public class DoubleValueSlider extends JPanel {
    */
   public void setValue(double d) {
     int i;
-    if (!isExponential) i = (int)(100 * (d-min)/(max-min));
-    else i = (int)( 100 - Math.exp( (max - d) / (max-min) * Math.log(100) ) );
+    if (!isExponential) i = (int)Math.round(100 * (d-min)/(max-min));
+    else i = (int)Math.round( 100 - Math.exp( (max - d) / (max-min) * Math.log(100) ) );
     slider.setValue(i);
   }
   
