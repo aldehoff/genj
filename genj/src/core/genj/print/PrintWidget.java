@@ -19,16 +19,20 @@
  */
 package genj.print;
 
+import genj.app.App;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.UnitGraphics;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -104,29 +108,6 @@ public class PrintWidget extends JTabbedPane {
   } //MainPanel
   
   /**
-   * The preview   */
-  private class Preview extends JComponent {
-
-    /**
-     * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
-     */
-    protected void paintComponent(Graphics g) {
-      
-      //FIXME preview please
-      g.setColor(Color.gray);
-      g.fillRect(0,0,getWidth(),getHeight());
-      g.setColor(Color.white);
-      Point pages = task.getPages(); 
-      g.drawString(pages.x+" x "+pages.y,32,32);
-      
-      Graphics2D g2d = (Graphics2D)g;
-      
-      //task.getRenderer().renderPage(g2d, new Point(0,0), task.getResolution());
-    }
-
-  } //Preview
-
-  /**
    * Action - Show Printer Setup
    */
   private class PrinterSetup extends ActionDelegate {
@@ -164,5 +145,72 @@ public class PrintWidget extends JTabbedPane {
     }
   } //PrintDlg
   
+  /**
+   * The preview
+   */
+  private class Preview extends JComponent {
+    
+    private double 
+      pad  = 1.0D,
+      zoom = 0.1D;
+    
+    /**
+     * @see javax.swing.JComponent#getPreferredSize()
+     */
+    public Dimension getPreferredSize() {
+      // calculate
+      Point2D psize = calcPageSize();
+      Point pages = task.getPages(); 
+      Point dpi = App.getInstance().getDPI();
+      double 
+        width = (pages.x*(psize.getX()+pad) + pad)*dpi.x*zoom,
+        height= (pages.y*(psize.getY()+pad) + pad)*dpi.y*zoom;
+      // done
+      return new Dimension((int)width, (int)height);
+    }
+    
+    /**
+     * Calculate page size in inch
+     */
+    Point2D calcPageSize() {
+      Point dpi = task.getResolution();
+      Dimension psize = task.getPageSize();
+      return new Point2D.Double(
+        (double)psize.width /dpi.x,
+        (double)psize.height/dpi.y
+      );
+    }
+    
+    /**
+     * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
+     */
+    // FIXME 
+    protected void paintComponent(Graphics g) {
+      // fill background
+      g.setColor(Color.gray);
+      g.fillRect(0,0,getWidth(),getHeight());
+      g.setColor(Color.white);
+      // render pages in app's dpi space
+      Point2D psize = calcPageSize();
+      Point pages = task.getPages(); 
+      Point dpi = App.getInstance().getDPI();
+      UnitGraphics ug = new UnitGraphics(g, dpi.x*zoom, dpi.y*zoom);
+      ug.setColor(Color.white);
+      Rectangle2D page = new Rectangle2D.Double(); 
+      for (int x=0;x<pages.x;x++) {
+        for (int y=0;y<pages.y;y++) {
+          page.setFrame( pad + x*(psize.getX()+pad) , pad + y*(psize.getY()+pad), psize.getX(), psize.getY());
+          ug.draw(page, 0, 0, true);
+        }
+      }
+
+      // draw indicator      
+//      g.drawString(pages.x+" x "+pages.y,32,32);
+//      Graphics2D g2d = (Graphics2D)g;
+      // done
+    }
+
+  } //Preview
+
   
 } //PrintWidget

@@ -321,22 +321,25 @@ public class PrintManager {
     }
     
     /**
-     * PageFormat
-     */
-    /*package*/ PageFormat getPageFormat() {
-      return pageFormat;
-    }
-
-    /**
      * Resolve resolution     */
     /*package*/ Point getResolution() {
       return new Point(72, 72);
     }
     
     /**
-     * PageSize in dpi
+     * PageSize in dots
      */
     /*package*/ Dimension getPageSize() {
+      return new Dimension(
+        (int)pageFormat.getWidth(),
+        (int)pageFormat.getHeight()
+      );
+    }
+    
+    /**
+     * ImageableSize in dots
+     */
+    /*package*/ Dimension getImageableSize() {
       return new Dimension(
         (int)pageFormat.getImageableWidth(),
         (int)pageFormat.getImageableHeight()
@@ -350,12 +353,12 @@ public class PrintManager {
       // already calculated?
       if (pages!=null) return pages;
       
-      Dimension size = renderer.calcSize(getResolution());
-      Dimension page = getPageSize();
+      Dimension content = renderer.calcSize(getResolution());
+      Dimension imageable = getImageableSize();
       
       pages = new Point(
-        (int)Math.ceil( ((float)size.width ) / page.width),
-        (int)Math.ceil( ((float)size.height) / page.height)
+        (int)Math.ceil( ((float)content.width ) / imageable.width),
+        (int)Math.ceil( ((float)content.height) / imageable.height)
       );
       
       // done
