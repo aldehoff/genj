@@ -174,6 +174,8 @@ import javax.swing.event.TreeSelectionListener;
    * @return Gedcom tree's root and selection 
    */
   public Context getContext() {
+    if (tree.getRoot()==null)
+      return new Context(gedcom);
     return new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
   }
   

@@ -321,7 +321,7 @@ import javax.swing.event.ChangeListener;
   
       }
 
-// FIXME need links showing in basic mode
+// FIXME need to add paths for INDI:FAMS, INDI:FAMC, FAM:HUSB, FAM:WIFE, FAM:CHIL 
       // create links
       Iterator xrefs = entity.getProperties(PropertyXRef.class).iterator();
       while (xrefs.hasNext()) {

@@ -22,10 +22,7 @@ package genj.renderer;
 import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyName;
 import genj.gedcom.PropertyXRef;
-import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.UnitGraphics;
 
@@ -120,7 +117,7 @@ public class PropertyRenderer {
    * @param dpi resolution or null  
    */
   public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point dpi) {
-    return getSize(metrics, prop.getImage(false), prop.getValue(), preference, dpi);
+    return getSize(metrics, prop.getImage(false), prop.getDisplayValue(), preference, dpi);
   }
   
   /**
@@ -132,7 +129,7 @@ public class PropertyRenderer {
    * @param dpi resolution or null  
    */
   public void render(Graphics g, Rectangle bounds, Property prop, int preference, Point dpi) {
-    render(g,bounds,prop.getImage(false),prop.getValue(),preference,dpi);
+    render(g,bounds,prop.getImage(false),prop.getDisplayValue(),preference,dpi);
   }
   
   /**
@@ -307,40 +304,6 @@ public class PropertyRenderer {
   } //MLE
 
   /**
-   * name
-   */
-  /*package*/ static class Name extends PropertyRenderer {
-  
-    /**
-     * size override
-     */
-    public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point dpi) {
-      return super.getSize(metrics, prop.getImage(false), getName(prop), preference, dpi);
-    }
-  
-    /**
-     * render override
-     */
-    public void render( Graphics g, Rectangle bounds, Property prop, int preference, Point dpi) {
-      super.render(g, bounds, prop.getImage(false), getName(prop), preference, dpi);
-    }
-    
-    /**
-     * helper to get the name of PropertyName
-     */
-    private String getName(Property prop) {
-      if (!(prop instanceof PropertyName)||!prop.isValid()) 
-        return prop.getValue();
-      PropertyName name = (PropertyName)prop;
-      WordBuffer b = new WordBuffer().setFiller(", ");
-      b.append(name.getLastName());
-      b.append(name.getFirstName());
-      return b.toString();
-    }  
-  
-  } //Name
-
-  /**
    * File
    */
   /*package*/ static class File extends PropertyRenderer {
@@ -459,49 +422,6 @@ public class PropertyRenderer {
     }
     
   } //Entity
-
-  /**
-   * Date
-   */
-  /*package*/ static class Date extends PropertyRenderer {
-  
-    /**
-     * size override
-     */
-    public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point dpi) {
-      return super.getSize(metrics, prop.getImage(false), getDate(prop), preference, dpi);
-    }
-  
-    /**
-     * render override
-     */
-    public void render(Graphics g, Rectangle bounds, Property prop, int preference, Point dpi) {
-      super.render(g, bounds, prop.getImage(false), getDate(prop), preference, dpi);
-    }
-  
-    /**
-     * render override (right aligned)
-     */
-    protected void render(Graphics g, Rectangle bounds, String txt) {
-      int w = g.getFontMetrics().stringWidth(txt);
-      bounds.x = Math.max(
-        bounds.x,
-        bounds.x+bounds.width-w
-      );
-      super.render(g, bounds, txt);
-    }
-  
-    /**
-     * Helper to get the date of PropertyDate
-     */
-    private String getDate(Property prop) {
-      if (!(prop instanceof PropertyDate)||!prop.isValid()) 
-        return prop.getValue();
-      PropertyDate date = (PropertyDate)prop;
-      return date.toString(true);
-    }  
-  
-  } //Date
 
   /**
    * XRef

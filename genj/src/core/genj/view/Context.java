@@ -80,7 +80,7 @@ public class Context {
   public Context(Gedcom ged, Entity ent, Property prop) {
     
     // property?
-    if (prop!=null) {
+    if (prop!=null&&prop.getParent()!=null) {
       property = prop;
       entity = property.getEntity();
       gedcom = entity.getGedcom();

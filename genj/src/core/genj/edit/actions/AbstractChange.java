@@ -20,9 +20,9 @@
 package genj.edit.actions;
 
 import genj.edit.Images;
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
@@ -50,7 +50,7 @@ import javax.swing.JTextArea;
   protected ViewManager manager;
   
   /** the focus */
-  protected Entity focus = null;
+  protected Property focus = null;
   
   /** image *new* */
   protected final static ImageIcon imgNew = Images.imgNew;
@@ -127,8 +127,8 @@ import javax.swing.JTextArea;
     // let sub-class handle create
     try {
       change();
-    } catch (GedcomException ex) {
-      manager.getWindowManager().openDialog(null, null, WindowManager.IMG_ERROR, ex.getMessage(), CloseWindow.OK(), getTarget());
+    } catch (Throwable t) {
+      manager.getWindowManager().openDialog(null, null, WindowManager.IMG_ERROR, t.getMessage(), CloseWindow.OK(), getTarget());
     }
     // unlock gedcom
     gedcom.endTransaction();

@@ -54,7 +54,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
       return new Property[0];
     ReferenceSet refSet = gedcom.getReferenceSet(getTag());
     // convert
-    return toArray(refSet.getReferences(getValue()));
+    return toArray(refSet.getReferences(super.getValue()));
   }
   
   /**
@@ -62,7 +62,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    */
   public void setValue(String value) {
     // remember
-    remember(getValue(), value);
+    remember(super.getValue(), value);
     // delegate
     super.setValue(value);
   }
@@ -74,7 +74,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     // delegate
     super.addNotify(parent, tx);
     // a remember wouldn't have worked until now
-    remember(getValue(), getValue());
+    remember(super.getValue(), super.getValue());
     // done
   }
 
@@ -84,7 +84,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    */
   /*package*/ void delNotify(Transaction tx) {
     // forget value
-    remember(getValue(), EMPTY_STRING);
+    remember(super.getValue(), EMPTY_STRING);
     // continue
     super.delNotify(tx);
   }

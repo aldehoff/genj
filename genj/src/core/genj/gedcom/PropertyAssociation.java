@@ -83,9 +83,14 @@ public class PropertyAssociation extends PropertyXRef {
     if (ent==null) 
       throw new GedcomException("Couldnt't find individual with ID "+id);
 
-    // Create Backlink
+    // Create Backlink using RELA
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    ent.addProperty(fxref);
+    try {
+      PropertyRelationship rela = (PropertyRelationship)getProperty("RELA");
+      ent.getProperty(rela.getAnchor()).addProperty(fxref);
+    } catch (Throwable t) {
+      ent.addProperty(fxref);
+    }
 
     // ... and point
     setTarget(fxref);

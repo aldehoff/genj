@@ -163,9 +163,10 @@ public class PropertyName extends Property {
    * the gedcom value
    */
   public String getValue() {
-    if (nameAsString != null) {
+
+    if (nameAsString != null) 
       return nameAsString;
-    }
+    
     WordBuffer wb = new WordBuffer();
     wb.append(firstName);
     if ((lastName!=null) && (lastName.length()>0))
@@ -173,6 +174,22 @@ public class PropertyName extends Property {
     if ((suffix!=null) && (suffix.length()>0) )
       wb.append(suffix);
     return wb.toString();
+  }
+  
+  /**
+   * a value for display
+   */
+  public String getDisplayValue() {
+    
+    // n/a
+    if (nameAsString!=null)
+      return nameAsString;
+    
+    WordBuffer b = new WordBuffer().setFiller(", ");
+    b.append(getLastName());
+    b.append(getFirstName());
+    
+    return b.toString();
   }
 
   /**

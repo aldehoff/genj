@@ -65,7 +65,7 @@ public class ChoiceBean extends PropertyBean {
       items = ((PropertyChoiceValue)property).getChoices(setGedcom).toArray();
 
     // Setup controls
-    choice = new ChoiceWidget(items, property.getValue());
+    choice = new ChoiceWidget(items, property.getDisplayValue());
     choice.addChangeListener(changeSupport);
     
     // layout

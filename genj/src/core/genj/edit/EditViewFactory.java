@@ -36,9 +36,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyAssociation;
 import genj.gedcom.PropertyFile;
-import genj.gedcom.PropertyMedia;
 import genj.gedcom.PropertyNote;
 import genj.gedcom.PropertyRepository;
 import genj.gedcom.PropertySource;
@@ -127,8 +125,21 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
       
     // Check what xrefs can be added
     MetaProperty[] subs = property.getSubMetaProperties(0);
-    for (int s=0;s<subs.length;s++) 
-      createXRefActions(result, property, subs[s], manager);
+    for (int s=0;s<subs.length;s++) {
+      // NOTE||REPO||SOUR||SUBM
+      Class type = subs[s].getType();
+      if (type==PropertyNote.class||
+          type==PropertyRepository.class||
+          type==PropertySource.class||
+          type==PropertySubmitter.class) {
+        // .. make sure @@ forces a non-substitute!
+        result.add(new CreateRelationship(new XRefBy(property, (PropertyXRef)subs[s].create("@@")), manager));
+      }
+    }
+    
+    // Add Association to this one ...
+    if (!property.isTransient())
+      result.add(new CreateRelationship(new Relationship.Association(property), manager));
     
     // Toggle "Private"
     if (Enigma.isAvailable())
@@ -157,8 +168,17 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
 
     // Check what xrefs can be added
     MetaProperty[] subs = entity.getSubMetaProperties(0);
-    for (int s=0;s<subs.length;s++) 
-      createXRefActions(result, entity, subs[s], manager);
+    for (int s=0;s<subs.length;s++) {
+      // NOTE||REPO||SOUR||SUBM
+      Class type = subs[s].getType();
+      if (type==PropertyNote.class||
+          type==PropertyRepository.class||
+          type==PropertySource.class||
+          type==PropertySubmitter.class) {
+        // .. make sure @@ forces a non-substitute!
+        result.add(new CreateRelationship(new Relationship.XRefBy(entity, (PropertyXRef)subs[s].create("@@")), manager));
+      }
+    }
 
     // add delete
     result.add(ActionDelegate.NOOP);
@@ -225,7 +245,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(new SetSubmitter(submitter, manager));
   }
   
-  /**
+  /**  
    * Create actions for PropertyFile
    */
   public static void createActions(List result, PropertyFile file) {
@@ -242,38 +262,4 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     // done
   }
 
-  /**
-   * Create CreateRelationship actions for property
-   */
-  private void createXRefActions(List result, Property parent, MetaProperty sub, ViewManager manager) {
-    
-    Class type = sub.getType();
-    
-    // ASSO is special
-    if (type==PropertyAssociation.class) {
-      for (int i=0;i<PropertyAssociation.TARGET_TYPES.length;i++) {
-        PropertyAssociation asso = (PropertyAssociation)sub.create("");
-        asso.setTargetType(PropertyAssociation.TARGET_TYPES[i]);
-        result.add(new CreateRelationship(new XRefBy(parent, asso), manager));
-      }
-      return;
-    }
-      
-    // OBJE references/entities with BLOB data is discouraged
-    if (type==PropertyMedia.class) 
-      return;
-
-    // NOTE||REPO||SOUR||SUBM
-    if (type==PropertyNote.class||
-        type==PropertyRepository.class||
-        type==PropertySource.class||
-        type==PropertySubmitter.class) {
-      // .. make sure @@ forces a non-substitute!
-      result.add(new CreateRelationship(new XRefBy(parent, (PropertyXRef)sub.create("@@")), manager));
-      return;
-    }
-
-    // not applicable
-  }
-  
 } //EditViewFactory

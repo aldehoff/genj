@@ -25,7 +25,7 @@ public abstract class Relationship {
    * Perform the relationship
    * @return the receiver of focus (preferrably)
    */
-  public abstract Entity apply(Entity entity) throws GedcomException ;  
+  public abstract Property apply(Entity entity) throws GedcomException ;  
   
   /**
    * Accessor - gedcom
@@ -67,6 +67,61 @@ public abstract class Relationship {
   }
   
   /**
+   * Relationship : Association
+   */
+  public static class Association extends Relationship {
+      
+    private Property target;
+
+    /**
+     * Constructor
+     */  
+    public Association(Property target) {
+      super(target.getGedcom(), Gedcom.INDI);
+      
+      this.target = target;
+    }
+      
+    /**
+     * Create Association 
+     */
+    public Property apply(Entity entity) throws GedcomException {
+        
+      assume(entity, Indi.class);
+
+      // create ASSO in entity
+      MetaProperty meta = entity.getMetaProperty().get("ASSO", true);
+      PropertyAssociation asso = (PropertyAssociation)meta.create('@'+target.getEntity().getId()+'@');
+      entity.addProperty(asso);
+
+      // setup anchor through RELA if applicable
+      TagPath anchor = target.getPath();
+      Property rela = asso.addProperty(meta.get("RELA", true).create(anchor==null?"":'@'+anchor.toString()));
+
+      // link it
+      asso.link();
+      
+      // done - continue with relationship
+      return rela;
+    }
+    
+    /**
+     * 'Association'
+     */
+    public String getName() {
+      return Gedcom.resources.getString("rel.association");
+    }
+    
+    /**
+     * 
+     */
+    public String getDescription() {
+      return Gedcom.resources.getString("rel.association.with", new String[]{ Gedcom.getName(target.getTag()), target.getEntity().toString() });
+    }
+    
+  } //Assocation
+  
+  /**
    * Relationship : XRef'd by
    */
   public static class XRefBy extends Relationship {
@@ -90,44 +145,20 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#getName()
      */
     public String getName() {
-
-      // {0} getTargetType()
-      //rel.xref                = {0}
-      //rel.ASSO                = Association with {0}
-
-      // try to find right resource key to construct name (fallback is rel.xref)
-      String rkey = "rel."+xref.getTag();
-      if (!Gedcom.resources.contains(rkey))
-        rkey = "rel.xref";
-
-      // look it up
-      return Gedcom.resources.getString(rkey, Gedcom.getName(getTargetType()));
+      return Gedcom.resources.getString("rel.xref", Gedcom.getName(getTargetType()));
     }
     
     /**
      * @see genj.gedcom.Relationship#getDescription()
      */
     public String getDescription() {
-
-      // {0} getTargetType()
-      // {1} owner
-      
-      //rel.xref.desc           = {0} for {1}
-      //rel.ASSO.desc           = Association between {1} and {0}
-
-      // try to find right resource key to construct description (fallback is rel.xref.desc)
-      String rkey = "rel."+xref.getTag()+".desc";
-      if (!Gedcom.resources.contains(rkey))
-        rkey = "rel.xref.desc";
-      
-      //  look it up
-      return Gedcom.resources.getString(rkey, new String[]{ Gedcom.getName(getTargetType()), owner.toString()});
+      return Gedcom.resources.getString("rel.xref.desc", new String[]{ Gedcom.getName(getTargetType()), owner.toString()});
     }
     
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public Entity apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity) throws GedcomException {
       // connect
       owner.addProperty(xref);
       xref.setValue(entity.getId());
@@ -170,7 +201,7 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public Entity apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       family.addChild((Indi)entity);
       // focus stays with family
@@ -212,7 +243,7 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public Entity apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity) throws GedcomException {
       
       assume(entity, Indi.class);
   
@@ -269,7 +300,7 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public Entity apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       Indi indi = (Indi)entity;
       family.setSpouse(indi);
@@ -312,7 +343,7 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public Entity apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       
       // get Family
@@ -367,7 +398,7 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public Entity apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       
       // lookup family for spouse
@@ -421,7 +452,7 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public Entity apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity) throws GedcomException {
       
       assume(entity, Indi.class);
 

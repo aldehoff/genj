@@ -593,10 +593,24 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Returns the value of this property as string.
+   * Returns the value of this property as string (this is a Gedcom compliant value)
    */
   abstract public String getValue();
+  
+  /**
+   * Returns a user-readable property value
+   */
+  public String getDisplayValue() {
+    return getValue();
+  }
 
+  /**
+   * The default toString() returns the display value of this property
+   */
+  public String toString() {
+    return getDisplayValue();
+  }
+  
   /**
    * Sets this property's value as string.
    */
@@ -609,18 +623,6 @@ public abstract class Property implements Comparable {
     return true;
   }
 
-  /**
-   * The default toString returns the value of this property
-   * NM 19990715 introduced to allow access to a property on a
-   *             more abstract level than getValue()
-   * NM 20020221 changed to return value only
-   * NM sometime changed to return TAG VALUE
-   * NM 20040317 changed back to return value only - avoids need for renderer everywhere where a simple text representation is needed
-   */
-  public String toString() {
-    return getValue();
-  }
-  
   /**
    * Compares this property to another property
    * @return -1 this &lt; property <BR>
@@ -677,7 +679,7 @@ public abstract class Property implements Comparable {
   public final Property addDefaultProperties() {
     
     // only if parent set
-    if (getEntity()==null) throw new IllegalArgumentException("entity is null!");
+    if (getEntity()==null) throw new IllegalArgumentException("addDefaultProperties() while getEntity()==null!");
     
     // loop
     MetaProperty[] subs = getSubMetaProperties(MetaProperty.FILTER_DEFAULT); 

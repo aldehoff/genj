@@ -104,7 +104,7 @@ public class ReportAges extends Report {
             toPrint = "INDI:" + tag + ": ";
             indent = 4;
         }
-        println(getIndent(3) + toPrint + prop.toString(true));
+        println(getIndent(3) + toPrint + prop.getDisplayValue());
         Delta age = indi.getAge(prop.getStart());
         printAge(age, indent);
         

@@ -28,7 +28,6 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChange;
-import genj.gedcom.PropertyDate;
 import genj.gedcom.Transaction;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
@@ -656,14 +655,8 @@ public class PropertyTreeWidget extends DnDTree {
         
       } 
       
-      // date?
-      if (prop instanceof PropertyDate) {
-        html.append(((PropertyDate)prop).toString(true));
-        return;
-      }
-      
       // default!
-      html.append(prop.getValue());
+      html.append(prop.getDisplayValue());
     }
     
   } //Renderer

@@ -309,25 +309,18 @@ public class PropertyDate extends Property {
     assume(TAG.equals(meta.getTag()), UNSUPPORTED_TAG);
     return super.init(meta, value);
   }
-  
-  /**
-   * @see genj.gedcom.Property#toString()
-   */
-  public String toString() {
-    return toString(true);
-  }
 
   /**
-   * Returns this date as a string
+   * Returns this date as a localized string for display
    */
-  public String toString(boolean localize) {
-    return toString(localize, null);
+  public String getDisplayValue() {
+    return getDisplayValue(null);
   }
   
   /**
-   * Returns this date as a string
+   * Returns this date as a localized string for display
    */
-  public String toString(boolean localize, Calendar calendar) {
+  public String getDisplayValue(Calendar calendar) {
     
     // as string?
     if (dateAsString!=null) 
@@ -341,12 +334,10 @@ public class PropertyDate extends Property {
       smod = fd.start,
       emod = fd.end  ;
       
-    if (localize) {
-      if (smod.length()>0)
-        smod = Gedcom.getResources().getString("prop.date.mod."+smod);  
-      if (emod.length()>0)
-        emod = Gedcom.getResources().getString("prop.date.mod."+emod);  
-    }
+    if (smod.length()>0)
+      smod = Gedcom.getResources().getString("prop.date.mod."+smod);  
+    if (emod.length()>0)
+      emod = Gedcom.getResources().getString("prop.date.mod."+emod);  
 
     // collect information
     try {
@@ -355,17 +346,17 @@ public class PropertyDate extends Property {
       // start modifier & point in time
       result.append(smod);
       if (calendar==null||start.getCalendar()==calendar) 
-        start.toString(result, localize);
+        start.toString(result, true);
       else 
-        start.getPointInTime(calendar).toString(result, localize);
+        start.getPointInTime(calendar).toString(result, true);
   
       // end modifier & point in time
       if (isRange()) {
         result.append(emod);
         if (calendar==null||end.getCalendar()==calendar) 
-          end.toString(result,localize);
+          end.toString(result,true);
         else 
-          end.getPointInTime(calendar).toString(result, localize);
+          end.getPointInTime(calendar).toString(result, true);
       }
   
       // done    
@@ -384,10 +375,10 @@ public class PropertyDate extends Property {
     WordBuffer result = new WordBuffer();
     result.append(super.getInfo());
     result.append("<br>");
-    result.append(toString(true));
+    result.append(getDisplayValue());
     if (!(getStart().isGregorian()&&getEnd().isGregorian())) {
       result.append("<br>");
-      result.append(toString(true, PointInTime.GREGORIAN));
+      result.append(getDisplayValue(PointInTime.GREGORIAN));
       result.append("("+PointInTime.GREGORIAN.getName()+")");
     }
     return result.toString();

@@ -49,7 +49,7 @@ public class PropertyForeignXRef extends PropertyXRef {
   }
 
   /**
-   * getValue method comment.
+   * There's no gedcom equivalent to a foreign (back) reference so we'll simply babble here a bit 
    */
   public String getValue() {
     // the property/entity we're originating from
@@ -59,8 +59,8 @@ public class PropertyForeignXRef extends PropertyXRef {
     String result = resources.getString("linked.by")+" "+p.getPath()+" "+resources.getString("linked.in")+" "+e.getId();
     // relationship information?    
     Property rela = p.getProperty("RELA");
-    if (rela!=null&&rela.getValue().length()>0) { 
-      result += " ("+rela.getValue()+")";
+    if (rela!=null&&rela.getDisplayValue().length()>0) { 
+      result += " ("+rela.getDisplayValue()+")";
     } 
     
     // done

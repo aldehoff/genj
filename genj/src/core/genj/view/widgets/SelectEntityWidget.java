@@ -187,7 +187,7 @@ public class SelectEntityWidget extends JPanel {
       // DATE?
       if (path.getLast().equals("DATE")) {
         PropertyDate pd = (PropertyDate)e.getProperty(path);
-        String date = pd!=null ? pd.toString(true) : "?";
+        String date = pd!=null ? pd.getDisplayValue() : "?";
         return  date + " - " + e.toString() + " (" + e.getId() + ')';
       }
       
