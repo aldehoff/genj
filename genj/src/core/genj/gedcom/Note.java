@@ -19,7 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.swing.ImageIcon;
 
 /**
  * Class for encapsulating a note
@@ -30,14 +29,25 @@ public class Note extends Entity implements MultiLineSupport {
 // be able to choose the sub-note in path selector!!
 
   /** a delegate for keep the text data crammed in here by Gedcom grammar */
-  private Delegate delegate = new Delegate();
+  private PropertyMultilineValue delegate;
   
   /**
    * Notification to entity that it has been added to a Gedcom
    */
   public void addNotify(Gedcom gedcom) {
+    
+    // continue
     super.addNotify(gedcom);
-    addProperty(delegate);
+
+    // create a delegate we're using for storing the 
+    // note's multiline value
+    if (delegate==null) {
+      delegate = (PropertyMultilineValue)MetaProperty.get(this, "NOTE").create("");
+      delegate.isTransient = true;
+      addProperty(delegate);
+    }
+    
+    // done
   }
 
   /**
@@ -87,40 +97,4 @@ public class Note extends Entity implements MultiLineSupport {
     return delegate.append(level, tag, value);
   }
 
-
-  /**
-   * Delegate 
-   */
-  private class Delegate extends PropertyMultilineValue {
-    
-    /**
-     * Constructor
-     */
-    private Delegate() {
-    };
-    
-    /**
-     * @see genj.gedcom.PropertySimpleValue#getTag()
-     */
-    public String getTag() {
-      return Note.this.getTag();
-    }
-
-    
-    /**
-     * @see genj.gedcom.Property#getImage(boolean)
-     */
-    public ImageIcon getImage(boolean checkValid) {
-      return Note.this.getImage(false);
-    }
-    
-    /**
-     * @see genj.gedcom.Property#isTransient()
-     */
-    public boolean isTransient() {
-      return true;
-    }
-    
-  } //Delegate
-  
 } //Note
