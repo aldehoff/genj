@@ -44,7 +44,7 @@ public class ReportSameValues extends Report {
       return null;
     
     // return a meaningfull text for that context
-    return i18n("xname", val );
+    return i18n("xname", new String[]{ ((Property)context).getPropertyName(), val } );
   }
 
   /**
@@ -109,6 +109,8 @@ public class ReportSameValues extends Report {
     if (val==null||val.length()==0)
       return;
     
+    String name = ((Property)context).getPropertyName();
+    
     // collect parents of sameProps
     Item[] items = new Item[sameProps.length];
     for (int i=0; i<items.length; i++) {
@@ -116,7 +118,12 @@ public class ReportSameValues extends Report {
       // "Birth, Meier, Nils (I001)"
       Property prop = sameProps[i];      
       Property parent = prop.getParent();
-      String txt = (parent!=null?parent.getName():"") + ", " +prop.getEntity();
+      
+      String txt;
+      if (parent==null||parent instanceof Entity)
+        txt = prop.getEntity().toString();
+      else
+        txt = parent.getPropertyName() + " | " +prop.getEntity();
 
       // one item for each
     	items[i] = new Item(txt, prop.getImage(false), prop);
@@ -126,7 +133,7 @@ public class ReportSameValues extends Report {
     Arrays.sort(items);
     
     // show 'em
-    showItemsToUser( i18n("xname",val), gedcom, items);
+    showItemsToUser( i18n("xname",new String[]{ name, val}), gedcom, items);
     
     // done
   }

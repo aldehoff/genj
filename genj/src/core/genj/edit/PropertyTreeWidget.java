@@ -255,7 +255,7 @@ public class PropertyTreeWidget extends DnDTree {
     // .. won't work if property is not part of entity (e.g. Cliboard.Copy)
     if (prop.getEntity()==null) return null;
     // .. calc information text
-    String info = prop.getInfo();
+    String info = prop.getPropertyInfo();
     if (info==null) 
       return null;
     // return text wrapped to 200 pixels

@@ -305,11 +305,11 @@ public class PropertyDate extends Property {
   }
   
   /**
-   * @see genj.gedcom.Property#getInfo()
+   * @see genj.gedcom.Property#getPropertyInfo()
    */
-  public String getInfo() {
+  public String getPropertyInfo() {
     WordBuffer result = new WordBuffer();
-    result.append(super.getInfo());
+    result.append(super.getPropertyInfo());
     result.append("<br>");
     result.append(getDisplayValue());
     if (!(getStart().isGregorian()&&getEnd().isGregorian())) {

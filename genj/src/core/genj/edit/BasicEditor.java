@@ -475,7 +475,7 @@ import javax.swing.event.ChangeListener;
       if (prop.getParent()==null)
         img = img.getDisabled(50);
       setIcon(img);
-      setToolTipText(wrapped.getProperty().getName());
+      setToolTipText(wrapped.getProperty().getPropertyName());
   
       // fix looks
       setFocusable(false);
@@ -514,7 +514,7 @@ import javax.swing.event.ChangeListener;
       }
       // prepare a panel with wrapped
       JPanel content = new JPanel(new BorderLayout());
-      content.add(new JLabel(wrapped.getProperty().getName()), BorderLayout.NORTH);
+      content.add(new JLabel(wrapped.getProperty().getPropertyName()), BorderLayout.NORTH);
       content.add(wrapped, BorderLayout.CENTER);
       // show popup
       Point pos = getLocationOnScreen();

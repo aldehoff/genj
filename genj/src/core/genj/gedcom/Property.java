@@ -721,7 +721,7 @@ public abstract class Property implements Comparable {
    * default whatever is in the language resource files
    * @return name and info or null
    */
-  public String getInfo() {
+  public String getPropertyInfo() {
     return getMetaProperty().getInfo();
   }
   
@@ -730,7 +730,7 @@ public abstract class Property implements Comparable {
    * default whatever is in the language resource files
    * @return name
    */
-  public String getName() {
+  public String getPropertyName() {
     return Gedcom.getName(getTag());
   }
   
