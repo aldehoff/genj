@@ -39,10 +39,16 @@ public class NestedBlockLayout implements LayoutManager2 {
   /** level of components */
   private int componentLevel = 1;
   
+  /** padding */
+  private int padding = 1;
+  
   /**
    * Constructor
    */
   public NestedBlockLayout(boolean startWithRow, int componentLevel) {
+    
+    if (componentLevel<1)
+      throw new IllegalArgumentException(componentLevel+"<1");
 
     root = startWithRow ? (Block)new Row() : (Block)new Column();
     
@@ -205,7 +211,7 @@ public class NestedBlockLayout implements LayoutManager2 {
         Block sub = (Block)subs.get(i);
         
         avail.width = sub.preferred().width + (int)(sub.weight().getX() * spareOverWeight);
-        avail.height = sub.weight().getY()>0 ? in.height : sub.preferred().height;
+        avail.height = in.height;
 
         sub.layout(avail);
   
@@ -282,7 +288,7 @@ public class NestedBlockLayout implements LayoutManager2 {
         
         Block sub = (Block)subs.get(i);
         
-        avail.width = sub.weight().getX()>0 ? in.width : sub.preferred().width;
+        avail.width = in.width;
         avail.height = sub.preferred().height + (int)(sub.weight().getY() * spareOverWeight);
         
         sub.layout(avail);
@@ -330,7 +336,14 @@ public class NestedBlockLayout implements LayoutManager2 {
     
     /** preferred */
     Dimension preferred() {
-      return component.getPreferredSize();
+      // known?
+      if (preferred!=null)
+        return preferred;
+      // calc
+      preferred = new Dimension(component.getPreferredSize());
+      preferred.width += padding*2;
+      preferred.height += padding*2;
+      return preferred;
     }
     
     /** weight */
@@ -341,11 +354,13 @@ public class NestedBlockLayout implements LayoutManager2 {
     /** layout */
     void layout(Rectangle in) {
       
-      Rectangle avail = new Rectangle(in.x, in.y, in.width, in.height);
-      if (constraints.getX()==0)
-        avail.width = component.getPreferredSize().width;
-      if (constraints.getY()==0)
-        avail.height = component.getPreferredSize().height;
+      Rectangle avail = new Rectangle(in.x+padding, in.y+padding, in.width-padding*2, in.height-padding*2);
+      
+      Dimension max = component.getMaximumSize();
+      if (max.width<avail.width)  
+        avail.width = max.width;
+      if (max.height<avail.height)  
+        avail.height = max.height;
       component.setBounds(avail);
     }
     
@@ -354,7 +369,7 @@ public class NestedBlockLayout implements LayoutManager2 {
   /**
    * Constructor
    */
-  public NestedBlockLayout() {
+  private NestedBlockLayout() {
   }
   
   /**
@@ -363,7 +378,7 @@ public class NestedBlockLayout implements LayoutManager2 {
    * @param constraints a Point2D for x/y weight (if applicable)
    */
   public void addLayoutComponent(Component comp, Object constraints) {
-    root.add(new Cell(comp, constraints), componentLevel);
+    root.add(new Cell(comp, constraints), componentLevel-1);
   }
 
   /**
