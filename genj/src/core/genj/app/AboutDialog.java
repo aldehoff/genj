@@ -20,7 +20,7 @@
  *
  * AboutDialog class
  * This class creates the content of AboutDialog application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.1 2002-05-21 17:57:07 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/AboutDialog.java,v 1.2 2002-05-21 21:12:07 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.0
  *
@@ -142,7 +142,7 @@ public class AboutDialog {
       return;
     }
     else {
-      AboutDialog am = new AboutDialog();
+      instance = new AboutDialog();
     }
   }
   
