@@ -31,7 +31,8 @@ public class PropertyName extends Property {
   /** the first + last name */
   private String
     lastName  = null,
-    firstName = null;
+    firstName = null,
+    suffix    = null;
 
   /** the name if unparsable */
   private String nameAsString;
@@ -100,10 +101,24 @@ public class PropertyName extends Property {
   }
 
   /**
+   * Returns localized label for last name
+   */
+  static public String getLabelForSuffix() {
+    return "Suffix";
+  }
+
+  /**
    * the last name
    */
   public String getLastName() {
     return lastName;
+  }
+
+  /**
+   * the suffix
+   */
+  public String getSuffix() {
+    return suffix;
   }
 
   /**
@@ -151,16 +166,18 @@ public class PropertyName extends Property {
     if (nameAsString != null) {
       return nameAsString;
     }
-    if (lastName.equals("")) {
-      return firstName;
-    }
-    return firstName+" /"+lastName+"/";
+    String out = firstName;
+    if ((lastName != null) && (! lastName.equals("")))
+      out = firstName+" /"+lastName+"/";
+    if ((suffix != null) && (! suffix.equals("")))
+      out = out+suffix;
+    return out;
   }
 
   /**
    * Sets name to a new value
    */
-  public void setName(String first, String last) {
+  public void setName(String first, String last, String suff) {
 
     noteModifiedProperty();
 
@@ -169,6 +186,7 @@ public class PropertyName extends Property {
 
     lastName  = last.trim();
     firstName = first.trim();
+    suffix    = suff.trim();
 
     // Done
   }
@@ -212,6 +230,7 @@ public class PropertyName extends Property {
     }
 
     // ... format ok
+    suffix = l.substring( l.indexOf('/') + 1 );
     l = l.substring( 0 , l.indexOf('/') );
 
     // Done

@@ -34,7 +34,7 @@ import genj.gedcom.*;
 class ProxyName extends Proxy implements DocumentListener {
 
   /** our components */
-  private JTextField tlast,tfirst;
+  private JTextField tlast, tfirst, tsuff;
 
   /** dirty flag */
   private boolean changed=false;
@@ -57,12 +57,13 @@ class ProxyName extends Proxy implements DocumentListener {
     }
 
     // ... calc texts
-    String first = tfirst.getText().trim(),
-           last  = tlast .getText().trim();
+    String first = tfirst.getText().trim();
+    String last  = tlast .getText().trim();
+    String suff  = tsuff .getText().trim();
 
     // ... store changed value
     PropertyName p = (PropertyName) prop;
-    p.setName( first , last );
+    p.setName( first, last, suff );
 
     // Done
   }
@@ -99,6 +100,7 @@ class ProxyName extends Proxy implements DocumentListener {
     // Unknown property can be changed through a TextField
     tlast  = createTextField( pname.getLastName() ,"B" ,this, null );
     tfirst = createTextField( pname.getFirstName(),"FB",this, null  );
+    tsuff  = createTextField( pname.getSuffix(),   "?", this, null );
 
     JLabel l = createLabel( pname.getLabelForFirstName() , "LFN");
     in.add(l);
@@ -107,6 +109,10 @@ class ProxyName extends Proxy implements DocumentListener {
     l = createLabel( pname.getLabelForLastName(), "LLN" );
     in.add(l);
     in.add(tlast);
+
+    l = createLabel( pname.getLabelForSuffix(), "?" );
+    in.add(l);
+    in.add(tsuff);
 
     in.add(Box.createVerticalGlue());
 
