@@ -24,6 +24,7 @@ import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyName;
+import genj.gedcom.PropertyXRef;
 import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
 
@@ -441,5 +442,38 @@ public class PropertyRenderer {
     }  
   
   } //Date
+
+  /**
+   * XRef
+   */
+  /*package*/ static class XRef extends PropertyRenderer {
+    
+    /** 
+     * size override
+     */
+    public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point2D.Float resolution) {
+      if (prop instanceof PropertyXRef) {
+        Object e = ((PropertyXRef)prop).getReferencedEntity();
+        if (e!=null) 
+          return super.getSize(metrics, prop.getImage(false), e.toString(), preference, resolution);
+      }
+      return super.getSize(metrics, prop, preference, resolution);
+    }
+
+    /**
+     * render override
+     */
+    public void render( Graphics g, Rectangle bounds, Property prop, int preference, Point2D.Float resolution) {
+      if (prop instanceof PropertyXRef) {
+        Object e = ((PropertyXRef)prop).getReferencedEntity();
+        if (e!=null) {
+          super.render(g, bounds, prop.getImage(false), e.toString(), preference, resolution);
+          return;
+        }
+      }
+      super.render(g, bounds, prop, preference, resolution);
+    }
+  
+  } //XRef
       
 } //PropertyProxy

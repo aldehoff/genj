@@ -41,7 +41,7 @@ public class Note extends Entity implements MultiLineSupport{
    * Returns this property as a string
    */
   public String toString() {
-    return super.toString()+delegate.getLinesValue();
+    return delegate.getValue();
   }
 
   /**

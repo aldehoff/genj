@@ -210,27 +210,16 @@ public class Fam extends Entity {
    */
   public String toString() {
     
-    WordBuffer wb = new WordBuffer();
+    WordBuffer wb = new WordBuffer('+');
 
-    // Fxyz:...
-    wb.append(super.toString());
-
-    // ... Someone, Joe (Iabc) ...
     Indi husband = getHusband();
-    if (husband!=null) wb.append(husband);
+    if (husband!=null) wb.append(husband.getName());
     
-    // ... + Another, Susan (Izyx) ...
     Indi wife = getWife();
-    if (wife!=null) wb.append(wife);
-
-    // ... \n Little, One (Iefg) ...
-    Indi[] children = getChildren();
-    for (int c=0;c<children.length;c++) {
-      wb.append(children[c].toString());
-    }
+    if (wife!=null) wb.append(wife.getName());
 
     // Done
-    return wb.toString();
+    return wb.length()>0 ? wb.toString() : super.toString();
   }
   
 } //Fam

@@ -31,7 +31,7 @@ public class Media extends Entity {
    */
   public String toString() {
     Property title = getProperty("TITL");
-    return super.toString() + (title!=null ? title.getValue() : ""); 
+    return title!=null ? title.getValue() : super.toString(); 
   }
 
   /**

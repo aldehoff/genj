@@ -489,7 +489,8 @@ public class Indi extends Entity {
    * Returns this entity as String description
    */
   public String toString() {
-    return super.toString()+getName();
+    String name = getName();
+    return name.length()>0 ? name : super.toString();
   }
   
 } //Indi

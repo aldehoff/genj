@@ -19,7 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.WordBuffer;
 
 
 /**
@@ -33,14 +32,8 @@ public class Source extends Entity {
    * Returns this property as a string
    */
   public String toString() {
-    // look for titl
-    WordBuffer buf = new WordBuffer();
-    buf.append(getProperty("TITL"));
-    // author 
-    buf.append("by").append(getProperty("AUTH"), "Unknown Author");
-    // text
-    buf.setFiller("\n").append(getText(), "text n/a");
-    return super.toString() + buf.toString();
+    Property titl = getProperty("TITL");
+    return titl!=null ? titl.getValue() : super.toString();
   }
   
   /**

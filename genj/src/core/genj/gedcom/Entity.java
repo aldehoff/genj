@@ -89,7 +89,7 @@ public abstract class Entity extends Property {
    * @see genj.gedcom.Property#toString()
    */
   public String toString() {
-    return id+":";
+    return getTag() + ' ' + id;
   }
 
   /**
