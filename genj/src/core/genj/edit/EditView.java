@@ -624,6 +624,8 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   
           // Continue with/without veto
         }
+        
+        // FIXME always ask because we don't have undo
   
         if (veto==null) {
           getCurrentEntity().getProperty().delProperty( prop );
