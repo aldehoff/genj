@@ -254,12 +254,12 @@ public class MetaProperty {
   /**
    * Resolve sub by tag
    */
-  public MetaProperty get(String tag) {
+  public MetaProperty get(String tag, boolean persist) {
     // current tag in map?
     MetaProperty result = (MetaProperty)mapOfSubs.get(tag);
     if (result==null) {
       result = new MetaProperty(tag, Collections.EMPTY_MAP);
-      addSub(result);
+      if (persist) addSub(result);
     }
     // done
     return result;
@@ -304,7 +304,7 @@ public class MetaProperty {
    * Static - resolve instance
    */
   public static MetaProperty get(Property prop, String sub) {
-    return get(prop).get(sub);    
+    return get(prop).get(sub, true);    
   }
   
   /**
