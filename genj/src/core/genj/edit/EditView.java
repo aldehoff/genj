@@ -676,7 +676,7 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
       result.setToolTipText(resources.getString(tip));
     }
     result.setBorderPainted(borderPainted);
-    result.setFocusable(false);
+    result.setRequestFocusEnabled(false); // setFocusable is 1.4
     result.setEnabled(enabled);
     result.setMargin(insets!=null?insets:new Insets(0,0,0,0));
 
