@@ -21,7 +21,7 @@ package genj.app;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.MultiLineSupport;
+import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.io.Filter;
@@ -212,8 +212,8 @@ import javax.swing.JTextField;
       // check if path is applying
       if (paths.contains(property.getPath())) return false;
       // check if value is applying
-      if (property instanceof MultiLineSupport) {
-        if (!accept(((MultiLineSupport)property).getAllLines()))
+      if (property instanceof MultiLineProperty) {
+        if (!accept(((MultiLineProperty)property).getLinesValue()))
           return false;
       }
       // simple

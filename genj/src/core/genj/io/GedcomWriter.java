@@ -23,7 +23,7 @@ import genj.Version;
 import genj.crypto.Enigma;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.MultiLineSupport;
+import genj.gedcom.MultiLineProperty;
 import genj.gedcom.PointInTime;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -300,18 +300,33 @@ public class GedcomWriter implements Trackable {
     // This property's value
     boolean encrypt = prop.isPrivate();
     
-    if (prop instanceof MultiLineSupport) {
+    if (prop instanceof MultiLineProperty) {
+      
+      MultiLineProperty multi = (MultiLineProperty)prop;
 
-      // .. more lines from iterator
-      MultiLineSupport.Lines lines = ((MultiLineSupport)prop).getLines();
+      // prep an iterator to loop through lines in this property
+      MultiLineProperty.Iterator lines = multi.getLineIterator();
+      
+      // encrypt lines value?
+      if (encrypt)
+        lines.setValue(encrypt(multi.getLinesValue()));
+        
+      // loop for write
       line(lines.getIndent(), prefix + lines.getTag(), lines.getValue());
       while (lines.next())
         line(lines.getIndent(), lines.getTag(), lines.getValue());
 
+
     } else {
+
+      // encrypt value?
+      String value = prop.getValue();
+      if (encrypt)
+        value = encrypt(value);
+        
       
       // .. just a single line
-      line(prefix + prop.getTag(), prop.getValue());
+      line(prefix + prop.getTag(), value);
       
     }
 
@@ -335,17 +350,19 @@ public class GedcomWriter implements Trackable {
    * encrypt a value
    */
   private String encrypt(String value) throws IOException {
-    // Make sure enigma is setup
-    if (enigma==null) {
-      String pwd = gedcom.getPassword();
-      if (pwd==null)
-        throw new IOException("Unknown Password - needed for encryption");
-      enigma = Enigma.getInstance(gedcom.getPassword());
-      if (enigma==null)
-        throw new IOException("Encryption not possible");
-    }
-    // encrypt and done
-    return enigma.encrypt(value);
+    return value;
+// FIXME encrypt call here    
+//    // Make sure enigma is setup
+//    if (enigma==null) {
+//      String pwd = gedcom.getPassword();
+//      if (pwd==null)
+//        throw new IOException("Unknown Password - needed for encryption");
+//      enigma = Enigma.getInstance(gedcom.getPassword());
+//      if (enigma==null) 
+//        throw new IOException("Encryption not available");
+//    }
+//    // encrypt and done
+//    return enigma.encrypt(value);
   }
 
   /**

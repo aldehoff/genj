@@ -24,7 +24,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.IconValueAvailable;
-import genj.gedcom.MultiLineSupport;
+import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
@@ -593,8 +593,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       if (searchThis&&!prop.isTransient()) {
         // check prop's value
         String value;
-        if (prop instanceof MultiLineSupport && !(prop instanceof IconValueAvailable))
-          value = ((MultiLineSupport)prop).getAllLines();
+        if (prop instanceof MultiLineProperty && !(prop instanceof IconValueAvailable))
+          value = ((MultiLineProperty)prop).getLinesValue();
         else
           value = prop.getValue();
         search(entity, prop, value);

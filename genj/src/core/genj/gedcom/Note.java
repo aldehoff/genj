@@ -25,7 +25,7 @@ package genj.gedcom;
 /**
  * Class for encapsulating a note
  */
-public class Note extends Entity implements MultiLineSupport {
+public class Note extends Entity implements MultiLineProperty {
 
   /** a delegate for keep the text data crammed in here by Gedcom grammar */
   private PropertyMultilineValue delegate;
@@ -77,22 +77,29 @@ public class Note extends Entity implements MultiLineSupport {
   /**
    * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
-  public String getAllLines() {
-    return delegate.getAllLines();
+  public String getLinesValue() {
+    return delegate.getLinesValue();
   }
   
   /**
    * @see genj.gedcom.PropertyNote#getLines()
    */
-  public Lines getLines() {
-    return delegate.getLines();
+  public Iterator getLineIterator() {
+    return delegate.getLineIterator();
   }
 
   /**
    * @see genj.gedcom.MultiLineSupport#getContinuation()
    */
-  public Continuation getContinuation() {
-    return delegate.getContinuation();
+  public Collector getLineCollector() {
+    return delegate.getLineCollector();
+  }
+  
+  /**
+   * @see genj.gedcom.Property#isPrivate()
+   */
+  public boolean isPrivate() {
+    return delegate.isPrivate();
   }
   
 

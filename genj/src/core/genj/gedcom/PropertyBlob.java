@@ -30,7 +30,7 @@ import java.io.InputStream;
 /**
  * Gedcom Property : BLOB
  */
-public class PropertyBlob extends Property implements MultiLineSupport, IconValueAvailable {
+public class PropertyBlob extends Property implements MultiLineProperty, IconValueAvailable {
   
   private final static String TAG = "BLOB";
 
@@ -144,32 +144,32 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   /**
    * @see genj.gedcom.MultiLineSupport#getContinuation()
    */
-  public Continuation getContinuation() {
-    return new MyContinuation();
+  public Collector getLineCollector() {
+    return new BlobCollector();
   }
 
   /**
    * Returns an Iterator which can be used to iterate through
    * several lines of this blob's value
    */
-  public MultiLineSupport.Lines getLines() {
+  public MultiLineProperty.Iterator getLineIterator() {
     
     // raw?
     if (content instanceof byte[])
-      return new Base64Lines(Base64.encode((byte[])content));
+      return new BlobIterator(Base64.encode((byte[])content));
       
     // image?
     if (content instanceof ImageIcon)
-      return new Base64Lines(Base64.encode(((ImageIcon)content).getBytes()));
+      return new BlobIterator(Base64.encode(((ImageIcon)content).getBytes()));
 
     // string!
-    return new Base64Lines(new StringBuffer(content.toString()));
+    return new BlobIterator(content.toString());
   }
   
   /**
    * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
-  public String getAllLines() {
+  public String getLinesValue() {
     return getValue();
   }
 
@@ -236,7 +236,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
    * A continuation for gathering blob data
    *
    */
-  private class MyContinuation implements MultiLineSupport.Continuation {
+  private class BlobCollector implements MultiLineProperty.Collector {
     
     /** current state */
     private StringBuffer buffer;
@@ -244,7 +244,7 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     /**
      * Constructor
      */ 
-    private MyContinuation() {
+    private BlobCollector() {
       buffer = new StringBuffer(1024);
       if (content instanceof String) buffer.append(content);
     }
@@ -270,10 +270,10 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     }
     
     /**
-     * @see genj.gedcom.MultiLineSupport.Continuation#commit()
+     * @see genj.gedcom.MultiLineProperty.Collector#getValue()
      */
-    public void commit() {
-      setValue(buffer.toString());
+    public String getValue() {
+      return buffer.toString();
     }
 
   } //MyContinuation
@@ -281,10 +281,10 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
   /**
    * Member class for iterating through adress' lines of base64-encoded data
    */
-  private static class Base64Lines implements MultiLineSupport.Lines {
+  private static class BlobIterator implements MultiLineProperty.Iterator {
 
     /** the base64 string */
-    private StringBuffer base64;
+    private String base64;
 
     /** the offset in the string */
     private int offset;
@@ -293,7 +293,14 @@ public class PropertyBlob extends Property implements MultiLineSupport, IconValu
     private final int LINE = 72;
 
     /** Constructor */
-    public Base64Lines(StringBuffer base64) {
+    public BlobIterator(String base64) {
+      setValue(base64);
+    }
+    
+    /**
+     * @see genj.gedcom.MultiLineProperty.Iterator#setValue()
+     */
+    public void setValue(String base64) {
       this.base64 = base64;
       this.offset = 0;
     }

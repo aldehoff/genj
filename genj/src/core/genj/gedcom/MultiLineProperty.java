@@ -23,27 +23,27 @@ package genj.gedcom;
  * An interface for properties with multiple lines
  * CONCatenated or CONTinued
  */
-public interface MultiLineSupport {
+public interface MultiLineProperty {
   
   /**
    * Return an iterator for writing lines
    */
-  public Continuation getContinuation();
+  public Collector getLineCollector();
 
   /**
    * Return an iterator for reading lines
    */
-  public Lines getLines();
+  public Iterator getLineIterator();
   
   /** 
    * Return the multiline value as a continuous String
    */
-  public String getAllLines();
+  public String getLinesValue();
   
   /**
-   * An iterator for continuing with multiple lines 
+   * Collecting multiple lines into a value for a MultiLineProperty 
    */
-  public interface Continuation {
+  public interface Collector {
     
     /**
      * append
@@ -52,16 +52,19 @@ public interface MultiLineSupport {
     public boolean append(int indent, String tag, String value);
     
     /**
-     * commit the writer - no more data following
+     * get the resulting value
      */
-    public void commit();
+    public String getValue();
     
   }
   
   /**
    * An iterator for reading multiple lines
    */
-  public interface Lines {
+  public interface Iterator {
+    
+    /** change value to iterate over */
+    public void setValue(String value);
 
     /** relative level of indent (normaly 0) */
     public int getIndent();

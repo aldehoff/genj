@@ -19,7 +19,7 @@
  */
 package genj.edit;
 
-import genj.gedcom.MultiLineSupport;
+import genj.gedcom.MultiLineProperty;
 import genj.util.swing.TextAreaWidget;
 
 import javax.swing.BorderFactory;
@@ -59,8 +59,8 @@ class ProxyMLE extends Proxy {
 
     // Calculate value to show
     String value;
-    if (property instanceof MultiLineSupport) {
-      value = ((MultiLineSupport)property).getAllLines();
+    if (property instanceof MultiLineProperty) {
+      value = ((MultiLineProperty)property).getLinesValue();
     } else {
       value = property.getValue(); 
     }

@@ -25,7 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MetaProperty;
-import genj.gedcom.MultiLineSupport;
+import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.util.swing.HeadlessLabel;
@@ -546,9 +546,9 @@ public class PropertyTreeWidget extends TreeWidget {
           if (!prop.isTransient())
             html.append(" <b>").append(prop.getTag()).append("</b> ");
           
-          if (prop instanceof MultiLineSupport && !(prop instanceof IconValueAvailable)) {
+          if (prop instanceof MultiLineProperty && !(prop instanceof IconValueAvailable)) {
           
-            char[] chars = ((MultiLineSupport)prop).getAllLines().toCharArray();
+            char[] chars = ((MultiLineProperty)prop).getLinesValue().toCharArray();
             for (int i=0; i<chars.length; i++) {
               char c = chars[i];
               if (c=='\n') html.append("<br>");

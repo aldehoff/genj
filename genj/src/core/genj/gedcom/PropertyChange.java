@@ -36,7 +36,7 @@ import java.util.Date;
  * the same three lines on save
  * @author nmeier
  */
-public class PropertyChange extends Property implements MultiLineSupport {
+public class PropertyChange extends Property implements MultiLineProperty {
 
   //tried to parse the decimal-fraction of a second, too, but SS is milliseconds
   //new SimpleDateFormat("HH:mm:ss.SS"), 
@@ -124,29 +124,44 @@ public class PropertyChange extends Property implements MultiLineSupport {
   /**
    * @see genj.gedcom.MultiLineSupport#getContinuation()
    */
-  public Continuation getContinuation() {
-    return new MyContinuation();
+  public Collector getLineCollector() {
+    return new DateTimeCollector();
   }
     
   /**
    * @see genj.gedcom.MultiLineSupport#getLines()
    */
-  public Lines getLines() {
-    return new MyLines();
+  public Iterator getLineIterator() {
+    return new DateTimeIterator();
   }
   
   /**
    * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
-  public String getAllLines() {
-    return EMPTY_STRING;
+  public String getLinesValue() {
+    return getValue();
   }
   
   /**
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
   public void setValue(String value) {
-    // ignored
+    // must look like 19 DEC 2003,14:50
+    int i = value.indexOf(',');
+    if (i<0) 
+      return;
+    // parse pit
+    pit = PointInTime.getPointInTime(value.substring(0,i));
+    // parse tiem 
+    for (int f=0;f<FORMATS.length;f++) {
+      try {
+        time = FORMATS[f].parse(value.substring(i+1)).getTime();
+        break;
+      } catch (Throwable t) {
+        time = -1;
+      }
+    }
+    // done
   }
   
   /**
@@ -154,7 +169,7 @@ public class PropertyChange extends Property implements MultiLineSupport {
    * @see genj.gedcom.Property#getValue()
    */
   public String getValue() {
-    return getDateAsString()+' '+getTimeAsString();
+    return getDateAsString()+','+getTimeAsString();
   }
   
   /**
@@ -172,11 +187,20 @@ public class PropertyChange extends Property implements MultiLineSupport {
     // compare time
     return (int)(time-other.time);
   }
+  
+  /**
+   * @see genj.gedcom.Property#setPrivate(boolean, boolean)
+   */
+  public void setPrivate(boolean set, boolean recursively) {
+    // ignored
+  }
 
   /**
    * Continuation for handling multiple lines concerning this change
    */
-  private class MyContinuation implements MultiLineSupport.Continuation {
+  private class DateTimeCollector implements MultiLineProperty.Collector {
+
+    private String date, time;
     
     /**
      * @see genj.gedcom.MultiLineSupport.Continuation#append(int, java.lang.String, java.lang.String)
@@ -184,23 +208,14 @@ public class PropertyChange extends Property implements MultiLineSupport {
     public boolean append(int indent, String tag, String value) {
       
       // DATE
-      if (indent==1&&DATE.equals(tag)) { 
-        pit = PointInTime.getPointInTime(value);
+      if (indent==1&&DATE.equals(tag)) {
+        date = value; 
         return true;
       }
     
       // TIME
       if (indent==2&&TIME.equals(tag)) {
-        time = -1;
-      
-        for (int f=0;f<FORMATS.length;f++) {
-          try {
-            time = FORMATS[f].parse(value).getTime();
-            break;
-          } catch (Throwable t) {
-          }
-        }
-      
+        time = value;
         return true;
       }
       
@@ -209,10 +224,10 @@ public class PropertyChange extends Property implements MultiLineSupport {
     }
     
     /**
-     * @see genj.gedcom.MultiLineSupport.Continuation#commit()
+     * @see genj.gedcom.MultiLineProperty.Collector#getValue()
      */
-    public void commit() {
-      // nothing to commit
+    public String getValue() {
+      return date+','+time;
     }
     
   } //MyContinuation
@@ -220,7 +235,7 @@ public class PropertyChange extends Property implements MultiLineSupport {
   /**
    * Iterator for lines wrapped in this change
    */
-  private class MyLines implements MultiLineSupport.Lines {
+  private class DateTimeIterator implements MultiLineProperty.Iterator {
     
     /** tracking line index */
     int i = 0;
@@ -229,6 +244,13 @@ public class PropertyChange extends Property implements MultiLineSupport {
     private String[] 
       tags = { CHAN, DATE, TIME  },
       values = { EMPTY_STRING, pit.toGedcomString(), getTimeAsString() };
+      
+    /**
+     * @see genj.gedcom.MultiLineProperty.Iterator#setValue(java.lang.String)
+     */
+    public void setValue(String value) {
+      // ignored
+    }
       
     /**
      * @see genj.gedcom.MultiLineSupport.LineIterator#getIndent()

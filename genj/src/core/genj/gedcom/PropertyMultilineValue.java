@@ -25,13 +25,13 @@ package genj.gedcom;
 /**
  * Gedcom Property with multiple lines
  */
-public class PropertyMultilineValue extends Property implements MultiLineSupport {
+public class PropertyMultilineValue extends Property implements MultiLineProperty {
   
   /** the tag */
   private String tag;
   
   /** our value */
-  private StringBuffer lines = new StringBuffer(80);
+  private String lines = "";
   
   /**
    * Which Proxy to use for this property
@@ -56,43 +56,43 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
   }
   
   /**
+   * Can contain '\n' etc. since this is a mutli-line text
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
-  public void setValue(String set) {
+  public void setValue(String setValue) {
     modNotify();
-    lines.setLength(0);
-    lines.append(set);
+    lines = setValue;
   }
 
   /**
    * Accessor Value
    */
   public String getValue() {
-    return getFirstLine(lines);
+    return getFirstLine();
   }
   
   /**
    * Helper to resolve the first line of a multiline value
    */
-  /*package*/ static String getFirstLine(StringBuffer value) { 
+  public String getFirstLine() { 
 
     // More than one line ?
-    int pos = value.indexOf("\n");
+    int pos = lines.indexOf("\n");
     if (pos>=0) 
-      return value.substring(0,pos)+"...";
+      return lines.substring(0,pos)+"...";
       
     // Longer than 255?
-    if (value.length()>255)
-      return value.substring(0,252)+"...";
+    if (lines.length()>255)
+      return lines.substring(0,252)+"...";
 
     // Value
-    return value.toString();
+    return lines;
   }
   
   /**
    * @see genj.gedcom.MultiLineSupport#getLinesValue()
    */
-  public String getAllLines() {
+  public String getLinesValue() {
     return lines.toString();
   }
 
@@ -100,27 +100,27 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
   /**
    * @see genj.gedcom.MultiLineSupport#getLines()
    */
-  public Lines getLines() {
-    return new MyLines(getTag(), lines);
+  public Iterator getLineIterator() {
+    return new ConcContIterator(getTag(), lines);
   }
 
   /**
    * @see genj.gedcom.MultiLineSupport#getContinuation()
    */
-  public Continuation getContinuation() {
-    return new MyContinuation();
+  public Collector getLineCollector() {
+    return new ConcContCollector();
   }
   
   /**
    * An iterator for lines
    */
-  private static class MyLines implements Lines {
+  private static class ConcContIterator implements Iterator {
     
     /** the tag */
-    private String tag, next;
+    private String first, current, next;
     
     /** the value */
-    private StringBuffer value;
+    private String value;
     
     /** the current segment */
     private int start,end;
@@ -128,14 +128,22 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
     /**
      * Constructor
      */
-    /*package*/ MyLines(String top, StringBuffer linesValue) {
-      
-      tag = top;
-      next = top;
-      value = linesValue;
-       
+    /*package*/ ConcContIterator(String top, String initValue) {
+      first = top;
+      setValue(initValue);
+    }
+    
+    /**
+     * @see genj.gedcom.MultiLineProperty.Iterator#setValue(java.lang.String)
+     */
+    public void setValue(String setValue) {
+
+      value = setValue;
+
+      current = first;       
       start = 0;
       end = 0;
+
       next();
     }
     
@@ -150,7 +158,7 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
      * @see genj.gedcom.MultiLineSupport.Line#getTag()
      */
     public String getTag() {
-      return tag;
+      return current;
     }
     
     /**
@@ -165,14 +173,15 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
      */
     public boolean next() {
       
-      tag = next;
-      
       // nothing more there?
       if (end==value.length()) 
         return false;
-      
+
       // continue from last end
       start = end;
+      
+      // calc current tag      
+      current = start==0?first:next;
       
       // assume taking all
       end = value.length();
@@ -214,7 +223,7 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
   /**
    * An iterator for lines
    */
-  private class MyContinuation implements Continuation {
+  private class ConcContCollector implements Collector {
     
     /** running collection */
     private StringBuffer buffer = new StringBuffer(lines.toString());
@@ -246,10 +255,10 @@ public class PropertyMultilineValue extends Property implements MultiLineSupport
     }
     
     /**
-     * @see genj.gedcom.MultiLineSupport.Writer#commit()
+     * @see genj.gedcom.MultiLineProperty.Collector#getValue()
      */
-    public void commit() {
-      setValue(buffer.toString());
+    public String getValue() {
+      return buffer.toString();
     }
 
   } //LineWriter

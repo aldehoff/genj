@@ -56,7 +56,7 @@ public abstract class Property implements Comparable {
   protected boolean isTransient = false;
 
   /** whether we're private or not */
-  protected boolean isPrivate = false;
+  private boolean isPrivate = false;
 
   /**
    * Lifecycle - callback when being added to parent

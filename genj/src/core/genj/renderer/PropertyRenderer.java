@@ -20,7 +20,7 @@
 package genj.renderer;
 
 import genj.gedcom.IconValueAvailable;
-import genj.gedcom.MultiLineSupport;
+import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyName;
@@ -237,12 +237,12 @@ public class PropertyRenderer {
      */
     public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point dpi) {
       //.gotta be multiline
-      if (!(prop instanceof MultiLineSupport))
+      if (!(prop instanceof MultiLineProperty))
         return super.getSize(metrics, prop, preference, dpi);
       // count 'em
       int lines = 0;
       int width = 0;
-      MultiLineSupport.Lines line = ((MultiLineSupport)prop).getLines();
+      MultiLineProperty.Iterator line = ((MultiLineProperty)prop).getLineIterator();
       do {
         lines++;
         width = Math.max(width, metrics.stringWidth(line.getValue()));
@@ -256,12 +256,12 @@ public class PropertyRenderer {
      */
     public void render( Graphics g, Rectangle bounds, Property prop, int preference, Point dpi) {
       //.gotta be multiline
-      if (!(prop instanceof MultiLineSupport)) {
+      if (!(prop instanceof MultiLineProperty)) {
         super.render(g, bounds, prop, preference, dpi);
         return;
       }
       // get lines
-      MultiLineSupport.Lines line = ((MultiLineSupport)prop).getLines();
+      MultiLineProperty.Iterator line = ((MultiLineProperty)prop).getLineIterator();
       // paint
       Rectangle clip = g.getClipBounds();
       int 

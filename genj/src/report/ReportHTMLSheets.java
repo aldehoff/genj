@@ -9,7 +9,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.MultiLineSupport;
+import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyName;
@@ -243,9 +243,9 @@ public class ReportHTMLSheets extends Report {
     } 
 
     // multiline needs loop
-    if (prop instanceof MultiLineSupport) {
+    if (prop instanceof MultiLineProperty) {
       
-      MultiLineSupport.Lines lines = ((MultiLineSupport)prop).getLines();
+      MultiLineProperty.Iterator lines = ((MultiLineProperty)prop).getLineIterator();
       do {
         out.print(lines.getValue());
         out.print("<br>");

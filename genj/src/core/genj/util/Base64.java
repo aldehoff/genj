@@ -91,14 +91,14 @@ public class Base64 {
   /**
    * Encodes raw bytes to base64 String
    */
-  public static StringBuffer encode(byte[] raw) {
+  public static String encode(byte[] raw) {
 
     StringBuffer encoded = new StringBuffer( (raw.length+1)*4/3 );
     for (int i=0; i<raw.length; i+=3) {
       encoded.append(encodeBlock(raw,i));
     }
 
-    return encoded;
+    return encoded.toString();
   }
 
   /**

@@ -21,7 +21,7 @@ package genj.edit;
 
 import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
-import genj.gedcom.MultiLineSupport;
+import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.util.swing.ImageIcon;
@@ -88,12 +88,12 @@ public class Clipboard {
     /*package*/  Copy(Property prop) {
       // remember
       img = prop.getImage(false);
-      isMultiline = prop instanceof MultiLineSupport;
+      isMultiline = prop instanceof MultiLineProperty;
       tag = prop.getTag();
       value = prop.getValue();
       
       if (isMultiline)
-        multiline = ((MultiLineSupport)prop).getAllLines();
+        multiline = ((MultiLineProperty)prop).getLinesValue();
         
       // subs?
       Property[] children = prop.getProperties();

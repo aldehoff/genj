@@ -50,7 +50,7 @@ public class Source extends Entity {
   public String getText() {
     Property text = getProperty("TEXT");
     if (text instanceof PropertyMultilineValue) 
-      return ((PropertyMultilineValue)text).getAllLines();
+      return ((PropertyMultilineValue)text).getLinesValue();
     if (text!=null) return text.getValue();
     return EMPTY_STRING;
   }

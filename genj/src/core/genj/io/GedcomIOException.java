@@ -19,11 +19,13 @@
  */
 package genj.io;
 
+import java.io.IOException;
+
 
 /**
  * Exception for IO problems during Gedcom operations
  */
-public class GedcomIOException extends Exception {
+public class GedcomIOException extends IOException {
 
   /** the line that this exception happened at */
   private int line;

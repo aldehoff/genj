@@ -24,7 +24,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
-import genj.gedcom.MultiLineSupport;
+import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
@@ -506,7 +506,7 @@ public class GedcomReader implements Trackable {
    */
   private void readProperties(Property of, MetaProperty meta, int currentlevel) throws GedcomIOException, GedcomFormatException {
 
-    MultiLineSupport.Continuation continuation =  of instanceof MultiLineSupport ? ((MultiLineSupport)of).getContinuation() : null;
+    MultiLineProperty.Collector collector =  of instanceof MultiLineProperty ? ((MultiLineProperty)of).getLineCollector() : null;
   
     // Get properties of property
     Property prop;
@@ -521,7 +521,7 @@ public class GedcomReader implements Trackable {
         break;
         
       // can we continue with current?
-      if (continuation!=null&&continuation.append(level-currentlevel+1, tag, value)) 
+      if (collector!=null&&collector.append(level-currentlevel+1, tag, value)) 
           continue;
         
       // skip if level>currentLevel?
@@ -549,8 +549,11 @@ public class GedcomReader implements Trackable {
       // next property
     } while (true);
 
-    // commit continuation
-    if (continuation!=null) continuation.commit();
+    // commit collected value for MultiLineProperties
+    if (collector!=null) {
+      System.out.println(collector.getValue());
+      of.setValue(collector.getValue());
+    } 
   
     // restore what we haven't consumed
     undoLine();

@@ -193,5 +193,4 @@ public class Entity extends Property {
     return Integer.parseInt(id.substring(start, end+1));
   }
 
-
 } //Entity

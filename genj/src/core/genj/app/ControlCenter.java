@@ -949,9 +949,7 @@ public class ControlCenter extends JPanel {
           null,
           gedcom.getName(),
           WindowManager.IMG_ERROR,
-          resources.getString("cc.save.write_error", "" + ioex.getLine())
-            + ":\n"
-            + ioex.getMessage(),
+          resources.getString("cc.save.write_error", "" + ioex.getLine()) + ":\n" + ioex.getMessage(),
           WindowManager.OPTIONS_OK,
           ControlCenter.this
         );
