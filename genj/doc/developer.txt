@@ -74,3 +74,20 @@ WORKING WITH IT
 
  [start with 'ant.cmd run' - this will do the necessary steps to run GenJ]
 
+USING AN IDE
+
+ If you're trying to run GenJ from inside your favourite IDE (e.g. JBuilder or Eclipse)
+ then you might not want to run ant to create a complete runnable unit everytime
+ you compile and restart.
+ 
+ You can set the following VM parameters to rectify that situation:
+
+  -Duser.home=[home_folder]                   where .properties files will end up in
+  -Dgenj.report.dir=[report_folder]           where the reports are loaded from
+  -Dgenj.help.dir=[help_folder]               where the help is loaded from
+  -Dgenj.gedcom.dir=[gedcom_folder]           where the file-dialog for opening files starts
+ 
+ Here's an example:
+ 
+  java -Duser.home=d:\nils -Dgenj.gedcom.dir=d:\nils\gedcoms genj.App
+  
