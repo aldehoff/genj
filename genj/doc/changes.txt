@@ -37,7 +37,9 @@ Future
       (see Toolkit.getDefaultToolkit().getScreenSize() : Dimension)
     + applet should layout views 
       (tree left/top, table right/top, overview left/bottom)
-
+  O EditView should show button for 'Create New Individual' when no individual set
+    (works nicely when the user has created an empty tree)
+  
 1.8 - Apr 18 2002
 
   C Abbreviated dates show month name (JAN), skip FROM/BET/AND/..., use '-' and are on one line
