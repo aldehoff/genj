@@ -450,7 +450,7 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
     protected void execute() {
       File f = file.getFile();
       if (f==null) return;
-      association.execute(new String[]{ f.toString() });
+      association.execute(f.toString());
     }
   } //External
 

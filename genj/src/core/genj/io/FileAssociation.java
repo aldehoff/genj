@@ -96,13 +96,19 @@ public class FileAssociation {
   /**
    * Execute
    */
-  public boolean execute(String[] parms) {
+  public boolean execute(String parm) {
     // run the executable
     try {
-      String[] args = new String[1+parms.length];
-      args[0] = getExecutable(); 
-      System.arraycopy(parms, 0, args, 1, parms.length);
-      if (null!=Runtime.getRuntime().exec(args)) return true;
+      String cmd = getExecutable(); 
+      // does executable contain '%'?
+      int i = cmd.indexOf('%');
+      if (i<0) {
+        cmd += ' ' + parm;
+      } else {
+        cmd = cmd.substring(0, i) + ' ' + parm + ' ' + cmd.substring(i+1);
+      }
+      // exec' it 
+      if (null!=Runtime.getRuntime().exec(cmd)) return true;
       Debug.log(Debug.WARNING, this, "Couldn't start external application "+getExecutable());
       return false;
     } catch (IOException e) {
