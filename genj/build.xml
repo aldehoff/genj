@@ -38,6 +38,9 @@
    Core Compilation
    -->
   <target name="compile.core" depends="init">
+    <echo>**********************************************</echo>
+    <echo>*** Note: JDK 1.4 required for compilation ***</echo>
+    <echo>**********************************************</echo>
     <mkdir dir="${dir.build}/classes/core"/>
     <javac srcdir="src/core" destdir="${dir.build}/classes/core"
            debug="on" optimize="off" deprecation="on" fork="yes">
