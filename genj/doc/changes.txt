@@ -33,7 +33,8 @@ Future
 
 1.9 - May xx 2002
 
-  B ReportGedcomStatistics doesn't track death-place anymore for people that haven't died yet
+  N A new About window has been added, implementing Welcome, Authors, Feedback and Copyright tabbed panes
+	B ReportGedcomStatistics doesn't track death-place anymore for people that haven't died yet
   N View-Menu in ControlCenter to open up views
   O Improved windows placement 
     + should never be places outside of the visible screen ("lost overview")
