@@ -96,7 +96,12 @@ public class Bookmark extends ActionDelegate {
    * @see genj.util.ActionDelegate#execute()
    */
   protected void execute() {
-    tree.setRoot(entity);
+    // Either scroll to or change root
+    TreeNode node = tree.getModel().getNode(entity);
+    if (node!=null)
+      tree.setContext(entity);
+    else
+      tree.setRoot(entity);
   }
 
   /**
