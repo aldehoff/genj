@@ -27,7 +27,6 @@ import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
 import genj.view.ToolBarSupport;
@@ -36,7 +35,6 @@ import genj.view.ViewManager;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,8 +69,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   private Back     back   = new Back(); 
   private Undo     undo;
   private Redo     redo;
-  private Basic    basic    = new Basic();
-  private Advanced advanced = new Advanced();
+  private Mode     mode;
 
   /** whether we're sticky */
   private  boolean isSticky = false;
@@ -98,8 +95,12 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     undo = new Undo(gedcom, manager);
     redo = new Redo(gedcom, manager);
     
-    // setup editor
-    basic.execute();
+    // prepare mode action
+    mode = new Mode();
+    
+    // run mode switch if applicable
+    if (registry.get("advanced", false))
+      mode.trigger();
 
     // Done
   }
@@ -164,6 +165,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     // remember context
     Entity e = editor.getContext().getEntity();
     registry.put("last", e!=null?e.getId():"");
+
+    // remember mode
+    registry.put("advanced", mode.advanced);
 
     // dont listen for available undos
     gedcom.removeGedcomListener(undo);
@@ -248,17 +252,14 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     bh.setEnabled(true).create(back);
     
     // toggle sticky
-    bh.create(sticky);
+    bh.create(sticky, Images.imgStickOn, isSticky);
     
     // add undo/redo
     bh.create(undo);
     bh.create(redo);
     
     // add basic/advanced
-    bar.addSeparator();
-    List modes = Arrays.asList(new Object[]{ basic, advanced });
-    PopupWidget popup = new PopupWidget("", Images.imgView, modes);
-    bar.add(popup);
+    bh.create(mode, Images.imgAdvanced, mode.advanced);
     
     // done
   }
@@ -291,7 +292,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     /** constructor */
     protected Sticky() {
       super.setImage(Images.imgStickOff);
-      super.setToggle(Images.imgStickOn);
       super.setTip("action.stick.tip");
     }
     /** run */
@@ -336,33 +336,18 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   } //Back
   
   /**
-   * Action - advanced
+   * Action - advanced or basic
    */
-  private class Advanced extends ActionDelegate {
-    private Advanced() {
-      setText("Advanced Mode");
-    }
-    public boolean isEnabled() {
-      return !(editor instanceof AdvancedEditor);
-    }
-    protected void execute() {
-      setEditor(new AdvancedEditor());
-    }
-  } //Advanced
-  
-  /**
-   * Action - basic
-   */
-  private class Basic extends ActionDelegate {
-    private Basic() {
-      setText("Basic Mode");
-    }
-    public boolean isEnabled() {
-      return !(editor instanceof BasicEditor);
-    }
-    protected void execute() {
+  private class Mode extends ActionDelegate {
+    private boolean advanced = false;
+    private Mode() {
+      setImage(Images.imgView);
       setEditor(new BasicEditor());
     }
-  } //Basic
+    protected void execute() {
+      advanced = !advanced;
+      setEditor(advanced ? (Editor)new AdvancedEditor() : new BasicEditor());
+    }
+  } //Advanced
   
 } //EditView

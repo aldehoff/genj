@@ -70,6 +70,8 @@ public class SexBean extends PropertyBean {
 
     super.init(setGedcom, setProp, setMgr, setReg);
   
+    // FIXME use custom layout to arrange gender choices hori or vert as fits best
+  
     // we know it's PropertySex
     PropertySex p = (PropertySex) property;
 

@@ -31,6 +31,7 @@ final public class Images {
   public static ImageIcon
   
     imgView,
+    imgAdvanced,
     
     imgStickOn,
     imgStickOff,
@@ -48,6 +49,7 @@ final public class Images {
   private Images() {
     
     imgView      = new ImageIcon(this,"images/View.gif");
+    imgAdvanced  = new ImageIcon(this,"images/Advanced.gif");
 
     imgStickOn   = new ImageIcon(this,"images/StickOn.gif");
     imgStickOff  = new ImageIcon(this,"images/StickOff.gif");

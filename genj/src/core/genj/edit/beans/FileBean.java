@@ -166,8 +166,13 @@ public class FileBean extends PropertyBean {
     if (property instanceof PropertyBlob) 
       ((PropertyBlob)property).load(file, updateFormatAndTitle.isSelected());
 
-    // update
+    // update chooser
     chooser.setFile(property.getValue());
+
+    // and preview if necessary
+    ImageIcon img = preview.getImage();
+    if (img==null||!img.getDescription().equals(file))
+      load(file, false);
 
     // done
   }
@@ -256,6 +261,12 @@ public class FileBean extends PropertyBean {
       img = set;
       // show
       setZoom(zoom);
+    }
+    /**
+     * Access current image
+     */
+    protected ImageIcon getImage() {
+      return img;
     }
     /**
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
