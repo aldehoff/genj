@@ -124,7 +124,7 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
     // fam?
     if (entity instanceof Fam) createActions(result, (Fam)entity, manager);
     // submitter?
-    if (entity instanceof Submitter) createActions(result, (Submitter)entity);
+    if (entity instanceof Submitter) createActions(result, (Submitter)entity, manager);
     
     // separator
     result.add(ActionDelegate.NOOP);
@@ -213,8 +213,8 @@ public class EditViewFactory implements ViewFactory, ActionSupport {
   /**
    * Create actions for Submitters
    */
-  private void createActions(List result, Submitter submitter) {
-    result.add(new SetSubmitter(submitter));
+  private void createActions(List result, Submitter submitter, ViewManager manager) {
+    result.add(new SetSubmitter(submitter, manager));
   }
   
   /**

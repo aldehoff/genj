@@ -20,13 +20,14 @@
 package genj.edit.actions;
 
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Submitter;
-import genj.util.ActionDelegate;
+import genj.view.ViewManager;
 
 /**
  * Set the submitter of a gedcom file
  */
-public class SetSubmitter extends ActionDelegate {
+public class SetSubmitter extends AbstractChange {
 
     /** the submitter */
     private Submitter submitter;
@@ -34,18 +35,24 @@ public class SetSubmitter extends ActionDelegate {
     /**
      * Constructor
      */
-    public SetSubmitter(Submitter sub) {
+    public SetSubmitter(Submitter sub, ViewManager mgr) {
+      super(sub.getGedcom(), Gedcom.getEntityImage(Gedcom.SUBM), resources.getString("submitter", sub.getGedcom().getName()), mgr);
       submitter = sub;
-      Gedcom ged = submitter.getGedcom();
-      setImage(Gedcom.getEntityImage(Gedcom.SUBM));
-      setText(AbstractChange.resources.getString("submitter", ged.getName()));
-      if (ged.getSubmitter()==submitter) setEnabled(false);
+      if (sub.getGedcom().getSubmitter()==submitter) 
+        setEnabled(false);
     }
-    
+
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * no confirmation message needed
+     */    
+    protected String getConfirmMessage() {
+      return null;
+    }
+
+    /**
+     * set the submitter
      */
-    protected void execute() {
+    protected void change() throws GedcomException {
       submitter.getGedcom().setSubmitter(submitter);
     }
 
