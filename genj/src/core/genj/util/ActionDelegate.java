@@ -14,44 +14,133 @@ import javax.swing.event.ListSelectionListener;
 /**
  * An Action
  */
-public abstract class ActionDelegate {
+public abstract class ActionDelegate implements Cloneable {
   
+  /** async modes */
+  public static final int 
+    ASYNC_NOT_APPLICABLE = 0,
+    ASYNC_SAME_INSTANCE  = 1,
+    ASYNC_NEW_INSTANCE   = 2;
+  
+  /** attributes */
   public ImgIcon img,roll;
   public String  txt;
   public String  tip;
   
+  /** whether we're async or not */
+  private int async = ASYNC_NOT_APPLICABLE;
+  
+  /** the thread executing asynchronously */
+  private Thread thread;
+  private Object threadLock = new Object();
+  
   /**
    * trigger execution
    */
-  public final void trigger() {
-    // run & catch
-    try {
-      execute();
-    } catch (Throwable t) {
-      t.printStackTrace();
+  public final ActionDelegate trigger() {
+
+    // do we have to create a new instance?
+    if (async==ASYNC_NEW_INSTANCE) {
+      try {
+        ActionDelegate ad = (ActionDelegate)clone();
+        ad.setAsync(ASYNC_SAME_INSTANCE);
+        return ad.trigger();
+      } catch (Throwable t) {
+        t.printStackTrace();
+        handleThrowable(new RuntimeException("Couldn't create new instance of "+getClass().getName()+" for ASYNC_NEW_INSTANCE"));
+      }
+      return this;
     }
+    
+    // pre
+    boolean preExecuteOk;
+    try {
+      preExecuteOk = preExecute();
+    } catch (Throwable t) {
+      handleThrowable(t);
+      preExecuteOk = false;
+    }
+    
+    // execute
+    if (preExecuteOk) try {
+      if (async!=ASYNC_NOT_APPLICABLE) {
+        synchronized (threadLock) {
+          getThread().start();
+        }
+      }
+      else execute();
+    } catch (Throwable t) {
+      handleThrowable(t);
+    }
+    
+    // post
+    if ((async==ASYNC_NOT_APPLICABLE)||(!preExecuteOk)) try {
+      postExecute();
+    } catch (Throwable t) {
+      handleThrowable(t);
+    }
+    
     // done
+    return this;
   }
   
   /**
-   * trigger execution (async)
+   * Setter 
    */
-  public final void triggerAsync() {
-    new Thread((Runnable)as(Runnable.class)).start();
+  protected void setAsync(int set) {
+    async=set;
+  }
+  
+  /**
+   * The thread running this asynchronously
+   * @return thread or null
+   */
+  public Thread getThread() {
+    if (async!=ASYNC_SAME_INSTANCE) return null;
+    synchronized (threadLock) {
+      if (thread==null) thread=new Thread(new CallAsyncExecute());
+      return thread;
+    }
+  }
+  
+  /**
+   * Implementor's functionality
+   */
+  protected boolean preExecute() {
+    // Default 'yes, continue'
+    return true;
   }
   
   /**
    * Implementor's functionality
    */
   protected abstract void execute();
+
+  /**
+   * Implementor's functionality
+   */
+  protected void postExecute() {
+    // Default NOOP
+  }
+  
+  /** 
+   * Handle an uncaught throwable
+   */
+  protected void handleThrowable(Throwable t) {
+    t.printStackTrace();
+  }
   
   /**
-   * Sync this action with the event-dispatcher-thread
-   * (called back on syncd)
+   * Returns an instance to work on asynchronously. By
+   * default the same instance is returned which makes 
+   * it not thread-safe. Return another instance if you
+   * need that
    */
-  protected void sync2EDT() {
-    SwingUtilities.invokeLater((Runnable)as(Runnable.class));
+/*  
+  protected ActionDelegate getAsyncInstance() {
+    return this;
   }
+*/
   
   /**
    * Image 
@@ -181,6 +270,35 @@ public abstract class ActionDelegate {
       trigger();
     }
   }
+
+  /**
+   * Async Execution
+   */
+  private class CallAsyncExecute implements Runnable {
+    public void run() {
+      try {
+        execute();
+      } catch (Throwable t) {
+        handleThrowable(t);
+      }
+      synchronized (threadLock) {
+        thread=null;
+      }
+      SwingUtilities.invokeLater(new CallSyncPostExecute());
+    }
+  } //AsyncExecute
   
+  /**
+   * Sync (EDT) Post
+   */
+  private class CallSyncPostExecute implements Runnable {
+    public void run() {
+      try {
+        postExecute();
+      } catch (Throwable t) {
+        handleThrowable(t);
+      }
+    }
+  } //SyncPostExecute
 }
 

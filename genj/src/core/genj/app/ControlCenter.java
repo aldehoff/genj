@@ -315,29 +315,58 @@ public class ControlCenter extends JPanel {
   } //ActionExit
 
   /**
-   * Action - read
+   * Action - open
    */
-  private class ActionRead extends ActionDelegate { 
-    /** members */
+  private class ActionOpen extends ActionDelegate { 
+    
+    /** a preset origin we're reading from */
+    private Origin presetOrigin;
+    
+    /** a reader we're working on */
     private GedcomReader reader;
+
+    /** an error we'll provide */
     private String error;
+    
+    /** a gedcom we're creating */
     private Gedcom gedcom;
+    
     /** constructor */
-    protected ActionRead(GedcomReader r) {
-      reader=r;
+    protected ActionOpen() {
+      super.setImage(Images.imgGedcom);
+      super.setTip("cc.tip.open_file");
+      super.setText("cc.menu.open");
+      super.setAsync(ASYNC_NEW_INSTANCE);
     }
-    /** run */    
+
+    /** constructor */
+    protected ActionOpen(Origin origin) {
+      super.setAsync(ASYNC_NEW_INSTANCE);
+      presetOrigin=origin;            
+    }
+    
+    /**
+     * (sync) pre execute
+     */
+    protected boolean preExecute() {
+      
+      // try to get an origin we're interested in
+      Origin origin;
+      if (presetOrigin!=null) 
+        origin = presetOrigin;
+      else
+        origin = getOrigin();
+        
+      if (origin==null) return false; // don't continue into (async) execute without
+      
+      // open it
+      return open(origin);
+    }
+    
+    /**
+     * (Async) execute
+     */
     protected void execute() {
-      
-      if (error!=null) {
-        JOptionPane.showMessageDialog(frame,error,App.resources.getString("app.error"),JOptionPane.ERROR_MESSAGE);
-        return;
-      }
-      if (gedcom!=null) {
-        addGedcom(gedcom);
-        return;
-      }
-      
       try {
         gedcom = reader.readGedcom();
       } catch (GedcomIOException ex) {
@@ -345,25 +374,26 @@ public class ControlCenter extends JPanel {
       } catch (GedcomFormatException ex) {
         error = App.resources.getString("cc.open.format_error",""+ex.getLine())+":\n"+ex.getMessage();
       }
-      sync2EDT();
     }
-  } //ActionRead
-
-  /**
-   * Action - open
-   */
-  private class ActionOpen extends ActionDelegate { 
     
-    /** constructor */
-    protected ActionOpen() {
-      super.setImage(Images.imgGedcom);
-      super.setTip("cc.tip.open_file");
-      super.setText("cc.menu.open");
+    /**
+     * (sync) post execute
+     */
+    protected void postExecute() {
+      if (error!=null) {
+        JOptionPane.showMessageDialog(frame,error,App.resources.getString("app.error"),JOptionPane.ERROR_MESSAGE);
+      }
+      if (gedcom!=null) {
+        addGedcom(gedcom);
+      }
     }
-    /** run */    
-    protected void execute() {
+    
+    /** 
+     * Ask for an origin 
+     */
+    private Origin getOrigin() {
   
-      // ... ask for way to open
+      // pop choice of opening
       String selections[] = {
         App.resources.getString("cc.open.choice.new"),
         App.resources.getString("cc.open.choice.local"),
@@ -376,147 +406,135 @@ public class ControlCenter extends JPanel {
         App.resources.getString("cc.open.title"),
         0,JOptionPane.QUESTION_MESSAGE,null,selections,selections[1]
       );
-  
+
+      // check choices
       switch (rc) {
-  
-      case 0: {
-        // ---------------------- NEW GEDCOM -----------------------------
-        FileChooser chooser = new GedcomFileChooser(
-          frame,
-          App.resources.getString("cc.create.title"),
-          App.resources.getString("cc.create.action")
-        );
-  
-        if (FileChooser.APPROVE_OPTION != chooser.showDialog()) {
-          return;
-        }
-  
-        final File file = chooser.getSelectedFile();
-        if (file==null) {
-          return;
-        }
-  
-        if (file.exists()) {
-  
-        rc = JOptionPane.showConfirmDialog(
+        case 0: createNew(); return null;
+        case 1: return chooseFile();
+        case 2: return chooseURL();
+        default: return null;
+      }
+
+      // done      
+    }
+    
+    /** 
+     * create a new Gedcom
+     */
+    private void createNew() {
+
+      // pop a chooser
+      FileChooser chooser = new GedcomFileChooser(
+        frame,
+        App.resources.getString("cc.create.title"),
+        App.resources.getString("cc.create.action")
+      );
+      chooser.showDialog();
+      // check the selection
+      File file = chooser.getSelectedFile();
+      if (file==null) return;
+      if (file.exists()) {
+        int rc = JOptionPane.showConfirmDialog(
           frame,
           App.resources.getString("cc.open.file_exists"),
           App.resources.getString("cc.create.title"),
           JOptionPane.YES_NO_OPTION
         );
-  
-        if (rc==JOptionPane.NO_OPTION)
-          return;
-        }
-  
-        Origin origin;
-        try {
-          origin = Origin.create(new URL("file","",file.getAbsolutePath()));
-        } catch (MalformedURLException e) {
-          return;
-        }
-  
-        addGedcom(new Gedcom(origin));
-        return;
+        if (rc==JOptionPane.NO_OPTION) return;
       }
-  
-      case 1: {
-        // ---------------------- CHOOSE FILE ----------------------------
-        FileChooser chooser = new GedcomFileChooser(
-          frame,
-          App.resources.getString("cc.open.title"),
-          App.resources.getString("cc.open.action")
-        );
-  
-        if (FileChooser.APPROVE_OPTION != chooser.showDialog()) {
-          return;
-        }
-  
-        final File file = chooser.getSelectedFile();
-        if (file==null) {
-          return;
-        }
-  
-        Origin origin;
-        try {
-          origin = Origin.create(new URL("file","",file.getAbsolutePath()));
-        } catch (MalformedURLException e) {
-          return;
-        }
-  
-        // Read !
-        open(origin);
-  
-        // Done
-        return;
+      // form the origin
+      try {
+        Origin origin = Origin.create(new URL("file","",file.getAbsolutePath()));
+        gedcom = new Gedcom(origin);
+      } catch (MalformedURLException e) {
       }
-  
-      case 2: {
-  
-        // -------------------- CHOOSE URL ----------------------------------
-        Vector    vUrls  = registry.get("urls", new Vector());
-        JLabel    lEnter = new JLabel(App.resources.getString("cc.open.enter_url"));
-        JComboBox cEnter = new JComboBox(vUrls);
-        cEnter.setEditable(true);
-        Object message[] = { lEnter, cEnter };
-        Object options[] = { App.resources.getString("app.ok"), App.resources.getString("app.cancel") };
-  
-        rc = JOptionPane.showOptionDialog(
-          frame,
-          message,
-          App.resources.getString("cc.open.title"),
-          JOptionPane.OK_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,
-          options,options[0]
-        );
-  
-        String item=(String)cEnter.getEditor().getItem();
-  
-        if ((rc!=JOptionPane.OK_OPTION)||(item.length()==0)) {
-          return;
-        }
-  
-        // Try to form Origin
-        Origin origin;
-        try {
-          origin = Origin.create(item);
-        } catch (MalformedURLException ex) {
-          JOptionPane.showMessageDialog(frame,
-            App.resources.getString("cc.open.invalid_url"),
-            App.resources.getString("app.error"),
-            JOptionPane.ERROR_MESSAGE
-          );
-          return;
-        }
-  
-        // Remember URLs
-        for (int i=0;i<vUrls.size();i++) {
-          if ( vUrls.elementAt(i).toString().equals(item) ) {
-            vUrls.removeElementAt(i);
-            break;
-          }
-        }
-        vUrls.insertElementAt(item,0);
-        if (vUrls.size() > 10)
-        vUrls.setSize( 10 );
-        registry.put("urls",vUrls);
-  
-        // Read from URL
-        open(origin);
-  
-        // .. Done
-        return;
-      }
-  
-      default:
-        // --------------------------------- UNKNOWN ---------------------------
-      }
-  
+      // done
     }
     
     /**
-     * Read Gedcom from URL
+     * choose a file
      */
-    protected void open(Origin origin) {
+    private Origin chooseFile() {
+
+      // pop a chooser      
+      FileChooser chooser = new GedcomFileChooser(
+        frame,
+        App.resources.getString("cc.open.title"),
+        App.resources.getString("cc.open.action")
+      );
+      chooser.showDialog();
+      // check the selection
+      File file = chooser.getSelectedFile();
+      if (file==null) return null;
+      // form origin
+      try {
+        return Origin.create(new URL("file","",file.getAbsolutePath()));
+      } catch (MalformedURLException e) {
+        return null;
+      }
+      // done
+    }
+    
+    /**
+     * choose a url
+     */
+    private Origin chooseURL() {
+
+      // pop a chooser    
+      Vector    vUrls  = registry.get("urls", new Vector());
+      JLabel    lEnter = new JLabel(App.resources.getString("cc.open.enter_url"));
+      JComboBox cEnter = new JComboBox(vUrls);
+      cEnter.setEditable(true);
+      Object message[] = { lEnter, cEnter };
+      Object options[] = { App.resources.getString("app.ok"), App.resources.getString("app.cancel") };
+
+      int rc = JOptionPane.showOptionDialog(
+        frame,
+        message,
+        App.resources.getString("cc.open.title"),
+        JOptionPane.OK_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,
+        options,options[0]
+      );
+
+      // check the selection
+      String item=(String)cEnter.getEditor().getItem();
+      if ((rc!=JOptionPane.OK_OPTION)||(item.length()==0)) {
+        return null;
+      }
+
+      // Try to form Origin
+      Origin origin;
+      try {
+        origin = Origin.create(item);
+      } catch (MalformedURLException ex) {
+        JOptionPane.showMessageDialog(frame,
+          App.resources.getString("cc.open.invalid_url"),
+          App.resources.getString("app.error"),
+          JOptionPane.ERROR_MESSAGE
+        );
+        return null;
+      }
+
+      // Remember URL for dialog
+      for (int i=0;i<vUrls.size();i++) {
+        if ( vUrls.elementAt(i).toString().equals(item) ) {
+          vUrls.removeElementAt(i);
+          break;
+        }
+      }
+      vUrls.insertElementAt(item,0);
+      if (vUrls.size() > 10)
+      vUrls.setSize( 10 );
+      registry.put("urls",vUrls);
+
+      // ... continue
+      return origin;
+    }
+    
+    /**
+     * Open Origin - continue with (async) execute if true
+     */
+    private boolean open(Origin origin) {
   
       // Check if already open
       Vector gedcoms = tGedcoms.getAllGedcoms();
@@ -530,7 +548,7 @@ public class ControlCenter extends JPanel {
             App.resources.getString("app.error"),
             JOptionPane.ERROR_MESSAGE
           );
-          return;
+          return false;
         }
       }
   
@@ -548,22 +566,22 @@ public class ControlCenter extends JPanel {
           App.resources.getString("app.error"),
           JOptionPane.ERROR_MESSAGE
         );
-        return;
+        return false;
       }
   
-      // .. read gedcom from it
-      GedcomReader reader = new GedcomReader(in,origin,size);
-      ActionDelegate action = new ActionRead(reader);
-      Thread thread = new Thread((Runnable)action.as(Runnable.class));
-      thread.setPriority(Thread.MIN_PRIORITY);
-      thread.start();
+      // .. prepare our reader
+      reader = new GedcomReader(in,origin,size);
+      
+      // .. prepare our thread
+      getThread().setPriority(Thread.MIN_PRIORITY);
   
       // .. show progress dialog
       new ProgressDialog(frame,App.resources.getString("cc.open.loading"),
-        ""+origin,reader,thread
+        ""+origin,reader,getThread()
       );
   
-      // .. done
+      // .. continue into (async) execute
+      return true;
     }
     
   } //ActionOpen
@@ -579,7 +597,7 @@ public class ControlCenter extends JPanel {
       String[] gedcoms = registry.get("open",defaults);
       for (int g=0;g<gedcoms.length;g++) {
         try {
-          new ActionOpen().open(Origin.create(gedcoms[g]));
+          new ActionOpen(Origin.create(gedcoms[g])).trigger();
         } catch (MalformedURLException x) {
         }
       }

@@ -29,9 +29,11 @@ Future
   O Improved windows placement (applet layouts views tree NW, table NE, overview S)
   O View-Menu in ControlCenter to open up views
   O Use colors to distinguish different events in TimelineView
+  O When entities are selected TableView and TreeView should try to scroll and show it
 
 1.9 - Aug xx 2002
 
+  I refactored multi-threading into ActionDelegate (ReportView and ControlCenter)
   I file .properties for file .ged is loaded from same location but stored in user.home (local takes precendence)
   N New Report ReportExec which allows to execute a command line tool
   I EditView Buttons are now always visible (shrinking horizontally) when component is sized too small

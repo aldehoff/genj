@@ -32,12 +32,13 @@ import java.net.*;
 
 import genj.gedcom.*;
 import genj.util.*;
+import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImgIconConverter;
 
 /**
  * Component for running reports on genealogic data
  */
-public class ReportView extends JPanel implements ListSelectionListener, ActionListener {
+public class ReportView extends JPanel {
 
   private Gedcom   gedcom;
   private Frame    frame;
@@ -48,13 +49,10 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
   private JList       listOfReports;
   private JTabbedPane tabbedPane;
   private JButton     bStart,bStop,bClose,bSave,bReload;
-  private Thread  thread;
-  private boolean isInterrupted;
   private static  ReportLoader loader;
   private static  ImageIcon imgShell,imgGui;
   private Registry registry;
   private final static Resources resources = new Resources(ReportView.class);
-  private Closure deferredSetRunning;
 
   /**
    * Report Renderer
@@ -115,8 +113,6 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
     imgShell = ImgIconConverter.get(new ImgIcon(this,"ReportShell.gif"));
     imgGui   = ImgIconConverter.get(new ImgIcon(this,"ReportGui.gif"  ));
 
-    deferredSetRunning = new Closure(this, "setRunning", false);
-
     // Look for reports
     loadReports(false);
 
@@ -138,7 +134,7 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
     listOfReports = new JList(reports);
     listOfReports.setCellRenderer(new ReportRenderer());
     listOfReports.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    listOfReports.addListSelectionListener(this);
+    listOfReports.addListSelectionListener((ListSelectionListener)new ActionSelect().as(ListSelectionListener.class));
 
     JScrollPane spList = new JScrollPane(listOfReports);
     reportGridBag.add(spList,1,1,1,6,GridBagHelper.GROW_BOTH);
@@ -184,216 +180,20 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
 
     // Buttons at bottom
     JPanel buttonPanel = new JPanel();
-    add(buttonPanel,"South");
-
     buttonPanel.setLayout(new BoxLayout(buttonPanel,BoxLayout.X_AXIS));
-    buttonPanel.add(   bStart = newButton(resources.getString("report.start" ), "Start selected report","START"  ,true ) );
-    buttonPanel.add(   bStop  = newButton(resources.getString("report.stop"  ), "Stop running report"  ,"STOP"   ,false) );
+    add(buttonPanel,"South");
+    
+    ButtonHelper bh = new ButtonHelper().setResources(resources).setContainer(buttonPanel);
+
+    ActionStart astart = new ActionStart();
+    bStart = bh.create(astart);
+    bStop  = bh.setEnabled(false).create(new ActionStop(astart));    
+    bSave  = bh.setEnabled(true).create(new ActionSave());
+    bReload= bh.create(new ActionReload());
     if (frame!=null)
-      buttonPanel.add( bClose = newButton(resources.getString("report.close" ), "Close dialog"         ,"CLOSE"  ,true ) );
-    buttonPanel.add(   bSave  = newButton(resources.getString("report.save"  ), "Save report output"   ,"SAVE"   ,true) );
-    buttonPanel.add(   bReload= newButton(resources.getString("report.reload"), "Reload report classes","RELOAD" ,true) );
-
+      bClose = bh.create(new ActionDelegate.ActionDisposeFrame(frame).setText("report.close"));    
+    
     // Done
-  }
-
-  /**
-   * Action: RELOAD
-   */
-  private void actionReload() {
-    // show first page and unselect report
-    tabbedPane.getModel().setSelectedIndex(0);
-    selectReport(null);
-    // .. do it (forced!);
-    loadReports(true);
-    // .. get them
-    Report reports[] = loader.getReports();
-    // .. update
-    listOfReports.setListData(reports);
-    // .. done
-  }
-
-  /**
-   * Action: STOP
-   */
-  private void actionStop() {
-    if (thread!=null) {
-      isInterrupted=true;
-      thread.interrupt();
-    }
-  }
-
-  /**
-   * Action: START
-   */
-  private void actionStart() {
-
-    // Calc Report
-    final Report report = (Report)listOfReports.getSelectedValue();
-    if (report==null) {
-      return;
-    }
-
-    // .. change buttons
-    setRunning(true);
-    isInterrupted = false;
-
-    // .. switch to output
-    if (report.usesStandardOut()) {
-      tabbedPane.getModel().setSelectedIndex(1);
-    }
-    taOutput.setText("");
-
-    // .. prepare own STDOUT
-    final ReportBridge bridge = new ReportBridge(this, new Registry(registry, report.getName()));
-
-    bridge.log("<!--");
-    bridge.log("   Report : "+report.getClass().getName());
-    bridge.log("   Gedcom : "+gedcom.getName());
-    bridge.log("   Start  : "+new Date());
-    bridge.log("-->");
-    bridge.log("");
-    bridge.flush();
-
-    // .. start Thread
-    thread = new Thread() {
-
-      // LCD
-
-      /** main Thread routine */
-      public void run() {
-
-        // Report actions are subject to interruption
-        boolean rc=false;
-        boolean readOnly=report.isReadOnly();
-        String status;
-
-        // .. lock Gedcom for read and start report
-        try {
-          if (readOnly) {
-            rc = report.start(bridge,gedcom);
-
-          } else {
-            if (!gedcom.startTransaction())
-              status = "No Write Access";
-            else {
-              rc = report.start(bridge,gedcom);
-              gedcom.endTransaction();
-            }
-          }
-          if (rc)
-            status = "O.K";
-          else
-            status = "Error";
-        } catch (ReportCancelledException ex) {
-          // Running report was stopped
-          status="Cancelled";
-        } catch (Exception ex) {
-          // Running report failed
-          bridge.println(ex);
-          status="Exception";
-        }
-        isInterrupted = false;
-
-        // .. end output
-        bridge.log("");
-        bridge.log("<!--");
-        bridge.log("   End    : "+new Date());
-        bridge.log("   Status : "+status);
-        bridge.log("-->");
-        bridge.flush();
-
-        // .. end thread officially
-        thread=null;
-
-        // .. change buttons back in main thread again
-        SwingUtilities.invokeLater(deferredSetRunning);
-      }
-
-      // EOC
-    };
-
-    thread.start();
-
-    // done
-  }
-
-  /**
-   * One of the buttons has been pressed
-   */
-  public void actionPerformed(ActionEvent e) {
-
-    if (e.getActionCommand()=="SAVE") {
-      actionSave();
-    }
-    if (e.getActionCommand()=="RELOAD") {
-      actionReload();
-    }
-    if (e.getActionCommand()=="STOP") {
-      actionStop();
-    }
-    if (e.getActionCommand()=="START") {
-      actionStart();
-    }
-    if (e.getActionCommand()=="CLOSE") {
-      actionClose();
-    }
-
-    // Done
-  }
-
-  /**
-   * Action: CLOSE
-   */
-  private void actionClose() {
-    frame.dispose();
-  }
-
-  /**
-   * Action: SAVE
-   */
-  private void actionSave() {
-
-    // .. choose file
-    JFileChooser chooser = new JFileChooser(".");
-    chooser.setDialogTitle("Save Output");
-
-    if (JFileChooser.APPROVE_OPTION != chooser.showDialog(frame,"Save")) {
-      return;
-    }
-    File file = chooser.getSelectedFile();
-    if (file==null) {
-      return;
-    }
-
-    // .. exits ?
-    if (file.exists()) {
-      if (JOptionPane.NO_OPTION==JOptionPane.showConfirmDialog(this,"File exists. Overwrite?","Save",JOptionPane.YES_NO_OPTION)) {
-        return;
-      }
-    }
-
-    // .. open file
-    final FileWriter writer;
-    try {
-      writer = new FileWriter(file);
-    } catch (IOException ex) {
-      JOptionPane.showMessageDialog(this,"Error while saving to\n"+file.getAbsolutePath(),"File Error",JOptionPane.ERROR_MESSAGE);
-      return;
-    }
-
-    // .. save data
-    try {
-
-      BufferedWriter out = new BufferedWriter(writer);
-      String data = taOutput.getText();
-      out.write(data,0,data.length());
-      out.close();
-
-    } catch (IOException ex) {
-    }
-
-    // .. done
   }
 
   /**
@@ -408,49 +208,31 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
   }
 
   /**
-   * Is this report cancelled?
+   * Load Reports from Disk/Net
    */
-  public boolean isInterrupted() {
-    return isInterrupted;
+  private void loadReports(boolean force) {
+    
+    // Reload isn't always necessary
+    if ((force==false)&&(loader!=null)) {
+      return;
+    }
+    
+    // The reports are either 
+    File base;
+    if (System.getProperty("genj.report.dir")!=null) {
+      // .. in "genj.report.dir"
+      base = new File(System.getProperty("genj.report.dir"));
+    } else {
+      // .. or in "user.dir"/report
+      base = new File(System.getProperty("user.dir"),"report");
+    }
+    System.out.println("[Debug]Reading reports from "+base);
+    
+    // Create the loader
+    loader = new ReportLoader(base);
+    // Done
   }
-
-  /**
-	 * Load Reports from Disk/Net
-	 */
-	private void loadReports(boolean force) {
-	  
-	  // Reload isn't always necessary
-	  if ((force==false)&&(loader!=null)) {
-	    return;
-	  }
-	  
-	  // The reports are either 
-	  File base;
-	  if (System.getProperty("genj.report.dir")!=null) {
-	    // .. in "genj.report.dir"
-	    base = new File(System.getProperty("genj.report.dir"));
-	  } else {
-	    // .. or in "user.dir"/report
-	    base = new File(System.getProperty("user.dir"),"report");
-	  }
-	  System.out.println("[Debug]Reading reports from "+base);
-	  
-	  // Create the loader
-	  loader = new ReportLoader(base);
-	  // Done
-	}
-
-  /**
-   * Helper for easy button creation
-   */
-  private JButton newButton(String title, String tip,String action,boolean enabled) {
-    JButton b = new JButton(title);
-    b.setActionCommand(action);
-    b.addActionListener(this);
-    b.setToolTipText(tip);
-    b.setEnabled(enabled);
-    return b;
-  }
+  
 
   /**
    * Select given report
@@ -465,6 +247,7 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
       lAuthor .setText(report.getAuthor());
       lVersion.setText(report.getVersion());
       tpInfo  .setText(report.getInfo());
+      tpInfo.setCaretPosition(0);
     }
 
     // Done
@@ -492,18 +275,213 @@ public class ReportView extends JPanel implements ListSelectionListener, ActionL
   }
 
   /**
-   * One of the reports in the list has been selected
+   * Action: Select(Report)
    */
-  public void valueChanged(ListSelectionEvent e) {
-
-    // Too much selection ?
-    if (e.getLastIndex()!=e.getFirstIndex()) {
-      tpInfo.setText("");
+  private class ActionSelect extends ActionDelegate {
+    protected void execute() {
+      if (listOfReports.getSelectedIndices().length!=1) {
+        selectReport(null);
+      } else {
+        selectReport((Report)listOfReports.getSelectedValue());
+      }
     }
-
-    // Calc Report
-    selectReport((Report)listOfReports.getSelectedValue());
-
   }
 
+  /**
+   * Action: RELOAD
+   */
+  private class ActionReload extends ActionDelegate {
+    protected ActionReload() {
+      setText("report.reload").setTip("report.reload.tip");
+    }
+    protected void execute() {
+      // show first page and unselect report
+      tabbedPane.getModel().setSelectedIndex(0);
+      selectReport(null);
+      // .. do it (forced!);
+      loadReports(true);
+      // .. get them
+      Report reports[] = loader.getReports();
+      // .. update
+      listOfReports.setListData(reports);
+      // .. done
+    }
+  } //ActionReload
+
+  /**
+   * Action: STOP
+   */
+  private class ActionStop extends ActionDelegate {
+    private ActionStart start;
+    protected ActionStop(ActionStart start) {
+      setText("report.stop"  ).setTip("report.stop.tip");
+      this.start=start;
+    }
+    protected void execute() {
+      Thread thread = start.getThread();
+      System.out.println(thread);
+      if (thread!=null) thread.interrupt();
+    }
+  } //ActionStop
+
+  /**
+   * Action: START
+   */
+  private class ActionStart extends ActionDelegate {
+    private ReportBridge bridge;
+    private Report report;
+    private String status;
+    protected ActionStart() {
+      setAsync(ASYNC_SAME_INSTANCE);
+      setText("report.start" ).setTip("report.start.tip");
+      //System.out.println(this+"()");
+    }
+    /**
+     * pre execute
+     */
+    protected boolean preExecute() {
+      
+      //System.out.println(this+".preExecute()");
+      
+      // Calc Report
+      report = (Report)listOfReports.getSelectedValue();
+      if (report==null) {
+        return false;
+      }
+  
+      // .. change buttons
+      setRunning(true);
+  
+      // .. switch to output
+      if (report.usesStandardOut()) {
+        tabbedPane.getModel().setSelectedIndex(1);
+      }
+      taOutput.setText("");
+  
+      // .. prepare own STDOUT
+      bridge = new ReportBridge(ReportView.this, new Registry(registry, report.getName()));      bridge.log("<!--");
+      
+      bridge.log("   Report : "+report.getClass().getName());
+      bridge.log("   Gedcom : "+gedcom.getName());
+      bridge.log("   Start  : "+new Date());
+      bridge.log("-->");
+      bridge.log("");
+      bridge.flush();
+
+      // done
+      return true;
+    }
+    /**
+     * execute
+     */
+    protected void execute() {
+
+      //System.out.println(this+".execute()");
+
+      // Report actions are subject to interruption
+      boolean rc=false;
+      boolean readOnly=report.isReadOnly();
+
+      // .. lock Gedcom for read and start report
+      try {
+        if (readOnly) {
+          rc = report.start(bridge,gedcom);
+
+        } else {
+          if (!gedcom.startTransaction())
+            status = "No Write Access";
+          else {
+            rc = report.start(bridge,gedcom);
+            gedcom.endTransaction();
+          }
+        }
+        if (rc)
+          status = "O.K";
+        else
+          status = "Error";
+      } catch (ReportCancelledException ex) {
+        // Running report was stopped
+        status="Cancelled";
+      } catch (Exception ex) {
+        // Running report failed
+        bridge.println(ex);
+        status="Exception";
+      }
+
+    }
+    
+    /**
+     * post execute
+     */
+    protected void postExecute() {
+  
+      //System.out.println(this+".postExecute()");
+  
+      // .. end output
+      bridge.log("");
+      bridge.log("<!--");
+      bridge.log("   End    : "+new Date());
+      bridge.log("   Status : "+status);
+      bridge.log("-->");
+      bridge.flush();
+      
+      // done
+      setRunning(false);
+
+    }
+  } //ActionStart
+  
+  /**
+   * Action: SAVE
+   */
+  private class ActionSave extends ActionDelegate {
+    protected ActionSave() {
+      setText("report.save").setTip("report.save.tip");
+    }
+    protected void execute() {
+
+      // .. choose file
+      JFileChooser chooser = new JFileChooser(".");
+      chooser.setDialogTitle("Save Output");
+  
+      if (JFileChooser.APPROVE_OPTION != chooser.showDialog(frame,"Save")) {
+        return;
+      }
+      File file = chooser.getSelectedFile();
+      if (file==null) {
+        return;
+      }
+  
+      // .. exits ?
+      if (file.exists()) {
+        if (JOptionPane.NO_OPTION==JOptionPane.showConfirmDialog(ReportView.this,"File exists. Overwrite?","Save",JOptionPane.YES_NO_OPTION)) {
+          return;
+        }
+      }
+  
+      // .. open file
+      final FileWriter writer;
+      try {
+        writer = new FileWriter(file);
+      } catch (IOException ex) {
+        JOptionPane.showMessageDialog(ReportView.this,"Error while saving to\n"+file.getAbsolutePath(),"File Error",JOptionPane.ERROR_MESSAGE);
+        return;
+      }
+  
+      // .. save data
+      try {
+  
+        BufferedWriter out = new BufferedWriter(writer);
+        String data = taOutput.getText();
+        out.write(data,0,data.length());
+        out.close();
+  
+      } catch (IOException ex) {
+      }
+  
+      // .. done
+    }
+
+  } //ActionSave
+  
 }
