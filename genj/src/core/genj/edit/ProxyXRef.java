@@ -47,6 +47,9 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    * Finish editing a property through proxy
    */
   protected void finish() {
+    // not if no entity - noone was listening and preview==null 20030420
+    if (entity==null) return;
+    // update looks
     setArmed(false);
     view.tree.removeMouseMotionListener(this);
     view.tree.removeMouseListener(this);
@@ -108,6 +111,7 @@ class ProxyXRef extends Proxy implements MouseMotionListener, MouseListener {
    * Arm for click
    */
   private void setArmed(boolean set) {
+    // set armed and update cursor
     armed = set;
     Cursor cursor = armed ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor();
     view.tree.setCursor(cursor);
