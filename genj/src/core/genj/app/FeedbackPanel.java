@@ -20,9 +20,9 @@
  * About Menu class - Feedback
  * This class creates the content on the Feedback tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.5 2002-05-18 19:57:45 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.6 2002-05-19 12:46:32 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
- * @version 1.1
+ * @version 1.2
  *
  */
 
@@ -40,7 +40,7 @@ import java.util.*;
 import genj.Version;
 
 
-public class FeedbackPanel extends JPanel
+public class FeedbackPanel extends JPanel implements ActionListener
 { // Opens class
   
   // variables for panelUp
@@ -54,6 +54,7 @@ public class FeedbackPanel extends JPanel
   // variables for panelBottom
   private JPanel panelBottom;
   private JButton b1Panel3;
+  private boolean _clickMeMode = true;
   
   
     public FeedbackPanel()
@@ -120,12 +121,8 @@ public class FeedbackPanel extends JPanel
     panelBottom = new JPanel();
     panelBottom.setLayout(new FlowLayout(FlowLayout.LEFT));
     panelBottom.setBackground(Color.white);
-    b1Panel3 = new JButton(App.resources.getString("cc.about.tab3.send.button"));
-    b1Panel3.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        // Here we have to write code to perform an action
-      }
-    });
+    b1Panel3 = new JButton(App.resources.getString("cc.about.tab3.save.button"));
+    b1Panel3.addActionListener(this);
     panelBottom.add(b1Panel3);
   }
   
@@ -155,9 +152,30 @@ public class FeedbackPanel extends JPanel
     sb.append(App.resources.getString("cc.about.tab3.text2.4"));
     sb.append(" :\n");
     sb.append(App.resources.getString("cc.about.tab3.text2.5"));
-    sb.append(". . . . . . . . . . . . . . . . . . . .\n");
-    sb.append("\nWARNING : This function is not yet available - Feel free to write the code needed ;-) ");
+    sb.append(" . . . . . . . . . . . . . . . . . . . .\n");
+    sb.append("\n");
    	return sb.toString();
+  }
+  
+  // this method initiated the action event
+  public void actionPerformed(ActionEvent event) {
+    Object source = event.getSource();
+    if (source == b1Panel3) {
+      String s = null;
+      if (_clickMeMode) {
+        try {
+          String text2save = ta1Panel2.getText();
+          byte b[] = text2save.getBytes();
+          String outputFileName = "comments.txt";
+          FileOutputStream out = new FileOutputStream(outputFileName);
+          out.write(b);
+          out.close();
+        }
+        catch(java.io.IOException e) {
+          System.out.println("Cannot write to text file comments.txt");
+        }
+      }
+    }
   }
   
 } // Closes class
