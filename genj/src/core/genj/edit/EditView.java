@@ -1085,7 +1085,7 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     } catch (ClassCastException ex) {
       System.out.println("Wrong proxy for property "+prop);
     }
-
+    
     // Layout change !
     panelForProxy.validate();
     panelForProxy.doLayout();
