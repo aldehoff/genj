@@ -46,7 +46,7 @@ public class ReportAges extends Report {
     public String getVersion() {
         return VERSION;
     }
-   
+    
     /**
      * Author
      */
@@ -123,7 +123,8 @@ public class ReportAges extends Report {
         
         Delta age = null;
         
-        println("@" + indi.getId() + "@ " + indi.getName());
+        String[] output = {indi.getId(), indi.getName()};
+        println(i18n("entity", output));
         
         // print birth date (give up if none)
         PropertyDate birth = indi.getBirthDate();
@@ -149,7 +150,9 @@ public class ReportAges extends Report {
             if (fams.length > 0) {
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
-                    String text = getIndent(2)+OPTIONS.getMarriageSymbol() + " "+fam.toString() + " (@" + fam.getId() + "@): ";
+                    output[0] = fam.getId();
+                    output[1] = fam.toString();
+                    String text = getIndent(2)+OPTIONS.getMarriageSymbol() + " "+i18n("entity", output)+": ";
                     if (fam.getMarriageDate() == null)
                         println(text + i18n("noData"));
                     else {
@@ -168,7 +171,9 @@ public class ReportAges extends Report {
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
                     if (fam.getDivorceDate() != null) {
-                        println(getIndent(2)+OPTIONS.getDivorceSymbol() + " @" + fam.getId() + "@ " + fam.toString() + ": " + fam.getDivorceDate());
+                        output[0] = fam.getId();
+                        output[1] = fam.toString();
+                        println(getIndent(2)+OPTIONS.getDivorceSymbol() + " "+i18n("entity", output)+": " + fam.getDivorceDate());
                         age = indi.getAge(fam.getDivorceDate().getStart());
                         printAge(age,3);
                     }
@@ -181,7 +186,9 @@ public class ReportAges extends Report {
             if (children.length > 0) {
                 for (int i = 0; i < children.length; i++) {
                     Indi child = children[i];
-                    String text = getIndent(2) + OPTIONS.getBirthSymbol()+" "+children[i].getName() + " (@" + child.getId() + "@): ";
+                    output[0] = child.getId();
+                    output[1] = children[i].getName();
+                    String text = getIndent(2) + OPTIONS.getBirthSymbol()+" "+i18n("entity", output)+": ";
                     PropertyDate cbirth = child.getBirthDate();
                     if (cbirth == null)
                         println(text + i18n("noData"));
@@ -222,7 +229,7 @@ public class ReportAges extends Report {
         
         if (reportAgeSinceBirth) {
             PointInTime now = PointInTime.getNow();
-            println(getIndent(2) + i18n("sinceBirth")+" "+now+")");
+            println(getIndent(2) + i18n("sinceBirth", now));
             age = indi.getAge(now);
             printAge(age,3);
         }

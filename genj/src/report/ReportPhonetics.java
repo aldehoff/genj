@@ -34,7 +34,7 @@ public class ReportPhonetics extends Report {
     };
     
     /** this report's version */
-    public static final String VERSION = "0.11";
+    public static final String VERSION = "0.12";
     
     /**
      * Returns the version of this script
@@ -116,6 +116,7 @@ public class ReportPhonetics extends Report {
     private void printPhonetic(Entity[] indis) {
         Indi indi = null;
         String str = "";
+        String[] output = new String[2];
         
         println(i18n("outputFormat")+": "+outputFormats[outputFormat]);
         println();
@@ -133,8 +134,9 @@ public class ReportPhonetics extends Report {
                 Iterator first = names.getReferences(str).iterator();
                 while(first.hasNext()) {
                     indi  = (Indi)first.next();
-                    str = indi.getFirstName();
-                    println(getIndent(2)+"@"+indi.getId()+"@ "+str+": "+encode(str));
+                    output[0] = indi.getId();
+                    output[1] = indi.getFirstName();
+                    println(getIndent(2)+i18n("entity", output)+": "+encode(str));
                 }
             }
         }

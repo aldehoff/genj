@@ -111,18 +111,29 @@ public class ReportFamily extends Report {
         if(indi==null)
             return;
         
+        String[] output = new String[2];
+        
         println(getIndent(2)+indi);
+        
         if(reportParents) {
             if(indi.getFamc()!=null) {
                 Fam parents = indi.getFamc();
-                println(getIndent(3)+OPTIONS.getChildOfSymbol()+" "+parents+" (@"+parents.getId()+"@)");
+                output[0] = parents.getId();
+                output[1] = parents.toString();
+                println(getIndent(3)+OPTIONS.getChildOfSymbol()+" "+i18n("entity", output));
             }
             else {
                 Indi father = indi.getFather(), mother = indi.getMother();
-                if(father!=null)
-                    println(getIndent(4)+OPTIONS.getChildOfSymbol()+" "+father+" (@"+father.getId()+"@)");
-                if(mother!=null)
-                    println(getIndent(4)+OPTIONS.getChildOfSymbol()+" "+mother+" (@"+mother.getId()+"@)");
+                if(father!=null) {
+                    output[0] = father.getId();
+                    output[1] = father.getName();
+                    println(getIndent(4)+OPTIONS.getChildOfSymbol()+" "+i18n("entity", output));
+                }
+                if(mother!=null) {
+                    output[0] = mother.getId();
+                    output[1] = mother.getName();
+                    println(getIndent(4)+OPTIONS.getChildOfSymbol()+" "+i18n("entity", output));
+                }
             }
         }
         if( (trim(indi.getBirthAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0) )
@@ -138,7 +149,9 @@ public class ReportFamily extends Report {
                         String str = "";
                         if((trim(families[i].getMarriageDate().toString()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0))
                             str = OPTIONS.getMarriageSymbol()+" "+trim(families[i].getMarriageDate())+" "+trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC")))+" ";
-                        println(getIndent(4)+str+families[i]+" (@"+families[i].getId()+"@)");
+                        output[0] = families[i].getId();
+                        output[1] = families[i].toString();
+                        println(getIndent(4)+str+" "+i18n("entity", output));
                     }
                 }
             }
@@ -147,16 +160,19 @@ public class ReportFamily extends Report {
     
     private void analyzeChildren(Fam f) {
         
+        String[] output = new String[2];
         Indi[] children = f.getChildren();
         Indi child;
         Fam[] families;
-        Fam family;
+        Fam family;        
         
         if(children.length>0)
             println(getIndent(2)+i18n("children"));
         for(int i=0; i<children.length; i++) {
             child = children[i];
-            println(getIndent(3)+child+" (@"+child.getId()+"@)");
+            output[0] = child.getId();
+            output[1] = child.getName();
+            println(getIndent(3)+i18n("entity", output));
             if(reportDetailedChildrenData) {
                 if ( (trim(child.getBirthAsString()).length()>0) || (trim(child.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0) )
                     println(getIndent(4)+OPTIONS.getBirthSymbol()+" "+trim(child.getBirthAsString())+" "+trim(child.getProperty(new TagPath("INDI:BIRT:PLAC"))));
@@ -167,7 +183,9 @@ public class ReportFamily extends Report {
                 families = child.getFamilies();
                 for(int j=0; j<families.length; j++) {
                     family = (Fam)families[j];
-                    println(getIndent(4)+OPTIONS.getMarriageSymbol()+" "+family+" (@"+family.getId()+"@) "+trim(family.getMarriageDate())+" "+trim(family.getProperty(new TagPath("FAM:MARR:PLAC"))));
+            output[0] = family.getId();
+            output[1] = family.toString();
+                    println(getIndent(4)+OPTIONS.getMarriageSymbol()+" "+i18n("entity", output)+" "+trim(family.getMarriageDate())+" "+trim(family.getProperty(new TagPath("FAM:MARR:PLAC"))));
                 }
                 if(child.getProperty("DEAT")!=null && ( (trim(child.getDeathAsString()).length()>0) || (trim(child.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0) ) )
                     println(getIndent(4)+OPTIONS.getDeathSymbol()+" "+trim(child.getDeathAsString())+" "+trim(child.getProperty(new TagPath("INDI:DEAT:PLAC"))));

@@ -102,7 +102,8 @@ public class ReportTrees extends Report {
             if ( !stats.seen.containsKey(indi.getId()) ) {
                 int curTree = stats.numTrees++;
                 stats.trees[curTree] = new AncTree();
-                stats.trees[curTree].name = "@"+indi.getId()+"@ "+indi.getName();
+                String[] output = {indi.getId(), indi.getName()};
+                stats.trees[curTree].name = i18n("entity", output);
                 stats.trees[curTree].count = analyzeIndividual(indi, stats);
             }
         }
