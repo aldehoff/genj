@@ -1182,42 +1182,15 @@ public class EditView extends JPanel implements ActionListener, TreeSelectionLis
     actionCheckStick.setSelected(registry.get("sticky",false));
     actionCheckStick.setToolTipText(resources.getString("tip.stick"));
 
-    Insets i = new Insets(4,4,4,4);
-    actionButtonAdd    = createButton(actionPanel, "ADD"   ,"action.add"   ,null            ,"tip.add_prop" , i, false, true );
-    actionButtonRemove = createButton(actionPanel, "DEL"   ,"action.del"   ,null            ,"tip.del_prop" , i, false, true );
-    actionButtonUp     = createButton(actionPanel, "UP"    ,"action.up"    ,null            ,"tip.up_prop"  , i, false, true );
-    actionButtonDown   = createButton(actionPanel, "DOWN"  ,"action.down"  ,null            ,"tip.down_prop", i, false, true );
-    actionButtonReturn = createButton(actionPanel, "RETURN",null           ,Images.imgReturn,"tip.return"   , i, false, true );
-    
-    actionPanel.add(Box.createHorizontalGlue());
+    actionButtonAdd    = createButton(actionPanel, "ADD"   ,"action.add"   ,null            ,"tip.add_prop" , null, false, true );
+    actionButtonRemove = createButton(actionPanel, "DEL"   ,"action.del"   ,null            ,"tip.del_prop" , null, false, true );
+    actionButtonUp     = createButton(actionPanel, "UP"    ,"action.up"    ,null            ,"tip.up_prop"  , null, false, true );
+    actionButtonDown   = createButton(actionPanel, "DOWN"  ,"action.down"  ,null            ,"tip.down_prop", null, false, true );
+    actionButtonReturn = createButton(actionPanel, "RETURN",null           ,Images.imgReturn,"tip.return"   , null, false, true );
     
     actionPanel.add(actionCheckStick);
-    
-    actionPanel.add(Box.createHorizontalGlue());
-    
-    actionPanel.add(createNavPanel());
     
     return actionPanel;
   }
   
-  /**
-   * Creates a panel with nav buttons
-   */
-  private JPanel createNavPanel() {
-    
-    // create the result and get the grid bag going
-    JPanel result = new JPanel();
-    GridBagHelper h = new GridBagHelper(result);
-    
-    // add the buttons    
-    h.add(createButton(null, "NAVPREVGEN"  , null, Images.imgNavPrevGen, "tip.nav_prevgen", null, true, false),1,0,1,2,h.FILL_NONE);
-    h.add(createButton(null, "NAVPREVINGEN", null, Images.imgNavPrevInGen, "tip.nav_previngen", null, true, false),0,0,1,4,h.FILL_NONE);
-    h.add(createButton(null, "NAVNEXTINGEN", null, Images.imgNavNextInGen, "tip.nav_nextingen", null, true, false),2,0,1,4,h.FILL_NONE);
-    h.add(createButton(null, "NAVNEXTGEN"  , null, Images.imgNavNextGen, "tip.nav_nextgen", null, true, false),1,2,1,2,h.FILL_NONE);
-
-    result.setMaximumSize(result.getPreferredSize());
-    
-    // done
-    return result;
-  }
 }

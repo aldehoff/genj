@@ -38,11 +38,7 @@ final public class Images {
     imgNewNote,
     imgReturn,
     imgFind,
-    imgLink,
-    imgNavPrevInGen,
-    imgNavNextInGen,
-    imgNavPrevGen,
-    imgNavNextGen;
+    imgLink;
 
   /**
    * Constructor which pre-loads all images
@@ -60,9 +56,5 @@ final public class Images {
     imgLink      = new ImgIcon(this,"Link.gif");
     imgReturn    = new ImgIcon(this,"Return.gif");
     
-    imgNavPrevInGen = new ImgIcon(this,"NavPrevInGen.gif");
-    imgNavNextInGen = new ImgIcon(this,"NavNextInGen.gif");
-    imgNavPrevGen   = new ImgIcon(this,"NavPrevGen.gif");
-    imgNavNextGen   = new ImgIcon(this,"NavNextGen.gif");
   }
 }
