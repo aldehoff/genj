@@ -176,11 +176,11 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    */
   private void createActions(List result, Indi indi) {
     result.add(new CreateLinked(indi, Gedcom.NOTES, Images.imgNewNote));
+    result.add(new CreateLinked(indi, Gedcom.MULTIMEDIAS, Images.imgNewMedia));
     /*
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.child"  , indi));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.parent", indi));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.spouse", indi));
-    result.add(new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS, indi ));
     */
   }
   
@@ -188,12 +188,12 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
    * Create actions for Families
    */
   private void createActions(List result, Fam fam) {
+    result.add(new CreateLinked(fam, Gedcom.NOTES, Images.imgNewNote));
+    result.add(new CreateLinked(fam, Gedcom.MULTIMEDIAS, Images.imgNewMedia));
     /*
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0 , "new.child"  , fam));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.husband", fam));
     result.add(new ActionCreate(Images.imgNewIndi      , Gedcom.INDIVIDUALS, 0, "new.wife"   , fam));
-    result.add(new ActionCreate(Images.imgNewNote      , Gedcom.NOTES      , fam));
-    result.add(new ActionCreate(Images.imgNewMedia     , Gedcom.MULTIMEDIAS, fam));
     */
   }
   
