@@ -67,6 +67,16 @@ public class WordBuffer {
   public String toString() {
     return buffer.toString();
   }
+  
+  /**
+   * Append a primitive
+   */
+  public WordBuffer append(int i) {
+    if (buffer.length()>0)
+      buffer.append(filler);
+    buffer.append(i);
+    return this;
+  }
 
   /**
    * Append a generic object (null->"")

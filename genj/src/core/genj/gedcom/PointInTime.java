@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import genj.util.Resources;
 import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
 
@@ -30,16 +31,10 @@ import java.util.StringTokenizer;
  * A point in time - either hebrew, roman, frenchr, gregorian or julian
  */
 public class PointInTime implements Comparable {
-
-//  /** localizations */
-//  private final static String
-//  YEAR  = Gedcom.resources.getString("time.year"  ),
-//  YEARS = Gedcom.resources.getString("time.years" ),
-//  MONTH = Gedcom.resources.getString("time.month" ),
-//  MONTHS= Gedcom.resources.getString("time.months"),
-//  DAY   = Gedcom.resources.getString("time.day"   ),
-//  DAYS  = Gedcom.resources.getString("time.days"  );
   
+  /** resources */
+  private final static Resources resources = Gedcom.resources;
+
   /** marker for unknown day,month,year */
   public final static int 
     UNKNOWN = Integer.MAX_VALUE;
@@ -174,10 +169,10 @@ public class PointInTime implements Comparable {
   public void set(Calendar cal) throws GedcomException {
     // has to be valid
     if (!isValid())
-      throw new GedcomException(Gedcom.getResources().getString("prop.date.pit.invalid"));
+      throw new GedcomException(resources.getString("prop.date.pit.invalid"));
     // has to be complete
     if (!isComplete())
-      throw new GedcomException(Gedcom.getResources().getString("prop.date.pit.incomplete"));
+      throw new GedcomException(resources.getString("prop.date.pit.incomplete"));
     // convert to julian date
     int jd = getJulianDay();
     // convert to new instance
@@ -379,8 +374,17 @@ public class PointInTime implements Comparable {
   /**
    * Delta
    */
-  public static class Delta {
+  public static class Delta implements Comparable {
 
+    /** localizations */
+    private final static String
+      YEAR  = resources.getString("time.year"  ),
+      YEARS = resources.getString("time.years" ),
+      MONTH = resources.getString("time.month" ),
+      MONTHS= resources.getString("time.months"),
+      DAY   = resources.getString("time.day"   ),
+      DAYS  = resources.getString("time.days"  );
+  
     /** values */
     private int years, months, days;
     private Calendar calendar;
@@ -502,60 +506,104 @@ public class PointInTime implements Comparable {
     }
     
     /**
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(Object o) {
+      Delta other = (Delta)o;
+      // compare years
+      int delta = years - other.years;
+      if (delta != 0)
+        return delta;
+      // .. months
+      delta = months - other.months;
+      if (delta != 0)
+        return delta;
+      // .. days
+      delta = days - other.days;
+      return delta;
+    }
+
+    
+    /**
      * @see java.lang.Object#toString()
      */
     public String toString() {
+      // no delta?
+      if (years==0&&months==0&&days==0) {
+        return "<1 "+DAY;
+      }
+
+      WordBuffer buffer = new WordBuffer();
+      if (years >0) {
+        buffer.append(years);
+        buffer.append(years==1 ? YEAR : YEARS);
+      } 
+      if (months>0) {
+        buffer.append(months);
+        buffer.append(months==1 ? MONTH : MONTHS);
+      } 
+      if (days  >0) {
+        buffer.append(days);
+        buffer.append(days==1 ? DAY : DAYS);
+      } 
+      return buffer.toString();
+    }
+    
+    /**
+     * Gedcom value
+     */
+    public String getValue() {
       WordBuffer buffer = new WordBuffer();
       if (years >0) buffer.append(years+"y");
       if (months>0) buffer.append(months+"m");
       if (days  >0) buffer.append(days +"d");
       return buffer.toString();
     }
+    
+    /**
+     * Gedcom value
+     */
+    public boolean setValue(String value) {
 
-//    /**
-//     * Calculate Age String
-//     */
-//    public static String getAgeString(int y, int m, int d, boolean localize, boolean shortWriting) {
-//        
-//        // calculate output
-//        WordBuffer buffer = new WordBuffer();
-//        if (!localize) {
-//            if (y>0) buffer.append(y+"y");
-//            if (m>0) buffer.append(m+"m");
-//            if (d>0) buffer.append(d+"d");
-//        } else {
-//            if (y==0&&m==0&&d==0) {
-//                if(shortWriting)
-//                    return "<1 "+DAY.substring(0,1).toLowerCase();
-//                else
-//                    return "<1 "+DAY;
-//            }
-//            if (y>0) {
-//                buffer.append(""+y);
-//                if(shortWriting)
-//                    buffer.append(y==1?YEAR.substring(0,1).toLowerCase() :YEARS.substring(0,1).toLowerCase() );
-//                else
-//                    buffer.append(y==1?YEAR :YEARS );
-//            }
-//            if (m>0) {
-//                if(shortWriting)
-//                    buffer.append(""+m).append(m==1?MONTH.substring(0,1).toLowerCase():MONTHS.substring(0,1).toLowerCase());
-//                else
-//                    buffer.append(""+m).append(m==1?MONTH:MONTHS);
-//            }
-//            if (d>0) {
-//                if(shortWriting)
-//                    buffer.append(""+d).append(d==1?DAY.substring(0,1).toLowerCase()  :DAYS.substring(0,1).toLowerCase()  );
-//                else
-//                    buffer.append(""+d).append(d==1?DAY  :DAYS  );
-//            }
-//        }
-//        
-//        // done
-//        return buffer.toString();
-//    }
-//    
+      // reset
+      years = 0;
+      months = 0;
+      days = 0;
 
+      // try to parse delta string tokens
+      StringTokenizer tokens = new StringTokenizer(value);
+      while (tokens.hasMoreTokens()) {
+          
+          String token = tokens.nextToken();
+          int len = token.length();
+          
+          // check 1234x
+          if (len<2) return false;
+          for (int i=0;i<len-1;i++) {
+              if (!Character.isDigit(token.charAt(i))) 
+                return false;
+          }
+          
+          int i;
+          try {
+            i = Integer.parseInt(token.substring(0, token.length()-1));;
+          } catch (NumberFormatException e) {
+            return false;
+          }
+          
+          // check last
+          switch (token.charAt(len-1)) {
+              case 'y' : years = i; break;
+              case 'm' : months= i; break;
+              case 'd' : days  = i; break;
+              default  : return false;
+          }
+      }
+
+      // parsed!
+      return true;
+    }
+    
   } // Delta
 
   /**
@@ -581,14 +629,14 @@ public class PointInTime implements Comparable {
       // initialize members
       months = mOnths;
       escape = esc;
-      name = Gedcom.resources.getString("prop.date.cal."+key);
+      name = resources.getString("prop.date.cal."+key);
       image = new ImageIcon(Gedcom.class, img);
       marker = "("+key.charAt(0)+")";
       
       // localize months
       for (int m=0;m<months.length;m++) {
         String mmm = months[m];
-        String localized = Gedcom.getResources().getString("prop.date.mon."+mmm);
+        String localized = resources.getString("prop.date.mon."+mmm);
         String abbreviated;
     
         // calculate abbreviation
@@ -692,23 +740,23 @@ public class PointInTime implements Comparable {
         
       // YYYY is always needed - no calendar includes a year 0!
       if (year==UNKNOWN||year==0)
-        throw new GedcomException(Gedcom.getResources().getString("prop.date.year.invalid"));
+        throw new GedcomException(resources.getString("prop.date.year.invalid"));
         
       // MM needed if DD!
       if (month==UNKNOWN&&day!=UNKNOWN)
-        throw new GedcomException(Gedcom.getResources().getString("prop.date.month.invalid"));
+        throw new GedcomException(resources.getString("prop.date.month.invalid"));
         
       // months have to be within range
       if (month==UNKNOWN)
         month = 0;
       else if (month<0||month>=months.length)
-        throw new GedcomException(Gedcom.getResources().getString("prop.date.month.invalid"));
+        throw new GedcomException(resources.getString("prop.date.month.invalid"));
 
       // day has to be withing range
       if (day==UNKNOWN)
         day = 0;
       else if (day<0||day>=getDays(month,year))
-        throw new GedcomException(Gedcom.getResources().getString("prop.date.day.invalid"));
+        throw new GedcomException(resources.getString("prop.date.day.invalid"));
 
       // try to get julian day
       return toJulianDay(day, month, year);
@@ -933,9 +981,9 @@ public class PointInTime implements Comparable {
         if (y>LEAP_YEARS[l]) jd++; 
       // check range
       if (jd<AN_I)
-        throw new GedcomException(Gedcom.getResources().getString("prop.date.frenchr.bef"));
+        throw new GedcomException(resources.getString("prop.date.frenchr.bef"));
       if (jd>=UNTIL)
-        throw new GedcomException(Gedcom.getResources().getString("prop.date.frenchr.aft"));
+        throw new GedcomException(resources.getString("prop.date.frenchr.aft"));
       // sum
       return jd;
     }
@@ -947,9 +995,9 @@ public class PointInTime implements Comparable {
 
       // check range
       if (julianDay<AN_I)
-        throw new GedcomException(Gedcom.getResources().getString("prop.date.frenchr.bef"));
+        throw new GedcomException(resources.getString("prop.date.frenchr.bef"));
       if (julianDay>=UNTIL)
-        throw new GedcomException(Gedcom.getResources().getString("prop.date.frenchr.aft"));
+        throw new GedcomException(resources.getString("prop.date.frenchr.aft"));
       
       julianDay = julianDay - AN_I;
       

@@ -105,7 +105,10 @@ class ProxyAge extends Proxy {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      tfield.setText(PointInTime.Delta.get(age.getEarlier(), age.getLater()).toString());
+      PointInTime.Delta delta = PointInTime.Delta.get(age.getEarlier(), age.getLater());
+      if (delta==null)
+        return;
+      tfield.setText(delta.getValue());
       tfield.setChanged(true);
     }
   } //ActionUpdate
