@@ -19,6 +19,10 @@
  */
 package genj.option;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * The abstract base type of all options
  */
@@ -40,5 +44,33 @@ public abstract class Option {
   public String getName() {
     return name;
   }
+  
+  /**
+   * Get options in member variables of instance
+   */
+  public static Option[] getOptions(Object instance) {
+    
+    // prepare result
+    List result = new ArrayList();
+    
+    // loop over fields of instance
+    Field[] fields = instance.getClass().getFields();
+    for (int f=0;f<fields.length;f++) {
+      Field field = fields[f];
+      // grab all Option fields
+      if (Option.class.isAssignableFrom(field.getType())) try {
+        result.add(field.get(instance));
+      } catch (Throwable t) {
+      }
+    }
+    
+    // done
+    return (Option[])result.toArray(new Option[result.size()]);
+  }
+  
+  /**
+   * Calculates a text representation
+   */
+  protected abstract String toText();
 
 } //Option

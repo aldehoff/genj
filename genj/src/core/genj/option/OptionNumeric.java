@@ -48,5 +48,12 @@ public class OptionNumeric extends Option {
   public int getValue() {
     return value;
   }
+  
+  /**
+   * @see genj.option.Option#toText()
+   */
+  protected String toText() {
+    return ""+value;
+  }
 
 } //OptionNumeric

@@ -21,6 +21,8 @@ package genj.report;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.option.Option;
+import genj.option.OptionsWidget;
 import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
@@ -50,6 +52,7 @@ import java.io.Writer;
 
 import javax.swing.AbstractButton;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -96,6 +99,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private JList       listOfReports;
   private JTabbedPane tabbedPane;
   private AbstractButton bStart,bStop,bClose,bSave,bReload;
+  private OptionsWidget owOptions;
   
   /** registry for settings */
   private Registry registry;
@@ -127,14 +131,26 @@ public class ReportView extends JPanel implements ToolBarSupport {
     tabbedPane = new JTabbedPane();
     add(tabbedPane,"Center");
 
+    // three tabs
+    Callback callback = new Callback();
+    tabbedPane.add(resources.getString("report.reports"),createReportList(callback));
+    tabbedPane.add(resources.getString("report.output"),createReportOutput(callback));
+    tabbedPane.add(resources.getString("report.options"), createReportOptions());
+    
+    // done
+  }
+  
+  /**
+   * Create tab content for report list/info
+   */
+  private JPanel createReportList(Callback callback) {
+    
     // Panel for Report
     JPanel reportPanel = new JPanel();
     reportPanel.setBorder(new EmptyBorder(3,3,3,3));
     GridBagHelper gh = new GridBagHelper(reportPanel);
-    tabbedPane.add(resources.getString("report.reports"),reportPanel);
 
     // ... List of reports
-    Callback callback = new Callback();
     listOfReports = new JList(ReportLoader.getInstance().getReports());
     listOfReports.setCellRenderer(callback);
     listOfReports.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -172,6 +188,16 @@ public class ReportView extends JPanel implements ToolBarSupport {
     gh.add(new JLabel(resources.getString("report.info")),2,3);
     gh.add(spInfo,2,4,2,1,gh.FILL_BOTH);
 
+    // done
+    return reportPanel;
+    
+  }
+
+  /**
+   * Create the tab content for report output
+   */  
+  private JComponent createReportOutput(Callback callback) {
+    
     // Panel for Report Output
     taOutput = new JTextArea();
     taOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -179,9 +205,16 @@ public class ReportView extends JPanel implements ToolBarSupport {
     taOutput.addMouseMotionListener(callback);
     taOutput.addMouseListener(callback);
 
-    tabbedPane.add(resources.getString("report.output"),new JScrollPane(taOutput));
-
     // Done
+    return new JScrollPane(taOutput);
+  }
+  
+  /**
+   * Create the tab content for report options
+   */
+  private JComponent createReportOptions() {
+    owOptions = new OptionsWidget();
+    return owOptions;
   }
 
   /**
@@ -496,15 +529,17 @@ public class ReportView extends JPanel implements ToolBarSupport {
     public void valueChanged(ListSelectionEvent e) {
       // update info
       if (listOfReports.getSelectedIndices().length!=1) {
-        lAuthor .setText("");
-        lVersion.setText("");
-        tpInfo  .setText("");
+        lAuthor  .setText("");
+        lVersion .setText("");
+        tpInfo   .setText("");
+        owOptions.setOptions(new Option[0]);
       } else {
         Report report = (Report)listOfReports.getSelectedValue();
-        lAuthor .setText(report.getAuthor());
-        lVersion.setText(report.getVersion());
-        tpInfo  .setText(report.getInfo());
-        tpInfo.setCaretPosition(0);
+        lAuthor  .setText(report.getAuthor());
+        lVersion .setText(report.getVersion());
+        tpInfo   .setText(report.getInfo());
+        tpInfo   .setCaretPosition(0);
+        owOptions.setOptions(Option.getOptions(report));
       }
     }
     

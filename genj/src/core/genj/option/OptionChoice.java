@@ -19,8 +19,11 @@
  */
 package genj.option;
 
+import genj.util.WordBuffer;
+
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -75,5 +78,18 @@ public class OptionChoice extends Option {
   public void setSelected(Object value) {
     selection.add(value);
   }
+  
+  /**
+   * @see genj.option.Option#toText()
+   */
+  protected String toText() {
+    if (selection.isEmpty())
+      return "";
+    WordBuffer buffer = new WordBuffer(',');
+    for (Iterator it = selection.iterator(); it.hasNext(); )
+      buffer.append(getName(it.next()));
+    return buffer.toString();
+  }
+
   
 } //OptionChoice

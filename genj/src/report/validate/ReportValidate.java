@@ -26,11 +26,11 @@ import java.util.List;
 public class ReportValidate extends Report {
   
   /** our options */
-  private OptionBoolean 
+  public OptionBoolean 
     isEmptyValueValid = new OptionBoolean("Empty Values are Valid", true);
 
   /** options of reports are picked up via field-introspection */
-  protected OptionNumeric
+  public OptionNumeric
     maxLife    = new OptionNumeric("Maximum Lifespan", 90),
     minAgeMARR = new OptionNumeric("Minimum age when marrying", 15),
     maxAgeBAPM = new OptionNumeric("Maximum age when baptised",  6),

@@ -41,6 +41,12 @@ public class OptionBoolean extends Option {
   public boolean isSelected() {
     return isSelected; 
   }
+  
+  /**
+   * @see genj.option.Option#toText()
+   */
+  protected String toText() {
+    return new Boolean(isSelected).toString();
+  }
 
-}
- //OptionBoolean
+} //OptionBoolean
