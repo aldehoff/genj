@@ -73,15 +73,14 @@ public class ReportAges implements Report {
   public boolean start(ReportBridge bridge, Gedcom gedcom) {
 
     // Show the users in a combo to the user
-    Indi indi = (Indi)bridge.getValueFromUser(
-      "Please select an individual",
-      gedcom.getEntities(Gedcom.INDIVIDUALS).toArray(),
-      null
+    Indi indi = (Indi)bridge.getEntityFromUser(
+      "Please select an individual", // msg
+      gedcom,                        // our gedcom instance
+      Gedcom.INDIVIDUALS,            // type INDIVIDUALS
+      "INDI:NAME"                    // sort by name
     );
 
-    if (indi==null) {
-      return false;
-    }
+    if (indi==null) return false;
 
     // Display the ages
     iterate(bridge, indi, 1);

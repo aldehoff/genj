@@ -19,6 +19,9 @@
  */
 package genj.report;
 
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.PropertyComparator;
 import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
@@ -27,7 +30,9 @@ import genj.window.WindowManager;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
@@ -146,6 +151,24 @@ public class ReportBridge {
    */
   public void showMessageToUser(String msg) {
     view.getViewManager().getWindowManager().openDialog(null, report.getName(), WindowManager.IMG_INFORMATION, msg, (String[])null, view);
+  }
+
+  /**
+   * Helper method that queries the user for an entity
+   * @param gedcom to use
+   * @param type the type of entities to show 
+   * @param sortPath path to sort by or null
+   */
+  public Entity getEntityFromUser(String msg, Gedcom gedcom, int type, String sortPath) {
+    // grab entities
+    List ents = gedcom.getEntities(type);
+    if (ents.isEmpty())
+      return null;
+    // sort
+    if (sortPath!=null)
+      Collections.sort(ents, new PropertyComparator(sortPath));
+    // show
+    return (Entity)getValueFromUser(msg, ents.toArray(), ents.get(0));
   }
 
   /**
