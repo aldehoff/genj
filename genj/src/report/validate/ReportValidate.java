@@ -68,8 +68,7 @@ public class ReportValidate extends Report {
    * @see genj.report.Report#usesStandardOut()
    */
   public boolean usesStandardOut() {
-    // still true
-    return true;
+    return false;
   }
   
   /**
@@ -85,12 +84,6 @@ public class ReportValidate extends Report {
    * @see genj.report.Report#start(java.lang.Object)
    */
   public void start(Object context) {
-
-    println("***This Report is not finished yet - work in progress***");
-    println(" Still to do:");
-    println(" + migrate more of Jerome's anomaly checks");
-    println(" + internationalize all tests");
-    flush();
 
     // prepare tests
     List tests = createTests();
