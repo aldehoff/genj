@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.cday;
+package genj.almanac;
 
 import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
@@ -31,10 +31,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * This class adds support for a CDAY style event repository with
@@ -52,7 +49,7 @@ import java.util.Set;
  * </code>
  * @see http://cday.sourceforge.net
  */
-public class Repository {
+public class Almanac {
   
   private final static String DIR = "./contrib/cday";
   
@@ -61,46 +58,68 @@ public class Repository {
   };
   
   /** singleton */
-  private static Repository instance;
+  private static Almanac instance;
   
   /** events */
   private List events = new ArrayList();
   
   /** libraries */
-  private Set libraries = new HashSet();
+  private List libraries = new ArrayList();
+  
+  /** categories */
+  private List categories = new ArrayList();
   
   /** 
    * Singleton Accessor 
    */
-  public static Repository getInstance() {
+  public static Almanac getInstance() {
     if (instance==null)
-      instance = new Repository();
+      instance = new Almanac();
     return instance;
   }
   
   /**
    * Constructor
    */
-  private Repository() {
+  private Almanac() {
     // load what we can find
     new Thread(new Loader()).start();
     // done for now
   }
   
   /**
+   * Accessor - categories
+   */
+  public List getCategories() {
+    return categories;
+  }
+  
+  /**
+   * Accessor - category
+   */
+  public Category getCategory(String key) {
+    for (int c=0; c<categories.size(); c++) {
+      Category cat = (Category)categories.get(c);
+      if (cat.getKey().equals(key))
+        return cat;
+    }
+    Category cat = new Category(key);
+    categories.add(cat);
+    return cat;
+  }
+  
+  /**
    * Accessor - libraries
    */
-  public Set getLibraries() {
+  public List getLibraries() {
     return libraries;
   }
   
   /**
    * find start index of given year in events (log n)
    */
-  public int getStartIndex(int year) {
-    synchronized (events) {
-      return getStartIndex(year, 0, events.size()-1);
-    }
+  public synchronized int getStartIndex(int year) {
+    return getStartIndex(year, 0, events.size()-1);
   }
   private int getStartIndex(int year, int start, int end) {
     
@@ -119,11 +138,11 @@ public class Repository {
   /**
    * Accessor - events by point in time
    */
-  public List getEvents(PointInTime when, int days) {
+  public synchronized List getEvents(PointInTime when, int days) {
     
     ArrayList result = new ArrayList(10);
     
-    try {	synchronized (events) {
+    try {	
 
 	    // convert to julian day
 	    long julian = when.getJulianDay();
@@ -147,7 +166,7 @@ public class Repository {
           result.add(event);
       }
 	    
-    } } catch (GedcomException e) {
+    } catch (GedcomException e) {
     }
     
     // done
@@ -162,35 +181,9 @@ public class Repository {
   }
 
   /**
-   * Accessor - the list of events
-   */
-  public void setEvents(List set) {
-    synchronized (events) {
-      // replace
-      events.clear();
-      libraries.clear();
-      Iterator it = set.iterator();
-      while (it.hasNext()) {
-        Event event = (Event)it.next();
-        events.add(event);
-        libraries.add(event.getLibrary());
-      }
-	    // sort them
-      Collections.sort(events);
-    }
-  }
-
-  /** debug */
-  public static void main(String[] args) {
-    getInstance();
-  }
-  
-  /**
    * A loader for cday files in ./cday
    */  
   private class Loader implements Runnable {
-    
-    private List result = new ArrayList(1000);
     
 		/**
 		 * async load
@@ -209,7 +202,7 @@ public class Repository {
 		  else
 		    files = dir.listFiles();
 		  
-	    Debug.log(Debug.INFO, Repository.this, "Found "+files.length+" CDay file(s) in "+dir.getAbsoluteFile());
+	    Debug.log(Debug.INFO, Almanac.this, "Found "+files.length+" CDay file(s) in "+dir.getAbsoluteFile());
 		  if (files.length==0) 
 		    return;
 		  
@@ -217,22 +210,22 @@ public class Repository {
 		  for (int f = 0; f < files.length; f++) {
 		    File file = files[f];
 		    if (isGoodSuffix(file)) {
-    	    Debug.log(Debug.INFO, Repository.this, "Loading "+file.getAbsoluteFile());
+    	    Debug.log(Debug.INFO, Almanac.this, "Loading "+file.getAbsoluteFile());
     	    try {
 	          load(file, charset);
 	        } catch (IOException e) {
-	    	    Debug.log(Debug.WARNING, Repository.this, "IO Problem reading "+file.getAbsoluteFile(), e);
+	    	    Debug.log(Debug.WARNING, Almanac.this, "IO Problem reading "+file.getAbsoluteFile(), e);
 	        }
 		    }
       }
 		  
-	    Debug.log(Debug.INFO, Repository.this, "Loaded "+result.size()+" events");
+	    Debug.log(Debug.INFO, Almanac.this, "Loaded "+events.size()+" events");
+      
+      // sort 'em
+      synchronized (instance) {
+        Collections.sort(events);
+      }
 
-	    // tell about it
-	    setEvents(result);
-	    
-	    Debug.flush();
-	    
 		  // done
 		}    
 		
@@ -258,6 +251,7 @@ public class Repository {
 		private void load(File file, Charset charset) throws IOException {
 		  
 		  String lib = file.getName();
+      libraries.add(lib);
 		  
 		  // read its lines
 		  BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset));
@@ -276,13 +270,8 @@ public class Repository {
 		  if (line.length()<11)
 		    return false;
 		  
-		  // check prefix
-		  boolean birthday;
-		  switch (line.charAt(0)) {
-		    case 'B': birthday = true; break;
-		    case 'S': birthday = false; break;
-		    default : return false;
-		  }
+		  // grab category
+      String c = line.substring(0,1);
 		  
 		  // check date
 		  int day, month, year;
@@ -300,11 +289,13 @@ public class Repository {
 		    return false;
 
 		  // instantiate
-		  try {
-		    result.add(new Event(lib, birthday, new PointInTime(day-1, month-1, year), text)); 
-		  } catch (GedcomException e) {
-		    return false;
-		  }
+      synchronized (instance) {
+  		  try {
+  		    events.add(new Event(lib, getCategory(c), new PointInTime(day-1, month-1, year), text)); 
+  		  } catch (GedcomException e) {
+  		    return false;
+  		  }
+      }
 		  
 		  // done
 		  return true;

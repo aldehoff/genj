@@ -19,8 +19,8 @@
  */
 package genj.timeline;
 
-import genj.cday.Event;
-import genj.cday.Repository;
+import genj.almanac.Event;
+import genj.almanac.Almanac;
 import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
 import genj.util.swing.UnitGraphics;
@@ -85,12 +85,11 @@ public class RulerRenderer extends ContentRenderer {
     
     g.setColor(cTimespan);
     Rectangle2D clip = g.getClip();
-
     int 
     	fromYear = (int)Math.floor(clip.getX()),
   		toYear   = (int)Math.ceil (clip.getMaxX());
     
-    Repository cday = Repository.getInstance();
+    Almanac cday = Almanac.getInstance();
     List events = cday.getEvents();
     for (int i=cday.getStartIndex(fromYear);i<events.size();i++) {
       Event event = (Event)events.get(i);

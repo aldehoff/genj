@@ -17,9 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.cday;
+package genj.almanac;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
 import genj.util.WordBuffer;
@@ -32,13 +31,13 @@ public class Event implements Comparable {
   private String lib;
   private PointInTime pit;
   private String text;
-  private boolean isBirthday;
+  private Category cat;
   
   /** constructor */
-  public Event(String library, boolean setBirthday, PointInTime setTime, String setText) throws GedcomException {
+  public Event(String library, Category setCat, PointInTime setTime, String setText) throws GedcomException {
     lib = library;
     pit = setTime;
-    isBirthday = setBirthday;
+    cat = setCat;
     text = setText;
     // make sure its julian day is good
     pit.getJulianDay();
@@ -48,10 +47,6 @@ public class Event implements Comparable {
   public String toString() {
     WordBuffer result = new WordBuffer();
     result.append(pit.toString());
-    if (isBirthday) {
-      result.append(Gedcom.getName("BIRT"));
-      result.append(":");
-    }
     result.append(text);
     return result.toString();
   }
@@ -79,8 +74,8 @@ public class Event implements Comparable {
   /**
    * Accessor
    */
-  public boolean isBirthday() {
-    return isBirthday;
+  public Category getCategory() {
+    return cat;
   }
   
   /**

@@ -19,7 +19,7 @@
  */
 package genj.timeline;
 
-import genj.cday.Repository;
+import genj.almanac.Almanac;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
@@ -33,8 +33,9 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -74,11 +75,10 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     }
   };
   
-  /** a widget for selecting event libraries to use */
-  private ListSelectionWidget eventsList = new ListSelectionWidget();
-  
-  /** a checkbox for whether to consider birthdays in library */
-  private JCheckBox checkShowBirthdays = new JCheckBox(resources.getString("events.bdays" ));
+  /** a widget for selecting almanac event libraries / categories */
+  private ListSelectionWidget 
+    almanacEvents = new ListSelectionWidget(),
+    almanacCategories = new ListSelectionWidget();
   
   /** Checkbox for options */
   private JCheckBox[] checkOptions = {
@@ -124,12 +124,9 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     panelMain.add(panelOptions, BorderLayout.SOUTH);
     
     // panel for history options
-    Set libs = Repository.getInstance().getLibraries();
-    eventsList.setChoices(libs);
-    eventsList.setSelection(libs);
     JPanel panelEvents = new JPanel(new BorderLayout());
-    panelEvents.add(checkShowBirthdays, BorderLayout.NORTH);
-    panelEvents.add(eventsList, BorderLayout.CENTER);
+    panelEvents.add(almanacCategories, BorderLayout.NORTH);
+    panelEvents.add(almanacEvents, BorderLayout.CENTER);
     
     // color chooser
     colorWidget = new ColorsWidget();
@@ -137,7 +134,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     // add those tabs
     add(resources.getString("page.main")  , panelMain);
     add(resources.getString("page.colors"), colorWidget);
-    add(resources.getString("page.events"), panelEvents);
+    add(resources.getString("page.almanac"), panelEvents);
 
     // done
   }
@@ -204,6 +201,16 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
       Color color = (Color)view.colors.get(key);
       colorWidget.addColor(key, name, color);
     }
+    
+    // almanac
+    Almanac almanac = Almanac.getInstance();
+    List libs = almanac.getLibraries();
+    almanacEvents.setChoices(libs);
+    almanacEvents.setSelection(new HashSet());
+    List cats = almanac.getCategories();
+    almanacCategories.setChoices(cats);
+    almanacCategories.setSelection(new HashSet());
+    
     
     // Done
   }

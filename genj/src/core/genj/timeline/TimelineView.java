@@ -19,7 +19,7 @@
  */
 package genj.timeline;
 
-import genj.cday.Repository;
+import genj.almanac.Almanac;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.time.PointInTime;
@@ -434,7 +434,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       PointInTime when = model.getPointInTime(year);
       int days = (int)Math.ceil(5F/DPC.getX()/cmPerYear*365);
       // collect events and their text
-      Iterator it = Repository.getInstance().getEvents(when, days).iterator();
+      Iterator it = Almanac.getInstance().getEvents(when, days).iterator();
       WordBuffer text = new WordBuffer();
       if (it.hasNext()) {
 	      text.append("<html><body>");
