@@ -545,8 +545,8 @@ import java.awt.geom.Rectangle2D;
       };
       
       offsetHusband = model.isVertical() ? 
-        -(metrics.wIndis + shapeMarrs.getBounds2D().getWidth ())/2 :
-        -(metrics.hIndis + shapeMarrs.getBounds2D().getHeight())/2;
+        metrics.wFams/2 - metrics.wIndis - shapeMarrs.getBounds2D().getWidth()/2 :
+        metrics.hFams/2 - metrics.hIndis - shapeMarrs.getBounds2D().getHeight()/2;
       // done
     }
     
@@ -599,7 +599,7 @@ import java.awt.geom.Rectangle2D;
          * patch alignment above children so that marr is centered above
          */
         public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
-          return (maxc+minc)/2 + offsetHusband;
+          return minc + offsetHusband;
         }
       };
       model.add(new TreeArc(pivot, model.add(nIndi), pivot.getShape()!=null));
