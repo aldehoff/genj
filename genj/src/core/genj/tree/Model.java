@@ -676,11 +676,7 @@ public class Model implements Graph, GedcomListener {
       // grab the children
       Indi[] children = fam.getChildren();
       for (int c=0; c<children.length; c++) {
-// FIXME        new MyArc(parent, iterate(children[c]), true);       
-MyNode foo = iterate(children[c]);
-new MyArc(parent, foo, true);       
-new MyArc(parent, foo, true);       
-
+      new MyArc(parent, iterate(children[c]), true);       
       }
       // done
     }
