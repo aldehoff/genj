@@ -351,9 +351,9 @@ public class Model implements Graph, GedcomListener {
   /**
    * Adds a node   */
   /*package*/ TreeNode add(TreeNode node) {
-    Object key = node.entity;
-    if (key==null) key = node;
-    entities2nodes.put(key, node);
+    if (node.entity!=null) {
+      entities2nodes.put(node.entity, node);
+    }
     nodes.add(node);
     return node;
   }
