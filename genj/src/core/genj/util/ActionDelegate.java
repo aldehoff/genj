@@ -128,14 +128,21 @@ public abstract class ActionDelegate implements Cloneable {
    * Stops asynchronous execution
    */
   public void cancel(boolean wait) {
-    Thread t = getThread();
-    if (t!=null&&t.isAlive()) {
-      t.interrupt();
-      if (wait) try {
-        t.join();
-      } catch (InterruptedException e) {
-      }
+
+    Thread cancel;
+    synchronized (threadLock) {
+      if (thread==null||!thread.isAlive()) 
+        return;
+      cancel = thread;      
+      cancel.interrupt();
     }
+
+    if (wait) try {
+      cancel.join();
+    } catch (InterruptedException e) {
+    }
+
+    // done
   }
   
   /**
