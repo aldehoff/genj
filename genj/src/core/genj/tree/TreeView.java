@@ -589,7 +589,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
      */
     private ActionRoot(Entity entity) {
       root = entity;
-      setText("Make root in "+frame.getTitle());
+      setText(resources.getString("root",frame.getTitle()));
       setImage(Images.imgView);
     }
     
