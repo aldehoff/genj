@@ -578,7 +578,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       Property prop = (Property)path.getLastPathComponent();
   
       // .. Confirm
-      ChoosePropertyBean choose = new ChoosePropertyBean(MetaProperty.get(prop).getSubs(false), resources);
+      ChoosePropertyBean choose = new ChoosePropertyBean(MetaProperty.get(prop).getSubs(prop,false), resources);
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
       Object[] message = new Object[3];
@@ -599,7 +599,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       if (option != JOptionPane.OK_OPTION) return;
   
       // .. Calculate chosen properties
-      Property[] props = choose.getResultingProperties(check.isSelected());
+      Property[] props = choose.getResultingProperties();
   
       if ( (props==null) || (props.length==0) ) {
         JOptionPane.showMessageDialog(
@@ -613,7 +613,11 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   
       // .. add properties
       if (!gedcom.startTransaction()) return;
-      for (int i=0;i<props.length;i++) prop.addProperty(props[i]);
+      
+      for (int i=0;i<props.length;i++) {
+        Property newProp = prop.addProperty(props[i]);
+        if (check.isSelected()) newProp.addDefaultProperties();
+      } 
       gedcom.endTransaction();
      
       // .. select added

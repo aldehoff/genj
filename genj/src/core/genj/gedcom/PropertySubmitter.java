@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.Enumeration;
-import java.util.StringTokenizer;
 
 /**
  * Gedcom Property : SUBMITTER (entity/property)
@@ -53,38 +51,13 @@ public class PropertySubmitter extends PropertyXRef {
    */
   public PropertySubmitter(String tag, String value) {
     super(null);
-    setValue(value);
   }
   
-  /**
-   * Returns a LineIterator which can be used to iterate through
-   * several lines of this submitter
-   */
-  public Enumeration getLineIterator() {
-    // iterate
-    return new StringTokenizer(super.getValue(), "\n");
-  }
-
-  /**
-   * Returns this property's value cut to a first line in
-   * case someone actually asks us
-   */
-  public String getValue() {
-    String result = super.getValue();    
-    int pos = result.indexOf('\n');
-    if (pos>=0) result = result.substring(0,pos)+"...";
-    return result;
-  }
-
   /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
-    // 20021113 if linked then we stay XRef
-    if (super.getReferencedEntity()!=null)
-      return "XRef";
-    // multiline
-    return "MLE";    
+    return "XRef";
   }
 
   /**
@@ -99,7 +72,7 @@ public class PropertySubmitter extends PropertyXRef {
       return "Entity";
 
     // Could be XRef or MLE
-    return "MLE";
+    return "Empty";
   }
 
   /**
@@ -107,16 +80,6 @@ public class PropertySubmitter extends PropertyXRef {
    */
   public String getTag() {
     return "SUBM";
-  }
-
-  /**
-   * This property incorporates several lines with newlines
-   */
-  public int isMultiLine() {
-    // not if this is a valid linke
-    if (getReferencedEntity()!=null) return NO_MULTI;
-    // sure bring it on!
-    return MULTI_NEWLINE;
   }
 
   /**
@@ -157,7 +120,7 @@ public class PropertySubmitter extends PropertyXRef {
   }
   
   /**
-   * @see genj.gedcom.PropertyXRef#isValid()
+   * @see genj.gedcom.Submitter#isValid()
    */
   public boolean isValid() {
     // always

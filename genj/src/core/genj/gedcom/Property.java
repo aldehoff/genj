@@ -86,14 +86,18 @@ public abstract class Property implements Comparable {
    */
   public Property addDefaultProperties() {
     
+    // only if parent set
+    if (getEntity()==null) throw new IllegalArgumentException("Not part of entity is null!");
+    
     // ask for default sub-properties
     MetaProperty meta = MetaProperty.get(this);
-    MetaProperty[] subs = meta.getSubs(true);
+    MetaProperty[] subs = meta.getSubs(this, true);
     
     // loop
     for (int s=0; s<subs.length; s++) {
-      if (getProperty(subs[s].getTag())==null)
-      	addProperty(subs[s].instantiate("", true));
+      if (getProperty(subs[s].getTag())==null) {
+      	addProperty(subs[s].instantiate("")).addDefaultProperties();
+      }
     }
     
     return this;
@@ -111,7 +115,7 @@ public abstract class Property implements Comparable {
    * Adds another property to this property
    * @param prop new property to add
    */
-  public final void addProperty(Property prop) {
+  public final Property addProperty(Property prop) {
 
     // Make sure we have a children's list
     if (children==null) {
@@ -121,10 +125,8 @@ public abstract class Property implements Comparable {
     // Remember
     children.add(prop);
 
-    // Notify the meta-property of this
-    MetaProperty.get(this).addNotify(prop);
-
     // Done
+    return prop;
   }
 
   /**

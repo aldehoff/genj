@@ -288,7 +288,7 @@ public class BlueprintEditor extends JSplitPane {
       Object value = tag2value.get(path.getLast());
       if (value==null) value = "some "+path.getLast().toLowerCase();
       // .. create the property
-      Property result = MetaProperty.instantiate(path.getLast(), value.toString(), false);
+      Property result = MetaProperty.instantiate(path.getLast(), value.toString());
       // done
       return result;
     }

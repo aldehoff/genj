@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import java.util.List;
+
 
 /**
  * Class for encapsulating a submitter
@@ -92,8 +94,8 @@ public class Submitter extends PropertySubmitter implements Entity {
    */
   public String toString() {
     // try sub-property
-    PropertySubmitter sub = getSubSubmitter(false);
-    if (sub!=null) return getId()+":"+sub.toString();
+    List names = getProperties(PropertyName.class);
+    if (!names.isEmpty()) return getId()+':'+names.get(0).toString();
     // fallback id only
     return getId();
   }
@@ -110,46 +112,6 @@ public class Submitter extends PropertySubmitter implements Entity {
    */
   public void link() throws GedcomException {
     throw new IllegalArgumentException();
-  }
-
-  /**
-   * @see genj.gedcom.PropertyNote#setValue(java.lang.String)
-   */
-  public boolean setValue(String v) {
-    // ignoring empty
-    if (v.trim().length()==0) return true;
-    // keep in sub-submitter
-    getSubSubmitter(true).setValue(v);
-    // done
-    return true;
-  }
-
-  /**
-   * Get a unique sub-submitter we use to
-   * keep value-date that someone might
-   * try to store in this node
-   */
-  private PropertySubmitter getSubSubmitter(boolean create) {
-    for (int i=0;i<getNoOfProperties();i++) {
-      Property child = getProperty(i);
-      if (child instanceof PropertySubmitter) {
-        return (PropertySubmitter)child;
-      }
-    }
-    PropertySubmitter result = null; 
-    if (create) {
-      result = new PropertySubmitter(null, ""); 
-      addProperty(result);
-    }
-    return result;
-  }
-
-  /**
-   * @see genj.gedcom.Property#addDefaultProperties()
-   */
-  public Property addDefaultProperties() {
-    getSubSubmitter(true);
-    return this;
   }
   
 } //Submitter

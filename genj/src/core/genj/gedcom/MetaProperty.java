@@ -50,7 +50,7 @@ public class MetaProperty {
   private static Set events = new HashSet();
   
   /** unknown */
-  private final static MetaProperty UNKNOWN = new MetaProperty("?","Unknown",null);
+  private final static MetaProperty UNKNOWN = new MetaProperty("?","Unknown");
 
   /** globally loaded images */    
   private static Map images = new HashMap(); 
@@ -58,7 +58,6 @@ public class MetaProperty {
   /** Members */
   private String    theTag;
   private Class     theClass;
-  private List      theSubs = new ArrayList(20);
   private boolean  isEvent;
   private ImageIcon theImage = null;
   private Map       theImages = new HashMap();
@@ -66,7 +65,7 @@ public class MetaProperty {
   /**
    * Constructor
    */
-  private MetaProperty(String tag, String type, String subs) {
+  private MetaProperty(String tag, String type) {
     // Remember data
     theTag = tag;
     
@@ -80,31 +79,10 @@ public class MetaProperty {
       theClass = PropertyUnknown.class;
     }
     
-    // Initialize subTags
-    if (subs!=null) {
-      if (subs.startsWith("$")) subs = properties.getProperty(subs.substring(1));
-      StringTokenizer tokens = new StringTokenizer(subs,",");
-      while (tokens.hasMoreTokens()) theSubs.add(tokens.nextToken());
-    }
-    
     // event?
     isEvent = PropertyEvent.class.isAssignableFrom(theClass);
     
     // done
-  }
-
-  /**
-   * notifies this meta of a property being added
-   */
-  public void addNotify(Property prop) {
-    // won't keep transients
-    if (prop.isTransient()) return;
-    // won't keep xrefs
-    if (prop instanceof PropertyXRef) return;
-    // won't keep known
-    if (theSubs.contains(prop.getTag())) return;
-    // keep it
-    theSubs.add(prop.getTag());
   }
 
   /**
@@ -131,19 +109,37 @@ public class MetaProperty {
   /**
    * The subs defined for the meta-definition
    */
-  public MetaProperty[] getSubs(boolean defaultsOnly) {
+  public MetaProperty[] getSubs(Property parent, boolean defaultsOnly) {
     
-    Set result = new LinkedHashSet(theSubs.size());
-    for (int i=0; i<theSubs.size(); i++) {
-      String sub = theSubs.get(i).toString();
+    // Try to find subs TAG.subs.PATH or TAG.subs
+    String subs = properties.getProperty(theTag+".subs."+parent.getPath().toString());
+    if (subs==null)
+      subs = properties.getProperty(theTag+".subs");
+    if (subs==null) return new MetaProperty[0];
+
+    // .. a variable?    
+    if (subs.startsWith("$")) subs = properties.getProperty(subs.substring(1));
+
+    // Loop sub-tags    
+    Set result = new LinkedHashSet();
+    StringTokenizer tokens = new StringTokenizer(subs,",");
+    while (tokens.hasMoreTokens()) {
+      // the sub-tag
+      String sub = tokens.nextToken();
+      // .. a variable?    
+      if (sub.startsWith("$")) sub = properties.getProperty(sub.substring(1));
+      // check default
       if (sub.startsWith("!")) {
         sub = sub.substring(1);
       } else {
         if (defaultsOnly) continue;
       } 
-      result.add(get(sub));
+      // here it is
+      MetaProperty mp = get(sub);
+      if (mp!=null) result.add(mp);
     }
-        
+
+    // done        
     return (MetaProperty[])result.toArray(new MetaProperty[result.size()]);
   }
 
@@ -261,10 +257,9 @@ public class MetaProperty {
     
     // try to get the information we need
     String type = properties.getProperty(tag+".type");
-    String subs = properties.getProperty(tag+".subs");
 
     // create it
-    result = new MetaProperty(tag, type, subs);
+    result = new MetaProperty(tag, type);
     instances.put(tag, result);
     if (result.isEvent()) events.add(result);
     
@@ -275,7 +270,7 @@ public class MetaProperty {
   /**
    * Instantiate property
    */
-  public Property instantiate(String value, boolean addDefaults) {
+  public Property instantiate(String value) {
     
     // Instantiate Property object
     try {
@@ -287,9 +282,6 @@ public class MetaProperty {
       // .. get object
       Property result = (Property)constructor.newInstance(parms);
       
-      // .. add defaults?
-      if (addDefaults) result.addDefaultProperties();
-
       // Done
       return result;
 
@@ -304,8 +296,8 @@ public class MetaProperty {
   /**
    * Instantitate property
    */
-  public static Property instantiate(String tag, String value, boolean addDefaults) {
-    return get(tag).instantiate(value, addDefaults);
+  public static Property instantiate(String tag, String value) {
+    return get(tag).instantiate(value);
   }
 
 } //MetaDefinition

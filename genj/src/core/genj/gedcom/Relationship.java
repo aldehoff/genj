@@ -64,8 +64,8 @@ public abstract class Relationship {
       if (!(entity.getProperty() instanceof PropertyXRef))
         throw new GedcomException("Can apply relationship to non-xref");
 
-      PropertyXRef xref = (PropertyXRef)MetaProperty.instantiate(entity.getProperty().getTag(), "", true);     
-      owner.addProperty(xref);
+      PropertyXRef xref = (PropertyXRef)MetaProperty.instantiate(entity.getProperty().getTag(), "");     
+      owner.addProperty(xref).addDefaultProperties();
       xref.setTarget((PropertyXRef)entity.getProperty());
       //  focus stays with owner
       return owner.getEntity();
@@ -350,8 +350,8 @@ public abstract class Relationship {
     public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       // add association
-      PropertyAssociation pa = (PropertyAssociation)MetaProperty.instantiate("ASSO", entity.getId(), true);
-      property.addProperty(pa);
+      PropertyAssociation pa = (PropertyAssociation)MetaProperty.instantiate("ASSO", entity.getId());
+      property.addProperty(pa).addDefaultProperties();
       try {
         pa.link();
       } catch (GedcomException ge) {

@@ -137,7 +137,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
   /**
    * Returns the resulting properties
    */
-  public Property[] getResultingProperties(boolean addDefaults) {
+  public Property[] getResultingProperties() {
 
     Property[] result = null;
 
@@ -146,7 +146,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
       Object[] objs = lChoose.getSelectedValues();
       result = new Property[objs.length];
       for (int i=0;i<objs.length;i++) {
-        result[i] = ((MetaProperty)objs[i]).instantiate("", addDefaults);
+        result[i] = ((MetaProperty)objs[i]).instantiate("");
       }
     } else {
       // ... create a single entry property list
@@ -154,7 +154,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
         result = new Property[0];
       } else {
         result = new Property[1];
-        result[0] = MetaProperty.get(tfNew.getText()).instantiate("",addDefaults);
+        result[0] = MetaProperty.get(tfNew.getText()).instantiate("");
       }
     }
     

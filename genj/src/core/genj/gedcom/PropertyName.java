@@ -71,7 +71,7 @@ public class PropertyName extends Property {
    */
   public boolean isValid() {
     /// no indi -> true
-    if (!(getEntity() instanceof Indi)) return true;
+    if (!(getEntity() instanceof Indi||getEntity() instanceof Submitter)) return true;
     return nameAsString==null;
   }
 
@@ -207,7 +207,7 @@ public class PropertyName extends Property {
     noteModifiedProperty();
     
     // don't know entity - remember unparsed
-    if (!(getEntity() instanceof Indi)) {
+    if (!(getEntity() instanceof Indi||getEntity() instanceof Submitter)) {
       nameAsString = newValue;
       return true;
     }
