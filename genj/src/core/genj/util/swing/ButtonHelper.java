@@ -110,8 +110,12 @@ public class ButtonHelper {
       result.setMargin(insets);
     if (minSize!=null)
       result.setMinimumSize(minSize);
-    if (maxSize!=null)
-      result.setMaximumSize(maxSize);
+    if (maxSize!=null) {
+      result.setMaximumSize(new Dimension(
+        maxSize.width <0 ? result.getMaximumSize().width : maxSize.width,
+        maxSize.height<0 ? result.getMaximumSize().height: maxSize.height
+      ));
+    }
     if (isImageOverText) {
       result.setVerticalTextPosition(SwingConstants.BOTTOM);
       result.setHorizontalTextPosition(SwingConstants.CENTER);

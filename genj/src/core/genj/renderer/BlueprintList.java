@@ -95,7 +95,7 @@ public class BlueprintList extends JSplitPane {
       .setContainer(left)
       .setResources(resources)
       .setEnabled(false)
-      .setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+      .setMaximumSize(new Dimension(Integer.MAX_VALUE, -1));
     bAdd = bh.create(new ActionAdd());
     bDel = bh.create(new ActionDel());
     // children
