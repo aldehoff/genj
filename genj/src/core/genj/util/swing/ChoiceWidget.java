@@ -30,18 +30,23 @@ import javax.swing.ComboBoxEditor;
  * Our own JComboBox
  */
 public class ChoiceWidget extends javax.swing.JComboBox {
+  
+  /** did we change */
+  private boolean isChanged = false;
+  
 
-  /** our editor */
-  private Editor editor = new Editor();
-    
   /**
    * Constructor
    */     
   public ChoiceWidget(Object[] values, Object selection) {
+    
     super(values);
+    
     setSelectedItem(selection);
     setAlignmentX(LEFT_ALIGNMENT);
     setEditor(editor);
+    
+    isChanged = false;
   }
     
   /**
@@ -55,23 +60,44 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * Changed?
    */
   public boolean hasChanged() {
-    return editor.hasChanged();
+    // check editor
+    Object edit = getEditor();
+    if (edit instanceof Editor && ((Editor)edit).hasChanged() )
+      return true;
+    // check us
+    return isChanged;
   }
-    
+
+  /**
+   * @see javax.swing.JComboBox#setSelectedItem(java.lang.Object)
+   */
+  public void setSelectedItem(Object anObject) {
+    // mark changed
+    isChanged = true;
+    // continue
+    super.setSelectedItem(anObject);
+  }
+
+  
   /**
    * @see javax.swing.JComboBox#setEditable(boolean)
    */
   public void setEditable(boolean set) {
     super.setEditable(set);
-    // mark unchanged if start editable
-    if (set) editor.setText(editor.getText());
+    // install our special editor for now
+    if (set) {
+      Editor edit = new Editor();
+      setEditor(edit);
+      edit.setChanged(false);
+    }
+    // done 
   }
     
   /**
    * Current text value
    */
   public String getText() {
-    if (isEditable()) return editor.getText();
+    if (isEditable()) return getEditor().getItem().toString();
     return super.getSelectedItem().toString();
   }
   
@@ -79,19 +105,21 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * @see javax.swing.JComboBox#setPopupVisible(boolean)
    */
   public void setPopupVisible(boolean v) {
-    // try to find prefix in combo - overriden instead of
-    //  this.addPopupMenuListener() 
-    // because that would be JDK 1.4 only
-    String pre = getText();
-    for (int i=0; i<getItemCount(); i++) {
-      String item = (String) getItemAt(i);
-      if (item.regionMatches(true, 0, pre, 0, pre.length())) {
-        setSelectedIndex(i);
-        break;
+    // show it
+    super.setPopupVisible(v);
+    // try to find prefix in combo
+    if (v) { 
+      // not via this.addPopupMenuListener() in 1.4 only 
+      String pre = getText();
+      for (int i=0; i<getItemCount(); i++) {
+        String item = (String) getItemAt(i);
+        if (item.regionMatches(true, 0, pre, 0, pre.length())) {
+          setSelectedIndex(i);
+          break;
+        }
       }
     }
-    // continue
-    super.setPopupVisible(v);
+    // done
   }
 
       
