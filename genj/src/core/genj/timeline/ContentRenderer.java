@@ -24,7 +24,6 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.UnitGraphics;
 import java.awt.Color;
 import java.awt.FontMetrics;
-import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -36,8 +35,11 @@ import java.util.List;
  */
 public class ContentRenderer {
   
+  /** size of a dot */
+  protected Point2D.Double dotSize = new Point2D.Double();
+  
   /** a mark used for demarking time spans */
-  private Shape FROM_MARK, TO_MARK; 
+  protected GeneralPath fromMark, toMark; 
   
   /** whether we paint tags or not */
   /*package*/ boolean paintTags = false;
@@ -76,9 +78,8 @@ public class ContentRenderer {
    * Renders the model
    */
   public void render(UnitGraphics graphics, Model model) {
-    // calculate marks
-    FROM_MARK = calcFromMark(graphics.getUnit());
-    TO_MARK = calcToMark(graphics.getUnit());
+    // calculate parameters
+    init(graphics);
     // render background
     renderBackground(graphics, model);
     // render grid
@@ -170,17 +171,10 @@ public class ContentRenderer {
     // draw it's extend
     g.setColor(cTimespan);
     
-    g.draw(FROM_MARK, event.from, level+1, true);
+    g.draw(fromMark, event.from, level+1, true);
     if (event.from!=event.to) {
-      
-      // FIXME : calculate 1 pixel before starting to draw
-      g.draw(
-        event.from, 
-        level+1 -(float)(1F/g.getUnit().getY()), 
-        event.to, 
-        level+1 -(float)(1F/g.getUnit().getY())
-      );
-      g.draw(TO_MARK, event.to, level+1, true);
+      g.draw( event.from, level + 1 - dotSize.y, event.to, level + 1 - dotSize.y );
+      g.draw(toMark, event.to, level+1, true);
     }
 
     // clipping from here    
@@ -220,27 +214,27 @@ public class ContentRenderer {
   }
   
   /**
-   * Generates a mark
-   */
-  private Shape calcFromMark(Point2D unit) {
-    GeneralPath result = new GeneralPath();
-    result.moveTo((float)( 0F/unit.getX()),(float)(-1F/unit.getY()));
-    result.lineTo((float)(-3F/unit.getX()),(float)(-5F/unit.getY()));
-    result.lineTo((float)(-3F/unit.getX()),(float)(+3F/unit.getY()));
-    result.closePath();
-    return result;
-  }
-  
-  /**
-   * Generates a mark
-   */
-  private Shape calcToMark(Point2D unit) {
-    GeneralPath result = new GeneralPath();
-    result.moveTo((float)( 0F/unit.getX()),(float)(-1F/unit.getY()));
-    result.lineTo((float)( 4F/unit.getX()),(float)(-6F/unit.getY()));
-    result.lineTo((float)( 4F/unit.getX()),(float)(+4F/unit.getY()));
-    result.closePath();
-    return result;
+   * inits painting   */
+  protected void init(UnitGraphics graphics) {
+    
+    // calculate dot-size
+    dotSize.setLocation( 1D / graphics.getUnit().getX(), 1D / graphics.getUnit().getY() );
+    
+    // calculate fromMark
+    fromMark = new GeneralPath();
+    fromMark.moveTo((float)( 0F*dotSize.x),(float)(-1F*dotSize.y));
+    fromMark.lineTo((float)(-3F*dotSize.x),(float)(-5F*dotSize.y));
+    fromMark.lineTo((float)(-3F*dotSize.x),(float)(+3F*dotSize.y));
+    fromMark.closePath();
+
+    // calculate toMark
+    toMark = new GeneralPath();
+    toMark  .moveTo((float)( 0F*dotSize.x),(float)(-1F*dotSize.y));
+    toMark  .lineTo((float)( 4F*dotSize.x),(float)(-6F*dotSize.y));
+    toMark  .lineTo((float)( 4F*dotSize.x),(float)(+4F*dotSize.y));
+    toMark  .closePath();
+    
+    // done
   }
   
 } //RulerRenderer

@@ -22,8 +22,7 @@ package genj.timeline;
 import genj.util.swing.UnitGraphics;
 import java.awt.Color;
 import java.awt.FontMetrics;
-import java.awt.Polygon;
-import java.awt.Shape;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -35,19 +34,22 @@ public class RulerRenderer extends ContentRenderer {
   /*package*/ Color cTick = null;
   
   /** a tick */
-  private final static Shape TICK = calcTick();
+  private GeneralPath tickMark;
   
   /**
    * Renders the model
    */
   public void render(UnitGraphics graphics, Model model) {
     
+    // init drawing
+    init(graphics);
+    
     // prepare some stuff
     FontMetrics fm = graphics.getFontMetrics();
     double
       from  = Math.ceil(model.min),
       to    = Math.floor(model.max),
-      width = fm.stringWidth(" 0000 ") / graphics.getUnit().getX();
+      width = fm.stringWidth(" 0000 ") * dotSize.x;
 
     // render background
     renderBackground(graphics, model);
@@ -99,26 +101,29 @@ public class RulerRenderer extends ContentRenderer {
    * Renders one year
    */
   private void renderYear(UnitGraphics g, Model model,  FontMetrics fm, double year, double align) {
-//    // draw a vertical line
-//    g.setColor(cTick);
-//    g.draw(TICK, year, 1, Double.NaN, Double.NaN, 0, true);
-//    
-//    // draw the label
-//    g.setColor(cText);
-//    g.draw(Integer.toString((int)year), year, 1, align, 0, -fm.getDescent());
-//    
-//    // done
+    // draw a vertical line
+    g.setColor(cTick);
+    g.draw(tickMark, year, 1, true);
+    
+    // draw the label
+    g.setColor(cText);
+    g.draw(Integer.toString((int)year), year, 1, align, 1.0);
+    
+    // done
   }
 
   /**
-   * Generates a tick
+   * Initializes drawing
    */
-  private static Shape calcTick() {
-    Polygon result = new Polygon();
-    result.addPoint(0,0);
-    result.addPoint(3,-3);
-    result.addPoint(-3,-3);
-    return result;
+  protected void init(UnitGraphics graphics) {
+    super.init(graphics);
+    
+    tickMark = new GeneralPath();
+    tickMark.moveTo( (float)( 0F*dotSize.x), (float)( 0F*dotSize.y) );
+    tickMark.lineTo( (float)( 3F*dotSize.x), (float)(-3F*dotSize.y) );
+    tickMark.lineTo( (float)(-3F*dotSize.x), (float)(-3F*dotSize.y) );
+    tickMark.closePath();
+    
   }
   
 } //RulerRenderer
