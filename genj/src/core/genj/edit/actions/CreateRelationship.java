@@ -29,20 +29,21 @@ import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 
 /**
  * Add an entity via relationship (new or existing) 
  */
 public class CreateRelationship extends AbstractChange {
   
+  /** the target type */
+  private int targetType;
+
   /** the relationship */
   private Relationship relationship;
   
   /** the referenced entity */
   private Entity existing;
-  
-  /** the target type */
-  private int target;
   
   /**
    * Constructor
@@ -50,7 +51,33 @@ public class CreateRelationship extends AbstractChange {
   public CreateRelationship(Relationship relatshp) {
     super(relatshp.getGedcom(), relatshp.getImage(), resources.getString("new", relatshp.getName()));
     relationship = relatshp;
-    target = relationship.getTargetTypes()[0];
+  }
+  
+  /**
+   * @see genj.edit.actions.CreateRelationship#execute()
+   */
+  protected void execute() {
+    // check if we have to choose a target type
+    int[] types = relationship.getTargetTypes();
+    if (types.length>1) {
+      // collect names of types
+      String[] names = new String[types.length];
+      for (int n=0;n<types.length;n++) names[n] = Gedcom.getNameFor(types[n], false);
+      // show dialog
+      int choice = JOptionPane.showOptionDialog(
+        target, relationship, relationship.getName(),
+        JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+        names, names[0]
+      );
+      if (choice==JOptionPane.CLOSED_OPTION) return;
+      // set targetType
+      targetType = types[choice];
+    } else {
+      targetType = types[0];
+    }
+
+    // continue
+    super.execute();
   }
   
   /**
@@ -61,7 +88,7 @@ public class CreateRelationship extends AbstractChange {
     // You are about to create a {0} in {1}! / You are about to reference {0} in {1}!
     // This {0} will be {1}.
     String about = existing==null ?
-      resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(target,false), gedcom})
+      resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(targetType,false), gedcom})
      :
       resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom});
 
@@ -69,7 +96,7 @@ public class CreateRelationship extends AbstractChange {
     String detail = resources.getString("confirm.new.related", relationship );
     
     // Entity comment?
-    String comment = resources.getString("confirm."+Gedcom.getTagFor(target));
+    String comment = resources.getString("confirm."+Gedcom.getTagFor(targetType));
     
     // combine
     return about + '\n' + detail + '\n' + comment ;
@@ -81,7 +108,7 @@ public class CreateRelationship extends AbstractChange {
   protected JComponent getOptions() {
     
     // selection of existing
-    List ents = gedcom.getEntities(target);
+    List ents = gedcom.getEntities(targetType);
     Collections.sort(ents);
     ents.add(0, "*New*" );
     
@@ -103,7 +130,7 @@ public class CreateRelationship extends AbstractChange {
     // create the entity if necessary
     if (existing==null) {
       // focus always changes to new that we create now
-      focus = gedcom.createEntity(target, null);
+      focus = gedcom.createEntity(targetType, null);
       focus.addDefaultProperties();
       // perform the relationship to new
       relationship.apply(focus);

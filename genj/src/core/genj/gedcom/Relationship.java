@@ -110,7 +110,7 @@ public abstract class Relationship {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-      return "referenced by " + TagPath.get(owner) + ":" + xref.getTag() + " ("+ getName() + ") in " + owner.getEntity().getId(); 
+      return Gedcom.resources.getString("rel.xref.for", new String[]{getName(),owner.toString()});
     }
     
     /**

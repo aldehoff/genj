@@ -137,14 +137,6 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
   }
   
   /**
-   * @see genj.gedcom.PropertyXRef#toString()
-   */
-  public String toString() {
-    if (getTarget()!=null) return super.toString();
-    return getTitle();
-  }
-
-  /**
    * Returns the title of this media
    */
   private String getTitle() {

@@ -106,13 +106,6 @@ public class PropertySource extends PropertyXRef implements MultiLineSupport {
   }
   
   /**
-   * @see genj.gedcom.PropertyXRef#toString()
-   */
-  public String toString() {
-    return super.getValue();
-  }
-  
-  /**
    * @see genj.gedcom.PropertyXRef#getValue()
    */
   public String getValue() {

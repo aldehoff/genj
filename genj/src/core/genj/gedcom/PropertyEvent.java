@@ -63,7 +63,7 @@ public class PropertyEvent extends Property {
     for (int i=0;i<children.getSize();i++) {
       Property prop = children.get(i);
       if ( prop instanceof PropertyDate ) {
-        return ((PropertyDate)prop).toString();
+        return ((PropertyDate)prop).getValue();
       }
     }
 
@@ -106,10 +106,10 @@ public class PropertyEvent extends Property {
   }
 
   /**
-   * Text representation (e.g. BIRT@7 MAY 2002)
+   * Text representation (e.g. BIRT 7 MAY 2002)
    */
   public String toString() {
-    return getTag()+'@'+getDateAsString();
+    return getTag()+' '+getDateAsString();
   }
 
   /**

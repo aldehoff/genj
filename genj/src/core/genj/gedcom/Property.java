@@ -633,7 +633,7 @@ public abstract class Property implements Comparable {
    * NM 20020221 changed to return value only
    */
   public String toString() {
-    return getValue();
+    return getTag()+' '+getValue();
   }
   
   /**

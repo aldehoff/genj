@@ -325,13 +325,6 @@ public class PropertyDate extends Property {
   /**
    * Returns this date as a string
    */
-  public String toString() {
-    return toString(false,true);
-  }
-    
-  /**
-   * Returns this date as a string
-   */
   public String toString(boolean abbreviate, boolean localize) {
     if (dateAsString!=null) return dateAsString;
     WordBuffer result = new WordBuffer(start.toString(abbreviate,localize));
