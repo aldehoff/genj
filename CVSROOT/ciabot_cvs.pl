@@ -20,23 +20,11 @@
 # This program is designed to run from the loginfo CVS administration file. It
 # takes a log message, massaging it and mailing it to the address given below.
 #
-# Its record in the loginfo file should look like:
-#
-#     ALL /usr/bin/perl $CVSROOT/CVSROOT/ciabot_cvs.pl %{,,,s} $USER project from_email dest_email ignore_regexp
-#
-# IMPORTANT: The %{,,,s} in loginfo is new, and is required for proper operation.
-#
-#            Make sure that you add the script to 'checkoutlist' before
-#            committing it. You may need to change /usr/bin/perl to point to your
-#            system's perl binary.
-#
-#            Note that the last four parameters are optional, you can alternatively
-#            change the defaults below in the configuration section.
 #
 
 use strict;
 use vars qw ($project $from_email $dest_email $rpc_uri $sendmail $sync_delay
-		$xml_rpc $ignore_regexp $alt_local_message_target);
+		$xml_rpc $regexp $alt_local_message_target);
 
 
 ### Configuration
@@ -74,19 +62,13 @@ $sync_delay = 5;
 # unfortunately not an uncommon condition.
 $xml_rpc = 0;
 
-# You can make this bot to totally ignore events concerning the objects
-# specified below. Each object is composed of <module>/<path>/<filename>,
-# therefore file Manifest in root directory of module gentoo will be called
-# "gentoo/Manifest", while file src/bfu/inphist.c of module elinks will be
-# called "elinks/src/bfu/inphist.c". Easy, isn't it?
+# Specify which <module>/<path>/<filename> this bot will be applied to.
+# All non matches will be ignored!!!
 #
 # This variable should contain regexp, against which will each object be
-# checked, and if the regexp is matched, the file is ignored. Therefore ie.  to
-# ignore all changes in the two files above and everything concerning module
-# 'admin', use:
+# checked, and if the regexp is matched, the file is not ignored. 
 #
-# $ignore_regexp = "^(gentoo/Manifest|elinks/src/bfu/inphist.c|admin/)";
-$ignore_regexp = "";
+$regexp = "^dev.*";
 
 # It can be useful to also grab the generated XML message by some other
 # programs and ie. autogenerate some content based on it. Here you can specify
@@ -142,7 +124,6 @@ $user = $ARGV[1];
 $project = $ARGV[2] if $ARGV[2];
 $from_email = $ARGV[3] if $ARGV[3];
 $dest_email = $ARGV[4] if $ARGV[4];
-$ignore_regexp = $ARGV[5] if $ARGV[5];
 
 
 # Parse stdin (what's interesting is the tag and log message)
@@ -166,9 +147,9 @@ while (<STDIN>) {
 $dirfiles[0] = join (' ',
   grep {
     my $f = "$module/$dir[0]/$_";
-    $f !~ m/$ignore_regexp/;
+    $f =~ m/$regexp/;
   } split (/\s+/, $dirfiles[0])
-) if ($ignore_regexp);
+);
 exit unless $dirfiles[0];
 
 
