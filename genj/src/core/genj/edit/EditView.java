@@ -600,21 +600,27 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       if (prop==null) 
         return; // shouldn't happen
         
+      // safety - check existing copy
+      Clipboard.Copy copy = Clipboard.getInstance().getCopy();
+      if (copy==null) 
+        return; // shouldn't happen
+        
       // ask
-      if (0!=manager.getWindowManager().openDialog(
-        null,
-        resources.getString("action.paste.tip"),
-        WindowManager.IMG_QUESTION,
-        Clipboard.getInstance().toString(),
-        new String[]{ resources.getString("action.paste"), WindowManager.OPTION_CANCEL},
-        EditView.this
-      )) return;        
+// FIXME wanne show copy-property tree here
+//      if (0!=manager.getWindowManager().openDialog(
+//        null,
+//        resources.getString("action.paste.tip"),
+//        WindowManager.IMG_QUESTION,
+//        "foo",
+//        new String[]{ resources.getString("action.paste"), WindowManager.OPTION_CANCEL},
+//        EditView.this
+//      )) return;        
         
       // paste contents
       if (!gedcom.startTransaction()) return;
       Property result = null;
       try {
-        result = Clipboard.getInstance().paste(prop);
+        result = copy.paste(prop);
       } catch (GedcomException e) {
         manager.getWindowManager().openDialog(
           null,
@@ -671,7 +677,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       // cut,copy,paste
       actionButtonCut  .setEnabled(prop.getParent()!=null&&!prop.isTransient());
       actionButtonCopy .setEnabled(prop.getParent()!=null&&!prop.isTransient());
-      actionButtonPaste.setEnabled(!Clipboard.getInstance().isEmpty());
+      actionButtonPaste.setEnabled(Clipboard.getInstance().getCopy()!=null);
   
       // up, down
       actionButtonUp    .setEnabled(prop.getPreviousSibling()!=null);

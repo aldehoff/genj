@@ -25,9 +25,6 @@ import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * An app wide clipboard
  */
@@ -53,13 +50,6 @@ public class Clipboard {
   }
   
   /**
-   * whether there's something to paste
-   */
-  public boolean isEmpty() {
-    return copy==null;
-  }
-  
-  /**
    * copy
    */
   public void copy(Property what) {
@@ -75,33 +65,19 @@ public class Clipboard {
   }
   
   /**
-   * paste
+   * access to current copy
    */
-  public Property paste(Property where) throws GedcomException {
-    // check copy
-    if (copy==null)
-      return null;
-    // apply copy
-    return copy.paste(where);
+  public Copy getCopy() {
+    return copy;
   }
   
   /**
-   * String representation
-   */
-  public String toString() {
-    return copy==null ? "" : copy.toString();
-  }
-
-  /**
    * A Copy 
    */
-  /*package*/ static class Copy {
+  public static class Copy extends Property {
     
     /** copied information */
     private String tag, value;
-    
-    /** sub */
-    private List subs = new ArrayList();
     
     /**
      * Constructor
@@ -116,7 +92,7 @@ public class Clipboard {
       // subs?
       Property[] children = prop.getProperties();
       for (int c=0; c<children.length; c++) {
-        subs.add(new Copy(children[c]));
+        addProperty(new Copy(children[c]));
       }
       // done 
     }
@@ -124,7 +100,7 @@ public class Clipboard {
     /**
      * paste
      */
-    /*package*/ Property paste(Property target) throws GedcomException {
+    public Property paste(Property target) throws GedcomException {
       return pasteRecursively(target, MetaProperty.get(target));
     }
     
@@ -143,8 +119,9 @@ public class Clipboard {
           ((PropertyXRef)prop).link();
         }
         // recurse into subs
-        for (int s=0, t=subs.size(); s<t; s++) {
-        	((Copy)subs.get(s)).pasteRecursively(prop, meta);
+        for (int s=0, t=getNoOfProperties(); s<t; s++) {
+          Copy sub = (Copy)getProperty(s);
+        	sub.pasteRecursively(prop, meta);
         }
       } catch (GedcomException e) {
         // rollback
@@ -156,39 +133,24 @@ public class Clipboard {
     }
     
     /**
-     * append a string representation
+     * @see genj.gedcom.Property#getTag()
      */
-    public void append(StringBuffer buffer, int level) {
-
-      // add newline
-      if (buffer.length()>0) buffer.append('\n');
-      // add indentation      
-      for (int i=0;i<level;i++) buffer.append(' ');
-      // add 'tag '
-      buffer.append(tag).append(' ');
-      // add value
-      char[] val = value.toCharArray();
-      for (int c=0;c<val.length;c++) {
-        buffer.append(val[c]);
-        if (val[c]=='\n')
-          for (int i=0;i<level+1;i++) buffer.append(' ');
-      }
-      // add subs
-      for (int s=0, t=subs.size(); s<t; s++) {
-        ((Copy)subs.get(s)).append(buffer, level+1);
-      }
-      // done
+    public String getTag() {
+      return tag;
     }
     
     /**
-     * @see java.lang.Object#toString()
+     * @see genj.gedcom.Property#setValue(java.lang.String)
      */
-    public String toString() {
-      // collection
-      StringBuffer buffer = new StringBuffer();
-      append(buffer, 0);
-      // done
-      return buffer.toString();
+    public void setValue(String value) {
+      throw new IllegalArgumentException("n/a");
+    }
+
+    /**
+     * @see genj.gedcom.Property#getValue()
+     */
+    public String getValue() {
+      return value;
     }
     
   } //Copy

@@ -501,7 +501,8 @@ public abstract class Property implements Comparable {
   /**
    * Sets this property's tag
    */
-  /*package*/ abstract void setTag(String tag) throws GedcomException ;
+  /*package*/ void setTag(String tag) throws GedcomException {
+  }
   
   /**
    * Assertion (this was assert once but that's deprecated with 1.4)

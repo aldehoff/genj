@@ -111,12 +111,6 @@ public abstract class Entity extends Property {
   }
   
   /**
-   * @see genj.gedcom.Property#setTag(java.lang.String)
-   */
-  /*package*/ void setTag(String tag) {
-  }
-  
-  /**
    * @see genj.gedcom.Property#getValue()
    */
   public String getValue() {
