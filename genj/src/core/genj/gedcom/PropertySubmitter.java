@@ -19,19 +19,63 @@
  */
 package genj.gedcom;
 
+import java.util.*;
 import genj.util.*;
 
 /**
- * Gedcom Property : SUBM (entity)
- * Class for encapsulating a submitter as property
+ * Gedcom Property : SUBMITTER (entity/property)
+ * A property that either consists of SUBMITTER information or
+ * refers to a SUBMITTER entity
  */
-public abstract class PropertySubmitter extends Property {
+public class PropertySubmitter extends PropertyXRef {
+
+  /** the submitter's content */
+  private String submitter;
+
+  /**
+   * Constructor with reference
+   * @param entity reference of entity this property links to
+   */
+  public PropertySubmitter(PropertyXRef target) {
+    super(target);
+  }
+
+  /**
+   * Constructor with Tag,Value parameters
+   * @param tag property's tag
+   * @param value property's value
+   */
+  public PropertySubmitter() {
+    this(null,"");
+  }
+
+  /**
+   * Constructor with Tag,Value parameters
+   * @param tag property's tag
+   * @param value property's value
+   */
+  public PropertySubmitter(String tag, String value) {
+    super(null);
+
+    // Setup value
+    setValue(value);
+  }
 
   /**
    * Returns the logical name of the proxy-object which knows this object
    */
   public String getProxy() {
-    return "Entity";
+
+    // Entity Submitter? Should be Entity but has to be Submitter to be editable :(
+    if (this instanceof Entity)
+      return "MLE";
+
+    // Property XRef linked to Entity Submitter?
+    if (super.getValue().startsWith("@") || submitter==null)
+      return "XRef";
+
+    // Seems to be Property Submitter
+    return "MLE";
   }
 
   /**
@@ -40,28 +84,75 @@ public abstract class PropertySubmitter extends Property {
    * @return proxy's logical name
    */
   public static String getProxy(TagPath path) {
-    return "Entity";
+
+    // Entity Submitter? Should be Entity but has to be Submitter to be editable :(
+    if (path.length()==1)
+      return "MLE";
+
+    // Property XRef linked to Entity Submitter - or Property Submitter
+    return "XRef";
   }
 
   /**
-   * Accessor for tag
+   * Returns the tag of this property
    */
   public String getTag() {
     return "SUBM";
   }
 
   /**
-   * Accessor for value (empty)
+   * Links reference to entity (if not already done)
+   * @exception GedcomException when processing link would result in inconsistent state
    */
-  public String getValue() {
-    return "";
+  public void link() throws GedcomException {
+
+    // No Property Submitter?
+    if (submitter!=null) {
+      return;
+    }
+
+    // Get enclosing entity ?
+    Entity entity = getEntity();
+
+    // .. Me Submitter-Property or -Entity?
+    if (this==entity) {
+      return;  // outa here
+    }
+
+    // Something to do ?
+    if (getReferencedEntity()!=null) {
+      return;
+    }
+
+    // Look for Submitter
+    String id = getReferencedId();
+    if (id.length()==0) {
+      return;
+    }
+
+    Submitter submitter = getGedcom().getSubmitterFromId(id);
+    if (submitter == null) {
+        throw new GedcomException(toString()+" not in this gedcom");
+    }
+
+    // Create Backlink
+    PropertyForeignXRef fxref = new PropertyForeignXRef(this);
+    submitter.addForeignXRef(fxref);
+
+    // ... and point
+    setTarget(fxref);
+
+    // Are there any properties that can be deleted ?
+    delAllProperties();
+
+    // Done
   }
 
   /**
-   * Accessor for value (n/a)
+   * The expected referenced type
    */
-  public boolean setValue(String value) {
-    return false;
+  public int getExpectedReferencedType() {
+    return Gedcom.SUBMITTERS;
   }
-
 }
+

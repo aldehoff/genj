@@ -174,11 +174,15 @@ public class Gedcom implements GedcomListener {
     if (getTagFor(SOURCES).equals(tag.toUpperCase())) {
       return createSource(id);
     }
+    // Submitters
+    if (getTagFor(SUBMITTERS).equals(tag.toUpperCase())) {
+      return createSubmitter(id);
+    }
     // Repository
     if (getTagFor(REPOSITORIES).equals(tag.toUpperCase())) {
       return createRepository(id);
     }
-    // Unknown - SUBM
+    // Unknown
     throw new GedcomException("Unknown tag for entity");
   }
 
@@ -339,7 +343,7 @@ public class Gedcom implements GedcomListener {
     // NAME
     if ((lastName!=null)&&(firstName!=null)) {
       PropertyName pn = new PropertyName();
-      pn.setName(firstName,lastName);
+      pn.setName(firstName, lastName, null);
       indi.addProperty(pn);
     }
 
@@ -595,6 +599,30 @@ public class Gedcom implements GedcomListener {
     return source;
   }
 
+  /**
+   * Creates a non-related submitter
+   * @exception GedcomException in of error during creation
+   * dkionka: blindly copied createNote()
+   */
+  /*package*/ Submitter createSubmitter(String id) throws GedcomException {
+
+    // Generate id if necessary
+    if (id==null) {
+      id = getRandomIdFor(SUBMITTERS);
+    }
+
+    // Create submitter & add to list of submitters
+    Submitter submitter = new Submitter(this);
+    noteAddedEntity(submitter);
+    entities[SUBMITTERS].add(submitter);
+
+    // Store id
+    ids[SUBMITTERS].put(id,submitter);
+    submitter.setId(id);
+
+    // Done
+    return submitter;
+  }
 
   /**
    * Creates a Repository entity.
@@ -1006,6 +1034,14 @@ public class Gedcom implements GedcomListener {
   }
 
   /**
+   * Returns the submitter with given id
+   */
+  public Submitter getSubmitterFromId(String id) throws DuplicateIDException {
+    return (Submitter)ids[SUBMITTERS].get(id);
+  }
+
+  /**
+   *
    * Returns the repository with given id
    */
   public Repository getRepositoryFromId(String id) throws DuplicateIDException {

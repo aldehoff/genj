@@ -35,6 +35,10 @@ public abstract class Property {
   private static final String   EVT_SUB_TAGS       [] = new String[]{ "DATE", "PLAC", "ADDR", "AGNC", "TYPE" };
   private static final String   IAT_SUB_TAGS       [] = new String[]{ "ADDR", "AGNC", "DATE", "PLAC", "TYPE" };
 
+  /**
+   * Common fields for every Property: parent and vector of child properties
+   * Define tag and value in subclass, or hard-wire in getTag() and getValue()
+   */
   private Property  parent=null;
   private ReferencePropertySet properties=null;
 
@@ -73,6 +77,9 @@ public abstract class Property {
 
     // NOTE Record
     new MetaDefinition("NOTE","Note", new String[]{"DATE"}) ,
+
+    // SUBM Record
+    new MetaDefinition("SUBM","Submitter",new String[]{"NAME","ADDR"}),
 
     // INDI Attributes
     new MetaDefinition("CAST","IndividualAttribute",IAT_SUB_TAGS) ,
