@@ -164,7 +164,7 @@ public class ReportNameHistory extends Report {
 	  
 	  // check minimum percentage of name
 	  IndexedSeries series;
-	  if (PropertyName.getPropertyNames(gedcom, last).size()<indis.size()*minUseOfName/100) {
+	  if (PropertyName.getInstances(gedcom, last).size()<indis.size()*minUseOfName/100) {
 	    if (!makeGroupOther) 
 	      return;
 	    series = others;
