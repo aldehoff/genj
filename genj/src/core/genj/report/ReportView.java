@@ -270,7 +270,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     bStart = bh.create(astart);
     bStop  = bh.setEnabled(false).create(new ActionStop(astart));    
     bSave  = bh.setEnabled(true).create(new ActionSave());
-    bReload= bh.create(new ActionReload());
+    bReload= bh.setEnabled(!loader.isReportsInClasspath()).create(new ActionReload());
    
     // done 
   }
