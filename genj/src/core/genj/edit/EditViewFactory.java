@@ -170,6 +170,62 @@ public class EditViewFactory implements ViewFactory, ContextMenuSupport {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
+/*
+      // Recheck with the user
+      String message = resources.getString(
+        "new.confirm", new String[] {resources.getString(txt),Gedcom.getNameFor(type,false)}
+      );
+
+      int option = JOptionPane.showOptionDialog(
+        EditView.this,
+        message,
+        resources.getString("new"),
+        JOptionPane.OK_CANCEL_OPTION,
+        JOptionPane.QUESTION_MESSAGE,
+        null, null, null
+      );
+
+      // .. OK or Cancel ?
+      if (option != JOptionPane.OK_OPTION) {
+        return;
+      }
+
+      // Lock write
+      if (!startTransaction("Couldn't lock Gedcom for write")) {
+        return;
+      }
+
+      // Stop editing old
+      flushEditing(true);
+
+      // Try to create
+      Entity old = entity;
+      Entity created = null;
+      try {
+        switch (type) {
+          case Gedcom.INDIVIDUALS:
+            created = gedcom.createIndi("", "", 0, relation, entity);
+            break;
+          case Gedcom.NOTES:
+            created = gedcom.createNote(entity);
+            break;
+          case Gedcom.MULTIMEDIAS:
+            created = gedcom.createMedia(entity);
+            break;
+        }
+      } catch (GedcomException ex) {
+        JOptionPane.showMessageDialog(
+          getFrame(),
+          ex.getMessage(),
+          EditView.resources.getString("error"),
+          JOptionPane.ERROR_MESSAGE
+        );
+      }
+
+      // End transaction
+      endTransaction();
+
+ */
     }
   } //ActionCreate
 
