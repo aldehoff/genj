@@ -39,18 +39,6 @@ import javax.swing.table.TableColumnModel;
  */
 public class GedcomTableWidget extends JTable {
   
-  /** default column headers */
-  private static final Object headers[] = {
-    App.resources.getString("cc.column_header.name"),
-    Gedcom.getImage(Gedcom.INDIVIDUALS),
-    Gedcom.getImage(Gedcom.FAMILIES),
-    Gedcom.getImage(Gedcom.MULTIMEDIAS),
-    Gedcom.getImage(Gedcom.NOTES),
-    Gedcom.getImage(Gedcom.SOURCES),
-    Gedcom.getImage(Gedcom.SUBMITTERS),
-    Gedcom.getImage(Gedcom.REPOSITORIES),
-  };
-
   /** default column widths */
   private static final int defaultWidths[] = {
     96, 24, 24, 24, 24, 24, 24, 24
@@ -75,9 +63,13 @@ public class GedcomTableWidget extends JTable {
     
     // Prepare a column model
     TableColumnModel cm = new DefaultTableColumnModel();
-    for (int h=0; h<headers.length; h++) {
+    for (int h=0; h<Gedcom.NUM_TYPES+1; h++) {
       TableColumn col = new TableColumn(h);
-      col.setHeaderValue(headers[h]);
+      if (h==0) 
+        col.setHeaderValue(App.resources.getString("cc.column_header.name"));
+      else
+        col.setHeaderValue(Gedcom.getImage(h-1));
+      
       col.setPreferredWidth(defaultWidths[h]);
       cm.addColumn(col);
     }
@@ -113,7 +105,7 @@ public class GedcomTableWidget extends JTable {
   public void removeNotify() {
     // remember our layout
     if (registry!=null) {
-      int[] widths = new int[headers.length];
+      int[] widths = new int[getColumnModel().getColumnCount()];
       for (int c=0; c<widths.length; c++) {
         widths[c] = getColumnModel().getColumn(c).getWidth();
       }
@@ -199,7 +191,7 @@ public class GedcomTableWidget extends JTable {
      * @see javax.swing.table.TableModel#getColumnCount()
      */
     public int getColumnCount() {
-      return headers.length;
+      return Gedcom.NUM_TYPES+1;
     }
   
     /**
