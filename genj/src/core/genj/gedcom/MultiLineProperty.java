@@ -26,6 +26,11 @@ package genj.gedcom;
 public interface MultiLineProperty {
   
   /**
+   * Set value as multiline encoded string (containing '\n's)
+   */
+  public void setValue(String value);
+  
+  /**
    * Return an iterator for writing lines
    */
   public Collector getLineCollector();
