@@ -45,9 +45,9 @@ public class PropertyAge extends Property {
   /**
    * @see genj.gedcom.Property#addNotify(genj.gedcom.Property)
    */
-  void addNotify(Property parent, Transaction tx) {
+  /*package*/ void addNotify(Property parent) {
     // continue
-    super.addNotify(parent, tx);
+    super.addNotify(parent);
     // try to update age
     updateAge();
     // done
@@ -85,13 +85,14 @@ public class PropertyAge extends Property {
    * Accessor Value
    */
   public void setValue(String newValue) {
+    String old = getValue();
     // try to parse
     if (age.setValue(newValue))
       ageAsString = null;
     else
       ageAsString = newValue;
     // notify
-    propagateChanged(this);
+    propagateChange(old);
     // Done
   }
 

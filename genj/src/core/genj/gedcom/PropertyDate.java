@@ -157,10 +157,9 @@ public class PropertyDate extends Property {
    * Accessor Format
    */
   public void setFormat(Format set) {
-    
-    // remember as modified      
-    propagateChanged(this);
 
+    String old = getValue();
+    
     // set end == start?
     if (!isRange()&&set.isRange()) 
       end.set(start);
@@ -168,6 +167,9 @@ public class PropertyDate extends Property {
     // remember
     format = set;
     
+    // remember as modified      
+    propagateChange(old);
+
     // Done
   }
 
@@ -176,7 +178,7 @@ public class PropertyDate extends Property {
    */
   public void setValue(String newValue) {
 
-    propagateChanged(this);
+    String old = getValue();
 
     // Reset value
     start.reset();
@@ -187,6 +189,9 @@ public class PropertyDate extends Property {
     // parse and keep string if no good
     if (!parseDate(newValue))
       dateAsString=newValue;
+
+    // remember as modified      
+    propagateChange(old);
 
     // done
   }
@@ -329,15 +334,17 @@ public class PropertyDate extends Property {
      * Setter
      */
     public void set(int d, int m, int y) {
-      
-      // note change
-      propagateChanged(PropertyDate.this);
 
+      String old = getValue();
+      
       // assume string is not needed anymore
       dateAsString=null;
       
       // set it
       super.set(d,m,y);
+
+      // note change
+      propagateChange(old);
 
       // done
     }

@@ -204,7 +204,7 @@ public class PropertyName extends Property {
    */
   public PropertyName setName(String first, String last, String suff) {
 
-    propagateChanged(this);
+    String old = getValue();
 
     // forget/remember
     rememberLastName(lastName, last);
@@ -215,6 +215,9 @@ public class PropertyName extends Property {
     lastName  = last!=null ? last.trim() : null;
     firstName = first!=null ? first.trim() : null;
     suffix    = suff!=null ? suff.trim() : suff;
+
+    // tell about it 
+    propagateChange(old);
     
     // Done
     return this;
@@ -226,9 +229,9 @@ public class PropertyName extends Property {
    * 
    * @see genj.gedcom.PropertyName#addNotify(genj.gedcom.Property)
    */
-  /*package*/ void addNotify(Property parent, Transaction tx) {
+  /*package*/ void addNotify(Property parent) {
     // continue
-    super.addNotify(parent, tx);
+    super.addNotify(parent);
     // our change to remember the last name
     rememberLastName(lastName, lastName);
     // done
@@ -239,11 +242,11 @@ public class PropertyName extends Property {
    * + Forget last names in reference set
    * @see genj.gedcom.Property#delNotify()
    */
-  /*package*/ void delNotify(Transaction tx) {
+  /*package*/ void delNotify(Property old) {
     // forget value
     rememberLastName(lastName, EMPTY_STRING);
     // continue
-    super.delNotify(tx);
+    super.delNotify(old);
     // done
   }
 

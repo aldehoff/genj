@@ -109,7 +109,11 @@ public class PropertyChange extends Property implements MultiLineProperty {
       return;
 
     // change itself?
-    if (change.getProperty() instanceof PropertyChange)
+    if (change instanceof Change.PropertyAdd && ((Change.PropertyAdd)change).getAdded() instanceof PropertyChange)
+      return;
+    if (change instanceof Change.PropertyDel && ((Change.PropertyDel)change).getRemoved() instanceof PropertyChange)
+      return;
+    if (change instanceof Change.PropertyValue && ((Change.PropertyValue)change).getChanged() instanceof PropertyChange)
       return;
   
     // is allowed?
@@ -154,11 +158,13 @@ public class PropertyChange extends Property implements MultiLineProperty {
     if (time==set)
       return;
 
-    // notify
-    propagateChanged(this);
+    String old = getValue();
     
     // keep time before propagate so no endless loop happens
     time = set;
+    
+    // notify
+    propagateChange(old);
     
     // done
   }
@@ -168,8 +174,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    */
   public void setValue(String value) {
     
-    // notify
-    propagateChanged(this);
+    String old = getValue();
 
     // must look like 19 DEC 2003,14:50
     int i = value.indexOf(',');
@@ -195,6 +200,9 @@ public class PropertyChange extends Property implements MultiLineProperty {
 
       time = -1;
     }
+    
+    // notify
+    propagateChange(old);
     
     // done
   }

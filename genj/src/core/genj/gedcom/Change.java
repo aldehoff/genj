@@ -19,6 +19,9 @@
  */
 package genj.gedcom;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Abstract base class for all Gedcom changes
  */
@@ -26,21 +29,12 @@ public abstract class Change {
 
   /** affected */
   protected Entity entity;
-  protected Property prop;
 
   /**
    * Constructor
    */
   /*package*/ Change(Entity entity) {
-    this(entity, entity);
-  }
-
-  /**
-   * Constructor
-   */
-  /*package*/ Change(Entity entity, Property prop) {
     this.entity = entity;
-    this.prop = prop;
   }
 
   /**
@@ -56,63 +50,88 @@ public abstract class Change {
   }
 
   /**
-   * Affected property
-   */
-  public Property getProperty() {
-    return prop;
-  }
-
-  /**
    * Change affecting a single property change
    */  
-  public static class PropertyChanged extends Change {
+  public static class PropertyValue extends Change {
     
     private String old;
+    private Property changed;
     
-    PropertyChanged(Property propBeforeChange) {
-      super(propBeforeChange.getEntity(), propBeforeChange);
-      old = propBeforeChange.getValue();
+    PropertyValue(Property changed, String old) {
+      super(changed.getEntity());
+      this.changed = changed;
+      this.old = old;
     }
     
     void undo() {
-      prop.setValue(old);
+      changed.setValue(old);
+    }
+    
+    public Property getChanged() {
+      return changed;
     }
     
     public String toString() {
-      return "Changed "+prop.getPath()+" (old: "+old+")";
+      return "Changed "+changed.getPath()+" (old: "+old+")";
     }
-
     
   } //PropertyModified
+  
+  /**
+   * Structure change
+   */
+  public static abstract class PropertyStructure extends Change {
+    
+    protected Property root;
+    
+    protected PropertyStructure(Property root) {
+      super(root.getEntity());
+      this.root = root;
+    }
+  } //Structure
 
+  /**
+   * Shuffled Properties
+   */
+  public static class PropertyShuffle extends PropertyStructure {
+    
+    private List children;
+    
+    PropertyShuffle(Property owner, List childrenBeforeShuffle) {
+      super(owner);
+      children = new ArrayList(childrenBeforeShuffle);
+    }
+    
+    void undo() {
+      root.setProperties(children);
+    }
+    
+  } //Shuffle
+  
   /**
    * Added Property
    */  
-  public static class PropertyAdded extends Change {
+  public static class PropertyAdd extends PropertyStructure {
 
-    private Property owner;
     private int      pos;
+    private Property added;
     
-    PropertyAdded(Property owner, int pos, Property added) {
-      super(owner.getEntity(), added);
-      this.owner = owner;
+    PropertyAdd(Property owner, int pos, Property added) {
+      super(owner);
+      this.added = added;
       this.pos = pos;
     }
     
-    public Property getOwner() {
-      return owner;
-    }
-    
-    public int getPosition() {
-      return pos;
-    }
-    
     void undo() {
-      owner.delProperty(prop);
+      root.delProperty(added);
+    }
+    
+    public Property getAdded() {
+      return added;
     }
     
     public String toString() {
-      return "Added "+prop.getPath()+" (pos: "+pos+")";
+      return "Added "+added.getPath()+" (pos: "+pos+")";
     }
     
   } //PropertyAdded
@@ -120,42 +139,38 @@ public abstract class Change {
   /**
    * Removed Property
    */  
-  public static class PropertyRemoved extends Change {
+  public static class PropertyDel extends PropertyStructure {
     
-    private Property owner;
+    private Property removed;
     private int      pos;
     
-    PropertyRemoved(Property owner, int pos, Property removed) {
-      super(owner.getEntity(), removed);
-      this.owner = owner;
+    PropertyDel(Property owner, int pos, Property removed) {
+      super(owner);
+      this.removed = removed;
       this.pos = pos;
     }
     
-    public Property getOwner() {
-      return owner;
-    }
-    
-    public int getPosition() {
-      return pos;
-    }
-    
     void undo() {
-      owner.addProperty(prop, pos);
+      root.addProperty(removed, pos);
+    }
+    
+    public Property getRemoved() {
+      return removed;
     }
 
     public String toString() {
-      return "Removed "+prop.getTag()+" from "+owner.getPath()+" (pos: "+pos+")";
+      return "Removed "+removed.getTag()+" from "+root.getPath()+" (pos: "+pos+")";
     }
   } //PropertyRemoved
   
   /**
    * Added Entity
    */  
-  public static class EntityAdded extends Change {
+  public static class EntityAdd extends Change {
     
     Gedcom gedcom;
     
-    EntityAdded(Entity newEntity) {
+    EntityAdd(Entity newEntity) {
       super(newEntity);
       gedcom = newEntity.getGedcom();
     }
@@ -172,11 +187,11 @@ public abstract class Change {
   /**
    * Removed Entity
    */  
-  public static class EntityRemoved extends Change {
+  public static class EntityDel extends Change {
 
     Gedcom gedcom;
     
-    EntityRemoved(Entity oldEntity) {
+    EntityDel(Entity oldEntity) {
       super(oldEntity);
       gedcom = oldEntity.getGedcom();
     }

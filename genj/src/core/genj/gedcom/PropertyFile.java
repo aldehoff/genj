@@ -170,8 +170,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
    */
   public void setValue(String value) {
 
-    // Remember the change
-    propagateChanged(this);
+    String old = getValue();
 
     // Remember the value
     file = value.replace('\\','/');
@@ -182,6 +181,9 @@ public class PropertyFile extends Property implements IconValueAvailable {
 
     // 20030518 don't automatically update TITL/FORM
     // will be prompted in ProxyFile
+    
+    // Remember the change
+    propagateChange(old);
     
     // done    
   }

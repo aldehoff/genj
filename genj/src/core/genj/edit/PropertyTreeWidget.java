@@ -515,18 +515,19 @@ public class PropertyTreeWidget extends DnDTree {
         if (change.getEntity()!=entity)
           continue;
         // structure change?
-        if (change instanceof Change.PropertyRemoved||change instanceof Change.PropertyAdded) {
-          if (change instanceof Change.PropertyAdded)
-            selection = change.getProperty();
+        if (change instanceof Change.PropertyStructure) {
+          if (change instanceof Change.PropertyAdd)
+            selection = ((Change.PropertyAdd)change).getAdded();
           setRoot(root);
           break;
         }
         // simple change?
-        if (change instanceof Change.PropertyChanged) {
+        if (change instanceof Change.PropertyValue) {
+          Property changed = ((Change.PropertyValue)change).getChanged();
           // .. forget cached value for prop
-          property2view.remove(change.getProperty());
+          property2view.remove(changed);
           // .. tell about it
-          fireTreeNodesChanged(this, getPathFor(change.getProperty()), null, null);
+          fireTreeNodesChanged(this, getPathFor(changed), null, null);
         }
         // go on checking
       }

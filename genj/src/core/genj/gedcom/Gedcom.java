@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.70 $ $Author: nmeier $ $Date: 2004-08-27 03:27:04 $
+ * $Revision: 1.71 $ $Author: nmeier $ $Date: 2004-11-12 17:37:25 $
  */
 package genj.gedcom;
 
@@ -230,7 +230,7 @@ public class Gedcom {
     submitter = set;
     
     // propagate modified on submitter
-    submitter.propagateChanged(submitter);
+    submitter.propagateChange(submitter.getValue());
 
   }
   

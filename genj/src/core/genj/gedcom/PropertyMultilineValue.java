@@ -57,8 +57,9 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
   public void setValue(String setValue) {
-    propagateChanged(this);
+    String old = getValue();
     lines = setValue;
+    propagateChange(old);
   }
   
   /**

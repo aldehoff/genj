@@ -177,9 +177,10 @@ public class PropertySex extends Property {
    * Accessor for Sex
    */
   public void setSex(int newSex) {
-    propagateChanged(this);
+    String old = getValue();
     sexAsString = null;
     sex = newSex;
+    propagateChange(old);
     // Done
   }
 
@@ -188,37 +189,38 @@ public class PropertySex extends Property {
    */
   public void setValue(String newValue) {
 
-    propagateChanged(this);
+    String old = getValue();
 
     // Cannot parse anything longer than 1
     if (newValue.length()>1) {
       sexAsString=newValue;
-      // Done
-      return;
+    } else {
+	    // zero length -> unknown
+	    if (newValue.length()==0) {
+	      sexAsString = null;
+	      sex = UNKNOWN;
+	    } else {
+		    // Female or Male ?
+		    switch (newValue.charAt(0)) {
+		      case 'f' :
+		      case 'F' :
+		        sex = FEMALE;
+		        sexAsString=null;
+		        break;
+		      case 'm' :
+		      case 'M' : 
+		        sex = MALE;
+		        sexAsString=null;
+		        break;
+		      default:
+		        sexAsString = newValue;
+		        break;
+		    }
+	    }
     }
-    // zero length -> unknown
-    if (newValue.length()==0) {
-      sexAsString = null;
-      sex = UNKNOWN;
-      return;
-      
-    }
-    // Female or Male ?
-    switch (newValue.charAt(0)) {
-      case 'f' :
-      case 'F' :
-        sex = FEMALE;
-        sexAsString=null;
-        return;
-      case 'm' :
-      case 'M' : 
-        sex = MALE;
-        sexAsString=null;
-        return;
-    }
-    // Done
-    sexAsString=newValue;
-    // Done
+    // notify
+    propagateChange(old);
+    // done
   }
 
   /**

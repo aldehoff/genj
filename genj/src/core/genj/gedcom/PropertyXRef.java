@@ -55,10 +55,10 @@ public abstract class PropertyXRef extends Property {
   /**
    * Method for notifying being removed from another parent
    */
-  protected void delNotify(Transaction tx) {
+  /*package*/ void delNotify(Property old) {
 
     // Let it through
-    super.delNotify(tx);
+    super.delNotify(old);
     
     // are we referencing something that points back?
     if (target==null)
@@ -69,7 +69,8 @@ public abstract class PropertyXRef extends Property {
       return;
       
     // ... delete back referencing property unless this is a rollback
-    if (tx==null||!tx.isRollback())
+    Transaction tx = getTransaction();
+    if (tx!=null&&!tx.isRollback())
       target.getParent().delProperty(target);
 
   }
@@ -145,12 +146,14 @@ public abstract class PropertyXRef extends Property {
    */
   protected void setTarget(PropertyXRef target) {
 
-    // Remember change
-    propagateChanged(this);
-
+    String old = getValue();
+    
     // Do it
     this.target=target;
     this.value =target.getEntity().getId();
+
+    // Remember change
+    propagateChange(old);
 
     // Done
   }
@@ -167,18 +170,20 @@ public abstract class PropertyXRef extends Property {
   /**
    * Sets this property's value as string.
    */
-  public void setValue(String vAlue) {
+  public void setValue(String set) {
 
     // ignore if linked
     if (target!=null)
       return;
       
-    // remember change
-    propagateChanged(this);
+    String old = getValue();
 
     // remember value
-    value = vAlue.replace('@',' ').trim();
+    value = set.replace('@',' ').trim();
 
+    // remember change
+    propagateChange(old);
+    
     // done
   }
   

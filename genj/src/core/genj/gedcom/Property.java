@@ -62,9 +62,11 @@ public abstract class Property implements Comparable {
   private MetaProperty meta = null;
 
   /**
-   * Lifecycle - callback when being added to parent
+   * Lifecycle - callback when being added to parent.
+   * This is called by the parent of the property after
+   * it has been added.
    */
-  /*package*/ void addNotify(Property parent, Transaction tx) {
+  /*package*/ void addNotify(Property parent) {
 
     // remember parent
     this.parent=parent;
@@ -73,19 +75,22 @@ public abstract class Property implements Comparable {
     Property[] props = getProperties();
     for (int i=0,j=props.length;i<j;i++) {
       Property child = (Property)props[i];
-      child.addNotify(this, tx);
+      child.addNotify(this);
     }
 
     // remember being added
+    Transaction tx = getTransaction();
     if (tx!=null)
       tx.get(Transaction.PROPERTIES_ADDED).add(this);
 
   }
 
   /**
-   * Lifecycle - callback when being removed from parent
+   * Lifecycle - callback when being removed from parent.
+   * This is called by the parent of the property after
+   * it has been removed.
    */
-  /*package*/ void delNotify(Transaction tx) {
+  /*package*/ void delNotify(Property oldParent) {
   
     // reset meta
     meta = null;
@@ -93,10 +98,11 @@ public abstract class Property implements Comparable {
     // tell children first (they might have to do some cleanup themselves)
     Property[] props = getProperties();
     for (int i=props.length-1;i>=0;i--) {
-      props[i].delNotify(tx);
+      props[i].delNotify(this);
     }
     
     // remember being deleted
+    Transaction tx = getTransaction();
     if (tx!=null)
       tx.get(Transaction.PROPERTIES_DELETED).add(this);
       
@@ -105,43 +111,41 @@ public abstract class Property implements Comparable {
     
     // continue
   }
-
-  /*package*/ void modNotify(Transaction tx) {
-
+  
+  /**
+   * This called by the property in process of being
+   * changed before the value has changed.
+   */
+  /*package*/ void propagateChange(String old) {
+    
     // remember being modified
-    if (tx!=null)
+    Transaction tx = getTransaction();
+    if (tx!=null) {
+      Change change = new Change.PropertyValue(this, old);
       tx.get(Transaction.PROPERTIES_MODIFIED).add(this);
+      tx.addChange(change);
       
+      // propagate change
+      propagateChange(change);
+    }
+    
   }
   
   /**
-   * Propagate changed property
+   * Propagate something has changed to the
+   * parent hierarchy
    */
-  /*package*/ void propagateChanged(Property changed) {
-
+  /*package*/ void propagateChange(Change change) {
     // tell it to parent
     if (parent!=null)
-      parent.propagateChanged(changed);
+      parent.propagateChange(change);
   }
   
   /**
-   * Propagate added property
+   * get current transaction
    */
-  /*package*/ void propagateAdded(Property owner, int pos, Property added) {
-    // tell it to parent
-    if (parent!=null)
-      parent.propagateAdded(owner, pos, added);
-  }
-
-  /**
-   * Propagate removed property
-   */
-  /*package*/ void propagateRemoved(Property owner, int pos, Property removed) {
-
-    // tell it to parent
-    if (parent!=null)
-      parent.propagateRemoved(owner, pos, removed);
-      
+  protected Transaction getTransaction() {
+    return parent==null ? null : parent.getTransaction();
   }
   
   /**
@@ -197,9 +201,21 @@ public abstract class Property implements Comparable {
       pos = children.size()-1;
     }
 
-    // propagate addition
-    propagateAdded(this, pos, child);
-    
+	  // tell to added
+	  child.addNotify(this);
+	
+	  // remember change
+	  Transaction tx = getTransaction();
+	  if (tx!=null) {
+	    Change change = new Change.PropertyAdd(this, pos, child);
+	    tx.get(Transaction.PROPERTIES_MODIFIED).add(this);
+	    tx.addChange(change);
+	    
+			// propagate
+			propagateChange(change);
+
+	  }
+	
     // Done
     return child;
   }
@@ -216,11 +232,8 @@ public abstract class Property implements Comparable {
         break;
     }
 
-    // tell about it
-    propagateRemoved(this, pos, deletee);
-  
-    // remove   
-    children.remove(pos);
+    // do it
+    delProperty(pos);
     
   }
 
@@ -233,12 +246,24 @@ public abstract class Property implements Comparable {
     if (pos<0||pos>=children.size())
       throw new IndexOutOfBoundsException();
 
-    // tell about it
-    propagateRemoved(this, pos, (Property)children.get(pos));
-  
     // remove   
-    children.remove(pos);
+    Property removed = (Property)children.remove(pos);
 
+	  // tell to removed
+	  removed.delNotify(this);
+	
+	  // remember change
+	  Transaction tx = getTransaction();
+	  if (tx!=null) {
+	    Change change = new Change.PropertyDel(this, pos, removed);
+	    tx.get(Transaction.PROPERTIES_MODIFIED).add(this);
+	    tx.addChange(change);
+	    
+			// tell it to parent
+			propagateChange(change);
+	  
+	  }
+	
   }
   
   /**
@@ -350,9 +375,20 @@ public abstract class Property implements Comparable {
     // check mutual inclusion
     if (!(children.containsAll(set)&&set.containsAll(children)))
       throw new IllegalArgumentException("change of properties not allowed");
-    // FIXME implement change mechanism
-//    children.clear();
-//    children.addAll(set);
+	  // remember change
+	  Transaction tx = getTransaction();
+	  if (tx!=null) {
+	    Change change = new Change.PropertyShuffle(this, children);
+	    tx.get(Transaction.PROPERTIES_MODIFIED).add(this);
+	    tx.addChange(change);
+	    
+			// propagate
+      propagateChange(change);
+
+	  }
+    // do the change
+    children.clear();
+    children.addAll(set);
     // done
   }
   
@@ -733,7 +769,7 @@ public abstract class Property implements Comparable {
     isPrivate = set;
     
     // bookkeeping
-    propagateChanged(this);
+    propagateChange(getValue());
     
     // done
   }

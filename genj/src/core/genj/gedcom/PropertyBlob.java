@@ -170,13 +170,15 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
    * Sets a property value line
    */
   public void setValue(String value) {
+    
+    String old = getValue();
 
     // Successfull new information
     content = value;
     isIconChecked = false;
 
     // Remember changed property
-    propagateChanged(this);
+    propagateChange(old);
 
     // Done
   }
@@ -186,24 +188,26 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
    */
   public void load(String file, boolean updateSubs) {
     
-    // Remember changed property
-    propagateChanged(this);
+    String old = getValue();
 
     // Reset state
     isIconChecked = false;
-    content ="";
     
     // file?
     if (file.length()!=0) {
       // Try to open file
       try {
         InputStream in = getGedcom().getOrigin().open(file);
-        content = new ByteArray(in, in.available()).getBytes();
+        byte[] newContent = new ByteArray(in, in.available()).getBytes();
         in.close();
+        content = newContent;
       } catch (IOException ex) {
         return;
       }
     }
+    
+    // Remember changed property
+    propagateChange(old);
     
     // check
     Property media = getParent();

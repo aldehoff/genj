@@ -19,6 +19,7 @@
  */
 package genj.renderer;
 
+import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
@@ -325,17 +326,7 @@ public class BlueprintEditor extends JSplitPane {
     /**
      * no gedcom - override and ignore
      */
-    protected void propagateAdded(Property owner, int pos, Property added) {
-    }
-    /**
-     * no gedcom - override and ignore
-     */
-    protected void propagateChanged(Property changed) {
-    }
-    /**
-     * no gedcom - override and ignore
-     */
-    protected void propagateRemoved(Property owner, int pos, Property removed) {
+    protected void propagateChange(Change change) {
     }
   } //ExampleIndi
   

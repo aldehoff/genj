@@ -40,7 +40,7 @@ public class Entity extends Property {
    * Lookup current transaction
    */
   protected Transaction getTransaction() {
-    return gedcom.getTransaction();
+    return gedcom!=null ? gedcom.getTransaction() : null;
   }
   
   /**
@@ -52,15 +52,12 @@ public class Entity extends Property {
     gedcom = ged;
 
     // note
-    Transaction tx = gedcom.getTransaction();
+    Transaction tx = getTransaction();
     if (tx!=null) {
       tx.get(Transaction.ENTITIES_ADDED).add(this);
-      tx.addChange(new Change.EntityAdded(this));
+      tx.addChange(new Change.EntityAdd(this));
     }
     
-    // propagate to property
-    addNotify(null, tx);
-
     // done    
   }
   
@@ -69,14 +66,17 @@ public class Entity extends Property {
    */
   /*package*/ void delNotify() {
     
-    // propagate to property hierarchy
-    Transaction tx = gedcom.getTransaction();
-    delNotify(tx);
+    // delete children
+    Property[] props = getProperties();
+    for (int p = 0; p < props.length; p++) {
+      delProperty(props[p]);
+    }
 
     // housekeeping
+    Transaction tx = getTransaction();
     if (tx!=null) {
       tx.get(Transaction.ENTITIES_DELETED).add(this);
-      tx.addChange(new Change.EntityRemoved(this));
+      tx.addChange(new Change.EntityDel(this));
     }
     
     // forget gedcom
@@ -88,72 +88,17 @@ public class Entity extends Property {
   /**
    * Propagate changed property
    */
-  protected void propagateChanged(Property changed) {
-
-    // always tell to modified first
-    Transaction tx = gedcom.getTransaction();
-
-    changed.modNotify(tx);    
+  protected void propagateChange(Change change) {
     
-    if (tx==null)
-      return;
-      
-    Change change = new Change.PropertyChanged(changed);
+    super.propagateChange(change);
+
+    // mark entity as changed and update CHAN
+    Transaction tx = getTransaction();
+    if (tx!=null) {
+      tx.get(Transaction.ENTITIES_MODIFIED).add(this);
+      PropertyChange.update(this, tx, change);
+    }
     
-    tx.get(Transaction.ENTITIES_MODIFIED).add(this);
-    tx.addChange(change);
-    
-    // Reflect change of property 
-    PropertyChange.update(this, tx, change);
-      
-  }
-  
-  /**
-   * Propagate added property
-   */
-  protected void propagateAdded(Property owner, int pos, Property added) {
-
-    // always tell to added first
-    Transaction tx = gedcom.getTransaction();
-
-    added.addNotify(owner, tx);
-    
-    // more housekeeping?
-    if (tx==null)
-      return;
-
-    Change change = new Change.PropertyAdded(owner, pos, added);
-      
-    tx.get(Transaction.ENTITIES_MODIFIED).add(this);
-    tx.addChange(change);
-    
-    // Reflect change of property 
-    PropertyChange.update(this, tx, change);
-      
-  }
-
-  /**
-   * Propagate removed property
-   */
-  protected void propagateRemoved(Property owner, int pos, Property removed) {
-
-    // always tell to removed first
-    Transaction tx = gedcom.getTransaction();
-
-    removed.delNotify(tx);
-
-    // more housekeeping?
-    if (tx==null)
-      return;
-
-    Change change = new Change.PropertyRemoved(owner, pos, removed);
-    
-    tx.get(Transaction.ENTITIES_MODIFIED).add(this);
-    tx.addChange(change);
-    
-    // Reflect change of property 
-    PropertyChange.update(this, tx, change);
-
   }
   
   /**
