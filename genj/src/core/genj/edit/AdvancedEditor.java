@@ -151,13 +151,14 @@ import javax.swing.event.TreeSelectionListener;
         // create Context
         Context result = new Context(gedcom, (Entity)root, prop);
 
-        // add actions (add&delete)
-        result.addAction(new Add(prop));
-        
         // cut/copy/paste
         result.addAction(new Cut(prop));
         result.addAction(new Copy(prop));
         result.addAction(new Paste(prop));
+        result.addAction(ActionDelegate.NOOP);
+        
+        // add actions (add&delete)
+        result.addAction(new Add(prop));
         
         // done
         return result;
