@@ -27,6 +27,7 @@ import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
+import genj.gedcom.Submission;
 import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Trackable;
@@ -65,6 +66,7 @@ public class GedcomReader implements Trackable {
   private Origin origin;
   private List xrefs;
   private String submitter;
+  private String submission;
   private List warnings;
   private boolean cancel=false;
   private Thread worker;
@@ -333,6 +335,18 @@ public class GedcomReader implements Trackable {
       }
     }
 
+    /*
+    // Prepare submission record
+    if (submission!=null) {
+      try {
+        Submission sub = (Submission)gedcom.getEntity(submission.replace('@',' ').trim(), Gedcom.SUBMISSIONS);
+        gedcom.setSubmission(sub);
+      } catch (Throwable t) {
+        warnings.add("Submission record "+submission+" couldn't be resolved");
+      }
+    }
+    */
+
     // Link references
     for (int i=0,j=xrefs.size();i<j;i++) {
       XRef xref = (XRef)xrefs.get(i);
@@ -368,6 +382,7 @@ public class GedcomReader implements Trackable {
     //  1 "DATE", date
     //  2 "TIME", time
     //  1 "SUBM", '@'+gedcom.getSubmitter().getId()+'@'
+    //  1 "SUBN", '@'+gedcom.getSubmission().getId()+'@'
     //  1 "GEDC", ""
     //  2 "VERS", "5.5"
     //  2 "FORM", "Lineage-Linked"
@@ -388,6 +403,10 @@ public class GedcomReader implements Trackable {
       // check for submitter
       if (level==1&&"SUBM".equals(tag)) {
         submitter = value; 
+      }
+      // check for submission record
+      if (level==1&&"SUBN".equals(tag)) {
+        submission = value; 
       }
       // done
     } while (true);
