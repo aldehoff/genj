@@ -27,12 +27,15 @@ import genj.gedcom.PropertyName;
 import genj.gedcom.PropertyXRef;
 import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.UnitGraphics;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -146,8 +149,6 @@ public class PropertyRenderer {
     return result;
   }
 
-  // FIXME resize IMAGE to character size when dpi is set
-  
   /**
    * Implementation for rendering img/txt 
    */
@@ -328,33 +329,65 @@ public class PropertyRenderer {
    */
   /*package*/ static class File extends PropertyRenderer {
 
-  // FIXME resize FILE according to dpi when set
-  
     /**
      * size override 
      */
     public Dimension getSize(FontMetrics metrics, Property prop, int preference, Point dpi) {
+      
+      // try to resolve image
       ImageIcon img = getImage(prop, preference);
-      if (img==null) return EMPTY_DIM; 
-      return new Dimension(img.getIconWidth(), img.getIconHeight());
+      if (img==null) return EMPTY_DIM;
+      
+      // check physical size
+      Point2D size = img.getPhysicalSize();
+        
+      // transform into dot-space
+      return new Dimension((int)(size.getX()*dpi.x), (int)(size.getY()*dpi.y));
     }
-  
+    
     /**
      * render override
      */
     public void render(Graphics g, Rectangle bounds, Property prop, int preference, Point dpi) {
+      
       // grab the image
       ImageIcon img = getImage(prop, preference);
       if (img==null) return;
-      // check if we should zoom
-      int
-        h = img.getIconHeight(),
-        w = img.getIconWidth ();
-      double zoom = Math.min(
-        Math.min(1.0D, ((double)bounds.width )/w),
-        Math.min(1.0D, ((double)bounds.height)/h)
-      );
-      img.paintIcon(g, bounds.x, bounds.y, zoom);
+      
+      // get unit graphics up
+      UnitGraphics ug = new UnitGraphics(g, 1, 1);
+      ug.pushTransformation();
+      ug.setColor(Color.black);
+      ug.translate(bounds.x, bounds.y);
+      
+      // calculate factor - the image's dpi might be
+      // different than that of the rendered surface
+      Point idpi = img.getResolution();
+      double
+       scalex = (double)dpi.x/idpi.x, 
+       scaley = (double)dpi.y/idpi.y;
+       
+      // check bounds - the image might still be too
+      // big - in that case we simply scale down to
+      // maximum allowed
+      double 
+        w = img.getIconWidth ()*scalex,
+        h = img.getIconHeight()*scaley;
+      if (bounds.width<w||bounds.height<h) {
+        double zoom = Math.min(
+          bounds.width/w, bounds.height/h
+        );
+        scalex *= zoom;
+        scaley *= zoom;
+      }        
+        
+      // scale and draw
+      ug.scale(scalex, scaley);
+      ug.draw(img, 0, 0, 0, 0);
+      
+      // restore graphics
+      ug.popTransformation();
+         
       // done
     }
     

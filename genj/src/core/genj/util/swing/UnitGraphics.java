@@ -89,7 +89,17 @@ public class UnitGraphics {
   /**
    * Translation   */
   public void translate(double dx, double dy) {
+    // 20030423
+    // when not casting this to int tiny offsets happen
+    // in TreeView on context-mouse-clicks
     graphics.translate((int)(dx * unitx), (int)(dy * unity));
+  }
+  
+  /**
+   * Scaling
+   */
+  public void scale(double sx, double sy) {
+    graphics.scale(sx * unitx, sy * unity);
   }
   
   /**
@@ -189,10 +199,10 @@ public class UnitGraphics {
   /**
    * Draw Image at given position
    */
-  public void draw(ImageIcon img, double x, double y) {
+  public void draw(ImageIcon img, double x, double y, double xalign, double yalign) {
     int
-      ix = (int)(x*unitx),
-      iy = (int)(y*unity) - img.getIconHeight()/2;
+      ix = (int)(x*unitx - xalign*img.getIconWidth ()),
+      iy = (int)(y*unity - yalign*img.getIconHeight());
     img.paintIcon(graphics, ix, iy);
   }
   

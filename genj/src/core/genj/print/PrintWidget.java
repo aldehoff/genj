@@ -90,8 +90,11 @@ public class PrintWidget extends JTabbedPane {
 
       // Choose printer
       gh.add(new JLabel(resources.getString("dlg.label.printer")), 0, 0);
-      gh.add(bh.create(new ActionPrinterSetup())                 , 1, 0);
-      gh.add(new JLabel(task.getPrinter())                       , 2, 0);
+      gh.add(bh.create(new PrinterSetup())                       , 1, 0);
+      gh.add(new JLabel(task.getPrintService())                  , 2, 0);
+
+      gh.add(new JLabel(resources.getString("dlg.label.page"))   , 0, 1);
+      gh.add(bh.create(new PageSetup())                          , 1, 1);
       
       gh.addFiller(99,99);
       
@@ -124,11 +127,11 @@ public class PrintWidget extends JTabbedPane {
   /**
    * Action - Show Printer Setup
    */
-  private class ActionPrinterSetup extends ActionDelegate {
+  private class PrinterSetup extends ActionDelegate {
     /**
      * Constructor
      */
-    private ActionPrinterSetup() {
+    private PrinterSetup() {
       super.setText(resources.getString("dlg.label.setup"));
     }
     /**
@@ -136,6 +139,25 @@ public class PrintWidget extends JTabbedPane {
      */
     protected void execute() {
       task.showPrinterDialog();
+      reset();
+    }
+  } //PrinterSetup
+  
+  /**
+   * Action - Show Page Setup
+   */
+  private class PageSetup extends ActionDelegate {
+    /**
+     * Constructor
+     */
+    private PageSetup() {
+      super.setText(resources.getString("dlg.label.setup"));
+    }
+    /**
+     * @see genj.util.ActionDelegate#execute()
+     */
+    protected void execute() {
+      task.showPageDialog();
       reset();
     }
   } //PrintDlg

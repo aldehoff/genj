@@ -49,6 +49,7 @@ import javax.swing.SwingConstants;
  * A Proxy knows how to generate interaction components that the user
  * will use to change a property : FILE / BLOB
  */
+// FIXME checkout dpi of pic
 class ProxyFile extends Proxy {
 
   /** static image dir */

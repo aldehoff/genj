@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.util.swing.ScreenResolutionScale;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -94,7 +95,10 @@ public class EntityRenderer {
   private boolean isDebug = false; 
   
   /** a resolution */
-  private Point dpi = null;
+  private Point dpi = ScreenResolutionScale.getSystemDPI();
+  
+  /** whether we scale fonts to resolution */
+  private boolean isScaleFonts = false;
 
   /**
    * Constructor
@@ -162,12 +166,16 @@ public class EntityRenderer {
   /**
    * Setup specific resolution (dpi)   */
   public EntityRenderer setResolution(Point set) {
-    // keep the resolution
-    if (set==null) {
-      dpi = null;
-    } else {
-      dpi = new Point(set);
-    }
+    dpi = new Point(set);
+    // done
+    return this;
+  }
+  
+  /**
+   * Setup font scaling
+   */
+  public EntityRenderer setScaleFonts(boolean set) {
+    isScaleFonts = set;
     // done
     return this;
   }
@@ -227,7 +235,7 @@ public class EntityRenderer {
      */
     public Font getFont(AttributeSet attr) {
       Font font = super.getFont(attr);
-      if (dpi!=null) {
+      if (isScaleFonts) {
         float factor = dpi.y/72F; 
         font = font.deriveFont(factor*font.getSize2D());
       }
@@ -389,13 +397,6 @@ public class EntityRenderer {
     }
     
     /**
-     * @see javax.swing.text.View#getMaximumSpan(int)
-     */
-    public float getMaximumSpan(int axis) {
-      return getPreferredSpan(axis);
-    }
-    
-    /**
      * @see javax.swing.text.View#getPreferredSpan(int)
      */
     public float getPreferredSpan(int axis) {
@@ -406,6 +407,13 @@ public class EntityRenderer {
       return axis==X_AXIS ? preferredSpan.width : preferredSpan.height;
     }
     
+    /**
+     * @see javax.swing.text.View#getMaximumSpan(int)
+     */
+    public float getMaximumSpan(int axis) {
+      return getPreferredSpan(axis);
+    }
+
     /**
      * @see javax.swing.text.View#getAlignment(int)
      */
@@ -626,8 +634,8 @@ public class EntityRenderer {
     /** the cached property we're displaying */
     private Property cachedProperty = null;
     
-    /** minimum percentage of the rendering space */
-    private int min;
+    /** minimum/maximum percentage of the rendering space */
+    private int min, max;
     
     /** valid or not */
     private boolean isValid = false;
@@ -657,6 +665,7 @@ public class EntityRenderer {
       
       // minimum?
       min = getInt(atts, "min", 1, 100, 1);
+      max = getInt(atts, "max", 1, 100, 100);
       
       // done
     }
@@ -750,7 +759,11 @@ public class EntityRenderer {
       // no renderer - no spane
       if (renderer==null) return new Dimension(0,0);
       // calc span
-      return renderer.getSize(getFontMetrics(), property, preference, dpi);
+      Dimension d = renderer.getSize(getFontMetrics(), property, preference, dpi);
+      // check max
+      d.width = (int)Math.min(d.width, root.width*max/100);
+      //height = (int)Math.min(result.height, root.height*max/100);      // done
+      return d;
     }
     /**
      * @see javax.swing.text.View#getMinimumSpan(int)

@@ -324,6 +324,9 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   public void setAdjustFonts(boolean set) {
     if (isAdjustFonts==set) return;
     isAdjustFonts = set;
+    // reset renderers
+    renderers = new EntityRenderer[Gedcom.NUM_TYPES];
+    // show
     repaint();
   }
   
@@ -563,6 +566,8 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
     EntityRenderer result = renderers[type];
     if (result==null) { 
       result = new EntityRenderer(blueprints[type], contentFont);
+      result.setResolution(DPI);
+      result.setScaleFonts(isAdjustFonts);
       renderers[type] = result;
     }
     return result;
@@ -770,12 +775,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
       contentRenderer.selection      = currentEntity;
       contentRenderer.indiRenderer   = getEntityRenderer(Gedcom.INDIVIDUALS);
       contentRenderer.famRenderer    = getEntityRenderer(Gedcom.FAMILIES   );
-      // special handling for adjusting fonts?
-//   FIXME dpi      
-      if (isAdjustFonts) {
-        contentRenderer.indiRenderer.setResolution(DPI);
-        contentRenderer. famRenderer.setResolution(DPI);
-      }
       // let the renderer do its work
       contentRenderer.render(gw, model);
       // done

@@ -187,7 +187,7 @@ public class ContentRenderer {
         
     // draw its image
     ImageIcon img = event.pe.getImage(false);
-    g.draw(img, event.from, level+0.5);
+    g.draw(img, event.from, level+0.5, 0, 0.5);
     int dx=img.getIconWidth();
 
     // draw its tag    

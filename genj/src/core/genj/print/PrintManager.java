@@ -182,6 +182,7 @@ public class PrintManager {
         new String[]{ resources.getString("dlg.label.print"), UIManager.getString("OptionPane.cancelButtonText")}
       ).packAndShow();
       
+  System.out.println(getPrintService());      
       // check choice
       if (ok!=0||getPages().x==0||getPages().y==0) {
         job.cancel();
@@ -201,7 +202,7 @@ public class PrintManager {
     protected void execute() {
       // this is on another thread
       try {
-        Debug.log(Debug.INFO, this, "Printing to "+getPrinter());
+        Debug.log(Debug.INFO, this, "Printing to "+getPrintService());
         job.print();
       } catch (PrinterException pe) {
         throwable = pe;
@@ -240,14 +241,78 @@ public class PrintManager {
     }
     
     /**
+     * Callback for actual printing  
+     * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
+     */
+    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+  
+      // what's the current page
+      int 
+        row = pageIndex/getPages().x,
+        col = pageIndex%getPages().x;
+      if (row>=getPages().x||row>=getPages().y) return NO_SUCH_PAGE;
+
+      page = pageIndex;
+
+      // draw border
+      Graphics2D g = (Graphics2D)graphics;
+      g.setColor(Color.black);
+      
+      g.draw(new Rectangle2D.Double(
+        pageFormat.getImageableX(),
+        pageFormat.getImageableY(),
+        pageFormat.getImageableWidth(),
+        pageFormat.getImageableHeight()
+      ));
+      
+      
+      // translate for content
+      graphics.translate(
+        (int)pageFormat.getImageableX(), 
+        (int)pageFormat.getImageableY()
+      );
+      graphics.translate(
+        -(int)(col*pageFormat.getImageableWidth ()), 
+        -(int)(row*pageFormat.getImageableHeight())
+      );
+
+      // render it
+      renderer.renderPage(g, new Point(col, row), getResolution());
+      
+      // done
+      return PAGE_EXISTS;
+  
+    }
+
+    // I wished we could just use one of both, either
+    //    job.printDialog or job.pageDialog
+    // but Java's printing 
+    //  + doesn't update the pageFormat when going 
+    //    through printDialog and 
+    //  + doesn't change the PrinterJob's printer that
+    //    the data ends up with (stays default) when
+    //    going through pageDialog 
+    // :(
+  
+    /**
      * Show page dialog     */
-    /*package*/ void showPrinterDialog() {
-      // I wished we could just use job.printDialog here - but
-      // Java's printing doesn't update the pageFormat in this
-      // method so offering the user to change settings in one
-      // of this dialogs is pretty useless - gotta use pageDialog
-      // instead :(
+    /*package*/ void showPageDialog() {
       pageFormat = job.pageDialog(pageFormat);
+      // preserve page format
+      registry.put("printer.orientation", pageFormat.getOrientation());
+      // reset pages
+      pages = null;
+      // done            
+    }
+    
+    /**
+     * Show printer dialog
+     */
+    /*package*/ void showPrinterDialog() {
+      // do it
+      job.printDialog();
+      // reset where possible
+      pageFormat = job.validatePage(pageFormat);
       // preserve page format
       registry.put("printer.orientation", pageFormat.getOrientation());
       // reset pages
@@ -285,7 +350,6 @@ public class PrintManager {
       // already calculated?
       if (pages!=null) return pages;
       
-      // FIXME fix resolution if required (e.g. 300)
       Dimension size = renderer.calcSize(getResolution());
       Dimension page = getPageSize();
       
@@ -301,7 +365,7 @@ public class PrintManager {
     /**
      * Computer printer name
      */
-    /*package*/ String getPrinter() {
+    /*package*/ String getPrintService() {
       Object name = "*Default*";
       try {
         name = job.getClass().getMethod("getPrintService", new Class[0]).invoke(job,new Object[0]);
@@ -309,51 +373,6 @@ public class PrintManager {
       return name.toString();
     }
     
-    /**
-     * Callback for actual printing  
-     * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
-     */
-    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-  
-      // what's the current page
-      page = pageIndex;
-      int 
-        row = pageIndex/getPages().x,
-        col = pageIndex%getPages().x;
-      if (row>=getPages().x||row>=getPages().y) return NO_SUCH_PAGE;
-      
-      Point page = new Point(col, row);
-  
-      // draw border
-      Graphics2D g = (Graphics2D)graphics;
-      g.setColor(Color.black);
-      
-      g.draw(new Rectangle2D.Double(
-        pageFormat.getImageableX(),
-        pageFormat.getImageableY(),
-        pageFormat.getImageableWidth(),
-        pageFormat.getImageableHeight()
-      ));
-      
-      
-      // translate for content
-      graphics.translate(
-        (int)pageFormat.getImageableX(), 
-        (int)pageFormat.getImageableY()
-      );
-      graphics.translate(
-        -(int)(page.x*pageFormat.getImageableWidth ()), 
-        -(int)(page.y*pageFormat.getImageableHeight())
-      );
-
-      // render it
-      renderer.renderPage(g, page, getResolution());
-      
-      // done
-      return PAGE_EXISTS;
-  
-    }
-  
   } //PrintTask
 
 } //PrintManager
