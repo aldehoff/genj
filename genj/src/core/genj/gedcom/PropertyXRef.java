@@ -223,4 +223,11 @@ public abstract class PropertyXRef extends Property {
    */
   public abstract int getExpectedReferencedType();
 
-}
+  /**
+   * @see genj.gedcom.Property#getDeleteVeto()
+   */
+  public String getDeleteVeto() {
+    return "The reference to the entity is deleted but the entity itself stays";
+  }
+
+} //PropertyXRef
