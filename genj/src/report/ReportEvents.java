@@ -124,16 +124,9 @@ public class ReportEvents extends Report {
         
         // output results
         println(PropertySex.TXT_SEX + ": " + sexs[sex]);
-        String[] output = {Delta.TXT_DAY, Integer.toString(day+1), handleDays[handleDay] };
-        println(i18n("dateLimit", output));
-        output[0] = Delta.TXT_MONTH;
-        output[1] = Integer.toString(month+1);
-        output[2] = handleMonths[handleMonth];
-        println(i18n("dateLimit", output));
-        output[0] = Delta.TXT_YEAR;
-        output[1] = Integer.toString(year);
-        output[2] = handleYears[handleYear];
-        println(i18n("dateLimit", output));
+        println(i18n("dateLimit", new String[] { Delta.TXT_DAY, Integer.toString(day+1), handleDays[handleDay] } ));
+        println(i18n("dateLimit", new String[] { Delta.TXT_MONTH, Integer.toString(month+1), handleMonths[handleMonth] } ));
+        println(i18n("dateLimit", new String[] { Delta.TXT_YEAR, Integer.toString(year), handleYears[handleYear] } ));
         println();
         
         if (reportBirth&&!births.isEmpty()) {
@@ -279,21 +272,17 @@ public class ReportEvents extends Report {
      * Print a hit
      */
     private void report(Hit hit) {
-        String[] output = new String[2];
+
         if (hit.who instanceof Indi) {
             Indi indi = (Indi) hit.who;
             String tag = "";
             if(hit.tag.length() > 0)
                 tag = hit.tag+": ";
-            output[0] = indi.getId();
-            output[1] = indi.getName();
-            println(getIndent(3) + tag + hit.when + " "+i18n("entity",output));
+            println(getIndent(3) + tag + hit.when + " "+i18n("entity", new String[] {indi.getId(), indi.getName()} ));
         }
         if (hit.who instanceof Fam) {
             Fam fam = (Fam) hit.who;
-            output[0] = fam.getId();
-            output[1] = fam.toString();            
-            println(getIndent(3) + hit.when + " "+i18n("entity",output)+" (@" + fam.getHusband().getId() + "@" + TXT_MARR_SYMBOL + "@" + fam.getWife().getId() + "@)");
+            println(getIndent(3) + hit.when + " "+i18n("entity", new String[] {fam.getId(), fam.toString()})+" (@" + fam.getHusband().getId() + "@" + TXT_MARR_SYMBOL + "@" + fam.getWife().getId() + "@)");
         }
     }
     

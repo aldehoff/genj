@@ -252,8 +252,7 @@ public class ReportAncestorStatistics extends Report {
      * Returns an individual description.
      */
     private String getIndiDescription(Indi indi) {
-        String[] output = {indi.getId(), indi.getName()};
-        return i18n("entity", output);
+        return i18n("entity", new String[] {indi.getId(), indi.getName()});
     }
     
     /**

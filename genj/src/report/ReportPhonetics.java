@@ -116,7 +116,6 @@ public class ReportPhonetics extends Report {
     private void printPhonetic(Entity[] indis) {
         Indi indi = null;
         String str = "";
-        String[] output = new String[2];
         
         println(i18n("outputFormat")+": "+outputFormats[outputFormat]);
         println();
@@ -134,9 +133,7 @@ public class ReportPhonetics extends Report {
                 Iterator first = names.getReferences(str).iterator();
                 while(first.hasNext()) {
                     indi  = (Indi)first.next();
-                    output[0] = indi.getId();
-                    output[1] = indi.getFirstName();
-                    println(getIndent(2)+i18n("entity", output)+": "+encode(str));
+                    println(getIndent(2)+i18n("entity", new String[] {indi.getId(), indi.getFirstName()} )+": "+encode(str));
                 }
             }
         }

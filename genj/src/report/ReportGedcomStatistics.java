@@ -27,7 +27,7 @@ import java.util.Collection;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.58 2004-06-23 16:41:21 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.59 2004-06-24 18:17:51 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -778,10 +778,8 @@ public class ReportGedcomStatistics extends Report {
                         Indi indi = (Indi)stats.age.getReferences((Integer)stats.age.getKeys().get(0)).iterator().next();
                         age = calculateAverageAge(stats.sumAge,1);
                         println(getIndent(indent)+new Delta(age[2], age[1], age[0])+" "+i18n("oneIndi"));
-                        if(printIndis<3) {
-                            String[] output = {indi.getId(), indi.getName()};
-                            println(getIndent(indent+1)+i18n("entity", output));
-                        }
+                        if(printIndis<3)
+                            println(getIndent(indent+1)+i18n("entity", new String[] {indi.getId(), indi.getName()} ));
                     }
                     else {
                         // we have several indis to print
@@ -806,10 +804,8 @@ public class ReportGedcomStatistics extends Report {
                         Indi indi = (Indi)stats.childBirthAge.getReferences((Integer)stats.childBirthAge.getKeys().get(0)).iterator().next();
                         age = calculateAverageAge(stats.sumChildBirthAge,1);
                         println(getIndent(indent)+new Delta(age[2], age[1], age[0])+" "+i18n("oneIndi"));
-                        if(printIndis<3) {
-                            String[] output = {indi.getId(), indi.getName()};
-                            println(getIndent(indent+1)+i18n("entity", output));
-                        }
+                        if(printIndis<3)
+                            println(getIndent(indent+1)+i18n("entity", new String[] {indi.getId(), indi.getName()} ));
                     }
                     else{
                         // we have several indis to print
@@ -843,8 +839,7 @@ public class ReportGedcomStatistics extends Report {
         Iterator it = c.iterator();
         while(it.hasNext()) {
             Indi indi = (Indi)it.next();
-            String[] output = {indi.getId(), indi.getName()};
-            println(getIndent(indent+1)+i18n("entity", output));
+            println(getIndent(indent+1)+i18n("entity", new String[] {indi.getId(), indi.getName()} ));
         }
     }
     
@@ -909,8 +904,7 @@ public class ReportGedcomStatistics extends Report {
         Iterator it = families.children.getReferences(new Integer(childs)).iterator();
         while(it.hasNext()) {
             Fam fam = (Fam)it.next();
-            String[] output = {fam.getId(), fam.toString()};
-            println(getIndent(indent+2)+i18n("entity", output));
+            println(getIndent(indent+2)+i18n("entity", new String[] {fam.getId(), fam.toString()} ));
         }
     }
     
@@ -954,8 +948,7 @@ public class ReportGedcomStatistics extends Report {
             printAges(i, indent+2, families.wifes, MARRIAGE);
             
             //children
-            String[] output = { ""+families.withChildren, ""+roundNumber((double)families.withChildren/(double)families.number*100,OPTIONS.getPositions()) };
-            println(getIndent(indent)+i18n("withChildren", output));
+            println(getIndent(indent)+i18n("withChildren", new String[] { ""+families.withChildren, ""+roundNumber((double)families.withChildren/(double)families.number*100,OPTIONS.getPositions()) }));
             
             switch(reportFamsToChildren) {
                 case 0:
@@ -1009,20 +1002,16 @@ public class ReportGedcomStatistics extends Report {
             int number = places.places.getSize(place);
             println(getIndent(2)+place+": "+number+" ("+roundNumber((double)number/(double)places.entitiesWithKnownPlaces*100, OPTIONS.getPositions())+"%)");
             if(reportIndisToPlaces) {
-                String[] output = new String[2];
                 Iterator entities = places.places.getReferences(place).iterator();
                 while(entities.hasNext()) {
                     if(places.which==MARRIAGE) {
                         Fam fam = (Fam)entities.next();
-                        output[0] = fam.getId();
-                        output[1] = fam.toString();
+                        println(getIndent(3)+i18n("entity", new String[] {fam.getId(), fam.toString()} ));
                     }
                     else {
                         Indi indi = (Indi)entities.next();
-                        output[0] = indi.getId();
-                        output[1] = indi.getName();
+                        println(getIndent(3)+i18n("entity", new String[] {indi.getId(), indi.getName()} ));
                     }
-                    println(getIndent(3)+i18n("entity", output));
                 }
             }
         }
@@ -1035,8 +1024,7 @@ public class ReportGedcomStatistics extends Report {
      */
     private void reportLastNames(StatisticsLastNames lastNames, int numberAllIndis) {
         
-        String[] output = { ""+lastNames.lastNamesIndis.getKeys().size(), ""+numberAllIndis };
-        println(i18n("lastNames", output));
+        println(i18n("lastNames", new String[] { ""+lastNames.lastNamesIndis.getKeys().size(), ""+numberAllIndis } ));
         Iterator it = lastNames.lastNamesIndis.getKeys(sortLastNamesByName).iterator();
         while(it.hasNext()) {
             String name = (String)it.next();
@@ -1080,23 +1068,17 @@ public class ReportGedcomStatistics extends Report {
      */
     private void reportOccupations(StatisticsOccupations occupations) {
         
-        String[] output = new String[3];
         println(i18n("occupations"));
         println(getIndent(2)+i18n("number", occupations.occupations.getKeys().size()));
         Iterator it = occupations.occupations.getKeys(sortOccupationsByName).iterator();
         while(it.hasNext()) {
             String occupation = (String)it.next();
-            output[0] = occupation;
-            output[1] = ""+occupations.occupations.getSize(occupation);
-            output[2] = ""+roundNumber((double)occupations.occupations.getSize(occupation)/(double)occupations.occupations.getSize()*100, OPTIONS.getPositions());
-            println(getIndent(3)+i18n("occupation", output));
+            println(getIndent(3)+i18n("occupation", new String[] {occupation, ""+occupations.occupations.getSize(occupation), ""+roundNumber((double)occupations.occupations.getSize(occupation)/(double)occupations.occupations.getSize()*100, OPTIONS.getPositions()) } ));
             if(reportIndisToOccupations) {
                 Iterator indis = occupations.occupations.getReferences(occupation).iterator();
                 while(indis.hasNext()) {
                     Indi indi = (Indi)indis.next();
-                    output[0] = indi.getId();
-                    output[1] = indi.getName();
-                    println(getIndent(4)+i18n("entity", output));
+                    println(getIndent(4)+i18n("entity", new String[] {indi.getId(), indi.getName()} ));
                 }
             }
         }
