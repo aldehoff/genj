@@ -83,7 +83,7 @@ public class BlueprintEditor extends JSplitPane {
   public BlueprintEditor() { 
     // preview
     preview = new Preview();
-    preview.setBorder(BorderFactory.createTitledBorder("Preview"));
+    preview.setBorder(BorderFactory.createTitledBorder(resources.getString("blueprint.preview")));
     // edit
     JPanel edit = new JPanel(new BorderLayout());
       // html
