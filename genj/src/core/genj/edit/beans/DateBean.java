@@ -44,7 +44,7 @@ import javax.swing.JLabel;
  */
 public class DateBean extends PropertyBean {
 
-  private ImageIcon PIT = new ImageIcon(this, "/genj/gedcom/images/Time.gif");
+  private final static ImageIcon PIT = new ImageIcon(PropertyBean.class, "/genj/gedcom/images/Time.gif");
   
   /** members */
   private PropertyDate.Format format; 
@@ -82,6 +82,10 @@ public class DateBean extends PropertyBean {
    */
   private void setFormat(PropertyDate.Format set) {
 
+    // already?
+    if (format==set)
+      return;
+    
     changeSupport.fireChangeEvent();
 
     // remember
@@ -102,6 +106,36 @@ public class DateBean extends PropertyBean {
     revalidate();
     repaint();
   }          
+  
+  private static Dimension preferredPopupSize;
+  
+  /**
+   * set cached calculated preferred size for popup
+   */
+  private static void setPreferredSize(PopupWidget choose) {
+    
+    // unknown?
+    if (preferredPopupSize==null) {
+
+      // calculate image alone
+      choose.setIcon(PIT);
+      preferredPopupSize = choose.getPreferredSize();
+      choose.setIcon(null);
+      
+      // loop over date format texts and patch preferred
+      for (int i=0,j=PropertyDate.FORMATS.length;i<j;i++) {
+        choose.setText(PropertyDate.FORMATS[i].getLabel1());
+        Dimension pref = choose.getPreferredSize();
+        preferredPopupSize.width = Math.max(preferredPopupSize.width , pref.width );
+        preferredPopupSize.height= Math.max(preferredPopupSize.height, pref.height);
+      }
+      
+    }
+    
+    // set it
+    choose.setPreferredSize(preferredPopupSize);
+
+  }
 
   /**
    * Initialize
@@ -122,22 +156,16 @@ public class DateBean extends PropertyBean {
     WindowManager mgr = viewManager.getWindowManager();
 
     // .. the chooser (making sure the preferred size is pre-computed to fit-it-all)
-    choose = new PopupWidget(null, PIT, actions);
-    Dimension pref = choose.getPreferredSize();
-    choose.setIcon(null);
-    for (int i=0,j=PropertyDate.FORMATS.length;i<j;i++) {
-      choose.setText(PropertyDate.FORMATS[i].getLabel1());
-      pref.width = Math.max(pref.width, choose.getPreferredSize().width);
-    }
-    choose.setPreferredSize(pref);
-
+    choose = new PopupWidget(null, null, actions);
+    setPreferredSize(choose);
+    
     // .. first date
     date1 = new DateWidget(p.getStart(), mgr);
     date1.addChangeListener(changeSupport);
     date1.setAlignmentX(0);
 
     // .. the label
-    label = new JLabel("to");
+    label = new JLabel();
     
     // .. second date
     date2 = new DateWidget(p.getEnd(), mgr);

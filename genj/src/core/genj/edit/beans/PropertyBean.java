@@ -34,6 +34,8 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -75,15 +77,34 @@ public abstract class PropertyBean extends JPanel {
   /** an optional path */
   protected TagPath path;
   
+  /** map a 'proxy' to a type */
+  private static Map proxy2type = new HashMap();
+  
   /**
    * Accessor
    */
   public static PropertyBean get(Property prop) {
-    try {
-      return (PropertyBean) Class.forName( "genj.edit.beans." + prop.getProxy() + "Bean").newInstance();
-    } catch (Throwable t) {
-      return new SimpleValueBean();
+    // unknown type?
+    Class type = (Class)proxy2type.get(prop.getProxy());
+    PropertyBean result = null;
+    if (type==null) {
+      try {
+        type = Class.forName( "genj.edit.beans." + prop.getProxy() + "Bean");
+        result = (PropertyBean)type.newInstance();
+      } catch (Throwable t) {
+        type = SimpleValueBean.class;
+      }
+      proxy2type.put(prop.getProxy(), type);
     }
+    // instantiate if still necessary
+    if (result==null)
+      try {
+        result = (PropertyBean)type.newInstance();
+      } catch (Throwable t) {
+        result = new SimpleValueBean();
+      }
+    // done
+    return result;
   }
   
   /**
