@@ -66,6 +66,14 @@ public class ControlCenter extends JPanel implements ActionListener {
     registry=new Registry(setRegistry,"cc");
     busyGedcoms=new Vector();
 
+    // Initialize the frame
+    frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    frame.addWindowListener(new WindowAdapter() {
+      public void windowClosing(WindowEvent we) {
+        shutdown();
+      }
+    });
+
     // Table of Gedcoms
     tGedcoms = new GedcomTable();
     tGedcoms.setColumnWidths(registry.get("columns",(int[])null));
@@ -531,7 +539,6 @@ public class ControlCenter extends JPanel implements ActionListener {
     if (e.getActionCommand().equals("CONTENTS")) {
       actionHelp();
       return;
-
     }
 
     // ABOUT?
@@ -542,7 +549,7 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     // CLOSE ?
     if (e.getActionCommand().equals("EXIT")) {
-      close();
+      shutdown();
       return;
     }
 
@@ -844,12 +851,7 @@ public class ControlCenter extends JPanel implements ActionListener {
   /**
    * Closes all frame created by this controlcenter
    */
-  /*package*/ boolean close() {
-
-    // Tell the HelpBridge
-    if (helpBridge!=null) {
-      helpBridge.close(registry);
-    }
+  private boolean shutdown() {
 
     // Unsaved changes ?
     Enumeration gedcoms = tGedcoms.getGedcoms().elements();
@@ -869,8 +871,16 @@ public class ControlCenter extends JPanel implements ActionListener {
       }
     }
     
+    // Tell the HelpBridge
+    if (helpBridge!=null) {
+      helpBridge.close(registry);
+    }
+
     // Save settings from GedcomTable
     registry.put("columns",tGedcoms.getColumnWidths());
+
+    // Tell it to the app
+    App.getInstance().shutdown();
 
     // Done
     return true;

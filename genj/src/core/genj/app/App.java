@@ -101,21 +101,6 @@ public class App {
 
     // Create frame
     frame = createFrame(resources.getString("app.title"),Images.imgGedcom,"main", null);
-    frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    frame.addWindowListener(new WindowAdapter() {
-      public void windowClosing(WindowEvent we) {
-        // let cc handle it
-        if (center.close()) {
-          // close all frames we know
-          Enumeration e = getFrames().elements();
-          while (e.hasMoreElements()) ((JFrame)e.nextElement()).dispose();
-          // Store registry 
-          Registry.saveToDisk();      
-          // exit
-          System.exit(0);
-        }
-      }
-    });
 
     // Create the desktop
     center = new ControlCenter(frame,registry);
@@ -136,6 +121,20 @@ public class App {
    */
   public static App getInstance() {
     return instance;
+  }
+  
+  /**
+   * Shutdown
+   */
+  public void shutdown() {
+    
+    // close all frames we know
+    Enumeration e = App.getInstance().getFrames().elements();
+    while (e.hasMoreElements()) ((JFrame)e.nextElement()).dispose();
+    // Store registry 
+    Registry.saveToDisk();      
+    // exit
+    System.exit(0);
   }
 
   /**
