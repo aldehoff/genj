@@ -34,6 +34,13 @@ public class PropertySex extends Property {
     IMG_MALE   = MetaProperty.get(new TagPath("INDI:SEX")).getImage("male"),
     IMG_FEMALE = MetaProperty.get(new TagPath("INDI:SEX")).getImage("female");
 
+  /** txts */
+  public final static String
+    TXT_SEX     = Gedcom.getResources().getString("prop.sex"),
+    TXT_MALE    = Gedcom.getResources().getString("prop.sex.male"),
+    TXT_FEMALE  = Gedcom.getResources().getString("prop.sex.female"),
+    TXT_UNKNOWN = Gedcom.getResources().getString("prop.sex.unknown");
+    
   /** sexes */
   public static final int UNKNOWN = 0;
   public static final int MALE    = 1;
@@ -93,13 +100,6 @@ public class PropertySex extends Property {
     return (sexAsString==null);
   }
 
-
-  /**
-   * Returns localized label for sex
-   */
-  static public String getLabelForSex() {
-    return Gedcom.getResources().getString("prop.sex");
-  }
 
   /**
    * Returns localized label for sex of male/female

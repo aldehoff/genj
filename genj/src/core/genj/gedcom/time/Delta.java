@@ -29,13 +29,13 @@ import java.util.StringTokenizer;
 public class Delta implements Comparable {
 
   /** localizations */
-  private final static String
-    YEAR  = PointInTime.resources.getString("time.year"  ),
-    YEARS = PointInTime.resources.getString("time.years" ),
-    MONTH = PointInTime.resources.getString("time.month" ),
-    MONTHS= PointInTime.resources.getString("time.months"),
-    DAY   = PointInTime.resources.getString("time.day"   ),
-    DAYS  = PointInTime.resources.getString("time.days"  );
+  public final static String
+    TXT_YEAR  = PointInTime.resources.getString("time.year"  ),
+    TXT_YEARS = PointInTime.resources.getString("time.years" ),
+    TXT_MONTH = PointInTime.resources.getString("time.month" ),
+    TXT_MONTHS= PointInTime.resources.getString("time.months"),
+    TXT_DAY   = PointInTime.resources.getString("time.day"   ),
+    TXT_DAYS  = PointInTime.resources.getString("time.days"  );
 
   /** values */
   private int years, months, days;
@@ -186,21 +186,21 @@ public class Delta implements Comparable {
   public String toString() {
     // no delta?
     if (years==0&&months==0&&days==0) {
-      return "<1 "+Delta.DAY;
+      return "<1 "+TXT_DAY;
     }
 
     WordBuffer buffer = new WordBuffer();
     if (years >0) {
       buffer.append(years);
-      buffer.append(years==1 ? Delta.YEAR : Delta.YEARS);
+      buffer.append(years==1 ? TXT_YEAR : TXT_YEARS);
     } 
     if (months>0) {
       buffer.append(months);
-      buffer.append(months==1 ? Delta.MONTH : Delta.MONTHS);
+      buffer.append(months==1 ? TXT_MONTH : TXT_MONTHS);
     } 
     if (days  >0) {
       buffer.append(days);
-      buffer.append(days==1 ? Delta.DAY : Delta.DAYS);
+      buffer.append(days==1 ? TXT_DAY : TXT_DAYS);
     } 
     return buffer.toString();
   }
