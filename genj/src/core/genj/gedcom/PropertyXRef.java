@@ -175,6 +175,15 @@ public abstract class PropertyXRef extends Property {
   }
 
   /**
+   * Some references have a natural target value property 
+   * that can be accessed here (e.g. PropertyNote's target Note)
+   * @return property lending itself to be edited or null
+   */
+  public Property getTargetValueProperty() {
+    return null;
+  }
+
+  /**
    * Sets this property's value as string.
    */
   public void setValue(String set) {

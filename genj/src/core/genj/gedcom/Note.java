@@ -50,6 +50,14 @@ public class Note extends Entity implements MultiLineProperty {
   }
 
   /**
+   * Returns the delegate multiline value property that actually
+   * contains this note's content
+   */
+  public PropertyMultilineValue getDelegate() {
+    return delegate;
+  }
+  
+  /**
    * Returns this property as a string
    */
   public String toString() {
