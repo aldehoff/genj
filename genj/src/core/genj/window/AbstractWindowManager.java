@@ -43,6 +43,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
@@ -53,18 +54,29 @@ import javax.swing.SwingConstants;
  */
 public abstract class AbstractWindowManager implements WindowManager {
 
+  /** registry */
+  protected Registry registry;
+
   /** a counter for temporary keys */
   private int temporaryKeyCounter = 0;  
 
   /** a mapping between key to framedlg */
   private Map key2framedlg = new HashMap();
-
+  
+  /** 
+   * Constructor
+   */
+  public AbstractWindowManager(Registry regiStry) {
+    registry = regiStry;
+  }
+  
   /**
    * @see genj.window.WindowManager#openFrame(java.lang.String, java.lang.String, javax.swing.ImageIcon, javax.swing.JComponent, java.lang.String)
    */
   public String openFrame(String key, String title, ImageIcon image, JComponent content, String option) {
     // key is necessary
-    if (key==null) key = getTemporaryKey();
+    if (key==null) 
+      key = getTemporaryKey();
     // create option
     final String close = key;
     JPanel south = new JPanel();
@@ -83,6 +95,31 @@ public abstract class AbstractWindowManager implements WindowManager {
     return openFrame(key, title, image, panel, null, null, null);
   }
 
+  /**
+   * Core frame handling implementation
+   */
+  public final String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable onClosing, Runnable onClose) {
+    // create a key?
+    if (key==null) 
+      key = getTemporaryKey();
+    // close if already open
+    close(key);
+    // grab parameters
+    Rectangle bounds = registry.get(key, (Rectangle)null);
+    boolean maximized = registry.get(key+".maximized", false);
+    // deal with it in impl
+    Object frame = openFrameImpl(key, title, image, content, menu, bounds, maximized, onClosing, onClose);
+    // remember it
+    key2framedlg.put(key, frame);
+    // done
+    return key;
+  }
+  
+  /**
+   * Implementation for core frame handling
+   */
+  protected abstract Object openFrameImpl(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, Runnable onClosing, Runnable onClose);
+  
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String[], javax.swing.JComponent)
    */
@@ -137,6 +174,58 @@ public abstract class AbstractWindowManager implements WindowManager {
     return rc==0?tf.getText().trim():null;
   }
 
+  /**
+   * dialog core routine
+   */
+  public final int openDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner) {
+    // check options - default to OK
+    if (actions==null) 
+      actions = CloseWindow.OK();
+    // key is necessary
+    if (key==null) 
+      key = getTemporaryKey();
+    // close if already open
+    close(key);
+    // grab parameters
+    Rectangle bounds = registry.get(key, (Rectangle)null);
+    // do it
+    openDialogImpl(key, title, image, content, actions, owner, bounds, true);
+    // analyze - check which action was responsible for close
+    for (int i=0; i<actions.length; i++) {
+      if (actions[i] instanceof CloseWindow && ((CloseWindow)actions[i]).isPerformed()) 
+        return i;
+    }
+    // done
+    return -1;
+  }
+  
+  /**
+   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, javax.swing.JComponent, javax.swing.JComponent)
+   */
+  public final String openNonModalDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner) {
+    // check options - none ok
+    if (actions==null)
+      actions = new ActionDelegate[0];
+    // key is necessary
+    if (key==null) 
+      key = getTemporaryKey();
+    // close if already open
+    close(key);
+    // grab parameters
+    Rectangle bounds = registry.get(key, (Rectangle)null);
+    // do it
+    Object dialog = openDialogImpl(key, title, image, content, actions, owner, bounds, false);
+    // remember it
+    key2framedlg.put(key, dialog);
+    // done
+    return key;
+  }
+
+  /**
+   * Implementation for core frame handling
+   */
+  protected abstract Object openDialogImpl(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner, Rectangle bounds, boolean modal);
+  
   /**
    * Helper for assembling dialog content
    */
@@ -216,38 +305,29 @@ public abstract class AbstractWindowManager implements WindowManager {
    */
   protected Object recall(String key) {
     // no key - no result
-    if (key==null) return null;
+    if (key==null) 
+      return null;
     // look it up
     return key2framedlg.get(key);
   }
 
   /**
-   * Remember frame/dialog, recall bounds from registry
-   */
-  protected Rectangle remember(String key, Object framedlg, Registry registry) {
-    // no key - no action
-    if (key==null) return null;
-    // remember frame/dialog
-    key2framedlg.put(key, framedlg);
-    // temporary key? nothing to recall
-    if (key.startsWith("_")) return null;
-    // recall!
-    return registry.get(key, (Rectangle)null);
-  }
-  
-  /**
    * Forget about frame/dialog, stash away bounds
    */
-  protected void forget(String key, Rectangle bounds, Registry registry) {
+  protected void closeNotify(String key, Rectangle bounds, boolean maximized) {
     // no key - no action
-    if (key==null) return;
+    if (key==null) 
+      return;
     // forget frame/dialog
     key2framedlg.remove(key);
     // temporary key? nothing to stash away
-    if (key.startsWith("_")) return;
+    if (key.startsWith("_")) 
+      return;
     // keep bounds
-    if (bounds!=null)
+    if (bounds!=null&&!maximized)
       registry.put(key, bounds);
+    registry.put(key+".maximized", maximized);
+    // done
   }
   
   /**

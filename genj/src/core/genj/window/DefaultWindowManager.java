@@ -49,36 +49,18 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /** screen we're dealing with */
   private Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
   
-  /** registry */
-  private Registry registry;
-
   /** 
    * Constructor
    */
-  public DefaultWindowManager(Registry regiStry) {
-    registry = regiStry;
-  }
-  
-  /**
-   * @see genj.window.WindowManager#openFrame(String, String, ImageIcon, JComponent, JMenuBar, Runnable, Runnable)
-   */
-  public String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
-    // create a key?
-    if (key==null) getTemporaryKey();
-    // deal with it in impl
-    openFrameImpl(key, title, image, content, menu, onClosing, onClose);
-    // done
-    return key;
+  public DefaultWindowManager(Registry registry) {
+    super(registry);
   }
   
   /**
    * Frame implementation
    */
-  private void openFrameImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
+  protected Object openFrameImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, final Runnable onClosing, final Runnable onClose) {
     
-    // close if already open
-    close(key);
-
     // Create a frame
     final JFrame frame = new JFrame() {
       /**
@@ -87,18 +69,8 @@ public class DefaultWindowManager extends AbstractWindowManager {
        * late (one frame) after dispose()
        */
       public void dispose() {
-        // grab bounds
-        Rectangle bounds = getBounds();
-        try {
-          // 20040531 window bounds shouldn't be remembered if maximized
-          // try to determine if we shouldn't keep bounds (e.g. maximized)
-          int state = getExtendedState();
-          if (state!=NORMAL&&state!=ICONIFIED)
-            bounds = null;
-        } catch (Throwable t) {
-        }
         // forget about key but keep bounds
-        forget(key, bounds, registry);
+        closeNotify(key, getBounds(), getExtendedState()==MAXIMIZED_BOTH);
         // continue
         super.dispose();
         // callback?
@@ -127,9 +99,6 @@ public class DefaultWindowManager extends AbstractWindowManager {
       });
     }
 
-    // remember
-    Rectangle bounds = remember(key, frame, registry);
-
     // place
     if (bounds==null) {
       frame.pack();
@@ -137,43 +106,21 @@ public class DefaultWindowManager extends AbstractWindowManager {
       bounds = new Rectangle(screen.width/2-dim.width/2, screen.height/2-dim.height/2,dim.width,dim.height);
     }
     frame.setBounds(clip(bounds,screen));
+    
+    if (maximized)
+      frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
     // show
     frame.setVisible(true);
     
     // done
-  }
-  
-  /**
-   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.ImageIcon, java.awt.Dimension, javax.swing.JComponent)
-   */
-  public int openDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner) {
-    // check options - default to OK
-    if (actions==null) 
-      actions = CloseWindow.OK();
-    // ask impl
-    return openDialogImpl(key, title, image, content, actions, owner, true);
-  }
-  
-  /**
-   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, javax.swing.JComponent, javax.swing.JComponent)
-   */
-  public String openNonModalDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner) {
-    // create a key?
-    if (key==null) key = getTemporaryKey();
-    // construct options
-    if (actions==null)
-      actions = new ActionDelegate[0];
-    // ask impl
-    openDialogImpl(key, title, image, content, actions, owner, false);
-    // done
-    return key;
+    return frame;
   }
   
   /**
    * Dialog implementation
    */
-  private int openDialogImpl(final String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner, boolean isModal) {
+  protected Object openDialogImpl(final String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner, Rectangle bounds, boolean isModal) {
 
     // Create a dialog 
     Window parent = getWindowForComponent(owner);
@@ -181,7 +128,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
       (JDialog)new JDialog((Dialog)parent) {
         /** dispose is our onClose (WindowListener.windowClosed is too late after dispose() */
         public void dispose() {
-          forget(key, getBounds(), registry);
+          closeNotify(key, getBounds(), false);
           // continue
           super.dispose();
         }
@@ -190,12 +137,21 @@ public class DefaultWindowManager extends AbstractWindowManager {
       (JDialog)new JDialog((Frame)parent) {
         /** dispose is our onClose (WindowListener.windowClosed is too late after dispose() */
         public void dispose() {
-          forget(key, getBounds(), registry);
+          closeNotify(key, getBounds(), false);
           // continue
           super.dispose();
         }
       }
     ;
+    
+//    dlg.addComponentListener(new ComponentAdapter() {
+//      public void componentMoved(ComponentEvent e) {
+//        System.out.println("moved");
+//      }
+//      public void componentResized(ComponentEvent e) {
+//        System.out.println("resized");
+//      }
+//    });
     
     // setup looks
     dlg.setTitle(title);
@@ -217,17 +173,10 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // DISPOSE_ON_CLOSE?
     dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-    // remember
-    Rectangle bounds = remember(key, dlg, registry);
-
     // place
     if (bounds==null) {
       dlg.pack();
-      try {
-        dlg.setLocationRelativeTo(owner);
-      } catch (Throwable t) {
-        // apparently no in JDialog/Window on jdk 1.3.1_04
-      }
+      dlg.setLocationRelativeTo(owner);
     } else {
       dlg.setBounds(clip(bounds,screen));
     }
@@ -235,17 +184,8 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // show
     dlg.setVisible(true);
 
-    // did we wait for something?
-    if (isModal) {
-      // analyze - check which action was responsible for close
-      for (int i=0; i<actions.length; i++) {
-        if (actions[i] instanceof CloseWindow && ((CloseWindow)actions[i]).isPerformed()) 
-          return i;
-      }
-    }
-        
     // done    
-    return -1;
+    return dlg;
   }
 
   /**

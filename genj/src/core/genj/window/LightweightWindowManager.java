@@ -24,6 +24,7 @@ import genj.util.Registry;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.beans.PropertyVetoException;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -41,19 +42,14 @@ import javax.swing.event.InternalFrameEvent;
  */
 public class LightweightWindowManager extends DefaultWindowManager {
   
-  /** registry */
-  private Registry registry;
-
   /** one desktop */
   private JDesktopPane desktop;
   
   /** 
    * Constructor
    */
-  public LightweightWindowManager(Registry regiStry) {
-    super(regiStry);
-    // remember
-    registry = regiStry;
+  public LightweightWindowManager(Registry registry) {
+    super(registry);
   }
   
   /**
@@ -95,43 +91,22 @@ public class LightweightWindowManager extends DefaultWindowManager {
   }
   
   /**
-   * @see genj.window.WindowManager#openFrame(String, String, ImageIcon, JComponent, JMenuBar, Runnable, Runnable)
-   */
-  public String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
-    // check key
-    if (key==null) key = getTemporaryKey();
-    
-    // continue
-    openFrameImpl(key, title, image, content, menu, onClosing, onClose);
-    
-    // done
-    return key;
-  }
-
-  /**
    * Our implementation for opening a frame
    */
-  private void openFrameImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, final Runnable onClosing, final Runnable onClose) {
+  protected Object openFrameImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, final Runnable onClosing, final Runnable onClose) {
     
-    // close if already open
-    close(key);
-
     // Create a frame
     final JInternalFrame frame = new JInternalFrame(title, true, true, true, true) {
-      /**
-       * our dispose serves as onClose - WindowListener.onClose() is one frame too late
-       */
+      /** our dispose serves as onClose - WindowListener.onClose() is one frame too late */
       public void dispose() {
-        if (key!=null) {
-          // forget and keep bounds
-          forget(key, getBounds(), registry);
-        }
+        // forget and keep bounds
+        closeNotify(key, getBounds(), isMaximum());
         // callback?
-        if (onClose!=null) onClose.run();
+        if (onClose!=null) 
+          onClose.run();
         // continue
         super.dispose();
       }
-
     };
 
     // setup looks
@@ -154,20 +129,21 @@ public class LightweightWindowManager extends DefaultWindowManager {
       });
     }
 
-    // remember
-    remember(key, frame, registry);
-
     // place
     JDesktopPane desktop = getDesktop(title, image);
     Dimension screen = desktop.getSize();
     
-    Rectangle box = registry.get(key,(Rectangle)null);
-    if (box==null||key==null) { 
+    if (bounds==null) { 
       frame.pack();
       Dimension dim = frame.getSize();
-      box = new Rectangle(screen.width/2-dim.width/2, screen.height/2-dim.height/2,dim.width,dim.height);
+      bounds = new Rectangle(screen.width/2-dim.width/2, screen.height/2-dim.height/2,dim.width,dim.height);
     }
-    frame.setBounds(clip(box, screen));
+    frame.setBounds(clip(bounds, screen));
+    
+    if (maximized) try {
+      frame.setMaximum(true);
+    } catch (PropertyVetoException veto) {
+    }
 
     // show
     desktop.add(frame);
@@ -175,6 +151,7 @@ public class LightweightWindowManager extends DefaultWindowManager {
     frame.show();
     
     // done
+    return frame;
   }
   
   /**
