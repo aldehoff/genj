@@ -108,7 +108,26 @@ public class TagPath {
     // prepare our hash
     hash = other.hash+tag.hashCode();
   }
-
+  
+  /**
+   * Constructor for TagPath
+   */
+  public TagPath(TagPath other, int pos, int selector) {
+    
+    // setup len
+    len = other.len;
+  
+    // copy and change
+    tags = new String[len];
+    System.arraycopy(other.tags, 0, tags, 0, other.len);
+    
+    tags[pos] = get(pos)+"#"+selector;
+    
+    // prepare our hash
+    hash = other.hash-other.tags[pos].hashCode()+tags[pos].hashCode();
+    
+  }
+  
   /**
    * Constructor for TagPath
    * @param path path as colon separated string value c:b:a
@@ -299,7 +318,7 @@ public class TagPath {
   public int length() {
     return len;
   }
-  
+    
   /**
    * Returns the path as a string
    */
@@ -349,6 +368,6 @@ public class TagPath {
     }
     return result;
   }
-  
+
 
 } //TagPath
