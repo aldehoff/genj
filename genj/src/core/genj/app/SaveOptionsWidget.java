@@ -26,6 +26,7 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.io.Filter;
 import genj.io.GedcomWriter;
+import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.TextFieldWidget;
 import genj.view.FilterSupport;
@@ -55,6 +56,8 @@ import javax.swing.JTextField;
   private JCheckBox[] checkViews;
   private JTextField  textTags, textValues;
   private JComboBox   comboEncodings;
+  private Resources resources = Resources.get(this);
+  
   
   /** filters */
   private FilterSupport[] filterViews;
@@ -66,7 +69,7 @@ import javax.swing.JTextField;
     
     // Options
     Box options = new Box(BoxLayout.Y_AXIS);
-    options.add(new JLabel("Encoding"));
+    options.add(new JLabel(resources.getString("save.options.encoding")));
     comboEncodings = new ChoiceWidget(GedcomWriter.ENCODINGS, GedcomWriter.ANSEL);
     comboEncodings.setEditable(false);
     options.add(comboEncodings);
@@ -80,11 +83,11 @@ import javax.swing.JTextField;
     
     // property filter
     Box props = new Box(BoxLayout.Y_AXIS);
-    props.add(new JLabel("Exclude Tags (or Paths):"));
-    textTags = new TextFieldWidget("e.g. \"INDI:BIRT:NOTE, ADDR\"", 10).setTemplate(true);
+    props.add(new JLabel(resources.getString("save.options.exclude.tags")));
+    textTags = new TextFieldWidget(resources.getString("save.options.exclude.tags.eg"), 10).setTemplate(true);
     props.add(textTags);
-    props.add(new JLabel("Exclude Values containing:"));
-    textValues = new TextFieldWidget("e.g. \"secret, private\"", 10).setTemplate(true);
+    props.add(new JLabel(resources.getString("save.options.exclude.values")));
+    textValues = new TextFieldWidget(resources.getString("save.options.exclude.values.eg"), 10).setTemplate(true);
     props.add(textValues);
     
     // others filter
@@ -97,10 +100,10 @@ import javax.swing.JTextField;
     }
     
     // layout
-    add("Options", options);
-    add("Filter by Entities", types);
-    add("Filter by Properties"   , props);
-    add("Filter by View", others);
+    add(resources.getString("save.options"                  ), options);
+    add(resources.getString("save.options.filter.entities"  ), types);
+    add(resources.getString("save.options.filter.properties"), props);
+    add(resources.getString("save.options.filter.views"     ), others);
     
     // done
   }
