@@ -20,11 +20,12 @@
  * About Menu class - Feedback
  * This class creates the content on the Feedback tabbed pane in the
  * About Menu application
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.8 2002-05-20 13:47:38 island1 Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/core/genj/app/FeedbackPanel.java,v 1.9 2002-05-20 16:42:13 island1 Exp $
  * @author Francois Massonneau <frmas@free.fr>
  * @version 1.3
  *
  */
+
 
 package genj.app;
 
@@ -81,7 +82,7 @@ public class FeedbackPanel extends JPanel implements ActionListener
     
   }  // Closes constructor
   
-  // This method build the Up Panel
+  // This method build the panelUp
   private void buildPanelUp() {
     panelUp = new JPanel();
     panelUp.setLayout(new BorderLayout());
@@ -99,7 +100,7 @@ public class FeedbackPanel extends JPanel implements ActionListener
     panelUp.add(ta1Panel1, BorderLayout.CENTER);
   }
   
-    // This method build the Middle Panel
+    // This method build the panelMiddle
   private void buildPanelMiddle() {
     panelMiddle = new JPanel(new BorderLayout());
     panelMiddle.setBackground(Color.white);
@@ -117,7 +118,7 @@ public class FeedbackPanel extends JPanel implements ActionListener
     panelMiddle.add(jspta1, BorderLayout.CENTER);
   }
   
-    // This method build the Bottom Panel
+    // This method build the panelBottom
   private void buildPanelBottom() {
     panelBottom = new JPanel();
     panelBottom.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -192,39 +193,39 @@ public class FeedbackPanel extends JPanel implements ActionListener
         ta1Panel2.setText(App.resources.getString("cc.about.tab3.text2.6"));
         b1Panel3.setText(App.resources.getString("cc.about.tab3.clickagain.button"));
         _clickMeMode = false;
+      }
+      else {
+        // Save text to file
+        ta1Panel2.setText(getSystemInfo());
+        b1Panel3.setText(App.resources.getString("cc.about.tab3.save.button"));
+        _clickMeMode = true;
+      }
     }
-    else {
-      // Save text to file
-      ta1Panel2.setText(getSystemInfo());
-      b1Panel3.setText(App.resources.getString("cc.about.tab3.save.button"));
-      _clickMeMode = true;
+    if (source == b2Panel3) {
+      if (_clickMeMode) {
+        try {
+          String inputFileName = "feedback.txt";
+          File inputFile = new File(inputFileName);
+          // Code to load a text from a file
+          if (inputFile.length() > 0) {
+            FileInputStream in = new FileInputStream(inputFile);
+            byte bt[] = new byte[(int)inputFile.length()];
+            in.read(bt);
+            s = new String(bt);
+            in.close();
+            ta1Panel2.setText("");
+            ta1Panel2.setText(s);
+          }
+          else {
+            ta1Panel2.setText(getSystemInfo());
+          }
+        }
+        // If something goes wrong, I try to catch the error and display something
+        catch(java.io.IOException e) {
+          System.out.println("Cannot read from text file feedback.txt");
+        }
+      }
     }
-   }
-   if (source == b2Panel3) {
-     if (_clickMeMode) {
-       try {
-         String inputFileName = "feedback.txt";
-         File inputFile = new File(inputFileName);
-         // Code to load a text from a file
-         if (inputFile.length() > 0) {
-           FileInputStream in = new FileInputStream(inputFile);
-           byte bt[] = new byte[(int)inputFile.length()];
-           in.read(bt);
-           s = new String(bt);
-           in.close();
-           ta1Panel2.setText("");
-           ta1Panel2.setText(s);
-         }
-         else {
-           ta1Panel2.setText(getSystemInfo());
-         }
-       }
-       // If something goes wrong, I try to catch the error and display something
-       catch(java.io.IOException e) {
-         System.out.println("Cannot read from text file feedback.txt");
-       }
-     }
-   }
   }
   
 } // Closes class
