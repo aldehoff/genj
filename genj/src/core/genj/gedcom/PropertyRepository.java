@@ -143,7 +143,7 @@ public class PropertyRepository extends PropertyXRef {
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    repository.addForeignXRef(fxref);
+    repository.getProperty().addProperty(fxref);
 
     // ... and point
     setTarget(fxref);

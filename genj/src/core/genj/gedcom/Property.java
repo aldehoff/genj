@@ -251,7 +251,8 @@ public abstract class Property implements Comparable {
     children.add(prop);
 
     // We have to remember this as a new known (sub-)property
-    getMetaDefinition(getTag()).addSubTag(prop.getTag());
+    if (!prop.isTransient())
+      getMetaDefinition(getTag()).addSubTag(prop.getTag());
 
     // Done
   }
@@ -970,6 +971,15 @@ public abstract class Property implements Comparable {
    */
   public String toString() {
     return getValue();
+  }
+  
+  /**
+   * Whether this property is transient and therfor shouldn't
+   * - act as a template
+   * - be saved
+   */
+  public boolean isTransient() {
+    return false;
   }
 
   /**

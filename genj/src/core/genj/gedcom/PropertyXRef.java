@@ -31,7 +31,7 @@ public abstract class PropertyXRef extends Property {
   private PropertyXRef target;
 
   /** the value for a broken xref */
-  protected String       value ;
+  private String       value ;
 
   /**
    * Constructor with reference
@@ -150,7 +150,7 @@ public abstract class PropertyXRef extends Property {
     if (target instanceof Entity) {
       // .. create a 'substitute' foreign x-ref 
       PropertyForeignXRef fx = new PropertyForeignXRef(this);
-      ((Entity)target).addForeignXRef(fx);
+      ((Entity)target).getProperty().addProperty(fx);
       target = fx;
     }
 
@@ -162,6 +162,15 @@ public abstract class PropertyXRef extends Property {
     this.value =null  ;
 
     // Done
+  }
+  
+
+  /**
+   * Returns this reference's target
+   * @return target or null
+   */  
+  public Property getTarget() {
+    return target;
   }
 
   /**

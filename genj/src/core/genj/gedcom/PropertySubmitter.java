@@ -138,7 +138,7 @@ public class PropertySubmitter extends PropertyXRef {
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    subm.addForeignXRef(fxref);
+    subm.getProperty().addProperty(fxref);
 
     // ... and point
     setTarget(fxref);

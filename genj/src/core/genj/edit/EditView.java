@@ -36,8 +36,10 @@ import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -671,7 +673,6 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     private PropertyTree() {
       super(new PropertyTreeModel(gedcom));
       label.setOpaque(true);
-      label.setFont(getFont());
       ToolTipManager.sharedInstance().registerComponent(this);
       setCellRenderer(this);
       getSelectionModel().addTreeSelectionListener(this);
@@ -750,12 +751,22 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       label.setIcon(prop.getImage(true));
       
       // background
+      Color fg,bg;
       if (selected) {
-        label.setBackground(UIManager.getColor("Tree.selectionBackground"));
-        label.setForeground(UIManager.getColor("Tree.selectionForeground"));
+        bg = UIManager.getColor("Tree.selectionBackground");
+        fg = UIManager.getColor("Tree.selectionForeground");
       } else {
-        label.setBackground(UIManager.getColor("Tree.textBackground"));
-        label.setForeground(UIManager.getColor("Tree.textForeground"));
+        bg = UIManager.getColor("Tree.textBackground");
+        fg = UIManager.getColor("Tree.textForeground");
+      }
+      label.setBackground(bg);
+      label.setForeground(fg);
+      
+      // font
+      if (prop.isTransient()) {
+        label.setFont(getFont().deriveFont(Font.ITALIC));
+      } else {
+        label.setFont(getFont());
       }
 
       // Done
@@ -772,6 +783,8 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       // .. calc property
       Object p = path.getLastPathComponent();
       if (!(p instanceof Property)) return "";
+      // .. transient?
+      if (((Property)p).isTransient()) return null;
       // .. calc information text
       String info = ((Property)p).getInfo();
       if (info==null) return "?";

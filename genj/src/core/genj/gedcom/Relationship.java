@@ -7,8 +7,9 @@ public abstract class Relationship {
   
   /**
    * Perform the relationship
+   * @return the receiver of focus (preferrably)
    */
-  public abstract void apply(Entity entity) throws GedcomException ;  
+  public abstract Entity apply(Entity entity) throws GedcomException ;  
   
   /**
    * A name
@@ -58,7 +59,7 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public void apply(Entity entity) throws GedcomException {
+    public Entity apply(Entity entity) throws GedcomException {
       // must be a PropertyXRef
       if (!(entity.getProperty() instanceof PropertyXRef))
         throw new GedcomException("Can apply relationship to non-xref");
@@ -66,6 +67,8 @@ public abstract class Relationship {
       PropertyXRef xref = (PropertyXRef)Property.createInstance(entity.getProperty().getTag(), "", true);     
       owner.addProperty(xref);
       xref.setTarget((PropertyXRef)entity.getProperty());
+      //  focus stays with owner
+      return owner.getEntity();
     }
 
   } // LinkedBy
@@ -100,9 +103,11 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public void apply(Entity entity) throws GedcomException {
+    public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       family.addChild((Indi)entity);
+      // focus stays with family
+      return family;
     }
     
   } // ChildOf
@@ -137,10 +142,12 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public void apply(Entity entity) throws GedcomException {
+    public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       Fam fam = parent.getFam(true);
       fam.addChild((Indi)entity);
+      // focus stays with parent
+      return parent;
     }
     
   } // ChildOf
@@ -175,10 +182,12 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public void apply(Entity entity) throws GedcomException {
+    public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       Indi indi = (Indi)entity;
       family.setSpouse(indi);
+      // focus stays with family
+      return family;
     }
     
   } // ParentIn
@@ -213,11 +222,13 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public void apply(Entity entity) throws GedcomException {
+    public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       Fam fam = child.getFamc(true);
       Indi indi = (Indi)entity;
       fam.setSpouse(indi);
+      // focus stays with child
+      return child;
     }
     
   } // ParentOf
@@ -252,13 +263,15 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public void apply(Entity entity) throws GedcomException {
+    public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       Fam fam = spouse.getFam(true);
       if (fam.getNoOfSpouses()>=2) { 
         fam = spouse.addFam();
       }
       fam.setSpouse((Indi)entity);
+      // focus stays with spouse
+      return spouse;
     }
     
   } // SpouseOf
@@ -293,10 +306,12 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship#apply(Entity)
      */
-    public void apply(Entity entity) throws GedcomException {
+    public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       Fam fam = sibling.getFamc(true);
       fam.addChild((Indi)entity);
+      // focus stays with sibling
+      return sibling;
     }
     
   } // SiblingOf
@@ -331,13 +346,15 @@ public abstract class Relationship {
     /**
      * @see genj.gedcom.Relationship.AssociatedWith#apply(genj.gedcom.Entity)
      */
-    public void apply(Entity entity) throws GedcomException {
+    public Entity apply(Entity entity) throws GedcomException {
       assume(entity, Indi.class);
       // add association
       PropertyAssociation pa = new PropertyAssociation("ASSO", property.getEntity().getId());
       entity.getProperty().addProperty(pa);
       pa.link();
       pa.addDefaultProperties();
+      // focus changes to entity that got the ASSO
+      return entity;
     }
     
   } //AssociatedWith

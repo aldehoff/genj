@@ -28,7 +28,6 @@ public class Fam extends PropertyFam implements Entity {
 
   private String id = "";
   private Gedcom gedcom;
-  private PropertySet foreignXRefs = new PropertySet();
 
   /**
    * Default constructor
@@ -61,35 +60,6 @@ public class Fam extends PropertyFam implements Entity {
    */
   public void addNotify(Gedcom gedcom) {
     this.gedcom = gedcom;
-  }
-
-  /**
-   * Notification to entity that it has been deleted from a Gedcom
-   */
-  public void delNotify() {
-
-    // Notify to properties
-    super.delNotify();
-
-    // Remove all foreign XRefs
-    foreignXRefs.deleteAll();
-
-    // Break connection
-    this.gedcom = null;
-  }
-
-  /**
-   * Removes a property
-   * This overrides the default behaviour by first
-   * looking in this entity's foreign list
-   */
-  public boolean delProperty(Property which) {
-
-    if (foreignXRefs.contains(which)) {
-      foreignXRefs.delete(which);
-      return true;
-    }
-    return super.delProperty(which);
   }
 
   /**
@@ -324,11 +294,4 @@ public class Fam extends PropertyFam implements Entity {
     return wb.toString();
   }
   
-  /**
-   * Adds a PropertyForeignXRef to this entity
-   */
-  public void addForeignXRef(PropertyForeignXRef fxref) {
-    foreignXRefs.add(fxref);
-  }
-
 } //Fam

@@ -263,7 +263,10 @@ public class GedcomWriter implements Trackable {
 
     int num = prop.getNoOfProperties();
     for (int i=0;i<num;i++) {
-      writeProperty("",prop.getProperty(i));
+      Property pi = prop.getProperty(i);
+      if (!pi.isTransient()) {  
+        writeProperty("",pi);
+      }
     }
 
     line(-1);

@@ -64,6 +64,17 @@ public class TagPath {
 
     // Done
   }
+  
+  /**
+   * Constructor for TagPath
+   */
+  public TagPath(Property[] props) {
+    tags = new String[props.length];
+    for (int i=0; i<props.length; i++) {
+    	tags[i] = props[i].getTag();
+    }
+    position = 0;
+  }
 
   /**
    * Returns the path as a string
@@ -134,7 +145,9 @@ public class TagPath {
 
     p+=":";
     for (int c=0;c<prop.getNoOfProperties();c++) {
-      fillHashtableWithPaths(hash,prop.getProperty(c),p);
+      Property child = prop.getProperty(c);
+      if (!child.isTransient())
+        fillHashtableWithPaths(hash,child,p);
     }
 
   }

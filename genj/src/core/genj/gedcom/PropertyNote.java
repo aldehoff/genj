@@ -138,7 +138,7 @@ public class PropertyNote extends PropertyXRef {
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    note.addForeignXRef(fxref);
+    note.getProperty().addProperty(fxref);
 
     // ... and point
     setTarget(fxref);

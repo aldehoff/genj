@@ -146,7 +146,7 @@ public class PropertySource extends PropertyXRef {
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
-    source.addForeignXRef(fxref);
+    source.getProperty().addProperty(fxref);
 
     // ... and point
     setTarget(fxref);

@@ -39,21 +39,17 @@ public class PropertyForeignXRef extends PropertyXRef {
    * getTag method comment.
    */
   public String getTag() {
-    throw new RuntimeException("getTag is not support by ForeignXRefs");
+    return "";
   }
 
   /**
    * getValue method comment.
    */
   public String getValue() {
-    throw new RuntimeException("getValue is not support by ForeignXRefs");
-  }
-
-  /**
-   * Marks this Property as being invisible
-   */
-  public boolean isVisible() {
-    return false;
+    Property p = getTarget();
+    Entity e = p.getEntity();
+    return "linked through "+new TagPath(e.getProperty().getPathTo(p))+" in "+e.getId();
+    //return "";
   }
 
   /**
@@ -74,14 +70,28 @@ public class PropertyForeignXRef extends PropertyXRef {
    * getImage method comment.
    */
   public ImageIcon getImage(boolean checkValid) {
-    throw new RuntimeException("getImage is not support by ForeignXRefs");
+    return Images.get("ASSO");
   }
 
   /**
    * The expected referenced type
    */
   public int getExpectedReferencedType() {
-    return -1;
+    throw new RuntimeException("getExpectedReferencedType is not support by ForeignXRefs");
   }
 
-}
+  /**
+   * @see genj.gedcom.PropertyForeignXRef#isValid()
+   */
+  public boolean isValid() {
+    return false;
+  }
+
+  /**
+   * @see genj.gedcom.PropertyForeignXRef#isTransient()
+   */
+  public boolean isTransient() {
+    return true; //YES!
+  }
+
+} //PropertyForeignXRef
