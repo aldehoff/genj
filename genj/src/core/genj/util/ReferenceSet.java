@@ -6,7 +6,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * A hashmap that counts the number of This comment is specified in template 'typecomment'. (Window>Preferences>Java>Templates)
+ * A hashmap that counts the number of adds vs. remove per key
+ * a.k.a. a reference count
  */
 public class ReferenceSet extends AbstractSet {
 
