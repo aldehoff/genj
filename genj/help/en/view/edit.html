@@ -3,109 +3,71 @@
 <body>
 <h2><a href="../views.html">Views</a> - Edit View</h2>
 
+<table><tr><td>
+
+ <p>
+  As discussed in the section about <a href="../concepts/gedcom.html">Gedcom</a>
+  one entity consists of a hierarchy of properties and their values.
+  After opening this view it will follow any selection that you might
+  make in any view in GenJ. The hierarchy of properties of the selected 
+  entity will be displayed including symbols that represent each property,
+  the Tags and values.
+ </p>
+ 
+ <p>
+  Explore the tree of properties and use the scrollbars at the right and
+  bottom if necessary. After clicking on a property an editor for that
+  type of property will appear in the bottom half if applicable. Change
+  values there if desired.
+ </p>
+
+ <p>
+  Some of the properties contain references to other entities (e.g. HUSB keeps
+  a reference of a family's husband and FAMS the reference of a spouse's family).
+  Click twice on such a node and the current entity will be switched to that
+  target.
+ </p>
+ 
+</td><td>
+
+  <blockquote><img src="../../images/screenshots/edit1.png"></blockquote>
+
+</td></tr></table>
+
 <p>
-Gedcom suggests one file which consists of an unlimited
-number of <A href="../entities.html">entities</A>. Every
-entity has an unlimited number of properties which
-can be nested in an unlimited number of levels.
-To edit an entity therefore GenJ shows a tree of its
-properties.
+ The plus-button in the toolbar allows to add new properties. An additional
+ property is added as a sub-property of the currently selected property.
+ A dialog will present all Gedcom compliant sub-properties - choose one
+ or more and they're inserted. You can also add properties through custom
+ Tags in the same dialog but it's advised to do so sparingly as to not
+ divert too far from the standard.
 </p>
 
 <p>
-You can open as many Edit Views as you wish - they all
-listen to events on the file they were opened on. Once
-you select an entity in the Table or Tree view, it will
-be shown in this one. In case you want to have one
-Edit View stick to a particular entity, simply select
-it in one of the other views and click on the little
-symbol at the top/right. Now this view sticks to that
-entity.
+ Don't forget the <a href="../concepts/context.html">Context Menu</a> to 
+ perform actions on properties and the entity, too. Try a right-click
+ on one of the displayed nodes and discover what you can do.
 </p>
 
-<p>
-You can browse the property-tree by opening and closing
-sub-trees and selecting individual properties. Once
-selected the property is also displayed in the bottom
-part - here you can edit it.
-</p>
+<h3>Toolbar</h3>
 
 <p>
-Note that there is a number of predefined editors for
-specific properties. Most properties are single-line
-but sometimes they have a special format. For example
-NAME : its format is <B>NAME first /last/</B>.
-If you select a NAME property a special editor will
-appear at the bottom that allows you to edit that
-information in to individual fields. If GenJ doesn't
-know an editor for the selected property or the data
-kept in the property is not well formatted (e.g.
-a wrong date) you still can change that value with the
-default editor.
+  <blockquote><img src="../../images/screenshots/edit2.png"></blockquote>
+ <ol>
+  <li>add a property to selected property (continues in dialog)
+  <li>remove currently selected property
+  <li>move currently selected property up
+  <li>move currently selected property down
+  <li>return to the last entity shown before the current one
+  <li>toggle sticky (stick with current entity - don't follow selection in other view)
+  <li>close view
+ </ol>
 </p>
 
-<p>
-A special case are also links between entities - for
-example if an individual is married he is a husband
-in a family. Gedcom keeps that information by adding
-one property to the family and one to the individual.
-The family knows the property HUSB - the husband or
-WIFE - the wife.
-The individual knows the property FAMS - the family
-in which he/she is a spouse.
-</p>
+<h3>Settings</h3>
 
 <p>
-If you select a property such as HUSB, WIFE, FAMS or
-FAMC an editor appears that looks different depending
-on the link's state:
-<OL>
-<LI> valid link - a button to jump to that linked entity
-<LI> broken link - a textfield to change the reference
- to a future linked entity, a button to find another
- entity to link to by text-search and a button to perform
- the link operation.
-</OL>
-</p>
-
-<p>
-The buttons at the top of this view allow you to
-add or remove properties. This applies to the currently
-selected property. You can also move properties up/down
-in the current level they reside in.
-</p>
-
-<p>
-When adding a property a dialog appears that allows to
-choose from a number of known sub-properties (identified
-by tags). Select one of the properties and a description
-appears in the right window. If you need to add a property
-that is not in the list, select the 2. radio button and
-enter a user-defined tag. Please read about the discussion
-of <A href="../gedcom.html">Gedcom</A> compliancy to
-understand that this has to be done carefully.
-</p>
-
-<p>
-When you select one of the know properties by choosing
-the checkbox at the bottom you can tell GenJ to add the
-default sub-properties, too.
-</p>
-
-<p>
-The buttons at the bottom of this view can be used to
-quickly grow your GEDCOM information from the currently
-shown entity. There are buttons to:
-<ul>
-<li>Create and add a spouse
-<li>Create and add a child
-<li>Create and add a parent
-<li>Create and attach a note
-<li>Create and attach a multimedia object
-</ul>
-The new entity will be selected automatically so you can
-enter information very quickly e.g. starting with an
-individual.
+ There are no settings for this view at this point.
 </p>
 
 </body>
