@@ -117,7 +117,7 @@ public class PropertyAge extends Property {
    */
   public int compareTo(Object o) {
     PropertyAge other = (PropertyAge)o;
-    if (ageAsString!=null||other.ageAsString==null)
+    if (!isValid()||!other.isValid())
       return super.compareTo(o);
     return age.compareTo(other.age);
   }

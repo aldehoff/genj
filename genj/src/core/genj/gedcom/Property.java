@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
@@ -57,6 +58,9 @@ public abstract class Property implements Comparable {
 
   /** whether we're private or not */
   private boolean isPrivate = false;
+  
+  /** resources */
+  protected final static Resources resources = Gedcom.resources;
 
   /**
    * Lifecycle - callback when being added to parent

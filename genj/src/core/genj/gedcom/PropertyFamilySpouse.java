@@ -55,7 +55,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
    * @return warning as <code>String</code>, <code>null</code> when no warning
    */
   public String getDeleteVeto() {
-    return "The connection to the referenced family and its reference to this spouse are lost";
+    return resources.getString("prop.fams.veto");
   }
 
   /**

@@ -49,7 +49,7 @@ public class PropertyAssociation extends PropertyXRef {
    * @return warning as <code>String</code>, <code>null</code> when no warning
    */
   public String getDeleteVeto() {
-    return "The association with the referenced entity is lost";
+    return resources.getString("prop.asso.veto");
   }
 
   /**

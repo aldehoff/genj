@@ -224,8 +224,9 @@ public abstract class PropertyXRef extends Property {
    * @see genj.gedcom.Property#getDeleteVeto()
    */
   public String getDeleteVeto() {
-    if (getReferencedEntity()==null) return null;
-    return "The reference to the entity is deleted but the entity itself stays";
+    if (getReferencedEntity()==null) 
+      return null;
+    return resources.getString("prop.xref.veto");
   }
 
   /**

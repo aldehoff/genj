@@ -71,7 +71,7 @@ public class PropertyChild extends PropertyXRef {
    * @return warning as <code>String</code>, <code>null</code> when no warning
    */
   public String getDeleteVeto() {
-    return "The connection to the referenced child and its reference to this family are lost";
+    return resources.getString("prop.chil.veto");
   }
 
   /**
