@@ -11,7 +11,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Entity;
 import genj.gedcom.Indi;
 import genj.gedcom.Fam;
-import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 import genj.report.Options;
 import genj.report.Report;
