@@ -46,14 +46,14 @@ import java.util.List;
    * 
    * @see gj.model.MutableGraph#createArc(Node, Node, Path)
    */
-  public Arc createArc(Node from, Node to, Path path) {
+  public Arc addArc(Node from, Node to, Path path) {
     Arc result;
     // reversed if there is a path from-to already
     if (isPath(to,from)) {
-      result = super.createArc(to, from, path);
+      result = super.addArc(to, from, path);
       getReversedArcs().add(result);
     } else {
-      result = super.createArc(from, to, path);
+      result = super.addArc(from, to, path);
     }
     return result;
   }

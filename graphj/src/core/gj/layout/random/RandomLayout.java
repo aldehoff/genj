@@ -86,16 +86,15 @@ public class RandomLayout extends AbstractLayout implements Layout {
   /**
    * @see Layout#applyTo(Graph)
    */
-  public void layout(Graph graph) throws LayoutException {
+  public Rectangle2D layout(Graph graph, Rectangle2D bounds) throws LayoutException {
     
     // something to do for me?
-    if (graph.getNodes().isEmpty()) return;
+    if (graph.getNodes().isEmpty()) return bounds;
     
     // get a seed
     Random random = new Random(seed++);
 
     // place the nodes    
-    Rectangle2D canvas = graph.getBounds();
     Iterator nodes = graph.getNodes().iterator();
     while (nodes.hasNext()) {
       
@@ -103,10 +102,10 @@ public class RandomLayout extends AbstractLayout implements Layout {
       Rectangle2D nodeCanvas = node.getShape().getBounds2D();
 
       double 
-        x = canvas.getMinX() - nodeCanvas.getMinX(),
-        y = canvas.getMinY() - nodeCanvas.getMinY(),
-        w = canvas.getWidth() - nodeCanvas.getWidth(),
-        h = canvas.getHeight() - nodeCanvas.getHeight();
+        x = bounds.getMinX() - nodeCanvas.getMinX(),
+        y = bounds.getMinY() - nodeCanvas.getMinY(),
+        w = bounds.getWidth() - nodeCanvas.getWidth(),
+        h = bounds.getHeight() - nodeCanvas.getHeight();
 
       node.getPosition().setLocation( 
         isApplyHorizontally ? x + random.nextDouble()*w : node.getPosition().getX(), 
@@ -129,6 +128,7 @@ public class RandomLayout extends AbstractLayout implements Layout {
     }
     
     // done
+    return bounds;
   }
 
 }

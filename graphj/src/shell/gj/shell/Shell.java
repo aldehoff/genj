@@ -15,33 +15,32 @@
  */
 package gj.shell;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.SwingUtilities;
-
-import gj.model.factory.Factory;
 import gj.io.GraphReader;
 import gj.io.GraphWriter;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
 import gj.layout.random.RandomLayout;
-
 import gj.model.MutableGraph;
-
+import gj.model.factory.Factory;
 import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.Properties;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import javax.swing.BorderFactory;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.SwingUtilities;
 
 /**
  * A Shell for GraphJ's core functions
@@ -173,20 +172,18 @@ public class Shell {
   /**
    * Creates a MutableGraph
    */
-  private MutableGraph createMutableGraph(Rectangle2D dim) {
-    MutableGraph result = new gj.model.impl.MutableGraphImpl();
-    if (dim!=null) result.getBounds().setRect(dim);
-    return result;
+  private MutableGraph createMutableGraph() {
+    return new gj.model.impl.MutableGraphImpl();
   }
   
   /**
    * Sets the graph we're looking at
    */
-  private void setGraph(MutableGraph graph) {
+  private void setGraph(MutableGraph graph, Rectangle2D bounds) {
     // remember
     this.graph=graph;
     // propagate
-    graphWidget.setGraph(graph);
+    graphWidget.setGraph(graph, bounds.getBounds());
     layoutWidget.setGraph(graph);
   }
   
@@ -202,13 +199,19 @@ public class Shell {
       content.commit();
     }
     // create the graph      
-    Rectangle2D box = new Rectangle2D.Double(0,0,graphWidget.getWidth(),graphWidget.getHeight());
-    MutableGraph graph = createMutableGraph(box);
-    factory.create(graph,graphWidget.shapes[0]);
-    setGraph(graph);
+    MutableGraph graph = createMutableGraph();
+    Rectangle2D bounds = factory.create(graph, createGraphBounds(), graphWidget.shapes[0]);
+    setGraph(graph, bounds.getBounds());
     // done
   }
-
+  
+  /**
+   * Creates a graph bounds rectangle
+   */
+  private Rectangle createGraphBounds() {
+    return new Rectangle(0,0,graphWidget.getWidth(),graphWidget.getHeight());
+  }
+  
   /**
    * How to handle - run a layout
    */
@@ -227,27 +230,23 @@ public class Shell {
       Layout layout = layoutWidget.getSelectedLayout();
       // tell the graph Widget
       graphWidget.setCurrentLayout(layout);
-      // increase size of Graph to visible maximum for starters
-      graph.getBounds().setRect(0, 0, graphWidget.getWidth(), graphWidget.getHeight());
       // apply it?
+      Rectangle bounds = createGraphBounds();
       if (!isAnimation) {
         try {
-          layout.layout(graph);
+          bounds = layout.layout(graph, bounds).getBounds();
+          graphWidget.setGraph(graph, bounds);
         } catch (LayoutException e) {
-          new RandomLayout().layout(graph);
+          new RandomLayout().layout(graph, bounds);
           // can't handle it really
           throw e;
-        } finally {
-          // reflect change      
-          graphWidget.revalidate();
         }
         // dont' continue
         return false;
       }
       // create an animation
-      animation = new Animation(graph, layout);
-      // rip the layout from the graph widget so now 
-      // intermediates are rendered
+      animation = new Animation(graph, layout, bounds);
+      // rip the layout from the graph widget  
       graphWidget.setCurrentLayout(null);
       // continue
       return true;
@@ -259,11 +258,12 @@ public class Shell {
         while (true) {
           if (Thread.currentThread().isInterrupted()) break;
           if (!animation.perform()) break;
-          graphWidget.revalidate();
+          graphWidget.setGraph(graph, animation.getBounds().getBounds());
         }
       } catch (InterruptedException e) {
         // ignore
       }
+      graphWidget.setGraph(graph, animation.getBounds().getBounds());
       graphWidget.setCurrentLayout(layoutWidget.getSelectedLayout());
     }
     
@@ -308,9 +308,9 @@ public class Shell {
         if (JFileChooser.APPROVE_OPTION!=fc.showOpenDialog(frame)) return;
         file = fc.getSelectedFile();
       }
-      MutableGraph result = createMutableGraph(null);
-      new GraphReader(new FileInputStream(file)).read(result);
-      setGraph(result);
+      MutableGraph result = createMutableGraph();
+      Rectangle2D bounds = new GraphReader(new FileInputStream(file)).read(result);
+      setGraph(result, bounds);
     }
   }
 
@@ -340,7 +340,7 @@ public class Shell {
   protected class ActionNewGraph extends UnifiedAction {
     private Factory factory;
     protected ActionNewGraph(Factory factory) { 
-      super(factory.getName());
+      super(factory.toString());
       this.factory = factory;
     }
     public void execute() {

@@ -80,12 +80,20 @@ public class GraphRenderer {
   public void renderNode(Node node, Graphics2D graphics) {
 
     // draw its shape
+    Point2D pos = node.getPosition();
     graphics.setColor(Color.black);
-    draw(node.getShape(), node.getPosition(), graphics);
+    draw(node.getShape(), pos, graphics);
 
     // and content    
     Object content = node.getContent();
-    if (content!=null) {
+    if (content==null) return;
+    
+    // another graph?
+    if (content instanceof Graph) {
+      graphics.translate( pos.getX(), pos.getY());
+      render((Graph)content, null, graphics);
+      graphics.translate(-pos.getX(), -pos.getY());
+    } else {
       draw(content.toString(), node.getPosition(), graphics);
     }
 

@@ -23,7 +23,9 @@ import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcHelper;
 import gj.util.ModelHelper;
+
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -52,14 +54,13 @@ public class HierarchicalLayout extends AbstractLayout implements Layout {
   /** whether to layout lines orthogonally or not */
   //public boolean isOrthogonalLines;
   
-  
   /**
-   * @see gj.layout.Layout#applyTo(Graph)
+   * @see gj.layout.Layout#layout(gj.model.Graph, java.awt.geom.Rectangle2D)
    */
-  public void layout(Graph graph) throws LayoutException {
+  public Rectangle2D layout(Graph graph, Rectangle2D bounds) throws LayoutException {
     
     // something to do?
-    if (graph.getNodes().isEmpty()) return;
+    if (graph.getNodes().isEmpty()) return bounds;
     
     // Algorithm :
     // (1) create a layered acyclic graph
@@ -74,9 +75,8 @@ public class HierarchicalLayout extends AbstractLayout implements Layout {
     layoutArcs(lag);
     
     // calculate bounds
-    graph.getBounds().setRect(ModelHelper.getBounds(graph.getNodes()));
+    return ModelHelper.getBounds(graph.getNodes());
 
-    // Done
   }
   
   /**

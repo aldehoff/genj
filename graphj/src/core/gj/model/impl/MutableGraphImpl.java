@@ -20,9 +20,9 @@ import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.MutableGraph;
 import gj.model.Node;
+
 import java.awt.Shape;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,9 +37,6 @@ import java.util.Map;
  */
 public class MutableGraphImpl implements MutableGraph {
   
-  /** the bounds */
-  private Rectangle2D bounds = new Rectangle2D.Double();
-
   /** the contained nodes */
   protected Collection nodes = new HashSet(10);
   private Collection immutableNodes = Collections.unmodifiableCollection(nodes);
@@ -69,7 +66,7 @@ public class MutableGraphImpl implements MutableGraph {
     Iterator it = graph.getNodes().iterator();
     while (it.hasNext()) {
       Node orig = (Node)it.next();
-      Node clone = createNode(orig.getPosition(), orig.getShape(), orig.getContent());
+      Node clone = addNode(orig.getPosition(), orig.getShape(), orig.getContent());
       orig2clone.put(orig,clone);
     }
     
@@ -77,7 +74,7 @@ public class MutableGraphImpl implements MutableGraph {
     it = graph.getArcs().iterator();
     while (it.hasNext()) {
       Arc orig = (Arc)it.next();
-      createArc((Node)orig2clone.get(orig.getStart()), (Node)orig2clone.get(orig.getEnd()), orig.getPath() );
+      addArc((Node)orig2clone.get(orig.getStart()), (Node)orig2clone.get(orig.getEnd()), orig.getPath() );
     }
     
     // done
@@ -86,7 +83,7 @@ public class MutableGraphImpl implements MutableGraph {
   /**
    * @see MutableGraph#createArc(Node, Node)
    */
-  public Arc createArc(Node from, Node to, Path path) {
+  public Arc addArc(Node from, Node to, Path path) {
 
     NodeImpl 
       iFrom = getImpl(from),
@@ -114,7 +111,7 @@ public class MutableGraphImpl implements MutableGraph {
   /**
    * @see MutableGraph#createNode(Point2D, Shape, Object)
    */
-  public Node createNode(Point2D position, Shape shape, Object content) {
+  public Node addNode(Point2D position, Shape shape, Object content) {
     NodeImpl node = new NodeImpl(position, shape, content);
     nodes.add(node);
     return node;
@@ -145,14 +142,6 @@ public class MutableGraphImpl implements MutableGraph {
    */
   public Collection getArcs() {
     return immutableArcs;
-  }
-
-  /**
-   * @see Graph#getBounds()
-   */
-  public Rectangle2D getBounds() {
-    // done
-    return bounds;
   }
 
   /**

@@ -29,6 +29,13 @@ import java.util.List;
 public abstract class AbstractFactory implements Factory {
 
   /**
+   * Helper that returns Point2D for given args
+   */
+  protected Point2D getPoint(double x, double y) {
+    return new Point2D.Double(x, y);
+  }
+
+  /**
    * Helper that returns the node with minimum degree from a list
    */
   protected Node getMinDegNode(List list, boolean remove) {
@@ -91,4 +98,12 @@ public abstract class AbstractFactory implements Factory {
     
   }
 
+  /**
+   * @see java.lang.Object#toString()
+   */
+  public String toString() {
+    String s = getClass().getName();
+    return s.substring(s.lastIndexOf('.')+1);
+  }
+  
 } //AbstractFactory

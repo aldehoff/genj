@@ -24,6 +24,7 @@ import gj.model.Graph;
 import gj.model.Node;
 import gj.util.ArcHelper;
 import gj.util.ModelHelper;
+
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 
@@ -74,12 +75,12 @@ public class CircularLayout extends AbstractLayout implements Layout {
   }
   
   /**
-   * @see gj.layout.Layout#applyTo(Graph)
+   * @see gj.layout.Layout#layout(gj.model.Graph, java.awt.geom.Rectangle2D)
    */
-  public void layout(Graph graph) throws LayoutException {
+  public Rectangle2D layout(Graph graph, Rectangle2D bounds) throws LayoutException {
     
     // no purpose in empty|1-ary graph
-    if (graph.getNodes().size()<2) return;
+    if (graph.getNodes().size()<2) return bounds;
     
     // create a CircularGraph
     CircularGraph cgraph = new CircularGraph(graph, isSingleCircle);
@@ -105,7 +106,7 @@ public class CircularLayout extends AbstractLayout implements Layout {
     }
     
     // done
-    graph.getBounds().setRect(ModelHelper.getBounds(graph.getNodes()));
+    return ModelHelper.getBounds(graph.getNodes());
   } 
   
   /**

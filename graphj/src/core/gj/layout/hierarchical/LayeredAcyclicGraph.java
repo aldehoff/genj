@@ -88,11 +88,11 @@ import java.util.Map;
     
     int i=0; nodes[i++] = arc.getStart();
     for (int n=0; n<number; n++) {
-      nodes[i++]=createNode(new Point2D.Double(), null, null);
-      createArc(nodes[i-2], nodes[i-1], new Path());
+      nodes[i++]=addNode(new Point2D.Double(), null, null);
+      addArc(nodes[i-2], nodes[i-1], new Path());
     }
     nodes[i++] = arc.getEnd();
-    createArc(nodes[i-2], nodes[i-1], new Path());
+    addArc(nodes[i-2], nodes[i-1], new Path());
     
     // remember
     broken.add(new BrokenArc(nodes, path, isReversed));
@@ -106,10 +106,10 @@ import java.util.Map;
    * 
    * @see gj.model.MutableGraph#createArc(Node, Node, Path)
    */
-  public Arc createArc(Node from, Node to, Path path) {
+  public Arc addArc(Node from, Node to, Path path) {
     
     // delegate the create
-    Arc arc = super.createArc(from,to,path);
+    Arc arc = super.addArc(from,to,path);
 
     // check layers of 'from' and 'to'
     int fromLayer = getLayer(from);
@@ -174,10 +174,10 @@ import java.util.Map;
    * 
    * @see gj.model.MutableGraph#createNode(Point2D, Shape, Object)
    */
-  public Node createNode(Point2D position, Shape shape, Object content) {
+  public Node addNode(Point2D position, Shape shape, Object content) {
     
     // delegate the create
-    Node result = super.createNode(position, shape, content);
+    Node result = super.addNode(position, shape, content);
     
     // remember layer '0'
     setLayer(result, Integer.MAX_VALUE);

@@ -89,7 +89,7 @@ public class GraphReader implements PathIteratorKnowHow  {
   /**
    * Read - Graph
    */
-  public void read(MutableGraph graph) throws IOException {
+  public Rectangle2D read(MutableGraph graph) throws IOException {
     
     try {
       
@@ -117,7 +117,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       }
       
       // post-work : graph's bounds
-      graph.getBounds().setRect(ModelHelper.getBounds(graph.getNodes()));
+      return ModelHelper.getBounds(graph.getNodes());
       
       // done
     } catch (SAXException e) {
@@ -158,7 +158,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       // the content
       String content = atts.getValue("c");
       // create the node
-      Node node = graph.createNode(pos,shape,content);
+      Node node = graph.addNode(pos,shape,content);
       // it's arcs
       List arcs = new ArrayList(5);
       for (int a=0;;a++) {
@@ -182,7 +182,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       Node
         s = (Node)ids2nodes.get(atts.getValue("s")),
         e = (Node)ids2nodes.get(atts.getValue("e"));
-      arc = graph.createArc(s, e, new Path());
+      arc = graph.addArc(s, e, new Path());
       ids2arcs.put(atts.getValue("id"),arc);
     }
     protected ElementHandler start(String name, Attributes atts) {

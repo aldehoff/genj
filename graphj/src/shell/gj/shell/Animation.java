@@ -35,6 +35,9 @@ import java.util.Iterator;
   /** the graph */
   private Graph graph;
   
+  /** original graph bounds */
+  private Rectangle2D originalBounds;
+  
   /** the moves */
   private Movement[] moves;
   
@@ -54,7 +57,10 @@ import java.util.Iterator;
   /**
    * Constructor
    */
-  /*package*/ Animation(Graph graph, Layout layout) throws LayoutException {
+  /*package*/ Animation(Graph graph, Layout layout, Rectangle2D bounds) throws LayoutException {
+    
+    // preset original bounds to given bounds
+    originalBounds = bounds;
     
     // something to animate?
     if (graph.getNodes().isEmpty()) return;
@@ -79,10 +85,10 @@ import java.util.Iterator;
     
     // do the layout
     try {
-      layout.layout(graph);
+      originalBounds = layout.layout(graph, bounds);
     } catch (LayoutException e) {
       // make sure the graph is at least some how in place
-      new RandomLayout().layout(graph);
+      new RandomLayout().layout(graph, bounds);
       // can't handle it really
       throw e;
     }
@@ -104,11 +110,16 @@ import java.util.Iterator;
   /**
    * Stops the animation by setting it to the last frame
    */
-  public boolean stop() {
+  private boolean stop() {
     // perform step to final frame
     if (moves!=null) perform(moves,1D);
     // stop all moves
     moves=null;
+    // restore original bounds
+    minx = originalBounds.getMinX();
+    miny = originalBounds.getMinY();
+    maxx = originalBounds.getMaxX();
+    maxy = originalBounds.getMaxY();
     // done
     return false;
   }
@@ -165,13 +176,17 @@ import java.util.Iterator;
         
       }
       
-      // check the graph's bounds    
-      graph.getBounds().setRect(minx,miny,maxx-minx,maxy-miny);
-
     }
         
     // done
     return done;
+  }
+
+  /**
+   * Current bounds
+   */  
+  public Rectangle2D getBounds() {
+    return new Rectangle2D.Double(minx,miny,maxx-minx,maxy-miny);
   }
 
   /**

@@ -30,7 +30,7 @@ public interface Node {
   public Point2D getPosition();
   
   /** 
-   * Its shape (at the position) - immutable
+   * Its shape (at the position) - immutable or mutable
    */
   public Shape getShape();
   

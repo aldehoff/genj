@@ -28,7 +28,7 @@ public interface MutableGraph extends Graph {
   /**
    * Creates an Arc
    */
-  public Arc createArc(Node from, Node to, Path path);
+  public Arc addArc(Node from, Node to, Path path);
 
   /**
    * Removes an Arc
@@ -38,7 +38,7 @@ public interface MutableGraph extends Graph {
   /**
    * Creates a Node
    */
-  public Node createNode(Point2D position, Shape shape, Object content);
+  public Node addNode(Point2D position, Shape shape, Object content);
 
   /**
    * Removes a Node

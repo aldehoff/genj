@@ -17,6 +17,8 @@ package gj.layout;
 
 import gj.model.Graph;
 
+import java.awt.geom.Rectangle2D;
+
 /**
  * What a layout is all about - Implementors provide layout
  * functionality in <i>applyTo(Graph graph)</i>. 
@@ -25,7 +27,10 @@ public interface Layout {
 
   /** 
    * Applies the layout to a given graph
+   * @param graph the graph to layout
+   * @param bounds bounds to adhere to if possible (not guaranteed)
+   * @return resulting bounds 
    */
-  public void layout(Graph graph) throws LayoutException;
+  public Rectangle2D layout(Graph graph, Rectangle2D bounds) throws LayoutException;
   
-}
+} //Layout

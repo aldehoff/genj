@@ -19,9 +19,11 @@ import gj.awt.geom.Path;
 import gj.model.MutableGraph;
 import gj.model.Node;
 import gj.util.ArcHelper;
+import gj.util.ModelHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,20 +108,20 @@ public class TreeFactory extends AbstractFactory {
       { "1.4.1.2.1.1",  "1.4.1.2.1.2"},
       { "1.4.1.2.1.2" }
     };
-
+    
   /**
-   * @see Factory#create(MutableGraph, Shape)
+   * @see gj.model.factory.Factory#create(gj.model.MutableGraph, java.awt.geom.Rectangle2D, java.awt.Shape)
    */
-  public void create(MutableGraph graph, Shape nodeShape) {
+  public Rectangle2D create(MutableGraph graph, Rectangle2D bounds, Shape nodeShape) {
     
     // We loop through the sample data
     Map nodes = new HashMap(sample.length);
     for (int s = 0; s < sample.length; s++) {
       
       String key = sample[s][0];
-      Point2D pos = super.getRandomPosition(graph.getBounds(),nodeShape);
+      Point2D pos = super.getRandomPosition(bounds,nodeShape);
       
-      Node node = graph.createNode(pos, nodeShape, key);
+      Node node = graph.addNode(pos, nodeShape, key);
       
       nodes.put(key, node);
     }
@@ -130,22 +132,15 @@ public class TreeFactory extends AbstractFactory {
         String key = sample[s][c];        
         Node to = (Node)nodes.get(key);
         if (Math.random()>0.5) {
-          ArcHelper.update(graph.createArc(from, to, new Path()));
+          ArcHelper.update(graph.addArc(from, to, new Path()));
         } else {
-          ArcHelper.update(graph.createArc(to, from, new Path()));
+          ArcHelper.update(graph.addArc(to, from, new Path()));
         }
       }
     }
     
     // Done    
+    return ModelHelper.getBounds(nodes.values());
   }
 
-  
-  /**
-   * @see IGraphFactory#getName()
-   */
-  public String getName() {
-    return "Tree";
-  }
-
-}
+} //TreeFactory

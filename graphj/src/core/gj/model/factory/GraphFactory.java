@@ -21,6 +21,7 @@ import gj.model.MutableGraph;
 import gj.model.Node;
 import gj.util.ArcHelper;
 import gj.util.ModelHelper;
+
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -94,20 +95,21 @@ public class GraphFactory extends AbstractFactory {
   }
   
   /**
-   * @see Factory#create(MutableGraph, Shape)
+   * @see gj.model.factory.Factory#create(gj.model.MutableGraph, java.awt.geom.Rectangle2D, java.awt.Shape)
    */
-  public void create(MutableGraph graph, Shape nodeShape) {
+  public Rectangle2D create(MutableGraph graph, Rectangle2D bounds, Shape nodeShape) {
     
     // create nodes
-    createNodes(graph,graph.getBounds(),nodeShape);
+    createNodes(graph,bounds,nodeShape);
     
     // create arcs
     createArcs(graph);
     
     // done
+    return ModelHelper.getBounds(graph.getNodes());
   }
   
-    /**
+  /**
    * Creates Nodes
    */
   private void createNodes(MutableGraph graph, Rectangle2D canvas, Shape shape) {
@@ -116,7 +118,7 @@ public class GraphFactory extends AbstractFactory {
     for (int n=0;n<numNodes;n++) {
       Point2D position = getRandomPosition(canvas,shape);
       String content = ""+(n+1);
-      Node node = graph.createNode(position, shape, content);
+      Node node = graph.addNode(position, shape, content);
     }
     
     // done
@@ -143,7 +145,7 @@ public class GraphFactory extends AbstractFactory {
       for (int j=i+1;j<n;j++) {
         Node from = nodes[i];
         Node to   = nodes[j];
-        ArcHelper.update(graph.createArc(from,to,new Path()));
+        ArcHelper.update(graph.addArc(from,to,new Path()));
       }
     }
     
@@ -194,7 +196,7 @@ public class GraphFactory extends AbstractFactory {
       while (true) {
         Node other = getRandomNode(others,true);
         if ((other.getArcs().size()<minDegree)||(others.isEmpty())) {
-          ArcHelper.update(graph.createArc(node, other, new Path()));
+          ArcHelper.update(graph.addArc(node, other, new Path()));
           break;
         }
       }
@@ -223,18 +225,11 @@ public class GraphFactory extends AbstractFactory {
       Node from = getMinDegNode(nodes,true);
       if (!ModelHelper.isNeighbour(from,nodes)) {
         Node to = getMinDegNode(nodes,false);
-        ArcHelper.update(graph.createArc(from, to, new Path()));
+        ArcHelper.update(graph.addArc(from, to, new Path()));
       }
     }
     
     // done
   }
   
-  /**
-   * @see IGraphFactory#getName()
-   */
-  public String getName() {
-    return "Graph";
-  }
-
-}
+} //GraphFactory

@@ -42,13 +42,13 @@ public abstract class AbstractLayout implements Layout {
   public void setDebug(boolean set) {
     isDebug=set;
   }
-  
+
   /**
-   * String representation
+   * @see java.lang.Object#toString()
    */
   public String toString() {
     String s = getClass().getName();
     return s.substring(s.lastIndexOf('.')+1);
   }
-  
+
 } //AbstractLayout

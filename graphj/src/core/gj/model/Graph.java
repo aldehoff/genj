@@ -15,7 +15,6 @@
  */
 package gj.model;
 
-import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 
 /**
@@ -33,10 +32,5 @@ public interface Graph {
    */
   public Collection getArcs();
   
-  /**
-   * Access to the graph's bounds - mutable
-   */
-  public Rectangle2D getBounds();
-  
-}
+} //Graph
  

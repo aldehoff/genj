@@ -265,9 +265,9 @@ public class TreeLayout extends AbstractLayout implements Layout {
   }
   
   /**
-   * @see gj.layout.Layout#applyTo(Graph)
+   * @see gj.layout.Layout#layout(gj.model.Graph, java.awt.geom.Rectangle2D)
    */
-  public void layout(Graph graph) throws LayoutException {
+  public Rectangle2D layout(Graph graph, Rectangle2D preset) throws LayoutException {
 
     // remember
     appliedTo = graph;
@@ -276,7 +276,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
     debugShapes.clear();
 
     // something to do for me?
-    if (graph.getNodes().isEmpty()) return;
+    if (graph.getNodes().isEmpty()) return preset;
 
     // get an orientation
     Orientation orientn = new Orientation(orientation);
@@ -319,11 +319,8 @@ public class TreeLayout extends AbstractLayout implements Layout {
       root = (Node)unvisited.iterator().next();
     }
 
-
-    // Lastly tell the graph its size
-    graph.getBounds().setRect(bounds);
-
     // Done
+    return bounds;
   }
 
   /**

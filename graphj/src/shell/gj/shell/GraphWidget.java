@@ -26,14 +26,15 @@ import gj.model.Node;
 import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.ReflectHelper;
-import gj.util.ArcIterator;
 import gj.util.ArcHelper;
+import gj.util.ArcIterator;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.MouseAdapter;
@@ -80,6 +81,9 @@ public class GraphWidget extends JPanel {
   
   /** the graph we're displaying */
   private MutableGraph graph;
+  
+  /** the size of the graph */
+  private Rectangle graphBounds;
   
   /** the content for the graph */
   private Content content = new Content();
@@ -154,10 +158,11 @@ public class GraphWidget extends JPanel {
   /**
    * Accessor - Graph
    */
-  public void setGraph(MutableGraph set) {
+  public void setGraph(MutableGraph setGraph, Rectangle setBounds) {
     
     // cleanup data
-    graph = set;
+    graph = setGraph;
+    graphBounds = setBounds;
     lastSelection = null;
     
     // make sure that's reflected
@@ -190,7 +195,7 @@ public class GraphWidget extends JPanel {
   public void createNode(double x, double y, Object object) {
     
     // let the graph do it
-    graph.createNode(
+    graph.addNode(
       new Point2D.Double(x,y),
       shapes[0],
       object
@@ -427,7 +432,7 @@ public class GraphWidget extends JPanel {
     public void mouseReleased(MouseEvent e) {
       Node to = getElement(content.getX(e), content.getY(e));
       if (to!=null) {
-        ArcHelper.update(graph.createArc(from, to, new Path()));
+        ArcHelper.update(graph.addArc(from, to, new Path()));
       }
       repaint();
       dndNoOp.start(e);
@@ -637,8 +642,7 @@ public class GraphWidget extends JPanel {
      */
     private int getXOffset() {
       if (graph==null) return 0;
-      Rectangle2D bounds = graph.getBounds();
-      return (int)(-bounds.getX()+(getWidth()-bounds.getWidth())/2);
+      return -graphBounds.x+(getWidth()-graphBounds.width)/2;
     }
     
     /**
@@ -646,8 +650,7 @@ public class GraphWidget extends JPanel {
      */
     private int getYOffset() {
       if (graph==null) return 0;
-      Rectangle2D bounds = graph.getBounds();
-      return (int)(-bounds.getY()+(getHeight()-bounds.getHeight())/2);
+      return -graphBounds.y+(getHeight()-graphBounds.height)/2;
     }
     
     /**
@@ -655,28 +658,31 @@ public class GraphWidget extends JPanel {
      */
     public Dimension getPreferredSize() {
       if (graph==null) return new Dimension();
-      return new Dimension(
-        (int)Math.ceil(graph.getBounds().getWidth()),
-        (int)Math.ceil(graph.getBounds().getHeight())
-      );
+      return graphBounds.getSize();
     }
   
     /**
      * @see javax.swing.JComponent#paintComponent(Graphics)
      */
     protected void paintComponent(Graphics g) {
+      
       // clear background
       g.setColor(Color.white);
       g.fillRect(0,0,getWidth(),getHeight());
+
+      // graph there?
+      if (graph==null) return;
+      
       // cast to 2d
       Graphics2D graphics = (Graphics2D)g;
+      
       // switch on antialiasing?
       graphics.setRenderingHint(
         RenderingHints.KEY_ANTIALIASING,
         isAntialiasing ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF
       );
+      
       // synchronize on graph and go?
-      if (graph==null) return;
       synchronized (graph) {
         // create our working graphics
         // paint at 0,0
@@ -686,7 +692,6 @@ public class GraphWidget extends JPanel {
           layoutRenderer.render(graph,currentLayout,graphics);
         // let the renderer do its work
         graphRenderer.render(graph, currentLayout, graphics);
-        // done
         // Is the a current to render?
         if (lastSelection!=null) {
           graphics.setColor(Color.blue);
@@ -700,6 +705,7 @@ public class GraphWidget extends JPanel {
         if (dndCurrent!=null)
           dndCurrent.paint(graphics);
       }
+
       // done
     }
     
