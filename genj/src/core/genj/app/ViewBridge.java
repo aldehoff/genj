@@ -27,6 +27,9 @@ import java.util.*;
 import java.awt.event.*;
 
 import genj.gedcom.*;
+import genj.print.PrintProperties;
+import genj.print.PrintRenderer;
+import genj.print.Printer;
 import genj.util.*;
 import genj.util.swing.ButtonHelper;
 import awtx.*;
@@ -107,13 +110,30 @@ class ViewBridge {
       ButtonHelper bh = new ButtonHelper().setResources(App.resources).setInsets(0);
 
       // A button for editing the View's settings
-      scroll.add2Edge(bh.setImage(Images.imgSettings).setAction("VIEWEDIT").setTip("cc.tip.settings").create());
+      if (ViewEditor.getViewInfo(view)!=null) {
+        final Component _view = view;
+        final Frame _frame = frame;
+        bh.setListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+            ViewEditor.startEditing(_view,_frame.getTitle());
+          }
+        });
+        scroll.add2Edge(bh.setImage(Images.imgSettings).setAction("VIEWEDIT").setTip("cc.tip.settings").create());
+      }
 
       // And a print button in case a PrintRenderer is existing
       try {
-        c = Class.forName(view.getClass().getName()+"PrintRenderer");
+        final PrintRenderer _renderer = (PrintRenderer)Class.forName(view.getClass().getName()+"PrintRenderer").newInstance();
+        _renderer.setView(view);
+        final Frame _frame = frame;
+        bh.setListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+            Printer.print(_frame, _renderer, new PrintProperties(_frame.getTitle()));
+          }
+        });
         scroll.add2Edge(bh.setImage(Images.imgPrint).setAction("PRINT").setTip("cc.tip.print").create());
-      } catch (Throwable e) {
+      } catch (Throwable t) {
+        // won't support printing
       }
     }
 
@@ -205,22 +225,4 @@ class ViewBridge {
     return null;
     // Done
   }
-
-
-/*
-        ActionListener alistener = new ActionListener() {
-          public void actionPerformed(ActionEvent ae) {
-            System.out.println("Print!");
-                // Setup Printing
-                PrintProperties properties = new PrintProperties(view.getTitle());
-            
-                // TODO : This is just a hack  .... it will crash as soon as the first Non Tree View will be printable by implementing its own XXXPrintRenderer
-                PrintRenderer renderer = new genj.tree.TreeViewPrintRenderer( ((genj.tree.TreeView)view.getContent()).getModel() );
-                Printer.print(frame,renderer,properties);
-            
-                // Done
-          }
-        };
-        b.addActionListener(alistener);
- */  
 }

@@ -297,7 +297,7 @@ public class ControlCenter extends JPanel implements ActionListener {
       helpBridge = h;
     } catch (Throwable e) {
       String m = e.getMessage()+"@"+e.getClass().getName();
-      System.out.println("Couldn't build a bridge to Java Help - make sure the setup correctly includes jhbasic.jar in the CLASSPATH ("+m+")");
+      System.out.println("[Debug]Couldn't build a bridge to Java Help - make sure the setup correctly includes jhbasic.jar in the CLASSPATH ("+m+")");
     }
 
   }
@@ -647,7 +647,7 @@ public class ControlCenter extends JPanel implements ActionListener {
     }
     // Settings?
     if (e.getActionCommand().equals("VIEWEDIT")) {
-      actionViewEdit();
+      ViewEditor.startEditing(null,"");
       return;
     }
     // Unknown !
@@ -783,35 +783,6 @@ public class ControlCenter extends JPanel implements ActionListener {
 
     TransactionPanel tpanel = new TransactionPanel(frame,transaction);
     frame.getContentPane().add(tpanel);
-    frame.pack();
-    frame.show();
-
-    // Done
-  }
-
-  /**
-   * Action started for VIEWEDIT
-   */
-  private void actionViewEdit() {
-
-    // Open?
-    JFrame frame = App.getInstance().getFrame("settings");
-    if (frame!=null) {
-      frame.dispose();
-      return;
-    }
-
-    // Setup editor dialog
-    frame = App.getInstance().createFrame(
-      App.resources.getString("cc.title.settings_edit"),
-      Images.imgGedcom,
-      "settings",
-      null
-    );
-
-    ViewEditor editor = new ViewEditor(frame);
-
-    frame.getContentPane().add(editor);
     frame.pack();
     frame.show();
 

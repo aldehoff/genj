@@ -28,6 +28,11 @@ import genj.util.Resources;
  * Interface between Printer and Renderer
  */
 public interface PrintRenderer {
+  
+  /**
+   * Sets the View that this PrintRenderer should work for
+   */
+  public void setView(Component component);
 
   /**
    * Returns a panel for editing this renderers properties

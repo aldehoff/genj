@@ -30,26 +30,26 @@ import java.awt.event.*;
 import genj.gedcom.*;
 import genj.util.*;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.ImgIconConverter;
 
 /**
  * Class for editing the properties of a view
  */
-class ViewEditor extends JPanel implements ViewInfo {
+class ViewEditor extends JPanel {
 
   /** statics */
-  static private ViewEditor instance = null;
-  static private JLabel lDefault = new JLabel("",JLabel.CENTER);
   static private Hashtable hViewInfos = new Hashtable();
 
   /** members */
-  private Resources resources;
+  private Resources resources = new Resources(ViewEditor.class);;
   private TitledBorder border;
   private Frame frame;
   private JPanel pSettings;
   private JButton bApply,bReset,bClose;
+  private EmptyViewInfo emptyViewInfo = new EmptyViewInfo();
 
-  private Component view;
-  private ViewInfo  info;
+  private Component currentView;
+  private ViewInfo  currentInfo;
 
   /**
    * Constructor
@@ -57,7 +57,6 @@ class ViewEditor extends JPanel implements ViewInfo {
   /*package*/ ViewEditor(Frame pFrame) {
 
     frame = pFrame;
-    resources = new Resources(this);
 
     // Panel for View's settings
     pSettings = new JPanel();
@@ -69,12 +68,16 @@ class ViewEditor extends JPanel implements ViewInfo {
 
     ActionListener alistener = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-      if ("CLOSE".equals(e.getActionCommand()))
-        frame.dispose();
-      if ("APPLY".equals(e.getActionCommand())&&(view!=null))
-        info.apply();
-      if ("RESET".equals(e.getActionCommand())&&(view!=null))
-        info.reset();
+        if ((currentView==null)||(!currentView.isValid())) {
+          edit(null,null,null);
+          return;
+        }
+        if ("CLOSE".equals(e.getActionCommand()))
+          frame.dispose();
+        if ("APPLY".equals(e.getActionCommand())&&(currentView!=null))
+          currentInfo.apply();
+        if ("RESET".equals(e.getActionCommand())&&(currentView!=null))
+          currentInfo.reset();
       }
     };
 
@@ -94,110 +97,74 @@ class ViewEditor extends JPanel implements ViewInfo {
     add(pActions ,"South" );
 
     // Done
-    setEditingComponent(this,null,null);
+    edit(emptyViewInfo,null,null);
   }
 
   /**
-   * Remembers this instance
+   * Get ViewInfo for given view
    */
-  public void addNotify() {
-    instance = this;
-    super.addNotify();
-  }
+  static public ViewInfo getViewInfo(Component view) {
+    
+    // tricky
+    if (view==null) return null;
 
-  /**
-   * Since we act as the default ViewInfo (no View information) we
-   * provide implementation for the callbacks
-   */
-  public void apply() {
-  }
+    // already known?
+    String name = view.getClass().getName()+"Info";
+    ViewInfo result = (ViewInfo)hViewInfos.get(name);
+    if (result!=null) return result;
 
-  /**
-   * Since we act as the default ViewInfo (no View information) we
-   * provide implementation for the callbacks
-   */
-  public void reset() {
-  }
-
-  /**
-   * Since we act as the default ViewInfo (no View information) we
-   * provide implementation for the callbacks
-   */
-  public void setView(Component comp) {
-  }
-
-  /**
-   * Static signal that a view should not be edited anymore
-   */
-  static public void dontEdit(Component view) {
-
-    // Instance there?
-    if ((instance==null)||(instance.view!=view))
-      return;
-
-    // .. turn to non editing
-    instance.setEditingComponent(instance,null,null);
+    // look for it    
+    try {
+      Class c = Class.forName(name);
+      result = (ViewInfo)c.newInstance();
+      hViewInfos.put(name,result);
+    } catch (ClassCastException cce) {
+    } catch (Exception e) {
+    }
+    
+    // done
+    return result;
   }
 
   /**
    * Static signal that a view should be edited
    */
-  static public void edit(Component view, String title) {
-
-    // Instance there?
-    if ((instance==null)||(instance.view==view))
-      return;
-
-    // Calculate class to use and instantiate it
-    ViewInfo info = null;
-
-    String viName = view.getClass().getName()+"Info";
-
-    info = (ViewInfo)hViewInfos.get(viName);
-    if (info==null) {
-      try {
-        Class c = Class.forName(viName);
-        info = (ViewInfo)c.newInstance();
-        hViewInfos.put(viName,info);
-      } catch (ClassCastException cce) {
-        System.out.println("[Debug]"+viName+" is no valid ViewInfo class");
-      } catch (Exception e) {
-        //System.out.println("[Debug] Couldn't instantiate "+viName);
-        return;
-      }
+  public static void startEditing(Component view, String title) {
+    
+    // get the ViewInfo
+    ViewInfo info = getViewInfo(view);
+    
+    // editor already open?
+    JFrame frame = App.getInstance().getFrame("settings");
+    ViewEditor instance;
+    if (frame==null) {
+      // get a new
+      frame = App.getInstance().createFrame(
+        App.resources.getString("cc.title.settings_edit"),
+        Images.imgGedcom,
+        "settings",
+        new Dimension(256,320)
+      );
+      instance = new ViewEditor(frame);
+      frame.getContentPane().add(instance);
+      frame.pack();
+      frame.show();
+    } else {
+      instance = (ViewEditor)frame.getContentPane().getComponent(0);
     }
-
-    // Minimum is default
-    if (info==null) {
-      info = instance;
-    }
-
-    instance.setEditingComponent(info,view,title);
+    
+    instance.edit(info,view,title);
 
     // Done
   }
 
   /**
-   * Our editor component in case of missing ViewInfo
-   */
-  public Component getEditor() {
-    lDefault.setText(resources.getString("view.choose"));
-    return lDefault;
-  }
-
-  /**
-   * Forgets this instance
-   */
-  public void removeNotify() {
-    instance = null;
-    super.removeNotify();
-  }
-
-  /**
    * Helper for adding an editing component
    */
-  private void setEditingComponent(ViewInfo info,Component view, String title) {
-
+  private void edit(ViewInfo info,final Component view, String title) {
+    
+    // the editor we're using
+    if (info==null) info = emptyViewInfo;
     Component editor = info.getEditor();
 
     // Remove last
@@ -223,13 +190,54 @@ class ViewEditor extends JPanel implements ViewInfo {
     info.setView(view);
 
     // Show it
-    frame.pack();
     pSettings.invalidate();
+    pSettings.validate();
     pSettings.repaint();
 
     // Remember
-    this.view = view;
-    this.info = info;
+    currentView = view;
+    currentInfo = info;
   }
 
+  /**
+   * An empty ViewInfo
+   */
+  private class EmptyViewInfo implements ViewInfo {
+
+    private JLabel lDefault;
+    
+    /**
+     * Constructor
+     */
+    public EmptyViewInfo() {
+      lDefault = new JLabel(resources.getString("view.choose"),ImgIconConverter.get(Images.imgSettings),JLabel.CENTER);
+      lDefault.setHorizontalTextPosition(lDefault.LEADING);
+    }
+    
+    /**
+     * noop
+     */
+    public void apply() {
+    }
+  
+    /**
+     * noop
+     */
+    public void reset() {
+    }
+  
+    /**
+     * noop
+     */
+    public void setView(Component comp) {
+    }
+
+    /**
+     * simple label
+     */
+    public Component getEditor() {
+      return lDefault;
+    }
+
+  } // EmptyViewInfo
 }
