@@ -17,24 +17,34 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.model;
+package gj.shell.model;
 
-import java.util.Set;
+import java.awt.Rectangle;
+import java.awt.Shape;
 
 /**
- * A Graph contains Nodes and Arcs
+ * Base impl for elements
  */
-public interface Graph {
+public class Element {
+
+  /** the default shape */
+  private static final Shape EMPTY_SHAPE = new Rectangle();
+  
+  /** the shape of this node */
+  private Shape shape;
 
   /**
-   * Access to the graph's vertices
+   * interface implementation
    */
-  public Set getVertices();
- 
-  /**
-   * Access to the neighbours of a vertex
-   */
-  public Set getNeighbours(Object vertex);
+  public Shape getShape() {
+    return shape;
+  }
   
-} //Graph
- 
+  /**
+   * interface implementation
+   */
+  public void setShape(Shape set) {
+    shape = set!=null ? set : EMPTY_SHAPE;
+  }
+  
+} //DefaultElement

@@ -17,24 +17,29 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.model;
-
-import java.util.Set;
+package gj.layout;
 
 /**
- * A Graph contains Nodes and Arcs
+ * A layout algorithm exception that explains what type of graph is supported
  */
-public interface Graph {
+public class GraphNotSupportedException extends LayoutAlgorithmException {
+  
+  /** the supported type */
+  private Class supported;
 
   /**
-   * Access to the graph's vertices
+   * Constructor
    */
-  public Set getVertices();
- 
-  /**
-   * Access to the neighbours of a vertex
-   */
-  public Set getNeighbours(Object vertex);
+  public GraphNotSupportedException(String message, Class supportedGraph) {
+    super(message);
+    supported = supportedGraph;
+  }
   
-} //Graph
- 
+  /**
+   * Accessor - supported Graph type
+   */
+  public Class getSupportedGraphType() {
+    return supported;
+  }
+  
+} //GraphNotSupportedException

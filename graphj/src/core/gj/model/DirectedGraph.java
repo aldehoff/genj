@@ -19,22 +19,15 @@
  */
 package gj.model;
 
-import java.util.Set;
-
 /**
- * A Graph contains Nodes and Arcs
+ * A directed graph (or Digraph)
  */
-public interface Graph {
-
-  /**
-   * Access to the graph's vertices
-   */
-  public Set getVertices();
- 
-  /**
-   * Access to the neighbours of a vertex
-   */
-  public Set getNeighbours(Object vertex);
+public interface DirectedGraph extends Graph {
   
-} //Graph
- 
+  /**
+   * Access direction of edge
+   * @return -1 (b,a), 1 for (a,b), 0 otherwise 
+   */
+  public int getDirection(Object vertexA, Object VertexB);
+  
+} //DirectedGraph

@@ -1,17 +1,21 @@
 /**
- * GraphJ
+ * This file is part of GraphJ
  * 
- * Copyright (C) 2002 Nils Meier
+ * Copyright (C) 2002-2004 Nils Meier
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * GraphJ is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * GraphJ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GraphJ; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package gj.shell;
 
@@ -79,16 +83,12 @@ public class PropertyWidget extends JPanel {
   public void commit() {
 
     // safety
-    if (instance==null) return;
+    if (instance==null) 
+      return;
     
     // gather the values
-    for (int p=0; p<properties.length; p++) {
-      ReflectHelper.Property prop = properties[p];
-      prop.value = getValue((JComponent)components.get(prop.name));
-    }
-    
-    // set those values
-    ReflectHelper.setProperties(instance, properties);
+    for (int p=0; p<properties.length; p++) 
+      ReflectHelper.setValue(properties[p], getValue((JComponent)components.get(properties[p].getName())));
     
     // done
   }
@@ -99,15 +99,15 @@ public class PropertyWidget extends JPanel {
   public void refresh() {
     
     // safety
-    if (instance==null) return;
+    if (instance==null) 
+      return;
     
     // get the properties again
     properties = ReflectHelper.getProperties(instance, true);
     
     // gather the values
     for (int p=0; p<properties.length; p++) {
-      ReflectHelper.Property prop = properties[p];
-      setValue((JComponent)components.get(prop.name), prop.value);
+      setValue((JComponent)components.get(properties[p].getName()), ReflectHelper.getValue(properties[p]));
     }
     
     // done
@@ -146,11 +146,11 @@ public class PropertyWidget extends JPanel {
 
         ReflectHelper.Property prop = properties[p];
         
-        JComponent component = getComponent(prop.value);
-        components.put(prop.name, component);
+        JComponent component = getComponent(ReflectHelper.getValue(prop));
+        components.put(prop.getName(), component);
         
-        layout.add(new JLabel(prop.name),0,p,1,1,false,false,true,false);
-        layout.add(component            ,1,p,1,1,true ,false,true,false);
+        layout.add(new JLabel(prop.getName()),0,p,1,1,false,false,true,false);
+        layout.add(component                 ,1,p,1,1,true ,false,true,false);
        
       }
       
@@ -197,8 +197,11 @@ public class PropertyWidget extends JPanel {
       JComboBox cb = (JComboBox)component;
       cb.setSelectedItem(value);
       isIgnoreActionEvent=false;
+    } else {
+      if (value==null)
+        value = "";
+      ((JTextField)component).setText(value.toString());
     }
-    else ((JTextField)component).setText(value.toString());
   }
   
   /**

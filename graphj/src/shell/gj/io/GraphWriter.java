@@ -1,24 +1,28 @@
 /**
- * GraphJ
+ * This file is part of GraphJ
  * 
- * Copyright (C) 2002 Nils Meier
+ * Copyright (C) 2002-2004 Nils Meier
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * GraphJ is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * GraphJ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GraphJ; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package gj.io;
 
-import gj.awt.geom.PathIteratorKnowHow;
-import gj.model.Arc;
-import gj.model.Graph;
-import gj.model.Node;
+import gj.geom.PathIteratorKnowHow;
+import gj.shell.model.Edge;
+import gj.shell.model.Graph;
+import gj.shell.model.Vertex;
 
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
@@ -26,11 +30,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -50,10 +51,8 @@ public class GraphWriter implements PathIteratorKnowHow {
   
   /** elements mapped to ids */
   private Map 
-    nodes2ids  = new HashMap(),
-    arcs2ids   = new HashMap(),
-    shapes2ids = new HashMap();
-
+    element2id  = new HashMap();
+  
   /**
    * Constructor
    */  
@@ -69,99 +68,41 @@ public class GraphWriter implements PathIteratorKnowHow {
     push("graph",null,false);
     // shapes
     writeShapes(g);
-    // nodes
-    writeNodes(g);
-    // arcs
-    writeArcs(g);
+    // vertices
+    writeVertices(g);
+    // edges
+    writeEdges(g);
     // done
     pop();
     out.flush();
   }
 
   /**
-   * Write - Arcs
+   * Write - Edges
    */
-  private void writeArcs(Graph g) throws IOException {
+  private void writeEdges(Graph g) throws IOException {
     
-    push("arcs",null,false);
+    push("edges",null,false);
     
-    // sort arcs so that they're written in order
-    // to be recreated on load
-    Arc[] arcs = (Arc[])g.getArcs().toArray(new Arc[g.getArcs().size()]);
-    Arrays.sort(arcs, new ArcComparator());
-
     // write 'em
-    for (int i=0;i<arcs.length;i++) {
-      writeArc(arcs[i]);
-    }
+    Iterator it = g.getEdges().iterator();
+    while (it.hasNext())
+      writeEdge(g, (Edge)it.next());
     
     pop();
   }
 
   /**
-   * KnowHow about which arc to write first
-   */  
-  private static class ArcComparator implements Comparator {
-    /**
-     * callback - compare
-     */
-    public int compare(Object a, Object b) {
-      return compare((Arc)a, (Arc)b);
-    }
-    /**
-     * Which arc to write first (as,ae) || (bs,be)
-     * 
-     * (1) a,b are loops starting at x => order of a,b in as 
-     * 
-     *     x == as == ae == bs == be
-     * 
-     * (2) a,b are dups between x,y => order of a,b in as
-     *  
-     *     x == as == bs, y == ae == be ||
-     *     x == as == be, y == ae == bs
-     * 
-     * (3) a,b connect in x => order of a,b in ...
-     * 
-     *     x == as == bs || x == as == be ||     ... as
-     *     x == ae == bs || x == ae == be        ... ae
-     * 
-     * (4) a,b are not connected => we don't care
-     */
-    private int compare(Arc a, Arc b) {    
-      // check nodes
-      Node 
-        as = a.getStart(),
-        ae = a.getEnd  (),
-        bs = b.getStart(),
-        be = b.getEnd  ();
-      // arcs that touch?
-      if (as==bs||as==be)
-        return compare(as, a, b);
-      if (ae==bs||ae==be)
-        return compare(ae, a, b);
-      // unknown
-      return 0;
-    }
-    /**
-     * The index of arc a vs. b in n.getArcs()
-     */
-    private int compare(Node n, Arc a, Arc b) {
-      List arcs = n.getArcs();
-      return arcs.indexOf(a) - arcs.indexOf(b);
-    }
-  } //ArcComparator
-
-  /**
-   * Write - Arc
+   * Write - Edge
    */
-  private void writeArc(Arc arc) throws IOException {
+  private void writeEdge(Graph g, Edge edge) throws IOException {
     
     ElementInfo info = new ElementInfo();
-    info.put("id", getId(arc));
-    info.put("s", getId(arc.getStart()));
-    info.put("e", getId(arc.getEnd  ()));
-    push("arc",info,false);
-      writeShape(arc.getPath(),-1);
+    info.put("id", getId(edge));
+    info.put("s", getId(edge.getStart()));
+    info.put("e", getId(edge.getEnd()));
+    push("edge",info,false);
+      writeShape(edge.getShape(),-1);
     pop();
   }
 
@@ -171,14 +112,13 @@ public class GraphWriter implements PathIteratorKnowHow {
   private void writeShapes(Graph g) throws IOException {
     // starting shapes
     push("shapes",null,false);
-    // loop through nodes
-    Iterator it = g.getNodes().iterator();
+    // loop through vertices
+    Iterator it = g.getVertices().iterator();
     while (it.hasNext()) {
-      // check known shape - wish that (but it is not)
-      //  new GeneralPath(shape).equals(new GeneralPath(shape))
-      Shape s = ((Node)it.next()).getShape();
-      if (!shapes2ids.containsKey(s))
-        writeShape(s, shapes2ids.size()+1);
+      // check known shape
+      Shape s = ((Vertex)it.next()).getShape();
+      if (!element2id.containsKey(s))
+        writeShape(s, element2id.size()+1);
       // next
     }
     // done
@@ -193,7 +133,7 @@ public class GraphWriter implements PathIteratorKnowHow {
     ElementInfo info = new ElementInfo();
     if (sid>=0) {
       info.put("id", sid);
-      shapes2ids.put(shape,new Integer(sid));
+      element2id.put(shape,new Integer(sid));
     }
     push("shape",info,false);
     PathIterator it = shape.getPathIterator(null);
@@ -219,76 +159,51 @@ public class GraphWriter implements PathIteratorKnowHow {
   
   
   /**
-   * Write - Nodes
+   * Write - Vertices
    */
-  private void writeNodes(Graph g) throws IOException {
-    push("nodes",null,false);
-    Iterator nodes = g.getNodes().iterator();
-    while (nodes.hasNext()) {
-      Node node = (Node)nodes.next();
-      writeNode(node);
-    }
+  private void writeVertices(Graph g) throws IOException {
+    push("vertices",null,false);
+    Iterator vertices = g.getVertices().iterator();
+    while (vertices.hasNext()) 
+      writeVertex((Vertex)vertices.next());
     pop();
   }
   
   /**
-   * Write - Node
+   * Write - Vertex
    */
-  private void writeNode(Node n) throws IOException {
+  private void writeVertex(Vertex v) throws IOException {
     
     // gather element information
     ElementInfo info = new ElementInfo();
-    info.put("id", getId(n));
-    info.put("x", n.getPosition().getX());
-    info.put("y", n.getPosition().getY());
-    info.put("sid", shapes2ids.get(n.getShape()));
+    info.put("id", getId(v));
+    info.put("x", v.getPosition().getX());
+    info.put("y", v.getPosition().getY());
+    info.put("sid", element2id.get(v.getShape()));
+    Object content = v.getContent();
+    if (content!=null)
+      info.put("c", content.toString());
 
-    // no graph contained?
-    Object content = n.getContent();
-    if (!(content instanceof Graph)) {
-      info.put("c", n.getContent());
-      push("node",info,true);
-      return;
-    }
-    
-    // open node for contained graph
-    push("node",info,false);
-    
-    // do the graph
-    write((Graph)content);
+    // keep it
+    push("vertex",info,true);
 
     // done
-    pop();
   }
   
   /**
-   * Get id for node
+   * Get id for element (vertex or edge)
    */
-  private Object getId(Node node) {
+  private Object getId(Object element) {
     // lookup
-    Object result = nodes2ids.get(node);
+    Object result = element2id.get(element);
     if (result==null) {
-      result = new Integer(nodes2ids.size()+1);
-      nodes2ids.put(node, result);
+      result = new Integer(element2id.size()+1);
+      element2id.put(element, result);
     }
     // don
     return result;
   }
 
-  /**
-   * Get id for arc
-   */
-  private Object getId(Arc arc) {
-    // lookup
-    Object result = arcs2ids.get(arc);
-    if (result==null) {
-      result = new Integer(arcs2ids.size()+1);
-      arcs2ids.put(arc, result);
-    }
-    // done
-    return result;
-  }
-  
   /**
    * Push element
    */
@@ -333,9 +248,20 @@ public class GraphWriter implements PathIteratorKnowHow {
       list.add(new Integer(val));
     }    
     public void put(Object key, Object val) {
+      if (val==null)
+        return;
       list.add(key);
       list.add(val);
     }    
+    public void put(Map atts) {
+      Iterator keys = atts.keySet().iterator();
+      while (keys.hasNext()) {
+        Object key = keys.next();
+        Object val = atts.get(key);
+        list.add(key);
+        list.add(val);
+      }
+    }
     public void append(StringBuffer b) {
       Iterator it = list.iterator();
       while (it.hasNext()) {

@@ -1,26 +1,30 @@
 /**
- * GraphJ
+ * This file is part of GraphJ
  * 
- * Copyright (C) 2002 Nils Meier
+ * Copyright (C) 2002-2004 Nils Meier
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * GraphJ is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * GraphJ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GraphJ; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package gj.shell;
 
-import gj.awt.geom.Geometry;
-import gj.awt.geom.ShapeHelper;
-import gj.layout.Layout;
-import gj.layout.LayoutRenderer;
-import gj.shell.model.ShellGraph;
-import gj.shell.model.ShellNode;
+import gj.geom.Geometry;
+import gj.layout.LayoutAlgorithm;
+import gj.shell.model.Edge;
+import gj.shell.model.Graph;
+import gj.shell.model.Layout;
+import gj.shell.model.Vertex;
 import gj.shell.swing.SwingHelper;
 import gj.shell.swing.UnifiedAction;
 import gj.shell.util.ReflectHelper;
@@ -41,8 +45,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.lang.reflect.Method;
 
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -55,39 +57,17 @@ import javax.swing.JScrollPane;
  */
 public class GraphWidget extends JPanel {
   
-  /** the Shapes we know */
-  protected Shape[] shapes = new Shape[] {
-    new Rectangle2D.Double(-16,-16,32,32),
-    ShapeHelper.createShape(23D,19D,1,1,new double[]{
-      0,6,4,1,18,11,1,29,1,1,34,30,1,47,27,1,31,44,1,20,24,1,6,38,1,2,21,1,14,20,1,6,4
-    }),
-    ShapeHelper.createShape(15D,15D,1,1,new double[] {
-      0,10,0,
-      1,20,0,
-       2,30,0,30,10, // tr : quad
-      1,30,20,
-       2,20,20,20,30, // br : quad
-      1,10,30,
-       3,20,20,10,10,0,20, // bl : cubic
-      1,0,10,
-       3,-10,0,0,-10,10,0 // tl : cubic
-    })
-  };
-  
   /** the graph we're displaying */
-  private ShellGraph graph;
+  private Graph graph;
+  
+  /** the layout of it */
+  private Layout layout = new Layout();
   
   /** the size of the graph */
   private Rectangle graphBounds;
   
   /** the content for the graph */
   private Content content = new Content();
-  
-  /** more renderers */
-  private LayoutRenderer layoutRenderer = null;
-  
-  /** the handle on current selection */
-  private ShellNode selection = null;
   
   /** whether quicknode is enabled */
   private boolean quickNode = false;
@@ -98,21 +78,14 @@ public class GraphWidget extends JPanel {
   /** our mouse analyzers */
   private DnD
     dndNoOp = new DnDIdle(),
-    dndMoveNode = new DnDMoveNode(),
-    dndCreateArc = new DnDCreateArc(),
-    dndResizeNode = new DnDResizeNode(),
+    dndMoveNode = new DnDMoveVertex(),
+    dndCreateEdge = new DnDCreateEdge(),
+    dndResizeNode = new DnDResizeVertex(),
     dndCurrent = null;
     
-  /** a layout we know about */
-  private Layout currentLayout;
+  /** a algorithm we know about */
+  private LayoutAlgorithm currentAlgorithm;
     
-  /** the renderer we're using */
-  private GraphRenderer graphRenderer = new GraphRenderer() {
-    protected Color getColor(ShellNode node) {
-      return selection==node ? Color.blue : Color.black; 
-    }
-  };
-  
   /**
    * Constructor
    */
@@ -128,12 +101,11 @@ public class GraphWidget extends JPanel {
   /**
    * Accessor - Graph
    */
-  public void setGraph(ShellGraph setGraph) {
+  public void setGraph(Graph setGraph) {
     
     // cleanup data
     graph = setGraph;
-    graphBounds = ModelHelper.getBounds(graph.getNodes()).getBounds();
-    selection = null;
+    graphBounds = ModelHelper.getBounds(graph, layout).getBounds();
     
     // make sure that's reflected
     revalidate();
@@ -169,60 +141,52 @@ public class GraphWidget extends JPanel {
   }
   
   /** 
-   * Accessor - the current layout
+   * Accessor - the current algorithm
    */
-  public void setCurrentLayout(Layout layout) {
-    currentLayout = layout;
-    layoutRenderer = getRenderer(layout);
+  public void setCurrentAlgorithm(LayoutAlgorithm set) {
+    currentAlgorithm = set;
     repaint();
   }
   
   /**
-   * Helper that calculates a Renderer for given Layout
+   * Returns the popup for edges
    */
-  private LayoutRenderer getRenderer(Layout instance) {
-    if (instance==null) return null;
-    try {
-      return (LayoutRenderer)ReflectHelper.getInstance(instance.getClass().getName()+"Renderer", LayoutRenderer.class);
-    } catch (Throwable t) {
-      return null;
-    }
-  }
-  
-  /**
-   * Returns the popup for nodes
-   */
-  private JPopupMenu getNodePopupMenu(ShellNode node, Point pos) {
+  private JPopupMenu getEdgePopupMenu(Edge e, Point pos) {
 
     // Create the popups
     JPopupMenu result = new JPopupMenu();
-    if (selection.getContainedGraph()!=null)
-      result.add(new ActionCreateNode(selection.getContainedGraph(), Geometry.sub(graph.getPosition(node), content.getPoint(pos)) ));
-    result.add(new ActionResizeNode());
-    result.add(new ActionDeleteNode());
-    result.add(new ActionSetNodeContent());
-    JMenu mShape = new JMenu("Set Shape");
-    for (int i=0;i<shapes.length;i++)
-      mShape.add(new ShapeMenuItemWidget(shapes[i], new ActionSetNodeShape(shapes[i])));
-    result.add(mShape);
+    result.add(new ActionDeleteEdge());
 
-    // do we have a a layout with input for the node's menu?
-    if (currentLayout==null) 
-      return result;
-      
-    // continue with menu's submenu
-    JMenu mLayout = new JMenu();
-    
-    // collect public setters(Node)
-    Method[] actions = ReflectHelper.getMethods(currentLayout, "", new Class[]{ gj.model.Node.class});
-    if (actions.length>0) {
-      // add add actions
-      for (int a=0; a<actions.length; a++) {
-        mLayout.add(new ActionNodeLayoutMethod(actions[a]));
-      }
-      // visible now
-      mLayout.setText(currentLayout.toString());
-      result.add(mLayout);
+    // collect public setters(Edge)
+    ReflectHelper.Property[] props = ReflectHelper.getProperties(graph, false);
+    for (int a=0; a<props.length; a++) { 
+      if (props[a].getType()==Edge.class)
+        result.add(new ActionGraphProperty(props[a]));
+    }
+    // done
+    return result;
+  }
+
+  /**
+   * Returns the popup for nodes
+   */
+  private JPopupMenu getVertexPopupMenu(Vertex v, Point pos) {
+
+    // Create the popups
+    JPopupMenu result = new JPopupMenu();
+    result.add(new ActionResizeVertex());
+    result.add(new ActionSetVertexContent());
+    JMenu mShape = new JMenu("Set Shape");
+    for (int i=0;i<Shell.shapes.length;i++)
+      mShape.add(new ShapeMenuItemWidget(Shell.shapes[i], new ActionSetVertexShape(Shell.shapes[i])));
+    result.add(mShape);
+    result.add(new ActionDeleteVertex());
+
+    // collect public setters(Vertex)
+    ReflectHelper.Property[] props = ReflectHelper.getProperties(graph, false);
+    for (int a=0; a<props.length; a++) { 
+      if (props[a].getType()==Vertex.class)
+        result.add(new ActionGraphProperty(props[a]));
     }
 
     // done
@@ -235,8 +199,8 @@ public class GraphWidget extends JPanel {
   private JPopupMenu getCanvasPopupMenu(Point pos) {
     
     JPopupMenu result = new JPopupMenu();
-    result.add(new ActionCreateNode(graph, content.getPoint(pos)));
-    result.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleQuickNode()));
+    result.add(new ActionCreateVertex(content.getPoint(pos)));
+    result.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleQuickVertex()));
     return result;
   }
 
@@ -280,19 +244,22 @@ public class GraphWidget extends JPanel {
       // nothing to do?
       if (graph==null) return;
       // something there?
-      ShellNode oldSelection = selection;
-      selection = graph.getNode(content.getPoint(e.getPoint()));
+      Object oldSelection = graph.getSelection();
+      Object newSelection = graph.getObject(content.getPoint(e.getPoint()));
+      graph.setSelection(newSelection);
       // popup?
       if (e.isPopupTrigger()) {
         popup(e.getPoint());
         return;
       }
       // start dragging?
-      if (e.getButton()==e.BUTTON1&&selection!=null) {
-        if (oldSelection==selection)
-          dndMoveNode.start(e.getPoint());
-        else
-          dndCreateArc.start(e.getPoint());
+      if (e.getButton()==MouseEvent.BUTTON1) {
+        if (newSelection instanceof Vertex) {
+	        if (oldSelection==newSelection)
+	          dndMoveNode.start(e.getPoint());
+	        else
+	          dndCreateEdge.start(e.getPoint());
+        }
       }
       // always show
       repaint();
@@ -309,7 +276,7 @@ public class GraphWidget extends JPanel {
       
       // quick create?
       if (quickNode) {
-        graph.createNode(shapes[0], ""+(graph.getNodes().size()+1), content.getPoint(e.getPoint()));
+        graph.addVertex(content.getPoint(e.getPoint()), Shell.shapes[0], ""+(graph.getVertices().size()+1) );
         repaint();
         return;
       }
@@ -317,7 +284,14 @@ public class GraphWidget extends JPanel {
     }
     /** popup */
     private void popup(Point at) {
-      JPopupMenu menu = selection!=null ? getNodePopupMenu(selection, at) : getCanvasPopupMenu(at);
+      Object selection = graph.getSelection();
+      JPopupMenu menu = null;
+      if (selection instanceof Vertex) 
+        menu = getVertexPopupMenu((Vertex)selection, at);
+      if (selection instanceof Edge)
+        menu = getEdgePopupMenu((Edge)selection, at);
+      if (menu==null)
+        menu = getCanvasPopupMenu(at);
       menu.show(content,at.x,at.y);
     }
   } //DnDIdle
@@ -325,7 +299,7 @@ public class GraphWidget extends JPanel {
   /**
    * Mouse Analyzer - Drag a Node
    */
-  private class DnDMoveNode extends DnD {
+  private class DnDMoveVertex extends DnD {
     Point from;
     /** start */
     protected void start(Point at) {
@@ -339,7 +313,7 @@ public class GraphWidget extends JPanel {
     /** callback */
     public void mouseDragged(MouseEvent e) {
       // move the selected
-      selection.translate(Geometry.sub(from, e.getPoint()));
+      ModelHelper.translate(layout, graph.getSelection(), Geometry.sub(from, e.getPoint()));
       from = e.getPoint();
       // show
       repaint();
@@ -347,25 +321,27 @@ public class GraphWidget extends JPanel {
   } //DnDMoveNode
   
   /**
-   * Mouse Analyzer - Create an Arc
+   * Mouse Analyzer - Create an edge
    */
-  private class DnDCreateArc extends DnD{
+  private class DnDCreateEdge extends DnD{
     /** the from node */
-    private ShellNode from;
+    private Vertex from;
     /** a dummy to */
-    private ShellNode dummy;
+    private Vertex dummy;
     /** start */
     protected void start(Point at) {
       super.start(at);
-      from = selection;
+      from = (Vertex)graph.getSelection();
       dummy = null;
-      selection = null;
+      graph.setSelection(null);
     }
     /** stop */
     protected void stop() {
       // delete dummy which will also delete the arc
-      if (dummy!=null) 
-        dummy.delete();
+      if (dummy!=null)  {
+        graph.removeVertex(dummy);
+        dummy = null;
+      }
       // done
     }
     /** callback */
@@ -373,10 +349,16 @@ public class GraphWidget extends JPanel {
       // make sure we're stopped
       stop();
       // selection made? create arc!
-      if (selection!=null) {
-        selection.getGraph().createArc(from, selection);
+      if (graph.getSelection()!=null) {
+        Object selection = graph.getSelection();
+        if (selection instanceof Vertex) {
+          Vertex v = (Vertex)selection;
+	        if (from.getNeighbours().contains(v))
+	          graph.removeEdge(from.getEdge(v));
+	        new ActionCreateEdge(from, v).trigger();
+        }
       }
-      selection = from;
+      graph.setSelection(from);
       // show
       repaint();
       // continue
@@ -387,36 +369,36 @@ public class GraphWidget extends JPanel {
       // not really dragging yet?
       if (dummy==null) {
         // user has to move mouse outside of shape first (avoid loops)
-        if (graph.getNode(content.getPoint(e.getPoint()))==from)
+        if (graph.getVertex(content.getPoint(e.getPoint()))==from)
           return;
         // create dummies
-        dummy = from.getGraph().createNode(null, null);      
-        from.getGraph().createArc(from, dummy);
+        dummy = graph.addVertex(null, null, null);      
+        graph.addEdge(from, dummy, null);
       }
       // place dummy (tip of arc)
-      graph.setPosition(dummy, content.getPoint(e.getPoint()));
+      Point2D pos = content.getPoint(e.getPoint());
+      dummy.setPosition(pos);
       // find target
-      selection = graph.getNode(content.getPoint(e.getPoint()));
-      if (selection!=null&&selection.getGraph()!=from.getGraph()) {
-        selection = null;
-      }
+      graph.setSelection(graph.getVertex(pos));
       // show
       repaint();
     }
-  } //DnDCreateArc
+  } //DnDCreateEdge
 
   /**
    * Mouse Analyzer - Resize a Node
    */
-  private class DnDResizeNode extends DnD {
+  private class DnDResizeVertex extends DnD {
     /** our status */
+    private Vertex vertex;
     private Shape shape;
     private Dimension dim;
     /** start */
     protected void start(Point pos) {
       super.start(pos);
       // remember
-      shape = selection.getShape();
+      vertex = (Vertex)graph.getSelection();
+      shape = vertex.getShape();
       dim = shape.getBounds().getSize();
     }
     /** callback */
@@ -427,14 +409,14 @@ public class GraphWidget extends JPanel {
     public void mouseMoved(MouseEvent e) {
 
       // change shape
-      Point2D delta = Geometry.sub(graph.getPosition(selection), content.getPoint(e.getPoint()));
+      Point2D delta = Geometry.sub(vertex.getPosition(), content.getPoint(e.getPoint()));
       double 
         sx = Math.max(0.1,Math.abs(delta.getX())/dim.width *2),
         sy = Math.max(0.1,Math.abs(delta.getY())/dim.height*2);
 
       GeneralPath gp = new GeneralPath(shape);
       gp.transform(AffineTransform.getScaleInstance(sx, sy));
-      selection.setShape(gp);
+      vertex.setShape(gp);
       
       // show it
       repaint();
@@ -442,29 +424,50 @@ public class GraphWidget extends JPanel {
   } //DnDResizeNode
 
   /**
-   * How to handle - Delete a Node
+   * How to handle - Delete a Vertex
    */
-  private class ActionDeleteNode extends UnifiedAction {
-    protected ActionDeleteNode() { super("Delete"); }
+  private class ActionDeleteVertex extends UnifiedAction {
+    protected ActionDeleteVertex() { super("Delete Vertex"); }
     protected void execute() {
+      Vertex selection = (Vertex)graph.getSelection();
+      if (selection==null)
+        return;
       int i = SwingHelper.showDialog(GraphWidget.this, "Delete Node", "Are you sure?", SwingHelper.DLG_YES_NO);
-      if (SwingHelper.OPTION_YES!=i) return;
-      selection.delete();
-      selection=null;
+      if (SwingHelper.OPTION_YES!=i) 
+        return;
+      graph.removeVertex(selection);
       repaint();
     }
-  } //ActionDeleteNode
+  } //ActionDeleteVertex
+
+  /**
+   * How to handle - Delete an edge
+   */
+  private class ActionDeleteEdge extends UnifiedAction {
+    protected ActionDeleteEdge() { super("Delete Edge"); }
+    protected void execute() {
+      Edge selection = (Edge)graph.getSelection();
+      if (selection==null)
+        return;
+      int i = SwingHelper.showDialog(GraphWidget.this, "Delete Edge", "Are you sure?", SwingHelper.DLG_YES_NO);
+      if (SwingHelper.OPTION_YES!=i) 
+        return;
+      graph.removeEdge(selection);
+      repaint();
+    }
+  } //ActionDeleteEdge
 
   /**
    * How to handle - Sets a Node's Shape
    */
-  private class ActionSetNodeShape extends UnifiedAction {
+  private class ActionSetVertexShape extends UnifiedAction {
     Shape shape;
-    protected ActionSetNodeShape(Shape set) {
+    protected ActionSetVertexShape(Shape set) {
       shape = set;
     }
     protected void execute() {
-      selection.setShape(shape);
+      Vertex vertex = (Vertex)graph.getSelection();
+      vertex.setShape(shape);
       repaint();
     }
   }
@@ -472,15 +475,14 @@ public class GraphWidget extends JPanel {
   /**
    * How to handle - Change node content
    */
-  private class ActionSetNodeContent extends UnifiedAction {
-    protected ActionSetNodeContent() { super("Set content"); }
+  private class ActionSetVertexContent extends UnifiedAction {
+    protected ActionSetVertexContent() { super("Set content"); }
     protected void execute() {
       String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
-      if (txt==null) return;
-      if (txt.length()>0)
-        selection.setContent(txt);
-      else 
-        selection.setContent(new ShellGraph());
+      if (txt==null) 
+        return;
+      Vertex vertex = (Vertex)graph.getSelection();
+      vertex.setContent(txt);
       repaint();
     }
   }
@@ -488,25 +490,38 @@ public class GraphWidget extends JPanel {
   /**
    * How to handle - Change node size
    */
-  private class ActionResizeNode extends UnifiedAction {
-    protected ActionResizeNode() { super("Resize"); }
+  private class ActionResizeVertex extends UnifiedAction {
+    protected ActionResizeVertex() { super("Resize"); }
     protected void execute() { dndResizeNode.start(null); }
   }
   
   /**
-   * How to handle - Create a node
+   * How to handle - create an edge
    */
-  private class ActionCreateNode extends UnifiedAction {
-    private ShellGraph in;
+  private class ActionCreateEdge extends UnifiedAction {
+    private Vertex from, to;
+    protected ActionCreateEdge(Vertex v1, Vertex v2) {
+      from = v1;
+      to = v2;
+    }
+    protected void execute() throws Exception {
+      graph.addEdge(from, to, null);
+    }
+  }
+  
+  /**
+   * How to handle - Create a vertex
+   */
+  private class ActionCreateVertex extends UnifiedAction {
     private Point2D pos;
-    protected ActionCreateNode(ShellGraph setIn, Point2D setPos) { 
+    protected ActionCreateVertex(Point2D setPos) { 
       super("Create node"); 
       pos = setPos;
-      in = setIn; 
     }
     protected void execute() {
       String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
-      if (txt!=null) in.createNode(shapes[0], txt, pos);
+      if (txt!=null) 
+        graph.addVertex(pos, Shell.shapes[0], txt);
       repaint();
     }
   }
@@ -514,25 +529,26 @@ public class GraphWidget extends JPanel {
   /**
    * How to handle - Toggle quick node
    */
-  private class ActionToggleQuickNode extends UnifiedAction {
-    protected ActionToggleQuickNode() { super("QuickNode"); }
+  private class ActionToggleQuickVertex extends UnifiedAction {
+    protected ActionToggleQuickVertex() { super("QuickNode"); }
     protected void execute() { quickNode=!quickNode; }
     public boolean isSelected() { return quickNode; }
   }
   
   /**
-   * How to handle - NodePopupProvider's Action
+   * How to handle - Graph property 
    */
-  private class ActionNodeLayoutMethod extends UnifiedAction {
-    private Method method;
-    protected ActionNodeLayoutMethod(Method method) { 
-      super.setName(method.getName()+"()"); 
-      this.method = method;
+  private class ActionGraphProperty extends UnifiedAction {
+    private ReflectHelper.Property prop;
+    protected ActionGraphProperty(ReflectHelper.Property prop) { 
+      super.setName("set"+prop.getName()+"()"); 
+      this.prop = prop;
     }
     protected void execute() { 
       try {
-        method.invoke(currentLayout, new Object[]{ selection });
-      } catch (Exception e) {}
+        prop.setValue(graph.getSelection() );
+      } catch (Exception e) {
+      }
       repaint();
     }
   }
@@ -582,7 +598,8 @@ public class GraphWidget extends JPanel {
       g.fillRect(0,0,getWidth(),getHeight());
 
       // graph there?
-      if (graph==null) return;
+      if (graph==null) 
+        return;
       
       // cast to 2d
       Graphics2D graphics = (Graphics2D)g;
@@ -598,11 +615,8 @@ public class GraphWidget extends JPanel {
         // create our working graphics
         // paint at 0,0
         graphics.translate(getXOffset(),getYOffset());
-        // LayoutRenderer?
-        if (layoutRenderer!=null) 
-          layoutRenderer.render(graph,currentLayout,graphics);
         // let the renderer do its work
-        graphRenderer.render(graph, currentLayout, graphics);
+        graph.render(graphics);
       }
 
       // done

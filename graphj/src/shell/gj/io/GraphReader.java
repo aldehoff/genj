@@ -1,27 +1,29 @@
 /**
- * GraphJ
+ * This file is part of GraphJ
  * 
- * Copyright (C) 2002 Nils Meier
+ * Copyright (C) 2002-2004 Nils Meier
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * GraphJ is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * GraphJ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GraphJ; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package gj.io;
 
-import gj.awt.geom.PathIteratorKnowHow;
-import gj.awt.geom.ShapeHelper;
-import gj.model.Arc;
-import gj.model.Factory;
-import gj.model.Graph;
-import gj.model.Node;
-import gj.util.ArcHelper;
+import gj.geom.PathIteratorKnowHow;
+import gj.geom.ShapeHelper;
+import gj.shell.model.Edge;
+import gj.shell.model.Graph;
+import gj.shell.model.Vertex;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -53,21 +55,15 @@ public class GraphReader implements PathIteratorKnowHow  {
   /** the input we're reading from */
   private InputStream in;
   
-  /** the factory we're using */
-  private Factory factory;
-  
   /** the graph we're creating */
   private Graph result;
 
   /** identity support */
   private Map 
-    ids2nodes = new HashMap(),
-    ids2arcs = new HashMap(),
-    ids2shapes = new HashMap();
+    id2vertex = new HashMap(),
+    id2edge = new HashMap(),
+    id2shape = new HashMap();
 
-  /** a base layout we use for fixing arcs' paths */
-  private ArcHelper alayout = new ArcHelper();
-  
   /**
    * Constructor
    */
@@ -89,13 +85,10 @@ public class GraphReader implements PathIteratorKnowHow  {
   /**
    * Read - Graph
    */
-  public Graph read(Factory faCtory) throws IOException {
-    
-    // remember
-    factory = faCtory;
+  public Graph read() throws IOException {
     
     // create a graph
-    result = factory.createGraph();
+    result = new Graph();
     
     try {
       
@@ -135,63 +128,59 @@ public class GraphReader implements PathIteratorKnowHow  {
       graph = grAph;
     }
     protected ElementHandler start(String name, Attributes atts) {
-      if ("node".equals(name)) return new NodeHandler(graph, atts);
-      if ("arc".equals(name)) return new ArcHandler(graph, atts);
+      if ("node".equals(name)||"vertex".equals(name)) return new VertexHandler(graph, atts);
+      if ("arc".equals(name)||"edge".equals(name)) return new EdgeHandler(graph, atts);
       if ("shape".equals(name)) return new ShapeHandler(atts);
       return this;
     }
   } //GraphHandler
   
   /**
-   * Handling structure elements - Node
+   * Handling structure elements - Vertex
    */
-  private class NodeHandler extends ElementHandler {
+  private class VertexHandler extends ElementHandler {
     private Graph graph;
     private String id = null;
     private Shape shape = null;
     private Point2D pos = null;
     private Object content = null;
-    protected NodeHandler(Graph grAph, Attributes atts) {
+    protected VertexHandler(Graph grAph, Attributes atts) {
       graph = grAph;
       // the id
       id = atts.getValue("id");
       if (id==null)
         error("expected id=");
       // find a shape
-      shape = (Shape)ids2shapes.get(atts.getValue("sid"));
+      shape = (Shape)id2shape.get(atts.getValue("sid"));
       if (shape==null) shape = DEFAULT_SHAPE;
       // its position
       pos = new Point2D.Double(Double.parseDouble(atts.getValue("x")), Double.parseDouble(atts.getValue("y")));
-      // the content
+      // its content
       content = atts.getValue("c");
+      // create the vertex
+      Vertex v = graph.addVertex(pos, shape, content);
+      // keep it
+      id2vertex.put(id, v);
+      // done
     }
     protected ElementHandler start(String name, Attributes atts) {
-      if (!"graph".equals(name)) 
-        error("expected graph");
-      content = factory.createGraph();
-      return new GraphHandler((Graph)content);
+      error(name+" not allowed in vertex");
+      return this;
     }
-    protected void end(String name) {
-      // create the node
-      Node node = factory.createNode(graph, shape, content);
-      node.getPosition().setLocation( pos );
-      // keep it
-      ids2nodes.put(id, node);
-    }
-  } //NodeHandler
+  } //VertexHandler
   
   /**
-   * Handling structure elements - Arc
+   * Handling structure elements - Edge
    */
-  private class ArcHandler extends ElementHandler {
+  private class EdgeHandler extends ElementHandler {
     private ShapeHandler shapeHandler;
-    private Arc arc;
-    protected ArcHandler(Graph graph, Attributes atts) {
-      Node
-        s = (Node)ids2nodes.get(atts.getValue("s")),
-        e = (Node)ids2nodes.get(atts.getValue("e"));
-      arc = factory.createArc(graph, s, e);
-      ids2arcs.put(atts.getValue("id"),arc);
+    private Edge edge;
+    protected EdgeHandler(Graph graph, Attributes atts) {
+      Vertex
+        s = (Vertex)id2vertex.get(atts.getValue("s")),
+        e = (Vertex)id2vertex.get(atts.getValue("e"));
+      edge = graph.addEdge(s, e, null);
+      id2edge.put(atts.getValue("id"),edge);
     }
     protected ElementHandler start(String name, Attributes atts) {
       if ("shape".equals(name)) {
@@ -202,12 +191,10 @@ public class GraphReader implements PathIteratorKnowHow  {
     }
     protected void end(String name) {
       if (shapeHandler!=null) {
-        arc.getPath().set(shapeHandler.getResult());
-      } else {
-        ArcHelper.update(arc);
+        edge.setShape(shapeHandler.getResult());
       }
     }    
-  } //ArcHandler
+  } //EdgeHandler
 
   /**
    * Handling structure elements - Shape
@@ -236,7 +223,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       if (!"shape".equals(name)) return;
       values[size++]=-1;
       result = ShapeHelper.createShape(0,0,1,1,values);
-      if (id!=null) ids2shapes.put(id, result);
+      if (id!=null) id2shape.put(id, result);
     }
     protected Shape getResult() {
       return result;
@@ -277,7 +264,6 @@ public class GraphReader implements PathIteratorKnowHow  {
       current.end(qName);
     }
 
-
   } //XMLHandler
-  
+
 } //GraphReader

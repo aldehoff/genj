@@ -1,17 +1,21 @@
 /**
- * GraphJ
+ * This file is part of GraphJ
  * 
- * Copyright (C) 2002 Nils Meier
+ * Copyright (C) 2002-2004 Nils Meier
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * GraphJ is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * GraphJ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GraphJ; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package gj.shell.util;
 
@@ -93,12 +97,7 @@ public class ReflectHelper {
         continue;
       }
       // keep 'em
-      try {
-        list.add(new Property(name, getter, setter).get(instance));
-      } catch (InvocationTargetException ite) {
-      } catch (IllegalAccessException iae) {
-        // ignored
-      }
+      list.add(new Property(instance, name, getter, setter));
     }
     
     // done
@@ -109,23 +108,28 @@ public class ReflectHelper {
   }
 
   /**
-   * Sets the properties of given instance (which
-   * are all its public attributes)
+   * Sets a property value
    */
-  public static void setProperties(Object instance, Property[] properties) {
+  public static boolean setValue(Property prop, Object value) {
     
-    // loop over properties
-    for (int p=0; p<properties.length; p++) {
-      Property prop = properties[p];
-      try {
-        prop.set(instance);
-      } catch (InvocationTargetException ite) {
-      } catch (IllegalAccessException iae) {
-        // ignored
-      }
+    try {
+      prop.setValue(value);
+      return true;
+    } catch (Throwable t) {
+      return false;
     }
+  }
+  
+  /**
+   * Gets a property value
+   */
+  public static Object getValue(Property prop) {
     
-    // done
+    try {
+      return prop.getValue();
+    } catch (Throwable t) {
+      return null;
+    }
   }
   
   /*
@@ -228,32 +232,45 @@ public class ReflectHelper {
    * A wrapper for a Property
    */
   public static class Property implements Comparable {
+    /** instance */
+    private Object instance;
     /** the name of the property */
-    public String name;
-    /** the value of the property */
-    public Object value;
+    private String name;
     /** the getter method */
     private Method getter;
     /** the setter method */
     private Method setter;
     /** constructor */
-    protected Property(String n, Method g, Method s) {
+    protected Property(Object i, String n, Method g, Method s) {
+      instance = i;
       name   = n;
       getter = g;
       setter = s;
     }
+    /** name */
+    public String getName() {
+      return name;
+    }
+    /** type */
+    public Class getType() {
+      return getter.getReturnType();
+    }
     /** get */
-    protected Property get(Object instance) throws IllegalAccessException, InvocationTargetException {
-      value  = getter.invoke(instance, new Object[0]);
-      return this;
+    public Object getValue() throws IllegalAccessException, InvocationTargetException {
+      return getter.invoke(instance, new Object[0]);
     }
     /** set */
-    protected Property set(Object instance) throws IllegalAccessException, InvocationTargetException {
+    public void setValue(Object value) throws IllegalAccessException, InvocationTargetException {
       setter.invoke(instance, new Object[]{ wrap(value, setter.getParameterTypes()[0]) });
-      return this;
     }
     /** string representation */
     public String toString() {
+      Object value;
+      try {
+        value = getValue();
+      } catch (Throwable t) {
+        value = t.toString();
+      }
       return name+'='+value;
     }
     /** hierarchy = # superclasses of declared class */

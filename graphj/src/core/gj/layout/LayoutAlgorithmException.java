@@ -17,24 +17,27 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.model;
-
-import java.util.Set;
+package gj.layout;
 
 /**
- * A Graph contains Nodes and Arcs
+ * What can go wrong with a layout
  */
-public interface Graph {
+public class LayoutAlgorithmException extends Exception {
 
   /**
-   * Access to the graph's vertices
+   * Constructor for LayoutException.
+   * @param message
    */
-  public Set getVertices();
- 
+  public LayoutAlgorithmException(String message) {
+    super(message);
+  }
+
   /**
-   * Access to the neighbours of a vertex
+   * Constructor for LayoutException.
+   * @param message
    */
-  public Set getNeighbours(Object vertex);
-  
-} //Graph
- 
+  public LayoutAlgorithmException(String message, Throwable t) {
+    super(message, t);
+  }
+
+} //LayoutException

@@ -1,23 +1,26 @@
 /**
- * GraphJ
+ * This file is part of GraphJ
  * 
- * Copyright (C) 2002 Nils Meier
+ * Copyright (C) 2002-2004 Nils Meier
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * GraphJ is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * GraphJ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GraphJ; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package gj.layout.circular;
 
 import gj.model.Graph;
-import gj.model.Node;
-import gj.util.ArcIterator;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +32,7 @@ import java.util.Stack;
 /**
  * A graph that is broken down in circles
  */
-public class CircularGraph {
+/*package*/ class CircularGraph {
 
   /** the circles in a graph */
   private Set circles;
@@ -40,30 +43,26 @@ public class CircularGraph {
   /**
    * Constructor
    */
-  public CircularGraph(Graph graph, boolean isSingleCircle) {
+  /*package*/ CircularGraph(Graph graph, boolean isSingleCircle) {
     
     // anything to do?
-    if (graph.getNodes().isEmpty()) return;
+    if (graph.getVertices().isEmpty()) 
+      return;
     
     // prepare our nodes and their initial circles
-    circles = new HashSet(isSingleCircle ? 1 : graph.getNodes().size());
-    node2circle = new HashMap(graph.getNodes().size());
+    circles = new HashSet();
+    node2circle = new HashMap(graph.getVertices().size());
     
-    Circle circle = !isSingleCircle ? null : new Circle(graph.getNodes());
-    Iterator it = graph.getNodes().iterator();
-    while (it.hasNext()) {
-      Node node = (Node)it.next();
-      if (!isSingleCircle) circle = new Circle(node);
-      node2circle.put(node, circle);
+    // simple for isSingleCircle=true
+    if (isSingleCircle) {
+      new Circle(graph.getVertices());
+      return;
     }
     
-    // start looking for circles while keeping track of what we looked at
-    if (!isSingleCircle) {
-      Set unvisited = new HashSet(graph.getNodes());
-      while (!unvisited.isEmpty()) {
-        findCircles((Node)unvisited.iterator().next(), null, new Stack(), unvisited);
-      }
-    }
+    // find circles for all
+    Set unvisited = new HashSet(graph.getVertices());
+    while (!unvisited.isEmpty()) 
+      findCircles(graph, unvisited.iterator().next(), null, new Stack(), unvisited);
 
     // done    
   }
@@ -71,32 +70,33 @@ public class CircularGraph {
   /**
    * Find circles starting at given node
    */
-  private void findCircles(Node node, Node parent, Stack path, Set unvisited) {
+  private void findCircles(Graph graph, Object node, Object parent, Stack path, Set unvisited) {
     
     // have we been here before?
     if (path.contains(node)) {
-      Circle circle = (Circle)node2circle.get(node);
+      Circle circle = getCircle(node);
       circle.fold(path, node);
       return;
     }
     
     // now its visited
     unvisited.remove(node);
+    
+    // create a circle for it
+    new Circle(node);
 
     // add current node to stack
     path.push(node);
     
-    // recurse into children traversing via arcs
-    ArcIterator arcs = new ArcIterator(node);
-    while (arcs.next()) {
-      // don't go twice
-      if (!arcs.isFirst) continue;
+    // recurse into neighbours traversing via arcs
+    Iterator neighbours = graph.getNeighbours(node).iterator();
+    while (neighbours.hasNext()) {
+      Object neighbour = neighbours.next();
       // don't go back
-      if (arcs.dest==parent) continue;
-      // don't regard loops
-      if (arcs.isLoop) continue;
+      if (neighbour==node||neighbour==parent)
+        continue;
       // recurse into child
-      findCircles(arcs.dest, node, path, unvisited);
+      findCircles(graph, neighbour, node, path, unvisited);
     }
     
     // take current node of stack again
@@ -108,47 +108,70 @@ public class CircularGraph {
   /**
    * Accessor - the circles
    */
-  public Collection getCircles() {
+  /*package*/ Collection getCircles() {
     return circles;
+  }
+  
+  /**
+   * Accessor - a circle
+   */
+  /*package*/ Circle getCircle(Object node) {
+    Circle result = (Circle)node2circle.get(node);
+    if (result==null)
+      result = new Circle(node);
+    return result;
   }
   
   /**
    * The circle in a graph
    */
-  public class Circle extends HashSet {
+  /*package*/ class Circle extends HashSet {
 
     /**
      * Creates a new circle
      */
     Circle(Collection nodes) {
-      super.addAll(nodes);
+      addAll(nodes);
       circles.add(this);
     }
     
     /**
      * Creates a new circle with one elements
      */
-    Circle(Node node) {
-      super.add(node);
+    Circle(Object node) {
+      add(node);
       circles.add(this);
+    }
+    
+    /**
+     * Add a node
+     */
+    public boolean add(Object node) {
+      // let super do its thing
+      boolean rc = super.add(node);
+      // remember node->this
+      if (rc)
+        node2circle.put(node, this);
+      // done
+      return rc;
     }
     
     /**
      * Folds all elements in path down to stop into this
      * circle. Folded nodes' circles are merged.
      */
-    void fold(Stack path, Node stop) {
+    void fold(Stack path, Object stop) {
       
       // Loop through stack elements
       for (int i=path.size()-1;;i--) {
         // get next (=previous) the node in the stack
-        Node node = (Node)path.get(i);
+        Object node = path.get(i);
         // back at the stop?
-        if (node==stop) break;
+        if (node==stop) 
+          break;
         // grab its circle
-        Circle other = (Circle)node2circle.get(node);
+        Circle other = getCircle(node);
         addAll(other);
-        node2circle.put(node, this);
         circles.remove(other);
         // next stack element
       }
@@ -159,7 +182,7 @@ public class CircularGraph {
     /**
      * Accessor - the nodes
      */
-    public Set getNodes() {
+    /*package*/ Set getNodes() {
       return this;
     }
     

@@ -17,24 +17,49 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.model;
+package gj.layout;
 
-import java.util.Set;
+import java.awt.Shape;
+import java.awt.geom.Point2D;
 
 /**
- * A Graph contains Nodes and Arcs
+ * A layout of a graph
  */
-public interface Graph {
+public interface Layout2D {
 
   /**
-   * Access to the graph's vertices
+   * Graph's shape
    */
-  public Set getVertices();
- 
+  public Shape getShapeOfGraph();
+
   /**
-   * Access to the neighbours of a vertex
+   * Graph's shape
    */
-  public Set getNeighbours(Object vertex);
-  
-} //Graph
- 
+  public void setShapeOfGraph(Shape shape);
+
+  /**
+   * Edge's shape
+   */
+  public Shape getShapeOfEdge(Object vertexA, Object vertexB);
+
+  /**
+   * Edge's shape
+   */
+  public void setShapeOfEdge(Object vertexA, Object vertexB, Shape shape);
+
+  /**
+   * Vertex's shape
+   */
+  public Shape getShapeOfVertex(Object vertex);
+
+  /**
+   * Vertex's position
+   */
+  public Point2D getPositionOfVertex(Object vertex);
+
+  /**
+   * Vertex's position
+   */
+  public void setPositionOfVertex(Object vertex, Point2D pos);
+
+} //Layout2D

@@ -17,24 +17,25 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.model;
+package gj.layout;
 
-import java.util.Set;
+import gj.model.Graph;
+
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 
 /**
- * A Graph contains Nodes and Arcs
+ * What a layout is all about - Implementors provide layout
+ * functionality in <i>applyTo(Graph graph)</i>. 
  */
-public interface Graph {
+public interface LayoutAlgorithm {
 
-  /**
-   * Access to the graph's vertices
+  /** 
+   * Applies the layout to a given graph
+   * @param graph the graph to layout
+   * @param bounds bounds to adhere to if possible (not guaranteed)
+   * @return resulting bounds 
    */
-  public Set getVertices();
- 
-  /**
-   * Access to the neighbours of a vertex
-   */
-  public Set getNeighbours(Object vertex);
+  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException;
   
-} //Graph
- 
+} //LayoutAlgorithm

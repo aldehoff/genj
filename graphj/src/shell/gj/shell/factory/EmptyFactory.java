@@ -17,24 +17,22 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.model;
+package gj.shell.factory;
 
-import java.util.Set;
+import gj.shell.model.Graph;
+
+import java.awt.geom.Rectangle2D;
 
 /**
- * A Graph contains Nodes and Arcs
+ * GraphFactory - a Tree
  */
-public interface Graph {
+public class EmptyFactory extends AbstractGraphFactory {
 
   /**
-   * Access to the graph's vertices
+   * @see gj.shell.factory.AbstractGraphFactory#create(gj.model.Factory, java.awt.geom.Rectangle2D)
    */
-  public Set getVertices();
- 
-  /**
-   * Access to the neighbours of a vertex
-   */
-  public Set getNeighbours(Object vertex);
-  
-} //Graph
- 
+  public Graph create(Rectangle2D bounds) {
+    return new Graph();
+  }
+
+} //EmptyFactory

@@ -17,24 +17,41 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.model;
+package gj.layout;
 
-import java.util.Set;
+import gj.util.EdgeLayoutHelper;
 
 /**
- * A Graph contains Nodes and Arcs
+ * Base for Layouts (optional)
  */
-public interface Graph {
+public abstract class AbstractLayoutAlgorithm implements LayoutAlgorithm {
+  
+  /** whether we debug or not */
+  private boolean isDebug = false;
+  
+  /** an arc layout for convenience */
+  protected EdgeLayoutHelper arcLayout = new EdgeLayoutHelper();
 
   /**
-   * Access to the graph's vertices
+   * Getter - debug
    */
-  public Set getVertices();
- 
-  /**
-   * Access to the neighbours of a vertex
-   */
-  public Set getNeighbours(Object vertex);
+  public boolean isDebug() {
+    return isDebug;
+  }
   
-} //Graph
- 
+  /**
+   * Setter - debug
+   */
+  public void setDebug(boolean set) {
+    isDebug=set;
+  }
+
+  /**
+   * @see java.lang.Object#toString()
+   */
+  public String toString() {
+    String s = getClass().getName();
+    return s.substring(s.lastIndexOf('.')+1);
+  }
+
+} //AbstractLayout
