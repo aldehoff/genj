@@ -51,13 +51,13 @@ final public class Images {
     imgNavYoungerSiblingOn   = new ImageIcon(this,"NavYoungerSiblingOn.gif");
     imgNavYoungerSiblingOff  = new ImageIcon(this,"NavYoungerSiblingOff.gif");
     imgNavOlderSiblingOn  = new ImageIcon(this,"NavOlderSiblingOn.gif");
-    imgNavOlderSiblingOff = imgNavYoungerSiblingOff;
+    imgNavOlderSiblingOff = new ImageIcon(this,"NavOlderSiblingOff.gif");
     imgNavChildOn         = new ImageIcon(this,"NavChildOn.gif");
     imgNavChildOff        = new ImageIcon(this,"NavChildOff.gif");
     imgNavFatherOn        = new ImageIcon(this,"NavFatherOn.gif");
     imgNavFatherOff       = new ImageIcon(this,"NavFatherOff.gif");
     imgNavMotherOn        = new ImageIcon(this,"NavMotherOn.gif");
-    imgNavMotherOff       = imgNavFatherOff;
+    imgNavMotherOff       = new ImageIcon(this,"NavMotherOff.gif");
     imgNavPartnerOn       = new ImageIcon(this,"NavPartnerOn.gif");
     imgNavPartnerOff      = new ImageIcon(this,"NavPartnerOff.gif");
   }
