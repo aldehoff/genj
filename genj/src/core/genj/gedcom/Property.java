@@ -55,7 +55,7 @@ public abstract class Property implements Comparable {
     if (getEntity()==null) throw new IllegalArgumentException("Not part of entity is null!");
     
     // ask for default sub-properties
-    MetaProperty[] subs = MetaProperty.getSubs(this, true); 
+    MetaProperty[] subs = MetaProperty.get(this).getSubs(true); 
     
     // loop
     for (int s=0; s<subs.length; s++) {

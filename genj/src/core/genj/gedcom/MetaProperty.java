@@ -213,13 +213,6 @@ public class MetaProperty {
   }
   
   /**
-   * Acessor - subs
-   */
-  public static MetaProperty[] getSubs(Property prop, boolean defaults) {
-    return get(prop.getPath()).getSubs(defaults);
-  }
-
-  /**
    * Resolve sub by tag
    */
   public MetaProperty get(String tag) {
