@@ -48,7 +48,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -734,8 +733,6 @@ public class ControlCenter extends JPanel {
       }
 
       // Open Connection and get input stream
-      InputStream in;
-      long size;
       try {
         
         // .. prepare our reader
@@ -877,6 +874,8 @@ public class ControlCenter extends JPanel {
 
         // .. take choosen one & filters
         result = chooser.getSelectedFile();
+        if (!result.getName().endsWith(".ged"))
+          result = new File(result.getAbsolutePath()+".ged");
         filters = options.getFilters();
         if (gedcom.hasPassword())
           password = options.getPassword();
@@ -924,6 +923,8 @@ public class ControlCenter extends JPanel {
         // .. create writer
         gedWriter =
           new GedcomWriter(gedcom, result.getName(), new FileOutputStream(temp));
+          
+        // .. set options
         gedWriter.setFilters(filters);
         gedWriter.setPassword(password);
         
@@ -975,7 +976,8 @@ public class ControlCenter extends JPanel {
         }
         
         // .. and now !finally! move from temp to result
-        temp.renameTo(result);
+        if (!temp.renameTo(result))
+          throw new GedcomIOException("Couldn't move temporary "+temp.getName()+" to "+result.getName(), -1);
        
         // .. note changes are saved now
         if (newOrigin == null) 
