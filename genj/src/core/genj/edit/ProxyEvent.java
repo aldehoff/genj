@@ -66,10 +66,12 @@ class ProxyEvent extends Proxy {
     
     // Calculate label & age
     String ageat = "Age";
-    String age = date!=null ? indi.getAge(date) : "(unknown)";
+    String age;
     if ("BIRT".equals(event.getTag())) {
       ageat+=" (today)";
-      age = indi.getAge(null);
+      age = indi.toAgeString(null);
+    } else {
+      age = date!=null ? indi.toAgeString(date) : "(unknown)";
     }
     
     // layout

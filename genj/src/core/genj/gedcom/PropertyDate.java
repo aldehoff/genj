@@ -278,10 +278,11 @@ public class PropertyDate extends Property {
     noteModifiedProperty();
 
     // remember
-    if (!isRange()&&isRange(newFormat)) {
-      end.set(start);
-    }
     format=newFormat;
+    
+    // set end == start?
+    if (!isRange()&&isRange(format)) 
+      end.set(start);
     
     // Done
   }
@@ -294,8 +295,8 @@ public class PropertyDate extends Property {
     noteModifiedProperty();
 
     // Reset value
-    start.set(null,null,null);
-    end.set(null,null,null);
+    start.reset();
+    end.reset();
     format = DATE;
     dateAsString=null;
 
@@ -326,12 +327,32 @@ public class PropertyDate extends Property {
    * Returns this date as a string
    */
   public String toString(boolean abbreviate, boolean localize) {
-    if (dateAsString!=null) return dateAsString;
-    WordBuffer result = new WordBuffer(start.toString(abbreviate,localize));
-    if (isRange()) {
-      if (abbreviate) result.append("-");
-      result.append(end.toString(abbreviate,localize));
+    
+    // as string?
+    if (dateAsString!=null) 
+      return dateAsString;
+      
+    // prepare modifiers
+    String
+      smod = formats[format].startModifier,
+      emod = formats[format].endModifier;
+      
+    if (localize) {
+      smod = Gedcom.getResources().getString("prop.date.mod."+smod);  
+      emod = Gedcom.getResources().getString("prop.date.mod."+emod);  
     }
+      
+    // collect information
+    WordBuffer result = new WordBuffer();
+    
+    result.append(abbreviate?EMPTY_STRING:smod);  
+    start.toString(result,localize);
+    
+    if (isRange()) {
+      result.append(abbreviate?"-":emod);
+      end.toString(result,localize);
+    }
+    
     return result.toString();
   }
 
@@ -341,53 +362,59 @@ public class PropertyDate extends Property {
   public class PointInTime {
     
     /** content */
-    protected Integer year,month,day;
+    private int 
+      year = -1,
+      month = -1,
+      day = -1;
     
     /**
      * Returns the year
      */
-    public Integer getYear() {
+    public int getYear() {
       return year;
     }
   
     /**
      * Returns the month
      */
-    public Integer getMonth() {
+    public int getMonth() {
       return month;
     }
 
     /**
      * Returns the day
      */
-    public Integer getDay() {
+    public int getDay() {
       return day;
     }
 
     /**
-     * Returns a Calendar object for year/month/day
+     * Checks for validity
      */
-    public Calendar toCalendar() {
-      Calendar cal = Calendar.getInstance();
-      int iyear  = (year  == null) ? 0 : year.intValue();
-      int imonth = (month == null) ? 0 : (month.intValue() - 1);
-      int iday   = (day   == null) ? 0 : day.intValue();
-      cal.set(iyear, imonth, iday);
-      return cal;
+    public boolean isValid() {
+  
+      // YYYY or MMM YYYY or DD MMMM YYYY
+      if (year<0)
+        return false;
+      if (month>=12)
+        return false;
+      if (month<0&&day>=0)
+        return false;
+      return true;
     }
-
+    
     /**
      * Returns a double representation
      */
     public double toDouble() {
       double result = 0;
       
-      if (year!=null) {
-        result = year.intValue();
-        if (month!=null) {
-          result += ((double)month.intValue()-1)/12;
-          if (day!=null) {
-            result += ((double)day.intValue()/12/31);
+      if (year>=0) {
+        result = year;
+        if (month>=0&&month<12) {
+          result += ((double)month)/12;
+          if (day>=0&&day<31) {
+            result += ((double)day)/12/31;
           } 
         }
       }
@@ -395,58 +422,62 @@ public class PropertyDate extends Property {
       return result;
     }
   
+    /**
+     * String representation
+     */
+    public String toString() {
+      return toString(new WordBuffer(),true).toString();
+    }
+    
+    /**
+     * Setter
+     */
+    public void set(int d, int m, int y) {
 
+      // Remember change
+      noteModifiedProperty();
+
+      // Set it
+      dateAsString=null;
+      
+      day   = d;
+      month = m;
+      year  = y;
+  
+      // Done
+    }
+    
     /**
      * compare to other
      */  
-    protected int compareTo(PointInTime other) {
-      
+    private int compareTo(PointInTime other) {
+
       int result;
       
       // Year ?
-      if ((result=compare(year, other.year))!=0) return result;
+      if ((result=year-other.year)!=0) return result;
       
       // Month
-      if ((result=compare(month, other.month))!=0) return result;
+      if ((result=month-other.month)!=0) return result;
       
       // Day
-      if ((result=compare(day, other.day))!=0) return result;
+      if ((result=day-other.day)!=0) return result;
       
       // Equal
       return 0;
     }    
     
     /**
-     * helper for comparison
+     * Setter
      */
-    private int compare(Integer one, Integer two) {
-      if ((one==null)&&(two==null)) return 0;
-      if (one==null) return -1;
-      if (two==null) return  1;
-      if (one.intValue()<two.intValue()) return -1;
-      if (one.intValue()>two.intValue()) return  1;
-      return 0;
-    }
-    
-    /**
-     * Checks for validity
-     */
-    public boolean isValid() {
-  
-      // YYYY or MMM YYYY or DD MMMM YYYY
-      if (year==null)
-        return false;
-      if ((month!=null)&&(month.intValue()>=1)&&(month.intValue()<=12))
-        return true;
-      if (day!=null)
-        return false;
-      return true;
+    private void reset() {
+      set(-1,-1,-1);
     }
     
     /**
      * Setter
      */
-    protected void set(PointInTime other) {
+    private void set(PointInTime other) {
       // Remember change
       noteModifiedProperty();
       // set
@@ -458,25 +489,7 @@ public class PropertyDate extends Property {
     /**
      * Setter
      */
-    public void set(Integer d, Integer m, Integer y) {
-
-      // Remember change
-      noteModifiedProperty();
-
-      // Set it
-      dateAsString=null;
-      
-      day   = d;
-      if ((m!=null)&&(m.intValue()<1||m.intValue()>12)) {} else month = m;
-      year  = y;
-  
-      // Done
-    }
-    
-    /**
-     * Setter
-     */
-    protected boolean set(StringTokenizer tokens) {
+    private boolean set(StringTokenizer tokens) {
   
       // Number of tokens ?
       switch (tokens.countTokens()) {
@@ -486,24 +499,24 @@ public class PropertyDate extends Property {
           return false;
         case 1 : // YYYY
           try {
-            year = new Integer( tokens.nextToken() );
+            year = Integer.parseInt(tokens.nextToken());
           } catch (NumberFormatException e) {
             return false;
           }
-          return true;
+          return year>=0;
         case 2 : // MMM YYYY
           try {
             month = parseMonth ( tokens.nextToken() );
-            year  = new Integer( tokens.nextToken() );
+            year  = Integer.parseInt( tokens.nextToken() );
           } catch (NumberFormatException e) {
             return false;
           }
           break;
         case 3 : // DD MMM YYYY
           try {
-            day   = new Integer( tokens.nextToken() );
+            day   = Integer.parseInt( tokens.nextToken() );
             month = parseMonth ( tokens.nextToken() );
-            year  = new Integer( tokens.nextToken() );
+            year  = Integer.parseInt( tokens.nextToken() );
           } catch (NumberFormatException e) {
             return false;
           }
@@ -517,37 +530,20 @@ public class PropertyDate extends Property {
     /**
      * String representation
      */
-    public String toString() {
-      return toString(false,true);
+    private WordBuffer toString(WordBuffer buffer, boolean localize) {
+      if (day>0) buffer.append(new Integer(day));
+      buffer.append(getMonth(localize));
+      if (year>0) buffer.append(new Integer(year));
+      return buffer;
     }
     
-    /**
-     * String representation
-     */
-    public String toString(boolean abbreviate, boolean localize) {
-      WordBuffer result = new WordBuffer();
-      if (!abbreviate) {
-        result.append(getModifier(localize));
-      }
-      return result.append(getDay()).append(getMonth(localize)).append(getYear()).toString();
-    }
-    
-    /**
-     * Acessor - the modifier (e.g. 'FROM', 'BEF')
-     */
-    private String getModifier(boolean localize) {
-      String mod = (start == this ? formats[format].startModifier : formats[format].endModifier);
-      if ((mod.length()>0)&&localize) mod = Gedcom.getResources().getString("prop.date.mod."+mod);
-      return mod;
-    }
-
     /**
      * Accessor - the month
      */
     private String getMonth(boolean localize) {
-      if (month==null)
+      if (month<0||month>=12)
         return EMPTY_STRING;
-      String mmm = months[month.intValue()-1];
+      String mmm = months[month];
       if (localize) mmm = Gedcom.getResources().getString("prop.date.mon."+mmm);
       return mmm;
     }
@@ -555,9 +551,9 @@ public class PropertyDate extends Property {
     /**
      * Helper that transforms month to Integer
      */
-    private Integer parseMonth(String mmm) throws NumberFormatException {
+    private int parseMonth(String mmm) throws NumberFormatException {
       for (int i=0;i<months.length;i++) {
-        if (months[i].equalsIgnoreCase(mmm)) return new Integer(i+1);
+        if (months[i].equalsIgnoreCase(mmm)) return i;
       }
       throw new NumberFormatException();
     }

@@ -212,7 +212,13 @@ public class MetaProperty {
    */
   public ImageIcon getImage(String postfix) {
     Object name = props.get("img."+postfix);
-    if (name==null) return getImage() ;
+    if (name==null) {
+      // check err
+      if ("err".equals(postfix))
+        name = IMG_ERROR;
+      else
+        return getImage() ;
+    } 
     return loadImage(name.toString());
   }
 

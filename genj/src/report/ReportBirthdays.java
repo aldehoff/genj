@@ -101,7 +101,6 @@ public class ReportBirthdays implements Report {
         break;
       }
     }
-    month++;
 
     // Look for candidates
     List candidates = new ArrayList(100);
@@ -113,8 +112,7 @@ public class ReportBirthdays implements Report {
       if (birth==null) {
         continue;
       }
-      Integer m =birth.getStart().getMonth();
-      if (m!=null && m.intValue() == month) {
+      if (birth.getStart().getMonth() == month) {
         candidates.add(indi);
       }
     }

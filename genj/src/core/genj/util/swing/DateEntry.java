@@ -57,12 +57,12 @@ public class DateEntry extends JPanel {
   /**
    * Constructor
    */
-  public DateEntry(Integer setDay, Integer setMonth, Integer setYear) {
+  public DateEntry(int setDay, int setMonth, int setYear) {
     // Sub-components
     lStatus = new JLabel();
-    tfDay   = new JTextField( (setDay  != null) ? setDay  .toString() : "",2+1);
-    tfMonth = new JTextField( (setMonth!= null) ? setMonth.toString() : "",2+1);
-    tfYear  = new JTextField( (setYear != null) ? setYear .toString() : "",4+1);
+    tfDay   = new JTextField( (setDay  <0) ? "" : ""+setDay      ,2+1);
+    tfMonth = new JTextField( (setMonth<0) ? "" : ""+(setMonth+1),2+1);
+    tfYear  = new JTextField( (setYear <0) ? "" : ""+setYear     ,4+1);
     // order fields
     String format;
     switch (new SimpleDateFormat().toPattern().charAt(0)) {
@@ -127,11 +127,11 @@ public class DateEntry extends JPanel {
   /**
    * Returns Day
    */
-  public Integer getDay() {
+  public int getDay() {
     try {
-      return new Integer(tfDay.getText());
+      return Integer.parseInt(tfDay.getText());
     } catch (NumberFormatException e) {
-      return null;
+      return -1;
     }
   }
 
@@ -145,22 +145,22 @@ public class DateEntry extends JPanel {
   /**
    * Returns Month
    */
-  public Integer getMonth() {
+  public int getMonth() {
     try {
-      return new Integer(tfMonth.getText());
+      return Integer.parseInt(tfMonth.getText())-1;
     } catch (NumberFormatException e) {
-      return null;
+      return -1;
     }
   }
 
   /**
    * Returns Year
    */
-  public Integer getYear() {
+  public int getYear() {
     try {
-      return new Integer(tfYear.getText());
+      return Integer.parseInt(tfYear.getText());
     } catch (NumberFormatException e) {
-      return null;
+      return -1;
     }
   }
 
@@ -171,15 +171,15 @@ public class DateEntry extends JPanel {
     return changed;
   }
 
-  /**
-   * Sets the date
-   */
-  public void setDate(Integer setYear, Integer setMonth, Integer setDay) {
-    tfDay  .setText( setDay  != null ? setDay  .toString() : "" );
-    tfMonth.setText( setMonth!= null ? setMonth.toString() : "" );
-    tfYear .setText( setYear != null ? setYear .toString() : "" );
-    changed=false;
-  }
+//  /**
+//   * Sets the date
+//   */
+//  public void setDate(Integer setYear, Integer setMonth, Integer setDay) {
+//    tfDay  .setText( setDay  != null ? setDay  .toString() : "" );
+//    tfMonth.setText( setMonth!= null ? setMonth.toString() : "" );
+//    tfYear .setText( setYear != null ? setYear .toString() : "" );
+//    changed=false;
+//  }
 
   /**
    * Dis-/Enables the control

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
 
 /**
@@ -239,73 +240,6 @@ public class Indi extends Entity {
   }
 
   /**
-   * Calculate indi's age at given date
-   * (some code borrowed from jLifelines)
-   * @param pEnd the date at which to calc age (or null for *now*)
-   * @return age as a string description or null
-   */
-  public String getAge(PropertyDate pEnd) {
-
-    // try to get birth    
-    PropertyDate pBirth = getBirthDate();
-    if (pBirth==null)
-      return null;
-
-    // calculate    
-    boolean showMonth, showDay;
-    PropertyDate.PointInTime pit;
-
-    pit = pBirth.getStart();
-    Calendar birthCal = pit.toCalendar();
-    showMonth = (pit.getMonth() != null);
-    showDay   = (pit.getDay()   != null);
-
-    Calendar end = Calendar.getInstance(); // default to current time
-    if (pEnd!=null) {
-      pit = pEnd.getStart();
-      end = pit.toCalendar();
-      showMonth |= (pit.getMonth() != null);
-      showDay   |= (pit.getDay()   != null);
-    }
-
-    int ageYears  = end.get(Calendar.YEAR)  - birthCal.get(Calendar.YEAR);
-    int ageMonths = end.get(Calendar.MONTH) - birthCal.get(Calendar.MONTH);
-    int ageDays   = end.get(Calendar.DATE)  - birthCal.get(Calendar.DATE);
-
-    if ((ageMonths < 0) || ((ageMonths == 0) && (ageDays < 0))) {
-      ageYears  -= 1;
-      ageMonths += 12;
-    }
-    if (ageDays < 0) {
-      ageMonths -= 1;
-      // a lot of work just to get the number of days in the previous month
-      Calendar tmp = Calendar.getInstance();
-      tmp.set(birthCal.get(Calendar.YEAR), birthCal.get(Calendar.MONTH), 1);
-      tmp.add(Calendar.YEAR,  ageYears);
-      tmp.add(Calendar.MONTH, ageMonths);
-      // worst case: born 30 Jan, died 1 Mar - 1m 1d
-      int prevMonth = tmp.getActualMaximum(Calendar.DATE);
-      if (birthCal.get(Calendar.DATE) > prevMonth)
-        ageDays = end.get(Calendar.DATE);
-      else
-        ageDays += prevMonth;
-    }
-
-    if (ageYears < 0)
-      return null;                        // bogus info
-
-    StringBuffer buf = new StringBuffer(ageYears + "y");
-    if (showMonth) {
-      buf.append(" ").append(ageMonths).append("m");
-      if (showDay) {
-        buf.append(" ").append(ageDays).append("d");
-      }
-    }
-
-    return buf.toString();
-  }
-
-  /**
    * Returns the selected family in which the individual is a partner
    */
   public Fam getFam(int which) {
@@ -503,13 +437,82 @@ public class Indi extends Entity {
   }
 
   /**
+   * Calculate indi's age at given date
+   * @param pEnd the date at which to calc age (or null for *now*)
+   * @return age as a string description or null
+   */
+  public String toAgeString(PropertyDate pEnd) {
+
+    // try to get birth    
+    PropertyDate birth = getBirthDate();
+    if (birth==null)
+      return null;
+    PropertyDate.PointInTime pit = birth.getStart();
+    if (!pit.isValid())
+      return null;
+      
+    int 
+      ythen = pit.getYear(),
+      mthen = Math.max(0,pit.getMonth()),
+      dthen = Math.max(0,pit.getDay  ());
+   
+    // age at what point in time?
+    int ynow, mnow, dnow;
+    if (pEnd==null) {
+      Calendar now = Calendar.getInstance(); // default to current time
+      ynow = now.get(Calendar.YEAR);      
+      mnow = now.get(Calendar.MONTH);      
+      dnow = now.get(Calendar.DATE)-1;      
+    } else {
+      PropertyDate.PointInTime at = pEnd.getStart();
+      if (!at.isValid()) return null;
+      ynow = at.getYear();
+      mnow = Math.max(0, at.getMonth());
+      dnow = Math.max(0, at.getDay  ());
+    }
+    
+    // calculate deltas
+    int ydelta = ynow - ythen;
+    int mdelta = mnow - mthen;
+    int ddelta = dnow - dthen;
+    
+    // check day
+    if (ddelta<0) {
+      // decrease months
+      mdelta -=1;
+      // increase days with days in previous month
+      //ddelta +=30;
+
+
+      Calendar c = Calendar.getInstance();
+      c.set(ythen, mthen, 1);
+      int days = c.getActualMaximum(Calendar.DATE);
+      ddelta = dnow + (days-dthen); 
+
+    }
+
+    // check month now<then
+    if (mdelta<0) {
+      // decrease years
+      ydelta -=1;
+      // increase months
+      mdelta +=12;
+    } 
+
+    // calculate output
+    WordBuffer buffer = new WordBuffer();
+    if (ydelta>0) buffer.append(ydelta+"y");
+    if (mdelta>0) buffer.append(mdelta+"m");
+    if (ddelta>0) buffer.append(ddelta+"d");
+    
+    return buffer.toString();    
+  }
+
+  /**
    * Image
    */
   public ImageIcon getImage(boolean checkValid) {
-    // validity?
-    if (checkValid&&(!isValid()))
-      return super.getImage(true);
-    // check it
+    // check sex (no need to check valid here)
     switch (getSex()) {
       case PropertySex.MALE: return IMG_MALE;
       case PropertySex.FEMALE: return IMG_FEMALE;

@@ -114,14 +114,14 @@ public class ReportAges implements Report {
         PropertyDate pDate = event.getDate(true);
         if (pDate != null) {
           String out = event.getTag() + ": " + pDate
-            + ", " + indi.getAge(pDate);
+            + ", " + indi.toAgeString(pDate);
           bridge.println(out);
         }
       }
     }
 
     // in case no DEAT, or if he were alive today
-    bridge.println("Since birth: " + indi.getAge(null));
+    bridge.println("Since birth: " + indi.toAgeString(null));
   }
 
 } //ReportAges
