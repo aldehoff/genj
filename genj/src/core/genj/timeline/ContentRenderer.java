@@ -71,23 +71,27 @@ public class ContentRenderer extends Renderer {
   private final void render(Graphics g, FontMetrics fm, Model model, List layer, int level) {
     // loop through events
     Iterator events = layer.iterator();
-    while (events.hasNext()) {
-      Model.Event event = (Model.Event)events.next();
-      render(g, fm, model, event, level);
-    }
+    Model.Event event = (Model.Event)events.next();
+    while (true) {
+      Model.Event next = events.hasNext() ? (Model.Event)events.next() : null;
+      render(g, fm, model, event, next, level);
+      if (next==null) break;
+      event = next;
+    } 
     // done
   }
   
   /**
    * Renders an event
    */
-  private final void render(Graphics g, FontMetrics fm, Model model, Model.Event event, int level) {
+  private final void render(Graphics g, FontMetrics fm, Model model, Model.Event event, Model.Event next, int level) {
     // calculate some parameters
     int
       fh  = fm.getHeight(),
       fd  = fm.getDescent(),
       x1  = cm2pixels((event.from-model.min)*cmPyear),
       x2  = cm2pixels((event.to-model.min)*cmPyear),
+      w   = next == null ? Integer.MAX_VALUE : cm2pixels((next.from-event.to)*cmPyear),
       y   = level*(fh+1);
 
     boolean em  = event.prop.getEntity().equals(model.gedcom.getLastEntity());
@@ -101,12 +105,8 @@ public class ContentRenderer extends Renderer {
     // draw it's text and image (not extending past model.max)
     if (colorize) g.setColor(em ? Color.red : Color.black);
     
+    pushClip(g, x1, y, w, fh+1);
     ImgIcon img = event.prop.getImage(false);
-    double years = pixels2cm(Math.min(pixelsPevent,img.getIconWidth() + fm.stringWidth(event.tag)))/cmPyear;
-    if (event.from+years > model.max) {
-      x1 = cm2pixels((model.max-model.min-years)*cmPyear);
-    }
-    pushClip(g, x1, y, pixelsPevent, fh+1);
     img.paintIcon(g, x1, y+fh/2-img.getIconHeight()/2);
     x1+=img.getIconWidth();
     g.drawString(event.tag, x1, y + fh - fd);

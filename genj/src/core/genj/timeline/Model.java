@@ -106,14 +106,14 @@ import genj.gedcom.PropertyEvent;
     createEventsFrom(gedcom.getEntities(Gedcom.INDIVIDUALS));
     createEventsFrom(gedcom.getEntities(Gedcom.FAMILIES   ));
     
-    // recheck trailing events in layers
-    checkTrailingEvents();
-    
     // nothing found -> fallback to this year
     if (layers.size()==0) {
       min = Calendar.getInstance().get(Calendar.YEAR);
-      max = min+(double)11/12;
+      max = min;
     }
+    
+    // add space for the events
+    max += timePevent;
     
     // done
   }
@@ -210,19 +210,6 @@ import genj.gedcom.PropertyEvent;
    */
   private final double wrap(PropertyDate.PointInTime p) {
     return (double)p.getYear(0) + ((double)p.getMonth(1)-1)/12 + ((double)p.getDay(0)/12/31);
-  }
-  
-  /**
-   * Check trailing events - we don't want them closer
-   * than timePerEvent*2 to the previous one
-   */
-  private final void checkTrailingEvents() {
-    // loop layers
-    for (int l=0;l<layers.size();l++) {
-      LinkedList layer = (LinkedList)layers.get(l);
-      Event event = (Event)layer.getLast();
-    }
-    // done
   }
   
   /**

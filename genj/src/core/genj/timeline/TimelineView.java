@@ -159,6 +159,11 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     sliderPixelsPerEvent.addChangeListener((ChangeListener)new ActionPixelsPerEvent().as(ChangeListener.class));
     bar.add(sliderPixelsPerEvent);
 
+    // create 'ma' label
+    JLabel labelMax = new JLabel("max.");
+    labelMax.setFont(labelCmPerYear.getFont());
+    bar.add(labelMax);
+
     // create '1pts' label
     labelPixelsPerEvent = new JLabel(pixels2txt(pixelsPevent));
     labelPixelsPerEvent.setFont(labelCmPerYear.getFont());
@@ -169,7 +174,6 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     labelPerEvent.setFont(labelCmPerYear.getFont());
     bar.add(labelPerEvent);
 
-    
     // done
   }
   
