@@ -319,6 +319,8 @@ public class GedcomReader implements Trackable {
 
     // .. get new
     try {
+      
+      //Thread.currentThread().sleep(100);
 
       // Read
       do {
