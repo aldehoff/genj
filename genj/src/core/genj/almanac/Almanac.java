@@ -88,8 +88,11 @@ public class Almanac {
     // load what we can find async
     new Thread(new Runnable() {
       public void run() {
-        new WikipediaLoader().load();
-        new AlmanacLoader().load();
+        try {
+          new WikipediaLoader().load();
+          new AlmanacLoader().load();
+        } catch (Throwable t) {
+        }
   	    Debug.log(Debug.INFO, Almanac.this, "Loaded "+events.size()+" events");
   	    synchronized (events) {
   	      isLoaded = true;
@@ -377,7 +380,7 @@ public class Almanac {
     // 19700525\Births\Nils Meier
     private Pattern REGEX_LINE = Pattern.compile("(.*?)\\\\(.*?)\\\\(.*)");
     
-    private final String DIR = "./contrib/wikipedias";
+    private final String DIR = "./contrib/wikipedia";
     
     private final String SUFFIX = ".wikipedia.zip";
     
