@@ -49,20 +49,31 @@ public class PropertyForeignXRef extends PropertyXRef {
   }
 
   /**
-   * There's no gedcom equivalent to a foreign (back) reference so we'll simply babble here a bit 
+   * There's no gedcom equivalent to a foreign (back) reference - returning ID of foreign entity
    */
   public String getValue() {
+    return '@'+getReferencedEntity().getId()+'@';
+  }
+  
+  
+  /**
+   * A human readable text representation 
+   */
+  public String getDisplayValue() {
+    
     // the property/entity we're originating from
     Property p = getTarget();
     Entity e = p.getEntity();
-    // "linked through INDI:BIRT:ASSO in I001"
-    String result = resources.getString("linked.by")+" "+p.getPath()+" "+resources.getString("linked.in")+" "+e.getId();
-    // relationship information?    
-    Property rela = p.getProperty("RELA");
-    if (rela!=null&&rela.getDisplayValue().length()>0) { 
-      result += " ("+rela.getDisplayValue()+")";
-    } 
     
+    // relationship information for association?
+    String result = resources.getString("linked");
+    if (p instanceof PropertyAssociation) {
+      Property rela = p.getProperty("RELA");
+      if (rela!=null&&rela.getDisplayValue().length()>0) 
+        result = rela.getDisplayValue();
+    }
+    result += ": " + e.toString();
+
     // done
     return result;
   }
