@@ -106,6 +106,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       result.add(new CreateRelationship(property.getGedcom(), Gedcom.MULTIMEDIAS , new Relationship.LinkedBy(property,Gedcom.MULTIMEDIAS)));
       result.add(new CreateRelationship(property.getGedcom(), Gedcom.SOURCES     , new Relationship.LinkedBy(property,Gedcom.SOURCES)));
     }
+    // association
+    result.add(new CreateRelationship(property.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(property) ));
     // delete possible
     result.add(ActionDelegate.NOOP);
     result.add(new DelProperty(property));
@@ -133,6 +135,8 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       result.add(new CreateRelationship(entity.getGedcom(), Gedcom.SUBMITTERS  , new Relationship.LinkedBy(entity.getProperty(),Gedcom.SUBMITTERS)));
       result.add(new CreateRelationship(entity.getGedcom(), Gedcom.REPOSITORIES, new Relationship.LinkedBy(entity.getProperty(),Gedcom.REPOSITORIES)));
     }
+    // association
+    result.add(new CreateRelationship(entity.getGedcom(), Gedcom.INDIVIDUALS, new Relationship.AssociatedWith(entity.getProperty()) ));
     // add delete
     result.add(ActionDelegate.NOOP);
     result.add(new DelEntity(entity));
@@ -178,7 +182,6 @@ public class EditViewFactory implements ViewFactory, ContextSupport {
       result.add(new CreateRelationship(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.ParentOf(indi)));
     result.add(new CreateRelationship(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.SpouseOf(indi)));
     result.add(new CreateRelationship(indi.getGedcom(), Gedcom.INDIVIDUALS , new Relationship.SiblingOf(indi)));
-    result.add(new CreateAssociation(indi));
   }
   
   /**

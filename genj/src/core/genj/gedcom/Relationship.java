@@ -301,4 +301,45 @@ public abstract class Relationship {
     
   } // SiblingOf
   
+  /**
+   * Relationship : Associated With
+   */
+  public static class AssociatedWith extends Relationship {
+    
+    /** target property */
+    private Property property;
+    
+    /** Constructor */
+    public AssociatedWith(Property prop) {
+      property = prop;
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship.AssociatedWith#getName()
+     */
+    public String getName() {
+      return Gedcom.resources.getString("rel.association");
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship.AssociatedWith#toString()
+     */
+    public String toString() {
+      return Gedcom.resources.getString("rel.association.with", property.getEntity());
+    }
+    
+    /**
+     * @see genj.gedcom.Relationship.AssociatedWith#apply(genj.gedcom.Entity)
+     */
+    public void apply(Entity entity) throws GedcomException {
+      assume(entity, Indi.class);
+      // add association
+      PropertyAssociation pa = new PropertyAssociation("ASSO", property.getEntity().getId());
+      entity.getProperty().addProperty(pa);
+      pa.link();
+      pa.addDefaultProperties();
+    }
+    
+  } //AssociatedWith
+  
 } //Relationship

@@ -56,13 +56,16 @@ public class CreateRelationship extends AbstractChange {
    * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
    */
   protected String getConfirmMessage() {
+    
     // You are about to create a {0} in {1}! / You are about to reference {0} in {1}!
-    // This entity will be {0}.
+    // This {0} will be {1}.
     String about = existing==null ?
       resources.getString("confirm.new", new Object[]{ Gedcom.getNameFor(type,false), gedcom})
      :
       resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom});
-    String detail = resources.getString("confirm.new.related", relationship);
+      
+    String detail = resources.getString("confirm.new.related", relationship );
+    
     return about + '\n' + detail;
   }
   
