@@ -502,7 +502,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       if (!gedcom.startTransaction()) return;
   
       // .. Calculate property that is moved
-      Property sibling = parent.getProperty(tree.getModel().getIndexOfChild(parent, prop) + (up?-1:1));
+      Property sibling = (Property)tree.getModel().getChild(parent, tree.getModel().getIndexOfChild(parent, prop) + (up?-1:1));
       parent.swapProperties(prop, sibling);
   
       // .. UnlockWrite
@@ -512,7 +512,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextSupport {
       tree.expandRows();
   
       // Reselect the property
-      tree.setSelectionPath(new TreePath(prop.getEntity().getPathTo(prop)));
+      TreePath path = new TreePath(prop.getEntity().getPathTo(prop));
+      tree.setSelectionPath(path);
+      tree.scrollPathToVisible(path);;
       
       // Done  
     }
