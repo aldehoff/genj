@@ -48,6 +48,16 @@ public class Gedcom {
   static private Random seed = new Random();
   static /*package*/ Resources resources = Resources.get(Gedcom.class);
 
+  public static final String 
+    UNICODE = "UNICODE", 
+    ASCII = "ASCII", 
+    IBMPC = "IBMPC", 
+    ANSEL = "ANSEL";
+
+  public static final String[] ENCODINGS = { 
+    ANSEL, UNICODE, ASCII, IBMPC 
+  };
+
   public final static String
     INDI = "INDI", 
     FAM  = "FAM" ,
@@ -110,6 +120,9 @@ public class Gedcom {
   
   /** mapping tags refence sets */
   private Map tags2refsets = new HashMap();
+
+  /** encoding */
+  private String encoding = ANSEL;
 
   /**
    * Gedcom's Constructor
@@ -524,6 +537,25 @@ public class Gedcom {
    */
   public static Resources getResources() {
     return resources;
+  }
+
+  /**
+   * Accessor - encoding
+   */
+  public void setEncoding(String set) {
+    for (int e=0;e<ENCODINGS.length;e++) {
+      if (ENCODINGS[e].equals(set)) {
+        encoding = set;
+        return;
+      }
+    }
+  }
+  
+  /**
+   * Accessor - encoding
+   */
+  public String getEncoding() {
+    return encoding;
   }
   
 } //Gedcom
