@@ -32,6 +32,7 @@ import java.util.Vector;
 
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
+import javax.swing.SwingConstants;
 
 /**
  * Helper for button creation etc.
@@ -49,7 +50,8 @@ public class ButtonHelper {
   private Vector collection       = null;
   private boolean isTextAllowed   = true;
   private boolean isImageAllowed  = true;
-
+  private boolean isImageOverText = false;
+  
   /** Setters */    
   public ButtonHelper setInsets(Insets set) { insets=set; return this; }
   public ButtonHelper setInsets(int val) { insets=new Insets(val,val,val,val); return this; }
@@ -63,6 +65,7 @@ public class ButtonHelper {
   public ButtonHelper setCollection(Vector set) { collection=set; return this; }
   public ButtonHelper setImageAllowed(boolean set) { isImageAllowed=set; return this; }
   public ButtonHelper setTextAllowed(boolean set) { isTextAllowed=set; return this; }
+  public ButtonHelper setImageOverText(boolean set) { isImageOverText=set; return this; }
   
   
   /**
@@ -84,6 +87,10 @@ public class ButtonHelper {
       result.setMargin(insets);
     if (minSize!=null)
       result.setMinimumSize(minSize);
+    if (isImageOverText) {
+      result.setVerticalTextPosition(SwingConstants.BOTTOM);
+      result.setHorizontalTextPosition(SwingConstants.CENTER);
+    }
     if (horizontalAlignment>=0)
       result.setHorizontalAlignment(horizontalAlignment);
     
