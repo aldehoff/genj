@@ -57,16 +57,16 @@ public class PropertyDate extends Property {
     
   /** format definitions */
   private final static FormatDescriptor[] formats = {
-    new FormatDescriptor(false, ""    , ""   ), // DATE
-    new FormatDescriptor(true , "FROM", "TO" ), // FROM TO
-    new FormatDescriptor(false, "FROM", ""   ), // FROM
-    new FormatDescriptor(false, "TO"  , ""   ), // TO
-    new FormatDescriptor(true , "BET" , "AND"), // BETAND
-    new FormatDescriptor(false, "BEF" , ""   ), // BEF
-    new FormatDescriptor(false, "AFT" , ""   ), // AFT
-    new FormatDescriptor(false, "ABT" , ""   ), // ABT
-    new FormatDescriptor(false, "CAL" , ""   ), // CAL
-    new FormatDescriptor(false, "EST" , ""   )  // EST
+    new FormatDescriptor(false, ""    , ""   , "" , "" ), // DATE
+    new FormatDescriptor(true , "FROM", "TO" , "" , "-"), // FROM TO
+    new FormatDescriptor(false, "FROM", ""   , "[", "" ), // FROM
+    new FormatDescriptor(false, "TO"  , ""   , "]", "" ), // TO
+    new FormatDescriptor(true , "BET" , "AND", ">", "<"), // BETAND
+    new FormatDescriptor(false, "BEF" , ""   , "<", "" ), // BEF
+    new FormatDescriptor(false, "AFT" , ""   , ">", "" ), // AFT
+    new FormatDescriptor(false, "ABT" , ""   , "~", "" ), // ABT
+    new FormatDescriptor(false, "CAL" , ""   , "~", "" ), // CAL
+    new FormatDescriptor(false, "EST" , ""   , "~", "" )  // EST
   };
 
   /** month names */
@@ -231,7 +231,7 @@ public class PropertyDate extends Property {
     for (format=0;format<formats.length;format++) {
 
       // .. found modifier (prefix is enough: e.g. ABT or ABT.)
-      if ( (formats[format].startModifier.length()>0) && token.startsWith(formats[format].startModifier) ) {
+      if ( (formats[format].start.length()>0) && token.startsWith(formats[format].start) ) {
 
         // ... no range (TO,ABT,CAL,...) -> parse PointInTime from remaining tokens
         if ( !formats[format].isRange ) 
@@ -242,7 +242,7 @@ public class PropertyDate extends Property {
         while (tokens.hasMoreTokens()) {
           // .. TO or AND ? -> parse 2 PointInTimes from grabbed and remaining tokens
           token = tokens.nextToken();
-          if ( token.startsWith(formats[format].endModifier) ) {
+          if ( token.startsWith(formats[format].end) ) {
             return start.set(new StringTokenizer(grab)) && end.set(tokens);
           }
           // .. grab more
@@ -332,12 +332,15 @@ public class PropertyDate extends Property {
     if (dateAsString!=null) 
       return dateAsString;
       
+    // what's our format descriptor?
+    FormatDescriptor fd = formats[format]; 
+      
     // prepare modifiers
     String
-      smod = formats[format].startModifier,
-      emod = formats[format].endModifier;
+      smod = abbreviate ? fd.astart : fd.start,
+      emod = abbreviate ? fd.aend   : fd.end  ;
       
-    if (localize) {
+    if (!abbreviate&&localize) {
       if (smod.length()>0)
         smod = Gedcom.getResources().getString("prop.date.mod."+smod);  
       if (emod.length()>0)
@@ -347,14 +350,12 @@ public class PropertyDate extends Property {
     // collect information
     WordBuffer result = new WordBuffer();
     
-    result.append(abbreviate?EMPTY_STRING:smod);  
+    result.append(smod);  
     start.toString(result,localize);
-    
-    if (isRange()) {
-      result.append(abbreviate?"-":emod);
-      end.toString(result,localize);
-    }
-    
+    result.append(emod);
+    if (isRange()) end.toString(result,localize);
+
+    // done    
     return result.toString();
   }
 
@@ -567,10 +568,15 @@ public class PropertyDate extends Property {
    */
   private static class FormatDescriptor {
     protected boolean isRange;
-    protected String startModifier, endModifier;
-    protected FormatDescriptor(boolean r, String s, String e) {
-      isRange=r; startModifier=s; endModifier=e;
+    protected String start, end;
+    protected String astart, aend;
+    protected FormatDescriptor(boolean r, String s, String e, String as, String ae) {
+      isRange= r; 
+      start  = s; 
+      end    = e;
+      astart = as;
+      aend   = ae;
     }
-  }
-
+  } //FormatDescriptor
+  
 } //PropertyDate
