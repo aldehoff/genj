@@ -20,6 +20,7 @@
 package genj.option;
 
 import genj.util.Registry;
+import genj.util.swing.TextFieldWidget;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -35,7 +36,6 @@ import java.util.Set;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JTextField;
 
 /**
  * An option based on a simple accessible value
@@ -277,11 +277,13 @@ public abstract class PropertyOption extends Option {
   /**
    * A UI for text, numbers, etc.
    */
-  private class SimpleUI extends JTextField implements OptionUI {
+  private class SimpleUI extends TextFieldWidget implements OptionUI {
     /** constructor */
     private SimpleUI() {
       Object value = getValue();
       setText(value!=null?value.toString():"");
+      setSelectAllOnFocus(true);
+      setColumns(12);
     }
     /** no text ui */
     public String getTextRepresentation() {
