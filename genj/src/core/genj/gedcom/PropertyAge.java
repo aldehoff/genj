@@ -48,8 +48,8 @@ public class PropertyAge extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  public void setTag(String tag) throws GedcomException {
-    if (!"AGE".equals(tag)) throw new GedcomException("Unsupported Tag");
+  /*package*/ void setTag(String tag) throws GedcomException {
+    assert("AGE".equals(tag), UNSUPPORTED_TAG);
   }
 
   /**

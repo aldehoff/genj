@@ -31,6 +31,8 @@ import java.io.InputStream;
  */
 public class PropertyFile extends Property implements IconValueAvailable {
   
+  private final static String TAG = "FILE";
+  
   /** maximum we load of image */
   private final static int DEF_MAX_LOAD = 128*1024;  
   private static int max_load = -1;
@@ -58,14 +60,14 @@ public class PropertyFile extends Property implements IconValueAvailable {
    * Returns the tag of this property
    */
   public String getTag() {
-    return "FILE";
+    return TAG;
   }
   
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  public void setTag(String tag) throws GedcomException {
-    if (!"FILE".equals(tag)) throw new GedcomException("Unsupported Tag");
+  /*package*/ void setTag(String tag) throws GedcomException {
+    assert(TAG.equals(tag), UNSUPPORTED_TAG);
   }
 
   /**

@@ -30,6 +30,8 @@ import genj.util.WordBuffer;
  */
 public class PropertyName extends Property {
   
+  private final static String TAG =  "NAME";
+  
   /** all names */
   private static ReferenceSet names = new ReferenceSet();
 
@@ -147,14 +149,14 @@ public class PropertyName extends Property {
    * the tag
    */
   public String getTag() {
-    return "NAME";
+    return TAG;
   }
   
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  public void setTag(String tag) throws GedcomException {
-    if (!"NAME".equals(tag)) throw new GedcomException("Unsupported Tag");
+  /*package*/ void setTag(String tag) throws GedcomException {
+    assert(TAG.equals(tag), UNSUPPORTED_TAG);
   }
 
   /**

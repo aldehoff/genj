@@ -28,6 +28,8 @@ import java.util.StringTokenizer;
  */
 public class PropertyDate extends Property {
 
+  private final static String TAG = "DATE";
+
   /** time values */
   private PIT 
     start = new PIT(),
@@ -145,7 +147,7 @@ public class PropertyDate extends Property {
    * Accessor Tag
    */
   public String getTag() {
-    return "DATE";
+    return TAG;
   }
 
   /**
@@ -293,8 +295,8 @@ public class PropertyDate extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  public void setTag(String tag) throws GedcomException {
-    if (!"DATE".equals(tag)) throw new GedcomException("Unsupported Tag");
+  /*package*/ void setTag(String tag) throws GedcomException {
+    assert(TAG.equals(tag), UNSUPPORTED_TAG);
   }
   
   /**

@@ -26,6 +26,8 @@ import genj.util.swing.ImageIcon;
  */
 public class PropertySex extends Property {
   
+  private final static String TAG = "SEX";
+  
   /** images */
   private final static ImageIcon
     IMG_UNKNOWN= MetaProperty.get(new TagPath("INDI:SEX")).getImage(),
@@ -133,14 +135,14 @@ public class PropertySex extends Property {
    * Accessor for Tag
    */
   public String getTag() {
-    return "SEX";
+    return TAG;
   }
 
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  public void setTag(String tag) throws GedcomException {
-    if (!"SEX".equals(tag)) throw new GedcomException("Unsupported Tag");
+  /*package*/ void setTag(String tag) throws GedcomException {
+    assert(TAG.equals(tag), UNSUPPORTED_TAG);
   }
 
   /**

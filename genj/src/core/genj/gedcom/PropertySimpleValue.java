@@ -54,7 +54,7 @@ public class PropertySimpleValue extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  public void setTag(String set) {
+  /*package*/ void setTag(String set) {
     tag = set;
   }
 

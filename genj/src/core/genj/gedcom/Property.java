@@ -32,8 +32,10 @@ import java.util.List;
  */
 public abstract class Property implements Comparable {
 
-  /** empty string */
-  protected final static String EMPTY_STRING = "";
+  /** static strings */
+  protected final static String 
+    EMPTY_STRING = "",
+    UNSUPPORTED_TAG = "Unsupported Tag";
 
   /** parent of this property */
   protected Property parent=null;
@@ -45,13 +47,27 @@ public abstract class Property implements Comparable {
   protected ImageIcon image, imageErr;
 
   /**
-   * Method for notifying being added to another property
+   * Lifecycle - callback when being added to parent
    */
-  public void addNotify(Property parent) {
+  /*package*/ void addNotify(Property parent) {
     this.parent=parent;
     noteAddedProperty();
   }
 
+  /**
+   * Lifecycle - callback when being remove from parent
+   */
+  /*package*/ void delNotify() {
+
+    // Remember it
+    noteDeletedProperty();
+
+    // Say it to properties
+    delProperties(toArray(childs));
+
+    // Done
+  }
+  
   /**
    * Adds another property to this property
    * @param prop new property to add
@@ -63,32 +79,6 @@ public abstract class Property implements Comparable {
     prop.addNotify(this);
     // Done
     return prop;
-  }
-
-  /**
-   * Compares this property to another property
-   * @return -1 this &lt; property <BR>
-   *          0 this = property <BR>
-   *          1 this &gt; property
-   */
-  public int compareTo(Object o) {
-    // safety check
-    if (!(o instanceof Property)) throw new ClassCastException("compareTo("+o+")");
-    return getValue().compareTo(((Property)o).getValue());
-  }
-  
-  /**
-   * Method for notifying being removed from parent property
-   */
-  public void delNotify() {
-
-    // Remember it
-    noteDeletedProperty();
-
-    // Say it to properties
-    delProperties(toArray(childs));
-
-    // Done
   }
 
   /**
@@ -289,7 +279,7 @@ public abstract class Property implements Comparable {
   /**
    * Recursive getPathTo
    */
-  protected void getPathToRecursively(LinkedList path, Property prop) {
+  private void getPathToRecursively(LinkedList path, Property prop) {
     
     // is it me?
     if (prop==this) {
@@ -370,7 +360,7 @@ public abstract class Property implements Comparable {
     return props;
   }
   
-  protected void getPropertiesRecursively(List props, Class type) {
+  private void getPropertiesRecursively(List props, Class type) {
     for (int c=0;c<getNoOfProperties();c++) {
       Property child = getProperty(c);
       if (type.isAssignableFrom(child.getClass())) {
@@ -393,7 +383,7 @@ public abstract class Property implements Comparable {
     return toArray(result);
   }
 
-  protected List getPropertiesRecursively(TagPath path, int pos, List fill, boolean validOnly) {
+  private List getPropertiesRecursively(TagPath path, int pos, List fill, boolean validOnly) {
 
     // Correct here ?
     if (!path.get(pos).equals(getTag())) return fill;
@@ -467,7 +457,7 @@ public abstract class Property implements Comparable {
     return getPropertyRecursively(path, 0, validOnly);
   }
   
-  protected Property getPropertyRecursively(TagPath path, int pos, boolean validOnly) {
+  private Property getPropertyRecursively(TagPath path, int pos, boolean validOnly) {
 
     // Correct here ?
     if (!path.get(pos).equals(getTag())) return null;
@@ -504,7 +494,14 @@ public abstract class Property implements Comparable {
   /**
    * Sets this property's tag
    */
-  public abstract void setTag(String tag) throws GedcomException ;
+  /*package*/ abstract void setTag(String tag) throws GedcomException ;
+  
+  /**
+   * Assertion
+   */
+  protected void assert(boolean condition, String explanation) throws GedcomException {
+    if (!condition) throw new GedcomException(explanation);
+  }
 
   /**
    * Returns the value of this property as string.
@@ -553,7 +550,7 @@ public abstract class Property implements Comparable {
   /**
    * Notify Gedcom that this property has been added
    */
-  protected void noteAddedProperty() {
+  /*package*/ void noteAddedProperty() {
     Gedcom gedcom = getGedcom();
     if (gedcom!=null) {
       gedcom.noteAddedProperty(this);
@@ -563,7 +560,7 @@ public abstract class Property implements Comparable {
   /**
    * Notify Gedcom that this property has been deleted
    */
-  protected void noteDeletedProperty() {
+  /*package*/ void noteDeletedProperty() {
     Gedcom gedcom = getGedcom();
     if (gedcom!=null) {
       gedcom.noteDeletedProperty(this);
@@ -573,7 +570,7 @@ public abstract class Property implements Comparable {
   /**
    * Notify Gedcom that this property has been changed
    */
-  protected void noteModifiedProperty() {
+  /*package*/ void noteModifiedProperty() {
     Gedcom gedcom = getGedcom();
     if (gedcom!=null) {
       gedcom.noteModifiedProperty(this);
@@ -588,6 +585,18 @@ public abstract class Property implements Comparable {
    */
   public String toString() {
     return getTag()+' '+getValue();
+  }
+  
+  /**
+   * Compares this property to another property
+   * @return -1 this &lt; property <BR>
+   *          0 this = property <BR>
+   *          1 this &gt; property
+   */
+  public int compareTo(Object o) {
+    // safety check
+    if (!(o instanceof Property)) throw new ClassCastException("compareTo("+o+")");
+    return getValue().compareTo(((Property)o).getValue());
   }
   
   /**

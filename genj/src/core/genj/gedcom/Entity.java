@@ -37,14 +37,18 @@ public abstract class Entity extends Property {
   private int type;
 
   /**
-   * Notification to entity that it has been added to a Gedcom
+   * Lifecycle - callback when being added to Gedcom
    */
-  public void addNotify(Gedcom ged) {
-    gedcom = ged;
+  /*package*/ void addNotify(Gedcom ged) {
     
+    // remember
+    gedcom = ged;
+
+    // init status    
     type = ged.getTypeFor(getClass());
     tag = ged.getTagFor(type);
-    
+
+    // done    
   }
 
   /**
@@ -73,7 +77,7 @@ public abstract class Entity extends Property {
   /**
    * Sets entity's id
    */
-  public void setId(String setId) {
+  /*package*/ void setId(String setId) {
     id = setId;
   }
   
@@ -109,7 +113,7 @@ public abstract class Entity extends Property {
   /**
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
-  public void setTag(String tag) {
+  /*package*/ void setTag(String tag) {
   }
   
   /**
