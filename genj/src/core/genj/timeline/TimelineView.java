@@ -115,26 +115,20 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     bar.add(sliderCmPerYear);
     
     // create maximum label
-    labelCmPerYear = createToolBarLabel(cmPyear2txt());
+    labelCmPerYear = new JLabel(MAX_CMPERYEAR+"cm");
+    labelCmPerYear.setFont(labelCmPerYear.getFont().deriveFont(9.0F));
+    labelCmPerYear.setPreferredSize(labelCmPerYear.getPreferredSize());
+    labelCmPerYear.setText(cm2txt(cmPyear));
     bar.add(labelCmPerYear);
     
     // create '/year' label
-    bar.add(createToolBarLabel("/year"));
+    JLabel labelPerYear = new JLabel("/year");
+    labelPerYear.setFont(labelCmPerYear.getFont());
+    bar.add(labelPerYear);
     
     // done
   }
   
-  /** 
-   * Create one of our toolbar labels
-   */
-  private JLabel createToolBarLabel(String txt) {
-    JLabel result = new JLabel(txt);
-    Font font = result.getFont().deriveFont(9.0F);
-    result.setHorizontalAlignment(JLabel.CENTER);
-    result.setFont(font);
-    return result;
-  }
-
   /**
    * Converts double to int
    */
@@ -152,8 +146,8 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   /**
    * Convert cmPyear into text
    */
-  private String cmPyear2txt() {
-    return NumberFormat.getInstance().format(cmPyear)+"cm";
+  private String cm2txt(double cm) {
+    return NumberFormat.getInstance().format(cm)+"cm";
   }
     
   /**
@@ -223,7 +217,7 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       // get the new value
       cmPyear = d(sliderCmPerYear.getValue());
       // update label
-      labelCmPerYear.setText(cmPyear2txt());
+      labelCmPerYear.setText(cm2txt(cmPyear));
       // revalidate views
       ruler.revalidate();
       content.revalidate();
