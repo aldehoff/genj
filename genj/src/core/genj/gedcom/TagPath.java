@@ -220,6 +220,14 @@ public class TagPath {
   }
 
   /**
+   * Returns the first tag of this path
+   * @return first tag as <code>String</code>
+   */
+  public String getFirst() {
+    return tags[0];
+  }
+
+  /**
    * Returns the last tag of this path
    * @return last tag as <code>String</code>
    */
