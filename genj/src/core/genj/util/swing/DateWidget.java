@@ -96,7 +96,11 @@ public class DateWidget extends JPanel {
       default: 
         add(widgetYear); add(widgetMonth); add(widgetDay ); format = "yyyy-mmm-dd"; break;
     }
-    super.setToolTipText(format);
+    
+    widgetCalendar.setToolTipText(format);
+    widgetDay.setToolTipText(format);
+    widgetMonth.setToolTipText(format);
+    widgetYear.setToolTipText(format);
     
     // Listeners
     DocumentListener listener = new DocumentListener() {
