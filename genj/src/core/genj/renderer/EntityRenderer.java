@@ -47,7 +47,6 @@ import javax.swing.text.Segment;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.Position.Bias;
-import javax.swing.text.html.CSS;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.InlineView;
@@ -213,19 +212,20 @@ public class EntityRenderer {
       // default to super
       View result = super.create(elem);
 
-//      // InlineViews have a bad habit of breaking
-//      // a single-space-sequence, replace those
-//      // cases with a dummy      
-//      if (result instanceof InlineView) {
-//        GlyphView gv = (GlyphView)result;
-//        Segment seg = gv.getText(gv.getStartOffset(), gv.getEndOffset());
-//        System.out.print("("+seg+")");
-//        if (seg.getEndIndex()-seg.getBeginIndex()==1&&seg.first()=='\n') {
-//          System.out.println("!");
-//          return new EmptyView(elem);
-//        }
-//        System.out.println();
-//      }
+      // Sadly InlineViews get generated for little '\n'
+      // segment that I don't know where they come from.
+      // They have the bad habit of not-breaking but flowing
+      // into a new-line when space is restricted and the
+      // result can be an empty line - so we replace those
+      // views with out EmptyView that is also flowing into
+      // the next line but doesn't take up any space (height!)
+      if (result instanceof InlineView && result.getClass().getName().indexOf("BRView")<0) {
+        GlyphView gv = (GlyphView)result;
+        Segment seg = gv.getText(gv.getStartOffset(), gv.getEndOffset());
+        if (seg.getEndIndex()-seg.getBeginIndex()==1&&seg.first()=='\n') {
+          return new EmptyView(elem);
+        }
+      }
       
       // .. keep track of TableViews
       if ("table".equals(elem.getName())) {
@@ -628,39 +628,39 @@ public class EntityRenderer {
     
   } //PropertyView
 
-//  /**
-//   * EmptyView//   */
-//  private class EmptyView extends MyView {
-//    
-//    /**
-//     * Constructor//     */
-//    private EmptyView(Element elem) {
-//      super(elem);
-//    }
-//    
-//    /**
-//     * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
-//     */
-//    protected Dimension getPreferredSpan() {
-//      return new Dimension(0,0);
-//    }
-//
-//    /**
-//     * @see javax.swing.text.View#paint(java.awt.Graphics, java.awt.Shape)
-//     */
-//    public void paint(Graphics g, Shape allocation) {
-//      g.setColor(Color.red);
-//      Rectangle r = allocation.getBounds();
-//      g.drawRect(r.x,r.y,r.width,r.height);
-//    }
-//    
-//    /**
-//     * @see genj.renderer.EntityRenderer.MyView#getBreakWeight(int, float, float)
-//     */
-//    public int getBreakWeight(int axis, float pos, float len) {
-//      return BadBreakWeight;
-//    }
-//
-//  } //EmptyView
+  /**
+   * EmptyView   */
+  private class EmptyView extends MyView {
+    
+    /**
+     * Constructor     */
+    private EmptyView(Element elem) {
+      super(elem);
+    }
+    
+    /**
+     * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
+     */
+    protected Dimension getPreferredSpan() {
+      return new Dimension(0,0);
+    }
+
+    /**
+     * @see javax.swing.text.View#paint(java.awt.Graphics, java.awt.Shape)
+     */
+    public void paint(Graphics g, Shape allocation) {
+      g.setColor(Color.red);
+      Rectangle r = allocation.getBounds();
+      g.fillRect(r.x,r.y,r.width,r.height);
+    }
+    
+    /**
+     * @see genj.renderer.EntityRenderer.MyView#getBreakWeight(int, float, float)
+     */
+    public int getBreakWeight(int axis, float pos, float len) {
+      return BadBreakWeight;
+    }
+
+  } //EmptyView
   
 } //EntityRenderer
