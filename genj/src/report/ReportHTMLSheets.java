@@ -572,7 +572,7 @@ public class ReportHTMLSheets extends Report {
       content = ((Property)content).toString();
       
     // We don't want to see 'null' but ''
-    if (content == null)
+    if (content == null || content.toString().length() == 0)
       content = SPACE;
 
     // Here comes the HTML
