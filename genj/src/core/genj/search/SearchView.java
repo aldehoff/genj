@@ -23,6 +23,7 @@ import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
@@ -585,7 +586,11 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
       // all but transients
       if (!prop.isTransient()) {
         // check prop's value
-        String value = prop instanceof MultiLineSupport ? ((MultiLineSupport)prop).getLinesValue() : prop.getValue();
+        String value;
+        if (prop instanceof MultiLineSupport && !(prop instanceof IconValueAvailable))
+          value = ((MultiLineSupport)prop).getLinesValue();
+        else
+          value = prop.getValue();
         search(entity, prop, value);
       }
       // check subs
@@ -711,8 +716,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
   private class ResultWidget extends JList implements ListSelectionListener, ListCellRenderer {
     
     /** our label used for rendering */
-    private HeadlessLabel label = new HeadlessLabel(); 
-
+    private HeadlessLabel label = new HeadlessLabel();
+    
     /** background colors */
     private Color[] bgColors = new Color[3];
 
@@ -751,6 +756,9 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
 
       // show text view
       label.setView(hit.getView());
+      
+      // patch max - how to enable word wrap
+      // label.setMaximumSize(new Dimension(getSize().width, Integer.MAX_VALUE));
 
       // done
       return label;

@@ -4,6 +4,7 @@ import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineSupport;
 import genj.gedcom.Property;
@@ -481,7 +482,7 @@ public class PropertyTreeWidget extends TreeWidget {
           if (!prop.isTransient())
             html.append(" <b>").append(prop.getTag()).append("</b> ");
           
-          if (prop instanceof MultiLineSupport) {
+          if (prop instanceof MultiLineSupport && !(prop instanceof IconValueAvailable)) {
           
             char[] chars = ((MultiLineSupport)prop).getLinesValue().toCharArray();
             for (int i=0; i<chars.length; i++) {
