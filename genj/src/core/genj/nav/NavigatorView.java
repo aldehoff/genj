@@ -83,18 +83,18 @@ public class NavigatorView extends JPanel {
     // date
     useGedcom.addListener(new GedcomListener() {
       public void handleChange(Change change) {
-        if (change.getEntities(change.EDEL).contains(indi)) setEntity(null);
-        else setEntity(indi);
+        if (change.getEntities(change.EDEL).contains(indi)) setEntity(change.getGedcom(), null);
+        else setEntity(change.getGedcom(), indi);
       }
       public void handleClose(Gedcom which) {
       }
       public void handleSelection(Selection selection) {
-        setEntity(selection.getEntity());
+        setEntity(selection.getEntity().getGedcom(), selection.getEntity());
       }
     });
     
     // init
-    setEntity(useGedcom.getLastEntity());
+    setEntity(useGedcom,useGedcom.getLastEntity());
 
     // done    
 
@@ -103,8 +103,9 @@ public class NavigatorView extends JPanel {
   /**
    * Sets the current entity (only individuals accepted)
    */
-  public void setEntity(Entity e) {
+  public void setEntity(Gedcom g, Entity e) {
     // no entity
+    if ((e == null)&&(g.getEntities(Gedcom.INDIVIDUALS).getSize()>0)) e=g.getIndi(0);
     if (e == null) {
       // data
       indi = null;

@@ -30,7 +30,7 @@ public class Source extends PropertySource implements Entity {
 
   private String id = "";
   private Gedcom gedcom;
-  private ReferencePropertySet foreignXRefs = new ReferencePropertySet();
+  private PropertySet foreignXRefs = new PropertySet();
 
   /**
    * Constructor for Source
@@ -48,7 +48,7 @@ public class Source extends PropertySource implements Entity {
    * Adds a PropertyForeignXRef to this entity
    */
   public void addForeignXRef(PropertyForeignXRef fxref) {
-    foreignXRefs.add(fxref, this);
+    foreignXRefs.add(fxref);
   }
 
   /**

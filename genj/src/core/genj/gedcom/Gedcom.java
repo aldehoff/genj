@@ -1229,30 +1229,28 @@ public class Gedcom implements GedcomListener {
       Entity e2 = matches[m][1];
 
       // Tag kept properties from G2 (if needed)
-      ReferencePropertySet plist2 = e2.getProperty().getProperties();
       if ((options&TAG_PROPERTY_SOURCE)!=0) {
-        for (int p=0;p<plist2.getSize();p++) {
-          Property prop = plist2.get(p);
+        for (int p=0;p<e2.getProperty().getNoOfProperties();p++) {
+          Property prop = e2.getProperty().getProperty(p);
           prop.addProperty(new PropertyNote(n2));
         }
       }
 
       // Move properties from G1 (and tag moved properties if needed)
-      ReferencePropertySet plist1 = e1.getProperty().getProperties();
-      for (int p=0;p<plist1.getSize();p++) {
+      for (int p=0;p<e1.getProperty().getNoOfProperties();p++) {
 
-      Property prop = plist1.get(p);
-
-      // .. A PropertyXRef?
-      if (prop instanceof PropertyXRef)
-        continue;
-
-      // .. Tag it
-      if ((options&TAG_PROPERTY_SOURCE)!=0)
-        prop.addProperty(new PropertyNote(n1));
-
-      // .. Add it
-      e2.getProperty().addProperty(prop);
+        Property prop = e1.getProperty().getProperty(p);
+  
+        // .. A PropertyXRef?
+        if (prop instanceof PropertyXRef)
+          continue;
+  
+        // .. Tag it
+        if ((options&TAG_PROPERTY_SOURCE)!=0)
+          prop.addProperty(new PropertyNote(n1));
+  
+        // .. Add it
+        e2.getProperty().addProperty(prop);
       }
 
       // Forget entity E1 in G1
@@ -1264,48 +1262,24 @@ public class Gedcom implements GedcomListener {
     // Tag entities from two sources
     if ((options&TAG_ENTITY_SOURCE)!=0) {
 
-      // .. Action
-      final Note _n1=n1,_n2=n2;
-      EntityList.Action a = new EntityList.Action() {
-      public boolean on(Entity e) {
-        // .. set source
-        if (e.getGedcom()==g1)
-          e.getProperty().addProperty(new PropertyNote(_n1));
-        else
-          e.getProperty().addProperty(new PropertyNote(_n2));
-        // .. please continue
-        return true;
+      // .. Tag entities
+      for (int l=0;l<g1.entities.length;l++) {
+        for (int e=0;e<g1.entities[l].getSize();e++) {
+          g1.entities[l].get(e).getProperty().addProperty(new PropertyNote(n1));
+        }
       }
-      };
 
       // .. Tag entities
-      for (int l=0;l<g1.entities.length;l++)
-        g1.entities[l].operate(a);
-
-      // .. Tag entities
-      for (int l=0;l<g2.entities.length;l++)
-        g2.entities[l].operate(a);
+      for (int l=0;l<g2.entities.length;l++) {
+        for (int e=0;e<g2.entities[l].getSize();e++) {
+          g2.entities[l].get(e).getProperty().addProperty(new PropertyNote(n2));
+        }
+      }
 
       // .. done
     }
 
     // Fill in entities
-    EntityList.Action a = new EntityList.Action() {
-      public boolean on(Entity e) {
-      // .. remember Daddy
-      e.setGedcom(result);
-      // .. get new ID
-      String id = result.getRandomIdFor(e.getType());
-      // .. change entity
-      e.setId(id);
-      // .. remember ID
-      result.ids[e.getType()].put(id,e);
-      // .. continue
-      return true;
-      }
-      // EOC
-    };
-
     if (n1!=null) {
       result.entities[n1.getType()].add(n1);
       result.entities[n2.getType()].add(n2);
@@ -1317,7 +1291,17 @@ public class Gedcom implements GedcomListener {
       // .. add entities of type from G1
       result.entities[i].add(g2.entities[i]);
       // .. loop through entities of type from Result
-      result.entities[i].operate(a);
+      for (int e=0;e<result.entities[i].getSize();e++) {
+        Entity ent=result.entities[i].get(e);
+        // .. remember Daddy
+        ent.setGedcom(result);
+        // .. get new ID
+        String id = result.getRandomIdFor(ent.getType());
+        // .. change entity
+        ent.setId(id);
+        // .. remember ID
+        result.ids[ent.getType()].put(id,ent);
+      }
     }
 
     // Done
@@ -1336,20 +1320,6 @@ public class Gedcom implements GedcomListener {
     }
 
     addedEntities.addElement(entities);
-  }
-
-  /**
-   * Notification that a set of properties have been added.
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteAddedEntities(ReferencePropertySet props) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-      return;
-    }
-
-    addedProperties.addElement(props);
   }
 
   /**
@@ -1417,21 +1387,6 @@ public class Gedcom implements GedcomListener {
   }
 
   /**
-   * Notification that a set of propertiess have been deleted.
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteDeletedProperties(ReferencePropertySet props) {
-
-    // Is there a transaction running?
-    if (!isTransaction) {
-      return;
-    }
-
-    deletedProperties.addElement(props);
-    // Done
-  }
-
-  /**
    * Notification that a property has been deleted.
    * That change will be notified to listeners after unlocking write.
    */
@@ -1442,20 +1397,6 @@ public class Gedcom implements GedcomListener {
       return;
 
     deletedProperties.addElement(prop);
-    // Done
-  }
-
-  /**
-   * Notification that properties have been changed
-   * That change will be notified to listeners after unlocking write.
-   */
-  void noteModifiedProperties(ReferencePropertySet properties) {
-
-    // Is there a transaction running?
-    if (!isTransaction)
-      return;
-
-    modifiedProperties.addElement(properties);
     // Done
   }
 
@@ -1531,11 +1472,10 @@ public class Gedcom implements GedcomListener {
   private void removeUnsatisfiedLinks(Property property) {
 
     // Check wether any property of this property is unsatisfied
-    ReferencePropertySet plist = property.getProperties();
-    for (int p=plist.getSize()-1;p>=0;p--) {
+    for (int p=property.getNoOfProperties()-1;p>=0;p--) {
 
       // .. candidate
-      Property prop = plist.get(p);
+      Property prop = property.getProperty(p);
 
       // .. unsatisfied XRef?
       if ( (prop instanceof PropertyXRef)&&(!((PropertyXRef)prop).isValid()) ) {

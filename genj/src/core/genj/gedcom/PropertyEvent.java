@@ -93,17 +93,11 @@ public class PropertyEvent extends Property {
    */
   public String getDateAsString() {
 
-    // Calculate properties of event
-    ReferencePropertySet props = getProperties();
-    if (props == null) {
-      return "";
-    }
-
-    // look for property DATE
-    Property prop;
-
-    for (int i=0;i<props.getSize();i++) {
-      prop = props.get(i);
+    // look for PropertyDate in children
+    if (children==null) return "";
+    
+    for (int i=0;i<children.getSize();i++) {
+      Property prop = children.get(i);
       if ( prop instanceof PropertyDate ) {
         return ((PropertyDate)prop).toString();
       }

@@ -191,22 +191,18 @@ public class TimelineModel implements GedcomListener {
    */
   private void calculateLinksFor(EntityList entities) {
 
-    Property property;
-    ReferencePropertySet properties;
-
     for (int e=0;e<entities.getSize();e++) {
 
       // .. get Entity
-      property = entities.get(e).getProperty();
+      Property property = entities.get(e).getProperty();
 
       // .. go through its properties
-      properties = property.getProperties();
-      for (int p=0;p<properties.getSize();p++) {
+      for (int p=0;p<property.getNoOfProperties();p++) {
 
         // .. An event ?
-        property = properties.get(p);
-        if ( (property instanceof PropertyEvent) && eventTags.contains(property.getTag()))
-          calculateLinkFor((PropertyEvent)property);
+        Property child = property.getProperty(p);
+        if ( (child instanceof PropertyEvent) && eventTags.contains(child.getTag()))
+          calculateLinkFor((PropertyEvent)child);
 
         // .. Next proeprty
       }

@@ -28,7 +28,7 @@ public class Repository extends PropertyRepository implements Entity {
 
   private String id = "";
   private Gedcom gedcom;
-  private ReferencePropertySet foreignXRefs = new ReferencePropertySet();
+  private PropertySet foreignXRefs = new PropertySet();
 
   /**
    * Constructor for Repository
@@ -46,7 +46,7 @@ public class Repository extends PropertyRepository implements Entity {
    * Adds a PropertyForeignXRef to this entity
    */
   public void addForeignXRef(PropertyForeignXRef fxref) {
-    foreignXRefs.add(fxref, this);
+    foreignXRefs.add(fxref);
   }
 
   /**

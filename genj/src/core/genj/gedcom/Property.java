@@ -39,8 +39,8 @@ public abstract class Property {
    * Common fields for every Property: parent and vector of child properties
    * Define tag and value in subclass, or hard-wire in getTag() and getValue()
    */
-  private Property  parent=null;
-  private ReferencePropertySet properties=null;
+  protected Property  parent=null;
+  protected PropertySet children=null;
 
   public static final int
     UP   = 1,
@@ -251,12 +251,12 @@ public abstract class Property {
   public final void addProperty(Property prop) {
 
     // Make sure we have a children's list
-    if (properties==null) {
-      properties=new ReferencePropertySet();
+    if (children==null) {
+      children=new PropertySet();
     }
 
     // Remember
-    properties.add(prop,this);
+    children.add(prop);
 
     // We have to remember this as a new known (sub-)property
     getMetaDefinition(getTag()).addSubTag(prop.getTag());
@@ -368,10 +368,10 @@ public abstract class Property {
    * Removes all properties
    */
   public final void delAllProperties() {
-    if (properties!=null) {
-      properties.deleteAll();
+    if (children!=null) {
+      children.deleteAll();
+      children=null;
     }
-    properties=null;
   }
 
   /**
@@ -383,9 +383,7 @@ public abstract class Property {
     noteDeletedProperty();
 
     // Say it to properties
-    if (properties!=null) {
-      properties.deleteAll();
-    }
+    delAllProperties();
 
     // Done
   }
@@ -406,19 +404,19 @@ public abstract class Property {
   public boolean delProperty(Property which) {
 
     // No properties ?
-    if (properties == null) {
+    if (children==null) {
       return false;
     }
 
     // Look for first class properties
-    if (properties.contains(which)) {
-      properties.delete(which);
+    if (children.contains(which)) {
+      children.delete(which);
       return true;
     }
 
     // Look for second class properties
-    for (int i=0;i<properties.getSize();i++) {
-      if ( properties.get(i).delProperty(which) ) {
+    for (int i=0;i<children.getSize();i++) {
+      if ( children.get(i).delProperty(which) ) {
         return true;
       }
     }
@@ -455,13 +453,13 @@ public abstract class Property {
    */
   public int getDepthOfProperties() {
 
-    if (properties==null) {
+    if (children==null) {
       return 0;
     }
 
     int result = 0;
-    for (int i=0;i<properties.getSize();i++) {
-      result = Math.max( result, properties.get(i).getDepthOfProperties()+1 );
+    for (int i=0;i<children.getSize();i++) {
+      result = Math.max( result, children.get(i).getDepthOfProperties()+1 );
     }
 
     // Done
@@ -622,10 +620,8 @@ public abstract class Property {
    * Calculates the number of properties this property has.
    */
   public int getNoOfProperties() {
-    if (properties==null) {
-      return 0;
-    }
-    return properties.getSize();
+    if (children==null) return 0;
+    return children.getSize();
   }
 
   /**
@@ -635,16 +631,14 @@ public abstract class Property {
    */
   public int getNoOfProperties(boolean recursive, boolean validOnly) {
 
-    if (properties==null) {
-      return 0;
-    }
+    if (children==null) return 0;
 
     int result = 0;
-    for (int i=0;i<properties.getSize();i++) {
-      if (properties.get(i).isValid() || (!validOnly))
+    for (int i=0;i<children.getSize();i++) {
+      if (children.get(i).isValid() || (!validOnly))
       result ++;
       if (recursive)
-      result += properties.get(i).getNoOfProperties(true,validOnly);
+      result += children.get(i).getNoOfProperties(true,validOnly);
     }
 
     return result;
@@ -705,16 +699,6 @@ public abstract class Property {
   }
 
   /**
-   * Returns this property's properties
-   */
-  public ReferencePropertySet getProperties() {
-    if (properties==null) {
-      properties = new ReferencePropertySet();
-    }
-    return properties;
-  }
-
-  /**
    * Returns this property's properties which are of given type
    */
   public Vector getProperties(Class type) {
@@ -744,12 +728,12 @@ public abstract class Property {
   public Property[] getProperties(TagPath path, boolean validOnly) {
 
     // No properties there ?
-    if (properties==null) {
+    if (children==null) {
       return new Property[0];
     }
 
     // Gather 'em
-    Vector vresult = new Vector(properties.getSize());
+    Vector vresult = new Vector(children.getSize());
     getPropertiesInto(path,vresult,validOnly);
 
     Property[] result = new Property[vresult.size()];
@@ -786,15 +770,15 @@ public abstract class Property {
     }
 
     // Does this one have properties ?
-    if (properties==null) {
+    if (children==null) {
       path.back();
       return;
     }
 
     // Search in properties
     Property p;
-    for (int i=0;i<properties.getSize();i++) {
-      properties.get(i).getPropertiesInto(path,fill,validOnly);
+    for (int i=0;i<children.getSize();i++) {
+      children.get(i).getPropertiesInto(path,fill,validOnly);
     }
 
     path.back();
@@ -804,7 +788,8 @@ public abstract class Property {
    * Returns this property's nth property
    */
   public Property getProperty(int n) {
-    return properties.get(n);
+    if (children==null) throw new IndexOutOfBoundsException("Index "+n+" doesn't work for empty set of properties");
+    return children.get(n);
   }
 
   /**
@@ -843,22 +828,26 @@ public abstract class Property {
     }
 
     // Loop through the children
-    Property child;
-    Property result;
-    ReferencePropertySet children = getProperties();
-    for (int i=0;i<children.getSize();i++) {
-
-      child = children.get(i);
-
-      // .. check that child
-      if (child.getTag().equals(next)) {
-        result = child.getProperty(path, validOnly);
-        if (result != null) {
-          return result;
+    if (children!=null) {
+      
+      Property child;
+      Property result;
+      
+      for (int i=0;i<children.getSize();i++) {
+  
+        child = children.get(i);
+  
+        // .. check that child
+        if (child.getTag().equals(next)) {
+          result = child.getProperty(path, validOnly);
+          if (result != null) {
+            return result;
+          }
         }
+  
+        // .. we have to keep on looking
       }
-
-      // .. we have to keep on looking
+      
     }
 
     // Getting here ... restore path for a sibling
@@ -924,20 +913,20 @@ public abstract class Property {
   public boolean moveProperty(Property which, int how) {
 
     // Does this one have properties ?
-    if (properties==null) {
+    if (children==null) {
       return false;
     }
 
     // Search in properties
     Property p;
-    for (int i=0;i<properties.getSize();i++) {
-      p = properties.get(i);
+    for (int i=0;i<children.getSize();i++) {
+      p = children.get(i);
       // ... move it
       if (p==which) {
 
       int j = i+(how==UP?-1:1);
       try {
-        properties.swap(i,j);
+        children.swap(i,j);
 
         getGedcom().setUnsavedChanges(true);
       } catch (Exception e) {
@@ -1045,9 +1034,10 @@ public abstract class Property {
     }
 
     // check the children
-    ReferencePropertySet children = getProperties();
-    for (int i=0;i<children.getSize();i++) {
-      children.get(i).find(result, text, all);
+    if (children!=null) {
+      for (int i=0;i<children.getSize();i++) {
+        children.get(i).find(result, text, all);
+      }
     }
 
     // done
@@ -1145,5 +1135,84 @@ public abstract class Property {
     }
     return false;
   }
+  
+  /**
+   * Set of sub-properties 
+   */
+  protected class PropertySet {
+    
+    /** the elements */
+    private Vector vector = new Vector();
+
+    /**
+     * Adds another property to this set
+     * @prop the property to add to this list
+     */
+    protected void add(Property prop) {
+      vector.addElement(prop);
+      prop.addNotify(Property.this);
+    }
+
+    /**
+     * Property in list?
+     */
+    protected boolean contains(Property property) {
+      return vector.contains(property);
+    }
+  
+    /**
+     * Removes a property
+     */
+    protected void delete(Property which) {
+      vector.removeElement(which);
+      which.delNotify();
+    }
+
+    /**
+     * Removes all properties
+     */
+    protected void deleteAll() {
+      Enumeration e = ((Vector)vector.clone()).elements();
+      vector.removeAllElements();
+      while (e.hasMoreElements())
+        ((Property)e.nextElement()).delNotify();
+    }
+
+    /**
+     * Returns one of the properties in this set by index
+     */
+    public Property get(int which) {
+      return ((Property)vector.elementAt(which));
+    }
+
+    /**
+     * Returns one of the properties in this set by tag
+     */
+    public Property get(String tag) {
+      Property p;
+      for (int i=0;i<getSize();i++) {
+        p = get(i);
+        if (p.getTag().equals(tag)) return p;
+      }
+      return null;
+    }
+
+    /**
+     * Returns the number of properties in this set
+     */
+    public int getSize() {
+      return vector.size();
+    }
+  
+    /**
+     * Swaps place of properties given by index
+     */
+    public void swap(int i, int j) {
+      Object o = vector.elementAt(i);
+      vector.setElementAt(vector.elementAt(j),i);
+      vector.setElementAt(o,j);
+    }          
+    
+  } // PropertySet
 }
 

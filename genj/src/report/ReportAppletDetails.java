@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.11 2002-05-12 15:57:14 timmsc Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.12 2002-08-08 19:28:41 nmeier Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -236,9 +236,8 @@ public class ReportAppletDetails implements Report {
       exportProperty(tag, value, out, level);
     }
 
-    ReferencePropertySet props = prop.getProperties();
-    for (int i=0;i<props.getSize();i++) {
-      exportProperty(props.get(i), out, level+1);
+    for (int i=0;i<prop.getNoOfProperties();i++) {
+      exportProperty(prop.getProperty(i), out, level+1);
     }
 
   }

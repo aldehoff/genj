@@ -30,18 +30,6 @@ public class EntityList implements Cloneable {
   private Vector vector;
 
   /**
-   * Class for running action on list of entities
-   */
-  public interface Action {
-    /**
-     * Operate action on entity
-     * @return false if not to be continued
-     */
-    public boolean on(Entity e);
-    // EOC
-  }
-
-  /**
    * Constructor
    */
   public EntityList() {
@@ -191,17 +179,6 @@ public class EntityList implements Cloneable {
     return(vector.size());
   }
 
-  /**
-   * Operates on all entities in this list
-   */
-  public void operate(Action action) {
-    Enumeration e = vector.elements();
-    while (e.hasMoreElements()) {
-      if (!action.on((Entity)e.nextElement()))
-      break;
-    }
-  }
-  
   /**
    * Returns the elements as an array
    */
