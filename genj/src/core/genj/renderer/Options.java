@@ -23,25 +23,55 @@ import genj.option.Option;
 import genj.option.OptionProvider;
 import genj.option.OptionUI;
 import genj.option.OptionsWidget;
+import genj.option.PropertyOption;
 import genj.util.Registry;
 
-import java.util.Collections;
+import java.awt.Font;
 import java.util.List;
 
 /**
  * Blueprint/Renderer Options
  */
 public class Options extends OptionProvider {
+  
+  /** singleton */
+  private final static Options instance = new Options();
+  
+  /** the default font */
+  private Font defaultFont = new Font("SansSerif", 0, 11);
+  
+  /**
+   * singleton access
+   */
+  public static Options getInstance() {
+    return instance;
+  }
+  
+  /**
+   * Accessor - font
+   */
+  public Font getDefaultFont() {
+    return defaultFont;
+  }
+
+  /**
+   * Accessor - font
+   */
+  public void setDefaultFont(Font set) {
+    defaultFont = set;
+  }
 
   /**
    * Access to our options (one)
    */
   public List getOptions() {
-    return Collections.singletonList(new Mgr());
+    List result= PropertyOption.introspect(getInstance());
+    result.add(new Mgr());
+    return result;
   }
   
   /**
-   * Our one option
+   * Our headless option
    */
   private class Mgr extends Option {
 

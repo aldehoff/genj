@@ -112,7 +112,7 @@ public class EntityRenderer {
    * Constructor
    */  
   public EntityRenderer(Blueprint bp) {
-    this(bp, null);
+    this(bp, Options.getInstance().getDefaultFont());
   }
     
   /**
