@@ -238,8 +238,8 @@ public class Resources {
       StringBuffer buffer = new StringBuffer(pattern.length()+8);
       for (int i=0,j=pattern.length();i<j;i++) {
         char c = pattern.charAt(i);
-        if (c=='\'') buffer.append("''");
-        else buffer.append(c);
+        buffer.append(c);
+        if (c=='\'') buffer.append('\'');
       }
       pattern = buffer.toString();
     }
