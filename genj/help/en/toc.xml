@@ -35,8 +35,10 @@
     </tocitem>
     <tocitem target="d.faq"     text="FAQ">
     </tocitem>
-    <tocitem target="d.developer"   text="Developer HowTo" image="img.Developer"/>
-    <tocitem target="d.gpl"     text="GNU GPL"            image="img.GNUgpl"/>
+    <tocitem target="d.developer"   text="Developer HowTo">
+    </tocitem>
+    <tocitem target="d.gpl"     text="GNU GPL">
+    </tocitem>
   </tocitem>
   <tocitem target="team"      text="The Team"       image="img.Fam"        />
 </toc>
