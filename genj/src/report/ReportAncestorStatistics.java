@@ -383,7 +383,7 @@ public class ReportAncestorStatistics extends Report {
    * Compute consanguinity factor.
    * @param indi  Root individual.
    */
-  void computeConsanguinityFactor(Indi indi) {
+  private void computeConsanguinityFactor(Indi indi) {
     // Initialize value
     dConsanguinityFactor = 0;
 
@@ -406,7 +406,7 @@ public class ReportAncestorStatistics extends Report {
    * @param iLevelLeft   Current generation level of other the tree.
    * @param stackLeft    Current ancestor list of other the tree.
    */
-  void checkRightTree(Indi indiRight, int iLevelRight, Stack stackRight,
+  private void checkRightTree(Indi indiRight, int iLevelRight, Stack stackRight,
                       Indi indiLeft, int iLevelLeft, Stack stackLeft) {
     // Exit if an individual is missing
     if (indiRight == null || indiLeft == null)
@@ -444,7 +444,7 @@ public class ReportAncestorStatistics extends Report {
    * @param iLevelLeft   Current generation level.
    * @param stackLeft    Current ancestor list.
    */
-  void searchInLeftTree(Indi indiRight, int iLevelRight, Stack stackRight,
+  private void searchInLeftTree(Indi indiRight, int iLevelRight, Stack stackRight,
                         Indi indiLeft, int iLevelLeft, Stack stackLeft) {
     // Exit if an individual is missing
     if (indiRight == null || indiLeft == null)
