@@ -602,9 +602,16 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
   }
   
   /**
+   * @see genj.view.FilterSupport#getFilterName()
+   */
+  public String getFilterName() {
+    return model.getEntities().size()+" nodes in "+title;
+  }
+
+  /**
    * A filter that includes visible indis/families
    */
-  private class VisibleFilter implements Filter {
+  private static class VisibleFilter implements Filter {
     /** entities that are 'in' */
     private Set ents;
     /** whether we're showing families */
@@ -638,12 +645,6 @@ public class TreeView extends JPanel implements ContextSupport, ToolBarSupport, 
      */
     public boolean accept(Property property) {
       return true;
-    }
-    /**
-     * @see java.lang.Object#toString()
-     */
-    public String toString() {
-      return model.getEntities().size()+" nodes in "+title;
     }
   } //VisibleFilter
 

@@ -92,7 +92,7 @@ import javax.swing.JTextField;
     filterViews = (FilterSupport[])manager.getInstances(FilterSupport.class, gedcom);
     checkViews = new JCheckBox[filterViews.length];
     for (int i=0; i<checkViews.length; i++) {
-      checkViews[i] = new JCheckBox(filterViews[i].toString(), false);
+      checkViews[i] = new JCheckBox(filterViews[i].getFilterName(), false);
       others.add(checkViews[i]);
     }
     

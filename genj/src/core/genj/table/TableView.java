@@ -295,6 +295,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     // Done
   }  
   
+  
   /**
    * @see genj.view.FilterSupport#getFilter()
    */
@@ -303,9 +304,16 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
   }
   
   /**
+   * @see genj.view.FilterSupport#getFilterName()
+   */
+  public String getFilterName() {
+    return table.getSelectedRowCount()+" selected rows in "+title;
+  }
+
+  /**
    * SelectionFilter
    */
-  private class SelectionFilter implements Filter {
+  private static class SelectionFilter implements Filter {
     /** selected entities */
     private Set ents = new HashSet();
     /** type we're looking at */
@@ -339,12 +347,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     /** @see genj.io.Filter#accept(genj.gedcom.Property) */
     public boolean accept(Property property) {
       return true;
-    }
-    /**
-     * @see java.lang.Object#toString()
-     */
-    public String toString() {
-      return table.getSelectedRowCount()+" selected rows in "+title;
     }
   } //SelectionFilter
   

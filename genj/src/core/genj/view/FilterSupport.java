@@ -30,5 +30,10 @@ public interface FilterSupport {
    * Return a filter
    */
   public Filter getFilter();
+  
+  /**
+   * Returns the name of the filter
+   */
+  public String getFilterName();
 
 } //FilterSupport
