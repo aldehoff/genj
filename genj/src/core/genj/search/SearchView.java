@@ -300,7 +300,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextSupport
     // regexp?
     if (regex)  {
       try {
-        result = (Matcher)Class.forName("genj.search.RegExMatcher").newInstance(); 
+        result = new RegExMatcher(); 
       } catch (Throwable t) {
         return null;
       }

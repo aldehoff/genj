@@ -29,7 +29,15 @@ import java.util.regex.PatternSyntaxException;
 public class RegExMatcher extends Matcher {
   
   /** the compiled regular expression */
-  private Pattern compiled; 
+  private Pattern compiled;
+  
+  /**
+   * If someone wants to instantiate this they
+   * better use JDK1.4 and higher
+   */
+  /*package*/ RegExMatcher() {
+    Class tst = Pattern.class;
+  }
   
   /**
    * @see genj.search.Matcher#init(java.lang.String)
