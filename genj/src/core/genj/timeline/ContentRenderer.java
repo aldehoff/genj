@@ -118,43 +118,4 @@ public class ContentRenderer extends Renderer {
     return event.prop.getTag() + " of " + event.prop.getEntity() + " (" + event.prop.getDate() + ")";
   }
   
-/*    
-  private void render(Graphics g, Model model, List layer, int level) {
-    // prepare parameters
-    int 
-      fh = g.getFontMetrics().getHeight(),
-      fd = g.getFontMetrics().getDescent();
-    
-    // loop through events
-    Iterator events = layer.iterator();
-    while (events.hasNext()) {
-      
-      // here's the event
-      Model.Event event = (Model.Event)events.next();
-      int     x1  = cm2pixels((event.from-model.min)*cmPyear);
-      int     x2  = cm2pixels((event.to-model.min)*cmPyear);
-      String  tag = event.prop.getTag() + " of " + event.prop.getEntity() + " (" + event.prop.getDate() + ")";
-      int     y   = level*(fh+1);
-      ImgIcon img = event.prop.getImage(false);
-      boolean em  = event.prop.getEntity().equals(model.gedcom.getLastEntity());
-
-      // color
-      if (colorize) g.setColor(em ? Color.red : Color.black);
-      
-      // draw it's extend
-      g.drawLine(x1, y+fh-1, x1, y+fh);
-      g.drawLine(x1, y+fh  , x2, y+fh);
-      g.drawLine(x2, y+fh-1, x2, y+fh);
-      
-      // .. image
-      img.paintIcon(g, x1, y+fh/2-img.getIconHeight()/2);
-      
-      // .. txt
-      g.drawString(tag, x1 + img.getIconWidth(), y + fh - fd);
-      
-      // next
-    }
-    // done
-  }
-*/
 } //RulerRenderer

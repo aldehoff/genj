@@ -191,6 +191,7 @@ import genj.gedcom.PropertyEvent;
       // calculate tag
       Entity e = propEvent.getEntity();
       tag = e instanceof Indi ? tag((Indi)e) : tag((Fam)e);
+      tag = tag + '(' + propEvent.getDate() + ')';
       // done
     }
     /**
