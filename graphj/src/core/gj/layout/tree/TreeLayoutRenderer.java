@@ -47,14 +47,14 @@ public class TreeLayoutRenderer implements GraphRenderer {
     // Render the root
     Node root = tlayout.getRoot();
     if ((root!=null)&&graph.getNodes().contains(root)) {
-      emphasize(root, Color.GREEN, graphics);
+      emphasize(root, Color.green, graphics);
     }
 
     // debugging must be on for sketching the contour
     if (tlayout.isDebug()) {
       
       // Render the contours
-      graphics.setColor(Color.LIGHT_GRAY);
+      graphics.setColor(Color.lightGray);
       
       Iterator it = tlayout.debugShapes.iterator();
       while (it.hasNext()) graphics.draw((Shape)it.next(),false);

@@ -94,7 +94,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
       y = node.getPosition().getY();
       
     // draw its shape
-    graphics.setColor(Color.BLACK);
+    graphics.setColor(Color.black);
     graphics.draw(node.getShape(), x, y, 1D, 1D, 0D, false);
 
     // and content    
@@ -129,7 +129,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
     Path path = arc.getPath();
     
     // arbitrary color
-    graphics.setColor(Color.RED);
+    graphics.setColor(Color.red);
     
     // the path's shape
     graphics.draw(path,false);

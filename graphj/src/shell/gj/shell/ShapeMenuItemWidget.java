@@ -59,7 +59,7 @@ public class ShapeMenuItemWidget extends JMenuItem {
     Dimension size = getSize();
     Graphics2D graphics = (Graphics2D)g;
     
-    graphics.setColor(Color.BLACK);
+    graphics.setColor(Color.black);
     graphics.translate(size.width/2, size.height/2);
     graphics.draw(shape);
     graphics.translate(-size.width/2, -size.height/2);

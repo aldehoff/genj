@@ -184,7 +184,7 @@ public class GraphWidget extends JComponent {
     // No graph
     if (graph==null) {
       // Clear the background 
-      g.setColor(Color.GRAY);
+      g.setColor(Color.gray);
       g.fillRect(0, 0, getSize().width, getSize().height);
       // Done
       return;
@@ -194,7 +194,7 @@ public class GraphWidget extends JComponent {
     Graphics2D graphics = SwingHelper.getGraphics2D(g,isAntialiasing());
     
     // Clear the background
-    graphics.setColor(Color.WHITE);
+    graphics.setColor(Color.white);
     graphics.fillRect(0,0,getSize().width, getSize().height);
       
     synchronized (graph) {
@@ -215,7 +215,7 @@ public class GraphWidget extends JComponent {
       
       // Is the a current to render?
       if (lastSelection!=null) {
-        gg.setColor(Color.BLUE);
+        gg.setColor(Color.blue);
         gg.draw(
           lastSelection.getShape(), 
           lastSelection.getPosition().getX(), 
@@ -473,26 +473,26 @@ public class GraphWidget extends JComponent {
         repaint();
       }
       // start dragging?
-      if (e.getButton()==e.BUTTON1) {
+      if ((e.getModifiers()&e.BUTTON1_MASK)!=0) {
+      //if (e.getButton()==e.BUTTON1) {
         dndMoveNode.start(e);
       }
       // done
     }
     /** callback */
     public void mouseReleased(MouseEvent e) {
-      switch (e.getButton()) {
-        case MouseEvent.BUTTON3:
-          // popup
-          lastPosition = e.getPoint();
-          JPopupMenu menu = lastSelection!=null ? getNodePopupMenu() : getCanvasPopupMenu();
-          menu.show(GraphWidget.this,e.getX(),e.getY());
-          // done
-          break;
-        case MouseEvent.BUTTON1:
-          // quick node
-          if (quickNode) createNode(e.getPoint(),""+(graph.getNodes().size()+1));
-          // done
-          break;
+      if ((e.getModifiers()&e.BUTTON3_MASK)!=0) {
+      //if (e.getButton()==e.BUTTON3) {
+        // popup
+        lastPosition = e.getPoint();
+        JPopupMenu menu = lastSelection!=null ? getNodePopupMenu() : getCanvasPopupMenu();
+        menu.show(GraphWidget.this,e.getX(),e.getY());
+        return;
+      }
+      if ((e.getModifiers()&e.BUTTON1_MASK)!=0) {
+      //if (e.getButton()==e.BUTTON1) {
+        if (quickNode) createNode(e.getPoint(),""+(graph.getNodes().size()+1));
+        return;
       }
     }
   } // EOC
