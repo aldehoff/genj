@@ -31,6 +31,8 @@
   <tocitem target="documentation"    text="General Documentation">
     <tocitem target="d.changes"     text="Changes">
     </tocitem>
+    <tocitem target="d.todo"     text="To Do">
+    </tocitem>
     <tocitem target="d.developer"   text="Developer HowTo" image="img.Developer"/>
     <tocitem target="d.gpl"     text="GNU GPL"            image="img.GNUgpl"/>
   </tocitem>

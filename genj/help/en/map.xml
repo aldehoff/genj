@@ -30,7 +30,9 @@
   <mapID target="x.report"    url="special/report.html" />
   <mapID target="x.resedit"   url="special/resedit.html" />
 
+  <mapID target="documentation"     url="documentation/documentation.html" />
   <mapID target="d.changes"     url="documentation/changes.html" />
+  <mapID target="d.todo"     url="documentation/todo.html" />
   <mapID target="d.developer"    url="documentation/developer.html" />
   <mapID target="d.gpl"     url="documentation/gpl.html" />
 
