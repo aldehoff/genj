@@ -12,6 +12,14 @@ public class EnvironmentChecker {
         "browser", "browser.vendor", "browser.version",
         "user.name", "user.home", "user.dir"
   };
+  
+  /**
+   * Check for Java 1.4 and higher
+   */
+  public static boolean isJava14(Object receipient) {
+    String version = getProperty(receipient, "java.version", "", "Checking Java VM version");
+    return version.startsWith("1.4");
+  }
 
   /**
    * Check the environment
@@ -90,7 +98,8 @@ public class EnvironmentChecker {
       Debug.log(Debug.WARNING, receipient, "Couldn't access system-properties", t);
     }
     // fallback
-    Debug.log(Debug.INFO, receipient, "Using fallback for system-property "+key+'='+fallback+" ("+msg+')');
+    if (fallback!=null)
+      Debug.log(Debug.INFO, receipient, "Using fallback for system-property "+key+'='+fallback+" ("+msg+')');
     return fallback;
   }
 

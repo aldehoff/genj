@@ -72,6 +72,15 @@ public class App {
       Debug.setFile(new File(log));
     EnvironmentChecker.log();
     
+    // check VM version
+    if (!EnvironmentChecker.isJava14(App.class)) {
+      if (EnvironmentChecker.getProperty(App.class, "genj.forcevm", null, "Check force of VM")==null) {
+        Debug.log(Debug.ERROR, App.class, "Need Java 1.4 to run GenJ");
+        System.exit(1);
+        return;
+      }
+    }
+    
     // init our data
     final Registry registry = new Registry("genj");
     
