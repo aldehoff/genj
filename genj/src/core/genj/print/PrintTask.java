@@ -138,6 +138,9 @@ import javax.swing.JComponent;
     // check suitability
     if (service.isDocFlavorSupported(FLAVOR))
       return service;
+    
+   Debug.log(Debug.INFO, this, "Found service "+service+" but isDocFlavorSupported==false");
+   
     // try to find a better one
     PrintService[] suitables = PrintServiceLookup.lookupPrintServices(FLAVOR, null);
     if (suitables.length==0)
