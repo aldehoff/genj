@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyChange;
 import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
 import genj.io.PropertyTransferable;
@@ -502,7 +503,7 @@ public class PropertyTreeWidget extends DnDTree {
           continue;
         // structure change?
         if (change instanceof Change.PropertyStructure) {
-          if (change instanceof Change.PropertyAdd)
+          if (change instanceof Change.PropertyAdd&&!(((Change.PropertyAdd)change).getAdded() instanceof PropertyChange))
             selection = ((Change.PropertyAdd)change).getAdded();
           setRoot(root);
           break;
