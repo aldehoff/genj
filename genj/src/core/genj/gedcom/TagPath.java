@@ -111,25 +111,6 @@ public class TagPath {
   
   /**
    * Constructor for TagPath
-   */
-  public TagPath(TagPath other, int pos, int selector) {
-    
-    // setup len
-    len = other.len;
-  
-    // copy and change
-    tags = new String[len];
-    System.arraycopy(other.tags, 0, tags, 0, other.len);
-    
-    tags[pos] = get(pos)+"#"+selector;
-    
-    // prepare our hash
-    hash = other.hash-other.tags[pos].hashCode()+tags[pos].hashCode();
-    
-  }
-  
-  /**
-   * Constructor for TagPath
    * @param path path as colon separated string value c:b:a
    * @exception IllegalArgumentException in case format isn't o.k.
    * @return the path [a:b:c]
@@ -200,99 +181,16 @@ public class TagPath {
     
     // what's the element 'at'
     String element = tags[at];
-    
-    // gotta match for at least tag.length
-    if (!element.regionMatches(0, tag, 0, tag.length()))
-      return false;
-    
-    // simplest case of 'BIRT' matches 'BIRT' (implying 0 selector)
-    if (element.length()==tag.length())
-      return true;
-  
-    // no good if followed by other than selector
-    if (element.charAt(tag.length())!='#')
-      return false;
-    
-    // is good
-    return true;
+    return element.equals(tag);
   }
   
   /**
-   * Compares the selector at given position with argument
-   */
-  public boolean equals(int at, int selector) {
-    
-    // what's the element 'at'
-    String element = tags[at];
-
-    // no selector - gotta be 0 
-    int i = element.indexOf('#');
-    if (i<0)
-      return selector==0;
-    
-    // selector has to fit after '#'?
-    String s = Integer.toString(selector);
-    if (element.length()-i-1!=s.length())
-      return false;
-    
-    return element.regionMatches(i+1, s, 0, s.length());
-  }
-  
-//  /**
-//   * Matches a path element with given tag
-//   * @param which the path element to match
-//   * @param tag the tag to match it with
-//   * @return true if tag equals path[which]
-//   */
-//  public boolean match(int which, String tag) {
-//    return match(which, tag, 0)!=MATCH_NONE;
-//  }
-//  
-//  /**
-//   * Matches a path element with given tag and selector
-//   * @param which the path element to match
-//   * @param tag the tag to match it with
-//   * @param selector the selector (e.g. '2') to match it with
-//   * @return MATCH_NONE if tag is not the same, 
-//   *          MATCH_TAG if tag is the same but selector is different,
-//   *          MATCH_ALL if tag and selector are the same
-//   */
-//  public int match(int which, String tag, int selector) {
-//
-//    // compare path element 'which' 
-//    String element = tags[which];
-//    
-//    // gotta match for tag.length - e.g. 'BIRT#0' matches 'BIRT'
-//    if (!element.regionMatches(0, tag, 0, tag.length()))
-//      return MATCH_NONE;
-//      
-//    // simplest case of 'BIRT' matches 'BIRT' (implying 0 selector)
-//    if (element.length()==tag.length())
-//      return selector==0 ? MATCH_ALL : MATCH_TAG;
-//    
-//    // gotta be selector case case then 'BIRT#x' matching 'BIRT'
-//    if (element.charAt(tag.length())!='#')
-//      return MATCH_NONE;
-//      
-//    // selector wrong? e.g. in case of 'BIRT#1' match 1 with 'selector' #2?
-//    if (!element.regionMatches(tag.length()+1, Integer.toString(selector), 0, element.length()-tag.length()-1))
-//      return MATCH_TAG;
-//      
-//    // all well
-//    return MATCH_ALL;
-//  }
-
-  /**
-   * Returns the n-th tag of this path (this won't return the selector information e.g. BIRT#1 but only BIRT)
+   * Returns the n-th tag of this path 
    * @param which 0-based number
    * @return tag as <code>String</code>
    */
   public String get(int which) {
-    String result = tags[which];
-    int selector = result.indexOf('#');
-    if (selector>=0)
-      result = result.substring(0,selector);
-    return result;
+    return tags[which];
   }
 
   /**

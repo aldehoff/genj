@@ -545,7 +545,7 @@ public abstract class Property implements Comparable {
       }
       
       // Search for appropriate tag in children
-      for (int i=0,n=0;i<prop.getNoOfProperties();i++) {
+      for (int i=0;i<prop.getNoOfProperties();i++) {
 
         Property ith = prop.getProperty(i);
 
@@ -555,11 +555,7 @@ public abstract class Property implements Comparable {
           if (listAll!=null) {
             getPropertyRecursively(ith, path, pos+1, listAll, false);
           } else {
-            // selector good?
-            if (path.equals(pos, n))
-              return getPropertyRecursively(ith, path, pos+1, listAll, false);
-            // inc selector
-            n++;
+            return getPropertyRecursively(ith, path, pos+1, listAll, false);
           }
         }
       }
