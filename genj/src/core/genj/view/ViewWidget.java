@@ -35,8 +35,14 @@ import genj.util.swing.MenuHelper;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
@@ -51,6 +57,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSlider;
 import javax.swing.JToolBar;
+import javax.swing.MenuSelectionManager;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
@@ -191,8 +198,21 @@ import javax.swing.border.TitledBorder;
    * Sets the view's current entity
    */
   /*package*/ void setCurrentEntity(Entity entity) {
+    // delegate to view
     if (view instanceof CurrentSupport)
       ((CurrentSupport)view).setCurrentEntity(entity);
+    // 20021017 - Popups are not removed by Swing as
+    // diligently as I would like. e.g. opening up
+    // a JPopupMenu in one view won't close that menu
+    // when other things are done in other views. We
+    // could do some stuff with windowDeactivated but
+    // that seems to much to bother. Also timing of
+    // menu cleanup seems to be a problem. For now we'll
+    // simple tell the global MenuSelectionmanager
+    // to clearSelectedPath() which will get rid of the
+    // popup anytime the user changes the current entity.
+    MenuSelectionManager.defaultManager().clearSelectedPath();
+     
   }
   
   /**
@@ -291,6 +311,11 @@ import javax.swing.border.TitledBorder;
       // get the actions for that entity
       List actions = ViewManager.getInstance().getActions(entity);
       if (actions.isEmpty()) return;
+      // 20021017 strangely Popups for JPopupMenu don't seem to
+      // disappear even though of mouse-clicks in the view. The
+      // following makes sure that the menu disappears when 
+      // anything is clicking in the view (@see setCurrentEntity())
+      MenuSelectionManager.defaultManager().clearSelectedPath();
       // fill them into a popup
       MenuHelper mh = new MenuHelper();
       JPopupMenu popup = mh.createPopup(entity.getId());
@@ -299,6 +324,7 @@ import javax.swing.border.TitledBorder;
         ImgIconConverter.get(entity.getProperty().getImage(false)),
         JLabel.CENTER
       ));
+      popup.setDefaultLightWeightPopupEnabled(true);
       Iterator it = actions.iterator();
       while (it.hasNext()) {
         ActionDelegate ad = (ActionDelegate)it.next();

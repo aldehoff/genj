@@ -43,6 +43,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -63,7 +64,7 @@ public class NavigatorView extends JPanel implements CurrentSupport {
   private Indi indi;
   
   /** the buttons */
-  private JButton bFather, bMother, bOlder, bPartner, bYounger, bChild;
+  private AbstractButton bFather, bMother, bOlder, bPartner, bYounger, bChild;
   
   /** the gedcom */
   private Gedcom gedcom;

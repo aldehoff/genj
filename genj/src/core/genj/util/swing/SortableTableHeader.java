@@ -81,7 +81,7 @@ public class SortableTableHeader extends JTableHeader {
    * A patched header renderer that uses the default renderer from installed
    * L&F and knows sorting and ImageIcon values
    */
-  private class PatchedHeaderRenderer extends JLabel implements TableCellRenderer {
+  private class PatchedHeaderRenderer extends HeadlessLabel implements TableCellRenderer {
     
     /** arrow design */
     private int[] 

@@ -49,6 +49,7 @@ import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.HeadlessLabel;
 import genj.util.swing.SortableTableHeader;
 import genj.view.CurrentSupport;
 import genj.view.EntityPopupSupport;
@@ -294,7 +295,7 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
   /**
    * Renderer for properties in cells
    */
-  private class PropertyTableCellRenderer extends JLabel implements TableCellRenderer {
+  private class PropertyTableCellRenderer extends HeadlessLabel implements TableCellRenderer {
     /** current property */
     private Property prop;
     /** attributes */

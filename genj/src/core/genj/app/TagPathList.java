@@ -29,6 +29,7 @@ import javax.swing.event.*;
 
 import genj.gedcom.*;
 import genj.util.ImgIcon;
+import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImgIconConverter;
 
 /**
@@ -46,7 +47,7 @@ public class TagPathList extends JComponent {
   class TagPathRenderer implements ListCellRenderer {
     // LCD
     /** members */
-    private JLabel  label = new JLabel();
+    private HeadlessLabel label = new HeadlessLabel();
     private boolean selected;
 
     /** return component for rendering list element */

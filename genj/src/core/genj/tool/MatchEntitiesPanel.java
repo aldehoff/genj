@@ -41,7 +41,7 @@ import genj.app.*;
 class MatchEntitiesPanel extends JPanel implements GedcomListener {
 
   private JTable   tMatch;
-  private JButton  bDont,bDontAll;
+  private AbstractButton  bDont,bDontAll;
   private Gedcom[] candidates = new Gedcom[2];
 
   private String   header =

@@ -33,6 +33,7 @@ import java.util.Vector;
 
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
@@ -78,9 +79,10 @@ public class ButtonHelper {
   /**
    * Creates the button
    */
-  public JButton create(ActionDelegate action) {
+  public AbstractButton create(ActionDelegate action) {
     
-    JButton result = new JButton();
+    // create the button
+    AbstractButton result = action.toggle==null ? (AbstractButton)new JButton() : (AbstractButton)new JToggleButton();
     
     // its text
     String s = string((isShortTexts&&action.stxt!=null) ? action.stxt : action.txt);
@@ -92,6 +94,8 @@ public class ButtonHelper {
       result.setIcon(ImgIconConverter.get(action.img));
     if (isImageAllowed&&action.roll!=null)
       result.setRolloverIcon(ImgIconConverter.get(action.roll));
+    if (isImageAllowed&&action.toggle!=null)
+      result.setSelectedIcon(ImgIconConverter.get(action.toggle));
     if (action.tip!=null) 
       result.setToolTipText(string(action.tip));
     if (insets!=null)

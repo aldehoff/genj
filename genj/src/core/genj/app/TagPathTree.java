@@ -28,6 +28,7 @@ import java.awt.event.*;
 import java.util.*;
 
 import genj.gedcom.*;
+import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImgIconConverter;
 
 /**
@@ -111,9 +112,9 @@ public class TagPathTree extends JScrollPane {
   class NodeRenderer implements TreeCellRenderer {
     // LCD
     /** members */
-    private JPanel    panel = new JPanel();
-    private JCheckBox checkbox = new JCheckBox();
-    private JLabel    label = new JLabel();
+    private JPanel        panel = new JPanel();
+    private JCheckBox     checkbox = new JCheckBox();
+    private HeadlessLabel label = new HeadlessLabel();
 
     /** constructor */
     NodeRenderer() {
@@ -152,7 +153,7 @@ public class TagPathTree extends JScrollPane {
     MouseAdapter madapter = new MouseAdapter() {
       // LCD
       /** callback for mouse click */
-      public void mouseClicked(MouseEvent me) {
+      public void mousePressed(MouseEvent me) {
         // Check wether some valid path has been clicked on
         TreePath path = tree.getPathForLocation(me.getX(),me.getY());
         if (path==null)

@@ -21,6 +21,7 @@ package genj.app;
 
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
+import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImgIconConverter;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -147,9 +148,9 @@ public class TagSelector extends JComponent {
 
     // LCD
     /** members */
-    private JPanel    panel = new JPanel();
-    private JCheckBox check = new JCheckBox();
-    private JLabel    label = new JLabel();
+    private JPanel        panel = new JPanel();
+    private JCheckBox     check = new JCheckBox();
+    private HeadlessLabel label = new HeadlessLabel();
 
     /** Constructor */
     private EntryRenderer() {

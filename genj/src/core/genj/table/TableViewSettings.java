@@ -89,8 +89,8 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
 
     // Up/Down of ordering
     ButtonHelper bh = new ButtonHelper().setResources(TableView.resources).setInsets(0);
-    JButton bUp   = bh.create(new ActionUpDown(true));
-    JButton bDown = bh.create(new ActionUpDown(false));
+    AbstractButton bUp   = bh.create(new ActionUpDown(true));
+    AbstractButton bDown = bh.create(new ActionUpDown(false));
     
     // Layout
     gh.add(new JLabel(TableView.resources.getString("info.entities"))  ,0,1,1,1);

@@ -34,6 +34,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImgIconConverter;
+import genj.util.swing.HeadlessLabel;
 import genj.view.CurrentSupport;
 import genj.view.EntityPopupSupport;
 import genj.view.ToolBarSupport;
@@ -64,6 +65,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
@@ -102,8 +104,8 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
                             actionButtonRemove,
                             actionButtonUp,
                             actionButtonDown,
-                            actionButtonReturn;
-  private JCheckBox         checkSticky;
+                            actionButtonReturn,
+                            actionSticky;
 
   /** everything for the tree */
   private PropertyTree      tree = null;
@@ -163,7 +165,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     // Remember registry
     registry.put("divider",getDividerLocation());
     registry.put("last", currentEntity!=null?currentEntity.getId():"");
-    registry.put("sticky", checkSticky.isSelected());
+    registry.put("sticky", actionSticky!=null&&actionSticky.isSelected());
 
     // Continue
     super.removeNotify();
@@ -250,7 +252,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
    * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
    */
   public void setCurrentEntity(Entity entity) {
-    if (checkSticky==null||!checkSticky.isSelected()) setEntity(entity);
+    if (actionSticky==null||!actionSticky.isSelected()) setEntity(entity);
   }
 
   /**
@@ -292,16 +294,10 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
     actionButtonUp     = bh.create(new ActionPropertyUpDown(true));
     actionButtonDown   = bh.create(new ActionPropertyUpDown(false));
     actionButtonReturn = bh.setEnabled(true).create(new ActionBack());
-
-    // sticky checkbox
-    checkSticky  = new JCheckBox(ImgIconConverter.get(Images.imgStickOff));
-    checkSticky.setSelectedIcon (ImgIconConverter.get(Images.imgStickOn ));
-    checkSticky.setFocusPainted(false);
-    checkSticky.setSelected(registry.get("sticky",false));
-    checkSticky.setToolTipText(resources.getString("tip.stick"));
-    checkSticky.setOpaque(false);
-    bar.add(checkSticky);
+    actionSticky       = bh.create(new ActionSticky());
     
+    actionSticky.setSelected(registry.get("sticky",false));
+
     // done
   }
 
@@ -417,6 +413,23 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
 
     // Done
   }
+
+  /**
+   * Action - toggle
+   */
+  private class ActionSticky extends ActionDelegate {
+    /** constructor */
+    protected ActionSticky() {
+      super.setImage(Images.imgStickOff);
+      super.setToggle(Images.imgStickOn);
+      super.setTip("tip.stick");
+    }
+    /** run */
+    protected void execute() {
+      //noop
+    }
+  } //ActionBack
+  
 
   /**
    * Action - back
@@ -649,7 +662,7 @@ public class EditView extends JSplitPane implements CurrentSupport, ToolBarSuppo
   private class PropertyTree extends JTree implements TreeCellRenderer, TreeSelectionListener {
     
     /** a label for rendering */
-    private JLabel label = new JLabel();
+    private HeadlessLabel label = new HeadlessLabel();
     
     /**
      * Constructor

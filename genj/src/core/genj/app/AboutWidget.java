@@ -84,8 +84,7 @@ public class AboutWidget extends JPanel{
     
     // create a south panel
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    JButton bExit = new ButtonHelper().setResources(ViewManager.resources).create(new ActionDelegate.ActionDisposeFrame(setFrame).setText("view.close"));
-    pSouth.add(bExit);
+    pSouth.add(new ButtonHelper().setResources(ViewManager.resources).create(new ActionDelegate.ActionDisposeFrame(setFrame).setText("view.close")));
 
     // create a center panel
     JTabbedPane pCenter = new JTabbedPane(SwingConstants.LEFT);
@@ -348,14 +347,9 @@ public class AboutWidget extends JPanel{
      * South Panel
      */
     private JPanel getSouth() {
-      
       // apply-button
-      JButton bOk = new ButtonHelper().setResources(App.resources).create(new ActionApply());
-      
-      // layout
       JPanel pResult = new JPanel();
-      pResult.add(bOk);
-      
+      pResult.add(new ButtonHelper().setResources(App.resources).create(new ActionApply()));
       // done
       return pResult;
     }

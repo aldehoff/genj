@@ -47,7 +47,7 @@ public abstract class ActionDelegate implements Cloneable {
     ASYNC_NEW_INSTANCE   = 2;
   
   /** attributes */
-  public ImgIcon img,roll;
+  public ImgIcon img,roll,toggle;
   public String  txt;
   public String  stxt;
   public String  tip;
@@ -186,6 +186,13 @@ public abstract class ActionDelegate implements Cloneable {
     return this;
   }
   
+  /**
+   * Toggle
+   */
+  public ActionDelegate setToggle(ImgIcon t) {
+    toggle=t;
+    return this;
+  }
   
   /**
    * Text

@@ -48,7 +48,7 @@ public class ReportView extends JPanel {
   private JTextArea   taOutput;
   private JList       listOfReports;
   private JTabbedPane tabbedPane;
-  private JButton     bStart,bStop,bClose,bSave,bReload;
+  private AbstractButton bStart,bStop,bClose,bSave,bReload;
   private static  ReportLoader loader;
   private static  ImageIcon imgShell,imgGui;
   private Registry registry;

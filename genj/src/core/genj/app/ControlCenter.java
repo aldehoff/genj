@@ -121,7 +121,7 @@ public class ControlCenter extends JPanel {
     bh.setEnabled(false).addCollection(gedcomButtons).setResources(null);
     ViewManager.Descriptor[] ds=ViewManager.getInstance().getDescriptors();
     for (int i=0; i<ds.length; i++) {
-      JButton b = bh.create(new ActionView(ds[i]));
+      bh.create(new ActionView(ds[i]));
     }
     
     bh.setEnabled(true).removeCollection(gedcomButtons).setResources(App.resources);

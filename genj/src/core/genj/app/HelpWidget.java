@@ -93,10 +93,7 @@ class HelpWidget extends JPanel {
     
     // create south component
     JPanel pSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    JButton bExit = new ButtonHelper()
-      .setResources(ViewManager.resources)
-      .create(new ActionDelegate.ActionDisposeFrame(frame).setText("view.close"));
-    pSouth.add(bExit);
+    pSouth.add(new ButtonHelper().setResources(ViewManager.resources).create(new ActionDelegate.ActionDisposeFrame(frame).setText("view.close")));
     
     // layout
     add(pCenter, BorderLayout.CENTER);    
