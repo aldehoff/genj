@@ -23,10 +23,10 @@ import genj.report.Report;
 
 public class ReportFamily extends Report {
     
-    /** bullets we use as prefix */
+    /** program options also con global report options */
     private static final Options options = Options.getInstance();
     /** this report's version */
-    public static final String VERSION = "1.0";    
+    public static final String VERSION = "1.0";
     
     public String getVersion() {
         return VERSION;
@@ -51,7 +51,7 @@ public class ReportFamily extends Report {
      */
     public String getInfo() {
         return i18n("info");
-    }    
+    }
     
     /**
      * @see genj.report.Report#accepts(java.lang.Object)
@@ -65,7 +65,7 @@ public class ReportFamily extends Report {
      * This method actually starts this report
      */
     public void start(Object context) {
-
+        
         Entity[] fams;
         Fam fam;
         
@@ -83,7 +83,7 @@ public class ReportFamily extends Report {
         // Done
     }
     
-    private String getString(Object o) {
+    private String trim(Object o) {
         if(o == null)
             return "";
         return o.toString();
@@ -92,8 +92,8 @@ public class ReportFamily extends Report {
     private void analyzeFam(Fam f) {
         
         println("@"+f.getId()+"@ "+f);
-        if((f.getMarriageDate()!=null) || (f.getProperty(new TagPath("FAM:MARR:PLAC"))!=null))
-            println(options.getMarriageSymbol()+" "+getString(f.getMarriageDate())+" "+getString(f.getProperty(new TagPath("FAM:MARR:PLAC"))));
+        if( (trim(f.getMarriageDate()).length()>0) || (trim(f.getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0) )
+            println(options.getMarriageSymbol()+" "+trim(f.getMarriageDate())+" "+trim(f.getProperty(new TagPath("FAM:MARR:PLAC"))));
         analyzeIndi(f.getHusband(), f);
         analyzeIndi(f.getWife(), f);
         analyzeChildren(f);
@@ -107,31 +107,31 @@ public class ReportFamily extends Report {
         if(indi==null)
             return;
         
-        println(getIndent(2, options.getIndentPerLevel(), null)+indi);
+        println(getIndent(2)+indi);
         if(indi.getFamc()!=null) {
             Fam parents = indi.getFamc();
-            println(getIndent(3, options.getIndentPerLevel(), null)+options.getChildOfSymbol()+" @"+parents.getId()+"@ "+parents);
+            println(getIndent(3)+options.getChildOfSymbol()+" "+parents+" (@"+parents.getId()+"@)");
         }
         else {
             Indi father = indi.getFather(), mother = indi.getMother();
             if(father!=null)
-                println(getIndent(4, options.getIndentPerLevel(), null)+options.getChildOfSymbol()+" @"+father.getId()+"@ "+father);
+                println(getIndent(4)+options.getChildOfSymbol()+" "+father+" (@"+father.getId()+"@)");
             if(mother!=null)
-                println(getIndent(4, options.getIndentPerLevel(), null)+options.getChildOfSymbol()+" @"+mother.getId()+"@ "+mother);
+                println(getIndent(4)+options.getChildOfSymbol()+" "+mother+" (@"+mother.getId()+"@)");
         }
-        if( ((indi.getBirthAsString()!=null)&&(indi.getBirthAsString().length()>0)) || ((indi.getProperty(new TagPath("INDI:BIRT:PLAC"))!=null)&&(indi.getProperty(new TagPath("INDI:BIRT:PLAC")).toString().length()>0)) )
-           println(getIndent(3, options.getIndentPerLevel(), null)+options.getBirthSymbol()+" "+getString(indi.getBirthAsString())+" "+getString(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))));
-        if(indi.getProperty("DEAT")!=null && ( (indi.getDeathAsString()!=null) || (indi.getProperty(new TagPath("INDI:DEAT:PLAC"))!=null) ) )
-            println(getIndent(3, options.getIndentPerLevel(), null)+options.getDeathSymbol()+" "+getString(indi.getDeathAsString())+" "+getString(indi.getProperty(new TagPath("INDI:DEAT:PLAC"))));
+        if( (trim(indi.getBirthAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0) )
+            println(getIndent(3)+options.getBirthSymbol()+" "+trim(indi.getBirthAsString())+" "+trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))));
+        if(indi.getProperty("DEAT")!=null && ( (trim(indi.getDeathAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0) ) )
+            println(getIndent(3)+options.getDeathSymbol()+" "+trim(indi.getDeathAsString())+" "+trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC"))));
         Fam[] families = indi.getFamilies();
         if(families.length > 1) {
-            println(getIndent(3, options.getIndentPerLevel(), null)+i18n("otherSpouses"));
+            println(getIndent(3)+i18n("otherSpouses"));
             for(int i=0; i<families.length; i++) {
                 if(families[i]!=f) {
                     String str = "";
-                    if((families[i].getMarriageDate()!=null) || (families[i].getProperty(new TagPath("FAM:MARR:PLAC"))!=null))
-                        str = options.getMarriageSymbol()+" "+getString(families[i].getMarriageDate())+" "+getString(families[i].getProperty(new TagPath("FAM:MARR:PLAC")));
-                    println(getIndent(4, options.getIndentPerLevel(), null)+"@"+families[i].getId()+"@ "+families[i]+str);
+                    if((trim(families[i].getMarriageDate().toString()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0))
+                        str = options.getMarriageSymbol()+" "+trim(families[i].getMarriageDate())+" "+trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC")))+" ";
+                    println(getIndent(4)+str+families[i]+" (@"+families[i].getId()+"@)");
                 }
             }
         }
@@ -145,29 +145,36 @@ public class ReportFamily extends Report {
         Fam family;
         
         if(children.length>0)
-            println(getIndent(2, options.getIndentPerLevel(), null)+i18n("children"));
+            println(getIndent(2)+i18n("children"));
         for(int i=0; i<children.length; i++) {
             child = children[i];
-            println(getIndent(3, options.getIndentPerLevel(), null)+"@"+child.getId()+"@ "+child);
-            if ( ((child.getBirthAsString()!=null)&&(child.getBirthAsString().length()>0)) || ((child.getProperty(new TagPath("INDI:BIRT:PLAC"))!=null)&&(child.getProperty(new TagPath("INDI:BIRT:PLAC")).toString().length()>0)) )
-               println(getIndent(4, options.getIndentPerLevel(), null)+options.getBirthSymbol()+" "+getString(child.getBirthAsString())+" "+getString(child.getProperty(new TagPath("INDI:BIRT:PLAC"))));
-            analyzeBaptism(child, "BAPM");
-            analyzeBaptism(child, "BAPL");
-            analyzeBaptism(child, "CHR");
-            analyzeBaptism(child, "CHRA");
+            println(getIndent(3)+child+" (@"+child.getId()+"@)");
+            if ( (trim(child.getBirthAsString()).length()>0) || (trim(child.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0) )
+                println(getIndent(4)+options.getBirthSymbol()+" "+trim(child.getBirthAsString())+" "+trim(child.getProperty(new TagPath("INDI:BIRT:PLAC"))));
+            printBaptism(child, "BAPM");
+            printBaptism(child, "BAPL");
+            printBaptism(child, "CHR");
+            printBaptism(child, "CHRA");
             families = child.getFamilies();
             for(int j=0; j<families.length; j++) {
                 family = (Fam)families[j];
-                println(getIndent(4, options.getIndentPerLevel(), null)+options.getMarriageSymbol()+" @"+family.getId()+"@ "+family+" "+getString(family.getMarriageDate())+" "+getString(family.getProperty(new TagPath("FAM:MARR:PLAC"))));
-            }            
-            if(child.getProperty("DEAT")!=null && ( (child.getDeathAsString()!=null) || (child.getProperty(new TagPath("INDI:DEAT:PLAC"))!=null) ) )
-                println(getIndent(4, options.getIndentPerLevel(), null)+options.getDeathSymbol()+" "+getString(child.getDeathAsString())+" "+getString(child.getProperty(new TagPath("INDI:DEAT:PLAC"))));          
+                println(getIndent(4)+options.getMarriageSymbol()+" "+family+" (@"+family.getId()+"@) "+trim(family.getMarriageDate())+" "+trim(family.getProperty(new TagPath("FAM:MARR:PLAC"))));
+            }
+            if(child.getProperty("DEAT")!=null && ( (trim(child.getDeathAsString()).length()>0) || (trim(child.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0) ) )
+                println(getIndent(4)+options.getDeathSymbol()+" "+trim(child.getDeathAsString())+" "+trim(child.getProperty(new TagPath("INDI:DEAT:PLAC"))));
         }
     }
     
-    private void analyzeBaptism(Indi indi, String tag) {
+    private void printBaptism(Indi indi, String tag) {
         
-        if(indi.getProperty(tag)!=null && ( (indi.getProperty(new TagPath("INDI:"+tag+":DATE"))!=null) || (indi.getProperty(new TagPath("INDI:"+tag+":PLAC"))!=null) ) )
-            println(getIndent(4, options.getIndentPerLevel(), null)+options.getBaptismSymbol()+" ("+tag+"): "+getString(((PropertyDate)indi.getProperty(new TagPath("INDI:"+tag+":DATE"))).toString())+" "+getString(indi.getProperty(new TagPath("INDI:"+tag+":PLAC"))));
-    }    
+        if( (indi.getProperty(tag)!=null) && ( (trim(indi.getProperty(new TagPath("INDI:"+tag+":DATE"))).length()>0) || (trim(indi.getProperty(new TagPath("INDI:"+tag+":PLAC"))).length()>0) ) )
+            println(getIndent(4)+options.getBaptismSymbol()+" ("+tag+"): "+trim(indi.getProperty(new TagPath("INDI:"+tag+":DATE")))+" "+trim(indi.getProperty(new TagPath("INDI:"+tag+":PLAC"))));
+    }
+    
+    /**
+     * Return an indented string for given level
+     */
+    private String getIndent(int level) {
+        return super.getIndent(level, options.getIndentPerLevel(), null);
+    }
 } //ReportFamily
