@@ -17,12 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.57 $ $Author: nmeier $ $Date: 2004-12-08 22:54:49 $
+ * $Revision: 1.58 $ $Author: nmeier $ $Date: 2004-12-09 03:38:18 $
  */
 package genj.report;
 
-import genj.chart.CategorySheet;
-import genj.chart.XYSheet;
+import genj.chart.Chart;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
@@ -42,7 +41,6 @@ import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -53,7 +51,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -70,18 +67,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.category.BarRenderer;
-import org.jfree.chart.renderer.category.StackedBarRenderer;
-import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
 
 
 /**
@@ -303,60 +288,12 @@ public abstract class Report implements Cloneable {
     registry.put(key, result.toString());    
     return result;
   }
-  
+
   /**
    * Helper method that shows a chart to the user
    */
-  public final void showChartToUser(String title, XYSheet sheet) {
-    
-    // prepare chart setup
-    NumberAxis xAxis = new NumberAxis("years");
-    xAxis.setAutoRangeIncludesZero(false);
-    
-    NumberAxis yAxis = new NumberAxis("individuals");
-    
-    XYItemRenderer renderer = new StandardXYItemRenderer();
-    //XYItemRenderer renderer = new StackedXYAreaRenderer(XYAreaRenderer.AREA);
-    
-    XYPlot plot = new XYPlot(sheet.wrap(), xAxis, yAxis, renderer);
-
-    // create jfreechart
-    JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
-    
-    // show it
-    showComponentToUser(new ChartPanel(chart));
-  }
-  
-  /**
-   * Helper method that shows a chart to the user
-   */
-  public final void showChartToUser(String title, String labelCatAxis, CategorySheet sheet, NumberFormat format, boolean isStacked, boolean isVertical) {
-
-    // wrap into JFreeChart
-    CategoryAxis categoryAxis = new CategoryAxis(labelCatAxis);
-    NumberAxis valueAxis = new NumberAxis();
-    valueAxis.setNumberFormatOverride(format);
-
-    BarRenderer renderer;
-    if (isStacked) {
-	    renderer = new StackedBarRenderer();
-    } else {
-      renderer = new BarRenderer();
-    }
-    
-    // TODO parameterize colors
-    renderer.setSeriesPaint(0, Color.BLUE);
-    renderer.setSeriesPaint(1, Color.RED);
-    
-    // prepare plot
-    CategoryPlot plot = new CategoryPlot(sheet.wrap(), categoryAxis, valueAxis, renderer);
-    plot.setOrientation(!isVertical ? PlotOrientation.VERTICAL : PlotOrientation.HORIZONTAL);
-
-    // create jfreechart
-    JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
-    
-    // show it
-    showComponentToUser(new ChartPanel(chart));
+  public final void showChartToUser(Chart chart) {
+    showComponentToUser(chart);
   }
   
   /**

@@ -5,7 +5,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.chart.CategorySheet;
+import genj.chart.Chart;
+import genj.chart.IndexedSeries;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertyAge;
@@ -47,7 +48,6 @@ public class ReportDemography extends Report {
     // gather data - we're using two series, one for males the other
     // for females. The categories we're collecting is ages/lifespans
     // for people between 0-9 and 10-19 etc. years old
-    String[] series = { i18n("men"), i18n("women") };
     int res = ageGrouping==0 ? 10 : 5;
     String[] categories = new String[100/res + 1];
     categories[0] = "100+"; 
@@ -55,8 +55,10 @@ public class ReportDemography extends Report {
       categories[i] = (100 - (i*res)) + "+";
     }
 
-    // create a category sheet for that
-    CategorySheet sheet = new CategorySheet(series, categories);
+    // create category series for that
+    IndexedSeries
+      males = new IndexedSeries(i18n("men"), categories.length),
+      females = new IndexedSeries(i18n("women"), categories.length);
 
     // Looping over each individual in gedcom
     Iterator indis = gedcom.getEntities(Gedcom.INDI).iterator();
@@ -81,9 +83,9 @@ public class ReportDemography extends Report {
       // bars on the left and the females on the right of the axis.
       int col = years>=100 ? 0 : categories.length - (years/res) - 1;
       if (indi.getSex() == PropertySex.MALE)
-        sheet.dec(0,col);
+        males.dec(col);
       else
-        sheet.inc(1,col);
+        females.inc(col);
 
       // next
     }
@@ -98,7 +100,7 @@ public class ReportDemography extends Report {
     //   instead of stacked
     // + isVertical makes the main axis for the categories go from top
     //   to bottom
-    showChartToUser(title, PropertyAge.getLabelForAge(), sheet, new DecimalFormat("#; #"), true, true);
+    showChartToUser(new Chart(title, PropertyAge.getLabelForAge(), new IndexedSeries[]{ males, females}, categories, new DecimalFormat("#; #"), true, true));
       
     // done
   }
