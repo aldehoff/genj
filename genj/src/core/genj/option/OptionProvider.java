@@ -19,14 +19,38 @@
  */
 package genj.option;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+
+import sun.misc.Service;
+
 /**
- * A provider for option names
+ * A service that can provide options
  */
-public interface OptionMetaInfo {
+public abstract class OptionProvider {
 
   /**
-   * Return a localized user-readable name
+   * Accessor - options
    */
-  public String getLocalizedName(Option option);
+  public abstract Option[] getOptions();
+  
+  /**
+   * Static Accessor - all options available from OptionProviders
+   */
+  public static Option[] getAllOptions() {  
 
-} //OptionNameProvider 
+    ArrayList result = new ArrayList(32);
+
+    // prepare options
+    Iterator it = Service.providers(OptionProvider.class);
+    while (it.hasNext()) {
+      OptionProvider provider = (OptionProvider)it.next();
+      result.addAll(Arrays.asList(provider.getOptions()));
+    }
+
+    // done
+    return (Option[])result.toArray(new Option[result.size()]);    
+  }
+  
+} //OptionProvider

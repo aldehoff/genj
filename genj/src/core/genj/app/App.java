@@ -162,7 +162,7 @@ public class App {
     };
     winMgr.openFrame("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), onClosing, onClose);
 
-    // Done
+
   }
   
   /**

@@ -25,6 +25,8 @@ import genj.io.GedcomEncryptionException;
 import genj.io.GedcomIOException;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
+import genj.option.OptionProvider;
+import genj.option.OptionsWidget;
 import genj.print.PrintManager;
 import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
@@ -281,6 +283,8 @@ public class ControlCenter extends JPanel {
     for (int i = 0; i < factories.length; i++)
       mh.createItem(new ActionView(i+1, factories[i]));
     mh.setEnabled(true).setCollection(null).setResources(resources);
+    mh.createSeparator();
+    mh.createItem(new ActionOptions());
 
     result.add(Box.createHorizontalGlue());
 
@@ -312,7 +316,7 @@ public class ControlCenter extends JPanel {
   private class ActionToggleTnI extends ActionDelegate {
     /** constructor */
     protected ActionToggleTnI() {
-      super.setText("cc.menu.tni");
+      setText("cc.menu.tni");
     }
     /** run */
     protected void execute() {
@@ -328,8 +332,8 @@ public class ControlCenter extends JPanel {
   private class ActionAbout extends ActionDelegate {
     /** constructor */
     protected ActionAbout() {
-      super.setText("cc.menu.about");
-      super.setImage(Images.imgAbout);
+      setText("cc.menu.about");
+      setImage(Images.imgAbout);
     }
     /** run */
     protected void execute() {
@@ -352,8 +356,8 @@ public class ControlCenter extends JPanel {
   private class ActionHelp extends ActionDelegate {
     /** constructor */
     protected ActionHelp() {
-      super.setText("cc.menu.contents");
-      super.setImage(Images.imgHelp);
+      setText("cc.menu.contents");
+      setImage(Images.imgHelp);
     }
     /** run */
     protected void execute() {
@@ -376,8 +380,8 @@ public class ControlCenter extends JPanel {
   private class ActionExit extends ActionDelegate {
     /** constructor */
     protected ActionExit() {
-      super.setText("cc.menu.exit");
-      super.setImage(Images.imgExit);
+      setText("cc.menu.exit");
+      setImage(Images.imgExit);
     }
     /** run */
     protected void execute() {
@@ -441,16 +445,15 @@ public class ControlCenter extends JPanel {
 
     /** constructor */
     protected ActionOpen() {
-      super.setImage(Gedcom.getImage());
-      super.setTip("cc.tip.open_file");
-      super.setText("cc.menu.open");
-      super.setImage(Images.imgOpen);
-      super.setAsync(ASYNC_NEW_INSTANCE);
+      setTip("cc.tip.open_file");
+      setText("cc.menu.open");
+      setImage(Images.imgOpen);
+      setAsync(ASYNC_NEW_INSTANCE);
     }
 
     /** constructor */
     protected ActionOpen(Origin setOrigin) {
-      super.setAsync(ASYNC_NEW_INSTANCE);
+      setAsync(ASYNC_NEW_INSTANCE);
       origin = setOrigin;
     }
 
@@ -824,12 +827,12 @@ public class ControlCenter extends JPanel {
       this.ask = ask;
       // text
       if (ask)
-        super.setText(resources.getString("cc.menu.saveas"));
+        setText(resources.getString("cc.menu.saveas"));
       else
-        super.setText(resources.getString("cc.menu.save"));
+        setText(resources.getString("cc.menu.save"));
       // setup
-      super.setImage(Images.imgSave);
-      super.setAsync(ASYNC_NEW_INSTANCE);
+      setImage(Images.imgSave);
+      setAsync(ASYNC_NEW_INSTANCE);
     }
     /**
      * Initialize save
@@ -1024,8 +1027,8 @@ public class ControlCenter extends JPanel {
   private class ActionClose extends ActionDelegate {
     /** constructor */
     protected ActionClose() {
-      super.setText(resources.getString("cc.menu.close"));
-      super.setImage(Images.imgClose);
+      setText(resources.getString("cc.menu.close"));
+      setImage(Images.imgClose);
     }
     /** run */
     protected void execute() {
@@ -1064,11 +1067,11 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionView(int i, ViewFactory vw) {
       factory = vw;
-      super.setText( (i>0 ? Integer.toString(i) + ' ' : "") +factory.getTitle(false));
-      super.setShortText(factory.getTitle(true));
-      super.setTip(
+      setText( (i>0 ? Integer.toString(i) + ' ' : "") +factory.getTitle(false));
+      setShortText(factory.getTitle(true));
+      setTip(
         resources.getString("cc.tip.open_view", factory.getTitle(false)));
-      super.setImage(factory.getImage());
+      setImage(factory.getImage());
     }
     /** run */
     protected void execute() {
@@ -1080,5 +1083,25 @@ public class ControlCenter extends JPanel {
       viewManager.openView(factory, gedcom);
     }
   } //ActionView
+
+  /**
+   * Action - Options
+   */
+  private class ActionOptions extends ActionDelegate {
+    /** constructor */
+    protected ActionOptions() {
+      setText(resources.getString("cc.menu.options"));
+      setImage(OptionsWidget.IMAGE);
+    }
+    /** run */
+    protected void execute() {
+      // create widget for options
+      OptionsWidget widget = new OptionsWidget();
+      widget.setOptions(OptionProvider.getAllOptions());
+      // open dialog
+      windowManager.openDialog("options", "Options", WindowManager.IMG_INFORMATION, widget, WindowManager.OPTIONS_OK, ControlCenter.this);
+      // done
+    }
+  } //ActionOptions
 
 } //ControlCenter

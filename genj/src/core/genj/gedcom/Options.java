@@ -17,16 +17,35 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.option;
+package genj.gedcom;
+
+import genj.option.Option;
+import genj.option.OptionMetaInfo;
+import genj.option.OptionProvider;
 
 /**
- * A provider for option names
+ * Application options
  */
-public interface OptionMetaInfo {
+public class Options extends OptionProvider implements OptionMetaInfo {
+
+  /** singleton */
+  private final static Options instance = new Options();
+
+  /** options */  
+  public int maxImageFileSizeKB = 128;
+  
+  /** 
+   * Provider callback 
+   */
+  public Option[] getOptions() {
+    return Option.getOptions(instance);
+  }
 
   /**
-   * Return a localized user-readable name
-   */
-  public String getLocalizedName(Option option);
+   * OptionMetaInfo callback - localize a name
+   */  
+  public String getLocalizedName(Option option) {
+    return Gedcom.resources.getString("option."+option.getKey());
+  }
 
-} //OptionNameProvider 
+} //Options

@@ -447,9 +447,8 @@ import javax.swing.JScrollPane;
         
         String txt = view.resources.getString("proxy.file.max", new String[]{
           result.getDescription(),
-          String.valueOf(PropertyFile.toKB(result.getByteSize())),
+          String.valueOf(result.getByteSize()/1024+1),
           String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
-          PropertyFile.MINUS_D_KEY
         }); 
         
         view.manager.getWindowManager().openDialog(

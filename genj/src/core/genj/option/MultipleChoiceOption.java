@@ -33,12 +33,12 @@ public class MultipleChoiceOption extends Option {
   /**
    * Constructor
    */
-  public MultipleChoiceOption(Object inStance, String naMe, Field fiEld, Object[] choIces) {
+  public MultipleChoiceOption(Object instance, Field field, Object[] choices) {
 
-    super(inStance, naMe, fiEld);
+    super(instance, field);
 
     // remember choices
-    choices = choIces;
+    this.choices = choices;
     
     // done
   }

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.38 $ $Author: nmeier $ $Date: 2004-03-25 08:47:59 $
+ * $Revision: 1.39 $ $Author: nmeier $ $Date: 2004-05-17 10:04:43 $
  */
 package genj.report;
 
@@ -193,8 +193,8 @@ public abstract class Report implements OptionMetaInfo, Cloneable {
   /**
    * @see genj.option.OptionNameProvider#getOptionName(java.lang.String)
    */
-  public String getOptionName(String name) {
-    return i18n(name);
+  public String getLocalizedName(Option option) {
+    return i18n(option.getKey());
   }
 
   /**

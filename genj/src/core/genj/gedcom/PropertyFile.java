@@ -19,7 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.EnvironmentChecker;
 import genj.util.swing.ImageIcon;
 
 import java.io.File;
@@ -31,15 +30,12 @@ import java.lang.ref.SoftReference;
  * Gedcom Property : FILE
  */
 public class PropertyFile extends Property implements IconValueAvailable {
-  
-  public final static String MINUS_D_KEY = "genj.file.max";
+
+  /** static configuration */
+  private static final Options options = new Options();
   
   /** expected tag */
   private final static String TAG = "FILE";
-  
-  /** maximum we load of image */
-  private final static int DEF_MAX_LOAD = 128*1024;  
-  private static int max_load = -1;
   
   /** the file-name */
   private String  file;
@@ -229,18 +225,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
   /**
    * Resolve the maximum load (whether to return kb)   */
   public static int getMaxValueAsIconSize(boolean kb) {
-    // already known?
-    if (max_load<=0) {
-      // resolve
-      max_load = DEF_MAX_LOAD;
-      try {
-        int i = Integer.parseInt(EnvironmentChecker.getProperty(PropertyFile.class, MINUS_D_KEY, ""+max_load, "Maximum PropertyFile size to load"));
-        if (i>0) max_load = i;
-      } catch (Throwable t) {
-      }
-    }  
-    // done
-    return kb ? toKB(max_load) : max_load;
+    return (kb ? 1 : 1024) * options.maxImageFileSizeKB;
   }
 
   /**
@@ -264,10 +249,4 @@ public class PropertyFile extends Property implements IconValueAvailable {
     return result;
   }
   
-  /**
-   * helper to convert a byte size into kb
-   */
-  public static int toKB(int bytes) {
-    return (int)Math.ceil(bytes/1024D);
-  }
 } //PropertyFile

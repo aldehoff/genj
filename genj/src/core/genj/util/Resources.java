@@ -69,12 +69,14 @@ public class Resources {
    * Accessor  (cached)
    */
   public static Resources get(String packge) {
-    Resources result = (Resources)instances.get(packge);
-    if (result==null) {
-      result = new Resources(packge);
-      instances.put(packge, result);
+    synchronized (instances) {
+      Resources result = (Resources)instances.get(packge);
+      if (result==null) {
+        result = new Resources(packge);
+        instances.put(packge, result);
+      }
+      return result;
     }
-    return result;
   }
   
   /**

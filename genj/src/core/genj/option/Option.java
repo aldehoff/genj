@@ -33,20 +33,16 @@ public class Option {
   /** option is for instance */
   protected Object instance;
   
-  /** a name that can be presented to the user */
-  protected String name;
-  
   /** field */
   protected Field field;
   
   /**
    * Constructor
    */
-  protected Option(Object inStance, String naMe, Field fiEld) {
+  protected Option(Object instance, Field field) {
     // remember
-    instance = inStance;
-    name = naMe;
-    field = fiEld;
+    this.instance = instance;
+    this.field = field;
     // done
   }
 
@@ -84,7 +80,11 @@ public class Option {
    * Accessor - name of this option
    */
   public String getName() {
-    return name;
+    // can localize?
+    if (instance instanceof OptionMetaInfo)
+      return ((OptionMetaInfo)instance).getLocalizedName(this);
+    // key
+    return getKey();
   }
   
   /**
@@ -118,21 +118,21 @@ public class Option {
   }
   
   /**
-   * Get option for given instance, name and field
+   * Get option for given instance and field
    */
-  private static Option getOption(Object instance, String name, Field field) {
+  private static Option getOption(Object instance, Field field) {
     
     // maybe multiple choice?
     if (Integer.TYPE.isAssignableFrom(field.getType())) {
       try {
         Object[] choices = (Object[])instance.getClass().getField(field.getName()+"s").get(instance);
-        return new MultipleChoiceOption(instance, name, field, choices);
+        return new MultipleChoiceOption(instance, field, choices);
       } catch (Exception e) {
       }
     }
     
     // Simple value option
-    return new Option(instance, name, field); 
+    return new Option(instance, field); 
   }
   
   /**
@@ -155,22 +155,22 @@ public class Option {
       // test access
       int mod = field.getModifiers();
       
-      if (Modifier.isFinal(mod) || !Modifier.isPublic(mod) || Modifier.isStatic(mod)) 
+      if (Modifier.isFinal(mod) || Modifier.isStatic(mod)) 
         continue;
+      try {
+        field.get(instance);
+      } catch (Throwable t) {
+        continue;
+      }
 
       // int, boolean, String?
       if (!String.class.isAssignableFrom(type) &&
           !Integer.TYPE.isAssignableFrom(type) &&
           !Boolean.TYPE.isAssignableFrom(type) )
         continue;
-        
-      // calculate a name for the option
-      String name = field.getName();
-      if (instance instanceof OptionMetaInfo)
-        name = ((OptionMetaInfo)instance).getOptionName(name);
-        
-      // keep      
-      result.add(getOption(instance, name, field));
+
+      // create and keep the option
+      result.add(getOption(instance, field));
 
       // next
     }

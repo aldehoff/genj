@@ -19,6 +19,8 @@
  */
 package genj.option;
 
+import genj.util.swing.ImageIcon;
+
 import java.awt.BorderLayout;
 
 import javax.swing.DefaultCellEditor;
@@ -39,6 +41,9 @@ import javax.swing.table.TableColumn;
  * A widget for displaying options in tabular way
  */
 public class OptionsWidget extends JPanel {
+
+  /** an image for options */
+  public final static ImageIcon IMAGE = new ImageIcon(OptionsWidget.class, "images/Options.gif");
 
   /** table we're using */
   private JTable table;
@@ -105,6 +110,7 @@ public class OptionsWidget extends JPanel {
    * Set options to display
    */
   public void setOptions(Option[] options) {
+    
     // let model know
     model.setOptions(options);
     
@@ -127,10 +133,10 @@ public class OptionsWidget extends JPanel {
    * Model
    */
   private class Model extends AbstractTableModel {
-
+  
     /** options we're looking at */
     private Option[] options = new Option[0];
-
+  
     /**
      * Get options by index
      */
