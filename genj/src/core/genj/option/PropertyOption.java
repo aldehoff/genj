@@ -22,8 +22,11 @@ package genj.option;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.FileChooserWidget;
+import genj.util.swing.FontChooser;
 import genj.util.swing.TextFieldWidget;
 
+import java.awt.Font;
+import java.awt.font.TextAttribute;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -33,8 +36,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JCheckBox;
@@ -154,6 +159,33 @@ public abstract class PropertyOption extends Option {
   }
   
   /**
+   * A UI for a font
+   */
+  private class FontUI implements OptionUI {
+    
+    /** widgets */
+    private FontChooser chooser = new FontChooser();
+      
+    /** callback - text representation = none */
+    public String getTextRepresentation() {
+      Font font = (Font)getValue();
+      return font==null ? "..." : font.getFamily() + "," + font.getSize();
+    }
+    
+    /** callback - component representation */
+    public JComponent getComponentRepresentation() {
+      chooser.setSelectedFont((Font)getValue());
+      return chooser;
+    }
+
+    /** commit - noop */    
+    public void endRepresentation() {
+      setValue(chooser.getSelectedFont());
+    }
+    
+  } //FontUI
+  
+  /**
    * A UI for a file
    */
   private class FileUI implements OptionUI {
@@ -247,6 +279,9 @@ public abstract class PropertyOption extends Option {
   
     /** a user readable name */
     private String name;
+    
+    /** mapper */
+    private Mapper mapper;
   
     /**
      * Constructor
@@ -255,6 +290,9 @@ public abstract class PropertyOption extends Option {
       super(property);
       this.instance = instance;
       this.type     = type;
+      
+      // FIXME derive mapper automatically
+      this.mapper   = type==Font.class ? new FontMapper() : new Mapper();
     }
 
     /**
@@ -304,6 +342,10 @@ public abstract class PropertyOption extends Option {
      * Provider a UI for this option
      */  
     public OptionUI getUI(OptionsWidget widget) {
+      // FIXME derive UI automatically
+      // a font?
+      if (Font.class.isAssignableFrom(type))
+        return new FontUI();
       // a boolean?
       if (type==Boolean.TYPE)
         return new BooleanUI();
@@ -336,14 +378,7 @@ public abstract class PropertyOption extends Option {
      */
     public final void setValue(Object value) {
       try {
-        // type clash?
-        Class boxed = box(type);
-        if (value!=null&&value.getClass()!=boxed) { 
-          value = boxed.getConstructor(new Class[]{value.getClass()})
-            .newInstance(new Object[]{ value });
-        }
-        // set it
-        setValueImpl(value);
+        setValueImpl(mapper.toObject(value, type));
       } catch (Throwable t) {
         // not much we can do about that - ignored
       }
@@ -357,25 +392,11 @@ public abstract class PropertyOption extends Option {
     protected abstract void setValueImpl(Object value) throws Throwable;
   
     /**
-     * Accessor - (boxed) type of this option
-     */ 
-    private static Class box(Class type) {
-      if (type == boolean.class) return Boolean.class;         
-      if (type == byte.class) return Byte.class;         
-      if (type == char.class) return Character.class;         
-      if (type == short.class) return Short.class;         
-      if (type == int.class) return Integer.class;         
-      if (type == long.class) return Long.class;         
-      if (type == float.class) return Float.class;         
-      if (type == double.class) return Double.class;                     
-      return type;
-    }
-  
-    /**
      * Test for supported option types
      */
     private static boolean isSupportedArgument(Class type) {
       return
+        Font.class.isAssignableFrom(type)   ||
         File.class.isAssignableFrom(type)   ||
         String.class.isAssignableFrom(type) ||
         Float.TYPE.isAssignableFrom(type) ||
@@ -478,5 +499,100 @@ public abstract class PropertyOption extends Option {
     }
     
   } //BeanProperty
+  
+  /**
+   * A mapper
+   */
+  private static class Mapper {
+
+    /**
+     * box type making sure no primitive types are returned
+     */ 
+    private static Class box(Class type) {
+      if (type == boolean.class) return Boolean.class;         
+      if (type == byte.class) return Byte.class;         
+      if (type == char.class) return Character.class;         
+      if (type == short.class) return Short.class;         
+      if (type == int.class) return Integer.class;         
+      if (type == long.class) return Long.class;         
+      if (type == float.class) return Float.class;         
+      if (type == double.class) return Double.class;                     
+      return type;
+    }
+  
+    
+    protected String toString(Object object) {
+      return object!=null ? object.toString() : "";
+    }
+    
+    protected Object toObject(Object object, Class expected) {
+      // make sure expected is not a primitive type
+      expected = box(expected);
+      // already ok?
+      if (object==null||object.getClass()==expected)
+        return object;
+      // map it
+      try {
+        return expected.getConstructor(new Class[]{object.getClass()})
+          .newInstance(new Object[]{ object });
+      } catch (Throwable t) {
+        throw new IllegalArgumentException("can't map "+object+" to expected");
+      }
+    }
+  } // Mapper
+
+  /**
+   * A mapper - Font
+   */
+  private static class FontMapper extends Mapper{
+    
+    private final static String
+    FAMILY = "family=",
+    STYLE  = "style=",
+    SIZE   = "size=";
  
+    /** font from string representation */
+    protected Object toObject(Object object, Class expected) {
+      
+      if (expected!=Font.class||object==null||object.getClass()!=String.class)
+        return super.toObject(object, expected);
+      String string = (String)object;
+      
+      // check what we've got
+      Map map = new HashMap();
+      
+      String family = getAttribute(string, FAMILY);
+      if (family==null)
+        family = "SansSerif";
+      map.put(TextAttribute.FAMILY, family);
+
+      try {
+        map.put(TextAttribute.SIZE, new Float(getAttribute(string, SIZE)));
+      } catch (Throwable t) {
+        map.put(TextAttribute.SIZE, new Float(11F));
+      }
+      
+      // done
+      return new Font(map);
+    }
+    
+    protected String getAttribute(String string, String key) {
+      
+      int i = string.indexOf(key);
+      if (i<0) 
+        return null;
+      i += key.length();
+      
+      int j = i;
+      for (;j<string.length();j++) {
+        char c = string.charAt(j);
+        if (!(Character.isLetterOrDigit(c)||Character.isWhitespace(c)))
+          break;
+      }
+
+      return j<i ? null : string.substring(i, j);
+    }
+    
+  }
+  
 } //ValueOption
