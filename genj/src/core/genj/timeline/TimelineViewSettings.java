@@ -19,8 +19,15 @@
  */
 package genj.timeline;
 
+import genj.app.TagSelector;
+import genj.gedcom.PropertyEvent;
 import genj.view.ApplyResetSupport;
 
+import java.awt.BorderLayout;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
@@ -28,17 +35,58 @@ import javax.swing.JPanel;
  * The ViewInfo representing settings of a TimelineView
  */
 public class TimelineViewSettings extends JPanel implements ApplyResetSupport {
+  
+  /** keeping track of timeline these settings are for */
+  private TimelineView timeline;
+  
+  /** a widget for selecting tags to show */
+  private TagSelector selectorEventTags = new TagSelector();
+  
+  /** Checkbox for options */
+  private JCheckBox[] checkOptions = {
+    new JCheckBox(TimelineView.resources.getString("info.show.tags" )),
+    new JCheckBox(TimelineView.resources.getString("info.show.dates")),
+    new JCheckBox(TimelineView.resources.getString("info.show.grid" ))
+  };
 
   /**
    * Constructor
    */
-  public TimelineViewSettings(JComponent view) {
+  public TimelineViewSettings(TimelineView timelineView) {
+    
+    // remember
+    timeline = timelineView;
+    
+    // create a panel for the options
+    Box panelOptions = new Box(BoxLayout.Y_AXIS);
+    for (int i=0; i<checkOptions.length; i++) {
+      panelOptions.add(checkOptions[i]);
+    }
+    
+    // layout
+    setLayout(new BorderLayout());
+    add(selectorEventTags, BorderLayout.CENTER);
+    add(panelOptions, BorderLayout.SOUTH);
+
+    // init
+    reset();
+    
+    // done
   }
 
   /**
    * Tells the ViewInfo to apply made changes
    */
   public void apply() {
+    
+    // choosen EventTags
+    timeline.getModel().setFilter(selectorEventTags.getSelection());
+    
+    // checks
+    timeline.setPaintTags(checkOptions[0].isSelected());
+    timeline.setPaintDates(checkOptions[1].isSelected());
+    timeline.setPaintGrid(checkOptions[2].isSelected());
+    
     // Done
   }
 
@@ -46,6 +94,15 @@ public class TimelineViewSettings extends JPanel implements ApplyResetSupport {
    * Tells the ViewInfo to reset made changes
    */
   public void reset() {
+    // EventTags to choose from
+    selectorEventTags.setTags(PropertyEvent.getTags());
+    selectorEventTags.setSelection(timeline.getModel().getFilter());
+
+    // Checks
+    checkOptions[0].setSelected(timeline.isPaintTags());
+    checkOptions[1].setSelected(timeline.isPaintDates());
+    checkOptions[2].setSelected(timeline.isPaintGrid());
+    
     // Done
   }
 

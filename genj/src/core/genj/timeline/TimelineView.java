@@ -31,6 +31,7 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -43,6 +44,7 @@ import javax.swing.event.ChangeListener;
 import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.*;
 import genj.view.ToolBarSupport;
 
@@ -50,6 +52,9 @@ import genj.view.ToolBarSupport;
  * Component for showing entities' events in a timeline view
  */
 public class TimelineView extends JPanel implements ToolBarSupport {
+  
+  /** resources */
+  /*package*/ final static Resources resources = new Resources("genj.timeline");
   
   /** our model */
   private Model model;
@@ -61,10 +66,13 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   private Ruler ruler;
 
   /** our sliders */  
-  private JSlider sliderCmPerYear, sliderPixelsPerEvent;
+  private JSlider sliderCmPerYear, sliderCmPerEvent;
   
   /** our labels */
-  private JLabel labelCmPerYear, labelPixelsPerEvent;
+  private JLabel labelCmPerYear, labelCmPerEvent;
+  
+  /** our scrollpane */
+  private JScrollPane scrollContent;
 
   /** the renderer we use for the ruler */
   private RulerRenderer rulerRenderer = new RulerRenderer();
@@ -72,26 +80,31 @@ public class TimelineView extends JPanel implements ToolBarSupport {
   /** the renderer we use for the content */
   private ContentRenderer contentRenderer = new ContentRenderer();
   
-  /** min/max centimeters per year */
+  /** min/max's */
   private final static double 
     MIN_CMPERYEAR =  0.1D,
     DEF_CMPERYEAR =  1.0D,
-    MAX_CMPERYEAR = 10.0D;
+    MAX_CMPERYEAR = 10.0D,
+    MIN_CMPEREVENT = 1.0D,
+    DEF_CMPEREVENT = 3.0D,
+    MAX_CMPEREVENT =10.0D;
     
-  /** default pixels per event */
-  private final static int
-    MIN_PIXELSPEREVENT =  64,
-    MAX_PIXELSPEREVENT = 512,
-    DEF_PIXELSPEREVENT = 125;
-    
-  /** centimeters per year */
-  private double cmPyear = DEF_CMPERYEAR;
-
-  /** pixels per event */
-  private int pixelsPevent = DEF_PIXELSPEREVENT;
+  /** centimeters per year/event */
+  private double 
+    cmPyear = DEF_CMPERYEAR,
+    cmPevent = DEF_CMPEREVENT;
+  
+  /** settings */
+  private boolean 
+    isPaintDates = true,
+    isPaintGrid = false,
+    isPaintTags = true;
 
   /** registry we keep */
   private Registry regstry;
+  
+  /** listener we are to the model */
+  private Model.Listener modelListener = new ModelListener();
     
   /**
    * Constructor
@@ -101,20 +114,26 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     // read some stuff from registry
     regstry = registry;
     cmPyear = Math.max(MIN_CMPERYEAR, Math.min(MAX_CMPERYEAR, regstry.get("cmpyear", (float)DEF_CMPERYEAR)));
-    pixelsPevent = Math.max(MIN_PIXELSPEREVENT, Math.min(MAX_PIXELSPEREVENT, regstry.get("pixpevt", DEF_PIXELSPEREVENT)));
+    cmPevent = Math.max(MIN_CMPEREVENT, Math.min(MAX_CMPEREVENT, regstry.get("cmpevent", (float)DEF_CMPEREVENT)));
+    isPaintDates = regstry.get("paintdates", true);
+    isPaintGrid  = regstry.get("paintgrid" , false);
+    isPaintTags  = regstry.get("painttags" , false);
     
     // create/keep our sub-parts
-    model = new Model(gedcom, pixels2time(pixelsPevent));
+    model = new Model(gedcom, (Set)regstry.get("filter", model.DEFAULT_FILTER), cmPevent/cmPyear);
     content = new Content();
     ruler = new Ruler();
     
-    // all that fits in a scrollpane
-    JScrollPane scroll = new JScrollPane(new ViewPortAdapter(content));
-    scroll.setColumnHeaderView(new ViewPortAdapter(ruler));
+    // start listeing
+    model.addListener(modelListener);
     
+    // all that fits in a scrollpane
+    scrollContent = new JScrollPane(new ViewPortAdapter(content));
+    scrollContent.setColumnHeaderView(new ViewPortAdapter(ruler));
+   
     // layout
     setLayout(new BorderLayout());
-    add(scroll, BorderLayout.CENTER);
+    add(scrollContent, BorderLayout.CENTER);
     
     // done
   }
@@ -123,11 +142,24 @@ public class TimelineView extends JPanel implements ToolBarSupport {
    * @see javax.swing.JComponent#removeNotify()
    */
   public void removeNotify() {
+    // stop listeing
+    model.removeListener(modelListener);
     // store stuff in registry
-    regstry.put("cmpyear", (float)cmPyear);
-    regstry.put("pixpevt", pixelsPevent);
+    regstry.put("cmpyear" , (float)cmPyear);
+    regstry.put("cmpevent", (float)cmPevent);
+    regstry.put("paintdates", isPaintDates);
+    regstry.put("paintgrid" , isPaintGrid);
+    regstry.put("painttags" , isPaintTags);
+    regstry.put("filter"    , model.getFilter());
     // done
     super.removeNotify();
+  }
+  
+  /**
+   * Accessor - the model
+   */
+  public Model getModel() {
+    return model;
   }
   
   /**
@@ -153,21 +185,21 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     bar.add(labelPerYear);
 
     // create a slider for pixelsPerEvent
-    sliderPixelsPerEvent = new JSlider(MIN_PIXELSPEREVENT,MAX_PIXELSPEREVENT,pixelsPevent);
-    sliderPixelsPerEvent.setAlignmentX(0F);
-    sliderPixelsPerEvent.setMaximumSize(sliderPixelsPerEvent.getPreferredSize());
-    sliderPixelsPerEvent.addChangeListener((ChangeListener)new ActionPixelsPerEvent().as(ChangeListener.class));
-    bar.add(sliderPixelsPerEvent);
+    sliderCmPerEvent = new JSlider(i(MIN_CMPEREVENT),i(MAX_CMPEREVENT),i(cmPevent));
+    sliderCmPerEvent.setAlignmentX(0F);
+    sliderCmPerEvent.setMaximumSize(sliderCmPerEvent.getPreferredSize());
+    sliderCmPerEvent.addChangeListener((ChangeListener)new ActionCmPerEvent().as(ChangeListener.class));
+    bar.add(sliderCmPerEvent);
 
-    // create 'ma' label
+    // create 'max' label
     JLabel labelMax = new JLabel("max.");
     labelMax.setFont(labelCmPerYear.getFont());
     bar.add(labelMax);
 
-    // create '1pts' label
-    labelPixelsPerEvent = new JLabel(pixels2txt(pixelsPevent));
-    labelPixelsPerEvent.setFont(labelCmPerYear.getFont());
-    bar.add(labelPixelsPerEvent);
+    // create '1.5cm' label
+    labelCmPerEvent = new JLabel(cm2txt(cmPevent));
+    labelCmPerEvent.setFont(labelCmPerYear.getFont());
+    bar.add(labelCmPerEvent);
 
     // create '/event' label
     JLabel labelPerEvent = new JLabel("/event");
@@ -175,6 +207,51 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     bar.add(labelPerEvent);
 
     // done
+  }
+  
+  /**
+   * Accessor - paint tags
+   */
+  public boolean isPaintTags() {
+    return isPaintTags;
+  }
+
+  /**
+   * Accessor - paint tags
+   */
+  public void setPaintTags(boolean set) {
+    isPaintTags = set;
+    repaint();
+  }
+
+  /**
+   * Accessor - paint dates
+   */
+  public boolean isPaintDates() {
+    return isPaintDates;
+  }
+
+  /**
+   * Accessor - paint dates
+   */
+  public void setPaintDates(boolean set) {
+    isPaintDates = set;
+    repaint();
+  }
+
+  /**
+   * Accessor - paint grid
+   */
+  public boolean isPaintGrid() {
+    return isPaintGrid;
+  }
+
+  /**
+   * Accessor - paint grid
+   */
+  public void setPaintGrid(boolean set) {
+    isPaintGrid = set;
+    repaint();
   }
   
   /**
@@ -198,20 +275,6 @@ public class TimelineView extends JPanel implements ToolBarSupport {
     return NumberFormat.getInstance().format(cm)+"cm";
   }
   
-  /**
-   * Convert pixelsPevent into text
-   */
-  private final String pixels2txt(int pixels) {
-    return pixels+"pts";
-  }
-  
-  /**
-   * Convert pixels into time
-   */
-  private final double pixels2time(int pixels) {
-    return contentRenderer.pixels2cm(pixelsPevent)/cmPyear;
-  }
-    
   /**
    * The ruler 'at the top'
    */
@@ -264,7 +327,9 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       g.fillRect(0,0,r.width,r.height);
       // let the renderer do its work
       contentRenderer.cmPyear = cmPyear;
-      contentRenderer.pixelsPevent = pixelsPevent;
+      contentRenderer.paintDates = isPaintDates;
+      contentRenderer.paintGrid = isPaintGrid;
+      contentRenderer.paintTags = isPaintTags;
       contentRenderer.render(g, model);
       // done
     }
@@ -282,33 +347,45 @@ public class TimelineView extends JPanel implements ToolBarSupport {
       // update label
       labelCmPerYear.setText(cm2txt(cmPyear));
       // update model
-      model.setTimePerEvent(pixels2time(pixelsPevent));
-      // revalidate views
-      ruler.revalidate();
-      content.revalidate();
-      repaint();
+      model.setTimePerEvent(cmPevent/cmPyear);
       // done
     }
   } //ActionScale
     
   /**
-   * Action - pixels per event
+   * Action - cm per event
    */
-  private class ActionPixelsPerEvent extends ActionDelegate {
+  private class ActionCmPerEvent extends ActionDelegate {
     /** @see genj.util.ActionDelegate#execute() */
     protected void execute() {
       // get the new value
-      pixelsPevent = sliderPixelsPerEvent.getValue();
+      cmPevent = d(sliderCmPerEvent.getValue());
       // update label
-      labelPixelsPerEvent.setText(pixels2txt(pixelsPevent));
+      labelCmPerEvent.setText(cm2txt(cmPevent));
       // update model
-      model.setTimePerEvent(pixels2time(pixelsPevent));
-      // revalidate views
+      model.setTimePerEvent(cmPevent/cmPyear);
+      // done
+    }
+  } //ActionCmPerEvent
+  
+  /**
+   * We're also listening to the model
+   */
+  private class ModelListener implements Model.Listener {
+    /**
+     * @see genj.timeline.Model.Listener#dataChanged()
+     */
+    public void dataChanged() {
+      repaint();
+    }
+    /**
+     * @see genj.timeline.Model.Listener#structureChanged()
+     */
+    public void structureChanged() {
       ruler.revalidate();
       content.revalidate();
       repaint();
-      // done
     }
-  } //ActionScale
+  } // ModelListener
     
 } //TimelineView

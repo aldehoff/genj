@@ -28,17 +28,14 @@ import java.awt.Graphics;
 /**
  * A renderer knowing how to render a ruler for the timeline
  */
-public class RulerRenderer extends Renderer {
-  
-  /** centimeters per year */
-  /*package*/ double cmPyear = 1.0D;
+public class RulerRenderer extends ContentRenderer {
   
   /** 
    * Calculates the model size in pixels
    */
   public Dimension getDimension(Model model, FontMetrics metrics) {
     return new Dimension(
-      cm2pixels((model.max-model.min)*cmPyear),
+      super.getDimension(model, metrics).width,
       metrics.getHeight()
     );
   }
@@ -55,6 +52,7 @@ public class RulerRenderer extends Renderer {
       from = model.min,
       to   = model.max,
       cond = Math.max(1, pixels2cm(fm.stringWidth(" 0000 "))/cmPyear);
+    Clip clip = new Clip(g, fm, model);
 
     // render first year and last
     g.setColor(Color.black);
@@ -62,17 +60,20 @@ public class RulerRenderer extends Renderer {
     to -= renderYear(g, model, d, fm, to  , 1.0D);
     
     // recurse binary
-    renderSpan(g, model, d, fm, from, to, cond);
+    renderSpan(g, model, d, fm, from, to, cond, clip);
   }
   
   /**
    * Renders ticks recursively
    */
-  private void renderSpan(Graphics g, Model model, Dimension d, FontMetrics fm, double from, double to, double cond) {
+  private void renderSpan(Graphics g, Model model, Dimension d, FontMetrics fm, double from, double to, double cond, Clip clip) {
     
     // condition met?
     if (to-from<cond) return;
-  
+    
+    // clipp'd out?
+    if (to<clip.minYear||from>clip.maxYear) return;
+    
     // calculate center year    
     double year = Math.rint((from+to)/2);
     
@@ -80,8 +81,8 @@ public class RulerRenderer extends Renderer {
     double gone = renderYear(g, model, d, fm, year, 0.5D);
     
     // recurse into
-    renderSpan(g, model, d, fm, year+gone/2, to         , cond);
-    renderSpan(g, model, d, fm, from       , year-gone/2, cond);
+    renderSpan(g, model, d, fm, year+gone/2, to         , cond, clip);
+    renderSpan(g, model, d, fm, from       , year-gone/2, cond, clip);
     
     // done
   }

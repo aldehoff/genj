@@ -20,26 +20,33 @@
 package genj.timeline;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
+import genj.gedcom.PropertyName;
 
 /**
  * A model that wraps the Gedcom information in a timeline fashion
  */
-/*package*/ class Model {
+/*package*/ class Model implements GedcomListener {
 
   /** the gedcom we're looking at */
   /*package*/ Gedcom gedcom;
@@ -53,7 +60,7 @@ import genj.gedcom.PropertyEvent;
   private Set filter;
   
   /** default filter */
-  private final static String[] DEFAULT_FILTER = { "BIRT", "MARR", "RESI", "EMIG" };
+  /*package*/ final static Set DEFAULT_FILTER = new HashSet(Arrays.asList(new String[]{ "BIRT", "MARR", "RESI", "EMIG" }));
     
   /** our levels */
   /*package*/List layers;
@@ -61,24 +68,49 @@ import genj.gedcom.PropertyEvent;
   /** time per event */
   private double timePevent = 1/2;
   
+  /** listeners */
+  private List listeners = new ArrayList(1);
+  
   /**
    * Constructor
    */
-  /*package*/ Model(Gedcom gedcom, double timePevent) {
+  /*package*/ Model(Gedcom gedcom, Set filter, double timePevent) {
     
     // remember
     this.gedcom = gedcom;
     this.timePevent = timePevent;
-    
-    // setup default filter
-    filter = new HashSet();
-    for (int f=0; f<DEFAULT_FILTER.length; f++) {
-      filter.add(DEFAULT_FILTER[f]);
+    this.filter = filter;    
+
+    // done
+  }
+  
+  /**
+   * Add a listener
+   */
+  /*package*/ void addListener(Listener listener) {
+    // keep it
+    listeners.add(listener);
+    // 1st listener?
+    if (listeners.size()==1) {
+      // start listening ourselves
+      gedcom.addListener(this);
+      // gather events
+      createEvents();
     }
-    
-    // gather events for the 1st time
-    createEvents();
-    
+    // done
+  }
+  
+  /**
+   * Removes a listener
+   */
+  /*package*/ void removeListener(Listener listener) {
+    // get rif of it
+    listeners.remove(listener);
+    // last listener?
+    if (listeners.size()==0) {
+      // stop listening ourselves
+      gedcom.removeListener(this);
+    }
     // done
   }
   
@@ -86,35 +118,147 @@ import genj.gedcom.PropertyEvent;
    * change time per event
    */
   /*package*/ void setTimePerEvent(double set) {
+    // already there?
+    if (set==timePevent) return;
+    // remember
     timePevent = set;
+    // layout the events we've got
+    layoutEvents();
+    // done
+  }
+  
+  /**
+   * Returns the filter - set of Tags we consider
+   */
+  public Set getFilter() {
+    return Collections.unmodifiableSet(filter);
+  }
+  
+  /**
+   * Sets the filter - set of Tags we consider
+   */
+  public void setFilter(Set set) {
+    filter.clear();
+    filter.addAll(set);
     createEvents();
+  }
+  
+  /**
+   * @see genj.gedcom.GedcomListener#handleChange(Change)
+   */
+  public void handleChange(Change change) {
+    // deleted or added entities/properties -> recreate
+    if (change.isChanged(change.EDEL)||change.isChanged(change.EADD)||change.isChanged(change.PADD)||change.isChanged(change.PDEL)) {
+      createEvents();
+      return;
+    }
+    // changed properties -> scan for dates or names
+    boolean changed = false;
+    if (change.isChanged(change.PMOD)) {
+      Iterator ps = change.getProperties(change.PMOD).iterator();
+      while (ps.hasNext()) {
+        Property p = (Property)ps.next();
+        // a date -> lets recreate everything
+        if (p instanceof PropertyDate) {
+          createEvents();
+          return;
+        }
+        // a name -> let's update all it's entities' events
+        if (p instanceof PropertyName) {
+          contentEvents(p.getEntity());
+          changed = true;
+        }
+      }
+    }
+    // still here and a change has happened?
+    if (changed) fireDataChanged();
+    // done
+  }
+
+  /**
+   * @see genj.gedcom.GedcomListener#handleSelection(Entity, boolean)
+   */
+  public void handleSelection(Entity entity, boolean emphasized) {
+    // ignored
+  }
+  
+  /**
+   * Trigger callback - our structure has changed
+   */
+  private void fireStructureChanged() {
+    for (int l=listeners.size()-1; l>=0; l--) {
+      ((Listener)listeners.get(l)).structureChanged();
+    }
+  }
+
+  /**
+   * Trigger callback - our data has changed
+   */
+  private void fireDataChanged() {
+    for (int l=listeners.size()-1; l>=0; l--) {
+      ((Listener)listeners.get(l)).dataChanged();
+    }
+  }
+  
+  /**
+   * Retags events for given entity
+   */
+  private final void contentEvents(Entity entity) {
+    // loop through layers
+    for (int l=0; l<layers.size(); l++) {
+      List layer = (List)layers.get(l);
+      Iterator events = layer.iterator();
+      while (events.hasNext()) {
+        Event event = (Event)events.next();
+        if (event.pe.getEntity()==entity) event.content();
+      }
+    }
+    // done
+  }
+
+  /**
+   * Layout events by using the existing set of events
+   * and re-stacking them in layers
+   */
+  private final void layoutEvents() {
+    // reset
+    min = Double.MAX_VALUE;
+    max = -Double.MAX_VALUE;
+    // keep old and create some new space
+    List old = layers;
+    layers = new ArrayList(10);
+    // loop through old
+    for (int l=0; l<old.size(); l++) {
+      List layer = (List)old.get(l);
+      Iterator events = layer.iterator();
+      while (events.hasNext()) {
+        Event event = (Event)events.next();
+        insertEvent(event);
+      }
+    }
+    // extend max by time for events
+    max += timePevent;
+    // trigger
+    fireStructureChanged();
+    // done
   }
   
   /**
    * Gather Events
    */
   private final void createEvents() {
-    
     // reset
     min = Double.MAX_VALUE;
     max = -Double.MAX_VALUE;
-    
     // prepare some space
     layers = new ArrayList(10);
-    
     // look for events in INDIs and FAMs
     createEventsFrom(gedcom.getEntities(Gedcom.INDIVIDUALS));
     createEventsFrom(gedcom.getEntities(Gedcom.FAMILIES   ));
-    
-    // nothing found -> fallback to this year
-    if (layers.size()==0) {
-      min = Calendar.getInstance().get(Calendar.YEAR);
-      max = min;
-    }
-    
-    // add space for the events
+    // extend max by time for events
     max += timePevent;
-    
+    // trigger
+    fireStructureChanged();
     // done
   }
   
@@ -141,19 +285,16 @@ import genj.gedcom.PropertyEvent;
    */
   private final void createEventFrom(PropertyEvent pe) {
     // we need a valid date for that event
-    PropertyDate date = pe.getDate();
-    if (date==null) return;
+    PropertyDate pd = pe.getDate();
+    if (pd==null) return;
     // get start (has to be valid) and end
     PropertyDate.PointInTime 
-      start = date.getStart(),
-      end   = date.getEnd();
+      start = pd.getStart(),
+      end   = pd.getEnd();
     if (!start.isValid()) return;
     if (!end  .isValid()) end = start;
     // create the Event
-    Event e = new Event(pe, wrap(start), wrap(end));
-    // remember min and max
-    min = Math.min(Math.floor(e.from), min);
-    max = Math.max(Math.ceil (e.to  ), max);
+    Event e = new Event(pe, pd, wrap(start), wrap(end));
     // keep the event
     insertEvent(e);
     // done
@@ -163,6 +304,10 @@ import genj.gedcom.PropertyEvent;
    * Insert the Event into one of our layers
    */
   private final void insertEvent(Event e) {
+    
+    // remember min and max
+    min = Math.min(Math.floor(e.from), min);
+    max = Math.max(Math.ceil (e.to  ), max);
     
     // find a level that suits us
     for (int l=0;l<layers.size();l++) {
@@ -218,40 +363,61 @@ import genj.gedcom.PropertyEvent;
   /*package*/ class Event {
     /** state */
     /*package*/ double from, to;
-    /*package*/ PropertyEvent prop;
-    /*package*/ String tag;
+    /*package*/ PropertyEvent pe;
+    /*package*/ PropertyDate pd;
+    /*package*/ String content;
     /** 
      * Constructor
      */
-    Event(PropertyEvent propEvent, double start, double end) {
+    Event(PropertyEvent propEvent, PropertyDate propDate, double start, double end) {
       // remember
-      prop = propEvent;
+      pe = propEvent;
+      pd = propDate;
       from  = start;
       to  = end;
-      // calculate tag
-      Entity e = propEvent.getEntity();
-      tag = e instanceof Indi ? tag((Indi)e) : tag((Fam)e);
-      tag = tag + '(' + propEvent.getDate() + ')';
+      // calculate content
+      content();
       // done
     }
-    /**
-     * calculate the tag
+    /** 
+     * calculate a content
      */
-    private final String tag(Indi indi) {
+    private final void content() {
+      Entity e = pe.getEntity();
+      content = e instanceof Indi ? content((Indi)e) : content((Fam)e);
+    }
+    /**
+     * calculate the content
+     */
+    private final String content(Indi indi) {
       return indi.getName();
     }
     /**
-     * calculate the tag
+     * calculate the content
      */
-    private final String tag(Fam fam) {
+    private final String content(Fam fam) {
       Indi 
         husband = fam.getHusband(),
         wife = fam.getWife();
-      if (husband!=null&&wife!=null) return husband.getName() + " and " + wife.getName();
+      if (husband!=null&&wife!=null) return husband.getName() + "+" + wife.getName();
       if (husband!=null) return husband.getName();
       if (wife!=null) return wife.getName();
       return "@"+fam.getId()+"@";
     }
   } //Event
+  
+  /**
+   * Interface for listeners
+   */
+  /*package*/ interface Listener {
+    /**
+     * callback for data changes
+     */
+    public void dataChanged();
+    /**
+     * callback for structure (and data) changes
+     */
+    public void structureChanged();
+  } //ModelListener
   
 } //TimelineModel 
