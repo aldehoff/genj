@@ -79,7 +79,10 @@ public class ReportNameHistory extends Report {
     Iterator iterator = indis.iterator();
     while (iterator.hasNext()) {
       Indi indi = (Indi)iterator.next();
-      analyze(gedcom, indis, indi, yearStart, yearEnd, name2series);
+      try {
+        analyze(gedcom, indis, indi, yearStart, yearEnd, name2series);
+      } catch (GedcomException e) {
+      }
     }
     
     // check if got something
@@ -119,7 +122,7 @@ public class ReportNameHistory extends Report {
   /**
    * Analyze one individual
    */
-  private void analyze(Gedcom gedcom, Collection indis, Indi indi, int yearStart, int yearEnd, Map name2series) {
+  private void analyze(Gedcom gedcom, Collection indis, Indi indi, int yearStart, int yearEnd, Map name2series) throws GedcomException {
     
 	  // look for individuals with a birth and name
 	  PropertyDate birth = indi.getBirthDate();
@@ -136,17 +139,22 @@ public class ReportNameHistory extends Report {
 	    return;
 	  
 	  // calculate start
-	  int start = birth.getStart().getYear();
+	  int start = birth.getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
 	  
 	  // calculate end
-	  int end = death==null||!death.isValid() ? start+lifespanWithoutDEAT : death.getStart().getYear();
-	  end = Math.min( PointInTime.getNow().getYear(), Math.max(start, end));
+	  int end;
+	  if (death==null)
+	    end = start+lifespanWithoutDEAT;
+	  else
+	    end = death.getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
 	  
 	  // check range
-	  if (end<yearStart||start>yearEnd)
+	  if (end<start||end<yearStart||start>yearEnd)
 	    return;
-	  start = Math.max(0, start-yearStart);
-	  end   = Math.min(yearEnd-yearStart, end-yearStart);
+	  
+	  // convert to indexed start/end 0<index<yearEnd-yearStart
+	  start = Math.max(0                , start-yearStart);
+	  end   = Math.min(yearEnd-yearStart,   end-yearStart);
 	  
 	  // increase indexedseries for last-name throughout lifespan (start to end)
 	  IndexedSeries series = (IndexedSeries)name2series.get(last);
