@@ -98,6 +98,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /** the registry we're working with */
   private Registry registry;
   
+  /** whether we use antialising */
+  private boolean isAntialising = false;
+  
   /** our colors */
   /*package*/ ColorSet colors;
   
@@ -130,6 +133,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
       registry.get("hfams" ,(float)defm.hFams ),
       registry.get("pad"   ,(float)defm.pad   )
     ));
+    isAntialising = registry.get("antial", false);
 
     // setup child components
     contentRenderer = new ContentRenderer();
@@ -141,7 +145,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     zoom = registry.get("zoom", 1.0F);
     
     // setup layout
-    //setLayout(new MyLayout()); 
     add(overview);
     add(scroll);
 
@@ -190,6 +193,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     registry.put("wfams"   ,(float)m.wFams );
     registry.put("hfams"   ,(float)m.hFams );
     registry.put("pad"     ,(float)m.pad   );
+    registry.put("antial"  , isAntialising );
     
     if (model.getRoot()!=null) registry.put("root", model.getRoot().getId());
     super.removeNotify();
@@ -202,6 +206,19 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     return !overview.isVisible();
   }
 
+  /**
+   * Accessor - isAntialising.
+   */
+  public boolean isAntialising() {
+    return isAntialising;
+  }
+
+  /**
+   * Accessor - isAntialising.
+   */
+  public void setAntialising(boolean set) {
+    isAntialising = set;
+  }
   
   /**
    * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
@@ -274,10 +291,6 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     // families?
     bh.create(new ActionFamsAndSpouses())
       .setSelected(model.isFamilies());
-    
-    // bending?
-    bh.create(new ActionBend())
-      .setSelected(model.isBendArcs());
     
     // modes
     bh.createGroup();
@@ -460,6 +473,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     public void paint(Graphics g) {
       // go 2d
       UnitGraphics ug = new UnitGraphics(g, UNITS.getX()*zoom, UNITS.getY()*zoom);
+      ug.setAntialiasing(isAntialising);
       // init renderer
       contentRenderer.cBackground    = colors.getColor("content");
       contentRenderer.cIndiShape     = colors.getColor("indis");
@@ -652,24 +666,4 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     }
   } //ActionOrientation
 
-  /**
-   * Action Bend Arcs
-   */
-  private class ActionBend extends ActionDelegate {
-    /**
-     * Constructor
-     */
-    private ActionBend() {
-      super.setImage(Images.imgDontBend);
-      super.setToggle(Images.imgDoBend);
-      super.setTip("bend.tip");
-    }
-    /**
-     * @see genj.util.ActionDelegate#execute()
-     */
-    protected void execute() {
-      model.setBendArcs(!model.isBendArcs());
-    }
-  } //ActionOrientation
-       
 } //TreeView

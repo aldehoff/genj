@@ -30,6 +30,8 @@ import genj.util.Resources;
 import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import gj.ui.UnitGraphics;
+
 import java.awt.Color;
 import java.awt.Frame;
 import java.awt.Graphics;
@@ -96,6 +98,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     g.setColor(Color.white);
     g.fillRect(0,0,bounds.width,bounds.height);
     g.setColor(Color.black);
+    new UnitGraphics(g,1,1).setAntialiasing(true);
     renderer.render(g, new Rectangle(0,0,bounds.width,bounds.height));
   }
 
