@@ -112,6 +112,8 @@ public class TableViewSettings extends JPanel implements Settings {
   public void setView(JComponent view) {
     // remember
     table = (TableView)view;
+    // switch type
+    cTypes.setSelectedItem(Gedcom.getEntityName(table.getType(), true));
     // done
   }
 

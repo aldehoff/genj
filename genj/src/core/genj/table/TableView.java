@@ -168,41 +168,14 @@ public class TableView extends JPanel implements ToolBarSupport, ContextSupport,
     grabColumnWidths();
     tableModel.setMode(type);
   }
-
-//  /**
-//   * Accessor - the paths we're using for given type
-//   */
-//  public TagPath[] getPaths(String type) {
-//    return tableModel.getPaths(type);
-//  }
-//  
-//  /**
-//   * Accessor - the paths we're using for given type
-//   */
-//  public void setPaths(String type, TagPath[] set) {
-//    tableModel.setPaths(type,set);
-//    table.setColumnModel(tableModel.createTableColumnModel(getWidth()));
-//  }
-//  
-//  /**
-//   * Returns the type of entities to look at
-//   */
-//  public String getType() {
-//    return tableModel.getType();
-//  }
-//
-//  /**
-//   * Sets the type of entities to look at
-//   */
-//  public void setType(String type) {
-//    // grab the column widths as they are right now
-//    grabColumnWidths();
-//    // set the new type
-//    tableModel.setType(type);
-//    table.setColumnModel(tableModel.createTableColumnModel(getWidth()));
-//    // done
-//  }
-
+  
+  /**
+   * Accessor - the type of entities we're looking at
+   */
+  /*package*/ String getType() {
+    return tableModel.getType();
+  }
+  
   /**
    * @see genj.view.ContextPopupSupport#setContext(genj.gedcom.Property)
    */
