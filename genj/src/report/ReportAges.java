@@ -113,8 +113,10 @@ public class ReportAges implements Report {
         PropertyEvent event = (PropertyEvent) prop;
         PropertyDate pDate = event.getDate(true);
         if (pDate != null) {
-          String out = event.getTag() + ": " + pDate
-            + ", " + indi.toAgeString(pDate);
+          String indiAge = indi.toAgeString(pDate);
+          String out = event.getTag() + ": " + pDate;
+          if (indiAge.length() > 0)
+             out += ", " + indiAge;
           bridge.println(out);
         }
       }
