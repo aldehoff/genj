@@ -351,8 +351,8 @@ public abstract class Property implements Comparable {
     if (!(children.containsAll(set)&&set.containsAll(children)))
       throw new IllegalArgumentException("change of properties not allowed");
     // FIXME implement change mechanism
-    children.clear();
-    children.addAll(set);
+//    children.clear();
+//    children.addAll(set);
     // done
   }
   
