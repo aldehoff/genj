@@ -26,13 +26,13 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
+import genj.util.swing.ImageIcon;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
