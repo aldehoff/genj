@@ -113,6 +113,21 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   }
   
   /**
+   * Set text value
+   */
+  public void setText(String text) {
+    if (!isEditable) throw new IllegalArgumentException("setText && !isEditable n/a");
+    editor.setText(text);
+  }
+  
+  /**
+   * Access to editor
+   */
+  public TextFieldWidget getTextWidget() {
+    return editor;
+  }
+  
+  /**
    * @see javax.swing.JComboBox#setPopupVisible(boolean)
    */
   public void setPopupVisible(boolean v) {
@@ -223,7 +238,14 @@ public class ChoiceWidget extends javax.swing.JComboBox {
      * @see javax.swing.ComboBoxEditor#setItem(java.lang.Object)
      */
     public void setItem(Object set) {
-      super.setText(set!=null ? set.toString() : "");
+      setText(set!=null ? set.toString() : "");
+    }
+    
+    /**
+     * @see genj.util.swing.TextFieldWidget#setText(java.lang.String)
+     */
+    public void setText(String t) {
+      super.setText(t);
       setChanged(true);
     }
     

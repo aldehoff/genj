@@ -104,12 +104,11 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
   /**
    * @see javax.swing.text.JTextComponent#setText(java.lang.String)
    */
-  public void setText(String t) {
-    super.setText(t);
+  public void setText(String txt) {
+    super.setText(txt);
     setChanged(false);
   }
 
-  
   /**
    * Change notification
    */
