@@ -47,7 +47,8 @@ class ProxyEntity extends Proxy {
   private EditView edit;
 
   /**
-   * Finish editing a property through proxy
+   * Finish editing a property through proxy (no changes here unless
+   * hasChanged()==true since this will be called in all cases)
    */
   protected void finish() {
   }
@@ -102,7 +103,7 @@ class ProxyEntity extends Proxy {
     in.add(new Preview(e));
 
     // Done
-    return tfield;
+    return null;
   }
 
   /**

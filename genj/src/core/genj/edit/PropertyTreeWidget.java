@@ -54,6 +54,9 @@ public class PropertyTreeWidget extends TreeWidget {
   public void setEntity(Entity entity) {
     model.setEntity(entity);
     expandRows();
+    
+    if (getRowCount()>0) setSelectionRow(0);
+    
   }
   
   /**
@@ -383,7 +386,7 @@ public class PropertyTreeWidget extends TreeWidget {
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       
       // delegate to super
-      super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+      super.getTreeCellRendererComponent(tree, "", sel, expanded, leaf, row, hasFocus);
 
       // do our own      
       if (value instanceof Property) {

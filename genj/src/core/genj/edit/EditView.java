@@ -36,13 +36,9 @@ import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -85,7 +81,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
                             actionSticky;
 
   /** everything for the tree */
-  private PropertyTreeWidget tree = null;
+  /*package*/ PropertyTreeWidget tree = null;
   
   /** everything for the proxy */
   private JPanel            proxyPane;
@@ -111,8 +107,6 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     TreeCallbackHandler callback = new TreeCallbackHandler();
     tree = new PropertyTreeWidget(setGedcom);
     tree.addTreeSelectionListener(callback);
-    tree.addMouseMotionListener(callback);
-    tree.addMouseListener(callback);
     
     JScrollPane treePane = new JScrollPane(tree);
     treePane.setMinimumSize  (new Dimension(160, 128));
@@ -162,6 +156,9 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
    * Notification when component is not used any more
    */
   public void removeNotify() {
+    
+    // stop editing
+    stopEdit();
 
     // Remember registry
     registry.put("divider",splitPane.getDividerLocation());
@@ -338,16 +335,11 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     if (getCurrentEntity()==entity) return;
 
     // Try to stop old editing first
-    stopEdit(true);
+    stopEdit();
 
     // Reset tree model
     tree.setEntity(entity);
 
-    // Pre-selected editing node ?
-    if ((entity!=null)) {//&&(tree.isShowing())) {
-      tree.setSelectionRow(Math.min(1,tree.getRowCount()));
-    }
-    
     // Done
   }
   
@@ -425,14 +417,18 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /**
    * Stop editing
    */
-  private void stopEdit(boolean commit) {
+  private void stopEdit() {
 
     // Prepare for finishing changed and finish
-    if (commit&&currentProxy!=null&&currentProxy.hasChanged()) {
-      Gedcom gedcom = getCurrentEntity().getGedcom();
-      if (gedcom.startTransaction()) {
+    if (currentProxy!=null) {
+      if (currentProxy.hasChanged()) {
+        Gedcom gedcom = getCurrentEntity().getGedcom();
+        if (gedcom.startTransaction()) {
+          currentProxy.finish();
+          gedcom.endTransaction();
+        }
+      } else {
         currentProxy.finish();
-        gedcom.endTransaction();
       }
     }
 
@@ -530,7 +526,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       Gedcom gedcom = entity.getGedcom();
   
       // .. Stop Editing
-      stopEdit(true);
+      stopEdit();
   
       // .. only in case of single selection
       TreePath paths[] = tree.getSelectionPaths();
@@ -609,7 +605,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     protected void execute() {
   
       // .. Stop Editing
-      stopEdit(true);
+      stopEdit();
       
       // go through selection
       Property[] ps = tree.getSelection();
@@ -644,7 +640,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       if (prop==null) return;
   
       // .. Stop Editing
-      stopEdit(true);
+      stopEdit();
   
       // .. LockWrite
       if (!gedcom.startTransaction()) return;
@@ -669,7 +665,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
   /**
    * Handling selection of properties
    */
-  private class TreeCallbackHandler extends MouseAdapter implements TreeSelectionListener, MouseMotionListener {
+  private class TreeCallbackHandler implements TreeSelectionListener {
     
     /**
      * @see javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event.TreeSelectionEvent)
@@ -677,7 +673,7 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
     public void valueChanged(TreeSelectionEvent e) {
 
       // stop editing
-      stopEdit(true);
+      stopEdit();
   
       // Look if exactly one node has been selected
       if (tree.getSelectionCount()==0||tree.getCurrentProperty()==null) {
@@ -717,51 +713,6 @@ public class EditView extends JPanel implements CurrentSupport, ToolBarSupport, 
       actionButtonDown  .setEnabled(prop.getNextSibling()    !=null);
   
       // Done
-    }
-    
-    private boolean clickable = false;
-    
-    /**
-     * @see java.awt.event.MouseMotionAdapter#mouseMoved(java.awt.event.MouseEvent)
-     */
-    public void mouseMoved(MouseEvent e) {
-      
-      // check if we should indicated clickable
-      Property prop = tree.getProperty(e.getX(), e.getY());
-      Property[] selection = tree.getSelection();
-      setClickable( 
-        selection.length==1
-        && prop==selection[0]
-        && currentProxy!=null
-        && currentProxy.isClickAction()
-      );
-
-      // done
-    }
-    
-    /**
-     * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
-     */
-    public void mouseDragged(MouseEvent e) {
-      // ignored
-    }
-
-    /**
-     * @see java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
-     */
-    public void mouseClicked(MouseEvent e) {
-      if (clickable) {
-        setClickable(false);
-        currentProxy.click();
-      } else mouseMoved(e); 
-    }
-    
-    /** 
-     * make clickable or not
-     */
-    private void setClickable(boolean set) {
-      clickable = set;
-      tree.setCursor(clickable ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor());
     }
     
   } //PropertyTree  

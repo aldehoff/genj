@@ -86,20 +86,6 @@ abstract class Proxy  {
   protected abstract void finish();
   
   /**
-   * Wether the proxy has a click action
-   */
-  protected boolean isClickAction() {
-    return false;
-  }
-  
-  /**
-   * Trigger click action
-   */
-  protected void click() {
-    // none here
-  }
-
-  /**
    * Our content
    */
   protected class Preview extends JComponent {
