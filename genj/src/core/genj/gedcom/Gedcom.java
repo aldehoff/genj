@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.64 $ $Author: nmeier $ $Date: 2004-07-03 20:42:38 $
+ * $Revision: 1.65 $ $Author: nmeier $ $Date: 2004-07-20 20:50:33 $
  */
 package genj.gedcom;
 
@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 /**
@@ -117,6 +118,7 @@ public class Gedcom {
   /** transaction support */
   private Transaction transaction = null;
   private boolean hasUnsavedChanges;
+  private Stack transactions = new Stack();
 
   /** listeners */
   private List listeners = new ArrayList(10);
@@ -186,7 +188,7 @@ public class Gedcom {
     submitter = set;
     
     // propagate modified on submitter
-    submitter.propagateModified();
+    submitter.propagateChanged(submitter);
 
   }
   
@@ -209,6 +211,24 @@ public class Gedcom {
    */
   public synchronized void removeGedcomListener(GedcomListener which) {
     listeners.remove(which);
+  }
+  
+  /**
+   * Add entity 
+   */
+  /*package*/ void addEntity(Entity entity) {
+    
+    // remember id2entity
+    String id = entity.getId();
+    if (id.length()>0)
+      getEntityMap(entity.getTag()).put(id, entity);
+     
+    // remember entity
+    entities.add(entity);
+    
+    // notify
+    entity.addNotify(this);
+
   }
 
   /**
@@ -248,18 +268,11 @@ public class Gedcom {
       throw new GedcomException("Unexpected problem creating instance of "+tag);
     }
 
-    // remember id2entity
-    if (id.length()>0)
-      getEntityMap(tag).put(id, result);
-     
-    // remember entity
-    entities.add(result);
-    
     // initialize
-    result.setId(id);
+    result.init(tag, id);
     
-    // notify
-    result.addNotify(this, tag);
+    // keep it
+    addEntity(result);
 
     // Done
     return result;
@@ -269,7 +282,7 @@ public class Gedcom {
    * Deletes entity
    * @exception GedcomException in case unknown type of entity
    */
-  public void deleteEntity(Entity which) throws GedcomException {
+  public void deleteEntity(Entity which) {
 
     // Lookup entity map
     Map ents = getEntityMap(which.getTag());
@@ -277,7 +290,7 @@ public class Gedcom {
     // Entity exists ?
     String id = which.getId();
     if (!ents.containsKey(id))
-      throw new GedcomException("Unknown entity with id "+which.getId());
+      throw new IllegalArgumentException("Unknown entity with id "+which.getId());
 
     // Tell it
     which.delNotify();
@@ -473,6 +486,7 @@ public class Gedcom {
       return;
 
     try {
+      
       // need to notify?
       if (transaction.hasChanges()) {
 
@@ -487,9 +501,47 @@ public class Gedcom {
         
         // done
       }
+      
+      // remember
+      if (!transaction.isRollback())
+        transactions.push(transaction);
+            
+      System.out.println(transaction);
+      
     } finally {
       transaction = null;
     }
+
+    // done
+  }
+  
+  /**
+   * Test for undo
+   */
+  public boolean canUndo() {
+    return !transactions.isEmpty();
+  }
+  
+  /**
+   * Performs an undo
+   */
+  public synchronized void undo() {
+    
+    // there?
+    if (transactions.isEmpty())
+      throw new IllegalArgumentException("No transcation to undo");
+
+    // start new
+    startTransaction().setRollback(true);
+
+    // roll it back
+    Transaction tx = (Transaction)transactions.pop();
+    Change[] changes = tx.getChanges();
+    for (int i=changes.length-1;i>=0;i--)
+      changes[i].undo();
+
+    // end tx
+    endTransaction();
 
     // done
   }

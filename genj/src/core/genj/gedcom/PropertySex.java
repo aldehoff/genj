@@ -177,7 +177,7 @@ public class PropertySex extends Property {
    * Accessor for Sex
    */
   public void setSex(int newSex) {
-    propagateModified();
+    propagateChanged(this);
     sexAsString = null;
     sex = newSex;
     // Done
@@ -188,7 +188,7 @@ public class PropertySex extends Property {
    */
   public void setValue(String newValue) {
 
-    propagateModified();
+    propagateChanged(this);
 
     // Cannot parse anything longer than 1
     if (newValue.length()>1) {

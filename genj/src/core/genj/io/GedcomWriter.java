@@ -328,7 +328,7 @@ public class GedcomWriter implements Trackable {
       
       // encrypt lines value?
       if (encrypt)
-        lines.setValue(encrypt(multi.getLinesValue()));
+        lines.setValue(encrypt(prop.getValue()));
         
       // loop for write
       line(lines.getIndent(), prefix + lines.getTag(), lines.getValue());

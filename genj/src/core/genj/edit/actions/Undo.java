@@ -17,41 +17,37 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.gedcom;
+package genj.edit.actions;
 
-
+import genj.edit.Images;
+import genj.gedcom.Gedcom;
+import genj.util.ActionDelegate;
+import genj.view.ViewManager;
 
 /**
- * Class for encapsulating a source
- * Basic strategy was to copy parts of note and media and then strip
- * out as much as I could.
- */
-public class Source extends Entity {
+ * Undo on Gedcom
+ */  
+public class Undo extends ActionDelegate {
+  
+  /** the gedcom */
+  private Gedcom gedcom;
+  
+  /**
+   * Constructor
+   */
+  public Undo(Gedcom gedcom, ViewManager mgr) {
+    setImage(Images.imgReturn);
+    setText(AbstractChange.resources.getString("undo"));    
+    
+    this.gedcom = gedcom;
+  }
 
   /**
-   * Returns this property as a string
+   * Undo changes from last transaction
    */
-  public String toString() {
-    String title = getTitle();
-    return title.length()>0 ? title : super.toString();
+  protected void execute() {
+    gedcom.undo();
   }
   
-  /** 
-   * the title
-   */
-  public String getTitle() {
-    Property title = getProperty("TITL");
-    return title!=null ? title.getValue() : EMPTY_STRING;
-  }
-  
-  /**
-   * The text
-   */
-  public String getText() {
-    Property text = getProperty("TEXT");
-    if (text!=null) 
-      return text.getValue();
-    return EMPTY_STRING;
-  }
-  
-} //Source
+} //Undo
+

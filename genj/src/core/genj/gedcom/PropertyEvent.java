@@ -119,7 +119,7 @@ public class PropertyEvent extends Property {
    */
   public void setKnownToHaveHappened(boolean set) {
     knownToHaveHappened = set;
-    propagateModified();
+    propagateChanged(this);
   }
 
 // Could do an automatic 'y' here but that would pollute

@@ -5,8 +5,8 @@
 2 CORP Nils Meier
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
-1 DATE 17 DEC 2003
-2 TIME 15:14:01
+1 DATE 18 JUL 2004
+2 TIME 18:00:06
 1 GEDC
 2 VERS 5.5
 2 FORM Lineage-Linked
@@ -97,6 +97,9 @@
 2 DATE FROM 1 SEP 2001
 2 PLAC San Francisco, California, USA
 1 OCCU SWEngineer
+1 CHAN
+2 DATE 19 JUL 2004
+3 TIME 00:59:40
 0 @I009@ INDI
 1 NAME Alisa /Meier/
 1 SEX F

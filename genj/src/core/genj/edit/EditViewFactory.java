@@ -28,6 +28,7 @@ import genj.edit.actions.RunExternal;
 import genj.edit.actions.SetSubmitter;
 import genj.edit.actions.SwapSpouses;
 import genj.edit.actions.TogglePrivate;
+import genj.edit.actions.Undo;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -191,6 +192,10 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(new CreateEntity(gedcom, Gedcom.REPO, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SOUR, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SUBM, manager));
+    if (gedcom.canUndo()) {
+      result.add(ActionDelegate.NOOP);
+      result.add(new Undo(gedcom, manager));
+    }
     // done
     return result;
   }

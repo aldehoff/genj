@@ -93,7 +93,6 @@ public class Context {
         // gedcom
         gedcom = ged;
       }
-      property = entity;
     }
     
     // done

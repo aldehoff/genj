@@ -33,16 +33,15 @@ import java.util.List;
 public abstract class PropertyXRef extends Property {
 
   /** the target property that this xref references */
-  private PropertyXRef target;
+  private PropertyXRef target = null;
 
   /** the value for a broken xref */
-  private String       value ;
+  private String       value  = null;
 
   /**
    * Empty Constructor
    */
   public PropertyXRef() {
-    this(null);
   }
 
   /**
@@ -50,22 +49,24 @@ public abstract class PropertyXRef extends Property {
    * @param target reference of property this property links to
    */
   public PropertyXRef(PropertyXRef target) {
-    // keep
     setTarget(target);
-    if (target==null) value=EMPTY_STRING;
-    // done    
   }
 
   /**
    * Method for notifying being removed from another parent
    */
-  public void delNotify() {
-
-    // Make sure the referenced entity doesn't reference back anymore
-    unlink();
+  public void delNotify(Transaction tx) {
 
     // Let it through
-    super.delNotify();
+    super.delNotify(tx);
+    
+    // Are we referencing something that still has parent?
+    if (target==null||target.getParent()==null)
+      return;
+
+    // ... delete back referencing property
+    target.getParent().delProperty(target);
+
   }
 
   /**
@@ -92,10 +93,7 @@ public abstract class PropertyXRef extends Property {
    * @return referenced entity's id
    */
   public String getReferencedId() {
-    if (target==null) {
-      return value == null ? EMPTY_STRING : value;
-    }
-    return target.getEntity().getId();
+    return value==null ? EMPTY_STRING : value;
   }
 
   /**
@@ -103,15 +101,7 @@ public abstract class PropertyXRef extends Property {
    * @return value of this property as <code>String</code>
    */
   public String getValue() {
-    if (target!=null) {
-      return "@"+target.getEntity().getId()+"@";
-    }
-    if ((value!=null)&&(value.length()>0)) {
-      // NM 20020221 a non linked value without @' might look better
-      //return "@"+value+"@";
-      return value;
-    }
-    return EMPTY_STRING;
+    return value==null ? EMPTY_STRING : '@'+value+'@';
   }
 
   /**
@@ -119,12 +109,7 @@ public abstract class PropertyXRef extends Property {
    * @return <code>boolean</code> true or false
    */
   public boolean isValid() {
-    // Valid target?
-    if (target!=null) {
-      return true;
-    }
-    // 20030106 No target - not valid unless overridden
-    return false;
+    return target!=null;
   }
   
   /**
@@ -140,11 +125,11 @@ public abstract class PropertyXRef extends Property {
   protected void setTarget(PropertyXRef target) {
 
     // Remember change
-    propagateModified();
+    propagateChanged(this);
 
     // Do it
     this.target=target;
-    this.value =null  ;
+    this.value =target.getEntity().getId();
 
     // Done
   }
@@ -163,10 +148,12 @@ public abstract class PropertyXRef extends Property {
    */
   public void setValue(String vAlue) {
 
-    propagateModified();
-
-    // referenced entity exists ?
-    unlink();
+    // ignore if linked
+    if (target!=null)
+      return;
+      
+    // remember change
+    propagateChanged(this);
 
     // remember value
     value = vAlue.replace('@',' ').trim();
@@ -180,30 +167,6 @@ public abstract class PropertyXRef extends Property {
   /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
     assume(getTag().equals(meta.getTag()), UNSUPPORTED_TAG);
     return super.init(meta, value);
-  }
-
-
-  /**
-   * Helper that unlinks reference to other entity.
-   * removes links from other entities to this property's entity, too.
-   */
-  private void unlink() {
-
-    // Referenced entities ?
-    if (target==null)
-      return;
-
-    // keep referenced id
-    value = getValue();
-
-    // Forget referenced entity
-    PropertyXRef t = target;
-    target = null;
-
-    // ... delete back referencing property in referenced entity
-    t.getEntity().delProperty(t);
-
-    // ... should be unlinked vice-versa now
   }
 
   /**

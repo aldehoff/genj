@@ -242,17 +242,17 @@ import java.util.Set;
    */
   public void handleChange(Transaction tx) {
     // deleted or added entities/properties -> recreate
-    if (!(tx.getChanges(Transaction.EDEL).isEmpty()
-        &&tx.getChanges(Transaction.EADD).isEmpty()
-        &&tx.getChanges(Transaction.PADD).isEmpty()
-        &&tx.getChanges(Transaction.PDEL).isEmpty())) {
+    if (!(tx.get(Transaction.ENTITIES_DELETED).isEmpty()
+        &&tx.get(Transaction.ENTITIES_ADDED).isEmpty()
+        &&tx.get(Transaction.PROPERTIES_ADDED).isEmpty()
+        &&tx.get(Transaction.PROPERTIES_DELETED).isEmpty())) {
       createEvents();
       return;
     }
     // changed properties -> scan for dates or names
     boolean changed = false;
-    if (!tx.getChanges(Transaction.PMOD).isEmpty()) {
-      Iterator ps = tx.getChanges(Transaction.PMOD).iterator();
+    if (!tx.get(Transaction.PROPERTIES_MODIFIED).isEmpty()) {
+      Iterator ps = tx.get(Transaction.PROPERTIES_MODIFIED).iterator();
       while (ps.hasNext()) {
         Property p = (Property)ps.next();
         // a date -> lets recreate everything

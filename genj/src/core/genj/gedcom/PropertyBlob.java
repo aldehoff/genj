@@ -167,13 +167,6 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   }
   
   /**
-   * @see genj.gedcom.MultiLineProperty#getLinesValue()
-   */
-  public String getLinesValue() {
-    return getValue();
-  }
-
-  /**
    * Sets a property value line
    */
   public void setValue(String value) {
@@ -183,7 +176,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     isIconChecked = false;
 
     // Remember changed property
-    propagateModified();
+    propagateChanged(this);
 
     // Done
   }
@@ -194,7 +187,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   public void load(String file, boolean updateSubs) {
     
     // Remember changed property
-    propagateModified();
+    propagateChanged(this);
 
     // Reset state
     isIconChecked = false;

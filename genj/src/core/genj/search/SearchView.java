@@ -22,9 +22,7 @@ package genj.search;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MetaProperty;
-import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
@@ -621,12 +619,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       // parse all but transients
       if (searchThis&&!prop.isTransient()) {
         // check prop's value
-        String value;
-        if (prop instanceof MultiLineProperty && !(prop instanceof IconValueAvailable))
-          value = ((MultiLineProperty)prop).getLinesValue();
-        else
-          value = prop.getValue();
-        search(entity, prop, value);
+        search(entity, prop, prop.getValue());
       }
       // check subs
       int n = prop.getNoOfProperties();
@@ -718,7 +711,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
      * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
      */
     public void handleChange(Transaction tx) {
-      if (!tx.getChanges(Transaction.PDEL).isEmpty())
+      if (!tx.get(Transaction.PROPERTIES_DELETED).isEmpty())
         clear();
     }
     

@@ -20,7 +20,6 @@
 package genj.edit.beans;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.util.Registry;
 import genj.util.swing.TextAreaWidget;
@@ -54,12 +53,7 @@ public class MLEBean extends PropertyBean {
     super.init(setGedcom, setProp, setMgr, setReg);
 
     // Calculate value to show
-    String value;
-    if (property instanceof MultiLineProperty) {
-      value = ((MultiLineProperty)property).getLinesValue();
-    } else {
-      value = property.getValue(); 
-    }
+    String value = property.getValue();
 
     tarea = new TextAreaWidget(value,6,20);
     tarea.addChangeListener(changeSupport);

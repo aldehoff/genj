@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,22 +29,28 @@ import java.util.Set;
 public class Transaction {
 
   public static final int
-    EADD    = 0,
-    EDEL    = 1,
-    EMOD    = 2,
-    PADD    = 3,
-    PDEL    = 4,
-    PMOD    = 5,
-    NUM     = 6;
+    ENTITIES_ADDED     = 0,
+    ENTITIES_DELETED   = 1,
+    ENTITIES_MODIFIED  = 2,
+    PROPERTIES_ADDED   = 3,
+    PROPERTIES_DELETED = 4,
+    PROPERTIES_MODIFIED= 5,
+    NUM                = 6;
 
   /** gedcom */
   private Gedcom gedcom;
 
-  /** current changes */
-  private Set[] changes;
+  /** currently affected */
+  private Set[] affected;
   
   /** time started */
   private long time;
+  
+  /** changes */
+  private ArrayList changes = new ArrayList(20);
+  
+  /** whether we're an undo */
+  private boolean isRollback = false; 
   
   /**
    * Constructor
@@ -55,11 +62,26 @@ public class Transaction {
     
     time = System.currentTimeMillis();
 
-    // prepare tracking changes
-    changes = new Set[NUM];
+    // prepare tracking affected
+    affected = new Set[NUM];
     for (int i=0;i<NUM;i++) {
-      changes[i] = new HashSet(64);
+      affected[i] = new HashSet(64);
     }
+  }
+  
+  /**
+   * Add a change
+   */
+  /*package*/ void addChange(Change change) {
+    changes.add(change);
+  }
+  
+  /*package*/ boolean isRollback() {
+    return isRollback;
+  }
+  
+  /*package*/ void setRollback(boolean set) {
+    isRollback = set;
   }
   
   /**
@@ -70,10 +92,17 @@ public class Transaction {
   }
   
   /**
+   * Returns list of changes
+   */
+  public Change[] getChanges() {
+    return (Change[])changes.toArray(new Change[changes.size()]);
+  }
+  
+  /**
    * Returns Set
    */
-  public Set getChanges(int which) {
-    return changes[which];
+  public Set get(int which) {
+    return affected[which];
   }
 
   /**
@@ -87,10 +116,17 @@ public class Transaction {
    * whether something was actually changed
    */
   public boolean hasChanges() {
-    for (int i=0;i<NUM;i++)
-      if (!changes[i].isEmpty()) 
-        return true;
-    return false;
+    return !changes.isEmpty();
+  }
+
+  /**
+   * String representation
+   */
+  public String toString() {
+    StringBuffer result = new StringBuffer(256);
+    for (int i=0;i<changes.size();i++)
+      result.append(changes.get(i)+"\n");
+    return result.toString();
   }
 
 } //Transaction

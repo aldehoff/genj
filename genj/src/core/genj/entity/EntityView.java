@@ -230,7 +230,7 @@ public class EntityView extends JPanel implements ToolBarSupport, ContextProvide
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
   public void handleChange(Transaction tx) {
-    if (tx.getChanges(Transaction.EDEL).contains(entity)) {
+    if (tx.get(Transaction.ENTITIES_DELETED).contains(entity)) {
       setEntity(null);
     }
     repaint();

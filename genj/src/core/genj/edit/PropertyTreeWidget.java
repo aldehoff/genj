@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
@@ -37,10 +38,8 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -267,15 +266,8 @@ public class PropertyTreeWidget extends DnDTree {
     // clear cache of view
     if (property2view!=null)
       property2view.clear();
-    // make sure that propagates
-    if (model!=null)
-      model.fireStructureChanged();
   }
 
-  // FIXME to make sure transactions opened in removeFrom() I'm
-  // remembering it for insertInto() to be closed in all cases
-  private static Model lastDnDModel = null;
-  
   /**
    * Our model
    */
@@ -311,47 +303,14 @@ public class PropertyTreeWidget extends DnDTree {
     protected void setRoot(Property set) {
       // remember
       root = set;
-      // notify
-      fireStructureChanged();
+      // .. clear cache of view
+      property2view.clear();
+      // .. tell about it
+      fireTreeStructureChanged(this, getPathToRoot(getRoot()), null, null);
       // make sure we don't show null-root
       setRootVisible(root!=null);
     }
   
-    /**
-     * Signals to listeners that properties have changed
-     */
-    protected void firePropertiesChanged(Set props) {
-
-      // Do it for all changed properties
-      for (Iterator it=props.iterator();it.hasNext();) {
-
-        // .. use property
-        Property prop = (Property)it.next();
-  
-        // .. forget cached value for prop
-        property2view.remove(prop);
-  
-        // .. propage change
-        fireTreeNodesChanged(this, getPathToRoot(prop), null, null);
-        
-        // .. next changed property
-      }
-    }          
-  
-    /**
-     * Signals to listeners that structure has changed
-     */
-    protected void fireStructureChanged() {
-
-      // clear cache of view
-      property2view.clear();
-
-      // propagate
-      fireTreeStructureChanged(this, getPathToRoot(root), null, null);
-
-      // done      
-    }          
-    
     /**
      * DND support - remove necessary before insert
      */
@@ -369,9 +328,6 @@ public class PropertyTreeWidget extends DnDTree {
       // start transaction
       gedcom.startTransaction();      
 
-      // remember this model
-      lastDnDModel = this;
-
       // loop through children
       int[] indexes = new int[children.size()];
       for (int i=0;i<children.size();i++) {
@@ -383,12 +339,10 @@ public class PropertyTreeWidget extends DnDTree {
         // remove
         parent.delProperty(child);
         
-        // tell to listeners
-        fireTreeNodesRemoved(this, getPathToRoot(parent), new int[]{pos}, null);
-
       }
 
-      // done for now      
+      // end transaction
+      gedcom.endTransaction();
     }
     
     /**
@@ -400,9 +354,10 @@ public class PropertyTreeWidget extends DnDTree {
       Property
         theParent = (Property)parent;
 
-      // start transaction if necessary
-      if (!gedcom.isTransaction())
-        gedcom.startTransaction();      
+      // start transaction 
+      // FIXME TODAY need to make both transactions into one for undo
+       
+      gedcom.startTransaction();      
   
       // perform copy/move
       for (int i=0;i<children.size();i++) {
@@ -417,12 +372,6 @@ public class PropertyTreeWidget extends DnDTree {
       // end insert transaction
       gedcom.endTransaction();      
       
-      // end transaction for lastDnDModel - removeFrom and insertInto
-      // might have been on different models. In that case the tx of
-      // the source's gedcom object has to be closed which we do here
-      if (lastDnDModel!=null&&lastDnDModel.gedcom.isTransaction())
-        lastDnDModel.gedcom.endTransaction();
-
       // done      
     }
 
@@ -527,56 +476,51 @@ public class PropertyTreeWidget extends DnDTree {
       Entity entity = root.getEntity();
 
       // Entity deleted ?
-      if ( !tx.getChanges(Transaction.EDEL).isEmpty() ) {
-        // Loop through known entity ?
-        boolean affected = false;
-        Iterator ents = tx.getChanges(Transaction.EDEL).iterator();
-        while (ents.hasNext()) {
-          // the entity deleted
-          Entity deleted = (Entity)ents.next();
-          // ... and might affect the current edit view
-          affected |= (entity==deleted);
-        }
-        // Is this a show stopper at this point?
-        if (affected==true) {
-          root = null;
-          setRoot(null);
-          return;
-        }
-        // continue
+      if (tx.get(Transaction.ENTITIES_DELETED).contains(entity)) {
+        setRoot(null);
+        return;
       }
       
       // at least same entity modified?
-      if (!tx.getChanges(Transaction.EMOD).contains(entity))
+      if (!tx.get(Transaction.ENTITIES_MODIFIED).contains(entity))
         return;
 
-      // Property removed?
-      Iterator pdels = tx.getChanges(Transaction.PDEL).iterator();
-      while (pdels.hasNext()) {
-        Property pdel = (Property)pdels.next();
-        if (pdel.getEntity()==entity) {
-          fireStructureChanged();
-          expandAllRows();
-          return;
+      // follow changes
+      Change[] changes = tx.getChanges();
+      for (int i=0;i<changes.length;i++) {
+        Change change = changes[i];
+        // applicable?
+        if (change.getEntity()!=entity)
+          continue;
+        // add?
+        if (change instanceof Change.PropertyAdded) {
+          Change.PropertyAdded c = (Change.PropertyAdded)change;
+          // .. tell about it if owner wasn't new as well
+          if (!tx.get(Transaction.PROPERTIES_ADDED).contains(c.getOwner())) {
+            TreePath path = getPathFor(c.getOwner());
+            fireTreeNodesInserted(this, path, new int[]{c.getPosition()}, null);
+          }
+          expandPath(getPathToRoot(c.getProperty()));
+          continue;
         }
-      }
-
-      // Property added?
-      Iterator padds = tx.getChanges(Transaction.PADD).iterator();
-      while (padds.hasNext()) {
-        Property padd = (Property)padds.next();
-        // only look at those from same entity
-        if (padd.getEntity()==entity) {
-          fireStructureChanged();
-          expandAllRows();
-          return;
+        // remove?
+        if (change instanceof Change.PropertyRemoved) {
+          Change.PropertyRemoved c = (Change.PropertyRemoved)change;
+          // .. forget cached value for prop
+          property2view.remove(c.getProperty());
+          // .. tell about it
+          fireTreeNodesRemoved(this, getPathFor(c.getOwner()), new int[]{c.getPosition()}, new Object[]{c.getProperty()});
+          continue;
         }
-      }
-      
-      // A simple property modified?
-      if ( !tx.getChanges(Transaction.PMOD).isEmpty() ) {
-        firePropertiesChanged(tx.getChanges(Transaction.PMOD));
-        return;
+        // simple change?
+        if (change instanceof Change.PropertyChanged) {
+          Change.PropertyChanged c = (Change.PropertyChanged)change;
+          // .. forget cached value for prop
+          property2view.remove(c.getProperty());
+          // .. tell about it
+          fireTreeNodesChanged(this, getPathFor(c.getProperty()), null, null);
+          continue;
+        }
       }
 
       // Done
@@ -696,7 +640,7 @@ public class PropertyTreeWidget extends DnDTree {
       // multiline?          
       if (prop instanceof MultiLineProperty && !(prop instanceof IconValueAvailable)) {
         
-        char[] chars = ((MultiLineProperty)prop).getLinesValue().toCharArray();
+        char[] chars = prop.getValue().toCharArray();
         for (int i=0; i<chars.length; i++) {
           char c = chars[i];
           if (c=='\n') html.append("<br>");

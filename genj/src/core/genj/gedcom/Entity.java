@@ -39,34 +39,38 @@ public class Entity extends Property {
   /**
    * Lifecycle - callback when being added to Gedcom
    */
-  /*package*/ void addNotify(Gedcom ged, String tag) {
+  /*package*/ void addNotify(Gedcom ged) {
     
     // remember
     gedcom = ged;
 
-    // init status    
-    this.tag  = tag;
-    
     // note
     Transaction tx = gedcom.getTransaction();
-    if (tx!=null)
-      tx.getChanges(Transaction.EADD).add(this);
+    if (tx!=null) {
+      tx.get(Transaction.ENTITIES_ADDED).add(this);
+      tx.addChange(new Change.EntityAdded(this));
+    }
+    
+    // propagate to property
+    addNotify(null, tx);
 
     // done    
   }
   
   /**
-   * @see genj.gedcom.Property#delNotify()
+   * Lifecycle - callback when being removed from Gedcom
    */
   /*package*/ void delNotify() {
     
-    // note
+    // propagate to property hierarchy
     Transaction tx = gedcom.getTransaction();
-    if (tx!=null)
-      tx.getChanges(Transaction.EDEL).add(this);
+    delNotify(tx);
 
-    // continue
-    super.delNotify();
+    // housekeeping
+    if (tx!=null) {
+      tx.get(Transaction.ENTITIES_DELETED).add(this);
+      tx.addChange(new Change.EntityRemoved(this));
+    }
     
     // forget gedcom
     gedcom = null;
@@ -75,29 +79,74 @@ public class Entity extends Property {
   }
   
   /**
-   * Lifecycle - callback when any property contained
-   * in record changed
+   * Propagate changed property
    */
-  /*package*/ void propagateChanged(Property prop, int status) {
-    
-    // gedcom known?
-    if (gedcom==null)
-      return;
-      
-    // propagate change
+  /*package*/ void propagateChanged(Property changed) {
+
+    // always tell to modified first
     Transaction tx = gedcom.getTransaction();
+
+    changed.modNotify(tx);    
+    
     if (tx==null)
       return;
       
-    // FIXME gedcom - remove of added property has to be checked  
-    tx.getChanges(status).add(prop);
-    tx.getChanges(Transaction.EMOD).add(this);
+    Change change = new Change.PropertyChanged(changed);
     
-    // Reflect change of property (unless we don't track changes or CHAN was deleted)
-    if (!(prop instanceof PropertyChange&&status==Transaction.PDEL))
-      PropertyChange.update(this, tx);
+    tx.get(Transaction.ENTITIES_MODIFIED).add(this);
+    tx.addChange(change);
     
-    // done
+    // Reflect change of property 
+    PropertyChange.update(this, tx, change);
+      
+  }
+  
+  /**
+   * Propagate added property
+   */
+  /*package*/ void propagateAdded(Property owner, int pos, Property added) {
+
+    // always tell to added first
+    Transaction tx = gedcom.getTransaction();
+
+    added.addNotify(owner, tx);
+    
+    // more housekeeping?
+    if (tx==null)
+      return;
+
+    Change change = new Change.PropertyAdded(owner, pos, added);
+      
+    tx.get(Transaction.ENTITIES_MODIFIED).add(this);
+    tx.addChange(change);
+    
+    // Reflect change of property 
+    PropertyChange.update(this, tx, change);
+      
+  }
+
+  /**
+   * Propagate removed property
+   */
+  /*package*/ void propagateRemoved(Property owner, int pos, Property removed) {
+
+    // always tell to removed first
+    Transaction tx = gedcom.getTransaction();
+
+    removed.delNotify(tx);
+
+    // more housekeeping?
+    if (tx==null)
+      return;
+
+    Change change = new Change.PropertyRemoved(owner, pos, removed);
+    
+    tx.get(Transaction.ENTITIES_MODIFIED).add(this);
+    tx.addChange(change);
+    
+    // Reflect change of property 
+    PropertyChange.update(this, tx, change);
+
   }
   
   /**
@@ -131,9 +180,10 @@ public class Entity extends Property {
   }
 
   /**
-   * Sets entity's id
+   * Initialize entity
    */
-  /*package*/ void setId(String setId) {
+  /*package*/ void init(String setTag, String setId) {
+    tag = setTag;
     id = setId;
   }
   

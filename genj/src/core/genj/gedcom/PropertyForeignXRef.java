@@ -45,7 +45,7 @@ public class PropertyForeignXRef extends PropertyXRef {
    * getTag method comment.
    */
   public String getTag() {
-    return EMPTY_STRING;
+    return "XREF";
   }
 
   /**

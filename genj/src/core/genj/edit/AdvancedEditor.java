@@ -135,9 +135,13 @@ import javax.swing.event.TreeSelectionListener;
         // property at that point?
         Property prop = tree.getPropertyAt(pos);
         Property root = tree.getRoot();
+
+        // 20040719 got to check transient - dont want to let the user control those
+        if (prop!=null&&prop.isTransient())
+          prop = null;
         
         // create Context
-        Context result = new Context(root.getGedcom(), (Entity)root, prop);
+        Context result = new Context(gedcom, (Entity)root, prop);
 
         // add actions (add&delete)
         result.addAction(new Add(prop));

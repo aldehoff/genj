@@ -102,23 +102,31 @@ public class PropertyChange extends Property implements MultiLineProperty {
   /**
    * Static update
    */
-  /*package*/ static void update(Entity entity, Transaction tx) {
+  /*package*/ static void update(Entity entity, Transaction tx, Change change) {
+
+    // tx isn't rollback?
+    if (tx.isRollback())
+      return;
+
+    // change itself?
+    if (change.getProperty() instanceof PropertyChange)
+      return;
   
     // is allowed?
-    MetaProperty ment = entity.getMetaProperty();
-    if (!ment.allows(CHAN))
+    MetaProperty meta = entity.getMetaProperty();
+    if (!meta.allows(CHAN))
       return;
       
-    // get PropertyChange
-    PropertyChange change = (PropertyChange)entity.getProperty(CHAN);
-    if (change==null) {
-      // create instance
-      change = (PropertyChange)ment.get(CHAN, true).create("");
-      entity.addProperty(change, Integer.MAX_VALUE);
+    // update values (tx time is UTC time!)
+    PropertyChange prop = (PropertyChange)entity.getProperty(CHAN);
+    if (prop==null) {
+      prop = (PropertyChange)meta.get(CHAN, true).create("");
+      prop.setValue(tx.getTime());
+      entity.addProperty(prop, Integer.MAX_VALUE);
+    } else {
+      prop.setValue(tx.getTime());
     }
     
-    // update values (tx time is UTC time!)
-    change.setValue(tx.getTime());
   
     // done
   }
@@ -138,13 +146,6 @@ public class PropertyChange extends Property implements MultiLineProperty {
   }
   
   /**
-   * @see genj.gedcom.MultiLineProperty#getLinesValue()
-   */
-  public String getLinesValue() {
-    return getValue();
-  }
-
-  /**
    * Set current value
    */  
   public void setValue(long set) {
@@ -153,11 +154,11 @@ public class PropertyChange extends Property implements MultiLineProperty {
     if (time==set)
       return;
 
+    // notify
+    propagateChanged(this);
+    
     // keep time before propagate so no endless loop happens
     time = set;
-    
-    // notify
-    propagateModified();
     
     // done
   }
@@ -168,7 +169,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
   public void setValue(String value) {
     
     // notify
-    propagateModified();
+    propagateChanged(this);
 
     // must look like 19 DEC 2003,14:50
     int i = value.indexOf(',');

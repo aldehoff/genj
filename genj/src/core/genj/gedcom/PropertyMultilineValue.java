@@ -57,7 +57,7 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
   public void setValue(String setValue) {
-    propagateModified();
+    propagateChanged(this);
     lines = setValue;
   }
 
@@ -65,35 +65,27 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
    * Accessor Value
    */
   public String getValue() {
-    return getFirstLine();
-  }
-  
-  /**
-   * Helper to resolve the first line of a multiline value
-   */
-  public String getFirstLine() { 
-
-    // More than one line ?
-    int pos = lines.indexOf("\n");
-    if (pos>=0) 
-      return lines.substring(0,pos)+"...";
-      
-    // Longer than 255?
-    int lb = Options.getInstance().getValueLineBreak();
-    if (lines.length()>lb)
-      return lines.substring(0,lb-3)+"...";
-
-    // Value
-    return lines;
-  }
-  
-  /**
-   * @see genj.gedcom.MultiLineProperty#getLinesValue()
-   */
-  public String getLinesValue() {
     return lines.toString();
   }
-
+  
+//  /**
+//   * Helper to resolve the first line of a multiline value
+//   */
+//  public String getFirstLine() { 
+//
+//    // More than one line ?
+//    int pos = lines.indexOf("\n");
+//    if (pos>=0) 
+//      return lines.substring(0,pos)+"...";
+//      
+//    // Longer than 255?
+//    int lb = Options.getInstance().getValueLineBreak();
+//    if (lines.length()>lb)
+//      return lines.substring(0,lb-3)+"...";
+//
+//    // Value
+//    return lines;
+//  }
   
   /**
    * @see genj.gedcom.MultiLineProperty#getLineIterator()

@@ -71,7 +71,7 @@ public abstract class Property implements Comparable {
   /**
    * Lifecycle - callback when being added to parent
    */
-  /*package*/ void addNotify(Property parent) {
+  /*package*/ void addNotify(Property parent, Transaction tx) {
 
     // remember parent
     this.parent=parent;
@@ -80,57 +80,75 @@ public abstract class Property implements Comparable {
     Property[] props = getProperties();
     for (int i=0,j=props.length;i<j;i++) {
       Property child = (Property)props[i];
-      child.addNotify(this);
+      child.addNotify(this, tx);
     }
 
-    // propagate change info
-    propagateChanged(this, Transaction.PADD);
-    
+    // remember being added
+    if (tx!=null)
+      tx.get(tx.PROPERTIES_ADDED).add(this);
+
   }
 
   /**
    * Lifecycle - callback when being removed from parent
    */
-  /*package*/ void delNotify() {
+  /*package*/ void delNotify(Transaction tx) {
   
     // reset meta
     meta = null;
     
-    // propagate
-    propagateChanged(this, Transaction.PDEL);
-  
-    // 20040609 to make move operations possible
-    // I'm keeping parent and children from now on
-    // this allows to ask a removed child for it's
-    // former parent!
-  
-    // propagate to children 
+    // delete children first
     Property[] props = getProperties();
-    for (int i=0,j=props.length;i<j;i++) {
-      Property child = (Property)props[i];
-      child.delNotify();
+    for (int i=props.length-1;i>=0;i--) {
+      props[i].delNotify(tx);
     }
     
-    // Done
+    // remember being deleted
+    if (tx!=null)
+      tx.get(tx.PROPERTIES_DELETED).add(this);
+      
+    // reset parent
+    parent = null;
+    
+    // continue
+  }
+
+  /*package*/ void modNotify(Transaction tx) {
+
+    // remember being modified
+    if (tx!=null)
+      tx.get(tx.PROPERTIES_MODIFIED).add(this);
+      
   }
   
   /**
-   * Lifecycle - callback expected for changes being made 
+   * Propagate changed property
    */
-  /*package*/ void propagateModified() {
-    propagateChanged(this, Transaction.PMOD);
-  }
-  
-  /**
-   * Lifecycle - callback when property changed. Is propagated
-   * 'up' the owner chain
-   * @param status Change.PMOD || Change.PDEL || Change.PADD 
-   */
-  /*package*/ void propagateChanged(Property prop, int status) {
+  /*package*/ void propagateChanged(Property changed) {
+
     // tell it to parent
     if (parent!=null)
-      parent.propagateChanged(prop, status);
-    // done      
+      parent.propagateChanged(changed);
+  }
+  
+  /**
+   * Propagate added property
+   */
+  /*package*/ void propagateAdded(Property owner, int pos, Property added) {
+    // tell it to parent
+    if (parent!=null)
+      parent.propagateAdded(owner, pos, added);
+  }
+
+  /**
+   * Propagate removed property
+   */
+  /*package*/ void propagateRemoved(Property owner, int pos, Property removed) {
+
+    // tell it to parent
+    if (parent!=null)
+      parent.propagateRemoved(owner, pos, removed);
+      
   }
   
   /**
@@ -145,7 +163,7 @@ public abstract class Property implements Comparable {
     MetaProperty meta = getMetaProperty();
     
     MetaProperty copyMeta = meta.get(prop.getTag(), true);
-    String      copyValue = prop instanceof MultiLineProperty ? ((MultiLineProperty)prop).getLinesValue() : prop.getValue();
+    String      copyValue = prop.getValue();
 
     Property copy = copyMeta.create(copyValue);
 
@@ -216,38 +234,47 @@ public abstract class Property implements Comparable {
     // position valid?
     if (pos>=0&&pos<children.size())
       children.add(pos, child);
-    else
+    else {
       children.add(child);
+      pos = children.size()-1;
+    }
 
-    // Notify
-    child.addNotify(this);
+    // propagate addition
+    propagateAdded(this, pos, child);
     
     // Done
     return child;
   }
   
-  /**
-   * Removes a property by looking in the property's properties
-   * list and eventually calling delProperty recursively
-   */
-  public boolean delProperty(Property which) {
-
-    // Look for first class properties
-    if (children.remove(which)) {
-      which.delNotify();
-      return true;
+    /**
+     * Removes a property by looking in the property's properties
+     * list and eventually calling delProperty recursively
+     */
+    public void delProperty(Property deletee) {
+  
+      // find position (throw outofbounds if n/a)
+      int pos = 0;
+      for (;;pos++) {
+        if (children.get(pos)==deletee)
+          break;
+      }
+      
+      // tell about it
+      propagateRemoved(this, pos, deletee);
+    
+      // remove   
+      children.remove(pos);
+  
+      // 20040717 once I checked recursively for 'which' but decided
+      // now to only allow deletion of immediate children
+  //    // Look for second class properties
+  //    for (int i=0;i<children.size();i++) {
+  //      if (getProperty(i).delProperty(which)) 
+  //        return true;
+  //    }
+  
     }
-
-    // Look for second class properties
-    for (int i=0;i<children.size();i++) {
-      if (getProperty(i).delProperty(which)) 
-        return true;
-    }
-
-    // Not found
-    return false;
-  }
-
+  
   /**
    * Returns a warning string that describes what happens when this
    * property would be deleted
@@ -730,7 +757,7 @@ public abstract class Property implements Comparable {
     isPrivate = set;
     
     // bookkeeping
-    propagateModified();
+    propagateChanged(this);
     
     // done
   }

@@ -35,11 +35,6 @@ public interface MultiLineProperty {
    */
   public Iterator getLineIterator();
   
-  /** 
-   * Return the multiline value as a continuous String
-   */
-  public String getLinesValue();
-  
   /**
    * Collecting multiple lines into a value for a MultiLineProperty 
    */
