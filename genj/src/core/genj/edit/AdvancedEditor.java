@@ -25,6 +25,8 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyXRef;
+import genj.io.GedcomReader;
+import genj.io.GedcomWriter;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
@@ -40,8 +42,13 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -145,7 +152,11 @@ import javax.swing.event.TreeSelectionListener;
 
         // add actions (add&delete)
         result.addAction(new Add(prop));
-        result.addAction(new Del(prop));
+        
+        // cut/copy/paste
+        result.addAction(new Cut(prop));
+        result.addAction(new Copy(prop));
+        result.addAction(new Paste(prop));
         
         // done
         return result;
@@ -194,6 +205,154 @@ import javax.swing.event.TreeSelectionListener;
   
     // Done
   }
+  
+  /**
+   * Action - cut
+   */
+  private class Cut extends Copy {
+
+    /** constructor */
+    private Cut(Property deletee) {
+      
+      super(deletee);
+      
+      super.setImage(Images.imgCut);
+      super.setText(resources.getString("action.cut"));
+
+    }
+    /** run */
+    protected void execute() {
+      
+      // warn about cut
+      String veto = selection.getDeleteVeto();
+      if (veto!=null) { 
+        // Removing property {0} from {1} leads to:\n{2}
+        String msg = resources.getString("del.warning", new String[] { 
+          selection.getTag(), selection.getEntity().getId(), veto 
+        });
+        // prepare actions
+        ActionDelegate[] actions = {
+          new CloseWindow(resources.getString("action.del")), 
+          new CloseWindow(CloseWindow.TXT_CANCEL)
+        };
+        // ask the user
+        int rc = winManager.openDialog(null, resources.getString("action.cut.tip"), WindowManager.IMG_WARNING, msg, actions, AdvancedEditor.this );
+        if (rc!=0)
+          return;
+        // continue
+      }
+      
+      // copy first
+      super.execute();
+      
+      // now cut
+      Gedcom gedcom = selection.getGedcom();
+      gedcom.startTransaction();
+      selection.getParent().delProperty(selection);
+      gedcom.endTransaction();
+      
+      // done
+    }
+  } //Cut
+
+  /**
+   * Action - copy
+   */
+  private class Copy extends ActionDelegate {
+  	
+    /** selection */
+    protected Property selection; 
+    
+    /** constructor */
+    protected Copy(Property property) {
+
+      super.setText(resources.getString("action.copy"));
+      super.setImage(Images.imgCopy);
+
+      this.selection = property;
+      
+      setEnabled(selection!=null && !(selection instanceof Entity) && !(selection.isTransient()));
+
+    }
+    /** run */
+    protected void execute() {
+      
+      try {
+        
+        // get the textual representation
+        StringWriter out = new StringWriter();
+        new GedcomWriter(selection, out);
+        
+        // stick it into the system clipboard
+	    	Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+	    	  new StringSelection(out.toString()), null
+	      );
+	    	
+	    	// done
+	    	
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, AdvancedEditor.this, "Couldn't copy to system clipboard", t);
+      }
+
+    }
+
+  } //ActionCopy
+    
+  /**
+   * Action - paste
+   */
+  private class Paste extends ActionDelegate {
+  	
+    /** selection */
+    private Property parent; 
+    
+    /** constructor */
+    protected Paste(Property property) {
+  
+      super.setText(resources.getString("action.paste"));
+      super.setImage(Images.imgPaste);
+  
+      this.parent = property;
+      
+      super.setEnabled(isPasteAvail());
+    }
+    /** check whether pasting is available */
+    private boolean isPasteAvail() {
+      try {
+        return Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this).isDataFlavorSupported(DataFlavor.stringFlavor);
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, AdvancedEditor.this, "Couldn't ask system clipboard for flavor", t);
+      }
+      return false;
+    }
+    /** run */
+    protected void execute() {
+      
+      // forget about it if data flavor is no good
+      if (!isPasteAvail())
+        return;
+      
+      // start a transaction
+      gedcom.startTransaction();
+      
+      try {
+        
+        // get the textual representation from system clipboard
+        String s = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this).getTransferData(DataFlavor.stringFlavor).toString();
+      	
+      	// paste it
+        new GedcomReader(parent, new StringReader(s));
+      	
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, AdvancedEditor.this, "Couldn't paste system clipboard content", t);
+      }
+      
+      // end transaction
+      gedcom.endTransaction();
+  
+    }
+  
+  } //Paste
   
   /**
    * Action - add
@@ -258,53 +417,8 @@ import javax.swing.event.TreeSelectionListener;
       // done
     }
 
-  } //ActionPropertyAdd
+  } //Add
     
-  /**
-   * Action - cut
-   */
-  private class Del extends ActionDelegate {
-    private Property deletee;
-    /** constructor */
-    private Del(Property deletee) {
-      super.setImage(Images.imgDelete);
-      super.setText(resources.getString("action.del"));
-
-      this.deletee = deletee;
-      
-      setEnabled(deletee!=null && !(deletee instanceof Entity) && !(deletee.isTransient()));
-
-    }
-    /** run */
-    protected void execute() {
-      // warn about cut
-      String veto = deletee.getDeleteVeto();
-      if (veto!=null) { 
-        // Removing property {0} from {1} leads to:\n{2}
-        String msg = resources.getString("del.warning", new String[] { 
-          deletee.getTag(), deletee.getEntity().getId(), veto 
-        });
-        // prepare actions
-        ActionDelegate[] actions = {
-          new CloseWindow(resources.getString("action.del")), 
-          new CloseWindow(CloseWindow.TXT_CANCEL)
-        };
-        // ask the user
-        int rc = winManager.openDialog(null, resources.getString("action.cut.tip"), WindowManager.IMG_WARNING, msg, actions, AdvancedEditor.this );
-        if (rc!=0)
-          return;
-        // continue
-      }
-      
-      // now cut
-      Gedcom gedcom = deletee.getGedcom();
-      gedcom.startTransaction();
-      deletee.getParent().delProperty(deletee);
-      gedcom.endTransaction();
-      // done
-    }
-  } //ActionCut
-
   /**
    * A ok action
    */
@@ -476,5 +590,6 @@ import javax.swing.event.TreeSelectionListener;
     }
   
   } //InteractionListener
+
 
 } //AdvancedEditor

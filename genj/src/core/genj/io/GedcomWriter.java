@@ -34,6 +34,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.SimpleDateFormat;
@@ -47,6 +48,7 @@ import java.util.Iterator;
 public class GedcomWriter implements Trackable {
 
   /** lots of state */
+  private boolean isIndentForLevels = false;
   private Gedcom gedcom;
   private BufferedWriter out;
   private String file;
@@ -63,7 +65,25 @@ public class GedcomWriter implements Trackable {
   private String encoding;
 
   /**
-   * Constructor
+   * Constructor used for converting a property into a text representation
+   */
+  public GedcomWriter(Property prop, Writer writer) throws GedcomIOException, IOException {
+    
+    // use a buffered out
+    out = new BufferedWriter(writer);
+    
+    // setup indent-spaces as level
+    isIndentForLevels = true;
+    
+    // write property
+    writeProperty("", prop);
+    
+    // done
+    out.close();
+  }
+  
+  /**
+   * Constructor for creating a writer that writes on writeGedcom()
    * @param ged data to write
    * @param name the logical name (header value)
    * @param enc either IBMPC, ASCII, UNICODE or ANSEL
@@ -76,14 +96,14 @@ public class GedcomWriter implements Trackable {
     // init data
     gedcom = ged;
     password = gedcom.getPassword();
-    encoding = enc;
+    encoding = enc!=null ? enc : ged.getEncoding();
     file = name;
     level = 0;
     line = 1;
     date = PointInTime.getNow().getValue();
     time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
 
-    out = new BufferedWriter(new OutputStreamWriter(stream, getCharset(enc)));
+    out = new BufferedWriter(new OutputStreamWriter(stream, getCharset(encoding)));
 
     // Done
   }
@@ -181,16 +201,22 @@ public class GedcomWriter implements Trackable {
       throw new GedcomIOException("Operation cancelled", line);
     }
     
-    // Level+Tag+Value
-    String l = "" + level;
-    out.write(l, 0, l.length());
-    out.write(' ');
-    out.write(tag, 0, tag.length());
-    
-    // 20030715 only write separating ' ' if value.length()>0 
+    // Level+Tag
+    if (isIndentForLevels) {
+      for (int i=0;i<level;i++)
+        out.write(' ');
+    } else {
+	    String l = Integer.toString(level);
+	    out.write(l);
+	    out.write(' ');
+    }
+    out.write(tag);
+
+    // Value
     if (value!=null&&value.length()>0) {
+      // 20030715 only write separating ' ' if value.length()>0 
       out.write(' ');
-      out.write(value, 0, value.length());
+      out.write(value);
     }
     out.newLine();
 

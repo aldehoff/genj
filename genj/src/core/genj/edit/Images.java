@@ -40,6 +40,10 @@ final public class Images {
     imgUndo,
     imgRedo,
     
+    imgCut,
+    imgCopy, 
+    imgPaste,
+	
     imgDelete,
     imgNew;
 
@@ -58,8 +62,11 @@ final public class Images {
     imgUndo      = new ImageIcon(this,"images/Undo.gif");
     imgRedo      = new ImageIcon(this,"images/Redo.gif");
     
-    imgDelete    = new ImageIcon(this,"images/entity/Delete.gif");
-    imgNew       = new ImageIcon(this,"images/entity/New.gif");
+    imgCut       = new ImageIcon(this,"images/Cut.gif");
+    imgCopy      = new ImageIcon(this,"images/Copy.gif");
+    imgPaste     = new ImageIcon(this,"images/Paste.gif");
     
+    imgNew       = new ImageIcon(this,"images/entity/New.gif");
+    imgDelete    = new ImageIcon(this,"images/entity/Delete.gif");
   }
 }

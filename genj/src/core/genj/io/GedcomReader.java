@@ -38,6 +38,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,27 +61,61 @@ public class GedcomReader implements Trackable {
   /** lots of state we keep during reading */
   private Gedcom              gedcom;
   private BufferedReader      in;
-
+  
+  private boolean isIndentForLevels = false;
+  private boolean isRefactoringAllowed = false;
   private int progress;
-  private int level;
-  private int line;
-  private int entity;
-  private int read;
+  private int level = 0;
+  private int line = 0;
+  private int entity = 0;
+  private int read = 0;
   private int state;
   private long length;
+  private String gedcomLine;
   private String xref;
   private String tag;
   private String value;
-  private String undoLine,gedcomLine;
+  private boolean redoLine = false;
   private Origin origin;
-  private List xrefs;
+  private List xrefs = new ArrayList(16);
   private String tempSubmitter;
-  private List warnings;
   private boolean cancel=false;
   private Thread worker;
   private Object lock = new Object();
+  
+  /** encryption */
   private Enigma enigma;
 
+  /** collecting warnings */
+  private List warnings = new ArrayList(128);
+  
+  /**
+   * Constructor for reading properties from text representation
+   */
+  public GedcomReader(Property parent, Reader reader) throws GedcomIOException, IOException {
+    
+    // we allow for refactoring to make the result better looking
+    isRefactoringAllowed = true;
+    
+    // we expect indent encoded through leading spaced
+    isIndentForLevels = true;
+    
+    // faking a buffered read
+    in = new BufferedReader(reader);
+    
+    // simply read properties into parent
+    try {
+      readProperties(parent, parent.getMetaProperty(), -1);
+    } catch (GedcomFormatException e) {
+      // ignoring any problem
+    }
+    
+    // link what needs linkage
+    linkReferences();
+
+    // done
+  }
+  
   /**
    * Constructor
    * @param initOrg the origin to initialize reader from
@@ -97,12 +132,8 @@ public class GedcomReader implements Trackable {
     
     // init some data
     in       = new BufferedReader(new InputStreamReader(sin, sin.getCharset()));
-    line     = 0;
     origin   = org;
     length   = oin.available();
-    level    = 0;
-    read     = 0;
-    warnings = new ArrayList(128);
     gedcom   = new Gedcom(origin);
     gedcom.setEncoding(sin.getEncoding());
     
@@ -172,12 +203,18 @@ public class GedcomReader implements Trackable {
    * @exception GedcomIOException reading from <code>BufferedReader</code> failed
    * @exception GedcomFormatException reading Gedcom-data brought up wrong format
    */
-  private boolean peekLine() throws GedcomIOException, GedcomFormatException {
-    boolean rc = readLine();
-    undoLine();
-    return rc;
+  private void peekLine() throws GedcomIOException, GedcomFormatException {
+    readLine();
+    redoLine();
   }
 
+  /**
+   * Put back gedcom-line
+   */
+  private void redoLine() {
+    redoLine = true;
+  }
+  
   /**
    * Read entity
    * @exception GedcomIOException reading from <code>BufferedReader</code> failed
@@ -185,8 +222,10 @@ public class GedcomReader implements Trackable {
    */
   private void readEntity() throws GedcomIOException, GedcomFormatException {
 
+    readLine();
+    
     // "0 [@xref@] value" expected - xref can be missing for custom records
-    if (!readLine()||level!=0) {
+    if (level!=0) {
       String msg = "Expected 0 @XREF@ INDI|FAM|OBJE|NOTE|REPO|SOUR|SUBM";
       // at least still level identifyable?
       if (level==0) {
@@ -210,7 +249,7 @@ public class GedcomReader implements Trackable {
       ent.setValue(value);
       
       // Read entity's properties till end of record
-      readProperties(ent, ent.getMetaProperty(), 1);
+      readProperties(ent, ent.getMetaProperty(), 0);
 
     } catch (GedcomException ex) {
       skipEntity(ex.getMessage());
@@ -230,7 +269,7 @@ public class GedcomReader implements Trackable {
       do {
         readLine();
       } while (level!=0);
-      undoLine();
+      redoLine();
     } finally {
       addWarning(start, "Skipped "+(line-start)+" lines - "+msg);
     }
@@ -289,9 +328,9 @@ public class GedcomReader implements Trackable {
     // Read records
     do {
       // .. still there ?
-      if (!peekLine()||(level!=0)) {
+      peekLine();
+      if (level!=0) 
         throw new GedcomFormatException("Expected 0 TAG or 0 TRLR",line);
-      }
 
       // .. end ?
       if (tag.equals("TRLR")) break;
@@ -304,9 +343,9 @@ public class GedcomReader implements Trackable {
 
 
     // Read Tail
-    if (!readLine()||(level!=0)) {
+    readLine();
+    if (level!=0) 
       throw new GedcomFormatException("Expected 0 TRLR",line);
-    }
 
     // Next state
     state++;
@@ -322,6 +361,17 @@ public class GedcomReader implements Trackable {
     }
 
     // Link references
+    linkReferences();
+
+    // Done
+  }
+
+  /**
+   * linkage
+   */
+  private void linkReferences() {
+
+    // loop over kept references
     for (int i=0,j=xrefs.size();i<j;i++) {
       XRef xref = (XRef)xrefs.get(i);
       try {
@@ -334,9 +384,9 @@ public class GedcomReader implements Trackable {
       }
     }
 
-    // Done
+    // done
   }
-
+  
   /**
    * Read Header
    * @exception GedcomIOException reading from <code>BufferedReader</code> failed
@@ -361,14 +411,14 @@ public class GedcomReader implements Trackable {
     //  1 "CHAR", encoding
     //  1 "LANG", language
     //  1 "FILE", file
-    if (!readLine()||level!=0||!tag.equals("HEAD"))
+    readLine();
+    if (level!=0||!tag.equals("HEAD"))
       throw new GedcomFormatException("Expected 0 HEAD",line);
 
     do {
 
       // read until end of header
-      if (!readLine()) 
-        throw new GedcomFormatException("Unexpected end of header",line);
+      readLine();
       if (level==0)
         break;
 
@@ -387,7 +437,7 @@ public class GedcomReader implements Trackable {
     } while (true);
 
     // Last still to be used
-    undoLine();
+    redoLine();
 
     // Done
     return true;
@@ -398,21 +448,16 @@ public class GedcomReader implements Trackable {
    * @exception GedcomIOException reading from <code>BufferedReader</code> failed
    * @exception GedcomFormatException reading Gedcom-data brought up wrong format
    */
-  private boolean readLine() throws GedcomIOException, GedcomFormatException {
+  private void readLine() throws GedcomIOException, GedcomFormatException {
 
     // Still running ?
     if (cancel)
       throw new GedcomIOException("Operation cancelled",line);
 
     // Still undo ?
-    if (undoLine!=null) {
-
-      // .. use that
-      gedcomLine=undoLine;
-      undoLine=null;
-
-      // .. done
-      return true;
+    if (redoLine) {
+      redoLine = false;
+      return;
     }
 
     // .. get new
@@ -453,10 +498,15 @@ public class GedcomReader implements Trackable {
 
     try {
 
-      // .. level
+      // .. caclulate level by looking at spaces or parsing a number
       try {
-        level = Integer.parseInt(tokens.nextToken(),10);
-      } catch (NumberFormatException ex) {
+        if (isIndentForLevels) {
+          level = 0;
+          while (gedcomLine.charAt(level)==' ') level++;
+        } else {
+          level = Integer.parseInt(tokens.nextToken(),10);
+        }
+      } catch (Throwable t) {
         throw new GedcomFormatException("Expected X [@XREF@] TAG [VALUE] - x integer",line);
       }
 
@@ -501,7 +551,6 @@ public class GedcomReader implements Trackable {
     }
     
     // Done
-    return true;
   }
 
   /**
@@ -509,49 +558,49 @@ public class GedcomReader implements Trackable {
    * @exception GedcomIOException reading from <code>BufferedReader</code> failed
    * @exception GedcomFormatException reading Gedcom-data brought up wrong format
    */
-  private void readProperties(Property of, MetaProperty meta, int currentlevel) throws GedcomIOException, GedcomFormatException {
+  private void readProperties(Property prop, MetaProperty meta, int currentlevel) throws GedcomIOException, GedcomFormatException {
 
-    MultiLineProperty.Collector collector =  of instanceof MultiLineProperty ? ((MultiLineProperty)of).getLineCollector() : null;
+    //FIXME need to finish collecting even when readLine fails (finally)
+    
+    MultiLineProperty.Collector collector =  prop instanceof MultiLineProperty ? ((MultiLineProperty)prop).getLineCollector() : null;
   
-    // Get properties of property
-    Property prop;
+    // Get subs of property
+    Property sub;
     do {
   
-      // try to get next property
-      if (!readLine()) 
-        throw new GedcomFormatException("Unexpected end of record",line);
+      // check next line
+      readLine();
   
       // end of property ?
-      if (level<currentlevel) 
+      if (level<=currentlevel) 
         break;
         
       // can we continue with current?
-      if (collector!=null&&collector.append(level-currentlevel+1, tag, value)) 
+      if (collector!=null&&collector.append(level-currentlevel, tag, value)) 
           continue;
         
-      // skip if level>currentLevel?
-      if (level>currentlevel) {
-        addWarning(line, "Skipping "+tag+" because level "+level+" was expected "+currentlevel);
-        continue;
-      }
+      // level>currentLevel would be wrong e.g.
+      // 0 INDI
+      // 1 BIRT
+      // 3 DATE
+      if (level>currentlevel+1) 
+        addWarning(line, "Correcting indentation level of '"+gedcomLine+"' and following");
   
       // get meta property for child
-      MetaProperty child = meta.get(tag, true);
+      MetaProperty submeta = meta.get(tag, true);
   
       // create property instance
-      prop = child.create(value);
+      sub = submeta.create(value);
       
       // and add to prop
-      // 20040513 since properties are placed in order by default
-      // we pass false here - on load we're accepting what's incoming
-      of.addProperty(prop, false);
+      prop.addProperty(sub, isRefactoringAllowed);
   
       // a reference ? Remember !
-      if (prop instanceof PropertyXRef)
-        xrefs.add(new XRef(line,(PropertyXRef)prop));
+      if (sub instanceof PropertyXRef)
+        xrefs.add(new XRef(line,(PropertyXRef)sub));
   
       // recurse into its properties
-      readProperties(prop, child, currentlevel+1);
+      readProperties(sub, submeta, level);
       
       // next property
     } while (true);
@@ -560,16 +609,16 @@ public class GedcomReader implements Trackable {
     String value;
     if (collector!=null) {
       value = collector.getValue();
-      of.setValue(value);
+      prop.setValue(value);
     } else {
-      value = of.getValue();
+      value = prop.getValue();
     }
 
     // decrypt value
-    decryptLazy(of, value);
+    decryptLazy(prop, value);
        
     // restore what we haven't consumed
-    undoLine();
+    redoLine();
   }
   
   /**
@@ -617,19 +666,11 @@ public class GedcomReader implements Trackable {
   }
 
   /**
-   * Put back gedcom-line
-   */
-  private void undoLine() {
-    undoLine = gedcomLine;
-  }
-  
-  /**
    * Add a warning
    */
   private void addWarning(int wline, String txt) {
     String warning = "Line "+wline+": "+txt;
     warnings.add(warning);
-    Debug.log(Debug.INFO, this, warning);
   }
   
   /**
