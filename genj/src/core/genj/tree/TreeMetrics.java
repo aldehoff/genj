@@ -57,5 +57,24 @@ public class TreeMetrics {
     return max;
   }
   
+  /**
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  public boolean equals(Object o) {
+    // check
+    if (o==null||!(o instanceof TreeMetrics)) return false;
+    // compare
+    TreeMetrics other = (TreeMetrics)o;
+    return 
+      wIndis == other.wIndis&&
+      hIndis == other.hIndis&&
+      wFams  == other.wFams &&
+      hFams  == other.hFams &&
+      wMarrs == other.wMarrs&&
+      hMarrs == other.hMarrs&&
+      pad    == other.pad   ;
+  }
+
+  
 } //TreeMetrics
 

@@ -77,7 +77,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   private final Point2D UNITS = ScreenResolutionScale.getDotsPerCm();
   
   /** our model */
-  /*package*/ Model model;
+  private Model model;
 
   /** our content */
   private Content content;
@@ -113,10 +113,10 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
   /*package*/ ColorSet colors;
   
   /** our blueprints */
-  /*package*/ Blueprint[] blueprints = new Blueprint[Gedcom.NUM_TYPES];
+  private Blueprint[] blueprints = new Blueprint[Gedcom.NUM_TYPES];
   
   /** our content's font */
-  /*package*/ Font contentFont = new Font("SansSerif", 0, 12);
+  private Font contentFont = new Font("SansSerif", 0, 12);
   
   /**
    * Constructor
@@ -241,7 +241,9 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
    * Accessor - isAntialising.
    */
   public void setAntialiasing(boolean set) {
+    if (isAntialiasing==set) return;
     isAntialiasing = set;
+    repaint();
   }
   
   /**
@@ -255,9 +257,56 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
    * Access - isAdjustFonts
    */
   public void setAdjustFonts(boolean set) {
+    if (isAdjustFonts==set) return;
     isAdjustFonts = set;
+    repaint();
   }
   
+  /**
+   * Access - contentFont
+   */
+  public Font getContentFont() {
+    return contentFont;
+  }
+
+  /**
+   * Access - contentFont
+   */
+  public void setContentFont(Font set) {
+    if (contentFont.equals(set)) return;
+    contentFont = set;
+    repaint();
+  }
+
+  /**
+   * Access - blueprints
+   */
+  public Blueprint[] getBlueprints() {
+    return (Blueprint[])blueprints.clone();
+  }
+
+  /**
+   * Access - blueprints
+   */
+  public void setBlueprints(Blueprint[] set) {
+    // check 
+    for (int i=0; i<set.length; i++) {
+      if (!blueprints[i].equals(set[i])) {
+        blueprints = set;
+        repaint();
+        return;
+      }
+    }
+    // done
+  }
+
+  /**
+   * Access - Mode
+   */
+  public Model getModel() {
+    return model;
+  }
+
   /**
    * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
    */

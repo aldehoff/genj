@@ -70,7 +70,6 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     tree = view;
     
     // panel for checkbox options    
-    TreeMetrics m = view.model.getMetrics();
     Box options = new Box(BoxLayout.Y_AXIS);
 
     checkBending.setToolTipText(tree.resources.getString("bend.tip"));
@@ -82,18 +81,18 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
     
     options.add(fontChooser);    
     
-    sliderCmIndiWidth = createSlider(options, 1.0, 16.0, m.wIndis, "indiwidth" );
-    sliderCmIndiHeight= createSlider(options, 0.4, 16.0, m.hIndis, "indiheight");
-    sliderCmFamWidth  = createSlider(options, 1.0, 16.0, m.wFams , "famwidth"  );
-    sliderCmFamHeight = createSlider(options, 0.4, 16.0, m.hFams , "famheight" );
-    sliderCmPadding   = createSlider(options, 0.1,  4.0, m.pad   , "padding"   );
+    sliderCmIndiWidth = createSlider(options, 1.0, 16.0, "indiwidth" );
+    sliderCmIndiHeight= createSlider(options, 0.4, 16.0, "indiheight");
+    sliderCmFamWidth  = createSlider(options, 1.0, 16.0, "famwidth"  );
+    sliderCmFamHeight = createSlider(options, 0.4, 16.0, "famheight" );
+    sliderCmPadding   = createSlider(options, 0.1,  4.0, "padding"   );
     
     // color chooser
     colors = new ColorChooser();
     colors.addSet(tree.colors);
     
     // blueprint options
-    blueprintList = new BlueprintList(tree.model.getGedcom());
+    blueprintList = new BlueprintList(tree.getModel().getGedcom());
     
     // add those tabs
     add(tree.resources.getString("page.main")  , options);
@@ -115,9 +114,9 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
   /**
    * Create a slider
    */
-  private DoubleValueSlider createSlider(Container c, double min, double max, double val, String key) {
+  private DoubleValueSlider createSlider(Container c, double min, double max, String key) {
     // create and preset
-    DoubleValueSlider result = new DoubleValueSlider(min, max, val, false);
+    DoubleValueSlider result = new DoubleValueSlider(min, max, (max+min)/2, false);
     result.setPreferredSliderWidth(128);
     result.setAlignmentX(0F);
     result.setText(tree.resources.getString("info."+key));
@@ -132,15 +131,14 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
    */
   public void apply() {
     // options
-    tree.model.setBendArcs(checkBending.isSelected());
+    tree.getModel().setBendArcs(checkBending.isSelected());
     tree.setAntialiasing(checkAntialiasing.isSelected());
     tree.setAdjustFonts(checkAdjustFonts.isSelected());
+    tree.setContentFont(fontChooser.getSelectedFont());
     // colors
-    colors.apply();
-    // font
-    tree.contentFont = fontChooser.getSelectedFont();
+    colors.apply(); //FIXME we shouldn't have to call repaint
     // metrics
-    tree.model.setMetrics(new TreeMetrics(
+    tree.getModel().setMetrics(new TreeMetrics(
       sliderCmIndiWidth .getValue(),
       sliderCmIndiHeight.getValue(),
       sliderCmFamWidth  .getValue(),
@@ -148,7 +146,7 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
       sliderCmPadding   .getValue()
     ));
     // blueprints
-    tree.blueprints = blueprintList.getSelection();
+    tree.setBlueprints(blueprintList.getSelection());
     // make sure that shows
     tree.repaint();
     // done
@@ -159,22 +157,21 @@ public class TreeViewSettings extends JTabbedPane implements ApplyResetSupport {
    */
   public void reset() {
     // options
-    checkBending.setSelected(tree.model.isBendArcs());
+    checkBending.setSelected(tree.getModel().isBendArcs());
     checkAntialiasing.setSelected(tree.isAntialising());
     checkAdjustFonts.setSelected(tree.isAdjustFonts());
-    // font
-    fontChooser.setSelectedFont(tree.contentFont);
+    fontChooser.setSelectedFont(tree.getContentFont());
     // colors
     colors.reset();
     // metrics
-    TreeMetrics m = tree.model.getMetrics();
+    TreeMetrics m = tree.getModel().getMetrics();
     sliderCmIndiWidth .setValue(m.wIndis);
     sliderCmIndiHeight.setValue(m.hIndis);
     sliderCmFamWidth  .setValue(m.wFams );
     sliderCmFamHeight .setValue(m.hFams );
     sliderCmPadding   .setValue(m.pad   );
     // blueprints
-    blueprintList.setSelection(tree.blueprints);
+    blueprintList.setSelection(tree.getBlueprints());
     // done
   }
 

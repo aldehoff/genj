@@ -148,6 +148,7 @@ public class Model implements Graph, GedcomListener {
    * Accessor - wether we bend arcs or not
    */
   public void setBendArcs(boolean set) {
+    if (isBendArcs==set) return;
     isBendArcs = set;
     parse();
   }
@@ -197,6 +198,7 @@ public class Model implements Graph, GedcomListener {
    * Accessor - the metrics
    */
   public void setMetrics(TreeMetrics set) {
+    if (metrics.equals(set)) return;
     metrics = set;
     parse();
   } 
