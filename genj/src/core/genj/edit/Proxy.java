@@ -21,6 +21,7 @@ package genj.edit;
 
 import genj.gedcom.Property;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.SwingFactory;
 
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
@@ -36,6 +37,9 @@ import javax.swing.event.DocumentListener;
  * will use to change a property
  */
 abstract class Proxy  {
+  
+  /** a swing factory */
+  protected SwingFactory factory = new SwingFactory();
 
   /** the property that is proxy'd */
   protected Property prop;
@@ -85,16 +89,6 @@ abstract class Proxy  {
     }
 
     // done
-    return result;
-  }
-
-  /**
-   * Helper : generate JLabel
-   */
-  protected JLabel createLabel(String text, String name) {
-    JLabel result = new JLabel( text );
-    result.setAlignmentX(0);
-    result.setName(name);
     return result;
   }
 

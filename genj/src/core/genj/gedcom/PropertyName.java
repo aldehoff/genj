@@ -19,12 +19,19 @@
  */
 package genj.gedcom;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import genj.util.ReferenceSet;
 import genj.util.WordBuffer;
 
 /**
  * Gedcom Property : NAME
  */
 public class PropertyName extends Property {
+  
+  /** all names */
+  private static ReferenceSet names = new ReferenceSet();
 
   /** the first + last name */
   private String
@@ -175,13 +182,17 @@ public class PropertyName extends Property {
 
     noteModifiedProperty();
 
+    // remember
+    names.remove(lastName);
+    names.add(last);
+
     // Make sure no Information is kept in base class
-    nameAsString=null;;
+    nameAsString=null;
 
-    lastName  = last.trim();
-    firstName = first.trim();
-    suffix    = suff.trim();
-
+    lastName  = last!=null ? last.trim() : null;
+    firstName = first!=null ? first.trim() : null;
+    suffix    = suff!=null ? suff.trim() : suff;
+    
     // Done
     return this;
   }
@@ -204,21 +215,13 @@ public class PropertyName extends Property {
     
     // New empty Value ?
     if (newValue==null) {
-      nameAsString=null;
-      lastName=null;
-      firstName=null;
-
-      // Done
+      setName(null,null,null);
       return;
     }
 
     // Only name specified ?
-    if (newValue.indexOf('/') == -1) {
-      nameAsString=null;
-      firstName = newValue;
-      lastName = "";
-
-      // Done
+    if (newValue.indexOf('/')<0) {
+      setName(newValue, "", null);
       return;
     }
 
@@ -228,8 +231,8 @@ public class PropertyName extends Property {
 
     // ... wrong format (2 x '/'s !)
     if (l.indexOf('/') == -1)  {
+      setName(null,null,null);
       nameAsString=newValue;
-      // Done
       return;
     }
 
@@ -237,12 +240,17 @@ public class PropertyName extends Property {
     suffix = l.substring( l.indexOf('/') + 1 );
     l = l.substring( 0 , l.indexOf('/') );
 
-    // Done
-    nameAsString=null;
-    firstName = f;
-    lastName  = l;
-    // Done
-
+    // keep
+    setName(f,l,suffix);
+    
+    // done
+  }
+  
+  /**
+   * Return all last names
+   */
+  public List getLastNames() {
+    return new ArrayList(names);
   }
 
 } //PropertyName

@@ -47,7 +47,7 @@ class ProxyChoice extends Proxy{
       return;
 
     // Store changed value
-    Object result = combo.getEditor().getItem();
+    Object result = combo.getText();
     prop.setValue(result!=null?result.toString():"");
 
     // Done

@@ -19,43 +19,60 @@
  */
 package genj.gedcom;
 
+import genj.util.ReferenceSet;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 
 /**
  * Gedcom Property : simple value with choices
  */
 public class PropertyChoiceValue extends PropertySimpleValue {
 
-  /** relationships */
-  private static Map tag2values = new HashMap();
+  /** mapping tags refence sets */
+  private static Map tags2refsets = new HashMap();
+
+  /**
+   * Lookup a refset
+   */
+  private ReferenceSet getRefSet() {
+    // lookup
+    String tag = getTag();
+    ReferenceSet result = (ReferenceSet)tags2refsets.get(tag);
+    if (result==null) {
+      // .. instantiate if necessary
+      result = new ReferenceSet();
+      tags2refsets.put(tag, result);
+      // .. and pre-fill
+      StringTokenizer tokens = new StringTokenizer(Gedcom.resources.getString(tag+".vals",""),",");
+      while (tokens.hasMoreElements()) result.add(tokens.nextToken().trim());
+    }
+    // done
+    return result;
+  }
+
+  /**
+   * Remember a value
+   */
+  private void remember(String oldValue, String newValue) {
+    String tag = getTag();
+    ReferenceSet refSet = getRefSet();
+    // forget old
+    refSet.remove(oldValue);
+    // remember new
+    refSet.add(newValue);
+    // done
+  }
   
   /**
    * @see genj.gedcom.PropertySimpleValue#setValue(java.lang.String)
    */
   public void setValue(String value) {
-    // get map value2count
-    Map value2count = getValueMap();
-    // decrease count for old value
-    String old = getValue();
-    if (old.length()>0){
-      Integer count = (Integer)value2count.get(old);
-      if (count==null||count.intValue()<=1)
-        value2count.remove(old);
-      else 
-        value2count.put(old, new Integer(count.intValue()-1));
-    }
-    // increase count for new value
-    value = value.trim();
-    if (value.length()>0) {
-      Integer count = (Integer)value2count.get(value);
-      count = new Integer((count==null?0:count.intValue())+1);
-      value2count.put(value, count);
-    }
+    // remember
+    remember(getValue(), value);
     // delegate
     super.setValue(value);
   }
@@ -71,29 +88,10 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   }
   
   /**
-   * Lookup map of values
-   */
-  private Map getValueMap() {
-    // get map with value2count from values
-    String tag = getTag();
-    Map values = (Map)tag2values.get(tag);
-    if (values==null) {
-      // .. instantiate
-      values = new TreeMap();
-      // .. and pre-fill if necessary
-      StringTokenizer tokens = new StringTokenizer(Gedcom.resources.getString(tag+".vals",""),",");
-      while (tokens.hasMoreElements()) values.put(tokens.nextToken().trim(), new Integer(1));
-      tag2values.put(tag, values);
-    }
-    // got it
-    return values;
-  }
-  
-  /**
    * Used choices
    */
   public List getChoices() {
-    return new ArrayList(getValueMap().keySet());
+    return new ArrayList(getRefSet());
   }
   
   /**
@@ -102,6 +100,5 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   public String getProxy() {
     return "Choice";
   }
-
 
 } //PropertyChoiceValue

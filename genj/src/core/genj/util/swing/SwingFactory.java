@@ -25,6 +25,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.Stack;
 
 import javax.swing.Box;
@@ -225,6 +226,9 @@ public class SwingFactory {
     /** change flag */  
     private boolean changed = false;
     
+    /** our editor */
+    private Editor editor = new Editor();
+    
     /**
      * Constructor
      */     
@@ -232,7 +236,7 @@ public class SwingFactory {
       super(values);
       setSelectedItem(selection);
       setAlignmentX(LEFT_ALIGNMENT);
-      setEditor(new Editor());
+      setEditor(editor);
       changed = false;
     }
     
@@ -258,18 +262,27 @@ public class SwingFactory {
       // mark unchanged if start editable
       if (set) changed = false;
     }
+    
+    /**
+     * Current text value
+     */
+    public String getText() {
+      if (isEditable()) return editor.getText();
+      return super.getSelectedItem().toString();
+    }
       
     /**
      * our own editor
      */
-    private class Editor extends JTextField implements ComboBoxEditor, DocumentListener, PopupMenuListener {
+    private class Editor extends JTextField implements ComboBoxEditor, DocumentListener, PopupMenuListener, FocusListener {
     
       /**
        * Constructor
        */
       private Editor() {
         getDocument().addDocumentListener(this);
-        addPopupMenuListener(this);
+        JComboBox.this.addPopupMenuListener(this);
+        JComboBox.this.addFocusListener(this);
       }
     
       /**
@@ -283,7 +296,7 @@ public class SwingFactory {
        * @see javax.swing.ComboBoxEditor#getItem()
        */
       public Object getItem() {
-        return getText();
+        return this.getText();
       }
 
       /**
@@ -342,7 +355,7 @@ public class SwingFactory {
        */
       public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         // try to find prefix in combo
-        String pre = getText();
+        String pre = this.getText();
         for (int i=0; i<getItemCount(); i++) {
           String item = (String) getItemAt(i);
           if (item.regionMatches(true, 0, pre, 0, pre.length())) {
@@ -351,6 +364,20 @@ public class SwingFactory {
           }
         }
         // done
+      }
+
+      /**
+       * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+       */
+      public void focusGained(FocusEvent e) {
+        requestFocusFor(this);
+      }
+
+      /**
+       * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+       */
+      public void focusLost(FocusEvent e) {
+        // ignored
       }
 
     } //Editor

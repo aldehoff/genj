@@ -23,7 +23,6 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
 import genj.util.swing.SwingFactory;
 
-import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -37,7 +36,8 @@ import javax.swing.event.DocumentListener;
 class ProxyName extends Proxy implements DocumentListener {
 
   /** our components */
-  private JTextField tlast, tfirst, tsuff;
+  private SwingFactory.JComboBox cLast;
+  private JTextField tFirst, tSuff;
 
   /** dirty flag */
   private boolean changed=false;
@@ -60,9 +60,9 @@ class ProxyName extends Proxy implements DocumentListener {
     }
 
     // ... calc texts
-    String first = tfirst.getText().trim();
-    String last  = tlast .getText().trim();
-    String suff  = tsuff .getText().trim();
+    String first = tFirst.getText().trim();
+    String last  = cLast .getText().trim();
+    String suff  = tSuff .getText().trim();
 
     // ... store changed value
     PropertyName p = (PropertyName) prop;
@@ -75,7 +75,7 @@ class ProxyName extends Proxy implements DocumentListener {
    * Returns change state of proxy
    */
   protected boolean hasChanged() {
-    return changed;
+    return changed || cLast.hasChanged();
   }
 
   /**
@@ -97,31 +97,30 @@ class ProxyName extends Proxy implements DocumentListener {
    */
   protected void start(JPanel in, JLabel setLabel, Property setProp, EditView edit) {
 
+    // keep prop and setup name components
     prop=setProp;
+    
+    // first, last, suff
     PropertyName pname = (PropertyName)prop;
+    
+    cLast  = factory.JComboBox(pname.getLastNames().toArray(), pname.getLastName());
+    cLast.setEditable(true);
+    tFirst = createTextField( pname.getFirstName(),"FB",this, null  );
+    tSuff  = createTextField( pname.getSuffix(),   "?", this, null );
 
-    // Unknown property can be changed through a TextField
-    tlast  = createTextField( pname.getLastName() ,"B" ,this, null );
-    tfirst = createTextField( pname.getFirstName(),"FB",this, null  );
-    tsuff  = createTextField( pname.getSuffix(),   "?", this, null );
+    in.add(factory.JLabel(pname.getLabelForFirstName()));
+    in.add(tFirst);
 
-    JLabel l = createLabel( pname.getLabelForFirstName() , "LFN");
-    in.add(l);
-    in.add(tfirst);
+    in.add(factory.JLabel(pname.getLabelForLastName()));
+    in.add(cLast);
 
-    l = createLabel( pname.getLabelForLastName(), "LLN" );
-    in.add(l);
-    in.add(tlast);
+    in.add(factory.JLabel(pname.getLabelForSuffix()));
+    in.add(tSuff);
 
-    l = createLabel( pname.getLabelForSuffix(), "?" );
-    in.add(l);
-    in.add(tsuff);
-
-    in.add(Box.createVerticalGlue());
-
-    SwingFactory.requestFocusFor(tfirst);
+    // focus to first
+    SwingFactory.requestFocusFor(tFirst);
 
     // Done
   }
 
-}
+} //ProxyName
