@@ -167,7 +167,7 @@
      <jar jarfile="${dir.lib}/run.jar" update="True">
        <manifest>
          <attribute name="Main-Class" value="genj.app.App"/>
-         <attribute name="Class-Path" value="./lib/genj.jar ./lib/jhbasic.jar ./lib/graphj.jar ./lib/genj_de.jar ./lib/genj_en.jar ./lib/genj_es.jar ./lib/genj_fr.jar ./lib/genj_it.jar ./lib/genj_ja.jar"/>
+         <attribute name="Class-Path" value="./lib/genj.jar ./lib/jhbasic.jar ./lib/graphj.jar ./lib/genj_de.jar ./lib/genj_en.jar ./lib/genj_es.jar ./lib/genj_fr.jar ./lib/genj_it.jar ./lib/genj_ja.jar ./lib/genj_hu.jar"/>
        </manifest>
      </jar>
      
