@@ -21,6 +21,8 @@ package genj.renderer;
 
 import genj.app.TagPathTree;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
+import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
@@ -30,6 +32,9 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.util.HashMap;
+
+import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -63,6 +68,9 @@ public class BlueprintEditor extends Box {
 
   /** the insert button */
   private AbstractButton bInsert;
+  
+  /** an example entity we use */
+  private ExampleIndi example = new ExampleIndi(); 
     
   /**
    * Constructor   */
@@ -142,7 +150,7 @@ public class BlueprintEditor extends Box {
       bounds.y += insets.top ;
       bounds.width -= insets.left+insets.right;
       bounds.height-= insets.top +insets.bottom;
-      new EntityRenderer(g, html.getText()).render(g, bounds);
+      new EntityRenderer(g, html.getText()).render(g, example, bounds);
     }
   } //Preview
 
@@ -173,5 +181,31 @@ public class BlueprintEditor extends Box {
       // done
     }
   } //ActionInsert
-  
+
+  /**
+   * Example
+   */
+  private class ExampleIndi extends Indi {
+    private Map tag2value = new HashMap();
+    /**
+     * Constructor
+     */
+    private ExampleIndi() {
+      setId("X999");
+      tag2value.put("NAME", "John /Doe/");
+      tag2value.put("SEX" , "M");
+      tag2value.put("DATE", "01 JAN 1900");
+      tag2value.put("PLAC", "Somewhere");
+    }    /**
+     * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath, boolean)
+     */
+    public Property getProperty(TagPath path, boolean validOnly) {
+      // entity itself is meant?
+      if (path.length()==1) return this;
+      // grab a value and wrap it in the property
+      Object value = tag2value.get(path.getLast());
+      if (value==null) value = "some "+path.getLast().toLowerCase();
+      return Property.createInstance(path.getLast(), value.toString());
+    }
+  } //ExampleIndi  
 } //RenderingSchemeEditor

@@ -121,7 +121,10 @@ public class EntityRenderer {
   /**
    * 
    */
-  public void render(Graphics g, Rectangle r) {
+  public void render(Graphics g, Entity e, Rectangle r) {
+    
+    // keep the entity
+    entity = e;
     
     // invalidate views 
     Iterator pv = propViews.iterator();
@@ -136,41 +139,11 @@ public class EntityRenderer {
       ((View)tv.next()).replace(0,0,null);
     }
 
-//      View parent = getParent();
-//      while (parent!=null) {
-////        try {
-////          parent.getClass().getDeclaredMethod("invalidateGrid", new Class[]{}).invoke(parent, new Object[]{});
-////          System.out.println("!");
-////        } catch (Throwable t) { t.printStackTrace(); }
-//        parent.replace(0,0,null);
-//        parent = parent.getParent();
-//      } 
-//      //((javax.swing.text.html.TableView.RowView)getParent()).preferenceChanged(this,true,true);
-//      //invalidateGrid
-    
     // set the size of root
     root.setSize(r.width,r.height);
     
     // show it
     root.paint(g, r);
-  }
-  
-  /**
-   * Setter - entity
-   */
-  public void setEntity(Entity set) {
-    
-    // keep it
-    entity = set;
-    
-    // done
-  }
-  
-  /** 
-   * Getter - entity
-   */
-  public Entity getEntity() {
-    return entity;
   }
   
   /**
@@ -370,7 +343,7 @@ public class EntityRenderer {
       
       // grab path&proxy
       Object p = elem.getAttributes().getAttribute("path");
-      if (p!=null) {
+      if (p!=null) try {
         
         path = new TagPath(p.toString());
       
@@ -385,7 +358,9 @@ public class EntityRenderer {
         }
 
         // proxy is setup
-      }      
+      } catch (IllegalArgumentException e) {
+        // ignoring wrong path
+      }       
       
       // check image&text
       preference = PropertyProxy.PREFER_DEFAULT;
@@ -431,7 +406,7 @@ public class EntityRenderer {
      * Returns the property we're viewing
      */
     private Property getProperty() {
-      if (entity==null) return null;
+      if (entity==null||path==null) return null;
       if (property!=null) return property==NULL ? null : (Property)property;
       path.setToFirst();
       property = entity.getProperty().getProperty(path, true);
@@ -487,7 +462,7 @@ public class EntityRenderer {
     public float getAlignment(int axis) {
       if (X_AXIS==axis)
         return super.getAlignment(axis);
-      return proxy.getVerticalAlignment(getFontMetrics());
+      return proxy==null ? 0 : proxy.getVerticalAlignment(getFontMetrics());
     }
     /**
      * @see javax.swing.text.View#getPreferredSpan(int)

@@ -40,7 +40,7 @@ public class PropertyFileProxy extends PropertyProxy {
    */
   public Dimension getSize(FontMetrics metrics, Property prop, int preference) {
     ImgIcon img = getImage(prop);
-    if (img==null) return ZERO_DIMENSION;
+    if (img==null) return new Dimension(32,32);
     return new Dimension(img.getIconWidth(), img.getIconHeight());
   }
 
@@ -48,26 +48,32 @@ public class PropertyFileProxy extends PropertyProxy {
    * @see genj.renderer.PropertyProxy#render(Graphics, FontMetrics, Rectangle, Property, boolean, boolean)
    */
   public void render(Graphics g, Rectangle bounds, Property prop, int preference) {
+    // render background
+    
     // grab the image
     ImgIcon img = getImage(prop);
-    if (img==null) return;
-    int
-      h = img.getIconHeight(),
+    int w,h;
+    if (img==null) {
+      w = 32;
+      h = 32;
+    } else {
+      h = img.getIconHeight();
       w = img.getIconWidth ();
+    }
     // check if we should zoom
     double zoom = Math.min(
       Math.min(1.0D, ((double)bounds.width )/w),
       Math.min(1.0D, ((double)bounds.height)/h)
     );
-    img.paintIcon(g, 
-      bounds.x, 
-      bounds.y, 
-//      (int)(bounds.x + (bounds.width -w*zoom)/2), 
-//      (int)(bounds.y + (bounds.height-h*zoom)/2), 
-      zoom
-    );
-//    g.setColor(Color.red);
-//    g.drawRect(bounds.x, bounds.y, bounds.width-1, bounds.height-1);
+    if (img==null) {
+      g.drawRect(bounds.x, bounds.y, bounds.width-1, bounds.height-1);
+    } else {
+      img.paintIcon(g, 
+        bounds.x, 
+        bounds.y, 
+        zoom
+      );
+    }
     // done
   }
   

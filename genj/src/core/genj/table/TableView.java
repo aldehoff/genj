@@ -19,7 +19,6 @@
  */
 package genj.table;
 
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
@@ -103,13 +102,6 @@ public class TableView extends JPanel implements ToolBarSupport, CurrentSupport,
     
     setLayout(new BorderLayout());
     add(new JScrollPane(table), BorderLayout.CENTER);
-    
-    // start listening to Gedcom
-    gedcom.addListener(new GedcomListener() {
-      /** @see genj.gedcom.GedcomListener#handleChange(Change) */
-      public void handleChange(Change change) {
-      }
-    });
     
     // done
   }

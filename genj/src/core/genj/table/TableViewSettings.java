@@ -102,9 +102,6 @@ public class TableViewSettings extends JPanel implements ApplyResetSupport {
     gh.add(bDown                   ,0,5,1,1);
     gh.add(pathList                ,1,3,2,4,gh.GROW_BOTH|gh.FILL_BOTH);
 
-    // init data
-    reset();
-
     // Done
   }
 

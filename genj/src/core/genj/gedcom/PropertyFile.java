@@ -122,7 +122,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
     // Open InputStream
     try {
       valueAsIcon = new ImgIcon(getInputStream());
-    } catch (IOException e) {
+    } catch (Throwable t) {
     }
 
     // Done

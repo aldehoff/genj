@@ -168,14 +168,14 @@ public class PropertyName extends Property {
   /**
    * Sets name to a new value
    */
-  public void setName(String first, String last) {
-    setName(first,last,"");
+  public PropertyName setName(String first, String last) {
+    return setName(first,last,"");
   }
 
   /**
    * Sets name to a new value
    */
-  public void setName(String first, String last, String suff) {
+  public PropertyName setName(String first, String last, String suff) {
 
     noteModifiedProperty();
 
@@ -187,6 +187,7 @@ public class PropertyName extends Property {
     suffix    = suff.trim();
 
     // Done
+    return this;
   }
 
   /**

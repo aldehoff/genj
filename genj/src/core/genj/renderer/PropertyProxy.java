@@ -39,9 +39,6 @@ public class PropertyProxy {
     PREFER_TEXT         = 2,
     PREFER_IMAGEANDTEXT = 3;
   
-  /** a zero space dimension for reuse */  
-  protected final static Dimension ZERO_DIMENSION = new Dimension(0,0);
-
   /** a default PropertyProxy */
   private final static PropertyProxy DEFAULT_PROPERTY_PROXY = new PropertyProxy();
 

@@ -33,7 +33,7 @@ public class Indi extends PropertyIndi implements Entity {
   /**
    * Constructor for Individual
    */
-  /*package*/ Indi() {
+  protected Indi() {
   }
 
   /**

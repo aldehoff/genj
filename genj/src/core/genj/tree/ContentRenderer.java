@@ -196,8 +196,7 @@ public class ContentRenderer {
     g.pushTransformation();
     // draw it - FIXME : pick from renderer for individual/family 
     g.translate(x, y);
-    contentRenderer.setEntity((Entity)content);
-    contentRenderer.render(g.getGraphics(), g.units2pixels(r));
+    contentRenderer.render(g.getGraphics(), (Entity)content, g.units2pixels(r));
     // restore clip&transformation
     g.popTransformation();    
     g.popClip();

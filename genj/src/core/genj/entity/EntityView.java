@@ -59,6 +59,9 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
   /** the Gedcom we're for */
   /*package*/ Gedcom gedcom = null;
   
+  /** the current entity */
+  private Entity entity = null;
+  
   /**
    * Constructor
    */
@@ -99,7 +102,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     g.fillRect(0,0,bounds.width,bounds.height);
     g.setColor(Color.black);
     new UnitGraphics(g,1,1).setAntialiasing(true);
-    renderer.render(g, new Rectangle(0,0,bounds.width,bounds.height));
+    renderer.render(g, entity, new Rectangle(0,0,bounds.width,bounds.height));
   }
 
   /**
@@ -120,9 +123,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
    */
   public void setHtml(int type, String set) {
     registry.put("html."+Gedcom.getTagFor(type), set);
-    Entity e = renderer.getEntity(); 
-    renderer = null;
-    setEntity(e);
+    repaint();
   }
     
   /**
@@ -132,22 +133,17 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
     if (e==null) {
       renderer=new EntityRenderer(getGraphics(), resources.getString("html.select"));
     } else {
-      if (renderer==null||renderer.getEntity()==null||renderer.getEntity().getType()!=e.getType()) {
-        renderer = new EntityRenderer(getGraphics(), getHtml(e.getType()));
-      }
-      renderer.setEntity(e);
+      renderer = new EntityRenderer(getGraphics(), getHtml(e.getType()));
     }
+    entity = e;
     repaint();
   }
   
   /**
    * @see genj.view.CurrentSupport#setCurrentEntity(Entity)
    */
-  public void setCurrentEntity(Entity entity) {
-    // already?
-    if (renderer.getEntity()==entity) return;
-    // set it
-    setEntity(entity);
+  public void setCurrentEntity(Entity e) {
+    if (entity!=e) setEntity(e);
   }
 
   /**
@@ -165,7 +161,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
      * @see genj.gedcom.GedcomListener#handleChange(Change)
      */
     public void handleChange(Change change) {
-      if (change.isChanged(change.EDEL)&&change.getEntities(change.EDEL).contains(renderer.getEntity())) {
+      if (change.isChanged(change.EDEL)&&change.getEntities(change.EDEL).contains(entity)) {
         setEntity(null);
       }
       repaint();

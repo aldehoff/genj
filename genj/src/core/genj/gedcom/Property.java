@@ -338,7 +338,7 @@ public abstract class Property implements Comparable {
     try {
       // .. get constructor of property
       Object parms[] = { tag, value };
-      Class  parmclasses[] = { parms[0].getClass() , parms[1].getClass()};
+      Class  parmclasses[] = { String.class , String.class };
       constructor = c.getConstructor(parmclasses);
 
       // .. get object
@@ -347,8 +347,8 @@ public abstract class Property implements Comparable {
       // Done
       return (Property)object;
 
-    } catch (Exception e) {
-      Debug.log(Debug.ERROR, Property.class,e);
+    } catch (Throwable t) {
+      Debug.log(Debug.ERROR, Property.class, t);
     }
 
     // Error means unknown
