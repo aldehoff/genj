@@ -28,18 +28,23 @@ import javax.swing.JComponent;
 
 
 import genj.gedcom.Entity;
+import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
+import genj.gedcom.Property;
 import genj.print.PrintRenderer;
 import genj.util.ActionDelegate;
 import genj.util.ImgIcon;
 import genj.util.Registry;
 import genj.view.ContextPopupSupport;
+import genj.view.ContextSupport;
 import genj.view.ViewFactory;
+import genj.view.ViewManager;
 
 /**
  * A factory for our TreeView component et al
  */
-public class TreeViewFactory implements ViewFactory{
+public class TreeViewFactory implements ViewFactory {
 
   /**
    * @see genj.app.ViewFactory#createPrintRenderer(Component)
@@ -89,5 +94,5 @@ public class TreeViewFactory implements ViewFactory{
   public String getTitle(boolean abbreviate) {
     return TreeView.resources.getString("title" + (abbreviate?".short":""));
   }
-  
+
 } //TreeViewFactory

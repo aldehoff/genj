@@ -69,6 +69,9 @@ public class ContentRenderer {
   /** whether to render content */
   /*package*/ boolean isRenderContent = true;
   
+  /** whether to render arcs */
+  /*package*/ boolean isRenderArcs = true;
+  
   /**
    * Render the content
    */
@@ -127,22 +130,22 @@ public class ContentRenderer {
     }
     g.draw(shape, x, y, false);
     // draw its content
-    if (isRenderContent&&content!=null) {
-      g.pushClip(x, y, shape.getBounds2D());
-      renderContent(g, x, y, content);
-      g.popClip();
-    }
+    renderContent(g, x, y, shape, content);
     // done
   }
   
   /**
    * Render the content of a node
    */
-  private void renderContent(UnitGraphics g, double x, double y, Object content) {
+  private void renderContent(UnitGraphics g, double x, double y, Shape shape, Object content) {
     // safety check
-    if (content==null) return;
+    if (!isRenderContent||content==null) return;
+    // preserve clip
+    g.pushClip(x, y, shape.getBounds2D());
     // draw it
     g.draw(content.toString(), x, y);
+    // restore clip
+    g.popClip();
     // done
   }
   
@@ -150,6 +153,8 @@ public class ContentRenderer {
    * Render the arcs
    */
   private void renderArcs(UnitGraphics g, Collection arcs) {
+    // check
+    if (!isRenderArcs) return;
     // prepare color
     g.setColor(cArcs);
     // loop

@@ -152,6 +152,7 @@ public class Model implements Graph, GedcomListener {
    * @see genj.gedcom.GedcomListener#handleChange(Change)
    */
   public void handleChange(Change change) {
+    // FIXME: this should be more fine-grained
     setRoot(root);
   }
   
