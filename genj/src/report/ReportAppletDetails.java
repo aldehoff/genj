@@ -26,7 +26,7 @@ import java.util.StringTokenizer;
 
 /**
  * GenJ - Report
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.17 2002-11-01 20:20:26 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportAppletDetails.java,v 1.18 2002-11-13 16:26:49 island1 Exp $
  * @author Nils Meier <nils@meiers.net>
  * @version 0.1
  */
@@ -170,6 +170,9 @@ public class ReportAppletDetails implements Report {
     }
     if (prop.getValue().toLowerCase().indexOf("gif")>0) {
       suffix = ".gif";
+    }
+    if (prop.getValue().toLowerCase().indexOf("png")>0) {
+      suffix = ".png";
     }
     if (suffix==null) {
       return "";
