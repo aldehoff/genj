@@ -70,7 +70,8 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
   private JCheckBox 
     checkBending = new JCheckBox(TreeView.resources.getString("bend" )),
     checkAntialiasing = new JCheckBox(TreeView.resources.getString("antialiasing" )),
-    checkAdjustFonts = new JCheckBox(TreeView.resources.getString("adjustfonts" ))
+    checkAdjustFonts = new JCheckBox(TreeView.resources.getString("adjustfonts" )),
+    checkMarrSymbols = new JCheckBox(TreeView.resources.getString("marrsymbols" ))
   ;
   
   /** font chooser */
@@ -92,6 +93,8 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     options.add(checkAntialiasing);
     checkAdjustFonts.setToolTipText(TreeView.resources.getString("adjustfonts.tip"));
     options.add(checkAdjustFonts);
+    checkMarrSymbols.setToolTipText(TreeView.resources.getString("marrsymbols.tip"));
+    options.add(checkMarrSymbols);
     
     options.add(fontChooser);    
     
@@ -190,6 +193,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     view.setAntialiasing(checkAntialiasing.isSelected());
     view.setAdjustFonts(checkAdjustFonts.isSelected());
     view.setContentFont(fontChooser.getSelectedFont());
+    view.getModel().setMarrSymbols(checkMarrSymbols.isSelected());
     // colors
     colors.apply();
     // metrics
@@ -214,6 +218,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings, genj.tree
     checkAntialiasing.setSelected(view.isAntialising());
     checkAdjustFonts.setSelected(view.isAdjustFonts());
     fontChooser.setSelectedFont(view.getContentFont());
+    checkMarrSymbols.setSelected(view.getModel().isMarrSymbols());
     // colors
     colors.reset();
     // metrics

@@ -168,6 +168,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     model.setVertical(registry.get("vertical",true));
     model.setFamilies(registry.get("families",true));
     model.setBendArcs(registry.get("bend"    ,true));
+    model.setMarrSymbols(registry.get("marrs",true));
     model.setMode(registry.get("mode", 0));
     TreeMetrics defm = model.getMetrics();
     model.setMetrics(new TreeMetrics(
@@ -254,6 +255,7 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     registry.put("vertical", model.isVertical());
     registry.put("families", model.isFamilies());
     registry.put("bend"    , model.isBendArcs());
+    registry.put("marrs"   , model.isMarrSymbols());
     registry.put("mode"    , model.getMode());
     TreeMetrics m = model.getMetrics();
     registry.put("windis"  ,(float)m.wIndis);

@@ -26,8 +26,8 @@ import gj.awt.geom.Path;
 import gj.layout.LayoutException;
 import gj.layout.tree.Orientation;
 import gj.layout.tree.TreeLayout;
-import gj.model.Arc;
 import gj.model.Node;
+
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -49,10 +49,11 @@ import java.awt.geom.Rectangle2D;
   protected Shape shapeMarrs, shapeIndis, shapeFams; 
 
   /** padding (n, e, s, w) */
-  protected double[] padMarrs, padIndis; 
+  protected double[] padIndis; 
   
   /** 
-   * gets an instance of a parser   */
+   * gets an instance of a parser
+   */
   public static Parser getInstance(boolean ancestors, boolean families, Model model, TreeMetrics metrics) {
     if (ancestors) {
       if (families) return new AncestorsWithFams(model, metrics);
@@ -64,7 +65,8 @@ import java.awt.geom.Rectangle2D;
   }
   
   /**
-   * Constructor   */
+   * Constructor
+   */
   protected Parser(Model mOdel, TreeMetrics mEtrics) {
     
     // keep the model&metrics
@@ -75,14 +77,6 @@ import java.awt.geom.Rectangle2D;
     shapeMarrs = calcMarriageShape();
     shapeIndis = calcIndiShape();
     shapeFams  = calcFamShape();
-    
-    // .. marrs padding
-    padMarrs = new double[] {
-      metrics.pad/2,
-      -metrics.pad/2,
-      metrics.pad/2,
-      -metrics.pad/2
-    };    
     
     // .. indis
     padIndis  = new double[] { 
@@ -147,6 +141,10 @@ import java.awt.geom.Rectangle2D;
    * Calculates marriage rings
    */
   private Shape calcMarriageShape() {
+    
+    // check model
+    if (!model.isMarrSymbols())
+      return new Rectangle2D.Double(); 
 
     // calculate maximum extension    
     float d = Math.min(metrics.wIndis/4, metrics.hIndis/4);
@@ -155,8 +153,8 @@ import java.awt.geom.Rectangle2D;
     Ellipse2D e = new Ellipse2D.Float(-d*0.3F,-d*0.3F,d*0.6F,d*0.6F);
 
     float 
-      dx = model.isVertical() ? 0.1F : 0.0F,
-      dy = model.isVertical() ? 0.0F : 0.1F;
+      dx = model.isVertical() ? d*0.2F : d*0.0F,
+      dy = model.isVertical() ? d*0.0F : d*0.2F;
 
     AffineTransform 
       at1 = AffineTransform.getTranslateInstance(-dx,-dy),
@@ -168,7 +166,7 @@ import java.awt.geom.Rectangle2D;
     
     // patch bounds
     result.setBounds2D( model.isVertical() ?
-      new Rectangle2D.Float(-d/2,-metrics.hIndis/2,d,metrics.hIndis) :
+      new Rectangle2D.Float(-d/2,-(metrics.hIndis+metrics.pad)/2,d,metrics.hIndis+metrics.pad) :
       new Rectangle2D.Float(-metrics.wIndis/2,-d/2,metrics.wIndis,d)
     );
     
@@ -205,7 +203,8 @@ import java.awt.geom.Rectangle2D;
    */
   private static class AncestorsNoFams extends Parser {
     /**
-     * Constructor     */
+     * Constructor
+     */
     protected AncestorsNoFams(Model model, TreeMetrics metrics) {
       super(model, metrics);
     }
@@ -270,6 +269,9 @@ import java.awt.geom.Rectangle2D;
     /** how we pad families */
     private double[] padFams;
       
+    /** how we pad husband, wife */
+    private double[] padHusband, padWife;
+    
     /**
      * Constructor
      */
@@ -284,6 +286,19 @@ import java.awt.geom.Rectangle2D;
          metrics.pad*0.05 
       };
 
+      padHusband = new double[]{
+        padIndis[0],
+        0,
+        padIndis[2],
+        padIndis[3]
+      };
+
+      padWife = new double[]{
+        padIndis[0],
+        padIndis[1],
+        padIndis[2],
+        0
+      };
       // done      
     }
     /**
@@ -299,7 +314,7 @@ import java.awt.geom.Rectangle2D;
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Indi)
      */
     public TreeNode parse(Indi indi, Point2D at) {
-      TreeNode node = iterate(indi, CENTER);
+      TreeNode node = iterate(indi, CENTER, padIndis);
       if (at!=null) node.getPosition().setLocation(at);
       super.layout(node, false);
       return node;
@@ -314,9 +329,9 @@ import java.awt.geom.Rectangle2D;
       Indi
         husb = fam.getHusband(),
         wife = fam.getWife();
-      model.add(new TreeArc(node, iterate(wife, hasParents(husb)?LEFT:CENTER), false));
-      model.add(new TreeArc(node, model.add(new TreeNode(null, model.isMarrSymbols()?shapeMarrs:null, padMarrs)), false));
-      model.add(new TreeArc(node, iterate(husb, hasParents(wife)?RIGHT:CENTER), false));
+      model.add(new TreeArc(node, iterate(wife, hasParents(husb)?LEFT:CENTER, padHusband), false));
+      model.add(new TreeArc(node, model.add(new TreeNode(null, shapeMarrs, null)), false));
+      model.add(new TreeArc(node, iterate(husb, hasParents(wife)?RIGHT:CENTER, padWife), false));
       // done
       return node;
     }
@@ -330,19 +345,29 @@ import java.awt.geom.Rectangle2D;
     /**
      * parse an individual and its ancestors
      */
-    private TreeNode iterate(Indi indi, final int alignment) {
+    private TreeNode iterate(Indi indi, final int alignment, double[] pad) {
       // node for indi      
       TreeNode node;
-      if (alignment==CENTER) {
-        node = new TreeNode(indi, shapeIndis, padIndis);
-      } else {
-        node = new TreeNode(indi, shapeIndis, padIndis) {
-          /** patching longitude */
-          public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
-            if (alignment==LEFT) return maxt+metrics.pad/2;
-            return mint-metrics.pad/2;
-          }
-        };
+      switch (alignment) {
+        case CENTER: default:
+          node = new TreeNode(indi, shapeIndis, pad);
+          break;
+        case LEFT:
+          node = new TreeNode(indi, shapeIndis, pad) {
+            /** patching longitude */
+            public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
+              return maxt+metrics.pad/2;
+            }
+          };
+          break;
+        case RIGHT:
+          node = new TreeNode(indi, shapeIndis, pad) {
+            /** patching longitude */
+            public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
+              return mint-metrics.pad/2;
+            }
+          };
+          break;
       }
       model.add(node);
       // do we have a family we're child in?
@@ -426,11 +451,14 @@ import java.awt.geom.Rectangle2D;
    */
   private static class DescendantsWithFams extends Parser {
     
-    /** the alignment offset for an individual above its 1st fam */
-    private Point2D.Double alignOffsetIndiAbove1stFam;
-    
     /** how we pad families */
     private double[] padFams;
+    
+    /** how we pad husband, wife */
+    private double[] padHusband, padWife;
+    
+    /** how we offset an indi above its marr */
+    private Point2D offsetHusband;
       
     /**
      * Constructor
@@ -441,17 +469,29 @@ import java.awt.geom.Rectangle2D;
       // how we pad fams (n, e, s, w)
       padFams  = new double[]{  
         -metrics.pad*0.4, 
-         metrics.pad*0.1, 
+         0, 
          metrics.pad/2, 
-         metrics.pad*0.1     
+         padIndis[3]     
       };
       
-      // patched alignment for 1st family
-      alignOffsetIndiAbove1stFam = new Point2D.Double(
-        padFams [TreeNode.WEST] + metrics.wFams/2 - padIndis[TreeNode.WEST] - metrics.wIndis - shapeMarrs.getBounds2D().getWidth ()/2,
-        padIndis[TreeNode.WEST] - metrics.hFams/2 - padFams [TreeNode.WEST] + metrics.hIndis + shapeMarrs.getBounds2D().getHeight()/2
-      );
+      padHusband = new double[]{
+        padIndis[0],
+        0,
+        padIndis[2],
+        padIndis[3]
+      };
+
+      padWife = new double[]{
+        padIndis[0],
+        padIndis[1],
+        padIndis[2],
+        0
+      };
       
+      offsetHusband = new Point2D.Double(
+        (metrics.wIndis + shapeMarrs.getBounds2D().getWidth ())/2,
+        -(metrics.hIndis + shapeMarrs.getBounds2D().getHeight())/2
+      );
       // done
     }
     
@@ -463,7 +503,7 @@ import java.awt.geom.Rectangle2D;
       if (at!=null) throw new IllegalArgumentException("at is not supported");
       // parse under pivot
       TreeNode pivot = model.add(new TreeNode(null, null, null));
-      TreeNode node = iterate(indi, pivot, 0);
+      TreeNode node = iterate(indi, pivot);
       // do the layout
       super.layout(pivot, true);
       // done
@@ -473,7 +513,7 @@ import java.awt.geom.Rectangle2D;
      * @see genj.tree.Model.Parser#parse(genj.gedcom.Fam)
      */
     protected TreeNode parse(Fam fam, Point2D at) {
-      TreeNode node = iterate(fam, null, 0);
+      TreeNode node = iterate(fam);
       node.padding = padIndis; // patch first fams padding
       if (at!=null) node.getPosition().setLocation(at);
       super.layout(node, true);
@@ -486,68 +526,56 @@ import java.awt.geom.Rectangle2D;
      * @param pivot all nodes of descendant are added to pivot
      * @return MyNode
      */
-    private TreeNode iterate(Indi indi, TreeNode pivot, final int group) {
-      // create node for indi
-      TreeNode node = model.add(new TreeNode(indi, shapeIndis, padIndis) {
-        /** patch longitude */
-        public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
-          return minc + o.getLongitude( alignOffsetIndiAbove1stFam );
-        }
-      });
-      // create an arc for pivot to indi
-      model.add(new TreeArc(pivot, node, pivot.getShape()!=null) {
-        /**
-         * @see genj.tree.TreeArc#getPort(gj.model.Arc, gj.model.Node)
-         */
-        public Point2D getPort(Arc arc, Node node, Orientation orntn) {
-          // delegate to super if end of arc
-          if (node==arc.getEnd()) return super.getPort(arc, node, orntn);
-          // the start of an arc is moved in longitude by 
-          //   ([w/h]Fams+padFams) * group
-          // so that it starts under the appropriate marriage
-          double dlon = 
-            group*(padFams[1]+padFams[3]+(model.isVertical()?metrics.wFams:metrics.hFams));
-          Point2D 
-            o = node.getPosition(),
-            d = orntn.getPoint2D(0, dlon),
-            n = new Point2D.Double(o.getX()+d.getX(), o.getY()+d.getY());
-          return n;
-        }
-      });
-      // loop through our fams
+    private TreeNode iterate(final Indi indi, TreeNode pivot) {
+
+      // lookup its families      
       Fam[] fams = indi.getFamilies();
-      TreeNode fam1 = null;
-      for (int f=0; f<fams.length; f++) {
-        // add arc : node-fam
-        TreeNode fami = iterate(fams[f], fam1, f);
-        if (fam1==null) fam1 = fami;
-        model.add(new TreeArc(node, fami, false));
-        // add arcs : pivot-marr, pivot-spouse
-        model.add(new TreeArc(pivot, model.add(new TreeNode(null, model.isMarrSymbols()?shapeMarrs:null, padMarrs)), false));
-        model.add(new TreeArc(pivot, model.add(new TreeNode(fams[f].getOtherSpouse(indi), shapeIndis, padIndis)), false));
+
+      // create indi and arc pivot-indi
+      TreeNode nIndi = new TreeNode(indi,shapeIndis,fams.length>0?padHusband:padIndis) {
+        /**
+         * @see genj.tree.Parser.DescendantsWithFams#getLongitude(gj.model.Node, double, double, double, double, gj.layout.tree.Orientation)
+         */
+        public double getLongitude(Node node, double minc, double maxc, double mint, double maxt, Orientation o) {
+          return super.getLongitude(node, minc, maxc, mint, maxt, o) - o.getLongitude(offsetHusband);
+        }
+      };
+      model.add(new TreeArc(pivot, model.add(nIndi), pivot.getShape()!=null));
+      
+      // Get the fam (1st for now)
+      if (fams.length>0) {
+        Fam fam = fams[0];
+        // add marr and arc pivot-marr
+        TreeNode nMarr = new TreeNode(null, shapeMarrs, null);
+        model.add(new TreeArc(pivot, model.add(nMarr), false));
+        // add spouse and arc pivot-spouse
+        TreeNode nSpouse = new TreeNode(fam.getOtherSpouse(indi), shapeIndis, padWife);
+        model.add(new TreeArc(pivot, model.add(nSpouse), false));
+        // add arc : marr-fam
+        TreeNode nFam = iterate(fam);
+        model.add(new TreeArc(nIndi, nFam, false));
         // next family
       }
       // done
-      return node;
+      return nIndi;
     }
     /**
      * parses a fam and its descendants
      * @parm pivot all nodes of descendant are added to pivot
      */
-    private TreeNode iterate(Fam fam, TreeNode pivot, int group) {
+    private TreeNode iterate(Fam fam) {
       // node for fam
-      TreeNode node = model.add(new TreeNode(fam, shapeFams, padFams));
-      // pivot is me if unset
-      if (pivot==null) pivot = node;
+      TreeNode nFam = new TreeNode(fam, shapeFams, padFams);
+      model.add(nFam);
       // grab the children
       Indi[] children = fam.getChildren();
       for (int c=0; c<children.length; c++) {
         // create an arc from node to node for indi
-        iterate(children[c], pivot, group);       
+        iterate(children[c], nFam);       
          // next child
       }
       // done
-      return node;
+      return nFam;
     }
     
   } //DescendantsWithFams

@@ -145,6 +145,7 @@ public class Model implements Graph, GedcomListener {
    * Accessor - wether we're vertical
    */
   public void setVertical(boolean set) {
+    if (isVertical==set) return;
     isVertical = set;
     parse();
   }
@@ -176,6 +177,7 @@ public class Model implements Graph, GedcomListener {
    * Accessor - whether we model families
    */
   public void setFamilies(boolean set) {
+    if (isFamilies==set) return;
     isFamilies = set;
     parse();
   } 
@@ -191,7 +193,9 @@ public class Model implements Graph, GedcomListener {
    * Access - isShowMarrSymbol
    */
   public void setMarrSymbols(boolean set) {
+    if (isMarrSymbols==set) return;
     isMarrSymbols = set;
+    parse();
   }
 
   /**
