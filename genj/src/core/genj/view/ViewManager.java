@@ -73,9 +73,6 @@ public class ViewManager {
   /** a window manager */
   private WindowManager windowManager = null;
   
-  /** a blueprint manager */
-  private BlueprintManager blueprintManager = null;
-  
   /** context listeners */
   private List contextListeners = new LinkedList();
   
@@ -91,7 +88,6 @@ public class ViewManager {
     registry = reGistry;
     printManager = pManager;
     windowManager = wManager;
-    blueprintManager = new BlueprintManager(registry);
     
     // creat list of factories
     factories = new ViewFactory[factoryTypes.length];
@@ -109,17 +105,6 @@ public class ViewManager {
     // done
   }
 
-  /**
-   * Makes a snapshot of the current view configuration
-   */
-  public void snapshot() {
-    // tell to blueprint manager
-    blueprintManager.snapshot();
-    // save window setup?
-    // ...
-    // done
-  }
-  
   /**
    * Returns all known view factories
    */
@@ -204,7 +189,7 @@ public class ViewManager {
    * The blueprint manager
    */
   public BlueprintManager getBlueprintManager() {
-    return blueprintManager;
+    return BlueprintManager.getInstance();
   }
   
   /**

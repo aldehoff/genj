@@ -28,6 +28,7 @@ import java.awt.ItemSelectable;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
+import java.util.ListIterator;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JLabel;
@@ -79,10 +80,17 @@ public class OptionsWidget extends JPanel {
    * Set options to display
    */
   public void setOptions(List set) {
+    
+    // check options
+    ListIterator it = set.listIterator();
+    while (it.hasNext()) {
+      Option option = (Option)it.next();
+      if (option.getUI(this)==null)
+        it.remove();
+    }
 
-    Option[] options = (Option[])set.toArray(new Option[set.size()]);
-        
     // let model know
+    Option[] options = (Option[])set.toArray(new Option[set.size()]);
     model.setOptions(options);
     
     // recalc column widths

@@ -173,13 +173,6 @@ public class ControlCenter extends JPanel {
   }
   
   /**
-   * Take a snapshot of current configuration
-   */
-  public void snapshot() {
-    viewManager.snapshot();
-  }
-  
-  /**
    * @see javax.swing.JComponent#addNotify()
    */
   public void addNotify() {

@@ -45,14 +45,18 @@ public class BlueprintManager {
   /** resources */
   private Resources resources = Resources.get(BlueprintManager.class);
   
-  /** registry */
-  private Registry registry;
+  /**
+   * Singleton access
+   */
+  public static BlueprintManager getInstance() {
+    if (instance==null)
+      instance = new BlueprintManager();
+    return instance;
+  }
   
   /**
    * Constructor   */
-  public BlueprintManager(Registry reGistry) {
-    
-    registry = reGistry;
+  private BlueprintManager() {
     
     // load readonly/predefined blueprints (from resources)
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
@@ -71,6 +75,14 @@ public class BlueprintManager {
       tag2blueprints.put(tag, blueprints);
     }
     
+    // done
+  }
+  
+  /**
+   * read from registry
+   */
+  /*package*/ void read(Registry registry) {
+    
     // load user-defined blueprints (from registry)
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
       
@@ -82,12 +94,11 @@ public class BlueprintManager {
       }
     }
     
-    // done
   }
   
   /**
-   * Takes a snapshot of current configuration   */
-  public void snapshot() {
+   * store to registry   */
+  /*package*/ void write(Registry registry) {
     // Store non read-only blueprints
     for (Iterator it=tag2blueprints.keySet().iterator(); it.hasNext(); ) {
       String tag = (String)it.next();

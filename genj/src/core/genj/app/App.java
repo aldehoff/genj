@@ -119,8 +119,6 @@ public class App {
     };
     Runnable onClose = new Runnable() {
       public void run() {
-        // take a snapshot of view configuration
-        center.snapshot();
         // close all frames we know
         winMgr.closeAll();
         // persist options
