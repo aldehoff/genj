@@ -50,6 +50,13 @@ public class CloseWindow extends ActionDelegate {
   }
 
   /** 
+   * predefined yesnocancel
+   */
+  public static CloseWindow[] YESandNOandCancel() {
+    return new CloseWindow[] { new CloseWindow(TXT_YES), new CloseWindow(TXT_NO), new CloseWindow(TXT_CANCEL) };
+  }
+
+  /** 
    * predefined okcancel
    */
   public static CloseWindow[] OKandCANCEL() {
