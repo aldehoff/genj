@@ -48,6 +48,9 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   /** our own model */
   private Model model = new Model();
   
+  /** wether we match ignoring case */
+  private boolean isIgnoreCase = false;
+  
   /**
    * Constructor
    */
@@ -102,7 +105,9 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * @see javax.swing.JComponent#getMaximumSize()
    */
   public Dimension getMaximumSize() {
-    return new Dimension(super.getMaximumSize().width, super.getPreferredSize().height);
+    // 20040223 seems like maximum width should be pretty big really
+    return new Dimension(Integer.MAX_VALUE, super.getPreferredSize().height);
+//    return new Dimension(super.getMaximumSize().width, super.getPreferredSize().height);
   }
     
   /**
@@ -111,8 +116,17 @@ public class ChoiceWidget extends javax.swing.JComboBox {
   public boolean hasChanged() {
     return isEditable() ? editor.hasChanged() : hasChanged;
   }
+  
+  /**
+   * Set change
+   */
+  public void setChanged(boolean set) {
+    hasChanged = set;
+    editor.setChanged(set);
+  }
 
   /**
+   * Changes the currently selected item
    * @see javax.swing.JComboBox#setSelectedItem(java.lang.Object)
    */
   public void setSelectedItem(Object anObject) {
@@ -136,7 +150,8 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    * Set text value
    */
   public void setText(String text) {
-    if (!isEditable) throw new IllegalArgumentException("setText && !isEditable n/a");
+    if (!isEditable) 
+      throw new IllegalArgumentException("setText && !isEditable n/a");
     editor.setText(text);
   }
   
@@ -145,6 +160,13 @@ public class ChoiceWidget extends javax.swing.JComboBox {
    */
   public TextFieldWidget getTextWidget() {
     return editor;
+  }
+  
+  /**
+   * Enable case ignore matching with editor autocomplete
+   */
+  public void setIgnoreCase(boolean set) {
+    isIgnoreCase = set;
   }
   
   /**
@@ -222,7 +244,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
      * Constructor
      */
     private Editor() {
-      super("", 24);
+      super("", 8);
       ChoiceWidget.this.addFocusListener(this);
     }
     
@@ -268,7 +290,7 @@ public class ChoiceWidget extends javax.swing.JComboBox {
      */
     public void setText(String t) {
       super.setText(t);
-      setChanged(true);
+      super.setChanged(true);
     }
     
     /**
@@ -354,9 +376,16 @@ public class ChoiceWidget extends javax.swing.JComboBox {
      */
     private String setSelectedPrefix(String prefix) {
       
+      if (isIgnoreCase)
+        prefix = prefix.toLowerCase();
+      
       // try to find a match
       for (int i=0;i<values.length;i++) {
-        if (values[i].toString().startsWith(prefix)) {
+        String value = values[i].toString();
+        if (isIgnoreCase)
+          value = value.toLowerCase();
+           
+        if (value.startsWith(prefix)) {
           setSelectedItem(values[i]);
           return values[i].toString();        
         }

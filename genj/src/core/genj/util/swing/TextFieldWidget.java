@@ -53,7 +53,10 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
   }
   
   /**
-   * Make this a template
+   * Make this a template - the field is set to unchanged, any
+   * current value in the text-field is not returned but empty
+   * string until the user changes focus to this component (which
+   * clears the content)
    */
   public TextFieldWidget setTemplate(boolean set) {
     isTemplate = set;
@@ -62,14 +65,16 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
   }
   
   /**
-   * Test for change
+   * Test for change - whether the user has made a change
+   * to the text-field's content
    */
   public boolean hasChanged() {
     return isChanged;
   }
   
   /**
-   * Set change
+   * Set change - simulating the user having made a change
+   * to the text-field's content (or not)
    */
   public void setChanged(boolean set) {
     isChanged = set;
@@ -94,14 +99,19 @@ public class TextFieldWidget extends javax.swing.JTextField implements DocumentL
   }
     
   /**
+   * Returns the current content unless isTemplate  is
+   * still true (the component didn't receive focus) in
+   * which case empty string is returned
    * @see javax.swing.text.JTextComponent#getText()
    */
   public String getText() {
-    if (isTemplate) return "";
+    if (isTemplate) 
+      return "";
     return super.getText();
   }
   
   /**
+   * Sets the content - any user change is revoked (hasChanged=false)
    * @see javax.swing.text.JTextComponent#setText(java.lang.String)
    */
   public void setText(String txt) {
