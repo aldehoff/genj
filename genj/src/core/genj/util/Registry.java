@@ -31,23 +31,66 @@ public class Registry {
   private String view;
   private Properties properties;
   private Registry parent;
-
-  private File file;
-  private String name;
   private boolean changed;
 
   private static Hashtable registries = new Hashtable();
 
   /**
-   * Constructor for empty registry that won't be saved
+   * Constructor for empty registry that can't be looked up
+   * afterwards and won't be saved
    */
   public Registry() {
-
-    // Prepare data
     view       ="";
     properties =new Properties();
+  }
 
-    // Done
+  /**
+   * Constructor for registry loaded from InputStream
+   * that can't be looked up and won't be saved
+   * @param InputStream to load registry from
+   */
+  public Registry(InputStream in) {
+    this();
+    // Load settings
+    try {
+      properties.load(in);
+    } catch (Exception ex) {
+    }
+  }
+
+  /**
+   * Constructor for registry loaded from local disk
+   * @param InputStream to load registry from
+   */
+  public Registry(String name) {
+    this(name, (Origin)null);
+  }
+  
+  /**
+   * Constructor for registry loaded relative to given Origin
+   */
+  public Registry(String name, Origin origin) {
+    this();
+    // read all relative to origin
+    if (origin!=null) {
+      try {
+        Origin.Connection c = origin.openFile(name+".properties");
+        InputStream in = c.getInputStream();
+        properties.load(in);
+        in.close();
+      } catch (Throwable t) {
+      }
+    }
+    // read all from local registry
+    try {
+      FileInputStream in = new FileInputStream(getFile(name));
+      properties.load(in);
+      in.close();
+    } catch (Throwable t) {
+    }
+    // remember
+    registries.put(name,this);
+    // done
   }
 
   /**
@@ -69,48 +112,12 @@ public class Registry {
   }
 
   /**
-   * Constructor
-   * @param file File to load/save registry data from/to
+   * Returns a registry for given logical name (might be null)
    */
-  private Registry(File file, String name) {
-
-    // Prepare data
-    this.file  =file;
-    this.name  =name;
-
-    view       ="";
-    properties =new Properties();
-
-    // Load settings
-    try {
-      FileInputStream in = new FileInputStream(file);
-      properties.load(in);
-      in.close();
-    } catch (Exception ex) {
-    }
-
-    // Done
+  public static Registry lookup(String name) {
+    return (Registry)registries.get(name);
   }
-
-  /**
-   * Constructor for registry loaded from InputStream that won't be saved
-   * @param InputStream to load registry from
-   */
-  public Registry(InputStream in) {
-
-    // Prepare data
-    view       ="";
-    properties =new Properties();
-
-    // Load settings
-    try {
-      properties.load(in);
-    } catch (Exception ex) {
-    }
-
-    // Done
-  }
-
+  
   /**
    * Returns array of ints by key
    */
@@ -351,38 +358,6 @@ public class Registry {
   }
 
   /**
-   * Returns this registry's name
-   */
-  public String getName() {
-    if (parent!=null)
-      return parent.getName();
-    return name;
-  }
-
-  /**
-   * Returns a registry for given logical name
-   */
-  public static Registry getRegistry(String name) {
-
-    // Known Gedcom ?
-    if (registries.containsKey(name))
-      return (Registry)registries.get(name);
-
-    // New one !
-    Registry r = new Registry(
-      // 20020308 Want to base a registry to on the user's home-directory!
-      // Previously: "This doesn't seem to work under OS/2" ... hmmm
-      //        Had: new File(name+".properties"),
-      new File(System.getProperty("user.dir"),name+".properties"),
-      name
-    );
-    registries.put(name,r);
-
-    // Done
-    return r;
-  }
-
-  /**
    * Returns this registry's view
    */
   public String getView() {
@@ -578,6 +553,13 @@ public class Registry {
 
     // Done
   }
+  
+  /**
+   * Calculates a filename for given registry name
+   */
+  private static File getFile(String name) {
+    return new File(System.getProperty("user.dir"),name+".properties");
+  }
 
   /**
    * Save registries
@@ -585,23 +567,21 @@ public class Registry {
   public static void saveToDisk() {
 
     // Go through registries
-    Enumeration enum = registries.elements();
-    Registry registry;
-
-    while (enum.hasMoreElements()) {
+    Enumeration keys = registries.keys();
+    while (keys.hasMoreElements()) {
 
       // Get Registry
-      registry = (Registry)enum.nextElement();
+      String key = keys.nextElement().toString();
+      Registry registry = (Registry)registries.get(key);
 
       // Open known file
       try {
-        FileOutputStream out = new FileOutputStream(registry.file);
-        registry.properties.save(out,registry.name);
-
-        // 20010821 maybe we should close the stream after writing
+        FileOutputStream out = new FileOutputStream(getFile(key));
+        registry.properties.save(out,key);
+        out.flush();
         out.close();
       } catch (IOException ex) {
-      System.out.println("Couldn't save user settings for "+registry.name);
+        System.out.println("[Debug]Couldn't save user settings for "+key);
       }
 
     }

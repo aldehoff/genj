@@ -25,6 +25,8 @@ import javax.swing.event.*;
 import java.awt.*;
 import java.util.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 
 import genj.gedcom.*;
 import genj.print.PrintProperties;
@@ -158,16 +160,24 @@ public class ViewBridge {
   private Registry getRegistryFor(Gedcom gedcom, String nameOfView) {
 
     // Check which iteration number is available next
-    String name = gedcom.getOrigin().getFileName();
+    Origin origin = gedcom.getOrigin();
+    String name = origin.getFileName();
     int number;
     for (number=1;;number++) {
       if (App.getInstance().getFrame(name+"."+nameOfView+"."+number)==null) {
         break;
       }
     }
-
-    // Return calculated view
-    return new Registry(Registry.getRegistry(name), nameOfView+"."+number);
+    
+    // Try to find a registry 
+    Registry registry = Registry.lookup(name);
+    if (registry==null) {
+      registry = new Registry(name, origin);
+    }
+    
+    return new Registry(registry, nameOfView+"."+number);
+    
+    // done    
   }
   
   /**
@@ -184,7 +194,7 @@ public class ViewBridge {
       JFrame frame = App.getInstance().createFrame(
         gedcom.getName()+" - "+App.resources.getString("cc.view."+descriptor.key)+" ("+registry.getViewSuffix()+")",
         descriptor.img,
-        registry.getName() + "." + registry.getView(),
+        gedcom.getName() + "." + registry.getView(),
         descriptor.dim
       );
       

@@ -51,7 +51,7 @@ public class App {
   private final static String FRAME_KEY_PREFIX = "frame.";
 
   /** members */
-  private Registry registry = Registry.getRegistry("genj");
+  private Registry registry = new Registry("genj");
   private Hashtable openFrames = new Hashtable();
   private static App instance;
   /*package*/ final static Resources resources = new Resources("genj.app");

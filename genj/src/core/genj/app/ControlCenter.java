@@ -499,16 +499,14 @@ public class ControlCenter extends JPanel {
         }
       }
   
-      // Check for given argument
-      long size;
+      // Open Connection and get input stream
       InputStream in;
-  
-      // .. Open Connection and get input stream
-      Origin.Connection connection;
+      long size;
       try {
-        connection = origin.open();
-        // .. query for input stream
+        Origin.Connection connection = origin.open();
+        // .. query for input stream & length
         in = connection.getInputStream();
+        size = connection.getLength();
       } catch (IOException ex) {
         JOptionPane.showMessageDialog(frame,
           App.resources.getString("cc.open.no_connect_to", origin ) + "\n[" + ex.getMessage() +"]",
@@ -517,7 +515,6 @@ public class ControlCenter extends JPanel {
         );
         return;
       }
-      size = connection.getLength();
   
       // .. read gedcom from it
       final GedcomReader gedReader = new GedcomReader(in,origin,size);
@@ -544,7 +541,6 @@ public class ControlCenter extends JPanel {
         // EOC
       };
   
-      //    threadReader.setPriority(Math.max(Thread.MIN_PRIORITY,threadReader.getPriority()-2));
       threadReader.setPriority(Thread.MIN_PRIORITY);
       threadReader.start();
   
@@ -944,12 +940,12 @@ public class ControlCenter extends JPanel {
     protected void execute() {
       // is a gedcom selected
       boolean on = (tGedcoms.getSelectedGedcom()!=null);
-      // Switch on/off AbstractButtons related to Gedcom
+      // switch on/off AbstractButtons related to Gedcom
       Enumeration e = gedcomButtons.elements();
       while (e.hasMoreElements()) {
         ((AbstractButton)e.nextElement()).setEnabled(on);
       }
-      // Done
+      // done
     }
   } //ActionToggleButtons    
   
