@@ -149,9 +149,11 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     
     // Check if we can preset something to edit
     Context context = manager.getContext(gedcom);
-    if (isSticky) try { 
-      context = new Context(gedcom.getEntity(registry.get("last",(String)null))); 
-    } catch (Exception e) {
+    try { 
+      context = new Context(gedcom.getEntity(registry.get("sticky",(String)null))); 
+      context.setSource(this);
+      isSticky = true;
+    } catch (Throwable t) {
     }
     setContext(context);
 
@@ -167,8 +169,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   public void removeNotify() {
     
     // remember context
-    Entity e = editor.getContext().getEntity();
-    registry.put("last", e!=null?e.getId():"");
+    if (isSticky) {
+      Entity e = editor.getContext().getEntity();
+      registry.put("sticky", e!=null?e.getId():"");
+    }
 
     // remember mode
     registry.put("advanced", mode.advanced);
