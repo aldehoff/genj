@@ -12,9 +12,11 @@ import java.io.*;
 import java.util.*;
 
 /**
- * GenJ - Report
+ * GenJ - Report.
+ * This report exports individuals' information to HTML.
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportMakeHTMLTable.java,v 1.8 2002-03-24 13:17:37 timmsc Exp $
  * @author Nils Meier nils@meiers.net
- * @version 0.1
+ * @version $Revision: 1.8 $
  */
 public class ReportMakeHTMLTable implements Report {
 
