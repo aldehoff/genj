@@ -174,8 +174,6 @@ import javax.swing.event.TreeSelectionListener;
    * @return Gedcom tree's root and selection 
    */
   public Context getContext() {
-    if (tree.getRoot()==null)
-      return new Context(gedcom);
     return new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
   }
   
@@ -364,7 +362,7 @@ import javax.swing.event.TreeSelectionListener;
   /**
    * Handling selection of properties
    */
-  private class InteractionListener extends MouseAdapter implements TreeSelectionListener {
+  private class InteractionListener extends MouseAdapter implements TreeSelectionListener, ChangeListener {
     
     /**
      * callback - mouse doubleclick
@@ -417,7 +415,7 @@ import javax.swing.event.TreeSelectionListener;
   
       // done on 'no selection'
       Property prop = tree.getSelection(); 
-      if (prop==null)
+      if (prop==null||prop.getParent()==null)
         return;
       
       // Starting with new one
@@ -448,14 +446,10 @@ import javax.swing.event.TreeSelectionListener;
           }
           
           // listen to it
-          bean.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-              ok.setEnabled(true);
-              cancel.setEnabled(true);
-            }
-          });
+          bean.addChangeListener(this);
   
           // and request focus
+          requestFocusInWindow();
           bean.requestFocusInWindow();
           
         } catch (Throwable t) {
@@ -472,7 +466,15 @@ import javax.swing.event.TreeSelectionListener;
   
       // Done
     }
+
+    /**
+     * callback for state change - enable buttons
+     */
+    public void stateChanged(ChangeEvent e) {
+      ok.setEnabled(true);
+      cancel.setEnabled(true);
+    }
   
-  } //Callback  
+  } //InteractionListener
 
 } //AdvancedEditor
