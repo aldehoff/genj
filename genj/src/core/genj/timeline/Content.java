@@ -50,7 +50,7 @@ import javax.swing.Scrollable;
    * @see java.awt.Component#getPreferredSize()
    */
   public Dimension getPreferredSize() {
-    return new Dimension(256,256);
+    return new Dimension((int)(model.getSpan()*32),128);
   }
 
   /**

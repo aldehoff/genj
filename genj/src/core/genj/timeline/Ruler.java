@@ -59,7 +59,7 @@ import javax.swing.Scrollable;
    * @see java.awt.Component#getPreferredSize()
    */
   public Dimension getPreferredSize() {
-    return new Dimension(256,32);
+    return new Dimension((int)(model.getSpan()*32),getFontMetrics(getFont()).getHeight());
   }
   
 } //Ruler
