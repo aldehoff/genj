@@ -95,7 +95,7 @@ public class ReportTrees extends Report {
     println(i18n("fileheader",gedcom.getName()));
 
     // Step through all the Individuals
-    println(i18n("indicount",indis.size()+"")+"\n");
+    println(i18n("indicount",indis.size())+"\n");
     for (int i=0;i<indis.size();i++) {
       Indi indi = (Indi)indis.get(i);
       // If we haven't seen them yet, it's the beginning of a new tree
@@ -107,9 +107,9 @@ public class ReportTrees extends Report {
         stats.trees[curTree].count =
           analyzeIndividual((Indi)indis.get(i), stats);
         if( stats.trees[curTree].count > CUTOFF ) {
-          String[] msgargs = {curTree+"",
+          Object[] msgargs = {new Integer(curTree),
                               stats.trees[curTree].name,
-                              stats.trees[curTree].count+""};
+                              new Integer(stats.trees[curTree].count)};
           // println(i18n("treecount", msgargs));
         }
       }
@@ -123,10 +123,11 @@ public class ReportTrees extends Report {
           return c2-c1;
         }
       });
-
+		
     // Print sorted list
-    println(align(i18n("count"),6)+"  "+i18n("name"));
-    println("------  ----------------------------------------------");
+    println(align(i18n("count"),7)+"  "+i18n("name"));
+    println("-------  ----------------------------------------------");
+
     int grandtotal=0;
     int loners=0;
     for (int i=0; i<stats.numTrees; i++) {
@@ -135,15 +136,15 @@ public class ReportTrees extends Report {
         loners +=count;
       } else {
         grandtotal+=count;
-        println(align(count,6)+"  "+stats.trees[i].name);
+        println(align(count,7)+"  "+stats.trees[i].name);
       }
     }
 
     println("");
-    println(i18n("grandtotal",grandtotal+""));
+    println(i18n("grandtotal",grandtotal));
 
     if (loners>0) {
-      String[] msgargs = {loners+"", CUTOFF+""};
+      Object[] msgargs = {new Integer(loners), new Integer(CUTOFF)};
       println("\n"+i18n("loners",msgargs));
     }
 
@@ -187,15 +188,16 @@ public class ReportTrees extends Report {
     }
 
     if (famc.getWife()!=null) {
-        count += analyzeIndividual(famc.getWife(), stats);
+      count += analyzeIndividual(famc.getWife(), stats);
     }
     if (famc.getHusband()!=null) {
-        count += analyzeIndividual(famc.getHusband(), stats);
+      count += analyzeIndividual(famc.getHusband(), stats);
     }
 
     return count;
 
   }
+
   /**
    * Analyzes an Individual's Descendants
    */
