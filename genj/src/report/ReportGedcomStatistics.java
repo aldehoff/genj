@@ -25,7 +25,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.53 2004-03-14 22:17:42 cmuessig Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.54 2004-03-19 23:30:57 cmuessig Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Müssig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -437,7 +437,7 @@ public class ReportGedcomStatistics extends Report {
      * @param places to store results
      */
     private void analyzePlaces(Entity[] e, StatisticsPlaces places) {
-                    
+        
         Property prop;
         Property[] props;
         
@@ -516,7 +516,7 @@ public class ReportGedcomStatistics extends Report {
                     if(props[j]!=null) {
                         String place = props[j].getValue();
                         if (place.length()>0) {
-                            if(places.places.add(place, e[i]))                            
+                            if(places.places.add(place, e[i]))
                                 places.entitiesWithKnownPlaces++;
                         }
                     }
@@ -768,7 +768,7 @@ public class ReportGedcomStatistics extends Report {
     
     /** Prints min., average, and max. age
      * @param stats to get the values from
-     * @param printIndis 1=all, 2=min./max. age, 3=none
+     * @param printIndis 1=all, 2=min./avg./max., 3=none
      * @param indent level for indent printing
      * @param which indis to print
      */
@@ -793,12 +793,12 @@ public class ReportGedcomStatistics extends Report {
                     }
                     else {
                         // min. age
-                        printMinMaxAge(printIndis, indent, "minAge", stats.minAge, new ArrayList(stats.age.getReferences(new Integer(stats.minAge))));
+                        printMinMaxAge(indent, "minAge", stats.minAge, new ArrayList(stats.age.getReferences(new Integer(stats.minAge))));
                         // average age
                         age = calculateAverageAge(stats.sumAge,stats.age.getSize());
                         println(getIndent(indent, SPACES_PER_LEVEL, getFront(indent))+i18n("avgAge")+" "+new Delta(age[2], age[1], age[0]));
                         // max. age
-                        printMinMaxAge(printIndis, indent, "maxAge", stats.maxAge, new ArrayList(stats.age.getReferences(new Integer(stats.maxAge))));
+                        printMinMaxAge(indent, "maxAge", stats.maxAge, new ArrayList(stats.age.getReferences(new Integer(stats.maxAge))));
                     }
                 }
                 else
@@ -818,12 +818,12 @@ public class ReportGedcomStatistics extends Report {
                     }
                     else{
                         // min. age
-                        printMinMaxAge(printIndis, indent, "minAge", stats.minChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.minChildBirthAge))));
+                        printMinMaxAge(indent, "minAge", stats.minChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.minChildBirthAge))));
                         // avg age
                         age = calculateAverageAge(stats.sumChildBirthAge,stats.childBirthNumber);
                         println(getIndent(indent, SPACES_PER_LEVEL, getFront(indent))+i18n("avgAge")+" "+new Delta(age[2], age[1], age[0]));
                         // max. age
-                        printMinMaxAge(printIndis, indent, "maxAge", stats.maxChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.maxChildBirthAge))));
+                        printMinMaxAge(indent, "maxAge", stats.maxChildBirthAge, new ArrayList(stats.childBirthAge.getReferences(new Integer(stats.maxChildBirthAge))));
                     }
                 }
                 else
@@ -837,18 +837,15 @@ public class ReportGedcomStatistics extends Report {
      * @param age to print
      * @param ages individuals with this age
      * @param indent level for indent printing
-     * @param printIndis 1=all, 2=min./max. age, 3=none
      */
-    private void printMinMaxAge(int reportIndis, int indent, String prefix, int age, ArrayList ages) {
+    private void printMinMaxAge(int indent, String prefix, int age, ArrayList ages) {
         
         int[] avg = calculateAverageAge(age,1);
         println(getIndent(indent, SPACES_PER_LEVEL, getFront(indent))+i18n(prefix)+" "+new Delta(avg[2], avg[1], avg[0]));
-        if(reportIndis<3) {
-            for(int i=0;i<ages.size();i++) {
-                Indi indi = (Indi)ages.get(i);
-                String[] output = {indi.getId(), indi.getName()};
-                println(getIndent(indent+1, SPACES_PER_LEVEL, getFront(indent+1))+i18n("entity", output));
-            }
+        for(int i=0;i<ages.size();i++) {
+            Indi indi = (Indi)ages.get(i);
+            String[] output = {indi.getId(), indi.getName()};
+            println(getIndent(indent+1, SPACES_PER_LEVEL, getFront(indent+1))+i18n("entity", output));
         }
     }
     
