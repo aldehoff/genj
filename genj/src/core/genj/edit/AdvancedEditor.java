@@ -605,10 +605,11 @@ import javax.swing.event.TreeSelectionListener;
         // start without ok and cancel
         ok.setEnabled(false);
         cancel.setEnabled(false);
+        
+        // tell selection to everyone else
+        editView.getViewManager().setContext(getContext());
+    
       }
-  
-      // tell everyone
-      editView.getViewManager().setContext(getContext());
   
       // Done
     }
