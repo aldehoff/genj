@@ -24,32 +24,33 @@ import genj.gedcom.GedcomException;
 
 /**
  * Our own hebrew republican
+ * @see http://www.merlyn.demon.co.uk/heb-date.htm
+ * 
+ * <pre>
+ *  Month    def reg perf  
+ *  Tishri   30  30  30  
+ *  Kheshvan 29  29  30  
+ *  Kislev   29  30  30  
+ *  Tevet    29  29  29   
+ *  Schevat  30  30  30   
+ * (Adar r   30  30  30) only in leap year
+ *  Adar s   29  29  29  
+ *  Nisan    30  30  30  
+ *  Iyyar    29  29  29  
+ *  Sivan    30  30  30  
+ *  Tammuz   29  29  29  
+ *  Av       30  30  30  
+ *  Elul     29  29  29  
+ *
+ *  total   353 354 355 (+30 in leap year)      
+ * </pre>
  */
 public class HebrewCalendar extends Calendar {
 
- /* 
-   Month    def reg perf  
-   Tishri   30  30  30  
-   Kheshvan 29  29  30  
-   Kislev   29  30  30  
-   Tevet    29  29  29   
-   Schevat  30  30  30   
-  (Adar r   30  30  30) only in leap year
-   Adar s   29  29  29  
-   Nisan    30  30  30  
-   Iyyar    29  29  29  
-   Sivan    30  30  30  
-   Tammuz   29  29  29  
-   Av       30  30  30  
-   Elul     29  29  29  
-
-   total   353 354 355 (+30 in leap year)      
- */
-
   /**
    * the calendar begins at sunset the night before 
-   * Monday, October 7, 3761 B.C.E. (Julian calendar)
-   * Monday, September 9, 3761 B.C.E (Gregorian calendar)
+   * Monday, October 7, 3760 B.C.E. (Julian calendar)
+   * Monday, September 9, 3760 B.C.E (Gregorian calendar)
    * Julian day 347997.5.
    */
   private static final int 
@@ -57,6 +58,15 @@ public class HebrewCalendar extends Calendar {
 
   private static final String[] MONTHS 
    = { "TSH","CSH","KSL","TVT","SHV","ADR","ADS","NSN","IYR","SVN","TMZ","AAV","ELL" };
+
+  private static final int[] MONTHS_PER_YEAR // [0, 3, 6, 8, 11, 14, 17]
+   = { 13, 12, 12, 13, 12, 12, 13, 12, 13, 12, 12, 13, 12, 12, 13, 12, 12, 13, 12 };
+  
+  /**
+   * The average Hebrew year length is about 365.2468 days - exactly, it is 
+   * (29d 12h 793p)×(12×12 + 7×13)/19 = 365 + 121555/492480 = 365 + 24311/98496 = 
+   * 35975351/98496 = 365.246822 recurring days 
+   */ 
 
   /**
    * Constructor
@@ -68,15 +78,36 @@ public class HebrewCalendar extends Calendar {
   /**
    * Julian Day -> PIT
    */
-  protected PointInTime toPointInTime(int julianDay) throws GedcomException {
+  public PointInTime toPointInTime(int julianDay) throws GedcomException {
+    
+    // before Hebrew calendar start - ANNO MUNDI?
+    if (julianDay<ANNO_MUNDI)
+      throw new GedcomException(PointInTime.resources.getString("hebrew.bef"));
+      
+    int hebrewDay = julianDay-ANNO_MUNDI+1; 
+      
+    // calculate metonic cycle (estimation with 6940 days in a cycle)
+    //
+    // "Every nineteen years, solar and lunar cycles repeat a phase 
+    //  relationship to each other. This is called the Metonic Cycle 
+    //  after a Greek named Meton, though the relationship had been 
+    //  known by Babylonian astronomers before Meton's time"
+    //
+    // "The Year contains either 12 or 13 Months, in a 19-year cycle. 
+    //  Seven years of each nineteen are Leap with the extra 30-day 
+    //  month Adar 1, placed sixth. There are thus 12×12 + 7×13 = 235 
+    //  Months in every 19 consecutive years - a Metonic Cycle
+    // 
+   
     // FIXME transformation Julian Day to Hebrew is missing
-    throw new GedcomException("Transformation to Hebrew Calendar not implemented yet");
+   throw new GedcomException("Transformation to Hebrew Calendar not implemented yet");
   }
   
+
   /**
    * d,m,y -> Julian Day
    */
-  protected int toJulianDay(int day, int month, int year) throws GedcomException {
+  public int toJulianDay(int day, int month, int year) throws GedcomException {
 
     // year ok?
     if (year<1)
@@ -125,10 +156,11 @@ public class HebrewCalendar extends Calendar {
     return tishri1;   
   }
     
-  private int _getTishri1(int year) {
+  public int _getTishri1(int year) {
         
     // In general the 1st of Tishri of that year avoids
     // Sunday, Wednesday, and Friday
+    // 235 months per 19 year cycle
     
     int months = ((235 * year) - 234) / 19;
     int parts = 12084 + (13753 * months);
@@ -180,10 +212,12 @@ public class HebrewCalendar extends Calendar {
   
   /**
    * whether a given year is a leap year 
-   *  0, 3, 6, 8, 11, 14, 17 in metonic cycle (mod 19)
+   * 
+   * Leap := (Year mod 19) in [0, 3, 6, 8, 11, 14, 17] ;
+   * Leap := ((Year*7 + 1) mod 19) < 7 ;
    */
   private boolean isLeap(int year) {
-    return (14*7+1)%19<7;    
+    return (year*7+1)%19<7;    
   }
   
   /**
