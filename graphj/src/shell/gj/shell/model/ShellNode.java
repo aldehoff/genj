@@ -16,11 +16,14 @@
 package gj.shell.model;
 
 import gj.awt.geom.Geometry;
+import gj.awt.geom.ShapeHelper;
 import gj.util.ArcHelper;
+import gj.util.ModelHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -45,8 +48,8 @@ public class ShellNode implements gj.model.Node {
    */
   protected ShellNode(ShellGraph grAph, Shape shApe, Object conTent) {
     graph = grAph;
-    shape = shApe==null ? new Rectangle() : shApe;
-    content = conTent;
+    setContent(conTent);
+    setShape(shApe==null ? new Rectangle() : shApe);    
   }
   
   /**
@@ -69,6 +72,56 @@ public class ShellNode implements gj.model.Node {
   protected boolean contains(Point2D point) {
     return shape.contains(point.getX()-position.getX(),point.getY()-position.getY());   
   }
+  
+  /**
+   * Revalidate node constraints
+   */
+  protected void revalidate(boolean shrink) {
+    
+    // FIXME this should try to shift the contained graph nodes' origin
+    // to optimize space requirement
+    
+    // do we contain a graph?
+    if (content instanceof ShellGraph) {
+      
+      // check our bounds
+      Rectangle2D bounds = ModelHelper.getBounds(((ShellGraph)content).getNodes());
+      
+      // find maximum
+      double max = 1.0D;
+      while (!ShapeHelper.createShape(shape, max, null).contains(bounds))
+        max *= 2.0D;
+        
+      if (max==1.0D&&!shrink)
+        return;
+        
+      // find minimum
+      double min = 1.0D;
+      while (ShapeHelper.createShape(shape, min, null).contains(bounds)) 
+        min *= 0.5D;
+    
+      // binary search for best fit 
+      for (int i=0;i<8;i++) {
+          
+        double pivt = (min+max)/2;
+    
+        if (ShapeHelper.createShape(shape, pivt, null).contains(bounds)) {
+          max = pivt;
+        } else {
+          min = pivt;
+        }
+    
+      }
+       
+      // set shape 
+      shape = ShapeHelper.createShape(shape, max, null);
+    }
+          
+    // update arcs
+    ArcHelper.updateArcs(arcs);
+    
+    // done
+  }  
   
   /**
    * Sets the location
@@ -124,22 +177,27 @@ public class ShellNode implements gj.model.Node {
    * Move by delta 
    */
   public void translate(Point2D delta) {
-    // FIXME check parent's bounds
+    // move
     position = Geometry.add(position, delta);
     ArcHelper.updateArcs(arcs);
+    // notify
+    graph.revalidate();
+    // done
   }
   
   /**
    * Change shape
    */
   public void setShape(Shape set) {
-    // FIXME make sure children fit in + check parent's bound
-    
+
     // change
     shape = set;
     
-    // update arcs
-    ArcHelper.updateArcs(arcs);
+    // revalidate
+    revalidate(false);
+    
+    // notify
+    graph.revalidate();
     
     // done
   }
@@ -149,11 +207,18 @@ public class ShellNode implements gj.model.Node {
    */
   public void setContent(Object set) {
 
-    // FIXME check parent's bounds (set==graph?)
-    
+    // was a graph?
+    if (content instanceof ShellGraph)
+      ((ShellGraph)content).removeNotify();
+
     // change
     content = set;
     
+    // is it a graph?
+    if (content instanceof ShellGraph)
+      ((ShellGraph)content).addNotify(this);
+
+    // done
   }
   
   /**

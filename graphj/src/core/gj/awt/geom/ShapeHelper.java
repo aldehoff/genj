@@ -16,6 +16,7 @@
 package gj.awt.geom;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -126,4 +127,15 @@ public class ShapeHelper implements PathIteratorKnowHow {
     // Done
   }  
 
-}
+  /**
+   * Calculate a scaled shape
+   */
+  public static Shape createShape(Shape shape, double scale, Point2D origin) {
+    GeneralPath gp = new GeneralPath(shape); 
+    if (origin!=null)
+      gp.transform(AffineTransform.getTranslateInstance(origin.getX(),origin.getY()));
+    gp.transform(AffineTransform.getScaleInstance(scale,scale));
+    return gp;
+  }
+  
+} //ShapeHelper

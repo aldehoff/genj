@@ -27,9 +27,14 @@ import java.util.Collection;
  */
 public class ShellGraph implements gj.model.Graph {
   
+  /** nodes in the graph */
   private ArrayList nodes = new ArrayList();
   
+  /** arcs in this graph */
   private ArrayList arcs = new ArrayList();
+  
+  /** a parent we might be added to */
+  private ShellNode parent;
 
   /**
    * Remove node
@@ -43,6 +48,31 @@ public class ShellGraph implements gj.model.Graph {
    */
   protected void removeArc(ShellArc arc) {
     arcs.remove(arc);
+  }
+  
+  /**
+   * Add Notification
+   */
+  protected void addNotify(ShellNode node) {
+    parent = node;
+  }
+
+  /**
+   * Add Notification
+   */
+  protected void removeNotify() {
+    parent = null;
+  }
+  
+  /**
+   * Change Notification
+   */
+  protected void revalidate() {
+    // parent?
+    if (parent==null)
+      return;
+    // propagate
+    parent.revalidate(true);
   }
 
   /**

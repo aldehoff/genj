@@ -95,11 +95,18 @@ public abstract class GraphRenderer {
     
     // another graph?
     if (content instanceof Graph) {
+      // save configuration
+      AffineTransform oldat = graphics.getTransform();
+      // render content graph
       graphics.translate( pos.getX(), pos.getY());
       render((Graph)content, null, graphics);
-      graphics.translate(-pos.getX(), -pos.getY());
+      // restore configuration
+      graphics.setTransform(oldat);
     } else {
+      Shape oldcp = graphics.getClip();
+      graphics.clip(ShapeHelper.createShape(node.getShape(), 1, node.getPosition()));
       draw(content.toString(), node.getPosition(), graphics);
+      graphics.setClip(oldcp);
     }
 
     // done
