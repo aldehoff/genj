@@ -38,6 +38,11 @@ public class ReportAges extends Report {
     /** this report's version */
     public static final String VERSION = "1.2";
     
+    private static final int SPACES_PER_LEVEL = 5;
+    private static final String FRONT_FIRST_LEVEL = " = ";
+    private static final String FRONT_SECOND_LEVEL = " * ";
+    private static final String FRONT_THIRD_LEVEL = " + ";
+    
     /**
      * Returns the version of this script
      */
@@ -106,9 +111,10 @@ public class ReportAges extends Report {
             if(printTag)
                 toPrint = "INDI:"+tag+": ";
             PropertyDate prop = (PropertyDate)indi.getProperty(new TagPath("INDI:"+tag+":DATE"));
-            println(getIndent(2)+toPrint+prop.toString(true));
+            //println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+toPrint+prop.toString(true));
+            println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+toPrint+prop.toString(true));
             Delta age = indi.getAge(prop.getStart());
-            printAge(age, 3, errorMessage);
+            printAge(age, 3, SPACES_PER_LEVEL, FRONT_THIRD_LEVEL, errorMessage);
             return true;
         }
         return false;
@@ -125,41 +131,41 @@ public class ReportAges extends Report {
         // give up if no birth date
         PropertyDate birth = indi.getBirthDate();
         if (birth == null) {
-            println(getIndent(1)+i18n("noBirthDate"));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("noBirthDate"));
             return;
         }
         // print birth date
-        println(getIndent(1)+i18n("birth"));
-        println(getIndent(2)+birth);
+        println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("birth"));
+        println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+birth);
         println();
         
         if(reportBaptismAge) {
             boolean baptism[] = new boolean[4];
-            println(getIndent(1)+i18n("baptism")+" "+i18n("seeDocumentation")+":");
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("baptism")+" "+i18n("seeDocumentation")+":");
             baptism[0] = analyzeTag(indi, "BAPM", true, "error");
             baptism[1] = analyzeTag(indi, "BAPL", true, "error");
             baptism[2] = analyzeTag(indi, "CHR", true, "error");
             baptism[3] = analyzeTag(indi, "CHRA", true, "error");
             if((baptism[0]==false) && (baptism[1]==false) && (baptism[2]==false) && (baptism[3]==false))
-                println(getIndent(2)+i18n("noData"));
+                println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+i18n("noData"));
             println();
         }
         
         if(reportMarriageAge) {
-            println(getIndent(1)+i18n("marriage"));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("marriage"));
             Fam[] fams = indi.getFamilies();
             if(fams.length==0)
-                println(getIndent(2)+i18n("noData"));
+                println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+i18n("noData"));
             else {
                 for(int i=0;i<fams.length;i++) {
                     Fam fam = fams[i];
                     toPrint = "@"+fam.getId()+"@ "+fam.toString()+": ";
                     if(fam.getMarriageDate() == null)
-                        println(getIndent(2)+toPrint+i18n("noData"));
+                        println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+toPrint+i18n("noData"));
                     else {
-                        println(getIndent(2)+toPrint+fam.getMarriageDate());
+                        println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+toPrint+fam.getMarriageDate());
                         age = indi.getAge(fam.getMarriageDate().getStart());
-                        printAge(age, 3, "error");
+                        printAge(age, 3, SPACES_PER_LEVEL, FRONT_THIRD_LEVEL, "error");
                     }
                 }
             }
@@ -167,20 +173,20 @@ public class ReportAges extends Report {
         }
         
         if(reportAgeAtDivorce) {
-            println(getIndent(1)+i18n("divorce"));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("divorce"));
             Fam[] fams = indi.getFamilies();
             if(fams.length==0)
-                println(getIndent(2)+i18n("noData"));
+                println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+i18n("noData"));
             else {
                 for(int i=0;i<fams.length;i++) {
                     Fam fam = fams[i];
                     toPrint = "@"+fam.getId()+"@ "+fam.toString()+": ";
                     if(fam.getDivorceDate() == null)
-                        println(getIndent(2)+toPrint+i18n("noData"));
+                        println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+toPrint+i18n("noData"));
                     else {
-                        println(getIndent(2)+toPrint+fam.getDivorceDate());
+                        println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+toPrint+fam.getDivorceDate());
                         age = indi.getAge(fam.getDivorceDate().getStart());
-                        printAge(age, 3, "error");
+                        printAge(age, 3, SPACES_PER_LEVEL, FRONT_THIRD_LEVEL, "error");
                     }
                 }
             }
@@ -188,21 +194,21 @@ public class ReportAges extends Report {
         }
         
         if(reportAgeAtChildBirth) {
-            println(getIndent(1)+i18n("childBirths"));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("childBirths"));
             Indi[] children = indi.getChildren();
             if(children.length==0)
-                println(getIndent(2)+i18n("noData"));
+                println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+i18n("noData"));
             else {
                 for(int i=0;i<children.length;i++) {
                     Indi child = children[i];
                     toPrint = "@"+child.getId()+"@ "+children[i].getName()+": ";
                     PropertyDate cbirth = child.getBirthDate();
                     if(cbirth == null)
-                        println(getIndent(2)+toPrint+i18n("noData"));
+                        println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+toPrint+i18n("noData"));
                     else {
-                        println(getIndent(2)+toPrint+cbirth);
+                        println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+toPrint+cbirth);
                         age = indi.getAge(cbirth.getStart());
-                        printAge(age, 3, "error");
+                        printAge(age, 3, SPACES_PER_LEVEL, FRONT_THIRD_LEVEL, "error");
                     }
                 }
             }
@@ -210,77 +216,55 @@ public class ReportAges extends Report {
         }
         
         if(reportAgeAtEmigration) {
-            println(getIndent(1)+i18n("emigration"));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("emigration"));
             boolean b = analyzeTag(indi, "EMIG", false, "error");
             if(b==false)
-                println(getIndent(2)+i18n("noData"));
+                println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+i18n("noData"));
             println();
         }
         
         if(reportAgeAtImmigration) {
-            println(getIndent(1)+i18n("immigration"));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("immigration"));
             boolean b = analyzeTag(indi, "IMMI", false, "error");
             if(b==false)
-                println(getIndent(2)+i18n("noData"));
+                println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+i18n("noData"));
             println();
         }
         
         if(reportAgeAtNaturalization) {
-            println(getIndent(1)+i18n("naturalization"));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("naturalization"));
             boolean b = analyzeTag(indi, "NATU", false, "error");
             if(b==false)
-                println(getIndent(2)+i18n("noData"));
+                println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+i18n("noData"));
             println();
         }
         
         if(reportAgeAtDeath) {
-            println(getIndent(1)+i18n("death"));
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("death"));
             PropertyDate death = indi.getDeathDate();
             if(death == null)
-                println(getIndent(2)+i18n("noData"));
+                println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+i18n("noData"));
             else {
-                println(getIndent(2)+death);
+                println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+death);
                 age = indi.getAge(indi.getDeathDate().getStart());
-                printAge(age, 3, "error");
+                printAge(age, 3, SPACES_PER_LEVEL, FRONT_THIRD_LEVEL, "error");
             }
             println();
         }
         
         if(reportAgeSinceBirth) {
             PointInTime now = PointInTime.getNow();
-            println(getIndent(1)+i18n("sinceBirth"));
-            println(getIndent(2)+now);
+            println(getIndent(1, SPACES_PER_LEVEL, FRONT_FIRST_LEVEL)+i18n("sinceBirth"));
+            println(getIndent(2, SPACES_PER_LEVEL, FRONT_SECOND_LEVEL)+now);
             age = indi.getAge(now);
-            printAge(age, 3, "error");
+            printAge(age, 3, SPACES_PER_LEVEL, FRONT_THIRD_LEVEL, "error");
         }
     }
     
-    private void printAge(Delta age, int indent, String errorMessage) {
+    private void printAge(Delta age, int indent, int spaces, String front, String errorMessage) {
         if(age == null)
-            println(getIndent(indent)+i18n(errorMessage));
+            println(getIndent(indent, spaces, front)+i18n(errorMessage));
         else
-            println(getIndent(indent)+i18n("age")+" "+age);
-    }
-    
-    
-    private String getIndent(int level) {
-        int l = level;
-        StringBuffer buffer = new StringBuffer(256);
-        while (--level>0) {
-            buffer.append("     ");
-        }
-        switch(l) {
-            case 1:
-                buffer.append(" = "); break;
-            case 2:
-                buffer.append(" * "); break;
-            case 3:
-                buffer.append(" + "); break;
-            case 4:
-                buffer.append(" - "); break;
-            case 5:
-                buffer.append(" . "); break;
-        }
-        return buffer.toString();
+            println(getIndent(indent, spaces, front)+i18n("age")+" "+age);
     }
 } //ReportAges
