@@ -212,7 +212,7 @@
      <zip zipfile="${dir.dist}/genj_app-${app.version}.zip" update="True">
        <zipfileset dir="${dir.build}/lib" includes="run.jar"/>
        <zipfileset dir="${dir.build}" includes="lib/genj.jar"/>
-       <zipfileset dir="${dir.build}" includes="lib/jfreechart.jar"/>
+       <zipfileset dir="." includes="lib/jfreechart.jar"/>
        <zipfileset dir="." includes="lib/graphj.jar"/>
        <zipfileset dir="${dir.build}/classes" includes="report/**"/>
         <zipfileset dir="./src" includes="report/**"/>
