@@ -31,6 +31,9 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.JCheckBox;
@@ -53,6 +56,7 @@ public class TagPathTree extends JScrollPane {
   private Gedcom  gedcom;
   private JTree   tree;
   private Node    root;
+  private Set     selection = new HashSet();
 
   /** statics */
   private static final Color
@@ -67,19 +71,19 @@ public class TagPathTree extends JScrollPane {
     String  tag;
     Vector  children;
     Node    parent;
-    boolean selected;
 
     /** constructor */
-    Node(String tag) {
+    private Node(String tag) {
       this.tag = tag;
       children = new Vector(4);
     }
     /** adds a child */
-    public void addChild(Node node) {
+    private void addChild(Node node) {
       children.addElement(node);
+      node.parent = this;
     }
     /** returns a child for given tag */
-    public Node getChildFor(String tag) {
+    private Node getChildFor(String tag) {
       for (int i=0;i<children.size();i++) {
         Node child = (Node)children.elementAt(i);
         if (child.tag.equals(tag))
@@ -143,7 +147,7 @@ public class TagPathTree extends JScrollPane {
       Node node = (Node)value;
       label.setText( node.tag );
       label.setIcon( ImgIconConverter.get(Property.getDefaultImage(node.tag)) );
-      checkbox.setSelected(node.selected);
+      checkbox.setSelected(selection.contains(node));
       return panel;
     }
     // EOC
@@ -172,9 +176,9 @@ public class TagPathTree extends JScrollPane {
           return;
         // Get Node and invert selection
         Node node = (Node)path.getLastPathComponent();
-        node.selected = ! node.selected;
+        if (!selection.remove(node)) selection.add(node);
         // Signal to listeners
-        fireSelectionChanged(path,node.selected);
+        fireSelectionChanged(path,selection.contains(node));
         // Show it ... simple repaint ... but could be done better ... probably
         tree.repaint();
       }
@@ -216,7 +220,7 @@ public class TagPathTree extends JScrollPane {
       createNodesFor(child,path,pos+1,select);
     // .. or end of path?
     } else {
-      child.selected=select;
+      if (select) selection.add(child);
     }
 
     // Done
@@ -235,8 +239,21 @@ public class TagPathTree extends JScrollPane {
    * Signals a change in a node to the listeners
    * @param path the TreePath to the selected node
    */
-  protected void fireSelectionChanged(TreePath path, boolean on) {
+  private void fireSelectionChanged(TreePath path, boolean on) {
 
+    // Transform to TagPath
+    TagPath p = path2path(path);
+
+    // Go through listeners
+    Enumeration enum = listeners.elements();
+    while (enum.hasMoreElements()) {
+      ((TagPathTreeListener)enum.nextElement()).handleSelection(p,on);
+    }
+  }
+  
+  /**
+   * Creates a TagPath out of a TreePath   */
+  private TagPath path2path(TreePath path) {
     // Loop through path elements (=Nodes)
     Object[] nodes = path.getPath();
     String s = "";
@@ -244,22 +261,23 @@ public class TagPathTree extends JScrollPane {
     // .. start with non-root as first
     for (int n=1;;n++) {
       s+=((Node)nodes[n]).tag;
-
-      if (n+1==nodes.length) {
-        break;
-      }
-
+      if (n+1==nodes.length) break;
       s+=":";
     }
 
     // .. and create a TagPath
-    TagPath p = new TagPath(s);
+    return new TagPath(s);
+  }
 
-    // Go through listeners
-    Enumeration enum = listeners.elements();
-    while (enum.hasMoreElements()) {
-      ((TagPathTreeListener)enum.nextElement()).handleSelection(p,on);
+  /**
+   * Create TagPath from given node   */
+  private TagPath node2path(Node node) {
+    String p = node.tag;
+    if (node.parent!=null) {
+      node = node.parent;
+      p = node.tag + ':' + p;
     }
+    return new TagPath(p);
   }
 
   /**
@@ -288,6 +306,18 @@ public class TagPathTree extends JScrollPane {
     expandRows();
 
     // Done
+  }
+  
+  /**
+   * Returns the selected TagPaths   */
+  public TagPath[] getSelection() {
+    TagPath[] result = new TagPath[selection.size()];
+    Iterator it = selection.iterator();
+    for (int i=0;it.hasNext();i++) {
+      Node node = (Node)it.next();
+      result[i] = node2path(node);
+    }
+    return result;
   }
 
   /**

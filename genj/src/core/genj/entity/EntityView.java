@@ -57,7 +57,7 @@ public class EntityView extends JComponent implements ToolBarSupport, CurrentSup
   private EntityRenderer renderer = null;
   
   /** the Gedcom we're for */
-  private Gedcom gedcom = null;
+  /*package*/ Gedcom gedcom = null;
   
   /**
    * Constructor

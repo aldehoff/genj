@@ -20,18 +20,17 @@
 package genj.entity;
 
 import genj.gedcom.Gedcom;
+import genj.renderer.Blueprint;
+import genj.renderer.BlueprintEditor;
 import genj.util.ActionDelegate;
 import genj.view.ApplyResetSupport;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.event.ActionListener;
 
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 
@@ -43,11 +42,11 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
   /** a drop-down for available entities */
   private JComboBox dropEntities = new JComboBox();
   
-  /** a text-area for html */
-  private JTextArea textHtml = new JTextArea();
-  
   /** the entity view */
   private EntityView entityView; 
+  
+  /** the scheme editor */
+  private BlueprintEditor editor;
   
   /**
    * Constructor
@@ -56,9 +55,6 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
     
     // keep the view
     entityView = view;
-    
-    // setup text area
-    textHtml.setFont(new Font("Monospaced", Font.PLAIN, 12));
     
     // get entities
     for (int i=0;i<Gedcom.NUM_TYPES;i++) {
@@ -72,10 +68,14 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
     });
     dropEntities.addActionListener((ActionListener)new ActionSelect().as(ActionListener.class));
     
+    // prepare a scheme editor
+    editor = new BlueprintEditor();
+    editor.set(view.gedcom, new Blueprint());
+    
     // do the layout
     setLayout(new BorderLayout());
     add(dropEntities, BorderLayout.NORTH);
-    add(new JScrollPane(textHtml), BorderLayout.CENTER);    
+    add(editor, BorderLayout.CENTER);    
     
     // done
   }
@@ -98,14 +98,18 @@ public class EntityViewSettings extends JPanel implements ApplyResetSupport {
    * @see genj.app.ViewSettingsWidget#apply()
    */
   public void apply() {
-    entityView.setHtml(unwrap(dropEntities.getSelectedItem()), textHtml.getText());
+    // entityView.setHtml(, edi.getText());
   }
 
   /**
    * @see genj.app.ViewSettingsWidget#reset()
    */
   public void reset() {
-    textHtml.setText(entityView.getHtml(unwrap(dropEntities.getSelectedItem())));
+    Blueprint s = new Blueprint();
+    s.setType(dropEntities.getSelectedIndex());
+    s.setHTML(entityView.getHtml(dropEntities.getSelectedIndex()));
+    editor.set(entityView.gedcom, s);
+    // FIXME textHtml.setText(entityView.getHtml(unwrap(dropEntities.getSelectedItem())));
   }
 
   /**

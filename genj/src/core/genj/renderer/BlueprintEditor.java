@@ -1,0 +1,177 @@
+/**
+ * GenJ - GenealogyJ
+ *
+ * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ *
+ * This piece of code is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package genj.renderer;
+
+import genj.app.TagPathTree;
+import genj.gedcom.Gedcom;
+import genj.gedcom.TagPath;
+import genj.util.ActionDelegate;
+import genj.util.Resources;
+import genj.util.swing.ButtonHelper;
+
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Rectangle;
+
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+/**
+ * An editor component for changing a rendering scheme */
+public class BlueprintEditor extends Box {
+
+  /** the text are for the html */
+  private JTextArea html;
+  
+  /** the preview */
+  private Preview preview;
+  
+  /** resources */
+  private final static Resources resources = new Resources(BlueprintEditor.class);
+  
+  /** the gedcom we're looking at*/
+  private Gedcom gedcom;
+  
+  /** the current scheme */
+  private Blueprint blueprint;
+
+  /** the insert button */
+  private AbstractButton bInsert;
+    
+  /**
+   * Constructor   */
+  public BlueprintEditor() { super(BoxLayout.Y_AXIS);
+    // preview
+    preview = new Preview();
+    preview.setBorder(BorderFactory.createTitledBorder("Preview"));
+    // html
+    html = new JTextArea(3,32);
+    html.setFont(new Font("Monospaced", Font.PLAIN, 12));
+    JScrollPane scroll = new JScrollPane(html);
+    scroll.setBorder(BorderFactory.createTitledBorder("HTML"));
+    // buttons
+    Box buttons = new Box(BoxLayout.X_AXIS);
+    ButtonHelper helper = new ButtonHelper().setContainer(buttons).setResources(resources);
+    bInsert = helper.create(new ActionInsert());
+    // layout
+    add(preview);
+    add(scroll);
+    add(buttons);
+    // event listening
+    html.getDocument().addDocumentListener(preview);
+    // intial set
+    set(null,null);
+    // done
+  }
+  
+  /**
+   * Set Gedcom, Blueprint
+   */
+  public void set(Gedcom geDcom, Blueprint scHeme) {
+    boolean b;
+    if (geDcom==null||scHeme==null) {
+      gedcom = null;
+      blueprint = null;
+      b = false;
+    } else {
+      gedcom = geDcom;
+      blueprint = scHeme;
+      html.setText(blueprint.getHTML());
+      b = true;
+    }
+    bInsert.setEnabled(b);
+    html.setEditable(b);
+    preview.repaint();
+    // done    
+  }
+  
+  /**
+   * The preview   */
+  private class Preview extends JComponent implements DocumentListener {
+    /**
+     * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
+     */
+    public void changedUpdate(DocumentEvent e) {
+      repaint();
+    }
+    /**
+     * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
+     */
+    public void insertUpdate(DocumentEvent e) {
+      repaint();
+    }
+    /**
+     * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
+     */
+    public void removeUpdate(DocumentEvent e) {
+      repaint();
+    }
+    /**
+     * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
+     */
+    protected void paintComponent(Graphics g) {
+      Rectangle bounds = getBounds();
+      Insets insets = getInsets();
+      bounds.x += insets.left;
+      bounds.y += insets.top ;
+      bounds.width -= insets.left+insets.right;
+      bounds.height-= insets.top +insets.bottom;
+      new EntityRenderer(g, html.getText()).render(g, bounds);
+    }
+  } //Preview
+
+  /**
+   * Insert a property   */
+  private class ActionInsert extends ActionDelegate {
+    /** constructor */
+    private ActionInsert() {
+      super.setText("insert");
+      super.setTip("insert.tip");
+    }
+    /** @see genj.util.ActionDelegate#execute() */
+    protected void execute() {
+      // create a tree of available TagPaths
+      TagPathTree tree = new TagPathTree(); 
+      tree.setPaths(TagPath.getUsedTagPaths(gedcom,blueprint.getType()));      
+      // Recheck with the user
+      int option = JOptionPane.showConfirmDialog(
+        BlueprintEditor.this, tree, resources.getString("insert.tip"), JOptionPane.OK_CANCEL_OPTION
+      );
+      // .. OK?
+      if (option != JOptionPane.OK_OPTION) return;
+      // add those properties
+      TagPath[] paths = tree.getSelection();
+      for (int p=0; p<paths.length; p++) {
+        html.insert("<prop path="+paths[p].toString()+">", html.getCaretPosition());
+      }
+      // done
+    }
+  } //ActionInsert
+  
+} //RenderingSchemeEditor
