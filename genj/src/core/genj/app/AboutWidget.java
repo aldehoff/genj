@@ -299,6 +299,7 @@ public class AboutWidget extends JPanel{
       // what are the languages
       String[] languages = {"en", "de", "es", "fr", "it", "ja"};
       choiceLanguages = new ChoiceWidget(languages, App.getInstance().getLanguage());
+      choiceLanguages.setEditable(false);
       gh.add(new JLabel(resources.getString("cc.about.tab4.language")), 0, 0);
       gh.add(choiceLanguages, 1, 0);
 

@@ -218,7 +218,6 @@ public class ReportBridge {
 
     // show 'em
     ChoiceWidget choice = new ChoiceWidget(choices, "");
-    choice.setEditable(true);
     
     int rc = view.getViewManager().getWindowManager().openDialog(
       null, 

@@ -71,7 +71,6 @@ class ProxyChoice extends Proxy{
 
     // Setup controls
     choice = new ChoiceWidget(items, property.getValue());
-    choice.setEditable(true);
     
     // layout
     panel.add(choice);

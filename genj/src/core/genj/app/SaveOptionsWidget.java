@@ -68,6 +68,7 @@ import javax.swing.JTextField;
     Box options = new Box(BoxLayout.Y_AXIS);
     options.add(new JLabel("Encoding"));
     comboEncodings = new ChoiceWidget(GedcomWriter.ENCODINGS, GedcomWriter.ANSEL);
+    comboEncodings.setEditable(false);
     options.add(comboEncodings);
     
     // entities filter    

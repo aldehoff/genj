@@ -613,7 +613,6 @@ public class ControlCenter extends JPanel {
       // pop a chooser    
       String[] choices = (String[])registry.get("urls", new String[0]);
       ChoiceWidget choice = new ChoiceWidget(choices, "");
-      choice.setEditable(true);
       JLabel label = new JLabel(resources.getString("cc.open.enter_url"));
       
       int rc = windowManager.openDialog(

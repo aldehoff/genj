@@ -76,7 +76,6 @@ class ProxyName extends Proxy {
     PropertyName pname = (PropertyName)property;
     
     cLast  = new ChoiceWidget(pname.getLastNames().toArray(), pname.getLastName());
-    cLast.setEditable(true);
     tFirst = new TextFieldWidget(pname.getFirstName(), 80); 
     tSuff  = new TextFieldWidget(pname.getSuffix()   , 80); 
 
