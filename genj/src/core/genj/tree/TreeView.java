@@ -38,6 +38,7 @@ import genj.view.ContextSupport;
 import genj.view.CurrentSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import gj.model.Node;
 import gj.ui.UnitGraphics;
 import java.awt.Color;
 import java.awt.Component;
@@ -47,8 +48,10 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -179,10 +182,23 @@ public class TreeView extends JPanel implements CurrentSupport, ContextPopupSupp
     if (entity==currentEntity) return;
     // allowed?
     if (!(entity instanceof Indi||entity instanceof Fam)) return;
-    // get and show
+    // Node for it?
+//    Node node = model.getNode(entity);
+//    if (node==null) return;
+    // remember
     currentEntity = entity;
+    // scroll
+//    Rectangle2D b = model.getBounds();
+//    Point2D     p = node.getPosition();
+//    Dimension   d = getSize();
+//    content.scrollRectToVisible(new Rectangle(
+//      UnitGraphics.units2pixels( p.getX() - b.getMinX(), UNITS*zoom ) - d.width /2,
+//      UnitGraphics.units2pixels( p.getY() - b.getMinY(), UNITS*zoom ) - d.height/2,
+//      d.width ,
+//      d.height
+//    ));
+    // make sure it's reflected
     content.repaint();
-    //overview.repaint();
     // done
   }
   
