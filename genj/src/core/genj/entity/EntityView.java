@@ -53,17 +53,18 @@ public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport
   private Registry registry;
   
   /** the renderer we're using */      
-  private EntityRenderer renderer = NORENDERER;
+  private EntityRenderer renderer = null;
   
-  /** a unset renderer */      
-  private final static EntityRenderer NORENDERER = new EntityRenderer(resources.getString("html.select"));
+  /** the Gedcom we're for */
+  private Gedcom gedcom = null;
   
   /**
    * Constructor
    */
-  public EntityView(Gedcom gedcom, Registry reg, Frame frame) {
+  public EntityView(Gedcom ged, Registry reg, Frame frame) {
     // save some stuff
     registry = reg;
+    gedcom = ged;
     // listen to gedcom
     gedcom.addListener(new GedcomConnector());
     // loop for htmls from defaults
@@ -76,9 +77,16 @@ public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport
           registry.put(key, resources.getString(key));
       }
     }
+    // done    
+  }
+  
+  /**
+   * @see javax.swing.JComponent#addNotify()
+   */
+  public void addNotify() {
+    super.addNotify();
     // set first entity
     setEntity(ViewManager.getInstance().getCurrentEntity(gedcom));
-    // done    
   }
 
   /**
@@ -111,7 +119,7 @@ public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport
   public void setHtml(int type, String set) {
     registry.put("html."+Gedcom.getTagFor(type), set);
     Entity e = renderer.getEntity(); 
-    renderer = NORENDERER;
+    renderer = null;
     setEntity(e);
   }
     
@@ -119,10 +127,11 @@ public class EntityView extends JPanel implements ToolBarSupport, CurrentSupport
    * Sets the entity to show
    */
   public void setEntity(Entity e) {
-    if (e==null) renderer=NORENDERER;
-    else {
-      if (renderer==NORENDERER||renderer.getEntity().getType()!=e.getType()) {
-        renderer = new EntityRenderer(getHtml(e.getType()));
+    if (e==null) {
+      renderer=new EntityRenderer(getGraphics(), resources.getString("html.select"));
+    } else {
+      if (renderer==null||renderer.getEntity()==null||renderer.getEntity().getType()!=e.getType()) {
+        renderer = new EntityRenderer(getGraphics(), getHtml(e.getType()));
       }
       renderer.setEntity(e);
     }

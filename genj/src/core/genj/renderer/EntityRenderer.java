@@ -29,7 +29,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -81,10 +80,18 @@ public class EntityRenderer {
   /** the proxies we know */
   private static Map proxies = new HashMap(10);
   
+  /** the graphics we're for */
+  private Graphics graphics;
+  
   /**
    * 
    */  
-  public EntityRenderer(String html) {
+  public EntityRenderer(Graphics g, String html) {
+
+    if (g==null||html==null) throw new IllegalArgumentException("Graphics and html must not be null"); 
+    
+    // remember Graphics
+    graphics = g;
     
     // we wrap the html in html/body
     html = "<html><body>"+html+"</body></html>";
@@ -335,7 +342,7 @@ public class EntityRenderer {
      * Returns the current metrics
      */
     private FontMetrics getFontMetrics() {
-      return Toolkit.getDefaultToolkit().getFontMetrics(getFont());
+      return graphics.getFontMetrics(getFont());
     }
     
     /** 
