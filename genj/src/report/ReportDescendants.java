@@ -50,9 +50,9 @@ public class ReportDescendants extends Report {
   /**
    * @see genj.report.Report#accepts(java.lang.Object)
    */
-  public boolean accepts(Object context) {
+  public String accepts(Object context) {
     // we accepts Gedom AND Individuals 
-    return context instanceof Indi || context instanceof Gedcom;  
+    return context instanceof Indi || context instanceof Gedcom ? getName() : null;  
   }
   
   /**

@@ -291,7 +291,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     private Object context;
     
     /** the running report */
-    private Report report;
+    private Report instance;
     
     /** constructor */
     protected ActionStart(Object coNtext) {
@@ -309,15 +309,34 @@ public class ReportView extends JPanel implements ToolBarSupport {
      */
     protected boolean preExecute() {
       
-      // Calc Report
-      report = (Report)listOfReports.getSelectedValue();
-      if (report==null) 
-        return false;
-      report = report.getInstance(ReportView.this, new Registry(registry, report.getName()));
-  
       // .. change buttons
       setRunning(true);
+      
+      // clear instance
+      instance = null;
   
+      // Calc Report
+      Report report = (Report)listOfReports.getSelectedValue();
+      if (report==null) 
+        return false;
+
+      // check if appropriate
+      if (report.accepts(context)==null) {
+        manager.getWindowManager().openDialog(
+          null,
+          null,
+          WindowManager.IMG_ERROR,
+          resources.getString("report.noaccept", new String[]{report.getName(), context.getClass().getName() } ),
+          WindowManager.OPTIONS_OK,
+          ReportView.this
+        );
+        instance = null;
+        return false;
+      }
+
+      // create our own private instance  
+      instance = report.getInstance(ReportView.this, new Registry(registry, report.getName()));
+      
       // .. switch to output
       if (report.usesStandardOut()) {
         tabbedPane.getModel().setSelectedIndex(1);
@@ -338,16 +357,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
      */
     protected void execute() {
 
-      // Report actions are subject to interruption
-      boolean readOnly=report.isReadOnly();
-
       // .. lock Gedcom for read and start report
       try {
-        report.start(context);
+        instance.start(context);
       } catch (ReportCancelledException ex) {
       } catch (Throwable t) {
         // Running report failed
-        report.println(t);
+        instance.println(t);
       }
 
     }
@@ -356,11 +372,14 @@ public class ReportView extends JPanel implements ToolBarSupport {
      * post execute
      */
     protected void postExecute() {
-      // flush
-      report.flush();
-      // end tx
-      if (!report.isReadOnly())
-        gedcom.endTransaction();
+      // report to cleanup?
+      if (instance!=null) {
+        // flush
+        instance.flush();
+        // end tx
+        if (!instance.isReadOnly())
+          gedcom.endTransaction();
+      }
       // stop run
       setRunning(false);
     }

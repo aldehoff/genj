@@ -94,8 +94,9 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
     Report[] reports = ReportLoader.getInstance().getReports();
     for (int r=0;r<reports.length;r++) {
       Report report = reports[r];
-      if (report.accepts(context))
-        result.add(new ActionRun(context, gedcom, report, manager));
+      String accept = report.accepts(context); 
+      if (accept!=null)
+        result.add(new ActionRun(accept, context, gedcom, report, manager));
     }
     // done
     return result;
@@ -114,7 +115,7 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
     /** view mgr */
     private ViewManager manager;
     /** constructor */
-    private ActionRun(Object coNtext, Gedcom geDcom, Report rePort, ViewManager maNager) {
+    private ActionRun(String txt, Object coNtext, Gedcom geDcom, Report rePort, ViewManager maNager) {
       // remember
       context = coNtext;
       gedcom = geDcom;
@@ -122,7 +123,7 @@ public class ReportViewFactory implements ViewFactory, ActionSupport {
       manager = maNager;
       // show
       setImage(getImage());
-      setText(report.getName());
+      setText(txt);
     }
     /** callback */
     protected void execute() {

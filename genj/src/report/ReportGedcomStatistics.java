@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.19 2003-05-28 19:22:59 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.20 2003-05-29 01:38:06 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @version 1.1
  */
@@ -200,7 +200,7 @@ public class ReportGedcomStatistics extends Report {
 
     // Six: We show the birth places
     println("  * Stats about birth places :");
-    Iterator births = stats.birthPlaces.iterator();
+    Iterator births = stats.birthPlaces.getValues().iterator();
     while (births.hasNext()) {
       String place = (String)births.next();
       int count = stats.birthPlaces.getCount(place);
@@ -211,7 +211,7 @@ public class ReportGedcomStatistics extends Report {
 
     // Seven: We show the death places
     println("  * Stats about death places :");
-    Iterator deaths = stats.deathPlaces.iterator();
+    Iterator deaths = stats.deathPlaces.getValues().iterator();
     while (deaths.hasNext()) {
       String place = (String)deaths.next();
       int count = stats.deathPlaces.getCount(place);

@@ -394,9 +394,10 @@ public abstract class Report implements Cloneable {
    * Whether the report allows to be run on a given context - default
    * only accepts Gedcom 
    * @param context will an instance of either Gedcom, Entity or Property
+   * @return null for no - string specific to context for yes 
    */
-  public boolean accepts(Object context) {
-    return context instanceof Gedcom;
+  public String accepts(Object context) {
+    return context instanceof Gedcom ? getName() :  null;
   }
 
 } //Report
