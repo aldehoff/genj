@@ -57,13 +57,6 @@ public abstract class PropertyOption extends Option {
    * Get options for given instance 
    */
   public static List introspect(Object instance) {
-    return introspect(instance, null);
-  }
-  
-  /**
-   * Get options for given instance 
-   */
-  public static List introspect(Object instance, String category) {
     
     // prepare result
     List result = new ArrayList();
@@ -91,7 +84,6 @@ public abstract class PropertyOption extends Option {
             
           // create 
           Option option = BeanPropertyImpl.create(instance, property);
-          option.setCategory(category);
           
           // and keep the option
           result.add(option);
@@ -131,7 +123,6 @@ public abstract class PropertyOption extends Option {
 
       // create 
       Option option = FieldImpl.create(instance, field);
-      option.setCategory(category);
       
       // and keep the option
       result.add(option);
@@ -309,6 +300,21 @@ public abstract class PropertyOption extends Option {
       this.mapper   = type==Font.class ? new FontMapper() : new Mapper();
     }
 
+    /**
+     * Accessor - category of this option
+     */
+    public String getCategory() {
+      String result = super.getCategory();
+      if (result==null) {
+        // try to localize?
+        Resources resources = Resources.get(instance);
+        result = resources.getString("options", false);
+        if (result!=null)
+          super.setCategory(result);
+      }
+      return result;
+    }
+    
     /**
      * Accessor - name of this option
      */

@@ -49,7 +49,7 @@ public class Options extends OptionProvider {
    * provided options
    */
   public List getOptions() {
-    return PropertyOption.introspect(instance, "Editing");
+    return PropertyOption.introspect(instance);
   }
 
 } //Options
