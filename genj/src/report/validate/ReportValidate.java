@@ -35,6 +35,9 @@ public class ReportValidate extends Report {
 
   /** whether we consider underscore tags to be valid custom tags */
   public boolean isUnderscoreValid = true;
+  
+  /** whether we consider extramarital children (before MARR after DIV) to be valid */
+  public boolean isExtramaritalValid = false;
 
   /** options of reports are picked up via field-introspection */
   public int
@@ -223,9 +226,11 @@ public class ReportValidate extends Report {
     result.add(new TestDate("FAM:CHIL"      ,"*:..:BIRT:DATE", TestDate.AFTER  ,"FAM:WIFE:*:..:DEAT:DATE"));
 
     // childbirth before marriage / after div
-    result.add(new TestDate("FAM:CHIL"      ,"*:..:BIRT:DATE", TestDate.BEFORE ,"FAM:MARR:DATE"));
-    result.add(new TestDate("FAM:CHIL"      ,"*:..:BIRT:DATE", TestDate.AFTER  ,"FAM:DIV:DATE"));
-
+    if (!isExtramaritalValid) {
+	    result.add(new TestDate("FAM:CHIL"      ,"*:..:BIRT:DATE", TestDate.BEFORE ,"FAM:MARR:DATE"));
+	    result.add(new TestDate("FAM:CHIL"      ,"*:..:BIRT:DATE", TestDate.AFTER  ,"FAM:DIV:DATE"));
+    }
+    
     // ************************* AGE TESTS **********************************
     
     // max lifespane
