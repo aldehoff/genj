@@ -320,7 +320,7 @@ public class Report4Generations extends Report {
     
     // String t = indi.getProperty(new TagPath("INDI:TITL"),true).toString();
     if (propTitle != null)
-	name = propTitle.toString()+" "+name;
+	name = propTitle.getValue()+" "+name;
 
     int padding = BLOCK_WIDTH - name.length();
     String padded = pad(padding/2)+name+pad(padding-padding/2);
