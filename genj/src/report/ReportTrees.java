@@ -32,7 +32,7 @@ public class ReportTrees extends Report {
      * FIXME The parameter below should be set by a configuration
      * interface when available
      */
-    static final int CUTOFF = 2;  // Don't print trees with count less than this
+    public int minTreeSize = 2;  // Don't print trees with count less than this
     
     /** this report's version */
     static final String VERSION = "1.0";
@@ -105,7 +105,7 @@ public class ReportTrees extends Report {
                 stats.trees[curTree] = new AncTree();
                 stats.trees[curTree].name = "@"+indi.getId()+"@ "+indi.getName();
                 stats.trees[curTree].count = analyzeIndividual(indi, stats);
-                if( stats.trees[curTree].count > CUTOFF ) {
+                if( stats.trees[curTree].count > minTreeSize ) {
                     Object[] msgargs = {new Integer(curTree),
                     stats.trees[curTree].name,
                     new Integer(stats.trees[curTree].count)};
@@ -132,7 +132,7 @@ public class ReportTrees extends Report {
             int loners=0;
             for (int i=0; i<stats.numTrees; i++) {
                 int count=stats.trees[i].count;
-                if (count<CUTOFF) {
+                if (count<minTreeSize) {
                     loners +=count;
                 } else {
                     grandtotal+=count;
@@ -144,7 +144,7 @@ public class ReportTrees extends Report {
             println(i18n("grandtotal",grandtotal));
             
             if (loners>0) {
-                Object[] msgargs = {new Integer(loners), new Integer(CUTOFF)};
+                Object[] msgargs = {new Integer(loners), new Integer(minTreeSize)};
                 println("\n"+i18n("loners",msgargs));
             }
         }
