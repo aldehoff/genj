@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.4 $ $Author: nmeier $ $Date: 2004-12-14 18:27:33 $
+ * $Revision: 1.5 $ $Author: nmeier $ $Date: 2004-12-14 22:25:40 $
  */
 package genj.chart;
 
@@ -55,8 +55,10 @@ public class Chart extends JPanel {
    */
   private void init(String title, Plot plot, boolean legend) {
     setLayout(new BorderLayout());
-    
-    add(new ChartPanel(new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, plot, legend)), BorderLayout.CENTER);
+    ChartPanel panel = new ChartPanel(new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, plot, legend));
+    panel.setHorizontalZoom(true);
+    panel.setVerticalZoom(true);
+    add(panel, BorderLayout.CENTER);
   }
   
   /**
