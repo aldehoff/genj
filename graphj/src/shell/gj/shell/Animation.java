@@ -14,9 +14,9 @@
  * Lesser General Public License for more details.
  */package gj.shell;
 
+import gj.layout.ArcLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
-import gj.layout.PathHelper;
 import gj.layout.random.RandomLayout;
 import gj.model.Arc;
 import gj.model.Graph;
@@ -46,6 +46,9 @@ import java.util.Iterator;
     frameTime = 1000/60 ,
     lastFrame, 
     startFrame;
+    
+  /** an arc layout we use during the animation */
+  private ArcLayout arcLayout = new ArcLayout();    
   
   /**
    * Constructor
@@ -75,10 +78,10 @@ import java.util.Iterator;
     
     // do the layout
     try {
-      layout.applyTo(graph);
+      layout.layout(graph);
     } catch (LayoutException e) {
       // make sure the graph is at least some how in place
-      new RandomLayout().applyTo(graph);
+      new RandomLayout().layout(graph);
       // can't handle it really
       throw e;
     }
@@ -229,7 +232,7 @@ import java.util.Iterator;
     }
     boolean perform(double time) {
       if (time<1)
-        PathHelper.update(arc.getPath(),start,end);
+        arcLayout.layout(arc);
       else 
         arc.getPath().set(shape);
       return true;

@@ -15,6 +15,7 @@
  */
 package gj.model.factory;
 
+import gj.layout.ArcLayout;
 import gj.model.Arc;
 import gj.model.Node;
 import java.awt.Shape;
@@ -26,6 +27,9 @@ import java.util.List;
  * Base for all Graph/Tree/.. creation
  */
 public abstract class AbstractFactory implements Factory {
+
+  /** an arc layout for convenience */
+  protected ArcLayout arcLayout = new ArcLayout();
 
   /**
    * Helper that returns the node with minimum degree from a list

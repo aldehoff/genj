@@ -16,39 +16,43 @@
 package gj.layout.tree;
 
 import gj.awt.geom.Path;
-import gj.layout.PathHelper;
+import gj.layout.ArcLayout;
 import gj.model.Arc;
 import gj.model.Node;
 import gj.util.ArcIterator;
-import gj.util.ModelHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 
 /**
- * The ArcLayout
+ * The ArcLayout for trees
  */
-/*package*/ abstract class ArcLayout {
+/*package*/ abstract class TreeArcLayout extends ArcLayout {
   
   /**
-   * Resolve an orientation
+   * Resolve an instance
    * @param bended whether we bend arcs 
    * @return an ArcLayout
    */
-  /*package*/ static ArcLayout get(boolean bended) {
-    if (bended) return new BendedArcLayout();
-    else return new DefaultArcLayout();
+  /*package*/ static TreeArcLayout get(boolean bended) {
+    if (bended) return new Bended();
+    else return new Straight();
   }
-  
-  
+    
   /**
    * apply the layout
    */
-  /*package*/ final void applyTo(Node root, Arc backtrack, double equator, Orientation orientation) {
+  /*package*/ final void layout(Node root, Arc backtrack, double equator, Orientation orientation) {
     // Loop through arcs to children (without backtrack)
     ArcIterator it = new ArcIterator(root);
     while (it.next()) {
-      if (!it.isDup(backtrack)&&it.arc.getPath()!=null) layout(root, it, equator, orientation);
+      // no path no interest
+      if (it.arc.getPath()==null) continue;
+      // won't go via backtrack
+      if (it.isDup(backtrack)) continue;
+      // handle loops separate from specialized
+      if (it.isLoop) layout(it.arc);
+      else layout(it.arc, equator, orientation);
     }
     // done      
   }
@@ -56,23 +60,23 @@ import java.awt.geom.Point2D;
   /**
    * layout one arc in the iterator we're working on
    */
-  /*package*/ abstract void layout(Node root, ArcIterator it, double equator, Orientation orientation);
+  protected abstract void layout(Arc arc, double equator, Orientation orientation);
 
 
   /**
    * Default (direct-line) ArcLayout
    */
-  private static class DefaultArcLayout extends ArcLayout {
+  private static class Straight extends TreeArcLayout {
     
     /**
      * layout one arc in the iterator we're working on
      */
-    /*package*/ void layout(Node root, ArcIterator it, double equator, Orientation orientation) {
-    
+    protected void layout(Arc arc, double equator, Orientation orientation) {
+      
       // grab nodes and their position/shape
       Node
-        n1 = it.arc.getStart(),
-        n2 = it.arc.getEnd();
+        n1 = arc.getStart(),
+        n2 = arc.getEnd();
       Point2D 
         p1 = n1.getPosition(),
         p2 = n2.getPosition();
@@ -81,17 +85,17 @@ import java.awt.geom.Point2D;
         s2 = n2.getShape();
 
       // calculate south of p1 and north of p2
-      p1 = PathHelper.calculateProjection(
+      p1 = getIntersection(
         p1, orientation.getPoint2D(orientation.getLatitude(p2), orientation.getLongitude(p1)),
         p1, s1
       );
-      p2 = PathHelper.calculateProjection(
+      p2 = getIntersection(
         p2, orientation.getPoint2D(orientation.getLatitude(p1), orientation.getLongitude(p2)),
         p2, s2
       );
 
       // strike a path
-      Path path = it.arc.getPath();
+      Path path = arc.getPath();
       path.reset();
       path.moveTo(p1);
       path.lineTo(p2);
@@ -104,49 +108,48 @@ import java.awt.geom.Point2D;
   /**
    * Bended ArcLayout
    */
-  private static class BendedArcLayout extends DefaultArcLayout {
+  private static class Bended extends Straight {
     
     /**
      * layout one arc in the iterator we're working on
      */
-    /*package*/ void layout(Node root, ArcIterator it, double equator, Orientation orientation) {
+    protected void layout(Arc arc, double equator, Orientation o) {
       
-      // we don't do anything special with loops
-      if (it.isLoop) {
-        super.layout(root,it,equator,orientation);
-        return;
-      }
-  
+      // grab arc's information
       Node
-        start = it.arc.getStart(),
-        end   = it.arc.getEnd(),
-        other = ModelHelper.getOther(it.arc,root);
+        n1 = arc.getStart(),
+        n2 = arc.getEnd();
       
-      // bend the arc
       Point2D
-        p1 = root.getPosition(),
+        p1 = n1.getPosition(),
         p2 = new Point2D.Double(),
         p3 = new Point2D.Double(),
-        p4 = other.getPosition();
-        
-      if (p1.getX()==p4.getX()||p1.getY()==p4.getY()) {
-        super.layout(root,it,equator,orientation);
+        p4 = n2.getPosition();
+
+      // straight line up?
+      if (o.getLongitude(p1)==o.getLongitude(p4)) {
+        super.layout(arc);
         return;
-      }
-  
-      if (Double.isNaN(equator)) {
-        p2.setLocation(orientation.getPoint2D(orientation.getLatitude(p1), orientation.getLongitude(p4)));
-        p3=p2;        
+      }        
+
+      // bending around equator
+      if (equator==o.getLatitude(p1)) {
+        p2.setLocation(o.getPoint2D(equator, o.getLongitude(p4)));
+        p3=p2;
+      } else if (equator==o.getLatitude(p4)) {
+        p2.setLocation(o.getPoint2D(equator, o.getLongitude(p1)));
+        p3=p2;
       } else {
-        p2.setLocation(orientation.getPoint2D(equator, orientation.getLongitude(p1)));
-        p3.setLocation(orientation.getPoint2D(equator, orientation.getLongitude(p4)));
+        p2.setLocation(o.getPoint2D(equator, o.getLongitude(p1)));
+        p3.setLocation(o.getPoint2D(equator, o.getLongitude(p4)));
       }
-  
-      PathHelper.update(
-        it.arc.getPath(),
-        root==start ? new Point2D[]{p1,p2,p3,p4} : new Point2D[]{p4,p3,p2,p1},
-        start.getShape(),
-        end.getShape()
+
+      // layout       
+      super.layout(
+        arc.getPath(),
+        new Point2D[]{p1,p2,p3,p4},
+        n1.getShape(),
+        n2.getShape()
       );
       
       // done

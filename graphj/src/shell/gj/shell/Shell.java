@@ -232,9 +232,9 @@ public class Shell {
       // apply it?
       if (!isAnimation) {
         try {
-          layout.applyTo(graph);
+          layout.layout(graph);
         } catch (LayoutException e) {
-          new RandomLayout().applyTo(graph);
+          new RandomLayout().layout(graph);
           // can't handle it really
           throw e;
         } finally {

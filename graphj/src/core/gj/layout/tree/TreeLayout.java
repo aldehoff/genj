@@ -268,7 +268,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
   /**
    * @see gj.layout.Layout#applyTo(Graph)
    */
-  public void applyTo(Graph graph) throws LayoutException {
+  public void layout(Graph graph) throws LayoutException {
 
     // remember
     appliedTo = graph;
@@ -288,7 +288,7 @@ public class TreeLayout extends AbstractLayout implements Layout {
       nodeOptions, 
       isLatAlignmentEnabled,
       orientationToggles,
-      ArcLayout.get(isBendArcs)
+      TreeArcLayout.get(isBendArcs)
     );
 
     // keep track of nodes we haven't visited yet

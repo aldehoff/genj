@@ -16,7 +16,6 @@
 package gj.model.factory;
 
 import gj.awt.geom.Path;
-import gj.layout.PathHelper;
 import gj.model.MutableGraph;
 import gj.model.Node;
 import java.awt.Shape;
@@ -129,9 +128,9 @@ public class TreeFactory extends AbstractFactory {
         String key = sample[s][c];        
         Node to = (Node)nodes.get(key);
         if (Math.random()>0.5) {
-          PathHelper.update(graph.createArc(from, to, new Path()));
+          arcLayout.layout(graph.createArc(from, to, new Path()));
         } else {
-          PathHelper.update(graph.createArc(to, from, new Path()));
+          arcLayout.layout(graph.createArc(to, from, new Path()));
         }
       }
     }

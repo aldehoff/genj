@@ -18,7 +18,6 @@ package gj.layout.random;
 import gj.layout.AbstractLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
-import gj.layout.PathHelper;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
@@ -85,7 +84,7 @@ public class RandomLayout extends AbstractLayout implements Layout {
   /**
    * @see Layout#applyTo(Graph)
    */
-  public void applyTo(Graph graph) throws LayoutException {
+  public void layout(Graph graph) throws LayoutException {
     
     // something to do for me?
     if (graph.getNodes().isEmpty()) return;
@@ -124,7 +123,7 @@ public class RandomLayout extends AbstractLayout implements Layout {
         from = arc.getStart(),
         to   = arc.getEnd();
       
-      PathHelper.update(arc.getPath(), from, to);
+      arcLayout.layout(arc);
     }
     
     // done

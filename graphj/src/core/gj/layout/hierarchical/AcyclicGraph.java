@@ -65,7 +65,7 @@ import java.util.List;
     ArcIterator it = new DirectedArcIterator(from, false);
     while (it.next()) {
       // no need to check path-segment twice
-      if (it.i>0) continue;
+      if (!it.isFirst) continue;
       if (it.isLoop) continue;
       // trivial case?
       if ((it.arc.getStart()==from)&&(it.arc.getEnd()==to)) return true;

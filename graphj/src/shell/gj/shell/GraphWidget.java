@@ -18,8 +18,8 @@ package gj.shell;
 import gj.awt.geom.Dimension2D;
 import gj.awt.geom.Path;
 import gj.awt.geom.ShapeHelper;
+import gj.layout.ArcLayout;
 import gj.layout.Layout;
-import gj.layout.PathHelper;
 import gj.model.Arc;
 import gj.model.MutableGraph;
 import gj.model.Node;
@@ -278,6 +278,8 @@ public class GraphWidget extends JPanel {
    * Mouse Analyzer
    */
   private abstract class DnD extends MouseAdapter implements MouseMotionListener {
+    /** an arc layout we use during dnds*/
+    protected ArcLayout arcLayout = new ArcLayout();    
     /** start */
     public void start(MouseEvent e) {
       // already someone there?
@@ -296,16 +298,7 @@ public class GraphWidget extends JPanel {
     protected void nodeChanged(Node node) {
       // update it's arcs
       ArcIterator it = new ArcIterator(node);
-      while (it.next()) {
-        Node 
-          from = it.arc.getStart(),
-          to = it.arc.getEnd();
-        PathHelper.update(
-          it.arc.getPath(),
-          from.getPosition(), from.getShape(), 
-          to.getPosition(), to.getShape()
-        );
-      }
+      while (it.next()) arcLayout.layout(it.arc);
       // show it
       repaint();
     }
@@ -435,8 +428,7 @@ public class GraphWidget extends JPanel {
     public void mouseReleased(MouseEvent e) {
       Node to = getElement(content.getX(e), content.getY(e));
       if (to!=null) {
-        Arc arc = graph.createArc(from, to, new Path());
-        PathHelper.update(arc.getPath(), from.getPosition(), from.getShape(), to.getPosition(), to.getShape());
+        arcLayout.layout(graph.createArc(from, to, new Path()));
       }
       repaint();
       dndNoOp.start(e);
@@ -461,7 +453,7 @@ public class GraphWidget extends JPanel {
     }
     /** @see gj.model.Arc#getPath() */
     public Path getPath() {
-      return PathHelper.update(new Path(), from.getPosition(),from.getShape(),to,null);
+      return arcLayout.layout(new Path(), from.getPosition(),from.getShape(),to,null);
     }
   } // EOC
 

@@ -18,7 +18,6 @@ package gj.layout.hierarchical;
 import gj.layout.AbstractLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
-import gj.layout.PathHelper;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
@@ -56,7 +55,7 @@ public class HierarchicalLayout extends AbstractLayout implements Layout {
   /**
    * @see gj.layout.Layout#applyTo(Graph)
    */
-  public void applyTo(Graph graph) throws LayoutException {
+  public void layout(Graph graph) throws LayoutException {
     
     // something to do?
     if (graph.getNodes().isEmpty()) return;
@@ -146,7 +145,7 @@ public class HierarchicalLayout extends AbstractLayout implements Layout {
     Iterator it = graph.getArcs().iterator();
     while (it.hasNext()) {
       Arc arc = (Arc)it.next();
-      PathHelper.update(arc.getPath(),arc.getStart(),arc.getEnd());
+      arcLayout.layout(arc);
     }
     
     // then layout all arcs that were broken - the
@@ -162,7 +161,7 @@ public class HierarchicalLayout extends AbstractLayout implements Layout {
         points[d] = nodes[d].getPosition();
       }
       // which we reflect on the Path
-      PathHelper.update(
+      arcLayout.layout(
         arc.getPath(), 
         points,
         arc.getStart().getShape(),

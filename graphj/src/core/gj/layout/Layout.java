@@ -26,6 +26,6 @@ public interface Layout {
   /** 
    * Applies the layout to a given graph
    */
-  public void applyTo(Graph graph) throws LayoutException;
+  public void layout(Graph graph) throws LayoutException;
   
 }

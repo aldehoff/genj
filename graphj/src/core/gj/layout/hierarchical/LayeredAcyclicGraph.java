@@ -143,7 +143,7 @@ import java.util.Map;
     ArcIterator it = new DirectedArcIterator(root,incoming);
     while (it.next()) {
       // don't push twice in one direction
-      if (it.i>0) continue;
+      if (!it.isFirst) continue;
       // don't loop
       if (it.isLoop) continue;
       // incoming / outgoing

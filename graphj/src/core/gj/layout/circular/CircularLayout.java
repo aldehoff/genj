@@ -17,9 +17,9 @@ package gj.layout.circular;
 
 import gj.awt.geom.Geometry;
 import gj.layout.AbstractLayout;
+import gj.layout.ArcLayout;
 import gj.layout.Layout;
 import gj.layout.LayoutException;
-import gj.layout.PathHelper;
 import gj.model.Arc;
 import gj.model.Graph;
 import gj.model.Node;
@@ -41,6 +41,9 @@ public class CircularLayout extends AbstractLayout implements Layout {
   
   /** whether we're generating a single circle or not */
   private boolean isSingleCircle = true;
+  
+  /** an arc layout we use */
+  private ArcLayout alayout = new ArcLayout();
 
   /**
    * Getter - is single circle
@@ -73,7 +76,7 @@ public class CircularLayout extends AbstractLayout implements Layout {
   /**
    * @see gj.layout.Layout#applyTo(Graph)
    */
-  public void applyTo(Graph graph) throws LayoutException {
+  public void layout(Graph graph) throws LayoutException {
     
     // no purpose in empty|1-ary graph
     if (graph.getNodes().size()<2) return;
@@ -98,7 +101,7 @@ public class CircularLayout extends AbstractLayout implements Layout {
     Iterator arcs = graph.getArcs().iterator();
     while (arcs.hasNext()) {
       Arc arc = (Arc)arcs.next();
-      PathHelper.update(arc.getPath(),arc.getStart(),arc.getEnd());
+      alayout.layout(arc);
     }
     
     // done

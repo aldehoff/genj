@@ -47,7 +47,7 @@ import java.util.Stack;
   private Set orientntggls;
   
   /** the arc layout we use */
-  private ArcLayout alayout;
+  private TreeArcLayout alayout;
   
   /** whether latitude alignment is enabled */
   private boolean latalign;
@@ -55,7 +55,7 @@ import java.util.Stack;
   /**
    * Constructor
    */
-  /*package*/ NodeLayout(Orientation orientation, NodeOptions nodeOptions, boolean isLatAlignmentEnabled, Set orientationToggles, ArcLayout arcLayout) {
+  /*package*/ NodeLayout(Orientation orientation, NodeOptions nodeOptions, boolean isLatAlignmentEnabled, Set orientationToggles, TreeArcLayout arcLayout) {
     orientn = orientation;
     nodeop  = nodeOptions;
     latalign = isLatAlignmentEnabled;
@@ -152,7 +152,12 @@ import java.util.Stack;
     Contour root = layoutParent(node, backtrack, children, tree, generation);
 
     // we layout the arcs
-    alayout.applyTo(node, backtrack, toggleOrientation ? Double.NaN : root.south, orientn);
+    alayout.layout(
+      node, 
+      backtrack, 
+      toggleOrientation ? orientn.getLatitude(node.getPosition()) : root.south, 
+      orientn
+    );
 
     // make everything children/arcs directly 'under' node relative
     absolute2relative(node, backtrack);

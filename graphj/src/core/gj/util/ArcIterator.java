@@ -35,7 +35,6 @@ public class ArcIterator {
   public Arc arc = null;
   
   /** the current's meta information */
-  public int i;
   public boolean isLoop;
   public boolean isFirst;
   
@@ -78,19 +77,18 @@ public class ArcIterator {
   
     // the next
     arc = (Arc)arcs.next();
-    i    = 0;
+    isFirst = true;
     
     // analyze the arcs we've iterated over already
     for (int a=0;a<index;a++) {
       // .. arc could be same twice (loop) -> ignore
       if (done[a]==arc) return next();
-      // .. arc could be dup of existing
-      if (isDup(done[a])) { i++; }
+      // .. arc could be dup of existing -> second or more
+      if (isDup(done[a])) isFirst=false;
     }
     done[index++]=arc;
     
-    // flags
-    isFirst = i==0;
+    // loop?
     isLoop = arc.getStart()==arc.getEnd();
 
     // done

@@ -15,15 +15,17 @@
  */
 package gj.layout;
 
-
 /**
  * Base for Layouts (optional)
  */
-public class AbstractLayout {
+public abstract class AbstractLayout implements Layout {
   
   /** whether we debug or not */
   private boolean isDebug = true;
   
+  /** an arc layout for convenience */
+  protected ArcLayout arcLayout = new ArcLayout();
+
   /**
    * Getter - debug
    */
@@ -39,16 +41,11 @@ public class AbstractLayout {
   }
   
   /**
-   * Constructor
-   */
-  protected AbstractLayout() {
-  }
-  
-  /**
    * String representation
    */
   public String toString() {
     String s = getClass().getName();
     return s.substring(s.lastIndexOf('.')+1);
   }
-}
+  
+} //AbstractLayout
