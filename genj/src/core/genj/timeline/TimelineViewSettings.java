@@ -21,6 +21,8 @@ package genj.timeline;
 
 import genj.app.TagSelector;
 import genj.gedcom.PropertyEvent;
+import genj.util.ActionDelegate;
+import genj.util.swing.DoubleValueSlider;
 import genj.view.ApplyResetSupport;
 
 import java.awt.BorderLayout;
@@ -30,8 +32,11 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeListener;
 
 /**
  * The ViewInfo representing settings of a TimelineView
@@ -61,7 +66,10 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     new JCheckBox(TimelineView.resources.getString("info.show.dates")),
     new JCheckBox(TimelineView.resources.getString("info.show.grid" ))
   };
-
+  
+  /** sliders for event size */
+  private DoubleValueSlider sliderCmBefEvent, sliderCmAftEvent;
+    
   /**
    * Constructor
    */
@@ -69,21 +77,30 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     
     // remember
     timeline = timelineView;
+
+    // panel for checkbox options    
+    Box panelOptions = new Box(BoxLayout.Y_AXIS);
+    for (int i=0; i<checkOptions.length; i++) {
+      checkOptions[i].setAlignmentX(0F);
+      panelOptions.add(checkOptions[i]);
+    }
+    sliderCmBefEvent = new DoubleValueSlider(timeline.MIN_CM_BEF_EVENT, timeline.MAX_CM_BEF_EVENT, timeline.cmBefEvent, false);
+    sliderCmBefEvent.setAlignmentX(0F);
+    sliderCmBefEvent.setToolTipText(timeline.resources.getString("info.befevent.tip"));
+    panelOptions.add(sliderCmBefEvent);
+    
+    sliderCmAftEvent = new DoubleValueSlider(timeline.MIN_CM_AFT_EVENT, timeline.MAX_CM_AFT_EVENT, timeline.cmAftEvent, false);
+    sliderCmAftEvent.setAlignmentX(0F);
+    sliderCmAftEvent.setToolTipText(timeline.resources.getString("info.aftevent.tip"));
+    panelOptions.add(sliderCmAftEvent);
     
     // panel for main options
     JPanel panelMain = new JPanel(new BorderLayout());
-    
-    Box panelOptions = new Box(BoxLayout.Y_AXIS);
-    for (int i=0; i<checkOptions.length; i++) {
-      panelOptions.add(checkOptions[i]);
-    }
-    
     panelMain.add(selectorEventTags, BorderLayout.CENTER);
     panelMain.add(panelOptions, BorderLayout.SOUTH);
     
     // panel for colors
     JPanel panelColors = new JPanel(new BorderLayout());
-    
     JColorChooser colorChooser = new JColorChooser();
     colorChooser.setPreviewPanel(new JPanel());
     panelColors.add(colorChooser, BorderLayout.CENTER);
@@ -91,6 +108,13 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     // add those tabs
     add("Main"  , panelMain);
     add("Colors", panelColors);
+
+    // listen
+    ActionSlider as = new ActionSlider();
+    ChangeListener cl = (ChangeListener)as.as(ChangeListener.class);
+    sliderCmAftEvent.addChangeListener(cl);
+    sliderCmBefEvent.addChangeListener(cl);
+    as.trigger();
 
     // init
     reset();
@@ -110,6 +134,7 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     timeline.setPaintTags(checkOptions[0].isSelected());
     timeline.setPaintDates(checkOptions[1].isSelected());
     timeline.setPaintGrid(checkOptions[2].isSelected());
+    timeline.setCMPerEvents(sliderCmBefEvent.getValue(), sliderCmAftEvent.getValue());
     
     // Done
   }
@@ -130,4 +155,21 @@ public class TimelineViewSettings extends JTabbedPane implements ApplyResetSuppo
     // Done
   }
 
-}
+  /**
+   * Action - slider changes
+   */
+  private class ActionSlider extends ActionDelegate {
+    /** @see genj.util.ActionDelegate#execute() */
+    protected void execute() {
+      // get values
+      double 
+        cmBefEvent = sliderCmBefEvent .getValue(),
+        cmAftEvent = sliderCmAftEvent.getValue();
+      // update labels
+      sliderCmBefEvent.setText(timeline.cm2txt(cmBefEvent, "info.befevent"));
+      sliderCmAftEvent.setText(timeline.cm2txt(cmAftEvent, "info.aftevent"));
+      // done
+    }
+  } //ActionSlider
+    
+} //TimelineViewSettings

@@ -143,7 +143,7 @@ public class ContentRenderer extends Renderer {
       fd  = fm.getDescent(),
       x1  = cm2pixels((event.from-model.min)*cmPyear),
       x2  = cm2pixels((event.to-model.min)*cmPyear),
-      w   = next == null ? Integer.MAX_VALUE : cm2pixels((next.from-event.to)*cmPyear),
+      w   = next == null ? Integer.MAX_VALUE : cm2pixels((next.from-model.timeBeforeEvent-event.from)*cmPyear),
       y   = level*calcLayerHeight(fm);
 
     boolean em  = event.pe.getEntity().equals(model.gedcom.getLastEntity());

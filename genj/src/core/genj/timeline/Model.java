@@ -66,7 +66,9 @@ import genj.gedcom.PropertyName;
   /*package*/List layers;
   
   /** time per event */
-  private double timePevent = 1/2;
+  /*package*/ double 
+    timeBeforeEvent = 0.5D,
+    timeAfterEvent  = 2.0D;
   
   /** listeners */
   private List listeners = new ArrayList(1);
@@ -74,11 +76,10 @@ import genj.gedcom.PropertyName;
   /**
    * Constructor
    */
-  /*package*/ Model(Gedcom gedcom, Set filter, double timePevent) {
+  /*package*/ Model(Gedcom gedcom, Set filter) {
     
     // remember
     this.gedcom = gedcom;
-    this.timePevent = timePevent;
     this.filter = filter;    
 
     // done
@@ -117,13 +118,14 @@ import genj.gedcom.PropertyName;
   /**
    * change time per event
    */
-  /*package*/ void setTimePerEvent(double set) {
+  /*package*/ void setTimePerEvent(double before, double after) {
     // already there?
-    if (set==timePevent) return;
+    if (timeBeforeEvent==before&&timeAfterEvent==after) return;
     // remember
-    timePevent = set;
+    timeBeforeEvent = before;
+    timeAfterEvent = after;
     // layout the events we've got
-    layoutEvents();
+    if (layers!=null) layoutEvents();
     // done
   }
   
@@ -236,8 +238,9 @@ import genj.gedcom.PropertyName;
         insertEvent(event);
       }
     }
-    // extend max by time for events
-    max += timePevent;
+    // extend time by before/after
+    max += timeAfterEvent;
+    min -= timeBeforeEvent;
     // trigger
     fireStructureChanged();
     // done
@@ -255,8 +258,9 @@ import genj.gedcom.PropertyName;
     // look for events in INDIs and FAMs
     createEventsFrom(gedcom.getEntities(Gedcom.INDIVIDUALS));
     createEventsFrom(gedcom.getEntities(Gedcom.FAMILIES   ));
-    // extend max by time for events
-    max += timePevent;
+    // extend time by before/after
+    max += timeAfterEvent;
+    min -= timeBeforeEvent;
     // trigger
     fireStructureChanged();
     // done
@@ -335,13 +339,13 @@ import genj.gedcom.PropertyName;
     do {
       Event event = (Event)events.next();
       // before?
-      if (candidate.to<event.from-timePevent) {
+      if (candidate.to+timeAfterEvent<event.from-timeBeforeEvent) {
         events.previous();
         events.add(candidate);
         return true;
       }
       // overlap?
-      if (candidate.from<event.to+timePevent) 
+      if (candidate.from-timeBeforeEvent<event.to+timeAfterEvent) 
         return false;
       // after?
     } while (events.hasNext());
