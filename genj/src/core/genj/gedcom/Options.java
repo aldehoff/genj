@@ -39,7 +39,7 @@ public class Options implements OptionProvider {
   private int valueLineBreak = 255;
   
   /** option - text symbol for marriage */
-  protected String txtMarriageSymbol = "+";
+  private String txtMarriageSymbol = "+";
 
   /**
    * Singleton access

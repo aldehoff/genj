@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.44 $ $Author: nmeier $ $Date: 2004-06-01 08:45:31 $
+ * $Revision: 1.45 $ $Author: cmuessig $ $Date: 2004-06-24 21:42:45 $
  */
 package genj.report;
 
@@ -277,7 +277,7 @@ public abstract class Report implements Cloneable {
 
     // get browser command
     Options options = Options.getInstance();
-    File browser = options.browser;
+    File browser = options.getBrowser();
     while (!browser.isFile()) {
       
       // show file chooser
@@ -289,7 +289,7 @@ public abstract class Report implements Cloneable {
         return;
     
       // keep it
-      options.browser = browser;    
+      options.setBrowser(browser);
     }
     
     // run it
