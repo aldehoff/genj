@@ -2,9 +2,9 @@
 <toc version="1.0">
   <tocitem target="welcome"       text="@welcome@">
   </tocitem>
-  <tocitem target="intro"       text="@intro@"  image="img.Intro"       />
-  <tocitem target="gedcom"      text="@gedcom@"        image="img.Gedcom"      />
-  <tocitem target="cc"          text="@cc@"image="img.NewGedcom"   />
+  <tocitem target="intro"       text="@intro@"    image="img.Intro"       />
+  <tocitem target="gedcom"      text="@gedcom@"   image="img.Gedcom"      />
+  <tocitem target="cc"          text="@cc@"       image="img.NewGedcom"   />
   <tocitem target="views"       text="@views@">
     <tocitem target="v.table"       text="@v.table@"       image="img.NewTable"    />
     <tocitem target="v.tree"        text="@v.tree@"        image="img.NewTree"     />
