@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.net.MalformedURLException;
 
 /**
  * GenJ - Report
@@ -234,8 +235,9 @@ public class ReportHTMLTable extends Report {
 	    /* these variables are used in multiple cases and
 	       therefore defined outside a certain visibility */
 	    PrintWriter htmlOut = null, indexOut = null;
+            File index = createFile(dir, "index.html");
             try {
-                indexOut =  new PrintWriter(new FileOutputStream(createFile(dir, "index.html")));
+                indexOut =  new PrintWriter(new FileOutputStream(index));
                 printHTMLStart(indexOut);
 			} catch(Exception e) {
 		  		println("Can't create index.html: "+e.getMessage());
@@ -479,6 +481,12 @@ public class ReportHTMLTable extends Report {
 		  }
             printHTMLEnd(indexOut);
             indexOut.close();
+                // Bring up the result
+    try {
+      showBrowserToUser(index.toURL());
+    } catch (MalformedURLException e) {
+      // shouldn't happen
+    }
 	  }
 	  
 	  /** examines and writes emigration, immigration and naturalization places
