@@ -308,6 +308,7 @@
        <classpath refid="project.class.path"/>
        <jvmarg line="${java.jvmargs}"/>
        <sysproperty key="genj.lnf.dir" value="${dir.lnf}"/>
+       <sysproperty key="genj.gedcom.dir" value="./gedcom"/>
     </java>
   </target>
   
