@@ -177,7 +177,7 @@ public class PropertyRenderer {
   /**
    * Sex
    */
-  private static class Sex extends PropertyRenderer {
+  /*package*/ static class Sex extends PropertyRenderer {
 
     /** 
      * size override
@@ -200,7 +200,7 @@ public class PropertyRenderer {
   /**
    * MLE
    */
-  private static class MLE extends PropertyRenderer {
+  /*package*/ static class MLE extends PropertyRenderer {
   
     /**
      * size override
@@ -254,7 +254,7 @@ public class PropertyRenderer {
   /**
    * name
    */
-  private static class Name extends PropertyRenderer {
+  /*package*/ static class Name extends PropertyRenderer {
   
     /**
      * size override
@@ -293,7 +293,7 @@ public class PropertyRenderer {
   /**
    * File
    */
-  private static class File extends PropertyRenderer {
+  /*package*/ static class File extends PropertyRenderer {
   
     /**
      * size override 
@@ -346,7 +346,7 @@ public class PropertyRenderer {
   /**
    * Entity
    */
-  private static class Entity extends PropertyRenderer {
+  /*package*/ static class Entity extends PropertyRenderer {
   
     /**
      * size override
@@ -367,7 +367,7 @@ public class PropertyRenderer {
   /**
    * Date
    */
-  private static class Date extends PropertyRenderer {
+  /*package*/ static class Date extends PropertyRenderer {
   
     /**
      * size override
