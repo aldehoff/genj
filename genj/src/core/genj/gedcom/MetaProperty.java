@@ -91,19 +91,19 @@ public class MetaProperty {
     // done
   }
 
-  /**
-   * Adds a possible-sub-tag to this definition
-   */
-  public void noteSub(Property prop) {
-    // won't keep transients
-    if (prop.isTransient()) return;
-    // won't keep xrefs
-    if (prop instanceof PropertyXRef) return;
-    // won't keep known
-    if (theSubs.contains(prop.getTag())) return;
-    // keep it
-    theSubs.add(prop.getTag());
-  }
+//  /**
+//   * Adds a possible-sub-tag to this definition
+//   */
+//  public void noteSub(Property prop) {
+//    // won't keep transients
+//    if (prop.isTransient()) return;
+//    // won't keep xrefs
+//    if (prop instanceof PropertyXRef) return;
+//    // won't keep known
+//    if (theSubs.contains(prop.getTag())) return;
+//    // keep it
+//    theSubs.add(prop.getTag());
+//  }
 
   /**
    * The property's type

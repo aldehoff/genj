@@ -121,8 +121,8 @@ public abstract class Property implements Comparable {
     // Remember
     children.add(prop);
 
-    // We have to remember this as a new known (sub-)property
-    MetaProperty.get(this).noteSub(prop);
+//    // We have to remember this as a new known (sub-)property
+//    MetaProperty.get(this).noteSub(prop);
 
     // Done
   }
