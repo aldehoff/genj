@@ -23,7 +23,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 
 import genj.gedcom.Property;
-import genj.gedcom.PropertyRelationship;
+import genj.gedcom.PropertyChoiceValue;
 import genj.util.swing.ButtonHelper;
 
 import javax.swing.ComboBoxEditor;
@@ -80,8 +80,8 @@ class ProxyChoice extends Proxy{
     
     // setup choices
     Object[] items = new Object[0];
-    if (prop instanceof PropertyRelationship) {
-      items =  ((PropertyRelationship)prop).getRelationships().toArray();
+    if (prop instanceof PropertyChoiceValue) {
+      items =  ((PropertyChoiceValue)prop).getChoices().toArray();
     }
 
     // Setup controls
