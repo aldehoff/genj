@@ -415,8 +415,8 @@ import java.awt.geom.Rectangle2D;
         Indi[] children = fams[f].getChildren();
         for (int c=0; c<children.length; c++) {
 
-          // on first child
-          if (c==0) {
+          // on first arc
+          if (node.getArcs().isEmpty()) {
             // stop when hiding descendants
             if (model.isHideDescendants(indi)) {
               // insert plus
