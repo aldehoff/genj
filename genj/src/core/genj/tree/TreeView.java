@@ -48,7 +48,6 @@ import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import gj.model.Node;
-import gj.shell.swing.SwingHelper;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -70,7 +69,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JComponent;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
