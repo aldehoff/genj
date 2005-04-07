@@ -161,7 +161,8 @@ public abstract class Origin {
   }
   
   /**
-   * Returns the Origin as a File (e.g. to use to write to)
+   * Returns the Origin as a File. For remote origins
+   * this will be a local representation of the file.
    * [new File(file://d:/gedcom/example.ged)]
    */
   public abstract File getFile();
@@ -174,7 +175,7 @@ public abstract class Origin {
   public abstract File getFile(String name);
 
   /**
-   * Returns the Origin's FileName - for example
+   * Returns the Origin's filename. For example
    * <pre>
    *  file://d:/gedcom/[example.ged]
    *  http://host/dir/[example.ged]
@@ -186,7 +187,7 @@ public abstract class Origin {
   }
 
   /**
-   * Returns the origin's distinctive name - for example
+   * Returns the origin's distinctive name. For example
    * <pre>
    *  file://d:/gedcom/[example.ged]
    *  http://host/dir/[example.ged]

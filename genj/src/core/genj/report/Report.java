@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.61 $ $Author: nmeier $ $Date: 2005-03-30 22:44:37 $
+ * $Revision: 1.62 $ $Author: nmeier $ $Date: 2005-04-07 14:44:03 $
  */
 package genj.report;
 
@@ -824,8 +824,7 @@ public abstract class Report implements Cloneable {
    * A report item wraps some text, an image and a reference to 
    * a Gedcom property instance. A report can create instances of
    * this type to keep track of findings or pointers that later
-   * can be shown to the user with a simple call to
-   * @see Report#showItemsToUser(String, Gedcom, Item[])
+   * can be shown to the user in a dialog box.
    */
   public static class Item implements Comparable {
 

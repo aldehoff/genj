@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.75 $ $Author: nmeier $ $Date: 2004-11-19 23:21:53 $
+ * $Revision: 1.76 $ $Author: nmeier $ $Date: 2005-04-07 14:44:05 $
  */
 package genj.gedcom;
 
@@ -59,12 +59,12 @@ public class Gedcom {
     LATIN1   = "LATIN1",     // a.k.a ISO-8859-1
     ANSI     = "ANSI";       // a.k.a. Windows-1252 (@see http://www.hclrss.demon.co.uk/demos/ansi.html)
   
-  /** encodings - LATIN1 and ANSI Are non-standard gedcom encodings */  
+  /** encodings including the non Gedcom-standard encodings LATIN1 and ANSI */  
   public static final String[] ENCODINGS = { 
     ANSEL, UNICODE, ASCII, LATIN1, ANSI 
   };
 
-  /** languages - as defined by the Gedcom 5.5. standard */  
+  /** languages as defined by the Gedcom standard */  
   public static final String[] LANGUAGES = {
     "Afrikaans","Albanian","Amharic","Anglo-Saxon","Arabic","Armenian","Assamese",
     "Belorusian","Bengali","Braj","Bulgarian","Burmese", 

@@ -122,14 +122,13 @@
   	<delete dir="${dir.build}/javadoc"/>
     <mkdir dir="${dir.build}/javadoc"/>
     <javadoc destdir="${dir.build}/javadoc"
-             link="http://java.sun.com/j2se/1.4/docs/api"
              classpathref="project.class.path"
              access="public"
              windowtitle="${app.name} - ${app.version}"
              doctitle="${app.name} - ${app.version}&lt;br&gt;Package Overview"
              bottom="&lt;a href=http://genj.sourceforge.net target=sourceforge &gt;genj.sourceforge.net&lt;/a&gt;"
              noindex="yes"
-             nohelp="yes"
+             nohelp="yes" 
              nodeprecatedlist="yes">
         <fileset dir="./src/core" defaultexcludes="yes">
           <include name="genj/gedcom/*.java" />
