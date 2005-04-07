@@ -203,6 +203,8 @@ import javax.swing.event.ChangeListener;
    * Select a property's bean
    */
   private void select(Property prop) {
+    if (prop==null)
+      return;
     // look for appropriate bean
     TagPath path = prop.getPath();
     for (int i=0,j=beanPanel.getComponentCount();i<j;i++) {
