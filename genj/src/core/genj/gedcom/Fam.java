@@ -29,9 +29,11 @@ import java.util.Set;
  */
 public class Fam extends Entity {
   
-  private final static TagPath
+  public final static TagPath
     PATH_FAMMARRDATE = new TagPath("FAM:MARR:DATE"),
-    PATH_FAMDIVDATE = new TagPath("FAM:DIV:DATE");
+    PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC"),
+    PATH_FAMDIVDATE  = new TagPath("FAM:DIV:DATE"),
+    PATH_FAMDIVPLAC  = new TagPath("FAM:MARR:PLAC");
 
   /**
    * Adds another child to the family
