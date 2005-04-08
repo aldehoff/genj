@@ -19,7 +19,9 @@
  */
 package genj.common;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 import genj.renderer.Options;
 import genj.renderer.PropertyRenderer;
 import genj.util.Dimension2d;
@@ -37,8 +39,11 @@ import java.awt.font.FontRenderContext;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 /**
  * A widget that shows entities in rows and columns
@@ -57,10 +62,41 @@ public class PropertyTableWidget extends JPanel {
     
     // setup layout
     setLayout(new BorderLayout());
-    JTable table = new JTable(new ModelWrapper(model));
+    JTable table = new JTable(new ModelWrapper(model), new ColumnsWrapper(model));
+    table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
+    table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    table.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    table.setCellSelectionEnabled(true);
     add(BorderLayout.CENTER, new JScrollPane(table));
     
     // done
+  }
+  
+  /**
+   * Wrapper for swing columns
+   */
+  private class ColumnsWrapper extends DefaultTableColumnModel {
+    
+    /** our model */
+    private PropertyTableModel model;
+    
+    /** constructor */
+    ColumnsWrapper(PropertyTableModel set) {
+      model = set;
+      
+      for (int i=0,j=model.getNumCols();i<j;i++) {
+        TableColumn col = new TableColumn(i);
+        TagPath path = model.getPath(i);
+        // try to find a reasonable tag to display as text (that's not '.' or '*')
+        String tag = path.getLast();
+        for (int p=path.length()-2;!Character.isLetter(tag.charAt(0))&&p>=0;p--) 
+          tag = path.get(p);
+        // keep tag as text
+        col.setHeaderValue(Gedcom.getName(tag));
+        addColumn(col);
+      }
+    }
+    
   }
 
   /**
@@ -73,7 +109,8 @@ public class PropertyTableWidget extends JPanel {
     
     /** cached table content */
     private Property cells[][];
-    
+
+    /** constructor */
     private ModelWrapper(PropertyTableModel set) {
       model = set;
       cells = new Property[set.getNumRows()][set.getNumCols()];
