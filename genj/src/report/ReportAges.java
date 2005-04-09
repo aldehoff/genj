@@ -37,7 +37,7 @@ public class ReportAges extends Report {
     
     /** localized strings */
     private final static String AGE = Gedcom.getName("AGE");
-    private final static String VERSION = "1.3";
+    private final static String VERSION = "1.31";
     
     public String getVersion() {
         return VERSION;
@@ -56,6 +56,18 @@ public class ReportAges extends Report {
     public String accepts(Object context) {
         // we accept GEDCOM or Individuals
         return context instanceof Indi || context instanceof Gedcom ? getName() : null;
+    }
+    
+    private String familyToString(Fam f) {
+        Indi husband = f.getHusband(), wife = f.getWife();
+        String str = "@"+f.getId()+"@ ";
+        if(husband!=null)
+            str = str + i18n("entity", new String[] {f.getHusband().getId(), f.getHusband().getName()} );
+            if(husband!=null && wife!=null)
+                str=str+" + ";
+            if(wife!=null)
+                str = str + i18n("entity", new String[] {f.getWife().getId(), f.getWife().getName()} );
+                return str;
     }
     
     /**
@@ -131,21 +143,24 @@ public class ReportAges extends Report {
         println();
         
         if (reportBaptismAge) {
+            println(getIndent(2) + i18n("baptism"));
             boolean ok = false;
             ok |= analyzeEvent(!ok, indi, "BAPM", true);
             ok |= analyzeEvent(!ok, indi, "BAPL", true);
             ok |= analyzeEvent(!ok, indi, "CHR", true);
             ok |= analyzeEvent(!ok, indi, "CHRA", true);
-            if (ok)
-                println();
+            if(!ok)
+                println(getIndent(3) + i18n("noData"));
+            println();
         }
         
         if (reportMarriageAge) {
+            println(getIndent(2) + i18n("marriage"));
             Fam[] fams = indi.getFamilies();
             if (fams.length > 0) {
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
-                    String text = getIndent(2)+OPTIONS.getMarriageSymbol() + " "+i18n("entity", new String[] {fam.getId(),  fam.toString()})+": ";
+                    String text = getIndent(2)+OPTIONS.getMarriageSymbol() + " "+familyToString(fam)+": ";
                     if (fam.getMarriageDate() == null)
                         println(text + i18n("noData"));
                     else {
@@ -154,11 +169,14 @@ public class ReportAges extends Report {
                         printAge(age,3);
                     }
                 }
-                println();
             }
+            else
+                println(getIndent(3) + i18n("noData"));
+            println();
         }
         
         if (reportAgeAtDivorce) {
+            println(getIndent(2) + i18n("divorce"));
             Fam[] fams = indi.getFamilies();
             if (fams.length > 0) {
                 for (int i = 0; i < fams.length; i++) {
@@ -169,10 +187,12 @@ public class ReportAges extends Report {
                         printAge(age,3);
                     }
                 }
-            }
+            } else
+                println(getIndent(3) + i18n("noData"));
         }
         
         if (reportAgeAtChildBirth) {
+            println(getIndent(2) + i18n("childBirths"));
             Indi[] children = indi.getChildren();
             if (children.length > 0) {
                 for (int i = 0; i < children.length; i++) {
@@ -187,33 +207,45 @@ public class ReportAges extends Report {
                         printAge(age,3);
                     }
                 }
-                println();
-            }
+            } else
+                println(getIndent(3) + i18n("noData"));
+            println();
         }
         
         if (reportAgeAtEmigration) {
-            if (analyzeEvent(true, indi, "EMIG", false))
-                println();
+            println(getIndent(2) + i18n("emigration"));
+            boolean ok = analyzeEvent(true, indi, "EMIG", false);
+            if(!ok)
+                println(getIndent(3) + i18n("noData"));            
+            println();
         }
         
         if (reportAgeAtImmigration) {
-            if (analyzeEvent(true, indi, "IMMI", false))
-                println();
+            println(getIndent(2) + i18n("immigration"));
+            boolean ok = analyzeEvent(true, indi, "IMMI", false);
+            if(!ok)
+                println(getIndent(3) + i18n("noData"));            
+            println();
         }
         
         if (reportAgeAtNaturalization) {
-            if (analyzeEvent(true, indi, "NATU", false))
-                println();
+            println(getIndent(2) + i18n("naturalization"));
+            boolean ok = analyzeEvent(true, indi, "NATU", false);
+            if(!ok)
+                println(getIndent(3) + i18n("noData"));
+            println();
         }
         
         if (reportAgeAtDeath) {
+            println(getIndent(2) + i18n("death"));
             PropertyDate death = indi.getDeathDate();
             if (death != null) {
                 println(getIndent(2) + OPTIONS.getDeathSymbol()+" " + death);
                 age = indi.getAge(indi.getDeathDate().getStart());
                 printAge(age,3);
-                println();
-            }
+            } else
+                println(getIndent(3) + i18n("noData"));
+            println();
         }
         
         if (reportAgeSinceBirth) {
