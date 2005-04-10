@@ -39,6 +39,16 @@ import java.awt.Dimension;
  */
 public class FamiliesBean extends PropertyBean {
 
+  private final static TagPath 
+    PATH_FAM = new TagPath("FAM"),
+    PATH_HUSB = new TagPath("FAM:HUSB:*:.."),
+    PATH_WIFE = new TagPath("FAM:WIFE:*:.."),
+    PATH_HUSB_NAME = new TagPath("FAM:HUSB:*:..:NAME"),
+    PATH_WIFE_NAME = new TagPath("FAM:WIFE:*:..:NAME"),
+    PATH_MARR_DATE = Fam.PATH_FAMMARRDATE,
+    PATH_MARR_PLAC = Fam.PATH_FAMMARRPLAC;
+
+
   /** indi we're looking at */
   private Indi indi;
   
@@ -62,6 +72,9 @@ public class FamiliesBean extends PropertyBean {
 
     // a table for the families
     PropertyTableModel model = new PropertyTableModel() {
+      public Gedcom getGedcom() {
+        return gedcom;
+      }
       public int getNumCols() {
         return 5;
       }
@@ -72,19 +85,15 @@ public class FamiliesBean extends PropertyBean {
         switch (col) {
           default:
 		    	case 0:
-		    	  return new TagPath("FAM");
+		    	  return PATH_FAM;
           case 1:
-            return indi.getSex() == PropertySex.FEMALE 
-            ? new TagPath("FAM:HUSB:*:..")
-            : new TagPath("FAM:WIFE:*:..");
+            return indi.getSex() == PropertySex.FEMALE ? PATH_HUSB : PATH_WIFE;
 		    	case 2:
-            return indi.getSex() == PropertySex.FEMALE 
-              ? new TagPath("FAM:HUSB:*:..:NAME")
-              : new TagPath("FAM:WIFE:*:..:NAME");
+            return indi.getSex() == PropertySex.FEMALE ? PATH_HUSB_NAME : PATH_WIFE_NAME;
 		    	case 3:
-		    	  return Fam.PATH_FAMMARRDATE;
+		    	  return PATH_MARR_DATE;
 		    	case 4:
-		    	  return Fam.PATH_FAMMARRPLAC;
+		    	  return PATH_MARR_PLAC;
         }
       }
       public Property getProperty(int row) {

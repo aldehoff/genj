@@ -20,12 +20,16 @@
 package genj.common;
 
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.renderer.Options;
 import genj.renderer.PropertyRenderer;
 import genj.util.Dimension2d;
 import genj.util.swing.HeadlessLabel;
+import genj.util.swing.SortableTableHeader;
+import genj.util.swing.SortableTableHeader.SortableTableModel;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -40,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
@@ -67,6 +72,7 @@ public class PropertyTableWidget extends JPanel {
     table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setCellSelectionEnabled(true);
+    table.setTableHeader(new SortableTableHeader());
     add(BorderLayout.CENTER, new JScrollPane(table));
     
     // done
@@ -102,29 +108,90 @@ public class PropertyTableWidget extends JPanel {
   /**
    * Wrapper for swing table
    */
-  private class ModelWrapper extends AbstractTableModel {
+  private class ModelWrapper extends AbstractTableModel implements SortableTableModel, GedcomListener {
+    
+    /** sort */
+    private int sortColumn = 0;
 
     /** our model */
     private PropertyTableModel model;
     
     /** cached table content */
     private Property cells[][];
+    
+    /** sorted indexes */
+    private int row2row[];
 
     /** constructor */
     private ModelWrapper(PropertyTableModel set) {
+      // setup state
       model = set;
-      cells = new Property[set.getNumRows()][set.getNumCols()];
+      reset();
+      // done
     }
     
+    /** reset state */
+    private void reset() {
+      cells = new Property[model.getNumRows()][model.getNumCols()];
+      row2row = new int[model.getNumRows()];
+      // init default non-sorted
+      for (int i=0;i<row2row.length;i++)
+        row2row[i]=i;
+      // sort now
+      sort();
+    }
+    
+    /** someone interested in us */
+    public void addTableModelListener(TableModelListener l) {
+      super.addTableModelListener(l);
+      // start listening ?
+      if (getListeners(TableModelListener.class).length==1)
+        model.getGedcom().addGedcomListener(this);
+    }
+    
+    /** someone lost interest */
+    public void removeTableModelListener(TableModelListener l) {
+      // stop listening ?
+      if (getListeners(TableModelListener.class).length==0)
+        model.getGedcom().removeGedcomListener(this);
+    }
+    
+    /** underlying gedcom change */
+    public void handleChange(Transaction tx) {
+      
+      // change in number of rows?
+      if (model.getNumRows()!=cells.length) {
+        reset();
+        super.fireTableDataChanged();
+        return;
+      }
+        
+      // since properties/cells might have been modified or deleted/added 
+      // we simply invalidate all our cached content instead of looking
+      // for delate iteratively
+      cells = new Property[model.getNumRows()][model.getNumCols()];
+      
+      fireTableRowsUpdated(0, cells.length);
+      
+      // done 
+      
+    }
+    
+    /** num columns */
     public int getColumnCount() {
       return model.getNumCols();
     }
     
+    /** num rows */
     public int getRowCount() {
       return model.getNumRows();
     }
     
-    public Object getValueAt(int row, int col) {
+    /** property */
+    private Property getPropertyAt(int row, int col) {
+      
+      row = row2row[row];
+      
       Property prop = cells[row][col];
       if (prop==null) {
         prop = model.getProperty(row).getProperty(model.getPath(col));
@@ -133,6 +200,86 @@ public class PropertyTableWidget extends JPanel {
       return prop;
     }
     
+    /** value */
+    public Object getValueAt(int row, int col) {
+      return getPropertyAt(row, col);
+    }
+    
+    /** sorted column */
+    public int getSortedColumn() {
+      return sortColumn;
+    }
+    
+    /** set sorted column */
+    public void setSortedColumn(int col) {
+      // remember
+      sortColumn = col;
+      // sort
+      sort();
+      // tell about it
+      fireTableDataChanged();
+      // done
+    }
+
+    /** compare two rows */
+    private int compare(int row1, int row2) {
+      
+      // split sortColumn
+      int col = Math.abs(sortColumn)-1;
+      
+      // here's the rows
+      Property 
+        p1 = getPropertyAt(row1, col),
+        p2 = getPropertyAt(row2, col);
+      
+      // both or one null?
+      if (p1==p2)
+        return  0;
+      if (p1==null) 
+        return -1 * sortColumn;
+      if (p2==null) 
+        return  1 * sortColumn;
+      
+      // let property decide
+      return p1.compareTo(p2) * sortColumn;
+    }
+    
+    /** 
+     * sort - I'm not using Arrays.sort() because I'm not sure that mergesort
+     * used is the better choice over quicksort *and* it doesn't operate on an 
+     * array of primitives w/comparator
+     */
+    private void sort() {
+      if (sortColumn!=0&&row2row.length>1)
+        qsort(0,row2row.length-1);
+    }
+    
+    private void qsort(int from, int to) {
+      
+      // choose pivot v
+      int v = (from+to)/2;
+      
+      // invariant: <= [v] <= 
+      int lo = from, hi = to;
+      while (lo<=hi) {
+        
+        for (;compare(lo, v)<0;lo++);
+        for (;compare(hi, v)>0;hi--);
+
+        if (lo>hi)
+          break;
+
+        int swap = row2row[lo];
+        row2row[lo++] = row2row[hi];
+        row2row[hi--] = swap;
+      }
+
+      // recurse into halfs
+      if (from<hi) qsort(from,hi);
+      if (lo<to) qsort(lo, to);
+      
+      // done
+    }
   } //ModelWrapper
   
   /**

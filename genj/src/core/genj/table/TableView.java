@@ -272,7 +272,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       int[]    ws = registry.get(tag+".widths", (int[]   )null);
       if (ws!=null) mode.setWidths(ws);
 
-      mode.setSort(registry.get(tag+".sort", new Point(0, 1)));
+      mode.setSort(registry.get(tag+".sort", 0));
 
     }
 

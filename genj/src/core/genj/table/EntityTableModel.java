@@ -249,22 +249,14 @@ import javax.swing.table.AbstractTableModel;
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#getSortedColumn()
    */
   public int getSortedColumn() {
-    return mode.sortColumn;
-  }
-
-  /**
-   * @see genj.util.swing.SortableTableHeader.SortableTableModel#isAscending()
-   */
-  public boolean isAscending() {
-    return mode.sortOrder==1;
+    return mode.sorting;
   }
 
   /**
    * @see genj.util.swing.SortableTableHeader.SortableTableModel#setSortedColumn(int)
    */
-  public void setSortedColumn(int col, boolean ascending) {
-    // propagate
-    mode.setSort(new Point(col, ascending?1:-1));
+  public void setSortedColumn(int col) {
+    mode.setSort(col);
   }
 
   /**
@@ -312,7 +304,8 @@ import javax.swing.table.AbstractTableModel;
     private String[] defaults;
     private TagPath[] paths;
     private int[] widths;
-    private int sortColumn, sortOrder;
+    private int sorting = 0;
+    
     /** constructor */
     private Mode(String t, String[] d) {
       // remember
@@ -326,21 +319,23 @@ import javax.swing.table.AbstractTableModel;
      */
     public int compare(Object o1, Object o2) {
       // only if column is fine
-      if (sortColumn<0||sortColumn>=paths.length) 
+      int dir = sorting<0 ? -1 : 1;
+      int col= Math.abs(sorting)-1;
+      if (col<0||col>=paths.length) 
         return 0;
       // here's the rows
       Property[] 
         row1 = ((Row)o1).getColumns(),
         row2 = ((Row)o2).getColumns();
       // null?
-      if (row1[sortColumn]==row2[sortColumn]) 
+      if (row1[col]==row2[col]) 
         return  0;
-      if (row1[sortColumn]==null) 
-        return -1 * sortOrder;
-      if (row2[sortColumn]==null) 
-        return  1 * sortOrder;
+      if (row1[col]==null) 
+        return -1 * dir;
+      if (row2[col]==null) 
+        return  1 * dir;
       // let property decide
-      return row1[sortColumn].compareTo(row2[sortColumn]) * sortOrder;
+      return row1[col].compareTo(row2[col]) * dir;
     }
     
     /**
@@ -357,7 +352,7 @@ import javax.swing.table.AbstractTableModel;
       paths = set;
       if (mode==this) {
         prepareRows();
-        sortColumn = -1;
+        sorting = 0;
         fireTableStructureChanged();
       }
     }
@@ -378,9 +373,8 @@ import javax.swing.table.AbstractTableModel;
     /**
      * Set sort
      */
-    /*package*/ void setSort(Point columnAndDir) {
-      sortColumn = columnAndDir.x;
-      sortOrder = columnAndDir.y;
+    /*package*/ void setSort(int col) {
+      sorting = col;
       if (mode==this) {
         sortRows();
         fireTableDataChanged();
@@ -389,8 +383,8 @@ import javax.swing.table.AbstractTableModel;
     /** 
      * Get sort
      */
-    /*package*/ Point getSort() {
-      return new Point(sortColumn, sortOrder);
+    /*package*/ int getSort() {
+      return sorting;
     }
   } //Mode
   

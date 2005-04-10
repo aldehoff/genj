@@ -135,8 +135,9 @@ public class SortableTableHeader extends JTableHeader {
       TableModel model = getTable().getModel();
       if (model instanceof SortableTableModel) {
         SortableTableModel smodel = (SortableTableModel)model;
-        if (smodel.getSortedColumn()==column)
-          paintSortIndicator(g,w,h,smodel.isAscending());
+        int sort = smodel.getSortedColumn();
+        if (Math.abs(sort)-1==column)
+          paintSortIndicator(g,w,h,sort>0);
       }
       // done
     }
@@ -174,17 +175,14 @@ public class SortableTableHeader extends JTableHeader {
    */
   public interface SortableTableModel extends TableModel {
     /**
-     * Whether sorting is Ascending or Descending
-     */
-    public boolean isAscending();
-    /**
-     * Returns the sorted column
+     * Returns the sorted column and direction
+     * @return 0 not sorter, <0 descending, >0 ascending
      */
     public int getSortedColumn();
     /**
      * Sets the sorted Column
      */
-    public void setSortedColumn(int col, boolean ascending);
+    public void setSortedColumn(int col);
   } //SortableTableModel
 
   /**
@@ -207,7 +205,7 @@ public class SortableTableHeader extends JTableHeader {
       if (model instanceof SortableTableModel) {
         // tell to model
         SortableTableModel stm = (SortableTableModel)model;
-        stm.setSortedColumn(col,!stm.isAscending());
+        stm.setSortedColumn(stm.getSortedColumn()<0 ? col+1 : -(col+1));
         // we do a repaint, too
         repaint();
       }

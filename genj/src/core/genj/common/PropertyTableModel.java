@@ -19,6 +19,7 @@
  */
 package genj.common;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 
@@ -26,6 +27,8 @@ import genj.gedcom.TagPath;
  * The data source for our PropertyTableWidget
  */
 public interface PropertyTableModel {
+  
+  public Gedcom getGedcom();
   
   public int getNumRows();
   
