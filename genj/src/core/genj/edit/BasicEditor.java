@@ -266,12 +266,14 @@ import javax.swing.event.ChangeListener;
     
     // a label?
     if ("label".equals(cell.getElement())) {
-      MetaProperty meta = MetaProperty.get(path);
+
+      String tag = path.getLast();
+      
       JLabel label;
-      if (Entity.class.isAssignableFrom(meta.getType()))
-        label = new JLabel(meta.getName() + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
+      if (entity.getTag().equals(tag))
+        label = new JLabel(Gedcom.getName(tag) + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
       else
-        label = new JLabel(meta.getName());
+        label = new JLabel(Gedcom.getName(tag));
       
       beanPanel.add(label, cell);
       return;

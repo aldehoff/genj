@@ -28,4 +28,10 @@
    <row><bean path="FAM:NOTE" wx="0.1" wy="0.1"/></row>
   </col>
  </row>
+ <row>
+  <label path="CHILs"/>
+ </row>
+ <row>
+  <bean path="FAM" type="Children" wx="1"/>
+ </row>
 </col> 

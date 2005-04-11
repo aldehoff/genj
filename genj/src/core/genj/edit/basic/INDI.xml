@@ -28,6 +28,9 @@
   </col>
  </row>
  <row>
+  <label path="FAMs"/>
+ </row>
+ <row>
   <bean path="INDI" type="Families" wx="1"/>
  </row>
 </col>
