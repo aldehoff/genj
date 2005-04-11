@@ -101,6 +101,7 @@ public class FamiliesBean extends PropertyBean {
       }
     };
     PropertyTableWidget table = new PropertyTableWidget(model, viewManager);
+    table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
     table.setPreferredSize(new Dimension(64,64));
     add(BorderLayout.CENTER, table);
     

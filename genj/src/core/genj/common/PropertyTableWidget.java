@@ -30,6 +30,7 @@ import genj.util.Dimension2d;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.SortableTableHeader;
 import genj.util.swing.SortableTableHeader.SortableTableModel;
+import genj.view.Context;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -37,7 +38,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 
 import javax.swing.JPanel;
@@ -54,29 +58,60 @@ import javax.swing.table.TableColumn;
  * A widget that shows entities in rows and columns
  */
 public class PropertyTableWidget extends JPanel {
+
+  public final static int
+    CONTEXT_PROPAGATION_ON_SINGLE_CLICK = 0,
+    CONTEXT_PROPAGATION_ON_DOUBLE_CLICK = 1;
   
   /** a reference to the view manager */
   private ViewManager viewManager;
   
+  /** table component */
+  private JTable table;
+  
+  /** context propagation */
+  private boolean contextPropagationOnDoubleClick = false;
+  
   /**
    * Constructor
    */
-  public PropertyTableWidget(PropertyTableModel model, ViewManager manager) {
+  public PropertyTableWidget(PropertyTableModel propertyModel, ViewManager manager) {
     
     viewManager = manager;
     
-    // setup layout
-    setLayout(new BorderLayout());
-    JTable table = new JTable(new ModelWrapper(model), new ColumnsWrapper(model));
+    // create table comp
+    table = new JTable();
+    table.addMouseListener(new InteractionHandler());
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
     table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.setCellSelectionEnabled(true);
     table.setTableHeader(new SortableTableHeader());
+    
+    // setup layout
+    setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(table));
+    
+    // set model
+    setModel(propertyModel);
     
     // done
   }
+  
+  /**
+   * Setter for current model
+   */
+  public void setModel(PropertyTableModel set) {
+    table.setModel(new Model(set));
+    table.setColumnModel(new ColumnsWrapper(set));
+  }
+  
+  /**
+   * Context Propagation on double click?
+   */
+  public void setContextPropagation(int mode) {
+    contextPropagationOnDoubleClick = mode==CONTEXT_PROPAGATION_ON_DOUBLE_CLICK;
+  }
+
   
   /**
    * Wrapper for swing columns
@@ -88,8 +123,12 @@ public class PropertyTableWidget extends JPanel {
     
     /** constructor */
     ColumnsWrapper(PropertyTableModel set) {
-      model = set;
       
+      // setup state
+      model = set;
+      setColumnSelectionAllowed(true);
+
+      // create columns
       for (int i=0,j=model.getNumCols();i<j;i++) {
         TableColumn col = new TableColumn(i);
         TagPath path = model.getPath(i);
@@ -101,6 +140,8 @@ public class PropertyTableWidget extends JPanel {
         col.setHeaderValue(Gedcom.getName(tag));
         addColumn(col);
       }
+      
+      // done
     }
     
   }
@@ -108,7 +149,7 @@ public class PropertyTableWidget extends JPanel {
   /**
    * Wrapper for swing table
    */
-  private class ModelWrapper extends AbstractTableModel implements SortableTableModel, GedcomListener {
+  private class Model extends AbstractTableModel implements SortableTableModel, GedcomListener {
     
     /** sort */
     private int sortColumn = 0;
@@ -123,7 +164,7 @@ public class PropertyTableWidget extends JPanel {
     private int row2row[];
 
     /** constructor */
-    private ModelWrapper(PropertyTableModel set) {
+    private Model(PropertyTableModel set) {
       // setup state
       model = set;
       reset();
@@ -185,6 +226,17 @@ public class PropertyTableWidget extends JPanel {
     /** num rows */
     public int getRowCount() {
       return model.getNumRows();
+    }
+    
+    /** context */
+    private Context getContextAt(int row, int col) {
+      
+      // try to find property already cached
+      Property prop = getPropertyAt(row, col);
+      if (prop==null) 
+        prop = model.getProperty(row2row[row]);
+      
+      return new Context(prop.getGedcom(), prop.getEntity(), prop);
     }
     
     /** property */
@@ -354,4 +406,55 @@ public class PropertyTableWidget extends JPanel {
     }
     
   } //PropertyTableCellRenderer
+  
+  
+  /**
+   * Callback for list selections
+   */
+  private class InteractionHandler extends MouseAdapter {
+    
+    /** callback - mouse press */
+    public void mousePressed(MouseEvent e) {
+      // some platforms send popup trigger on pressed
+      if (e.isPopupTrigger())
+        mouseReleased(e);
+    }
+    
+    /** callback - mouse release */
+    public void mouseReleased(MouseEvent e) {
+      
+      Point pos = e.getPoint();
+
+      // get context
+      int row = table.rowAtPoint(pos);
+      int col = table.columnAtPoint(pos);
+      if (row<0||col<0) 
+        return;
+      
+      // make sure selection is accurate - JTable does
+      // only react to 'first' mouse button not second
+      if (!table.isCellSelected(row, col))
+        table.changeSelection(row, col, false, false);
+      
+      // context is either entity or property
+      Context context = ((Model)table.getModel()).getContextAt(row, col);
+      context.setSource(PropertyTableWidget.this);
+      
+      // context menu?
+      if (e.isPopupTrigger()) {
+        viewManager.showContextMenu(context, null, table, pos);
+        return;
+      }
+      
+      // context propagation?
+      if (contextPropagationOnDoubleClick&&e.getClickCount()<2)
+        return;
+      viewManager.setContext(context);
+      
+      // done
+    }
+
+      
+  } //InteractionHandler
+
 }
