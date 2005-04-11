@@ -19,7 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.swing.ImageIcon;
 
 
 /**
@@ -79,12 +78,9 @@ public class PropertyNote extends PropertyXRef {
 
     // Look for Note
     String id = getReferencedId();
-    if (id.length()==0) return;
-
-    // .. ignore when not found - play inline note
     Note enote = (Note)getGedcom().getEntity(Gedcom.NOTE, id);
     if (enote==null) 
-      return;
+      throw new GedcomException("Couldnt't find note with ID "+id);
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
@@ -111,16 +107,5 @@ public class PropertyNote extends PropertyXRef {
     return Gedcom.NOTE;
   }
   
-  /**
-   * @see genj.gedcom.PropertyXRef#overlay(genj.util.swing.ImageIcon)
-   */
-  protected ImageIcon overlay(ImageIcon img) {
-    // used as a reference? go ahead and overlay!
-    if (super.getReferencedEntity()!=null)
-      return super.overlay(img);
-    // used inline! no overlay!
-    return img;
-  }
- 
 } //PropertyNote
 
