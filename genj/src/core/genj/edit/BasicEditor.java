@@ -267,13 +267,13 @@ import javax.swing.event.ChangeListener;
     // a label?
     if ("label".equals(cell.getElement())) {
 
-      String tag = path.getLast();
-      
+      boolean plural = cell.getAttribute("plural")!=null;
+      MetaProperty meta = MetaProperty.get(path);
       JLabel label;
-      if (entity.getTag().equals(tag))
-        label = new JLabel(Gedcom.getName(tag) + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
+      if (path.length()==1&&path.getLast().equals(entity.getTag()))
+        label = new JLabel(Gedcom.getName(path.getLast()) + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
       else
-        label = new JLabel(Gedcom.getName(tag));
+        label = new JLabel(Gedcom.getName(path.getLast(), plural), meta.getImage(), SwingConstants.LEFT);
       
       beanPanel.add(label, cell);
       return;

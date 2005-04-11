@@ -29,7 +29,7 @@
   </col>
  </row>
  <row>
-  <label path="CHILs"/>
+  <label path="FAM:CHIL" plural="1"/>
  </row>
  <row>
   <bean path="FAM" type="Children" wx="1" wy="0.5"/>

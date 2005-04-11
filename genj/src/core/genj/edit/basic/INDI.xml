@@ -28,7 +28,7 @@
   </col>
  </row>
  <row>
-  <label path="FAMs"/>
+  <label path="FAM" plural="1"/>
  </row>
  <row>
   <bean path="INDI" type="Families" wx="1" wy="1"/>
