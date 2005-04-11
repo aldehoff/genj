@@ -315,13 +315,23 @@ import javax.swing.event.ChangeListener;
     
     MetaProperty meta = MetaProperty.get(path, false);
 
-    // try to resolve existing prop - we might have to skip PropertyXRefs along the way
-    Property prop=null;
-    Property[] props = entity.getProperties(path);
-    for (int i=0;prop==null&&i<props.length;i++) {
-      prop = props[i];
-      if (prop instanceof PropertyXRef) 
-        prop = ((PropertyXRef)prop).getTargetValueProperty();
+    // try to resolve existing prop - this has to be a property along
+    // the first possible path to avoid that in this case:
+    //  INDI
+    //   BIRT
+    //    DATE sometime
+    //   BIRT
+    //    PLAC somewhere
+    // the result of INDI:BIRT:DATE/INDI:BIRT:PLAC is
+    //   somtime/somewhere
+    Property prop = entity.getProperty(path);
+    
+    // .. for an existing reference we try to use a suitable
+    // target property that we can edit inline
+    if (prop instanceof PropertyXRef) {
+      prop = ((PropertyXRef)prop).getTargetValueProperty();
+      if (prop==null) 
+        return null;
     }
     
     // created a new one?
