@@ -31,6 +31,6 @@
   <label path="FAMs"/>
  </row>
  <row>
-  <bean path="INDI" type="Families" wx="1"/>
+  <bean path="INDI" type="Families" wx="1" wy="1"/>
  </row>
 </col>
