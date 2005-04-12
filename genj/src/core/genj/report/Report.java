@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.62 $ $Author: nmeier $ $Date: 2005-04-07 14:44:03 $
+ * $Revision: 1.63 $ $Author: nmeier $ $Date: 2005-04-12 17:25:21 $
  */
 package genj.report;
 
@@ -128,6 +128,19 @@ public abstract class Report implements Cloneable {
    * Constructor
    */
   protected Report() {
+    
+    // prepare default image
+    image = usesStandardOut() ? IMG_SHELL : IMG_GUI;
+    // try to load a custom one too
+    try {
+      String file = getTypeName()+".gif";
+      InputStream in = getClass().getResourceAsStream(file);
+      if (in!=null)
+        image = new genj.util.swing.ImageIcon(file, in);
+    } catch (Throwable t) {
+    }
+    
+    // done
   }
   
   /**
@@ -211,19 +224,6 @@ public abstract class Report implements Cloneable {
    * An image
    */
   /*package*/ ImageIcon getImage() {
-    // not known?
-    if (image==null) {
-      // prepare default
-      image = usesStandardOut() ? IMG_SHELL : IMG_GUI;
-      // try to load a custom one too
-      try {
-        String file = getTypeName()+".gif";
-        InputStream in = getClass().getResourceAsStream(file);
-        if (in!=null)
-          image = new genj.util.swing.ImageIcon(file, in);
-      } catch (Throwable t) {
-      }
-    }
     return image; 
   }
 
