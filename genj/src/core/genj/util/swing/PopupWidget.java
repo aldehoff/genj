@@ -45,6 +45,9 @@ public class PopupWidget extends JButton {
 
   /** whether we fire the first of the available actions on popup click */
   private boolean isFireOnClick = false;
+  
+  /** current popup */
+  private JPopupMenu popup;
     
   /**
    * Constructor  
@@ -112,12 +115,25 @@ public class PopupWidget extends JButton {
   }
   
   /**
+   * Cancel pending popup
+   */
+  public void cancelPopup() {
+    if (popup!=null) {
+      popup.setVisible(false);
+      popup=null;
+    }
+  }
+  
+  /**
    * Change popup's visibility
    */
   public void showPopup() {
+    
+    // old lingering around?
+    cancelPopup();
 
     // create it
-    JPopupMenu popup = createPopup();
+    popup = createPopup();
     if (popup==null)
       return;
   
@@ -219,6 +235,7 @@ public class PopupWidget extends JButton {
      */
     protected void fireActionPerformed(ActionEvent e) {
       popupTriggered = false;
+      cancelPopup();
       // fire action on popup button press?
       if (isFireOnClick) { 
         List as = getActions();
