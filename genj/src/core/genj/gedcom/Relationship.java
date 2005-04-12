@@ -7,6 +7,10 @@ import genj.util.swing.ImageIcon;
  */
 public abstract class Relationship {
   
+  public static String
+		LABEL_FATHER = Gedcom.resources.getString("rel.father"),
+		LABEL_MOTHER = Gedcom.resources.getString("rel.mother");
+
   /** Gedcom this applies */
   protected Gedcom gedcom;
   
