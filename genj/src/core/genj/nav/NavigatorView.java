@@ -206,10 +206,11 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
   public void setCurrentEntity(Entity e) {
     
     // try to get one if entity==null
-    if (e == null) e = gedcom.getAnyEntity(Gedcom.INDI);
+    if (e == null) 
+      e = gedcom.getAnyEntity(Gedcom.INDI);
 
-    // only individual
-    if (e!=null&&!(e instanceof Indi)) 
+    // only individuals - and not already current
+    if (e==current || (e!=null&&!(e instanceof Indi)) ) 
       return;
     
     // forget jumps
@@ -292,15 +293,6 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     // done
   }
     
-  /**
-   * propagate the selection of an entity
-   */
-  private void fireCurrentEntity(Entity e) {
-    if (e==null) 
-      return;
-    manager.setContext(new Context(e));
-  }
-
   /**
    * Creates a button
    */
@@ -419,7 +411,10 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     }
     /** do it */
     protected void execute() {
-      fireCurrentEntity(target);
+      // follow immediately
+      setCurrentEntity(target);
+      // propagate to others
+      manager.setContext(new Context(target));
     }
   } //Jump
 
