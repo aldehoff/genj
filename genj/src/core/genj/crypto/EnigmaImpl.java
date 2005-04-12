@@ -67,7 +67,7 @@ import javax.crypto.spec.DESKeySpec;
       key = SecretKeyFactory.getInstance(ALGORITHM).generateSecret(keyspec);
       
     } catch (Throwable t) {
-      Debug.log(Debug.ERROR, this, t); 
+      Debug.log(Debug.WARNING, this, "Couldn't initialize Enigma : "+t.getMessage()); 
       return null;
     }
   
