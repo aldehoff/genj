@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.10 $ $Author: nmeier $ $Date: 2004-11-19 19:38:46 $
+ * $Revision: 1.11 $ $Author: nmeier $ $Date: 2005-04-12 12:49:27 $
  */
 package genj.report;
 
@@ -173,10 +173,18 @@ public class Options extends OptionProvider {
     }
     
     /**
-     * callback - provide options
+     * callback - provide options during system init
      */
     public List getOptions() {
-        return PropertyOption.introspect(getInstance());
+      // load report async
+      new Thread(new Runnable() {
+        public void run() {
+          ReportLoader.getInstance();
+        }
+      }).start();
+      
+      // introspect for options
+      return PropertyOption.introspect(getInstance());
     }
     
     /**

@@ -65,14 +65,19 @@ import java.util.List;
   /*package*/ static ReportLoader getInstance() {
     
     // not known yet?
-    if (singleton==null)
-      singleton = new ReportLoader();
+    if (singleton==null) {
+      synchronized (ReportLoader.class) {
+        if (singleton==null) {
+          singleton = new ReportLoader();
+        }
+      }
+    }
       
     // done
     return singleton;
       
   }
-
+  
   /**
    * Constructor
    */
