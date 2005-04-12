@@ -52,6 +52,7 @@ public class SortableTableHeader extends JTableHeader {
   public SortableTableHeader() {
     setDefaultRenderer(new PatchedHeaderRenderer());
     addMouseListener(new SortClickMouseListener());
+    setReorderingAllowed(false);
   }  
 
   /**
