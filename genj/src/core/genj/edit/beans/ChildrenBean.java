@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.common.AbstractPropertyTableModel;
 import genj.common.PropertyTableModel;
 import genj.common.PropertyTableWidget;
 import genj.gedcom.Fam;
@@ -43,8 +44,7 @@ public class ChildrenBean extends PropertyBean {
     new TagPath("INDI:BIRT:DATE"),
     new TagPath("INDI:BIRT:PLAC")
   };
-
-
+  
   /** fam we're looking at */
   private Fam fam;
   
@@ -67,7 +67,7 @@ public class ChildrenBean extends PropertyBean {
     setLayout(new BorderLayout());
 
     // a table for the families
-    PropertyTableModel model = new PropertyTableModel() {
+    PropertyTableModel model = new AbstractPropertyTableModel() {
       public Gedcom getGedcom() {
         return gedcom;
       }
@@ -82,6 +82,9 @@ public class ChildrenBean extends PropertyBean {
       }
       public Property getProperty(int row) {
         return fam.getChild(row);
+      }
+      public Object getHeader(int col) {
+        return col==0 ? Gedcom.getName("CHIL") : super.getHeader(col);
       }
     };
     PropertyTableWidget table = new PropertyTableWidget(model, viewManager);

@@ -19,10 +19,8 @@
  */
 package genj.common;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
-import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.renderer.Options;
 import genj.renderer.PropertyRenderer;
@@ -53,6 +51,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 /**
  * A widget that shows entities in rows and columns
@@ -84,7 +84,6 @@ public class PropertyTableWidget extends JPanel {
     table.addMouseListener(new InteractionHandler());
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
     table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setTableHeader(new SortableTableHeader());
     
     // setup layout
@@ -106,13 +105,98 @@ public class PropertyTableWidget extends JPanel {
   }
   
   /**
+   * Set column resize behavior
+   */
+  public void setAutoResize(boolean on) {
+    table.setAutoResizeMode(on ? JTable.AUTO_RESIZE_ALL_COLUMNS : JTable.AUTO_RESIZE_OFF);
+  }
+  
+  /**
    * Context Propagation on double click?
    */
   public void setContextPropagation(int mode) {
     contextPropagationOnDoubleClick = mode==CONTEXT_PROPAGATION_ON_DOUBLE_CLICK;
   }
-
   
+  /**
+   * Resolve row for property
+   */
+  public int getRow(Property row) {
+    return ((Model)table.getModel()).getRow(row);
+  }
+  
+  /**
+   * Resolve col for property
+   */
+  public int getCol(int row, Property col) {
+    return ((Model)table.getModel()).getCol(row, col);
+  }
+  
+  /**
+   * Select a cell
+   */
+  public void select(Property row, Property col) {
+    int r = getRow(row);
+    int c = getCol(r, col);
+
+    // scroll to visible
+    table.scrollRectToVisible(table.getCellRect(r,c,true));
+
+    // change selection
+    if (c>=0)
+      table.setColumnSelectionInterval(c,c);
+    if (r>=0)
+      table.setRowSelectionInterval(r,r);
+  }
+  
+  /**
+   * Return column widths
+   */
+  public int[] getColumnWidths() {
+    TableColumnModel columns = table.getColumnModel();
+    int[] result = new int[columns.getColumnCount()];
+    for (int c=0; c<result.length; c++) {
+      result[c] = columns.getColumn(c).getWidth();
+    }
+    return result;
+  }
+  
+  /**
+   * Set column widths
+   */
+  public void setColumnWidths(int[] widths) {
+    TableColumnModel columns = table.getColumnModel();
+    for (int i=0, j=columns.getColumnCount(); i<widths.length&&i<j; i++) {
+      TableColumn col = columns.getColumn(i);
+      col.setWidth(widths[i]);
+      col.setPreferredWidth(widths[i]);
+    }
+  }
+  
+  /**
+   * Get sorted column
+   */
+  public int getSortedColumn() {
+    return ((Model)table.getModel()).getSortedColumn();
+  }
+
+  /**
+   * Set sorted column
+   */
+  public void setSortedColumn(int set) {
+    ((Model)table.getModel()).setSortedColumn(set);
+  }
+  
+  /**
+   * Access to table model
+   * TODO This is here to allow for TableView to access the information provided by our
+   * internal classes for printing. We should really migrate the printing code itself to this class
+   * since it then can be used by all users of this widget.
+   */
+  public TableModel getModel() {
+    return table.getModel();
+  }
+
   /**
    * Wrapper for swing columns
    */
@@ -127,17 +211,15 @@ public class PropertyTableWidget extends JPanel {
       // setup state
       model = set;
       setColumnSelectionAllowed(true);
+      getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
       // create columns
-      for (int i=0,j=model.getNumCols();i<j;i++) {
+      if (model!=null) for (int i=0,j=model.getNumCols();i<j;i++) {
         TableColumn col = new TableColumn(i);
-        TagPath path = model.getPath(i);
-        // try to find a reasonable tag to display as text (that's not '.' or '*')
-        String tag = path.getLast();
-        for (int p=path.length()-2;!Character.isLetter(tag.charAt(0))&&p>=0;p--) 
-          tag = path.get(p);
-        // keep tag as text
-        col.setHeaderValue(Gedcom.getName(tag));
+        
+        Object value = model.getHeader(i);
+        if (value!=null)
+          col.setHeaderValue(value);
         addColumn(col);
       }
       
@@ -173,11 +255,24 @@ public class PropertyTableWidget extends JPanel {
     
     /** reset state */
     private void reset() {
-      cells = new Property[model.getNumRows()][model.getNumCols()];
-      row2row = new int[model.getNumRows()];
+      
+      if (model==null) 
+        return;
+      
+      // tell to model
+      model.reset();
+      
+      // setup cell state
+      int 
+      	rows = model.getNumRows(), 
+      	cols = model.getNumCols();
+      cells = new Property[rows][cols];
+      row2row = new int[rows];
+      
       // init default non-sorted
       for (int i=0;i<row2row.length;i++)
         row2row[i]=i;
+      
       // sort now
       sort();
     }
@@ -186,14 +281,14 @@ public class PropertyTableWidget extends JPanel {
     public void addTableModelListener(TableModelListener l) {
       super.addTableModelListener(l);
       // start listening ?
-      if (getListeners(TableModelListener.class).length==1)
+      if (model!=null&&getListeners(TableModelListener.class).length==1)
         model.getGedcom().addGedcomListener(this);
     }
     
     /** someone lost interest */
     public void removeTableModelListener(TableModelListener l) {
       // stop listening ?
-      if (getListeners(TableModelListener.class).length==0)
+      if (model!=null&&getListeners(TableModelListener.class).length==0)
         model.getGedcom().removeGedcomListener(this);
     }
     
@@ -218,14 +313,22 @@ public class PropertyTableWidget extends JPanel {
       
     }
     
+    /**
+     *  patched column name
+     */
+    public String getColumnName(int col) {
+      Object result = model!=null ? model.getHeader(col) : null;
+      return result!=null ? result.toString() : "";
+    }
+    
     /** num columns */
     public int getColumnCount() {
-      return model.getNumCols();
+      return model!=null ? model.getNumCols() : 0;
     }
     
     /** num rows */
     public int getRowCount() {
-      return model.getNumRows();
+      return model!=null ? row2row.length : 0;
     }
     
     /** context */
@@ -332,6 +435,38 @@ public class PropertyTableWidget extends JPanel {
       
       // done
     }
+    
+    /** 
+     * Get row by property
+     */
+    private int getRow(Property row) {
+
+      if (model==null||row==null)
+        return -1;
+      
+      // find row
+      for (int i=0; i<row2row.length; i++) {
+        if (model.getProperty(row2row[i])==row) 
+          return i;
+      }	
+     
+      // not found
+      return -1;
+    }
+
+    /** 
+     * Get col by property
+     */
+    private int getCol(int row, Property col) {
+      // find col
+      for (int i=0, j=getColumnCount(); i<j; i++) {
+        if (getPropertyAt(row,i)==col)
+          return i;
+      }
+      // not found
+      return -1;
+    }
+  
   } //ModelWrapper
   
   /**
@@ -457,4 +592,4 @@ public class PropertyTableWidget extends JPanel {
       
   } //InteractionHandler
 
-}
+} //PropertyTableWidget

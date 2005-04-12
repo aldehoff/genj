@@ -121,7 +121,7 @@ public class TableViewSettings extends JPanel implements Settings {
     // remember
     table = (TableView)view;
     // switch type
-    cTypes.setSelectedItem(Gedcom.getName(table.getType(), true));
+    cTypes.setSelectedItem(Gedcom.getName(table.getMode().getTag(), true));
     // done
   }
 
@@ -134,7 +134,7 @@ public class TableViewSettings extends JPanel implements Settings {
     String tag = Gedcom.ENTITIES[cTypes.getSelectedIndex()];
     List choices = pathList.getChoices();
     TagPath[] paths = (TagPath[])choices.toArray(new TagPath[choices.size()]);
-    table.setPaths(tag, paths);
+    table.getMode(tag).setPaths(paths);
     // Done
   }
 
@@ -146,7 +146,7 @@ public class TableViewSettings extends JPanel implements Settings {
     // Reflect columns by TagPaths
     String tag = Gedcom.ENTITIES[cTypes.getSelectedIndex()];
     
-    TagPath[] selectedPaths = table.getPaths(tag);
+    TagPath[] selectedPaths = table.getMode(tag).getPaths();
     TagPath[] usedPaths     = MetaProperty.getPaths(tag, Property.class);
 
     pathTree.setPaths(usedPaths, selectedPaths);
@@ -170,7 +170,7 @@ public class TableViewSettings extends JPanel implements Settings {
     /** run */
     public void execute() {
       if (table==null) return;
-      table.setType(Gedcom.ENTITIES[cTypes.getSelectedIndex()]);
+      table.setMode(table.getMode(Gedcom.ENTITIES[cTypes.getSelectedIndex()]));
       reset();
     }
   } //ActionChooseEntity

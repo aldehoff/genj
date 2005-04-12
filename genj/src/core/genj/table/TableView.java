@@ -19,59 +19,37 @@
  */
 package genj.table;
 
+import genj.common.AbstractPropertyTableModel;
+import genj.common.PropertyTableWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
-import genj.io.Filter;
-import genj.renderer.Options;
-import genj.renderer.PropertyRenderer;
 import genj.util.ActionDelegate;
-import genj.util.Dimension2d;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.util.swing.HeadlessLabel;
-import genj.util.swing.SortableTableHeader;
 import genj.view.Context;
 import genj.view.ContextListener;
-import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.font.FontRenderContext;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JToolBar;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport, ContextListener, FilterSupport {
+public class TableView extends JPanel implements ToolBarSupport, ContextListener {
 
   /** a static set of resources */
   private Resources resources = Resources.get(this);
@@ -89,13 +67,25 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
   private String title;
   
   /** the table we're using */
-  private JTable table;
-  
-  /** the table model we're using */
-  private EntityTableModel tableModel;
+  /*package*/ PropertyTableWidget propertyTable;
   
   /** the gedcom listener we're using */
   private GedcomListener listener;
+  
+  /** the modes we're offering */
+  private Map modes = new HashMap();
+    {
+      modes.put(Gedcom.INDI, new Mode(Gedcom.INDI, new String[]{"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"}));
+      modes.put(Gedcom.FAM , new Mode(Gedcom.FAM , new String[]{"FAM" ,"FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" }));
+      modes.put(Gedcom.OBJE, new Mode(Gedcom.OBJE, new String[]{"OBJE","OBJE:TITL"}));
+      modes.put(Gedcom.NOTE, new Mode(Gedcom.NOTE, new String[]{"NOTE","NOTE:NOTE"}));
+      modes.put(Gedcom.SOUR, new Mode(Gedcom.SOUR, new String[]{"SOUR","SOUR:TITL", "SOUR:TEXT"}));
+      modes.put(Gedcom.SUBM, new Mode(Gedcom.SUBM, new String[]{"SUBM","SUBM:NAME" }));
+      modes.put(Gedcom.REPO, new Mode(Gedcom.REPO, new String[]{"REPO","REPO:NAME", "REPO:NOTE"}));
+    };
+  
+  /** current type we're showing */
+  private Mode currentMode = getMode(Gedcom.INDI);
   
   /**
    * Constructor
@@ -108,31 +98,16 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     this.title = titl;
     this.manager = mgr;
     
-    // create the underlying model
-    tableModel = new EntityTableModel();
-
     // read properties
     loadProperties();
     
     // create our table
-    table = new JTable(tableModel, new DefaultTableColumnModel());
-    table.setTableHeader(new SortableTableHeader());
-    table.setCellSelectionEnabled(true);
-    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-    table.getTableHeader().setReorderingAllowed(false);
-    table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
-    table.setRowHeight((int)Math.ceil(Options.getInstance().getDefaultFont().getLineMetrics("", new FontRenderContext(null,false,false)).getHeight())+table.getRowMargin());
+    propertyTable = new PropertyTableWidget(null, manager);
+    propertyTable.setAutoResize(false);
 
-    // listen to row and column selections and model changes
-    TableCallback callback = new TableCallback();
-    table.getModel().addTableModelListener(callback);
-    table.addMouseListener(callback);
-    table.getSelectionModel().addListSelectionListener(callback);
-    table.getColumnModel().getSelectionModel().addListSelectionListener(callback);
-    
+    // lay it out
     setLayout(new BorderLayout());
-    add(new JScrollPane(table), BorderLayout.CENTER);
+    add(new JScrollPane(propertyTable), BorderLayout.CENTER);
     
     // done
   }
@@ -151,7 +126,9 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     // continue
     super.addNotify();
     // hook on
-    tableModel.setGedcom(gedcom);
+    Mode set = currentMode;
+    currentMode = null;
+    setMode(set);
   }
 
   /**
@@ -163,43 +140,44 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     // delegate
     super.removeNotify();
     // make sure the swing model is disconnected from gedcom model
-    tableModel.setGedcom(null);
+    propertyTable.setModel(null);
   }
   
   /**
-   * Accessor
+   * Returns a mode for given tag
    */
-  /*package*/ EntityTableModel getModel() {
-    return tableModel;
+  /*package*/ Mode getMode() {
+    return currentMode;
   }
- 
+  
   /**
-   * Accessor - the paths we're using for given type
+   * Returns a mode for given tag
    */
-  /*package*/ void setPaths(String type, TagPath[] set) {
-    tableModel.getMode(type).setPaths(set);
+  /*package*/ Mode getMode(String tag) {
+    // known mode?
+    Mode mode = (Mode)modes.get(tag); 
+    if (mode==null) {
+      mode = new Mode(tag, new String[0]);
+      modes.put(tag, mode);
+    }
+    return mode;
   }
-
-  /**
-   * Accessor - the paths we're using for given type
-   */
-  /*package*/ TagPath[] getPaths(String type) {
-    return tableModel.getMode(type).getPaths();
-  }
-
+  
   /**
    * Sets the type of entities to look at
    */
-  /*package*/ void setType(String type) {
-    grabColumnWidths();
-    tableModel.setMode(type);
-  }
-  
-  /**
-   * Accessor - the type of entities we're looking at
-   */
-  /*package*/ String getType() {
-    return tableModel.getType();
+  /*package*/ void setMode(Mode set) {
+    // give mode a change to grab what it wants to preserve
+    if (currentMode!=null)
+      currentMode.save(registry);
+    // remember current mode
+    currentMode = set;
+    // tell to table
+    propertyTable.setModel(new Model(currentMode));
+    // update its columns
+    propertyTable.setColumnWidths(currentMode.getWidths());
+    // and sorting
+    propertyTable.setSortedColumn(currentMode.sort);
   }
   
   /**
@@ -213,17 +191,11 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
 
     // a type that we're interested in?
     Entity entity = context.getEntity();
-    if (entity==null||!entity.getTag().equals(tableModel.getType())) 
+    if (entity==null||!entity.getTag().equals(currentMode.getTag())) 
       return;
       
     // change selection
-    Point rowcol = tableModel.getRowCol(entity, context.getProperty());
-    table.scrollRectToVisible(table.getCellRect(rowcol.y,rowcol.x,true));
-    //selectionCallback.skipNext();
-    if (rowcol.x>=0)
-      table.setColumnSelectionInterval(rowcol.x,rowcol.x);
-    if (rowcol.y>=0)
-      table.setRowSelectionInterval(rowcol.y,rowcol.y);
+    propertyTable.select(entity, context.getProperty());
 
     // done
   }
@@ -235,49 +207,30 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     // create buttons for mode switch
     ButtonHelper bh = new ButtonHelper();
     bh.setFocusable(false);
-    for (int t=0;t<Gedcom.ENTITIES.length;t++) {
-      bar.add(bh.create(new ActionChangeType(Gedcom.ENTITIES[t])));
+    
+    for (int i=0;i<Gedcom.ENTITIES.length;i++) {
+      bar.add(bh.create(new ActionChangeType(getMode(Gedcom.ENTITIES[i]))));
     }
+    
     // done
   }
   
-  /**
-   * Grab current column widths
-   */
-  private void grabColumnWidths() {
-    // grab column widths
-    TableColumnModel columns = table.getColumnModel();
-    int[] widths = new int[columns.getColumnCount()];
-    for (int c=0; c<columns.getColumnCount(); c++) {
-      widths[c] = columns.getColumn(c).getWidth();
-    }
-    tableModel.getMode().setWidths(widths);
-    // done
-  }
-
   /**
    * Read properties from registry
    */
   private void loadProperties() {
 
-    // get paths&widths
-    for (int t=0; t<Gedcom.ENTITIES.length; t++) {
-      
-      String tag = Gedcom.ENTITIES[t];
-      EntityTableModel.Mode mode = tableModel.getMode(tag);
-      
-      String[] ps = registry.get(tag+".paths" , (String[])null);
-      if (ps!=null) mode.setPaths(TagPath.toArray(ps));
-      
-      int[]    ws = registry.get(tag+".widths", (int[]   )null);
-      if (ws!=null) mode.setWidths(ws);
-
-      mode.setSort(registry.get(tag+".sort", 0));
-
+    // get modes
+    Iterator it = modes.values().iterator();
+    while (it.hasNext()) {
+      Mode mode = (Mode)it.next();
+      mode.load(registry);
     }
 
-    // get current filter
-    tableModel.setMode(registry.get("mode", Gedcom.INDI));
+    // get current mode
+    String tag = registry.get("mode", "");
+    if (modes.containsKey(tag))
+      currentMode = getMode(tag);
     
     // Done
   }
@@ -286,241 +239,165 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
    * Write properties from registry
    */
   private void saveProperties() {
-    // grab the column widths as they are right now
-    grabColumnWidths();
+    
     // save current type
-    registry.put("mode",tableModel.getType());
-    // save paths&widths
-    for (int t=0; t<Gedcom.ENTITIES.length; t++) {
-      String tag = Gedcom.ENTITIES[t];
-      EntityTableModel.Mode mode = tableModel.getMode(tag);
-      
-      registry.put(tag+".paths" , mode.getPaths());
-      registry.put(tag+".widths", mode.getWidths());
-      registry.put(tag+".sort"  , mode.getSort());
+    registry.put("mode", currentMode.getTag());
+    
+    // save modes
+    Iterator it = modes.values().iterator();
+    while (it.hasNext()) {
+      Mode mode = (Mode)it.next();
+      mode.save(registry);
     }
     // Done
   }  
   
   /**
-   * @see genj.view.FilterSupport#getFilter()
-   */
-  public Filter getFilter() {
-    return new SelectionFilter(tableModel, table.getSelectedRows());
-  }
-  
-  /**
-   * @see genj.view.FilterSupport#getFilterName()
-   */
-  public String getFilterName() {
-    return table.getSelectedRowCount()+" selected rows in "+title;
-  }
-
-  /**
-   * SelectionFilter
-   */
-  private static class SelectionFilter implements Filter {
-    /** selected entities */
-    private Set ents = new HashSet();
-    /** type we're looking at */
-    private String type;
-    /**
-     * Constructor
-     */
-    private SelectionFilter(EntityTableModel model, int[] rows) {
-      type = model.getType();
-      for (int r=0; r<rows.length; r++) {
-        ents.add(model.getEntity(rows[r]));
-      }
-    }
-    /**
-     * has to be in res
-     * @see genj.io.Filter#accept(genj.gedcom.Entity)
-     */
-    public boolean accept(Entity ent) {
-      // fam/indi
-      if (ent.getTag()==type)
-        return ents.contains(ent);
-      // maybe a referenced other type?
-      Entity[] refs = PropertyXRef.getReferences(ent);
-      for (int r=0; r<refs.length; r++) {
-        if (ents.contains(refs[r])) return true;
-      }
-      // not
-      return false;
-      
-    }
-    /** @see genj.io.Filter#accept(genj.gedcom.Property) */
-    public boolean accept(Property property) {
-      return true;
-    }
-  } //SelectionFilter
-  
-  /**
    * Action - flip view to entity type
    */
   private class ActionChangeType extends ActionDelegate {
-    /** the type this action triggers */
-    private String type;
+    /** the mode this action triggers */
+    private Mode mode;
     /** constructor */
-    ActionChangeType(String t) {
-      type = t;
-      setTip(resources.getString("mode.tip", Gedcom.getName(type,true)));
-      setImage(Gedcom.getEntityImage(type));
+    ActionChangeType(Mode mode) {
+      this.mode = mode;
+      setTip(resources.getString("mode.tip", Gedcom.getName(mode.getTag(),true)));
+      setImage(Gedcom.getEntityImage(mode.getTag()));
     }
     /** run */
     public void execute() {
-      setType(type);
+      setMode(mode);
     }
   } //ActionMode
-
-  /**
-   * Callback for list selections
-   */
-  private class TableCallback extends MouseAdapter implements ListSelectionListener, TableModelListener {
-    /**
-     * Table updates
-     */    
-    public void tableChanged(TableModelEvent e) {
-      // big change?
-      TableColumnModel columns = table.getColumnModel();
-      if (columns.getColumnCount()>0&&e!=null&&e.getFirstRow()!=TableModelEvent.HEADER_ROW)
-        return;
-      // clear columns
-      while (columns.getColumnCount() > 0)
-        columns.removeColumn(columns.getColumn(0));
-      // get current mode
-      EntityTableModel.Mode mode = tableModel.getMode();          
-      TagPath[] paths = mode.getPaths();
-      int[] widths = mode.getWidths();
-      // create and fill
-      for (int c=0; c<paths.length; c++) {
-        TableColumn col = new TableColumn(c);
-        col.setHeaderValue(paths[c]);
-        col.setPreferredWidth(widths.length>c&&widths[c]>0?widths[c]:75);
-        columns.addColumn(col);
-      }
-      // done
-    }
-
-    /** callback - mouse press */
-    public void mousePressed(MouseEvent e) {
-      mouseReleased(e);
-    }
-    /** callback - mouse release */
-    public void mouseReleased(MouseEvent e) {
-      
-      // no context menu?
-      if (!e.isPopupTrigger())
-        return;
-      Point pos = e.getPoint();
-
-      // get context
-      int row = table.rowAtPoint(pos);
-      int col = table.columnAtPoint(pos);
-      if (row<0||col<0) 
-        return;
-      
-      // make sure selection is accurate - JTable does
-      // only react to 'first' mouse button not second
-      if (!table.isCellSelected(row, col))
-        table.changeSelection(row, col, false, false);
-      
-      // context is either entity or property
-      Context context = tableModel.getContext(row, col);
-      
-      // show context menu 
-      manager.showContextMenu(context, null, table, pos);
-      
-      // done
-    }
-
-    /** callback - selection changed */
-    public void valueChanged(ListSelectionEvent e) {
-      
-      // adjusting?
-      if (e.getValueIsAdjusting())
-        return;
-
-      // check selection
-      int 
-        row = table.getSelectedRow(),
-        col = table.getSelectedColumn();
-
-      // check validity
-      // 20041007 on model changes the row/col selection might not be valid
-      if (row<0||col<0||row>=tableModel.getRowCount()||col>=tableModel.getColumnCount())
-        return;
-
-      // get context
-      Context context = tableModel.getContext(row, col);
-      context.setSource(TableView.this);
-      
-      // propagate
-      manager.setContext(context);
-    }
-  } //SelectionCallback
   
-  /**
-   * Renderer for properties in cells
+  /** 
+   * A PropertyTableModelWrapper FIXME caches rows and gedcom changes!
    */
-  private class PropertyTableCellRenderer extends HeadlessLabel implements TableCellRenderer {
-    /** current property */
-    private Property prop;
-    /** attributes */
-    private boolean isSelected;
-    /**
-     * constructor
-     */
-    /*package*/ PropertyTableCellRenderer() {
-      setFont(Options.getInstance().getDefaultFont());
-    }
-    /**
-     * @see javax.swing.table.TableCellRenderer#getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)
-     */
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focs, int row, int col) {
-      // there's a property here
-      prop = (Property)value;
-      // and some status
-      isSelected = selected;
-      // ready
-      return this;
-    }
-    /**
-     * patched preferred size
-     */
-    public Dimension getPreferredSize() {
-      if (prop==null)
-        return new Dimension(0,0);
-      return Dimension2d.getDimension(PropertyRenderer.get(prop).getSize(getFont(), new FontRenderContext(null, false, false), prop, PropertyRenderer.PREFER_DEFAULT, manager.getDPI()));
-    }
-    /**
-     * @see genj.util.swing.HeadlessLabel#paint(java.awt.Graphics)
-     */
-    public void paint(Graphics g) {
-      Graphics2D graphics = (Graphics2D)g;
-      // our bounds
-      Rectangle bounds = getBounds();
-      bounds.x=0; bounds.y=0;
-      // background?
-      if (isSelected) {
-        g.setColor(table.getSelectionBackground());
-        g.fillRect(0,0,bounds.width,bounds.height);
-        g.setColor(table.getSelectionForeground());
-      } else {
-        g.setColor(table.getForeground());
-      }
-      // no prop and we're done
-      if (prop==null) 
-        return;
-      // set font
-      g.setFont(getFont());
-      // get the proxy
-      PropertyRenderer proxy = PropertyRenderer.get(prop);
-      // let it render
-      proxy.render(graphics, bounds, prop, PropertyRenderer.PREFER_DEFAULT, manager.getDPI());
-      // done
-    }
-  } //PropertyTableCellRenderer
+  private class Model extends AbstractPropertyTableModel {
+
+    /** mode */
+    private Mode mode;
     
+    /** our cached rows */
+    private Entity[] rows;
+    
+    /** constructor */
+    private Model(Mode set) {
+      mode = set;
+    }
+    
+    /** reset cached state - this is called once automatically */
+    public void reset() {
+      // cache entities
+      Collection es = gedcom.getEntities(mode.getTag());
+      rows = (Entity[])es.toArray(new Entity[es.size()]);
+    }
+
+    /** gedcom */
+    public Gedcom getGedcom() {
+      return gedcom;
+    }
+
+    /** # columns */
+    public int getNumCols() {
+      return mode.getPaths().length;
+    }
+    
+    /** # rows */
+    public int getNumRows() {
+      return gedcom.getEntities(mode.getTag()).size();
+    }
+    
+    /** path for colum */
+    public TagPath getPath(int col) {
+      return mode.getPaths()[col];
+    }
+
+    /** property for row */
+    public Property getProperty(int row) {
+      return rows[row];
+    }
+    
+  } //Model
+
+  /**
+   * A mode is a configuration for a set of entities
+   */
+  /*package*/ class Mode {
+    
+    /** attributes */
+    private String tag;
+    private String[] defaults;
+    private TagPath[] paths;
+    private int[] widths;
+    private int sort = 0;
+    
+    /** constructor */
+    private Mode(String t, String[] d) {
+      // remember
+      tag      = t;
+      defaults = d;
+      paths    = TagPath.toArray(defaults);
+      widths   = new int[paths.length];
+    }
+    
+    /** load properties from registry */
+    private void load(Registry r) {
+      
+      String[] ps = r.get(tag+".paths" , (String[])null);
+      if (ps!=null) 
+        paths = TagPath.toArray(ps);
+      
+      int[] ws = r.get(tag+".widths", (int[])null);
+      if (ws!=null) 
+        widths = ws;
+
+      sort = registry.get(tag+".sort", 0);
+      
+    }
+    
+    /** set paths */
+    /*package*/ void setPaths(TagPath[] set) {
+      paths = set;
+      if (currentMode==this)
+        setMode(currentMode);
+    }
+    
+    /** get paths */
+    /*package*/ TagPath[] getPaths() {
+      return paths;
+    }
+    
+    /** get column widths */
+    private int[] getWidths() {
+      return widths;
+    }
+
+    /** set column widths */
+    private void setWidths(int[] set) {
+      widths = set;
+    }
+
+    /** save properties from registry */
+    private void save(Registry r) {
+      
+      // grab current column widths
+      if (currentMode==this)
+        widths = propertyTable.getColumnWidths();
+      
+      // grab current sort column
+      sort = propertyTable.getSortedColumn();
+
+	    registry.put(tag+".paths" , paths);
+	    registry.put(tag+".widths", widths);
+	    registry.put(tag+".sort"  , sort);
+    }
+    
+    /** tag */
+    /*package*/ String getTag() {
+      return tag;
+    }
+    
+  } //Mode
+  
 } //TableView

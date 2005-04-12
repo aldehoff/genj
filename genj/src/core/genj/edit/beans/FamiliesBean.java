@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.common.AbstractPropertyTableModel;
 import genj.common.PropertyTableModel;
 import genj.common.PropertyTableWidget;
 import genj.gedcom.Fam;
@@ -71,7 +72,7 @@ public class FamiliesBean extends PropertyBean {
     setLayout(new BorderLayout());
 
     // a table for the families
-    PropertyTableModel model = new PropertyTableModel() {
+    PropertyTableModel model = new AbstractPropertyTableModel() {
       public Gedcom getGedcom() {
         return gedcom;
       }

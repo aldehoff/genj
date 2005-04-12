@@ -20,47 +20,33 @@
 package genj.common;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 
 /**
- * The data source for our PropertyTableWidget
+ * A default base-type for property models
  */
-public interface PropertyTableModel {
-  
-  /**
-   * Every table model is associated with a gedcom instance
-   */
-  public Gedcom getGedcom();
-  
-  /**
-   * Number of rows
-   */
-  public int getNumRows();
-  
-  /**
-   * Number of columns
-   */
-  public int getNumCols();
+public abstract class AbstractPropertyTableModel implements PropertyTableModel {
 
   /**
-   * Root-property in given row
+   * The default header is derived from the path in column col
    */
-  public Property getProperty(int row);
-  
-  /**
-   * Path from root to property in given column
-   */
-  public TagPath getPath(int col);
-  
-  /**
-   * Header value for given col
-   */
-  public Object getHeader(int col);
+  public Object getHeader(int col) {
+    
+    TagPath path = getPath(col);
+    
+    // try to find a reasonable tag to display as text (that's not '.' or '*')
+    String tag = path.getLast();
+    for (int p=path.length()-2;!Character.isLetter(tag.charAt(0))&&p>=0;p--) 
+      tag = path.get(p);
+    
+    // as text
+    return Gedcom.getName(tag);
+  }
   
   /** 
-   * Convenience method that tells model to reset any cached state
+   * By default don't assume any cached state
    */
-  public void reset();
+  public void reset() {
+  }
   
 }

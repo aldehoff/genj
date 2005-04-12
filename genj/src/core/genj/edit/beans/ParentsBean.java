@@ -19,11 +19,13 @@
  */
 package genj.edit.beans;
 
+import genj.common.AbstractPropertyTableModel;
 import genj.common.PropertyTableModel;
 import genj.common.PropertyTableWidget;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.Relationship;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.util.Registry;
@@ -43,6 +45,10 @@ public class ParentsBean extends PropertyBean {
     new TagPath("FAM:HUSB:*:..:NAME"),
     new TagPath("FAM:WIFE:*:.."),
     new TagPath("FAM:WIFE:*:..:NAME")
+  };
+  
+  private final static String HEADERS[] = {
+    null, Relationship.LABEL_FATHER, null, Relationship.LABEL_MOTHER, null  
   };
 
 
@@ -68,7 +74,7 @@ public class ParentsBean extends PropertyBean {
     setLayout(new BorderLayout());
 
     // a table for the families
-    PropertyTableModel model = new PropertyTableModel() {
+    PropertyTableModel model = new AbstractPropertyTableModel() {
       public Gedcom getGedcom() {
         return gedcom;
       }
@@ -83,6 +89,13 @@ public class ParentsBean extends PropertyBean {
       }
       public Property getProperty(int row) {
         return indi.getFamc();
+      }
+      /**
+       * 
+       */
+      public Object getHeader(int col) {
+        String header = HEADERS[col];
+        return header!=null ? header : super.getHeader(col);
       }
     };
     PropertyTableWidget table = new PropertyTableWidget(model, viewManager);

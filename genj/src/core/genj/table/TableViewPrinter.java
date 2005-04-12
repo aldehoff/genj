@@ -35,6 +35,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.Dimension2D;
 
 import javax.swing.JComponent;
+import javax.swing.table.TableModel;
 
 /**
  * A print renderer for table */
@@ -89,19 +90,16 @@ public class TableViewPrinter implements Printer {
    */
   public Dimension calcSize(Dimension2D pageSizeInInches, Point dpi) {
 
-    // grab model
-    EntityTableModel model = table.getModel();
-
     // prepare data
     pageWidth = (int)Math.ceil(pageSizeInInches.getWidth()*dpi.x);
     pageHeight = (int)Math.ceil(pageSizeInInches.getHeight()*dpi.y);
     headerHeight = 0;
-    rowHeights = new int[model.getRowCount()];
-    colWidths = new int[model.getColumnCount()];
+    rowHeights = new int[table.propertyTable.getModel().getRowCount()];
+    colWidths = new int[table.propertyTable.getModel().getColumnCount()];
     
     // calculate header parameters
     for (int col=0;col<colWidths.length;col++) {
-      header.setValue(model.getColumnName(col));
+      header.setValue(table.propertyTable.getModel().getColumnName(col));
       calcSize(-1, col, header, dpi);
     }
     
@@ -110,7 +108,7 @@ public class TableViewPrinter implements Printer {
       // analyze all columns
       for (int col=0;col<colWidths.length;col++) {
         // add cell
-        calcSize(row, col, model.getProperty(row, col), dpi);
+        calcSize(row, col, (Property)table.propertyTable.getModel().getValueAt(row, col), dpi);
       }
       // next row
     }
@@ -190,7 +188,7 @@ public class TableViewPrinter implements Printer {
     g.setFont(font);
 
     // grab model
-    EntityTableModel model = table.getModel();
+    TableModel model = table.propertyTable.getModel();
     
     // identify column/row for this page
     int scol=0, cols=0;
@@ -223,7 +221,7 @@ public class TableViewPrinter implements Printer {
       for (int col=0,x=0;col<cols;col++) {
         // render in given space
         Rectangle r = new Rectangle(x, y, colWidths[scol+col], rowHeights[srow+row]);
-        render(g, r, model.getProperty(srow+row, scol+col), dpi);
+        render(g, r, (Property)model.getValueAt(srow+row, scol+col), dpi);
         // increase current horizontal position
         x += colWidths[scol+col] + pad;
       }
