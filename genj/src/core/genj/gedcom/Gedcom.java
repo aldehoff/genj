@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.76 $ $Author: nmeier $ $Date: 2005-04-07 14:44:05 $
+ * $Revision: 1.77 $ $Author: nmeier $ $Date: 2005-04-12 21:45:17 $
  */
 package genj.gedcom;
 
@@ -141,8 +141,9 @@ public class Gedcom {
   private Origin origin;
   
   /** entities */
-  private LinkedList entities = new LinkedList();
-  private Map e2entities = new HashMap(); // values are maps id->entitiy
+  private LinkedList allEntities = new LinkedList();
+  private Map tag2id2entities = new HashMap();
+  private Map tag2entities = new HashMap();
   private int minIDStringLen = 4; //lenght of ids e.g. I001
   
   /** transaction support */
@@ -279,9 +280,10 @@ public class Gedcom {
     String id = entity.getId();
     if (id.length()>0)
       getEntityMap(entity.getTag()).put(id, entity);
-     
+    
     // remember entity
-    entities.add(entity);
+    getEntityList(entity.getTag()).add(entity);
+    allEntities.add(entity);
     
     // notify
     entity.addNotify(this);
@@ -342,19 +344,21 @@ public class Gedcom {
   public void deleteEntity(Entity which) {
 
     // Lookup entity map
-    Map ents = getEntityMap(which.getTag());
+    Map id2entity = getEntityMap(which.getTag());
 
-    // Entity exists ?
+    // id exists ?
     String id = which.getId();
-    if (!ents.containsKey(id))
+    if (!id2entity.containsKey(id))
       throw new IllegalArgumentException("Unknown entity with id "+which.getId());
 
     // Tell it
     which.delNotify();
 
     // Delete it
-    ents.remove(id);
-    entities.remove(which);
+    if (id2entity.get(id)==which) // might be duplicate
+      id2entity.remove(id);
+    getEntityList(which.getTag()).remove(which);
+    allEntities.remove(which);
 
     // was it the submitter?    
     if (submitter==which) submitter = null;
@@ -367,27 +371,36 @@ public class Gedcom {
    */
   private Map getEntityMap(String tag) {
     // lookup map of entities for tag
-    Map ents = (Map)e2entities.get(tag);
-    if (ents==null) {
-      ents = new HashMap();
-      e2entities.put(tag, ents);
+    Map id2entities = (Map)tag2id2entities.get(tag);
+    if (id2entities==null) {
+      id2entities = new HashMap();
+      tag2id2entities.put(tag, id2entities);
     }
     // done
-    return ents;
+    return id2entities;
+  }
+  
+  private List getEntityList(String tag) {
+    List entities = (List)tag2entities.get(tag);
+    if (entities==null) {
+      entities = new LinkedList();
+      tag2entities.put(tag, entities);
+    }
+    return entities;
   }
 
   /**
    * Returns all entities
    */
   public Collection getEntities() {
-    return Collections.unmodifiableCollection(entities);
+    return Collections.unmodifiableCollection(allEntities);
   }
 
   /**
    * Returns entities of given type
    */
   public Collection getEntities(String tag) {
-    return Collections.unmodifiableCollection(getEntityMap(tag).values());
+    return Collections.unmodifiableCollection(getEntityList(tag));
   }
 
   /**
@@ -401,7 +414,7 @@ public class Gedcom {
    * Returns entities of given type sorted by comparator (can be null)
    */
   public Entity[] getEntities(String tag, Comparator comparator) {
-    Collection ents = getEntityMap(tag).values();
+    Collection ents = getEntityList(tag);
     Entity[] result = (Entity[])ents.toArray(new Entity[ents.size()]);
     // sort by comparator or entity
     if (comparator!=null) 
@@ -420,7 +433,7 @@ public class Gedcom {
     if (id==null) 
       throw new IllegalArgumentException("id cannot be null");
     // loop all types
-    for (Iterator tags=e2entities.keySet().iterator();tags.hasNext();) {
+    for (Iterator tags=tag2id2entities.keySet().iterator();tags.hasNext();) {
       String tag = (String)tags.next();
       Entity result = getEntity(tag, id);
       if (result!=null)
@@ -456,11 +469,11 @@ public class Gedcom {
   private String createEntityId(String tag) {
     
     // Lookup current entities of type
-    Map ents = getEntityMap(tag);
+    Map id2entity = getEntityMap(tag);
     
     // We might to do this several times
     String prefix = getEntityPrefix(tag);
-    int id = ents.size();
+    int id = id2entity.size();
     search: while (true) {
       // next one
       id ++;
@@ -471,7 +484,7 @@ public class Gedcom {
       while (true) {
         String candidate = prefix + suffix;
         // already used?
-        if (ents.containsKey(candidate))
+        if (id2entity.containsKey(candidate))
           continue search;
         // long enough?
         if (candidate.length()>=minIDStringLen) 
@@ -803,7 +816,7 @@ public class Gedcom {
    * Check for containment
    */
   public boolean contains(Entity entity) {
-    return getEntities(entity.getTag()).contains(entity);
+    return getEntityList(entity.getTag()).contains(entity);
   }
   
   /**

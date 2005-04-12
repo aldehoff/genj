@@ -265,6 +265,9 @@ public class GedcomReader implements Trackable {
     // Create entity and read its properties
     try {
       
+      if (gedcom.getEntity(tag, xref)!=null)
+        addWarning(line, "Duplicate ID "+xref+" for "+Gedcom.getName(tag));
+      
       Entity ent = gedcom.createEntity(tag, xref);
       
       // preserve value for those who care
