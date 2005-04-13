@@ -33,6 +33,9 @@ import java.util.StringTokenizer;
  * @version 2004/08/25 made immutable
  */
 public class TagPath {
+  
+  /** a logical name */
+  private String name = null;
 
   /** the list of tags that describe the path */
   private String tags[];
@@ -53,6 +56,18 @@ public class TagPath {
    * @exception IllegalArgumentException in case format isn't o.k.
    */
   public TagPath(String path) throws IllegalArgumentException {
+    this(path, null);
+  }
+  
+  /**
+   * Constructor for TagPath
+   * @param path path as colon separated string value a:b:c
+   * @exception IllegalArgumentException in case format isn't o.k.
+   */
+  public TagPath(String path, String name) throws IllegalArgumentException {
+    
+    // keep name
+    this.name = name;
 
     // Parse path
     StringTokenizer tokens = new StringTokenizer(path,SEPARATOR_STRING,false);
@@ -232,6 +247,27 @@ public class TagPath {
    */
   public int hashCode() {
     return hash;
+  }
+  
+  /**
+   * Accessor - name
+   */
+  public String getName() {
+    if (name==null) {
+      // try to find a reasonable tag to display as text (that's not '.' or '*')
+      int i = length()-1;
+      String tag = get(i);
+      while (i>1&&!Character.isLetter(tag.charAt(0))) 
+        tag = get(--i);
+      
+      // as text
+      name = Gedcom.getName(tag);
+      
+      // date or place?
+      if (i>1&&(tag.equals("DATE")||tag.equals("PLAC"))) 
+        name = Gedcom.getName(get(i-1)) + " - " + name;
+    }
+    return name;
   }
 
   /**
