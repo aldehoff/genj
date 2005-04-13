@@ -44,7 +44,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 /**
@@ -108,7 +107,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
 
     // lay it out
     setLayout(new BorderLayout());
-    add(new JScrollPane(propertyTable), BorderLayout.CENTER);
+    add(propertyTable, BorderLayout.CENTER);
     
     // done
   }
