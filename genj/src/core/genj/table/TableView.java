@@ -26,6 +26,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -271,7 +272,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
   } //ActionMode
   
   /** 
-   * A PropertyTableModelWrapper FIXME caches rows and gedcom changes!
+   * A PropertyTableModelWrapper
    */
   private class Model extends AbstractPropertyTableModel {
 
@@ -284,13 +285,26 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     /** constructor */
     private Model(Mode set) {
       mode = set;
+      handleChange(null);
     }
     
-    /** reset cached state - this is called once automatically */
-    public void reset() {
+    /**
+     * Gedcom callback
+     */
+    public void handleChange(Transaction tx) {
+
+      // no drastic change?
+      if (tx!=null&&tx.get(Transaction.ENTITIES_ADDED).isEmpty()&&tx.get(Transaction.ENTITIES_DELETED).isEmpty()) { 
+        fireContentChanged();
+        return;
+      }
+      
       // cache entities
       Collection es = gedcom.getEntities(mode.getTag());
       rows = (Entity[])es.toArray(new Entity[es.size()]);
+      
+      // continue
+      fireRowsChanged();
     }
 
     /** gedcom */

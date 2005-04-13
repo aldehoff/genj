@@ -19,9 +19,7 @@
  */
 package genj.common;
 
-import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
-import genj.gedcom.Transaction;
 import genj.renderer.Options;
 import genj.renderer.PropertyRenderer;
 import genj.util.Dimension2d;
@@ -48,7 +46,6 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -85,6 +82,8 @@ public class PropertyTableWidget extends JPanel {
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
     table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setTableHeader(new SortableTableHeader());
+    table.getColumnModel().setColumnSelectionAllowed(true);
+    table.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     
     // setup layout
     setLayout(new BorderLayout());
@@ -101,7 +100,7 @@ public class PropertyTableWidget extends JPanel {
    */
   public void setModel(PropertyTableModel set) {
     table.setModel(new Model(set));
-    table.setColumnModel(new ColumnsWrapper(set));
+    //table.setColumnModel(new ColumnsWrapper(set));
   }
   
   /**
@@ -197,41 +196,37 @@ public class PropertyTableWidget extends JPanel {
     return table.getModel();
   }
 
-  /**
-   * Wrapper for swing columns
-   */
-  private class ColumnsWrapper extends DefaultTableColumnModel {
-    
-    /** our model */
-    private PropertyTableModel model;
-    
-    /** constructor */
-    ColumnsWrapper(PropertyTableModel set) {
-      
-      // setup state
-      model = set;
-      setColumnSelectionAllowed(true);
-      getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-      // create columns
-      if (model!=null) for (int i=0,j=model.getNumCols();i<j;i++) {
-        TableColumn col = new TableColumn(i);
-        
-        Object value = model.getHeader(i);
-        if (value!=null)
-          col.setHeaderValue(value);
-        addColumn(col);
-      }
-      
-      // done
-    }
-    
-  }
+//  /**
+//   * Wrapper for swing columns
+//   */
+//  private class ColumnsWrapper extends DefaultTableColumnModel {
+//    
+//    PropertyTableModel model;
+//    
+//    /** constructor */
+//    ColumnsWrapper(PropertyTableModel set) {
+//      model = set;
+//      setColumnSelectionAllowed(true);
+//      getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//    }
+//    
+//    /** */
+//    public void addColumn(TableColumn col) {
+//    
+//      // patch auto generated column
+//      Object value = model.getHeader(col.getModelIndex());
+//      if (value!=null)
+//        col.setHeaderValue(value);
+//      
+//      // continue
+//      super.addColumn(col);
+//    }
+//  }
 
   /**
    * Wrapper for swing table
    */
-  private class Model extends AbstractTableModel implements SortableTableModel, GedcomListener {
+  private class Model extends AbstractTableModel implements SortableTableModel, PropertyTableModelListener {
     
     /** sort */
     private int sortColumn = 0;
@@ -249,23 +244,29 @@ public class PropertyTableWidget extends JPanel {
     private Model(PropertyTableModel set) {
       // setup state
       model = set;
-      reset();
+      
+      if (model!=null)
+        handleRowsChange(model);
       // done
     }
     
-    /** reset state */
-    private void reset() {
-      
-      if (model==null) 
-        return;
-      
-      // tell to model
-      model.reset();
+    public void handleContentChange(PropertyTableModel model) {
       
       // setup cell state
       int 
-      	rows = model.getNumRows(), 
-      	cols = model.getNumCols();
+        rows = model.getNumRows(), 
+        cols = model.getNumCols();
+      cells = new Property[rows][cols];
+
+      // tell about it
+      fireTableRowsUpdated(0, cells.length);
+    }
+    
+    public void handleRowsChange(PropertyTableModel model) {
+      // setup cell state
+      int 
+        rows = model.getNumRows(), 
+        cols = model.getNumCols();
       cells = new Property[rows][cols];
       row2row = new int[rows];
       
@@ -275,6 +276,9 @@ public class PropertyTableWidget extends JPanel {
       
       // sort now
       sort();
+
+      // done
+      fireTableDataChanged();
     }
     
     /** someone interested in us */
@@ -282,35 +286,14 @@ public class PropertyTableWidget extends JPanel {
       super.addTableModelListener(l);
       // start listening ?
       if (model!=null&&getListeners(TableModelListener.class).length==1)
-        model.getGedcom().addGedcomListener(this);
+        model.addListener(this);
     }
     
     /** someone lost interest */
     public void removeTableModelListener(TableModelListener l) {
       // stop listening ?
       if (model!=null&&getListeners(TableModelListener.class).length==0)
-        model.getGedcom().removeGedcomListener(this);
-    }
-    
-    /** underlying gedcom change */
-    public void handleChange(Transaction tx) {
-      
-      // change in number of rows?
-      if (model.getNumRows()!=cells.length) {
-        reset();
-        super.fireTableDataChanged();
-        return;
-      }
-        
-      // since properties/cells might have been modified or deleted/added 
-      // we simply invalidate all our cached content instead of looking
-      // for delate iteratively
-      cells = new Property[model.getNumRows()][model.getNumCols()];
-      
-      fireTableRowsUpdated(0, cells.length);
-      
-      // done 
-      
+        model.removeListener(this);
     }
     
     /**
@@ -405,7 +388,7 @@ public class PropertyTableWidget extends JPanel {
      * array of primitives w/comparator
      */
     private void sort() {
-      if (sortColumn!=0&&row2row.length>1)
+      if (sortColumn!=0&&(Math.abs(sortColumn)-1)<getColumnCount()&&row2row.length>1)
         qsort(0,row2row.length-1);
     }
     

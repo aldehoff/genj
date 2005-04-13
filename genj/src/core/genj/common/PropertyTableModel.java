@@ -59,8 +59,13 @@ public interface PropertyTableModel {
   public Object getHeader(int col);
   
   /** 
-   * Convenience method that tells model to reset any cached state
+   * Add listener
    */
-  public void reset();
+  public void addListener(PropertyTableModelListener listener);
+  
+  /** 
+   * Remove listener
+   */
+  public void removeListener(PropertyTableModelListener listener);
   
 }

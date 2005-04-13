@@ -20,12 +20,19 @@
 package genj.common;
 
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
 import genj.gedcom.TagPath;
+import genj.gedcom.Transaction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A default base-type for property models
  */
-public abstract class AbstractPropertyTableModel implements PropertyTableModel {
+public abstract class AbstractPropertyTableModel implements PropertyTableModel, GedcomListener {
+  
+  private List listeners = new ArrayList(3);
 
   /**
    * The default header is derived from the path in column col
@@ -44,9 +51,44 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel {
   }
   
   /** 
-   * By default don't assume any cached state
+   * Add listener
    */
-  public void reset() {
+  public void addListener(PropertyTableModelListener listener) {
+    listeners.add(listener);
+    if (listeners.size()==1)
+      getGedcom().addGedcomListener(this);
+  }
+  
+  /** 
+   * Remove listener
+   */
+  public void removeListener(PropertyTableModelListener listener) {
+    listeners.remove(listener);
+    if (listeners.isEmpty())
+      getGedcom().addGedcomListener(this);
+  }
+  
+  /**
+   * Structure change
+   */
+  protected void fireRowsChanged() {
+    for (int i=0;i<listeners.size();i++)
+      ((PropertyTableModelListener)listeners.get(i)).handleRowsChange(this);
+  }
+  
+  /**
+   * Structure change
+   */
+  protected void fireContentChanged() {
+    for (int i=0;i<listeners.size();i++)
+      ((PropertyTableModelListener)listeners.get(i)).handleContentChange(this);
+  }
+
+  /**
+   * Gedcom callback
+   */
+  public void handleChange(Transaction tx) {
+    fireRowsChanged();
   }
   
 }
