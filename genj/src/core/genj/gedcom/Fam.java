@@ -120,6 +120,25 @@ public class Fam extends Entity {
     if (getWife   ()!=null) result++;
     return result;
   } 
+  
+  /**
+   * Spouse by index
+   */
+  public Indi getSpouse(int which) {
+    Indi husband = getHusband();
+    if (husband!=null) {
+      if (which==0)
+        return husband;
+      which--;
+    }
+    Indi wife = getWife();
+    if (wife!=null) {
+      if (which==0)
+        return wife;
+      which--;
+    }
+    throw new IllegalArgumentException("No such spouse");
+  }
 
   /**
    * Returns the other parent to the given one
