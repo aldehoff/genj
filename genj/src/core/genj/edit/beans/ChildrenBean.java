@@ -39,7 +39,7 @@ import java.awt.Dimension;
 public class ChildrenBean extends PropertyBean {
 
   private final static TagPath PATHS[] = {
-    new TagPath("INDI"),
+    new TagPath("INDI", Gedcom.getName("CHIL")),
     new TagPath("INDI:NAME"),
     new TagPath("INDI:BIRT:DATE"),
     new TagPath("INDI:BIRT:PLAC")
@@ -82,9 +82,6 @@ public class ChildrenBean extends PropertyBean {
       }
       public Property getProperty(int row) {
         return fam.getChild(row);
-      }
-      public Object getHeader(int col) {
-        return col==0 ? Gedcom.getName("CHIL") : super.getHeader(col);
       }
     };
     PropertyTableWidget table = new PropertyTableWidget(model, viewManager);

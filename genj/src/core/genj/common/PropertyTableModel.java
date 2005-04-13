@@ -53,11 +53,6 @@ public interface PropertyTableModel {
    */
   public TagPath getPath(int col);
   
-  /**
-   * Header value for given col
-   */
-  public Object getHeader(int col);
-  
   /** 
    * Add listener
    */

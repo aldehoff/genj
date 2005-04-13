@@ -22,6 +22,7 @@ package genj.edit.beans;
 import genj.common.AbstractPropertyTableModel;
 import genj.common.PropertyTableModel;
 import genj.common.PropertyTableWidget;
+import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
@@ -39,22 +40,6 @@ import java.awt.Dimension;
  */
 public class ParentsBean extends PropertyBean {
 
-  private final static TagPath PATHS[] = {
-    new TagPath("FAM"),
-    new TagPath("FAM:HUSB:*:.."),
-    new TagPath("FAM:HUSB:*:..:NAME"),
-    new TagPath("FAM:WIFE:*:.."),
-    new TagPath("FAM:WIFE:*:..:NAME")
-  };
-  
-  private final static String HEADERS[] = {
-    null, Relationship.LABEL_FATHER, null, Relationship.LABEL_MOTHER, null  
-  };
-
-
-  /** indi we're looking at */
-  private Indi indi;
-  
   /**
    * Finish editing a property through proxy
    */
@@ -67,43 +52,90 @@ public class ParentsBean extends PropertyBean {
   public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
     super.init(setGedcom, setProp, setPath, setMgr, setReg);
 
-    // we assume we got an indi here
-    indi = (Indi)setProp;
-    
     // setup layout
     setLayout(new BorderLayout());
-
+    
     // a table for the families
-    PropertyTableModel model = new AbstractPropertyTableModel() {
-      public Gedcom getGedcom() {
-        return gedcom;
-      }
-      public int getNumCols() {
-        return PATHS.length;
-      }
-      public int getNumRows() {
-        return indi.getFamc()!=null ? 1 : 0; //FIXME max one atm
-      }
-      public TagPath getPath(int col) {
-        return PATHS[col];
-      }
-      public Property getProperty(int row) {
-        return indi.getFamc();
-      }
-      /**
-       * 
-       */
-      public Object getHeader(int col) {
-        String header = HEADERS[col];
-        return header!=null ? header : super.getHeader(col);
-      }
-    };
+    PropertyTableModel model = null;
+    if (setProp instanceof Indi)
+      model = new ParentsOfChild((Indi)setProp);
+    if (setProp instanceof Fam)
+      model = new ParentsInFamily((Fam)setProp);
+    
     PropertyTableWidget table = new PropertyTableWidget(model, viewManager);
     table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
     table.setPreferredSize(new Dimension(64,64));
     add(BorderLayout.CENTER, table);
     
     // done
+  }
+  
+  private static class ParentsInFamily extends AbstractPropertyTableModel {
+    
+    private final static TagPath[] PATHS = {
+//        new TagPath("FAM:HUSB:*:..", Relationship.LABEL_FATHER),  
+//        new TagPath("FAM:HUSB:*:..:NAME"),  
+//        new TagPath("FAM:WIFE:*:..", Relationship.LABEL_MOTHER),
+//        new TagPath("FAM:WIFE:*:..:NAME")
+        new TagPath("INDI"),
+        new TagPath("INDI:NAME"),
+        new TagPath("INDI:BIRT:DATE"),
+        new TagPath("INDI:BIRT:PLAC"),
+    };
+    
+    private Fam fam;
+    
+    private ParentsInFamily(Fam fam) {
+      this.fam = fam;
+    }
+    public Gedcom getGedcom() {
+      return fam.getGedcom();
+    }
+    public int getNumCols() {
+      return PATHS.length;
+    }
+    public int getNumRows() {
+      return fam.getNoOfSpouses();
+    }
+    public TagPath getPath(int col) {
+      return PATHS[col];
+    }
+    public Property getProperty(int row) {
+      return fam.getSpouse(row);
+    }
+  }
+  
+  private static class ParentsOfChild extends AbstractPropertyTableModel {
+    
+    private final static TagPath PATHS[] = {
+      new TagPath("FAM"),  
+      new TagPath("FAM:HUSB:*:..", Relationship.LABEL_FATHER),  
+      new TagPath("FAM:HUSB:*:..:NAME"),  
+      new TagPath("FAM:WIFE:*:..", Relationship.LABEL_MOTHER),
+      new TagPath("FAM:WIFE:*:..:NAME")
+    };
+    
+    private Indi child;
+    
+    private ParentsOfChild(Indi child) {
+      this.child = child;
+    }
+      
+    public Gedcom getGedcom() {
+      return child.getGedcom();
+    }
+    public int getNumCols() {
+      return PATHS.length;
+    }
+    public int getNumRows() {
+      return child.getFamc()!=null ? 1 : 0; //FIXME max one atm
+    }
+    public TagPath getPath(int col) {
+      return PATHS[col];
+    }
+    public Property getProperty(int row) {
+      return child.getFamc();
+    }
   }
 
 } //ParentsBean

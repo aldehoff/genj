@@ -19,9 +19,7 @@
  */
 package genj.common;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 
 import java.util.ArrayList;
@@ -34,22 +32,6 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
   
   private List listeners = new ArrayList(3);
 
-  /**
-   * The default header is derived from the path in column col
-   */
-  public Object getHeader(int col) {
-    
-    TagPath path = getPath(col);
-    
-    // try to find a reasonable tag to display as text (that's not '.' or '*')
-    String tag = path.getLast();
-    for (int p=path.length()-2;!Character.isLetter(tag.charAt(0))&&p>=0;p--) 
-      tag = path.get(p);
-    
-    // as text
-    return Gedcom.getName(tag);
-  }
-  
   /** 
    * Add listener
    */

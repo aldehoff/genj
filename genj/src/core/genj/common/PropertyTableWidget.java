@@ -300,8 +300,7 @@ public class PropertyTableWidget extends JPanel {
      *  patched column name
      */
     public String getColumnName(int col) {
-      Object result = model!=null ? model.getHeader(col) : null;
-      return result!=null ? result.toString() : "";
+      return model!=null ? model.getPath(col).getName() : "";
     }
     
     /** num columns */
