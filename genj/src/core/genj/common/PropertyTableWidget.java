@@ -318,11 +318,9 @@ public class PropertyTableWidget extends JPanel {
     private Context getContextAt(int row, int col) {
       
       // try to find property already cached
+      Property root = model.getProperty(row2row[row]);
       Property prop = getPropertyAt(row, col);
-      if (prop==null) 
-        prop = model.getProperty(row2row[row]);
-      
-      return new Context(prop.getGedcom(), prop.getEntity(), prop);
+      return new Context(root.getGedcom(), root.getEntity(), prop);
     }
     
     /** property */
