@@ -1,6 +1,8 @@
 <project name="GraphJ" default="run" basedir=".">
 
   <property file="./build.properties"/>
+	
+  <property name="dir.build" value="./build"/>
 
   <path id="classpath">
     <pathelement path="${dir.build}/classes/core"/>
@@ -71,12 +73,10 @@
      <delete file="${dir.build}/gj-tree.jar"/>
      <jar jarfile="${dir.build}/gj-tree.jar" update="True">
        <fileset dir="${dir.build}/classes/core"
-           includes="gj/awt/geom/*
+           includes="gj/geom/*
                     ,gj/layout/*
                     ,gj/layout/tree/**
                     ,gj/model/*
-                    ,gj/ui/UnitGraphics.class
-                    ,gj/ui/LayoutRenderer.class
                     ,gj/util/*"/>
      </jar>
   </target>
