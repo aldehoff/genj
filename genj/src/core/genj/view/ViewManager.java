@@ -149,7 +149,7 @@ public class ViewManager {
    * Sets the current context
    */
   public void setContext(Context context) {
-    System.out.println(context.getView());
+    
     // valid?
     if (!context.isValid())
       return;
