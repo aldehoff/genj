@@ -234,10 +234,13 @@ public class PopupWidget extends JButton {
      * action performed
      */
     protected void fireActionPerformed(ActionEvent e) {
-      popupTriggered = false;
-      cancelPopup();
       // fire action on popup button press?
       if (isFireOnClick) { 
+        
+        // cancel popu
+        popupTriggered = false;
+        cancelPopup();
+        
         List as = getActions();
         if (!as.isEmpty())
           ((ActionDelegate)as.get(0)).trigger();
