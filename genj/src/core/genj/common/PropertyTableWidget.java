@@ -44,6 +44,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -77,13 +79,17 @@ public class PropertyTableWidget extends JPanel {
     viewManager = manager;
     
     // create table comp
+    InteractionHandler i = new InteractionHandler();
+    
     table = new JTable();
-    table.addMouseListener(new InteractionHandler());
+    table.addMouseListener(i);
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
     table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setTableHeader(new SortableTableHeader());
     table.getColumnModel().setColumnSelectionAllowed(true);
     table.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    table.getColumnModel().getSelectionModel().addListSelectionListener(i);
+    table.getSelectionModel().addListSelectionListener(i);
     
     // setup layout
     setLayout(new BorderLayout());
@@ -555,7 +561,7 @@ public class PropertyTableWidget extends JPanel {
   /**
    * Callback for list selections
    */
-  private class InteractionHandler extends MouseAdapter {
+  private class InteractionHandler extends MouseAdapter implements ListSelectionListener {
     
     /** callback - mouse press */
     public void mousePressed(MouseEvent e) {
@@ -575,9 +581,8 @@ public class PropertyTableWidget extends JPanel {
       if (row<0||col<0) 
         return;
       
-      // make sure selection is accurate - JTable does
-      // only react to 'first' mouse button not second
-      if (!table.isCellSelected(row, col))
+      // make sure selection is accurate for non 1st button clicks
+      if (e.getButton()!=1&&!table.isCellSelected(row, col))
         table.changeSelection(row, col, false, false);
       
       // context is either entity or property
@@ -590,12 +595,32 @@ public class PropertyTableWidget extends JPanel {
         return;
       }
       
-      // context propagation?
-      if (contextPropagationOnDoubleClick&&e.getClickCount()<2)
-        return;
-      viewManager.setContext(context);
+      // context propagation for double clicks?
+      if (contextPropagationOnDoubleClick&&e.getClickCount()>1)
+        viewManager.setContext(context);
       
       // done
+    }
+    
+    /** callback - selection changed e.g. by keyboard */
+    public void valueChanged(ListSelectionEvent e) {
+      
+      if (e.getValueIsAdjusting())
+        return;
+      
+      int row = table.getSelectedRow();
+      int col = table.getSelectedColumn();
+      if (row<0||col<0)
+        return;
+      
+      // context is either entity or property
+      Context context = ((Model)table.getModel()).getContextAt(row, col);
+      context.setSource(PropertyTableWidget.this);
+      
+      //  context propagation for non-double clicks?
+      if (!contextPropagationOnDoubleClick)
+        viewManager.setContext(context);
+      
     }
 
       
