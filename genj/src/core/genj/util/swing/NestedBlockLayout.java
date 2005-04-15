@@ -34,7 +34,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -48,20 +47,16 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * A layout that arranges components in nested blocks of rows and columns
- * <!ELEMENT layout (row|col)>
  * <!ELEMENT row (col*|*)>
  * <!ELEMENT col (row*|*)>
  */
-public class NestedBlockLayout implements LayoutManager2 {
+public class NestedBlockLayout implements LayoutManager2, Cloneable {
 
   /** one root row is holds all the columns */
   private Block root;
   
   /** padding */
   private int padding = 1;
-  
-  /** mapping key 2 cell */
-  private List cells = new ArrayList(16);
   
   /**
    * Constructor
@@ -92,7 +87,7 @@ public class NestedBlockLayout implements LayoutManager2 {
    * Accessor to cell definitions
    */
   public Collection getCells() {
-    return cells;
+    return root.getCells(new ArrayList(10));
   }
   
   /**
@@ -143,11 +138,7 @@ public class NestedBlockLayout implements LayoutManager2 {
       if ("col".equals(element))
         return new Column();
       // a cell!
-      Cell cell =  new Cell(element, attrs);
-      // remember
-      cells.add(cell);
-      // done
-      return cell;
+      return new Cell(element, attrs, padding);
     }
     
     public void endElement(java.lang.String uri, java.lang.String localName, java.lang.String qName) throws org.xml.sax.SAXException {
@@ -171,7 +162,7 @@ public class NestedBlockLayout implements LayoutManager2 {
   /**
    * an block in the layout
    */
-  private abstract class Block {
+  private static abstract class Block implements Cloneable {
     
     /** preferred size of column */
     Dimension preferred;
@@ -181,6 +172,15 @@ public class NestedBlockLayout implements LayoutManager2 {
     
     /** subs */
     ArrayList subs = new ArrayList(16);
+    
+    /** copy */
+    protected Object clone() throws CloneNotSupportedException {
+      Block clone = (Block)super.clone();
+      clone.subs = new ArrayList(subs.size());
+      for (int i=0;i<subs.size();i++)
+        clone.subs.add( ((Block)subs.get(i)).clone() );
+      return clone;
+    }
     
     /** remove */
     boolean remove(Component component) {
@@ -231,13 +231,29 @@ public class NestedBlockLayout implements LayoutManager2 {
       
     /** layout */
     abstract void layout(Rectangle in);
+    
+    /** all cells */
+    Collection getCells(Collection collect) {
+      for (int i=0;i<subs.size();i++) 
+        ((Block)subs.get(i)).getCells(collect);
+      return collect;
+    }
+    
+    /** cell by element name */
+    Cell getCell(String element) {
+      Cell result = null;
+      for (int i=0;result==null&&i<subs.size();i++) {
+        result = ((Block)subs.get(i)).getCell(element);
+      }
+      return result;
+    }
 
   } //Area
   
   /**
    * a row
    */
-  private class Row extends Block {
+  private static class Row extends Block {
 
     /** add a sub */
     void add(Block sub) {
@@ -317,7 +333,7 @@ public class NestedBlockLayout implements LayoutManager2 {
   /**
    * a column
    */
-  private class Column extends Block {
+  private static class Column extends Block {
 
     /** add a sub */
     void add(Block sub) {
@@ -397,7 +413,7 @@ public class NestedBlockLayout implements LayoutManager2 {
   /**
    * Component
    */
-  public class Cell extends Block {
+  public static class Cell extends Block {
     
     /** a unique element id */
     private String element;
@@ -410,12 +426,16 @@ public class NestedBlockLayout implements LayoutManager2 {
     
     /** weight constraints */
     private Point2D.Float weight = new Point2D.Float();
-
+    
+    /** padding */
+    private int padding;
+    
     /** constructor */
-    private Cell(String element, Attributes attributes) {
+    private Cell(String element, Attributes attributes, int padding) {
       
       // keep key
       this.element = element;
+      this.padding = padding;
       
       for (int i=0,j=attributes.getLength();i<j;i++) 
         attrs.put(attributes.getQName(i), attributes.getValue(i));
@@ -428,6 +448,13 @@ public class NestedBlockLayout implements LayoutManager2 {
       if (wy!=null)
         weight.y = Float.parseFloat(wy);
 
+    }
+    
+    /** cloning */
+    protected Object clone() throws CloneNotSupportedException {
+      Cell clone = (Cell)super.clone();
+      clone.component = null;
+      return clone;
     }
     
     /** set contained content */
@@ -514,6 +541,16 @@ public class NestedBlockLayout implements LayoutManager2 {
       component.setBounds(avail);
     }
     
+    /** cell by element name */
+    Cell getCell(String elem) {
+      return ( (elem==null&&component==null) || element.equals(elem)) ? this : null;
+    }
+    
+    /** all cells */
+    Collection getCells(Collection collect) {
+      collect.add(this);
+      return collect;
+    }
   } //Cell
   
   /**
@@ -528,18 +565,14 @@ public class NestedBlockLayout implements LayoutManager2 {
     }
     
     // lookup cell
-    String element = key!=null ? key.toString() : null;
-    for (int i=0,j=cells.size();i<j;i++) {
-      Cell cell = (Cell)cells.get(i);
-      // take next available, if key==null
-      // matching element, otherwise
-      if ((element==null&&cell.component==null)||(cell.getElement().equals(element))) {
-        cell.setContent(comp);
-        return;
-      }
+    Cell cell = root.getCell(key!=null ? key.toString() : null);
+    if (cell!=null) {
+      cell.setContent(comp);
+      return;
     }
   
-    if (element==null)
+    // no match
+    if (key==null)
       throw new IllegalArgumentException("no available descriptor element - element qualifier required");
     throw new IllegalArgumentException("element qualifier doesn't match any descriptor element");
 
@@ -615,6 +648,19 @@ public class NestedBlockLayout implements LayoutManager2 {
       parent.getHeight()-insets.top-insets.bottom
     );
     root.layout(in);
+  }
+  
+  /**
+   * Create a private copy
+   */
+  protected NestedBlockLayout copy() {
+    try {
+      NestedBlockLayout clone = (NestedBlockLayout)super.clone();
+      clone.root = (Block)clone.root.clone();
+      return clone;
+    } catch (CloneNotSupportedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 } //ColumnLayout

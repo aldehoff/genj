@@ -43,6 +43,9 @@ import javax.swing.event.ChangeListener;
  */
 public class DateWidget extends JPanel {
   
+  private final static 
+   NestedBlockLayout LAYOUT = new NestedBlockLayout("<row><x/><x/><x/><x/></row>");
+  
   /** components */
   private PopupWidget widgetCalendar; 
   private TextFieldWidget widgetDay,widgetYear;
@@ -94,10 +97,10 @@ public class DateWidget extends JPanel {
     widgetDay.setSelectAllOnFocus(true);
     widgetDay.addChangeListener(changeSupport);
     
-    // Layout
-    setLayout(new NestedBlockLayout("<row><calendar/><x/><x/><x/></row>"));
+    // Setup Layout
+    setLayout(LAYOUT.copy()); // reuse a copy of layout 
     
-    add("calendar", widgetCalendar);
+    add(widgetCalendar);
     
     String format;
     switch (new SimpleDateFormat().toPattern().charAt(0)) {
