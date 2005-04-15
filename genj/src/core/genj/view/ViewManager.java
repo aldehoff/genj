@@ -25,7 +25,6 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.print.PrintManager;
 import genj.renderer.BlueprintManager;
-import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -45,7 +44,6 @@ import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuSelectionManager;
-import javax.swing.Timer;
 
 /**
  * A bridge to open/manage Views
@@ -76,9 +74,6 @@ public class ViewManager {
   /** context listeners */
   private List contextListeners = new LinkedList();
   
-  /** a timer for delayed context changes */
-  private Timer propagateContext;
-
   /**
    * Constructor
    */
@@ -154,7 +149,7 @@ public class ViewManager {
    * Sets the current context
    */
   public void setContext(Context context) {
-    
+    System.out.println(context.getView());
     // valid?
     if (!context.isValid())
       return;
@@ -169,11 +164,42 @@ public class ViewManager {
     if (!context.equals(getContext(gedcom)))
       MenuSelectionManager.defaultManager().clearSelectedPath();
 
-    // initiate context propagation
-    if (propagateContext==null)
-      propagateContext = new Timer(100, new PropagateContext());
-    propagateContext.stop();
-    propagateContext.start();
+    // connect to us
+    context.setManager(ViewManager.this);
+    
+    // see if source is a view which will get context message first
+    JComponent view = context.getView();
+    if (view!=null&&view instanceof ContextListener) {
+      try {
+        ((ContextListener)view).setContext(context);
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, view, "threw "+t+" on setContext()");
+      }
+    }
+    
+    // loop and tell to views
+    Iterator it = key2viewwidget.values().iterator();
+    while (it.hasNext()) {
+      ViewContainer vw = (ViewContainer)it.next();
+      // only if view on same gedcom
+      if (vw.getGedcom()!= gedcom) continue;
+      // and context supported
+      if (vw.getView() instanceof ContextListener) try {
+        ((ContextListener)vw.getView()).setContext(context);
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, vw.getView(), "ContextListener threw throwable", t);
+      }
+      // next
+    }
+    
+    // loop and tell to context listeners
+    ContextListener[] ls = (ContextListener[])contextListeners.toArray(new ContextListener[contextListeners.size()]);
+    for (int l=0;l<ls.length;l++)
+      try {      
+        ls[l].setContext(context);
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, ls[l], "ContextListener threw throwable", t);
+      }
     
     // done
   }
@@ -499,79 +525,5 @@ public class ViewManager {
     if (popup!=null)
       popup.show(component, pos.x, pos.y);
   }
-  
-  /**
-   * Propagate context change(s)
-   */
-  private class PropagateContext extends ActionDelegate {
     
-    /**
-     * propagate
-     */
-    protected void execute() {
-
-      propagateContext.stop();
-      
-      // check current contexts
-      Iterator contexts = gedcom2context.values().iterator();
-      while (contexts.hasNext()) {
-        Context context = (Context)contexts.next();
-        if (!context.isPropagated()) {
-          propagate(context);
-        }
-      }
-      
-      // done
-    }
-    
-    /**
-     * propagate
-     */
-    private void propagate(Context context) {
-      
-      Gedcom gedcom = context.getGedcom();
-      
-      // connect to us
-      context.setManager(ViewManager.this);
-      
-      // see if source is a view which will get context message first
-      JComponent view = context.getView();
-      if (view!=null&&view instanceof ContextListener) {
-        try {
-          ((ContextListener)view).setContext(context);
-        } catch (Throwable t) {
-          Debug.log(Debug.WARNING, view, "threw "+t+" on setContext()");
-        }
-      }
-      
-      // loop and tell to views
-      Iterator it = key2viewwidget.values().iterator();
-      while (it.hasNext()) {
-        ViewContainer vw = (ViewContainer)it.next();
-        // only if view on same gedcom
-        if (vw.getGedcom()!= gedcom) continue;
-        // and context supported
-        if (vw.getView() instanceof ContextListener) try {
-          ((ContextListener)vw.getView()).setContext(context);
-        } catch (Throwable t) {
-          Debug.log(Debug.WARNING, vw.getView(), "ContextListener threw throwable", t);
-        }
-        // next
-      }
-      
-      // loop and tell to context listeners
-      ContextListener[] ls = (ContextListener[])contextListeners.toArray(new ContextListener[contextListeners.size()]);
-      for (int l=0;l<ls.length;l++)
-        try {      
-          ls[l].setContext(context);
-        } catch (Throwable t) {
-          Debug.log(Debug.WARNING, ls[l], "ContextListener threw throwable", t);
-        }
-      
-      // done
-      context.setPropagated();
-    }
-    
-  } //ContextChange
-  
 } //ViewManager
