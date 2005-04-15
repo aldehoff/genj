@@ -257,6 +257,9 @@ public class PropertyTableWidget extends JPanel {
         rows = model.getNumRows(), 
         cols = model.getNumCols();
       cells = new Property[rows][cols];
+      
+      // sort again
+      sort(Integer.MAX_VALUE);
 
       // tell about it
       fireTableRowsUpdated(0, cells.length);
@@ -275,7 +278,7 @@ public class PropertyTableWidget extends JPanel {
         row2row[i]=i;
       
       // sort now
-      sort();
+      sort(Integer.MAX_VALUE);
 
       // done
       fireTableDataChanged();
@@ -348,9 +351,10 @@ public class PropertyTableWidget extends JPanel {
     /** set sorted column */
     public void setSortedColumn(int col) {
       // remember
+      int old = sortColumn;
       sortColumn = col;
       // sort
-      sort();
+      sort(old);
       // tell about it
       fireTableDataChanged();
       // done
@@ -384,36 +388,61 @@ public class PropertyTableWidget extends JPanel {
      * used is the better choice over quicksort *and* it doesn't operate on an 
      * array of primitives w/comparator
      */
-    private void sort() {
-      if (sortColumn!=0&&(Math.abs(sortColumn)-1)<getColumnCount()&&row2row.length>1)
-        qsort(0,row2row.length-1);
+    private void sort(int old) {
+      
+      // no sorting necessary?
+      if (sortColumn==0|| Math.abs(sortColumn)>getColumnCount() || row2row.length<2) 
+        return;
+
+      // a simple inversion (ascending into descending)?
+      if (old==-sortColumn) {
+        for (int i=0,j=row2row.length-1;i<j;)
+          swap(i++, j--);
+        return;
+      }
+      
+      // run quicksort
+      qsort(0,row2row.length-1);
+
     }
     
     private void qsort(int from, int to) {
       
-      // choose pivot v
+      // choose pivot v in the middle (this will work better on already sorted rows that are
+      // being resorted on content change) - move it out of the way
       int v = (from+to)/2;
+      swap(from, v);
+      v = from;
       
-      // invariant: <= [v] <= 
-      int lo = from, hi = to;
-      while (lo<=hi) {
+      // partition into < and > than v 
+      int lo = from+1, hi = to;
+      while (true) {
         
-        for (;compare(lo, v)<0;lo++);
-        for (;compare(hi, v)>0;hi--);
+        for (;lo<=to&&compare(lo, v)<0;lo++);
+        for (;hi>=from&&compare(hi, v)>0;hi--);
 
         if (lo>hi)
           break;
 
-        int swap = row2row[lo];
-        row2row[lo++] = row2row[hi];
-        row2row[hi--] = swap;
+        swap(lo++, hi--);
       }
+      
+      // move pivot back in the middle
+      swap(v, hi);
 
       // recurse into halfs
-      if (from<hi) qsort(from,hi);
-      if (lo<to) qsort(lo, to);
+      if (lo<to) 
+        qsort(lo,to);
+      if (hi>from) 
+        qsort(from, hi);
       
       // done
+    }
+    
+    private void swap(int row1, int row2) {
+      int swap = row2row[row1];
+      row2row[row1] = row2row[row2];
+      row2row[row2] = swap;
     }
     
     /** 
