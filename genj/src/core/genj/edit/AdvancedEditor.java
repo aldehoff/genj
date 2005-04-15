@@ -116,6 +116,9 @@ import javax.swing.event.TreeSelectionListener;
 
   /** registry */
   private Registry registry;
+  
+  /** interaction callback */
+  private InteractionListener callback;
 
   /**
    * Initialize
@@ -130,7 +133,7 @@ import javax.swing.event.TreeSelectionListener;
     // TREE Component's 
     tree = new PropertyTreeWidget(gedcom);
 
-    InteractionListener callback = new InteractionListener();
+    callback = new InteractionListener();
     tree.addTreeSelectionListener(callback);
     tree.addMouseListener(callback);
     
@@ -203,8 +206,11 @@ import javax.swing.event.TreeSelectionListener;
 
     // set selection
     Property property = context.getProperty();
-    if (property!=null)
+    if (property!=null) {
+      tree.removeTreeSelectionListener(callback);
       tree.setSelection(property);  
+      tree.addTreeSelectionListener(callback);
+    }
   
     // Done
   }
