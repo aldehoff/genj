@@ -26,13 +26,12 @@ import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.gedcom.time.PointInTime;
 import genj.util.ActionDelegate;
-import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.DateWidget;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
 import genj.view.ViewManager;
-import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -45,13 +44,15 @@ import javax.swing.JLabel;
  */
 public class DateBean extends PropertyBean {
 
+  private final static NestedBlockLayout LAYOUT = new NestedBlockLayout("<col><row><a/><b/></row><row><c/><d/></row></col>");
+
   private final static ImageIcon PIT = new ImageIcon(PropertyBean.class, "/genj/gedcom/images/Time.gif");
   
   /** members */
   private PropertyDate.Format format; 
   private DateWidget date1, date2;
   private PopupWidget choose;
-  private JLabel label;
+  private JLabel label2;
 
   /**
    * Finish proxying edit for property Date
@@ -83,6 +84,8 @@ public class DateBean extends PropertyBean {
    */
   private void setFormat(PropertyDate.Format set) {
 
+    PropertyDate p = (PropertyDate)property;
+    
     // already?
     if (format==set)
       return;
@@ -92,12 +95,25 @@ public class DateBean extends PropertyBean {
     // remember
     format = set;
 
-    // check date2 visibility
-    date2.setVisible(format.isRange());
-    
-    // set text of chooser and label
+    // set text of chooser 
     choose.setText(format.getLabel1());
-    label.setText(format.getLabel2());
+    
+    // check label2/date2 visibility
+    if (format.isRange()) {
+      if (date2==null) {
+        label2 = new JLabel();
+        add(label2);
+        date2 = new DateWidget(p.getEnd(), viewManager.getWindowManager());
+        date2.addChangeListener(changeSupport);
+        add(date2);
+      }
+      date2.setVisible(true);
+      label2.setVisible(true);
+      label2.setText(format.getLabel2());
+    } else {
+      if (date2!=null) date2.setVisible(false);
+      if (label2!=null) label2.setVisible(false);
+    }
 
     // set image and tooltip of chooser
     choose.setIcon(format==PropertyDate.DATE ? PIT : null);
@@ -145,6 +161,9 @@ public class DateBean extends PropertyBean {
 
     super.init(setGedcom, setProp, setPath, setMgr, setReg);
     
+    // setup Laout
+    setLayout(LAYOUT.copy());
+    
     // we know it's a date
     PropertyDate p = (PropertyDate)property;
 
@@ -153,34 +172,15 @@ public class DateBean extends PropertyBean {
     for (int i=0;i<PropertyDate.FORMATS.length;i++)
       actions.add(new ChangeFormat(PropertyDate.FORMATS[i]));
 
-    // setup components
-    WindowManager mgr = viewManager.getWindowManager();
-
     // .. the chooser (making sure the preferred size is pre-computed to fit-it-all)
     choose = new PopupWidget(null, null, actions);
-    setPreferredSize(choose);
+    add(choose);
     
     // .. first date
-    date1 = new DateWidget(p.getStart(), mgr);
+    date1 = new DateWidget(p.getStart(), viewManager.getWindowManager());
     date1.addChangeListener(changeSupport);
-    date1.setAlignmentX(0);
+    add(date1);
 
-    // .. the label
-    label = new JLabel();
-    
-    // .. second date
-    date2 = new DateWidget(p.getEnd(), mgr);
-    date2.addChangeListener(changeSupport);
-
-    // setup Laout
-    GridBagHelper gh = new GridBagHelper(this);
-
-    gh.add(choose, 0, 0);
-    gh.add(date1 , 1, 0);
-    gh.add(label , 0, 1);
-    gh.add(date2 , 1, 1);
-    gh.add(new JLabel(), 2, 2, 1, 1, GridBagHelper.GROW_BOTH);
-    
     // set format
     setFormat(p.getFormat());
     
