@@ -404,7 +404,7 @@ public class FileBean extends PropertyBean {
       // show wait
       preview.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
       // continue
-      return true;
+      return file.length()>0;
     }
 
     /** 
