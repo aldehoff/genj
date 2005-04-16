@@ -46,6 +46,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -71,7 +72,7 @@ import javax.swing.event.ChangeListener;
 /* package */class BasicEditor extends Editor implements GedcomListener {
 
   /** entity tag to layout */
-  private Map tag2layout = new HashMap();
+  private static Map TAG2LAYOUT = new HashMap();
   
   /** our gedcom */
   private Gedcom gedcom = null;
@@ -233,9 +234,7 @@ import javax.swing.event.ChangeListener;
     if (entity!=null) try {
       
       // grab layout (lazy)
-      NestedBlockLayout layout = (NestedBlockLayout)tag2layout.get(entity.getTag());
-      if (layout==null)
-        layout = new NestedBlockLayout(getClass().getResourceAsStream("basic/"+entity.getTag()+".xml"));
+      NestedBlockLayout layout = getLayout(entity);
       beanPanel.setLayout(layout);
 
       Iterator cells = layout.getCells().iterator();
@@ -256,12 +255,27 @@ import javax.swing.event.ChangeListener;
 
     // done
   }
+  
+  /**
+   * Get a layout for given entity
+   */
+  private static NestedBlockLayout getLayout(Entity entity) throws IOException {
+
+    // look up a cached one
+    NestedBlockLayout result = (NestedBlockLayout)TAG2LAYOUT.get(entity.getTag());
+    if (result==null) {
+      result = new NestedBlockLayout(BasicEditor.class.getResourceAsStream("basic/"+entity.getTag()+".xml"));
+      TAG2LAYOUT.put(entity.getTag(), result);
+    }
+    
+    // return a private copy
+    return result.copy();
+  }
 
   /**
    * Init a cell 
    */
   private void parseCell(NestedBlockLayout.Cell cell) {
-    
     TagPath path = new TagPath(cell.getAttribute("path"));
     
     // a label?
