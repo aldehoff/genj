@@ -52,6 +52,9 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class NestedBlockLayout implements LayoutManager2, Cloneable {
 
+  /** whether we've been invalidated recently */
+  private boolean invalidated = true;
+  
   /** one root row is holds all the columns */
   private Block root;
   
@@ -498,7 +501,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       if (preferred!=null)
         return preferred;
       // calc
-      if (component==null)
+      if (component==null||!component.isVisible())
         preferred = new Dimension();
       else {
 	      preferred = new Dimension(component.getPreferredSize());
@@ -626,13 +629,17 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    * Component/Layout lifecycle callback
    */
   public void invalidateLayout(Container target) {
-    root.invalidate(true);
+    if (!invalidated) {
+      root.invalidate(true);
+      invalidated = true;
+    }
   }
 
   /**
    * our preferred layout size
    */
   public Dimension preferredLayoutSize(Container parent) {
+    invalidated = false;
     return root.preferred();
   }
   
@@ -640,6 +647,8 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    * Component/Layout lifecycle callback
    */
   public void layoutContainer(Container parent) {
+    
+    // prepare insets
     Insets insets = parent.getInsets();
     Rectangle in = new Rectangle(
       insets.left,
@@ -647,13 +656,16 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       parent.getWidth()-insets.left-insets.right,
       parent.getHeight()-insets.top-insets.bottom
     );
+    // layout
     root.layout(in);
+    // remember
+    invalidated = false;
   }
   
   /**
    * Create a private copy
    */
-  protected NestedBlockLayout copy() {
+  public NestedBlockLayout copy() {
     try {
       NestedBlockLayout clone = (NestedBlockLayout)super.clone();
       clone.root = (Block)clone.root.clone();
