@@ -150,6 +150,12 @@ public class App {
      */  
     private static void initSwing(Resources resources) {
       
+      // make some adjustment for MacOS
+      //  switch menubar to be mac compatible - one on the top
+      // don't know how to set dock programmatically -Xdock:name="JUnit on Mac OS X"
+      System.setProperty("com.apple.macos.useScreenMenuBar", "true");
+      
+      // set swing resource strings (ok, cancel, etc.)
       Iterator keys = resources.getKeys();
       while (keys.hasNext()) {
         String key = (String)keys.next();
