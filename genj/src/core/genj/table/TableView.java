@@ -362,8 +362,12 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
         paths = TagPath.toArray(ps);
       
       int[] ws = r.get(tag+".widths", (int[])null);
-      if (ws!=null) 
+      if (ws!=null) {
         widths = ws;
+      } else {
+        widths = new int[paths.length];
+        for (int i=0;i<widths.length;i++)  widths[i]=64;
+      }
 
       sort = registry.get(tag+".sort", 0);
       
