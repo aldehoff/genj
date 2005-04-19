@@ -597,7 +597,7 @@ import javax.swing.event.TreeSelectionListener;
           SwingUtilities.invokeLater(new Runnable() {
             public void run() {
               requestFocusInWindow();
-              bean.requestFocusInWindow();
+              if (bean!=null) bean.requestFocusInWindow();
             }
           });
           
