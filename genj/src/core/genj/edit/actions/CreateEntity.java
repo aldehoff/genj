@@ -21,7 +21,16 @@ package genj.edit.actions;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.util.swing.NestedBlockLayout;
 import genj.view.ViewManager;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /**
  * Add a new entity  
@@ -31,12 +40,41 @@ public class CreateEntity extends AbstractChange {
   /** the type of the added entity*/
   private String etag;
   
+  /** text field for entering id */
+  private JTextField requestID;
+  
   /**
    * Constructor
    */
   public CreateEntity(Gedcom ged, String tag, ViewManager manager) {
     super(ged, Gedcom.getEntityImage(tag).getOverLayed(imgNew), resources.getString("new", Gedcom.getName(tag, false) ), manager);
     etag = tag;
+  }
+  
+  /**
+   * 
+   */
+  protected JComponent getOptions() {
+
+    // prepare id checkbox and textfield
+    requestID = new JTextField(Gedcom.getEntityPrefix(etag), 8);
+    requestID.setEditable(false);
+    
+    final JCheckBox check = new JCheckBox("Assign a specific ID");
+    check.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        requestID.setEditable(check.isSelected());
+        if (check.isSelected())  requestID.requestFocusInWindow();
+      }
+    });
+    
+    // wrap up
+    JPanel panel = new JPanel(new NestedBlockLayout("<row><check/><id/></row>"));
+    panel.add(check);
+    panel.add(requestID);
+    
+    // done
+    return panel;
   }
   
   /**
@@ -57,8 +95,15 @@ public class CreateEntity extends AbstractChange {
    * @see genj.edit.EditViewFactory.Change#change()
    */
   protected void change() throws GedcomException {
+    // check id
+    String id = null;
+    if (requestID.isEditable()) {
+      id = requestID.getText();
+      if (gedcom.getEntity(etag, id)!=null)
+        throw new GedcomException("ID "+id+" is already used");
+    }
     // create the entity
-    focus = gedcom.createEntity(etag);
+    focus = gedcom.createEntity(etag, id);
     focus.addDefaultProperties();
     // done
   }

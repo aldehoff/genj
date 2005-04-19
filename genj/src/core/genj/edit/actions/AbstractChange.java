@@ -26,12 +26,14 @@ import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.NestedBlockLayout;
 import genj.view.Context;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
@@ -108,16 +110,21 @@ import javax.swing.JTextArea;
       confirm.setEditable(false);
   
       // prepare options
-      JComponent c = getOptions();
+      JComponent options = getOptions();
       
       // prepare actions
       ActionDelegate[] actions = {
         new CloseWindow(resources.getString("confirm.proceed", getText() )), 
         new CloseWindow(CloseWindow.TXT_CANCEL)
       };
+      
+      // prepare option/confirm panel
+      JPanel panel  = new JPanel(new NestedBlockLayout("<col><confirm wy=\"1\"/><options/></col>"));
+      panel.add(new JScrollPane(confirm));
+      panel.add(options);
   
       // Recheck with the user
-      int rc = manager.getWindowManager().openDialog(getClass().getName(), null, WindowManager.IMG_QUESTION, new JComponent[]{ c, new JScrollPane(confirm)}, actions, getTarget() );
+      int rc = manager.getWindowManager().openDialog(getClass().getName(), null, WindowManager.IMG_QUESTION, panel, actions, getTarget() );
       if (rc!=0)
         return;
     }

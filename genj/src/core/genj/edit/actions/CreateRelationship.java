@@ -24,13 +24,19 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Relationship;
 import genj.util.WordBuffer;
+import genj.util.swing.NestedBlockLayout;
 import genj.view.ViewManager;
 import genj.view.widgets.SelectEntityWidget;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /**
  * Add an entity via relationship (new or existing)
@@ -43,6 +49,12 @@ public class CreateRelationship extends AbstractChange {
   /** the referenced entity */
   private Entity existing;
 
+  /** check for forcing id */
+  private JCheckBox checkID;
+  
+  /** text field for entering id */
+  private JTextField requestID;
+  
   /**
    * Constructor
    */
@@ -92,16 +104,40 @@ public class CreateRelationship extends AbstractChange {
    */
   protected JComponent getOptions() {
 
-    final SelectEntityWidget result = new SelectEntityWidget(getTargetType(), gedcom.getEntities(getTargetType()), "*New*");
-    result.addActionListener(new ActionListener() {
+    // prepare panel
+    JPanel panel = new JPanel(new NestedBlockLayout("<col><row><select wx=\"1\"/></row><row><check/><id/></row></col>"));
+
+    // add selector
+    final SelectEntityWidget select = new SelectEntityWidget(getTargetType(), gedcom.getEntities(getTargetType()), "*New*");
+    select.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         // grab current selection (might be null)
-        existing = result.getEntity();
+        existing = select.getEntity();
+        // can the user force an id now?
+        if (existing!=null) checkID.setSelected(false);
+        checkID.setEnabled(existing==null);
         refresh();
       }
     });
+    panel.add(select);
+ 
+    // prepare id checkbox and textfield
+    requestID = new JTextField(Gedcom.getEntityPrefix(getTargetType()), 8);
+    requestID.setEditable(false);
     
-    return result;
+    checkID = new JCheckBox("Assign a specific ID");
+    checkID.getModel().addItemListener(new ItemListener() {
+      public void itemStateChanged(ItemEvent e) {
+        requestID.setEditable(checkID.isSelected());
+        if (checkID.isSelected())  requestID.requestFocusInWindow();
+      }
+    });
+    panel.add(checkID);
+    panel.add(requestID);
+    
+    
+    // done
+    return panel;
   }
 
   /**
@@ -110,8 +146,15 @@ public class CreateRelationship extends AbstractChange {
   protected void change() throws GedcomException {
     // create the entity if necessary
     if (existing==null) {
+      // check id
+      String id = null;
+      if (requestID.isEditable()) {
+        id = requestID.getText();
+        if (gedcom.getEntity(getTargetType(), id)!=null)
+          throw new GedcomException("ID "+id+" is already used");
+      }
       // focus always changes to new that we create now
-      existing = gedcom.createEntity(getTargetType());
+      existing = gedcom.createEntity(getTargetType(), id);
       focus = existing;
       focus.addDefaultProperties();
       // perform the relationship to new
