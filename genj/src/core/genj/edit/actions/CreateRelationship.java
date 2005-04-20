@@ -125,7 +125,7 @@ public class CreateRelationship extends AbstractChange {
     requestID = new JTextField(Gedcom.getEntityPrefix(getTargetType()), 8);
     requestID.setEditable(false);
     
-    checkID = new JCheckBox("Assign a specific ID");
+    checkID = new JCheckBox(resources.getString("assign_id"));
     checkID.getModel().addItemListener(new ItemListener() {
       public void itemStateChanged(ItemEvent e) {
         requestID.setEditable(checkID.isSelected());
@@ -151,7 +151,7 @@ public class CreateRelationship extends AbstractChange {
       if (requestID.isEditable()) {
         id = requestID.getText();
         if (gedcom.getEntity(getTargetType(), id)!=null)
-          throw new GedcomException("ID "+id+" is already used");
+          throw new GedcomException(resources.getString("assign_id_error", id));
       }
       // focus always changes to new that we create now
       existing = gedcom.createEntity(getTargetType(), id);

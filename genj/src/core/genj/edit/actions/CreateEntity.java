@@ -60,7 +60,7 @@ public class CreateEntity extends AbstractChange {
     requestID = new JTextField(Gedcom.getEntityPrefix(etag), 8);
     requestID.setEditable(false);
     
-    final JCheckBox check = new JCheckBox("Assign a specific ID");
+    final JCheckBox check = new JCheckBox(resources.getString("assign_id"));
     check.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         requestID.setEditable(check.isSelected());
@@ -100,7 +100,7 @@ public class CreateEntity extends AbstractChange {
     if (requestID.isEditable()) {
       id = requestID.getText();
       if (gedcom.getEntity(etag, id)!=null)
-        throw new GedcomException("ID "+id+" is already used");
+        throw new GedcomException(resources.getString("assign_id_error", id));
     }
     // create the entity
     focus = gedcom.createEntity(etag, id);
