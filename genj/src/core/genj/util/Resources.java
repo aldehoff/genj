@@ -59,6 +59,17 @@ public class Resources {
   private WeakHashMap msgFormats = new WeakHashMap();
   
   /**
+   * Constructor for resources from explicit input stream
+   */
+  public Resources(InputStream in) {
+    try {
+      load(in);
+    } catch (IOException e) {
+      // swallow
+    }
+  }
+  
+  /**
    * Accessor (cached) 
    */
   public static Resources get(Object packgeMember) {
