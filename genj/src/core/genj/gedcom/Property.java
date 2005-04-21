@@ -150,6 +150,20 @@ public abstract class Property implements Comparable {
   
   /**
    * Adds a sub-property to this property
+   */
+  public Property addProperty(String tag) {
+    return addProperty(tag, EMPTY_STRING);
+  }
+  
+  /**
+   * Adds a sub-property to this property
+   */
+  public Property addProperty(String tag, String value) {
+    return addProperty(getMetaProperty().get(tag, true).create(value));
+  }
+  
+  /**
+   * Adds a sub-property to this property
    * @param prop new property to add
    */
   public Property addProperty(Property prop) {
