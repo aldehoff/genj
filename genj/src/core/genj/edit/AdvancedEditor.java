@@ -33,7 +33,10 @@ import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.NestedBlockLayout;
+import genj.util.swing.TextAreaWidget;
 import genj.view.Context;
+import genj.view.widgets.SelectEntityWidget;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
@@ -47,13 +50,17 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JCheckBox;
@@ -214,6 +221,87 @@ import javax.swing.event.TreeSelectionListener;
   
     // Done
   }
+  
+  /**
+   * Action - apply template
+   */
+  private class Template extends ActionDelegate {
+    /** state */
+    private Entity template;
+    /** constructor */
+    private Template(Entity entity) {
+      template = entity;
+      setText(resources.getString("action.template", Gedcom.getName(template.getTag(), true)));
+      setImage(template.getImage(false));
+    }
+    /** apply it */
+    protected void execute() {
+
+      // prepare options
+      String tag = template.getTag();
+      Collection ents = gedcom.getEntities(tag);
+      final TextAreaWidget text = new TextAreaWidget("", 4, 10, false, true);
+      final SelectEntityWidget select = new SelectEntityWidget(tag, ents, "*"+resources.getString("action.template.all")+"*");
+      
+      ActionListener selectionChanged = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          Entity selection = select.getEntity();
+          String string = selection==null ? resources.getString("action.template.note.all", template.getId())
+              : resources.getString("action.template.note.single", new String[]{ template.getId(), selection.getId()});
+          text.setText(string);
+        }
+      };
+      select.addActionListener(selectionChanged);
+      selectionChanged.actionPerformed(null);
+      
+      JPanel panel = new JPanel(new NestedBlockLayout("<col><select wx=\"1\"/><note wx=\"1\" wy=\"1\"/></col>"));
+      panel.add(select);
+      panel.add(new JScrollPane(text));
+
+      // show it
+      boolean cancel = 0!=editView.getWindowManager().openDialog("template", getText(), WindowManager.IMG_QUESTION, panel, CloseWindow.OKandCANCEL(), AdvancedEditor.this);
+      if (cancel)
+        return;
+
+      // change it
+      try {
+        gedcom.startTransaction();
+      } catch (IllegalStateException ise) {
+        return;
+      }
+        
+      Entity selection = select.getEntity();
+      try {
+        if (selection!=null)
+          apply(selection);
+        else for (Iterator it = ents.iterator(); it.hasNext(); ) 
+          apply((Entity)it.next());
+      } finally {
+        gedcom.endTransaction();
+      }
+
+      // change focus
+      if (selection!=null)
+        editView.getViewManager().setContext(new Context(selection));
+    }
+    
+    /** apply the template to an entity */
+    private void apply(Entity to) {
+      apply(template, to);
+    }
+    private void apply(Property from,  Property to) {
+      // loop over children of cursor
+      for (int i=0, j=from.getNoOfProperties(); i<j; i++) {
+        Property child = from.getProperty(i);
+        // apply to non-xrefs, non-transient, non-existent 
+        if ( !(child instanceof PropertyXRef) && !child.isTransient() && to.getProperty(child.getTag())==null) {
+          apply(child, to.addProperty(child.getTag()));
+        }
+        // next
+      }
+      // done
+    }
+  } //Template
   
   /**
    * Action - cut
@@ -503,6 +591,7 @@ import javax.swing.event.TreeSelectionListener;
     }
     /** callback - mouse release */
     public void mouseReleased(MouseEvent e) {
+      
       // no popup trigger no action
       if (!e.isPopupTrigger()) 
         return;
@@ -524,13 +613,15 @@ import javax.swing.event.TreeSelectionListener;
       Context context = new Context(gedcom, (Entity)root, prop);
 
       // cut/copy/paste
-      List actions = Arrays.asList(new Object[]{
-        new Cut(prop),
-        new Copy(prop),
-        new Paste(prop),
-        ActionDelegate.NOOP,
-        new Add(prop)
-      });
+      List actions = new ArrayList(16);
+      actions.add(new Cut(prop));
+      actions.add(new Copy(prop));
+      actions.add(new Paste(prop));
+      actions.add(ActionDelegate.NOOP);
+      actions.add(new Add(prop));
+      if (prop instanceof Entity)
+        actions.add(new Template((Entity)prop));
+      actions.add(ActionDelegate.NOOP);
       
       // show context menu
       editView.getViewManager().showContextMenu(context, actions, tree, e.getPoint());
