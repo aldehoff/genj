@@ -43,9 +43,11 @@ final public class Images {
     imgCut,
     imgCopy, 
     imgPaste,
+    
+    imgNew,
 	
-    imgDelete,
-    imgNew;
+    imgDelEntity,
+    imgNewEntity;
 
   /**
    * Constructor which pre-loads all images
@@ -66,7 +68,9 @@ final public class Images {
     imgCopy      = new ImageIcon(this,"images/Copy.gif");
     imgPaste     = new ImageIcon(this,"images/Paste.gif");
     
-    imgNew       = new ImageIcon(this,"images/entity/New.gif");
-    imgDelete    = new ImageIcon(this,"images/entity/Delete.gif");
+    imgNew     = new ImageIcon(this,"images/New.gif");
+    
+    imgNewEntity   = new ImageIcon(this,"images/entity/New.gif");
+    imgDelEntity    = new ImageIcon(this,"images/entity/Delete.gif");
   }
 }

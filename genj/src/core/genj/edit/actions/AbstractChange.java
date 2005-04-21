@@ -55,7 +55,7 @@ import javax.swing.JTextArea;
   protected Property focus = null;
   
   /** image *new* */
-  protected final static ImageIcon imgNew = Images.imgNew;
+  protected final static ImageIcon imgNew = Images.imgNewEntity;
   
   /**
    * Constructor
@@ -119,12 +119,12 @@ import javax.swing.JTextArea;
       };
       
       // prepare option/confirm panel
-      JPanel panel  = new JPanel(new NestedBlockLayout("<col><confirm wy=\"1\"/><options/></col>"));
-      panel.add(new JScrollPane(confirm));
+      JPanel panel  = new JPanel(new NestedBlockLayout("<col><options/><confirm wy=\"1\"/></col>"));
       panel.add(options);
+      panel.add(new JScrollPane(confirm));
   
       // Recheck with the user
-      int rc = manager.getWindowManager().openDialog(getClass().getName(), null, WindowManager.IMG_QUESTION, panel, actions, getTarget() );
+      int rc = manager.getWindowManager().openDialog(getClass().getName(), getText(), WindowManager.IMG_QUESTION, panel, actions, getTarget() );
       if (rc!=0)
         return;
     }
