@@ -38,9 +38,19 @@ public class TextAreaWidget extends JTextArea {
    * Constructor
    */
   public TextAreaWidget(String text, int rows, int cols) {
+    this(text, rows, cols, true, false);
+  }
+  
+  /**
+   * Constructor
+   */
+  public TextAreaWidget(String text, int rows, int cols, boolean editable, boolean wrap) {
     super(text, rows, cols);
     
     setAlignmentX(0);
+    setEditable(editable);
+    setLineWrap(wrap);
+    setWrapStyleWord(true);
 
     // restore default focus traversal keys (overriding
     // JTextArea's ctrl (shift) tab
