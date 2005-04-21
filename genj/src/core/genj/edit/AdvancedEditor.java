@@ -632,16 +632,18 @@ import javax.swing.event.TreeSelectionListener;
 
       // cut/copy/paste
       List actions = new ArrayList(16);
-      actions.add(new Cut(prop));
-      actions.add(new Copy(prop));
-      actions.add(new Paste(prop));
-      actions.add(ActionDelegate.NOOP);
-      actions.add(new Add(prop));
-      try {
-        actions.add(new Propagate(prop));
-      } catch (IllegalArgumentException i) {
+      if (prop!=null) {
+	      actions.add(new Cut(prop));
+	      actions.add(new Copy(prop));
+	      actions.add(new Paste(prop));
+	      actions.add(ActionDelegate.NOOP);
+	      actions.add(new Add(prop));
+	      try {
+	        actions.add(new Propagate(prop));
+	      } catch (IllegalArgumentException i) {
+	      }
+	      actions.add(ActionDelegate.NOOP);
       }
-      actions.add(ActionDelegate.NOOP);
       
       // show context menu
       editView.getViewManager().showContextMenu(context, actions, tree, e.getPoint());
