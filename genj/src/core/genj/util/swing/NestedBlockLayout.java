@@ -526,8 +526,13 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       Rectangle avail = new Rectangle(in.x+padding, in.y+padding, in.width-padding*2, in.height-padding*2);
       
       // make sure it's not more than maximum
+      Dimension pref = preferred();
       Dimension max = component.getMaximumSize();
-
+      if (weight.x==0) max.width = pref.width;
+      if (weight.y==0) max.height = pref.height;
+      
+      
+      // share space
       int extraX = avail.width-max.width;
       if (extraX>0) {
         avail.x += extraX/2;
