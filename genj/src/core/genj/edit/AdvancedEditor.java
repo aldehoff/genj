@@ -246,7 +246,7 @@ import javax.swing.event.TreeSelectionListener;
       final Entity entity = property.getEntity();
       final Collection ents = gedcom.getEntities(entity.getTag());
       final TextAreaWidget text = new TextAreaWidget("", 4, 10, false, true);
-      final SelectEntityWidget select = new SelectEntityWidget(entity.getTag(), ents, "*"+resources.getString("action.propagate.toall")+"*");
+      final SelectEntityWidget select = new SelectEntityWidget(entity.getTag(), ents, resources.getString("action.propagate.toall"));
       
       ActionListener selectionChanged = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
