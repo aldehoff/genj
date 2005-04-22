@@ -108,7 +108,7 @@ public class CreateRelationship extends AbstractChange {
     JPanel panel = new JPanel(new NestedBlockLayout("<col><row><select wx=\"1\"/></row><row><check/><id/></row></col>"));
 
     // add selector
-    final SelectEntityWidget select = new SelectEntityWidget(getTargetType(), gedcom.getEntities(getTargetType()), "*New*");
+    final SelectEntityWidget select = new SelectEntityWidget(getTargetType(), gedcom.getEntities(getTargetType()), resources.getString("select.new"));
     select.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         // grab current selection (might be null)
