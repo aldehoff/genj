@@ -215,9 +215,12 @@ import javax.swing.event.TreeSelectionListener;
     // set selection
     Property property = context.getProperty();
     if (property!=null) {
-      tree.removeTreeSelectionListener(callback);
+      // 20040424 want to let callback know what's going on but it shouldn't
+      // propagate a selection - so I'm not disconnecting callback instead using 
+      // flag to disable propagate
+      callback.propagateSelection = false;
       tree.setSelection(property);  
-      tree.addTreeSelectionListener(callback);
+      callback.propagateSelection = true;
     }
   
     // Done
@@ -578,6 +581,8 @@ import javax.swing.event.TreeSelectionListener;
    */
   private class InteractionListener extends MouseAdapter implements TreeSelectionListener, ChangeListener {
     
+    private boolean propagateSelection = true;
+    
     /**
      * callback - mouse doubleclick
      */
@@ -723,7 +728,8 @@ import javax.swing.event.TreeSelectionListener;
         cancel.setEnabled(false);
         
         // tell selection to everyone else
-        editView.getViewManager().setContext(getContext());
+        if (propagateSelection)
+          editView.getViewManager().setContext(getContext());
     
       }
   
