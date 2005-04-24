@@ -91,6 +91,8 @@ public class PropertyTableWidget extends JPanel {
     table.getColumnModel().getSelectionModel().addListSelectionListener(i);
     table.getSelectionModel().addListSelectionListener(i);
     
+    table.setRowHeight((int)Math.ceil(Options.getInstance().getDefaultFont().getLineMetrics("", new FontRenderContext(null,false,false)).getHeight())+table.getRowMargin());
+    
     // setup layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(table));
