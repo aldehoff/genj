@@ -136,10 +136,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     private Block getBlock(String element, Attributes attrs) {
       // row?
       if ("row".equals(element)) 
-        return new Row();
+        return new Row(attrs);
       // column?
       if ("col".equals(element))
-        return new Column();
+        return new Column(attrs);
       // a cell!
       return new Cell(element, attrs, padding);
     }
@@ -176,13 +176,21 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** subs */
     ArrayList subs = new ArrayList(16);
     
+    /** constructor */
+    Block(Attributes attributes) {
+    }
+
     /** copy */
-    protected Object clone() throws CloneNotSupportedException {
-      Block clone = (Block)super.clone();
-      clone.subs = new ArrayList(subs.size());
-      for (int i=0;i<subs.size();i++)
-        clone.subs.add( ((Block)subs.get(i)).clone() );
-      return clone;
+    protected Object clone() {
+      try {
+        Block clone = (Block)super.clone();
+        clone.subs = new ArrayList(subs.size());
+        for (int i=0;i<subs.size();i++)
+          clone.subs.add( ((Block)subs.get(i)).clone() );
+        return clone;
+      } catch (CloneNotSupportedException cnse) {
+        throw new Error();
+      }
     }
     
     /** remove */
@@ -208,9 +216,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** add sub */
-    void add(Block block) {
+    Block add(Block block) {
       subs.add(block);
       invalidate(false);
+      return block;
     }
     
     /** invalidate state */
@@ -244,9 +253,15 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     /** cell by element name */
     Cell getCell(String element) {
+      // look for it in our subs
       Cell result = null;
       for (int i=0;result==null&&i<subs.size();i++) {
-        result = ((Block)subs.get(i)).getCell(element);
+
+        // a sub at a time
+        Block sub = (Block)subs.get(i);
+        result = sub.getCell(element);
+        
+        // next
       }
       return result;
     }
@@ -258,11 +273,17 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    */
   private static class Row extends Block {
 
+    /** constructor */
+    Row(Attributes attributes) {
+      super(attributes);
+    }
+
     /** add a sub */
-    void add(Block sub) {
+    Block add(Block sub) {
       if (sub instanceof Row)
         throw new IllegalArgumentException("row can't contain row");
       super.add(sub);
+      return sub;
     }
     
     /** preferred size */
@@ -337,12 +358,18 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    * a column
    */
   private static class Column extends Block {
+    
+    /** constructor */
+    Column(Attributes attributes) {
+      super(attributes);
+    }
 
     /** add a sub */
-    void add(Block sub) {
+    Block add(Block sub) {
       if (sub instanceof Column)
         throw new IllegalArgumentException("column can't contain column");
       super.add(sub);
+      return sub;
     }
 
     /** preferred size */
@@ -436,6 +463,8 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** constructor */
     private Cell(String element, Attributes attributes, int padding) {
       
+      super(attributes);
+      
       // keep key
       this.element = element;
       this.padding = padding;
@@ -454,7 +483,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** cloning */
-    protected Object clone() throws CloneNotSupportedException {
+    protected Object clone()  {
       Cell clone = (Cell)super.clone();
       clone.component = null;
       return clone;
@@ -491,7 +520,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** add a sub */
-    void add(Block sub) {
+    Block add(Block sub) {
       throw new IllegalArgumentException("cell can't contain row, column or other cell");
     }
     
