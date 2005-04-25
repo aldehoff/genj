@@ -299,6 +299,10 @@ import javax.swing.event.TreeSelectionListener;
     
     /** apply the template to an entity */
     private void execute(Entity entity, boolean values) {
+      // make sure we're not propagating to self
+      if (property.getEntity()==entity)
+        return;
+      // check we got the root of the property's path
       TagPath path = property.getPath();
       Property to = entity;
       for (int i=1;i<path.length()-1;i++) {
@@ -309,14 +313,14 @@ import javax.swing.event.TreeSelectionListener;
     }
     private void copy(Property prop,  Property to, boolean values) {
       // check to for child
-      Property copy = to.getProperty(prop.getTag());
+      Property copy = to.getProperty(prop.getTag(), false);
       if (copy==null)
         copy = to.addProperty(prop.getTag(), values ? prop.getValue() : "");
       // loop over children of prop
       for (int i=0, j=prop.getNoOfProperties(); i<j; i++) {
         Property child = prop.getProperty(i);
         // apply to non-xrefs, non-transient, non-existent 
-        if ( !(child instanceof PropertyXRef) && !child.isTransient() && to.getProperty(child.getTag())==null) 
+        if ( !(child instanceof PropertyXRef) && !child.isTransient() && to.getProperty(child.getTag(), false)==null) 
           copy(child, copy, values);
         // next
       }
