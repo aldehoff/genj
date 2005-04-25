@@ -538,8 +538,11 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       }
       // parse all but transients
       if (searchThis&&!prop.isTransient()) {
+        // check entity's id
+        if (entity==prop)
+          search(entity, entity, entity.getId(), true);
         // check prop's value
-        search(entity, prop, prop.getValue());
+        search(entity, prop, prop.getValue(), false);
       }
       // check subs
       int n = prop.getNoOfProperties();
@@ -550,7 +553,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     }
 
     /** search property's value */
-    private void search(Entity entity, Property prop, String value) {
+    private void search(Entity entity, Property prop, String value, boolean isID) {
       // look for matches
       Matcher.Match[] matches = matcher.match(value);
       if (matches.length==0)
@@ -562,7 +565,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       // keep entity
       entities.add(entity);
       // create a hit
-      Hit hit = new Hit(prop, value, matches, entities.size());
+      Hit hit = new Hit(prop, value, matches, entities.size(), isID);
       // keep it
       synchronized (hits) {
         hits.add(hit);

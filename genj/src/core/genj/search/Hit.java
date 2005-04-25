@@ -58,7 +58,7 @@ import javax.swing.text.StyledDocument;
   /** 
    * Constructor
    */
-  /*package*/ Hit(Property setProp, String value, Matcher.Match[] matches, int setEntity) {
+  /*package*/ Hit(Property setProp, String value, Matcher.Match[] matches, int setEntity, boolean isID) {
     // keep property
     property = setProp;
     // cache img
@@ -68,15 +68,27 @@ import javax.swing.text.StyledDocument;
     // prepare document
     doc = new DefaultStyledDocument();
     try {
-      // keep tag
-      String tag = " "+setProp.getTag()+" ";
-      doc.insertString(0, tag, BOLD);
-      // keep value
-      doc.insertString(tag.length(), value, null);
-      // format for matches
+      int offset = 0;
+      String tag = setProp.getTag();
+      // indent
+      doc.insertString(offset++, " ", null);
+      // tag first for values and not IDs
+      if (!isID) {
+	      doc.insertString(offset, tag, BOLD);
+	      offset += tag.length();
+	      doc.insertString(offset++, " ", null);
+      }
+      // keep value and format for matches
+      doc.insertString(offset, value, null);
       for (int i=0;i<matches.length;i++) {
         Matcher.Match m = matches[i];
-        doc.setCharacterAttributes(tag.length()+m.pos, m.len, RED, false);
+        doc.setCharacterAttributes(offset+m.pos, m.len, RED, false);
+      }
+      offset += value.length();
+      // tag last for IDs
+      if (isID) {
+	      doc.insertString(offset++, " ", null);
+        doc.insertString(offset, tag, BOLD);
       }
       // keep image
       SimpleAttributeSet img = new SimpleAttributeSet();
