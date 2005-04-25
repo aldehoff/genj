@@ -31,6 +31,9 @@ public class Options extends OptionProvider {
   
   /** singleton */
   private final static Options instance = new Options();
+  
+  /** option - whether id-gaps should be filled */
+  public boolean isFillGapsInIDs = false;
 
   /** option - maximum image files size to be loaded */  
   private int maxImageFileSizeKB = 128;

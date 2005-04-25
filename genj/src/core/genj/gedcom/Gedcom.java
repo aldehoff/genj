@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.77 $ $Author: nmeier $ $Date: 2005-04-12 21:45:17 $
+ * $Revision: 1.78 $ $Author: nmeier $ $Date: 2005-04-25 20:14:30 $
  */
 package genj.gedcom;
 
@@ -471,9 +471,9 @@ public class Gedcom {
     // Lookup current entities of type
     Map id2entity = getEntityMap(tag);
     
-    // We might to do this several times
+    // Look for an available ID
     String prefix = getEntityPrefix(tag);
-    int id = id2entity.size();
+    int id = Options.getInstance().isFillGapsInIDs ? 1 : id2entity.size();
     search: while (true) {
       // next one
       id ++;
