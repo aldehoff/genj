@@ -22,6 +22,7 @@ package genj.gedcom;
 import genj.util.DirectAccessTokenizer;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * PLAC a choice value with brains for understanding sub-property FORM
@@ -30,6 +31,9 @@ public class PropertyPlace extends Property {
 
   public final static String
     JURISDICTION_SEPARATOR = ",";
+  
+  private final static String 
+    JURISDICTION_RESOURCE_PREFIX = "prop.plac.jurisdiction.";
   
   public final static String 
     TAG = "PLAC",
@@ -122,6 +126,7 @@ public class PropertyPlace extends Property {
    * Format
    */
   public String getHierarchy() {
+    // look it up
     String result = EMPTY_STRING;
     Property pformat = getProperty(FORM);
     if (pformat!=null) 
@@ -131,7 +136,74 @@ public class PropertyPlace extends Property {
       if (ged!=null)
         result = ged.getPlaceHierarchy();
     }
-    return result.trim();
+    // done
+    return gedcom2local(result);
+  }
+  
+  /**
+   * localize hierarchy
+   */
+  public static String gedcom2local(String hierarchy) {
+    
+    // loop over (assumed) english names
+    StringBuffer buf = new StringBuffer();
+    DirectAccessTokenizer tokens = new DirectAccessTokenizer(hierarchy, JURISDICTION_SEPARATOR, true);
+    for (int i=0;;i++) {
+      String token = tokens.get(i);
+      if (token==null) break;
+      if (buf.length()>0) buf.append(", ");
+      buf.append(_gedcom2local(token));
+    }
+    
+    // done
+    return buf.toString();
+  }
+  
+  private static String _gedcom2local(String token) {
+    String local = resources.getString(JURISDICTION_RESOURCE_PREFIX+token.toLowerCase().replaceAll(" ",""), false);
+    // no translation available - no luck - fall back to original gedcom token
+    if (local==null)
+      return token;
+    // choose one of multiple local translations
+    int or = local.indexOf('|');
+    if (or>0) local = local.substring(0,or);
+    // done
+    return local;
+  }
+  
+  public static String local2gedcom(String hierarchy) {
+    
+    // loop over (assumed) local names
+    StringBuffer buf = new StringBuffer();
+    DirectAccessTokenizer tokens = new DirectAccessTokenizer(hierarchy, JURISDICTION_SEPARATOR, true);
+    for (int i=0;;i++) {
+      String token = tokens.get(i);
+      if (token==null) break;
+      if (buf.length()>0) buf.append(", ");
+      buf.append(_local2gedcom(token));
+    }
+    
+    // done
+    return buf.toString();
+  }
+  
+  private static String _local2gedcom(String token) {
+    Iterator keys = resources.getKeys();
+    while (keys.hasNext()) {
+      String key = (String)keys.next();
+      if (key.startsWith(JURISDICTION_RESOURCE_PREFIX)) {
+        DirectAccessTokenizer locals = new DirectAccessTokenizer(resources.getString(key), "|", true);
+        for (int i=0;;i++) {
+          // check each local translation as a possibility
+          String local = locals.get(i);
+          if (local==null) break;
+          // return key without prefix as gedcom value
+          if (token.equals(local))
+            return key.substring(JURISDICTION_RESOURCE_PREFIX.length());
+        }
+      }
+    }
+    return token;
   }
   
   /**
@@ -157,7 +229,7 @@ public class PropertyPlace extends Property {
     if (!global)
       throw new IllegalArgumentException("non-global n/a");
     // propagate
-    getGedcom().setPlaceHierarchy(hierarchy);
+    getGedcom().setPlaceHierarchy(local2gedcom(hierarchy));
     // mark changed
     propagateChange(getValue());
   }

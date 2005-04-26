@@ -54,7 +54,7 @@ public class SetPlaceHierarchy extends AbstractChange {
    }
     
     protected JComponent getOptions() {
-      hierarchy = new TextFieldWidget(place.getGedcom().getPlaceHierarchy());
+      hierarchy = new TextFieldWidget(place.getHierarchy());
       return hierarchy;
     }
 

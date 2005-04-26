@@ -100,15 +100,15 @@ public class PlaceBean extends PropertyBean {
     // Done
   }
   
-  private ChoiceWidget createField(String label, String txt, int hierarchyLevel) {
-    // add a label?
-    if (label!=null) 
-      gh.add(new JLabel(label, SwingConstants.RIGHT), 0, rows, 1, 1, GridBagHelper.FILL_HORIZONTAL);
+  private ChoiceWidget createField(String name, String jurisdiction, int hierarchyLevel) {
+    // add a label for the jurisdiction name?
+    if (name!=null) 
+      gh.add(new JLabel(name, SwingConstants.RIGHT), 0, rows, 1, 1, GridBagHelper.FILL_HORIZONTAL);
     // and a textfield
     ChoiceWidget result = new ChoiceWidget();
     result.setEditable(true);
     result.setValues(PropertyPlace.getJurisdictions(gedcom, hierarchyLevel, true));
-    result.setText(txt);
+    result.setText(jurisdiction);
     result.addChangeListener(changeSupport);
     gh.add(result, 1, rows, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
     // set default focus if not done yet
