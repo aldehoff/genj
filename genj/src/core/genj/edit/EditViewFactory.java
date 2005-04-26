@@ -26,6 +26,7 @@ import genj.edit.actions.DelEntity;
 import genj.edit.actions.OpenForEdit;
 import genj.edit.actions.Redo;
 import genj.edit.actions.RunExternal;
+import genj.edit.actions.SetPlaceHierarchy;
 import genj.edit.actions.SetSubmitter;
 import genj.edit.actions.SwapSpouses;
 import genj.edit.actions.TogglePrivate;
@@ -39,6 +40,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyFamilyChild;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyNote;
+import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertyRepository;
 import genj.gedcom.PropertySource;
 import genj.gedcom.PropertySubmitter;
@@ -124,6 +126,10 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     // FileAssociationActions for PropertyFile
     if (property instanceof PropertyFile)  
       createActions(result, (PropertyFile)property); 
+      
+    // Place format for PropertyFile
+    if (property instanceof PropertyPlace)  
+      result.add(new SetPlaceHierarchy((PropertyPlace)property, manager)); 
       
     // Check what xrefs can be added
     MetaProperty[] subs = property.getSubMetaProperties(0);
