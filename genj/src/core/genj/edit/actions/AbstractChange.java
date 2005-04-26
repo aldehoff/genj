@@ -120,7 +120,7 @@ import javax.swing.JTextArea;
       
       // prepare option/confirm panel
       JPanel panel  = new JPanel(new NestedBlockLayout("<col><options wx=\"1\"/><confirm wx=\"1\" wy=\"1\"/></col>"));
-      panel.add(options);
+      if (options!=null) panel.add(options);
       panel.add(new JScrollPane(confirm));
   
       // Recheck with the user
