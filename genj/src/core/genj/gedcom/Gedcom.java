@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.79 $ $Author: nmeier $ $Date: 2005-04-26 00:27:00 $
+ * $Revision: 1.80 $ $Author: nmeier $ $Date: 2005-04-26 18:06:59 $
  */
 package genj.gedcom;
 
@@ -689,8 +689,11 @@ public class Gedcom {
       result = new ReferenceSet();
       tags2refsets.put(tag, result);
       // .. and pre-fill
-      StringTokenizer tokens = new StringTokenizer(Gedcom.resources.getString(tag+".vals",""),",");
-      while (tokens.hasMoreElements()) result.add(tokens.nextToken().trim(), null);
+      String defaults = Gedcom.resources.getString(tag+".vals",false);
+      if (defaults!=null) {
+        StringTokenizer tokens = new StringTokenizer(defaults,",");
+        while (tokens.hasMoreElements()) result.add(tokens.nextToken().trim(), null);
+      }
     }
     // done
     return result;
