@@ -27,7 +27,7 @@ import genj.gedcom.Transaction;
 import genj.util.DirectAccessTokenizer;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
-import genj.util.swing.TextFieldWidget;
+import genj.util.swing.ChoiceWidget;
 import genj.view.ViewManager;
 
 import java.awt.Component;
@@ -55,9 +55,9 @@ public class PlaceBean extends PropertyBean {
     for (int i=0, j=getComponentCount(); i<j; i++) {
       // check each text field
       Component comp = getComponent(i);
-      if (comp instanceof TextFieldWidget) {
+      if (comp instanceof ChoiceWidget) {
         
-        String jurisdiction = ((TextFieldWidget)comp).getText().trim();
+        String jurisdiction = ((ChoiceWidget)comp).getText().trim();
         if (jurisdiction.length()>0) {
           while (commas>0) { result.append(","); commas--; }
           result.append(jurisdiction);
@@ -82,7 +82,7 @@ public class PlaceBean extends PropertyBean {
     // either a simple value or broken down into comma separated jurisdictions
     String placeFormat = place.getHierarchy();
     if (placeFormat.length()==0) {
-      createText(null, place.getValue());
+      createField(null, place.getValue(), 0);
     } else {
       DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(placeFormat, ",", true);
       DirectAccessTokenizer values = new DirectAccessTokenizer( place.getValue(), ",", true);
@@ -90,7 +90,7 @@ public class PlaceBean extends PropertyBean {
         String jurisdiction = jurisdictions.get(i);
         String value = values.get(i);
         if (jurisdiction==null&&value==null) break;
-        createText(jurisdiction!=null ? jurisdiction : null, value!=null ? value : "");
+        createField(jurisdiction!=null ? jurisdiction : null, value!=null ? value : "", i);
       }
     }
     
@@ -100,14 +100,17 @@ public class PlaceBean extends PropertyBean {
     // Done
   }
   
-  private TextFieldWidget createText(String label, String txt) {
+  private ChoiceWidget createField(String label, String txt, int hierarchyLevel) {
     // add a label?
     if (label!=null) 
-      gh.add(new JLabel(label, SwingConstants.RIGHT), 0, rows, 1, 1, gh.FILL_HORIZONTAL);
+      gh.add(new JLabel(label, SwingConstants.RIGHT), 0, rows, 1, 1, GridBagHelper.FILL_HORIZONTAL);
     // and a textfield
-    TextFieldWidget result = new TextFieldWidget(txt, 20);
+    ChoiceWidget result = new ChoiceWidget();
+    result.setEditable(true);
+    result.setValues(PropertyPlace.getJurisdictions(gedcom, hierarchyLevel, true));
+    result.setText(txt);
     result.addChangeListener(changeSupport);
-    gh.add(result, 1, rows, 1, 1, gh.GROWFILL_HORIZONTAL);
+    gh.add(result, 1, rows, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
     // set default focus if not done yet
     if (defaultFocus==null) defaultFocus = result;
     // increase rows
