@@ -74,8 +74,15 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    * @see genj.gedcom.PropertySimpleValue#setValue(java.lang.String)
    */
   public void setValue(String value) {
+    
+    // TUNING: for choices we expect a lot of repeating values so
+    // we build the intern representation of value here - this makes
+    // us share string instances for an upfront cost
+    value = value.intern();
+    
     // remember
     remember(super.getValue(), value);
+    
     // delegate
     super.setValue(value);
   }
@@ -108,7 +115,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     // delegate
     super.addNotify(parent);
     // a remember wouldn't have worked until now
-    remember(super.getValue(), super.getValue());
+    remember(EMPTY_STRING, super.getValue());
     // done
   }
 

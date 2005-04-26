@@ -209,6 +209,13 @@ public class PropertyName extends Property {
   public PropertyName setName(String first, String last, String suff) {
 
     String old = getValue();
+    
+    // TUNING We expect that a lot of first and last names are the same
+    // so we pay the upfront cost of reusing an intern cached String to
+    // save overall memorey
+    first = first.trim().intern();
+    last = last.trim().intern();
+    suff = suff.trim();
 
     // forget/remember
     rememberLastName(lastName, last);
@@ -216,9 +223,9 @@ public class PropertyName extends Property {
     // Make sure no Information is kept in base class
     nameAsString=null;
 
-    lastName  = last.trim();
-    firstName = first.trim();
-    suffix    = suff.trim();
+    lastName  = last;
+    firstName = first;
+    suffix    = suff;
 
     // tell about it 
     propagateChange(old);

@@ -586,6 +586,11 @@ public class GedcomReader implements Trackable {
       throw new GedcomFormatException("Expected X [@XREF@] TAG [VALUE]",line);
     }
     
+    // TUNING: for tags we expect a lot of repeating strings (limited numbe of tags) so
+    // we build the intern representation of tag here - this makes us share string 
+    // instances for an upfront cost
+    tag = tag.intern();
+    
     // Done
   }
 
