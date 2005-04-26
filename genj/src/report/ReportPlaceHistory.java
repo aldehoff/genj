@@ -14,8 +14,8 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyChoiceValue;
 import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyPlace;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
@@ -102,15 +102,12 @@ public class ReportPlaceHistory extends Report {
   private void analyze(Entity ent, Map plac2series) {
     
     // look into entity's PropertyChoiceValues
-    Iterator it = ent.getProperties(PropertyChoiceValue.class).iterator();
+    Iterator it = ent.getProperties(PropertyPlace.class).iterator();
     while (it.hasNext()) {
-      // see whether it's a PLACe
-      PropertyChoiceValue place = (PropertyChoiceValue)it.next();
-      if (!PLAC.equals(place.getTag()))
-        continue;
       // check whether we have a series for that PLACe
-      String value = place.getValue();
-      XYSeries series = (XYSeries)plac2series.get(value);
+      PropertyPlace place = (PropertyPlace)it.next();
+      String jurisdiction = place.getJurisdiction(0);
+      XYSeries series = (XYSeries)plac2series.get(jurisdiction);
       if (series==null)
         continue;
       // look for a date we could use
@@ -137,12 +134,12 @@ public class ReportPlaceHistory extends Report {
   private Map getSeriesForPlaces(Gedcom gedcom) {
     
     // find what values are in gedcom for PLAC (sorted by ranking)
-    String[] values = PropertyChoiceValue.getChoices(gedcom, PLAC, false);
+    String[] jurisdictions = PropertyPlace.getJurisdictions(gedcom, 0, false);
     
     // create series for the top n
     Map result = new HashMap();
-    for (int s=values.length-1, i=0; s>=0&&i<topn; s--,i++) {
-      result.put(values[s], new XYSeries(values[s]));
+    for (int s=jurisdictions.length-1, i=0; s>=0&&i<topn; s--,i++) {
+      result.put(jurisdictions[s], new XYSeries(jurisdictions[s]));
     }
     
     // done
