@@ -27,47 +27,64 @@ public class DirectAccessTokenizer {
   private String string, separator;
   private int from, to;
   private int index;
+  private boolean trim;
   
   /**
    * Constructor
    */
   public DirectAccessTokenizer(String string, String separator) {
+    this(string, separator, false);
+  }
+  public DirectAccessTokenizer(String string, String separator, boolean trim) {
+    this.trim = trim;
     this.string = string;
     this.separator = separator;
     from = 0;
+    to = from-separator.length();
     index = 0;
   }
   
   /**
-   * Access token by index
+   * Access token by position
+   * @return token at position or null if no such exists
    */
   public String get(int pos) {
     
-    // passed already?
+    // legal argument?
+    if (pos<0)
+      return null;
+    
+    // backtrack?
     if (pos<index) {
       from = 0;
+      to = from-separator.length();
       index = 0;
     }
-
+    
     // loop
-    String result = null;
     while (index<=pos) {
-
-      // any possibility to get at it?
-      if (from<0)
-        throw new IllegalArgumentException("no value "+pos);
       
-      // look for next tab
+      // move to next
+      from = to+separator.length();
+      
+      // not available?
+      if (from>string.length())
+        return null;
+      
+      // look for next separator
       to = string.indexOf(separator, from);
-      result =  string.substring(from, to);
-      from = to+1;
+      
+      // no more? assume end of string
+      if (to<0) 
+        to = string.length();
       
       // we're moving the index now
       index++;
     }
     
     // done
-    return result;
+    String result = string.substring(from, to);
+    return trim ? result.trim() : result;
   }
   
   /**
