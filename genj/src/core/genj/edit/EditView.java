@@ -159,10 +159,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     Context context = manager.getContext(gedcom);
     try { 
       context = new Context(gedcom.getEntity(registry.get("sticky",(String)null))); 
-      context.setSource(this);
       isSticky = true;
     } catch (Throwable t) {
     }
+    context.setSource(this);
     setContext(context);
 
     // listen for available undos/removes
