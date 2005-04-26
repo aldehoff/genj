@@ -420,27 +420,30 @@ public class GedcomReader implements Trackable {
    */
   private boolean readHeader() throws GedcomIOException, GedcomFormatException {
 
-    //  0 "HEAD", ""
-    //  1 "SOUR", "GENJ"
-    //  2 "VERS", Version.getInstance().toString()
-    //  2 "NAME", "GenealogyJ"
-    //  2 "CORP", "Nils Meier"
-    //  3 "ADDR", "http://genj.sourceforge.net"
-    //  1 "DEST", "ANY"
-    //  1 "DATE", date
-    //  2 "TIME", time
-    //  1 "SUBM", '@'+gedcom.getSubmitter().getId()+'@'
-    //  1 "SUBN", '@'+gedcom.getSubmission().getId()+'@'
-    //  1 "GEDC", ""
-    //  2 "VERS", "5.5"
-    //  2 "FORM", "Lineage-Linked"
-    //  1 "CHAR", encoding
-    //  1 "LANG", language
-    //  1 "FILE", file
+    //  0 HEAD
+    //  1 SOUR GENJ
+    //  2 VERS Version.getInstance().toString()
+    //  2 NAME GenealogyJ
+    //  2 CORP Nils Meier
+    //  3 ADDR http://genj.sourceforge.net
+    //  1 DEST ANY
+    //  1 DATE date
+    //  2 TIME time
+    //  1 SUBM '@'+gedcom.getSubmitter().getId()+'@'
+    //  1 SUBN '@'+gedcom.getSubmission().getId()+'@'
+    //  1 GEDC
+    //  2 VERS 5.5
+    //  2 FORM Lineage-Linked
+    //  1 CHAR encoding
+    //  1 LANG language
+    //  1 PLAC 
+    //  2 FORM place format
+    //  1 FILE file
     readLine();
     if (level!=0||!tag.equals("HEAD"))
       throw new GedcomFormatException("Expected 0 HEAD",line);
 
+    String lastTag = "";
     do {
 
       // read until end of header
@@ -457,7 +460,15 @@ public class GedcomReader implements Trackable {
         gedcom.setLanguage(value);
         Debug.log(Debug.INFO, this, "Found LANG "+value+" - Locale is "+gedcom.getLocale());
       }
+      
+      // check for place hierarchy description
+      if (level==2&&"PLAC".equals(lastTag)&&"FORM".equals(tag)) {
+        gedcom.setPlaceHierarchy(value);
+        Debug.log(Debug.INFO, this, "Found Place.Format "+value);
+      }
         
+      lastTag = tag;
+      
       // done
     } while (true);
 

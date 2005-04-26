@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.78 $ $Author: nmeier $ $Date: 2005-04-25 20:14:30 $
+ * $Revision: 1.79 $ $Author: nmeier $ $Date: 2005-04-26 00:27:00 $
  */
 package genj.gedcom;
 
@@ -171,6 +171,9 @@ public class Gedcom {
 
   /** cached collator */
   private Collator cachedCollator = null;
+  
+  /** global place format */
+  private String placeFormat = "";
 
   /** password for private information */
   private String password = PASSWORD_NOT_SET;
@@ -758,6 +761,13 @@ public class Gedcom {
   /**
    * Accessor - encoding
    */
+  public String getEncoding() {
+    return encoding;
+  }
+  
+  /**
+   * Accessor - encoding
+   */
   public void setEncoding(String set) {
     for (int e=0;e<ENCODINGS.length;e++) {
       if (ENCODINGS[e].equals(set)) {
@@ -765,6 +775,20 @@ public class Gedcom {
         return;
       }
     }
+  }
+  
+  /**
+   * Accessor - place format
+   */
+  public String getPlaceHierarchy() {
+    return placeFormat;
+  }
+  
+  /**
+   * Accessor - place format
+   */
+  public void setPlaceHierarchy(String set) {
+    placeFormat = set;
   }
   
   /**
@@ -779,13 +803,6 @@ public class Gedcom {
    */
   public void setLanguage(String set) {
     language = set;
-  }
-  
-  /**
-   * Accessor - encoding
-   */
-  public String getEncoding() {
-    return encoding;
   }
   
   /**
