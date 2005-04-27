@@ -9,6 +9,7 @@ package validate;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
@@ -109,7 +110,7 @@ public class ReportValidate extends Report {
       Entity e = (Entity)context;
       gedcom = e.getGedcom();
       TagPath path = new TagPath(e.getTag());
-      test(e, path, MetaProperty.get(path), tests, issues);
+      test(e, path, Grammar.getMeta(path), tests, issues);
     } else {
       
       // assuming Gedcom
@@ -124,7 +125,7 @@ public class ReportValidate extends Report {
         for (Iterator es=gedcom.getEntities(Gedcom.ENTITIES[t]).iterator();es.hasNext();) {
           Entity e = (Entity)es.next();
           TagPath path = new TagPath(e.getTag());
-          test(e, path, MetaProperty.get(path), tests, issues);
+          test(e, path, Grammar.getMeta(path), tests, issues);
         }
       }
     }
@@ -176,7 +177,7 @@ public class ReportValidate extends Report {
         continue;
       }
       // dive into
-      test(child, new TagPath(path, ctag), meta.get(child.getTag(), false), tests, issues);
+      test(child, new TagPath(path, ctag), meta.getNested(child.getTag(), false), tests, issues);
       // next child
     }
     // done

@@ -23,7 +23,6 @@ import genj.crypto.Enigma;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
-import genj.gedcom.MetaProperty;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -113,7 +112,7 @@ public class GedcomReader implements Trackable {
     // simply read properties into parent
     List result = new ArrayList(16);
     try {
-      instance.readProperties(parent, pos, parent.getMetaProperty(), -1, result);
+      instance.readProperties(parent, pos, -1, result);
     } catch (GedcomFormatException e) {
       // ignoring any problem
     }
@@ -274,7 +273,7 @@ public class GedcomReader implements Trackable {
       ent.setValue(value);
       
       // Read entity's properties till end of record
-      readProperties(ent, 0, ent.getMetaProperty(), 0, null);
+      readProperties(ent, 0,  0, null);
 
     } catch (GedcomException ex) {
       skipEntity(ex.getMessage());
@@ -599,7 +598,7 @@ public class GedcomReader implements Trackable {
    * @exception GedcomIOException reading from <code>BufferedReader</code> failed
    * @exception GedcomFormatException reading Gedcom-data brought up wrong format
    */
-  private void readProperties(Property prop, int pos, MetaProperty meta, int currentlevel, List trackAdded) throws GedcomIOException, GedcomFormatException {
+  private void readProperties(Property prop, int pos, int currentlevel, List trackAdded) throws GedcomIOException, GedcomFormatException {
 
     // read more for multiline property prop?
     if (prop instanceof MultiLineProperty) {
@@ -652,28 +651,22 @@ public class GedcomReader implements Trackable {
       if (level>currentlevel+1) 
         addWarning(line, "Correcting indentation level of '"+gedcomLine+"' and following");
   
-      // get meta property for child
-      MetaProperty submeta = meta.get(tag, true);
-  
-      // create property instance
-      sub = submeta.create(value);
+      // add sub property
+      if (pos<0)
+        sub = prop.addProperty(tag, value, true);
+      else
+        sub  = prop.addProperty(tag, value, pos++);
       
       // track it?
       if (trackAdded!=null)
         trackAdded.add(sub);
       
-      // and add to prop
-      if (pos<0)
-        prop.addProperty(sub, true);
-      else
-        prop.addProperty(sub, pos++);
-  
       // a reference ? Remember !
       if (sub instanceof PropertyXRef)
         xrefs.add(new XRef(line,(PropertyXRef)sub));
   
       // recurse into its properties
-      readProperties(sub, 0, submeta, level, null);
+      readProperties(sub, 0, level, null);
       
       // next property
     } while (true);

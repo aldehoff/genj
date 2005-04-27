@@ -27,7 +27,7 @@ public class PropertyTagPathTest extends TestCase {
     indi = (Indi)gedcom.createEntity("INDI");
     
     // .. with default sub-properties
-    indi.addDefaultProperties();
+    indi.addDefaultProperties(); 
 
     // done
   }
@@ -38,19 +38,10 @@ public class PropertyTagPathTest extends TestCase {
   public void testGetPropertyByPath() {
     
     assertProperty(indi, "INDI"                          , indi);
-    assertProperty(indi, "INDI:BIRT:DATE:..:..:BIRT:DATE", get(indi, new String[]{"BIRT", "DATE"}));
+    assertProperty(indi, "INDI:BIRT:DATE:..:..:BIRT:DATE", indi.getProperty(new TagPath("INDI:BIRT:DATE")));
     
   }
 
-  /**
-   * helper for finding sub-property by tags
-   */
-  private Property get(Property root, String[] tags) {
-    for (int i=0;i<tags.length;i++)
-      root = root.getProperty(tags[i], false);
-    return root;
-  }
-  
   /**
    * helper for checking result of root.getProperty(path)
    */

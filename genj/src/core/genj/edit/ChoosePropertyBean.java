@@ -155,7 +155,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
       return new Property[0];
 
     result = new Property[1];
-    result[0] = parent.getMetaProperty().get(tfNew.getText(), true).create("");
+    result[0] = parent.getMetaProperty().getNested(tfNew.getText(), true).create("");
     
     // done
     return result;

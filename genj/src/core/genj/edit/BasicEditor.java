@@ -23,6 +23,7 @@ import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -282,7 +283,7 @@ import javax.swing.event.ChangeListener;
     if ("label".equals(cell.getElement())) {
 
       boolean plural = cell.getAttribute("plural")!=null;
-      MetaProperty meta = MetaProperty.get(path);
+      MetaProperty meta = Grammar.getMeta(path);
       JLabel label;
       if (path.length()==1&&path.getLast().equals(entity.getTag()))
         label = new JLabel(Gedcom.getName(path.getLast()) + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
@@ -327,7 +328,7 @@ import javax.swing.event.ChangeListener;
    */
   private PropertyBean createBean(Entity entity, TagPath path, String type) {
     
-    MetaProperty meta = MetaProperty.get(path, false);
+    MetaProperty meta = Grammar.getMeta(path, false);
 
     // try to resolve existing prop - this has to be a property along
     // the first possible path to avoid that in this case:
@@ -514,7 +515,7 @@ import javax.swing.event.ChangeListener;
       TagPath ppath = new TagPath(path, len - 1);
       Property parent = entity.getProperty(ppath);
       if (parent == null)
-        parent = add(MetaProperty.get(ppath).create(""), path, len - 1);
+        parent = add(Grammar.getMeta(ppath).create(""), path, len - 1);
 
       // add it
       parent.addProperty(prop);

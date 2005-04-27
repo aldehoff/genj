@@ -43,9 +43,9 @@ public class Indi extends Entity {
     PATH_INDIDEATDATE = new TagPath("INDI:DEAT:DATE");
 
   public final static ImageIcon
-    IMG_MALE    = MetaProperty.get(PATH_INDI).getImage("male"),
-    IMG_FEMALE  = MetaProperty.get(PATH_INDI).getImage("female"),
-    IMG_UNKNOWN = MetaProperty.get(PATH_INDI).getImage();
+    IMG_MALE    = Grammar.getMeta(PATH_INDI).getImage("male"),
+    IMG_FEMALE  = Grammar.getMeta(PATH_INDI).getImage("female"),
+    IMG_UNKNOWN = Grammar.getMeta(PATH_INDI).getImage();
     
   /**
    * Adds a family in which the individual is a partner

@@ -21,7 +21,7 @@ package genj.renderer;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.MetaProperty;
+import genj.gedcom.Grammar;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.Dimension2d;
@@ -70,8 +70,8 @@ public class EntityRenderer {
   
   /** the property image width */
   private static final int 
-    PROP_IMAGE_WIDTH  = MetaProperty.get(new TagPath("INDI")).getImage().getIconWidth()+4,
-    PROP_IMAGE_HEIGHT = MetaProperty.get(new TagPath("INDI")).getImage().getIconHeight();
+    PROP_IMAGE_WIDTH  = Grammar.getMeta(new TagPath("INDI")).getImage().getIconWidth()+4,
+    PROP_IMAGE_HEIGHT = Grammar.getMeta(new TagPath("INDI")).getImage().getIconHeight();
   
   /** a no value char array */
   private static final Segment EMPTY_SEGMENT = new Segment(); 

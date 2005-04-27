@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.80 $ $Author: nmeier $ $Date: 2005-04-26 18:06:59 $
+ * $Revision: 1.81 $ $Author: nmeier $ $Date: 2005-04-27 21:35:50 $
  */
 package genj.gedcom;
 
@@ -496,15 +496,10 @@ public class Gedcom {
         suffix = '0'+suffix;
       }
     }
-    // calculate id we use
-    String result;
-    if (id<10) {
-      result = "00"+id;
-    } else if (id<100) {
-      result = "0"+id;
-    } else {
-      result = ""+id;
-    }
+    // patch id up to max(3,minIDStringLen-1) digits
+    String result = Integer.toString(id);
+    while (result.length()<Math.max(3,minIDStringLen-1))
+      result = "0"+result;
     // done
     return prefix + result;
   }
@@ -748,7 +743,7 @@ public class Gedcom {
   public static ImageIcon getEntityImage(String tag) {
     ImageIcon result = (ImageIcon)E2IMAGE.get(tag);
     if (result==null) {
-      result = MetaProperty.get(new TagPath(tag)).getImage();
+      result = Grammar.getMeta(new TagPath(tag)).getImage();
       E2IMAGE.put(tag, result);
     }
     return result;

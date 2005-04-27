@@ -21,6 +21,7 @@ package genj.view.widgets;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyDate;
@@ -211,9 +212,9 @@ public class SelectEntityWidget extends JPanel {
       // image
       MetaProperty meta;
       if (tagPath.length()>1&&tagPath.getLast().equals(PropertyDate.TAG))
-        meta = MetaProperty.get(new TagPath(tagPath, tagPath.length()-1));
+        meta = Grammar.getMeta(new TagPath(tagPath, tagPath.length()-1));
       else
-        meta = MetaProperty.get(tagPath);
+        meta = Grammar.getMeta(tagPath);
       setImage(meta.getImage());
       
       // text

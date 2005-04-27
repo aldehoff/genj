@@ -307,7 +307,7 @@ import javax.swing.event.TreeSelectionListener;
       Property to = entity;
       for (int i=1;i<path.length()-1;i++) {
         Property p = to.getProperty(path.get(i));
-        to = p!=null ? p :  to.addProperty(path.get(i));
+        to = p!=null ? p :  to.addProperty(path.get(i), "");
       }
       copy(property, to, values);
     }

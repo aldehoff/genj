@@ -22,6 +22,7 @@ package genj.search;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
@@ -356,7 +357,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
      */
     private ActionPath(String path) {
       tagPath = new TagPath(path);
-      MetaProperty meta = MetaProperty.get(tagPath);
+      MetaProperty meta = Grammar.getMeta(tagPath);
       setText(meta.getName());
       setImage(meta.getImage());
     }

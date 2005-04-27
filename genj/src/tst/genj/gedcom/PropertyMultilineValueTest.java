@@ -31,7 +31,7 @@ public class PropertyMultilineValueTest extends TestCase {
     Options.getInstance().setValueLineBreak(40);
     
     // create one mle instance
-    mle = (MultiLineProperty)MetaProperty.get(MLPATH).create("");
+    mle = new PropertyMultilineValue();
   }
   
   /**

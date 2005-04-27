@@ -20,7 +20,7 @@
 package genj.timeline;
 
 import genj.almanac.Almanac;
-import genj.gedcom.MetaProperty;
+import genj.gedcom.Grammar;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
 import genj.util.Resources;
@@ -70,7 +70,7 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   private ListSelectionWidget pathsList = new ListSelectionWidget() {
     protected ImageIcon getIcon(Object choice) {
       TagPath path = (TagPath)choice;
-      return MetaProperty.get(path).getImage();
+      return Grammar.getMeta(path).getImage();
     }
   };
   

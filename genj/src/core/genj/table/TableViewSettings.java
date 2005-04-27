@@ -20,7 +20,7 @@
 package genj.table;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.MetaProperty;
+import genj.gedcom.Grammar;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
@@ -90,7 +90,7 @@ public class TableViewSettings extends JPanel implements Settings {
     pathList = new ListSelectionWidget() {
       protected ImageIcon getIcon(Object choice) {
 	      TagPath path = (TagPath)choice;
-	      return MetaProperty.get(path).getImage();
+	      return Grammar.getMeta(path).getImage();
       }
     };
 
@@ -147,7 +147,7 @@ public class TableViewSettings extends JPanel implements Settings {
     String tag = Gedcom.ENTITIES[cTypes.getSelectedIndex()];
     
     TagPath[] selectedPaths = table.getMode(tag).getPaths();
-    TagPath[] usedPaths     = MetaProperty.getPaths(tag, Property.class);
+    TagPath[] usedPaths     = Grammar.getAllPaths(tag, Property.class);
 
     pathTree.setPaths(usedPaths, selectedPaths);
     pathList.setChoices(selectedPaths);

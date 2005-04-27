@@ -22,7 +22,7 @@ package genj.renderer;
 import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.MetaProperty;
+import genj.gedcom.Grammar;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
@@ -234,7 +234,7 @@ public class BlueprintEditor extends JSplitPane {
       if (gedcom==null) return;
       // create a tree of available TagPaths
       PathTreeWidget tree = new PathTreeWidget();
-      TagPath[] paths = MetaProperty.getPaths(blueprint.getTag(), Property.class);
+      TagPath[] paths = Grammar.getAllPaths(blueprint.getTag(), Property.class);
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
       int option =  windowManager.openDialog(null,resources.getString("prop.insert.tip"),WindowManager.IMG_QUESTION,tree,CloseWindow.OKandCANCEL(),BlueprintEditor.this);        
@@ -317,7 +317,7 @@ public class BlueprintEditor extends JSplitPane {
         // otherwise create it
         Object value = tag2value.get(tag);
         if (value==null) value = "Something";
-        result = prop.addProperty(prop.getMetaProperty().get(tag, false).create(value.toString()));
+        result = prop.addProperty(prop.getMetaProperty().getNested(tag, false).create(value.toString()));
       }      
       // done
       return fakeProperty(result, path, pos);

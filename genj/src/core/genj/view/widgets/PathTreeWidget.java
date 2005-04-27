@@ -20,7 +20,7 @@
 package genj.view.widgets;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.MetaProperty;
+import genj.gedcom.Grammar;
 import genj.gedcom.TagPath;
 
 import java.awt.BorderLayout;
@@ -163,7 +163,7 @@ public class PathTreeWidget extends JScrollPane {
       if (value instanceof TagPath) {
         TagPath path = (TagPath)value; 
         setText( path.getLast() );
-        setIcon( MetaProperty.get(path).getImage() );
+        setIcon( Grammar.getMeta(path).getImage() );
         checkbox.setSelected(model.getSelection().contains(value));
         panel.invalidate(); // make sure no preferred side is cached
       }      

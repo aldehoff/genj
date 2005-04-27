@@ -22,18 +22,11 @@ package genj.gedcom;
 import genj.util.Debug;
 import genj.util.swing.ImageIcon;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 /**
  * Wrapper for a Property
@@ -57,15 +50,6 @@ public class MetaProperty implements Comparable {
     IMG_ERROR   = loadImage("Error.gif"),
     IMG_PRIVATE = loadImage("Private.gif");
     
-  /** static - root for entities  */
-  private static Map tag2root = new HashMap();
-  
-  /** static - one parser that is triggered */
-  private static GrammerParser parser = new GrammerParser();
-  
-  /** super */
-  private MetaProperty supr;
-  
   /** tag */
   private String tag;
   
@@ -79,68 +63,103 @@ public class MetaProperty implements Comparable {
   private String info;
   
   /** whether this has been instantiated */
-  private boolean isInstantiated = false;
+  boolean isInstantiated = false;
   
   /** whether this is grammar conform */
   private boolean isGrammar;
   
   /** properties */
-  private Map props;
+  private Map attrs;
   
   /** subs */
-  private Map mapOfSubs = new HashMap();
-  private List listOfSubs = new ArrayList();
+  private Map tag2nested = new HashMap();
+  List nested = new ArrayList();
 
   /**
    * Constructor
    */
-  private MetaProperty(String tag, Map props, boolean grammar) {
+  /*package*/ MetaProperty(String tag, Map attributes, boolean grammar) {
     // remember tags&props
     this.tag = tag;
-    this.props = props;
+    this.attrs = attributes;
     this.isGrammar = grammar;
-    // find super
-    String path = getAttribute("super", null);
-    if (path!=null) supr = MetaProperty.get(new TagPath(path));
-    // inherit from super?
-    if (supr!=null) {
+    // inherit from super if applicable
+    String path = (String)attributes.get("super");
+    if (path!=null) {
+      MetaProperty supr = Grammar.getMeta(new TagPath(path));
       // subs
-      mapOfSubs.putAll(supr.mapOfSubs);
-      listOfSubs.addAll(supr.listOfSubs);
+      tag2nested.putAll(supr.tag2nested);
+      nested.addAll(supr.nested);
       // type & image
-      if (getAttribute("type",null)==null)
-        props.put("type", supr.getAttribute("type",null));
-      if (getAttribute("img",null)==null)
-        props.put("img", supr.getAttribute("img",null));
+      if (getAttribute("type")==null)
+        attributes.put("type", supr.getAttribute("type"));
+      if (getAttribute("img")==null)
+        attributes.put("img", supr.getAttribute("img"));
     }
     // done
   }
   
   /**
-   * Resolve property
-   */
-  private String getAttribute(String key, String fallback) {
-    String result = (String)props.get(key);
-    if (result==null) result = fallback;
-    return result;
-  }
-
-  /**
    * Add a sub
    */
-  private void addSub(MetaProperty sub) {
+  /*package*/ void addNested(MetaProperty sub) {
     // keep key->sub
-    mapOfSubs.put(sub.tag, sub);
+    tag2nested.put(sub.tag, sub);
     // keep list (replace existing!)
-    for (int i=0; i<listOfSubs.size(); i++) {
-      MetaProperty other = (MetaProperty)listOfSubs.get(i);
+    for (int i=0; i<nested.size(); i++) {
+      MetaProperty other = (MetaProperty)nested.get(i);
       if (other.tag.equals(sub.tag)) {
-        listOfSubs.set(i, sub);
+        nested.set(i, sub);
         return;       
       }
     }
-    listOfSubs.add(sub);
+    nested.add(sub);
     // done
+  }
+  
+  /**
+   * Acessor - nested meta properties
+   * This is package private to make callees go through
+   * indvidual properties rather than accessing this directly.
+   */
+  /*package*/ MetaProperty[] getAllNested(int filter) {
+    
+    // Loop over subs
+    List result = new ArrayList(nested.size());
+    for (int s=0;s<nested.size();s++) {
+      
+      // .. next sub
+      MetaProperty sub = (MetaProperty)nested.get(s);
+
+      // default only?
+      if ((filter&FILTER_DEFAULT)!=0&&sub.getAttribute("default")==null)
+        continue;
+        
+      // hidden at all (a.k.a cardinality == 0)?
+      if ((filter&FILTER_NOT_HIDDEN)!=0&&"0".equals(sub.getAttribute("cardinality")))
+        continue;
+
+      // xref && not !xref   (FILTER_XREF = 4)
+      if ((filter&FILTER_XREF)!=0) {
+        if ("0".equals(sub.getAttribute("xref")))
+          continue;
+      } else {
+        if ("1".equals(sub.getAttribute("xref")))
+          continue;
+      }
+        
+      // .. keep
+      result.add(sub);
+    }
+    // done
+    return (MetaProperty[])result.toArray(new MetaProperty[result.size()]);
+  }
+  
+  /**
+   * Lookup an attribute
+   */
+  /*package*/ String getAttribute(String key) {
+    return (String)attrs.get(key);
   }
   
   /**
@@ -156,7 +175,7 @@ public class MetaProperty implements Comparable {
    */
   public boolean allows(String sub) {
     // has to be defined as sub with isGrammar==true
-    MetaProperty meta = (MetaProperty)mapOfSubs.get(sub);
+    MetaProperty meta = (MetaProperty)tag2nested.get(sub);
     return meta==null ? false : meta.isGrammar;
   }
   
@@ -165,65 +184,13 @@ public class MetaProperty implements Comparable {
    */
   public boolean allows(String sub, Class type) {
     // has to be defined as sub with isGrammar==true
-    MetaProperty meta = (MetaProperty)mapOfSubs.get(sub);
+    MetaProperty meta = (MetaProperty)tag2nested.get(sub);
     return meta!=null && type.isAssignableFrom(meta.getType());
   }
   
   /**
-   * Acessor - subs
-   * This is package private to make callees go through
-   * indvidual properties rather than accessing this directly.
-   */
-  /*package*/ MetaProperty[] getSubs(int filter) {
-    
-    // Loop over subs
-    List result = new ArrayList(listOfSubs.size());
-    for (int s=0;s<listOfSubs.size();s++) {
-      
-      // .. next sub
-      MetaProperty sub = (MetaProperty)listOfSubs.get(s);
-
-      // default only?
-      if ((filter&FILTER_DEFAULT)!=0&&sub.getAttribute("default",null)==null)
-        continue;
-        
-      // hidden at all?
-      if ((filter&FILTER_NOT_HIDDEN)!=0&&sub.getAttribute("hide",null)!=null)
-        continue;
-
-      //FILTER_XREF       = 4; 
-      // xref && not !xref
-      if ((filter&FILTER_XREF)!=0) {
-        if (sub.getAttribute("!xref",null)!=null)
-          continue;
-      } else {
-        if (sub.getAttribute("xref",null)!=null)
-          continue;
-      }
-        
-      // .. keep
-      result.add(sub);
-    }
-    // done
-    return toArray(result);
-  }
-  
-  /**
-   * Load image (once)
-   */
-  /*package*/ static ImageIcon loadImage(String name) {
-    // look up
-    ImageIcon result = (ImageIcon)name2images.get(name);
-    if (result==null) {
-      result = new ImageIcon(MetaProperty.class, "images/"+name);
-      name2images.put(name, result);
-    }
-    // done
-    return result;
-  }
-  
-  /**
    * Create an instance
+   * FIXME this should not be public but called through Property
    */
   public Property create(String value) {
 
@@ -254,7 +221,7 @@ public class MetaProperty implements Comparable {
   public ImageIcon getImage() {
     if (image==null) {
       // check 'img' attribute
-      String s = getAttribute("img", null);
+      String s = getAttribute("img");
       // unknown?
       if (s==null) 
         image = getTag().startsWith("_") ? IMG_CUSTOM : IMG_UNKNOWN;
@@ -268,7 +235,7 @@ public class MetaProperty implements Comparable {
    * Accessor - image
    */
   public ImageIcon getImage(String postfix) {
-    Object name = props.get("img."+postfix);
+    Object name = getAttribute("img."+postfix);
     if (name==null) {
       // check err
       if ("err".equals(postfix))
@@ -292,12 +259,13 @@ public class MetaProperty implements Comparable {
   public Class getType() {
     // check cached type
     if (type==null) {
-      String clazz = "genj.gedcom."+getAttribute("type", "PropertySimpleValue");
-      try {
-        type = Class.forName(clazz);
-
-      } catch (ClassNotFoundException e) {
-        Debug.log(Debug.WARNING, this, "Property type "+clazz+" can't be loaded", e);    
+      String attrType = getAttribute("type");
+      if (attrType==null)
+        type = PropertySimpleValue.class;
+      else try {
+        type = Class.forName("genj.gedcom."+attrType);
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, this, "Property type genj.gedcom."+attrType+" couldn't be instantiated", t);    
         type = PropertySimpleValue.class;
       }
       // resolved
@@ -333,12 +301,12 @@ public class MetaProperty implements Comparable {
   /**
    * Resolve sub by tag
    */
-  public MetaProperty get(String tag, boolean persist) {
+  public MetaProperty getNested(String tag, boolean persist) {
     // current tag in map?
-    MetaProperty result = (MetaProperty)mapOfSubs.get(tag);
+    MetaProperty result = (MetaProperty)tag2nested.get(tag);
     if (result==null) {
       result = new MetaProperty(tag, Collections.EMPTY_MAP, false);
-      if (persist) addSub(result);
+      if (persist) addNested(result);
     }
     // done
     return result;
@@ -348,13 +316,13 @@ public class MetaProperty implements Comparable {
    * Returns index of given subtag
    * @return zero based index or Integer.MAX_VALUE if unknown
    */
-  public int getIndex(String subtag) {
+  public int getNestedIndex(String subtag) {
     // make sure CHAN get's a high one (this should probably be defined in grammar)
     if (subtag.equals("CHAN"))
       return Integer.MAX_VALUE;
     // look through grammar defined subs
-    for (int i=0;i<listOfSubs.size();i++) {
-      if (((MetaProperty)listOfSubs.get(i)).getTag().equals(subtag))
+    for (int i=0;i<nested.size();i++) {
+      if (((MetaProperty)nested.get(i)).getTag().equals(subtag))
         return i;
     }
     //20040518 make the index of an unknown subtag as large as possible
@@ -362,188 +330,17 @@ public class MetaProperty implements Comparable {
   }
   
   /**
-   * Static - resolve instance
+   * Load image (once)
    */
-  public static MetaProperty get(TagPath path, boolean persist) {
-    String tag = path.get(0);
-    MetaProperty root = (MetaProperty)tag2root.get(tag);
-    // something we didn't know about yet?
-    if (root==null) {
-      root = new MetaProperty(tag, Collections.EMPTY_MAP, false);
-      tag2root.put(tag, root);
-    }
-    // recurse into      
-    return getRecursively(root, path, 1, persist);
-  }
-  
-  public static MetaProperty get(TagPath path) {
-    return get(path, true);
-  }
-  
-  private static MetaProperty getRecursively(MetaProperty meta, TagPath path, int pos, boolean persist) {
-
-    // is this it?
-    if (pos==path.length())
-      return meta;
-
-    // get meta for next tag
-    MetaProperty next = meta.get(path.get(pos++), persist);
-    return getRecursively(next, path, pos, persist);
-  }
-
-  /**
-   * Static - paths for given type (use etag==null for all)
-   */
-  public static TagPath[] getPaths(String etag, Class property) {
-    // prepare result
-    List result = new ArrayList();
-    // loop through roots
-    for (Iterator it=tag2root.values().iterator();it.hasNext();) {
-      MetaProperty root = (MetaProperty)it.next();
-      String tag = root.getTag();
-      if (etag==null||tag.equals(etag))
-        getPathsRecursively(root, property, new TagPath(tag), result);
+  private static ImageIcon loadImage(String name) {
+    // look up
+    ImageIcon result = (ImageIcon)name2images.get(name);
+    if (result==null) {
+      result = new ImageIcon(MetaProperty.class, "images/"+name);
+      name2images.put(name, result);
     }
     // done
-    return TagPath.toArray(result);
+    return result;
   }
   
-  private static void getPathsRecursively(MetaProperty meta, Class property, TagPath path, Collection result) {
-
-    // something worthwhile to dive into?
-    if (!meta.isInstantiated) 
-      return;
-    
-    // type match?
-    if (property.isAssignableFrom(meta.getType())) 
-      result.add(new TagPath(path));
-      
-    // recurse into
-    for (Iterator it=meta.listOfSubs.iterator();it.hasNext();) {
-      MetaProperty sub = (MetaProperty)it.next();
-      getPathsRecursively(sub, property, new TagPath(path, sub.tag), result);
-    }
-    
-    // done
-  }
-    
-  /**
-   * Get an array out of collection
-   */
-  public static MetaProperty[] toArray(Collection c) {
-    return (MetaProperty[])c.toArray(new MetaProperty[c.size()]);
-  }
-  
-  /**
-   * String representation
-   */
-  public String toString() {
-    return getTag() + "/" + getType().getName();
-  }
-  
-  
-  /**
-   * The Gedcom Grammer read
-   */
-  private static class GrammerParser {
-    
-    /** the current stack of MetaProperties */
-    private List stack = new ArrayList();
-    
-    /**
-     * Constructor
-     */
-    GrammerParser() {
-      // parse grammar.properties
-      try {
-        parse(MetaProperty.class.getResourceAsStream("grammar.properties"));
-      } catch (IOException e) {
-        Debug.log(Debug.ERROR, this, e.getMessage(), e);
-        throw new Error();
-      }
-      // done    
-    }
-    
-    /**
-     * parse input
-     */
-    private void parse(InputStream in) throws IOException {
-
-      BufferedReader reader = new BufferedReader(new InputStreamReader(in));      
-    
-      // loop over lines
-      while (true) {
-
-        // read next line
-        String line = reader.readLine();
-        if (line==null) break;
-        
-        // .. and trim
-        line = line.trim();
-        if (line.length()==0||line.startsWith("#")) continue;
-        
-        // work on line
-        push(line);
-        
-        // continue 
-      }
-      
-      // done     
-    }
-    
-    /**
-     * push a line
-     */
-    private void push(String line) {
-
-      // break into tokens
-      StringTokenizer tokens = new StringTokenizer(line);
-        
-      // grab level and tag
-      int level = Integer.parseInt(tokens.nextToken());
-      String tag = tokens.nextToken();
-        
-      // grab props
-      Map props = new HashMap();
-      
-      while (tokens.hasMoreTokens()) {
-        String prop = tokens.nextToken();
-        int i = prop.indexOf('=');
-        // .. either 'abc=def' or 'xyz'
-        if (i>0) props.put(prop.substring(0,i), prop.substring(i+1));
-        else props.put(prop, "");
-      }
-      
-      // do we have to take elements from the stack first?
-      while (stack.size()>level) pop();
-      
-      // instantiate
-      MetaProperty meta = new MetaProperty(tag, props, true);
-      if (level==0) {
-        tag2root.put(tag, meta);
-        meta.isInstantiated = true; // fake instantiated
-      } else {
-        peek().addSub(meta);
-      }
-      
-      // add to end of stack
-      stack.add(meta);
-    }
-
-    /**
-     * Pop from stack
-     */
-    private void pop() {
-      stack.remove(stack.size()-1);
-    }
-    
-    /**
-     * Peek from stack
-     */
-    private MetaProperty peek() {
-      return (MetaProperty)stack.get(stack.size()-1);
-    }
-    
-  } //Parser
-  
-} //MetaDefinition
+} //MetaProperty

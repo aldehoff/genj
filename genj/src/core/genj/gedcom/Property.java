@@ -149,17 +149,24 @@ public abstract class Property implements Comparable {
   }
   
   /**
-   * Adds a sub-property to this property
+   * Adds a sub-property to this property 
    */
-  public Property addProperty(String tag) {
-    return addProperty(tag, EMPTY_STRING);
+  public Property addProperty(String tag, String value) {
+    return addProperty(tag, value, true);
   }
   
   /**
    * Adds a sub-property to this property
    */
-  public Property addProperty(String tag, String value) {
-    return addProperty(getMetaProperty().get(tag, true).create(value));
+  public Property addProperty(String tag, String value, boolean place) {
+    return addProperty(getMetaProperty().getNested(tag, true).create(value), place);
+  }
+  
+  /**
+   * Adds a sub-property to this property
+   */
+  public Property addProperty(String tag, String value, int pos) {
+    return addProperty(getMetaProperty().getNested(tag, true).create(value), pos);
   }
   
   /**
@@ -185,9 +192,9 @@ public abstract class Property implements Comparable {
       MetaProperty meta = getMetaProperty();
       
       pos = 0;
-      int index = meta.getIndex(prop.getTag());
+      int index = meta.getNestedIndex(prop.getTag());
       for (;pos<getNoOfProperties();pos++) {
-        if (meta.getIndex(getProperty(pos).getTag())>index)
+        if (meta.getNestedIndex(getProperty(pos).getTag())>index)
           break;
       }
     }
@@ -720,7 +727,7 @@ public abstract class Property implements Comparable {
    */
   public MetaProperty getMetaProperty() {
     if (meta==null)
-      meta = MetaProperty.get(getPath());    
+      meta = Grammar.getMeta(getPath());    
     return meta;
   }
 
@@ -729,7 +736,7 @@ public abstract class Property implements Comparable {
    * @param filter one/many of QUERY_ALL, QUERY_VALID_TRUE, QUERY_SYSTEM_FALSE, QUERY_FOLLOW_LINK
    */
   public MetaProperty[] getSubMetaProperties(int filter) {
-    return getMetaProperty().getSubs(filter);
+    return getMetaProperty().getAllNested(filter);
   }
 
   /**

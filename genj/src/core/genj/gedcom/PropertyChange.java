@@ -124,7 +124,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
     // update values (tx time is UTC time!)
     PropertyChange prop = (PropertyChange)entity.getProperty(CHAN);
     if (prop==null) {
-      prop = (PropertyChange)meta.get(CHAN, true).create("");
+      prop = (PropertyChange)meta.getNested(CHAN, true).create("");
       prop.setValue(tx.getTime());
       entity.addProperty(prop, Integer.MAX_VALUE);
     } else {

@@ -45,7 +45,7 @@ public class PropertyEvent extends Property {
         if (!result[i].getTag().equals("PLAC"))
           continue;
         // patch it
-        result[i] = getMetaProperty().get("ADDR", false); 
+        result[i] = getMetaProperty().getNested("ADDR", false); 
         // done
         break;
       }
@@ -131,7 +131,7 @@ public class PropertyEvent extends Property {
    * Returns the list of paths which identify PropertyEvents
    */
   public static TagPath[] getTagPaths() {
-    return MetaProperty.getPaths(null, PropertyEvent.class);  
+    return Grammar.getAllPaths(null, PropertyEvent.class);  
   }
   
   /**

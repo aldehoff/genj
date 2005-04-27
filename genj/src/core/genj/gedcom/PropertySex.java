@@ -30,9 +30,9 @@ public class PropertySex extends Property {
   
   /** images */
   private final static ImageIcon
-    IMG_UNKNOWN= MetaProperty.get(new TagPath("INDI:SEX")).getImage(),
-    IMG_MALE   = MetaProperty.get(new TagPath("INDI:SEX")).getImage("male"),
-    IMG_FEMALE = MetaProperty.get(new TagPath("INDI:SEX")).getImage("female");
+    IMG_UNKNOWN= Grammar.getMeta(new TagPath("INDI:SEX")).getImage(),
+    IMG_MALE   = Grammar.getMeta(new TagPath("INDI:SEX")).getImage("male"),
+    IMG_FEMALE = Grammar.getMeta(new TagPath("INDI:SEX")).getImage("female");
 
   /** txts */
   public final static String
