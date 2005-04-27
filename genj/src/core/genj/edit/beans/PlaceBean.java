@@ -80,7 +80,7 @@ public class PlaceBean extends PropertyBean {
     PropertyPlace place = (PropertyPlace)setProp;
    
     // either a simple value or broken down into comma separated jurisdictions
-    String placeFormat = place.getHierarchy();
+    String placeFormat = place.getHierarchy(gedcom);
     if (placeFormat.length()==0) {
       createField(null, place.getValue(), 0);
     } else {
