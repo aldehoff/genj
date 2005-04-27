@@ -28,9 +28,10 @@ public abstract class Relationship {
   
   /**
    * Perform the relationship
+   * @param isNew TODO
    * @return the receiver of focus (preferrably)
    */
-  public abstract Property apply(Entity entity) throws GedcomException ;  
+  public abstract Property apply(Entity entity, boolean isNew) throws GedcomException ;  
   
   /**
    * Accessor - gedcom
@@ -98,18 +99,18 @@ public abstract class Relationship {
     /**
      * Create Association 
      */
-    public Property apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity, boolean isNew) throws GedcomException {
         
       assume(entity, Indi.class);
 
       // create ASSO in entity
-      MetaProperty meta = entity.getMetaProperty().get("ASSO", true);
+      MetaProperty meta = entity.getMetaProperty().getNested("ASSO", true);
       PropertyAssociation asso = (PropertyAssociation)meta.create('@'+target.getEntity().getId()+'@');
       entity.addProperty(asso);
 
       // setup anchor through RELA if applicable
       TagPath anchor = target.getPath();
-      Property rela = asso.addProperty(meta.get("RELA", true).create(anchor==null?"":'@'+anchor.toString()));
+      Property rela = asso.addProperty(meta.getNested("RELA", true).create(anchor==null?"":'@'+anchor.toString()));
 
       // link it
       asso.link();
@@ -169,9 +170,9 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#apply(Entity)
+     * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
-    public Property apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity, boolean isNew) throws GedcomException {
       // connect
       owner.addProperty(xref);
       xref.setValue(entity.getId());
@@ -212,11 +213,23 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#apply(Entity)
+     * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
-    public Property apply(Entity entity) throws GedcomException {
-      assume(entity, Indi.class);
-      family.addChild((Indi)entity);
+    public Property apply(Entity entity, boolean isNew) throws GedcomException {
+      
+      Indi child = (Indi)entity;
+      
+      // add child
+      family.addChild(child);
+      
+      // set name if new person
+      if (isNew) {
+        Indi parent  = family.getHusband();
+        if (parent==null) parent = family.getWife();
+        if (parent!=null)
+          child.setName("", parent.getLastName());
+      }
+      
       // focus stays with family
       return family;
     }
@@ -254,11 +267,11 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#apply(Entity)
+     * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
-    public Property apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity, boolean isNew) throws GedcomException {
       
-      assume(entity, Indi.class);
+      Indi child = (Indi)entity;
   
       // lookup family for child    
       Fam fam;
@@ -273,7 +286,11 @@ public abstract class Relationship {
       }
       
       // add child
-      fam.addChild((Indi)entity);
+      fam.addChild(child);
+      
+      // set it's name if new
+      if (isNew) 
+        child.setName("", parent.getLastName());        
       
       // focus stays with parent
       return parent;
@@ -311,9 +328,9 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#apply(Entity)
+     * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
-    public Property apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity, boolean isNew) throws GedcomException {
       assume(entity, Indi.class);
       Indi indi = (Indi)entity;
       family.setSpouse(indi);
@@ -354,9 +371,9 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#apply(Entity)
+     * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
-    public Property apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity, boolean isNew) throws GedcomException {
       assume(entity, Indi.class);
       Indi parent = (Indi)entity;
       
@@ -424,9 +441,9 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#apply(Entity)
+     * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
-    public Property apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity, boolean isNew) throws GedcomException {
       assume(entity, Indi.class);
       
       // lookup family for spouse
@@ -478,9 +495,9 @@ public abstract class Relationship {
     }
     
     /**
-     * @see genj.gedcom.Relationship#apply(Entity)
+     * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
-    public Property apply(Entity entity) throws GedcomException {
+    public Property apply(Entity entity, boolean isNew) throws GedcomException {
       
       assume(entity, Indi.class);
 

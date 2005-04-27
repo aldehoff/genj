@@ -158,10 +158,10 @@ public class CreateRelationship extends AbstractChange {
       focus = existing;
       focus.addDefaultProperties();
       // perform the relationship to new
-      relationship.apply(existing);
+      relationship.apply(existing, true);
     } else {
       // perform the relationship to existing
-      focus = relationship.apply(existing);
+      focus = relationship.apply(existing, false);
     }
     // done
   }
