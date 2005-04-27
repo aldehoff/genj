@@ -113,7 +113,7 @@ import javax.swing.JComponent;
     registry = setRegistry;
 
     // setup async
-    setAsync(super.ASYNC_SAME_INSTANCE);
+    setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
     
     // restore last service
     PrintService service = registry.get(getDefaultService());

@@ -393,7 +393,7 @@ public class FileBean extends PropertyBean {
     private Loader(String setFile, boolean setWarn) {
       warn = setWarn;
       file = setFile;
-      setAsync(super.ASYNC_SAME_INSTANCE);
+      setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
     }
     /**
      * @see genj.util.ActionDelegate#preExecute()
