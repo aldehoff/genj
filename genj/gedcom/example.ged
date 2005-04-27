@@ -1,24 +1,25 @@
 0 HEAD
 1 SOUR GENJ
-2 VERS version
+2 VERS ?
 2 NAME GenealogyJ
 2 CORP Nils Meier
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
-1 DATE 18 JUL 2004
-2 TIME 18:00:06
+1 DATE 26 APR 2005
+2 TIME 20:04:35
+1 FILE example.ged
 1 GEDC
 2 VERS 5.5
 2 FORM Lineage-Linked
 1 CHAR ANSEL
 1 LANG German
-1 FILE example.ged
 0 @I001@ INDI
 1 NAME Lars H. /Meier/
 1 SEX M
 1 BIRT
 2 DATE 8 SEP 1937
 2 PLAC Hamburg
+1 OCCU Pilot
 1 FAMS @F001@
 0 @I002@ INDI
 1 NAME Magdalene /Hauschildt/
@@ -26,6 +27,7 @@
 1 BIRT
 2 DATE 12 JAN 1936
 2 PLAC Quarnstedt
+1 OCCU Hausfrau
 1 FAMS @F001@
 0 @I003@ INDI
 1 NAME Nada /Mandalinic/
@@ -37,7 +39,7 @@
 1 NAME Lars jun. /Meier/
 1 SEX M
 1 BIRT
-2 DATE 1967
+2 DATE 23 JUN 1967
 2 PLAC Celle
 1 FAMC @F001@
 0 @I005@ INDI
@@ -46,6 +48,7 @@
 1 BIRT
 2 DATE 25 MAY 1970
 2 PLAC Rendsburg
+1 OCCU Software Engineer
 1 FAMC @F001@
 1 FAMS @F003@
 0 @I006@ INDI
@@ -54,6 +57,7 @@
 1 BIRT
 2 DATE 3 JUL 1971
 2 PLAC Kèoln
+1 OCCU Sozialpèadagogin
 1 FAMC @F002@
 1 FAMS @F003@
 0 @I007@ INDI
@@ -97,22 +101,20 @@
 1 EMIG
 2 DATE FROM 1 SEP 2001
 2 PLAC San Francisco, California, USA
-1 OCCU SWEngineer
-1 CHAN
-2 DATE 19 JUL 2004
-3 TIME 00:59:40
+1 OCCU Software Engineer
 0 @I009@ INDI
 1 NAME Alisa /Meier/
 1 SEX F
 1 BIRT
 2 DATE 26 NOV 2000
+2 PLAC Bergisch Gladbach
 1 FAMC @F003@
 0 @F001@ FAM
 1 WIFE @I002@
 1 HUSB @I001@
 1 MARR
 2 DATE 9 OCT 1964
-2 PLAC Flagstaff, USA
+2 PLAC Flagstaff, , USA
 1 CHIL @I004@
 1 CHIL @I005@
 1 CHIL @I008@
@@ -127,7 +129,15 @@
 1 HUSB @I005@
 1 CHIL @I007@
 1 CHIL @I009@
+1 CHIL @I010@
 0 @N003@ NOTE The author of GenJ - please visit
 1 CONT http://genj.sourceforge.net
 1 CONT for more information about Genealogy J
+0 @I010@ INDI
+1 NAME Luka /Meier/
+1 SEX M
+1 BIRT
+2 DATE DEC 2004
+2 PLAC
+1 FAMC @F003@
 0 TRLR
