@@ -19,7 +19,6 @@
  */
 package genj.entity;
 
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
@@ -249,7 +248,7 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
   }
 
   /**  
-   * @see genj.gedcom.GedcomListener#handleChange(Change)
+   * @see genj.gedcom.GedcomListener#handleChange(Transaction)
    */
   public void handleChange(Transaction tx) {
     if (tx.get(Transaction.ENTITIES_DELETED).contains(entity)) {
