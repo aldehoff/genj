@@ -126,15 +126,21 @@ public class PropertyPlace extends Property {
    * Format
    */
   public String getHierarchy() {
+    return getHierarchy(getGedcom());
+  }
+  
+  /**
+   * Format
+   */
+  public String getHierarchy(Gedcom gedcom) {
     // look it up
     String result = EMPTY_STRING;
     Property pformat = getProperty(FORM);
     if (pformat!=null) 
       result = pformat.getValue();
     else {
-      Gedcom ged = getGedcom();
-      if (ged!=null)
-        result = ged.getPlaceHierarchy();
+      if (gedcom!=null)
+        result = gedcom.getPlaceHierarchy();
     }
     // done
     return gedcom2local(result);
