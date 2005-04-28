@@ -132,8 +132,11 @@ public class MetaProperty implements Comparable {
       MetaProperty sub = (MetaProperty)nested.get(s);
 
       // default only?
-      if ((filter&FILTER_DEFAULT)!=0&&sub.getAttribute("default")==null)
+      if ((filter&FILTER_DEFAULT)!=0) {
+        String isDefault = sub.getAttribute("default");
+        if (isDefault==null||"0".equals(isDefault))
         continue;
+      }
         
       // hidden at all (a.k.a cardinality == 0)?
       if ((filter&FILTER_NOT_HIDDEN)!=0&&"0".equals(sub.getAttribute("cardinality")))
