@@ -712,7 +712,7 @@ public abstract class Property implements Comparable {
     if (getEntity()==null) throw new IllegalArgumentException("addDefaultProperties() while getEntity()==null!");
     
     // loop
-    MetaProperty[] subs = getSubMetaProperties(MetaProperty.FILTER_DEFAULT); 
+    MetaProperty[] subs = getNestedMetaProperties(MetaProperty.FILTER_DEFAULT); 
     for (int s=0; s<subs.length; s++) {
       if (getProperty(subs[s].getTag())==null)
         addProperty(subs[s].create(EMPTY_STRING)).addDefaultProperties();
@@ -735,7 +735,7 @@ public abstract class Property implements Comparable {
    * Resolve meta properties
    * @param filter one/many of QUERY_ALL, QUERY_VALID_TRUE, QUERY_SYSTEM_FALSE, QUERY_FOLLOW_LINK
    */
-  public MetaProperty[] getSubMetaProperties(int filter) {
+  public MetaProperty[] getNestedMetaProperties(int filter) {
     return getMetaProperty().getAllNested(filter);
   }
 

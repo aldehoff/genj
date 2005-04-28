@@ -60,7 +60,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     
     // keep parent and calculate possible properties
     parent = pArent;
-    MetaProperty[] defs = parent.getSubMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+    MetaProperty[] defs = parent.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
     Arrays.sort(defs);
         
     // Layout

@@ -132,7 +132,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
       result.add(new SetPlaceHierarchy((PropertyPlace)property, manager)); 
       
     // Check what xrefs can be added
-    MetaProperty[] subs = property.getSubMetaProperties(0);
+    MetaProperty[] subs = property.getNestedMetaProperties(0);
     for (int s=0;s<subs.length;s++) {
       // NOTE||REPO||SOUR||SUBM
       Class type = subs[s].getType();
@@ -183,7 +183,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(ActionDelegate.NOOP);
 
     // Check what xrefs can be added
-    MetaProperty[] subs = entity.getSubMetaProperties(0);
+    MetaProperty[] subs = entity.getNestedMetaProperties(0);
     for (int s=0;s<subs.length;s++) {
       // NOTE||REPO||SOUR||SUBM
       Class type = subs[s].getType();
