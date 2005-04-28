@@ -80,8 +80,11 @@
   <DEAT img="Death.gif" super="INDI:BIRT"/>
   +++++++++++++ Attributes are not events but have event_details +++++++++++++
   <OCCU type="PropertyChoiceValue" img="Occupation.gif" super="INDI:BIRT"/>
-  <RESI type="PropertyEvent" img="Residency.gif" super="INDI:OCCU"/>
-  <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:OCCU"/>
+  <RESI type="PropertySimpleReadOnly" img="Residency.gif" super="INDI:BIRT">
+   <PLAC default="0" super="INDI:BIRT:PLAC"/>
+   <ADDR default="1" super="INDI:BIRT:ADDR"/>
+  </RESI>
+  <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:BIRT"/>
   <DSCR img="Description.gif" super="INDI:CAST"/>
   <EDUC img="Education.gif" super="INDI:CAST"/>
   <IDNO img="IDNumber.gif" super="INDI:CAST"/>
