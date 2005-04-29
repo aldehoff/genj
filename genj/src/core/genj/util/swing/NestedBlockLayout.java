@@ -504,6 +504,11 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       return element;
     }
     
+    /** Access a cell descriptor attribute */
+    public boolean isAttribute(String attr) {
+      return getAttribute(attr)!=null;
+    }
+    
     /** attribute */
     public String getAttribute(String attr) {
       return (String)attrs.get(attr);
@@ -593,6 +598,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       collect.add(this);
       return collect;
     }
+
   } //Cell
   
   /**
