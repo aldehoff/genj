@@ -303,5 +303,73 @@ public class TagPath {
     return result;
   }
 
+  /**
+   * Iterate a properties nodes corresponding to this path
+   */
+  public void iterate(Property root, PropertyVisitor visitor) {
+    iterate(0, root, visitor, get(0));
+  }
 
+  private boolean iterate(int pos, Property prop, PropertyVisitor visitor, String unconfirmedTag) {
+    
+    // traversed path?
+    if (pos==length())
+      return visitor.leaf(prop);
+    
+    // a '..'?
+    if (get(pos).equals("..")) {
+      Property parent = prop.getParent();
+      // no parent?
+      if (parent==null)
+        return false;
+      // continue with parent
+      return iterate(pos+1, parent, visitor, null);
+    }
+    
+    // a '.'?
+    if (get(pos).equals( ".")) {
+      // continue with self
+      return iterate(pos+1, prop, visitor, null);
+    }
+
+    // a '*'?
+    if (get(pos).equals( "*")) {
+      // check out target
+      if (!(prop instanceof PropertyXRef))
+        return false;
+      prop = ((PropertyXRef)prop).getTarget();
+      if (prop==null)
+        return false;
+      // continue with target
+      return iterate(pos+1, prop, visitor, null);
+    }
+
+    // still have to confirm a tag?
+    if (unconfirmedTag!=null) {
+      if (!get(pos).equals(unconfirmedTag))
+        return true;
+      // go with prop then
+      return iterate(pos+1, prop, visitor, null);
+    }
+    
+    // let visitor know that we're recursing now
+    if (!visitor.recursion(prop, get(pos)))
+      return false;
+    
+    // recurse into each appropriate child
+    for (int i=0;i<prop.getNoOfProperties();i++) {
+
+      Property ith = prop.getProperty(i);
+
+      // tag is good?
+      if (get(pos).equals(ith.getTag())) {
+        if (!iterate(pos+1, ith, visitor, null))
+          return false;
+      }
+    }
+    
+    // backtrack
+    return true;
+  }
+  
 } //TagPath
