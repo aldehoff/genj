@@ -31,6 +31,7 @@ import genj.util.swing.FileChooserWidget;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.UnitGraphics;
+import genj.util.swing.ViewPortAdapter;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
@@ -45,8 +46,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.FilePermission;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -68,8 +67,8 @@ public class FileBean extends PropertyBean {
   /** file chooser  */
   private FileChooserWidget chooser = new FileChooserWidget();
   
-  /** a loader per rootpane*/
-  private static Map root2loader = new WeakHashMap();
+  /** current loader*/
+  private Loader loader = null;
   
   /**
    * Initialization
@@ -91,7 +90,7 @@ public class FileBean extends PropertyBean {
     
     // setup review
     preview = new Preview();
-    add(new JScrollPane(preview), BorderLayout.CENTER);
+    add(new JScrollPane(new ViewPortAdapter(preview)), BorderLayout.CENTER);
     
     // setup a reasonable preferred size
     setPreferredSize(new Dimension(128,128));
@@ -189,20 +188,13 @@ public class FileBean extends PropertyBean {
    * per RootPane
    */
   private void load(String file, boolean warnAboutSize) {
+    
+    // cancel current
+    Loader l = loader;
+    if (l!=null) l.cancel(true);
 
     // create new loader
-    Loader loader = new Loader(file, warnAboutSize);
-
-    // cancel current loader and keep new
-    synchronized (root2loader) {
-      Object root = getRootPane();
-      if (root!=null) {
-        Loader old = (Loader)root2loader.get(root);
-        if (old!=null)
-          old.cancel(true);
-      }
-      root2loader.put(root, loader);
-    }
+    loader = new Loader(file, warnAboutSize);
 
     // start loading      
     loader.trigger();
@@ -427,6 +419,8 @@ public class FileBean extends PropertyBean {
      * sync show result
      */
     protected void postExecute() {
+      
+      loader = null;
 
       // check 
       preview.setCursor(null);
