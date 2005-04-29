@@ -28,7 +28,6 @@ import genj.util.DirectAccessTokenizer;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
-import genj.view.ViewManager;
 
 import java.awt.Component;
 
@@ -43,6 +42,13 @@ public class PlaceBean extends PropertyBean {
 
   private GridBagHelper gh = new GridBagHelper(this);
   int rows = 0;
+
+  /**
+   * Initialization
+   */
+  protected void initializeImpl() {
+    // too dynamic to setup now
+  }
   
   /**
    * Finish editing a property through proxy
@@ -70,14 +76,15 @@ public class PlaceBean extends PropertyBean {
   }
 
   /**
-   * Initialize
+   * Set context to edit
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
-
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
 
     // check property's format
-    PropertyPlace place = (PropertyPlace)setProp;
+    PropertyPlace place = (PropertyPlace)prop;
+    
+    // remove all current fields - this is dynamic
+    removeAll();
    
     // either a simple value or broken down into comma separated jurisdictions
     String placeFormat = place.getHierarchy(gedcom);

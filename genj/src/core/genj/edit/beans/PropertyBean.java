@@ -21,7 +21,6 @@ package genj.edit.beans;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
@@ -35,40 +34,41 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.swing.AbstractButton;
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 
 /**
- * A Proxy is a ui representation of a property with interactiv components that the user
- * will use to change values
+ * Beans allow the user to edit gedcom properties (a.k.a lines) - the lifecycle of a bean
+ * looks like this:
+ * <pre>
+ * </pre>
  */
-public abstract class PropertyBean extends JPanel implements GedcomListener {
+public abstract class PropertyBean extends JPanel {
   
   /** the resources */
   protected final static Resources resources = Resources.get(PropertyBean.class); 
   
-  /** the gedcom object */
+  /** the proxy key for this bean */
+  private String proxy;
+  
+  /** factory for us */
+  private BeanFactory factory;
+  
+  /** the current gedcom object */
   protected Gedcom gedcom;
   
-  /** the proxied property */
+  /** the current  property */
   protected Property property;
   
-  /** the view manager */
+  /** the current view manager */
   protected ViewManager viewManager;
   
   /** current registry */
   protected Registry registry;
   
-  /** buttons */
-  protected AbstractButton ok, cancel;
-
   /** the default focus */
   protected JComponent defaultFocus = null;
   
@@ -78,87 +78,68 @@ public abstract class PropertyBean extends JPanel implements GedcomListener {
   /** an optional path */
   protected TagPath path;
   
-  /** map a 'proxy' to a type */
-  private static Map proxy2type = new HashMap();
-  
   /**
-   * Accessor
+   * Initialize (happens once)
    */
-  public static PropertyBean get(Property prop) {
-    return get(prop.getProxy());
-  }
-  
-  public static PropertyBean get(String proxy) {
-    // unknown type?
-    Class type = (Class)proxy2type.get(proxy);
-    PropertyBean result = null;
-    if (type==null) {
-      try {
-        type = Class.forName( "genj.edit.beans." + proxy + "Bean");
-        result = (PropertyBean)type.newInstance();
-      } catch (Throwable t) {
-        type = SimpleValueBean.class;
-      }
-      proxy2type.put(proxy, type);
-    }
-    // instantiate if still necessary
-    if (result==null)
-      try {
-        result = (PropertyBean)type.newInstance();
-      } catch (Throwable t) {
-        result = new SimpleValueBean();
-      }
-    // done
-    return result;
+  /*package*/ final void initialize(String proxyKey, BeanFactory factory, ViewManager viewManager) {
+    // our state
+    this.viewManager = viewManager;
+    this.factory = factory;
+    this.proxy = proxyKey;
+    // propagate init to sub-classes
+    initializeImpl();
   }
   
   /**
-   * Constructor
-   */  
-  protected PropertyBean() {
-    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-  }
-  
-  /**
-   * Setup an editor in given panel
+   * Custom bean initialization code after member attributes have been initialized
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
+  protected abstract void initializeImpl();
 
-    // remember property
-    property = setProp;
-    viewManager = setMgr;
-    registry = setReg;
-    gedcom = setGedcom;
-    path = setPath;
+  /**
+   * Set context to edit
+   * @return default component to receive focus
+   */
+  public final void setContext(Gedcom gedcom, Property prop, TagPath path, Registry reg) {
     
-    // done
+    // remember property
+    this.property = prop;
+    this.registry = reg;
+    this.gedcom = gedcom;
+    this.path = path;
+    
+    // propagate to implementation
+    setContextImpl(gedcom, prop, path, reg);
+    
   }
+
+  /**
+   * Implementation's set context
+   */
+  protected abstract void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg);
   
   /**
    * add hook
    */
   public void addNotify() {
+    // allow super add
     super.addNotify();
-    gedcom.addGedcomListener(this);
   }
   
   /**
    * remove hook
    */
   public void removeNotify() {
-    gedcom.removeGedcomListener(this);
+    // stop serving
+    changeSupport.removeAllChangeListeners();
+    // continue ui remove
     super.removeNotify();
+    // recycle
+    factory.recycle(proxy, this);
+    // done
   }
   
   /**
-   * Callback for gedcom changes
-   */
-  public void handleChange(Transaction tx) {
-    // ignored
-  }
-  
-  /**
-   * Property wrapped in bean
+   * Current Property
    */
   public Property getProperty() {
     return property;
@@ -181,7 +162,9 @@ public abstract class PropertyBean extends JPanel implements GedcomListener {
   /**
    * Commit any changes made by the user
    */
-  public abstract void commit(Transaction tx);
+  public void commit(Transaction tx) {
+    // noop
+  }
   
   /**
    * Editable? default is yes
@@ -210,7 +193,7 @@ public abstract class PropertyBean extends JPanel implements GedcomListener {
   }
 
   /**
-   * An optional path 
+   * Current path 
    */
   public TagPath getPath() {
     return path;
@@ -227,11 +210,8 @@ public abstract class PropertyBean extends JPanel implements GedcomListener {
     /**
      * Constructor
      */
-    protected Preview(Entity ent) {
-      // remember
-      entity = ent;
+    protected Preview() {
       setBorder(new EmptyBorder(4,4,4,4));
-      // done
     }
     /**
      * @see genj.edit.ProxyXRef.Content#paintComponent(java.awt.Graphics)
@@ -243,10 +223,15 @@ public abstract class PropertyBean extends JPanel implements GedcomListener {
       g.setColor(Color.WHITE); 
       g.fillRect(box.x, box.y, box.width, box.height);
       // render entity
-      if (renderer==null) 
-        renderer = new EntityRenderer(viewManager.getBlueprintManager().getBlueprint(entity.getTag(), ""));
-      renderer.render(g, entity, box);
+      if (renderer!=null) 
+        renderer.render(g, entity, box);
       // done
+    }
+    protected void setEntity(Entity ent) {
+      entity = ent;
+      if (entity!=null)
+        renderer = new EntityRenderer(viewManager.getBlueprintManager().getBlueprint(entity.getTag(), ""));
+      repaint();
     }
   } //Preview
 

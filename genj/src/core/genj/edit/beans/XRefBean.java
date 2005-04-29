@@ -19,28 +19,32 @@
  */
 package genj.edit.beans;
 
-import java.awt.Dimension;
-
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.util.Registry;
-import genj.view.ViewManager;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 /**
  * A proxy for a property that links entities
  */
 public class XRefBean extends PropertyBean {
 
-  /** xref */
-  private PropertyXRef xref;
+  private Preview preview;
   
   /**
-   * Finish editing a property through proxy
+   * Initialization
    */
-  public void commit(Transaction tx) {
+  protected void initializeImpl() {
+    
+    preview = new Preview();
+    
+    setLayout(new BorderLayout());
+    add(BorderLayout.CENTER, preview);
+    
   }
   
   /**
@@ -51,20 +55,15 @@ public class XRefBean extends PropertyBean {
   }
   
   /**
-   * Initialize
+   * Set context to edit
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
 
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
-
-    // remember xref
-    xref = (PropertyXRef)setProp;
-
-    // setup content
-    if (xref.getReferencedEntity()!=null)
-      add(new Preview(xref.getReferencedEntity()));
+    // set preview
+    PropertyXRef xref = (PropertyXRef)property;
+    if (xref!=null&&xref.getReferencedEntity()!=null) 
+      preview.setEntity(xref.getReferencedEntity());
     
-    // done
   }
   
   /**

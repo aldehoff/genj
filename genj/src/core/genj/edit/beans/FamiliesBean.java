@@ -20,7 +20,6 @@
 package genj.edit.beans;
 
 import genj.common.AbstractPropertyTableModel;
-import genj.common.PropertyTableModel;
 import genj.common.PropertyTableWidget;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -28,9 +27,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.util.Registry;
-import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -49,64 +46,69 @@ public class FamiliesBean extends PropertyBean {
     PATH_MARR_DATE = Fam.PATH_FAMMARRDATE,
     PATH_MARR_PLAC = Fam.PATH_FAMMARRPLAC;
 
-
-  /** indi we're looking at */
-  private Indi indi;
-  
-  /**
-   * Finish editing a property through proxy
-   */
-  public void commit(Transaction tx) {
-  }
+  private PropertyTableWidget table;
 
   /**
-   * Initialize
+   * Initialiazer
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
-
-    // we assume we got an indi here
-    indi = (Indi)setProp;
+  protected void initializeImpl() {
     
-    // setup layout
-    setLayout(new BorderLayout());
-
-    // a table for the families
-    PropertyTableModel model = new AbstractPropertyTableModel() {
-      public Gedcom getGedcom() {
-        return gedcom;
-      }
-      public int getNumCols() {
-        return 5;
-      }
-      public int getNumRows() {
-        return indi.getNoOfFams();
-      }
-      public TagPath getPath(int col) {
-        switch (col) {
-          default:
-		    	case 0:
-		    	  return PATH_FAM;
-          case 1:
-            return indi.getSex() == PropertySex.FEMALE ? PATH_HUSB : PATH_WIFE;
-		    	case 2:
-            return indi.getSex() == PropertySex.FEMALE ? PATH_HUSB_NAME : PATH_WIFE_NAME;
-		    	case 3:
-		    	  return PATH_MARR_DATE;
-		    	case 4:
-		    	  return PATH_MARR_PLAC;
-        }
-      }
-      public Property getProperty(int row) {
-        return indi.getFam(row);
-      }
-    };
-    PropertyTableWidget table = new PropertyTableWidget(model, viewManager);
+    // prepare a simple table
+    table = new PropertyTableWidget(viewManager);
     table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
     table.setPreferredSize(new Dimension(64,64));
+    
+    setLayout(new BorderLayout());
     add(BorderLayout.CENTER, table);
+  }
+  
+  /**
+   * Set context to edit
+   */
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+
+    // connect to current indi
+    table.setModel(new Families((Indi)property));
     
     // done
   }
+  
+  private class Families extends AbstractPropertyTableModel {
+    
+    private Indi indi;
+    
+    private Families(Indi indi) {
+      this.indi = indi;
+    }
+    
+    public Gedcom getGedcom() {
+      return gedcom;
+    }
+    public int getNumCols() {
+      return 5;
+    }
+    public int getNumRows() {
+      return indi.getNoOfFams();
+    }
+    public TagPath getPath(int col) {
+      switch (col) {
+        default:
+        case 0:
+          return PATH_FAM;
+        case 1:
+          return indi.getSex() == PropertySex.FEMALE ? PATH_HUSB : PATH_WIFE;
+        case 2:
+          return indi.getSex() == PropertySex.FEMALE ? PATH_HUSB_NAME : PATH_WIFE_NAME;
+        case 3:
+          return PATH_MARR_DATE;
+        case 4:
+          return PATH_MARR_PLAC;
+      }
+    }
+    public Property getProperty(int row) {
+      return indi.getFam(row);
+    }
+  };
+  
 
 } //FamiliesBean

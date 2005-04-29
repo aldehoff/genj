@@ -34,7 +34,6 @@ import genj.util.swing.FileChooserWidget;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.UnitGraphics;
-import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
@@ -76,21 +75,14 @@ public class FileBean extends PropertyBean {
   private static Map root2loader = new WeakHashMap();
   
   /**
-   * Initialize
+   * Initialization
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
+  protected void initializeImpl() {
 
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
     setLayout(new BorderLayout());
     
-    // calc directory
-    Origin origin = gedcom.getOrigin();
-    String dir = origin.isFile() ? origin.getFile().getParent() : null;
-    
-    // connect file chooser with change support
+    // setup chooser
     chooser.setAccessory(updateFormatAndTitle);
-    chooser.setImage(setProp.getImage(false));
-    chooser.setDirectory(dir);
     chooser.addChangeListener(changeSupport);
     chooser.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -98,27 +90,41 @@ public class FileBean extends PropertyBean {
       }
     });
 
-    defaultFocus = chooser;
+    add(chooser, BorderLayout.NORTH);      
+    
+    // setup review
+    preview = new Preview();
+    add(new JScrollPane(preview), BorderLayout.CENTER);
+    
+    // setup a reasonable preferred size
+    setPreferredSize(new Dimension(128,128));
+    
+    // done
+  }
+  
+  /**
+   * Set context to edit
+   */
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
 
-    // add filechooser if permissions are ok
+    // calc directory
+    Origin origin = gedcom.getOrigin();
+    String dir = origin.isFile() ? origin.getFile().getParent() : null;
+    
+    // check if showing file chooser makes sense
     if (dir!=null) try {
       
       SecurityManager sm = System.getSecurityManager();
       if (sm!=null) 
         sm.checkPermission( new FilePermission(dir, "read"));      
 
-      add(chooser, BorderLayout.NORTH);      
+      chooser.setVisible(true);
+      defaultFocus = chooser;
 
     } catch (SecurityException se) {
+      chooser.setVisible(false);
+      defaultFocus = null;
     }
-
-    // Any graphical information that could be shown ?
-    preview = new Preview();
-    
-    add(new JScrollPane(preview), BorderLayout.CENTER);
-    
-    // setup a reasonable preferred size
-    setPreferredSize(new Dimension(128,128));
 
     // case FILE
     if (property instanceof PropertyFile) {
@@ -151,6 +157,8 @@ public class FileBean extends PropertyBean {
 
     }
       
+    preview.setZoom(registry.get("file.zoom", 100));
+    
     // Done
   }
 
@@ -237,7 +245,6 @@ public class FileBean extends PropertyBean {
      */
     protected Preview() {
       addMouseListener(this);
-      setZoom(registry.get("file.zoom", 100));
     }
     /**
      * Sets the zoom level

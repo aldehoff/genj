@@ -20,15 +20,12 @@
 package genj.edit.beans;
 
 import genj.common.AbstractPropertyTableModel;
-import genj.common.PropertyTableModel;
 import genj.common.PropertyTableWidget;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.util.Registry;
-import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -45,51 +42,54 @@ public class ChildrenBean extends PropertyBean {
     new TagPath("INDI:BIRT:PLAC")
   };
   
-  /** fam we're looking at */
-  private Fam fam;
+  private PropertyTableWidget table;
   
   /**
-   * Finish editing a property through proxy
+   * Init
    */
-  public void commit(Transaction tx) {
+  protected void initializeImpl() {
+    
+    // a table for the families
+    table = new PropertyTableWidget(viewManager);
+    table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
+    table.setPreferredSize(new Dimension(64,64));
+    
+    setLayout(new BorderLayout());
+    add(BorderLayout.CENTER, table);
+    
   }
 
   /**
-   * Initialize
+   * Set context to edit
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
-
-    // we assume we got a famhere
-    fam = (Fam)setProp;
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
     
-    // setup layout
-    setLayout(new BorderLayout());
-
-    // a table for the families
-    PropertyTableModel model = new AbstractPropertyTableModel() {
-      public Gedcom getGedcom() {
-        return gedcom;
-      }
-      public int getNumCols() {
-        return PATHS.length;
-      }
-      public int getNumRows() {
-        return fam.getNoOfChildren();
-      }
-      public TagPath getPath(int col) {
-        return PATHS[col];
-      }
-      public Property getProperty(int row) {
-        return fam.getChild(row);
-      }
-    };
-    PropertyTableWidget table = new PropertyTableWidget(model, viewManager);
-    table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
-    table.setPreferredSize(new Dimension(64,64));
-    add(BorderLayout.CENTER, table);
+    // connect to current fam
+    table.setModel(new Children((Fam)property));
     
     // done
+  }
+  
+  private class Children extends AbstractPropertyTableModel {
+    private Fam fam;
+    private Children(Fam fam) {
+      this.fam = fam;
+    }
+    public Gedcom getGedcom() {
+      return gedcom;
+    }
+    public int getNumCols() {
+      return PATHS.length;
+    }
+    public int getNumRows() {
+      return fam!=null ? fam.getNoOfChildren() : 0;
+    }
+    public TagPath getPath(int col) {
+      return PATHS[col];
+    }
+    public Property getProperty(int row) {
+      return fam.getChild(row);
+    }
   }
 
 } //ChildrenBean

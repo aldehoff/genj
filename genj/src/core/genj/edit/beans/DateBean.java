@@ -31,16 +31,13 @@ import genj.util.swing.DateWidget;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
-import genj.view.ViewManager;
 
-import java.awt.Dimension;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
 
 /**
- * A Proxy knows how to generate interaction components that the user
- * will use to change a property : DATE
+ * A bean for editing DATEs
  */
 public class DateBean extends PropertyBean {
 
@@ -54,6 +51,42 @@ public class DateBean extends PropertyBean {
   private PopupWidget choose;
   private JLabel label2;
 
+  /**
+   * Initializer
+   */
+  protected void initializeImpl() {
+    
+    // setup Laout
+    setLayout(LAYOUT.copy());
+    
+    // prepare format change actions
+    ArrayList actions = new ArrayList(10);
+    for (int i=0;i<PropertyDate.FORMATS.length;i++)
+      actions.add(new ChangeFormat(PropertyDate.FORMATS[i]));
+
+    // .. the chooser (making sure the preferred size is pre-computed to fit-it-all)
+    choose = new PopupWidget(null, null, actions);
+    add(choose);
+    
+    // .. first date
+    date1 = new DateWidget(viewManager.getWindowManager());
+    date1.addChangeListener(changeSupport);
+    add(date1);
+
+    // .. second date
+    label2 = new JLabel();
+    add(label2);
+    
+    date2 = new DateWidget(viewManager.getWindowManager());
+    date2.addChangeListener(changeSupport);
+    add(date2);
+    
+    // setup default focus
+    defaultFocus = date1;
+
+    // Done
+  }
+  
   /**
    * Finish proxying edit for property Date
    */
@@ -100,19 +133,12 @@ public class DateBean extends PropertyBean {
     
     // check label2/date2 visibility
     if (format.isRange()) {
-      if (date2==null) {
-        label2 = new JLabel();
-        add(label2);
-        date2 = new DateWidget(p.getEnd(), viewManager.getWindowManager());
-        date2.addChangeListener(changeSupport);
-        add(date2);
-      }
       date2.setVisible(true);
       label2.setVisible(true);
       label2.setText(format.getLabel2());
     } else {
-      if (date2!=null) date2.setVisible(false);
-      if (label2!=null) label2.setVisible(false);
+      date2.setVisible(false);
+      label2.setVisible(false);
     }
 
     // set image and tooltip of chooser
@@ -124,70 +150,21 @@ public class DateBean extends PropertyBean {
     repaint();
   }          
   
-  private static Dimension preferredPopupSize;
-  
-  /**
-   * set cached calculated preferred size for popup
-   */
-  private static void setPreferredSize(PopupWidget choose) {
-    
-    // unknown?
-    if (preferredPopupSize==null) {
-
-      // calculate image alone
-      choose.setIcon(PIT);
-      preferredPopupSize = choose.getPreferredSize();
-      choose.setIcon(null);
-      
-      // loop over date format texts and patch preferred
-      for (int i=0,j=PropertyDate.FORMATS.length;i<j;i++) {
-        choose.setText(PropertyDate.FORMATS[i].getLabel1());
-        Dimension pref = choose.getPreferredSize();
-        preferredPopupSize.width = Math.max(preferredPopupSize.width , pref.width );
-        preferredPopupSize.height= Math.max(preferredPopupSize.height, pref.height);
-      }
-      
-    }
-    
-    // set it
-    choose.setPreferredSize(preferredPopupSize);
-
-  }
 
   /**
-   * Initialize
+   * Set context to edit
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
 
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
-    
-    // setup Laout
-    setLayout(LAYOUT.copy());
-    
     // we know it's a date
     PropertyDate p = (PropertyDate)property;
 
-    // prepare format change actions
-    ArrayList actions = new ArrayList(10);
-    for (int i=0;i<PropertyDate.FORMATS.length;i++)
-      actions.add(new ChangeFormat(PropertyDate.FORMATS[i]));
-
-    // .. the chooser (making sure the preferred size is pre-computed to fit-it-all)
-    choose = new PopupWidget(null, null, actions);
-    add(choose);
-    
-    // .. first date
-    date1 = new DateWidget(p.getStart(), viewManager.getWindowManager());
-    date1.addChangeListener(changeSupport);
-    add(date1);
-
-    // set format
+    // connect
+    date1.setValue(p.getStart());
+    date2.setValue(p.getEnd());
     setFormat(p.getFormat());
     
     // done
-    defaultFocus = date1;
-
-    // Done
   }
   
   /**

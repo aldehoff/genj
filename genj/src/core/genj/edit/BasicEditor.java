@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.edit.beans.BeanFactory;
 import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
@@ -354,8 +355,9 @@ import javax.swing.event.ChangeListener;
       prop = meta.create("");
     
     // init bean
-    PropertyBean bean = type!=null ? PropertyBean.get(type) : PropertyBean.get(prop);
-    bean.init(entity.getGedcom(), prop, path, view.getViewManager(), registry);
+    BeanFactory factory = view.getBeanFactory();
+    PropertyBean bean = type!=null ? factory.get(type) : factory.get(prop);
+    bean.setContext(entity.getGedcom(), prop, path, registry);
     bean.addChangeListener(changeCallback);
     
     // remember
@@ -486,42 +488,25 @@ import javax.swing.event.ChangeListener;
       // commit bean changes
       try {
         for (int i=0,j=beans.size();i<j;i++) {
+          
+          // let bean commit its changes
           PropertyBean bean = (PropertyBean)beans.get(i);
           bean.commit(tx);
+          
+          // check if this was working on a temporary property without parent
           Property prop = bean.getProperty();
-          TagPath path = bean.getPath();
           if (prop.getValue().length() > 0 && prop.getParent() == null)
-            add(prop, path, path.length());
+            entity.setValue(bean.getPath(), prop.getValue());
+          
         }
       } catch (Throwable t) {
         Debug.log(Debug.ERROR, this, t);
       }
 
-      // end transaction - fake entity==null because we're doing the change here
-      Entity old = entity;
-      entity = null;
+      // end transaction - this will refresh our view as well
       gedcom.endTransaction();
-      entity = old;
-
-      // disable commit/cancel since all changes are committed
-      ok.setEnabled(false);
-      cancel.setEnabled(false);
-      
-      // done
-    }
-
-    private Property add(Property prop, TagPath path, int len) {
-
-      TagPath ppath = new TagPath(path, len - 1);
-      Property parent = entity.getProperty(ppath);
-      if (parent == null)
-        parent = add(Grammar.getMeta(ppath).create(""), path, len - 1);
-
-      // add it
-      parent.addProperty(prop);
 
       // done
-      return prop;
     }
 
   } //OK

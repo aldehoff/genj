@@ -688,12 +688,12 @@ import javax.swing.event.TreeSelectionListener;
       if (prop!=null&&!prop.isSecret()) {
   
         // get a bean for property
-        bean = PropertyBean.get(prop);
+        bean = editView.getBeanFactory().get(prop);
         
         try {
   
           // initialize bean
-          bean.init(gedcom, prop, null, editView.getViewManager(), registry);
+          bean.setContext(gedcom, prop, null, registry);
           
           // add bean to center of editPane 
           editPane.add(bean, BorderLayout.CENTER);

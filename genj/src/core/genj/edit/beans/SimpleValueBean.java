@@ -25,11 +25,8 @@ import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.util.Registry;
 import genj.util.swing.TextFieldWidget;
-import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
-
-import javax.swing.JLabel;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -40,42 +37,43 @@ public class SimpleValueBean extends PropertyBean {
   /** members */
   private TextFieldWidget tfield;
 
+  /** initialization */
+  protected void initializeImpl() {
+    
+    tfield = new TextFieldWidget("", 8);
+    
+    setLayout(new BorderLayout());
+    add(BorderLayout.NORTH, tfield);
+  }
+
   /**
    * Finish editing a property through proxy
    */
   public void commit(Transaction tx) {
-    if (tfield!=null) {
+    
+    if (!property.isReadOnly())
       property.setValue(tfield.getText());
-    }
   }
 
   /**
-   * Nothing to edit
+   * Editable depends on property
    */  
   public boolean isEditable() {
     return !property.isReadOnly();
   }
 
   /**
-   * Initialize
+   * Set context to edit
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
 
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
-
-    setLayout(new BorderLayout());
-
-    // readOnly()?
-    if (property.isReadOnly()) {
-      add(BorderLayout.NORTH, new JLabel(property.getDisplayValue()));
-    } else {
-      tfield = new TextFieldWidget(property.getDisplayValue(), 8);
-      tfield.addChangeListener(changeSupport);
-      add(BorderLayout.NORTH, tfield);
-      super.defaultFocus = tfield;
-    }
+    // show value
+    String txt = property.getDisplayValue();
+    tfield.setText(txt);
+    tfield.setEditable(!property.isReadOnly());
+    tfield.setVisible(!property.isReadOnly()||txt.length()>0);
     
-    // Done
+    defaultFocus = tfield.isEditable() ? tfield : null;
   }
-
-} //ProxyUnknown
+  
+}

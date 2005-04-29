@@ -27,7 +27,6 @@ import genj.gedcom.Transaction;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
-import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
@@ -40,8 +39,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * A Proxy knows how to generate interaction components that the user
- * will use to change a property : Choice (e.g. RELA)
+ * A bean for editing choice properties(e.g. RELA)
  * @author nils@meiers.net
  * @author Tomas Dahlqvist fix for prefix lookup
  */
@@ -52,55 +50,12 @@ public class ChoiceBean extends PropertyBean {
   private JCheckBox global;
   
   /**
-   * Finish editing a property through proxy
+   * Initialization
    */
-  public void commit(Transaction tx) {
+  protected void initializeImpl() {
     
-    PropertyChoiceValue prop = (PropertyChoiceValue)property;
-
-    // check if property has been touched already 
-    // in current transaction
-    if (!tx.get(Transaction.PROPERTIES_MODIFIED).contains(prop)) {
-	    // change value
-	    prop.setValue(choice.getText(), global.isSelected());
-    }
-    
-    // Done
-  }
-
-  /**
-   * Listen to gedcom changes
-   */
-  public void handleChange(Transaction tx) {
-    // let super do its thing
-    super.handleChange(tx);
-    // check if property was changed
-    if (tx.get(Transaction.PROPERTIES_MODIFIED).contains(property)) {
-      PropertyChoiceValue prop = (PropertyChoiceValue)property;
-      // refresh choices & value
-      choice.setValues(prop.getChoices(gedcom).toArray());
-      choice.setText(prop.getDisplayValue());
-      // hide global change - we're starting fresh
-      global.setSelected(false);
-      global.setVisible(false);
-    }
-    // done
-  }
-
-  /**
-   * Initialize
-   */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
-
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
-    
-    // setup choices
-    Object[] items = ((PropertyChoiceValue)property).getChoices(setGedcom).toArray();
-
-    // prepare a choice for the user - we're using getDisplayValue() here
-    // because like in PropertyRelationship's case there might be more
-    // in the gedcom value than what we want to display (witness@INDI:BIRT)
-    choice = new ChoiceWidget(items, property.getDisplayValue());
+    // prepare a choice for the user
+    choice = new ChoiceWidget();
     choice.addChangeListener(changeSupport);
 
     // add a checkbox for global
@@ -140,7 +95,40 @@ public class ChoiceBean extends PropertyBean {
     
     // focus
     defaultFocus = choice;
+  }
+  
+  /**
+   * Finish editing a property through proxy
+   */
+  public void commit(Transaction tx) {
     
+    PropertyChoiceValue prop = (PropertyChoiceValue)property;
+
+    // check if property has been touched already 
+    // in current transaction
+    if (!tx.get(Transaction.PROPERTIES_MODIFIED).contains(prop)) {
+	    // change value
+	    prop.setValue(choice.getText(), global.isSelected());
+    }
+    
+    // Done
+  }
+
+  /**
+   * Set context to edit
+   */
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+
+    // setup choices    
+    // Note: we're using getDisplayValue() here because like in PropertyRelationship's 
+    // case there might be more in the gedcom value than what we want to display 
+    // e.g. witness@INDI:BIRT
+    choice.setValues(((PropertyChoiceValue)property).getChoices(gedcom));
+    choice.setText(property!=null ? property.getDisplayValue() : "");
+    global.setSelected(false);
+    global.setVisible(false);
+    
+    // done
   }
 
   /**

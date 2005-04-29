@@ -28,9 +28,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.Relationship;
 import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.util.Registry;
-import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -39,33 +37,38 @@ import java.awt.Dimension;
  * A complex bean displaying parents of an individual
  */
 public class ParentsBean extends PropertyBean {
-
+  
+  private PropertyTableWidget table;
+  
   /**
-   * Finish editing a property through proxy
+   * Initialization
    */
-  public void commit(Transaction tx) {
+  protected void initializeImpl() {
+    
+    // setup layout & table
+    table = new PropertyTableWidget(viewManager);
+    table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
+    table.setPreferredSize(new Dimension(64,64));
+    
+    setLayout(new BorderLayout());
+    add(BorderLayout.CENTER, table);
+    
+    // done
   }
 
   /**
-   * Initialize
+   * Set context to edit
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
 
-    // setup layout
-    setLayout(new BorderLayout());
-    
     // a table for the families
     PropertyTableModel model = null;
-    if (setProp instanceof Indi)
-      model = new ParentsOfChild((Indi)setProp);
-    if (setProp instanceof Fam)
-      model = new ParentsInFamily((Fam)setProp);
+    if (prop instanceof Indi)
+      model = new ParentsOfChild((Indi)prop);
+    if (prop instanceof Fam)
+      model = new ParentsInFamily((Fam)prop);
     
-    PropertyTableWidget table = new PropertyTableWidget(model, viewManager);
-    table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
-    table.setPreferredSize(new Dimension(64,64));
-    add(BorderLayout.CENTER, table);
+    table.setModel(model);
     
     // done
   }

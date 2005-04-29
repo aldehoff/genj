@@ -26,13 +26,10 @@ import genj.gedcom.PropertyChange;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.util.Registry;
-import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 
-import javax.swing.AbstractButton;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -40,9 +37,8 @@ import javax.swing.JTextField;
  */
 public class EntityBean extends PropertyBean {
 
-  /** members */
-  private JTextField tfield;
-  private AbstractButton bchange;
+  private Preview preview;
+  private JLabel changed;
 
   /**
    * Finish editing a property through proxy (no changes here unless
@@ -61,25 +57,32 @@ public class EntityBean extends PropertyBean {
   /**
    * Initialize
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
-
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
-
+  protected void initializeImpl() {
+    preview = new Preview();
+    changed = new JLabel();
+    
     setLayout(new BorderLayout());
+    add(BorderLayout.CENTER, preview);
+    add(BorderLayout.SOUTH, changed);
+  }
+  
+  /**
+   * Set context to edit
+   */
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
 
-    // Look for entity
-    if (property instanceof Entity) {
+    Entity entity = (Entity)property;
+    
+    // show it
+    preview.setEntity(entity);
 
-      Entity e = (Entity)property;
-
-      // add a preview
-      add(BorderLayout.CENTER, new Preview(e));
-
-      // add change date/time
-      PropertyChange change = e.getLastChange();
+    // add change date/time
+    changed.setVisible(false);
+    if (entity!=null) {
+      PropertyChange change = entity.getLastChange();
       if (change!=null)
-        add(BorderLayout.SOUTH, new JLabel(resources.getString("entity.change", new String[] {change.getDateAsString(), change.getTimeAsString()} )));      
-
+        changed.setText(resources.getString("entity.change", new String[] {change.getDateAsString(), change.getTimeAsString()} ));      
+        changed.setVisible(true);
     }
     
     // Done

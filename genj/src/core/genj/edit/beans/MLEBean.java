@@ -25,7 +25,6 @@ import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.util.Registry;
 import genj.util.swing.TextAreaWidget;
-import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 
@@ -40,6 +39,23 @@ public class MLEBean extends PropertyBean {
   /** members */
   private TextAreaWidget tarea;
 
+  /** 
+   * Initialization
+   */
+  protected void initializeImpl() {
+    
+    tarea = new TextAreaWidget("",3,20);
+    tarea.addChangeListener(changeSupport);
+    tarea.setLineWrap(true);
+    tarea.setWrapStyleWord(true);
+
+    setLayout(new BorderLayout());
+    add(BorderLayout.CENTER, new JScrollPane(tarea));
+    
+    defaultFocus = tarea;
+
+  }
+  
   /**
    * Finish editing a property through proxy
    */
@@ -48,29 +64,14 @@ public class MLEBean extends PropertyBean {
   }
 
   /**
-   * Initialize
+   * Set context to edit
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
 
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
+    // show value
+    tarea.setText(property.getValue());
 
-    // Calculate value to show
-    String value = property.getValue();
-
-    tarea = new TextAreaWidget(value,3,20);
-    tarea.addChangeListener(changeSupport);
-    tarea.setLineWrap(true);
-    tarea.setWrapStyleWord(true);
-
-    setLayout(new BorderLayout());
-    
-    // 20040701 added forgotten scrollpane - makes bean behave
-    // correctly in layouted environment like BasicEditor's bean panel
-    add(BorderLayout.CENTER, new JScrollPane(tarea));
-
-    defaultFocus = tarea;
-
-    // Done
+    // done
   }
 
-} //ProxyMLE
+} //MLEBean

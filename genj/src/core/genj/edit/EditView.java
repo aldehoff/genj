@@ -21,6 +21,7 @@ package genj.edit;
 
 import genj.edit.actions.Redo;
 import genj.edit.actions.Undo;
+import genj.edit.beans.BeanFactory;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
@@ -63,6 +64,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   
   /** the registry we use */
   private Registry registry;
+  
+  /** bean factory */
+  private BeanFactory beanFactory;
 
   /** the view manager */
   private ViewManager manager;
@@ -97,6 +101,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     gedcom   = setGedcom;
     registry = setRegistry;
     manager  = setManager;
+    beanFactory = new BeanFactory(manager);
 
     // prepare undo/redo actions
     undo = new Undo(gedcom, manager);
@@ -196,6 +201,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     super.removeNotify();
 
     // Done
+  }
+  
+  /**
+   * BeanFactory
+   */
+  /*package*/ BeanFactory getBeanFactory() {
+    return beanFactory;
   }
   
   /**

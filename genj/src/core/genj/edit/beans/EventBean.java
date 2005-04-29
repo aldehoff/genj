@@ -30,29 +30,53 @@ import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.util.Registry;
 import genj.util.swing.NestedBlockLayout;
-import genj.view.ViewManager;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 /**
- * A Proxy knows how to generate interaction components that the user
- * will use to change a property : *Events*
- * This Proxy was written by Dan Kionka, and only exists to display the age.
+ * A bean for editing Events
+ * @author Nils Meier
+ * @author Daniel Kionka
  */
 public class EventBean extends PropertyBean {
+  
+  private final static NestedBlockLayout LAYOUT = new NestedBlockLayout("<col><row><at/><age wx=\"1\"/></row><row><known/></row></col>");
 
   /** known to have happened */
-  private JCheckBox known;
+  private JCheckBox cKnown;
+  private JLabel lAgeAt;
+  private JTextField tAge;
+  
+  /**
+   * Initialization
+   */
+  protected void initializeImpl() {
+    
+    setLayout(LAYOUT.copy());
+    
+    lAgeAt = new JLabel();
+    
+    tAge = new JTextField("", 16); 
+    tAge.setEditable(false);
+    tAge.setFocusable(false);
+
+    cKnown = new JCheckBox(resources.getString("even.known"));
+    cKnown.addActionListener(changeSupport);
+    
+    add(lAgeAt);
+    add(tAge);
+    add(cKnown);
+      
+  }
 
   /**
    * Finish proxying edit for property Birth
    */
   public void commit(Transaction tx) {
-    // known might be null!
-    if (known!=null) {
-      ((PropertyEvent)property).setKnownToHaveHappened(known.isSelected());
+    if (cKnown.isVisible()) {
+      ((PropertyEvent)property).setKnownToHaveHappened(cKnown.isSelected());
     }
   }
 
@@ -60,22 +84,14 @@ public class EventBean extends PropertyBean {
    * Nothing to edit
    */  
   public boolean isEditable() {
-    return known!=null;
+    return cKnown.isVisible();
   }
 
   /**
-   * Initialize
+   * Set context to edit
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
 
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
-    
-    // showing age/event-has-happened if indeed an event
-    if (!(property instanceof PropertyEvent))
-      return;
-    
-    setLayout(new NestedBlockLayout("<col><row><at/><age wx=\"1\"/></row><row><known/></row></col>"));
-    
     PropertyEvent event = (PropertyEvent)property;
     PropertyDate date = event.getDate(true);
     
@@ -97,28 +113,30 @@ public class EventBean extends PropertyBean {
       } else {
         age = date!=null ? indi.getAgeString(date.getStart()) : resources.getString("even.age.?");
       }
-
-      JTextField txt = new JTextField(age, 16); 
-      txt.setEditable(false);
-      txt.setFocusable(false);
       
-      add("at", new JLabel(resources.getString(ageat)));
-      add("age", txt);
+      lAgeAt.setText(resources.getString(ageat));
+      tAge.setText(age);
       
+      lAgeAt.setVisible(true);
+      tAge.setVisible(true);
+    } else {
+      lAgeAt.setVisible(false);
+      tAge.setVisible(false);
     }
 
     // show event-has-happened?
-    if (!"EVEN".equals(property.getTag())) {
-      Boolean happened = event.isKnownToHaveHappened();
-      if (happened!=null) {
-        known = new JCheckBox(resources.getString("even.known"));
-        known.setSelected(happened.booleanValue());
-        known.addActionListener(changeSupport);
-        
-        add("known", known);
-        
-        defaultFocus = known;
-      }
+    Boolean known = null;
+    
+    if (!"EVEN".equals(property.getTag())) 
+      known = event.isKnownToHaveHappened();
+    
+    if (known!=null) {
+      cKnown.setSelected(known.booleanValue());
+      cKnown.setVisible(true);
+      defaultFocus = cKnown;
+    } else{
+      cKnown.setVisible(false);
+      defaultFocus = null;
     }
     
     // done

@@ -27,7 +27,6 @@ import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
-import genj.view.ViewManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -52,6 +51,25 @@ public class SexBean extends PropertyBean {
   }
   
   /**
+   * Initialization
+   */
+  protected void initializeImpl() {
+    
+    // use our layout
+    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+      
+    // create buttons    
+    ButtonHelper bh = new ButtonHelper()
+      .setButtonType(JRadioButton.class)
+      .setContainer(this);
+    bh.createGroup();
+    for (int i=0;i<buttons.length;i++)
+      buttons[i] = bh.create( new Gender(i) );
+    
+    // Done
+  }
+  
+  /**
    * Get current sex
    */
   private int getSex() {
@@ -67,27 +85,13 @@ public class SexBean extends PropertyBean {
   }
 
   /**
-   * Initialize
+   * Set context to edit
    */
-  public void init(Gedcom setGedcom, Property setProp, TagPath setPath, ViewManager setMgr, Registry setReg) {
+  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
 
-    super.init(setGedcom, setProp, setPath, setMgr, setReg);
-  
-    // use our layout
-    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-      
-    // we know it's PropertySex
+    // show it
     PropertySex p = (PropertySex) property;
-
-    // create buttons    
-    ButtonHelper bh = new ButtonHelper()
-      .setButtonType(JRadioButton.class)
-      .setContainer(this);
-    bh.createGroup();
-    for (int i=0;i<buttons.length;i++)
-      buttons[i] = bh.create( new Gender(i) );
     buttons[p.getSex()].setSelected(true);
-    
     defaultFocus = buttons[p.getSex()];
 
     // Done
