@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import javax.swing.ImageIcon;
+
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 
@@ -28,7 +30,8 @@ import genj.gedcom.time.PointInTime;
 public class PropertyAge extends Property {
 
   public final static String TAG = "AGE";
-
+  public final static ImageIcon IMG = Grammar.getMeta(new TagPath("INDI:BIRT:AGE")).getImage();
+  
   /** the age */
   private Delta age = new Delta(0, 0, 0);
 
