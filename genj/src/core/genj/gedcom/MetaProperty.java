@@ -288,8 +288,14 @@ public class MetaProperty implements Comparable {
    * Accessor - some explanationary information about the meta
    */
   public String getName() {
-    String name = Gedcom.getResources().getString(tag+".name", false);
-    return name==null ? tag : name;
+    return getName(false);
+  }
+  
+  /**
+   * Accessor - some explanationary information about the meta
+   */
+  public String getName(boolean plural) {
+    return Gedcom.getName(tag, plural);
   }
   
   /**

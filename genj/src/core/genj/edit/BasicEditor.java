@@ -27,7 +27,6 @@ import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
@@ -50,6 +49,7 @@ import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -244,7 +244,7 @@ import javax.swing.event.ChangeListener;
     if (entity!=null) try {
 
       // 'create' standard panel
-      createPanel(standardPanel, entity, "entities/"+entity.getTag());
+      createPanel(standardPanel, entity, getDescriptor(entity));
       
       // add relationship tabs
       if (entity instanceof Indi) {
@@ -255,14 +255,9 @@ import javax.swing.event.ChangeListener;
         Property prop = entity.getProperty(i);
         if (haveBean(prop))
           continue;
-        if (prop instanceof PropertyEvent)
-          tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, "properties/Event")));
-        if (prop.getTag().equals("RESI"))
-          tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, "properties/RESI")));
-        if (prop.getTag().equals("OCCU"))
-          tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, "properties/OCCU")));
-        if (prop.getTag().equals("OBJE"))
-          tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, "properties/OBJE")));
+        NestedBlockLayout descriptor = getDescriptor(prop);
+        if (descriptor!=null) 
+          tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, descriptor)));
       }
       
     } catch (Throwable t) {
@@ -278,6 +273,42 @@ import javax.swing.event.ChangeListener;
     repaint();
 
     // done
+  }
+
+  /**
+   * Find a descriptor for given property
+   * @return private copy descriptor or null if n/a
+   */
+  private NestedBlockLayout getDescriptor(Property property) {
+    
+    // either entity or property
+    String file  = "descriptors/" + (property instanceof Entity ? "entities" : "properties") + "/" + property.getTag()+".xml";
+    
+    // No cached layout yet?
+    NestedBlockLayout descriptor  = (NestedBlockLayout)FILE2LAYOUT.get(file);
+    if (descriptor==null) {
+
+      // try to read a descriptor
+      InputStream in = getClass().getResourceAsStream(file);
+      if (in==null) {
+        in = getClass().getResourceAsStream(file.replaceAll(property.getTag(), property.getProxy()));
+        if (in==null)
+          return null;
+      }
+  
+      try {
+        descriptor = new NestedBlockLayout(in);
+      } catch (IOException e) {
+        Debug.log(Debug.WARNING, this, "IO exception while reading descriptor "+file);
+        return null;
+      }
+
+      // cache it
+      FILE2LAYOUT.put(file, descriptor);
+    }
+
+    // return private copy
+    return descriptor.copy();
   }
   
   /**
@@ -296,20 +327,12 @@ import javax.swing.event.ChangeListener;
   /**
    * Create the panel content 
    */
-  private JPanel createPanel(JPanel panel, Property root, String descriptor) throws IOException {
+  private JPanel createPanel(JPanel panel, Property root, NestedBlockLayout descriptor) throws IOException {
 
-    // look up a cached layout and create a private copy for panel
-    NestedBlockLayout layout  = (NestedBlockLayout)FILE2LAYOUT.get(descriptor);
-    if (layout==null) {
-      layout = new NestedBlockLayout(BasicEditor.class.getResourceAsStream("descriptors/"+descriptor+".xml"));
-      FILE2LAYOUT.put(descriptor, layout);
-    }
-    
-    layout = layout.copy();
-    panel.setLayout(layout);
+    panel.setLayout(descriptor);
 
     // fill cells with beans
-    Iterator cells = layout.getCells().iterator();
+    Iterator cells = descriptor.getCells().iterator();
     while (cells.hasNext()) {
       NestedBlockLayout.Cell cell = (NestedBlockLayout.Cell)cells.next();
       JComponent comp = createComponent(root, cell);
@@ -332,12 +355,11 @@ import javax.swing.event.ChangeListener;
     // a label?
     if ("label".equals(cell.getElement())) {
 
-      boolean plural = cell.getAttribute("plural")!=null;
       JLabel label;
       if (path.length()==1&&path.getLast().equals(entity.getTag()))
         label = new JLabel(meta.getName() + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
       else
-        label = new JLabel(meta.getName(), meta.getImage(), SwingConstants.LEFT);
+        label = new JLabel(meta.getName(cell.isAttribute("plural")), meta.getImage(), SwingConstants.LEFT);
 
       return label;
     }
