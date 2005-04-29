@@ -193,7 +193,6 @@ public class MetaProperty implements Comparable {
   
   /**
    * Create an instance
-   * FIXME this should not be public but called through Property
    */
   public Property create(String value) {
 
@@ -206,7 +205,7 @@ public class MetaProperty implements Comparable {
     } catch (Exception e) {
       // 20030530 catch exceptions only - during load
       // an outofmemoryerrror could happen here
-      Debug.log(Debug.WARNING, this, e);
+      Debug.log(Debug.WARNING, this, "Couldn't instantiate "+getType()+" with value "+value, e);
       result = new PropertySimpleValue(); 
       ((PropertySimpleValue)result).init(this, value);
     }
