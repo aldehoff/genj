@@ -27,8 +27,8 @@ public abstract class Relationship {
   }
   
   /**
-   * Perform the relationship
-   * @param isNew TODO
+   * Setup the captured relationship with given entity
+   * @param isNew whether the entity was created new specifically for this relationship
    * @return the receiver of focus (preferrably)
    */
   public abstract Property apply(Entity entity, boolean isNew) throws GedcomException ;  
