@@ -74,6 +74,13 @@ public class PropertyTableWidget extends JPanel {
   /**
    * Constructor
    */
+  public PropertyTableWidget(ViewManager manager) {
+    this(null, manager);
+  }
+  
+  /**
+   * Constructor
+   */
   public PropertyTableWidget(PropertyTableModel propertyModel, ViewManager manager) {
     
     viewManager = manager;
