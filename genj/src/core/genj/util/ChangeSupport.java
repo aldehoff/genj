@@ -64,6 +64,13 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
   }
   
   /**
+   * remove all listeners
+   */
+  public void removeAllChangeListeners() {
+    listeners.clear();
+  }
+  
+  /**
    * fire change event
    */
   public void fireChangeEvent() {
