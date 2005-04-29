@@ -52,6 +52,9 @@ public class ChoiceWidget extends JComboBox {
   /** change support */
   private ChangeSupport changeSupport = new ChangeSupport(this);
   
+  /** auto complete support */
+  private AutoCompleteSupport autoComplete;
+  
   /**
    * Constructor
    */
@@ -90,7 +93,7 @@ public class ChoiceWidget extends JComboBox {
     setSelectedItem(selection);
     
     // enable autocomplete support
-    new AutoCompleteSupport();
+    autoComplete = new AutoCompleteSupport();
     
     // done
   }
@@ -120,13 +123,13 @@ public class ChoiceWidget extends JComboBox {
    * set values
    */
   public void setValues(Object[] set) {
-    String text = getText();
+//    String text = getText();
     // set
     model.setValues(set);
     // clear selection in model since it 
     // might differ from what's in the editor right now
-    if (isEditable) 
-      setText(text);
+//    if (isEditable) 
+//      setText(text);
     
     // done  
   }
@@ -304,7 +307,11 @@ public class ChoiceWidget extends JComboBox {
 
       // grab current 'prefix'
       String txt = getTextEditor().getText();
-        
+      
+      // don't autocomplete if matches selected item
+      if (txt.equals(getSelectedItem()))
+        return;
+
       // don't auto-complete unless cursor at end of text
       Caret c = getTextEditor().getCaret();
       if (c.getDot()!=txt.length())
@@ -348,11 +355,14 @@ public class ChoiceWidget extends JComboBox {
      * Setter - values
      */
     private void setValues(Object[] set) {
+      selection = null;
+      
       if (values.length>0) 
         fireIntervalRemoved(this, 0, values.length-1);
       values = set;
       if (values.length>0) 
         fireIntervalAdded(this, 0, values.length-1);
+      
     }
 
     /**
