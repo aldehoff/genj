@@ -38,6 +38,7 @@ public class SimpleValueBean extends PropertyBean {
   protected void initializeImpl() {
     
     tfield = new TextFieldWidget("", 8);
+    tfield.addChangeListener(changeSupport);
     
     setLayout(new BorderLayout());
     add(BorderLayout.NORTH, tfield);
