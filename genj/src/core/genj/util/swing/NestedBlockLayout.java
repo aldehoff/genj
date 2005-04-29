@@ -51,6 +51,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * <!ELEMENT col (row*|*)>
  */
 public class NestedBlockLayout implements LayoutManager2, Cloneable {
+  
+  private final static SAXException DONE = new SAXException("");
 
   /** whether we've been invalidated recently */
   private boolean invalidated = true;
@@ -102,10 +104,15 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     try {
 	    SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
 	    parser.parse(new InputSource(descriptor), new DescriptorHandler());
+    } catch (SAXException sax) {
+      if (DONE==sax) {
+        return;
+      }
+      throw new RuntimeException(sax);
     } catch (IOException ioe) {
       throw (IOException)ioe;
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e);
     }
     
     // done
@@ -121,10 +128,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     public void startElement(java.lang.String uri, java.lang.String localName, java.lang.String qName, Attributes attributes) throws org.xml.sax.SAXException {
       // new block!
       Block block = getBlock(qName, attributes);
-      // add to parent
-      if (stack==null) 
-        throw new SAXException("unexpected element");
-      if (!stack.isEmpty()) {
+      // make root or add to parent
+      if (stack.isEmpty()) {
+        root = block;
+      } else {
         Block parent = (Block)stack.peek();
 	      parent.add(block);
       }
@@ -154,10 +161,8 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       Block block = (Block)stack.pop();
       
       // are we done?
-      if (stack.isEmpty()) {
-        root = block;
-        stack = null;
-      }
+      if (stack.isEmpty())
+        throw DONE;
     }
     
   };
@@ -705,7 +710,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       clone.root = (Block)clone.root.clone();
       return clone;
     } catch (CloneNotSupportedException e) {
-      throw new RuntimeException(e);
+      throw new Error(e);
     }
   }
 
