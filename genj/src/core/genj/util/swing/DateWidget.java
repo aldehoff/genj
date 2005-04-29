@@ -70,6 +70,13 @@ public class DateWidget extends JPanel {
   /**
    * Constructor
    */
+  public DateWidget(WindowManager mgr) {
+    this(new PointInTime(), mgr);
+  }
+  
+  /**
+   * Constructor
+   */
   public DateWidget(PointInTime pit, WindowManager mgr) {
 
     manager = mgr;
