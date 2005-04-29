@@ -22,11 +22,8 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
-import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.gedcom.time.Delta;
 import genj.util.ActionDelegate;
-import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
@@ -47,7 +44,7 @@ public class AgeBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit(Transaction tx) {
+  protected void commitImpl() {
     property.setValue(tfield.getText());
   }
   
@@ -71,12 +68,12 @@ public class AgeBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     // update components
     PropertyAge age = (PropertyAge)property;
     
-    tfield.setText(property!=null ? property.getValue() : "");
+    tfield.setText(property.getValue());
     update.setEnabled(age.getEarlier()!=null&&age.getLater()!=null);
 
     // Done

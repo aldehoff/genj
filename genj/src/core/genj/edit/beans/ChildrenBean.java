@@ -25,7 +25,6 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.util.Registry;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -62,19 +61,15 @@ public class ChildrenBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
     
     // connect to current fam
-    table.setModel(new Children((Fam)property));
+    table.setModel(new Children());
     
     // done
   }
   
   private class Children extends AbstractPropertyTableModel {
-    private Fam fam;
-    private Children(Fam fam) {
-      this.fam = fam;
-    }
     public Gedcom getGedcom() {
       return gedcom;
     }
@@ -82,13 +77,13 @@ public class ChildrenBean extends PropertyBean {
       return PATHS.length;
     }
     public int getNumRows() {
-      return fam!=null ? fam.getNoOfChildren() : 0;
+      return ((Fam)property).getNoOfChildren();
     }
     public TagPath getPath(int col) {
       return PATHS[col];
     }
     public Property getProperty(int row) {
-      return fam.getChild(row);
+      return ((Fam)property).getChild(row);
     }
   }
 

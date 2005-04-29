@@ -23,7 +23,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
@@ -51,16 +50,19 @@ public abstract class PropertyBean extends JPanel {
   /** the resources */
   protected final static Resources resources = Resources.get(PropertyBean.class); 
   
-  /** the proxy key for this bean */
-  private String proxy;
-  
   /** factory for us */
   private BeanFactory factory;
   
   /** the current gedcom object */
   protected Gedcom gedcom;
   
-  /** the current  property */
+  /** the root property */
+  protected Property root;
+  
+  /** a path to the edited property */
+  private TagPath path;
+  
+  /** the property to edit */
   protected Property property;
   
   /** the current view manager */
@@ -75,17 +77,13 @@ public abstract class PropertyBean extends JPanel {
   /** change support */
   protected ChangeSupport changeSupport = new ChangeSupport(this);
   
-  /** an optional path */
-  protected TagPath path;
-  
   /**
    * Initialize (happens once)
    */
-  /*package*/ final void initialize(String proxyKey, BeanFactory factory, ViewManager viewManager) {
+  /*package*/ final void initialize(BeanFactory factory, ViewManager viewManager) {
     // our state
     this.viewManager = viewManager;
     this.factory = factory;
-    this.proxy = proxyKey;
     // propagate init to sub-classes
     initializeImpl();
   }
@@ -99,23 +97,24 @@ public abstract class PropertyBean extends JPanel {
    * Set context to edit
    * @return default component to receive focus
    */
-  public final void setContext(Gedcom gedcom, Property prop, TagPath path, Registry reg) {
+  public final void setContext(Gedcom gedcom, Property root, TagPath path, Property prop, Registry reg) {
     
     // remember property
+    this.gedcom = gedcom;
+    this.root = root;
+    this.path = path;
     this.property = prop;
     this.registry = reg;
-    this.gedcom = gedcom;
-    this.path = path;
     
     // propagate to implementation
-    setContextImpl(gedcom, prop, path, reg);
+    setContextImpl(gedcom, prop);
     
   }
 
   /**
    * Implementation's set context
    */
-  protected abstract void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg);
+  protected abstract void setContextImpl(Gedcom ged, Property prop);
   
   /**
    * add hook
@@ -134,7 +133,7 @@ public abstract class PropertyBean extends JPanel {
     // continue ui remove
     super.removeNotify();
     // recycle
-    factory.recycle(proxy, this);
+    factory.recycle(this);
     // done
   }
   
@@ -158,11 +157,26 @@ public abstract class PropertyBean extends JPanel {
   public void removeChangeListener(ChangeListener l) {
     changeSupport.removeChangeListener(l);
   }
+
+  /**
+   * Commit changes made by the user
+   */
+  public void commit() {
+    
+    // let impl do its things
+    commitImpl();
+    
+    // check if property was temporary working copy without parent
+    if (property.getValue().length() > 0 && property.getParent() == null)
+      root.setValue(path, property.getValue());
+    
+    // done
+  }
   
   /**
    * Commit any changes made by the user
    */
-  public void commit(Transaction tx) {
+  protected void commitImpl() {
     // noop
   }
   

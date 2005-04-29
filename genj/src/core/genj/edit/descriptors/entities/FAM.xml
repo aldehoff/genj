@@ -8,13 +8,6 @@
    <row><label path="FAM:ENGA"/></row>
    <row><bean path="FAM:ENGA:DATE"/></row>
    <row><bean path="FAM:ENGA:PLAC" wx="0.1"/></row>
-   <row><label path="FAM:DIV"/></row>
-   <row><bean path="FAM:DIV:DATE"/></row>
-   <row><bean path="FAM:DIV:PLAC" wx="0.1"/></row>
-   <row><label path="FAM:EVEN"/></row>
-   <row><label path="FAM:EVEN:TYPE"/><bean path="FAM:EVEN:TYPE" wx="0.1"/></row>
-   <row><bean path="FAM:EVEN:DATE"/></row>
-   <row><bean path="FAM:EVEN:PLAC" wx="0.1"/></row>
   </col>
   <col>
    <row><label path="FAM:OBJE"/></row>

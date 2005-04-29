@@ -546,7 +546,7 @@ import javax.swing.event.TreeSelectionListener;
   
       if (bean!=null) try {
         Transaction tx = gedcom.startTransaction();
-        bean.commit(tx);
+        bean.commit();
       } finally {
         gedcom.endTransaction();
       }
@@ -693,7 +693,7 @@ import javax.swing.event.TreeSelectionListener;
         try {
   
           // initialize bean
-          bean.setContext(gedcom, prop, null, registry);
+          bean.setContext(gedcom, root, null, prop, registry);
           
           // add bean to center of editPane 
           editPane.add(bean, BorderLayout.CENTER);

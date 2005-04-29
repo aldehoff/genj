@@ -23,9 +23,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChange;
-import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
-import genj.util.Registry;
 
 import java.awt.BorderLayout;
 
@@ -44,7 +41,7 @@ public class EntityBean extends PropertyBean {
    * Finish editing a property through proxy (no changes here unless
    * hasChanged()==true since this will be called in all cases)
    */
-  public void commit(Transaction tx) {
+  protected void commitImpl() {
   }
 
   /**
@@ -69,7 +66,7 @@ public class EntityBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     Entity entity = (Entity)property;
     

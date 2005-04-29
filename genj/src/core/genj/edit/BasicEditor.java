@@ -24,9 +24,10 @@ import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Grammar;
+import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
@@ -59,6 +60,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
@@ -74,7 +77,7 @@ import javax.swing.event.ChangeListener;
 /* package */class BasicEditor extends Editor implements GedcomListener {
 
   /** entity tag to layout */
-  private static Map TAG2LAYOUT = new HashMap();
+  private static Map FILE2LAYOUT = new HashMap();
   
   /** our gedcom */
   private Gedcom gedcom = null;
@@ -88,8 +91,9 @@ import javax.swing.event.ChangeListener;
   /** edit */
   private EditView view;
 
-  /** bean container */
-  private JPanel beanPanel;
+  /** panels */
+  private JPanel standardPanel;
+  private JTabbedPane tabPanel;
   
   /** beans */
   private List beans = new ArrayList(32);
@@ -119,9 +123,12 @@ import javax.swing.event.ChangeListener;
     setFocusTraversalPolicy(new FocusPolicy());
     setFocusCycleRoot(true);
 
-    // create panels for beans and links
-    beanPanel = new JPanel();
-    beanPanel.setBorder(new EmptyBorder(2,2,2,2));
+    // create standard panel
+    standardPanel = new JPanel();
+    standardPanel.setBorder(new EmptyBorder(2,2,2,2));
+    
+    // create tab panel
+    tabPanel = new JTabbedPane();
 
     // create panel for actions
     JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -131,8 +138,8 @@ import javax.swing.event.ChangeListener;
 
     // layout
     setLayout(new BorderLayout());
-    add(new JScrollPane(beanPanel), BorderLayout.CENTER);
-    add(buttons, BorderLayout.SOUTH);
+    add(BorderLayout.CENTER, new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(standardPanel), new JScrollPane(tabPanel)));
+    add(BorderLayout.SOUTH, buttons);
 
     // done
   }
@@ -210,8 +217,8 @@ import javax.swing.event.ChangeListener;
       return;
     // look for appropriate bean
     TagPath path = prop.getPath();
-    for (int i=0,j=beanPanel.getComponentCount();i<j;i++) {
-      JComponent c = (JComponent)beanPanel.getComponent(i);
+    for (int i=0,j=standardPanel.getComponentCount();i<j;i++) {
+      JComponent c = (JComponent)standardPanel.getComponent(i);
       if (c instanceof PropertyBean && (path.length()==1||((PropertyBean)c).getPath().equals(path))) {
         c.requestFocusInWindow();
         break;
@@ -228,20 +235,35 @@ import javax.swing.event.ChangeListener;
     // remember
     entity = set;
 
-    // remove all current beans
-    beanPanel.removeAll();
+    // remove all current beans and tabs
+    standardPanel.removeAll();
+    tabPanel.removeAll();
     beans.clear();
 
-    // setup layout
+    // setup components
     if (entity!=null) try {
-      
-      // grab layout (lazy)
-      NestedBlockLayout layout = getLayout(entity);
-      beanPanel.setLayout(layout);
 
-      Iterator cells = layout.getCells().iterator();
-      while (cells.hasNext()) 
-        parseCell((NestedBlockLayout.Cell)cells.next());
+      // 'create' standard panel
+      createPanel(standardPanel, entity, "entities/"+entity.getTag());
+      
+      // add relationship tabs
+      if (entity instanceof Indi) {
+      }
+      
+      // add tabs for events and medias
+      for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
+        Property prop = entity.getProperty(i);
+        if (haveBean(prop))
+          continue;
+        if (prop instanceof PropertyEvent)
+          tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, "properties/Event")));
+        if (prop.getTag().equals("RESI"))
+          tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, "properties/RESI")));
+        if (prop.getTag().equals("OCCU"))
+          tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, "properties/OCCU")));
+        if (prop.getTag().equals("OBJE"))
+          tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, "properties/OBJE")));
+      }
       
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, this, t);
@@ -259,62 +281,81 @@ import javax.swing.event.ChangeListener;
   }
   
   /**
-   * Get a layout for given entity
+   * Test whether we have a bean for given property or one of its subs
    */
-  private static NestedBlockLayout getLayout(Entity entity) throws IOException {
+  private boolean haveBean(Property prop) {
+    TagPath prefix = prop.getPath();
+    for (int i=0,j=beans.size();i<j;i++) {
+      PropertyBean bean = (PropertyBean)beans.get(i);
+      if (bean.getPath().startsWith(prefix))
+          return true;
+    }
+    return false;
+  }
+  
+  /**
+   * Create the panel content 
+   */
+  private JPanel createPanel(JPanel panel, Property root, String descriptor) throws IOException {
 
-    // look up a cached one
-    NestedBlockLayout result = (NestedBlockLayout)TAG2LAYOUT.get(entity.getTag());
-    if (result==null) {
-      result = new NestedBlockLayout(BasicEditor.class.getResourceAsStream("basic/"+entity.getTag()+".xml"));
-      TAG2LAYOUT.put(entity.getTag(), result);
+    // look up a cached layout and create a private copy for panel
+    NestedBlockLayout layout  = (NestedBlockLayout)FILE2LAYOUT.get(descriptor);
+    if (layout==null) {
+      layout = new NestedBlockLayout(BasicEditor.class.getResourceAsStream("descriptors/"+descriptor+".xml"));
+      FILE2LAYOUT.put(descriptor, layout);
     }
     
-    // return a private copy
-    return result.copy();
+    layout = layout.copy();
+    panel.setLayout(layout);
+
+    // fill cells with beans
+    Iterator cells = layout.getCells().iterator();
+    while (cells.hasNext()) {
+      NestedBlockLayout.Cell cell = (NestedBlockLayout.Cell)cells.next();
+      JComponent comp = createComponent(root, cell);
+      if (comp!=null)
+        panel.add(comp, cell);
+    }
+    
+    // done
+    return panel;
   }
 
   /**
-   * Init a cell 
+   * create a component for given cell
    */
-  private void parseCell(NestedBlockLayout.Cell cell) {
+  private JComponent createComponent(Property root, NestedBlockLayout.Cell cell) {
+    
     TagPath path = new TagPath(cell.getAttribute("path"));
+    MetaProperty meta = root.getMetaProperty().getNestedRecursively(path, false);
     
     // a label?
     if ("label".equals(cell.getElement())) {
 
       boolean plural = cell.getAttribute("plural")!=null;
-      MetaProperty meta = Grammar.getMeta(path);
       JLabel label;
       if (path.length()==1&&path.getLast().equals(entity.getTag()))
-        label = new JLabel(Gedcom.getName(path.getLast()) + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
+        label = new JLabel(meta.getName() + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
       else
-        label = new JLabel(Gedcom.getName(path.getLast(), plural), meta.getImage(), SwingConstants.LEFT);
-      
-      beanPanel.add(label, cell);
-      return;
+        label = new JLabel(meta.getName(), meta.getImage(), SwingConstants.LEFT);
+
+      return label;
     }
     
     // a bean?
     if ("bean".equals(cell.getElement())) {
       // conditional?
       if (cell.getAttribute("ifexists")!=null) {
-        if (entity.getProperty(path)==null)
-          return;
+        if (root.getProperty(path)==null)
+          return null;
       }
       // create bean
-      PropertyBean bean = createBean(entity, path, cell.getAttribute("type"));
+      PropertyBean bean = createBean(root, path, meta, cell.getAttribute("type"));
       if (bean==null)
-        return;
+        return null;
       
-      // popup or normal?
-      if (cell.getAttribute("popup")!=null) {
-        beanPanel.add(new PopupBean(bean), cell);
-      } else {
-        beanPanel.add(bean, cell);
-      }
-      
-      return;
+      // finally wrap in popup if requested?
+      return cell.getAttribute("popup")==null ? bean : (JComponent)new PopupBean(bean);
     }
 
     // bug in the descriptor
@@ -323,13 +364,11 @@ import javax.swing.event.ChangeListener;
   
   /**
    * create a bean
-   * @param entity we need the bean for
+   * @param root we need the bean for
    * @param path path to property we need bean for
    * @param explicit bean type
    */
-  private PropertyBean createBean(Entity entity, TagPath path, String type) {
-    
-    MetaProperty meta = Grammar.getMeta(path, false);
+  private PropertyBean createBean(Property root, TagPath path, MetaProperty meta, String type) {
 
     // try to resolve existing prop - this has to be a property along
     // the first possible path to avoid that in this case:
@@ -340,7 +379,7 @@ import javax.swing.event.ChangeListener;
     //    PLAC somewhere
     // the result of INDI:BIRT:DATE/INDI:BIRT:PLAC is
     //   somtime/somewhere
-    Property prop = entity.getProperty(path);
+    Property prop = root.getProperty(path);
     
     // .. for an existing reference we try to use a suitable
     // target property that we can edit inline
@@ -350,14 +389,16 @@ import javax.swing.event.ChangeListener;
         return null;
     }
     
-    // created a new one?
+    // created a temporary one? This won't be added to root but
+    // at this time can be used by the appropriate bean before
+    // comitting the edited value to the final instance
     if (prop==null) 
       prop = meta.create("");
     
     // init bean
     BeanFactory factory = view.getBeanFactory();
     PropertyBean bean = type!=null ? factory.get(type) : factory.get(prop);
-    bean.setContext(entity.getGedcom(), prop, path, registry);
+    bean.setContext(entity.getGedcom(), root, path, prop, registry);
     bean.addChangeListener(changeCallback);
     
     // remember
@@ -489,14 +530,9 @@ import javax.swing.event.ChangeListener;
       try {
         for (int i=0,j=beans.size();i<j;i++) {
           
-          // let bean commit its changes
+          // let bean commit its changes (which might add a new property if necessary)
           PropertyBean bean = (PropertyBean)beans.get(i);
-          bean.commit(tx);
-          
-          // check if this was working on a temporary property without parent
-          Property prop = bean.getProperty();
-          if (prop.getValue().length() > 0 && prop.getParent() == null)
-            entity.setValue(bean.getPath(), prop.getValue());
+          bean.commit();
           
         }
       } catch (Throwable t) {

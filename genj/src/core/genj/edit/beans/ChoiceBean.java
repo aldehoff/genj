@@ -22,10 +22,7 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
-import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.util.GridBagHelper;
-import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
@@ -100,16 +97,17 @@ public class ChoiceBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit(Transaction tx) {
+  protected void commitImpl() {
     
     PropertyChoiceValue prop = (PropertyChoiceValue)property;
 
-    // check if property has been touched already 
-    // in current transaction
-    if (!tx.get(Transaction.PROPERTIES_MODIFIED).contains(prop)) {
+// 20050428 don't know what this was for
+//    // check if property has been touched already 
+//    // in current transaction
+//    if (!tx.get(Transaction.PROPERTIES_MODIFIED).contains(prop)) {
+    
 	    // change value
 	    prop.setValue(choice.getText(), global.isSelected());
-    }
     
     // Done
   }
@@ -117,7 +115,7 @@ public class ChoiceBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     // setup choices    
     // Note: we're using getDisplayValue() here because like in PropertyRelationship's 

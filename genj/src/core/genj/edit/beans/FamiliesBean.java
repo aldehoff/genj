@@ -27,7 +27,6 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
-import genj.util.Registry;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -65,22 +64,15 @@ public class FamiliesBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     // connect to current indi
-    table.setModel(new Families((Indi)property));
+    table.setModel(new Families());
     
     // done
   }
   
   private class Families extends AbstractPropertyTableModel {
-    
-    private Indi indi;
-    
-    private Families(Indi indi) {
-      this.indi = indi;
-    }
-    
     public Gedcom getGedcom() {
       return gedcom;
     }
@@ -88,9 +80,10 @@ public class FamiliesBean extends PropertyBean {
       return 5;
     }
     public int getNumRows() {
-      return indi.getNoOfFams();
+      return ((Indi)property).getNoOfFams();
     }
     public TagPath getPath(int col) {
+      Indi indi = (Indi)property;
       switch (col) {
         default:
         case 0:
@@ -106,7 +99,7 @@ public class FamiliesBean extends PropertyBean {
       }
     }
     public Property getProperty(int row) {
-      return indi.getFam(row);
+      return ((Indi)property).getFam(row);
     }
   };
   

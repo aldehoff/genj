@@ -22,9 +22,6 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
-import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
-import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
@@ -74,7 +71,7 @@ public class NameBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit(Transaction tx) {
+  protected void commitImpl() {
 
     // ... calc texts
     String first = tFirst.getText().trim();
@@ -91,7 +88,7 @@ public class NameBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     // first, last, suff
     PropertyName pname = (PropertyName)property;

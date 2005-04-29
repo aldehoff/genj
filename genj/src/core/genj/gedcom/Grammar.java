@@ -161,18 +161,7 @@ public class Grammar {
     }
     
     // recurse into      
-    return getMetaRecursively(root, path, 1, persist);
-  }
-
-  private MetaProperty getMetaRecursively(MetaProperty meta, TagPath path, int pos, boolean persist) {
-
-    // is this it?
-    if (pos==path.length())
-      return meta;
-
-    // get meta for next tag
-    MetaProperty nested = meta.getNested(path.get(pos++), persist);
-    return getMetaRecursively(nested, path, pos, persist);
+    return root.getNestedRecursively(path, 1, persist);
   }
 
   /**

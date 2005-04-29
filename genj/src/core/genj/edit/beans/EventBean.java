@@ -24,11 +24,8 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
-import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
-import genj.util.Registry;
 import genj.util.swing.NestedBlockLayout;
 
 import javax.swing.JCheckBox;
@@ -74,7 +71,7 @@ public class EventBean extends PropertyBean {
   /**
    * Finish proxying edit for property Birth
    */
-  public void commit(Transaction tx) {
+  protected void commitImpl() {
     if (cKnown.isVisible()) {
       ((PropertyEvent)property).setKnownToHaveHappened(cKnown.isSelected());
     }
@@ -90,7 +87,7 @@ public class EventBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     PropertyEvent event = (PropertyEvent)property;
     PropertyDate date = event.getDate(true);

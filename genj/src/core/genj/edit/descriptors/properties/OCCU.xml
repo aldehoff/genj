@@ -1,0 +1,8 @@
+<col>
+ <row><label path="."/></row>
+ <row><bean path="."/></row>
+ <row><bean path=".:DATE"/></row>
+ <row><bean path=".:PLAC" wx="0.1"/></row>
+ <row><label path=".:NOTE"/></row>
+ <row><bean path=".:NOTE" wx="1" wy="1"/></row>
+</col>

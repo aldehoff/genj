@@ -139,7 +139,7 @@ public class MetaProperty implements Comparable {
       }
         
       // hidden at all (a.k.a cardinality == 0)?
-      if ((filter&FILTER_NOT_HIDDEN)!=0&&"0".equals(sub.getAttribute("cardinality")))
+      if ((filter&FILTER_NOT_HIDDEN)!=0&&sub.getAttribute("hide")!=null)
         continue;
 
       // xref && not !xref   (FILTER_XREF = 4)
@@ -163,6 +163,14 @@ public class MetaProperty implements Comparable {
    */
   /*package*/ String getAttribute(String key) {
     return (String)attrs.get(key);
+  }
+  
+  /**
+   * Check if this is a singleton - preferred to be one amongst its siblings
+   */
+  public boolean isSingleton() {
+    String single = getAttribute("singleton");
+    return single!=null&&"1".equals(single);
   }
   
   /**
@@ -299,7 +307,29 @@ public class MetaProperty implements Comparable {
     // done
     return info;
   }
+
+  /**
+   * Resolve nested by tag
+   */
+  public MetaProperty getNestedRecursively(TagPath path, boolean persist) {
+    
+    String tag = path.get(0);
+    if (!this.tag.equals(tag) && !".".equals(tag))
+      throw new IllegalArgumentException();
+    
+    return getNestedRecursively(path, 1, persist);
+  }
   
+  /*package*/ MetaProperty getNestedRecursively(TagPath path, int pos, boolean persist) {
+
+    // is this it?
+    if (pos==path.length())
+      return this;
+
+    // get meta for next tag
+    return getNested(path.get(pos), persist).getNestedRecursively(path, pos+1, persist);
+  }
+
   /**
    * Resolve sub by tag
    */

@@ -22,11 +22,8 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
-import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.util.DirectAccessTokenizer;
 import genj.util.GridBagHelper;
-import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
 
 import java.awt.Component;
@@ -53,7 +50,7 @@ public class PlaceBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit(Transaction tx) {
+  protected void commitImpl() {
     
     StringBuffer result = new StringBuffer();
     int commas = 0;
@@ -78,7 +75,7 @@ public class PlaceBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     // check property's format
     PropertyPlace place = (PropertyPlace)prop;

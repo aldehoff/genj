@@ -22,11 +22,8 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.gedcom.time.PointInTime;
 import genj.util.ActionDelegate;
-import genj.util.Registry;
 import genj.util.swing.DateWidget;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
@@ -90,7 +87,7 @@ public class DateBean extends PropertyBean {
   /**
    * Finish proxying edit for property Date
    */
-  public void commit(Transaction tx) {
+  protected void commitImpl() {
 
     PropertyDate p = (PropertyDate)property;
 
@@ -154,7 +151,7 @@ public class DateBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     // we know it's a date
     PropertyDate p = (PropertyDate)property;

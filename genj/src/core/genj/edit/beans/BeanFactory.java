@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A factory for cached PropertyBeans
@@ -84,7 +86,8 @@ public class BeanFactory {
       result = new SimpleValueBean();
     }
     // initialize it
-    result.initialize(proxy, this, viewManager);
+    result.initialize(this, viewManager);
+
     // done
     return result;
   }
@@ -92,7 +95,13 @@ public class BeanFactory {
   /**
    * Recycle a bean
    */
-  /*package*/ void recycle(String proxy, PropertyBean bean) {
+  /*package*/ void recycle(PropertyBean bean) {
+
+    Matcher m = Pattern.compile("genj.edit.beans.(.*)Bean").matcher(bean.getClass().getName());
+    if (!m.matches())
+      return;
+    String proxy = m.group(1);
+
     synchronized (proxy2instances) {
       List instances = (List)proxy2instances.get(proxy);
       if (instances==null) {

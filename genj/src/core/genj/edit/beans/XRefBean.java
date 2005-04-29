@@ -22,8 +22,6 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
-import genj.gedcom.TagPath;
-import genj.util.Registry;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -57,7 +55,7 @@ public class XRefBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     // set preview
     PropertyXRef xref = (PropertyXRef)property;

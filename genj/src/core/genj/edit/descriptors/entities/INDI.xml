@@ -1,0 +1,22 @@
+<col>
+ <row>
+  <col>
+   <row><label path="INDI"/></row>
+   <row><bean path="INDI:NAME" wx="0.1"/><bean path="INDI:SEX"/></row>
+   <row><label path="INDI:BIRT"/><bean path="INDI:BIRT:NOTE" popup="true"/></row>
+   <row><bean path="INDI:BIRT:DATE"/></row>
+   <row><bean path="INDI:BIRT:PLAC" wx="0.1"/></row>
+   <row><label path="INDI:DEAT"/><bean path="INDI:DEAT:NOTE" popup="true"/></row>
+   <row><bean path="INDI:DEAT:DATE"/></row>
+   <row><bean path="INDI:DEAT:PLAC" wx="0.1"/> </row>
+  </col>
+  <col>
+   <row><label path="INDI:NOTE"/></row>
+   <row><bean path="INDI:NOTE" wx="1" wy="1"/></row>
+  </col>
+ </row>
+ <row><label path="INDI:FAMS"/></row>
+ <row><bean path="INDI" type="Families" wx="1" wy="1"/></row>
+ <row><label path="INDI:FAMC"/></row>
+ <row><bean path="INDI" type="Parents" wx="1" wy="0.1"/></row>
+</col>

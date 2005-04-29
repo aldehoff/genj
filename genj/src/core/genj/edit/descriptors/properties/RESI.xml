@@ -1,0 +1,7 @@
+<col>
+ <row><label path="."/></row>
+ <row><bean path=".:DATE"/></row>
+ <row><bean path=".:ADDR" wx="0.1" wy="0.1"/></row>
+ <row><label path=".:ADDR:CITY"/><bean path=".:ADDR:CITY" wx="0.1"/></row>
+ <row><label path=".:ADDR:POST"/><bean path=".:ADDR:POST" wx="0.1"/></row>
+</col>

@@ -22,10 +22,7 @@ package genj.edit.beans;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
-import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
-import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 
 import javax.swing.AbstractButton;
@@ -44,7 +41,7 @@ public class SexBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit(Transaction tx) {
+  protected void commitImpl() {
     
     PropertySex sex = (PropertySex)property; 
     sex.setSex(getSex());
@@ -87,7 +84,7 @@ public class SexBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     // show it
     PropertySex p = (PropertySex) property;

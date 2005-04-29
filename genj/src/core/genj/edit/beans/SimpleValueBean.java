@@ -21,9 +21,6 @@ package genj.edit.beans;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
-import genj.util.Registry;
 import genj.util.swing.TextFieldWidget;
 
 import java.awt.BorderLayout;
@@ -49,7 +46,7 @@ public class SimpleValueBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit(Transaction tx) {
+  protected void commitImpl() {
     
     if (!property.isReadOnly())
       property.setValue(tfield.getText());
@@ -65,7 +62,7 @@ public class SimpleValueBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop, TagPath path, Registry reg) {
+  protected void setContextImpl(Gedcom ged, Property prop) {
 
     // show value
     String txt = property.getDisplayValue();
