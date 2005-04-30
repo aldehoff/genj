@@ -24,7 +24,6 @@ import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -94,6 +93,7 @@ import javax.swing.event.ChangeListener;
   /** panels */
   private JPanel standardPanel;
   private JTabbedPane tabPanel;
+  private JSplitPane splitPanel;
   
   /** beans */
   private List beans = new ArrayList(32);
@@ -123,22 +123,22 @@ import javax.swing.event.ChangeListener;
     setFocusTraversalPolicy(new FocusPolicy());
     setFocusCycleRoot(true);
 
-    // create standard panel
+    // create standard panel & tab panel
     standardPanel = new JPanel();
     standardPanel.setBorder(new EmptyBorder(2,2,2,2));
-    
-    // create tab panel
-    tabPanel = new JTabbedPane();
+    tabPanel = new JTabbedPane(JTabbedPane.TOP);
 
+    splitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(standardPanel), new JScrollPane(tabPanel));
+    
     // create panel for actions
     JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons).setFocusable(false);
     bh.create(ok);
     bh.create(cancel);
-
+    
     // layout
     setLayout(new BorderLayout());
-    add(BorderLayout.CENTER, new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(standardPanel), new JScrollPane(tabPanel)));
+    add(BorderLayout.CENTER, splitPanel);
     add(BorderLayout.SOUTH, buttons);
 
     // done
@@ -152,12 +152,16 @@ import javax.swing.event.ChangeListener;
     super.addNotify();
     // listen to gedcom events
     gedcom.addGedcomListener(this);
+    // setup split panel position
+    splitPanel.setDividerLocation(registry.get("basic.divider", -1));
   }
 
   /**
    * Intercepted remove notification
    */
   public void removeNotify() {
+    // keep split panel position
+    registry.put("basic.divider", splitPanel.getDividerLocation());
     // let super continue
     super.removeNotify();
     // stop listening to gedcom events
@@ -244,21 +248,38 @@ import javax.swing.event.ChangeListener;
     if (entity!=null) try {
 
       // 'create' standard panel
-      createPanel(standardPanel, entity, getDescriptor(entity));
+      createPanel(standardPanel, entity, getDescriptor(entity.getMetaProperty()));
       
-      // add relationship tabs
-      if (entity instanceof Indi) {
-      }
-      
-      // add tabs for events and medias
+      // add tabs for sub-properties of entity
       for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
         Property prop = entity.getProperty(i);
-        if (haveBean(prop))
+        // only if we don't have a been for that prop or its children
+        // FIXME this throws out too much
+        if (haveBean(prop.getPath()))
           continue;
-        NestedBlockLayout descriptor = getDescriptor(prop);
-        if (descriptor!=null) 
-          tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, descriptor)));
+        // and if there's a descriptor for it
+        NestedBlockLayout descriptor = getDescriptor(prop.getMetaProperty());
+        if (descriptor==null) 
+          continue;
+        // create a tab for it
+        tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, descriptor)));
+        // next
       }
+      
+//      // add buttons for creating sub-properties 
+//      MetaProperty[] nested = entity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+//      for (int i=0;i<nested.length;i++) {
+//        MetaProperty meta = nested[i];
+//        // if there's a descriptor for it
+//        NestedBlockLayout descriptor = getDescriptor(meta);
+//        if (descriptor==null)
+//          continue;
+//        // and if there's no other bean or !singleton
+//        if (haveBean(new TagPath(entity.getPath(), meta.getTag()))&&meta.isSingleton())
+//          continue;
+//        // create a button for it
+//        System.out.println(meta.getTag());
+//      }
       
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, this, t);
@@ -279,28 +300,27 @@ import javax.swing.event.ChangeListener;
    * Find a descriptor for given property
    * @return private copy descriptor or null if n/a
    */
-  private NestedBlockLayout getDescriptor(Property property) {
+  private NestedBlockLayout getDescriptor(MetaProperty meta) {
     
     // either entity or property
-    String file  = "descriptors/" + (property instanceof Entity ? "entities" : "properties") + "/" + property.getTag()+".xml";
+    String file  = "descriptors/" + (meta.isEntity() ? "entities" : "properties") + "/" + meta.getTag()+".xml";
     
-    // No cached layout yet?
+    // got a cached one already?
     NestedBlockLayout descriptor  = (NestedBlockLayout)FILE2LAYOUT.get(file);
     if (descriptor==null) {
+      
+      // hmm, already determined we don't have one?
+      if (FILE2LAYOUT.containsKey(file))
+        return null;
 
-      // try to read a descriptor
+      // try to read a descriptor - TAG.xml or Type.xml
       InputStream in = getClass().getResourceAsStream(file);
-      if (in==null) {
-        in = getClass().getResourceAsStream(file.replaceAll(property.getTag(), property.getProxy()));
-        if (in==null)
-          return null;
-      }
-  
-      try {
+      if (in==null) 
+        in = getClass().getResourceAsStream("descriptors/properties/"+meta.getType().getName().substring("genj.gedcom.".length())+".xml");
+      if (in!=null) try {
         descriptor = new NestedBlockLayout(in);
       } catch (IOException e) {
         Debug.log(Debug.WARNING, this, "IO exception while reading descriptor "+file);
-        return null;
       }
 
       // cache it
@@ -308,14 +328,13 @@ import javax.swing.event.ChangeListener;
     }
 
     // return private copy
-    return descriptor.copy();
+    return descriptor!=null ? descriptor.copy() : null;
   }
   
   /**
    * Test whether we have a bean for given property or one of its subs
    */
-  private boolean haveBean(Property prop) {
-    TagPath prefix = prop.getPath();
+  private boolean haveBean(TagPath prefix) {
     for (int i=0,j=beans.size();i<j;i++) {
       PropertyBean bean = (PropertyBean)beans.get(i);
       if (bean.getPath().startsWith(prefix))
@@ -615,4 +634,4 @@ import javax.swing.event.ChangeListener;
     }
   } //FocusPolicy
   
-} //BasicEditor
+}

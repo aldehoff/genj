@@ -15,10 +15,6 @@
    <row><label path="INDI:OBJE:TITL"/><bean path="INDI:OBJE:TITL" wx="1"/></row>
    <row><bean path="INDI:OBJE:FILE" wx="1" wy="1"/></row>
   </col>
-  <col>
-   <row><label path="INDI:NOTE"/></row>
-   <row><bean path="INDI:NOTE" wx="1" wy="1"/></row>
-  </col>
  </row>
  <row><label path="INDI:FAMS"/></row>
  <row><bean path="INDI" type="Families" wx="1" wy="1"/></row>
