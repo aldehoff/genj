@@ -43,6 +43,8 @@ import javax.swing.text.Caret;
  */
 public class ChoiceWidget extends JComboBox {
   
+  private boolean blockAutoComplete = false;
+  
   /** our own model */
   private Model model = new Model();
   
@@ -256,14 +258,12 @@ public class ChoiceWidget extends JComboBox {
   public void removeActionListener(ActionListener l) {
     getEditor().removeActionListener(l);
   }
-
+  
   /**
    * Auto complete support
    */
   private class AutoCompleteSupport implements DocumentListener, ActionListener {
 
-    private boolean ignoreInsertUpdate = false;
-    
     private Timer timer = new Timer(250, this);
     
     /**
@@ -296,7 +296,7 @@ public class ChoiceWidget extends JComboBox {
     public void insertUpdate(DocumentEvent e) {
       changeSupport.fireChangeEvent();
       // add a auto-complete callback
-      if (!ignoreInsertUpdate&&isEditable())
+      if (!blockAutoComplete&&isEditable())
         timer.start();
     }
       
@@ -307,9 +307,7 @@ public class ChoiceWidget extends JComboBox {
 
       // grab current 'prefix'
       String txt = getTextEditor().getText();
-      
-      // don't autocomplete if matches selected item
-      if (txt.length()==0||txt.equals(getSelectedItem()))
+      if (txt.length()==0)
         return;
 
       // don't auto-complete unless cursor at end of text
@@ -318,9 +316,9 @@ public class ChoiceWidget extends JComboBox {
         return;
 
       // try to select an item by prefix
-      ignoreInsertUpdate = true;
+      blockAutoComplete = true;
       String match = model.setSelectedPrefix(txt);
-      ignoreInsertUpdate = false;
+      blockAutoComplete = false;
         
       // no match
       if (match.length()==0)
@@ -404,7 +402,9 @@ public class ChoiceWidget extends JComboBox {
       // remember
       selection = seLection;
       // propagate to editor
+      blockAutoComplete = true;
       getEditor().setItem(selection);
+      blockAutoComplete = false;
       // notify about item state change
       fireItemStateChanged(new ItemEvent(ChoiceWidget.this, ItemEvent.ITEM_STATE_CHANGED, selection, ItemEvent.SELECTED));
       // and notify of data change - apparently the JComboBox
