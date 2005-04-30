@@ -188,7 +188,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
       super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
         MetaProperty def = (MetaProperty)value;
-        setText(def.getTag());
+        setText(def.getName()+" ("+def.getTag()+")");
         setIcon(def.getImage());
       return this;
     }
