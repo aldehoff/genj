@@ -182,6 +182,17 @@ public class FileBean extends PropertyBean {
 
     // done
   }
+
+  /**
+   * intercept remove 
+   */
+  public void removeNotify() {
+    // stop loading
+    Loader l = loader;
+    if (l!=null) l.cancel(true);
+    // continue
+    super.removeNotify();
+  }
   
   /**
    * trigger a load - we currently only allow one concurrent loader
@@ -410,6 +421,7 @@ public class FileBean extends PropertyBean {
       
       // load it
       try {
+        Thread.sleep(200);
           result = new ImageIcon(file, gedcom.getOrigin().open(file));
       } catch (Throwable t) {
       }
