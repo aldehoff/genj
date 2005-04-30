@@ -43,17 +43,15 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.FlowLayout;
-import java.awt.KeyboardFocusManager;
-import java.awt.Point;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -62,8 +60,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.LayoutFocusTraversalPolicy;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -250,13 +246,19 @@ import javax.swing.event.ChangeListener;
       // 'create' standard panel
       createPanel(standardPanel, entity, getDescriptor(entity.getMetaProperty()));
       
+      // collect top-level tags we've covered with that already
+      Set topLevelTags = new HashSet();
+      for (int i=0, j=beans.size(); i<j; i++) {
+        TagPath path = ((PropertyBean)beans.get(i)).getPath();
+        if (path.length()>1) topLevelTags.add(path.get(1));
+      }
+      
       // add tabs for sub-properties of entity
       for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
         Property prop = entity.getProperty(i);
-        // only if we don't have a been for that prop or its children
-        // FIXME this throws out too much
-        if (haveBean(prop.getPath()))
-          continue;
+        // only if we don't have a top level tag already
+        if (topLevelTags.remove(prop.getTag()))
+         continue;
         // and if there's a descriptor for it
         NestedBlockLayout descriptor = getDescriptor(prop.getMetaProperty());
         if (descriptor==null) 
@@ -329,18 +331,6 @@ import javax.swing.event.ChangeListener;
 
     // return private copy
     return descriptor!=null ? descriptor.copy() : null;
-  }
-  
-  /**
-   * Test whether we have a bean for given property or one of its subs
-   */
-  private boolean haveBean(TagPath prefix) {
-    for (int i=0,j=beans.size();i<j;i++) {
-      PropertyBean bean = (PropertyBean)beans.get(i);
-      if (bean.getPath().startsWith(prefix))
-          return true;
-    }
-    return false;
   }
   
   /**
@@ -452,11 +442,9 @@ import javax.swing.event.ChangeListener;
   /**
    * A 'bean' we use for groups
    */
-  private class PopupBean extends PopupWidget implements PropertyChangeListener {
+  private class PopupBean extends PopupWidget {
     
     private PropertyBean wrapped;
-    
-    private Popup popup = null;
     
     /**
      * constructor
@@ -465,6 +453,7 @@ import javax.swing.event.ChangeListener;
       
       // remember wrapped
       this.wrapped = wrapped;
+      wrapped.setAlignmentX(0);
       
       // prepare image
       Property prop = wrapped.getProperty();
@@ -473,50 +462,26 @@ import javax.swing.event.ChangeListener;
         img = img.getDisabled(50);
       setIcon(img);
       setToolTipText(wrapped.getProperty().getPropertyName());
-  
+      
       // fix looks
       setFocusable(false);
       setBorder(null);
       
+      // prepare 'actions'
+      List actions = new ArrayList();
+      actions.add(new JLabel(wrapped.getProperty().getPropertyName()));
+      actions.add(wrapped);
+      setActions(actions);
+
       // done
     }
     
-    /** lifecycle callback */
-    public void addNotify() {
-      // list to focus changes
-      KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("focusOwner", this);
-      // continue
-      super.addNotify();
-    }
-    
-    /** lifecycle callback */
-    public void removeNotify() {
-      // still a popup showing?
-      if (popup!=null) {
-        popup.hide();
-        popup = null;
-      }
-      // stop listening to focus changes
-      KeyboardFocusManager.getCurrentKeyboardFocusManager().removePropertyChangeListener("focusOwner", this);
-      // continue
-      super.removeNotify();
-    }
-    /** button press callback */
+    /**
+     * intercept popup
+     */
     public void showPopup() {
-
-      // clear current?
-      if (popup!=null) {
-        popup.hide();
-        popup=null;
-      }
-      // prepare a panel with wrapped
-      JPanel content = new JPanel(new BorderLayout());
-      content.add(new JLabel(wrapped.getProperty().getPropertyName()), BorderLayout.NORTH);
-      content.add(wrapped, BorderLayout.CENTER);
-      // show popup
-      Point pos = getLocationOnScreen();
-      popup = PopupFactory.getSharedInstance().getPopup(this, content, pos.x+getWidth(), pos.y);
-      popup.show();
+      // let super do its thing
+      super.showPopup();
       // request focus
       SwingUtilities.getWindowAncestor(wrapped).setFocusableWindowState(true);
       wrapped.requestFocus();
@@ -524,31 +489,7 @@ import javax.swing.event.ChangeListener;
       setIcon(wrapped.getProperty().getImage(false));
     }
     
-    /** 
-     * focus property change notification 
-     * (this doesn't seem to be invoke in Java 1.4.1 with a user clicking on a textfield)
-     */
-    public void propertyChange(PropertyChangeEvent evt) {
-      // popup visible?
-      if (popup==null)
-        return;
-      // a new focus owner?
-      if (evt.getNewValue()==null)
-        return;
-      // a sub-component of this?
-      Component focus = (Component)evt.getNewValue();
-      while (true) {
-        if (focus==wrapped) 
-          return;
-        if (focus==null)
-          break;
-        focus = focus.getParent();
-      }
-      // get rid of popup
-      popup.hide();
-      popup = null;
-      // done
-    }        
+      
   } //Label
   
   /**
