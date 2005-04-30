@@ -21,7 +21,6 @@ package genj.util.swing;
 
 import genj.util.ActionDelegate;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -152,7 +151,7 @@ public class PopupWidget extends JButton {
     
     // show it
     popup.show(PopupWidget.this, x, y);
-    
+
   }
   
   /**
@@ -167,11 +166,11 @@ public class PopupWidget extends JButton {
 
     // .. create an populate        
     JPopupMenu popup = new JPopupMenu();
-    popup.setBackground(Color.white);
     MenuHelper mh = new MenuHelper();
     mh.pushMenu(popup);
     mh.createItems(as, false);
 
+    
     // done
     return popup;
   }
