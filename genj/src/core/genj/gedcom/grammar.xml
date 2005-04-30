@@ -94,15 +94,15 @@
   <NMR  img="Marriage.gif" super="INDI:CAST"/>
   +++++++++++++ More Events +++++++++++++
   <GRAD img="Graduation.gif" super="INDI:BIRT"/>
-  <CHR  singleton="1" img="Baptism.gif" super="INDI:GRAD"/>
+  <CHR  hide="1" singleton="1" img="Baptism.gif" super="INDI:GRAD"/>
   <BURI singleton="1" img="Burial.gif" super="INDI:GRAD"/>
   <CREM singleton="1" img="Cremation.gif" super="INDI:GRAD"/>
   <BAPM singleton="1" img="Baptism.gif" super="INDI:GRAD"/>
-  <BAPL singleton="1" img="Baptism.gif" super="INDI:GRAD"/>
+  <BAPL hide="1" singleton="1" img="Baptism.gif" super="INDI:GRAD"/>
   <BARM singleton="1" img="Bar.gif" super="INDI:GRAD"/>
   <BASM singleton="1" img="Bas.gif" super="INDI:GRAD"/>
   <BLES singleton="1" img="Blessing.gif" super="INDI:GRAD"/>
-  <CHRA singleton="1" img="AdultChristening.gif" super="INDI:GRAD"/>
+  <CHRA hide="1" singleton="1" img="AdultChristening.gif" super="INDI:GRAD"/>
   <CONF singleton="1" super="INDI:GRAD"/>
   <FCOM singleton="1" img="FirstCommunion.gif" super="INDI:GRAD"/>
   <ORDN singleton="1" img="Ordination.gif" super="INDI:GRAD"/>
