@@ -146,6 +146,11 @@ public class MenuHelper  {
     if (emphasized) {
       item.setFont(item.getFont().deriveFont(Font.BOLD));
     }
+    createItem(item);
+    return item;
+  }
+  
+  private void createItem(Component item) {
 
     Object menu = peekMenu();
     if (menu instanceof JMenu)
@@ -155,7 +160,6 @@ public class MenuHelper  {
     if (menu instanceof JMenuBar)
       ((JMenuBar)menu).add(item);
     
-    return item;
   }
 
   /**
@@ -173,17 +177,25 @@ public class MenuHelper  {
     // Loop through list
     Iterator it = actions.iterator();
     while (it.hasNext()) {
-      // either ActionDelegate or list
       Object o = it.next();
+      // a nested list ?
       if (o instanceof List) {
-        // a separator
         createSeparator(false);
-        // recurse
         createItems((List)o, false);
-      } else {
-        // create
-        createItem((ActionDelegate)o);
+        continue;
       }
+      // a component?
+      if (o instanceof Component) {
+        createItem((Component)o);
+        continue;
+      }
+      // an action?
+      if (o instanceof ActionDelegate) {
+        createItem((ActionDelegate)o);
+        continue;
+      }
+      // n/a
+      throw new IllegalArgumentException("type "+o.getClass()+" n/a");
     }
     // done
   }
