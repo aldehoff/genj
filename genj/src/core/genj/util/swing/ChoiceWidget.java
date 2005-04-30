@@ -309,7 +309,7 @@ public class ChoiceWidget extends JComboBox {
       String txt = getTextEditor().getText();
       
       // don't autocomplete if matches selected item
-      if (txt.equals(getSelectedItem()))
+      if (txt.length()==0||txt.equals(getSelectedItem()))
         return;
 
       // don't auto-complete unless cursor at end of text
