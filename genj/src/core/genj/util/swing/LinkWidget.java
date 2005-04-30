@@ -3,17 +3,21 @@
  */
 package genj.util.swing;
 
+import genj.util.ActionDelegate;
+
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JButton;
+import javax.swing.Icon;
+import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 /**
  * 
  */
-public class LinkWidget extends JButton {
+public class LinkWidget extends JLabel {
   
   /** status hover */
   private boolean hover = false;
@@ -21,32 +25,28 @@ public class LinkWidget extends JButton {
   /** text */
   private String plain, underlined;
   
+  /** action */
+  private ActionDelegate action;
+  
   /**
    * Constructor
    */
-  public LinkWidget(ImageIcon img) {
-    this();
-    setIcon(img);
+  public LinkWidget(ActionDelegate action) {
+    this(action.getText(), action.getImage());
+    this.action = action;
   }
   
   /**
    * Constructor
    */
-  public LinkWidget() {
+  public LinkWidget(String text, Icon img) {
+    setText(text);
+    setIcon(img);
 
     // change looks
     setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     setBorder(null);
-    setBorderPainted(false);
-    try {
-      super.setFocusable(false);
-    } catch (Throwable t) {
-      // try pre 1.4 instead
-      super.setRequestFocusEnabled(false);
-    }
-
-    setFocusPainted(false);
-    setContentAreaFilled(false);
+    super.setFocusable(false);
     setHorizontalAlignment(SwingConstants.LEFT);
     
     // listen
@@ -54,18 +54,19 @@ public class LinkWidget extends JButton {
     
     // done
   }
-   
+  
   /**
-   * Overriden to try 1.4's super.setFocusable()
-   * @see java.awt.Component#setFocusable(boolean)
+   * Constructor
    */
-  public void setFocusable(boolean focusable) {
-    try {
-      super.setFocusable(focusable);
-    } catch (Throwable t) {
-      // try pre 1.4 instead
-      super.setRequestFocusEnabled(false);
-    }
+  public LinkWidget(ImageIcon img) {
+    this(null, img);
+  }
+  
+  /**
+   * Constructor
+   */
+  public LinkWidget() {
+    this(null,null);
   }
    
   /**
@@ -90,16 +91,17 @@ public class LinkWidget extends JButton {
    * A private callback code block
    */
   private class Callback extends MouseAdapter {
-    /**
-     * @see java.awt.event.MouseAdapter#mouseExited(java.awt.event.MouseEvent)
-     */
+    
+    /** click -> action */
+    public void mouseClicked(MouseEvent e) {
+      if (action!=null)
+        action.actionPerformed(new ActionEvent(this, 0, ""));
+    }
+    /** exit -> plain */
     public void mouseExited(MouseEvent e) {
       setTextInternal(plain);
     }
-
-    /**
-     * @see java.awt.event.MouseAdapter#mouseEntered(java.awt.event.MouseEvent)
-     */
+    /** exit -> underlined */
     public void mouseEntered(MouseEvent e) {
       setTextInternal(underlined);
     }

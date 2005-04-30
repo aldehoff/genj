@@ -24,7 +24,6 @@ import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.GridBagHelper;
 import genj.util.WordBuffer;
-import genj.util.swing.ButtonHelper;
 import genj.util.swing.LinkWidget;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
@@ -98,9 +97,8 @@ public class ControlCenter extends JPanel {
     JPanel p = new JPanel(new GridLayout(vfactories.length, 1));
     p.setOpaque(false);
     
-    ButtonHelper bh = new ButtonHelper().setContainer(p).setButtonType(LinkWidget.class);
     for (int v=0; v<vfactories.length; v++) {
-      bh.create(new ActionView(vfactories[v]));
+      p.add(new LinkWidget(new ActionView(vfactories[v])));
     }
     
     // done
