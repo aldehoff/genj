@@ -166,6 +166,13 @@ public class MetaProperty implements Comparable {
   }
   
   /**
+   * Check if this is an entity
+   */
+  public boolean isEntity() {
+    return Entity.class.isAssignableFrom(getType());
+  }
+  
+  /**
    * Check if this is a singleton - preferred to be one amongst its siblings
    */
   public boolean isSingleton() {

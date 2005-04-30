@@ -287,9 +287,7 @@ public class BlueprintEditor extends JSplitPane {
      * @see genj.gedcom.PropertyIndi#getTag()
      */
     public String getTag() {
-      return blueprint==null ? 
-        super.getTag() : 
-        blueprint.getTag();
+      return blueprint==null ? "INDI" : blueprint.getTag();
     }
     /**
      * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath)
@@ -298,29 +296,13 @@ public class BlueprintEditor extends JSplitPane {
       // safety check for root-tag
       if (!path.equals(0, getTag())) 
         return null;
+      // this?
+      if (path.length()==1)
+        return this;
       // fake it
-      return fakeProperty(this, path, 0);
-    }
-    
-    /**
-     * Fake having a property
-     */
-    private Property fakeProperty(Property prop, TagPath path, int pos) {
-
-      // me?
-      if (path.length()-1==pos) return prop;
-
-      // check if we have a property for tag at pos in path
-      String tag = path.get(++pos);
-      Property result = prop.getProperty(tag);
-      if (result==null) {
-        // otherwise create it
-        Object value = tag2value.get(tag);
-        if (value==null) value = "Something";
-        result = prop.addProperty(prop.getMetaProperty().getNested(tag, false).create(value.toString()));
-      }      
-      // done
-      return fakeProperty(result, path, pos);
+      Object value = tag2value.get(path.getLast());
+      if (value==null) value = "Something";
+      return Grammar.getMeta(path, false).create(value.toString());
     }
     
     /**

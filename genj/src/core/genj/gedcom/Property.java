@@ -173,7 +173,7 @@ public abstract class Property implements Comparable {
    * Adds a sub-property to this property
    * @param prop new property to add
    */
-  public Property addProperty(Property prop) {
+  /*package*/ Property addProperty(Property prop) {
     return addProperty(prop, true);
   }
 
@@ -182,7 +182,7 @@ public abstract class Property implements Comparable {
    * @param prop new property to add
    * @param place whether to place the sub-property according to grammar
    */
-  public Property addProperty(Property prop, boolean place) {
+  /*package*/ Property addProperty(Property prop, boolean place) {
 
     // check grammar for placement if applicable
     int pos = -1;
@@ -207,7 +207,7 @@ public abstract class Property implements Comparable {
   /**
    * Adds another property to this property
    */
-  public Property addProperty(Property child, int pos) {
+  /*package*/ Property addProperty(Property child, int pos) {
 
 // This will break the blueprint editor
 //    // check against meta of child

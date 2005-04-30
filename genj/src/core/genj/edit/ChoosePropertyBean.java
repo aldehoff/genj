@@ -114,51 +114,27 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     
     // Done
   }
-  
-//  /**
-//   * Helper method that adds components to a container with gridbaglayout
-//   */
-//  private void add(Component c,int x,int y,int w,int h,boolean grow) {
-//    add(c);
-//
-//    GridBagConstraints s = new GridBagConstraints();
-//    s.gridx = x;
-//    s.gridy = y;
-//    s.gridwidth = w;
-//    s.gridheight= h;
-//    s.weightx = grow ? 1 : 0;
-//    s.weighty = grow ? 1 : 0;
-//    s.fill = grow ? GridBagConstraints.BOTH : GridBagConstraints.HORIZONTAL;
-//
-//    ((GridBagLayout)getLayout()).setConstraints(c,s);
-//  }
 
   /**
-   * Returns the resulting properties
+   * Returns the selected tags
    */
-  public Property[] getResultingProperties() {
+  public String[] getSelectedTags() {
 
-    Property[] result = null;
+    String[] result = null;
 
     // list of selected properties
     if (rbChoose.isSelected() == true) {
       Object[] objs = lChoose.getSelectedValues();
-      result = new Property[objs.length];
+      result = new String[objs.length];
       for (int i=0;i<objs.length;i++) {
-        result[i] = ((MetaProperty)objs[i]).create("");
+        result[i] = ((MetaProperty)objs[i]).getTag();
       }
       return result;
     }
     
-    // single entered property
-    if (tfNew.getText().equals("")) 
-      return new Property[0];
-
-    result = new Property[1];
-    result[0] = parent.getMetaProperty().getNested(tfNew.getText(), true).create("");
-    
-    // done
-    return result;
+    // single entered tag
+    String tag = tfNew.getText();
+    return tag!=null ? new String[] { tag } : new String[0];
   }
 
   /**

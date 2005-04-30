@@ -494,19 +494,19 @@ import javax.swing.event.TreeSelectionListener;
       // .. stop current 
       tree.clearSelection();
   
-      // .. Calculate chosen properties
-      Property[] props = choose.getResultingProperties();
-  
-      if ( (props==null) || (props.length==0) ) {
+      // .. calculate chosen tags
+      String[] tags = choose.getSelectedTags();
+      if (tags.length==0)  {
         editView.getWindowManager().openDialog(null,null,WindowManager.IMG_ERROR,resources.getString("add.must_enter"),CloseWindow.OK(), AdvancedEditor.this);
         return;
       }
   
       // .. add properties
       gedcom.startTransaction();
+      Property newProp = null;
       try {
-        for (int i=0;i<props.length;i++) {
-          Property newProp = parent.addProperty(props[i]);
+        for (int i=0;i<tags.length;i++) {
+          newProp = parent.addProperty(tags[i], "");
           if (check.isSelected()) newProp.addDefaultProperties();
         } 
       } finally {
@@ -514,12 +514,11 @@ import javax.swing.event.TreeSelectionListener;
       }
          
       // .. select added
-      Property select = props[0];
-      if (select instanceof PropertyEvent) {
-        Property pdate = ((PropertyEvent)select).getDate(false);
-        if (pdate!=null) select = pdate;
+      if (newProp instanceof PropertyEvent) {
+        Property pdate = ((PropertyEvent)newProp).getDate(false);
+        if (pdate!=null) newProp = pdate;
       }
-      tree.setSelectionPath(tree.getPathFor(select));
+      tree.setSelectionPath(tree.getPathFor(newProp));
       
       // done
     }

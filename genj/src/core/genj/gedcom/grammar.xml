@@ -117,18 +117,18 @@
    <TYPE default="1" super="INDI:BIRT:TYPE"/>
   </EVEN>
   +++++++++++++ Relationships +++++++++++++
-  <FAMC hide="0" type="PropertyFamilyChild" img="Fam.gif">
+  <FAMC hide="1" type="PropertyFamilyChild" img="Fam.gif">
    <PEDI type="PropertySimpleValue" img="Type.gif"/>
    <NOTE super="INDI:NAME:NOTE"/>
   </FAMC>
-  <FAMS hide="0" type="PropertyFamilySpouse" img="Fam.gif">
+  <FAMS hide="1" type="PropertyFamilySpouse" img="Fam.gif">
    <NOTE super="INDI:NAME:NOTE"/>
   </FAMS>
   <OBJE super="INDI:BIRT:OBJE"/>
   <NOTE super="INDI:NAME:NOTE"/>
-  <SUBM hide="0" type="PropertySubmitter" img="Submitter.gif"/>
+  <SUBM hide="1" type="PropertySubmitter" img="Submitter.gif"/>
   <SOUR super="INDI:NAME:SOUR"/>
-  <ASSO hide="0" type="PropertyAssociation" img="Association.gif">
+  <ASSO hide="1" type="PropertyAssociation" img="Association.gif">
    <TYPE default="1" singleton="1" type="PropertySimpleValue" img="Type.gif"/>
    <RELA default="1" singleton="1" type="PropertyRelationship" img="Type.gif"/>
    <SOUR super="INDI:SOUR"/>
@@ -143,7 +143,7 @@
   </REFN>
   <RIN type="PropertySimpleValue" img="Blob.gif"/>
   +++++++++++++ change  - it swallows subs DATE|TIME - no need to declare in grammar +++++++++++++
-  <CHAN hide="0" type="PropertyChange" img="Code.gif">
+  <CHAN hide="1" type="PropertyChange" img="Code.gif">
    <NOTE super="INDI:NAME:NOTE"/>
   </CHAN>
  </INDI>
@@ -153,9 +153,9 @@
  *************************************
  <FAM type="Fam" img="Fam.gif">
   +++++++++++++ Relationships +++++++++++++
-  <HUSB hide="0" type="PropertyHusband" img="IndiMale.gif"/>
-  <WIFE hide="0" type="PropertyWife" img="IndiFemale.gif"/>
-  <CHIL hide="0" type="PropertyChild" img="Child.gif" img.male="MaleChild.gif" img.female="FemaleChild.gif"/>
+  <HUSB hide="1" type="PropertyHusband" img="IndiMale.gif"/>
+  <WIFE hide="1" type="PropertyWife" img="IndiFemale.gif"/>
+  <CHIL hide="1" type="PropertyChild" img="Child.gif" img.male="MaleChild.gif" img.female="FemaleChild.gif"/>
   +++++++++++++ Events +++++++++++++
   <MARR default="1" singleton="1" super="INDI:BIRT" img="Marriage.gif">
    <HUSB type="PropertySimpleReadOnly" img="IndiMale.gif">
@@ -181,12 +181,12 @@
   +++++++++++++ References +++++++++++++
   <OBJE super="INDI:OBJE"/>
   <NOTE super="INDI:NOTE"/>
-  <SUBM hide="0" super="INDI:SUBM"/>
+  <SUBM hide="1" super="INDI:SUBM"/>
   <SOUR super="INDI:SOUR"/>
   <REFN super="INDI:REFN"/>
   <RIN super="INDI:RIN"/>
   +++++++++++++ change +++++++++++++
-  <CHAN hide="0" super="INDI:CHAN"/>
+  <CHAN hide="1" super="INDI:CHAN"/>
  </FAM>
  
  *************************************
@@ -194,13 +194,13 @@
  *************************************
  <NOTE type="Note" img="Note.gif">
   +++++++++++++ we use inline NOTE to store the entity's content (GEDCOM anomalie) +++++++++++++
-  <NOTE hide="0" type="PropertyMultilineValue" img="Note.gif"/>
+  <NOTE hide="1" type="PropertyMultilineValue" img="Note.gif"/>
   +++++++++++++ References +++++++++++++
   <SOUR super="INDI:SOUR"/>
   <REFN super="INDI:REFN"/>
   <RIN super="INDI:RIN"/>
   +++++++++++++ change +++++++++++++
-  <CHAN hide="0" super="INDI:CHAN"/>
+  <CHAN hide="1" super="INDI:CHAN"/>
  </NOTE>
  
  *************************************
@@ -215,7 +215,7 @@
   <REFN super="INDI:REFN"/>
   <RIN super="INDI:RIN"/>
   +++++++++++++ change +++++++++++++
-  <CHAN hide="0" super="INDI:CHAN"/>
+  <CHAN hide="1" super="INDI:CHAN"/>
  </OBJE>
  
  *************************************
@@ -230,7 +230,7 @@
   <REFN super="INDI:REFN"/>
   <RIN super="INDI:RIN"/>
   +++++++++++++ change +++++++++++++
-  <CHAN hide="0" super="INDI:CHAN"/>
+  <CHAN hide="1" super="INDI:CHAN"/>
  </REPO>
  
  *************************************
@@ -253,7 +253,7 @@
   +++++++++++++ References +++++++++++++
   <OBJE super="INDI:OBJE"/>
   <NOTE super="INDI:NOTE"/>
-  <REPO hide="0" type="PropertyRepository" img="Repository.gif">
+  <REPO hide="1" type="PropertyRepository" img="Repository.gif">
    <NOTE xref="1" type="PropertyNote" img="Note.gif"/>
    <CALN xref="1" type="PropertySimpleValue" img="Attribute.gif">
     <MEDI type="PropertySimpleValue" img="Attribute.gif"/>
@@ -262,7 +262,7 @@
   <REFN super="INDI:REFN"/>
   <RIN super="INDI:RIN"/>
   +++++++++++++ change +++++++++++++
-  <CHAN hide="0" super="INDI:CHAN"/>
+  <CHAN hide="1" super="INDI:CHAN"/>
  </SOUR>
  
  *************************************
@@ -278,7 +278,7 @@
   <REFN super="INDI:REFN"/>
   <RIN super="INDI:RIN"/>
   +++++++++++++ change +++++++++++++
-  <CHAN hide="0" super="INDI:CHAN"/>
+  <CHAN hide="1" super="INDI:CHAN"/>
  </SUBM>
  
  *************************************
