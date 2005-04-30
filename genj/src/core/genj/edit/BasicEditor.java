@@ -48,6 +48,7 @@ import java.awt.FlowLayout;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -243,7 +244,7 @@ import javax.swing.event.ChangeListener;
     beans.clear();
 
     // prepare a 'new' tab
-    JPanel addPanel = new JPanel(new FlowLayout());
+    JPanel addPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     addPanel.setPreferredSize(new Dimension(64,64));
     tabPanel.addTab("", Images.imgNew, addPanel);
     
@@ -251,8 +252,8 @@ import javax.swing.event.ChangeListener;
     if (entity!=null) try {
 
       // 'create' standard panel
-      createPanel(standardPanel, entity, getDescriptor(entity.getMetaProperty()));
-      
+      createPanel(standardPanel, entity, getSharedDescriptor(entity.getMetaProperty()).copy());
+  
       // collect top-level tags we've covered with that already
       Set topLevelTags = new HashSet();
       for (int i=0, j=beans.size(); i<j; i++) {
@@ -260,6 +261,7 @@ import javax.swing.event.ChangeListener;
         if (path.length()>1) topLevelTags.add(path.get(1));
       }
       
+      // FIXME need to create tab lazyly on becoming visible()
       // add tabs for sub-properties of entity
       for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
         Property prop = entity.getProperty(i);
@@ -268,11 +270,11 @@ import javax.swing.event.ChangeListener;
          continue;
         MetaProperty meta = prop.getMetaProperty();
         // and if there's a descriptor for it
-        NestedBlockLayout descriptor = getDescriptor(meta);
+        NestedBlockLayout descriptor = getSharedDescriptor(meta);
         if (descriptor==null) 
           continue;
         // create a tab for it and select it as first
-        tabPanel.addTab(meta.getName(), meta.getImage(), new JScrollPane(createPanel(new JPanel(), prop, descriptor)));
+        tabPanel.addTab(meta.getName(), meta.getImage(), new JScrollPane(createPanel(new JPanel(), prop, descriptor.copy())));
         if (tabPanel.getTabCount()==2)
           tabPanel.setSelectedIndex(1);
         // next
@@ -280,10 +282,11 @@ import javax.swing.event.ChangeListener;
       
       // add buttons for creating sub-properties 
       MetaProperty[] nested = entity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+      Arrays.sort(nested);
       for (int i=0;i<nested.length;i++) {
         MetaProperty meta = nested[i];
         // if there's a descriptor for it
-        NestedBlockLayout descriptor = getDescriptor(meta);
+        NestedBlockLayout descriptor = getSharedDescriptor(meta);
         if (descriptor==null)
           continue;
 //        // and if there's no other bean or !singleton
@@ -292,6 +295,8 @@ import javax.swing.event.ChangeListener;
         // create a button for it
         addPanel.add(new LinkWidget(meta.getName(), meta.getImage()));
       }
+      
+      // done
       
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, this, t);
@@ -312,19 +317,21 @@ import javax.swing.event.ChangeListener;
    * Find a descriptor for given property
    * @return private copy descriptor or null if n/a
    */
-  private NestedBlockLayout getDescriptor(MetaProperty meta) {
+  private NestedBlockLayout getSharedDescriptor(MetaProperty meta) {
     
-    // either entity or property
-    String file  = "descriptors/" + (meta.isEntity() ? "entities" : "properties") + "/" + meta.getTag()+".xml";
+    String tag = meta.getTag(); 
     
     // got a cached one already?
-    NestedBlockLayout descriptor  = (NestedBlockLayout)FILE2LAYOUT.get(file);
+    NestedBlockLayout descriptor  = (NestedBlockLayout)FILE2LAYOUT.get(tag);
     if (descriptor==null) {
       
       // hmm, already determined we don't have one?
-      if (FILE2LAYOUT.containsKey(file))
+      if (FILE2LAYOUT.containsKey(tag))
         return null;
 
+      // compute appropiate file name for entity or property
+      String file  = "descriptors/" + (meta.isEntity() ? "entities" : "properties") + "/" + meta.getTag()+".xml";
+      
       // try to read a descriptor - TAG.xml or Type.xml
       InputStream in = getClass().getResourceAsStream(file);
       if (in==null) 
@@ -336,11 +343,11 @@ import javax.swing.event.ChangeListener;
       }
 
       // cache it
-      FILE2LAYOUT.put(file, descriptor);
+      FILE2LAYOUT.put(tag, descriptor);
     }
 
     // return private copy
-    return descriptor!=null ? descriptor.copy() : null;
+    return descriptor;
   }
   
   /**
@@ -369,6 +376,7 @@ import javax.swing.event.ChangeListener;
   private JComponent createComponent(Property root, NestedBlockLayout.Cell cell) {
     
     TagPath path = new TagPath(cell.getAttribute("path"));
+    
     MetaProperty meta = root.getMetaProperty().getNestedRecursively(path, false);
     
     // a label?

@@ -506,7 +506,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     /** Access a cell descriptor attribute */
     public boolean isAttribute(String attr) {
-      return getAttribute(attr)!=null;
+      return attrs.containsKey(attr);
     }
     
     /** attribute */
