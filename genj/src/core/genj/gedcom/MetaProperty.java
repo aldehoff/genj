@@ -56,6 +56,9 @@ public class MetaProperty implements Comparable {
   /** cached - image */
   private ImageIcon image;
   
+  /** cached - name */
+  private String name, names;
+  
   /** cached - type */
   private Class type;
 
@@ -185,7 +188,7 @@ public class MetaProperty implements Comparable {
    */
   public int compareTo(Object o) {
     MetaProperty other = (MetaProperty)o;
-    return getTag().compareTo(other.getTag());
+    return getName().compareTo(other.getName());
   }
 
   /**
@@ -302,7 +305,19 @@ public class MetaProperty implements Comparable {
    * Accessor - some explanationary information about the meta
    */
   public String getName(boolean plural) {
-    return Gedcom.getName(tag, plural);
+    String result;
+    if (plural) {
+      result = names;
+      if (result ==null)
+        result = Gedcom.getName(tag, true);
+      names = result;
+    } else {
+      result = name;
+      if (result ==null)
+        result = Gedcom.getName(tag, false);
+      name = result;
+    }
+    return result;
   }
   
   /**
