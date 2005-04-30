@@ -1,5 +1,4 @@
 <col>
- <row><label path="."/></row>
  <row><label path=".:TYPE"/><bean path=".:TYPE" wx="1"/></row>
  <row><bean path=".:DATE"/></row>
  <row><bean path=".:PLAC" wx="1"/></row>

@@ -34,6 +34,7 @@ import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.LinkWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
@@ -42,6 +43,7 @@ import genj.window.CloseWindow;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ContainerOrderFocusTraversalPolicy;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.IOException;
 import java.io.InputStream;
@@ -240,6 +242,11 @@ import javax.swing.event.ChangeListener;
     tabPanel.removeAll();
     beans.clear();
 
+    // prepare a 'new' tab
+    JPanel addPanel = new JPanel(new FlowLayout());
+    addPanel.setPreferredSize(new Dimension(64,64));
+    tabPanel.addTab("", Images.imgNew, addPanel);
+    
     // setup components
     if (entity!=null) try {
 
@@ -259,29 +266,32 @@ import javax.swing.event.ChangeListener;
         // only if we don't have a top level tag already
         if (topLevelTags.remove(prop.getTag()))
          continue;
+        MetaProperty meta = prop.getMetaProperty();
         // and if there's a descriptor for it
-        NestedBlockLayout descriptor = getDescriptor(prop.getMetaProperty());
+        NestedBlockLayout descriptor = getDescriptor(meta);
         if (descriptor==null) 
           continue;
-        // create a tab for it
-        tabPanel.add(prop.getPropertyName(), new JScrollPane(createPanel(new JPanel(), prop, descriptor)));
+        // create a tab for it and select it as first
+        tabPanel.addTab(meta.getName(), meta.getImage(), new JScrollPane(createPanel(new JPanel(), prop, descriptor)));
+        if (tabPanel.getTabCount()==2)
+          tabPanel.setSelectedIndex(1);
         // next
       }
       
-//      // add buttons for creating sub-properties 
-//      MetaProperty[] nested = entity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
-//      for (int i=0;i<nested.length;i++) {
-//        MetaProperty meta = nested[i];
-//        // if there's a descriptor for it
-//        NestedBlockLayout descriptor = getDescriptor(meta);
-//        if (descriptor==null)
-//          continue;
+      // add buttons for creating sub-properties 
+      MetaProperty[] nested = entity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+      for (int i=0;i<nested.length;i++) {
+        MetaProperty meta = nested[i];
+        // if there's a descriptor for it
+        NestedBlockLayout descriptor = getDescriptor(meta);
+        if (descriptor==null)
+          continue;
 //        // and if there's no other bean or !singleton
 //        if (haveBean(new TagPath(entity.getPath(), meta.getTag()))&&meta.isSingleton())
 //          continue;
-//        // create a button for it
-//        System.out.println(meta.getTag());
-//      }
+        // create a button for it
+        addPanel.add(new LinkWidget(meta.getName(), meta.getImage()));
+      }
       
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, this, t);
