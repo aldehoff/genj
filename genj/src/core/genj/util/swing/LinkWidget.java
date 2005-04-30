@@ -40,19 +40,8 @@ public class LinkWidget extends JLabel {
    * Constructor
    */
   public LinkWidget(String text, Icon img) {
-    setText(text);
-    setIcon(img);
-
-    // change looks
-    setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    setBorder(null);
-    super.setFocusable(false);
-    setHorizontalAlignment(SwingConstants.LEFT);
-    
-    // listen
+    super(text, img, SwingConstants.LEFT);
     addMouseListener(new Callback());
-    
-    // done
   }
   
   /**
@@ -77,7 +66,7 @@ public class LinkWidget extends JLabel {
     plain = ("<html>"+text);
     underlined = ("<html><u>"+text);
     // continue
-    super.setText(plain);
+    super.setText(text);
   }
 
   /**
@@ -104,6 +93,7 @@ public class LinkWidget extends JLabel {
     /** exit -> underlined */
     public void mouseEntered(MouseEvent e) {
       setTextInternal(underlined);
+      setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
     
   } //Callback
