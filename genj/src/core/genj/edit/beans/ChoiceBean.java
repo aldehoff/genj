@@ -19,7 +19,6 @@
  */
 package genj.edit.beans;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.util.GridBagHelper;
@@ -115,13 +114,13 @@ public class ChoiceBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     // setup choices    
     // Note: we're using getDisplayValue() here because like in PropertyRelationship's 
     // case there might be more in the gedcom value than what we want to display 
     // e.g. witness@INDI:BIRT
-    choice.setValues(((PropertyChoiceValue)property).getChoices(gedcom));
+    choice.setValues(((PropertyChoiceValue)property).getChoices(true));
     choice.setText(property!=null ? property.getDisplayValue() : "");
     global.setSelected(false);
     global.setVisible(false);

@@ -173,7 +173,7 @@ public abstract class Property implements Comparable {
    * Adds a sub-property to this property
    * @param prop new property to add
    */
-  /*package*/ Property addProperty(Property prop) {
+  protected Property addProperty(Property prop) {
     return addProperty(prop, true);
   }
 
@@ -182,7 +182,7 @@ public abstract class Property implements Comparable {
    * @param prop new property to add
    * @param place whether to place the sub-property according to grammar
    */
-  /*package*/ Property addProperty(Property prop, boolean place) {
+  protected Property addProperty(Property prop, boolean place) {
 
     // check grammar for placement if applicable
     int pos = -1;
@@ -207,12 +207,7 @@ public abstract class Property implements Comparable {
   /**
    * Adds another property to this property
    */
-  /*package*/ Property addProperty(Property child, int pos) {
-
-// This will break the blueprint editor
-//    // check against meta of child
-//    if (child.meta!=null && getMetaProperty().get(child.getTag(), false) != child.getMetaProperty())
-//      throw new IllegalArgumentException("illegal use of property "+child.getTag()+" in "+getPath());
+  protected Property addProperty(Property child, int pos) {
 
     // position valid?
     if (pos>=0&&pos<children.size())
@@ -307,16 +302,7 @@ public abstract class Property implements Comparable {
    * Returns the gedcom this property belongs to
    */
   public Gedcom getGedcom() {
-
-    // Entity ?
-    Entity entity = getEntity();
-    if (entity==null) {
-      return null;
-    }
-
-    // Ask Entity
-    return entity.getGedcom();
-
+    return parent!=null ? parent.getGedcom() : null;
   }
   
   /**

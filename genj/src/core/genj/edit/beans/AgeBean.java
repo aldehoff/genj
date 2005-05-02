@@ -19,7 +19,6 @@
  */
 package genj.edit.beans;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
 import genj.gedcom.time.Delta;
@@ -68,7 +67,7 @@ public class AgeBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     // update components
     PropertyAge age = (PropertyAge)property;

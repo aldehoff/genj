@@ -61,7 +61,7 @@ public class ChildrenBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
     
     // connect to current fam
     table.setModel(new Children());
@@ -71,7 +71,7 @@ public class ChildrenBean extends PropertyBean {
   
   private class Children extends AbstractPropertyTableModel {
     public Gedcom getGedcom() {
-      return gedcom;
+      return property.getGedcom();
     }
     public int getNumCols() {
       return PATHS.length;

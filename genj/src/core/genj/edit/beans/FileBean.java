@@ -20,7 +20,6 @@
 package genj.edit.beans;
 
 import genj.edit.actions.RunExternal;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
@@ -101,10 +100,10 @@ public class FileBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     // calc directory
-    Origin origin = gedcom.getOrigin();
+    Origin origin = property.getGedcom().getOrigin();
     String dir = origin.isFile() ? origin.getFile().getParent() : null;
     
     // check if showing file chooser makes sense
@@ -356,7 +355,7 @@ public class FileBean extends PropertyBean {
       Iterator it = FileAssociation.getAll(suffix).iterator();
       while (it.hasNext()) {
         FileAssociation fa = (FileAssociation)it.next(); 
-        mh.createItem(new RunExternal(gedcom,file,fa));
+        mh.createItem(new RunExternal(property.getGedcom(),file,fa));
       }
       // show
       if (popup.getComponentCount()>0)
@@ -422,7 +421,7 @@ public class FileBean extends PropertyBean {
       // load it
       try {
         Thread.sleep(200);
-          result = new ImageIcon(file, gedcom.getOrigin().open(file));
+          result = new ImageIcon(file, property.getGedcom().getOrigin().open(file));
       } catch (Throwable t) {
       }
       // continue

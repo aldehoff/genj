@@ -295,12 +295,15 @@ public class PropertyName extends Property {
   }
   
   /**
-   * Return all names with given last-name
+   * Return all last names
    */
-  public static List getInstances(Gedcom gedcom, String name) {
-    return new ArrayList(gedcom.getReferenceSet(TAG).getReferences(name));
+  public List getLastNames(boolean sortByName) {
+    Gedcom gedcom = getGedcom();
+    if (gedcom==null)
+      return new ArrayList(0);
+    return getLastNames(gedcom, sortByName);
   }
-  
+
   /**
    * Return all last names
    */
@@ -309,12 +312,22 @@ public class PropertyName extends Property {
   }
 
   /**
-   * Return last name count
+   * Returns all PropertyNames that contain the same name 
    */
-  public static int getLastNameCount(Gedcom gedcom, String name) {
-    return gedcom.getReferenceSet(TAG).getSize(name);
+  public int getLastNameCount() {
+    Gedcom gedcom = getGedcom();
+    if (gedcom==null)
+      return 0;
+    return getLastNameCount(gedcom, getLastName());
   }
-
+  
+  /**
+   * Returns all PropertyNames that contain the same name 
+   */
+  public static int getLastNameCount(Gedcom gedcom, String last) {
+    return gedcom.getReferenceSet(TAG).getReferences(last).size();
+  }
+  
   /**
    * Returns all PropertyNames that contain the same name 
    */

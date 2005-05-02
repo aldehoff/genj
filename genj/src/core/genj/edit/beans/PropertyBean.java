@@ -20,7 +20,6 @@
 package genj.edit.beans;
 
 import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
@@ -51,9 +50,6 @@ public abstract class PropertyBean extends JPanel {
   
   /** factory for us */
   private BeanFactory factory;
-  
-  /** the current gedcom object */
-  protected Gedcom gedcom;
   
   /** the property to edit */
   protected Property property;
@@ -92,22 +88,21 @@ public abstract class PropertyBean extends JPanel {
    * Set context to edit
    * @return default component to receive focus
    */
-  public final void setContext(Gedcom gedcom, Property prop, Registry reg) {
+  public final void setContext(Property prop, Registry reg) {
     
     // remember property
-    this.gedcom = gedcom;
     this.property = prop;
     this.registry = reg;
     
     // propagate to implementation
-    setContextImpl(gedcom, prop);
+    setContextImpl(prop);
     
   }
 
   /**
    * Implementation's set context
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
     
   }
   

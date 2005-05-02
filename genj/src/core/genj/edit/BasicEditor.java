@@ -423,7 +423,7 @@ import javax.swing.event.ChangeListener;
    * @param path path to property we need bean for
    * @param explicit bean type
    */
-  private PropertyBean createBean(Property root, TagPath path, MetaProperty meta, String type) {
+  private PropertyBean createBean(Property root, TagPath path, MetaProperty meta, String beanOverride) {
 
     // try to resolve existing prop - this has to be a property along
     // the first possible path to avoid that in this case:
@@ -444,43 +444,53 @@ import javax.swing.event.ChangeListener;
         return null;
     }
     
-    // created a temporary one? This won't be added to root but
-    // at this time can be used by the appropriate bean 
+    // need to create a temporary one? a temporary parent
+    // is used too hook it up to the current context (namely gedcom)
     if (prop==null) 
-      prop = meta.create("");
-    
+      prop = new TempProperty().addProperty(meta.create(""));
+
     // create bean for property
     BeanFactory factory = view.getBeanFactory();
-    PropertyBean bean = type!=null ? factory.get(type) : factory.get(prop);
-    bean.setContext(entity.getGedcom(), prop, registry);
+    PropertyBean bean = beanOverride!=null ? factory.get(beanOverride) : factory.get(prop);
+    bean.setContext(prop, registry);
     bean.addChangeListener(changeCallback);
     beans.add(bean);
     
-    // add a bean for adding property content on commit
-    if (prop.getParent()==null) 
-      beans.add(new AddLazy(root, path, prop));
+    // in case of temp - add a bean that will set the resulting value on commit
+    if (prop.getParent() instanceof TempProperty) 
+      beans.add(new SetValueBean(root, path, prop));
     
     // done
     return bean;
+  }
+
+  /**
+   * A temporary parent - we need this to hook up temporary properties to their context
+   */
+  private class TempProperty extends Property {
+    protected Property addProperty(Property child) { return super.addProperty(child); }
+    public Gedcom getGedcom() { return gedcom; }
+    public String getTag() { throw new IllegalArgumentException(); }
+    public String getValue() { throw new IllegalArgumentException(); }
+    public void setValue(String value) { throw new IllegalArgumentException(); }
   }
   
   /**
    * Bean that commits the value of a temporary property
    */
-  private class AddLazy extends PropertyBean {
+  private class SetValueBean extends PropertyBean {
     private Property root;
     private TagPath path;
-    private AddLazy(Property root, TagPath path, Property value) {
+    private SetValueBean(Property root, TagPath path, Property value) {
       this.root = root;
       this.path = path;
       this.property = value;
     }
     public void commit() {
-      // anything to commit?
-      if (property.getValue().length()==0)
-        return;
-      // add value
-      root.setValue(path, property.getValue());
+      // commit the value
+      String value = property.getValue();
+      if (value.length()>0)
+        root.setValue(path, value);
       // done
     }
   }

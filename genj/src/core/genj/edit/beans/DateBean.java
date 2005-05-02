@@ -19,7 +19,6 @@
  */
 package genj.edit.beans;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.time.PointInTime;
@@ -151,7 +150,7 @@ public class DateBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     // we know it's a date
     PropertyDate p = (PropertyDate)property;

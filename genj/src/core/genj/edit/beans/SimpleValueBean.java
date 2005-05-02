@@ -19,7 +19,6 @@
  */
 package genj.edit.beans;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.swing.TextFieldWidget;
 
@@ -63,7 +62,7 @@ public class SimpleValueBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     // show value
     String txt = property.getDisplayValue();

@@ -213,6 +213,16 @@ public class PropertyPlace extends Property {
   }
   
   /**
+   * Accessor - all jurisdictions of given level in same gedcom file
+   */
+  public String[] getJurisdictions(int hierarchyLevel, boolean sort) {
+    Gedcom gedcom = getGedcom();
+    if (gedcom==null)
+      return new String[0];
+    return getJurisdictions(gedcom, hierarchyLevel, sort);
+  }
+  
+  /**
    * Accessor - all jurisdictions of given level in gedcom
    */
   public static String[] getJurisdictions(Gedcom gedcom, int hierarchyLevel, boolean sort) {

@@ -45,6 +45,17 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   }
   
   /**
+   * Returns all choices in same gedcom file as this
+   */
+  public String[] getChoices(boolean sort) {
+    // got access to a reference set?
+    Gedcom gedcom = getGedcom();
+    if (gedcom==null)
+      return new String[0];
+    return getChoices(gedcom, getTag(), sort);
+  }
+  
+  /**
    * Returns all choices for given property tag
    */
   public static String[] getChoices(final Gedcom gedcom, final String tag, boolean sort) {

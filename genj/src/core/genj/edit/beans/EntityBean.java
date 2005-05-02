@@ -20,7 +20,6 @@
 package genj.edit.beans;
 
 import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChange;
 
@@ -66,7 +65,7 @@ public class EntityBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     Entity entity = (Entity)property;
     

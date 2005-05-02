@@ -19,7 +19,6 @@
  */
 package genj.edit.beans;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 
@@ -55,7 +54,7 @@ public class XRefBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     // set preview
     PropertyXRef xref = (PropertyXRef)property;

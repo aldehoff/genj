@@ -19,7 +19,6 @@
  */
 package genj.edit.beans;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
 import genj.util.swing.ChoiceWidget;
@@ -88,12 +87,12 @@ public class NameBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     // first, last, suff
     PropertyName pname = (PropertyName)property;
     
-    cLast.setValues(PropertyName.getLastNames(gedcom, true));
+    cLast.setValues(pname.getLastNames(true));
     cLast.setText(pname.getLastName());
     tFirst.setText(pname.getFirstName()); 
     tSuff.setText(pname.getSuffix()); 

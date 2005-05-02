@@ -19,7 +19,6 @@
  */
 package genj.edit.beans;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 import genj.util.DirectAccessTokenizer;
@@ -75,7 +74,7 @@ public class PlaceBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     // check property's format
     PropertyPlace place = (PropertyPlace)prop;
@@ -84,7 +83,7 @@ public class PlaceBean extends PropertyBean {
     removeAll();
    
     // either a simple value or broken down into comma separated jurisdictions
-    String placeFormat = place.getHierarchy(gedcom);
+    String placeFormat = place.getHierarchy();
     if (placeFormat.length()==0) {
       createField(null, place.getValue(), 0);
     } else {
@@ -111,7 +110,7 @@ public class PlaceBean extends PropertyBean {
     // and a textfield
     ChoiceWidget result = new ChoiceWidget();
     result.setEditable(true);
-    result.setValues(PropertyPlace.getJurisdictions(gedcom, hierarchyLevel, true));
+    result.setValues(((PropertyPlace)property).getJurisdictions(hierarchyLevel, true));
     result.setText(jurisdiction);
     result.addChangeListener(changeSupport);
     gh.add(result, 1, rows, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);

@@ -58,7 +58,7 @@ public class ParentsBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     // a table for the families
     PropertyTableModel model = null;

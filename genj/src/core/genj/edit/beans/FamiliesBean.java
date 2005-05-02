@@ -64,7 +64,7 @@ public class FamiliesBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Gedcom ged, Property prop) {
+  protected void setContextImpl(Property prop) {
 
     // connect to current indi
     table.setModel(new Families());
@@ -74,7 +74,7 @@ public class FamiliesBean extends PropertyBean {
   
   private class Families extends AbstractPropertyTableModel {
     public Gedcom getGedcom() {
-      return gedcom;
+      return property.getGedcom();
     }
     public int getNumCols() {
       return 5;
