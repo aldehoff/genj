@@ -87,7 +87,7 @@ public class DateBean extends PropertyBean {
   /**
    * Finish proxying edit for property Date
    */
-  protected void commitImpl() {
+  public void commit() {
 
     PropertyDate p = (PropertyDate)property;
 

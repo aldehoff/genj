@@ -41,7 +41,7 @@ public class SexBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  protected void commitImpl() {
+  public void commit() {
     
     PropertySex sex = (PropertySex)property; 
     sex.setSex(getSex());

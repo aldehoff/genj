@@ -97,7 +97,7 @@ public class ChoiceBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  protected void commitImpl() {
+  public void commit() {
     
     PropertyChoiceValue prop = (PropertyChoiceValue)property;
 

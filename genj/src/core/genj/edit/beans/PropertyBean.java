@@ -22,7 +22,6 @@ package genj.edit.beans;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.gedcom.TagPath;
 import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
@@ -56,12 +55,6 @@ public abstract class PropertyBean extends JPanel {
   /** the current gedcom object */
   protected Gedcom gedcom;
   
-  /** the root property */
-  protected Property root;
-  
-  /** a path to the edited property */
-  private TagPath path;
-  
   /** the property to edit */
   protected Property property;
   
@@ -91,18 +84,18 @@ public abstract class PropertyBean extends JPanel {
   /**
    * Custom bean initialization code after member attributes have been initialized
    */
-  protected abstract void initializeImpl();
+  protected void initializeImpl() {
+    
+  }
 
   /**
    * Set context to edit
    * @return default component to receive focus
    */
-  public final void setContext(Gedcom gedcom, Property root, TagPath path, Property prop, Registry reg) {
+  public final void setContext(Gedcom gedcom, Property prop, Registry reg) {
     
     // remember property
     this.gedcom = gedcom;
-    this.root = root;
-    this.path = path;
     this.property = prop;
     this.registry = reg;
     
@@ -114,27 +107,8 @@ public abstract class PropertyBean extends JPanel {
   /**
    * Implementation's set context
    */
-  protected abstract void setContextImpl(Gedcom ged, Property prop);
-  
-  /**
-   * add hook
-   */
-  public void addNotify() {
-    // allow super add
-    super.addNotify();
-  }
-  
-  /**
-   * remove hook
-   */
-  public void removeNotify() {
-    // stop serving
-    changeSupport.removeAllChangeListeners();
-    // continue ui remove
-    super.removeNotify();
-    // recycle
-    factory.recycle(this);
-    // done
+  protected void setContextImpl(Gedcom ged, Property prop) {
+    
   }
   
   /**
@@ -159,24 +133,9 @@ public abstract class PropertyBean extends JPanel {
   }
 
   /**
-   * Commit changes made by the user
-   */
-  public void commit() {
-    
-    // let impl do its things
-    commitImpl();
-    
-    // check if property was temporary working copy without parent
-    if (property.getValue().length() > 0 && property.getParent() == null)
-      root.setValue(path, property.getValue());
-    
-    // done
-  }
-  
-  /**
    * Commit any changes made by the user
    */
-  protected void commitImpl() {
+  public void commit() {
     // noop
   }
   
@@ -206,13 +165,6 @@ public abstract class PropertyBean extends JPanel {
       super.requestFocus();
   }
 
-  /**
-   * Current path 
-   */
-  public TagPath getPath() {
-    return path;
-  }
-  
   /**
    * A preview component using EntityRenderer for an entity
    */

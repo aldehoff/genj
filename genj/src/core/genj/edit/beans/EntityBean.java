@@ -41,7 +41,7 @@ public class EntityBean extends PropertyBean {
    * Finish editing a property through proxy (no changes here unless
    * hasChanged()==true since this will be called in all cases)
    */
-  protected void commitImpl() {
+  public void commit() {
   }
 
   /**

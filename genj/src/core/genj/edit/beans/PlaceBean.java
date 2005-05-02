@@ -50,7 +50,7 @@ public class PlaceBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  protected void commitImpl() {
+  public void commit() {
     
     StringBuffer result = new StringBuffer();
     int commas = 0;

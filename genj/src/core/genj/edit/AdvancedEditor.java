@@ -692,7 +692,7 @@ import javax.swing.event.TreeSelectionListener;
         try {
   
           // initialize bean
-          bean.setContext(gedcom, root, null, prop, registry);
+          bean.setContext(gedcom, prop, registry);
           
           // add bean to center of editPane 
           editPane.add(bean, BorderLayout.CENTER);

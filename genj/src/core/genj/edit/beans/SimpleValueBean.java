@@ -47,7 +47,7 @@ public class SimpleValueBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  protected void commitImpl() {
+  public void commit() {
     
     if (!property.isReadOnly())
       property.setValue(tfield.getText());

@@ -95,7 +95,7 @@ public class BeanFactory {
   /**
    * Recycle a bean
    */
-  /*package*/ void recycle(PropertyBean bean) {
+  public void recycle(PropertyBean bean) {
 
     Matcher m = Pattern.compile("genj.edit.beans.(.*)Bean").matcher(bean.getClass().getName());
     if (!m.matches())
