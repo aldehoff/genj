@@ -21,6 +21,7 @@ package genj.edit;
 
 import genj.edit.beans.BeanFactory;
 import genj.edit.beans.PropertyBean;
+import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
@@ -35,6 +36,7 @@ import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.LinkWidget;
+import genj.util.swing.MenuHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
@@ -45,6 +47,8 @@ import java.awt.Component;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -59,6 +63,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -90,6 +95,7 @@ import javax.swing.event.ChangeListener;
 
   /** panels */
   private JSplitPane splitPanel;
+  private JTabbedPane tabPanel;
   
   /** beans */
   private List beans = new ArrayList(32);
@@ -252,33 +258,29 @@ import javax.swing.event.ChangeListener;
       // 'create' standard panel (and collect topLevelTags)
       Set topLevelTags = new HashSet();
       JPanel mainPanel = createPanel(entity, getSharedDescriptor(entity.getMetaProperty()).copy(), topLevelTags);
-  
-      // prepare a tab panel for sub-property panels
+      
+      // 'create' tab panel
+      tabPanel = new JTabbedPane();
+      //tabPanel.addMouseListener(new RemoveTab());
+      
+      // .. and add all tabs
       Set skippedTags = new HashSet();
-      JTabbedPane tabPanel = new JTabbedPane();
       props: for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
         Property prop = entity.getProperty(i);
         // check tag - skipped or covered already?
         String tag = prop.getTag();
-        if (!skippedTags.contains(tag)&&topLevelTags.contains(tag)) {
-          skippedTags.add(tag);
+        if (skippedTags.add(tag)&&topLevelTags.contains(tag)) 
           continue;
-        }
         topLevelTags.add(tag);
-        // got a descriptor for it?
-        MetaProperty meta = prop.getMetaProperty();
-        NestedBlockLayout descriptor = getSharedDescriptor(meta);
-        if (descriptor==null) 
-          continue;
-        // create a tab for it and select it as first
-        tabPanel.addTab(meta.getName(), meta.getImage(), new JScrollPane(createPanel(prop, descriptor.copy(), null)));
+        // create a tab for it
+        createTab(prop);
         // next
       }
       
-      // add a tab for creating new properties
-      JPanel addPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-      addPanel.setPreferredSize(new Dimension(64,64));
-      tabPanel.addTab("", Images.imgNew, addPanel);
+      // 'create' a tab for creating new properties
+      JPanel newTab = new JPanel(new FlowLayout(FlowLayout.LEFT));
+      newTab.setPreferredSize(new Dimension(64,64));
+      tabPanel.addTab("", Images.imgNew, newTab);
       
       // add buttons for creating sub-properties 
       MetaProperty[] nested = entity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
@@ -293,7 +295,7 @@ import javax.swing.event.ChangeListener;
         if (topLevelTags.contains(meta.getTag())&&meta.isSingleton())
           continue;
         // create a button for it
-        addPanel.add(new LinkWidget(new NewTab(meta)));
+        newTab.add(new LinkWidget(new NewTab(meta)));
       }
 
       // finally finish setting up split panel
@@ -356,9 +358,29 @@ import javax.swing.event.ChangeListener;
   }
   
   /**
+   * Create a tab
+   */
+  private void createTab(Property prop) {
+    
+    // got a descriptor for it?
+    MetaProperty meta = prop.getMetaProperty();
+    NestedBlockLayout descriptor = getSharedDescriptor(meta);
+    if (descriptor==null) 
+      return;
+    
+    // create the panel
+    JPanel panel = createPanel(prop, descriptor.copy(), null);
+      
+    // keep it around
+    tabPanel.insertTab(meta.getName(), meta.getImage(), new JScrollPane(panel), meta.getInfo(), 0);
+
+    // done
+  }
+  
+  /**
    * Create the panel content 
    */
-  private JPanel createPanel(Property root, NestedBlockLayout descriptor, Set topLevelTags) throws IOException {
+  private JPanel createPanel(Property root, NestedBlockLayout descriptor, Set topLevelTags)  {
 
     JPanel result = new JPanel(descriptor);
     
@@ -444,10 +466,11 @@ import javax.swing.event.ChangeListener;
         return null;
     }
     
-    // need to create a temporary one? a temporary parent
-    // is used too hook it up to the current context (namely gedcom)
+    // addressed property doesn't exist yet? create a proxy that mirrors
+    // the root and add create a temporary holder (enjoys the necessary
+    // context - namely gedcom)
     if (prop==null) 
-      prop = new TempProperty().addProperty(meta.create(""));
+      prop = new Proxy(root, null).setValue(path, "");
 
     // create bean for property
     BeanFactory factory = view.getBeanFactory();
@@ -456,45 +479,94 @@ import javax.swing.event.ChangeListener;
     bean.addChangeListener(changeCallback);
     beans.add(bean);
     
-    // in case of temp - add a bean that will set the resulting value on commit
-    if (prop.getParent() instanceof TempProperty) 
-      beans.add(new SetValueBean(root, path, prop));
-    
     // done
     return bean;
   }
+  
+  /**
+   * A remove tab action
+   */
+  private class RemoveTab extends ActionDelegate implements MouseListener  {
+    int tabIndex = -1;
+    private RemoveTab() {
+      setText("Remove");
+      setImage(Images.imgCut);
+    }
+    public void mouseEntered(MouseEvent e) {
+    }
+    public void mouseExited(MouseEvent e) {
+    }
+    public void mouseClicked(MouseEvent e) {
+    }
+    public void mousePressed(MouseEvent e) {
+      mouseReleased(e);
+    }
+    public void mouseReleased(MouseEvent e) {
+      // popup?
+      if (!e.isPopupTrigger())
+        return;
+      // calculate tab 
+      tabIndex = tabPanel.indexAtLocation(e.getX(), e.getY());
+      if (tabIndex<0)
+        return;
+      // show popup
+      MenuHelper mh = new MenuHelper();
+      JPopupMenu menu = mh.createPopup(tabPanel);
+      mh.createItem(this);
+      menu.show(tabPanel, e.getX(), e.getY());
+      // done
+    }
+    protected void execute() {
+      if (tabIndex<0)
+        return;
+      tabPanel.removeTabAt(tabIndex);
+    }
+  }
 
   /**
-   * A temporary parent - we need this to hook up temporary properties to their context
+   * A proxy proparty - hooks up temporary properties to their context and propagates
+   * changes to an original
    */
-  private class TempProperty extends Property {
-    protected Property addProperty(Property child) { return super.addProperty(child); }
+  private class Proxy extends Property {
+    /** the original root */
+    private Property root;
+    /** a late binding parent */
+    private Property lateBindingParent;
+    /** constructor */
+    private Proxy(Property root , Property lateBindingParent) {
+      this.root = root;
+      this.lateBindingParent = lateBindingParent;
+    }
+    /** hook into change notifications */
+    protected void propagateChange(Change change) {
+      // a late binding parent to consider?
+      if (lateBindingParent!=null) {
+        root = lateBindingParent.addProperty(root.getTag(), "");
+        lateBindingParent = null;
+      }
+      // consider value changes only at this point
+      if (change instanceof Change.PropertyValue) {
+        // something to consider?
+        Property changed = ((Change.PropertyValue)change).getChanged();
+        String value = changed.getValue();
+        if (value.length()==0)
+          return;
+        root.setValue(getPathToNested(changed), value);
+        // done
+      }
+    }
+    /** offer context - gedcom and  transaction */
     public Gedcom getGedcom() { return gedcom; }
-    public String getTag() { throw new IllegalArgumentException(); }
+    protected Transaction getTransaction() { return gedcom.isTransaction() ? gedcom.getTransaction() : null; }
+    /** proxied stuff */
+    public String getTag() { return root.getTag(); }
+    public TagPath getPath() { return root.getPath(); }
+    public MetaProperty getMetaProperty() { return root.getMetaProperty(); }
+    /** have to implement but don't make sense here */
     public String getValue() { throw new IllegalArgumentException(); }
     public void setValue(String value) { throw new IllegalArgumentException(); }
   }
-  
-  /**
-   * Bean that commits the value of a temporary property
-   */
-  private class SetValueBean extends PropertyBean {
-    private Property root;
-    private TagPath path;
-    private SetValueBean(Property root, TagPath path, Property value) {
-      this.root = root;
-      this.path = path;
-      this.property = value;
-    }
-    public void commit() {
-      // commit the value
-      String value = property.getValue();
-      if (value.length()>0)
-        root.setValue(path, value);
-      // done
-    }
-  }
-  
+    
   /**
    * An action for adding 'new tabs'
    */
@@ -504,23 +576,25 @@ import javax.swing.event.ChangeListener;
     
     /** constructor */
     private NewTab(MetaProperty meta) {
+      // remember
+      this.meta = meta;
+      // looks
       setText(meta.getName());
       setImage(meta.getImage());
-      this.meta = meta;
     }
 
     /** callback initiate create */
     protected void execute() {
       
-      // add property for tab
-//      gedcom.startTransaction();
-//      
-//      try {
-//        entity.addProperty(meta.getTag(), "");
-//      } finally {
-//        gedcom.endTransaction();
-//      }
- 
+      // create a temporary root that we'll add later to entity on change
+      Property root = new Proxy(meta.create(""), entity);
+      
+      // create a tab for it
+      createTab(root);
+      
+      // and select it
+      tabPanel.setSelectedIndex(0);
+      
       // done
     }
     
