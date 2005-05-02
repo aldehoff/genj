@@ -398,12 +398,11 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     /** save properties from registry */
     private void save(Registry r) {
       
-      // grab current column widths
-      if (currentMode==this)
+      // grab current column widths & sort column
+      if (currentMode==this) {
         widths = propertyTable.getColumnWidths();
-      
-      // grab current sort column
-      sort = propertyTable.getSortedColumn();
+        sort = propertyTable.getSortedColumn();
+      }
 
 	    registry.put(tag+".paths" , paths);
 	    registry.put(tag+".widths", widths);
