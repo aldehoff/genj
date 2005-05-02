@@ -204,13 +204,13 @@ public class PropertyFile extends Property implements IconValueAvailable {
     // title?
     Property title = media.getProperty("TITL");
     if (title==null) 
-      title = media.addProperty(new PropertySimpleValue());
+      title = media.addProperty(new PropertySimpleValue("TITL"));
     title.setValue(new File(file).getName());
       
     // format?
     Property format = media.getProperty("FORM");
     if (format==null)
-      format = media.addProperty(new PropertySimpleValue()); 
+      format = media.addProperty(new PropertySimpleValue("FORM")); 
     format.setValue(PropertyFile.getSuffix(file));
     
     // done  
