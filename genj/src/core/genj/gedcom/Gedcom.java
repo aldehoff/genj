@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.81 $ $Author: nmeier $ $Date: 2005-04-27 21:35:50 $
+ * $Revision: 1.82 $ $Author: nmeier $ $Date: 2005-05-02 19:52:12 $
  */
 package genj.gedcom;
 
@@ -544,7 +544,7 @@ public class Gedcom {
   /**
    * Access current transaction
    */
-  /*package*/ synchronized Transaction getTransaction() {
+  public synchronized Transaction getTransaction() {
     // check for no transaction while listeners present
     if (transaction==null&&!listeners.isEmpty())
       throw new IllegalStateException("No active transaction but listeners present");
