@@ -116,7 +116,7 @@ public abstract class Property implements Comparable {
    * This called by the property in process of being
    * changed before the value has changed.
    */
-  /*package*/ void propagateChange(String old) {
+  protected void propagateChange(String old) {
     
     // remember being modified
     Transaction tx = getTransaction();
@@ -135,7 +135,7 @@ public abstract class Property implements Comparable {
    * Propagate something has changed to the
    * parent hierarchy
    */
-  /*package*/ void propagateChange(Change change) {
+  protected void propagateChange(Change change) {
     // tell it to parent
     if (parent!=null)
       parent.propagateChange(change);
@@ -336,6 +336,24 @@ public abstract class Property implements Comparable {
    */
   public Property getParent() {
     return parent;
+  }
+  
+  /**
+   * Returns the path from this to a nested property
+   */
+  public TagPath getPathToNested(Property nested) {    
+    Stack result = new Stack();
+    nested.getPathToContaining(this, result);
+    return new TagPath(result);
+  }
+  
+  private void getPathToContaining(Property containing, Stack result) {
+    result.push(getTag());
+    if (containing==this)
+      return;
+    if (parent==null)
+      throw new IllegalArgumentException("couldn't find containing "+containing);
+    parent.getPathToContaining(containing, result);
   }
   
   /**
