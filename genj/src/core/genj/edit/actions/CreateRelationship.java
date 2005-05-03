@@ -122,7 +122,7 @@ public class CreateRelationship extends AbstractChange {
     panel.add(select);
  
     // prepare id checkbox and textfield
-    requestID = new JTextField(Gedcom.getEntityPrefix(getTargetType()), 8);
+    requestID = new JTextField(gedcom.getNextAvailableID(getTargetType()), 8);
     requestID.setEditable(false);
     
     checkID = new JCheckBox(resources.getString("assign_id"));

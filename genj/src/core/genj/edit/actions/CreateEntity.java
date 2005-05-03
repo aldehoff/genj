@@ -57,7 +57,7 @@ public class CreateEntity extends AbstractChange {
   protected JComponent getOptions() {
 
     // prepare id checkbox and textfield
-    requestID = new JTextField(Gedcom.getEntityPrefix(etag), 8);
+    requestID = new JTextField(gedcom.getNextAvailableID(etag), 8);
     requestID.setEditable(false);
     
     final JCheckBox check = new JCheckBox(resources.getString("assign_id"));
