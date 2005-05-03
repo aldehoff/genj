@@ -45,6 +45,8 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuSelectionManager;
 
+import sun.misc.Service;
+
 /**
  * A bridge to open/manage Views
  */
@@ -77,24 +79,54 @@ public class ViewManager {
   /**
    * Constructor
    */
-  public ViewManager(Registry reGistry, PrintManager pManager, WindowManager wManager, String[] factoryTypes) {
+  public ViewManager(Registry registry, PrintManager printManager, WindowManager windowManager) {
+
+    // lookup all factories dynamically
+    List factories = new ArrayList();
+    Iterator it = Service.providers(ViewFactory.class);
+    while (it.hasNext()) 
+      factories.add(it.next());
+
+    // continue with init
+    init(registry, printManager, windowManager, factories);
+  }
+  
+  /**
+   * Constructor
+   */
+  public ViewManager(Registry registry, PrintManager printManager, WindowManager windowManager, String[] factoryTypes) {
+    
+    // instantiate factories
+    List factories = new ArrayList();
+    for (int f=0;f<factoryTypes.length;f++) {    
+      try {
+        factories.add( (ViewFactory)Class.forName(factoryTypes[f]).newInstance() );
+      } catch (Throwable t) {
+        Debug.log(Debug.ERROR, this, "Factory of type "+factoryTypes[f]+" cannot be instantiated ("+t.getMessage()+")");
+      }
+    }
+    
+    // continue with init
+    init(registry, printManager, windowManager, factories);
+  }
+  
+  /**
+   * Initialization
+   */
+  private void init(Registry registry, PrintManager printManager, WindowManager windowManager, List factories) {
     
     // remember
-    registry = reGistry;
-    printManager = pManager;
-    windowManager = wManager;
+    this.registry = registry;
+    this.printManager = printManager;
+    this.windowManager = windowManager;
     
-    // creat list of factories
-    factories = new ViewFactory[factoryTypes.length];
-    for (int f=0;f<factories.length;f++) {    
-      try {
-        ViewFactory factory = (ViewFactory)Class.forName(factoryTypes[f]).newInstance();
-        factories[f] = factory;
-        if (factory instanceof ContextListener)
-          addContextListener((ContextListener)factory);
-      } catch (Throwable t) {
-        throw new IllegalArgumentException("Factory of type "+factoryTypes[f]+" cannot be instantiated ("+t.getMessage()+")");
-      }
+    // keep factories
+    this.factories = (ViewFactory[])factories.toArray(new ViewFactory[factories.size()]);
+
+    // sign up context listeners
+    for (int f=0;f<this.factories.length;f++) {    
+        if (this.factories[f] instanceof ContextListener)
+          addContextListener((ContextListener)this.factories[f]);
     }
     
     // done

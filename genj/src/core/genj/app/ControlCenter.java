@@ -80,18 +80,6 @@ import javax.swing.event.ListSelectionListener;
  */
 public class ControlCenter extends JPanel {
 
-  /** views we offer */
-  static final private String[] FACTORIES = new String[]{
-    "genj.table.TableViewFactory",
-    "genj.tree.TreeViewFactory",
-    "genj.timeline.TimelineViewFactory",
-    "genj.edit.EditViewFactory",
-    "genj.report.ReportViewFactory",
-    "genj.nav.NavigatorViewFactory",
-    "genj.entity.EntityViewFactory", 
-    "genj.search.SearchViewFactory" 
-  };
-
   /** members */
   private JMenuBar menuBar; 
   private GedcomTableWidget tGedcoms;
@@ -112,7 +100,7 @@ public class ControlCenter extends JPanel {
     registry = new Registry(setRegistry, "cc");
     windowManager = winManager;
     printManager = new PrintManager(windowManager);
-    viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager, FACTORIES);
+    viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager);
     
     // Table of Gedcoms
     tGedcoms = new GedcomTableWidget(viewManager, registry);
