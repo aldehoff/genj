@@ -1,11 +1,14 @@
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 /**
@@ -30,11 +33,10 @@ import java.util.jar.Manifest;
 public class Run {
 
   public final static String 
-    RUNJAR = "./run.jar",
     MANIFEST = "META-INF/MANIFEST.MF",
     CLASSPATH = "Run-Classpath",
     RUNNABLE = "Run-Runnable";
-    
+  
   /**
    * Startup runnable with dynamically constructed classpath
    */
@@ -42,10 +44,8 @@ public class Run {
     
     try {
       
-      // grab our(!) manifest file
-      Manifest mf = new JarFile(RUNJAR).getManifest();
-      if (mf==null)
-        throw new Error("No local "+MANIFEST+" found");
+      // init grabbing our meta-inf configuration
+      Manifest mf = getManifest();
       
       // lookup classpath
       URL[] classpath = getClasspath(mf);
@@ -77,13 +77,13 @@ public class Run {
   }
   
   /**
-   * Assemble classpath from manifest file information
+   * Assemble classpath from manifest file information (optional)
    */
   private static URL[] getClasspath(Manifest mf) throws MalformedURLException {
 
     String classpath = mf.getMainAttributes().getValue(CLASSPATH);
-    if (classpath==null||classpath.length()==0)
-      throw new Error("No "+CLASSPATH+" defined in "+MANIFEST);
+    if (classpath==null)
+      classpath = "";
     
     // collect a list of classloader URLs
     StringTokenizer tokens = new StringTokenizer(classpath, ",", false);
@@ -104,6 +104,35 @@ public class Run {
 
     // done
     return (URL[])result.toArray(new URL[result.size()]);
+  }
+  
+  /**
+   * Get our manifest file. Normally all (parent) classloaders of a class do provide
+   * resources and the enumeration returned on lookup of manifest.mf will start
+   * with the topmost classloader's resources. 
+   * We're inverting that order to make sure we're consulting the manifest file in 
+   * the same jar as this class if available.
+   */
+  private static Manifest getManifest() throws IOException {
+
+    // find all manifest files
+    Stack manifests = new Stack();
+    for (Enumeration e = Run.class.getClassLoader().getResources(MANIFEST); e.hasMoreElements(); )
+      manifests.add(e.nextElement());
+    
+    // it has to have the runnable attribute
+    while (!manifests.isEmpty()) {
+      URL url = (URL)manifests.pop();
+      InputStream in = url.openStream();
+      Manifest mf = new Manifest(in);
+      in.close();
+      // careful with key here since Attributes.Name are used internally by Manifest file
+      if (mf.getMainAttributes().getValue(RUNNABLE)!=null)
+        return mf;
+    }
+      
+    // not found
+    throw new Error("No "+MANIFEST+" with "+RUNNABLE+" found");
   }
 
 } //Run
