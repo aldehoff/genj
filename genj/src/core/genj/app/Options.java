@@ -168,12 +168,8 @@ public class Options extends OptionProvider {
    */
   public void setLanguage(int language) {
     
-    // check bounds
-    if (language<0||language>codes.length-1)
-      return;
-
-    // set locale if applicable - only from unknown
-    if (this.language==-1) {
+    // set locale if applicable
+    if (language>=0&&language<codes.length) {
       String lang = codes[language];
       if (lang.length()>0) {
         Debug.log(Debug.INFO, this, "Switching language to "+lang);
