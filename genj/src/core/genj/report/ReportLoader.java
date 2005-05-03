@@ -103,7 +103,7 @@ import java.util.List;
     parseDir(base, null);
     
     // Prepare classloader
-    URLClassLoader cl = new URLClassLoader((URL[])classpath.toArray(new URL[classpath.size()]));
+    URLClassLoader cl = new URLClassLoader((URL[])classpath.toArray(new URL[classpath.size()]), getClass().getClassLoader());
     
     // Load reports
     Iterator rs = reports.iterator();
