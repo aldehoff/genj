@@ -219,7 +219,11 @@ public abstract class Change {
     }
     
     void undo() {
-      gedcom.addEntity(entity);
+      try {
+        gedcom.addEntity(entity);
+      } catch (GedcomException e) {
+        // shouldn't happen
+      }
     }
 
     public String toString() {

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.82 $ $Author: nmeier $ $Date: 2005-05-02 19:52:12 $
+ * $Revision: 1.83 $ $Author: nmeier $ $Date: 2005-05-03 18:46:46 $
  */
 package genj.gedcom;
 
@@ -142,8 +142,7 @@ public class Gedcom {
   
   /** entities */
   private LinkedList allEntities = new LinkedList();
-  private Map tag2id2entities = new HashMap();
-  private Map tag2entities = new HashMap();
+  private Map tag2id2entity = new HashMap();
   private int minIDStringLen = 4; //lenght of ids e.g. I001
   
   /** transaction support */
@@ -277,15 +276,22 @@ public class Gedcom {
   /**
    * Add entity 
    */
-  /*package*/ void addEntity(Entity entity) {
+  /*package*/ void addEntity(Entity entity) throws GedcomException {
     
-    // remember id2entity
     String id = entity.getId();
-    if (id.length()>0)
-      getEntityMap(entity.getTag()).put(id, entity);
+    
+    // some entities (event definitions for example) don't have an
+    // id - we'll keep them in our global list but not mapped id->entity
+    if (id.length()>0) {
+      Map id2entity = getEntityMap(entity.getTag());
+      if (id2entity.containsKey(id))
+        throw new GedcomException("Entity with duplicated id");
+      
+      // remember id2entity
+      id2entity.put(id, entity);
+    }
     
     // remember entity
-    getEntityList(entity.getTag()).add(entity);
     allEntities.add(entity);
     
     // notify
@@ -308,7 +314,7 @@ public class Gedcom {
     
     // Generate id if necessary
     if (id==null)
-      id = createEntityId(tag);
+      id = getNextAvailableID(tag);
       
     // update minIDStringLen
     minIDStringLen = Math.max(id.length(), minIDStringLen);
@@ -346,21 +352,26 @@ public class Gedcom {
    */
   public void deleteEntity(Entity which) {
 
-    // Lookup entity map
-    Map id2entity = getEntityMap(which.getTag());
-
-    // id exists ?
+    // Some entities dont' have ids (event definitions for example) - for
+    // all others we check the id once more
     String id = which.getId();
-    if (!id2entity.containsKey(id))
-      throw new IllegalArgumentException("Unknown entity with id "+which.getId());
+    if (id.length()>0) {
+      
+      // Lookup entity map
+      Map id2entity = getEntityMap(which.getTag());
+  
+      // id exists ?
+      if (!id2entity.containsKey(id))
+        throw new IllegalArgumentException("Unknown entity with id "+which.getId());
 
+      // forget id
+      id2entity.remove(id);
+    }
+    
     // Tell it
     which.delNotify();
 
-    // Delete it
-    if (id2entity.get(id)==which) // might be duplicate
-      id2entity.remove(id);
-    getEntityList(which.getTag()).remove(which);
+    // Forget it now
     allEntities.remove(which);
 
     // was it the submitter?    
@@ -374,24 +385,15 @@ public class Gedcom {
    */
   private Map getEntityMap(String tag) {
     // lookup map of entities for tag
-    Map id2entities = (Map)tag2id2entities.get(tag);
-    if (id2entities==null) {
-      id2entities = new HashMap();
-      tag2id2entities.put(tag, id2entities);
+    Map id2entity = (Map)tag2id2entity.get(tag);
+    if (id2entity==null) {
+      id2entity = new HashMap();
+      tag2id2entity.put(tag, id2entity);
     }
     // done
-    return id2entities;
+    return id2entity;
   }
   
-  private List getEntityList(String tag) {
-    List entities = (List)tag2entities.get(tag);
-    if (entities==null) {
-      entities = new LinkedList();
-      tag2entities.put(tag, entities);
-    }
-    return entities;
-  }
-
   /**
    * Returns all entities
    */
@@ -403,7 +405,7 @@ public class Gedcom {
    * Returns entities of given type
    */
   public Collection getEntities(String tag) {
-    return Collections.unmodifiableCollection(getEntityList(tag));
+    return Collections.unmodifiableCollection(getEntityMap(tag).values());
   }
 
   /**
@@ -417,7 +419,7 @@ public class Gedcom {
    * Returns entities of given type sorted by comparator (can be null)
    */
   public Entity[] getEntities(String tag, Comparator comparator) {
-    Collection ents = getEntityList(tag);
+    Collection ents = getEntityMap(tag).values();
     Entity[] result = (Entity[])ents.toArray(new Entity[ents.size()]);
     // sort by comparator or entity
     if (comparator!=null) 
@@ -436,7 +438,7 @@ public class Gedcom {
     if (id==null) 
       throw new IllegalArgumentException("id cannot be null");
     // loop all types
-    for (Iterator tags=tag2id2entities.keySet().iterator();tags.hasNext();) {
+    for (Iterator tags=tag2id2entity.keySet().iterator();tags.hasNext();) {
       String tag = (String)tags.next();
       Entity result = getEntity(tag, id);
       if (result!=null)
@@ -467,15 +469,15 @@ public class Gedcom {
   }
 
   /**
-   * Creates a random ID for given type of entity which is free in this Gedcom
+   * Return the next available ID for given type of entity
    */
-  private String createEntityId(String tag) {
+  public String getNextAvailableID(String entity) {
     
     // Lookup current entities of type
-    Map id2entity = getEntityMap(tag);
+    Map id2entity = getEntityMap(entity);
     
     // Look for an available ID
-    String prefix = getEntityPrefix(tag);
+    String prefix = getEntityPrefix(entity);
     int id = Options.getInstance().isFillGapsInIDs ? 1 : id2entity.size();
     search: while (true) {
       // next one
@@ -831,7 +833,7 @@ public class Gedcom {
    * Check for containment
    */
   public boolean contains(Entity entity) {
-    return getEntityList(entity.getTag()).contains(entity);
+    return getEntityMap(entity.getTag()).containsValue(entity);
   }
   
   /**
