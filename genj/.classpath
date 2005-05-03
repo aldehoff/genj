@@ -8,10 +8,6 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
-	<classpathentry output="build/classes/geo" kind="src" path="src/geo">
-		<attributes>
-		</attributes>
-	</classpathentry>
 	<classpathentry output="build/classes/report" kind="src" path="src/report">
 		<attributes>
 		</attributes>
