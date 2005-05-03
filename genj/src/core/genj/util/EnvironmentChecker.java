@@ -1,6 +1,8 @@
 package genj.util;
 
 import java.io.File;
+import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 public class EnvironmentChecker {
@@ -35,18 +37,25 @@ public class EnvironmentChecker {
 
       // check classpath
       String cpath = System.getProperty("java.class.path");
-      StringTokenizer tokens = new StringTokenizer(
-        cpath,
-        System.getProperty("path.separator"),
-        false
-      );
-      
+      StringTokenizer tokens = new StringTokenizer(cpath,System.getProperty("path.separator"),false);
       while (tokens.hasMoreTokens()) {
         String entry = tokens.nextToken();
         String stat = checkClasspathEntry(entry) ? " (does exist)" : "";
         Debug.log(Debug.INFO, EnvironmentChecker.class, "Classpath = "+entry+stat);
       }
+      
+      // check classloaders
+      ClassLoader cl = EnvironmentChecker.class.getClassLoader();
+      while (cl!=null) {
+        if (cl instanceof URLClassLoader) {
+          Debug.log(Debug.INFO, EnvironmentChecker.class, "URLClassloader "+cl + Arrays.asList(((URLClassLoader)cl).getURLs()));
+        } else {
+          Debug.log(Debug.INFO, EnvironmentChecker.class, "Classloader "+cl);
+        }
+        cl = cl.getParent();
+      }
 
+      // DONE
     } catch (Throwable t) {
       Debug.log(Debug.INFO, EnvironmentChecker.class, "Couldn't test for system properties");
     }
