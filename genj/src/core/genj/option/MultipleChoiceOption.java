@@ -111,8 +111,12 @@ public abstract class MultipleChoiceOption extends PropertyOption {
 
     /** constructor */
     private UI() {
-      setModel(new DefaultComboBoxModel(getChoices()));
-      setSelectedIndex(getIndex());
+      Object[] choices = getChoices();
+      setModel(new DefaultComboBoxModel(choices));
+      int index = getIndex();
+      if (index<0||index>choices.length-1)
+        index = -1;
+      setSelectedIndex(index);
     }
     
     /** component representation */
