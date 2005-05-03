@@ -288,6 +288,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     if (old.size()>MAX_OLD) old.removeLast();
     // update choice
     choice.setValues(old);
+    choice.setText(value);
     // done
   }
 

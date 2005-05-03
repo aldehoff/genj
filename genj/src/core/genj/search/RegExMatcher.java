@@ -44,7 +44,7 @@ public class RegExMatcher extends Matcher {
    */
   public void init(String pattern) {
     try {
-      compiled = Pattern.compile(pattern);
+      compiled = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE|Pattern.UNICODE_CASE|Pattern.DOTALL);
     } catch (PatternSyntaxException pe) {
       throw new IllegalArgumentException("There's a problem with the regular expression '"+pattern+"': "+pe.getDescription());
     }
