@@ -40,7 +40,7 @@ import javax.swing.UIManager;
 /**
  * Main Class for GenJ Application
  */
-public class App {
+public class App implements Runnable {
   
   /** constants */
   private final static String SWING_RESOURCES_KEY_PREFIX = "swing.";
@@ -49,6 +49,13 @@ public class App {
    * GenJ Main Method
    */
   public static void main(java.lang.String[] args) {
+    new App().run();
+  }
+  
+  /**
+   * GenJ Main Method
+   */
+  public void run() {
 
     // Catch anything that might happen
     try {
