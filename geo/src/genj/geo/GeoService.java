@@ -19,6 +19,8 @@
  */
 package genj.geo;
 
+import genj.gedcom.Property;
+import genj.gedcom.PropertyPlace;
 import genj.util.EnvironmentChecker;
 
 import java.io.File;
@@ -55,6 +57,40 @@ public class GeoService {
       }
     }
     return instance;
+  }
+  
+  /**
+   * Return a suitable location for given property
+   * @param placeOrAddr place or address
+   */
+  public GeoLocation[] getLocations(Property placeOrAddr) {
+    
+    // a place?
+    if (placeOrAddr instanceof PropertyPlace)
+      return getLocationsForPlace((PropertyPlace)placeOrAddr);
+    
+    // an address?
+    if (placeOrAddr.getTag().equals("ADDR"))
+      return getLocationsForAddress(placeOrAddr);
+    
+    // n/a
+    throw new IllegalArgumentException("either place or address argument required");
+  }
+  
+  /**
+   * Return a suitable location for given property
+   * @param place the place
+   */
+  public GeoLocation[] getLocationsForPlace(PropertyPlace place) {
+    return new GeoLocation[0];
+  }
+  
+  /**
+   * Return a suitable location for given property
+   * @param address the address
+   */
+  public GeoLocation[] getLocationsForAddress(Property address) {
+    return new GeoLocation[0];
   }
   
   /**

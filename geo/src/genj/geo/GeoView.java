@@ -20,10 +20,10 @@
 package genj.geo;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.PropertyPlace;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
+import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
@@ -49,6 +49,8 @@ import com.vividsolutions.jump.workbench.ui.LayerViewPanelContext;
  * The view showing gedcom data in geographic context
  */
 public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
+  
+  private final static ImageIcon IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png");
   
   private ViewManager viewManager;
   
@@ -121,9 +123,9 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       actions.add(new ChooseMap(maps[i]));
 
     // add a popup for them
-    PopupWidget popup = new PopupWidget(null, PropertyPlace.IMAGE, actions);
-    popup.setEnabled(!actions.isEmpty());
-    bar.add(popup);
+    PopupWidget chooseMap = new PopupWidget(null, IMG_MAP, actions);
+    chooseMap.setEnabled(!actions.isEmpty());
+    bar.add(chooseMap);
     
     // done
   }
