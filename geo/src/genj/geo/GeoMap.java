@@ -59,6 +59,9 @@ public class GeoMap {
   
   /** name */
   private String name;
+  
+  /** background color */
+  private Color background = Color.WHITE;
 
   /** constructor */
   /*package*/ GeoMap(File fileOrDir) {
@@ -77,8 +80,12 @@ public class GeoMap {
     } catch (IOException e) {
     }
     
-    // init name
+    // init name&color
     name = i18n("name", fileOrDir.getName());
+    try {
+      background =  new Color(Integer.decode(i18n("color.background", "#ffffff")).intValue());
+    } catch (Throwable t) {
+    }
     
     // done
 
@@ -97,8 +104,15 @@ public class GeoMap {
     return name;
   }
   
-  /** load all feature collections for this geo map into LayerManager  */
-  /*package*/ void load(LayerManager manager) throws IOException {
+  /** background color */
+  public Color getBackground() {
+    return background;
+  }
+  
+  /** 
+   * load all feature collections for this geo map into LayerManager  
+   */
+  void load(LayerManager manager) throws IOException {
 
     // load shapes files
     File[] files = fileOrDir.listFiles();
@@ -115,11 +129,10 @@ public class GeoMap {
       // check for parameters
       String color = i18n("color."+name, null);
       if (color!=null) try {
-//        Color c = new Color(255,255,204,255);
         Color c = new Color(Integer.decode(color).intValue());
         BasicStyle style = layer.getBasicStyle();
         style.setFillColor(c);
-        //style.setAlpha(100);
+        style.setAlpha(255);
         style.setLineColor(Layer.defaultLineColor(c));
       } catch (NumberFormatException nfe) {
         Debug.log(Debug.WARNING, this, "Found undecodeable color "+color);

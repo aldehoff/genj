@@ -145,7 +145,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     // pack into panel
     layerPanel = new LayerViewPanel(layerManager, new ViewContext());    
-//    layerPanel.setBackground(new Color(0, 255, 0, 255));
+    layerPanel.setBackground(map.getBackground());
     
     add(BorderLayout.CENTER, layerPanel);
 
