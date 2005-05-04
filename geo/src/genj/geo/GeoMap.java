@@ -40,6 +40,7 @@ import com.vividsolutions.jump.feature.FeatureDataset;
 import com.vividsolutions.jump.feature.FeatureSchema;
 import com.vividsolutions.jump.workbench.model.Layer;
 import com.vividsolutions.jump.workbench.model.LayerManager;
+import com.vividsolutions.jump.workbench.ui.renderer.style.BasicStyle;
 
 /**
  * An available Map
@@ -114,10 +115,13 @@ public class GeoMap {
       // check for parameters
       String color = i18n("color."+name, null);
       if (color!=null) try {
-        Color c =Color.decode(color);
-        layer.getBasicStyle().setFillColor(c);
-        layer.getBasicStyle().setLineColor(layer.defaultLineColor(c));
-      } catch (NumberFormatException e) {
+//        Color c = new Color(255,255,204,255);
+        Color c = new Color(Integer.decode(color).intValue());
+        BasicStyle style = layer.getBasicStyle();
+        style.setFillColor(c);
+        //style.setAlpha(100);
+        style.setLineColor(Layer.defaultLineColor(c));
+      } catch (NumberFormatException nfe) {
         Debug.log(Debug.WARNING, this, "Found undecodeable color "+color);
       }
       // next
