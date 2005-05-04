@@ -73,6 +73,8 @@
      <zipfileset dir="./contrib" includes="geo/**"/>
    </zip>
 
+   <!-- report -->
+   <echo level="info">You can find the distribution bits in ${dir.dist}</echo>
   </target>
 
 </project>
