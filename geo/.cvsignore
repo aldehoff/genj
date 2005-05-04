@@ -1,0 +1,4 @@
+*.jpage
+.project
+.settings
+build
