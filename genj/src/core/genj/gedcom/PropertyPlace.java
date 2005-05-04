@@ -20,6 +20,7 @@
 package genj.gedcom;
 
 import genj.util.DirectAccessTokenizer;
+import genj.util.swing.ImageIcon;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -29,6 +30,9 @@ import java.util.Iterator;
  */
 public class PropertyPlace extends Property {
 
+  public final static ImageIcon
+    IMAGE = Grammar.getInstance().getMeta(new TagPath("INDI:BIRT:PLAC")).getImage();
+  
   public final static String
     JURISDICTION_SEPARATOR = ",";
   
