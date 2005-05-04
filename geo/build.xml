@@ -34,7 +34,7 @@
    -->
   <target name="compile" depends="init">
     <mkdir dir="${dir.build}/classes"/>
-    <javac verbose="true" srcdir="src" destdir="${dir.build}/classes"
+    <javac srcdir="src" destdir="${dir.build}/classes"
            debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
       <classpath refid="project.class.path"/>
     </javac>
