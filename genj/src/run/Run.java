@@ -1,16 +1,3 @@
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Stack;
-import java.util.StringTokenizer;
-import java.util.jar.Manifest;
-
 /**
  * GenJ - GenealogyJ
  *
@@ -29,6 +16,36 @@ import java.util.jar.Manifest;
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Stack;
+import java.util.StringTokenizer;
+import java.util.jar.Manifest;
+
+/**
+ * A program starter that reads a classpath and runnable type from manifest-file. The
+ * comma-separated classpath is expanded (each entry that is a directory is scanned
+ * for jar-files) and the runnable invoked with the resulting classpath.
+ * 
+ * An applicable manifest file should roughly look like this example: META-INF/MANIFEST.MF
+ * 
+ * <pre>
+ *   Main-Class: Run
+ *   Run-Classpath: ./lib
+ *   Run-Runnable: some.package.and.Runnable </pre>
+ *   
+ * The manifest entry Main-Class makes sure that Run can be started via
+ * <pre>
+ *   java -jar thejar.jar
+ * </pre>
  */
 public class Run {
 
