@@ -69,7 +69,8 @@ public class GeoService {
       if (dir.exists()) {
         File[] files = dir.listFiles();
         for (int i=0;i<files.length;i++) 
-          maps.add(new GeoMap(files[i]));
+          if (!files[i].getName().equals("CVS")) 
+            maps.add(new GeoMap(files[i]));
       }
     }
     return (GeoMap[])maps.toArray(new GeoMap[maps.size()]);
