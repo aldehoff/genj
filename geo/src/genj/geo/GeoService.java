@@ -20,13 +20,13 @@
 package genj.geo;
 
 import genj.gedcom.Property;
-import genj.gedcom.PropertyPlace;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -35,13 +35,17 @@ import java.util.List;
 public class GeoService {
   
   private static final String 
-    GEO_DIR = "./geo";
+    GEO_DIR = "./geo",
+    GAZETTEER_SUFFIX = ".gzt";
 
   /** singleton */
   private static GeoService instance;
   
   /** maps */
   private List maps;
+  
+  /** databases */
+  private List gazetteers;
   
   /**
    * Constructor
@@ -64,46 +68,59 @@ public class GeoService {
   }
   
   /**
-   * Return location databases
+   * Calculate geo directory
    */
-  public LocationDatabase[] getLocationDatabases() {
-    return new LocationDatabase[0];
+  private File calcGeoDir() {
+    return new File(EnvironmentChecker.getProperty(GeoService.class,
+        "user.home/.genj/geo",
+        GEO_DIR,
+        "calculate dir for geometric database"
+      ));
+  }
+
+  /**
+   * Create a gazetteer for given country and state
+   */
+  public void createGazetteer(String country, String state) {
+    
+  }
+
+  /**
+   * Return all available gazetteers
+   */
+  public synchronized Gazetteer[] getGazetteers() {
+
+    // don't have it yet?
+    if (gazetteers==null) {
+        
+      gazetteers = new ArrayList();
+      
+      // check 'em files
+      File[] files = calcGeoDir().listFiles();
+      for (int i=0;i<files.length;i++) {
+        File file = files[i];
+        if (file.getName().endsWith(GAZETTEER_SUFFIX))
+          gazetteers.add(new Gazetteer(file));
+      }
+    
+      // got it now
+    }
+    
+    // done
+    return (Gazetteer[])gazetteers.toArray(new Gazetteer[gazetteers.size()]);
   }
   
   /**
-   * Return a suitable location for given property
-   * @param placeOrAddr place or address
+   * Return a suitable geographic location for given property. Any
+   * property that has a nested PLACe or ADDRess is a suitable
+   * argument.
+   * @param property property to analyze
+   * @return array of suitable locations
    */
-  public GeoLocation[] getLocations(Property placeOrAddr) {
+  public GeoLocation[] getLocations(Property property) {
     
-    // a place?
-    if (placeOrAddr instanceof PropertyPlace)
-      return getLocationsForPlace((PropertyPlace)placeOrAddr);
-    
-    // an address?
-    if (placeOrAddr.getTag().equals("ADDR"))
-      return getLocationsForAddress(placeOrAddr);
-    
-    // n/a
-    throw new IllegalArgumentException("either place or address argument required");
-  }
-  
-  /**
-   * Return a suitable location for given property
-   * @param place the place
-   */
-  public GeoLocation[] getLocationsForPlace(PropertyPlace place) {
     return new GeoLocation[0];
-  }
-  
-  /**
-   * Return a suitable location for given property
-   * @param address the address
-   */
-  public GeoLocation[] getLocationsForAddress(Property address) {
-    if (!address.getTag().equals("ADDR"))
-      throw new IllegalArgumentException(address.getTag()+" is not a valid argument");
-    return new GeoLocation[0];
+    
   }
   
   /**
@@ -121,6 +138,9 @@ public class GeoService {
         // loop over files and directories in ./geo or ${genj.geo.dir}
         File[] files = dir.listFiles();
         for (int i=0;i<files.length;i++) {
+          // only directories - later zip files as well
+          if (!files[i].isDirectory())
+            continue;
           // 20050504 don't consider directory 'CVS'
           if (files[i].getName().equals("CVS"))
             continue;
@@ -142,10 +162,48 @@ public class GeoService {
   }
   
   /**
-   * A location database contains well known places and coordinates
+   * Geographical dictionary with places and coordinates
    */
-  public class LocationDatabase {
+  public class Gazetteer  implements Comparable {
     
-  }
+    /** unique key, country and state id, name */
+    private String key, country, state, name;
+    
+    /** constructor */
+    /*package*/ Gazetteer(File file) {
+
+      // analyze filename
+      String filename = file.getName();
+      assert filename.endsWith(GAZETTEER_SUFFIX) : "need gazetteer file";
+      key = filename.substring(0, filename.length()-GAZETTEER_SUFFIX.length());
+      
+      // parse for country and state part
+      int i = key.indexOf('_');
+      assert i <0 || i>0 : "strange filename - should be country[_state].gzt";
+      if (i>0) { 
+        country = key.substring(0, i);
+        state = key.substring(i+1);
+      } else {
+        country = key;
+        state = null;
+      }
+      
+      // init a display name
+      name = new Locale("en", country).getDisplayCountry();
+      
+      // done
+    }
+    
+    /** string representation */
+    public String toString() {
+      return name;
+    }
+    
+    /** comparison */
+    public int compareTo(Object o) {
+      Gazetteer that = (Gazetteer)o;
+      return this.name.compareTo(that.name);
+    }
+  } //Gazetteer
     
 } //GeoService

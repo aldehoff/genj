@@ -19,21 +19,52 @@
  */
 package genj.geo;
 
+import genj.util.ActionDelegate;
+import genj.util.swing.ButtonHelper;
+import genj.util.swing.NestedBlockLayout;
 import genj.view.Settings;
 import genj.view.ViewManager;
 
+import java.util.Arrays;
+
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * Class for providing editable settings to user
  */
 public class GeoViewSettings extends JPanel implements Settings {
-
+  
+  /** a list of gazetters we have */
+  private JList listGazetteers;
+  
   /**
    * Initializer
    */
   public void init(ViewManager manager) {
+
+    // setup components
+    setLayout(new NestedBlockLayout("<col><row><label/></row><row><col><up gx=\"1\"/><down gx=\"1\"/><import gx=\"1\"/><delete gx=\"1\"/></col><col><list wx=\"1\"/></col></row></col>"));
+    
+    // .. a list of gazetteers, buttons for up and down, delete, import
+    GeoService.Gazetteer[] gazetteers = GeoService.getInstance().getGazetteers();
+    Arrays.sort(gazetteers);
+    listGazetteers = new JList(gazetteers);
+    
+    ButtonHelper bh = new ButtonHelper().setResources(GeoView.RESOURCES);
+    add("label", new JLabel(GeoView.RESOURCES.getString("label.gazetteers")));
+    add("up", bh.create(new UpDown(true)));
+    add("down", bh.create(new UpDown(false)));
+    add("import", bh.create(new Import()));
+    add("delete", bh.create(new Delete()));
+    add("list", new JScrollPane(listGazetteers));
+    
+    // done
   }
 
   /**
@@ -61,4 +92,65 @@ public class GeoViewSettings extends JPanel implements Settings {
   public void reset() {
   }
 
+  /**
+   * Action - Up and Down
+   */
+  private class UpDown extends ActionDelegate implements ListSelectionListener {
+    /** up or down */
+    private boolean up;
+    /** constructor */
+    protected UpDown(boolean up) {
+      this.up = up;
+      setEnabled(false);
+      setText( up ? "action.up" : "action.down");
+      listGazetteers.addListSelectionListener(this);
+    }
+    /** callback - run */
+    public void execute() {
+    }
+    /** callback - selection changed */
+    public void valueChanged(ListSelectionEvent e) {
+      boolean enabled;
+      if (up)
+        enabled = listGazetteers.getSelectionModel().getMinSelectionIndex()>0;
+      else {
+        int max = listGazetteers.getSelectionModel().getMaxSelectionIndex();
+        enabled = max>=0 && max < listGazetteers.getModel().getSize()-1;
+      }
+      setEnabled(enabled);
+    }
+  } //ActionUpDown
+
+  /**
+   * Action - Import
+   */
+  private class Import extends ActionDelegate {
+    /** constructor */
+    protected Import() {
+      setText( "action.import" );
+    }
+    /** callback - run */
+    public void execute() {
+    }
+  } //Import
+  
+  /**
+   * Action - Delete
+   */
+  private class Delete extends ActionDelegate implements ListSelectionListener {
+    /** constructor */
+    protected Delete() {
+      setText( "action.delete" );
+      setEnabled(false);
+      listGazetteers.addListSelectionListener(this);
+    }
+    /** callback - run */
+    public void execute() {
+    }
+    /** callback - selection changed */
+    public void valueChanged(ListSelectionEvent e) {
+      int index = listGazetteers.getSelectedIndex();
+      setEnabled(index>=0);
+    }
+  } //Delete
 }

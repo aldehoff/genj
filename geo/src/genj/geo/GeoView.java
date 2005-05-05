@@ -25,6 +25,7 @@ import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
@@ -53,6 +54,8 @@ import com.vividsolutions.jump.workbench.ui.LayerViewPanelContext;
 public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   
   private final static ImageIcon IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png");
+  
+  /*package*/ final static Resources RESOURCES = Resources.get(GeoView.class);
 
   /** gedcom we're looking at */
   private Gedcom gedcom;
