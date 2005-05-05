@@ -619,7 +619,7 @@ import javax.swing.event.ChangeListener;
       // prepare image
       Property prop = wrapped.getProperty();
       ImageIcon img = prop.getImage(false);
-      if (prop.getParent()==null)
+      if (prop.getValue().length()==0)
         img = img.getDisabled(50);
       setIcon(img);
       setToolTipText(wrapped.getProperty().getPropertyName());
