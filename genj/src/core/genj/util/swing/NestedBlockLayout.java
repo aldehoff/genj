@@ -24,6 +24,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.io.IOException;
@@ -47,8 +48,16 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * A layout that arranges components in nested blocks of rows and columns
+ * <pre>
  * <!ELEMENT row (col*|*)>
  * <!ELEMENT col (row*|*)>
+ * <!ELEMENT *>
+ * <!ATTLIST * wx CDATA>
+ * <!ATTLIST * wy CDATA>
+ * <!ATTLIST * gx CDATA>
+ * <!ATTLIST * gy CDATA>
+ * </pre>
+ * wx,wy are weight arguments - gx,gy are grow arguments
  */
 public class NestedBlockLayout implements LayoutManager2, Cloneable {
   
@@ -462,6 +471,9 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** weight constraints */
     private Point2D.Float weight = new Point2D.Float();
     
+    /** grow constraints */
+    private Point grow = new Point();
+    
     /** padding */
     private int padding;
     
@@ -484,7 +496,16 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       String wy = getAttribute("wy");
       if (wy!=null)
         weight.y = Float.parseFloat(wy);
+      
+      // look for grow info
+      String gx = getAttribute("gx");
+      if (gx!=null)
+        grow.x = 1;
+      String gy = getAttribute("gy");
+      if (gy!=null)
+        grow.y = 1;
 
+      // done
     }
     
     /** cloning */
@@ -567,9 +588,15 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // make sure it's not more than maximum
       Dimension pref = preferred();
       Dimension max = component.getMaximumSize();
-      if (weight.x==0) max.width = pref.width;
-      if (weight.y==0) max.height = pref.height;
-      
+      if (grow.x!=0) 
+        max.width = avail.width;
+      else if (weight.x==0) 
+        max.width = pref.width;
+        
+      if (grow.y!=0) 
+        max.height = avail.height;
+      else if (weight.y==0)
+        max.height = pref.height;
       
       // share space
       int extraX = avail.width-max.width;
