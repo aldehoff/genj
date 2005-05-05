@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.83 $ $Author: nmeier $ $Date: 2005-05-03 18:46:46 $
+ * $Revision: 1.84 $ $Author: nmeier $ $Date: 2005-05-05 19:59:49 $
  */
 package genj.gedcom;
 
@@ -875,8 +875,15 @@ public class Gedcom {
   public Collator getCollator() {
     
     // not known?
-    if (cachedCollator==null) 
+    if (cachedCollator==null) {
       cachedCollator = Collator.getInstance(getLocale());
+      
+      // 20050505 when comparing gedcom values we really don't want it to be
+      // done case sensitive. It surfaces in many places (namely for example
+      // in prefix matching in PropertyTableWidget) so I'm restricting comparison
+      // criterias to PRIMARY from now on
+      cachedCollator.setStrength(Collator.PRIMARY);
+    }
     
     // done
     return cachedCollator;
