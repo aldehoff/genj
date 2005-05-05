@@ -21,6 +21,7 @@ package genj.geo;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
+import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 
 import java.io.File;
@@ -32,6 +33,9 @@ import java.util.List;
  * A service for geographical computations / data services
  */
 public class GeoService {
+  
+  private static final String 
+    GEO_DIR = "./geo";
 
   /** singleton */
   private static GeoService instance;
@@ -57,6 +61,13 @@ public class GeoService {
       }
     }
     return instance;
+  }
+  
+  /**
+   * Return location databases
+   */
+  public LocationDatabase[] getLocationDatabases() {
+    return new LocationDatabase[0];
   }
   
   /**
@@ -90,6 +101,8 @@ public class GeoService {
    * @param address the address
    */
   public GeoLocation[] getLocationsForAddress(Property address) {
+    if (!address.getTag().equals("ADDR"))
+      throw new IllegalArgumentException(address.getTag()+" is not a valid argument");
     return new GeoLocation[0];
   }
   
@@ -97,19 +110,42 @@ public class GeoService {
    * Available Maps
    */
   public synchronized GeoMap[] getMaps() {
-    // known?
+    // know all maps already?
     if (maps==null) {
+      
       maps = new ArrayList();
+      
       // look em up in file system
-      File dir = new File(EnvironmentChecker.getProperty(this, "genj.geo.dir", "./geo", "Looking for map directory"));
+      File dir = new File(EnvironmentChecker.getProperty(this, "genj.geo.dir", GEO_DIR, "Looking for map directory"));
       if (dir.exists()) {
+        // loop over files and directories in ./geo or ${genj.geo.dir}
         File[] files = dir.listFiles();
-        for (int i=0;i<files.length;i++) 
-          if (!files[i].getName().equals("CVS")) 
+        for (int i=0;i<files.length;i++) {
+          // 20050504 don't consider directory 'CVS'
+          if (files[i].getName().equals("CVS"))
+            continue;
+          // add it to available maps
+          try {
             maps.add(new GeoMap(files[i]));
+          } catch (Throwable t) {
+            Debug.log(Debug.WARNING, this, "problem reading map from "+files[i], t);
+          }
+          // next
+        }
       }
+      
+      // finished looking for maps
     }
+    
+    // done
     return (GeoMap[])maps.toArray(new GeoMap[maps.size()]);
+  }
+  
+  /**
+   * A location database contains well known places and coordinates
+   */
+  public class LocationDatabase {
+    
   }
     
 } //GeoService

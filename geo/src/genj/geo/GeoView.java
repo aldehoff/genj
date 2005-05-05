@@ -20,6 +20,8 @@
 package genj.geo;
 
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
+import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
@@ -51,13 +53,23 @@ import com.vividsolutions.jump.workbench.ui.LayerViewPanelContext;
 public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   
   private final static ImageIcon IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png");
+
+  /** gedcom we're looking at */
+  private Gedcom gedcom;
   
+  /** handle to view manager */
   private ViewManager viewManager;
   
+  /** the current map */
   private GeoMap currentMap;
   
+  /** the current layer view panel */
   private LayerViewPanel layerPanel;
   
+  /** our connector to gedcom events */
+  private GedcomCallback gedcomCallback = new GedcomCallback();
+  
+  /** a rezoom runnable we can invokeLater() */
   private Runnable rezoom = new Runnable() {
     public void run() {
       if (layerPanel!=null) try {
@@ -71,13 +83,13 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * Constructor
    */
-  public GeoView(String title, Gedcom gedcom, Registry registry, ViewManager mgr) {
+  public GeoView(String title, Gedcom gedcom, Registry registry, ViewManager viewManager) {
     
     super(new BorderLayout());
     
     // state to remember
-    viewManager = mgr;
-    
+    this.viewManager = viewManager;
+    this.gedcom = gedcom;
     
     // listen
     addComponentListener(new ComponentAdapter() {
@@ -95,14 +107,22 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     // continue with super's
     super.addNotify();
 
-//    // trigger a current map
-//    if (currentMap==null) {
-//      // set map
-//      GeoMap[] maps = GeoService.getInstance().getMaps();
-//      if (maps.length>0) new ChooseMap(maps[0]).trigger();
-//    }
+    // start listening
+    gedcom.addGedcomListener(gedcomCallback);
   
     // done
+  }
+  
+  /**
+   * Lifecycle callback - we're not needed at the moment
+   */
+  public void removeNotify() {
+    
+    // stop listening
+    gedcom.removeGedcomListener(gedcomCallback);
+    
+    // continue with super
+    super.removeNotify();
   }
   
   /**
@@ -193,5 +213,16 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       }
     }
   }//ChooseMap
+  
+  /**
+   * Our connection to gedcom events
+   */
+  private class GedcomCallback implements GedcomListener {
+
+    /** changes */
+    public void handleChange(Transaction tx) {
+    }
+    
+  } //GedcomCallback
   
 } //GeoView
