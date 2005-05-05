@@ -693,10 +693,15 @@ public class PropertyTableWidget extends JPanel {
       int row = model.getRow(getText());
       if (row<0)
         return;
+      // set selection row/col
       table.getSelectionModel().setSelectionInterval(row,row);
       int col = Math.abs(model.sortColumn)-1;
       table.getColumnModel().getSelectionModel().setSelectionInterval(col,col);
-      table.scrollRectToVisible(table.getCellRect(row,col,true));
+      // scroll to visible
+      Rectangle rect = table.getCellRect(row,col,true);
+      rect.height = table.getParent().getHeight();
+      table.scrollRectToVisible(rect);
+      // done
     }
   } //Letter
   
