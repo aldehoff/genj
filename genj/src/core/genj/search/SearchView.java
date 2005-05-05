@@ -76,24 +76,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-/*
-> 
-> First the pull down menu is good, but a pop up window ...
-> Second, it's not easy for the users to write those tag paths. Would
-> it be possible to find something else ?
-> 
-> Third, the layout of the first line could be designed a little bit
-> different 
-> ? The "value" word is too close to the box of the "regular
-> expression" 
-> sentence, the number of occurances is difficult to find that way on
-> the 
-> right side (maybe something looking the same but with the word
-> "occurances" 
-> (translatable of course)) ;-)
->
- */
- 
 /**
  * View for searching
  */
@@ -544,7 +526,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
         if (entity==prop)
           search(entity, entity, entity.getId(), true);
         // check prop's value
-        search(entity, prop, prop.getValue(), false);
+        search(entity, prop, prop.getDisplayValue(), false);
       }
       // check subs
       int n = prop.getNoOfProperties();
