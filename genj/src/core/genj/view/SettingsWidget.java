@@ -20,6 +20,7 @@
 package genj.view;
 
 import genj.util.ActionDelegate;
+import genj.util.Debug;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 
@@ -166,11 +167,13 @@ import javax.swing.border.TitledBorder;
     if (result!=null) return result;
     
     // create
+    String type = viewType.getName()+"Settings";
     try {
-      result = (Settings)Class.forName(viewType.getName()+"Settings").newInstance();
+      result = (Settings)Class.forName(type).newInstance();
       result.init(viewManager);
       cache.put(viewType, result);
     } catch (Throwable t) {
+      Debug.log(Debug.WARNING, "couldn't initialize settings widget "+type, t);
     }
     
     // done
