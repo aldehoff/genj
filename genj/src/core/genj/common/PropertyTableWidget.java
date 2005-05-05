@@ -728,9 +728,9 @@ public class PropertyTableWidget extends JPanel {
         
       // need to have my letters instantiated now
       if (letters==null) {
-        letters =  new LinkWidget['z'-'a'+1];
+        letters =  new LinkWidget['Z'-'A'+1];
         for (int i=0; i<letters.length;i ++) {
-          letters[i] = new LinkWidget(new Letter( (char)('a'+i ) ));
+          letters[i] = new LinkWidget(new Letter( (char)('A'+i ) ));
           add(letters[i]);
         }
       }
@@ -744,7 +744,7 @@ public class PropertyTableWidget extends JPanel {
         String name = names.next().toString();
         if (name.length()==0)
           continue;
-        int i = Character.toLowerCase(name.charAt(0))-'a';
+        int i = Character.toUpperCase(name.charAt(0))-'A';
         if (i>=0&&i<cs.length) cs[i] = true;
       }
       
