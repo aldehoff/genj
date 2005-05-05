@@ -2,7 +2,7 @@
 <project name="GenJ" default="dist" basedir=".">
 
   <property file="build.properties"/>
-  <property file="${dir.genj}/build.properties"/>
+  <property prefix="genj" file="${dir.genj}/build.properties"/>
   	
   <property name="dir.build" value="build"/>
   <property name="dir.lib" value="${dir.build}/lib"/>
@@ -18,6 +18,9 @@
    Initialization
    -->
   <target name="init">
+  	
+  	<fail unless="genj.app.version" message="Couldn't find GenJ files in ${dir.genj} - please update ./build.properties"/>
+
     <echo level="info">Creating output directories</echo>
     <mkdir dir="${dir.build}"/>
     <mkdir dir="${dir.lib}"/>
@@ -60,6 +63,7 @@
      <fileset dir="${dir.build}/classes" includes="**/*.class"/>
      <fileset dir="./images"/>
      <fileset dir="./language/en"/>
+     <fileset dir="./language/fr"/>
      <fileset dir="./src" includes="META-INF/**"/>
    </jar>
     
@@ -67,14 +71,17 @@
    <copy file="./contrib/jump/jump.jar" todir="${dir.lib}"/>
 
    <!-- create genj_geo-xyz.zip -->
-   <zip zipfile="${dir.dist}/genj_geo-${app.version}.zip" update="True">
+   <zip zipfile="${dir.dist}/genj_geo-${genj.app.version}.zip" update="True">
      <zipfileset dir="${dir.build}" includes="lib/geo.jar"/>
      <zipfileset dir="${dir.build}" includes="lib/jump.jar"/>
      <zipfileset dir="./contrib" includes="geo/**"/>
    </zip>
-
+  	
+   <!-- copy it to genj's dist directory -->
+   <copy file="${dir.dist}/genj_geo-${genj.app.version}.zip" todir="${dir.genj}/${genj.dir.build}/dist"/>
+  	
    <!-- report -->
-   <echo level="info">You can find the distribution bits in ${dir.dist}</echo>
+   <echo level="info">You can find genj_geo-${genj.app.version}.zip in ${dir.dist} and a copy in ${dir.genj}/${genj.dir.build}/dist</echo>
   </target>
 
 </project>
