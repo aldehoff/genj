@@ -107,6 +107,9 @@ public class ChoiceBean extends PropertyBean {
     
 	    // change value
 	    prop.setValue(choice.getText(), global.isSelected());
+      
+      // reset state
+      setContextImpl(property);
     
     // Done
   }
