@@ -246,9 +246,9 @@ public class PropertyTableWidget extends JPanel {
     panelShortcuts.removeAll();
     panelShortcuts.revalidate();
     
-    // anything we can offer? need ascending sorted column
+    // anything we can offer? need ascending sorted column and at least 10 rows
     Model model = (Model)table.getModel();
-    if (model.getSortedColumn()<=0)
+    if (model.getSortedColumn()<=0||model.getRowCount()<10)
       return;
     
     // find a suitable non-null value representatve
