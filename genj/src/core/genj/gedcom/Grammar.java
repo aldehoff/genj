@@ -191,9 +191,10 @@ public class Grammar {
       MetaProperty meta = new MetaProperty(qName, properties, true);
 
       // a property root (a.k.a entity) or a nested one?
-      if (stack.isEmpty()) 
+      if (stack.isEmpty())  {
+        meta.isInstantiated = true;
         tag2root.put(qName, meta);
-      else
+      } else
         ((MetaProperty)stack.peek()).addNested(meta);
         
       // push on stack
