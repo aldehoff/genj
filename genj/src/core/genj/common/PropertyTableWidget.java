@@ -20,10 +20,14 @@
 package genj.common;
 
 import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyName;
+import genj.gedcom.PropertyPlace;
+import genj.gedcom.PropertySimpleValue;
+import genj.gedcom.TagPath;
+import genj.gedcom.time.PointInTime;
 import genj.renderer.Options;
 import genj.renderer.PropertyRenderer;
-import genj.util.ActionDelegate;
 import genj.util.Dimension2d;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.LinkWidget;
@@ -34,6 +38,7 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -42,7 +47,11 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -57,13 +66,20 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 
 /**
  * A widget that shows entities in rows and columns
  */
 public class PropertyTableWidget extends JPanel {
-
+  
+  private Map type2generator = new HashMap();
+  
+  { 
+    type2generator.put(PropertyName.class, new NameSG()); 
+    type2generator.put(PropertyDate.class, new DateSG()); 
+    type2generator.put(PropertyPlace.class, new PlaceSG()); 
+  }
+  
   public final static int
     CONTEXT_PROPAGATION_ON_SINGLE_CLICK = 0,
     CONTEXT_PROPAGATION_ON_DOUBLE_CLICK = 1;
@@ -77,8 +93,8 @@ public class PropertyTableWidget extends JPanel {
   /** context propagation */
   private boolean contextPropagationOnDoubleClick = false;
   
-  /** letter shortcuts */
-  private LetterBox letterBox = new LetterBox();
+  /** shortcuts panel */
+  private Box panelShortcuts = new Box(BoxLayout.Y_AXIS);
   
   /**
    * Constructor
@@ -112,7 +128,7 @@ public class PropertyTableWidget extends JPanel {
     // setup layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(table));
-    add(BorderLayout.WEST, letterBox);
+    add(BorderLayout.WEST, panelShortcuts);
     
     // set model
     setModel(propertyModel);
@@ -125,7 +141,6 @@ public class PropertyTableWidget extends JPanel {
    */
   public void setModel(PropertyTableModel set) {
     table.setModel(new Model(set));
-    //table.setColumnModel(new ColumnsWrapper(set));
   }
   
   /**
@@ -213,40 +228,43 @@ public class PropertyTableWidget extends JPanel {
   
   /**
    * Access to table model
-   * TODO This is here to allow for TableView to access the information provided by our
-   * internal classes for printing. We should really migrate the printing code itself to this class
-   * since it then can be used by all users of this widget.
    */
-  public TableModel getModel() {
-    return table.getModel();
+  public PropertyTableModel getModel() {
+    return ((Model)table.getModel()).model;
   }
+  
+  /**
+   * Lookup shortcut generator
+   */
+  
+  /**
+   * Create shortcuts for given tag
+   */
+  private void installShortcuts() {
 
-//  /**
-//   * Wrapper for swing columns
-//   */
-//  private class ColumnsWrapper extends DefaultTableColumnModel {
-//    
-//    PropertyTableModel model;
-//    
-//    /** constructor */
-//    ColumnsWrapper(PropertyTableModel set) {
-//      model = set;
-//      setColumnSelectionAllowed(true);
-//      getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//    }
-//    
-//    /** */
-//    public void addColumn(TableColumn col) {
-//    
-//      // patch auto generated column
-//      Object value = model.getHeader(col.getModelIndex());
-//      if (value!=null)
-//        col.setHeaderValue(value);
-//      
-//      // continue
-//      super.addColumn(col);
-//    }
-//  }
+    // remove old
+    panelShortcuts.removeAll();
+    panelShortcuts.revalidate();
+    
+    // anything we can offer? need ascending sorted column
+    Model model = (Model)table.getModel();
+    if (model.getSortedColumn()<=0)
+      return;
+    
+    // find a suitable non-null value representatve
+    int col = model.getSortedColumn()-1;
+    for (int row=model.getRowCount()-1;row>0;row--) {
+      Property prop = model.getPropertyAt(row, col);
+      if (prop!=null) {
+        ShortcutGenerator sg = (ShortcutGenerator)type2generator.get(prop.getClass());
+        if (sg!=null) sg.generate(col, model, panelShortcuts);
+        break;
+      }
+    }
+
+
+    // done
+  }
 
   /**
    * Wrapper for swing table
@@ -341,6 +359,11 @@ public class PropertyTableWidget extends JPanel {
       return model!=null ? row2row.length : 0;
     }
     
+    /** path in column */
+    private TagPath getPath(int col) {
+      return model!=null ? model.getPath(col) : null;
+    }
+    
     /** context */
     private Context getContextAt(int row, int col) {
       
@@ -382,33 +405,29 @@ public class PropertyTableWidget extends JPanel {
       sort(old);
       // tell about it
       fireTableDataChanged();
-      // check if we should show letters - for paths that end in 'NAME'
-      letterBox.setVisible(model!=null&&sortColumn>0 && model.getPath(Math.abs(sortColumn)-1).getLast().equals("NAME"));
+      // install shortcuts
+      installShortcuts();
       // done
     }
     
-    /** find a row by character - works for sortedColumn>0 with PropertyName properties */
-    private int getRow(String prefix) {
+    /** calculate where given property would have to be inserted for current sorted column*/
+    private int getRowToInsert(Property shortcut) {
       // some safety checks
       if (model==null||sortColumn<=0||getRowCount()==0)
         return -1;
-      int col = sortColumn-1;
-      if (!model.getPath(col).getLast().equals("NAME"))
-        return -1;
       
-      // look it up
-      PropertyName name = new PropertyName("/"+prefix+"/");
-
+      // do a binary search
+      int col = sortColumn-1;
       int from = 0, to = getRowCount()-1;
       while (from<to) {
 
         int pivot = (from+to)/2;
         
         Property prop = getPropertyAt(pivot, col);
-        if (!(prop instanceof PropertyName))
+        if (prop==null)
           return -1;
         
-        if (prop.compareTo(name) >= 0) {
+        if (prop.compareTo(shortcut) >= 0) {
           to = pivot;
         } else {
           from = pivot + 1;
@@ -681,16 +700,18 @@ public class PropertyTableWidget extends JPanel {
   } //InteractionHandler
 
   /**
-   * Jump to a specific letter
+   * A shortcut to jump to
    */
-  private class Letter extends ActionDelegate {
-    private Letter(char c) {
-      setText(""+c);
+  private class Shortcut extends LinkWidget {
+    private Property prop;
+    private Shortcut(Property prop) {
+      super(prop.getDisplayValue(), null);
+      this.prop = prop;
     }
-    protected void execute() {
+    protected void fireActionPerformed() {
       // ask model
       Model model = (Model)table.getModel();
-      int row = model.getRow(getText());
+      int row = model.getRowToInsert(prop);
       if (row<0)
         return;
       // set selection row/col
@@ -704,58 +725,114 @@ public class PropertyTableWidget extends JPanel {
       // done
     }
   } //Letter
+
+  /**
+   * A generator for shortcuts to rows in ascending order
+   */
+  private abstract class ShortcutGenerator {
+
+    abstract void generate(int col, Model model, Container container);
+    
+    protected void add(Property shortcut, Container container) {
+      container.add(new Shortcut(shortcut));
+    }
+  }
   
   /**
-   * Letterbox containing letters
+   * A generator for shortcuts to names
    */
-  private class LetterBox extends Box {
-    
-    /** letters */
-    private LinkWidget[] letters;
-    
-    /** constructor */
-    private LetterBox() {
-      super(BoxLayout.Y_AXIS);
-    }
-    
-    /** intercept visible */
-    public void setVisible(boolean visible) {
-      // invisible is easy
-      if (!visible) {
-        super.setVisible(false);
-        return;
-      }
-        
-      // need to have my letters instantiated now
-      if (letters==null) {
-        letters =  new LinkWidget['Z'-'A'+1];
-        for (int i=0; i<letters.length;i ++) {
-          letters[i] = new LinkWidget(new Letter( (char)('A'+i ) ));
-          add(letters[i]);
-        }
-      }
+  private class NameSG extends ShortcutGenerator {
+
+    /** collect first letters of names */
+    Set getLetters(Model model) {
       
       // check first letter of lastnames
-      Model model = (Model)table.getModel();
-      assert model.model!=null : "PropertyTableModel should not be null";
-      
-      boolean[] cs = new boolean[letters.length];
+      Set letters = new TreeSet();
       for (Iterator names = PropertyName.getLastNames(model.model.getGedcom(), false).iterator(); names.hasNext(); ) {
         String name = names.next().toString();
-        if (name.length()==0)
-          continue;
-        int i = Character.toUpperCase(name.charAt(0))-'A';
-        if (i>=0&&i<cs.length) cs[i] = true;
+        if (name.length()>0)
+          letters.add(String.valueOf(Character.toUpperCase(name.charAt(0))));
       }
-      
-      // apply to links
-      for (int i=0;i<letters.length;i++)
-        letters[i].setVisible(cs[i]);
-      
-      // continue
-      super.setVisible(true);
+      // done
+      return letters;
     }
     
-  } //LetterBox
+    /** generate */
+    void generate(int col, Model model, Container container) {
+
+      // create a shortcut for each letter
+      Set letters = getLetters(model);
+      for (Iterator it = letters.iterator(); it.hasNext(); ) 
+        add(new PropertyName("", it.next().toString()), container);
+      
+      // done
+    }
+  } //NameShortcutGenerator
+  
+  /**
+   * A generator for shortcuts to places
+   */
+  private class PlaceSG extends ShortcutGenerator {
+
+    /** collect first letters of values */
+    Set getLetters(int col, Model model) {
+      
+      // check first letter of lastnames
+      Set letters = new TreeSet();
+      int rows = model.getRowCount();
+      for (int row=0;row<rows;row++) {
+        PropertyPlace place = (PropertyPlace)model.getPropertyAt(row, col);
+        if (place!=null) {
+          String jurisdiction = place.getJurisdiction(0);
+          if (jurisdiction!=null&&jurisdiction.length()>0)
+            letters.add(String.valueOf(Character.toUpperCase(jurisdiction.charAt(0))));
+        }
+      }
+      // done
+      return letters;
+    }
+    
+    /** generate */
+    void generate(int col, Model model, Container container) {
+
+      // create a shortcut for each letter
+      Set letters = getLetters(col, model);
+      for (Iterator it = letters.iterator(); it.hasNext(); ) 
+        add(new PropertySimpleValue("", it.next().toString()), container);
+      
+      // done
+    }
+  } //SimpleShortcutGenerator
+  
+  /**
+   * A generator for shortcuts to years
+   */
+  private class DateSG extends ShortcutGenerator {
+    /** generate */
+    void generate(int col, Model model, Container container) {
+      
+      // how many text lines fit on screen?
+      int heightInRows = Math.max(40, getHeight()/table.getRowHeight());
+      int rows = model.getRowCount();
+      if (rows>heightInRows) try {
+        
+        // generate shortcuts for all years
+        for (int year=0, row=0; row<rows ; row+=rows/heightInRows) {
+          
+          PropertyDate date = (PropertyDate)model.getPropertyAt(row, col);
+          if (date==null || !date.getStart().isValid())
+            continue;
+          int next = date.getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
+          if (next==year)
+            continue;
+          year = next;
+          add(new PropertyDate(year), container);
+
+        }
+      } catch (Throwable t) {
+      }
+      // done
+    }
+  } //DateShortcutGenerator
   
 } //PropertyTableWidget
