@@ -77,7 +77,8 @@ public class PropertyTableWidget extends JPanel {
   { 
     type2generator.put(PropertyName.class, new NameSG()); 
     type2generator.put(PropertyDate.class, new DateSG()); 
-    type2generator.put(PropertyPlace.class, new PlaceSG()); 
+    type2generator.put(PropertyPlace.class, new ValueSG()); 
+    type2generator.put(PropertySimpleValue.class, new ValueSG()); 
   }
   
   public final static int
@@ -248,7 +249,7 @@ public class PropertyTableWidget extends JPanel {
     
     // anything we can offer? need ascending sorted column and at least 10 rows
     Model model = (Model)table.getModel();
-    if (model.getSortedColumn()<=0||model.getRowCount()<10)
+    if (model.getSortedColumn()<=0||model.getSortedColumn()>model.getColumnCount()||model.getRowCount()<10)
       return;
     
     // find a suitable non-null value representatve
@@ -256,14 +257,32 @@ public class PropertyTableWidget extends JPanel {
     for (int row=model.getRowCount()-1;row>0;row--) {
       Property prop = model.getPropertyAt(row, col);
       if (prop!=null) {
-        ShortcutGenerator sg = (ShortcutGenerator)type2generator.get(prop.getClass());
-        if (sg!=null) sg.generate(col, model, panelShortcuts);
+        ShortcutGenerator sg = getShortcutGenerator(prop);
+        if (sg!=null) 
+          sg.generate(col, model, panelShortcuts);
         break;
       }
     }
 
-
     // done
+  }
+  
+  /**
+   * Find applicable ShortcutGenerator for property representative
+   */
+  private ShortcutGenerator getShortcutGenerator(Property prop) {
+
+    // type is key
+    Class key = prop.getClass();
+    while (key!=null) {
+      ShortcutGenerator sg = (ShortcutGenerator)type2generator.get(key);
+      if (sg!=null) 
+        return sg;
+      key = key.getSuperclass();
+    }
+    
+    // not found
+    return null;
   }
 
   /**
@@ -424,8 +443,10 @@ public class PropertyTableWidget extends JPanel {
         int pivot = (from+to)/2;
         
         Property prop = getPropertyAt(pivot, col);
-        if (prop==null)
-          return -1;
+        if (prop==null) {
+          from = pivot+1;
+          continue;
+        }
         
         if (prop.compareTo(shortcut) >= 0) {
           to = pivot;
@@ -750,8 +771,11 @@ public class PropertyTableWidget extends JPanel {
       Set letters = new TreeSet();
       for (Iterator names = PropertyName.getLastNames(model.model.getGedcom(), false).iterator(); names.hasNext(); ) {
         String name = names.next().toString();
-        if (name.length()>0)
-          letters.add(String.valueOf(Character.toUpperCase(name.charAt(0))));
+        if (name.length()>0) {
+          char c = name.charAt(0);
+          if (Character.isLetter(c))
+            letters.add(String.valueOf(Character.toUpperCase(c)));
+        }
       }
       // done
       return letters;
@@ -770,9 +794,9 @@ public class PropertyTableWidget extends JPanel {
   } //NameShortcutGenerator
   
   /**
-   * A generator for shortcuts to places
+   * A generator for shortcuts to simple text values
    */
-  private class PlaceSG extends ShortcutGenerator {
+  private class ValueSG extends ShortcutGenerator {
 
     /** collect first letters of values */
     Set getLetters(int col, Model model) {
@@ -781,11 +805,14 @@ public class PropertyTableWidget extends JPanel {
       Set letters = new TreeSet();
       int rows = model.getRowCount();
       for (int row=0;row<rows;row++) {
-        PropertyPlace place = (PropertyPlace)model.getPropertyAt(row, col);
-        if (place!=null) {
-          String jurisdiction = place.getJurisdiction(0);
-          if (jurisdiction!=null&&jurisdiction.length()>0)
-            letters.add(String.valueOf(Character.toUpperCase(jurisdiction.charAt(0))));
+        Property prop = model.getPropertyAt(row, col);
+        if (prop!=null) {
+          String value = prop.getDisplayValue();
+          if (value.length()>0) {
+            char c = value.charAt(0);
+            if (Character.isLetter(c))
+              letters.add(String.valueOf(Character.toUpperCase(c)));
+          }
         }
       }
       // done
