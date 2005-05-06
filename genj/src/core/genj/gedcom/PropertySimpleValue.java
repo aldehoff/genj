@@ -40,8 +40,16 @@ public class PropertySimpleValue extends Property {
   /**
    * Constructor with tag
    */
-  public PropertySimpleValue(String set) {
-    tag = set;
+  public PropertySimpleValue(String tag) {
+    this.tag = tag;
+  }
+
+  /**
+   * Constructor with tag & value
+   */
+  public PropertySimpleValue(String tag, String value) {
+    this.tag = tag;
+    this.value = value;
   }
 
   /**
