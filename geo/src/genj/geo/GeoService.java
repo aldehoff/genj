@@ -150,7 +150,7 @@ public class GeoService {
       
       // check 'em files
       File[] files = calcGeoDir().listFiles();
-      for (int i=0;i<files.length;i++) {
+      for (int i=0;files!=null&&i<files.length;i++) {
         File file = files[i];
         if (file.getName().endsWith(GAZETTEER_SUFFIX))
           gazetteers.add(new Gazetteer(file));
