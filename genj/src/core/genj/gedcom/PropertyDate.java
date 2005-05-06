@@ -58,6 +58,19 @@ public class PropertyDate extends Property {
   public final static Format[] FORMATS = {
     DATE, FROM_TO, FROM, TO, BETWEEN_AND, BEFORE, AFTER, ABOUT, CALCULATED, ESTIMATED
   };
+  
+  /**
+   * Constructor
+   */
+  public PropertyDate() {
+  }
+
+  /**
+   * Constructor
+   */
+  public PropertyDate(int year) {
+    getStart().set(PointInTime.UNKNOWN, PointInTime.UNKNOWN, year);
+  }
 
   /**
    * @see java.lang.Comparable#compareTo(Object)

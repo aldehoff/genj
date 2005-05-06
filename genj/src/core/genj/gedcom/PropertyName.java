@@ -50,6 +50,13 @@ public class PropertyName extends Property {
   /**
    * Constructor
    */
+  public PropertyName(String first, String last) {
+    setName(first, last);
+  }
+  
+  /**
+   * Constructor
+   */
   public PropertyName(String name) {
     setValue(name);
   }
