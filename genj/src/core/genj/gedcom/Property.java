@@ -704,7 +704,7 @@ public abstract class Property implements Comparable {
     if (!(that instanceof Property)) 
       throw new ClassCastException("compareTo("+that+")");
     // no gedcom available?
-    return compare(this.getValue(), ((Property)that).getValue() );
+    return compare(this.getDisplayValue(), ((Property)that).getDisplayValue() );
   }
   
   /**
