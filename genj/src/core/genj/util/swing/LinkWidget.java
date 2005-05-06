@@ -76,6 +76,14 @@ public class LinkWidget extends JLabel {
     super.setText(text);
   }
   
+  /** 
+   * action performed
+   */
+  protected void fireActionPerformed() {
+    if (action!=null)
+      action.actionPerformed(new ActionEvent(this, 0, ""));
+  }
+  
   /**
    * A private callback code block
    */
@@ -83,8 +91,7 @@ public class LinkWidget extends JLabel {
     
     /** click -> action */
     public void mouseClicked(MouseEvent e) {
-      if (action!=null)
-        action.actionPerformed(new ActionEvent(this, 0, ""));
+      fireActionPerformed();
     }
     /** exit -> plain */
     public void mouseExited(MouseEvent e) {
