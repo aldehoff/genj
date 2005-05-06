@@ -59,6 +59,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
@@ -728,6 +730,9 @@ public class PropertyTableWidget extends JPanel {
     private Shortcut(Property prop) {
       super(prop.getDisplayValue(), null);
       this.prop = prop;
+      setAlignmentX(0.5F);
+      setHorizontalAlignment(SwingConstants.CENTER);
+      setBorder(new EmptyBorder(0,2,0,2));
     }
     protected void fireActionPerformed() {
       // ask model
