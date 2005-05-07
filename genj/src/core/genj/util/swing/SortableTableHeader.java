@@ -206,7 +206,11 @@ public class SortableTableHeader extends JTableHeader {
       if (model instanceof SortableTableModel) {
         // tell to model
         SortableTableModel stm = (SortableTableModel)model;
-        stm.setSortedColumn(stm.getSortedColumn()<0 ? col+1 : -(col+1));
+        int old = stm.getSortedColumn();
+        if (Math.abs(old)-1==col)
+          stm.setSortedColumn(old<0 ? col+1 : -(col+1));
+        else
+          stm.setSortedColumn(old>0 ? col+1 : -(col+1));
         // we do a repaint, too
         repaint();
       }
