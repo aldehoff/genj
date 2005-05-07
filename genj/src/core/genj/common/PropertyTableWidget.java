@@ -60,6 +60,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -127,11 +128,11 @@ public class PropertyTableWidget extends JPanel {
     table.getSelectionModel().addListSelectionListener(i);
     
     table.setRowHeight((int)Math.ceil(Options.getInstance().getDefaultFont().getLineMetrics("", new FontRenderContext(null,false,false)).getHeight())+table.getRowMargin());
-    
+
     // setup layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(table));
-    add(BorderLayout.WEST, panelShortcuts);
+    add(BorderLayout.EAST, panelShortcuts);
     
     // set model
     setModel(propertyModel);
@@ -237,10 +238,6 @@ public class PropertyTableWidget extends JPanel {
   }
   
   /**
-   * Lookup shortcut generator
-   */
-  
-  /**
    * Create shortcuts for given tag
    */
   private void installShortcuts() {
@@ -254,7 +251,7 @@ public class PropertyTableWidget extends JPanel {
     if (model.getSortedColumn()<=0||model.getSortedColumn()>model.getColumnCount()||model.getRowCount()<10)
       return;
     
-    // find a suitable non-null value representatve
+    // find a suitable non-null value representative
     int col = model.getSortedColumn()-1;
     for (int row=model.getRowCount()-1;row>0;row--) {
       Property prop = model.getPropertyAt(row, col);
@@ -427,7 +424,9 @@ public class PropertyTableWidget extends JPanel {
       // tell about it
       fireTableDataChanged();
       // install shortcuts
-      installShortcuts();
+      SwingUtilities.invokeLater(new Runnable() { 
+        public void run() { installShortcuts(); }
+      });
       // done
     }
     
@@ -844,23 +843,27 @@ public class PropertyTableWidget extends JPanel {
     void generate(int col, Model model, Container container) {
       
       // how many text lines fit on screen?
-      int heightInRows = Math.max(40, getHeight()/table.getRowHeight());
+      int visibleRows = Math.max(24, container.getHeight() / new LinkWidget("9999",null).getPreferredSize().height);
       int rows = model.getRowCount();
-      if (rows>heightInRows) try {
+      if (rows>visibleRows) try {
         
-        // generate shortcuts for all years
-        for (int year=0, row=0; row<rows ; row+=rows/heightInRows) {
-          
+        // find all applicable years
+        Set years = new TreeSet();
+        for (int row=0;row<rows;row++) {
           PropertyDate date = (PropertyDate)model.getPropertyAt(row, col);
           if (date==null || !date.getStart().isValid())
             continue;
-          int next = date.getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
-          if (next==year)
-            continue;
-          year = next;
-          add(new PropertyDate(year), container);
-
+          years.add(new Integer(date.getStart().getPointInTime(PointInTime.GREGORIAN).getYear()));
         }
+        
+        // generate shortcuts for all years
+        Object[] ys = years.toArray();
+        for (int y=0; y<visibleRows; y++) {
+          int index = y<visibleRows-1  ?   (int)( y * ys.length / visibleRows)  : ys.length-1;
+          int year = ((Integer)ys[index]).intValue();
+          add(new PropertyDate(year), container);
+        }
+
       } catch (Throwable t) {
       }
       // done
