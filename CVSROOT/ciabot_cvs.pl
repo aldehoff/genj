@@ -68,7 +68,7 @@ $xml_rpc = 0;
 # This variable should contain regexp, against which will each object be
 # checked, and if the regexp is matched, the file is not ignored. 
 #
-$regexp = "^dev.*";
+$regexp = "^(dev|extensions).*";
 
 # It can be useful to also grab the generated XML message by some other
 # programs and ie. autogenerate some content based on it. Here you can specify
