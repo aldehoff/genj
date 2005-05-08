@@ -328,19 +328,17 @@ import javax.swing.event.ChangeListener;
    */
   private NestedBlockLayout getSharedDescriptor(MetaProperty meta) {
     
-    String tag = meta.getTag(); 
+    // compute appropiate file name for entity or property
+    String file  = "descriptors/" + (meta.isEntity() ? "entities" : "properties") + "/" + meta.getTag()+".xml";
     
     // got a cached one already?
-    NestedBlockLayout descriptor  = (NestedBlockLayout)FILE2LAYOUT.get(tag);
+    NestedBlockLayout descriptor  = (NestedBlockLayout)FILE2LAYOUT.get(file);
     if (descriptor==null) {
       
       // hmm, already determined we don't have one?
-      if (FILE2LAYOUT.containsKey(tag))
+      if (FILE2LAYOUT.containsKey(file))
         return null;
 
-      // compute appropiate file name for entity or property
-      String file  = "descriptors/" + (meta.isEntity() ? "entities" : "properties") + "/" + meta.getTag()+".xml";
-      
       // try to read a descriptor - TAG.xml or Type.xml
       InputStream in = getClass().getResourceAsStream(file);
       if (in==null) 
@@ -352,7 +350,7 @@ import javax.swing.event.ChangeListener;
       }
 
       // cache it
-      FILE2LAYOUT.put(tag, descriptor);
+      FILE2LAYOUT.put(file, descriptor);
     }
 
     // return private copy
