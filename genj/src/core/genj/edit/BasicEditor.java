@@ -27,6 +27,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertySimpleValue;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
@@ -151,7 +152,8 @@ import javax.swing.event.ChangeListener;
     // listen to gedcom events
     gedcom.addGedcomListener(this);
     // setup split panel position
-    splitPanel.setDividerLocation(registry.get("basic.divider", -1));
+    splitPanel.setDividerLocation(registry.get("basic.divider", 256));
+    // done
   }
 
   /**
@@ -527,7 +529,7 @@ import javax.swing.event.ChangeListener;
    * A proxy proparty - hooks up temporary properties to their context and propagates
    * changes to an original
    */
-  private class Proxy extends Property {
+  private class Proxy extends PropertySimpleValue {
     /** the original root */
     private Property root;
     /** a late binding parent */
@@ -562,9 +564,6 @@ import javax.swing.event.ChangeListener;
     public String getTag() { return root.getTag(); }
     public TagPath getPath() { return root.getPath(); }
     public MetaProperty getMetaProperty() { return root.getMetaProperty(); }
-    /** have to implement but don't make sense here */
-    public String getValue() { throw new IllegalArgumentException(); }
-    public void setValue(String value) { throw new IllegalArgumentException(); }
   }
     
   /**
