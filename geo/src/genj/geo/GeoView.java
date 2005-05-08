@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2005 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -20,8 +20,6 @@
 package genj.geo;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomListener;
-import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
@@ -51,7 +49,7 @@ import com.vividsolutions.jump.workbench.ui.LayerViewPanelContext;
 /**
  * The view showing gedcom data in geographic context
  */
-public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
+public class GeoView extends JPanel implements ContextListener, ToolBarSupport, GeoModelListener {
   
   private final static ImageIcon IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png");
   
@@ -69,8 +67,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /** the current layer view panel */
   private LayerViewPanel layerPanel;
   
-  /** our connector to gedcom events */
-  private GedcomCallback gedcomCallback = new GedcomCallback();
+  /** our model */
+  private GeoModel model;
   
   /** a rezoom runnable we can invokeLater() */
   private Runnable rezoom = new Runnable() {
@@ -109,10 +107,11 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     // continue with super's
     super.addNotify();
+    
+    // create a model
+    model = new GeoModel(gedcom);
+    model.addGeoModelListener(this);
 
-    // start listening
-    gedcom.addGedcomListener(gedcomCallback);
-  
     // done
   }
   
@@ -121,9 +120,10 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    */
   public void removeNotify() {
     
-    // stop listening
-    gedcom.removeGedcomListener(gedcomCallback);
-    
+    // get rid of model
+    model.removeGeoModelListener(this);
+    model = null;
+
     // continue with super
     super.removeNotify();
   }
@@ -216,16 +216,5 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       }
     }
   }//ChooseMap
-  
-  /**
-   * Our connection to gedcom events
-   */
-  private class GedcomCallback implements GedcomListener {
-
-    /** changes */
-    public void handleChange(Transaction tx) {
-    }
-    
-  } //GedcomCallback
   
 } //GeoView

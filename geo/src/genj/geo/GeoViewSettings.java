@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2005 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -23,12 +23,17 @@ import genj.util.ActionDelegate;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
+import genj.util.swing.ProgressWidget;
 import genj.view.Settings;
 import genj.view.ViewManager;
+import genj.window.CloseWindow;
+import genj.window.WindowManager;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 
+import javax.swing.AbstractListModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -55,18 +60,21 @@ public class GeoViewSettings extends JPanel implements Settings {
   /** a list of gazetters we have */
   private JList listGazetteers;
   
+  /** reference to view manager */
+  private ViewManager viewManager;
+  
   /**
    * Initializer
    */
   public void init(ViewManager manager) {
 
+    this.viewManager = manager;
+    
     // setup components
     setLayout(new NestedBlockLayout("<col><row><label/></row><row><col><up gx=\"1\"/><down gx=\"1\"/><import gx=\"1\"/><delete gx=\"1\"/></col><col><list wx=\"1\"/></col></row></col>"));
     
     // .. a list of gazetteers, buttons for up and down, delete, import
-    GeoService.Gazetteer[] gazetteers = GeoService.getInstance().getGazetteers();
-    Arrays.sort(gazetteers);
-    listGazetteers = new JList(gazetteers);
+    listGazetteers = new JList();
     
     ButtonHelper bh = new ButtonHelper().setResources(GeoView.RESOURCES);
     add("label", new JLabel(GeoView.RESOURCES.getString("label.gazetteers")));
@@ -102,6 +110,13 @@ public class GeoViewSettings extends JPanel implements Settings {
    * Callback - reset changes
    */
   public void reset() {
+    
+    final GeoService.Gazetteer[] gazetteers = GeoService.getInstance().getGazetteers();
+    Arrays.sort(gazetteers);
+    listGazetteers.setModel(new AbstractListModel() {
+      public int getSize() { return gazetteers.length; }
+      public Object getElementAt(int i) { return gazetteers[i]; }
+    });
   }
 
   /**
@@ -152,7 +167,7 @@ public class GeoViewSettings extends JPanel implements Settings {
         int max = listGazetteers.getSelectionModel().getMaxSelectionIndex();
         enabled = max>=0 && max < listGazetteers.getModel().getSize()-1;
       }
-      setEnabled(enabled);
+      // FIXME setEnabled(enabled);
     }
   } //ActionUpDown
 
@@ -160,12 +175,56 @@ public class GeoViewSettings extends JPanel implements Settings {
    * Action - Import
    */
   private class Import extends ActionDelegate {
+    /** handle to progress dlg */
+    private String progress;
+    /** the import */
+    private GeoService.Import gztImport;
+    /** what we've imported */
+    private GeoService.Gazetteer imported;
     /** constructor */
     protected Import() {
       setText( "action.import" );
+      setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
     }
-    /** callback - run */
+    /** callback - on EDT */
+    protected boolean preExecute() {
+      // disable actions
+      setEnabled(false);
+      // let user choose country, state
+      SelectImportWidget select = new SelectImportWidget();
+      int choice = viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_QUESTION, select, CloseWindow.OKandCANCEL(), GeoViewSettings.this);
+      // prepare import
+      gztImport = GeoService.getInstance().getImport(select.getCountry(), select.getState());
+      if (choice!=0)
+        return false;
+      // .. show progress dialog
+      progress = viewManager.getWindowManager().openNonModalDialog(
+        null, "Importing ...",
+        WindowManager.IMG_INFORMATION, new ProgressWidget(gztImport, getThread()), null, GeoViewSettings.this
+      );
+      // continue
+      return true;
+    }
+    /** callback - run async */
     public void execute() {
+      try {
+        imported = gztImport.run();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    /** callback -  a problem */
+    protected void handleThrowable(String phase, Throwable t) {
+      viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_QUESTION, t.getMessage(), CloseWindow.OK(), GeoViewSettings.this);
+    }
+    /** callback -EDT again */
+    protected void postExecute() {
+      // close progress
+      viewManager.getWindowManager().close(progress);
+      // enable actions againe
+      setEnabled(true);
+      // FIXME listGazetteers.add
+      reset();
     }
   } //Import
   
@@ -185,7 +244,7 @@ public class GeoViewSettings extends JPanel implements Settings {
     /** callback - selection changed */
     public void valueChanged(ListSelectionEvent e) {
       int index = listGazetteers.getSelectedIndex();
-      setEnabled(index>=0);
+      // FIXME setEnabled(index>=0);
     }
   } //Delete
   

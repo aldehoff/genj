@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2005 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -33,7 +33,7 @@ import javax.swing.JComponent;
  */
 public class GeoViewFactory implements ViewFactory {
   
-  private ImageIcon image = new ImageIcon(this, "images/View.gif");
+  public final static ImageIcon IMAGE = new ImageIcon(GeoViewFactory.class, "images/View.gif");
 
   private Resources resources = Resources.get(this);
 
@@ -48,7 +48,7 @@ public class GeoViewFactory implements ViewFactory {
    * 
    */
   public ImageIcon getImage() {
-    return image;
+    return IMAGE;
   }
 
   /**

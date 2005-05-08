@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2005 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,48 +19,58 @@
  */
 package genj.geo;
 
-import genj.gedcom.Property;
 import genj.util.Debug;
 import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
+import genj.util.Trackable;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 
 /**
- * A service for geographical computations / data services
+ * A service for geographical computations / data services. It keeps well known
+ * locations in files in ./geo with format
+ * <pre>
+ *   PLACE \t STATE \t COUNTRY \t LAT \t LON
+ * </pre>
  */
 public class GeoService {
   
-//  /*package*/ final static int
-//  PLACE = 0,
-//  ZIP = 1,
-//  STATE = 2,
-//  COUNTRY = 3,
-//  LAT = 4,
-//  LON = 5,
-//  NUM_CRITERIAS = 4;
+  private final static Pattern MATCH_LAT_LON = Pattern.compile("^.*\t.*\t.*\t(.*)\t(.*)$");
+  
+  private final static Resources ISO2FIPS = new Resources(NGAImport.class.getResourceAsStream("iso2fips.properties"));
   
   private static final Charset UTF8 = Charset.forName("UTF-8");
   
   private static final String 
     GEO_DIR = "./geo",
-    GAZETTEER_SUFFIX = ".gzt",
-    FORMAT = "PLACE\tZIP\tSTATE\tCOUNTRY\tLAT\tLON";
+    TMP_SUFFIX = ".tmp",
+    GAZETTEER_SUFFIX = ".gzt";
+  
+  /** directories */
+  private File localDir, globalDir;
 
   /** singleton */
   private static GeoService instance;
@@ -69,7 +79,7 @@ public class GeoService {
   private List maps;
   
   /** databases */
-  private List gazetteers;
+  private Set gazetteers;
   
   /**
    * Constructor
@@ -92,20 +102,34 @@ public class GeoService {
   }
   
   /**
-   * Calculate geo directory
+   * Lookup Files in Geo directories
    */
-  private File calcGeoDir() {
-    return new File(EnvironmentChecker.getProperty(GeoService.class,
-        "user.home/.genj/geo",
-        GEO_DIR,
-        "calculate dir for geometric database"
-      ));
-  }
+  private File[] getGeoFiles() {
+    
+    List result = new ArrayList();
+    
+    // find directories
+    if (localDir==null) {
+      localDir =  new File(EnvironmentChecker.getProperty(this,"user.home/.genj/geo", "", "looking for locale geo files"));
+      globalDir = new File(EnvironmentChecker.getProperty(this, "genj.geo.dir", GEO_DIR, "Looking for map directory"));
+    }
 
+    // local files
+    if (localDir.exists())
+      result.addAll(Arrays.asList(localDir.listFiles()));
+
+    // global files
+    if (globalDir.exists()) 
+      result.addAll(Arrays.asList(globalDir.listFiles()));
+
+    // done
+    return (File[])result.toArray(new File[result.size()]);
+  }
+  
   /**
-   * Create a gazetteer for given country and state
+   * Prepare an import 
    */
-  public void createGazetteer(String country, String state) throws IOException {
+  public Import getImport(String country, String state) {
     
     // standardize to lower case
     country = country.trim().toLowerCase();
@@ -118,10 +142,6 @@ public class GeoService {
     if (country.length()==0)
       throw new IllegalArgumentException("Country can't be empty");
     
-    // find directory to store data in
-    File dir = calcGeoDir();
-    File file = new File(dir, (state!=null ? country+"_"+state : country) +GAZETTEER_SUFFIX);
-    
     // use NGA for everything but US
     Import im;
     if ("us".equals(country))
@@ -129,13 +149,8 @@ public class GeoService {
     else
       im = new NGAImport(country, state);
     
-    // let importer write all it can find
-    try {
-      im.write(file);
-    } catch (Throwable t) {
-      throw new IOException("Geo Import failed ["+t.getMessage()+"]");
-    }
-
+    // done
+    return im;
   }
 
   /**
@@ -146,10 +161,10 @@ public class GeoService {
     // don't have it yet?
     if (gazetteers==null) {
         
-      gazetteers = new ArrayList();
+      gazetteers = new HashSet();
       
       // check 'em files
-      File[] files = calcGeoDir().listFiles();
+      File[] files = getGeoFiles();
       for (int i=0;files!=null&&i<files.length;i++) {
         File file = files[i];
         if (file.getName().endsWith(GAZETTEER_SUFFIX))
@@ -164,16 +179,57 @@ public class GeoService {
   }
   
   /**
-   * Return a suitable geographic location for given property. Any
-   * property that has a nested PLACe or ADDRess is a suitable
-   * argument.
-   * @param property property to analyze
+   * Find all suitable locations for given location 
+   * @param location
    * @return array of suitable locations
    */
-  public GeoLocation[] getLocations(Property property) {
-    
+  public GeoLocation[] findAll(GeoLocation location) {
     return new GeoLocation[0];
+  }
+  
+  /**
+   * Locate given location
+   */
+  public boolean match(GeoLocation location) {
     
+    Pattern pattern = location.getPattern();
+
+    // loop over all gazetteers
+    File[] files = getGeoFiles();
+    for (int i=0;i<files.length;i++) {
+      if (!files[i].getName().endsWith(GAZETTEER_SUFFIX))
+        continue;
+      // check each
+      if (match(location, pattern, files[i]))
+        return true;
+      // next
+    }
+
+    // not found
+    return false;
+  }
+  
+  private boolean match(GeoLocation location, Pattern pattern, File gazetteer) {
+    
+    BufferedReader in = null;
+    try {
+      in = new BufferedReader(new InputStreamReader(new FileInputStream(gazetteer), UTF8));   
+      String line;
+      while ( (line=in.readLine()) !=null) {
+        if (pattern.matcher(line).find()) {
+          Matcher latlon = MATCH_LAT_LON.matcher(line);
+          latlon.matches();
+          location.set(Float.parseFloat(latlon.group(1)), Float.parseFloat(latlon.group(2)));
+          return true;
+        }
+      }
+    } catch (Throwable t) {
+      Debug.log(Debug.ERROR, this, t);
+    } finally {
+      try { in.close(); } catch (Throwable t) {}
+    }
+
+    return false;
   }
   
   /**
@@ -185,26 +241,22 @@ public class GeoService {
       
       maps = new ArrayList();
       
-      // look em up in file system
-      File dir = new File(EnvironmentChecker.getProperty(this, "genj.geo.dir", GEO_DIR, "Looking for map directory"));
-      if (dir.exists()) {
-        // loop over files and directories in ./geo or ${genj.geo.dir}
-        File[] files = dir.listFiles();
-        for (int i=0;i<files.length;i++) {
-          // only directories - later zip files as well
-          if (!files[i].isDirectory())
-            continue;
-          // 20050504 don't consider directory 'CVS'
-          if (files[i].getName().equals("CVS"))
-            continue;
-          // add it to available maps
-          try {
-            maps.add(new GeoMap(files[i]));
-          } catch (Throwable t) {
-            Debug.log(Debug.WARNING, this, "problem reading map from "+files[i], t);
-          }
-          // next
+      // loop over files 
+      File[] files = getGeoFiles();
+      for (int i=0;i<files.length;i++) {
+        // only directories - later zip files as well
+        if (!files[i].isDirectory())
+          continue;
+        // 20050504 don't consider directory 'CVS'
+        if (files[i].getName().equals("CVS"))
+          continue;
+        // add it to available maps
+        try {
+          maps.add(new GeoMap(files[i]));
+        } catch (Throwable t) {
+          Debug.log(Debug.WARNING, this, "problem reading map from "+files[i], t);
         }
+        // next
       }
       
       // finished looking for maps
@@ -249,7 +301,7 @@ public class GeoService {
     
     /** string representation */
     public String toString() {
-      return name;
+      return state==null ? name : name + " (" + state.toUpperCase() + ")";
     }
     
     /** comparison */
@@ -257,52 +309,153 @@ public class GeoService {
       Gazetteer that = (Gazetteer)o;
       return this.name.compareTo(that.name);
     }
+    
+    /** identity comparison */
+    public boolean equals(Object obj) {
+      Gazetteer that = (Gazetteer)obj;
+      return this.key.equals(that.key);
+    }
+    
+    /** identity */
+    public int hashCode() {
+      return key.hashCode();
+    }
   } //Gazetteer
     
   /**
    * Importer of geographic information
    */
-  /*package*/ abstract static class Import {
+  public abstract class Import implements Trackable {
+    
+    /** number of lines expected/written */
+    protected long linesExpected = -1;
+    private long linesWritten = 0;
+    
+    /** worker thread */
+    private Thread worker;
+    
+    /** key country[_state] */
+    private String key;
     
     /** state */
     private BufferedWriter out;
     
-    /** write to file */
-    public final void write(File file) throws Throwable {
+    /** constructor */
+    protected Import(String country, String state) {
+      this.key = (state!=null ? country+"_"+state : country);
+    }
+    
+    /** trackable callback - cancel */
+    public synchronized void cancel() {
+      if (worker!=null) {
+        worker.interrupt();
+        worker = null;
+      }
+    }
+    
+    /** trackable callback - state */
+    public String getState() {
+      return "Importing";
+    }
+    
+    /** trackable callback - current progress */
+    public int getProgress() {
+      if (linesExpected<=0)
+        return 0;
+      return (int)Math.min(100, linesWritten*100/linesExpected);
+    }
+    
+    /** perform the import  */
+    public final Gazetteer run() throws IOException {
+      
+      // keep current thread as worker
+      worker = Thread.currentThread();
+      
       // make sure the directory for file exists
-      file.getParentFile().mkdirs();
-      // open for output and continue with impl
+      File dir =  new File(EnvironmentChecker.getProperty(this,"user.home/.genj/geo", "", "geo import destination"));
+      File tmp = new File(dir, key +TMP_SUFFIX);
+      File dst = new File(dir, key +GAZETTEER_SUFFIX);
+      
+      // make sure we have the directories 
+      tmp.getParentFile().mkdirs();
+      
+      // do the io
+      InputStream in = null;
       try {
         
-        out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), UTF8));
-        write("place", "zip", "state", "country", "lat", "lon");
-        write();
+        // open input
+        URL url = getURL();
+        Debug.log(Debug.INFO, getClass(), "Importing "+key+" from "+url);
+        URLConnection con = url.openConnection();
+        in = con.getInputStream();
         
+        // always zipped - first entry is content
+        ZipInputStream zin = new ZipInputStream(in);
+        ZipEntry entry =  zin.getNextEntry();
+        linesExpected = entry.getSize() / 160;
+
+        // open output
+        out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp), UTF8));
+        write("place", "state", "country", "lat", "lon");
+        
+        // let implementation do its thing
+        parse(new BufferedReader(new InputStreamReader(zin, UTF8)));
+        
+        // close out
+        out .close();
+        out = null;
+        
+        // copy to final filename
+        Gazetteer result = new Gazetteer(dst);
+        dst.delete();
+        if (!tmp.renameTo(dst))
+          throw new IOException("Couldn't create output file "+dst);
+        
+        // keep gazetteer
+        synchronized (GeoService.this) {
+          gazetteers.add(result);
+        }
+        return result;
+
       } finally {
         if (out!=null) out.close();
+        if (in!=null) in.close();
       }
       
       // done
     }
     
-    /** implementation dependent write */
-    protected abstract void write() throws Throwable;
+    /** implementation dependent url */
+    protected abstract URL getURL() throws IOException;
+    
+    /** implementation dependent parse */
+    protected abstract void parse(BufferedReader in) throws IOException;
+    
+    /** declare one skipped line of information */
+    protected void skip() {
+      if (linesExpected>2) linesExpected--;
+    }
     
     /** write one line of information */
-    protected void write(String place, String zip, String state, String country, float lat, float lon) throws IOException {
-      write(place, zip, state, country, Float.toString(lat), Float.toString(lon));
+    protected void write(String city, String state, String country, float lat, float lon) throws IOException {
+      write(city, state, country, Float.toString(lat), Float.toString(lon));
     }
-    protected void write(String place, String zip, String state, String country, String lat, String lon) throws IOException {
-
-      assert FORMAT=="PLACE\tZIP\tSTATE\tCOUNTRY\tLAT\tLON" : "format problem";
+    protected void write(String city, String state, String country, String lat, String lon) throws IOException {
       
-      out.write(place); out.write('\t');
-      out.write(zip); out.write('\t');
+      // interrupted?
+      if (worker==null)
+        throw new IOException("Import Cancelled");
+
+      out.write(city); out.write('\t');
       out.write(state); out.write('\t');
       out.write(country); out.write('\t');
       out.write(lat); out.write('\t');
       out.write(lon); 
+      out.newLine();
+      
+      linesWritten++;
     }
+    
   } //Import
 
   /**
@@ -310,7 +463,7 @@ public class GeoService {
    * http://geonames.usgs.gov/gnishome.html
    * http://geonames.usgs.gov/geonames/stategaz/index.html
    */
-  /*package*/ static class USGSImport extends Import {
+  private class USGSImport extends Import {
     
     private final static String 
       URL = "http://geonames.usgs.gov/geonames/stategaz/XX_DECI.zip";
@@ -319,38 +472,20 @@ public class GeoService {
     private String state;
     
     /** constructor */
-    public USGSImport(String state) throws IOException {
-      if (state==null)
-        throw new IOException("state is required for US import");
+    private USGSImport(String state) {
+      super("us", state);
+      if (state==null||state.length()==0)
+        throw new IllegalArgumentException("US State is required for USGS import");
       this.state = state;
     }
     
-    /** our implementation for writing info */
-    protected void write() throws Throwable {
-      
-      Debug.log(Debug.INFO, GeoService.class, "Importing USGS state information for state "+state);
-      
-      // try to connect to provider URL 
-      InputStream in = null;
-      try {
-        
-        URL url = new URL(URL.replaceFirst("XX", state.toUpperCase()));
-        in = url.openConnection().getInputStream();
-        
-        // read content
-        ZipInputStream zin = new ZipInputStream(in);
-        zin.getNextEntry();
-        parse(new BufferedReader(new InputStreamReader(zin, UTF8)));
-        
-      } finally {
-        if (in!=null) in.close();
-      }
-      
-      // done
+    /** our URL */
+    protected URL getURL() throws IOException {
+        return new URL(URL.replaceFirst("XX", state.toUpperCase()));
     }
     
     /** parse USGS lines */
-    private void parse(BufferedReader in) throws IOException {
+    protected void parse(BufferedReader in) throws IOException {
       
       String name;
       float lat, lon;
@@ -368,22 +503,30 @@ public class GeoService {
         name = values.get(2);
         
         // look for 'populated areas' only
-        if (!"ppl".equals(values.get(3)))
+        if (!"ppl".equals(values.get(3))) {
+          skip();
           continue;
+        }
         
         // grab lat lon
         try {
           String s = values.get(9); 
-          if (s.length()==0||"UNKNOWN".equals(s)) continue;
+          if (s.length()==0||"UNKNOWN".equals(s)) {
+            skip();
+            continue;
+          }
           lat = Float.parseFloat(s); // LAT
-          if (s.length()==0||"UNKNOWN".equals(s)) continue;
+          if (s.length()==0||"UNKNOWN".equals(s)) {
+            skip();
+            continue;
+          }
           lon = Float.parseFloat(s); // LON
         } catch (NumberFormatException e) {
           throw new IOException("Format problem - expected to find lat/lon");
         }
   
         // keep it
-        write(name, null, state, "us", lat, lon);
+        write(name, state, "us", lat, lon);
       }
   
       // done
@@ -395,9 +538,7 @@ public class GeoService {
    * http://gnswww.nga.mil/geonames/GNS/index.jsp
    * http://www.nga.mil/gns/html/cntry_files.html
    */
-  /*package*/ static class NGAImport extends Import {
-    
-    private final static Resources ISO2FIPS = new Resources(NGAImport.class.getResourceAsStream("iso2fips.properties"));
+  private class NGAImport extends Import {
     
     private final static String 
       URL = "http://earth-info.nga.mil/gns/html/cntyfile/COUNTRY.zip";
@@ -405,37 +546,19 @@ public class GeoService {
     private String fipsCountry, isoCountry, state;
     
     /** constructor */
-    public NGAImport(String country, String state) {
-     fipsCountry  = ISO2FIPS.getString(country);
-     isoCountry = country;
-     this.state = state;
+    private NGAImport(String country, String state) {
+      super(country, state);
+      fipsCountry  = ISO2FIPS.getString(country);
+      isoCountry = country;
+      this.state = state;
     }
   
-    protected void write() throws Throwable {
-      
-      Debug.log(Debug.INFO, GeoService.class, "Importing NGA country information for "+isoCountry+" (fips "+fipsCountry+")");
-      
-      // try to connect to provider URL 
-      InputStream in = null;
-      try {
-        
-        URL url = new URL(URL.replaceFirst("COUNTRY", fipsCountry));
-        in = url.openConnection().getInputStream();
-        
-        // read content
-        ZipInputStream zin = new ZipInputStream(in);
-        zin.getNextEntry();
-        parse(new BufferedReader(new InputStreamReader(zin, UTF8)));
-        
-      } finally {
-        if (in!=null) in.close();
-      }
-      
-      // done
+    protected URL getURL() throws IOException {
+        return new URL(URL.replaceFirst("COUNTRY", fipsCountry));
     }
     
     /** parse NGA lines */
-    private void parse(BufferedReader in) throws IOException {
+    protected void parse(BufferedReader in) throws IOException {
       
       // skip header
       in.readLine();
@@ -460,18 +583,22 @@ public class GeoService {
         }
   
         // look for 'populated areas' only
-        if ('P'!=values.get(9).charAt(0))
+        if ('P'!=values.get(9).charAt(0)) {
+            skip();
           continue;
+        }
         
         // and check country
-        if (!fipsCountry.equalsIgnoreCase(values.get(12)))
+        if (!fipsCountry.equalsIgnoreCase(values.get(12))) {
+          skip();
           continue;
+        }
         
         // grab name
         name = values.get(22); // FULL_NAME
         
         // keep it
-        write(name, null, null, isoCountry, lat, lon);
+        write(name, "", isoCountry, lat, lon);
       }
   
       // done
