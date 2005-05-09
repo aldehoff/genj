@@ -232,7 +232,7 @@ public class PropertyDate extends Property {
           return start.set(tokens);
 
         // ... is range (FROM-TO,BET-AND)
-        String grab = EMPTY_STRING;
+        String grab = "";
         while (tokens.hasMoreTokens()) {
           // .. TO or AND ? -> parse 2 PointInTimes from grabbed and remaining tokens
           token = tokens.nextToken();
@@ -401,13 +401,13 @@ public class PropertyDate extends Property {
     
     public String getLabel1() {
       if (start.length()==0)
-        return EMPTY_STRING;
+        return "";
       return resources.getString("prop.date.mod."+start);
     }
     
     public String getLabel2() {
       if (end.length()==0)
-        return EMPTY_STRING;
+        return "";
       return resources.getString("prop.date.mod."+end);
     }
     

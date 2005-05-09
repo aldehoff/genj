@@ -44,7 +44,7 @@ public class PropertyPlace extends Property {
     FORM = "FORM";
 
   /** place */
-  private String place = EMPTY_STRING;
+  private String place = "";
   
   /**
    * The Place TAG
@@ -104,7 +104,7 @@ public class PropertyPlace extends Property {
     // delegate
     super.addNotify(parent);
     // a remember wouldn't have worked until now
-    remember(EMPTY_STRING, place);
+    remember("", place);
     // done
   }
 
@@ -114,7 +114,7 @@ public class PropertyPlace extends Property {
    */
   /*package*/ void delNotify(Property old) {
     // forget value
-    remember(place, EMPTY_STRING);
+    remember(place, "");
     // continue
     super.delNotify(old);
   }
@@ -138,7 +138,7 @@ public class PropertyPlace extends Property {
    */
   public String getHierarchy(Gedcom gedcom) {
     // look it up
-    String result = EMPTY_STRING;
+    String result = "";
     Property pformat = getProperty(FORM);
     if (pformat!=null) 
       result = pformat.getValue();

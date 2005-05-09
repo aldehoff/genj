@@ -73,21 +73,8 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
    */
   public void link() throws GedcomException {
 
-    // Get enclosing entity ?
-    Entity entity = getEntity();
-
-    // Something to do ?
-    if (getReferencedEntity()!=null)
-      return;
-
     // Look for media
-    String id = getReferencedId();
-    if (id.length()==0)
-      return;
-
-    Media media = (Media)getGedcom().getEntity(Gedcom.OBJE, id);
-    if (media==null)
-      throw new GedcomException("Couldn't find entity with ID "+id);
+    Media media = (Media)getCandidate();
 
     // Create a back-reference
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);

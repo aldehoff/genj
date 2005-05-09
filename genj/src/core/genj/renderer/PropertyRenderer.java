@@ -482,7 +482,7 @@ public class PropertyRenderer {
      */
     public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, int preference, Point dpi) {
       if (prop instanceof PropertyXRef) {
-        Object e = ((PropertyXRef)prop).getReferencedEntity();
+        Object e = ((PropertyXRef)prop).getTargetEntity();
         if (e!=null) 
           return super.getSizeImpl(font, context, prop, e.toString(), preference, dpi);
       }
@@ -494,7 +494,7 @@ public class PropertyRenderer {
      */
     public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
       if (prop instanceof PropertyXRef) {
-        Object e = ((PropertyXRef)prop).getReferencedEntity();
+        Object e = ((PropertyXRef)prop).getTargetEntity();
         if (e!=null) {
           super.renderImpl(g, bounds, prop, e.toString(), preference, dpi);
           return;

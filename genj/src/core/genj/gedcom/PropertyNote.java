@@ -72,15 +72,8 @@ public class PropertyNote extends PropertyXRef {
    */
   public void link() throws GedcomException {
     
-    // something to do ?
-    if (getReferencedEntity()!=null) 
-      return;
-
     // Look for Note
-    String id = getReferencedId();
-    Note enote = (Note)getGedcom().getEntity(Gedcom.NOTE, id);
-    if (enote==null) 
-      throw new GedcomException("Couldnt't find note with ID "+id);
+    Note enote = (Note)getCandidate();
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
@@ -96,7 +89,7 @@ public class PropertyNote extends PropertyXRef {
    * A Note's NOTE property
    */
   public Property getTargetValueProperty() {
-    Note note = (Note)getReferencedEntity();
+    Note note = (Note)getTargetEntity();
     return note!=null ? note.getDelegate() : null;
   }
   

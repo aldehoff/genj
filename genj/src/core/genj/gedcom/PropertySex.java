@@ -156,7 +156,7 @@ public class PropertySex extends Property {
       return "M";
     if (sex == FEMALE)
       return "F";
-    return EMPTY_STRING;
+    return "";
   }
   
   /**

@@ -78,7 +78,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
   public String getValue() {
 
     if (file==null)
-      return EMPTY_STRING;
+      return "";
 
     // we're checking the value for relative here because
     // in setValue() the parent might not be set yet so

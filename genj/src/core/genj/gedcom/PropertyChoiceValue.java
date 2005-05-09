@@ -126,7 +126,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     // delegate
     super.addNotify(parent);
     // a remember wouldn't have worked until now
-    remember(EMPTY_STRING, super.getValue());
+    remember("", super.getValue());
     // done
   }
 
@@ -136,7 +136,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    */
   /*package*/ void delNotify(Property old) {
     // forget value
-    remember(super.getValue(), EMPTY_STRING);
+    remember(super.getValue(), "");
     // continue
     super.delNotify(old);
   }

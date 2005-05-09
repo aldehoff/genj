@@ -54,16 +54,8 @@ public class PropertySubmitter extends PropertyXRef {
    */
   public void link() throws GedcomException {
 
-    // something to do ?
-    if (getReferencedEntity()!=null) return;
-
     // Look for SUBM
-    String id = getReferencedId();
-    if (id.length()==0) return;
-
-    Submitter subm = (Submitter)getGedcom().getEntity(Gedcom.SUBM, id);
-    if (subm == null) 
-      return;
+    Submitter subm = (Submitter)getCandidate();
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);

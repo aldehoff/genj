@@ -70,17 +70,8 @@ public class PropertySource extends PropertyXRef {
    */
   public void link() throws GedcomException {
 
-    // something to do ?
-    if (getReferencedEntity()!=null) return;
-
-
     // Look for Source
-    String id = getReferencedId();
-    if (id.length()==0) return;
-
-    Source source = (Source)getGedcom().getEntity(Gedcom.SOUR, id);
-    if (source == null)
-      return;
+    Source source = (Source)getCandidate();
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
@@ -104,7 +95,7 @@ public class PropertySource extends PropertyXRef {
    */
   protected ImageIcon overlay(ImageIcon img) {
     // used as a reference? go ahead and overlay!
-    if (super.getReferencedEntity()!=null)
+    if (super.getTargetEntity()!=null)
       return super.overlay(img);
     // used inline! no overlay!
     return img;

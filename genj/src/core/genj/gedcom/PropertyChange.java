@@ -59,7 +59,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    * Get the last change date
    */
   public String getDateAsString() {
-    return time<0 ? EMPTY_STRING : PointInTime.getPointInTime(time).toString(new WordBuffer(), true).toString();    
+    return time<0 ? "" : PointInTime.getPointInTime(time).toString(new WordBuffer(), true).toString();    
   }
   
   /**
@@ -67,7 +67,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    */
   public String getTimeAsString() {
     if (time<=0)
-      return EMPTY_STRING;
+      return "";
 
     long
       sec = (time/1000)%60,
@@ -211,14 +211,14 @@ public class PropertyChange extends Property implements MultiLineProperty {
    * Gedcom value - this is an intermittend value only that won't be saved (it's not Gedcom compliant but contains a valid gedcom date)
    */
   public String getValue() {
-    return time<0 ? EMPTY_STRING : PointInTime.getPointInTime(time).getValue() +','+getTimeAsString();
+    return time<0 ? "" : PointInTime.getPointInTime(time).getValue() +','+getTimeAsString();
   }
   
   /**
    * A display value - the date/time localized
    */
   public String getDisplayValue() {
-    return time<0 ? EMPTY_STRING : getDateAsString() +','+getTimeAsString();
+    return time<0 ? "" : getDateAsString() +','+getTimeAsString();
   }
   
   /**
@@ -292,7 +292,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
     /** lines */
     private String[] 
       tags = { CHAN, DATE, TIME  },
-      values = { EMPTY_STRING, PointInTime.getPointInTime(time).getValue(), getTimeAsString() };
+      values = { "", PointInTime.getPointInTime(time).getValue(), getTimeAsString() };
       
     /**
      * @see genj.gedcom.MultiLineProperty.Iterator#setValue(java.lang.String)

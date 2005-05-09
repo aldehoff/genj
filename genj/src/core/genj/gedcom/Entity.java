@@ -177,7 +177,7 @@ public class Entity extends Property {
    * @see genj.gedcom.Property#getValue()
    */
   public String getValue() {
-    return value!=null?value:EMPTY_STRING;
+    return value!=null?value : "";
   }
   
   /**

@@ -63,7 +63,7 @@ import java.util.List;
   private Issue getError(Fam fam, String role, ReportValidate report) {
     
     PropertyXRef xref = (PropertyXRef)fam.getProperty(role);
-    Indi indi = (Indi)xref.getReferencedEntity();
+    Indi indi = (Indi)xref.getTargetEntity();
      
     String[] format = new String[] {
       Gedcom.getName(role),

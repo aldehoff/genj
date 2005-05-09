@@ -324,7 +324,7 @@ public class Indi extends Entity {
    */
   public String getFirstName() {
     PropertyName p = (PropertyName)getProperty(PropertyName.TAG,true);
-    return p!=null ? p.getFirstName() : EMPTY_STRING;  
+    return p!=null ? p.getFirstName() : "";  
   }
 
   /**
@@ -332,7 +332,7 @@ public class Indi extends Entity {
    */
   public String getLastName() {
     PropertyName p = (PropertyName)getProperty(PropertyName.TAG,true);
-    return p!=null ? p.getLastName() : EMPTY_STRING; 
+    return p!=null ? p.getLastName() : ""; 
   }
 
   /**
@@ -340,7 +340,7 @@ public class Indi extends Entity {
    */
   public String getNameSuffix() {
     PropertyName p = (PropertyName)getProperty(PropertyName.TAG,true);
-    return p!=null ? p.getSuffix() : EMPTY_STRING; 
+    return p!=null ? p.getSuffix() : ""; 
   }
   
   /**
@@ -357,7 +357,7 @@ public class Indi extends Entity {
    */
   public String getName() {
     PropertyName p = (PropertyName)getProperty(PropertyName.TAG,true);
-    return p!=null ? p.getName() : EMPTY_STRING; 
+    return p!=null ? p.getName() : ""; 
   }
   
   /** 
@@ -511,11 +511,11 @@ public class Indi extends Entity {
     // try to get birth    
     PropertyDate pbirth = getBirthDate();
     if (pbirth==null) 
-      return EMPTY_STRING;
+      return "";
     
     Delta delta = Delta.get(pbirth.getStart(), pit);
     if (delta==null)
-      return EMPTY_STRING;
+      return "";
       
     return delta.toString();
   }

@@ -55,29 +55,8 @@ public class PropertyRepository extends PropertyXRef {
    */
   public void link() throws GedcomException {
 
-    // No Property Repository?
-    if (repository!=null) {
-      return;
-    }
-
-    // Get enclosing entity ?
-    Entity entity = getEntity();
-
-    // Something to do ?
-    if (getReferencedEntity()!=null) {
-      return;
-    }
-
     // Look for Repository
-    String id = getReferencedId();
-    if (id.length()==0) {
-      return;
-    }
-
-    Repository repository = (Repository)getGedcom().getEntity(Gedcom.REPO, id);
-    if (repository == null) {
-      throw new GedcomException("Couldn't find entity with ID "+id);
-    }
+    Repository repository = (Repository)getCandidate();
 
     // Create Backlink
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);

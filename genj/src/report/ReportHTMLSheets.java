@@ -222,7 +222,7 @@ public class ReportHTMLSheets extends Report {
     // we don't do anything for xrefs to non-indi/fam
     if (prop instanceof PropertyXRef) {
       PropertyXRef xref = (PropertyXRef)prop;
-      if (!(xref.getReferencedEntity() instanceof Indi||xref.getReferencedEntity() instanceof Fam))
+      if (!(xref.getTargetEntity() instanceof Indi||xref.getTargetEntity() instanceof Fam))
         return;
     }
 
@@ -267,7 +267,7 @@ public class ReportHTMLSheets extends Report {
     if (prop instanceof PropertyXRef) {
       
       PropertyXRef xref = (PropertyXRef)prop;
-      Entity ent = xref.getReferencedEntity();
+      Entity ent = xref.getTargetEntity();
       
       out.println("<A HREF=\"" + ent.getId() + ".html\">" + ent.toString() + "</a>");
       

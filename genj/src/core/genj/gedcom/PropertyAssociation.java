@@ -28,14 +28,6 @@ import genj.util.WordBuffer;
  */
 public class PropertyAssociation extends PropertyXRef {
   
-  /** available target types */
-  public static final String[] TARGET_TYPES = {
-    Gedcom.INDI, Gedcom.FAM, Gedcom.SUBM
-  };
-  
-  /** our target type */
-  private String targetType = Gedcom.INDI;
-  
   /**
    * Empty Constructor
    */
@@ -122,18 +114,8 @@ public class PropertyAssociation extends PropertyXRef {
    */
   public void link() throws GedcomException {
 
-    // linked already?
-    if (getReferencedEntity()!=null) 
-      return;
-
-    // Try to find entity
-    String id = getReferencedId();
-    if (id.length()==0)
-      return;
-
-    Entity ent = (Entity)getGedcom().getEntity(id);
-    if (ent==null) 
-      throw new GedcomException("Couldnt't find individual with ID "+id);
+     // Try to find entity
+    Entity ent = getCandidate();
 
     // Create Backlink using RELA
     PropertyForeignXRef fxref = new PropertyForeignXRef(this);
@@ -159,14 +141,13 @@ public class PropertyAssociation extends PropertyXRef {
    * The expected referenced type
    */
   public String getTargetType() {
-    return targetType;
-  }
-  
-  /**
-   * The expected referenced type
-   */
-  public void setTargetType(String set) {
-    targetType = set;
+    String prefix = getValue().substring(1,2);
+    for (int i = 0; i < Gedcom.ENTITIES.length; i++) {
+      if (Gedcom.getEntityPrefix(Gedcom.ENTITIES[i]).startsWith(prefix))
+        return Gedcom.ENTITIES[i];
+    }
+    // grrr, too bad
+    return Gedcom.INDI;
   }
   
 } //PropertyAssociation

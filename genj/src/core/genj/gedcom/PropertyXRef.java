@@ -36,7 +36,7 @@ public abstract class PropertyXRef extends Property {
   private PropertyXRef target = null;
 
   /** the value for a broken xref */
-  private String       value  = null;
+  private String  value  = "";
 
   /**
    * Empty Constructor
@@ -89,19 +89,33 @@ public abstract class PropertyXRef extends Property {
    * Returns the entity this reference points to
    * @return entity this property links to
    */
-  public Entity getReferencedEntity() {
-    if (target==null) {
-      return null;
-    }
-    return target.getEntity();
+  public Entity getTargetEntity() {
+    return target==null ? null : target.getEntity();
+  }
+  
+  /**
+   * Tries to find candidate entity to link to
+   */
+  protected Entity getCandidate() throws GedcomException {
+    // no good if already linked
+    if (target!=null)
+      throw new GedcomException(Gedcom.getName(getTag())+"/"+Gedcom.getName(getTargetType())+" is already linked");
+    
+    Entity entity = getGedcom().getEntity(getTargetType(), value);
+    if (entity==null)
+      throw new GedcomException("Couldn't find "+Gedcom.getName(getTag())+"/"+Gedcom.getName(getTargetType())+" with id="+value);
+    return entity;
   }
 
   /**
-   * Returns the id of the referenced entity
-   * @return referenced entity's id
+   * Checks whether an entity is a candidate to link to 
    */
-  public String getReferencedId() {
-    return value==null ? EMPTY_STRING : value;
+  protected boolean isCandidate(Entity entity) {
+    // can't be linked yet
+    if (target!=null)
+      return false;
+    // check entity
+    return entity.getId().equals(value);
   }
 
   /**
@@ -109,7 +123,7 @@ public abstract class PropertyXRef extends Property {
    * @return value of this property as <code>String</code>
    */
   public String getValue() {
-    return value==null ? EMPTY_STRING : '@'+value+'@';
+    return target!=null ? '@'+target.getEntity().getId()+'@' : '@'+value+'@';
   }
 
   /**
@@ -157,7 +171,7 @@ public abstract class PropertyXRef extends Property {
     
     // Do it
     this.target=target;
-    this.value =target.getEntity().getId();
+    this.value =null;
 
     // Remember change
     propagateChange(old);
@@ -195,7 +209,7 @@ public abstract class PropertyXRef extends Property {
     String old = getValue();
 
     // remember value
-    value = set.replace('@',' ').trim();
+    value = Gedcom.trimID(set.replace('@',' '));
 
     // remember change
     propagateChange(old);
@@ -208,6 +222,7 @@ public abstract class PropertyXRef extends Property {
    */
   /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
     assume(getTag().equals(meta.getTag()), UNSUPPORTED_TAG);
+    assume(value.startsWith("@")&&value.endsWith("@"), "xref value needs to be @..@");
     return super.init(meta, value);
   }
 
@@ -215,7 +230,7 @@ public abstract class PropertyXRef extends Property {
    * This property as a verbose string
    */
   public String toString() {
-    Entity e = getReferencedEntity();
+    Entity e = getTargetEntity();
     if (e==null) {
       return super.toString();
     }
@@ -232,7 +247,7 @@ public abstract class PropertyXRef extends Property {
    */
   public String getDeleteVeto() {
     // warn if linked
-    if (getReferencedEntity()==null) 
+    if (getTargetEntity()==null) 
       return null;
     // a specialized message?
     String key = "prop."+getTag().toLowerCase()+".veto";
@@ -304,13 +319,13 @@ public abstract class PropertyXRef extends Property {
     PropertyXRef that = (PropertyXRef)o;
     
     // got the references?
-    if (this.getReferencedEntity()==null||that.getReferencedEntity()==null)
+    if (this.getTargetEntity()==null||that.getTargetEntity()==null)
       return super.compareTo(that);
 
     // compare references - using toString() but it should really depend
     // on what the renderer renders
     
-    return compare(getReferencedEntity().toString(), that.getReferencedEntity().toString());
+    return compare(getTargetEntity().toString(), that.getTargetEntity().toString());
   }
 
 } //PropertyXRef

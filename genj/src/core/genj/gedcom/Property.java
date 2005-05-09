@@ -34,7 +34,6 @@ public abstract class Property implements Comparable {
 
   /** static strings */
   protected final static String 
-    EMPTY_STRING = "",
     UNSUPPORTED_TAG = "Unsupported Tag";
     
   /** parent of this property */
@@ -755,7 +754,7 @@ public abstract class Property implements Comparable {
     MetaProperty[] subs = getNestedMetaProperties(MetaProperty.FILTER_DEFAULT); 
     for (int s=0; s<subs.length; s++) {
       if (getProperty(subs[s].getTag())==null)
-        addProperty(subs[s].create(EMPTY_STRING)).addDefaultProperties();
+        addProperty(subs[s].create("")).addDefaultProperties();
     }
 
     // done    

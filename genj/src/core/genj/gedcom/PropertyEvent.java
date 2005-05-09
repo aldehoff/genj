@@ -57,7 +57,7 @@ public class PropertyEvent extends Property {
    */
   public String getDateAsString() {
     Property date = getProperty("DATE");
-    return date!=null ? date.getValue() : EMPTY_STRING;
+    return date!=null ? date.getValue() : "";
   }
 
   /**
@@ -91,7 +91,7 @@ public class PropertyEvent extends Property {
    * Returns the value of this property
    */
   public String getValue() {
-    return knownToHaveHappened ? "Y" : EMPTY_STRING;
+    return knownToHaveHappened ? "Y" : "";
   }
 
   /**

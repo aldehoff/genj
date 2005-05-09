@@ -63,7 +63,7 @@ public class PropertyChild extends PropertyXRef {
    * @return referenced child
    */
   public Indi getChild() {
-    return (Indi)getReferencedEntity();
+    return (Indi)getTargetEntity();
   }
 
   /**
@@ -91,11 +91,6 @@ public class PropertyChild extends PropertyXRef {
    */
   public void link() throws GedcomException {
 
-    // Something to do ?
-    if (getChild()!=null) {
-      return;
-    }
-
     // Get enclosing family ?
     Fam fam;
     try {
@@ -107,14 +102,10 @@ public class PropertyChild extends PropertyXRef {
     // Prepare some VARs
     Property p;
     Property ps[];
+    Gedcom gedcom = getGedcom();
 
     // Look for child (not-existing -> Gedcom throws Exception)
-    String id = getReferencedId();
-    Indi child = (Indi)getGedcom().getEntity(Gedcom.INDI, id);
-
-    if (child==null) {
-      throw new GedcomException("Couldn't find child with ID "+id);
-    }
+    Indi child = (Indi)getCandidate();
 
     // Child already has parents ?
 //    if (child.getFamc()!=null) {
@@ -122,23 +113,20 @@ public class PropertyChild extends PropertyXRef {
 //    }
 
     // Enclosing family has indi as child, husband or wife ?
-    if (fam.getWife()==child) {
-      throw new GedcomException("Individual @"+id+"@ is already wife in family @"+fam.getId()+"@");
-    }
-    if (fam.getHusband()==child) {
-      throw new GedcomException("Individual @"+id+"@ is already husband in family @"+fam.getId()+"@");
-    }
+    if (fam.getWife()==child) 
+      throw new GedcomException("Individual "+child+" is already wife in family @"+fam.getId()+"@");
+    if (fam.getHusband()==child) 
+      throw new GedcomException("Individual "+child+" is already husband in family @"+fam.getId()+"@");
 
     Indi children[] = fam.getChildren();
     for (int i=0;i<children.length;i++) {
-      if ( children[i] == child ) {
-        throw new GedcomException("Individual @"+id+"@ is already child in family @"+fam.getId()+"@");
-      }
+      if ( children[i] == child ) 
+        throw new GedcomException("Individual "+child+" is already child in family @"+fam.getId()+"@");
     }
 
     // Child is ancestor of husband or wife ?
     if (fam.getAncestors().contains(child)) {
-      throw new GedcomException("Individual @"+id+"@ is ancestor of family @"+fam.getId()+"@");
+      throw new GedcomException("Individual "+child+" is ancestor of family @"+fam.getId()+"@");
     }
 
     // Connect back from child (maybe using back reference)
@@ -148,7 +136,7 @@ public class PropertyChild extends PropertyXRef {
     for (int i=0;i<ps.length;i++) {
       pfc = (PropertyFamilyChild)ps[i];
       // 20030616 compare against fam.getId()!!!
-      if ( !pfc.isValid() && pfc.getReferencedId().equals(fam.getId()) ) {
+      if (pfc.isCandidate(fam)) {
         pfc.setTarget(this);
         setTarget(pfc);
         return;
@@ -157,7 +145,7 @@ public class PropertyChild extends PropertyXRef {
           for (int j=0;j<ps.length;j++) {
             pfc = (PropertyFamilyChild)ps[j];
             // 20030616 compare against fam.getId()!!!
-            if ( !pfc.isValid() && pfc.getReferencedId().equals(fam.getId()) ) {
+            if (pfc.isCandidate(fam)) {
               pfc.setTarget(this);
               setTarget(pfc);
               return;

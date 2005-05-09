@@ -264,9 +264,6 @@ public class GedcomReader implements Trackable {
     // Create entity and read its properties
     try {
       
-      if (gedcom.getEntity(tag, xref)!=null)
-        addWarning(line, "Duplicate ID "+xref+" for "+Gedcom.getName(tag));
-      
       Entity ent = gedcom.createEntity(tag, xref);
       
       // preserve value for those who care
@@ -400,10 +397,9 @@ public class GedcomReader implements Trackable {
     for (int i=0,j=xrefs.size();i<j;i++) {
       XRef xref = (XRef)xrefs.get(i);
       try {
-        xref.prop.link();
-
+        if (xref.prop.getTarget()==null)
+          xref.prop.link();
         progress = Math.min(100,(int)(i*(100*2)/j));  // 100*2 because Links are probably backref'd
-
       } catch (GedcomException ex) {
         addWarning(xref.line, "Property "+xref.prop.getTag()+" - "+ ex.getMessage());
       }

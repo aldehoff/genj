@@ -52,8 +52,8 @@ public class PropertyForeignXRef extends PropertyXRef {
    * There's no gedcom equivalent to a foreign (back) reference - returning ID of foreign entity
    */
   public String getValue() {
-    Entity entity = getReferencedEntity();
-    return entity==null ? "" : '@'+getReferencedEntity().getId()+'@';
+    Entity entity = getTargetEntity();
+    return entity==null ? "" : '@'+getTargetEntity().getId()+'@';
   }
   
   

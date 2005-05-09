@@ -62,7 +62,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
    * Returns the reference to family
    */
   public Fam getFamily() {
-    return (Fam)getReferencedEntity();
+    return (Fam)getTargetEntity();
   }
 
   /**
@@ -80,11 +80,6 @@ public class PropertyFamilySpouse extends PropertyXRef {
    */
   public void link() throws GedcomException {
 
-    // Something to do ?
-    if (getFamily()!=null) {
-      return;
-    }
-
     // Get enclosing individual ?
     Indi indi;
     try {
@@ -95,12 +90,10 @@ public class PropertyFamilySpouse extends PropertyXRef {
 
     // Prepare some VARs
     Property p;
+    Gedcom gedcom = getGedcom();
 
     // Look for family (not-existing -> Gedcom throws Exception)
-    String id = getReferencedId();
-    Fam fam = (Fam)getGedcom().getEntity(Gedcom.FAM, id);
-    if (fam==null)
-      throw new GedcomException("Couldn't find family with ID "+id);
+    Fam fam = (Fam)getCandidate();
 
     // Enclosing individual is Husband/Wife in family ?
     Indi husband = fam.getHusband();
@@ -110,14 +103,14 @@ public class PropertyFamilySpouse extends PropertyXRef {
       throw new GedcomException("Family @"+fam.getId()+"@ already has husband and wife");
 
     if ((husband==indi)||(wife==indi))
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already spouse in family @"+id+"@");
+      throw new GedcomException("Individual @"+indi.getId()+"@ is already spouse in family "+fam);
 
     if (indi.getFamc()==fam)
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already child in family @"+id+"@");
+      throw new GedcomException("Individual @"+indi.getId()+"@ is already child in family "+fam);
       
     // Enclosing individual is descendant of family
     if (fam.getDescendants().contains(indi)) 
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already descendant of family @"+id+"@");
+      throw new GedcomException("Individual @"+indi.getId()+"@ is already descendant of family "+fam);
 
     // place as husband or wife according to gender
     if (indi.getSex()==PropertySex.UNKNOWN) 
@@ -127,7 +120,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
     Property[] husbands = fam.getProperties(PATH_FAMHUSB);
     for (int i=0;i<husbands.length;i++) {
       PropertyHusband ph = (PropertyHusband)husbands[i];
-      if ( !ph.isValid() && ph.getReferencedId().equals(indi.getId()) ) {
+      if (ph.isCandidate(indi)) {
         ph.setTarget(this);
         setTarget(ph);
         return;
@@ -136,7 +129,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
     Property[] wifes = fam.getProperties(PATH_FAMWIFE);
     for (int i=0;i<wifes.length;i++) {
       PropertyWife pw = (PropertyWife)wifes[i];
-      if ( !pw.isValid() && pw.getReferencedId().equals(indi.getId()) ) {
+      if (pw.isCandidate(indi)) {
         pw.setTarget(this);
         setTarget(pw);
         return;

@@ -76,7 +76,7 @@ public class PropertySimpleValue extends Property {
    * Returns the value of this property
    */
   public String getValue() {
-    if (value==null) return EMPTY_STRING;
+    if (value==null) return "";
     return value;
   }
 

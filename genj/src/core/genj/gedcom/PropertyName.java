@@ -34,9 +34,9 @@ public class PropertyName extends Property {
   
   /** the first + last name */
   private String
-    lastName  = EMPTY_STRING,
-    firstName = EMPTY_STRING,
-    suffix    = EMPTY_STRING;
+    lastName  = "",
+    firstName = "",
+    suffix    = "";
 
   /** the name if unparsable */
   private String nameAsString;
@@ -207,7 +207,7 @@ public class PropertyName extends Property {
    * Sets name to a new value
    */
   public PropertyName setName(String first, String last) {
-    return setName(first,last,EMPTY_STRING);
+    return setName(first,last,"");
   }
 
   /**
@@ -262,7 +262,7 @@ public class PropertyName extends Property {
    */
   /*package*/ void delNotify(Property old) {
     // forget value
-    rememberLastName(lastName, EMPTY_STRING);
+    rememberLastName(lastName, "");
     // continue
     super.delNotify(old);
     // done
@@ -276,7 +276,7 @@ public class PropertyName extends Property {
 
     // Only name specified ?
     if (newValue.indexOf('/')<0) {
-      setName(newValue, EMPTY_STRING, EMPTY_STRING);
+      setName(newValue, "", "");
       return;
     }
 
@@ -286,7 +286,7 @@ public class PropertyName extends Property {
 
     // ... wrong format (2 x '/'s !)
     if (l.indexOf('/') == -1)  {
-      setName(EMPTY_STRING,EMPTY_STRING,EMPTY_STRING);
+      setName("","","");
       nameAsString=newValue;
       return;
     }

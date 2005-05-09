@@ -60,7 +60,7 @@ public class PropertyHusband extends PropertyXRef {
    * Returns the husband
    */
   public Indi getHusband() {
-    return (Indi)getReferencedEntity();
+    return (Indi)getTargetEntity();
   }
 
   /**
@@ -76,11 +76,6 @@ public class PropertyHusband extends PropertyXRef {
    * or a double husband/wife situation would be the result
    */
   public void link() throws GedcomException {
-
-    // Something to do ?
-    if (getHusband()!=null) {
-      return;
-    }
 
     // Get enclosing family ?
     Fam fam;
@@ -99,25 +94,21 @@ public class PropertyHusband extends PropertyXRef {
       throw new GedcomException("Family @"+fam.getId()+"@ can't have two husbands");
 
     // Look for husband (not-existing -> Gedcom throws Exception)
-    String id = getReferencedId();
-    Indi husband = (Indi)getGedcom().getEntity(Gedcom.INDI, id);
-
-    if (husband==null)
-      throw new GedcomException("Couldn't find husband with ID "+id);
+    Indi husband = (Indi)getCandidate();
 
     // Enclosing family has indi as descendant or wife ?
     if (fam.getWife()==husband)
-      throw new GedcomException("Individual @"+id+"@ is already wife in family @"+fam.getId()+"@");
+      throw new GedcomException("Individual "+husband+" is already wife in family @"+fam.getId()+"@");
 
     if (fam.getDescendants().contains(husband))
-      throw new GedcomException("Individual @"+id+"@ is already descendant of family @"+fam.getId()+"@");
+      throw new GedcomException("Individual "+husband+" is already descendant of family @"+fam.getId()+"@");
 
     // Connect back from husband (maybe using invalid back reference)
     ps = husband.getProperties(new TagPath("INDI:FAMS"));
     PropertyFamilySpouse pfs;
     for (int i=0;i<ps.length;i++) {
       pfs = (PropertyFamilySpouse)ps[i];
-      if ( !pfs.isValid() && pfs.getReferencedId().equals(fam.getId()) ) {
+      if (pfs.isCandidate(fam)) {
         pfs.setTarget(this); // Changed Oct 23 from pfs.setTarget(pfs);
         setTarget(pfs);      // Inserted Oct 23
         return;

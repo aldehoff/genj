@@ -71,7 +71,7 @@ public class PropertyWife extends PropertyXRef {
    * Returns the wife
    */
   public Indi getWife() {
-    return (Indi)getReferencedEntity();
+    return (Indi)getTargetEntity();
   }
 
   /**
@@ -80,11 +80,6 @@ public class PropertyWife extends PropertyXRef {
    * or a double husband/wife situation would be the result
    */
   public void link() throws GedcomException {
-
-    // Something to do ?
-    if (getWife()!=null) {
-      return;
-    }
 
     // Get enclosing family ?
     Fam fam = null;
@@ -104,17 +99,14 @@ public class PropertyWife extends PropertyXRef {
       throw new GedcomException("Family @"+fam.getId()+"@ can't have two wifes");
 
     // Look for wife (not-existing -> Gedcom throws Exception)
-    String id = getReferencedId();
-    Indi wife = (Indi)getGedcom().getEntity(Gedcom.INDI, id);
-    if (wife==null)
-      throw new GedcomException("Couldn't find wife with ID "+id);
+    Indi wife = (Indi)getCandidate();
 
     // Enclosing family has indi as descendant or husband ?
     if (fam.getHusband()==wife)
-      throw new GedcomException("Individual @"+id+"@ is already husband in family @"+fam.getId()+"@");
+      throw new GedcomException("Individual "+wife+"  is already husband in family @"+fam.getId()+"@");
 
     if (fam.getDescendants().contains(wife))
-      throw new GedcomException("Individual @"+id+"@ is already descendant of family @"+fam.getId()+"@");
+      throw new GedcomException("Individual "+wife+" is already descendant of family @"+fam.getId()+"@");
 
     // Connect back from husband (maybe using invalid back reference)
     
@@ -122,7 +114,7 @@ public class PropertyWife extends PropertyXRef {
     PropertyFamilySpouse pfs;
     for (int i=0;i<ps.length;i++) {
       pfs = (PropertyFamilySpouse)ps[i];
-      if ( !pfs.isValid() && pfs.getReferencedId().equals(fam.getId()) ) {
+      if (pfs.isCandidate(fam)) {
         pfs.setTarget(this);
         setTarget(pfs);
         return;

@@ -45,7 +45,7 @@ public class Media extends Entity {
    */
   public String getTitle() {
     Property title = getProperty("TITL");
-    return title==null ? EMPTY_STRING : title.getValue();
+    return title==null ? "" : title.getValue();
   }
 
 } //Media
