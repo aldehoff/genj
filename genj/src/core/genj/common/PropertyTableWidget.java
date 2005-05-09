@@ -646,6 +646,9 @@ public class PropertyTableWidget extends JPanel {
       g.setFont(getFont());
       // get the proxy
       PropertyRenderer proxy = PropertyRenderer.get(curProp);
+      // add some space left and right
+      bounds.x += 1;
+      bounds.width -= 2;
       // let it render
       proxy.render(graphics, bounds, curProp, PropertyRenderer.PREFER_DEFAULT, viewManager.getDPI());
       // done
