@@ -65,6 +65,7 @@
      <fileset dir="./language/en"/>
      <fileset dir="./language/fr"/>
      <fileset dir="./src" includes="META-INF/**"/>
+    <fileset dir="./src" includes="**/*.properties"/>
    </jar>
     
    <!-- copy jump.jar -->
