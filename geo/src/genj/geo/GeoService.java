@@ -22,7 +22,6 @@ package genj.geo;
 import genj.util.Debug;
 import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
-import genj.util.Resources;
 import genj.util.Trackable;
 
 import java.io.BufferedReader;
@@ -42,7 +41,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -61,8 +59,6 @@ import java.util.zip.ZipInputStream;
 public class GeoService {
   
   private final static Pattern MATCH_LAT_LON = Pattern.compile("^.*\t.*\t.*\t(.*)\t(.*)$");
-  
-  private final static Resources ISO2FIPS = new Resources(NGAImport.class.getResourceAsStream("iso2fips.properties"));
   
   private static final Charset UTF8 = Charset.forName("UTF-8");
   
@@ -134,18 +130,13 @@ public class GeoService {
   /**
    * Prepare an import 
    */
-  public Import getImport(String country, String state) {
+  public Import getImport(Country country, String state) {
     
     // standardize to lower case
-    country = country.trim().toLowerCase();
     if (state!=null) {
       state = state.trim().toLowerCase();
       if (state.length()==0) state=null;
     }
-    
-    // check at least country
-    if (country.length()==0)
-      throw new IllegalArgumentException("Country can't be empty");
     
     // use NGA for everything but US
     Import im;
@@ -158,6 +149,18 @@ public class GeoService {
     return im;
   }
 
+  /**
+   * Returns gazetteers for given country
+   */
+  public synchronized boolean hasGazetteer(Country country) {
+    Gazetteer[] gzts = getGazetteers();
+    for (int i = 0; i < gzts.length; i++) {
+      if (gzts[i].getCountry().equals(country))
+        return true;
+    }
+    return false;
+  }
+  
   /**
    * Return all available gazetteers
    */
@@ -287,7 +290,8 @@ public class GeoService {
   public class Gazetteer  implements Comparable {
     
     /** unique key, country and state id, name */
-    private String key, country, state, name;
+    private String key, state;
+    private Country country;
     
     /** constructor */
     /*package*/ Gazetteer(File file) {
@@ -301,28 +305,30 @@ public class GeoService {
       int i = key.indexOf('_');
       assert i <0 || i>0 : "strange filename - should be country[_state].gzt";
       if (i>0) { 
-        country = key.substring(0, i);
+        country = Country.get(key.substring(0, i));
         state = key.substring(i+1);
       } else {
-        country = key;
+        country = Country.get(key);
         state = null;
       }
-      
-      // init a display name
-      name = new Locale("en", country).getDisplayCountry();
       
       // done
     }
     
     /** string representation */
     public String toString() {
-      return state==null ? name : name + " (" + state.toUpperCase() + ")";
+      return state==null ? country.getName() : country.getName()+ " (" + state.toUpperCase() + ")";
     }
     
     /** comparison */
     public int compareTo(Object o) {
       Gazetteer that = (Gazetteer)o;
-      return this.name.compareTo(that.name);
+      return this.country.compareTo(that.country);
+    }
+    
+    /** country */
+    public Country getCountry() {
+      return country;
     }
     
     /** identity comparison */
@@ -356,8 +362,8 @@ public class GeoService {
     private BufferedWriter out;
     
     /** constructor */
-    protected Import(String country, String state) {
-      this.key = (state!=null ? country+"_"+state : country);
+    protected Import(String isoCountry, String state) {
+      this.key = (state!=null ? isoCountry+"_"+state : isoCountry);
     }
     
     /** trackable callback - cancel */
@@ -558,18 +564,18 @@ public class GeoService {
     private final static String 
       URL = "http://earth-info.nga.mil/gns/html/cntyfile/COUNTRY.zip";
     
-    private String fipsCountry, isoCountry, state;
+    private Country country;
+    private String state;
     
     /** constructor */
-    private NGAImport(String country, String state) {
-      super(country, state);
-      fipsCountry  = ISO2FIPS.getString(country);
-      isoCountry = country;
+    private NGAImport(Country country, String state) {
+      super(country.getCode(), state);
+      this.country = country;
       this.state = state;
     }
   
     protected URL getURL() throws IOException {
-        return new URL(URL.replaceFirst("COUNTRY", fipsCountry));
+        return new URL(URL.replaceFirst("COUNTRY", country.getFips()));
     }
     
     /** parse NGA lines */
@@ -604,7 +610,7 @@ public class GeoService {
         }
         
         // and check country
-        if (!fipsCountry.equalsIgnoreCase(values.get(12))) {
+        if (!country.getFips().equalsIgnoreCase(values.get(12))) {
           skip();
           continue;
         }
@@ -613,7 +619,7 @@ public class GeoService {
         name = values.get(22); // FULL_NAME
         
         // keep it
-        write(name, "", isoCountry, lat, lon);
+        write(name, "", country.getCode(), lat, lon);
       }
   
       // done

@@ -31,7 +31,6 @@ import genj.window.WindowManager;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Locale;
 
 import javax.swing.AbstractListModel;
 import javax.swing.JComboBox;
@@ -48,8 +47,6 @@ import javax.swing.event.ListSelectionListener;
  */
 public class GeoViewSettings extends JPanel implements Settings {
   
-  private static Country DEFAULT_COUNTRY;
-  private final static Country[] COUNTRIES = initCountries();
   private final static String[] USSTATES = {
     "AL","AK","AS","AZ","AR","CA","CO","CT","DE","DC","FM","FL","GA","GU","HI","ID","IL",
     "IN","IA","KS","KY","LA","ME","MH","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH",
@@ -117,29 +114,6 @@ public class GeoViewSettings extends JPanel implements Settings {
       public int getSize() { return gazetteers.length; }
       public Object getElementAt(int i) { return gazetteers[i]; }
     });
-  }
-
-  /**
-   * Lazy countries initializer
-   */
-  private static Country[] initCountries() {
-
-    // grab current locale
-    Locale locale = Locale.getDefault();
-    
-    // grab all country codes
-    String[] codes = Locale.getISOCountries(); 
-    Country[] result = new Country[codes.length];
-    for (int i=0;i<result.length;i++) {
-      Country country = new Country(codes[i]);
-      result[i] = country;
-      if (locale.getCountry().equals(country.iso))
-        DEFAULT_COUNTRY = country;
-    }
-    
-    // sort array & Done
-    Arrays.sort(result);
-    return result;
   }
 
   /**
@@ -264,8 +238,8 @@ public class GeoViewSettings extends JPanel implements Settings {
 
       setLayout(new NestedBlockLayout("<col><row><label/></row><row><country wx=\"1\"/></row><row><label/><state/></row></col>"));
 
-      countries = new JComboBox(COUNTRIES);
-      countries.setSelectedItem(DEFAULT_COUNTRY);
+      countries = new JComboBox(Country.getAllCountries());
+      countries.setSelectedItem(Country.getDefaultCountry());
       state = new ChoiceWidget(USSTATES, null);
       
       add(new JLabel("Please select a country"));
@@ -277,8 +251,8 @@ public class GeoViewSettings extends JPanel implements Settings {
     /**
      * Accessor - selected iso country code
      */
-    public String getCountry() {
-      return ((Country)countries.getSelectedItem()).iso;
+    public Country getCountry() {
+      return (Country)countries.getSelectedItem();
     }
     
     /**
@@ -289,23 +263,5 @@ public class GeoViewSettings extends JPanel implements Settings {
     }
     
   }//SelectImportWidget
-  
-  /**
-   * A country - why isn't that in java.util
-   */
-  private static class Country implements Comparable {
-    private String iso;
-    private String name;
-    private Country(String code) {
-      iso = code;
-      name =  new Locale("en", code).getDisplayCountry();
-    }
-    public String toString() {
-      return name;
-    }
-    public int compareTo(Object o) {
-      return toString().compareTo(o.toString());
-    }
-  } //Country
   
 } //GeoViewSettings

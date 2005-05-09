@@ -26,6 +26,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 import org.geotools.shapefile.Shapefile;
 
@@ -75,8 +76,7 @@ public class GeoMap {
     // load properties
     try {
       File file = new File(fileOrDir, PROPERTIES);
-      if (file.exists()) 
-        resources = new Resources(new FileInputStream(file));
+      resources = new Resources(new FileInputStream(file));
     } catch (IOException e) {
     }
     
@@ -89,6 +89,15 @@ public class GeoMap {
     
     // done
 
+  }
+  
+  /** countries */
+  public Country[] getCountries() {
+    StringTokenizer countries = new StringTokenizer(i18n("countries", ""), ",");
+    Country[] result = new Country[countries.countTokens()];
+    for (int i=0;i<result.length;i++)
+      result[i] = Country.get(countries.nextToken());
+    return result;
   }
   
   /** resource access */

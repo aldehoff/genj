@@ -24,12 +24,15 @@ import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
+import genj.window.CloseWindow;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -204,6 +207,20 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport, 
     repaint();
     
     SwingUtilities.invokeLater(rezoom);
+    
+    // test for gazetteers
+    WordBuffer unknown = new WordBuffer("\n ");
+    GeoService service = GeoService.getInstance();
+    Country[] countries = map.getCountries();
+    for (int i = 0; i < countries.length; i++) {
+      if (!service.hasGazetteer(countries[i])) 
+        unknown.append(countries[i]);
+    }
+    
+    if (unknown.length()>0) {
+      String note = RESOURCES.getString("nogazetteers", unknown);
+      viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_INFORMATION, note, CloseWindow.OK(), this);
+    }
     
     // done
   }
