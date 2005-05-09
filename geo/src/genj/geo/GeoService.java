@@ -39,9 +39,11 @@ import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,6 +70,9 @@ public class GeoService {
     GEO_DIR = "./geo",
     TMP_SUFFIX = ".tmp",
     GAZETTEER_SUFFIX = ".gzt";
+
+  /** cached matches */
+  private Map pattern2match = new HashMap();
   
   /** directories */
   private File localDir, globalDir;
@@ -193,6 +198,11 @@ public class GeoService {
   public boolean match(GeoLocation location) {
     
     Pattern pattern = location.getPattern();
+    
+    // check cached information
+    String cached = (String)pattern2match.get(pattern.pattern());
+    if (cached!=null)
+      return found(location, null, cached);
 
     // loop over all gazetteers
     File[] files = getGeoFiles();
@@ -216,12 +226,8 @@ public class GeoService {
       in = new BufferedReader(new InputStreamReader(new FileInputStream(gazetteer), UTF8));   
       String line;
       while ( (line=in.readLine()) !=null) {
-        if (pattern.matcher(line).find()) {
-          Matcher latlon = MATCH_LAT_LON.matcher(line);
-          latlon.matches();
-          location.set(Float.parseFloat(latlon.group(1)), Float.parseFloat(latlon.group(2)));
-          return true;
-        }
+        if (pattern.matcher(line).find()) 
+          return found(location, pattern, line);
       }
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, this, t);
@@ -230,6 +236,15 @@ public class GeoService {
     }
 
     return false;
+  }
+  
+  private boolean found(GeoLocation location, Pattern pattern, String line) {
+    if (pattern!=null)
+      pattern2match.put(pattern.pattern(), line);
+    Matcher latlon = MATCH_LAT_LON.matcher(line);
+    latlon.matches();
+    location.set(Float.parseFloat(latlon.group(1)), Float.parseFloat(latlon.group(2)));
+    return true;
   }
   
   /**

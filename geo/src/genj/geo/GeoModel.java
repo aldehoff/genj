@@ -56,6 +56,14 @@ import java.util.Map;
   }
   
   /**
+   * Accessor - locations
+   */
+  public Collection getLocations() {
+    
+    return prop2location.values();
+  }
+  
+  /**
    * callback - gedcom change 
    */
   public void handleChange(Transaction tx) {
@@ -86,35 +94,41 @@ import java.util.Map;
   }
   
   /**
-   * Add events
+   * Add location
    */
-  private void addProperties(Collection props) {
-    for (Iterator adds=props.iterator(); adds.hasNext(); ) {
-      try {
-        Property prop = (Property)adds.next();
-        // check if part of event (check parents)
-        while (prop!=null) {
-          if (prop instanceof PropertyEvent) {
-            GeoLocation location = new GeoLocation(prop) {
-              protected void set(float lat,float lon) {
-                super.set(lat, lon);
-                System.out.println(this);
-              }
-            };
-            prop2location.put(prop, location);
-            LOCATOR.add(location);
-            break;
-          }
-          prop = prop.getParent();
+  private void addLocation(Property prop) {
+    try {
+      // check if part of event (recursive parent lookup)
+      while (prop!=null) {
+        if (prop instanceof PropertyEvent) {
+          GeoLocation location = new GeoLocation(prop) {
+            protected void set(float lat,float lon) {
+              super.set(lat, lon);
+              
+              // FIXME need to go tell GeoModelListeners
+              //System.out.println(this);
+            }
+          };
+          prop2location.put(prop, location);
+          LOCATOR.add(location);
+          return;
         }
-      } catch (IllegalArgumentException i) {
+        prop = prop.getParent();
       }
+    } catch (IllegalArgumentException i) {
     }
-    // done
   }
   
   /**
    * Add events
+   */
+  private void addProperties(Collection props) {
+    for (Iterator adds=props.iterator(); adds.hasNext(); ) 
+      addLocation((Property)adds.next());
+  }
+  
+  /**
+   * Add events of entities
    */
   private void addEntities(Collection entities) {
     for (Iterator it = entities.iterator(); it.hasNext(); ) {

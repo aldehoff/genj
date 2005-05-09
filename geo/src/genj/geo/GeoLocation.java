@@ -59,9 +59,23 @@ public class GeoLocation {
    * Resolve pattern for place comparison
    */
   private Pattern getPattern(PropertyPlace place) {
+    
+    // simple - first jurisdiction
     String city = place.getJurisdiction(0);
-    if (city==null||city.length()==0)
+    if (city==null)
       throw new IllegalArgumentException("can't determine location for "+place);
+    
+    // check for '(' and trim
+    int i = city.indexOf('(');
+    if (i>=0)
+      city = city.substring(0,i);
+    city = city.trim();
+    
+    // empty?
+    if (city.length()==0)
+      throw new IllegalArgumentException("can't determine location for "+place);
+
+    // done
     return Pattern.compile("^"+city+"\t");
   }
 
@@ -78,6 +92,34 @@ public class GeoLocation {
    */
   public String toString() {
      return getPattern().pattern() + "[" + lat + "," +  lon+ "]";
+  }
+  
+  /** 
+   * Check - known?
+   */
+  public boolean isKnown() {
+    return lat!=Float.NaN && lon!=Float.NaN;
+  }
+  
+  /**
+   * Accessor - latitude
+   */
+  public float getLatitude() {
+    return lat;
+  }
+  
+  /**
+   * Accessor - longitude
+   */
+  public float getLongitude() {
+    return lon;
+  }
+  
+  /**
+   * Accessor - property
+   */
+  public Property getProperty() {
+    return property;
   }
   
 } //GeoLocation
