@@ -603,7 +603,7 @@ public class EntityRenderer {
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       g.setFont(getFont());
       g.setColor(getForeground());
-      PropertyRenderer.DEFAULT_RENDERER.renderImpl((Graphics2D)g,r,txt);
+      PropertyRenderer.DEFAULT_RENDERER.renderImpl((Graphics2D)g,r,txt,PropertyRenderer.PREFER_DEFAULT);
     }
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
@@ -653,9 +653,10 @@ public class EntityRenderer {
       preference = PropertyRenderer.PREFER_DEFAULT;
       AttributeSet atts = elem.getAttributes();
       if ("yes".equals(atts.getAttribute("img"))) {
-        preference = PropertyRenderer.PREFER_IMAGEANDTEXT;
         if ("no".equals(atts.getAttribute("txt"))) 
           preference = PropertyRenderer.PREFER_IMAGE;
+        else 
+          preference |= PropertyRenderer.PREFER_IMAGE;
       }
       
       // minimum?

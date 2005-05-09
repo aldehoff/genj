@@ -52,10 +52,10 @@ public class PropertyRenderer {
   
   /** our preferences when drawing properties */
   public final static int
-    PREFER_DEFAULT      = 0,
-    PREFER_IMAGE        = 1,
-    PREFER_TEXT         = 2,
-    PREFER_IMAGEANDTEXT = 3;
+    PREFER_IMAGE = 1,
+    PREFER_TXT = 2,
+    PREFER_RIGHTALIGN = 4,
+    PREFER_DEFAULT = PREFER_TXT;
   
   /** an empty dimension */
   private final static Dimension EMPTY_DIM = new Dimension(0,0);
@@ -181,7 +181,7 @@ public class PropertyRenderer {
     // image?
     if (isImage(preference)) renderImpl(g, bounds, prop.getImage(false), dpi);
     // text?
-    if (isText(preference)) renderImpl(g, bounds, txt);
+    if (isText(preference)) renderImpl(g, bounds, txt, preference);
     // done
   }
   
@@ -215,24 +215,42 @@ public class PropertyRenderer {
   /**
    * Implementation for rendering txt
    */
-  protected void renderImpl(Graphics2D g, Rectangle bounds, String txt) {
+  protected void renderImpl(Graphics2D g, Rectangle bounds, String txt, int preference) {
+    
     Font font = g.getFont();
     LineMetrics lm = font.getLineMetrics("", g.getFontRenderContext());
-    g.drawString(txt, (float)bounds.getX(), (float)bounds.getY()+lm.getHeight()-lm.getDescent());
+    
+    // alignment?
+    double x = bounds.getX();
+    if (isRightAlign(preference)) {
+      Rectangle2D r = font.getStringBounds(txt, g.getFontRenderContext());
+      if (r.getWidth()< bounds.getWidth())
+        x = bounds.getMaxX() - r.getWidth();
+    }
+    
+    // draw it
+    g.drawString(txt, (float)x, (float)bounds.getY()+lm.getHeight()-lm.getDescent());
+  }
+  
+  /** 
+   * Check preference for right align
+   */
+  protected boolean isRightAlign(int preference) {
+    return (preference&PREFER_RIGHTALIGN)!=0;
   }
 
   /**
    * Check preference for option to draw image
    */
   protected boolean isImage(int preference) {
-    return preference==PREFER_IMAGE||preference==PREFER_IMAGEANDTEXT;
+    return (preference&PREFER_IMAGE)!=0;
   }
   
   /**
    * Check preference for option to draw text
    */
   protected boolean isText(int preference) {
-    return preference==PREFER_TEXT||preference==PREFER_IMAGEANDTEXT||preference==PREFER_DEFAULT;
+    return (preference&PREFER_TXT)!=0;
   }
   
   /**
@@ -449,7 +467,7 @@ public class PropertyRenderer {
      * render override
      */
     public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
-      super.renderImpl(g, bounds, prop, ((genj.gedcom.Entity)prop).getId(), preference, dpi);
+      super.renderImpl(g, bounds, prop, ((genj.gedcom.Entity)prop).getId(), preference|PREFER_RIGHTALIGN, dpi);
     }
     
   } //Entity
@@ -508,4 +526,18 @@ public class PropertyRenderer {
     
   } //Secret
       
+  /**
+   * Date
+   */
+  /*package*/ static class Date extends PropertyRenderer {
+  
+    /**
+     * render override - make it right aligned
+     */
+    public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
+      super.renderImpl(g, bounds, prop, preference|PREFER_RIGHTALIGN, dpi);
+    }
+    
+  } //Date
+
 } //PropertyProxy

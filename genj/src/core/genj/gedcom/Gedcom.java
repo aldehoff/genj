@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.84 $ $Author: nmeier $ $Date: 2005-05-05 19:59:49 $
+ * $Revision: 1.85 $ $Author: nmeier $ $Date: 2005-05-09 17:30:35 $
  */
 package genj.gedcom;
 
@@ -498,12 +498,15 @@ public class Gedcom {
         suffix = '0'+suffix;
       }
     }
-    // patch id up to max(3,minIDStringLen-1) digits
-    String result = Integer.toString(id);
-    while (result.length()<Math.max(3,minIDStringLen-1))
-      result = "0"+result;
+// 20050509 not patching IDs with zeros anymore - since we now have alignment
+// in tableview there's not really a need to add leading zeros for readability. ID
+// uniqueness should still be guaranteed though
+//    // patch id up to max(3,minIDStringLen-1) digits
+//    String result = Integer.toString(id);
+//    while (result.length()<Math.max(3,minIDStringLen-1))
+//      result = "0"+result;
     // done
-    return prefix + result;
+    return prefix + Integer.toString(id);
   }
 
   /**
