@@ -575,7 +575,7 @@ public class GeoService {
     }
   
     protected URL getURL() throws IOException {
-        return new URL(URL.replaceFirst("COUNTRY", country.getFips()));
+        return new URL(URL.replaceFirst("COUNTRY", country.getFips().toLowerCase()));
     }
     
     /** parse NGA lines */
