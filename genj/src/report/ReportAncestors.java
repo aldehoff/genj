@@ -16,38 +16,6 @@ import genj.report.Report;
 public class ReportAncestors extends Report {
     
     /**
-     * Returns the version of this script
-     */
-    public String getVersion() {
-        // a call to i18n will lookup a string with given key in ReportAncestors.properties
-        return i18n("version");
-    }
-    
-    /**
-     * Returns the name of this report - should be localized.
-     */
-    public String getName() {
-        // a call to i18n will lookup a string with given key in ReportAncestors.properties
-        return i18n("name");
-    }
-    
-    /**
-     * Some information about this report
-     * @return Information as String
-     */
-    public String getInfo() {
-        // a call to i18n will lookup a string with given key in ReportAncestors.properties
-        return i18n("info");
-    }
-    
-    /**
-     * Author
-     */
-    public String getAuthor() {
-        return "YON - Jan C. Hardenbergh";
-    }
-    
-    /**
      * @see genj.report.Report#accepts(java.lang.Object)
      */
     public String accepts(Object context) {
