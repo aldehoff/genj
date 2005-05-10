@@ -47,7 +47,7 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
   public void removeListener(PropertyTableModelListener listener) {
     listeners.remove(listener);
     if (listeners.isEmpty())
-      getGedcom().addGedcomListener(this);
+      getGedcom().removeGedcomListener(this);
   }
   
   /**
