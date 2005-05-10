@@ -26,6 +26,7 @@ public class Country implements Comparable {
   
   /** lookup */
   public static Country get(String iso) {
+    iso = iso.toLowerCase();
     Country result = (Country) iso2country.get(iso);
     if (result==null) {
       result = new Country(iso);
