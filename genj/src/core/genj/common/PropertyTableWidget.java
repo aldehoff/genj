@@ -100,6 +100,9 @@ public class PropertyTableWidget extends JPanel {
   /** shortcuts panel */
   private Box panelShortcuts = new Box(BoxLayout.Y_AXIS);
   
+  /** property tabl model */
+  private PropertyTableModel propertyModel;
+  
   /**
    * Constructor
    */
@@ -112,7 +115,8 @@ public class PropertyTableWidget extends JPanel {
    */
   public PropertyTableWidget(PropertyTableModel propertyModel, ViewManager manager) {
     
-    viewManager = manager;
+    this.viewManager = manager;
+    this.propertyModel = propertyModel;
     
     // create table comp
     InteractionHandler i = new InteractionHandler();
@@ -134,16 +138,37 @@ public class PropertyTableWidget extends JPanel {
     add(BorderLayout.CENTER, new JScrollPane(table));
     add(BorderLayout.EAST, panelShortcuts);
     
-    // set model
-    setModel(propertyModel);
-    
     // done
+  }
+  
+  /**
+   * Component lifecycle callback - added
+   */
+  public void addNotify() {
+    // super 
+    super.addNotify();
+    // (re)set current model
+    if (propertyModel!=null)
+      table.setModel(new Model(propertyModel));
+  }
+  
+  /**
+   * Component lifecycle callback - removed
+   */
+  public void removeNotify() {
+    super.removeNotify();
+    // clear table's current model - lifecycle destructor
+    // so to say that will disconnect listeners recursively
+    table.setModel(new Model(null));
   }
   
   /**
    * Setter for current model
    */
   public void setModel(PropertyTableModel set) {
+    // remember
+    propertyModel = set;
+    // tell table about it
     table.setModel(new Model(set));
   }
   
@@ -234,7 +259,7 @@ public class PropertyTableWidget extends JPanel {
    * Access to table model
    */
   public PropertyTableModel getModel() {
-    return ((Model)table.getModel()).model;
+    return propertyModel;
   }
   
   /**
@@ -355,6 +380,7 @@ public class PropertyTableWidget extends JPanel {
     
     /** someone lost interest */
     public void removeTableModelListener(TableModelListener l) {
+      super.removeTableModelListener(l);
       // stop listening ?
       if (model!=null&&getListeners(TableModelListener.class).length==0)
         model.removeListener(this);
