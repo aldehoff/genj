@@ -19,6 +19,8 @@
  */
 package genj.geo;
 
+import genj.gedcom.Indi;
+import genj.gedcom.Property;
 import genj.util.Debug;
 import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
@@ -27,14 +29,16 @@ import genj.util.Trackable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,7 +47,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -57,6 +60,8 @@ import java.util.zip.ZipInputStream;
  * </pre>
  */
 public class GeoService {
+  
+  private final static String UNKNOWN = "";
   
   private final static Pattern MATCH_LAT_LON = Pattern.compile("^.*\t.*\t.*\t(.*)\t(.*)$");
   
@@ -199,55 +204,32 @@ public class GeoService {
    * Locate given location
    */
   public boolean match(GeoLocation location) {
-    
-    Pattern pattern = location.getPattern();
-    
-    // check cached information
-    String cached = (String)pattern2match.get(pattern.pattern());
-    if (cached!=null)
-      return found(location, null, cached);
 
     // loop over all gazetteers
     File[] files = getGeoFiles();
     for (int i=0;i<files.length;i++) {
-      if (!files[i].getName().endsWith(GAZETTEER_SUFFIX))
+      String filename = files[i].getName();
+      if (filename.length()<GAZETTEER_SUFFIX.length()+2 || !filename.endsWith(GAZETTEER_SUFFIX))
+        continue;
+      // good country?
+      Country country = location.getCountry();
+      if (country!=null&&!country.equals(Country.get(filename.substring(0,2))))
         continue;
       // check each
-      if (match(location, pattern, files[i]))
-        return true;
+      try {
+        if (new GeoMatcher(files[i]).match(location))
+          return true;
+      } catch (Throwable t) {
+        Debug.log(Debug.ERROR, this, t);
+      }
       // next
     }
+    
+    // didn't work out
+    location.set(Double.NaN, Double.NaN);
 
     // not found
     return false;
-  }
-  
-  private boolean match(GeoLocation location, Pattern pattern, File gazetteer) {
-    
-    BufferedReader in = null;
-    try {
-      in = new BufferedReader(new InputStreamReader(new FileInputStream(gazetteer), UTF8));   
-      String line;
-      while ( (line=in.readLine()) !=null) {
-        if (pattern.matcher(line).find()) 
-          return found(location, pattern, line);
-      }
-    } catch (Throwable t) {
-      Debug.log(Debug.ERROR, this, t);
-    } finally {
-      try { in.close(); } catch (Throwable t) {}
-    }
-
-    return false;
-  }
-  
-  private boolean found(GeoLocation location, Pattern pattern, String line) {
-    if (pattern!=null)
-      pattern2match.put(pattern.pattern(), line);
-    Matcher latlon = MATCH_LAT_LON.matcher(line);
-    latlon.matches();
-    location.set(Float.parseFloat(latlon.group(1)), Float.parseFloat(latlon.group(2)));
-    return true;
   }
   
   /**
@@ -627,4 +609,114 @@ public class GeoService {
   
   } //NGAImport
 
+  /**
+   * A O(log n) matcher on .gzt files
+   */
+  public static class GeoMatcher {
+
+    /** file we read from */
+    private RandomAccessFile file;
+
+    /** one current byte/char buffer */
+    byte[] bytes = new byte[256];
+    CharBuffer line = CharBuffer.allocate(256);
+    
+    /** constructor */
+    public GeoMatcher(File gzt) throws IOException {
+      file = new RandomAccessFile(gzt, "r");
+    }
+    
+    /** match a location if possible */
+    public boolean match(GeoLocation location) throws IOException {
+      if (true)
+        return false;
+      return match(0, file.length()-1, location, wrap(location.getCity()));
+    }
+    
+    /** wrap a string in a CharBuffer */
+    private CharBuffer wrap(String s) {
+      return s!=null ? CharBuffer.wrap(s) : CharBuffer.allocate(0);
+    }
+
+    /** match recursively */
+    private boolean match(long start, long end, GeoLocation location, CharBuffer city) throws IOException {
+
+      // find pivot
+      long pivot = (start+end)/2;
+      
+      // go there
+      file.seek(pivot);
+      
+      // find next newline
+      do { pivot++; } while (file.read()!='\n');
+      
+//      // did we reach end?
+//      if (pivot>=end) 
+//        return false;
+      
+      // read line
+      if (!readLine())
+        return false;
+      int read = line.length()+1;
+      
+      // find tab in line
+      int len = line.length();
+      while (line.length()>0 && line.charAt(0)!='\t') line.get();
+      line.limit(line.position());
+      line.position(0);
+      
+//      System.out.println(line);
+      
+      // compare city
+      int i = line.compareTo(city);
+      
+      // match?
+      if (i==0)  {
+        line.limit(len);
+        DirectAccessTokenizer tokens = new DirectAccessTokenizer(line.toString(), "\t", true);
+        location.set(Double.parseDouble(tokens.get(3)), Double.parseDouble(tokens.get(4)));
+        return true;
+      }
+      
+      // break condition?
+      if (start>=end)
+        return false;
+      
+      // recurse
+      return i<0 ? match(pivot+read, end, location, city) : match(start, pivot, location, city);
+    }
+
+    /** read an UTF8 line from current position */
+    private boolean readLine() throws IOException {
+      line.clear();
+      for (int i=0;i<bytes.length;i++) {
+        int next = file.read();
+        bytes[i] = (byte)next;
+        if (bytes[i]=='\n'||next==-1) {
+          if (i==0)
+            return false;
+          if (Charset.forName("UTF-8").newDecoder().decode(ByteBuffer.wrap(bytes, 0, i), line, false).isError())
+            throw new IOException("error decoding utf8");
+          line.limit(line.position());
+          line.position(0);
+          return true;
+        } 
+      }
+      return false;
+    }
+
+    /** test */
+    public static void main(String[] args) {
+      Indi indi = new Indi();
+      Property birt = indi.addProperty("BIRT", "");
+      birt.addProperty("PLAC", "Rendsburg");
+      try {
+        new GeoMatcher(new File("c:/Documents and Settings/nils/.genj/geo/de.gzt")).match(new GeoLocation(birt));
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
+    }
+    
+  } //GeoMatcher
+  
 } //GeoService

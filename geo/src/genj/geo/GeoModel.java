@@ -28,11 +28,10 @@ import genj.util.Debug;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.ListIterator;
 
 /**
  * Geographic model wrapper for gedcom
@@ -45,10 +44,13 @@ import java.util.Map;
   /** state */
   private List listeners = new ArrayList();
   private Gedcom gedcom;
-  private Map prop2location = new HashMap();
+  private LinkedList knownLocations = new LinkedList();
+  private LinkedList unknownLocations = new LinkedList();
 
   /**
    * Constructor
+   * @param gedcom the reference to gedcom object this model is for
+   * @param map map this model is providing data for
    */
   public GeoModel(Gedcom gedcom) {
     // keep 
@@ -58,22 +60,32 @@ import java.util.Map;
   /**
    * Accessor - locations
    */
-  public Collection getLocations() {
-    
-    return prop2location.values();
+  public synchronized List getKnownLocations() {
+    return new ArrayList(knownLocations);
   }
   
   /**
    * callback - gedcom change 
    */
   public void handleChange(Transaction tx) {
-    // clear location for modified props
-    addProperties(tx.get(Transaction.PROPERTIES_MODIFIED));
+// FIXME handle changes
+//    // clear location for modified props
+//    addProperties(tx.get(Transaction.PROPERTIES_MODIFIED));
     // take on added props
     addProperties(tx.get(Transaction.PROPERTIES_ADDED));
     // remove deleted props
     delProperties(tx.get(Transaction.PROPERTIES_DELETED));
     // done
+  }
+  
+  /**
+   * Tell listeners about a found location
+   */
+  private void fireLocationFound(GeoLocation location) {
+    GeoModelListener[] ls = (GeoModelListener[])listeners.toArray(new GeoModelListener[listeners.size()]);
+    for (int i = 0; i < ls.length; i++) {
+      ls[i].locationFound(location);
+    }
   }
 
   /**
@@ -82,15 +94,26 @@ import java.util.Map;
   private void delProperties(Collection props) {
     for (Iterator dels=props.iterator(); dels.hasNext(); ) {
       Property prop = (Property)dels.next();
-      while (prop!=null) {
-        if (prop instanceof PropertyEvent) {
-          prop2location.remove(prop);
-          break;
-        }
-        prop = prop.getParent();
-      }
+      if (prop instanceof PropertyEvent) 
+        removeLocation(prop);
     }
     // done
+  }
+  
+  /**
+   * Remove location
+   */
+  private synchronized void removeLocation(Property prop) {
+    for (ListIterator it = knownLocations.listIterator(); it.hasNext(); ) { 
+      GeoLocation location = (GeoLocation)it.next();
+      if (location.getProperty()==prop)
+        it.remove();
+    }
+    for (ListIterator it = unknownLocations.listIterator(); it.hasNext(); ) { 
+      GeoLocation location = (GeoLocation)it.next();
+      if (location.getProperty()==prop)
+        it.remove();
+    }
   }
   
   /**
@@ -102,14 +125,22 @@ import java.util.Map;
       while (prop!=null) {
         if (prop instanceof PropertyEvent) {
           GeoLocation location = new GeoLocation(prop) {
-            protected void set(float lat,float lon) {
+            protected void set(double lat,double lon) {
               super.set(lat, lon);
-              
-              // FIXME need to go tell GeoModelListeners
-              //System.out.println(this);
+              synchronized (GeoModel.this) {
+                // this should be O(1) since first in unknown locations
+                if (!unknownLocations.remove(this))
+                  return;
+                if (isValid())
+                  knownLocations.addLast(this);
+              }
+              fireLocationFound(this);
             }
           };
-          prop2location.put(prop, location);
+          synchronized (this) {
+            // first come first serve - add this last
+            unknownLocations.addLast(location);
+          }
           LOCATOR.add(location);
           return;
         }
@@ -141,7 +172,8 @@ import java.util.Map;
    * reset all data and start over
    */
   private void reset() {
-    prop2location.clear();
+    knownLocations.clear();
+    unknownLocations.clear();
     // collect events from indis and fams
     addEntities(gedcom.getEntities(Gedcom.INDI));
     addEntities(gedcom.getEntities(Gedcom.FAM));
@@ -184,7 +216,7 @@ import java.util.Map;
     private Locator() {
       // setup thread
       Thread t = new Thread(this);
-      t.setPriority(Thread.MIN_PRIORITY);
+      t.setPriority(Thread.NORM_PRIORITY-1);
       t.setDaemon(true);
       t.start();
       // ready
@@ -216,7 +248,7 @@ import java.util.Map;
     /** add to 'job-list' */
     private void add(GeoLocation location) {
       synchronized (locations) {
-        locations.add(location);
+        locations.addLast(location);
         locations.notify();
       }
     }
@@ -231,7 +263,9 @@ import java.util.Map;
             return;
           location = (GeoLocation)locations.removeFirst();
         }
+//        long t = System.currentTimeMillis();
         service.match(location);
+//        System.out.println(System.currentTimeMillis()-t);
       }
       
       // done

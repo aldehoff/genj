@@ -63,6 +63,9 @@ public class GeoMap {
   
   /** background color */
   private Color background = Color.WHITE;
+  
+  /** countries */
+  private Country[] countries;
 
   /** constructor */
   /*package*/ GeoMap(File fileOrDir) {
@@ -93,11 +96,13 @@ public class GeoMap {
   
   /** countries */
   public Country[] getCountries() {
-    StringTokenizer countries = new StringTokenizer(i18n("countries", ""), ",");
-    Country[] result = new Country[countries.countTokens()];
-    for (int i=0;i<result.length;i++)
-      result[i] = Country.get(countries.nextToken());
-    return result;
+    if (countries==null) {
+      StringTokenizer tokens = new StringTokenizer(i18n("countries", ""), ",");
+      countries = new Country[tokens.countTokens()];
+      for (int i=0;i<countries.length;i++)
+        countries[i] = Country.get(tokens.nextToken());
+    }
+    return countries;
   }
   
   /** resource access */

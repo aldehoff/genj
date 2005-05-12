@@ -23,5 +23,10 @@ package genj.geo;
  * A listener for our geo model
  */
 public interface GeoModelListener {
+  
+  /**
+   * We found a location
+   */
+  public void locationFound(GeoLocation location);
 
 }

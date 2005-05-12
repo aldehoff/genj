@@ -40,37 +40,34 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jump.feature.AttributeType;
-import com.vividsolutions.jump.feature.BasicFeature;
 import com.vividsolutions.jump.feature.FeatureCollection;
 import com.vividsolutions.jump.feature.FeatureSchema;
+import com.vividsolutions.jump.workbench.model.FeatureEventType;
 import com.vividsolutions.jump.workbench.model.Layer;
 import com.vividsolutions.jump.workbench.model.LayerManager;
 import com.vividsolutions.jump.workbench.ui.LayerViewPanel;
 import com.vividsolutions.jump.workbench.ui.LayerViewPanelContext;
+import com.vividsolutions.jump.workbench.ui.renderer.style.BasicStyle;
+import com.vividsolutions.jump.workbench.ui.renderer.style.LabelStyle;
 import com.vividsolutions.jump.workbench.ui.renderer.style.SquareVertexStyle;
 import com.vividsolutions.jump.workbench.ui.renderer.style.VertexStyle;
 
 /**
  * The view showing gedcom data in geographic context
  */
-public class GeoView extends JPanel implements ContextListener, ToolBarSupport, GeoModelListener {
+public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   
   private final static ImageIcon IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png");
   
   /*package*/ final static Resources RESOURCES = Resources.get(GeoView.class);
-
+  
   /** gedcom we're looking at */
   private Gedcom gedcom;
   
@@ -83,8 +80,9 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport, 
   /** the current layer view panel */
   private LayerViewPanel layerPanel;
   
-  /** our model */
+  /** our model & layer */
   private GeoModel model;
+  private GedcomLayer gedcomLayer;  
   
   /** a rezoom runnable we can invokeLater() */
   private Runnable rezoom = new Runnable() {
@@ -114,36 +112,13 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport, 
         rezoom.run();
       }
     });
-  }
-  
-  /**
-   * Lifecycle callback - we're needed
-   */
-  public void addNotify() {
     
-    // continue with super's
-    super.addNotify();
-    
-    // create a model
+    // create our model & layer
     model = new GeoModel(gedcom);
-    model.addGeoModelListener(this);
-
+    
     // done
   }
-  
-  /**
-   * Lifecycle callback - we're not needed at the moment
-   */
-  public void removeNotify() {
     
-    // get rid of model
-    model.removeGeoModelListener(this);
-    model = null;
-
-    // continue with super
-    super.removeNotify();
-  }
-  
   /**
    * Callback for context changes
    */
@@ -182,18 +157,10 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport, 
     
     // setup layer manager and add our own feature collection that's wrapping the model
     LayerManager layerManager = new LayerManager();
-    Layer layer = layerManager.addLayer("GenJ", "PLACs", new ModelWrapper());
-    layer.getBasicStyle().setLineColor(Color.BLACK);
-    VertexStyle vertices = new SquareVertexStyle();
-    vertices.setEnabled(true);
-    vertices.setSize(5);
-    layer.addStyle(vertices);
-//    LabelStyle labels = new LabelStyle();
-//    labels.setEnabled(true);
-//    labels.setAttribute("PLAC");
-//    labels.setHidingOverlappingLabels(false);
-//    layer.addStyle(labels);
-    
+    gedcomLayer = new GedcomLayer();
+    layerManager.addLayer("GenJ", gedcomLayer);
+    gedcomLayer.setLayerManager(layerManager);
+
     // load map
     map.load(layerManager);
     
@@ -219,9 +186,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport, 
     
     if (unknown.length()>0) {
       String note = RESOURCES.getString("nogazetteers", unknown);
-      viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_INFORMATION, note, CloseWindow.OK(), this);
+      viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_INFORMATION, note, CloseWindow.OK(), GeoView.this);
     }
-    
     // done
   }
   
@@ -252,6 +218,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport, 
     }
     /** choose current map */
     protected void execute() {
+      // set it
       try {
         setMap(map);
       } catch (IOException e) {
@@ -261,57 +228,63 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport, 
   }//ChooseMap
  
   /**
-   * A wrapper for our model
+   * A layer for our model
    */
-  private class ModelWrapper implements FeatureCollection {
-    
-    private GeometryFactory factory = new GeometryFactory();
-    private FeatureSchema schema;
-    private List features;
+  private class GedcomLayer extends Layer implements FeatureCollection, GeoModelListener {
     
     /** constructor */
-    private ModelWrapper() {
-      schema = new FeatureSchema();
-      schema.addAttribute("PLAC", AttributeType.STRING);
-      schema.addAttribute("GEOMETRY", AttributeType.GEOMETRY);
-
-      // FIXME this collection features once only at the moment
-      Collection locations = model.getLocations();
-      features = new ArrayList(locations.size());
-      for (Iterator it = locations.iterator(); it.hasNext(); ) {
-        
-        GeoLocation location = (GeoLocation)it.next();
-        if (location.isKnown()) {
-          BasicFeature feature = new BasicFeature(schema);
-          feature.setGeometry(factory.createPoint(new Coordinate(location.getLongitude(),location.getLatitude())));
-          feature.setAttribute("PLAC", location.toString());
-          features.add(feature);
-        }
-        
-      }
+    private GedcomLayer() {
+      
+      // connect us to Jumps internals
+      setName("Gedcom Locations");
+      setFeatureCollection(this);
+      
+      // prepare some styles
+      addStyle(new BasicStyle(Color.BLACK));
+       
+      VertexStyle vertices = new SquareVertexStyle();
+      vertices.setEnabled(true);
+      vertices.setSize(5);
+      addStyle(vertices);
+       
+      LabelStyle labels = new LabelStyle();
+//    labels.setEnabled(true);
+//    labels.setAttribute("PLAC");
+//    labels.setHidingOverlappingLabels(false);
+      addStyle(labels);
+      
+      // hook up to model
+      model.addGeoModelListener(this);
       
       // done
+    }
+    
+    
+    /** geo model - a location has been found */
+    public void locationFound(GeoLocation location) {
+      LayerManager mgr = getLayerManager();
+      if (mgr!=null)
+        mgr.fireFeaturesChanged(new ArrayList(), FeatureEventType.ADDED, this);
     }
 
     /** feature collection - our schema */
     public FeatureSchema getFeatureSchema() {
-      return schema;
+      return GeoLocation.SCHEMA;
     }
 
-    /** feature collection - our envelope */
+    /** feature collection - our envelope is empty by default */
     public Envelope getEnvelope() {
       return new Envelope();
-      //return new Envelope(new Coordinate(7.099818448299999,50.73455818310999));
     }
     
     /** feature collection - # of features */
     public int size() {
-      return features.size();
+      return model.getKnownLocations().size();
     }
     
     /** feature collection - feature access */
     public List getFeatures() {
-      return features;
+      return model.getKnownLocations();
     }
     
     /** feature collection - feature access */
@@ -319,6 +292,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport, 
       return getFeatures();
     }
     
-  } //ModelWrapper
+  } //GedcomLayer
   
 } //GeoView
