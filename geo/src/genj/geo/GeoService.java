@@ -628,8 +628,6 @@ public class GeoService {
     
     /** match a location if possible */
     public boolean match(GeoLocation location) throws IOException {
-      if (true)
-        return false;
       return match(0, file.length()-1, location, wrap(location.getCity()));
     }
     
@@ -641,23 +639,34 @@ public class GeoService {
     /** match recursively */
     private boolean match(long start, long end, GeoLocation location, CharBuffer city) throws IOException {
 
+      // break condition?
+      if (start>=end)
+        return false;
+      
       // find pivot
       long pivot = (start+end)/2;
       
       // go there
       file.seek(pivot);
       
-      // find next newline
-      do { pivot++; } while (file.read()!='\n');
+      // find end of pivot
+      long pivotEnd = pivot, pivotStart = pivot;
+      while (pivotEnd!=end&&file.read()!='\n') pivotEnd++;
+      while (true) {
+        file.seek(pivotStart);
+        if (pivotStart==start||file.read()=='\n') {
+          pivotStart++;
+          break;
+        }
+        pivotStart--;
+      }
       
-//      // did we reach end?
-//      if (pivot>=end) 
-//        return false;
+      if (pivotStart>=pivotEnd)
+        return false;
       
       // read line
-      if (!readLine())
+      if (!readLine(pivotStart, pivotEnd))
         return false;
-      int read = line.length()+1;
       
       // find tab in line
       int len = line.length();
@@ -665,7 +674,7 @@ public class GeoService {
       line.limit(line.position());
       line.position(0);
       
-//      System.out.println(line);
+      System.out.println(line);
       
       // compare city
       int i = line.compareTo(city);
@@ -678,31 +687,27 @@ public class GeoService {
         return true;
       }
       
-      // break condition?
-      if (start>=end)
-        return false;
-      
       // recurse
-      return i<0 ? match(pivot+read, end, location, city) : match(start, pivot, location, city);
+      return i<0 ? match(pivotEnd, end, location, city) : match(start, pivotStart, location, city);
     }
 
     /** read an UTF8 line from current position */
-    private boolean readLine() throws IOException {
+    private boolean readLine(long from, long to) throws IOException {
+      file.seek(from);
+      int length = (int)(to-from);
+      // read up to length bytes
+      for (int i=0;i<length&&i<bytes.length;i++) 
+        bytes[i] = (byte)file.read();
+      // decode it
       line.clear();
-      for (int i=0;i<bytes.length;i++) {
-        int next = file.read();
-        bytes[i] = (byte)next;
-        if (bytes[i]=='\n'||next==-1) {
-          if (i==0)
-            return false;
-          if (Charset.forName("UTF-8").newDecoder().decode(ByteBuffer.wrap(bytes, 0, i), line, false).isError())
-            throw new IOException("error decoding utf8");
-          line.limit(line.position());
-          line.position(0);
-          return true;
-        } 
-      }
-      return false;
+      if (length==0)
+        return true;
+      if (Charset.forName("UTF-8").newDecoder().decode(ByteBuffer.wrap(bytes, 0, length), line, false).isError())
+        throw new IOException("error decoding utf8");
+      // setup resulting line
+      line.limit(line.position());
+      line.position(0);
+      return true;
     }
 
     /** test */
