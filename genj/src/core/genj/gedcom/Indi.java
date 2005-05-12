@@ -521,6 +521,13 @@ public class Indi extends Entity {
   }
   
   /**
+   * Tag always INDI
+   */
+  public String getTag() {
+    return Gedcom.INDI;
+  }
+  
+  /**
    * Calculate indi's age at given point in time or null if an error occured
    */
   public Delta getAge(PointInTime pit) {
