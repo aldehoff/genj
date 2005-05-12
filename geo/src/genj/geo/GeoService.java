@@ -206,8 +206,10 @@ public class GeoService {
   public boolean match(GeoLocation location) {
 
     // loop over all gazetteers
+    String result = null;
+    
     File[] files = getGeoFiles();
-    for (int i=0;i<files.length;i++) {
+    for (int i=0;result==null&&i<files.length;i++) {
       String filename = files[i].getName();
       if (filename.length()<GAZETTEER_SUFFIX.length()+2 || !filename.endsWith(GAZETTEER_SUFFIX))
         continue;
@@ -217,16 +219,21 @@ public class GeoService {
         continue;
       // check each
       try {
-        if (new GeoMatcher(files[i]).match(location))
-          return true;
+        result = new BinarySearch().search(files[i], location);
       } catch (Throwable t) {
         Debug.log(Debug.ERROR, this, t);
       }
       // next
     }
     
-    // didn't work out
-    location.set(Double.NaN, Double.NaN);
+    // got a result?
+    if (result!=null) {
+      DirectAccessTokenizer tokens = new DirectAccessTokenizer(result, "\t", true);
+      location.set(Double.parseDouble(tokens.get(3)), Double.parseDouble(tokens.get(4)));
+    } else {
+      location.set(Double.NaN, Double.NaN);
+      System.out.println("Didn't find "+location);
+    }
 
     // not found
     return false;
@@ -610,9 +617,9 @@ public class GeoService {
   } //NGAImport
 
   /**
-   * A O(log n) matcher on .gzt files
+   * A O(log n) binary search on .gzt files
    */
-  public static class GeoMatcher {
+  public static class BinarySearch {
 
     /** file we read from */
     private RandomAccessFile file;
@@ -621,27 +628,24 @@ public class GeoService {
     byte[] bytes = new byte[256];
     CharBuffer line = CharBuffer.allocate(256);
     
-    /** constructor */
-    public GeoMatcher(File gzt) throws IOException {
-      file = new RandomAccessFile(gzt, "r");
-    }
-    
-    /** match a location if possible */
-    public boolean match(GeoLocation location) throws IOException {
-      return match(0, file.length()-1, location, wrap(location.getCity()));
-    }
-    
-    /** wrap a string in a CharBuffer */
-    private CharBuffer wrap(String s) {
-      return s!=null ? CharBuffer.wrap(s) : CharBuffer.allocate(0);
+    /** find an appropriate line for given location */
+    public String search(File gzt, GeoLocation location) throws IOException {
+      String result;
+      try {
+        file = new RandomAccessFile(gzt, "r");
+        result = search(0, file.length()-1, location, CharBuffer.wrap(location.getCity()));
+      } finally {
+        file.close();
+      }
+      return result;
     }
 
-    /** match recursively */
-    private boolean match(long start, long end, GeoLocation location, CharBuffer city) throws IOException {
+    /** find recursively */
+    private String search(long start, long end, GeoLocation location, CharBuffer city) throws IOException {
 
       // break condition?
       if (start>=end)
-        return false;
+        return null;
       
       // find pivot
       long pivot = (start+end)/2;
@@ -649,24 +653,21 @@ public class GeoService {
       // go there
       file.seek(pivot);
       
-      // find end of pivot
-      long pivotEnd = pivot, pivotStart = pivot;
-      while (pivotEnd!=end&&file.read()!='\n') pivotEnd++;
-      while (true) {
-        file.seek(pivotStart);
-        if (pivotStart==start||file.read()=='\n') {
-          pivotStart++;
-          break;
-        }
+      // find trailing '\n' (newline)
+      long pivotEnd = pivot;
+      while (file.read()!='\n') pivotEnd++;
+
+      // find first char in line
+      long pivotStart = pivot;
+      while (pivotStart>start) {
+        file.seek(pivotStart-1);
+        if (file.read()=='\n') break;
         pivotStart--;
       }
       
-      if (pivotStart>=pivotEnd)
-        return false;
-      
       // read line
       if (!readLine(pivotStart, pivotEnd))
-        return false;
+        return null;
       
       // find tab in line
       int len = line.length();
@@ -674,7 +675,7 @@ public class GeoService {
       line.limit(line.position());
       line.position(0);
       
-      System.out.println(line);
+    //System.out.println(line);
       
       // compare city
       int i = line.compareTo(city);
@@ -682,13 +683,11 @@ public class GeoService {
       // match?
       if (i==0)  {
         line.limit(len);
-        DirectAccessTokenizer tokens = new DirectAccessTokenizer(line.toString(), "\t", true);
-        location.set(Double.parseDouble(tokens.get(3)), Double.parseDouble(tokens.get(4)));
-        return true;
+        return line.toString();
       }
       
       // recurse
-      return i<0 ? match(pivotEnd, end, location, city) : match(start, pivotStart, location, city);
+      return i<0 ? search(pivotEnd+1, end, location, city) : search(start, pivotStart-1, location, city);
     }
 
     /** read an UTF8 line from current position */
@@ -714,9 +713,9 @@ public class GeoService {
     public static void main(String[] args) {
       Indi indi = new Indi();
       Property birt = indi.addProperty("BIRT", "");
-      birt.addProperty("PLAC", "Rendsburg");
+      birt.addProperty("PLAC", "Ottawa");
       try {
-        new GeoMatcher(new File("c:/Documents and Settings/nils/.genj/geo/de.gzt")).match(new GeoLocation(birt));
+        System.out.println(new BinarySearch().search(new File("c:/Documents and Settings/nmeier/.genj/geo/ca.gzt"), new GeoLocation(birt)));
       } catch (Throwable t) {
         t.printStackTrace();
       }
