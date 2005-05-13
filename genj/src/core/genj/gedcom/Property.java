@@ -331,6 +331,20 @@ public abstract class Property implements Comparable {
   }
 
   /**
+   * Return a parent of given type in the hierarchy of parents 
+   */
+  public Property getParent(Class type) {
+    Property prop = this;
+    while (prop!=null) {
+      if (type.isAssignableFrom(prop.getClass())) 
+        return prop;
+      prop = prop.getParent();
+    }
+    return null;
+  }
+  
+  
+  /**
    * Returns the property this property belongs to
    */
   public Property getParent() {
